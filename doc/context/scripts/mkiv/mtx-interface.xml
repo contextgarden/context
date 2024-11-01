@@ -8,12 +8,6 @@
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="interfaces"><short>generate context mkii interface files</short></flag>
-   </subcategory>
-   <subcategory>
-    <flag name="context"><short>equals <ref name="interfaces"/> <ref name="messages"/> <ref name="languages"/></short></flag>
-   </subcategory>
-   <subcategory>
     <flag name="scite"><short>generate scite interface</short></flag>
     <flag name="bbedit"><short>generate bbedit interface files</short></flag>
     <flag name="jedit"><short>generate jedit interface files</short></flag>

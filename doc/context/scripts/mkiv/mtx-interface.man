@@ -11,12 +11,6 @@
 .B ConTeXt Interface Related Goodies
 .SH OPTIONS
 .TP
-.B --interfaces
-generate context mkii interface files
-.TP
-.B --context
-equals --interfaces --messages --languages
-.TP
 .B --scite
 generate scite interface
 .TP

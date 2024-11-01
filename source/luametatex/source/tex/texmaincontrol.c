@@ -4636,7 +4636,7 @@ static void tex_aux_set_box_property(void)
                 }
             }
             break;
-         case box_attribute_code:
+        case box_attribute_code:
             {
                 halfword att = tex_scan_attribute_register_number();
                 halfword val = tex_scan_integer(1, NULL);

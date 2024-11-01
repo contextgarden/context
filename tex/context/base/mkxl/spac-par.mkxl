@@ -19,9 +19,42 @@
 
 % TODO: \appendtoks \strut \wrapuppar{\strut}\to \everypar
 
-%D New experimental stuff:
-
 % this might move to syst-ini.mkxl
+
+\setnewconstant\frozenparagraphdefault\numexpr
+    \adjustfrozenparcode
+  + \brokenpenaltyfrozenparcode
+  + \clubpenaltyfrozenparcode
+  + \demeritsfrozenparcode
+  + \displaypenaltyfrozenparcode
+  + \emergencyfrozenparcode
+  + \exhyphenpenaltyfrozenparcode
+  + \fitnessclassesfrozenparcode
+  + \hangfrozenparcode
+  + \hsizefrozenparcode
+  + \hyphenationfrozenparcode
+  + \hyphenpenaltyfrozenparcode
+  + \indentfrozenparcode
+  + \lastlinefrozenparcode
+  + \linebreakchecksfrozenparcode
+  % \linefrozenparcode
+  + \linepenaltyfrozenparcode
+  + \loosenessfrozenparcode
+  % \mathpenaltyfrozenparcode
+  + \orphanpenaltyfrozenparcode
+  + \parfillfrozenparcode
+  + \parpassesfrozenparcode
+  + \protrudefrozenparcode
+  + \shapefrozenparcode
+  + \shapingpenaltyfrozenparcode
+  + \singlelinepenaltyfrozenparcode
+  + \skipfrozenparcode
+  + \stretchfrozenparcode
+  + \toddlerpenaltyfrozenparcode
+  + \tolerancefrozenparcode
+  + \twindemeritsfrozenparcode
+  + \widowpenaltyfrozenparcode
+\relax
 
 \setnewconstant\paragraphupdatecodes\numexpr
     \tolerancefrozenparcode
@@ -82,40 +115,6 @@
 \bitwiseflip\glyphoptions\checktwinglyphoptioncode
 
 % \linefrozenparcode % lineskip
-
-\setnewconstant\frozenparagraphdefault\numexpr
-    \hsizefrozenparcode            % \hsize
-  + \skipfrozenparcode             % \leftskip \rightskip
-  + \hangfrozenparcode             % \hangindent \hangafter
-  + \indentfrozenparcode           % \parindent
-  + \parfillfrozenparcode          % \parfillskip \parfillleftskip
-  + \adjustfrozenparcode           % \adjustspacing
-  + \protrudefrozenparcode         % \protrudechars
-  + \tolerancefrozenparcode        % \tolerance \pretolerance
-  + \stretchfrozenparcode          % \emergcystretch
-  + \loosenessfrozenparcode        % \looseness
-  + \lastlinefrozenparcode         % \lastlinefit
-  + \linepenaltyfrozenparcode      % \linepenalty \interlinepenalty \interlinepenalties
-  + \clubpenaltyfrozenparcode      % \clubpenalty \clubpenalties
-  + \widowpenaltyfrozenparcode     % \widowpenalty \widowpenalties
-  + \displaypenaltyfrozenparcode   % \displaypenalty \displaypenalties
-  + \brokenpenaltyfrozenparcode    % \brokenpenalty
-  + \demeritsfrozenparcode         % \doublehyphendemerits \finalhyphendemerits \adjdemerits
-  + \shapefrozenparcode            % \parshape
-  % \linefrozenparcode             % \baselineskip \lineskip \lineskiplimit
-  + \hyphenationfrozenparcode      % \hyphenationmode
-  + \shapingpenaltyfrozenparcode   % \shapingpenaltymode
-  + \orphanpenaltyfrozenparcode
-  + \toddlerpenaltyfrozenparcode
-  % \mathpenaltyfrozenparcode
-  + \emergencyfrozenparcode
-  + \parpassesfrozenparcode
-  + \singlelinepenaltyfrozenparcode
-  + \hyphenpenaltyfrozenparcode
-  + \exhyphenpenaltyfrozenparcode
-  + \linebreakchecksfrozenparcode
-  + \twindemeritsfrozenparcode
-\relax
 
 \appendtoks
     \parpasses\zerocount

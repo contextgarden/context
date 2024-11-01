@@ -907,6 +907,66 @@ void lmt_nodelib_initialize(void) {
     lmt_interface.node_data[passive_node]        = (node_info) { .id = passive_node,        .size = passive_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(passive),        .lua = lua_key_index(passive),         .visible = 0 };
     lmt_interface.node_data[passive_node + 1]    = (node_info) { .id = -1,                  .size = -1,                       .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = NULL,                    .lua = 0,                              .visible = 0 };
 
+    lmt_interface.par_data = lmt_memory_malloc(par_n_of_codes * sizeof(par_info));
+
+    lmt_interface.par_data[par_none_code                   ] = (par_info) { .cmd = 0,                      .chr = 0,                            .category = par_none_category                };
+    lmt_interface.par_data[par_hsize_code                  ] = (par_info) { .cmd = internal_dimension_cmd, .chr = hsize_code,                   .category = par_hsize_category               };
+    lmt_interface.par_data[par_left_skip_code              ] = (par_info) { .cmd = internal_glue_cmd,      .chr = left_skip_code,               .category = par_skip_category                };
+    lmt_interface.par_data[par_right_skip_code             ] = (par_info) { .cmd = internal_glue_cmd,      .chr = right_skip_code,              .category = par_skip_category                };
+    lmt_interface.par_data[par_hang_indent_code            ] = (par_info) { .cmd = internal_dimension_cmd, .chr = hang_indent_code,             .category = par_hang_category                };
+    lmt_interface.par_data[par_hang_after_code             ] = (par_info) { .cmd = internal_integer_cmd,   .chr = hang_after_code,              .category = par_hang_category                };
+    lmt_interface.par_data[par_par_indent_code             ] = (par_info) { .cmd = internal_dimension_cmd, .chr = par_indent_code,              .category = par_indent_category              };
+    lmt_interface.par_data[par_par_fill_left_skip_code     ] = (par_info) { .cmd = internal_glue_cmd,      .chr = par_fill_left_skip_code,      .category = par_par_fill_category            };
+    lmt_interface.par_data[par_par_fill_right_skip_code    ] = (par_info) { .cmd = internal_glue_cmd,      .chr = par_fill_right_skip_code,     .category = par_par_fill_category            };
+    lmt_interface.par_data[par_par_init_left_skip_code     ] = (par_info) { .cmd = internal_glue_cmd,      .chr = par_init_left_skip_code,      .category = par_par_fill_category            };
+    lmt_interface.par_data[par_par_init_right_skip_code    ] = (par_info) { .cmd = internal_glue_cmd,      .chr = par_init_right_skip_code,     .category = par_par_fill_category            };
+    lmt_interface.par_data[par_emergency_left_skip_code    ] = (par_info) { .cmd = internal_glue_cmd,      .chr = emergency_left_skip_code,     .category = par_emergency_category           };
+    lmt_interface.par_data[par_emergency_right_skip_code   ] = (par_info) { .cmd = internal_glue_cmd,      .chr = emergency_right_skip_code,    .category = par_emergency_category           };
+    lmt_interface.par_data[par_adjust_spacing_code         ] = (par_info) { .cmd = internal_integer_cmd,   .chr = adjust_spacing_code,          .category = par_adjust_category              };
+    lmt_interface.par_data[par_protrude_chars_code         ] = (par_info) { .cmd = internal_integer_cmd,   .chr = protrude_chars_code,          .category = par_protrude_category            };
+    lmt_interface.par_data[par_pre_tolerance_code          ] = (par_info) { .cmd = internal_integer_cmd,   .chr = pre_tolerance_code,           .category = par_tolerance_category           };
+    lmt_interface.par_data[par_tolerance_code              ] = (par_info) { .cmd = internal_integer_cmd,   .chr = tolerance_code,               .category = par_tolerance_category           };
+    lmt_interface.par_data[par_emergency_stretch_code      ] = (par_info) { .cmd = internal_dimension_cmd, .chr = emergency_stretch_code,       .category = par_stretch_category             };
+    lmt_interface.par_data[par_looseness_code              ] = (par_info) { .cmd = internal_integer_cmd,   .chr = looseness_code,               .category = par_looseness_category           };
+    lmt_interface.par_data[par_last_line_fit_code          ] = (par_info) { .cmd = internal_integer_cmd,   .chr = last_line_fit_code,           .category = par_last_line_category           };
+    lmt_interface.par_data[par_line_penalty_code           ] = (par_info) { .cmd = internal_integer_cmd,   .chr = line_penalty_code,            .category = par_line_penalty_category        };
+    lmt_interface.par_data[par_inter_line_penalty_code     ] = (par_info) { .cmd = internal_integer_cmd,   .chr = inter_line_penalty_code,      .category = par_line_penalty_category        };
+    lmt_interface.par_data[par_club_penalty_code           ] = (par_info) { .cmd = internal_integer_cmd,   .chr = club_penalty_code,            .category = par_club_penalty_category        };
+    lmt_interface.par_data[par_widow_penalty_code          ] = (par_info) { .cmd = internal_integer_cmd,   .chr = widow_penalty_code,           .category = par_widow_penalty_category       };
+    lmt_interface.par_data[par_display_widow_penalty_code  ] = (par_info) { .cmd = internal_integer_cmd,   .chr = display_widow_penalty_code,   .category = par_display_penalty_category     };
+    lmt_interface.par_data[par_left_twin_demerits_code     ] = (par_info) { .cmd = internal_integer_cmd,   .chr = left_twin_demerits_code,      .category = par_twin_demerits_category       };
+    lmt_interface.par_data[par_right_twin_demerits_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = right_twin_demerits_code,     .category = par_twin_demerits_category       };
+    lmt_interface.par_data[par_broken_penalty_code         ] = (par_info) { .cmd = internal_integer_cmd,   .chr = broken_penalty_code,          .category = par_broken_penalty_category      };
+    lmt_interface.par_data[par_adj_demerits_code           ] = (par_info) { .cmd = internal_integer_cmd,   .chr = adj_demerits_code,            .category = par_demerits_category            };
+    lmt_interface.par_data[par_double_hyphen_demerits_code ] = (par_info) { .cmd = internal_integer_cmd,   .chr = double_hyphen_demerits_code,  .category = par_demerits_category            };
+    lmt_interface.par_data[par_final_hyphen_demerits_code  ] = (par_info) { .cmd = internal_integer_cmd,   .chr = final_hyphen_demerits_code,   .category = par_demerits_category            };
+    lmt_interface.par_data[par_par_shape_code              ] = (par_info) { .cmd = specification_cmd,      .chr = par_shape_code,               .category = par_shape_category               };
+    lmt_interface.par_data[par_inter_line_penalties_code   ] = (par_info) { .cmd = specification_cmd,      .chr = inter_line_penalties_code,    .category = par_line_penalty_category        };
+    lmt_interface.par_data[par_club_penalties_code         ] = (par_info) { .cmd = specification_cmd,      .chr = club_penalties_code,          .category = par_club_penalty_category        };
+    lmt_interface.par_data[par_widow_penalties_code        ] = (par_info) { .cmd = specification_cmd,      .chr = widow_penalties_code,         .category = par_widow_penalty_category       };
+    lmt_interface.par_data[par_display_widow_penalties_code] = (par_info) { .cmd = specification_cmd,      .chr = display_widow_penalties_code, .category = par_display_penalty_category     };
+    lmt_interface.par_data[par_broken_penalties_code       ] = (par_info) { .cmd = specification_cmd,      .chr = broken_penalties_code,        .category = par_broken_penalty_category      };
+    lmt_interface.par_data[par_orphan_penalties_code       ] = (par_info) { .cmd = specification_cmd,      .chr = orphan_penalties_code,        .category = par_orphan_penalty_category      };
+    lmt_interface.par_data[par_toddler_penalties_code      ] = (par_info) { .cmd = specification_cmd,      .chr = toddler_penalties_code,       .category = par_toddler_penalty_category     };
+    lmt_interface.par_data[par_fitness_classes_code        ] = (par_info) { .cmd = specification_cmd,      .chr = fitness_classes_code,         .category = par_fitness_classes_category     };
+    lmt_interface.par_data[par_adjacent_demerits_code      ] = (par_info) { .cmd = specification_cmd,      .chr = adjacent_demerits_code,       .category = par_demerits_category            };
+    lmt_interface.par_data[par_orphan_line_factors_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = orphan_line_factors_code,     .category = par_orphan_penalty_category      };
+    lmt_interface.par_data[par_baseline_skip_code          ] = (par_info) { .cmd = internal_glue_cmd,      .chr = baseline_skip_code,           .category = par_line_category                };
+    lmt_interface.par_data[par_line_skip_code              ] = (par_info) { .cmd = internal_glue_cmd,      .chr = line_skip_code,               .category = par_line_category                };
+    lmt_interface.par_data[par_line_skip_limit_code        ] = (par_info) { .cmd = internal_dimension_cmd, .chr = line_skip_limit_code,         .category = par_line_category                };
+    lmt_interface.par_data[par_adjust_spacing_step_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = adjust_spacing_step_code,     .category = par_adjust_category              };
+    lmt_interface.par_data[par_adjust_spacing_shrink_code  ] = (par_info) { .cmd = internal_integer_cmd,   .chr = adjust_spacing_shrink_code,   .category = par_adjust_category              };
+    lmt_interface.par_data[par_adjust_spacing_stretch_code ] = (par_info) { .cmd = internal_integer_cmd,   .chr = adjust_spacing_stretch_code,  .category = par_adjust_category              };
+    lmt_interface.par_data[par_hyphenation_mode_code       ] = (par_info) { .cmd = internal_integer_cmd,   .chr = hyphenation_mode_code,        .category = par_hyphenation_category,         };
+    lmt_interface.par_data[par_shaping_penalties_mode_code ] = (par_info) { .cmd = internal_integer_cmd,   .chr = shaping_penalties_mode_code,  .category = par_shaping_penalty_category     };
+    lmt_interface.par_data[par_shaping_penalty_code        ] = (par_info) { .cmd = internal_integer_cmd,   .chr = shaping_penalty_code,         .category = par_shaping_penalty_category     };
+    lmt_interface.par_data[par_emergency_extra_stretch_code] = (par_info) { .cmd = internal_dimension_cmd, .chr = emergency_extra_stretch_code, .category = par_emergency_category           };
+    lmt_interface.par_data[par_par_passes_code             ] = (par_info) { .cmd = specification_cmd,      .chr = par_passes_code,              .category = par_par_passes_category          };
+    lmt_interface.par_data[par_line_break_checks_code      ] = (par_info) { .cmd = internal_integer_cmd,   .chr = line_break_checks_code,       .category = par_line_break_checks_category   };
+    lmt_interface.par_data[par_single_line_penalty_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = single_line_penalty_code,     .category = par_single_line_penalty_category };
+    lmt_interface.par_data[par_hyphen_penalty_code         ] = (par_info) { .cmd = internal_integer_cmd,   .chr = hyphen_penalty_code,          .category = par_hyphen_penalty_category      };
+    lmt_interface.par_data[par_ex_hyphen_penalty_code      ] = (par_info) { .cmd = internal_integer_cmd,   .chr = ex_hyphen_penalty_code,       .category = par_ex_hyphen_penalty_category   };
+
 }
 
 /*tex
@@ -4131,6 +4191,12 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case final_hyphen_demerits_code  : return par_final_hyphen_demerits_code;
                 case shaping_penalties_mode_code : return par_shaping_penalties_mode_code;
                 case shaping_penalty_code        : return par_shaping_penalty_code;
+                case line_break_checks_code      : return line_break_checks_code;
+                case orphan_line_factors_code    : return par_orphan_line_factors_code;
+                case adjust_spacing_step_code    : return par_adjust_spacing_step_code;
+                case adjust_spacing_shrink_code  : return par_adjust_spacing_shrink_code;
+                case adjust_spacing_stretch_code : return par_adjust_spacing_stretch_code;
+                case hyphenation_mode_code       : return par_hyphenation_mode_code;
             }
             break;
         case internal_dimension_cmd:
@@ -4157,6 +4223,7 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case line_skip_code              : return par_line_skip_code;
             }
             break;
+
         case specification_reference_cmd:
             switch (index) {
                 case par_shape_code              : return par_par_shape_code;
@@ -4166,11 +4233,11 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case display_widow_penalties_code: return par_display_widow_penalties_code;
                 case orphan_penalties_code       : return par_orphan_penalties_code;
                 case toddler_penalties_code      : return par_toddler_penalties_code;
+                case par_broken_penalties_code   : return par_broken_penalties_code;
                 case fitness_classes_code        : return par_fitness_classes_code;
                 case adjacent_demerits_code      : return par_adjacent_demerits_code;
                 case orphan_line_factors_code    : return par_orphan_line_factors_code;
                 case par_passes_code             : return par_par_passes_code;
-                case line_break_checks_code      : return line_break_checks_code;
             }
             break;
     }

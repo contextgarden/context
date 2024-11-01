@@ -691,6 +691,9 @@
 \defcsname\??mathalignlocation\v!packed\endcsname
   {\c_strc_formulas_align_packed\plusone}
 
+\defcsname\??mathalignlocation\v!unpacked\endcsname
+  {\c_strc_formulas_align_packed\plustwo}
+
 \defcsname\??mathalignlocation\v!formula\endcsname
   {\c_strc_formulas_align_alignment
      \ifcstok{\formulaparameter\c!align}\v!flushleft
@@ -730,8 +733,10 @@
    \ifzeropt\wd\scratchbox\else
      \hpack
        \s!attr \mathnumberlocationattribute \numexpr
-         \c_math_alignment_packed_signal +
-         \c_strc_math_ragged_status * \plussixteen + \plusone
+        % \c_strc_formulas_align_packed*\pluscclvi % 0x0.00
+          \c_math_alignment_packed_signal          % 0x0.00
+        + \c_strc_math_ragged_status*\plussixteen  % 0x00.0
+        + \plusone                                 % 0x000.
        \relax
        \s!attr \mathnumberthresholdattribute \numexpr
          \d_math_eqalign_number_threshold
@@ -750,8 +755,10 @@
    \ifzeropt\wd\scratchbox\else
      \hpack
        \s!attr \mathnumberlocationattribute \numexpr
-         \c_math_alignment_packed_signal +
-         \c_strc_math_ragged_status * \plussixteen + \plustwo
+        % \c_strc_formulas_align_packed*\pluscclvi % 0x0.00
+          \c_math_alignment_packed_signal          % 0x0.00
+        + \c_strc_math_ragged_status*\plussixteen  % 0x00.0
+        + \plustwo                                 % 0x000.
        \relax
        \s!attr \mathnumberthresholdattribute \numexpr
          \d_math_eqalign_number_threshold
@@ -883,11 +890,14 @@
 \def\math_alignment_packed_start
   {%\math_eqalign_set_defaults
    \c_strc_formulas_check_width\zerocount
-   \c_math_alignment_packed_signal"100\relax
+   \c_math_alignment_packed_signal\numexpr\c_strc_formulas_align_packed*\pluscclvi\relax
    \d_math_alignment_packed_margin\rightskip
    \mathatom
      \s!class \mathwrappedcode
-     \s!attr \mathnumberlocationattribute \c_math_alignment_packed_signal
+     \s!attr \mathnumberlocationattribute \numexpr
+      % \c_strc_formulas_align_packed*\pluscclvi
+        \c_math_alignment_packed_signal
+     \relax
    \bgroup
  % \scratchdimen\mathalignmentparameter\c!leftmargin\relax
  % \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
@@ -943,7 +953,7 @@
      \math_prepare_r_eqalign_no
    \fi
    %
-   \ifcase\c_strc_formulas_align_packed\or
+   \ifcase\c_strc_formulas_align_packed\else
      \math_alignment_packed_start
    \fi
  % \everycr{\ifcase\c_math_eqalign_row\else\noalign{\penalty\interdisplaylinepenalty}\fi}%
@@ -954,7 +964,7 @@
   {\crcr
    \egroup
    \egroup
-   \ifcase\c_strc_formulas_align_packed\or
+   \ifcase\c_strc_formulas_align_packed\else
      \math_alignment_packed_stop
    \fi
    \expand\everymathalignmentdone

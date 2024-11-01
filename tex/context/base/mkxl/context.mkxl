@@ -29,7 +29,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.10.31 11:51}
+\immutable\edef\contextversion{2024.11.01 19:09}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error

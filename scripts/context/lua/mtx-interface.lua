@@ -11,6 +11,10 @@ local gsub, format, gmatch, find, upper = string.gsub, string.format, string.gma
 local utfchar, utfgsub = utf.char, utf.gsub
 local sortedkeys, sortedhash, serialize = table.sortedkeys, table.sortedhash, table.serialize
 
+-- <subcategory>
+-- <flag name="mkii"><short>generate context mkii interface files</short></flag>
+-- </subcategory>
+
 local helpinfo = [[
 <?xml version="1.0"?>
 <application>
@@ -21,12 +25,6 @@ local helpinfo = [[
  </metadata>
  <flags>
   <category name="basic">
-   <subcategory>
-    <flag name="interfaces"><short>generate context mkii interface files</short></flag>
-   </subcategory>
-   <subcategory>
-    <flag name="context"><short>equals <ref name="interfaces"/> <ref name="messages"/> <ref name="languages"/></short></flag>
-   </subcategory>
    <subcategory>
     <flag name="scite"><short>generate scite interface</short></flag>
     <flag name="bbedit"><short>generate bbedit interface files</short></flag>
@@ -68,7 +66,6 @@ scripts.interface = scripts.interface or { }
 
 local flushers          = { }
 local userinterfaces    = { 'en','cs','de','it','nl','ro','fr','pe' }
-local messageinterfaces = { 'en','cs','de','it','nl','ro','fr','pe','no' }
 
 local function collect(filename,class,data)
     if data then
@@ -597,87 +594,95 @@ function scripts.interface.check()
     end
 end
 
-function scripts.interface.mkii()
-    local filename = resolvers.findfile(environment.files[1] or "mult-def.lua") or ""
-    if filename ~= "" then
-        local interface = dofile(filename)
-        if interface and next(interface) then
-            local variables, constants, commands, elements = interface.variables, interface.constants, interface.commands, interface.elements
-            local filename = resolvers.findfile("cont-en.xml") or ""
-            local xmldata = filename ~= "" and (io.loaddata(filename) or "")
-            local function flush(texresult,xmlresult,language,what,tag)
-                local t = interface[what]
-                texresult[#texresult+1] = format("%% definitions for interface %s for language %s\n%%",what,language)
-                xmlresult[#xmlresult+1] = format("\t<!-- definitions for interface %s for language %s -->\n",what,language)
-                xmlresult[#xmlresult+1] = format("\t<cd:%s>",what)
-                local sorted = sortedkeys(t)
-                for i=1,#sorted do
-                    local key = sorted[i]
-                    local v = t[key]
-                    local value = v[language] or v["en"]
-                    if not value then
-                        report("warning, no value for key '%s' for language '%s'",key,language)
-                    else
-                        local value = t[key][language] or t[key].en
-                        texresult[#texresult+1] = format("\\setinterface%s{%s}{%s}",tag,key,value)
-                        xmlresult[#xmlresult+1] = format("\t\t<cd:%s name='%s' value='%s'/>",tag,key,value)
-                    end
-                end
-                xmlresult[#xmlresult+1] = format("\t</cd:%s>\n",what)
-            end
-            local function replace(str, element, attribute, category, othercategory, language)
-                return str:gsub(format("(<%s[^>]-%s=)([\"\'])([^\"\']-)([\"\'])",element,attribute), function(a,b,c)
-                    local cc = category[c]
-                    if not cc and othercategory then
-                        cc = othercategory[c]
-                    end
-                    if cc then
-                        ccl = cc[language]
-                        if ccl then
-                            return a .. b .. ccl .. b
-                        end
-                    end
-                    return a .. b .. c .. b
-                end)
-            end
-            -- we could just replace attributes
-            for language, _ in next, commands.setuplayout do
-                -- keyword files
-                local texresult, xmlresult = { }, { }
-                texresult[#texresult+1] = format("%% this file is auto-generated, don't edit this file\n%%")
-                xmlresult[#xmlresult+1] = format("<?xml version='1.0'?>\n",tag)
-                xmlresult[#xmlresult+1] = format("<cd:interface xmlns:cd='http://www.pragma-ade.com/commands' name='context' language='%s' version='2008.10.21 19:42'>\n",language)
-                flush(texresult,xmlresult,language,"variables","variable")
-                flush(texresult,xmlresult,language,"constants","constant")
-                flush(texresult,xmlresult,language,"elements", "element")
-                flush(texresult,xmlresult,language,"commands", "command")
-                texresult[#texresult+1] = format("%%\n\\endinput")
-                xmlresult[#xmlresult+1] = format("</cd:interface>")
-                local texfilename = format("mult-%s.mkii",language)
-                local xmlfilename = format("keys-%s.xml",language)
-                io.savedata(texfilename,concat(texresult,"\n"))
-                report("saving interface definitions '%s'",texfilename)
-                io.savedata(xmlfilename,concat(xmlresult,"\n"))
-                report("saving interface translations '%s'",xmlfilename)
-                -- mkii files
-                if language ~= "en" and xmldata ~= "" then
-                    local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
-                 -- newdata = replace(newdata, 'cd:command', 'name', interface.commands, interface.elements, language)
-                    newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
-                    newdata = replace(newdata, 'cd:variable' , 'value', interface.variables, nil, language)
-                    newdata = replace(newdata, 'cd:parameter', 'name', interface.constants, nil, language)
-                    newdata = replace(newdata, 'cd:constant', 'type', interface.variables, nil, language)
-                    newdata = replace(newdata, 'cd:variable', 'type', interface.variables, nil, language)
-                    newdata = replace(newdata, 'cd:inherit', 'name', interface.commands, interface.elements, language)
-                    local xmlfilename = format("cont-%s.xml",language)
-                    io.savedata(xmlfilename,newdata)
-                    report("saving interface specification '%s'",xmlfilename)
-                end
-                -- mkiv is generated otherwise
-            end
-        end
-    end
-end
+-- function scripts.interface.mkii()
+--     local filename = resolvers.findfile("mult-def.lua") or ""
+--     if filename ~= "" then
+--         local interface = dofile(filename)
+--         if interface and next(interface) then
+--             local variables, constants, commands, elements = interface.variables, interface.constants, interface.commands, interface.elements
+--             local filename = resolvers.findfile("context.xml") or ""
+--             local xmldata = filename ~= "" and (io.loaddata(filename) or "")
+--             if not xmldata then
+--                 report("no valid xml file %a",filename)
+--             else
+--                 local function flush(texresult,xmlresult,language,what,tag)
+--                     local t = interface[what]
+--                     texresult[#texresult+1] = format("%% definitions for interface %s for language %s\n%%",what,language)
+--                     xmlresult[#xmlresult+1] = format("\t<!-- definitions for interface %s for language %s -->\n",what,language)
+--                     xmlresult[#xmlresult+1] = format("\t<cd:%s>",what)
+--                     local sorted = sortedkeys(t)
+--                     for i=1,#sorted do
+--                         local key = sorted[i]
+--                         local v = t[key]
+--                         local value = v[language] or v["en"]
+--                         if not value then
+--                             report("warning, no value for key '%s' for language '%s'",key,language)
+--                         else
+--                             local value = t[key][language] or t[key].en
+--                             texresult[#texresult+1] = format("\\setinterface%s{%s}{%s}",tag,key,value)
+--                             xmlresult[#xmlresult+1] = format("\t\t<cd:%s name='%s' value='%s'/>",tag,key,value)
+--                         end
+--                     end
+--                     xmlresult[#xmlresult+1] = format("\t</cd:%s>\n",what)
+--                 end
+--                 local function replace(str, element, attribute, category, othercategory, language)
+--                     return str:gsub(format("(<%s[^>]-%s=)([\"\'])([^\"\']-)([\"\'])",element,attribute), function(a,b,c)
+--                         local cc = category[c]
+--                         if not cc and othercategory then
+--                             cc = othercategory[c]
+--                         end
+--                         if cc then
+--                             ccl = cc[language]
+--                             if ccl then
+--                                 return a .. b .. ccl .. b
+--                             end
+--                         end
+--                         return a .. b .. c .. b
+--                     end)
+--                 end
+--                 -- we could just replace attributes
+--                 for language, _ in next, commands.setuplayout do
+--                     -- keyword files
+--                     local texresult, xmlresult = { }, { }
+--                     texresult[#texresult+1] = format("%% this file is auto-generated, don't edit this file\n%%")
+--                     xmlresult[#xmlresult+1] = format("<?xml version='1.0'?>\n",tag)
+--                     xmlresult[#xmlresult+1] = format("<cd:interface xmlns:cd='http://www.pragma-ade.com/commands' name='context' language='%s' version='2008.10.21 19:42'>\n",language)
+--                     flush(texresult,xmlresult,language,"variables","variable")
+--                     flush(texresult,xmlresult,language,"constants","constant")
+--                     flush(texresult,xmlresult,language,"elements", "element")
+--                     flush(texresult,xmlresult,language,"commands", "command")
+--                     texresult[#texresult+1] = format("%%\n\\endinput")
+--                     xmlresult[#xmlresult+1] = format("</cd:interface>")
+--                     local texfilename = format("mult-%s.mkii",language)
+--                     local xmlfilename = format("keys-%s.xml",language)
+--                     io.savedata(texfilename,concat(texresult,"\n"))
+--                     report("saving interface definitions '%s'",texfilename)
+--                     io.savedata(xmlfilename,concat(xmlresult,"\n"))
+--                     report("saving interface translations '%s'",xmlfilename)
+--                     -- mkii files
+--                     if language ~= "en" and xmldata ~= "" then
+--                         local newdata = xmldata:gsub("(<cd:interface.*language=.)en(.)","%1"..language.."%2",1)
+--                      -- newdata = replace(newdata, 'cd:command', 'name', interface.commands, interface.elements, language)
+--                         newdata = replace(newdata, 'cd:string', 'value', interface.commands, interface.elements, language)
+--                         newdata = replace(newdata, 'cd:variable' , 'value', interface.variables, nil, language)
+--                         newdata = replace(newdata, 'cd:parameter', 'name', interface.constants, nil, language)
+--                         newdata = replace(newdata, 'cd:constant', 'type', interface.variables, nil, language)
+--                         newdata = replace(newdata, 'cd:variable', 'type', interface.variables, nil, language)
+--                         newdata = replace(newdata, 'cd:inherit', 'name', interface.commands, interface.elements, language)
+--                         local xmlfilename = format("cont-%s.xml",language)
+--                         io.savedata(xmlfilename,newdata)
+--                         report("saving interface specification '%s'",xmlfilename)
+--                     end
+--                     -- mkiv is generated otherwise
+--                 end
+--             end
+--         else
+--             report("no file %a",filename)
+--         end
+--     else
+--         report("no file %a","mult-def")
+--     end
+-- end
 
 function scripts.interface.preprocess()
     require("luat-mac")
@@ -818,9 +823,11 @@ end
 
 local ea = environment.argument
 
-if ea("mkii") then
-    scripts.interface.mkii()
-elseif ea("preprocess") then
+-- if ea("mkii") then
+--     scripts.interface.mkii()
+-- elseif ea("preprocess") then
+
+if ea("preprocess") then
     scripts.interface.preprocess()
 elseif ea("meaning") then
     scripts.interface.meaning()

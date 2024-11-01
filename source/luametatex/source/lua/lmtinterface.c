@@ -57,6 +57,7 @@ lmt_interface_info lmt_interface = {
     .math_parameter_values     = NULL,
     .field_type_values         = NULL,
     .node_data                 = NULL,
+    .par_data                  = NULL, 
     .command_names             = NULL,
 } ;
 

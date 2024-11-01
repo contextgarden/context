@@ -91,7 +91,7 @@ return {
         "shapingpenaltyfrozenparcode", "orphanpenaltyfrozenparcode", "toddlerpenaltyfrozenparcode",
         "emergencyfrozenparcode", "parpassesfrozenparcode", "singlelinepenaltyfrozenparcode",
         "hyphenpenaltyfrozenparcode", "exhyphenpenaltyfrozenparcode", "linebreakchecksfrozenparcode",
-        "twindemeritsfrozenparcode", "allfrozenparcode",
+        "twindemeritsfrozenparcode", "fitnessclassesfrozenparcode", "allfrozenparcode",
         --
         "activemathcharcode",
         --

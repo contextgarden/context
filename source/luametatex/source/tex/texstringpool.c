@@ -463,7 +463,7 @@ char *tex_makecstring(int s)
 */
 
 /*tex 
-    I might eventually replace this because in qite some calls we know that we knwo that we have
+    I might eventually replace this because in quite some calls we know that we knwo that we have
     a pointer in string space. We can kin dof predict in what cases we are below |cs_offset_value|
     anyway. 
 */
