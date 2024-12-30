@@ -90,7 +90,7 @@ return {
                     list    = {
                         {
                             source   = { first = 0x02980 }, -- triplebar
-                            filename = "TeXGyrePagellaMath-Companion.otf",
+                            filename = "texgyrepagellamathcompanion-regular.otf",
                         },
                     },
                 },

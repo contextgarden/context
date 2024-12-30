@@ -47,7 +47,7 @@ return {
                     list    = {
                         {
                             source   = { first = 0x02980 }, -- triplebar
-                            filename = "TeXGyreTermesMath-Companion.otf",
+                            filename = "texgyretermesmathcompanion-regular.otf",
                         },
                     },
                 },

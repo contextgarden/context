@@ -317,6 +317,13 @@ typedef struct node_info {
     int           last;
 } node_info;
 
+typedef struct par_info {
+    short cmd;
+    short chr;
+    int   category;
+} par_info;
+
+
 typedef struct command_item {
     int         id;
     int         lua;
@@ -368,6 +375,7 @@ typedef struct lmt_interface_info {
     value_info    *field_type_values;
     /*tex Here's one for nodes. */
     node_info     *node_data;
+    par_info      *par_data;
     /*tex And this one is for tokens. */
     command_item  *command_names;
 } lmt_interface_info ;

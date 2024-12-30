@@ -432,7 +432,7 @@ like this:
     numeric ds ; ds :=  3 ;
 
     path slash       ; slash       := (-ws,-(hs+ds)) -- (ws,(hs+ds))  ;
-    path numerator   ; numerator   := unitsquare xyscaled ( wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
+    path numerator   ; numerator   := unitsquare xyscaled (wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
     path denominator ; denominator := numerator ;
 
     numerator   := numerator   shifted - center numerator ;
@@ -499,7 +499,57 @@ There are some parameter involved:
 
 \startsection[title=Math fractions]
 
-todo
+Fractions in \TEX\ come in variants: with or without rule in the middle and with
+or without fences. The reason for the fenced ones is that they are not spaced
+like open and close class symbols. So, instead of open, fraction, close being
+three things, we have one thing. In \LUAMETATEX\ we can also use an extensible
+instead of the rule.
+
+\startlinecorrection
+\startMPcode
+    def Example (expr showbar) =
+        numeric wd ; wd := 20 ;
+        numeric ht ; ht :=  7 ;
+        numeric dp ; dp :=  3 ;
+
+        numeric ax ; ax :=  2 ;
+        numeric ay ; ay := -2 ;
+        numeric ab ; ab :=  2 ;
+
+        path numerator   ; numerator   := unitsquare xyscaled ( wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
+        path denominator ; denominator := numerator ;
+        path fraction    ; fraction    := (-wd/2-ax,0) -- (wd/2+ax,0) ;
+
+        numerator   := numerator   shifted - center numerator ;
+        denominator := denominator shifted - center denominator ;
+
+        numerator   := numerator   shifted (0, (ht+dp)+ay) ;
+        denominator := denominator shifted (0,-(ht+dp)-ay) ;
+
+        if showbar :
+            draw fraction    withcolor "darkgray" withpen pencircle scaled 1 ;
+        fi ;
+        draw numerator   withcolor "darkred"  ;
+        draw denominator withcolor "darkblue" ;
+
+        path leftbar  ; leftbar  := (leftboundary  currentpicture topenlarged 2 bottomenlarged 2) shifted (-ab,0) ;
+        path rightbar ; rightbar := (rightboundary currentpicture topenlarged 2 bottomenlarged 2) shifted ( ab,0) ;
+
+        draw leftbar  withcolor "darkgray" withpen pencircle scaled 1 ;
+        draw rightbar withcolor "darkgray" withpen pencircle scaled 1 ;
+
+        currentpicture := currentpicture scaled 5 ;
+    enddef ;
+
+    draw image (Example(true)) ;
+
+    draw image (Example(false)) shifted (20+bbwidth(currentpicture) ,0) ;
+
+\stopMPcode
+\stoplinecorrection
+
+Because the rule is optional, we can have the following, which represents a so
+called binom construct.
 
 \stopsection
 
@@ -535,8 +585,8 @@ too.
     path rleft   ; rleft   := (-3rw,rh/3) -- (-2rw,-rd) -- (-rw,rh) ;
     path rright  ; rright  := (wd+2,rh) -- (wd+2,rh-2);
     path rmiddle ; rmiddle := (-rw,rh) -- (wd+2,rh);
-    path body    ; body    := unitsquare xyscaled ( wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
-    path degree  ; degree  := unitsquare xyscaled ( dw, dh+dd) shifted (0,-dd) && ((0,0) -- (dw,0)) ;
+    path body    ; body    := unitsquare xyscaled (wd, ht+dp) shifted (0,-dp) && ((0,0) -- (wd,0)) ;
+    path degree  ; degree  := unitsquare xyscaled (dw, dh+dd) shifted (0,-dd) && ((0,0) -- (dw,0)) ;
 
     degree := degree shifted (-3rw-2,rh/3+dd+2) ;
 

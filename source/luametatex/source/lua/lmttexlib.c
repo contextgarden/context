@@ -5772,6 +5772,7 @@ static int texlib_getfrozenparvalues(lua_State *L)
     lua_set_string_by_index(L, par_ex_hyphen_penalty_category,   "exhyphenpenalty");
     lua_set_string_by_index(L, par_line_break_checks_category,   "linebreakchecks");
     lua_set_string_by_index(L, par_twin_demerits_category,       "twindemerits");
+    lua_set_string_by_index(L, par_fitness_classes_category,     "fitnessclasses");
  /* lua_set_string_by_index(L, par_all_category,                 "all"); */
     return 1;
 }
@@ -6347,6 +6348,24 @@ static int texlib_getmathstylevariant(lua_State *L)
     }
 }
 
+static int texlib_getpardataspecifications(lua_State *L)
+{
+    lua_createtable(L, par_n_of_codes, 0); /* one too many */
+    for (int i = 1 ; i < par_n_of_codes; i++) {
+        int cmd = lmt_interface.par_data[i].cmd;
+        int chr = lmt_interface.par_data[i].chr;
+        size_t len;
+        char *csname = tex_makeclstring(lmt_primitive_state.prim_data[cmd].names[chr], &len);
+        lua_createtable(L, 4, 0);
+        lua_set_integer_by_index(L, 1, cmd);
+        lua_set_integer_by_index(L, 2, chr);
+        lua_set_string_by_index (L, 3, csname);
+        lua_set_integer_by_index(L, 4, lmt_interface.par_data[i].category);
+        lua_rawseti(L, -2, (lua_Integer) i);
+    }
+    return 1;
+}
+
 /*tex
     Experiment. We could enhance page_builder_state_info with a few state fields.
 */
@@ -6596,6 +6615,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getmathvariantpresets",        texlib_getmathvariantpresets        },
     { "getmathcontrolvalues",         texlib_getmathcontrolvalues         },
     { "gettextcontrolvalues",         texlib_gettextcontrolvalues         },
+    { "getpardataspecifications",     texlib_getpardataspecifications     },
     { "getprepoststatevalues",        texlib_getprepoststatevalues        },
     { "getadjustoptionvalues",        texlib_getadjustoptionvalues        },
     { "getpacktypevalues",            texlib_getpacktypevalues            },

@@ -51,7 +51,7 @@ return {
                     list    = {
                         {
                             -- source   = { first = 0x02980 }, -- triplebar
-                            filename = "LatinModernMath-Companion.otf",
+                            filename = "latinmodernmathcompanion-regular.otf",
                             feature = "ss01",
                             unicodes = {
                                 0x00028, -- left parenthesis
@@ -70,7 +70,7 @@ return {
                         },
                         {
                             -- source   = { first = 0x02980 }, -- triplebar
-                            filename = "LatinModernMath-Companion.otf",
+                            filename = "latinmodernmathcompanion-regular.otf",
                             feature = "ss02",
                             unicodes = {
                                 0x0007B, -- left brace
@@ -78,7 +78,7 @@ return {
                             },
                         },
                         {
-                            filename = "LatinModernMath-Companion.otf",
+                            filename = "latinmodernmathcompanion-regular.otf",
                             feature = "ss03",
                             unicodes = {
                                 0x0221A, -- radical
@@ -86,7 +86,7 @@ return {
                         },
                         {
                             -- source   = { first = 0x02980 }, -- triplebar
-                            filename = "LatinModernMath-Companion.otf",
+                            filename = "latinmodernmathcompanion-regular.otf",
                             unicodes = {
                                 0x0002F, -- solidus
                                 -- 0x00028, -- left parenthesis

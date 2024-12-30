@@ -2417,67 +2417,6 @@ typedef enum dir_subtypes {
     subtype so that the initial and successive instances can be recognized.
  */
 
-typedef enum par_codes {                   /* extrahyphenpenalty : in parpass     */
-    par_none_code,                         /* hyphenpenalty      : why not stored */
-    par_hsize_code,
-    par_left_skip_code,
-    par_right_skip_code,
-    par_hang_indent_code,
-    par_hang_after_code,
-    par_par_indent_code,
-    par_par_fill_left_skip_code,
-    par_par_fill_right_skip_code,
-    par_par_init_left_skip_code,
-    par_par_init_right_skip_code,
-    par_emergency_left_skip_code,
-    par_emergency_right_skip_code,
-    par_adjust_spacing_code,               /* parpass */
-    par_protrude_chars_code,
-    par_pre_tolerance_code,
-    par_tolerance_code,                    /* parpass */
-    par_emergency_stretch_code,            /* parpass */ /* dimension */
-    par_looseness_code,                    /* parpass */
-    par_last_line_fit_code,
-    par_line_penalty_code,                 /* parpass */
-    par_inter_line_penalty_code,
-    par_club_penalty_code,
-    par_widow_penalty_code,
-    par_display_widow_penalty_code,
-    par_left_twin_demerits_code,           /* parpass */
-    par_right_twin_demerits_code,          /* parpass */
-    par_broken_penalty_code,
-    par_adj_demerits_code,                 /* parpass */
- // par_double_adj_demerits_code,
-    par_double_hyphen_demerits_code,       /* parpass */
-    par_final_hyphen_demerits_code,        /* parpass */
-    par_par_shape_code,
-    par_inter_line_penalties_code,
-    par_club_penalties_code,
-    par_widow_penalties_code,
-    par_display_widow_penalties_code,
-    par_broken_penalties_code,
-    par_orphan_penalties_code,
-    par_toddler_penalties_code,
-    par_fitness_classes_code,              /* parpass */
-    par_adjacent_demerits_code,            /* parpass */
-    par_orphan_line_factors_code,          /* parpass */
-    par_baseline_skip_code,
-    par_line_skip_code,
-    par_line_skip_limit_code,
-    par_adjust_spacing_step_code,          /* parpass */
-    par_adjust_spacing_shrink_code,        /* parpass */
-    par_adjust_spacing_stretch_code,       /* parpass */
-    par_hyphenation_mode_code,
-    par_shaping_penalties_mode_code,
-    par_shaping_penalty_code,
-    par_emergency_extra_stretch_code,
-    par_par_passes_code,
-    par_line_break_checks_code,
-    par_single_line_penalty_code,
-    par_hyphen_penalty_code,
-    par_ex_hyphen_penalty_code,
-} par_codes;
-
 typedef enum par_categories {
     par_none_category                = 0x00000000,
     par_hsize_category               = 0x00000001, // \hsize
@@ -2514,20 +2453,81 @@ typedef enum par_categories {
     par_all_category                 = 0x7FFFFFFF, //
 } par_categories;
 
-static int par_category_to_codes[] = {
-    par_none_category,
+typedef enum par_codes {                   /* extrahyphenpenalty : in parpass     */
+    par_none_code,                         /* hyphenpenalty      : why not stored */
+    par_hsize_code,
+    par_left_skip_code,
+    par_right_skip_code,
+    par_hang_indent_code,
+    par_hang_after_code,
+    par_par_indent_code,
+    par_par_fill_left_skip_code,
+    par_par_fill_right_skip_code,
+    par_par_init_left_skip_code,
+    par_par_init_right_skip_code,
+    par_emergency_left_skip_code,
+    par_emergency_right_skip_code,
+    par_adjust_spacing_code,               /* parpass */
+    par_protrude_chars_code,
+    par_pre_tolerance_code,
+    par_tolerance_code,                    /* parpass */
+    par_emergency_stretch_code,            /* parpass */ /* dimension */
+    par_looseness_code,                    /* parpass */
+    par_last_line_fit_code,
+    par_line_penalty_code,                 /* parpass */
+    par_inter_line_penalty_code,
+    par_club_penalty_code,
+    par_widow_penalty_code,
+    par_display_widow_penalty_code,
+    par_left_twin_demerits_code,           /* parpass */
+    par_right_twin_demerits_code,          /* parpass */
+    par_broken_penalty_code,
+    par_adj_demerits_code,                 /* parpass */
+    par_double_hyphen_demerits_code,       /* parpass */
+    par_final_hyphen_demerits_code,        /* parpass */
+    par_par_shape_code,
+    par_inter_line_penalties_code,
+    par_club_penalties_code,
+    par_widow_penalties_code,
+    par_display_widow_penalties_code,
+    par_broken_penalties_code,
+    par_orphan_penalties_code,
+    par_toddler_penalties_code,
+    par_fitness_classes_code,              /* parpass */
+    par_adjacent_demerits_code,            /* parpass */
+    par_orphan_line_factors_code,          /* parpass */
+    par_baseline_skip_code,
+    par_line_skip_code,
+    par_line_skip_limit_code,
+    par_adjust_spacing_step_code,          /* parpass */
+    par_adjust_spacing_shrink_code,        /* parpass */
+    par_adjust_spacing_stretch_code,       /* parpass */
+    par_hyphenation_mode_code,
+    par_shaping_penalties_mode_code,
+    par_shaping_penalty_code,
+    par_emergency_extra_stretch_code,
+    par_par_passes_code,
+    par_line_break_checks_code,
+    par_single_line_penalty_code,
+    par_hyphen_penalty_code,
+    par_ex_hyphen_penalty_code,
+    par_n_of_codes,
+} par_codes;
+
+static int par_category_to_codes[par_n_of_codes] = { /* explicit size is check */
+    par_none_category,                // par_none_code
     par_hsize_category,               // par_hsize_code
     par_skip_category,                // par_left_skip_code
     par_skip_category,                // par_right_skip_code
     par_hang_category,                // par_hang_indent_code
     par_hang_category,                // par_hang_after_code
     par_indent_category,              // par_par_indent_code
-    par_par_fill_category,            // par_par_fill_skip_code
     par_par_fill_category,            // par_par_fill_left_skip_code
-    par_par_fill_category,            // par_par_init_skip_code
-    par_par_fill_category,            // par_par_init_skip_code
-    par_emergency_category,           // par_par_emergency_left_skip
-    par_emergency_category,           // par_par_emergency_right_skip
+    par_par_fill_category,            // par_par_fill_right_skip_code
+    par_par_fill_category,            // par_par_init_left_skip_code
+    par_par_fill_category,            // par_par_init_right_skip_code
+    par_emergency_category,           // par_emergency_left_skip_code
+    par_emergency_category,           // par_emergency_right_skip_code
     par_adjust_category,              // par_adjust_spacing_code
     par_protrude_category,            // par_protrude_chars_code
     par_tolerance_category,           // par_pre_tolerance_code
@@ -2540,13 +2540,10 @@ static int par_category_to_codes[] = {
     par_club_penalty_category,        // par_club_penalty_code
     par_widow_penalty_category,       // par_widow_penalty_code
     par_display_penalty_category,     // par_display_widow_penalty_code
-    par_orphan_penalty_category,      // par_orphan_penalty_code
-    par_toddler_penalty_category,     // par_toddler_penalties_code
     par_twin_demerits_category,       // par_left_twin_demerits_code
     par_twin_demerits_category,       // par_right_twin_demerits_code
     par_broken_penalty_category,      // par_broken_penalty_code
     par_demerits_category,            // par_adj_demerits_code
- // par_demerits_category,            // par_double_adj_demerits_code
     par_demerits_category,            // par_double_hyphen_demerits_code
     par_demerits_category,            // par_final_hyphen_demerits_code
     par_shape_category,               // par_par_shape_code
@@ -2554,11 +2551,12 @@ static int par_category_to_codes[] = {
     par_club_penalty_category,        // par_club_penalties_code
     par_widow_penalty_category,       // par_widow_penalties_code
     par_display_penalty_category,     // par_display_widow_penalties_code
-    par_broken_penalty_category,      // par_display_widow_penalties_code
+    par_broken_penalty_category,      // par_broken_penalties_code
     par_orphan_penalty_category,      // par_orphan_penalties_code
+    par_toddler_penalty_category,     // par_toddler_penalties_code
     par_fitness_classes_category,     // par_fitness_classes_code
     par_demerits_category,            // par_adjacent_demerits_code
-    par_orphan_penalty_category,
+    par_orphan_penalty_category,      // par_orphan_line_factors_code
     par_line_category,                // par_baseline_skip_code
     par_line_category,                // par_line_skip_code
     par_line_category,                // par_line_skip_limit_code
@@ -2568,12 +2566,12 @@ static int par_category_to_codes[] = {
     par_hyphenation_category,         // par_hyphenation_mode_code
     par_shaping_penalty_category,     // par_shaping_penalties_mode_code
     par_shaping_penalty_category,     // par_shaping_penalty_code
-    par_emergency_category,           //
-    par_par_passes_category,          //
-    par_line_break_checks_category,   //
-    par_single_line_penalty_category, //
-    par_hyphen_penalty_category,      //
-    par_ex_hyphen_penalty_category,   //
+    par_emergency_category,           // par_emergency_extra_stretch_code
+    par_par_passes_category,          // par_par_passes_code
+    par_line_break_checks_category,   // par_line_break_checks_code
+    par_single_line_penalty_category, // par_single_line_penalty_code
+    par_hyphen_penalty_category,      // par_hyphen_penalty_code
+    par_ex_hyphen_penalty_category,   // par_ex_hyphen_penalty_code
 };
 
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */

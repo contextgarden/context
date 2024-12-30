@@ -521,13 +521,15 @@ do
                                         rwidth = wd
                                         centered = true
                                     end
-
-if packed > 0 then
-    setprop(n,"mathalignshift","right")
-    lwidth = 0
-    rwidth = 0
-end
-
+                                    if packed > 0 then
+                                        setprop(n,"mathalignshift","right")
+                                        if packed == 2 then
+                                            lwidth = 0
+                                        else
+                                            lwidth = 0
+                                            rwidth = 0
+                                        end
+                                    end
                                     if totals[count-2] + cellwidths[count-1] + s*wd - s*threshold > hsize then
                                         local total = ht + dp
                                         setdepth(row,getdepth(row) + total)
@@ -548,13 +550,15 @@ end
                                     if signal == 0x80 then
                                         lwidth = wd
                                     end
-
-if packed > 0 then
-    setprop(n,"mathalignshift","left")
-    lwidth = 0
-    rwidth = 0
-end
-
+                                    if packed > 0 then
+                                        setprop(n,"mathalignshift","left")
+                                        if packed == 2 then
+                                            rwidth = 0
+                                        else
+                                            lwidth = 0
+                                            rwidth = 0
+                                        end
+                                    end
                                 end
                                 if location == a_numberleft and anchor then
                                     local l, l, n = removenode(list,n)

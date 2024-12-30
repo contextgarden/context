@@ -217,45 +217,27 @@ them but that has to be done explicitly then. The advantage is that grouping no
 longer interferes with the line break algorithm. The magic primitive is \type
 {\snapshotpar} which takes a number made from categories mentioned below:
 
-\starttabulate[|l|l|r|]
-\BC variable                       \BC category        \BC code                                        \NC \NR
-\NC \type {\hsize}                 \NC hsize           \NC 0x\uchexnumbers\hsizefrozenparcode          \NC \NR
-\NC \type {\leftskip}              \NC skip            \NC 0x\uchexnumbers\skipfrozenparcode           \NC \NR
-\NC \type {\rightskip}             \NC skip            \NC 0x\uchexnumbers\skipfrozenparcode           \NC \NR
-\NC \type {\hangindent}            \NC hang            \NC 0x\uchexnumbers\hangfrozenparcode           \NC \NR
-\NC \type {\hangafter}             \NC hang            \NC 0x\uchexnumbers\hangfrozenparcode           \NC \NR
-\NC \type {\parindent}             \NC indent          \NC 0x\uchexnumbers\indentfrozenparcode         \NC \NR
-\NC \type {\parfillleftskip}       \NC par fill        \NC 0x\uchexnumbers\parfillfrozenparcode        \NC \NR
-\NC \type {\parfillrightskip}      \NC par fill        \NC 0x\uchexnumbers\parfillfrozenparcode        \NC \NR
-\NC \type {\adjustspacing}         \NC adjust          \NC 0x\uchexnumbers\adjustfrozenparcode         \NC \NR
-\NC \type {\adjustspacingstep}     \NC adjust          \NC 0x\uchexnumbers\adjustfrozenparcode         \NC \NR
-\NC \type {\adjustspacingshrink}   \NC adjust          \NC 0x\uchexnumbers\adjustfrozenparcode         \NC \NR
-\NC \type {\adjustspacingstretch}  \NC adjust          \NC 0x\uchexnumbers\adjustfrozenparcode         \NC \NR
-\NC \type {\protrudechars}         \NC protrude        \NC 0x\uchexnumbers\protrudefrozenparcode       \NC \NR
-\NC \type {\pretolerance}          \NC tolerance       \NC 0x\uchexnumbers\tolerancefrozenparcode      \NC \NR
-\NC \type {\tolerance}             \NC tolerance       \NC 0x\uchexnumbers\tolerancefrozenparcode      \NC \NR
-\NC \type {\emergencystretch}      \NC stretch         \NC 0x\uchexnumbers\stretchfrozenparcode        \NC \NR
-\NC \type {\looseness}             \NC looseness       \NC 0x\uchexnumbers\loosenessfrozenparcode      \NC \NR
-\NC \type {\lastlinefit}           \NC last line       \NC 0x\uchexnumbers\lastlinefrozenparcode       \NC \NR
-\NC \type {\linepenalty}           \NC line penalty    \NC 0x\uchexnumbers\linepenaltyfrozenparcode    \NC \NR
-\NC \type {\interlinepenalty}      \NC line penalty    \NC 0x\uchexnumbers\linepenaltyfrozenparcode    \NC \NR
-\NC \type {\interlinepenalties}    \NC line penalty    \NC 0x\uchexnumbers\linepenaltyfrozenparcode    \NC \NR
-\NC \type {\clubpenalty}           \NC club penalty    \NC 0x\uchexnumbers\clubpenaltyfrozenparcode    \NC \NR
-\NC \type {\clubpenalties}         \NC club penalty    \NC 0x\uchexnumbers\clubpenaltyfrozenparcode    \NC \NR
-\NC \type {\widowpenalty}          \NC widow penalty   \NC 0x\uchexnumbers\widowpenaltyfrozenparcode   \NC \NR
-\NC \type {\widowpenalties}        \NC widow penalty   \NC 0x\uchexnumbers\widowpenaltyfrozenparcode   \NC \NR
-\NC \type {\displaywidowpenalty}   \NC display penalty \NC 0x\uchexnumbers\displaypenaltyfrozenparcode \NC \NR
-\NC \type {\displaywidowpenalties} \NC display penalty \NC 0x\uchexnumbers\displaypenaltyfrozenparcode \NC \NR
-\NC \type {\brokenpenalty}         \NC broken penalty  \NC 0x\uchexnumbers\brokenpenaltyfrozenparcode  \NC \NR
-\NC \type {\adjdemerits}           \NC demerits        \NC 0x\uchexnumbers\demeritsfrozenparcode       \NC \NR
-\NC \type {\doublehyphendemerits}  \NC demerits        \NC 0x\uchexnumbers\demeritsfrozenparcode       \NC \NR
-\NC \type {\finalhyphendemerits}   \NC demerits        \NC 0x\uchexnumbers\demeritsfrozenparcode       \NC \NR
-\NC \type {\parshape}              \NC shape           \NC 0x\uchexnumbers\shapefrozenparcode          \NC \NR
-\NC \type {\baselineskip}          \NC line            \NC 0x\uchexnumbers\linefrozenparcode           \NC \NR
-\NC \type {\lineskip}              \NC line            \NC 0x\uchexnumbers\linefrozenparcode           \NC \NR
-\NC \type {\lineskiplimit}         \NC line            \NC 0x\uchexnumbers\linefrozenparcode           \NC \NR
-\NC \type {\hyphenationmode}       \NC hyphenation     \NC 0x\uchexnumbers\hyphenationfrozenparcode    \NC \NR
-\stoptabulate
+\startluacode
+    local specifications = tex.getpardataspecifications()
+    local categories = tex.getfrozenparvalues()
+ -- context.starttabulate { "|l|l|l|l|" }
+    context.starttabulate { "|l|l|l|    " }
+    context.BC() context("variable")
+    context.BC() context("category")
+    context.BC() context("code")
+    context.NC() context.NR()
+    for i=1,#specifications do
+        local s = specifications[i]
+        local n = s[3]
+        local c = s[4]
+        context.NC() context.formatted.type("\\%s",n)
+        context.NC() context(categories[c])
+        context.NC() context("0x%08X",c)
+     -- context.NC() context.formatted.type("\\%sfrozensparcode",categories[c])
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+\stopluacode
 
 As you can see here, there are more paragraph related parameters than in for
 instance \PDFTEX\ and \LUATEX\ and these are (to be) explained in the
@@ -1270,7 +1252,7 @@ Here \type {\nointerlineskip} is (normally) defined as:
 \prevdepth-1000pt
 \stoptyping
 
-although in \CONTEXT\ we use \type {\ignoredepthcriterium} instead of the hard
+although in \CONTEXT\ we use \typ {\ignoredepthcriterium} instead of the hard
 coded dimension. We now give a more extensive example:
 
 \startbuffer[definition-1]
@@ -1309,7 +1291,7 @@ coded dimension. We now give a more extensive example:
 
 \typebuffer[example][option=TEX]
 
-In this example we set \type {\ignoredepthcriterium} to $\tf -50.0pt$ instead of the
+In this example we set \typ {\ignoredepthcriterium} to $\tf -50.0pt$ instead of the
 normal $\tf -1000pt$. The helper is defined as:
 
 \typebuffer[definition-1][option=TEX]
@@ -1367,7 +1349,7 @@ we get with positive values:
 \stopplacefigure
 
 Watch the interline skip kicking in when we make the depth larger than in
-\type {\ignoredepthcriterium} being $\tf 50pt$.
+\typ {\ignoredepthcriterium} being $\tf 50pt$.
 
 \stopsectionlevel
 
@@ -1470,10 +1452,55 @@ Can you guess what the next specification does?
 
 \stopsectionlevel
 
+\startsectionlevel[title=Par passes]
+
+Everything comes together in what we call par passes. Before we explain them first
+something about a feature that makes setting up for instance \type {\widowpenalties}
+easier. Here are a few definitions:
+
+\starttyping
+\specificationdef\strictwidowpenalties      \widowpenalties  \plusthree
+    \maxcount \maxcount \zerocount \relax
+\specificationdef\strictwidowpenaltiestwo   \widowpenalties  \plustwo
+    \maxcount \zerocount \relax
+\specificationdef\strictwidowpenaltiesthree \widowpenalties  \plusthree
+    \maxcount \maxcount \zerocount \relax
+\specificationdef\strictwidowpenaltiesfour  \widowpenalties  \plusfour
+    \maxcount \maxcount \maxcount \zerocount \relax
+\stoptyping
+
+These are defined in the core and hooked into the alignment interface:
+
+\starttyping
+\installaligncommand{strictwidows}  {\strictwidowpenalties     }
+\installaligncommand{strictwidows:2}{\strictwidowpenaltiestwo  }
+\installaligncommand{strictwidows:3}{\strictwidowpenaltiesthree}
+\installaligncommand{strictwidows:4}{\strictwidowpenaltiesfour }
+\stoptyping
+
+We also have four such \quote {strict} definitions for club but only one for
+broken penalties. For orphan penalties we have four \quote {less} orphan
+penalties but for widow, club and broken we have only one. So we end up with \typ
+{lessorphans}, \typ {lessorphans:2}, \typ {lessorphans:3}, \typ {lessorphans:4},
+\typ {defaultwidows}, \typ {defaultclubs}, \typ {defaultbroken}, \typ
+{strictwidows}, \typ {strictwidows:2}, \typ {strictwidows:3}, \typ
+{strictwidows:4}, \typ {strictclubs}, \typ {strictclubs:2}, \typ {strictclubs:3},
+\typ {strictclubs:4} and \typ {strictbroken}.
+
+You can also use \type {\specificationdef} for other constructs that have this
+multiple variable setup. Now to par passes. This is a mechanism unique to
+\LUAMETATEX\ that permits more than the usual upto three paragraph break steps:
+pretolerance, tolerance and emergency. How this works is explained in detail in
+the paragraphs chapter in the \type {beyond} document.
+
+{\em todo: copy some from article when published}
+
+\stopsectionlevel
+
 \stopdocument
 
 % I rewarded myself after writing a section by watching the video "Final Thing On
-% My Mind", The Pineapple This, Live, 2020, the usual perfect GH performance,
+% My Mind", The Pineapple Thief, Live, 2020, the usual perfect GH performance,
 % wondering if live would turn to normal so that we could go to such concerts once
 % again given successive covids. Writing manuals can do with a distraction.
 %
