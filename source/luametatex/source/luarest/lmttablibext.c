@@ -17,7 +17,7 @@ static int tablib_keys(lua_State *L)
             if (category != 3) {
                 if (category == 1) {
                     if (tkey != LUA_TSTRING) {
-                         category = 3;
+                        category = 3;
                     }
                 } else if (category == 2) {
                     if (tkey != LUA_TNUMBER) {
@@ -42,9 +42,56 @@ static int tablib_keys(lua_State *L)
     return 2; 
 }
 
+/* 
+
+local function get(t,n)
+    local min  = 1
+    local max = #t
+    while min <= max do
+        local mid = min + (max - min) // 2
+        if t[mid] == n then
+            return mid
+        elseif t[mid] < n then
+            min = mid + 1
+        else
+            max = mid - 1
+        end
+    end
+    return nil
+end
+
+*/
+
+static int tablib_binsearch(lua_State *L)
+{
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        lua_Integer val = lua_tointeger(L, 2);
+        lua_Unsigned min  = 1;
+        lua_Unsigned max = lua_rawlen(L, 1);
+        while (min <= max) {
+            lua_Unsigned mid = min + (max - min) / 2;
+            if (lua_rawgeti(L, 1, mid) == LUA_TNUMBER) {
+                lua_Integer tmp = lua_tointeger(L, -1); 
+                lua_pop(L, 1);
+                if (tmp == val) {
+                    lua_pushinteger(L, mid);
+                    return 1;
+                } else if (tmp < val) {
+                    min = mid + 1;
+                } else {
+                    max = mid - 1;
+                }
+            }
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
 static const luaL_Reg tablib_function_list[] = {
-    { "getkeys", tablib_keys },
-    { NULL,      NULL        },
+    { "getkeys",   tablib_keys      },
+    { "binsearch", tablib_binsearch },
+    { NULL,        NULL             },
 };
 
 int luaextend_table(lua_State * L)

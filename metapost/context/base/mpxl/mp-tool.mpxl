@@ -4800,3 +4800,45 @@ vardef totalarea(expr p) =
 enddef ;
 
 permanent totalarea ;
+
+% Here we emulate penstroke but with a plugin:
+
+% path p ; p := fullcircle xyscaled (100,70) ;
+% path s ; s := nepstroke (1000) (.25 + uniformdeviate(5)) ;
+% path t ; t := nepstroke (100) .25sin(10*pi*strokestep/strokesteps) ;
+% picture c ; c := lmt_outline [text = "CMS", kind = "path" ] ;
+% c := c shifted -center c ;
+% fill p penstroked s withcolor darkblue ;
+% for i within c :
+%     fill ((pathpart i) penstroked t) scaled 3
+%         withpen pencircle scaled 3
+%         withcolor darkred
+%     ;
+% endfor ;
+
+tertiarydef p penstroked s =
+    begingroup
+    interim defaultzeroangle := 0;
+    save N ; numeric N ; N := length s ;
+    save pp ; path pp ; pp := arcpointlist N of p ;
+    save pl ; path pl ; pl := for i within pp :
+        pathpoint shifted ((ypart point i of s,0) rotated (angle(pathdirection) + 90)) ..
+    endfor nocycle ;
+    save pr ; path pr ; pr := for i within pp :
+        pathpoint shifted ((ypart point i of s,0) rotated (angle(pathdirection) - 90)) ..
+    endfor nocycle ;
+  % pl -- reverse pr -- cycle
+    if cycle p :
+      (pl -- cycle) && (reverse pr -- cycle) && cycle
+    else :
+      pl -- reverse pr -- cycle
+    fi
+    endgroup
+enddef;
+
+vardef nepstroke (expr N) text F =
+    save strokesteps ; numeric strokesteps ; strokesteps := N ;
+    for strokestep = 0 upto strokesteps : (strokestep,F) -- endfor nocycle
+enddef ;
+
+permanent penstroked, nepstroke ;

@@ -106,6 +106,40 @@ end
 -- 2 0 obj << /Metadata 4 0 R /Subtype /XML /Type /Metadata >> endobj
 -- 4 0 obj << /Length 9104 >> stream ...
 
+do
+
+    -- This is a goodie. Checking came up in the ctx chat (HHR) in relation
+    -- to conversion and newer (lossless jpeg) file formats (not in pdf) but
+    -- that could be dealt with later (at least get the size and resolution
+    -- info).
+
+    -- todo : svg
+    -- todo : pdf (similar table)
+    -- todo : jbig jbig2 jb2 (if needed)
+
+    local graphics = nil
+
+    function scripts.pdf.identify(filename)
+        if graphics == nil then
+            graphics = require("grph-img.lua") or false
+        end
+        if graphics then
+            local info = graphics.identify(filename)
+            if info and info.length then
+                report("filename    : %s",filename)
+                report("filetype    : %s",info.filetype)
+                report("filesize    : %s",info.length)
+                report("colordepth  : %s",info.colordepth)
+                report("colorspace  : %s",graphics.colorspaces[info.colorspace])
+                report("size        : %s %s",info.xsize,info.ysize)
+                report("resolution  : %s %s",info.xres,info.yres)
+                report("boundingbox : 0 0 %s %s (bp)",graphics.bpsize(info))
+            end
+        end
+    end
+
+end
+
 function scripts.pdf.info(filename)
     local pdffile = loadpdffile(filename)
     if pdffile then
@@ -915,6 +949,8 @@ if filename == "" then
     application.help()
 elseif environment.argument("info") then
     scripts.pdf.info(filename)
+elseif environment.argument("identify") then
+    scripts.pdf.identify(filename)
 elseif environment.argument("metadata") then
     scripts.pdf.metadata(filename,environment.argument("pretty"))
 elseif environment.argument("formdata") then

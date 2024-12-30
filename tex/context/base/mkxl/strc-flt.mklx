@@ -375,6 +375,14 @@
 %D
 %D So there you have it:
 
+\def\strc_floats_open_up_caption
+  {\vpack\bgroup
+     \offinterlineskip
+     \vkern\scratchtopoffset
+     \strc_floats_make_complete_caption
+     \vkern\scratchbottomoffset
+   \egroup}
+
 \permanent\tolerant\protected\def\placefloatcaption[#category]#spacer[#S#settings]#spacer[#S#userdata]%
   {\ifarguments\or\else % >= 2
      % we need at least a category and title
@@ -391,6 +399,9 @@
      \setupcurrentfloatcaption[#settings]%
      \edef\currentfloatcounter{\namedcounterparameter\currentfloat\s!name}%
      \iftrialtypesetting\strc_counters_save\currentfloatcounter\fi
+% \strc_floats_reset_variables
+\global\emptyfloatcaptionfalse
+\global\nofloatcaptionfalse
      \ifcstok{\floatcaptionparameter\c!number}\v!yes
        \global\nofloatnumberfalse
      \else
@@ -422,7 +433,8 @@
    %    \c_attr_destination\currentfloatattribute\relax
    % \fi
      \currentfloatsynchronize
-     \strc_floats_make_complete_caption
+%      \strc_floats_make_complete_caption
+ \strc_floats_set_open_up\strc_floats_open_up_caption\strc_floats_make_complete_caption
      %
      \iftrialtypesetting\strc_counters_restore\currentfloatcounter\fi
      \egroup
@@ -2731,6 +2743,45 @@
    \let\strc_floats_align_caption\relax
    \strc_floats_build_box}
 
+\setupcaptions
+  [\c!topdistance=\zeropoint,
+   \c!bottomdistance=\zeropoint]
+
+\setupfloats % cheat as we want to set this per float
+  [\c!topdistance=\floatcaptionparameter\c!topdistance,
+   \c!bottomdistance=\floatcaptionparameter\c!bottomdistance]
+
+\def\strc_floats_open_up
+  {\setbox\floatbox\vpack\bgroup
+     \offinterlineskip
+     \vkern\scratchtopoffset
+     \box\floatbox
+     \vkern\scratchbottomoffset
+   \egroup}
+
+\def\strc_floats_set_open_up#1#2%
+  {\ifchkdimension\floatparameter\c!topdistance\or
+     \scratchtopoffset\lastchkdimension
+   \orelse\ifchknumber\lastnamedcs\or
+     \scratchtopoffset\lastnamedcs\lineheight
+   \else
+     \scratchtopoffset\zerocount
+   \fi
+   \ifchkdimension\floatparameter\c!bottomdistance\or
+     \scratchbottomoffset\lastchkdimension
+   \orelse\ifchknumber\lastnamedcs\or
+     \scratchbottomoffset\lastnamedcs\lineheight
+   \else
+     \scratchbottomoffset\zerocount
+   \fi
+   \unless\ifzeropt\scratchtopoffset
+     #1%
+   \orunless\ifzeropt\scratchbottomoffset
+     #1%
+   \else
+     #2%
+   \fi}
+
 \def\strc_floats_set_box % todo : \global\setbox, currently messy
   {\ifvisible
      \par
@@ -2755,6 +2806,7 @@
             \box\floatbox}%
        \fi
      \fi
+     \strc_floats_set_open_up\strc_floats_open_up\relax
      \wd\floatbox\floatwidth
      \ifdim\dimexpr\floatheight+\lineheight\relax<\textheight \else
        \global\floatheight\dimexpr\textheight-\lineheight\relax

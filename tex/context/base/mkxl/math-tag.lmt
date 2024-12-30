@@ -457,12 +457,18 @@ do
     trackers.register("export.trace.math", function(v) trace = v end)
 
     local function show(n,id,where)
-        local s = taglist[getattr(n,a_tagged)]
-        s = s and s.taglist
-        report_tags("%w %s : %S : %s",
+-- inspect(getattr(n,a_tagged))
+-- inspect(taglist)
+        local a = getattr(n,a_tagged)
+        local s = a and taglist[a]
+        if s then
+            s = s.taglist
+        end
+        report_tags("%w %s : %S : %s : %s",
             level,
             where,
             nodecodes[id],
+            a or "?",
             s and concat(s," ", 3) or "untagged"
         )
     end
@@ -504,7 +510,7 @@ do
                     local extra = #tagdata
                     if common <= extra then
                         if trace then
-                            show(" ",n,id)
+                            show(n,id," ")
                         end
                         for i=common,extra do
                             -- don't we loose properties here?
@@ -570,14 +576,14 @@ do
         level = level + 1
         for start, id, subtype in nextnode, start do -- current
             if trace then
-                show(start,id,"B")
+                show(start,id,"+")
             end
             if id == glyph_code or id == disc_code then
                 if not mtexttag then
                     mtexttag = start_tagged("mtext")
                 end
                 setattr(start,a_tagged,mtexttag)
-            elseif mtexttag and id == kern_code and subtype == fontkern_code or subtype == italickern_code then
+            elseif mtexttag and id == kern_code and (subtype == fontkern_code or subtype == italickern_code) then
                 setattr(start,a_tagged,mtexttag)
             elseif id == rule_code then
              -- setattr(start,a_tagged,start_tagged("ignore"))
@@ -595,9 +601,8 @@ do
                     properties.mathcategory = getattr(start,a_mathcategory)
                     setattr(start,a_tagged,start_tagged(tag,properties))
                     stop_tagged()
-                 -- showtag(start,id,false)
                     if trace then
-                        show("A",start,id)
+                        show(start,id,"C")
                     end
                     level = level - 1
                     break -- okay?
@@ -610,9 +615,8 @@ do
                         setattr(start,a_tagged,start_tagged("ms")) -- mtext
                     end
                     stop_tagged()
-                 -- showtag(start,id,false)
                     if trace then
-                        show("A",start,id)
+                        show(start,id,"T")
                     end
                     level = level - 1
                     break
@@ -622,9 +626,8 @@ do
                     properties.delimiter = "true" -- inspect(properties)
                     setattr(start,a_tagged,start_tagged("mo",properties))
                     stop_tagged()
-                 -- showtag(start,id,false)
                     if trace then
-                        show("A",start,id)
+                        show(start,id,"D")
                     end
                     level = level - 1
                    break
@@ -1019,7 +1022,7 @@ do
                 end
             end
             if trace then
-                show(start,id,"A")
+                show(start,id,"-")
             end
         end
         if mtexttag then

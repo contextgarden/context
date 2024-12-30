@@ -11562,6 +11562,14 @@ return {
    ["pe"]="دوران",
    ["ro"]="rotatie",
   },
+  ["rowdistance"]={
+   ["en"]="rowdistance",
+   ["nl"]="rijafstand",
+  },
+  ["rows"]={
+   ["en"]="rows",
+   ["nl"]="rijen",
+  },
   ["rule"]={
    ["cs"]="linka",
    ["de"]="linie",
@@ -11743,6 +11751,16 @@ return {
   },
   ["setups"]={
    ["en"]="setups",
+  },
+  ["sheet"]={
+   ["cs"]="sheet",
+   ["de"]="sheet",
+   ["en"]="sheet",
+   ["fr"]="feuille",
+   ["it"]="sheet",
+   ["nl"]="sheet",
+   ["pe"]="ورقه",
+   ["ro"]="sheet",
   },
   ["shrink"]={
    ["en"]="shrink",

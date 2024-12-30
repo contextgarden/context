@@ -13,9 +13,6 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- check all of the luatex code some day .. maybe i should replece the
 -- whole mvl handler by lua code .. why not
 
--- todo: use lua nodes with lua data (>0.79)
--- see ** can go when 0.79
-
 -- needs to be redone, too many calls and tests now ... still within some
 -- luatex limitations
 
@@ -45,7 +42,6 @@ local attributes   =  attributes
 local context      =  context
 local tex          =  tex
 
-local texlists     = tex.lists
 local texget       = tex.get
 local texgetcount  = tex.getcount
 local texgetdimen  = tex.getdimen
@@ -53,10 +49,11 @@ local texgetglue   = tex.getglue
 local texset       = tex.set
 local texsetdimen  = tex.setdimen
 local texsetcount  = tex.setcount
-local texnest      = tex.nest
 local texgetbox    = tex.getbox
 
-local buildpage    = tex.triggerbuildpage
+local texgetlist   = tex.getlist
+local texsetlist   = tex.setlist
+local texgetnest   = tex.getnest
 
 local variables    = interfaces.variables
 
@@ -147,6 +144,7 @@ local setdepth            = nuts.setdepth
 local getdepth            = nuts.getdepth
 local setnext             = nuts.setnext
 local setprev             = nuts.setprev
+local setoptions          = nuts.setoptions
 
 local find_node_tail      = nuts.tail
 local flushnode           = nuts.flushnode
@@ -161,8 +159,6 @@ local write_node          = nuts.write
 
 local nextnode            = nuts.traversers.node
 local nexthlist           = nuts.traversers.hlist
-
-local nodereference       = nuts.reference
 
 local listtoutf           = nodes.listtoutf
 local nodeidstostring     = nodes.idstostring
@@ -283,7 +279,7 @@ do
         snapmethods[n] = t
         t.name          = name   -- not interfaced
         t.specification = method -- not interfaced
-        context(n)
+        return n
     end
 
 end
@@ -715,6 +711,7 @@ local categories = { [0] =
     "overlay",
     "enable",
     "notopskip",
+    "keep", -- 12
 }
 
 categories          = allocate(table.swapped(categories,categories))
@@ -887,15 +884,13 @@ do
     local keyword    = C((1-category-separator)^1)
     local splitter   = (multiplier + Cc(1)) * keyword * (category + Cc(false))
 
-    local k_fixed    = variables.fixed
-    local k_flexible = variables.flexible
-    local k_limit    = variables.limit
+    local k_fixed    <const> = variables.fixed
+    local k_flexible <const> = variables.flexible
+    local k_limit    <const> = variables.limit
 
     local k_category <const> = "category"
     local k_penalty  <const> = "penalty"
     local k_order    <const> = "order"
-
-    local setoptions = nuts.setoptions
 
     function vspacing.setmap(from,to)
         map[from] = to
@@ -916,6 +911,7 @@ do
 
     local b_done     = false
     local b_packed   = false
+    local b_keep     = false
 
     local b_amount   = 0
     local b_stretch  = 0
@@ -930,6 +926,7 @@ do
     local pattern    = nil
 
     local packed     = categories.packed
+    local keep       = categories.keep
 
     local gluefactor = .25
 
@@ -1077,6 +1074,7 @@ do
         end
         b_done   = false
         b_packed = false
+        b_keep   = false
         b_grid   = grid == true or grid == 1
         before()
         lpegmatch(pattern,str)
@@ -1193,6 +1191,8 @@ do
     local before       = ""
     local after        = ""
 
+    local texnest      = tex.nest
+
     local function nodes_to_string(head)
         local current = head
         local t       = { }
@@ -1299,24 +1299,25 @@ do
 
     -- penalty only works well when before skip
 
-    local discard   = categories.discard
-    local largest   = categories.largest
-    local force     = categories.force
-    local penalty   = categories.penalty
-    local add       = categories.add
-    local disable   = categories.disable
-    local nowhite   = categories.nowhite
-    local goback    = categories.goback
-    local packed    = categories.packed
-    local overlay   = categories.overlay
-    local enable    = categories.enable
-    local notopskip = categories.notopskip
+    local discard   <const> = categories.discard
+    local largest   <const> = categories.largest
+    local force     <const> = categories.force
+    local penalty   <const> = categories.penalty
+    local add       <const> = categories.add
+    local disable   <const> = categories.disable
+    local nowhite   <const> = categories.nowhite
+    local goback    <const> = categories.goback
+    local packed    <const> = categories.packed
+    local overlay   <const> = categories.overlay
+    local enable    <const> = categories.enable
+    local notopskip <const> = categories.notopskip
+    local keep      <const> = categories.keep
 
     -- [whatsits][hlist][glue][glue][penalty]
 
-    local special_penalty_min = 32250
-    local special_penalty_max = 35000
-    local special_penalty_xxx =     0
+    local special_penalty_min <const> = 32250
+    local special_penalty_max <const> = 35000
+    local special_penalty_xxx <const> =     0
 
     -- this is rather messy and complex: we want to make sure that successive
     -- header don't break but also make sure that we have at least a decent
@@ -1518,7 +1519,7 @@ do
                     -- quit, we're not on the mvl
                 else
                     -- inefficient when we're at the end of a page
-                    local c = tonut(texlists.pagehead)
+                    local c = tonut(texgetlist("pagehead"))
                     while c and c ~= n do
                         local id = getid(c)
                         if id == hlist_code then
@@ -1571,28 +1572,34 @@ do
         local ignore_following  = false
         local ignore_whitespace = false
         local keep_together     = false
+        local dont_discard      = false
         local lastsnap
         local pagehead
         local pagetail
         --
         -- todo: keep_together: between headers
         -- todo: make this nicer in the engine
-        --
         local function getpagelist()
             if not pagehead then
-                pagehead = texlists.pagehead -- pagehead, pagetail = tex.getlist("pagehead")
-                if pagehead then
-                    pagehead = tonut(pagehead)
-                    pagetail = find_node_tail(pagehead) -- no texlists.page_tail yet-- no texlists.page_tail yet
-                end
+                pagehead, pagetail = nuts.getmvllist()
             end
         end
         --
-     -- local function getpagelist()
-     --     if not pagehead then
-     --         pagehead, pagetail = texgetlist("pagehead")
-     --     end
-     -- end
+        local setdiscardable   <const> = tex.glueoptioncodes.setdiscardable
+        local resetdiscardable <const> = tex.glueoptioncodes.resetdiscardable
+        --
+        local function checkoptions(n,where)
+            if getid(n) ~= glue_code then
+                -- something is wrong
+            -- print("IGNORE OPTION",where)
+            elseif dont_discard then
+            -- print("SET OPTION")
+                setoptions(n,tex.glueoptioncodes.setdiscardable)
+            else
+            -- print("RESET OPTION")
+                setoptions(n,tex.glueoptioncodes.resetdiscardable)
+            end
+        end
         --
         local function compensate(n)
             local g = 0
@@ -1629,6 +1636,7 @@ do
                     if p then
                         local e = p.extra
                         if e and e < 0 then
+-- What if mvl's
                             local t = texget("pagetotal")
                             if t > 0 then
                                 local g = texget("pagegoal") -- 1073741823 is signal
@@ -1652,6 +1660,7 @@ do
         local function getavailable()
             getpagelist()
             if pagehead then
+-- What if mvl's
                 local t = texget("pagetotal")
                 if t > 0 then
                     local g = texget("pagegoal")
@@ -1695,6 +1704,7 @@ do
                     if trace then
                         trace_done("flushed due to forced " .. why,glue_data)
                     end
+                    checkoptions(head,1)
                     head = forced_skip(head,current,getwidth(glue_data,width),"before",trace)
                     flushnode(glue_data)
                 else
@@ -1703,6 +1713,7 @@ do
                         if trace then
                             trace_done("flushed due to non zero " .. why,glue_data)
                         end
+                        checkoptions(glue_data,2)
                         head = insertnodebefore(head,current,glue_data)
                     elseif stretch ~= 0 or shrink ~= 0 then
                         if trace then
@@ -1711,6 +1722,7 @@ do
                         head = insertnodebefore(head,current,glue_data)
                     else
                      -- report_vspacing("needs checking (%s): %p",gluecodes[getsubtype(glue_data)],w)
+                        checkoptions(glue_data,3)
                         flushnode(glue_data)
                     end
                 end
@@ -1719,9 +1731,17 @@ do
             if trace then
                 trace_node(current)
             end
-            glue_order, glue_data, force_glue = 0, nil, false
-            penalty_order, penalty_data, natural_penalty = 0, nil, nil
-            parskip, ignore_parskip, ignore_following, ignore_whitespace = nil, false, false, false
+            glue_order        = 0
+            glue_data         = nil
+            force_glue        = false
+            penalty_order     = 0
+            penalty_data      = nil
+            natural_penalty   = nil
+            parskip           = nil
+            ignore_parskip    = false
+            ignore_following  = false
+            ignore_whitespace = false
+            dont_discard      = false
         end
         --
         if trace_vsnapping then
@@ -1932,6 +1952,12 @@ do
                         if trace then
                             trace_skip("assign",sc,so,sp,current)
                         end
+                        if sc == keep then
+                            if trace then
+                                trace_skip("keep 1",sc,so,sp,current)
+                            end
+                            dont_discard = true
+                        end
                         glue_order = so
                         head, current, glue_data = remove_node(head,current)
                     elseif glue_order < so then
@@ -1941,6 +1967,12 @@ do
                         glue_order = so
                         flushnode(glue_data)
                         head, current, glue_data = remove_node(head,current)
+                        if sc == keep then
+                            if trace then
+                                trace_skip("keep 2",sc,so,sp,current)
+                            end
+                            dont_discard = true
+                        end
                     elseif glue_order == so then
                         -- is now exclusive, maybe support goback as combi, else why a set
                         if sc == largest then
@@ -1958,6 +1990,12 @@ do
                                 end
                                 head, current = remove_node(head,current,true)
                             end
+-- if sc == keep then
+--     if trace then
+--         trace_skip("keep 3",sc,so,sp,current)
+--     end
+--     dont_discard = true
+-- end
                         elseif sc == goback then
                             if trace then
                                 trace_skip("goback",sc,so,sp,current)
@@ -1990,13 +2028,19 @@ do
                             head, current = remove_node(head,current,true)
                         else
                             if trace then
-                                trace_skip("unknown",sc,so,sp,current)
+                                trace_skip("unknown 1",sc,so,sp,current)
                             end
                             head, current = remove_node(head,current,true)
+if sc == keep then
+    if trace then
+        trace_skip("keep 4",sc,so,sp,current)
+    end
+    dont_discard = true
+end
                         end
                     else
                         if trace then
-                            trace_skip("unknown",sc,so,sp,current)
+                            trace_skip("unknown 2",sc,so,sp,current)
                         end
                         head, current = remove_node(head,current,true)
                     end
@@ -2190,17 +2234,20 @@ do
                 trace_done("result",glue_data)
             end
             if force_glue then
+                checkoptions(head,4)
                 head, tail = forced_skip(head,tail,getwidth(glue_data),"after",trace)
                 flushnode(glue_data)
                 glue_data = nil
             elseif tail then
                 setlink(tail,glue_data)
                 setnext(glue_data)
+                checkoptions(glue_data,5)
             else
                 head = glue_data
+                checkoptions(glue_data,6)
             end
-            -- texsetnest("top","prevdepth",0)
-            texnest[texnest.ptr].prevdepth = 0 -- appending to the list bypasses tex's prevdepth handler
+            -- appending to the list bypasses tex's prevdepth handler
+            texnest[texnest.ptr].prevdepth = 0
         end
         if trace then
             if glue_data or penalty_data then
@@ -2230,16 +2277,6 @@ do
 --         return head
 --     end
 
-    local stackhead, stacktail, stackhack = nil, nil, false
-
-    local function report(message,where,lst)
-        if lst and where then
-            report_vspacing(message,where,count_nodes(lst,true),nodeidstostring(lst))
-        else
-            report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
-        end
-    end
-
     -- This really need a rework. although, it has now been stable for 15 years so why
     -- mess with it. We get sequences like these where penalties come from the par
     -- builder:
@@ -2250,16 +2287,40 @@ do
     --
     -- and in context we never use penalties other than spacing related
 
+    local stackhead  = { }
+    local stacktail  = { }
+    local stackhack  = { }
+
     local forceflush = false
+    local stackmvl   = 0
+
+    local function report(message,where,lst)
+        if lst and where then
+            report_vspacing(message,where,count_nodes(lst,true),nodeidstostring(lst))
+        else
+            report_vspacing(message,count_nodes(lst,true),nodeidstostring(lst))
+        end
+    end
 
     function vspacing.pagehandler(newhead,where)
         if newhead then
+            --
+            local mvl = tex.getcurrentmvl()
+            if mvl ~= stackmvl then
+                if stackhead[stackmvl] then
+                    report_vspacing("pending stack entries for mvl %i, changing to %i",stackmvl,mvl)
+                end
+-- if stackmvl == 0 then
+--     stackhack[0] = false
+--     stackhead[0] = false
+--     stacktail[0] = false
+-- end
+                stackmvl = mvl
+            end
+            --
             local newtail = find_node_tail(newhead) -- best pass that tail, known anyway
             local flush = false
-            stackhack = true -- todo: only when grid snapping once enabled
-
--- local t = { } for n, id in nextnode, newhead do t[#t+1] = nodecodes[id] end report_vspacing("page handler: % t",t)
-
+            stackhack[stackmvl] = true -- todo: only when grid snapping once enabled
             for n, id, subtype in nextnode, newhead do
                 if id ~= glue_code then
                     flush = true
@@ -2267,7 +2328,7 @@ do
                  -- local sc = getattr(n,a_skipcategory)
                     local sc = getspecification(n)
                     if sc then
-                        stackhack = true
+                        stackhack[stackmvl] = true
                     else
                         flush = true
                     end
@@ -2287,15 +2348,15 @@ do
             end
 
             if flush then
-                if stackhead then
+                if stackhead[stackmvl] then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (final): %s",where,newhead) end
-                    setlink(stacktail,newhead)
-                    newhead   = stackhead
-                    stackhead = nil
-                    stacktail = nil
+                    setlink(stacktail[stackmvl],newhead)
+                    newhead = stackhead[stackmvl]
+                    stackhead[stackmvl] = nil
+                    stacktail[stackmvl] = nil
                 end
-                if stackhack then
-                    stackhack = false
+                if stackhack[stackmvl] then
+                    stackhack[stackmvl] = false
                     if trace_collect_vspacing then report("%s > processing %s nodes: %s",where,newhead) end
                     newhead = collapser(newhead,"page",where,trace_page_vspacing,true,a_snapmethod)
                 else
@@ -2303,14 +2364,14 @@ do
                 end
                 return newhead
             else
-                if stackhead then
+                if stackhead[stackmvl] then
                     if trace_collect_vspacing then report("%s > appending %s nodes to stack (intermediate): %s",where,newhead) end
-                    setlink(stacktail,newhead)
+                    setlink(stacktail[stackmvl],newhead)
                 else
                     if trace_collect_vspacing then report("%s > storing %s nodes in stack (initial): %s",where,newhead) end
-                    stackhead = newhead
+                    stackhead[stackmvl] = newhead
                 end
-                stacktail = newtail
+                stacktail[stackmvl] = newtail
             end
         end
         return nil
@@ -2318,8 +2379,8 @@ do
 
     function vspacing.pageoverflow()
         local h = 0
-        if stackhead then
-            for n, id in nextnode, stackhead do
+        if stackhead[stackmvl] then
+            for n, id in nextnode, stackhead[stackmvl] do
                 if id == glue_code then
                     h = h + getwidth(n)
                 elseif id == kern_code then
@@ -2342,7 +2403,6 @@ do
 
     function vspacing.vboxhandler(head,where)
         if head and not ignored[where] and getnext(head) then
--- if getid(head) == glue_code and getsubtype(head) == topskip_code then
             head = collapser(head,"vbox",where,trace_vbox_vspacing,true,a_snapvbox) -- todo: local snapper
         end
         return head
@@ -2371,7 +2431,7 @@ end
 
 do
 
-    local outer   = texnest[0]
+    local outer   = tex.getnest(0)
 
     local enabled = true
     local trace   = false
@@ -2399,7 +2459,7 @@ do
     function vspacing.getnofpreviouslines(head)
         if enabled then
             if not thead then
-                head = texlists.pagehead
+                head = texgetlist("pagehead")
             end
             local noflines = 0
             if head then
@@ -2450,7 +2510,7 @@ do
             if trace then
                 local newdepth = outer.prevdepth
                 local olddepth = newdepth
-                if not texlists.pagehead then
+                if not texgetlist("pagehead") then
                     newdepth = ignoredepth()
                     texset("prevdepth",newdepth)
                     outer.prevdepth = newdepth
@@ -2458,7 +2518,7 @@ do
                 report("page %i, prevdepth %p => %p",texgetcount("realpageno"),olddepth,newdepth)
              -- report("list %s",nodes.idsandsubtypes(head))
             else
-                if not texlists.pagehead then
+                if not texgetlist("pagehead") then
                     local newdepth = ignoredepth()
                     texset("prevdepth",newdepth)
                     outer.prevdepth = newdepth
@@ -2470,11 +2530,10 @@ do
     local trace       = false
     local abs         = math.abs
  -- local last        = nil
-    local vmode_code  = tex.modelevels.vertical
-    local temp_code   <const> = nodecodes.temp
-    local texgetnest  = tex.getnest
-    local texgetlist  = tex.getlist
     local getnodetail = nodes.tail
+
+    local vmode_code <const> = tex.modelevels.vertical
+    local temp_code  <const> = nodecodes.temp
 
  -- trackers.register("vspacing.forcestrutdepth",function(v) trace = v end)
 
@@ -2491,6 +2550,7 @@ do
                 end
                 nest.prevdepth = depth
             elseif id == temp_code and texgetnest("ptr") == 0 then
+-- TODO
                 local head = texgetlist("pagehead")
                 if head then
                     tail = getnodetail(head)
@@ -2589,6 +2649,8 @@ do
     local gettotal         = nuts.gettotal
     local getspeciallist   = nuts.getspeciallist
     local setspeciallist   = nuts.setspeciallist
+    local getmvllist       = nuts.getmvllist
+    local setmvllist       = nuts.setmvllist
 
     local triggerbuildpage = tex.triggerbuildpage
 
@@ -2688,7 +2750,8 @@ do
     function vspacing.interceptsamepagecontent(box)
         if vspacing.flushcontributions() then
             -- now we consult the last line (if present)
-            local head, tail = getspeciallist("pagehead")
+--             local head, tail = getspeciallist("pagehead")
+local head, tail = getmvllist()
             if tail and getid(tail) == glue_code then
                 local prev = getprev(tail)
                 if prev and getid(prev) == penalty_code then
@@ -2866,9 +2929,14 @@ do
         arguments = "2 integers",
     }
 
+    local integer_value = tokens.values.integer
+
     implement {
         name      = "definesnapmethod",
-        actions   = vspacing.definesnapmethod,
+        usage     = "value",
+        actions   = function(key,value)
+            return integer_value, vspacing.definesnapmethod(key,value)
+        end,
         scope     = "private",
         arguments = "2 strings",
     }
@@ -2879,25 +2947,27 @@ do
  -- interfaces.implement {
  --     name    = "fakenextstrutline",
  --     actions = function()
- --         local head = texlists.pagehead
+ --         local head = texgetlist("pagehead")
  --         if head then
  --             local head = remove_node(head,find_node_tail(head),true)
- --             texlists.pagehead = head
+ --             texgetlist("pagehead") = head
  --             buildpage()
  --         end
  --     end
  -- }
 
+    local buildpage = tex.triggerbuildpage
+
     implement {
         name    = "removelastline",
         actions = function()
-            local head = texlists.pagehead
+            local head = texgetlist("pagehead")
             if head then
                 local tail = find_node_tail(head)
                 if tail then
                     -- maybe check for hlist subtype 1
                     local head = remove_node(head,tail,true)
-                    texlists.pagehead = head
+                    texsetlist("pagehead", head)
                     buildpage()
                 end
             end
@@ -2907,7 +2977,7 @@ do
     implement {
         name    = "showpagelist", -- will improve
         actions = function()
-            local head = texlists.pagehead
+            local head = texgetlist("pagehead")
             if head then
                 print("start")
                 while head do

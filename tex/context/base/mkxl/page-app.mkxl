@@ -77,8 +77,7 @@
       \bgroup
       \inheritedfittingpageframed
       \bgroup
-      \pack_framed_initialize
-      \ignorepars} % \gobblespacetokens} brr also gobbles next assingment
+      \ignorepars}
 
 \protected\def\page_fitting_stop_normal % todo: figure out why a small mp image gets shifted
   {\removeunwantedspaces

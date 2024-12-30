@@ -469,6 +469,8 @@
      #following\relax
    \fi}
 
+\newmarks\c_strc_notes_insert_mark
+
 \protected\defcsname\??constructionnotehandler\v!notation:\v!note\endcsname % in the running text
   {\ifnotesenabled
      % do be done elsewhere
@@ -509,11 +511,32 @@
        \endgroup
      \fi
    \fi
+   %
+   \ifcstok{\noteparameter\c!range}\v!yes
+     \normalexpanded{\marks\c_strc_notes_insert_mark{\the\c_strc_notes_n}}%
+   \fi
+   %
    \ifconditional\c_strc_notes_skip
      \global\c_strc_notes_skip\conditionalfalse
    \else
      \boundary\noteboundary
    \fi}
+
+%D New, for columnsets:
+
+\permanent\protected\def\flushnoterange[#1]%
+  {\begingroup
+   \cdef\currentnote{#1}%
+  %\clf_flushnoterange
+  %   \numexpr\currentnoteinsertionnumber\relax
+  %   \numexpr\firstmarks\c_strc_notes_insert_mark\relax
+  %   \numexpr\botmarks\c_strc_notes_insert_mark\relax
+  %\relax
+   \clf_flushnoterange
+      \numexpr\currentnoteinsertionnumber\relax
+      \c_strc_notes_insert_mark
+   \relax
+   \endgroup}
 
 %D Interaction in notes is somewhat complex due to the way notes get flushed. In
 %D principle it is more or less the same as lists but where in lists we pack whole
@@ -1074,17 +1097,31 @@
      {\forgetall
       \dontcomplain
       \noteparameter\c!before
+      \ifvmode
+        \nointerlineskip
+      \fi
       \placenoterule
+     %\nointerlineskip
       \strut
       \noteparameter\c!after}%
    % also dp now
    \scratchdimen\dimexpr\htdp\scratchbox-\lineheight\relax
-   \ifgridsnapping
+   \ifconditional\c_page_mvl_active
+     % quick hack, columnsets already handle the grid .. maybe an option
+   \orelse\ifgridsnapping
      \getnoflines\scratchdimen
      \scratchdimen\noflines\lineheight
    \fi
-   \expandafter\endgroup\expandafter
-   \s_strc_notes_distance\the\scratchdimen\relax}
+%    \expandafter\endgroup\expandafter
+%    \s_strc_notes_distance\the\scratchdimen\relax%
+   \normalexpanded{%
+     \endgroup
+     \s_strc_notes_distance\the\scratchdimen\relax
+     % this will / has to / might become a plug
+     \ifconditional\c_page_mvl_split_inserts
+       \page_inserts_set_lineheight\currentnoteinsertionnumber\space\the\strutht\relax
+       \page_inserts_set_linedepth \currentnoteinsertionnumber\space\the\strutdp\relax
+     \fi}}
 
 \def\strc_notes_set_columns
   {\c_strc_notes_columns\noteparameter\c!n\relax
@@ -1140,7 +1177,8 @@
   {\strc_notes_set_columns
    \strc_notes_set_distance
    \strc_notes_set_location
-   \strc_notes_set_delayed}
+   \strc_notes_set_delayed
+   \strc_notes_set_factor}
 
 \let\strc_notes_set_position_high\relax
 
@@ -1194,6 +1232,7 @@
 
 \permanent\protected\def\normalnoterule
   {\ifvmode
+    %\nointerlineskip % maybe, columnsets
      \dontleavehmode \blackrule
        [\c!color=\noteparameter\c!rulecolor,
         \c!width=.2\hsize,
@@ -1258,6 +1297,8 @@
 \newconditional\c_strc_notes_symbol \c_strc_notes_symbol\conditionaltrue % not used
 \newconditional\c_strc_notes_skip
 
+\newcount\c_strc_notes_n
+
 \permanent\protected\def\setnote    [#tag]{\csname#tag\endcsname}
 \permanent\protected\def\setnotetext[#tag]{\global\c_strc_notes_skip\conditionaltrue\csname#tag\endcsname}
 
@@ -1266,8 +1307,13 @@
    \cdef\currentnote{#tag}%
    \strc_constructions_initialize{#tag}%
    \strc_notes_synchronize
+   \global\advanceby\c_strc_notes_n\plusone
    \expand\everybeforenoteinsert
-   \insert\currentnoteinsertionnumber\bgroup
+  %\insert\currentnoteinsertionnumber
+   \insert
+     \s!index \currentnoteinsertionnumber
+     \s!data  \c_strc_notes_n
+   \bgroup
      \expand\everyinsidenoteinsert\relax
      \usesetupsparameter\noteparameter % experimental
      \useinterlinespaceparameter\noteparameter
@@ -1451,33 +1497,46 @@
      \fi
    \fi}
 
+\newbox\b_strc_notes_inserts
+
+\def\strc_notes_place_inserts_indeed_before
+  {\endgraf
+   \ifvmode
+     \whitespace
+     \ifconditional\c_strc_notes_first_placed
+       \edef\p_spaceinbetween{\noteparameter\c!spaceinbetween}%
+       \ifempty\p_spaceinbetween\else
+         \blank[\p_spaceinbetween]%
+       \fi
+     \else
+       \edef\p_spacebefore{\rootnoteparameter\c!spacebefore}%
+       \ifempty\p_spacebefore\else
+         \blank[\p_spacebefore]%
+       \fi
+     \fi
+     \noteparameter\c!before
+     \nointerlineskip % added, otherwise spacing between multiple classes
+   \fi
+   \placenoterule}
+
+\def\strc_notes_place_inserts_indeed_after
+  {\endgraf
+   \ifvmode
+     \noteparameter\c!after
+   \fi}
+
 \def\strc_notes_place_inserts_indeed
   {\relax
 %    \ifdim\ht\currentnoteinsertionnumber>\zeropoint
    \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
-     \endgraf
-     \ifvmode
-       \whitespace
-       \ifconditional\c_strc_notes_first_placed
-         \edef\p_spaceinbetween{\noteparameter\c!spaceinbetween}%
-         \ifempty\p_spaceinbetween\else
-           \blank[\p_spaceinbetween]%
-         \fi
-       \else
-         \edef\p_spacebefore{\rootnoteparameter\c!spacebefore}%
-         \ifempty\p_spacebefore\else
-           \blank[\p_spacebefore]%
-         \fi
-       \fi
-       \noteparameter\c!before
-     \fi
-     \placenoterule
+%  \ifzeropt\page_inserts_get_height\currentnoteinsertionnumber\else
+     \strc_notes_place_inserts_indeed_before
      \bgroup
      \strc_notes_set_bodyfont
-     \setbox\scratchbox\hbox
+     \setbox\b_strc_notes_inserts\hbox
        {\strc_notes_flush_inserts}%
-     \page_postprocessors_linenumbers_deepbox\scratchbox
-     \setbox\scratchbox\hbox
+     \page_postprocessors_linenumbers_deepbox\b_strc_notes_inserts
+     \setbox\b_strc_notes_inserts\hbox
        {\setupcurrentnote
           [\c!location=,
            \c!width=\v!fit,
@@ -1485,23 +1544,47 @@
            \c!strut=\v!no,
            \c!offset=\v!overlay]%
         \inheritednoteframed
-          {\ifzeropt\dp\scratchbox                  % this hack is needed because \vadjust
-             \hpack{\lower\strutdp\box\scratchbox}% % in margin number placement
-           \else                                    % hides the (always) present depth
-             \box\scratchbox
+          {\ifzeropt\dp\b_strc_notes_inserts                  % this hack is needed because \vadjust
+             \hpack{\lower\strutdp\box\b_strc_notes_inserts}% % in margin number placement
+           \else                                              % hides the (always) present depth
+             \box\b_strc_notes_inserts
            \fi}}%
-     \setbox\scratchbox\hpack{\lower\strutdepth\box\scratchbox}%
-     \dp\scratchbox\strutdepth % so we know that it has the note bodyfont depth
+     \setbox\b_strc_notes_inserts\hpack{\lower\strutdepth\box\b_strc_notes_inserts}%
+     \dp\b_strc_notes_inserts\strutdepth % so we know that it has the note bodyfont depth
      \ifvmode
        \nointerlineskip % else sometimes empty line
      \fi
-     \box\scratchbox
+     \box\b_strc_notes_inserts
      \egroup
-     \endgraf
-     \ifvmode
-       \noteparameter\c!after
-     \fi
+     \strc_notes_place_inserts_indeed_after
    \fi}
+
+\def\strc_notes_place_inserts_very_indeed#1%
+  {\strc_notes_place_inserts_indeed_before
+   \bgroup
+   \strc_notes_set_bodyfont
+   #1% set the box here
+   \page_postprocessors_linenumbers_deepbox\b_strc_notes_inserts
+   \scratchheight\ht\b_strc_notes_inserts
+   \scratchdepth \dp\b_strc_notes_inserts
+   \setbox\b_strc_notes_inserts\hbox
+     {\setupcurrentnote
+        [\c!location=,
+         \c!width=\v!fit,
+         \c!height=\v!fit,
+         \c!strut=\v!no,
+         \c!offset=\v!overlay]%
+      \inheritednoteframed
+        {\box\b_strc_notes_inserts}}%
+   \ht\b_strc_notes_inserts\scratchheight
+  %\dp\b_strc_notes_inserts\scratchdepth
+   \dp\b_strc_notes_inserts\strutdepth % so we know that it has the note bodyfont depth
+   \ifvmode
+     \nointerlineskip % else sometimes empty line
+   \fi
+   \box\b_strc_notes_inserts
+   \egroup
+   \strc_notes_place_inserts_indeed_after}
 
 \def\strc_notes_flush_inserts
   {\ifcase\noteparameter\c!n\relax

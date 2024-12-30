@@ -43,8 +43,6 @@ extern void     lmt_token_register_to_lua     (lua_State *L, halfword t, int ori
 
 extern void     lmt_tokenlib_initialize       (void);
 
-extern int      lmt_push_specification        (lua_State *L, halfword ptr, int onlycount);
-
 extern void     lmt_push_cmd_name             (lua_State *L, int cmd);
 
 extern halfword lmt_macro_to_tok              (lua_State* L, int slot, halfword *tail);

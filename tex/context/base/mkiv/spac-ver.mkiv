@@ -342,7 +342,6 @@
 
 \newskip       \s_spac_whitespace_parskip   \s_spac_whitespace_parskip\zeropoint
 \newconditional\c_spac_whitespace_flexible  \settrue\c_spac_whitespace_flexible
-\newconstant   \c_spac_whitespace_grid_mode % option in layout / 1=permit_half_lines
 
 %def\v_spac_whitespace_current{\zeropoint}
 \let\v_spac_whitespace_current\v!none
@@ -387,18 +386,7 @@
 \def\spac_whitespace_setup_grid
   {\setfalse\c_spac_whitespace_flexible
    \ifdim\s_spac_whitespace_parskip>\zeropoint
-     \s_spac_whitespace_parskip
-       \ifcase\c_spac_whitespace_grid_mode
-         \baselineskip
-       \or
-         \ifdim\scratchdimen=\baselineskip % maybe range
-           \baselineskip
-         \else
-           \numexpr\s_spac_whitespace_parskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
-         \fi
-       \else
-         \baselineskip
-       \fi
+     \s_spac_whitespace_parskip\baselineskip
    \fi}
 
 \unexpanded\def\installwhitespacemethod#1#2%

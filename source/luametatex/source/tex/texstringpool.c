@@ -40,6 +40,7 @@ string_pool_info lmt_string_pool_state = {
         .ptr       = 0,
         .initial   = 0,
         .offset    = cs_offset_value,
+        .extra     = 0, 
     },
     .string_body_data      = {
         .minimum   = min_body_size,
@@ -52,6 +53,8 @@ string_pool_info lmt_string_pool_state = {
         .ptr       = memory_data_unset,
         .initial   = 0,
         .offset    = 0,
+        .extra     = 0, 
+        .extra     = 0, 
     },
     .reserved              = 0,
     .string_max_length     = 0,

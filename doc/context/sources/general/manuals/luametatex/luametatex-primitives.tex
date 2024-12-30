@@ -1,10 +1,13 @@
+
 % language=us runpath=texruns:manuals/luametatex
 
 % run locally!
+% \enablemode[checktodo]
 
 \environment luametatex-style
 
 % \tracepositions
+
 
 % The usual time stamp. This written while listening intermized to Fish (just ran
 % into), Lazulli (some yt videos too, looking forward to a next live act) and
@@ -27,6 +30,9 @@
 
 % iflastnamedcs
 % ignorerest
+
+% boxinserts bitset return codes
+% boxmigrate bitset return codes
 
 % \enableexperiments[fonts.compact]
 
@@ -85,7 +91,7 @@
 
 \pushoverloadmode
 
-% \startbodymatter
+\doifmode{checktodo}{\startbodymatter}
 
 \startsection[title={Introduction}]
 
@@ -117,6 +123,7 @@ engine provides. If you are new to \TEX, you need to play a while with its mixed
 bag of typesetting and programming features in order to understand the difference
 between this macro language and other languages you might be familiar with.
 
+% \starttworows \hsize.5\textwidth
 \startcolumns
     \placelist
       [newprimitive,oldprimitive]
@@ -831,6 +838,27 @@ which it will be set to zero.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {adjacentdemerits}}]
+
+This is a more granular variant of \prm {adjdemerits} and mostly meant for multipass
+par building, for instance:
+
+\starttyping
+\adjacentdemerits 8 0 2500 5000 7500 10000 12500 15000 20000
+\stoptyping
+
+More details can be found in the \quote {beyond paragraphs} chapter of the \quote
+{beyond} progress report. One can also discriminate between loose and tight
+deltas. In these examples we also assume a more granular fitness classes setup.
+
+\starttyping
+\adjacentdemerits 8 double
+        0  2500   5000  7500 10000 12500 15000 20000
+    20000 15000 125000 10000 7500   5000  2500     0
+\stoptyping
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {adjdemerits}}]
 
 When \TEX\ considers to lines to be incompatible it will add this penalty to its
@@ -1005,8 +1033,6 @@ test 4 : }
 This gives:
 
 \startpacked\getbuffer\stoppacked
-
-
 
 \stopnewprimitive
 
@@ -1343,7 +1369,7 @@ The current value is {\tttf 0x\tohexadecimal\automigrationmode}.
 
 \startnewprimitive[title={\prm {autoparagraphmode}}]
 
-A paragraph can be triggered by an empty line, a \prm {par} token or an
+A paragraph can be triggered by an empty line, a \type {\par} token or an
 equivalent of it. This parameter controls how \type {\par} is interpreted in
 different scenarios:
 
@@ -1352,7 +1378,7 @@ different scenarios:
 The current value is {\tttf 0x\tohexadecimal\autoparagraphmode} and setting it to
 a non|-|zero value can have consequences for mechanisms that expect otherwise.
 The text option uses the same code as an empty line. The macro option checks a
-token in a macro preamble against the frozen \prm {\par} token. The last option
+token in a macro preamble against the frozen \prm {par} token. The last option
 ignores the par token.
 
 \stopnewprimitive
@@ -1362,6 +1388,159 @@ ignores the par token.
 This one returns the last encountered badness value.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {balanceadjdemerits}}]
+
+These are added to the accumulated demerits depending on the fitness of
+neighbouring slots in balancing act.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancebottomskip}}]
+
+The counterpart of \prm {balancetopskip} and ensures that the last depth honors
+this criterium.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceboundary}}]
+
+This boundary is triggering a callback that can itself trigger a try break call. It's up to
+the macro package to come up with a usage scenario.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancebreakpasses}}]
+
+See (upcoming) \CONTEXT\ documentation for an explanation.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancechecks}}]
+
+The balance tracer callback gets this paremeter passed.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceemergencyshrink}}]
+
+{\em This is a reserved parameter.}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceemergencystretch}}]
+
+When set this will make the balancer more tolerant. It's comparable to \prm
+{emergencystretch} in the par builder.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancelineheight}}]
+
+{\em This is a reserved parameter.}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancelooseness}}]
+
+When set the balancer tries to produce nore or less slots. As with the par
+builder the result of looseness is kind of unpredictable. One needs plenty of
+glue and normally that is not present in a vertical list.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancepasses}}]
+
+Specifies one or more recipes for additional second balance passes. Examples
+can be found in the \CONTEXT\ distribution (in due time).
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancepenalty}}]
+
+This is the penalty applied between slots, prety much like \prm {linepenalty}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceshape}}]
+
+\startbuffer[shape]
+\balanceshape 3
+    topskip 11pt bottomskip 21pt vsize 91pt next
+    topskip 12pt bottomskip 22pt vsize 92pt next
+    topskip 13pt bottomskip 23pt vsize 93pt
+\relax
+\stopbuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceshapebottomspace}}]
+
+This gives the (fixed) amount of space added at the bottom of the given shape
+slot.
+
+\startbuffer
+\the\balanceshapebottomspace 1 \space
+\the\balanceshapebottomspace 3
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer[shape] We get: {\inlinebuffer}. \stop
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceshapetopspace}}]
+
+This provides (fixed) amount of space added at the top of the given shape slot.
+
+\startbuffer
+\the\balanceshapetopspace 1 \space
+\the\balanceshapetopspace 3
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer[shape] This results in: {\inlinebuffer}. \stop
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balanceshapevsize}}]
+
+This returns the the target height of the given shape slot.
+
+\startbuffer
+\the\balanceshapevsize 1 \space
+\the\balanceshapevsize 3
+\stopbuffer
+
+\typebuffer
+
+\start \getbuffer[shape] This results in: {\inlinebuffer}. \stop
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancetolerance}}]
+
+This parameter sets the criterium for a slot being bad (pretty much like in the
+linebreak for a line). Although the code is able to have a pre balance pass it
+has no meaning here so we don't have a \type {\balancepretolerance}. \footnote
+{We might find usage for it some day.}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancetopskip}}]
+
+This glue ensures the height of the first content (box or rule) in a slot. It can
+be compared to \prm {topskip} and \prm {splittopskip}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {balancevsize}}]
+
+This sets the target height of a balance slot unless \prm {balanceshape} is used.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {baselineskip}}]
 
@@ -1463,6 +1642,39 @@ family. The engine therefore provides the alternatives \prm {beginmathgroup} and
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {beginmvl}}]
+
+This initiates intercepting the main vertical list (the page). There has to be a
+matching \prm {endmvl}. For example:
+
+\starttyping
+\beginmvl 1 the main vertical list, one \endmvl
+\beginmvl 2 the main vertical list, two \endmvl
+\stoptyping
+
+The streams can be flushed out of order:
+
+\starttyping
+\setbox\scratchboxone\flushmvl 2
+\setbox\scratchboxtwo\flushmvl 1
+\stoptyping
+
+One can be more specific:
+
+\starttyping
+\beginmvl
+    index   1
+    options 5 % ignore prevdepth (1) and discard top (4)
+\relax
+    ....
+\endmvl
+\stoptyping
+
+More details can be found in the \CONTEXT\ low level manuals that describe this
+feature in combination with balancing.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {beginsimplegroup}}]
 
 The original \TEX\ engine distinguishes two kind of grouping that at the user end
@@ -1545,6 +1757,12 @@ This is a reference to the last mark with the given id (a number) on the current
 page, it gives back tokens.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {bottomskip}}]
+
+{\em This is a reserved parameter.}
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {boundary}}]
 
@@ -1732,6 +1950,13 @@ properties is set. This primitive accesses this state; it is a bitset:
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {boxinserts}}]
+
+A non zero value return indicates that there are inserts in this box. This
+primitive is meant to be used with the balancer.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {boxlimit}}]
 
 This primitive will freeze the glue in a box but only when there is glue marked
@@ -1760,6 +1985,14 @@ that should be used with care because when that box is filled nested boxes can b
 influenced.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {boxmigrate}}]
+
+When the given box has pre migration material the value will have \type {0x08}
+set. When there is post material the \type {0x10} bit is set. Of course both can
+be set.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {boxorientation}}]
 
@@ -2123,6 +2356,12 @@ class 34 (a user one) get the spacing from class 2 (binary).
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {copysplitdiscards}}]
+
+This is a variant of \prm {splitdiscards} that keep the original.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {count}}]
 
 This accesses a count register by index. This is kind of \quote {not done} unless
@@ -2304,7 +2543,7 @@ The next example gives: \inlinebuffer.
 The possible values depend in the engine and for \LUAMETATEX\ they are:
 
 \startluacode
-context.startcolumns { n = 4 }
+context.startfourrows()
 context.starttabulate { "|r|l|" }
 for i=0,#tex.groupcodes do
     context.NC() context(i)
@@ -2312,7 +2551,7 @@ for i=0,#tex.groupcodes do
     context.NC() context.NR()
 end
 context.stoptabulate()
-context.stopcolumns()
+context.stopfourrows()
 \stopluacode
 
 \stopoldprimitive
@@ -2376,7 +2615,7 @@ The values are engine dependent:
 
 \startluacode
 local t = tex.getiftypes()
-context.startcolumns { n = 5 }
+context.startfiverows()
 context.starttabulate { "|r|l|" }
 for i=0,#tex.groupcodes do
     context.NC() context(i)
@@ -2384,7 +2623,7 @@ for i=0,#tex.groupcodes do
     context.NC() context.NR()
 end
 context.stoptabulate()
-context.stopcolumns()
+context.stopfiverows()
 \stopluacode
 
 \stopoldprimitive
@@ -3254,6 +3493,12 @@ This primitive is the counterpart of \prm {beginmathgroup}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {endmvl}}]
+
+This ends \prm {beginmvl}.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {endsimplegroup}}]
 
 This one ends a simple group, see \prm {beginsimplegroup} for an explanation
@@ -3334,6 +3579,13 @@ This internal integer has the code point of the character that get prepended to 
 control sequence when it is serialized (for instance in tracing or messages).
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {etexexprmode}}]
+
+When set to a positive value the \type {:} and \type {;} operators are not
+interpreted. In \CONTEXT\ we keep this value zero!
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {etoks}}]
 
@@ -4095,6 +4347,13 @@ clear operation (like \prm {clearmarks} which operates immediately).
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {flushmvl}}]
+
+This returns a vertical box with the content of the accumulated mvl list (see
+\prm {beginmvl}).
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {font}}]
 
 This primitive is either a symbolic reference to the current font or in the
@@ -4244,6 +4503,19 @@ test {\setfontid\MyFontA test} test {\MyFontB test} test
 \typebuffer
 
 gives: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {fontidentifier}}]
+
+This one is just there for completeness: it reports the string used to identify a
+font when logging. Compare:
+
+\starttabulate
+\NC \type {\fontname      \font} \NC \fontname      \font \NC \NR
+\NC \type {\fontidentifier\font} \NC \fontidentifier\font \NC \NR
+\NC \type {\the\fontid    \font} \NC \the\fontid    \font \NC \NR
+\stoptabulate
 
 \stopnewprimitive
 
@@ -4837,9 +5109,9 @@ injected. It has no meaning in itself but can be used at the \LUA\ end.
 The value of this parameter is assigned to the options field in glyph nodes that
 get injected.
 
-\startcolumns
+\starttworows
 \getbuffer[engine:syntax:glyphoptions]
-\stopcolumns
+\stoptworows
 
 \stopnewprimitive
 
@@ -5542,6 +5814,20 @@ section:
 Here we get:
 
 {\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifcmpdim}}]
+
+This is a less strict veriant of \prm {ifchkdimension} that doesn't bark on
+trailing tokens.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifcmpnum}}]
+
+This is a less strict veriant of \prm {ifchknumber} that doesn't bark on
+trailing tokens.
 
 \stopnewprimitive
 
@@ -6425,13 +6711,13 @@ This primitive gobbles following tokens and can deal with nested \quote
 {environments}, for example:
 
 \startbuffer
-\def\startfoo{\ignorenestedupto\startfoo\stopfoo}
+\def\StartFoo{\ignorenestedupto\StartFoo\StopFoo}
 
 (before
-\startfoo
-    test \startfoo test \stopfoo
-   {test \startfoo test \stopfoo}
-\stopfoo
+\StartFoo
+    test \StartFoo test \StopFoo
+   {test \StartFoo test \StopFoo}
+\StopFoo
 after)
 \stopbuffer
 
@@ -7130,9 +7416,9 @@ This reports the last applied (permitted) overshoot.
 When a paragraph is wrapped up the reason is reported by this state variable.
 Possible values are:
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:parcontextcodes]
-\stopcolumns
+\stopfourrows
 
 \stopnewprimitive
 
@@ -7141,9 +7427,9 @@ Possible values are:
 There are several reasons for entering a paragraphs and some are automatic and
 triggered by other commands that force \TEX\ into horizontal mode.
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:partriggercodes]
-\stopcolumns
+\stopfourrows
 
 \stopnewprimitive
 
@@ -7481,7 +7767,7 @@ so we get two times a 3pt glue injected.
 \startnewprimitive[title={\prm {localbreakpar}}]
 
 This forces a newline in a paragraph without side effects so that for instance
-\prm {widowpenalties} work as expected in scenarios where using a \prm {\par}
+\prm {widowpenalties} work as expected in scenarios where using a \prm {par}
 would have been the solution. This is an experimental primitive!
 
 \stopnewprimitive
@@ -7859,6 +8145,40 @@ context (like an \prm {edef}).
 \startnewprimitive[title={\prm {luatexbanner}}]
 
 This gives: {\tttf \luatexbanner}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {luametatexmajorversion}}]
+
+This is the numeric major version number, so it's an integer: \the
+\luametatexmajorversion, which will only change when we have very drastic
+changes. The whole repertoire of numbers is:
+
+\starttabulate
+\NC \type {\the\luametatexmajorversion} \NC \the\luametatexmajorversion \NC \NR
+\NC \type {\the\luametatexminorversion} \NC \the\luametatexminorversion \NC \NR
+\NC \type {\the\luametatexrelease}      \NC \the\luametatexrelease      \NC \NR
+\NC \type {\the\luatexversion}          \NC \the\luatexversion          \NC \NR
+\NC \type {\the\luatexrevision}         \NC \the\luatexrevision         \NC \NR
+\stoptabulate
+
+The last two are there because they might be tested but the first three are the
+official ones.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {luametatexminorversion}}]
+
+This is a numeric minor version number, so it's an integer: \the
+\luametatexminorversion. It changes when we add functionality. Intermediate
+updates
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {luametatexrelease}}]
+
+This is a numeric release number, so it's an integer: \the\luametatexrelease. It
+changes when we are developing functionality.
 
 \stopnewprimitive
 
@@ -9028,6 +9348,13 @@ The sequence \typ {\the \mutoglue 20mu plus 10mu minus 5mu} gives \the \mutoglue
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {mvlcurrentlyactive}}]
+
+This numeric state variable hold the id of the currently active mvl. Unless one
+is in \prm {beginmlv} it's zero (regular page).
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {nestedloopiterator}}]
 
 This is one of the accessors of loop iterators:
@@ -9160,6 +9487,20 @@ This directive omits all stops.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {nooutputboxerror}}]
+
+Setting this a positive value will silence the error triggered by a still
+somewhat full output box after the output routine returns. It is a bitset:
+
+\starttabulate[|T||]
+\NC 0x1 \NC when firing up \NC \NR
+\NC 0x2 \NC after output   \NC \NR
+\stoptabulate
+
+where values larger than two will always silence,
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {norelax}}]
 
 The rationale for this command can be shown by a few examples:
@@ -9200,9 +9541,9 @@ manipulating the result also involved checking what one encountered, for instanc
 glue and its origin. In \LUAMETATEX\ we can normalize lines so that they have for
 instance balanced skips.
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:normalizelinecodes]
-\stopcolumns
+\stoptworows
 
 The order in which the skips get inserted when we normalize is as follows:
 
@@ -9235,9 +9576,9 @@ engine do the work we get a better performance.
 For now we just mention the few options available. It is also worth mentioning that
 \LUAMETATEX\ tries to balance the direction nodes.
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:normalizeparcodes]
-\stopcolumns
+\stoptworows
 
 \stopnewprimitive
 
@@ -9614,6 +9955,14 @@ Of course it is only useful at the right level, so you might end up with cases l
     more
 \fi
 \stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {orphanlinefactors}}]
+
+Normally this (specification) parameter is set in a \prm {parpasses} as it
+supports multiple orphan penalties with a different weight (starting from the
+last candidate).
 
 \stopnewprimitive
 
@@ -10093,6 +10442,13 @@ The glue inserted at the start of the first line.
 \startnewprimitive[title={\prm {parinitrightskip}}]
 
 The glue inserted at the end of the first line.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {paroptions}}]
+
+This adds options to already set options in a paragraph. It is used for
+experiments so for now just forget about it.
 
 \stopnewprimitive
 
@@ -11275,9 +11631,9 @@ This primitive expects a class (number) and a bitset.
 
 \testpage[2]
 
-\startcolumns
+\starttworows
 \getbuffer[engine:syntax:classoptioncodes] % weird: one liner at end of page
-\stopcolumns
+\stoptworows
 
 \stopnewprimitive
 
@@ -11585,9 +11941,9 @@ node is created. That means that later settings no longer replace the stored one
 The \prm {snapshotpar} takes a bitset that determine what stored parameters get
 updated to the current values.
 
-\startcolumns[n=3]
+\startthreerows
 \getbuffer[engine:syntax:frozenparcodes]
-\stopcolumns
+\stopthreerows
 
 One such value covers multiple values, so for instance \type {skip} is good for
 storing the current \prm {leftskip} and \prm {rightskip} values. More about this
@@ -11744,6 +12100,12 @@ keeps the that list so that it can be pushed back if needed.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {splitextraheight}}]
+
+A possible (permissive) overrun of the split off part in a \prm {vsplit}.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {splitfirstmark}}][obsolete=yes]
 
 This is a reference to the first mark on the currently split off box, it gives
@@ -11757,6 +12119,30 @@ This is a reference to the first mark with the given id (a number) on the
 currently split off box, it gives back tokens.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {splitlastdepth}}]
+
+This returns the last depth in a \type {vsplit}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {splitlastheight}}]
+
+This returns the last (accumulated) height in a \type {vsplit}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {splitlastshrink}}]
+
+This returns the last (accumulated) shrink in a \type {vsplit}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {splitlaststretch}}]
+
+This returns the last (accumulated) stretch in a \type {vsplit}.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {splitmaxdepth}}]
 
@@ -12307,6 +12693,13 @@ redundant assignments these don't get reported.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {tracingbalancing}}]
+
+When set to a positive some insight in the balancing process is given, kind of
+like with the par builder, so it can be noisy.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {tracingcommands}}]
 
 When set to a positive values the commands (primitives) are reported on the console
@@ -12432,6 +12825,12 @@ tweak the many available parameters.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {tracingmvl}}]
+
+When set to a positive value mvl switching is reported.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {tracingnesting}}]
 
 A positive value triggers log messages about the current level.
@@ -12455,9 +12854,15 @@ end can be channeled independently.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {tracingorphans}}]
+
+When set to a positive value handling of orphans is shown.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {tracingoutput}}]
 
-Values larger than one result in some information about what gets passed to the
+Values larger than zero result in some information about what gets passed to the
 output routine.
 
 \stopoldprimitive
@@ -12506,6 +12911,12 @@ reported when the format is made but for a regular run it is up to the macro
 package to come up with useful information.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {tracingtoddlers}}]
+
+When set to a positive value handling of toddlers is shown.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {tsplit}}]
 
@@ -12930,6 +13341,127 @@ value is \the \badness.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {vbalance}}]
+
+In addition to the page builder and vbox splitter we have what's called a
+balancer. This routine splits a vertical list in pieces (slots) according to a
+specification (see \typ {\balanceshape}). It can do so in multiple passes (see
+\typ {\balancepasses}). The balancing \quote {framework} operates independently
+from the page builder and vsplitter.
+
+Because there are multiple primitives involved and because one will normally
+write decent wrapper, wd delegate a more detailed explanation to a \CONTEXT\ low
+level manual.
+
+\startbuffer
+\setbox 0 \vbox\bgroup \hsize 10em
+  line 1\par line 2\par line 3\par
+  line 4\par line 5\par line 6\par
+  line 7\par line 8\par
+\egroup
+\balancetopskip          \strutht
+\balancebottomskip       \strutht
+\balancevsize            3\lineheight
+\balancetolerance        100
+\balanceemergencystretch 0pt
+\setbox 2 \vbalance 0
+\hbox \bgroup
+    \vbalancedbox 2 \hskip2em
+    \vbalancedbox 2 \hskip2em
+    \vbalancedbox 2
+\egroup
+\stopbuffer
+
+\typebuffer
+
+Here we use a simple specification (no shape). The balancer does a whole list
+optimization so it does honor penalties and works with some tolerance too.
+Decisions are made on badness and demerits. Like the par builder you can get
+overfull slots so in practice one might rebalance with different specifications
+if that happens.
+
+The results are collected in a box (in this exmaple box register 2) which destroys the
+original. With
+
+\starttyping
+\setbox 2 \vbalance trial 0
+\stoptyping
+
+we keep the original and the result will have empty boxes with the dimensions of
+the slots. You can loop over the result and check the real height with \typ
+{\balanceshapevsize}.
+
+\getbuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalancedbox}}]
+
+This command take the topmost balanced slot from the given balanced box and wraps
+it in a \type {\vbox}. When there is is no more to fetch the result is void.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalanceddeinsert}}]
+
+This will convert the inserts in the given balancing result into a form that is
+useable for the balancer. This is not mandate but needed if you want split
+insertions. The keyword \type {descend} will locate the relevant box and \type
+{forcedepth} will make sure that we get constent depths (but expects \prm
+{insertlinedepth} being set.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalanceddiscard}}]
+
+One of the features of balancing is that we can can have discardable content at
+the top and|/|or bottom of slots. This primitive will remove discarded content
+from the given result of \type {\vbalance}, like:
+
+\starttyping
+\setbox 2 \vbalance 0
+\vbalanceddiscard 2
+\stoptyping
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalancedinsert}}]
+
+This one fetches the inserts from a balanced slot result. This happens per insert
+class.
+
+\starttyping
+\setbox 4 \vbalancedinsert 2 4
+\stoptyping
+
+Instead you can give:
+
+\starttyping
+\setbox 4 \vbalancedinsert 2 index 4 descend \relax
+\stoptyping
+
+Here \type {descend} will locate the relevant slot box which is handy in case one
+already wrapped the result in a box.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalancedreinsert}}]
+
+This will convert the inserts in the given balancing slot result into a more
+original form, assumign that \prm {vbalanceddeinsert} was applied.. This is not
+mandate and depends on what is expected further down the line (read: this is
+macro package specific). You can use the keyword \type {descend} to locate the
+relevant slot box.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {vbalancedtop}}]
+
+This command take the topmost balanced slot from the given balanced box and wraps
+it in a \type {\vbox}. When there is is no more to fetch the result is void.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {vbox}}]
 
 This creates a vertical box. In the process callbacks can be triggered that can
@@ -13038,6 +13570,12 @@ split \type {to} but also \type {upto}, so that we don't have to repack the
 result in order to see how much is actually in there.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {vsplitchecks}}]
+
+This parameter is passed to the \type {show_vsplit} callback.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {vss}}]
 
@@ -13164,67 +13702,6 @@ This internal number starts out with the year that the job started.
 
 \stopsection
 
-\startsection[title=Obsolete]
-
-The \LUAMETATEX\ engine has more than its \LUATEX\ ancestor but it also has less.
-Because in the end the local control mechanism performed quite okay I decided to
-drop the \prm {immediateassignment} and \prm {immediateassigned} variants. They
-sort of used the same trick so there isn't much to gain and it was less generic
-(read: error prone).
-
-% \startnewprimitive[title={\prm {immediateassignment}}]
-%
-% Assignments are not expandable which means that you cannot define fully
-% expandable macros that have assignments. But, there is a way out of this:
-%
-% \startbuffer
-% \scratchcounter = 10
-% \edef\whatever{%
-%     (\the\scratchcounter)
-%     \immediateassignment\scratchcounter\numexpr\scratchcounter+10\relax
-%     \immediateassignment\advance\scratchcounter -5
-%     (\the\scratchcounter)
-% }
-% \meaning\whatever
-% \stopbuffer
-%
-% \typebuffer
-%
-% Don't expect miracles: you can't mix|-|in content or unexpandable tokens as they
-% will either show up or quit the scanning.
-%
-% {\getbuffer}
-%
-% \stopnewprimitive
-%
-% \startnewprimitive[title={\prm {immediateassigned}}]
-%
-% This is the multi|-|token variant of the primitive mentioned in the previous
-% section.
-%
-% \startbuffer
-% \scratchcounter = 10
-% \edef\whatever{%
-%     (\the\scratchcounter)
-%     \immediateassigned{
-%         \scratchcounter\numexpr\scratchcounter+10\relax
-%         \advance\scratchcounter -5
-%     }%
-%     (\the\scratchcounter)
-% }
-% \meaning\whatever
-% \stopbuffer
-%
-% \typebuffer
-%
-% The results are the same as in the previous section:
-%
-% {\getbuffer}
-%
-% \stopnewprimitive
-
-\stopsection
-
 \page
 
 \startsection[title=Syntax]
@@ -13238,8 +13715,6 @@ sort of used the same trick so there isn't much to gain and it was less generic
 \stopsection
 
 \page
-
-\popoverloadmode
 
 \startluacode
     local match = string.match
@@ -13286,7 +13761,8 @@ sort of used the same trick so there isn't much to gain and it was less generic
         context.startsection { title = "To be checked primitives (new)" }
 
         context.blank()
-        context.startcolumns { n = 2 }
+        context.startcolumns()
+     -- context.starttworows()
         for k, v in table.sortedhash(luametatex) do
             if not v then
                 context.dontleavehmode()
@@ -13294,6 +13770,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
                 context.crlf()
             end
         end
+     -- context.stoptworows()
         context.stopcolumns()
 
         context.page()
@@ -13306,7 +13783,8 @@ sort of used the same trick so there isn't much to gain and it was less generic
         context.startsection { title = "To be checked primitives (math)" }
 
         context.blank()
-        context.startcolumns { n = 2 }
+        context.startcolumns()
+     -- context.starttworows()
         for k, v in table.sortedhash(everything) do
             if not v then
                 context.dontleavehmode()
@@ -13314,6 +13792,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
                 context.crlf()
             end
         end
+     -- context.stoptworows()
         context.stopcolumns()
 
         context("Many primitives starting with \\type{Umath} are math parameters that are discussed elsewhere, if at all.")
@@ -13325,7 +13804,8 @@ sort of used the same trick so there isn't much to gain and it was less generic
         context.startsection { title = "To be checked primitives (old)" }
 
         context.blank()
-        context.startcolumns { n = 2 }
+        context.startcolumns()
+     -- context.starttworows()
         for k, v in table.sortedhash(everything) do
             if v then
                 context.dontleavehmode()
@@ -13333,6 +13813,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
                 context.crlf()
             end
         end
+     -- context.stoptworows()
         context.stopcolumns()
 
         context.page()
@@ -13342,7 +13823,8 @@ sort of used the same trick so there isn't much to gain and it was less generic
         context.startsection { title = "Indexed primitives" }
 
         context.blank()
-        context.startcolumns { n = 2 }
+        context.startcolumns()
+     -- context.starttworows()
         for k, v in table.sortedhash(indexed) do
             context.dontleavehmode()
             if luametatex[k] == true then
@@ -13354,6 +13836,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
             end
             context.crlf()
         end
+     -- context.stoptworows()
         context.stopcolumns()
 
         context.page()
@@ -13372,7 +13855,7 @@ sort of used the same trick so there isn't much to gain and it was less generic
 %     primitives.
 \stopmode
 
-% \stopbodymatter
+\doifmode{checktodo}{\stopbodymatter}
 
 \popoverloadmode
 

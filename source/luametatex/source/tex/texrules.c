@@ -82,8 +82,23 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 }
                 break;
             case 'd': case 'D':
-                if (tex_scan_mandate_keyword("depth", 1)) {
-                    rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+             // if (tex_scan_mandate_keyword("depth", 1)) {
+             //     rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+             // }
+                switch (tex_scan_character("eiEI", 0, 0, 0)) {
+                    case 'e': case 'E':
+                        if (tex_scan_mandate_keyword("depth", 2)) {
+                            rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        }
+                        break;
+                    case 'i': case 'I':
+                        if (tex_scan_mandate_keyword("discardable", 2)) {
+                            rule_options(rule) |= rule_option_discardable;
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("depth|discardable");
+                        goto DONE;
                 }
                 break;
             case 'p': case 'P':

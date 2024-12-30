@@ -170,19 +170,27 @@ LUALIB_API void luaL_traceback (lua_State *L, lua_State *L1,
 
 LUALIB_API int luaL_argerror (lua_State *L, int arg, const char *extramsg) {
   lua_Debug ar;
+  const char *argword;
   if (!lua_getstack(L, 0, &ar))  /* no stack frame? */
     return luaL_error(L, "bad argument #%d (%s)", arg, extramsg);
-  lua_getinfo(L, "n", &ar);
-  if (strcmp(ar.namewhat, "method") == 0) {
-    arg--;  /* do not count 'self' */
-    if (arg == 0)  /* error is in the self argument itself? */
-      return luaL_error(L, "calling '%s' on bad self (%s)",
-                           ar.name, extramsg);
+  lua_getinfo(L, "nt", &ar);
+  if (arg <= ar.extraargs)  /* error in an extra argument? */
+    argword =  "extra argument";
+  else {
+    arg -= ar.extraargs;  /* do not count extra arguments */
+    if (strcmp(ar.namewhat, "method") == 0) {  /* colon syntax? */
+      arg--;  /* do not count (extra) self argument */
+      if (arg == 0)  /* error in self argument? */
+        return luaL_error(L, "calling '%s' on bad self (%s)",
+                               ar.name, extramsg);
+      /* else go through; error in a regular argument */
+    }
+    argword = "argument";
   }
   if (ar.name == NULL)
     ar.name = (pushglobalfuncname(L, &ar)) ? lua_tostring(L, -1) : "?";
-  return luaL_error(L, "bad argument #%d to '%s' (%s)",
-                        arg, ar.name, extramsg);
+  return luaL_error(L, "bad %s #%d to '%s' (%s)",
+                       argword, arg, ar.name, extramsg);
 }
 
 
@@ -225,7 +233,7 @@ LUALIB_API void luaL_where (lua_State *L, int level) {
 /*
 ** Again, the use of 'lua_pushvfstring' ensures this function does
 ** not need reserved stack space when called. (At worst, it generates
-** an error with "stack overflow" instead of the given message.)
+** a memory error instead of the given message.)
 */
 LUALIB_API int luaL_error (lua_State *L, const char *fmt, ...) {
   va_list argp;
@@ -618,6 +626,7 @@ LUALIB_API void luaL_pushresult (luaL_Buffer *B) {
     box->bsize = 0;  box->box = NULL;
     lua_pushextlstring(L, s, len, allocf, ud);
     lua_closeslot(L, -2);  /* close the box */
+    lua_gc(L, LUA_GCSTEP, len);
   }
   lua_remove(L, -2);  /* remove box or placeholder from the stack */
 }
@@ -919,10 +928,9 @@ LUALIB_API const char *luaL_tolstring (lua_State *L, int idx, size_t *len) {
   else {
     switch (lua_type(L, idx)) {
       case LUA_TNUMBER: {
-        if (lua_isinteger(L, idx))
-          lua_pushfstring(L, "%I", (LUAI_UACINT)lua_tointeger(L, idx));
-        else
-          lua_pushfstring(L, "%f", (LUAI_UACNUMBER)lua_tonumber(L, idx));
+        char buff[LUA_N2SBUFFSZ];
+        lua_numbertostrbuff(L, idx, buff);
+        lua_pushstring(L, buff);
         break;
       }
       case LUA_TSTRING:

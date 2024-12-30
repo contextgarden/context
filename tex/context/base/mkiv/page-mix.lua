@@ -73,7 +73,6 @@ local theprop             = nuts.theprop
 
 local nodepool            = nuts.pool
 
-local new_hlist           = nodepool.hlist
 local new_vlist           = nodepool.vlist
 local new_glue            = nodepool.glue
 

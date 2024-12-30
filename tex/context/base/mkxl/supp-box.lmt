@@ -116,6 +116,7 @@ local dimension_value    <const> = values.dimension
 local cardinal_value     <const> = values.cardinal
 local direct_value       <const> = values.direct
 local conditional_value  <const> = values.conditional
+local boolean_value      <const> = values.boolean
 
 local d_lastnaturalboxwd <const> = texisdimen("lastnaturalboxwd")
 local d_lastnaturalboxht <const> = texisdimen("lastnaturalboxht")
@@ -1162,12 +1163,15 @@ do
     local getnormalizedline  = nuts.getnormalizedline -- we can optimize this
     local getdimensions      = nuts.dimensions
     local getrangedimensions = nuts.rangedimensions
+    local getwidth           = nuts.getwidth
+    local getheight          = nuts.getheight
+    local getdepth           = nuts.getdepth
 
     local setprop            = nuts.setprop
     local getprop            = nuts.getprop
 
     local line_code          <const> = nodes.listcodes.line
-    local equation_code      <const> = nodes.listcodes.equation
+    local alignment_code     <const> = nodes.listcodes.alignment
     local unknown_code       <const> = nodes.listcodes.unknown
 
     -- todo: make helper that formats
@@ -1184,12 +1188,17 @@ do
         if not prop then
             local line = 0
             local list = getlist(box)
+-- node.show(tonode(box),100000,100000)
             prop = { }
             if list then
                 for n, subtype in nexthlist, list do
-                    if subtype == line_code then -- or subtype == equation_code then
+                    if subtype == line_code or subtype == alignment_code then
                         line = line + 1
                         prop[line] = n
+-- local h, f, l = nuts.migrate(n,true)
+-- if f then
+--     nuts.setpost(n,f)
+-- end
                     end
                 end
             end
@@ -1206,6 +1215,31 @@ do
         end
     end
 
+    local function boxlinemaxwhd(what,get)
+        local n   = scaninteger()
+        local box = getbox(n)
+        if box and what == "value" then
+            local prop = getprop(box,"boxlines")
+            if not prop then
+                prop = countlines(box)
+            end
+            local v = 0
+            if prop then
+                for i=1,#prop do
+                    local w = get(prop[i])
+                    if w > v then
+                        v = w
+                    end
+                end
+            end
+            return dimension_value, v
+        end
+    end
+
+    local function boxlinemaxwd(what) return boxlinemaxwhd(what,getwidth)  end
+    local function boxlinemaxht(what) return boxlinemaxwhd(what,getheight) end
+    local function boxlinemaxdp(what) return boxlinemaxwhd(what,getdepth)  end
+
     local function findline()
         local n    = scaninteger()
         local line = scaninteger()
@@ -1217,7 +1251,7 @@ do
             end
             local found = prop[line]
             if found then
-                local props = getprop(found,"lineproperties")
+                local props = getprop(found,"lineproperties") or { } -- alignment has no properties (yet)
                 if not props then
                     props = getnormalizedline(found)
                     props.width, props.height, props.depth = getwhd(found)
@@ -1244,7 +1278,7 @@ do
                     local found = prop[i]
                     local props = getprop(found,"lineproperties")
                     if not props then
-                        props = getnormalizedline(found)
+                        props = getnormalizedline(found) or { } -- alignment has no properties (yet)
                         props.width, props.height, props.depth = getwhd(found)
                         setprop(found,"lineproperties",props)
                     end
@@ -1369,7 +1403,6 @@ do
     end
 
     --
-
     local function boxrange(name,what)
         local prop, first, last, box = findrange()
         if not prop then
@@ -1411,6 +1444,10 @@ do
         usage   = "value",
         actions = boxlinecount,
     }
+
+    implement { name = "boxlinemaxwd", public = true, usage = "value", actions = boxlinemaxwd }
+    implement { name = "boxlinemaxht", public = true, usage = "value", actions = boxlinemaxht }
+    implement { name = "boxlinemaxdp", public = true, usage = "value", actions = boxlinemaxdp }
 
     -- todoL: just inline so that s-system-macros can find them
 
@@ -1569,8 +1606,20 @@ do
         public  = true,
         usage   = "condition",
         actions = function()
+            -- this is kind of weird, the valid_text does the iftrue / iffalse
             ctx_validtext()
             return conditional_value
+        end
+    }
+
+    implement {
+        name      = "ifboxhaslist",
+        public    = true,
+        usage     = "condition",
+        arguments = "integer",
+        actions   = function(n)
+            local b = texgetbox(n)
+            return boolean_value, b and b.list and true or false
         end
     }
 

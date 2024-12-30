@@ -2593,7 +2593,7 @@ static void tex_aux_make_vcenter(halfword target, halfword style, halfword size)
     }
     {
         scaled total = box_total(box);
-        scaled axis = has_box_axis(box, no_math_axis) ? 0 : tex_aux_math_axis(size);
+        scaled axis = tex_has_box_option(box, box_option_no_math_axis) ? 0 : tex_aux_math_axis(size);
         box_height(box) = axis + tex_half_scaled(total);
         box_depth(box) = total - box_height(box);
     }
@@ -5401,7 +5401,8 @@ static scaled tex_aux_math_left_kern(halfword fnt, int chr)
                 bot = tex_char_bottom_left_kern_from_font(fnt, chr);
             }
         }
-        return top > bot ? top : bot;
+//      return top > bot ? top : bot;
+        return top < bot ? top : bot;
     } else {
         return 0;
     }
@@ -6290,7 +6291,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
             noad_new_hlist(target) = result;
         }
     }
-    /*tex  We now have prines always at the end (after the superscript): */
+    /*tex  We now have primes always at the end (after the superscript): */
     switch (primestate) { 
         case prime_at_end_location:
             tex_couple_nodes(tex_tail_of_node_list(result), primedata.box);

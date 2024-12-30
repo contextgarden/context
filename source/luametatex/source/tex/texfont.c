@@ -117,11 +117,12 @@ font_state_info lmt_font_state = {
         .size      = memory_data_unset,
         .step      = stp_font_size,
         .allocated = 0,
-        .itemsize  = 1,
+        .itemsize  = sizeof(texfont *),
         .top       = 0,
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
 };
 
@@ -138,7 +139,7 @@ void tex_initialize_fonts(void)
             tmp[i] = NULL;
         }
         lmt_font_state.fonts = tmp;
-        lmt_font_state.font_data.allocated += lmt_font_state.font_data.minimum * sizeof(texfont *);
+        lmt_font_state.font_data.allocated = lmt_font_state.font_data.minimum;
         lmt_font_state.font_data.top = lmt_font_state.font_data.minimum;
         lmt_font_state.font_data.ptr = -1; /* we need to end up with id zero first */
         tex_create_null_font();
@@ -166,7 +167,7 @@ int tex_new_font_id(void)
                 tmp[i] = NULL;
             }
             lmt_font_state.fonts = tmp;
-            lmt_font_state.font_data.allocated += ((size_t) top - lmt_font_state.font_data.top) * sizeof(texfont *);
+            lmt_font_state.font_data.allocated = top;
             lmt_font_state.font_data.top = top;
             lmt_font_state.font_data.ptr += 1;
             return lmt_font_state.font_data.ptr;
@@ -214,7 +215,7 @@ void tex_set_font_parameters(halfword f, int index)
         int size = (index + 2) * (int) sizeof(int);
         int *list = lmt_memory_realloc(font_parameter_base(f), (size_t) size);
         if (list) {
-            lmt_font_state.font_data.allocated += (index - i + 1) * (int) sizeof(scaled);
+            lmt_font_state.font_data.extra += (index - i + 1) * (int) sizeof(scaled);
             font_parameter_base(f) = list;
             font_parameter_count(f) = index;
             while (i < index) {
@@ -239,7 +240,7 @@ int tex_new_font(void)
         if (tf) {
             sa_tree_item sa_value = { 0 };
             int id = tex_new_font_id();
-            lmt_font_state.font_data.allocated += size;
+            lmt_font_state.font_data.extra += size;
             lmt_font_state.fonts[id] = tf;
             set_font_name(id, NULL);
             set_font_original(id, NULL);
@@ -274,7 +275,7 @@ void tex_font_malloc_charinfo(halfword f, int index)
     int size = (glyph + index) * sizeof(charinfo);
     charinfo *data = lmt_memory_realloc(lmt_font_state.fonts[f]->chardata , (size_t) size);
     if (data) {
-        lmt_font_state.font_data.allocated += index * sizeof(charinfo);
+        lmt_font_state.font_data.extra += index * sizeof(charinfo);
         lmt_font_state.fonts[f]->chardata = data;
         memset(&data[glyph], 0, (size_t) index * sizeof(charinfo));
         lmt_font_state.fonts[f]->chardata_size += index;
@@ -316,7 +317,7 @@ void tex_char_malloc_mathinfo(charinfo *ci)
             set_charinfo_bottom_left_math_kern_array(ci, NULL);
             lmt_memory_free(ci->math);
         } else {
-            lmt_font_state.font_data.allocated += size;
+            lmt_font_state.font_data.extra += size;
         }
         ci->math = mi;
     } else {
@@ -355,7 +356,7 @@ charinfo *tex_get_charinfo(halfword f, int c)
             int size = sizeof(charinfo);
             charinfo *ci = lmt_memory_calloc(1, (size_t) size);
             if (ci) {
-                lmt_font_state.font_data.allocated += size;
+                lmt_font_state.font_data.extra += size;
                 set_font_left_boundary(f, ci);
             } else {
                 tex_overflow_error("font", size);
@@ -367,7 +368,7 @@ charinfo *tex_get_charinfo(halfword f, int c)
             int size = sizeof(charinfo);
             charinfo *ci = lmt_memory_calloc(1, (size_t) size);
             if (ci) {
-                lmt_font_state.font_data.allocated += size;
+                lmt_font_state.font_data.extra += size;
                 set_font_right_boundary(f, ci);
             } else {
                 tex_overflow_error("font", size);
@@ -691,7 +692,7 @@ void tex_set_font_math_parameters(halfword f, int b)
         size_t size = ((size_t) b + 2) * sizeof(scaled);
         scaled *data = lmt_memory_realloc(font_math_parameter_base(f), size);
         if (data) {
-            lmt_font_state.font_data.allocated += (int) (((size_t) b - i + 1) * sizeof(scaled));
+            lmt_font_state.font_data.extra += (int) (((size_t) b - i + 1) * sizeof(scaled));
             font_math_parameter_base(f) = data;
             font_math_parameter_count(f) = b;
             while (i < b) {

@@ -13,7 +13,11 @@ typedef struct insert_record {
     halfword initialized;
     halfword options;
     halfword penalty;
-    halfword maxdepth;
+    scaled   maxdepth;
+    halfword before;
+    halfword inbetween;
+    scaled   lineheight;
+    scaled   linedepth;
 } insert_record;
 
 typedef enum insert_modes {
@@ -59,6 +63,8 @@ extern scaled   tex_get_insert_depth       (halfword i);
 extern scaled   tex_get_insert_width       (halfword i);
 extern halfword tex_get_insert_content     (halfword i);
 extern halfword tex_get_insert_storage     (halfword i);
+extern scaled   tex_get_insert_line_height (halfword i);
+extern scaled   tex_get_insert_line_depth  (halfword i);
                                            
 extern void     tex_set_insert_limit       (halfword i, scaled v);
 extern void     tex_set_insert_multiplier  (halfword i, halfword v);
@@ -70,6 +76,8 @@ extern void     tex_set_insert_depth       (halfword i, scaled v);
 extern void     tex_set_insert_width       (halfword i, scaled v);
 extern void     tex_set_insert_content     (halfword i, halfword v);
 extern void     tex_set_insert_storage     (halfword i, halfword v);
+extern void     tex_set_insert_line_height (halfword i, scaled v);
+extern void     tex_set_insert_line_depth  (halfword i, scaled v);
                                            
 extern void     tex_wipe_insert            (halfword i);
                                            
@@ -89,11 +97,17 @@ extern int      tex_insert_stored          (void);
 extern halfword tex_scan_insert_index      (void);
 extern void     tex_set_insert_mode        (halfword mode);
 extern int      tex_insert_is_void         (halfword i);
+
+extern int      tex_identify_inserts       (halfword b, halfword cbk);
                                            
 extern void     tex_run_insert             (void);
 extern void     tex_finish_insert_group    (void);
 
 extern void     tex_show_insert_group      (void);
 extern int      tex_show_insert_record     (void);
+
+extern scaled   tex_insert_height          (halfword node);
+extern void     tex_insert_reset_distances (void);
+extern scaled   tex_insert_distances       (halfword first, halfword last, scaled *stretch, scaled *shrink);
 
 # endif

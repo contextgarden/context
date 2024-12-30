@@ -130,6 +130,7 @@ local nuts = {
     getlistdimensions       = direct.getlistdimensions,
     getmiddle               = direct.getdelimiter,
     getmiddledelimiter      = direct.getdelimiter,
+    getmvllist              = direct.getmvllist,
     getnext                 = d_getnext,
     getnormalizedline       = direct.getnormalizedline,
     getnucleus              = direct.getnucleus,
@@ -268,6 +269,7 @@ local nuts = {
     setleftdelimiter        = direct.setleftdelimiter,
     setlink                 = d_setlink,
     setlist                 = direct.setlist,
+    setmvllist              = direct.setmvllist,
     setmiddledelimiter      = direct.setdelimiter,
     setnext                 = direct.setnext,
     setnucleus              = direct.setnucleus,
@@ -332,6 +334,11 @@ local nuts = {
     write                   = direct.write,
     xscaled                 = direct.xscaled,
     yscaled                 = direct.yscaled,
+
+    updatetopmarks          = direct.updatetopmarks,
+    updatemarks             = direct.updatemarks,
+    updatefirstmarks        = direct.updatefirstmarks,
+    updatefirstandbotmark   = direct.updatefirstandbotmark,
 }
 
 nodes.nuts     = nuts

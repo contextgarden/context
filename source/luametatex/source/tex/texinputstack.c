@@ -17,6 +17,7 @@ input_state_info lmt_input_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .in_stack         = NULL,
     .in_stack_data    = {
@@ -30,6 +31,7 @@ input_state_info lmt_input_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .parameter_stack      = NULL,
     .parameter_stack_data = {
@@ -43,6 +45,7 @@ input_state_info lmt_input_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .cur_input      = { 0 },
     .input_line     = 0,

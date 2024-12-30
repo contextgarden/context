@@ -443,7 +443,7 @@
 % \definedatluaend\capheight
 
 \pushoverloadmode
-    \newuserunit\globalbodyfontsize fs % normally locas is the same as em
+    \newuserunit\globalbodyfontsize fs % normally local is the same as em
     \newuserunit\widthofzero        ch % from css
     \newuserunit\ascender           fa
     \newuserunit\descender          fd

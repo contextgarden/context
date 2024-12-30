@@ -90,6 +90,7 @@ save_state_info lmt_save_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .current_level    = 0,
     .current_group    = 0,

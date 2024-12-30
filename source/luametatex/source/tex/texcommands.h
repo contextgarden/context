@@ -150,6 +150,7 @@ typedef enum tex_command_code {
     mark_cmd,                         /*tex mark definition (|mark|) */
     node_cmd,                         /*tex a node injected via \LUA */
     xray_cmd,                         /*tex peek inside of \TEX\ (|\show|, |\showbox|, etc.) */
+    mvl_cmd,
     make_box_cmd,                     /*tex make a box (|\box|, |\copy|, |\hbox|, etc.) */
     hmove_cmd,                        /*tex horizontal motion (|\moveleft|, |\moveright|) */
     vmove_cmd,                        /*tex vertical motion (|\raise|, |\lower|) */
@@ -533,59 +534,69 @@ typedef enum input_codes {
 
 # define last_input_code quit_loop_now_code
 
+typedef enum mvl_codes {
+    begin_mvl_code,
+    end_mvl_code,
+} mvl_codes;
+
+# define last_mvl_code end_mvl_code
+
 typedef enum some_item_codes {
-    lastpenalty_code,           /*tex |\lastpenalty| */
-    lastkern_code,              /*tex |\lastkern| */
-    lastskip_code,              /*tex |\lastskip| */
-    lastboundary_code,          /*tex |\lastboundary| */
-    last_node_type_code,        /*tex |\lastnodetype| */
-    last_node_subtype_code,     /*tex |\lastnodesubtype| */
-    input_line_no_code,         /*tex |\inputlineno| */
-    badness_code,               /*tex |\badness| */
-    overshoot_code,             /*tex |\overshoot| */
-    luatex_version_code,        /*tex |\luatexversion| */
-    luatex_revision_code,       /*tex |\luatexrevision| */
-    current_group_level_code,   /*tex |\currentgrouplevel| */
-    current_group_type_code,    /*tex |\currentgrouptype| */
-    current_stack_size_code,    /*tex |\currentstacksize| */
-    current_if_level_code,      /*tex |\currentiflevel| */
-    current_if_type_code,       /*tex |\currentiftype| */
-    current_if_branch_code,     /*tex |\currentifbranch| */
-    glue_stretch_order_code,    /*tex |\gluestretchorder| */
-    glue_shrink_order_code,     /*tex |\glueshrinkorder| */
-    font_id_code,               /*tex |\fontid| */
-    glyph_x_scaled_code,        /*tex |\glyphxscaled| */
-    glyph_y_scaled_code,        /*tex |\glyphyscaled| */
-    font_char_wd_code,          /*tex |\fontcharwd| */
-    font_char_ht_code,          /*tex |\fontcharht| */
-    font_char_dp_code,          /*tex |\fontchardp| */
-    font_char_ic_code,          /*tex |\fontcharic| */
-    font_char_ta_code,          /*tex |\fontcharta| */
-    font_char_ba_code,          /*tex |\fontcharba| */
-    scaled_font_char_wd_code,   /*tex |\scaledfontcharwd| */
-    scaled_font_char_ht_code,   /*tex |\scaledfontcharht| */
-    scaled_font_char_dp_code,   /*tex |\scaledfontchardp| */
-    scaled_font_char_ic_code,   /*tex |\scaledfontcharic| */
-    scaled_font_char_ta_code,   /*tex |\scaledfontcharta| */
-    scaled_font_char_ba_code,   /*tex |\scaledfontcharba| */
-    font_spec_id_code,          /*tex |\fontspecid| */
-    font_spec_scale_code,       /*tex |\fontspecscale| */
-    font_spec_xscale_code,      /*tex |\fontspecxscale| */
-    font_spec_yscale_code,      /*tex |\fontspecyscale| */
-    font_spec_slant_code,       /*tex |\fontspecslant| */
-    font_spec_weight_code,      /*tex |\fontspecweight| */
-    font_size_code,             /*tex |\fontsize| */
-    font_math_control_code,     /*tex |\fontmathcontrol| */
-    font_text_control_code,     /*tex |\fonttextcontrol| */
-    math_scale_code,            /*tex |\mathscale| */
-    math_style_code,            /*tex |\mathstyle| */
-    math_main_style_code,       /*tex |\mathmainstyle| */
-    math_parent_style_code,     /*tex |\mathparentstyle| */
-    math_style_font_id_code,    /*tex |\mathstylefontid| */
-    math_stack_style_code,      /*tex |\mathstackstyle| */
-    math_char_class_code,       /*tex |\Umathcharclass| */
-    math_char_fam_code,         /*tex |\Umathcharfam| */
-    math_char_slot_code,        /*tex |\Umathcharslot| */
+    lastpenalty_code,              /*tex |\lastpenalty| */
+    lastkern_code,                 /*tex |\lastkern| */
+    lastskip_code,                 /*tex |\lastskip| */
+    lastboundary_code,             /*tex |\lastboundary| */
+    last_node_type_code,           /*tex |\lastnodetype| */
+    last_node_subtype_code,        /*tex |\lastnodesubtype| */
+    input_line_no_code,            /*tex |\inputlineno| */
+    badness_code,                  /*tex |\badness| */
+    overshoot_code,                /*tex |\overshoot| */
+    luametatex_major_version_code, /*tex |\luametatexversion| */
+    luametatex_minor_version_code, /*tex |\luametatexrevision| */
+    luametatex_release_code,       /*tex |\luametatexrelease| */
+    luatex_version_code,           /*tex |\luatexversion| (old) */
+    luatex_revision_code,          /*tex |\luatexrevision| (old) */
+    current_group_level_code,      /*tex |\currentgrouplevel| */
+    current_group_type_code,       /*tex |\currentgrouptype| */
+    current_stack_size_code,       /*tex |\currentstacksize| */
+    current_if_level_code,         /*tex |\currentiflevel| */
+    current_if_type_code,          /*tex |\currentiftype| */
+    current_if_branch_code,        /*tex |\currentifbranch| */
+    glue_stretch_order_code,       /*tex |\gluestretchorder| */
+    glue_shrink_order_code,        /*tex |\glueshrinkorder| */
+    font_id_code,                  /*tex |\fontid| */
+    glyph_x_scaled_code,           /*tex |\glyphxscaled| */
+    glyph_y_scaled_code,           /*tex |\glyphyscaled| */
+    font_char_wd_code,             /*tex |\fontcharwd| */
+    font_char_ht_code,             /*tex |\fontcharht| */
+    font_char_dp_code,             /*tex |\fontchardp| */
+    font_char_ic_code,             /*tex |\fontcharic| */
+    font_char_ta_code,             /*tex |\fontcharta| */
+    font_char_ba_code,             /*tex |\fontcharba| */
+    scaled_font_char_wd_code,      /*tex |\scaledfontcharwd| */
+    scaled_font_char_ht_code,      /*tex |\scaledfontcharht| */
+    scaled_font_char_dp_code,      /*tex |\scaledfontchardp| */
+    scaled_font_char_ic_code,      /*tex |\scaledfontcharic| */
+    scaled_font_char_ta_code,      /*tex |\scaledfontcharta| */
+    scaled_font_char_ba_code,      /*tex |\scaledfontcharba| */
+    font_spec_id_code,             /*tex |\fontspecid| */
+    font_spec_scale_code,          /*tex |\fontspecscale| */
+    font_spec_xscale_code,         /*tex |\fontspecxscale| */
+    font_spec_yscale_code,         /*tex |\fontspecyscale| */
+    font_spec_slant_code,          /*tex |\fontspecslant| */
+    font_spec_weight_code,         /*tex |\fontspecweight| */
+    font_size_code,                /*tex |\fontsize| */
+    font_math_control_code,        /*tex |\fontmathcontrol| */
+    font_text_control_code,        /*tex |\fonttextcontrol| */
+    math_scale_code,               /*tex |\mathscale| */
+    math_style_code,               /*tex |\mathstyle| */
+    math_main_style_code,          /*tex |\mathmainstyle| */
+    math_parent_style_code,        /*tex |\mathparentstyle| */
+    math_style_font_id_code,       /*tex |\mathstylefontid| */
+    math_stack_style_code,         /*tex |\mathstackstyle| */
+    math_char_class_code,          /*tex |\Umathcharclass| */
+    math_char_fam_code,            /*tex |\Umathcharfam| */
+    math_char_slot_code,           /*tex |\Umathcharslot| */
     scaled_slant_per_point_code,
     scaled_interword_space_code,
     scaled_interword_stretch_code,
@@ -606,6 +617,9 @@ typedef enum some_item_codes {
     par_shape_length_code,      /*tex |\parshapelength| */
     par_shape_indent_code,      /*tex |\parshapeindent| */
     par_shape_width_code,       /*tex |\parshapewidth| */
+    balance_shape_vsize_code,
+    balance_shape_top_space_code,
+    balance_shape_bottom_space_code,
     glue_stretch_code,          /*tex |\gluestretch| */
     glue_shrink_code,           /*tex |\glueshrink| */
     mu_to_glue_code,            /*tex |\mutoglue| */
@@ -685,6 +699,7 @@ typedef enum box_property_codes {
     box_adapt_code,
     box_repack_code,
     box_freeze_code,
+    box_migrate_code,
     box_limitate_code,
     box_finalize_code,
     box_limit_code,
@@ -693,9 +708,10 @@ typedef enum box_property_codes {
     /* we actually need set_box_int_cmd, or set_box_property */
     box_attribute_code,
     box_vadjust_code,
+    box_inserts_code,
 } box_property_codes;
 
-# define last_box_property_code box_vadjust_code
+# define last_box_property_code box_inserts_code
 
 typedef enum hyphenation_codes {
     hyphenation_code,
@@ -717,6 +733,7 @@ typedef enum begin_paragraph_codes {
     undent_par_code,
     snapshot_par_code,
     attribute_par_code,
+    options_par_code,
     wrapup_par_code,
 } begin_paragraph_codes;
 

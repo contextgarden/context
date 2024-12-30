@@ -1,5 +1,4 @@
 % language=us runpath=texruns:manuals/luametatex
-
 \environment luametatex-style
 
 \startdocument[title=Internals]
@@ -419,10 +418,11 @@ The characters in the text also become tokens and here we get two \quote {letter
 commands (with the \UNICODE\ slots as operand), one \quote {space} command, five
 more letter commands and an \quote {other} command, and so on.
 
-Here every token is fed into the interpreter. The \type {\starttext} is a macro
-(control sequence) so it gets expanded and its stored tokens get interpreted. The
-letters become (to be discussed) nodes in a linked list of content. In this case
-the tokens are not stored and discarded as we read on.
+Here every token is fed into the interpreter. The \type {\starttext} and \type
+{\stoptext} are macros (control sequences) so they get expanded and the stored
+tokens get interpreted. The letters become (to be discussed) nodes in a linked
+list of content. In this case the tokens are not stored and discarded as we read
+on.
 
 The \type {\hbox} is also a control sequence but a built in primitive. The
 operator is \typ {make_box} and the operand is \typ {hbox}. It will trigger
@@ -473,6 +473,8 @@ lists are constructed we take from this pool so there is an index indicating the
 first available token. When a list is discarded it gets appended to a list of
 free tokens. So in practice we first try to get a free token from this pool. In
 \LUAMETATEX\ it the token array will grow on demand with a configurable chunk size.
+
+\stopsection
 
 \startsection[title=Nodes]
 
@@ -575,17 +577,18 @@ nodes: \SnapNow \SnapUsage\ and \SnapStock\ were the numbers after the colon.}
 \startsection[title=The hash table]
 
 The engine has a lot of built-in commands and users can define additional ones.
-An example is macros, like the mentioned \typ {\starttext} that refers to a token
-list that starts the typesetting process. When reading the input from file these
-commands and macros are looked up in a hash table. There are also built-in
-commands that generate a hash entry. For instance when you define a counter or a
-font, the given name becomes a hash entry that points to a memory location (again
-an index).
+An example is macros, like the mentioned \typ {\starttext} and \type {\stoptext}
+that refer to a token list that starts the typesetting process. When reading the
+input from file these commands and macros are looked up in a hash table. There
+are also built-in commands that generate a hash entry. For instance when you
+define a counter or a font, the given name becomes a hash entry that points to a
+memory location (again an index).
 
 Here it gets more complex. A hash table is used to lookup primitive commands like
-\type {\hbox} and \type {\font} as well as \type {\starttext}. The string is
-converted into an integer within a specific range. That integer is then an index
-into a table like we saw before, with two halfwords per slot.
+\type {\hbox} and \type {\font} as well as \type {\starttext} and \type
+{\stoptext}. The string is converted into an integer within a specific range.
+That integer is then an index into a table like we saw before, with two halfwords
+per slot.
 
 \startlinecorrection
     \forgetall
@@ -949,7 +952,7 @@ the \type {type} and \type {subtype} fields. The macros that define a glyph are:
 
 Instead of one memory word we use seven, and given the amount of characters
 on a page that adds quite a bit compared to the original. Of course it is
-irrelevant on todays machines. So how about \LUAMETATEX ?
+irrelevant on todays machines. So how about \LUAMETATEX\ as of late 2024?
 
 \starttyping[option=CPP]
 # define glyph_node_size     14
@@ -1050,6 +1053,76 @@ switch (subtype(n) {
 Because a glyph can have scaled set and similar features exist for glue we need to
 distinguish need to distinguish anyway. Watch the math node: we have to deal with
 either kern or glue.
+
+\stopsection
+
+\startsection[title=Keywords]
+
+The \ETEX\ extension added primitives, \PDFTEX\ did the same, as did \OMEGA\ and
+therefore also \LUATEX, which took from its ancestors and added more. The
+\LUAMETATEX\ engine again extends the repertoire. However, in order to control
+some primitive (functional) behavior instead of using extra primitive parameters,
+we use keywords. For instance \type {\hbox} accepts multiple \type {attr}, \typ
+{direction}, (\LUATEX) but also \type {xoffset}, \type {yoffset}, \typ
+{orientation} and more. This has no impact on compatibility because scanning
+keywords stops at the left brace (or its equivalent). The \type {\hrule} like
+primitives also accept more keywords but here scanning stops at an unknown
+keyword, which can give interesting side effects when it's last in macro followed
+by text that itself starts with a valid keyword (say \type {height}) but not by a
+dimensions.
+
+\startlinenumbering
+\starttyping
+\def\foo{\hrule width 10pt} \foo height or depth, what about it.
+\def\foo{\hrule width 10pt\relax} \foo height or depth, what about it.
+\def\foo{\hrule width 10pt} \foo what about it.
+\hbox to 20pt{x}
+\hbox attr 999 1 to 20pt{x}
+\hbox to 20pt attr 999 1 {x}
+\stoptyping
+\stoplinenumbering
+
+The first line gives an error, the second uses \type {\relax} to end the
+scanning. The last line is wrong in \LUATEX\ where order matters while it's okay
+in \LUAMETATEX. The third line is okay in \LUATEX\ where the \type {what} is
+pushed back but wrong in \LUAMETATEX\ where it expect \type {w} to start a valid
+keyword. The last is actually an incompatibility but one should keep in mind that
+using \type {\relax} is the way to go here anyway. The same is true for scanning
+glue specifications.
+
+The fact that \type {what} gets pushed back (in \LUATEX) into the input add extra
+overhead. But in this case it's little. However, think of this in \LUATEX:
+
+\starttyping
+if (scan_keyword("width")) {
+    scan_normal_dimen();
+    width(q) = cur_val;
+    goto RESWITCH;
+}
+if (scan_keyword("height")) {
+    scan_normal_dimen();
+    height(q) = cur_val;
+    goto RESWITCH;
+}
+if (scan_keyword("depth")) {
+    scan_normal_dimen();
+    depth(q) = cur_val;
+    goto RESWITCH;
+}
+\stoptyping
+
+Here we push back two times when we only specify the \type {depth}. This is still
+not that bad but imagine many more keywords. This is why in \LUAMETATEX\ we
+cascade: we check for the first character and act on that and if needed do the
+same with later characters (box specifications take \type {adapt}, \type {attr},
+\type {anchor} and \type {axis} so here a second character differentiates. In par
+passes we have \typ {adjustspacingstep}, \typ {adjustspacingshrink}, \typ
+{adjustspacingstretch} so there is no need to push back the \typ {adjustspacings}
+and if you look carefully \type {tep} and \type {tretch} also cascade. Of course
+the code looks a bit more messy but we do gain here due to less push back and
+therefore input level bumping. In some cases we also need less further tracing
+because we already know what is coming. Of course given \TEX's already good
+scanning performance it all depends on usage what we gain in practice.
 
 \stopsection
 

@@ -1,0 +1,222 @@
+if not modules then modules = { } end modules ['m-bibles'] = {
+    version   = 1.001,
+    comment   = "companion to m-bibles.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local tonumber = tonumber
+local context = context
+
+moduledata        = moduledata or { }
+local bibles      = { }
+moduledata.bibles = bibles
+
+bibles.books = {
+    english = {
+        "Genesis", "Exodus", "Leviticus", "Numbers", "Deuteronomy", "Joshua",
+        "Judges", "Ruth", "1 Samuel", "2 Samuel", "1 Kings", "2 Kings",
+        "1 Chronicles", "2 Chronicles", "Ezra", "Nehemiah", "Esther", "Job",
+        "Psalms", "Proverbs", "Ecclesiastes", "Song of Songs", "Isaiah",
+        "Jeremiah", "Lamentations", "Ezekiel", "Daniel", "Hosea", "Joel", "Amos",
+        "Obadiah", "Jonah", "Micah", "Nahum", "Habakkuk", "Zephaniah", "Haggai",
+        "Zechariah", "Malachi",
+        --
+        "Matthew", "Mark", "Luke", "John", "Acts", "Romans", "1 Corinthians",
+        "2 Corinthians", "Galatians", "Ephesians", "Philippians", "Colossians",
+        "1 Thessalonians", "2 Thessalonians", "1 Timothy", "2 Timothy", "Titus",
+        "Philemon", "Hebrews", "James", "1 Peter", "2 Peter", "1 John", "2 John",
+        "3 John", "Jude", "Revelation",
+    },
+    polish = {
+--            "Rodzaju", "Wyjścia", "Kapłańska", "Liczb", "Powtórzonego Prawa",
+        "Rodzaxu", "Wyjścia", "Kapłańska", "Liczb", "Powtórzonego Prawa",
+        "Jozuego", "Sędziów", "Ruty", "1. Samuelowa", "2. Samuelowa",
+        "1. Królewska", "2. Królewska", "1. Kronik", "2. Kronik", "Ezdraszowa",
+        "Nehemijaszowa", "Estery", "Ijobowa", "Psalmów",
+        "Przypowieści Salomonowych", "Kaznodziei Salomona", "Pieśń Salomona",
+        "Izajasz", "Jeremijasz", "Treny Jeremijaszowe", "Ezechyjel",
+        "Danijel", "Ozeasza", "Joel", "Amos", "Abdyjasz", "Jonasz",
+        "Micheasz", "Nahum", "Abakuk", "Sofonijasz", "Aggieusz",
+        "Zacharyjasz", "Malachyjasz",
+        --
+        "Mateusza", "Marka", "Łukasza", "Jana", "Dzieje Apostolskie",
+        "Rzymian", "1. Koryntów", "2. Koryntów", "Galatów", "Efezów",
+        "Filipensów", "Kolosensów", "1. Tesalonicensów", "2. Tesalonicensów",
+        "1. Tymoteusza", "2. Tymoteusza", "Tytusa", "Filemona", "Żydów",
+        "Jakóba", "1. Piotra", "2. Piotra", "1. Jana", "2. Jana", "3. Jana",
+        "Judasa", "Objawienie Jana",
+    },
+    swedish = { -- according to bibeln.se
+        "Första Moseboken", "Andra Moseboken", "Tredje Moseboken",
+        "Fjärde Moseboken", "Femte Moseboken", "Josua", "Domarboken", "Rut",
+        "Första Samuelsboken", "Andra Samuelsboken", "Första Kungaboken",
+        "Andra Kungaboken", "Första Krönikeboken", "Andra Krönikeboken",
+        "Esra", "Nehemjah", "Ester", "Job", "Psaltaren", "Ordspråksboken",
+        "Predikaren", "Höga visan", "Jesaja", "Jeremia", "Klagovisorna",
+        "Hesekiel", "Daniel", "Hosea", "Joel", "Amos", "Obadja", "Jona",
+        "Mika", "Nahum", "Habackuk", "Sefanja", "Haggaj", "Sakarja",
+        "Malaki",
+        --
+        "Matteus", "Markus", "Lukas", "Johannes", "Apostlagärningarna",
+        "Romarbrevet", "Första Korinthierbrevet", "Andra Korinthierbrevet",
+        "Galaterbrevet", "Efesierbrevet", "Filipperbrevet", "Kolosserbrevet",
+        "Första Thessalonikerbrevet", "Andra Thessalonikerbrevet",
+        "Första Timotheosbrevet", "Andra Timotheosbrevet", "Titusbrevet",
+        "Filemonbrevet", "Hebreerbrevet", "Jakobsbrevet",
+        "Första Petrusbrevet", "Andra Petrusbrevet", "Första Johannesbrevet",
+        "Andra Johannesbrevet", "Tredje Johannesbrevet", "Judasbrevet",
+        "Uppenbarelseboken",
+    },
+    dutch = {
+        "Genesis", "Exodus", "Leviticus", "Numeri", "Deuteronomium", "Jozua",
+        "Rechters", "Ruth", "1 Samuel", "2 Samuel", "1 Koningen",
+        "2 Koningen", "1 Kronieken", "2 Kronieken", "Ezra", "Nehemia", "Ester",
+        "Job", "Psalmen", "Spreuken", "Prediker", "Hooglied", "Jesaja",
+        "Jeremia", "Klaagliederen", "Ezechiël", "Daniël", "Hosea", "Joël", "Amos",
+        "Obadja", "Jona", "Micha", "Nahum", "Habakuk", "Sefanja", "Haggai", "Zacharia",
+        "Maleachi",
+        --
+        "Matteüs", "Marcus", "Lucas", "Johannes", "Handelingen", "Romeinen",
+        "1 Korintiërs", "2 Korintiërs", "Galaten", "Efeziërs", "Filippenzen",
+        "Kolossenzen", "1 Tessalonicenzen", "2 Tessalonicenzen", "1 Timoteüs",
+        "2 Timoteüs", "Titus", "Filemon", "Hebreeën", "Jakobus", "1 Petrus",
+        "2 Petrus", "1 Johannes", "2 Johannes", "3 Johannes", "Judas",
+        "Openbaring van Johannes",
+    }
+}
+
+bibles.testaments = {
+    english = {
+        Old = "Old testament",
+        New = "New testament",
+    },
+    polish = {
+        Old = "Starego testamentu",
+        New = "Nowego testamentu",
+    },
+    swedish = {
+        Old = "Gamla testamentet",
+        New = "Nya testamentet",
+    },
+    dutch = {
+        Old = "Oude testament",
+        New = "Nieuwe testament",
+    },
+}
+
+table.setmetatableindex(bibles.books, bibles.books.english)
+table.setmetatableindex(bibles.testaments, bibles.testaments.english)
+
+bibles.biblefiles = table.setmetatableindex {
+    title      = "Bible",
+    books      = bibles.books.english,
+    testaments = bibles.testaments.english,
+    chapter    = "Chapter",
+}
+
+bibles.biblefiles["EnglishKJBible.xml"] = {
+    filename   = "EnglishKJBible.xml",
+    title      = "English King James",
+    books      = bibles.books.english,
+    testaments = bibles.testaments.english,
+    chapter    = "Chapter",
+}
+
+bibles.biblefiles["PolishBible.xml"] = {
+    filename   = "PolishBible.xml",
+    title      = "Polish Biblia Warszawska 1975",
+    books      = bibles.books.polish,
+    testaments = bibles.testaments.polish,
+    chapter    = "Rozdział",
+}
+
+bibles.biblefiles["DutchBible.xml"] = {
+    filename   = "DutchBible.xml",
+    title      = "Nederlandse Statenvertaling",
+    books      = bibles.books.dutch,
+    testaments = bibles.testaments.dutch,
+    chapter    = "Hoofdstuk",
+}
+
+bibles.biblefiles["SwedishBible.xml"] = {
+    filename   = "SwedishBible.xml",
+    title      = "Svenska 1917",
+    books      = bibles.books.swedish,
+    testaments = bibles.testaments.swedish,
+    chapter    = "Kapitel",
+}
+
+bibles.biblefiles["HebrewBible.xml"] = {
+    filename   = "HebrewBible.xml",
+    title      = "Hebrew Bible Modern 1977",
+    books      = bibles.books.hebrew,
+    books      = bibles.books.english,
+    testaments = bibles.testaments.hebrew,
+    testaments = bibles.testaments.english,
+    chapter    = "Chapter",
+}
+
+if context then
+
+    local biblefiles = bibles.biblefiles
+
+    interfaces.implement {
+        name      = "BibleSetFile",
+        public    = true,
+        arguments = "2 strings",
+        actions   = function(bibleindex,biblefile)
+            biblefiles[bibleindex] = biblefiles[biblefile]
+        end
+    }
+
+    interfaces.implement {
+        name      = "BibleFile",
+        public    = true,
+        arguments = "string",
+        actions   = function(bibleindex)
+--         print(biblefiles[bibleindex].filename)
+            context(biblefiles[bibleindex].filename)
+        end
+    }
+
+    interfaces.implement {
+        name      = "BibleTitleName",
+        public    = true,
+        arguments = "string",
+        actions   = function(biblefile)
+            context(biblefiles[biblefile].title)
+        end
+    }
+
+    interfaces.implement {
+        name    = "BibleTestamentName",
+        public  = true,
+        arguments = "2 strings",
+        actions = function(biblefile,biblename)
+            context(biblefiles[biblefile].testaments[biblename])
+        end
+    }
+
+    interfaces.implement {
+        name    = "BibleBookName",
+        public  = true,
+        arguments = "2 strings",
+        actions = function(biblefile,biblebook)
+            context(biblefiles[biblefile].books[tonumber(biblebook)])
+        end
+    }
+
+    interfaces.implement {
+        name    = "BibleChapterName",
+        public  = true,
+        arguments = "string",
+        actions = function(biblefile)
+            context(biblefiles[biblefile].chapter)
+        end
+    }
+
+end
+
+return bibles

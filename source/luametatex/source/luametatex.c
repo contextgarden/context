@@ -37,6 +37,8 @@
 // # endif
 
 version_state_info lmt_version_state = {
+    .majorversion      = luametatex_majorversion,
+    .minorversion      = luametatex_minorversion,
     .version           = luametatex_version,
     .revision          = luametatex_revision,
     .release           = luametatex_release,

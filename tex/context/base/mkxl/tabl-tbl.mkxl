@@ -1417,25 +1417,25 @@
      \let\tabl_tabulate_inside_after\relax
    \fi}
 
-\protected\def\tabl_tabulate_outside_before
-  {\ifhmode\par\fi
-   \ifhmode
-     \vbox\bgroup
-     \let\tabl_tabulate_outside_after    \egroup
-     \let\tabl_tabulate_outside_inbetween\relax
-   \orelse\ifinner
-     \let\tabl_tabulate_outside_after    \relax
-     \let\tabl_tabulate_outside_inbetween\relax
-   \else
-     \whitespace
-     \tabulationparameter\c!before
-     \relax
-     \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
-     \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
-   \fi}
+% \protected\def\tabl_tabulate_outside_before
+%   {\ifhmode\par\fi
+%    \ifhmode
+%      \vbox\bgroup
+%      \let\tabl_tabulate_outside_after    \egroup
+%      \let\tabl_tabulate_outside_inbetween\relax
+%    \orelse\ifinner
+%      \let\tabl_tabulate_outside_after    \relax
+%      \let\tabl_tabulate_outside_inbetween\relax
+%    \else
+%      \whitespace
+%      \tabulationparameter\c!before
+%      \relax
+%      \let\tabl_tabulate_outside_after    \tabl_tabulate_outside_after_indeed
+%      \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
+%    \fi}
 
-\def\tabl_tabulate_outside_after_indeed
-  {\tabulationparameter\c!after}
+% \def\tabl_tabulate_outside_after_indeed
+%   {\tabulationparameter\c!after}
 
 \def\tabl_tabulate_outside_inbetween_indeed
   {\ifempty{\tabulationparameter\c!after}%
@@ -1450,6 +1450,58 @@
      \verticalstrut
      \vskip-\struttotal
    \fi}
+
+% This supports \c!n where we have to handle before/after a bit differently:
+
+\definerows
+  [\v!tabulate]
+  [\c!n=\rowsparameter\c!n,
+   \c!order=\v!vertical,
+   \c!before=\tabulationparameter\c!before,
+   \c!after=\tabulationparameter\c!after]
+
+\setuptabulate
+  [\c!n=\zerocount]
+
+\let\tabl_tabulate_outside_stoprows \relax
+
+\protected\def\tabl_tabulate_outside_after_yes
+  {\stoprows} % before/after handled in rows
+
+\protected\def\tabl_tabulate_outside_after_nop
+  {\tabulationparameter\c!after}
+
+\protected\def\tabl_tabulate_outside_before
+  {\ifhmode\par\fi
+   \ifhmode
+     \vbox\bgroup
+     \let\tabl_tabulate_outside_after    \egroup
+     \let\tabl_tabulate_outside_inbetween\relax
+   \orelse\ifinner
+     \let\tabl_tabulate_outside_after    \relax
+     \let\tabl_tabulate_outside_inbetween\relax
+   \else
+     \whitespace
+     \relax
+     \ifcase\tabulateparameter\c!n\relax
+       \tabulationparameter\c!before
+       \let\tabl_tabulate_outside_after\tabl_tabulate_outside_after_nop % does \c!after
+     \else
+       \startrows
+         [\v!tabulate]
+         [\c!n=\tabulateparameter\c!n,%
+          \c!before=\tabulateparameter\c!before,
+          \c!after=\tabulateparameter\c!after]%
+       \let\tabl_tabulate_outside_after\tabl_tabulate_outside_after_yes
+     \fi
+     \let\tabl_tabulate_outside_inbetween\tabl_tabulate_outside_inbetween_indeed
+   \fi}
+
+\def\tabl_tabulate_outside_after_indeed
+  {\tabl_tabulate_outside_stoprows_nop
+   \tabulationparameter\c!after}
+
+% till here
 
 \newinteger\c_tabl_widow_penalty
 \newinteger\c_tabl_club_penalty

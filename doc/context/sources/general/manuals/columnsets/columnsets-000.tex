@@ -59,4 +59,38 @@
 \defineoverlay[frame]   [\uniqueMPgraphic{frame}]
 \defineoverlay[contrast][\uniqueMPgraphic{contrast}]
 
+% TODO
+
+\unprotect
+
+\protected\def\NormalizeFontWidthSpread#1#2#3#4#5#6%
+  {\global\setfalse\NFSpread
+   \scratchdimen#3%
+   \scratchdimen-.5\scratchdimen
+   \advance\scratchdimen#2\relax
+   \NormalizeFontWidth
+     #1%
+     {\enforced\def\+{\global\settrue\NFSpread\gobbleuntil\relax}%
+      \enforced\def\\{\gobbleuntil\relax}% newline
+      \setupspacing
+      #6\relax}%
+     {\scratchdimen}%
+     {#4}%
+   \ifconditional\NFSpread
+     % de gap valt in de binding
+   \else
+     \definefont[\strippedcsname#1][#4 #5]%
+   \fi}
+
+\protected\def\SpreadGapText#1#2%
+  {{\def\+{\kern#1}#2}}
+
+\protected\def\GapText#1#2#3#4#5% width distance font spec title
+  {\bgroup
+   \NormalizeFontWidthSpread\DummyFont{#1}{#2}{#3}{#4}{#5}%
+   \DummyFont\setupspacing\SpreadGapText{#2}{#5}\endgraf
+   \egroup}
+
+\protect
+
 \stopenvironment

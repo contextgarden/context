@@ -33,7 +33,12 @@ typedef enum set_mark_codes {
 
 # define last_set_mark_code flush_marks_code
 
-typedef halfword mark_record[split_bot_marks_code+1];
+//typedef halfword mark_record[split_bot_marks_code+1];
+
+typedef struct mark_record {
+    halfword marks[split_bot_marks_code+1]; 
+    halfword state; 
+} mark_record;
 
 typedef struct mark_state_info {
     mark_record *data;
@@ -51,15 +56,19 @@ extern void     tex_wipe_mark                 (halfword m);
 extern void     tex_delete_mark               (halfword m, int what);
 extern halfword tex_get_some_mark             (halfword chr, halfword val);
 extern halfword tex_new_mark                  (quarterword subtype, halfword index, halfword ptr);
-extern void     tex_update_top_marks          (void);
+extern int      tex_update_top_marks          (void);
 extern void     tex_update_first_and_bot_mark (halfword m);
-extern void     tex_update_first_marks        (void);
+extern int      tex_update_first_marks        (void);
 extern void     tex_update_split_mark         (halfword m);
+extern int      tex_update_marks              (halfword n);
+
 extern void     tex_show_marks                (void);
 extern int      tex_has_mark                  (halfword m);
 extern halfword tex_get_mark                  (halfword m, halfword s);
 extern void     tex_set_mark                  (halfword m, halfword s, halfword v);
 
 extern void     tex_run_mark                  (void);
+
+extern halfword lmt_get_mark_class            (lua_State *L, int index);
 
 # endif

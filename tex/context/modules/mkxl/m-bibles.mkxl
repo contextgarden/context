@@ -1,0 +1,536 @@
+%D \module
+%D   [       file=m-bibles,
+%D        version=2024.11.01,
+%D          title=\CONTEXT\ Extra Modules,
+%D       subtitle=Parallel Bibles,
+%D         author=Hans Hagen & Mikael Sundqvist,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is one of the test files that we use while upgrading columnsets to use new
+%D \LUAMETATEX\ features.
+%D
+%D The \XML\ bible files are fetched from:
+%D
+%D \starttyping
+%D https://github.com/Beblia/Holy-Bible-XML-Format
+%D \stoptyping
+
+% todo: use labeltext
+
+% \enablemode[balance-verses] % too late
+
+\startmodule [bibles]
+
+% \enabletrackers[vspacing.collect]
+% \enabletrackers[vspacing.snapping]
+
+% \showmakeup[line]
+% \enabletrackers[system.usage=summary]
+% \showframe
+% \showgrid
+
+\registerctxluafile{m-bibles}{}
+
+\enableexperiments[fonts.compact]
+
+\dontcomplain
+
+\setuplayout
+  [topspace=.05ph,
+   bottomspace=.05ph,
+   backspace=.05ph,
+   header=.05ph,
+   grid=yes,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+% \setupinteraction
+%   [state=start,
+%    color=,
+%    contrastcolor=]
+%
+% \setuplist
+%   [interaction=all]
+
+% hlig rlig dlig ccmp
+
+\starttypescript [serif] [unifraktur] [name]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]     [file:unifrakturcook-light] [features=default]
+    \definefontsynonym [SerifBold] [file:unifrakturcook]       [features=default]
+\stoptypescript
+
+\starttypescript[unifraktur]
+    \definetypeface [\typescriptone] [rm] [serif] [unifraktur] [default]
+    \definetypeface [\typescriptone] [ss] [serif] [unifraktur] [default]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]
+    \definetypeface [\typescriptone] [tt] [mono]  [modern]
+\stoptypescript
+
+\definefontfeature
+  [default]
+  [default]
+  [hz=quality,
+   protrusion=quality]
+
+\setupinterlinespace
+  [top=.72]
+
+% \setupbodyfont[unifraktur,10pt] \setupinterlinespace[line=2.25ex]
+
+% \setupbodyfont[lucida,9pt]
+\setupbodyfont[pagella,9pt]
+% \setupbodyfont[pagella,7pt]
+
+% \showmakeup[expansion]
+% \enabletrackers[paragraphs.passes=summary]
+
+\startsetups balance:example
+  \balancetopskip          \strutht
+  \balancebottomskip       \strutdp
+  \balanceemergencystretch 0pt
+  \balanceadjdemerits      0
+  \balancetolerance        10
+\stopsetups
+
+\setupwhitespace
+  [none]
+
+% \setuplayout
+%   [limitstretch=yes]
+
+% \setuplayout
+%  %[vz=4]
+%   [vz=8]
+
+%  2-1  1 2     | 1 2
+%  3-1  1 2 3   | 1 2 3
+%  4-1  1 2 3 4 | 1 2 3 4
+
+%  4-2  1 2     | 3 4
+%  6-2  1 2 3   | 4 5 6
+%  8-2  1 2 3 4 | 5 6 7 8
+
+% \enablemode[balance-four-two]
+
+% \startmode[balance-two-one]
+%     \definecolumnset[bible][n=2]
+%     \definesubcolumnset[bible][1][1,3]
+%     \definesubcolumnset[bible][2][2,4]
+% \stopmode
+
+% \startmode[balance-three-one]
+%     \definecolumnset[bible][n=3]
+%     \definesubcolumnset[bible][1][1,4]
+%     \definesubcolumnset[bible][2][2,5]
+%     \definesubcolumnset[bible][3][3,6]
+% \stopmode
+
+% \startmode[balance-four-one]
+%     \definecolumnset[bible][n=4]
+%     \definesubcolumnset[bible][1][1,5]
+%     \definesubcolumnset[bible][2][2,6]
+%     \definesubcolumnset[bible][3][3,7]
+%     \definesubcolumnset[bible][4][4,8]
+% \stopmode
+
+% \startmode[balance-four-two]
+%     \definecolumnset[bible][n=2]
+%     \definesubcolumnset[bible][1][1]
+%     \definesubcolumnset[bible][2][2]
+%     \definesubcolumnset[bible][3][3]
+%     \definesubcolumnset[bible][4][4]
+% \stopmode
+
+% \startmode[balance-six-two]
+%     \definecolumnset[bible][n=3]
+%     \definesubcolumnset[bible][1][1]
+%     \definesubcolumnset[bible][2][2]
+%     \definesubcolumnset[bible][3][3]
+%     \definesubcolumnset[bible][4][4]
+%     \definesubcolumnset[bible][5][5]
+%     \definesubcolumnset[bible][6][6]
+% \stopmode
+
+% \startmode[balance-eight-two]
+%     \definecolumnset[bible][n=4]
+%     \definesubcolumnset[bible][1][1]
+%     \definesubcolumnset[bible][2][2]
+%     \definesubcolumnset[bible][3][3]
+%     \definesubcolumnset[bible][4][4]
+%     \definesubcolumnset[bible][5][5]
+%     \definesubcolumnset[bible][6][6]
+%     \definesubcolumnset[bible][7][7]
+%     \definesubcolumnset[bible][8][8]
+% \stopmode
+
+\definecolumnset
+  [bible]
+  [n=2,
+   align={lesswidows,lessclubs,lessbroken,lessorphans}]
+
+\definesubcolumnset[bible][2][2]
+\definesubcolumnset[bible][3][3]
+\definesubcolumnset[bible][4][4]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupalign
+%   [tolerant,depth,granular]
+  [tolerant,granular]
+
+% \enabletrackers[paragraphs.passes=summary]
+
+\newinteger\parpassdefaultone
+\parpassdefaultone\parpassidentifier{quality}
+
+\startsetups align:pass:quality
+    \parpasses  5
+        identifier           \parpassdefaultone
+        tolerance            100
+        adjustspacing          0
+        emergencyfactor        0
+        hyphenation            0
+        mathpenaltyfactor  20000
+        orphanlinefactors   4 100 250 500 1000
+        toddlerpenalties    1 options 2 200 50
+    next
+        tolerance            200
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink    5
+        adjustspacingstretch  10
+    next
+        tolerance            300
+        adjustspacing          0
+    next
+        tolerance            200
+        adjustspacing          3
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+    next
+        tolerance            400
+        hyphenation            1
+        extrahyphenpenalty   200
+        adjustspacing          3
+        adjustspacingshrink   30
+        adjustspacingstretch  60
+        emergencystretch       1\bodyfontsize
+        emergencyfactor     1000
+        mathpenaltyfactor   1000
+     \relax
+\stopsetups
+
+\setupalignpass
+  [quality]
+
+% \setupalign[notwins]
+
+% \enabletrackers[pages.loners] % none as we have high penalties
+
+\setuphead
+  [chapter,section,subsection]
+  [number=no,
+   page=,
+   continue=no,
+   expansion=yes]
+
+\setuphead
+  [chapter]
+  [before=,
+%    after=\blank[2*line,force]]
+   after=\blank[2*line]]
+
+\setuphead
+  [section]
+  [before=,
+%    beforesection=\blank[line,force]]
+   beforesection=\blank[2*line]]
+
+\setuphead
+  [subsection]
+  [before=\blank[line]\testcolumn[5],
+   after=\blank[line,samepage],
+%    beforesection=\blank[line,force]]
+   beforesection=\blank[2*line]]
+
+\setuphead [chapter]    [style=\bfd]
+\setuphead [section]    [style=\bfc]
+\setuphead [subsection] [style=\bfa]
+
+% \localcontrolledloop 1 4 1 {
+%     \definehead [chapter:#I]    [chapter]    [marking=new]
+%     \definehead [title:#I]      [title]      [marking=new]
+%     \definehead [section:#I]    [section]    [marking=new]
+%     \definehead [subsection:#I] [subsection] [marking=new]
+% }
+
+\definehead [chapter:1]    [chapter]    [marking=new]
+\definehead [chapter:2]    [chapter]    [marking=new]
+\definehead [chapter:3]    [chapter]    [marking=new]
+\definehead [chapter:4]    [chapter]    [marking=new]
+
+\definehead [title:1]      [title]      [marking=new]
+\definehead [title:2]      [title]      [marking=new]
+\definehead [title:3]      [title]      [marking=new]
+\definehead [title:4]      [title]      [marking=new]
+
+\definehead [section:1]    [section]    [marking=new]
+\definehead [section:2]    [section]    [marking=new]
+\definehead [section:3]    [section]    [marking=new]
+\definehead [section:4]    [section]    [marking=new]
+
+\definehead [subsection:1] [subsection] [marking=new]
+\definehead [subsection:2] [subsection] [marking=new]
+\definehead [subsection:3] [subsection] [marking=new]
+\definehead [subsection:4] [subsection] [marking=new]
+
+\setupheader
+  [style=bold]
+
+\setupheadertexts
+  [pagenumber]
+
+\startsetups header:right
+    \doifelsemarking {subsection:3} {
+        \getmarking[section:3]
+        \quad
+        \getmarking[subsection:3]
+    } {
+        % nothing
+    }
+    \hfill
+    \doifelsemarking {subsection:4} {
+        \getmarking[subsection:4]
+    \quad
+        \getmarking[section:4]
+    } {
+        % nothing
+    }
+%     \qquad
+%     \pagenumber
+\stopsetups
+
+\startsetups header:left
+%     \pagenumber
+%     \qquad
+    \doifelsemarking {subsection:1} {
+        \getmarking[section:1]
+        \quad
+        \getmarking[subsection:1]
+    } {
+        % nothing
+    }
+    \hfill
+    \doifelsemarking {subsection:2} {
+        \getmarking[subsection:2]
+        \quad
+        \getmarking[section:2]
+    } {
+        % nothing
+    }
+\stopsetups
+
+\setupheadertexts
+  [] [\directsetup{header:right}]
+  [\directsetup{header:left}] []
+
+\newgluespec \VerseSkip \VerseSkip .5em plus .25em minus .125em \relax
+
+\def\BibleBook     {1}
+\def\BibleChapter  {1}
+\def\BibleTestament{Old}
+\def\BibleVerse    {1}
+
+%D We define these at the lua end but it's not faster ... non critical.
+
+% \protected\def\BibleSetFile#1#2{\setvalue{BibleFile:#1}{#2}}
+% \def\BibleFile#1{\getvalue{BibleFile:#1}}
+%
+% \def\BibleTitleName      #1{\cldcontext{moduledata.bibles.biblefiles["\BibleFile{#1}"].title}}
+% \def\BibleTestamentName#1#2{\cldcontext{moduledata.bibles.biblefiles["\BibleFile{#1}"].testaments["#2"]}}
+% \def\BibleBookName     #1#2{\cldcontext{moduledata.bibles.biblefiles["\BibleFile{#1}"].books[tonumber("#2")]}}
+% \def\BibleChapterName    #1{\cldcontext{moduledata.bibles.biblefiles["\BibleFile{#1}"].chapter}}
+
+\startxmlsetups xml:bible
+    \page[left]
+    \startcolumnset [bible]
+%         \localcontrolledloop 1 4 1 {
+        \localcontrolledrepeat 4 {
+            \startsubcolumnset[#I]\relax
+                \startnamedsection[title:#I][title={\BibleTitleName{\number#I}}]
+                    \placelist[chapter:#I][criterium=text]
+                \stopnamedsection
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+    \stopcolumnset
+    \page[left]
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:testament
+    \page[left]
+    \startcolumnset [bible]
+        \xdef\BibleName{\xmlatt{#1}{name}}
+        \localcontrolledloop 1 4 1 {
+            \startsubcolumnset[#I]\relax
+                \startnamedsection[chapter:#I][title={\BibleTestamentName{\number#I}{\BibleName}}]
+                    \placelist[section:#I][criterium=text]
+                \stopnamedsection
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+    \stopcolumnset
+    \page[left]
+    \xmlflush{#1}
+\stopxmlsetups
+
+\startxmlsetups xml:book
+    \xdef\BibleBook   {\xmlatt{#1}{number}}
+    \xdef\BibleChapter{1}
+% \ifnum\BibleBook<\plustwo
+    \startcolumnset [bible]
+        \startsubcolumnset\relax
+            \namedsection[section:1][title={\BibleBookName{1}\BibleBook}]
+        \stopsubcolumnset
+        \localcontrolledloop 2 4 1 {
+            \startsubcolumnset[#I]\relax
+                \namedsection[section:#I][title={\BibleBookName{\number#I}\BibleBook},incrementnumber=no]
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+        \xmlflush{#1}
+    \stopcolumnset
+% \fi
+\stopxmlsetups
+
+\startnotmode[balance-verses]
+
+    \startxmlsetups xml:chapter
+        \xdef\BibleChapter{\xmlatt{#1}{number}}
+        \localcontrolledloop 1 4 1 {
+            \startsubcolumnset[#I]\relax
+               %\startnamedsection[subsection:\the\currentloopiterator][title={\BibleChapterName{\the\currentloopiterator}}]
+                \startnamedsection[subsection:#I][title={\BibleChapterName{\number#I} \BibleChapter}]
+                    \xmlfilter{bible:#I}{/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/text()}
+                   %\xmltext  {bible:\number\currentloopiterator}{/bible/testament/book[position()=\BibleBook]/chapter[position()=\BibleChapter]}
+                \stopnamedsection
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+    \stopxmlsetups
+
+%     \startxmlsetups xml:verse
+%         {\glyphweight140\relax \xmlatt{#1}{number}}
+%         \hskip\VerseSkip
+%         \xmlflush{#1}
+%         \par
+%     \stopxmlsetups
+
+    \startxmlsetups xml:verse
+        {\lefttoright\glyphweight140\relax \xmlatt{#1}{number}}
+        \hskip\VerseSkip
+        \xmlflush{#1}
+        \par
+    \stopxmlsetups
+
+\stopnotmode
+
+\startmode[balance-verses]
+
+    \startxmlsetups xml:chapter
+        \xdef\BibleChapter{\xmlatt{#1}{number}}
+        \localcontrolledloop 1 4 1 {
+            \startsubcolumnset[#I]\relax
+                \namedsection
+                  [subsection:#I]
+                  [title={\BibleChapterName{\number#I} \BibleChapter}]
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+        \xmlflush{#1}
+    \stopxmlsetups
+
+    \startxmlsetups xml:verse
+        \xdef\BibleVerse{\xmlatt{#1}{number}}%
+        \localcontrolledloop 1 4 1 {
+            \startsubcolumnset[#I]\relax
+                {\lefttoright\glyphweight140\relax \BibleVerse}
+                \hskip\VerseSkip
+                \xmlfilter{bible:#I}{/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/verse[@number="\BibleVerse"]/text()}
+                \par
+            \stopsubcolumnset
+        }
+        \flushsubcolumnsets[spread]
+    \stopxmlsetups
+
+\stopmode
+
+\startxmlsetups xml:mysetups
+    \xmlsetsetup{#1}{bible|testament|book|chapter|verse}{xml:*}
+\stopxmlsetups
+
+\xmlregistersetup{xml:mysetups}
+
+\startsetups bibles:parallel
+    \localcontrolledloop 1 4 1 {
+        \xmlloadonly{bible:#I}{\BibleFile{\number#I}}{}
+    }
+    \xmlflush{bible:1}
+\stopsetups
+
+% \startxmlsetups xml:verse
+%     \startelement[verse]
+%         \startelement[versetag]
+%             {\glyphweight140\relax \xmlatt{#1}{number}}
+%         \stopelement
+%         \hskip\VerseSkip
+%         \startelement[versecontent]
+%             \xmlflush{#1}
+%         \stopelement
+%     \stopelement
+%     \par
+% \stopxmlsetups
+
+\stopmodule
+
+\continueifinputfile{m-bibles.mkxl}
+
+\usemodule[bibles]
+
+% \enablemode[balance-verses] % too late
+
+\mainlanguage[gb]
+
+% todo: locate the oldest ones (those often standardized the language)
+% todo: locate the most recent official ones (to which the patterns apply)
+% todo: make a nice title page
+
+\BibleSetFile{1}{EnglishKJBible.xml}
+\BibleSetFile{2}{PolishBible.xml}
+\BibleSetFile{3}{DutchBible.xml}
+\BibleSetFile{4}{SwedishBible.xml}
+
+\setupsubcolumnset[bible:2][language=polish]
+\setupsubcolumnset[bible:3][language=dutch]
+\setupsubcolumnset[bible:4][language=swedish]
+
+\starttext
+    \setups[bibles:parallel]
+\stoptext
+
+% There is room for some speedup (like in the xml part but this is non critical code
+% used in some production environment. On my 2018 laptop I get:
+%
+% 2024-12-29 : 137.4 136.4 137.4 138.4 136.9 138.2
+%     verses : 144.4 144.6 144/8
+
+

@@ -55,6 +55,8 @@ function snapshots.takesample(comment)
                 language  = status.getlanguagestate(),
                 mark      = status.getmarkstate(),
                 sparse    = status.getsparsestate(),
+                insert    = status.getinsertstate(),
+                mvl       = status.getmvlstate(),
             },
         }
     end

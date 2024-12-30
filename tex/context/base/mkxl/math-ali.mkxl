@@ -878,6 +878,8 @@
    \edef\v_spac_whitespace_current{#1\c!spaceinbetween}%
    \ifempty\v_spac_whitespace_current
      \global\s_strc_math_alignment_inbetween\zeroskip
+   \orelse\ifgridsnapping
+     \global\s_strc_math_alignment_inbetween\zeroskip
    \else
      \spac_whitespace_setup
      \global\s_strc_math_alignment_inbetween\parskip
@@ -3588,11 +3590,36 @@
      \c_strc_math_number_variant \plusone
    \fi}
 
+\newconditional\c_strc_math_signal
+
+\protected\def\strc_math_check_location
+  {\c_strc_math_signal\conditionalfalse}
+
+\protected\def\strc_math_signal_location
+  {\ifconditional\c_strc_math_signal
+     \signalrightpage
+   \fi}
+
+\defcsname\??mathboxlocation\v!outer\endcsname
+  {\c_strc_math_signal\conditionaltrue
+   \doifelseupcomingrightpage
+     {\letformulaparameter\c!location\v!right}%
+     {\letformulaparameter\c!location\v!left}%
+   \begincsname\??mathboxlocation\formulaparameter\c!location\endcsname}
+
+\defcsname\??mathboxlocation\v!inner\endcsname
+  {\c_strc_math_signal\conditionaltrue
+   \doifelseupcomingrightpage
+     {\letformulaparameter\c!location\v!left}%
+     {\letformulaparameter\c!location\v!right}%
+   \begincsname\??mathboxlocation\formulaparameter\c!location\endcsname}
+
 \protected\def\strc_math_box_start#1%
   {\c_strc_math_ragged_status#1\relax % already set
    \useformulacolorparameter\c!color
    \c_strc_math_number_location\zerocount
    \c_strc_math_number_variant \zerocount
+   \strc_math_check_location
    \begincsname\??mathboxlocation\formulaparameter\c!location\endcsname
    %
    % We collect the math formula in an hbox. Dimensions don't really play
@@ -3601,6 +3628,7 @@
    \dontcomplain
   %\holdingmigrations\plusfour
    \setbox\b_strc_math_display\hbox retain \plusfour\bgroup
+     \strc_math_signal_location
      \startforceddisplaymath}
 
 \protected\def\strc_math_box_stop

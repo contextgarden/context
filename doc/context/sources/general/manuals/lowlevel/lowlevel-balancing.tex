@@ -1,0 +1,962 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=balancing,
+   color=middlecyan]
+
+\startsectionlevel[title=Introduction]
+
+{\em This is work in progress as per end 2024 these mechanisms are still in flux.
+We expect them to be stable around the \CONTEXT\ meeting in 2025. The text is not
+corrected, so feel free to comment.}
+
+This manual is about a new (sort of fundamental) feature that got added to
+\LUAMETATEX\ when we started upgrading column sets. In \TEX\ we have a par
+builder that does a multi|-|pass optimization where it considers various
+solutions based on tolerance, penalties, demerits etc. The page builder on the
+other hand is forward looking and backtracks to a previous break when there is an
+overflow. The balancing mechanism discussed here is basically a page builder
+operating like the par builder: it looks at the whole picture.
+
+In order to make this a useful mechanism the engine also permits intercepting the
+main vertical list, so we start by introducing this.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Intercepting the MVL]
+
+When content gets processed it's added to a list. We can be in horizontal mode or
+vertical mode (let's forget about math mode). In vertical mode we can be in a box
+context (say \type {\vbox}) or in what is called the main vertical list: the one
+that makes the page. But what is page? When \TEX\ has collected enough to match
+the criteria set by \type {\pagegoal} which starts out as \type {\vsize}, it will
+call the so called output routine which basically is expanding the \type
+{\output} token list. That routine had do so something with the box that has the
+collected material. It can become a page, likely with the content wrapped in a
+page body with headers and footers and such, but it can also be stored for later
+assembly, for instance in multiple columns, or after some analysis fed back into
+the main vertical list.
+
+For various mechanisms it matters if they are used inside a contained boxed
+environment or in the more liberal main vertical list (from now on called mlv).
+That's why we can intercept the mvl and use it later. Intercepting works as
+follows:
+
+\starttyping
+\beginmvl 1
+various content
+\endmvl
+
+\beginmvl 2
+various content
+\endmvl
+\stoptyping
+
+When at some point you want this content, you can do this:
+
+\starttyping
+\setbox\scratchboxone\flushmvl 2
+\setbox\scratchboxtwo\flushmvl 1
+\stoptyping
+
+and then do whatever is needed. You can see what goes on with:
+
+\starttyping
+\tracingmvl 1
+\stoptyping
+
+There is not much more to say other than that this is way to operate on content
+as if it were added to the page which can be different from collecting something
+in a vertical box. Think of various callbacks that can differ for the mvl and a
+box.
+
+The \type {\beginmvl} primitive takes a number or a set of keywords, as in:
+
+\starttyping
+\beginmvl
+    index   1
+    options \numexpr "01 + "04\relax
+\relax
+\stoptyping
+
+There is of course some possible interference with mechanism that check the page
+properties like \type {\pagegoal}. If needed one can check this:
+
+\starttyping
+\ifcase\mvlcurrentlyactive
+  % main mvl
+\or
+  % first one
+\else
+  % other ones
+\fi
+\stoptyping
+
+Possible applications of this mechanism are the mentioned columns and parallel,
+independent, streams. However for that we need to be able to manipulate the
+collected content. Actually, the next manipulator preceded the capturing, because
+we first wanted to make sure that what we had in mind made sense.
+
+The \type {beginmvl} also accepts keywords. You can specify an \type {index} (an
+integer), a \type {prevdepth} (dimensions) and \type {options} (an integer
+bitset). Possible option bit related values are:
+
+\starttabulate[|Tr|||]
+\NC 0x\tohexadecimal\ignoreprevdepthmvloptioncode \NC ignore prevdepth \NC \type {\ignoreprevdepthmvloptioncode} \NC \NR
+\NC 0x\tohexadecimal\noprevdepthmvloptioncode     \NC no prevdepth     \NC \type {\noprevdepthmvloptioncode    } \NC \NR
+\NC 0x\tohexadecimal\discardtopmvloptioncode      \NC discard top      \NC \type {\discardtopmvloptioncode     } \NC \NR
+\NC 0x\tohexadecimal\discardbottommvloptioncode   \NC discard bottom   \NC \type {\discardbottommvloptioncode  } \NC \NR
+\stoptabulate
+
+Here the last column is a numeric alias available in \CONTEXT. More options are
+likely to show up. When we eventually will balance these lists the routine will
+deal with the discardables (like glue) but one can also remove them via the
+options.
+
+\startbuffer
+\beginmvl
+    index     1
+    prevdepth 0pt
+    options  \discardtopmvloptioncode
+\relax
+\scratchdimen\prevdepth
+\dontleavehmode
+\quad\the\mvlcurrentlyactive\quad\the\scratchdimen
+\quad\blackrule[height=\strutht,depth=\strutdp,color=darkred]
+\endmvl
+
+\ruledhbox {\llap{1\quad}\flushmvl 1}
+\stopbuffer
+
+\typebuffer \start \showmakeup[line] \getbuffer \stop
+
+\startbuffer
+\beginmvl
+    index  2
+    options \numexpr
+                \ignoreprevdepthmvloptioncode
+              + \discardtopmvloptioncode
+            \relax
+\relax
+\scratchdimen\prevdepth
+\dontleavehmode
+\quad\the\mvlcurrentlyactive\quad\the\scratchdimen
+\quad\blackrule[height=\strutht,depth=\strutdp,color=darkred]
+\endmvl
+
+\ruledhbox {\llap{2\quad}\flushmvl 2}
+\stopbuffer
+
+\typebuffer \start \showmakeup[line] \getbuffer \stop
+
+\startbuffer
+\beginmvl 3 % when no keywords are used we expect a number
+\scratchdimen\prevdepth
+\dontleavehmode
+\quad\the\mvlcurrentlyactive\quad\the\scratchdimen
+\quad\blackrule[height=\strutht,depth=\strutdp,color=darkred]
+\endmvl
+
+\ruledhbox {\llap{3\quad}\flushmvl 3}
+\stopbuffer
+
+\typebuffer \start \showmakeup[line] \getbuffer \stop
+
+\startbuffer
+\beginmvl index 4 options 1
+\scratchdimen\prevdepth
+\dontleavehmode
+\quad\the\mvlcurrentlyactive\quad\the\scratchdimen
+\quad\blackrule[height=\strutht,depth=\strutdp,color=darkred]
+\endmvl
+
+\ruledhbox {\llap{4\quad}\flushmvl 4}
+\stopbuffer
+
+\typebuffer \start \showmakeup[line] \getbuffer \stop
+
+\stopsectionlevel
+
+\startsectionlevel[title=Balancing]
+
+Balancing is not referring to balancing columns but to \quote {a result that
+looks well balanced}. Just like we want lines in a paragraph to look consistent
+with each other, something that is reflected in the (adjacent) demerits, we want
+the same with vertical split of pieces. For this purpose we took elements of the
+par builders to construct a (page) snippet builder. Here are some highlights:
+
+\startitemize
+
+\startitem
+    Instead of a pretolerance, tolerance and emergency pass we only enable the
+    last two. In the par builder the pretolerance pass is the one without
+    hyphenation.
+\stopitem
+
+\startitem
+    We seriously considered vertical discretionaries but eventually rejected the
+    idea: we just don't expect users to go through the trouble of adding lots of
+    split related pre, post and replace content. It's not hard to support it but
+    in the end it also interfered with other demands that we had. We kept toe
+    code around for a while but then removed it. To mention one complication: if
+    we add some new node we also need to intercept it in various callbacks that
+    we already have in place in \CONTEXT. As with horizontal discretionaries, we
+    then need to go into the components and sometimes even need to make decisions
+    what can not yet be made.
+\stopitem
+
+\startitem
+    As with the par builder, \TEX\ will happily produce an overfull box when no
+    solution is possible that fits the constraints. In a paragraph there are
+    plenty spaces (with stretch) and discretionaries (with components that vary
+    in width) which enlarges the solution space. In vertical material there is
+    less possible so there an emergency pass really makes sense: better be
+    underful than overful.
+\stopitem
+
+\startitem
+    In many cases there is no stretch available. There are also widow, club,
+    shape and orphan penalties that can limit the solution space.
+\stopitem
+
+\startitem
+    When we look at splitting pages (and boxes) we see (split) top skip kick in.
+    This is something that we need to provide one way ot the other. And as we
+    have to do that, we can as well provide support for bottom skip. A horizontal
+    analogue is protrusion, something that also has to be taken into account in a
+    rather dynamic way, at the beginning or end of the currently analyzed line.
+\stopitem
+
+\startitem
+    There is no equivalent of hanging indentation but a shape makes sense. Here
+    the shape defines heights, top and bottom skips and maybe more in the future.
+    For that reason we use a keyword driven shape.
+\stopitem
+
+\startitem
+    Because we have so called par passes, it made sense to have something similar
+    for balancing. This gives is the opportunity to experiment with various
+    variables that drive the process.
+\stopitem
+
+\startitem
+    For those who read what we wrote about the par builder, it will not come as
+    surprise that we also added extensive tracing and a callback for intercepting
+    the results. This makes it possible to show the same detailed output as we
+    can do for par passes.
+\stopitem
+
+\stopitemize
+
+It's about time for some examples but before we come to that it is good to
+roughly explain how the page builder works. When the page builder is triggered it
+will take elements from the contributions list and add them to the page. When
+doing that it keeps track of the height and depth as contributed buy boxes and
+rules. Because it will discard glue and kerns it does some checking there. An
+important feature is that the depth is added in a next iteration. The routine
+also needs to look at inserts. The variables \type {\pagegoal} (original \type
+{\vsize} minus accumulated insert heights) and \type {\pagetotal} are compared
+and when we run over the target height the accumulated stretch and shrink in glue
+(when present) will be used to determine how bad this break is. If it is too bad,
+the previous best break will be taken. Penalties can make a possible break more
+or less attractive. When the output routine gets a split of page, the total is
+not reliable because we can have backtracked to the previous break. In
+\LUAMETATEX\ we have some more variables, like \type {\pagelastheight}, that give
+a better estimate of what we got.
+
+In order to make the first lines align properly relative to the top of the page
+there is a variable \type {\topskip}. The height of the first line is at least
+that amount. The correction is calculated when the first contribution happens: a
+box or rule.
+
+When we look at the balancer it is good to keep in mind that where the page
+builder stepwise adds and checks, the balancer looks at the whole picture. The
+page builder does a decent job but is less sophisticated than the par builder.
+There is a badness calculation, penalties are looked at, glue is taken into
+account but there are no demerits.
+
+We want the balancer to well with column sets that are very much grid
+based. But in getting there we had some hurdles to take. Because
+the algorithm (like the par builder) happily results in overfull boxes unless
+emergency stretch is set, pages can overflow. When there is no stretch
+and|/|or shrink using emergency stretch can give an underfull page.
+
+The way out of this is to have non destructive trial passes and decrease the
+number of lines. Of course we can get short pages but when for instance it
+concerns a section title that gets moved this is no big deal. In a similar
+fashion splitting a multi|-|line formula is also okay.
+
+\startitemize
+\startitem
+    Collect the content in an mvl list and after that's done put the result in a
+    box.
+\stopitem
+\startitem
+    Set up a balance shape that specifies the slots in in columns (normally a
+    column is just a blob of text).
+\stopitem
+\startitem
+    Perform a trial balance run. As soon as an overfull page is seen, adapt the
+    balance shape and do a new trial run.
+\stopitem
+\startitem
+    When we're fine, either because we reached the end without overfull column or
+    by passing the set deadcycles value, quit the trial process and balance the
+    original list using the most recent balance shape.
+\stopitem
+\startitem
+    Flush the result by fetching the topmost from the result split collection and
+    feed it into the page flow. The boxed pseudo page will happily trigger the
+    output routine that in turn construct the final page.
+\stopitem
+\stopitemize
+
+At some point we decided to support multiple mvl streams and therefore changed
+the last mentioned step. Because we store the whole column set we can as well
+also store the assembled page bodies. This way we can flush different streams into
+the same result.
+
+\startitemize
+\startitem
+    Flush the result by fetching the topmost from the result split collection and
+    feed it into the page flow. Do this for every saved (mvl) stream.
+\stopitem
+\startitem
+    When we're done, the boxed pseudo pages will be flushed as pages. In the
+    process, for every page we identify marks.
+\stopitem
+\stopitemize
+
+We are now ready to look at some examples. Here we also show what balance shapes
+do. These basically describe a sequence of slots to be filled. The last
+specification is used when we exceed the number of defined slots. These are just
+examples of simple situations, for real applications more code is needed.
+
+\startbuffer[one]
+\setbox\scratchboxone\vbox\bgroup
+    \hsize.30\hsize
+    \samplefile{tufte}
+\egroup
+\stopbuffer
+
+\startbuffer[two]
+\balanceshape 3
+    vsize      12\lineheight
+    topskip    \strutht
+    bottomskip \strutdp
+next
+    vsize       5\lineheight
+    topskip    \strutht
+    bottomskip \strutdp
+next
+    vsize      8\lineheight
+    topskip    \strutht
+    bottomskip \strutdp
+\relax
+\stopbuffer
+
+\startbuffer[three]
+\setbox\scratchboxtwo\vbalance\scratchboxone
+\stopbuffer
+
+\startbuffer[four]
+\hbox \bgroup
+    \localcontrolledendless {%
+        \ifvoid\scratchboxtwo
+            \expandafter\quitloop
+        \else
+            \setbox\scratchbox\ruledhbox\bgroup
+                \vbalancedbox\scratchboxtwo
+            \egroup
+            \vbox to 12\lineheight \bgroup
+                \box\scratchbox
+                \vfill
+            \egroup
+            \hskip1em
+        \fi
+    }\unskip
+\egroup
+\stopbuffer
+
+We start with some content in a box. This can of course be a flushed
+mvl but here we just set it directly:
+
+\typebuffer[one]
+
+We will split this box in columns. If you are familiar with \TEX\ you might know
+that a paragraph of text can follow a shape defined by \type {\parshape}. In a
+similar way as lines are split by width, we can split a vertical list by height.
+For that we define a balance shape:
+
+\typebuffer[two]
+
+\typebuffer[three]
+
+Contrary to a \type {\parshape}, a \type {\balanceshape} is not wiped after the
+work is done. It also expects keys and values. As with \type {\parpasses} each
+step is separated by \type {next}. This makes it an extensible mechanism. Finally
+we will split the box according to this shape:
+
+\typebuffer[four]
+
+The result is shown here:
+
+\startlinecorrection
+    \small
+    \setuptolerance[tolerant,stretch]
+    \getbuffer[one,two,three,four]
+\stoplinecorrection
+
+Like the par builder we can end up with overfull boxes but we can deal with that
+by using trial runs.
+
+\starttyping
+\setbox\scratchboxtwo\vbalance\scratchboxone trial
+\stoptyping
+
+\startbuffer[one]
+\setbox\scratchboxone\vbox\bgroup
+    \hsize.30\hsize
+    \samplefile{knuthmath} \blank
+    \framed[height=4\lineheight]{test}
+    \samplefile{knuthmath} \blank
+\egroup
+\stopbuffer
+
+In that case the result is made from empty boxes so the original is not
+disturbed. Here we show an overflow, so in the first resulting box you
+can compare the height with the requested one and when it's larger you
+can decide to decrease the first height in the shape and try again.
+
+\startlinecorrection
+    \small
+    \setuptolerance[tolerant,stretch]
+    \getbuffer[one,two,three,four]
+\stoplinecorrection
+
+Of course that involves some juggling of the shape but after all we have \LUA\ at
+our disposal so in the end it's all quite doable.
+
+\startbuffer[three]
+\setbox\scratchboxtwo\vbalance\scratchboxone trial
+\stopbuffer
+
+\startbuffer[four]
+\global\globalscratchtoks\emptytoks
+\localcontrolledendless {%
+    \ifvoid\scratchboxtwo
+        \expandafter\quitloop
+    \else
+        \setbox\scratchbox\vbalancedbox\scratchboxtwo
+        \xtoksapp\globalscratchtoks {
+            \NC \the\currentloopiterator
+            \NC \the\ht\scratchbox
+            \NC \the\balanceshapevsize\currentloopiterator
+            \NC \NR
+        }
+    \fi
+}
+\stopbuffer
+
+\start
+    \small
+    \setuptolerance[tolerant,stretch]
+    \getbuffer[one,two,three,four]
+\stop
+
+\starttabulate[||||]
+\BC \BC real \BC target \NC \NR
+\the\globalscratchtoks
+\stoptabulate
+
+Because the balancer can produced what otherwise the page builder produces, we
+need to handle the equivalent of top skip which is what the already shown \type
+{top} keyword takes care of. This means that the current slice (think current
+line in the par builder) has to take that into account. This can be compared to the
+left- and right protrusion in the par builder. When we typeset on a grid we have an
+additional demand.
+
+When we surround (for instance a formula) with halfline spacing, we eventually
+have to return on the grid. One complication is that when we are in grid mode and
+use half line vertical spacing, we can end up in a situation where the initial
+half line space is on a previous page. That means that we need to use a larger
+top skip. This is not something that we want to burden the balancer with but we
+have ways to trick it into taking that compensation into account.
+
+\startlinecorrection
+\hpack \bgroup
+    \ruledvpack to 8\lineheight \bgroup \forgetall \raggedcenter \offinterlineskip \hsize 3cm
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=\strutht,  depth=\strutdp,  color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=middlegray]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=\strutht,  depth=\strutdp,  color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=darkgray]
+        \vfill
+    \egroup
+    \quad
+    \ruledvpack to 8\lineheight \bgroup \forgetall \raggedcenter \offinterlineskip \hsize 3cm
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=.5\strutht,depth=.5\strutdp,color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=middlegray]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=.5\strutht,depth=.5\strutdp,color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=darkgray]
+        \vfill
+    \egroup
+    \quad
+    \ruledvpack to 8\lineheight \bgroup \forgetall \raggedcenter \offinterlineskip \hsize 3cm
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=middlegray]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=.5\strutht,depth=.5\strutdp,color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=darkgray]
+        \vfill
+    \egroup
+    \quad
+    \ruledvpack to 8\lineheight \bgroup \forgetall \raggedcenter \offinterlineskip \hsize 3cm
+        \blackrule[width=.2\hsize,height=.5\strutht,depth=.5\strutdp,color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=middlegray]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.2\hsize,height=.5\strutht,depth=.5\strutdp,color=darkred]\par
+        \blackrule[width=\hsize,  height=\strutht,  depth=\strutdp,  color=darkgray]\par
+        \blackrule[width=.6\hsize,height=\strutht,  depth=\strutdp,  color=darkgray]
+        \vfill
+    \egroup
+\egroup
+\stoplinecorrection
+
+However, when we split in the middle of that segment, we can end up with a half
+line skip in a next slot because \TEX\ will remove glue at the edge. So we end up
+with what we see in the third sequence above. We deal with that in a somewhat
+special way: a box as a discardable field which value will be taken into account
+as additional top value. That field is set and reset by glue options {\tt
+0x\tohexadecimal \cldcontext {tex . glueoptioncodes . setdiscardable}} and {\tt
+0x\tohexadecimal \cldcontext {tex . glueoptioncodes . resetdiscardable}} that can
+be manipulated in \LUA\ as part of some spacing model. Here we suffice by
+mentioning that it makes sure that (as in the fourth blob above) at the top we
+have a half line spacing.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Forcing breaks]
+
+Because the initial application of balancing was in column sets, we also need the
+ability to goto a next slot (step in a shape), column (possibly more steps), page
+(depending on the page state), and spread (for instance if we are doubles ided).
+For this we use \type {\balanceboundary}. It takes two values and when the
+boundary node triggers a callback in the builder these are passed along with a
+shape identifier and current shape slot. That callback can then signal back that
+we need to try a break here with a given penalty. Assuming that at the \LUA\ end
+we know at which slot we have a slot, column, page or spread break. Multiple
+slots can be skipped by multiple boundaries. There is one pitfall: we need
+something in a slot in order to break at all, so one ends up with for instance:
+
+\starttyping
+\balanceboundary 3 1\relax
+\vskip\zeropoint
+\balanceboundary 3 0\relax
+\vskip\zeropoint
+\balanceboundary 3 0\relax
+\stoptyping
+
+Here the \type {3} is just some value that the callback can use to determine its
+action (like goto a next page) and the second value provides a detail. Of course
+all depends on the intended usage. By using a callback we can force breaks while
+not burdening the engine with some hard coded solution. For example, in \CONTEXT\
+we used these (the values are these from experiments and might change:
+
+\starttabulate[|c|c|||]
+\BC first \BC second \BC action                                    \BC user interface          \NC \NR
+\NC 1     \NC 1 or 0 \NC goto next spread (1 initial, 0 follow up) \NC \type {\page[spread]}   \NC \NR
+\NC 2     \NC 1 or 0 \NC goto next page (idem)                     \NC \type {\page}           \NC \NR
+\NC 3     \NC 1 or 0 \NC goto next column (idem)                   \NC \type {\column}         \NC \NR
+\NC 4     \NC 1 or 0 \NC goto next slot (idem)                     \NC \type {\column[slot]}   \NC \NR
+\NC 5     \NC n      \NC next slot when more than n lines          \NC \type {\testroom[5]}    \NC \NR
+\NC 6     \NC s      \NC next slot when more than s scaled points  \NC \type {\testroom[80pt]} \NC \NR
+\stoptabulate
+
+\stopsectionlevel
+
+\startsectionlevel[title=Marks]
+
+It is possible to synchronize the marks with those in the results of balanced
+segments with a few \LUA\ helpers that do the same as the page builder does at
+the start of a page, while packaging the page and when wrapping it up. So, instead
+of split marks we can have real marks.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Inserts]
+
+Before we go into detail, we want to point out that when implementing a
+(balancing) mechanism as introduced above, decisions have to be made. In
+traditional \TEX\ there is for instance an approach to inserts that involves
+splitting them over pages. In our case that is a bit harder to do but there are
+ways to deal with it. When deciding on an approach it helps that we know a bit
+what situations occur and where we can put some constraints. One can argue that
+solutions should be very generic because (for instance) a publisher has some
+specific demands but in practice those are not our audience. In decades of
+developing \LUATEX\ and \LUAMETATEX\ it's (\CONTEXT) user demands and challenges
+that drives what gets implemented. Publishers, their suppliers, and large scale
+(commercial) users are pretty silent when it comes to development (and supporting
+it) while users communicate via meetings and mailing lists. Also, rendering of
+documents that have notes are often typeset kind of traditional.
+
+Users on the other hand have come up with demands for columns, typesetting on the
+grid, multiple notes, balancing, and parallel content streams The picture we get
+from that makes us confident that what we provide is generally enough and as
+users understand the issues at hand (maybe as side effect of struggling with
+solutions) it's not that hard to explain why constraints are in place. It makes
+more sense to have a limited reliable mechanism that deals with the kind of
+(foot)notes that known users need than to cook up some complex mechanism that
+caters potential specific demands by potential users. Of course we have our own
+challenges to deal with, even if the resulting features will probably not be used
+that often. So here are the criteria that make sense:
+
+\startitemize[packed]
+\startitem We can assume a reasonable amount of notes. \stopitem
+\startitem These are normally small with no (vertical) whitespace. \stopitem
+\startitem Notes taking multiple lines may split. \stopitem
+\startitem But we need to obey widow and club penalties. \stopitem
+\startitem There can be math formulas but mostly inline. \stopitem
+\startitem We need to keep them close to where they are referred from. \stopitem
+\stopitemize
+
+But,
+
+\startitemize[packed]
+\startitem We can ignore complex conflicting demands. \stopitem
+\startitem As long as we get some result, were fine. \stopitem
+\startitem So users have to check what comes out. \stopitem
+\startitem We don't assume fully automated unattended usage. \stopitem
+\stopitemize
+
+And of course:
+
+\startitemize[packed]
+\startitem Performance should be acceptable. \stopitem
+\startitem User interfaces should be intuitive. \stopitem
+\startitem Memory consumption should be reasonable. \stopitem
+\stopitemize
+
+We have users who use multiple note classes so that also has to be handled but
+again we don't need to come up with solutions that solve all possible demands. We
+can assume that when a book is published that needs them, the author will operate
+within the constraints.
+
+We mentioned footnotes being handled by the page builder so how about them in
+these balanced slots? Given the above remarks, we assume sane usage, so for
+instance columns that have a single slot with possibly fixed content at the top
+or bottom (and maybe as part of the stream). The balancer handles notes by taking
+their height into account and when a result is used one can request the embedded
+inserts and deal with them. Again this is very macro package dependent. Among the
+features dealt with are space above and between a set of notes, which means that
+we need to identify the first and successive notes in a class. Given how the
+routine works, this is a dynamic feature of a line: the amount of space needed
+depends on how many inserts are within a slot. When we did some extreme tests
+with several classes of notes and multiple per column we saw runtime increasing
+because instead of a few passes we got a few hundred. In an extreme case of 800
+passes to balance the result we noticed over four million checks for note related
+spacing. We could bring that down to one tenth so in the end we are still slower
+but less noticeable. Here are the helper primitives for inserts:
+
+\starttyping
+<state> = \boxinserts <box>
+<box>   = \vbalancedinsert <box> <class>
+<state> = \boxinserts <box>
+\stoptyping
+
+A (foot)note implementation is very macro package dependent so the next example
+is just that: an example of using the available primitive. We start by populating
+a mvl with a sample text and a single footnote.
+
+\startbuffer[populate]
+\begingroup
+    \forgetall
+    \beginmvl
+        index 5
+        options \numexpr
+            \ignoreprevdepthmvloptioncode
+          + \discardtopmvloptioncode
+        \relax
+    \relax
+        \hsize .4tw
+        Line 1 \par Line 2 \footnote {Note 1} \par Line 3 \par
+        Line 4 \footnote {Note 2} \par Line 5 \par Line 6 \par
+    \endmvl
+\endgroup
+\stopbuffer
+
+\typebuffer[populate]
+
+We fetch the footnote number, which is one of many possible defined
+inserts
+
+\startbuffer[whatever]
+\cdef\currentnote{footnote}%
+\scratchcounter\currentnoteinsertionnumber
+\stopbuffer
+
+\typebuffer[whatever]
+
+The quick and dirty balancer uses a simple shape of 5 lines with normal strut
+properties. From the balanced result we take two columns. We test if there is an
+insert and take action when there is. Here we just filter the footnotes but there
+can of course be more. We overlay these notes over (under) the column that has
+them. So we work per column.
+
+\startbuffer[balance]
+\begingroup
+    \setbox\scratchboxone\flushmvl 5
+    \balanceshape 1
+        vsize      5lh
+        topskip    1sh
+        bottomskip 1sd
+    \relax
+    \setbox\scratchboxtwo\vbalance\scratchboxone
+    \ruledhbox \bgroup
+        \localcontrolledrepeat 2 {
+          \ifnum\currentloopiterator > 1
+            \hskip2\emwidth
+          \fi
+          \setbox\scratchboxthree\vbalancedbox\scratchboxtwo \relax
+          \ifnum\boxinserts\scratchboxthree > 3
+            \setbox\scratchboxfour\vbalancedinsert
+                \scratchboxthree\scratchcounter
+            \wd\scratchboxfour 0pt
+            \box\scratchboxfour
+          \fi
+          \box\scratchboxthree
+        }\unskip
+    \egroup
+\endgroup
+\stopbuffer
+
+\typebuffer[balance]
+
+The result is:
+
+\start
+    \getbuffer[populate] % outside next vbox
+    \startlinecorrection
+        \getbuffer[whatever]
+        \automigrationmode 0
+        \getbuffer[balance]
+    \stoplinecorrection
+\stop
+
+As we progressed we realized that the \quote {balancer} used in column sets can
+also be used for single columns and we can even support a mix of single and multi
+columns. There is however a problem: within a mvl we can deal with spacing but we
+can't do that reliable across mvl's and especially when we cross a page it
+becomes hard to identify if some (vertical) spacing is needed; we don't want it
+at the bottom or top of a page. This feature is too experimental to be discussed
+right now.
+
+We assumed reasonable notes to be used but even if a user tries to keep notes
+small and avoid too many, there are cases where they might look like a paragraph
+and when there are more in a row, it might be that a column overflows. This is
+why we have some support for split notes. This is accomplished by two additional
+commands:
+
+\starttyping
+\setbox\scratchboxone\vbalance\scratchboxone\relax
+\vbalanceddeinsert\scratchboxone\relax
+\stoptyping
+
+Here we convert inserts in such a way that they are taken into account by the
+balancer so that multi|-|slot optimization takes place. Afterwards, when we loop
+over the result we can reconstruct the inserts:
+
+\starttyping
+\setbox\scratchboxtwo\vbalancedbox\scratchboxone
+\vbalancedreinsert\scratchboxtwo\relax
+\stoptyping
+
+Among the reasons that these are explicit actions, is that we want to experiment
+but also be able to see the effect by selectively enabling it. You can get better
+results by forcing depth correction.
+
+\starttyping
+\setbox\scratchboxone\vbalance\scratchboxone
+\vbalanceddeinsert\scratchboxone forcedepth\relax
+\stoptyping
+
+This will use the depth as defined by \type {\insertlinedepth} which is an insert
+class specific parameter, but discussing details of inserts is not what we do
+here. The reason for using a \type {\relax} in the above examples is that we want
+to stress that when keywords are involved, you need to prevent look|-|ahead,
+especially when an \type {\if...} or expandable loop follows, which is not
+uncommon when we balance.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Discardables]
+
+This is a preliminary explanation.
+
+\startbuffer[populate]
+\begingroup
+    \beginmvl
+        index 5
+        options \numexpr
+            \ignoreprevdepthmvloptioncode
+          + \discardtopmvloptioncode
+        \relax
+    \relax
+        \hsize .4tw
+        \par
+        \vskip0pt
+        {\darkred \hrule discardable height 1sh depth 1sd width 1em}
+        \par
+        % we need the strut because the rule obscures it .. todo
+        \dorecurse{8}{\strut Line #1 \par}
+        \vskip\zeropoint
+        {\darkblue \hrule discardable height 1sh depth 1sd width 1em}
+        \par
+    \endmvl
+\endgroup
+\stopbuffer
+
+\typebuffer[populate]
+
+\startbuffer[balance]
+\setbox\scratchboxone\flushmvl 5
+\balanceshape 1
+    vsize       5lh
+    topskip     1sh % see comment above
+    bottomskip  1sd
+    options     3
+\relax
+\setbox\scratchboxtwo\vbalance\scratchboxone\relax % lookhead
+\stopbuffer
+
+\startbuffer[flush]
+\hpack \bgroup
+    \localcontrolledrepeat 3 {
+        \ifvoid\scratchboxtwo\else
+            \setbox\scratchboxthree\vbalancedbox\scratchboxtwo
+            \ifvoid\scratchboxthree\else
+                \dontleavehmode\llap{[\the\currentloopiterator]\quad}%
+                \ruledhpack{\box\scratchboxthree}\par
+            \fi
+            \hskip 4em
+        \fi
+    }\unskip
+\egroup
+\stopbuffer
+
+\typebuffer[balance,flush]
+
+\start
+    \forgetall
+    \getbuffer[populate] % outside next vbox
+    \blank[2*line]
+    \startlinecorrection
+        \getbuffer[balance]
+        \getbuffer[flush]
+    \stoplinecorrection
+%     \blank[2*line]
+\stop
+
+When at the top, the rule will be ignored and basically sticks out. When at the
+bottom the rule might end up in a zero dimension box. With \typ
+{\vbalanceddiscard \scratchboxtwo} they will become an \type {\nohrule}.
+Basically we're talking of optional content. The \type {options} bitset in the
+shape definition tells if we have a top (1) and|/| or bottom (2), here we have
+both (3) but in for instance column sets it depends.
+
+\start
+    \forgetall
+    \showmakeup[vglue]
+    \getbuffer[populate] % outside next vbox
+    \showmakeup[reset]
+    \blank
+    \startlinecorrection
+    \showmakeup[vglue]
+        \getbuffer[balance]
+        \vbalanceddiscard\scratchboxtwo
+        \getbuffer[flush]
+    \stoplinecorrection
+%     \blank[2*line]
+\stop
+
+Here we actually still have the rule but marked as invisible. So, topskip has a
+negative amount. In the next case the \type {remove} keyword makes the rule go
+away in which case we also adapt the topskip accordingly.
+
+\start
+    \forgetall
+    \showmakeup[vglue]
+    \getbuffer[populate] % outside next vbox
+    \showmakeup[reset]
+    \blank
+    \startlinecorrection
+        \getbuffer[balance]
+        \vbalanceddiscard \scratchboxtwo remove\relax
+        \getbuffer[flush]
+    \stoplinecorrection
+%     \blank[2*line]
+\stop
+
+You need to juggle a bit with skips and penalties to get this working as you
+like. Instead of rules you can also use boxes, for example before:
+
+\starttyping
+\vskip\zeropoint
+\ruledvbox discardable {\hpack{\strut BEFORE}}
+\par
+\stoptyping
+
+and after:
+
+\starttyping
+\forgetall \par \vskip\zeropoint
+\ruledvbox discardable {\hpack{\strut AFTER}}%
+\penalty\minusone % !
+\par
+\stoptyping
+
+It currently is a playground so it might (and probably will) evolve. Although it
+was also made for a specific issue it might have other usage.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Passes]
+
+In \LUAMETATEX\ the par builder has been extended with additional features (like
+orphan, toddler and twin control) and the ability to define and apply multiple
+passes over the paragraph to get the best result. The balancer has a similar
+feature: \type {\balancepasses}. As with \type {\parpasses} we have an
+infrastructure for tracing.
+
+\starttyping
+% threshold
+% tolerance
+% looseness
+% adjdemerits
+% originalstretch
+% emergencystretch
+% emergencyfactor
+% emergencypercentage
+\stoptyping
+
+\stopsectionlevel
+
+% tests/mkiv/typesetting/balancing-001.tex
+
+\stopdocument
+
+% (Re)written mixed with watching Talk Talk in Montreux DVD and energetic The
+% Warning live concerts on YT, just to get a positive constructive vibe. As with
+% the mechanisms discussed here, it's all about cooperation and subtle (and honest)
+% quality. It's often music that drives this development.

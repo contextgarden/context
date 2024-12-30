@@ -2019,7 +2019,7 @@
 
 \unexpanded\def\tabl_tabulate_bbskip_second_split_yes
   {\ifvoid\b_tabl_tabulate_current\c_tabl_tabulate_column
-     \ifempty\tabl_tabulate_flush_collected_indeed\else
+     \ifx\tabl_tabulate_flush_collected_indeed\empty\else
 % like in mkxl
 %        \dostarttagged\t!tabulatecell\empty
 %        \dotagtabulatesignal

@@ -266,7 +266,7 @@ local flush_character, flush_space  do
 
         -- we assume resolved fonts: id mandate but maybe also size
 
-        local function flushchar(fnt,chr,csx,csy) -- can't be moved out of the function due to binding locals
+        local function flushchar(fnt,chr,csx,csy,slnt) -- can't be moved out of the function due to binding locals
             if fnt then                           -- to the function variables etc etc ... kind of messy
                 local nest = char ~= chr or font ~= fnt
                 if fnt == 0 then
@@ -284,7 +284,7 @@ local flush_character, flush_space  do
                 end
                 -- here no current!
              -- return flushcharacter(false,pos_h,pos_v,pos_r,fnt,chr,nil,csx,csy,factor,sx,sy,slant,weight)
-                return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,csx,csy,slant,weight)
+                return flush_character(false,fnt,chr,factor,nest,pos_h,pos_v,pos_r,csx,csy,slnt or slant,weight)
             else
                 return 0
             end
@@ -378,12 +378,13 @@ local flush_character, flush_space  do
                 elseif command == "offset" then
                     local c = packet[4]
                     if c then
-                        local ph  = pos_h
-                        local pv  = pos_v
-                        local csx = packet[5]
-                        local csy = packet[6] or csx
-                        local h   = packet[2]
-                        local v   = packet[3]
+                        local ph   = pos_h
+                        local pv   = pos_v
+                        local csx  = packet[5]
+                        local csy  = packet[6] or csx
+                        local h    = packet[2]
+                        local v    = packet[3]
+                        local slnt = packet[7] or false
                         if h and h ~= 0 then
                             if factor ~= 0 then
                                 h = h + h * factor / refactored -- expansion
@@ -393,7 +394,7 @@ local flush_character, flush_space  do
                         if v and v ~= 0 then
                             pos_v = pos_v + v * sy
                         end
-                        flushchar(fnt,c,csx,csy)
+                        flushchar(fnt,c,csx,csy,slnt)
                         pos_h = ph
                         pos_v = pv
                     end
@@ -582,7 +583,7 @@ local flush_character, flush_space  do
 
     local onetimemessage -- could be defined later (todo: make plug for this)
 
-    flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,csx,csy)
+    flush_character = function(current,font,char,factor,vfcommands,pos_h,pos_v,pos_r,csx,csy,slnt)
 
         if font ~= lastfont then
             lastfont       = font
@@ -630,10 +631,10 @@ local flush_character, flush_space  do
             if orientation and (orientation == 1 or orientation == 3) then
                 -- we can get weird charactersbox tracing here
                 pushorientation(orientation,pos_h,pos_v)
-                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slant,weight)
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slnt or slant,weight)
                 poporientation(orientation,pos_h,pos_v)
             else
-                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slant,weight)
+                flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slnt or slant,weight)
             end
         end
         return width, height, depth

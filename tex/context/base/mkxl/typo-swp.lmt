@@ -1,0 +1,115 @@
+if not modules then modules = { } end modules ['typo-stc'] = {
+    version   = 1.001,
+    comment   = "companion to typo-stc.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local nodes, node = nodes, node
+
+local nuts       = nodes.nuts
+local tonut      = nuts.tonut
+local getattr    = nuts.getattr
+----- getwhd     = nuts.getwhd
+local getboth    = nuts.getboth
+local setlink    = nuts.setlink
+local nextlist   = nuts.traversers.list
+
+local a_swapping <const> = attributes.private("swapping")
+
+local swapping       = typesetters.swapping or { }
+typesetters.swapping = swapping
+
+local enabled = false
+local stack   = { }
+
+local report  = logs.reporter("swapping")
+
+interfaces.implement {
+    name      = "enableswapping",
+    actions   = function()
+        if not enabled then
+            nodes.tasks.enableaction("shipouts", "typesetters.swapping.handler")
+            enabled = true
+        end
+    end,
+}
+
+-- check if wd/ht/dp match
+
+local function process(head, parent)
+    for current, id, subtype, list in nextlist, head do
+        if list then
+            local a = getattr(current,a_swapping)
+            if a then
+                if not stack then
+                    stack = { }
+                end
+                local s = stack[a]
+                if not s then
+                    s = { }
+                    stack[a] = s
+                end
+             -- s[#s+1] = { parent, current }
+                s[#s+1] = current
+            end
+            process(list,current)
+        end
+    end
+    return head
+end
+
+swapping.handler = function(head)
+    if enabled then
+        stack = { }
+        head  = process(head)
+        if stack then
+            for k, v in next, stack do
+                local parent  = v[1]
+                local box     = v[2]
+                local columns = k & 0xFFFF
+                local w = lua.newindex(#v)
+                local rows = #v//columns
+                local vn = 1
+                local wr = 0
+                local wc = 1
+                for r=1,rows do
+                    for c=1,columns do
+                        wr = wr + 1
+                        if wr > rows then
+                            wc = wc + 1
+                            wr = 1
+                        end
+                        local wn = (wr-1)*columns+wc
+                     -- local old = v[vn]
+                     -- local new = v[wn]
+                     -- local vi  = old[2]
+                     -- local prv, nxt = getboth(new[2])
+                        --
+                     -- local oldwd, oldht, olddp = getwhd(old[1])
+                     -- local newwd, newht, newdp = getwhd(new[1])
+                     -- if oldht ~= newht or olddp ~= newdp then
+                     --     report("difference old (%p,%p), new (%p,%p)",oldht,olddp,newht,newdp)
+                     -- end
+                        local vi  = v[vn]
+                        local prv, nxt = getboth(v[wn])
+                        --
+                        w[wn] = { vi, prv, nxt }
+                        vn = vn + 1
+                    end
+                end
+                for i=1,#w do
+                    local wi = w[i]
+                    local vi = wi[1]
+                    if vi and wi and vi ~= wi then
+                        setlink(wi[2],vi,wi[3])
+                    end
+                end
+            end
+        end
+        stack = false
+    end
+    return head
+end
+

@@ -7,24 +7,38 @@ if not modules then modules = { } end modules ['strc-not'] = {
 }
 
 local format = string.format
-local next = next
+local next, tonumber = next, tonumber
+local sortedhash = table.sortedhash
 
-local trace_notes      = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
-local trace_references = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
+local trace_notes         = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
+local trace_references    = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
 
-local report_notes     = logs.reporter("structure","notes")
+local report_notes        = logs.reporter("structure","notes")
 
-local structures       = structures
-local helpers          = structures.helpers
-local lists            = structures.lists
-local sections         = structures.sections
-local counters         = structures.counters
-local notes            = structures.notes
-local references       = structures.references
-local counterspecials  = counters.specials
+local structures          = structures
+local helpers             = structures.helpers
+local lists               = structures.lists
+local sections            = structures.sections
+local counters            = structures.counters
+local notes               = structures.notes
+local references          = structures.references
+local counterspecials     = counters.specials
 
-local texgetcount      = tex.getcount
-local texgetbox        = tex.getbox
+local texgetcount         = tex.getcount
+local texgetglue          = tex.getglue
+local texgetbox           = tex.getbox
+local getinsertmultiplier = tex.getinsertmultiplier
+local getmark             = tex.getmark
+
+local nuts                = nodes.nuts
+local tonut               = nodes.tonut
+local tonode              = nuts.tonode
+
+local setlink             = nuts.setlink
+local gettail             = nuts.tail
+local vpack               = nuts.vpack
+
+local newgluespec         = nuts.pool.gluespec -- nodes.pool.gluespec
 
 -- todo: allocate
 
@@ -147,8 +161,6 @@ end
 
 notes.setstate        = setstate
 notes.getstate        = getstate
-
-
 
 implement {
     name      = "setnotestate",
@@ -490,15 +502,9 @@ end
 local report_insert = logs.reporter("pagebuilder","insert")
 local trace_insert  = false  trackers.register("pagebuilder.insert",function(v) trace_insert = v end)
 
-local texgetglue = tex.getglue
------ texsetglue = tex.setglue
-
-local tonode      = nodes.nuts.tonode
-local newgluespec = nodes.nuts.pool.gluespec -- nodes.pool.gluespec
-
 -- needs to be sorted out!
 
-local function check_spacing(index,slot)
+local function check_spacing(index,slot) -- actually zero should return zero
     -- we can also check for tex.insertheights > 0 (instead of i > 1)
     local gn, pn, mn = tex.getinsertdistance(index) -- ,true so no testing needed
     if not pn then pn = 0 end
@@ -531,3 +537,50 @@ local function action(index,slot)
 end
 
 callbacks.register("insert_distance",action,"check spacing around inserts")
+
+-- New, for columnsets:
+
+local inserts = table.setmetatableindex("table")
+
+callback.register("balance_insert", function(n, cbk, index, data)
+    if cbk == 0 and getinsertmultiplier(index) == 0 then
+        inserts[index][data] = tonut(n.list)
+        n.list = nil
+    end
+end)
+
+function notes.flushrange(index,mark) -- (index,first,last)
+    local first = tonumber(getmark("first", mark)) or 0
+    local last  = tonumber(getmark("bottom",mark)) or 0
+    if first > 0 and last > 0 then
+     -- for index, byindex in sortedhash(inserts) do
+        local byindex = inserts[index]
+        if byindex then
+            local head = nil
+            local tail = nil
+            for data, list in sortedhash(byindex) do
+                if data >= first and data <= last then
+                    if head then
+                        setlink(tail,list)
+                    else
+                        head = list
+                    end
+                    tail = gettail(list)
+                    byindex[data] = nil
+                end
+            end
+            if head then
+                context(tonode(vpack(head)))
+                context.par()
+            end
+        end
+    end
+end
+
+implement {
+    name      = "flushnoterange",
+ -- arguments = "3 integers",
+    arguments = "2 integers",
+    actions   = structures.notes.flushrange,
+}
+

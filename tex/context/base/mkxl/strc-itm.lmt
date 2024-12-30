@@ -40,11 +40,13 @@ local counts = table.setmetatableindex("number")
 
 local trialtypesetting = context.trialtypesetting
 
-local function analyzeitemgroup(name,level)
+local function analyzeitemgroup(name,level,upcoming)
     local n = counts[name]
+    local u = false
     if level == 1 then
         n = n + 1
         counts[name] = n
+        u = upcoming and true
     end
     local items = 0
     local width = 0
@@ -58,6 +60,9 @@ local function analyzeitemgroup(name,level)
                 width = l[2] or 0
             end
         end
+    end
+    if u then
+        counts[name] = n - 1
     end
     texsetcount(c_strc_itemgroups_max_items,items)
     texsetdimen(d_strc_itemgroups_max_width,width)
@@ -86,6 +91,12 @@ implement {
     name      = "analyzeitemgroup",
     actions   = analyzeitemgroup,
     arguments = { "string", "integer" }
+}
+
+implement {
+    name      = "analyzeupcomingitemgroup",
+    actions   = analyzeitemgroup,
+    arguments = { "string", "integer", true }
 }
 
 implement {

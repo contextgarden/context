@@ -191,8 +191,8 @@
 %D x y z
 %D \stopbuffer
 %D
-%D \savebuffer[x]      [temp]     % gets name: jobname-temp.tmp
-%D \savebufferinfile[x][temp.log] % gets name: temp.log
+%D \savebuffer[x][temp]                % gets name: jobname-temp.tmp
+%D \savebuffer[list={x},file=temp.log] % gets name: temp.log
 %D \stoptyping
 
 \installcorenamespace{savebuffer}
@@ -210,6 +210,8 @@
   {\begingroup
    \ifhastok={#1}%
      \setupcurrentsavebuffer[#1]%
+   \orelse\ifhastok={#2}%
+     \setupcurrentsavebuffer[\c!list={#1},#2]%
    \else
      \setupcurrentsavebuffer[\c!list={#1},\c!file=#2]%
    \fi

@@ -192,12 +192,13 @@ implement {
         { "name", "string"  },
         { "nx",   "integer" },
         { "ny",   "integer" },
+        { "n",    "integer" },
         { "type", "string"  },
     } },
     actions   = function(t)
         local name = t.name
         if t.name then
-            local nx = t.nx
+            local nx = t.nx or t.n
             local ny = t.ny
             local ty = t.type or "integer"
             local df = nil

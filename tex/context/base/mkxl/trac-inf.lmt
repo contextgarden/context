@@ -266,7 +266,7 @@ local report = logs.reporter("system")
 
 local list   = {
     "string", "pool", "hash", "lookup", "node", "token",
-    "buffer", "input", "file", "nest", "parameter", "save", "font", "language", "mark", "insert",
+    "buffer", "input", "file", "nest", "parameter", "save", "font", "language", "mark", "insert", "mvl",
  -- "extra", "sparse",
 }
 
@@ -318,6 +318,7 @@ function statistics.showusage(when)
     local m = mplib   .getcallbackstate()
     local b = backends.getcallbackstate()
     local l = status  .getlinebreakstate()
+    local p = status  .getbalancestate()
     local h = status  .gethyphenationstate()
     do
         --
@@ -338,7 +339,7 @@ function statistics.showusage(when)
         else
             report("status after shipping out page %s",tex.getcount("realpageno"))
         end
-        show(s, { "max", "min", "set", "stp", false, "mem", "all", false, "ini", "ptr", "top" })
+        show(s, { "max", "min", "set", "stp", false, "mem", "itm", "ext", "all", false, "ini", "ptr", "top" })
         report("  current input type    : %s", iocode)
         if iocode == "file" then
             report("  current file name     : %s", rstatus.filename or "")
@@ -409,22 +410,25 @@ function statistics.showusage(when)
         end
     end
     do
-        local left, right, double = l.lefttwins, l.righttwins, l.doubletwins
-        if left ~= 0 or right ~= 0 then
+        if p.calls > 0 then
             report("")
-            report("  left twins            : %i",left)
-            report("  right twins           : %i",right)
-            report("  double twins          : %i",double)
+            for k, v in table.sortedhash(p) do
+                if v ~= 0 then
+                    report("  balance state         : %-14s  %7i",k,v)
+                end
+            end
         end
     end
     do
-        report("")
-        for k, v in table.sortedhash(h) do
-            if v ~= 0 then
-                report("  hyphenation state     : %-10s  %6i",k,v)
-                done = true
+     -- if h.checked > 0 then
+            report("")
+            for k, v in table.sortedhash(h) do
+                if v ~= 0 then
+                    report("  hyphenation state     : %-10s  %7i",k,v)
+                    done = true
+                end
             end
-        end
+     -- end
     end
     do
         if pstatus then

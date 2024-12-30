@@ -1005,11 +1005,11 @@ void tex_print_font(halfword f)
 
 void tex_short_display(halfword p)
 {
-    tex_print_levels();
+ // tex_print_levels();
     if (p) {
         tex_print_short_node_contents(p);
     } else {
-        tex_print_str("empty list");
+        tex_print_str("[empty list]");
     }
 }
 

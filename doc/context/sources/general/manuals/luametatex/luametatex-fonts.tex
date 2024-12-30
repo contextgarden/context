@@ -196,7 +196,7 @@ when applied to a stretch of them, the horizontal offset probably being the leas
 useful. The values default to the currently set values. Here is a \CONTEXT\ example:
 
 \startbuffer
-\ruledhbox {%
+\ruledhbox \bgroup
     \ruledhbox {\glyph yoffset 1ex xoffset -.5em 123}
     \ruledhbox {\glyph yoffset 1ex               125}
     \ruledhbox \bgroup
@@ -337,9 +337,9 @@ features but in \LUAMETATEX\ these primitives are gone. They are replace by a
 more generic control primitive \type {\glyphoptions}. This numerical parameter is
 a bitset with the following fields:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:glyphoptions]
-\stopcolumns
+\stoptworows
 
 The effects speak for themselves. They provide detailed control over individual
 glyph, this because the current value of this option is stored with glyphs. In

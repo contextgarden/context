@@ -1021,6 +1021,10 @@ static void tex_aux_run_begin_paragraph_vmode(void)
             tex_scan_attribute_register_number();
             tex_scan_integer(1, NULL);
             break;
+        case options_par_code:
+            /* silently ignore */
+            tex_scan_integer(1, NULL);
+            break;
         case wrapup_par_code:
             tex_you_cant_error(NULL);
             break;
@@ -1086,6 +1090,15 @@ static void tex_aux_run_begin_paragraph_hmode(void)
                     } else {
                         tex_set_attribute(par, att, val);
                     }
+                }
+                break;
+            }
+        case options_par_code:
+            {
+                halfword val = tex_scan_integer(1, NULL);
+                halfword par = tex_find_par_par(cur_list.head);
+                if (par && val >= 0) {
+                    par_options(par) |= (singleword) val;
                 }
                 break;
             }
@@ -1229,6 +1242,18 @@ static void tex_aux_run_par_boundary(void)
                 }
                 break;
             }
+        case balance_boundary:
+            {
+                halfword n = tex_scan_integer(0, NULL);
+                halfword m = tex_scan_integer(0, NULL);
+                if (cur_list.mode == vmode && ! lmt_page_builder_state.output_active) {
+                    halfword boundary = tex_new_node(boundary_node, balance_boundary);
+                    boundary_data(boundary) = n;
+                    boundary_reserved(boundary) = m;
+                    tex_tail_append(boundary);
+                }
+                break;
+            }
         /*tex Not yet, first I need a proper use case. */ /*
         case par_boundary:
             {
@@ -1258,6 +1283,10 @@ static void tex_aux_run_text_boundary(void)
             boundary_data(boundary) = tex_scan_integer(0, NULL);
             boundary_reserved(boundary) = tex_scan_integer(0, NULL);
             break;
+        case balance_boundary:
+            /*tex Maybe we should force vmode? For now we just ignore the value. */
+            tex_scan_integer(0, NULL);
+            /* fall through */
         case page_boundary:
             /*tex Maybe we should force vmode? For now we just ignore the value. */
             tex_scan_integer(0, NULL);
@@ -1464,14 +1493,29 @@ static void tex_aux_run_after_something(void)
         case at_end_of_group_code:
             {
                 halfword t = tex_get_token(); /* avoid realloc issues */
-                halfword r = tex_get_available_token(t);
-                if (end_of_group_par) {
-                    halfword p = tex_tail_of_token_list(end_of_group_par);
-                    token_link(p) = r;
-                } else {
-                    halfword p = tex_get_available_token(null);
-                    token_link(p) = r;
-                    update_tex_end_of_group(p);
+                switch (token_cmd(t)) {
+                    case left_brace_cmd:
+                    case right_brace_cmd:
+                        /*tex We don't want to crash. */
+                        tex_handle_error(
+                            normal_error_type,
+                            "I don't expected a { or }",
+                            "The '\\atendofgroup' command won't handle this, maybe you want \\atendofgrouped instead."
+                        );
+                        break;
+                    default: 
+                        {
+                            halfword r = tex_get_available_token(t);
+                            if (end_of_group_par) {
+                                halfword p = tex_tail_of_token_list(end_of_group_par);
+                                token_link(p) = r;
+                            } else {
+                                halfword p = tex_get_available_token(null);
+                                token_link(p) = r;
+                                update_tex_end_of_group(p);
+                            }
+                        }
+                        break;
                 }
                 break;
             }
@@ -2505,11 +2549,15 @@ static void tex_aux_run_discretionary(void)
                 halfword d = tex_new_disc_node(explicit_discretionary_code);
                 tex_tail_append(d);
                 if (c > 0) {
-                    tex_set_disc_field(d, pre_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_disccode(g, glyph_disc_explicit);
+                    tex_set_disc_field(d, pre_break_code, g);
                 }
                 c = tex_get_post_hyphen_char(cur_lang_par);
                 if (c > 0) {
-                    tex_set_disc_field(d, post_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_disccode(g, glyph_disc_explicit);
+                    tex_set_disc_field(d, post_break_code, g);
                 }
                 disc_penalty(d) = tex_explicit_disc_penalty(hyphenation_mode_par);
             }
@@ -2520,29 +2568,37 @@ static void tex_aux_run_discretionary(void)
             if (hyphenation_permitted(hyphenation_mode_par, automatic_hyphenation_mode)) {
                 halfword c = tex_get_pre_exhyphen_char(cur_lang_par);
                 halfword d = tex_new_disc_node(automatic_discretionary_code);
+                halfword f = cur_chr == mathematics_discretionary_code ? glyph_disc_mathematics : glyph_disc_automatic;
                 tex_tail_append(d);
                 /*tex As done in hyphenator: */
                 if (c <= 0) {
                     c = ex_hyphen_char_par;
                 }
                 if (c > 0) {
-                    tex_set_disc_field(d, pre_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_disccode(g, f);
+                    tex_set_disc_field(d, pre_break_code, g);
                 }
                 c = tex_get_post_exhyphen_char(cur_lang_par);
                 if (c > 0) {
-                    tex_set_disc_field(d, post_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_disccode(g, f);
+                    tex_set_disc_field(d, post_break_code, g);
                 }
                 c = ex_hyphen_char_par;
                 if (c > 0) {
-                    tex_set_disc_field(d, no_break_code, tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1));
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_disccode(g, f);
+                    tex_set_disc_field(d, no_break_code, g);
                 }
                 disc_penalty(d) = tex_automatic_disc_penalty(hyphenation_mode_par);
             } else {
                 halfword c = ex_hyphen_char_par;
                 if (c > 0) {
-                    c = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
-                    set_glyph_discpart(c, glyph_discpart_always);
-                    tex_tail_append(c);
+                    halfword g = tex_new_char_node(glyph_unset_subtype, cur_font_par, c, 1);
+                    set_glyph_discpart(g, glyph_discpart_always);
+                    set_glyph_disccode(g, glyph_disc_normal);
+                    tex_tail_append(g);
                 }
             }
             break;
@@ -4385,6 +4441,18 @@ static void tex_aux_set_page_property(void)
                 tex_set_insert_width(index, tex_scan_dimension(0, 0, 0, 1, NULL));
             }
             break;
+        case insert_line_height_code:
+            {
+                int index = tex_scan_integer(0, NULL);
+                tex_set_insert_line_height(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+            }
+            break;
+        case insert_line_depth_code:
+            {
+                int index = tex_scan_integer(0, NULL);
+                tex_set_insert_line_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+            }
+            break;
         case page_stretch_code:                        
             lmt_page_builder_state.stretch = tex_scan_dimension(0, 0, 0, 1, NULL);
             break;
@@ -4613,6 +4681,20 @@ static void tex_aux_set_box_property(void)
                 }
             }
             break;
+        case box_migrate_code:
+            {
+                halfword what = tex_scan_integer(1, NULL);
+                if (b) {
+                    /* maybe check for post */
+                    halfword first = null; 
+                    halfword last = null; 
+                    tex_migrate(b, &first, &last, what & auto_migrate_insert, what & auto_migrate_mark);
+                    if (first) { 
+                        box_post_migrated(b) = first;
+                    }
+                }
+            }
+            break;
         case box_limitate_code:
             {
                 halfword recurse = tex_scan_integer(1, NULL);
@@ -4659,6 +4741,8 @@ static void tex_aux_set_box_property(void)
         case box_stretch_code:
         case box_shrink_code:
             /* ignore: maybe apply some factor  */            
+            break;
+        case box_inserts_code:
             break;
         default:
             break;
@@ -5061,10 +5145,35 @@ static void tex_aux_set_def(int flags, int force)
             goto DONE;
     }
     tex_get_r_token();
-  DONE:
+    DONE:
+# if 1
     if (global_defs_par) {
         flags = global_defs_par > 0 ? add_global_flag(flags) : remove_global_flag(flags);
     }
+# else
+    /*tex Tracing discussed @ tex-implementors but differently. It makes not that sense anyway. */
+    if (global_defs_par) {
+        if (global_defs_par < 0) {
+            if (is_global(flags)) {
+                remove_global_flag(flags);
+                if (tracing_commands_par) {
+                    begin_diagnostic();
+                    tprint_nl("{\global canceled}");
+                    end_diagnostic();
+                }
+            }
+        } else {
+            if (! is_global(flags)) {
+                add_global_flag(flags);
+                if (tracing_commands_par) {
+                    begin_diagnostic();
+                    tprint_nl("{\global enforced}");
+                    end_diagnostic();
+                }
+            }
+        }
+    }
+# endif 
     if (force || tex_define_permitted(cur_cs, flags)) {
         halfword p = cur_cs;
         halfword t = expand == 2 ? tex_scan_toks_expand(0, null, 1, 0) : (expand ? tex_scan_macro_expand() : tex_scan_macro_normal());
@@ -6936,6 +7045,7 @@ halfword tex_expand_iterator(halfword tok)
         default:                        return 0;
     }
 }
+
 static void tex_aux_run_parameter(void)
 {
     tex_get_token();
@@ -6947,6 +7057,23 @@ static void tex_aux_run_parameter(void)
             tex_back_input(cur_tok);
             tex_aux_run_illegal_case(); 
         }
+    }
+}
+
+static void tex_aux_run_mvl(void)
+{
+    switch (cur_chr) {
+        case begin_mvl_code:
+            tex_start_mvl(); // todo: use na range specific scanner 
+            break;
+        case end_mvl_code:
+            if (cur_list.mode == hmode) {
+                tex_aux_run_paragraph_end_hmode();
+            }
+            tex_stop_mvl();
+            break;
+        default:
+            break;
     }
 }
 
@@ -7051,9 +7178,8 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         case alignment_cmd:               
         case alignment_tab_cmd:           tex_run_alignment_error();        break;
         case end_template_cmd:            tex_run_alignment_end_template(); break;
-
+        case mvl_cmd:                     tex_aux_run_mvl();                break;      
         /* */
-
         case math_fraction_cmd:    mode == mmode ? tex_run_math_fraction()         : tex_aux_run_insert_dollar_sign(); break;
         case delimiter_number_cmd: mode == mmode ? tex_run_math_delimiter_number() : tex_aux_run_insert_dollar_sign(); break;
         case math_fence_cmd:       mode == mmode ? tex_run_math_fence()            : tex_aux_run_insert_dollar_sign(); break;

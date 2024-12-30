@@ -1326,13 +1326,17 @@ static void mp_scaled_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number 
         octant = octant + switch_x_and_y;
     }
     if (x == 0) {
-        mp_error(
-            mp,
-            "angle(0,0) is taken as zero",
-            "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
-            "Proceed, with fingers crossed."
-        );
-        ret->data.val = 0;
+        if (internal_value(mp_default_zero_angle_internal).data.val < 0) {
+            mp_error(
+                mp,
+                "angle(0,0) is taken as zero",
+                "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
+                "Proceed, with fingers crossed."
+            );
+            ret->data.val = 0;
+        } else { 
+            ret->data.val = internal_value(mp_default_zero_angle_internal).data.val;
+        }
     } else {
         int z = 0; /* auxiliary register */
         ret->type = mp_angle_type;

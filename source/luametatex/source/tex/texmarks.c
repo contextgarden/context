@@ -38,6 +38,7 @@ mark_state_info lmt_mark_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
 };
 
@@ -46,7 +47,7 @@ void tex_initialize_marks(void)
     /* allocated: minimum + 1 */
     lmt_mark_state.data = aux_allocate_clear_array(sizeof(mark_record), lmt_mark_state.mark_data.minimum, 1);
     if (lmt_mark_state.data) {
-        lmt_mark_state.mark_data.allocated = sizeof(mark_record) * lmt_mark_state.mark_data.minimum;
+        lmt_mark_state.mark_data.allocated = lmt_mark_state.mark_data.minimum;
         lmt_mark_state.mark_data.top = lmt_mark_state.mark_data.minimum;
     }
 }
@@ -70,7 +71,7 @@ void tex_reset_mark(halfword m)
                lmt_mark_state.data = tmp;
                memset(&lmt_mark_state.data[lmt_mark_state.mark_data.top], 0, sizeof(mark_record) * (size - lmt_mark_state.mark_data.top));
                lmt_mark_state.mark_data.top = size;
-               lmt_mark_state.mark_data.allocated = sizeof(mark_record) * size;
+               lmt_mark_state.mark_data.allocated = size;
            } else {
                tex_overflow_error("marks", size);
            }
@@ -87,7 +88,7 @@ void tex_reset_mark(halfword m)
 halfword tex_get_mark(halfword m, halfword s)
 {
     if (s >= 0 && s <= last_unique_mark_code) {
-        return lmt_mark_state.data[m][s];
+        return lmt_mark_state.data[m].marks[s];
     } else {
         return null;
     }
@@ -96,13 +97,14 @@ halfword tex_get_mark(halfword m, halfword s)
 void tex_set_mark(halfword m, halfword s, halfword v)
 {
     if (s >= 0 && s <= last_unique_mark_code) {
-        if (lmt_mark_state.data[m][s]) {
-            tex_delete_token_reference(lmt_mark_state.data[m][s]);
+        if (lmt_mark_state.data[m].marks[s]) {
+            tex_delete_token_reference(lmt_mark_state.data[m].marks[s]);
         }
         if (v) {
             tex_add_token_reference(v);
         }
-        lmt_mark_state.data[m][s] = v;
+        lmt_mark_state.data[m].marks[s] = v;
+        lmt_mark_state.data[m].state = 1;
     }
 }
 
@@ -136,6 +138,7 @@ halfword tex_new_mark(quarterword subtype, halfword index, halfword ptr)
 static void tex_aux_print_mark(const char *s, halfword t)
 {
     if (t) {
+        /* todo: proper indentation */
         tex_print_token_list(s, token_link(t));
     }
 }
@@ -159,8 +162,9 @@ void tex_show_marks()
     }
 }
 
-void tex_update_top_marks()
+int tex_update_top_marks()
 {
+    int done = 0;
     if (lmt_mark_state.min_used >= 0) {
         for (halfword m = lmt_mark_state.min_used; m <= lmt_mark_state.max_used; m++) {
             halfword bot = tex_get_mark(m, bot_marks_code);
@@ -173,9 +177,11 @@ void tex_update_top_marks()
                     tex_end_diagnostic();
                 }
                 tex_delete_mark(m, first_marks_code);
+                done = 1;
             }
         }
     }
+    return done; 
 }
 
 void tex_update_first_and_bot_mark(halfword n)
@@ -212,8 +218,9 @@ void tex_update_first_and_bot_mark(halfword n)
     }
 }
 
-void tex_update_first_marks(void)
+int tex_update_first_marks(void)
 {
+    int done = 0;
     if (lmt_mark_state.min_used >= 0) {
         for (halfword m = lmt_mark_state.min_used; m <= lmt_mark_state.max_used; m++) {
             halfword top = tex_get_mark(m, top_marks_code);
@@ -226,9 +233,29 @@ void tex_update_first_marks(void)
                     tex_aux_print_mark(NULL, top);
                     tex_end_diagnostic();
                 }
+                done = 1;
             }
         }
     }
+    return done;
+}
+
+int tex_update_marks(
+    halfword n
+)
+{
+    int done = 0;
+    if (n && node_type(n) == vlist_node) {
+        halfword list = box_list(n);
+        while (list) {
+            if (node_type(list) == mark_node) {
+                tex_update_first_and_bot_mark(list);
+                done = 1;
+            }
+            list = node_next(list);
+        }
+    }
+    return done;
 }
 
 void tex_update_split_mark(halfword n)
@@ -237,30 +264,27 @@ void tex_update_split_mark(halfword n)
     halfword ptr = mark_ptr(n);
     if (node_subtype(n) == reset_mark_value_code) {
         tex_reset_mark(index);
+    } else if (tex_get_mark(index, split_first_marks_code)) {
+        tex_set_mark(index, split_bot_marks_code, ptr);
+        if (tracing_marks_par > 1) {
+            tex_begin_diagnostic();
+            tex_print_format("[mark: index %i, split bot becomes mark]", index);
+            tex_aux_print_mark(NULL, tex_get_mark(index, split_bot_marks_code));
+            tex_end_diagnostic();
+        }
     } else {
-        if (tex_get_mark(index, split_first_marks_code)) {
-            tex_set_mark(index, split_bot_marks_code, ptr);
-            if (tracing_marks_par > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("[mark: index %i, split bot becomes mark]", index);
-                tex_aux_print_mark(NULL, tex_get_mark(index, split_bot_marks_code));
-                tex_end_diagnostic();
-            }
-        } else {
-            tex_set_mark(index, split_first_marks_code, ptr);
-            tex_set_mark(index, split_bot_marks_code, ptr);
-            if (tracing_marks_par > 1) {
-                tex_begin_diagnostic();
-                tex_print_format("[mark: index %i, split first becomes mark]", index);
-                tex_aux_print_mark(NULL, tex_get_mark(index, split_first_marks_code));
-                tex_print_format("[mark: index %i, split bot becomes split first]", index);
-                tex_aux_print_mark(NULL, tex_get_mark(index, split_bot_marks_code));
-                tex_end_diagnostic();
-            }
+        tex_set_mark(index, split_first_marks_code, ptr);
+        tex_set_mark(index, split_bot_marks_code, ptr);
+        if (tracing_marks_par > 1) {
+            tex_begin_diagnostic();
+            tex_print_format("[mark: index %i, split first becomes mark]", index);
+            tex_aux_print_mark(NULL, tex_get_mark(index, split_first_marks_code));
+            tex_print_format("[mark: index %i, split bot becomes split first]", index);
+            tex_aux_print_mark(NULL, tex_get_mark(index, split_bot_marks_code));
+            tex_end_diagnostic();
         }
     }
 }
-
 
 void tex_delete_mark(halfword m, int what)
 {
@@ -291,13 +315,16 @@ void tex_wipe_mark(halfword m)
     for (int what = 0; what <= last_unique_mark_code; what++) {
         tex_set_mark(m, what, null);
     }
+    lmt_mark_state.data[m].state = 0;
 }
 
 int tex_has_mark(halfword m)
 {
-    for (int what = 0; what <= last_unique_mark_code; what++) {
-        if (lmt_mark_state.data[m][what]) {
-            return 1;
+    if (lmt_mark_state.data[m].state) { 
+        for (int what = 0; what <= last_unique_mark_code; what++) {
+            if (lmt_mark_state.data[m].marks[what]) {
+                return 1;
+            }
         }
     }
     return 0;
@@ -340,5 +367,41 @@ void tex_run_mark(void)
         tex_tail_append(tex_new_mark(subtype, index, ptr));
     } else {
         /* error already issued */
+    }
+}
+
+extern halfword lmt_get_mark_class(lua_State *L, int index)
+{
+    switch (lua_type(L, index)) {
+        case LUA_TSTRING:
+            {
+                const char *s = lua_tostring(L, index);
+                if (lua_key_eq(s, top)) {
+                    return top_marks_code;
+                } else if (lua_key_eq(s, first)) {
+                    return first_marks_code;
+                } else if (lua_key_eq(s, bottom)) {
+                    return bot_marks_code;
+                } else if (lua_key_eq(s, splitfirst)) {
+                    return split_first_marks_code;
+                } else if (lua_key_eq(s, splitbottom)) {
+                    return split_bot_marks_code;
+                } else if (lua_key_eq(s, current)) {
+                    return current_marks_code;
+                } else {
+                    return -1;
+                }
+            }
+        case LUA_TNUMBER:
+            {
+                halfword m = lmt_tohalfword(L, index);
+                if (m >= 0 && m <= last_unique_mark_code) {
+                    return m; 
+                } else {
+                    return -1;
+                }
+            }
+        default:
+            return -1;
     }
 }

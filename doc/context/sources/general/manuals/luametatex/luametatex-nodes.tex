@@ -380,9 +380,9 @@ As mentioned, nodes are represented in \LUA\ as user data objects with a variabl
 set of fields or by a numeric identifier when requested and we showed that when
 you print a node user data object you will see these numbers.
 
-\startcolumns[n=4]
+\startfourrows
 \ctxlua{moduledata.node.codes("types")}
-\stopcolumns
+\stopfourrows
 
 You can ask for a list of fields with \type {node.fields} and for valid subtypes
 with \type {node.subtypes}. There are plenty specific field values and you can
@@ -903,7 +903,7 @@ These nodes are signals to switch to another math style. Currently the subtype i
 actually used to store the style but don't rely on that for the future.
 
 \showenginefields   {style}
-\showenginesubtypes {style}
+%showenginesubtypes {style}
 \showenginevalues   {mathstylenamevalues}
 \showenginevalues   {mathstylevalues}
 
@@ -2571,7 +2571,7 @@ In previous sections we only show the functions in the \type {node.direct}
 namespace. The following functions are available in both \type {node} and \type
 {node.direct}:
 
-\startcolumns[n=3]
+\startthreerows
 \startluacode
     context.starttabulate { "|T|" }
     for k, v in table.sortedhash(node.direct) do
@@ -2582,14 +2582,14 @@ namespace. The following functions are available in both \type {node} and \type
     end
     context.stoptabulate()
 \stopluacode
-\stopcolumns
+\stopthreerows
 
 In \CONTEXT\ these are duplicated in \type {nodes.nuts} so that is the reference.
 Quite some functions gets mapped onto the \type {nodes} namespace. In addition we
 emulate some userdata functions and add some of our own. We show them here because
 this manual takes \CONTEXT\ as reference.
 
-\startcolumns[n=2]
+\starttworows
 \startluacode
     context.starttabulate { "|T|c|c|" }
         context.BC() context("node.direct")
@@ -2611,13 +2611,13 @@ this manual takes \CONTEXT\ as reference.
         end
     context.stoptabulate()
 \stopluacode
-\stopcolumns
+\stoptworows
 
 The following functions are in the \CONTEXT\ \type {nodes} namespace but don't
 come from the library. Again, we show them here because \CONTEXT\ is the
 reference.
 
-\startcolumns[n=2]
+\starttworows
 \startluacode
     context.starttabulate { "|T|c|c|" }
         context.BC() context("nodes")
@@ -2638,7 +2638,7 @@ reference.
         end
     context.stoptabulate()
 \stopluacode
-\stopcolumns
+\stoptworows
 
 We have quite some helpers and some accept different node types. Here is the
 repertoire:

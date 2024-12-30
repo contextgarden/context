@@ -109,6 +109,8 @@
 %D than once. Savings like this should of course be implemented in english, just
 %D because \TEX\ is english.
 
+% system constants
+
 \cdef\s!width      {width}
 \cdef\s!height     {height}
 \cdef\s!depth      {depth}

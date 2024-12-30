@@ -496,12 +496,24 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val = lmt_packaging_state.last_overshoot;
             cur_val_level = dimension_val_level;
             break;
+        case luametatex_major_version_code:
+            cur_val = lmt_version_state.majorversion;
+            cur_val_level = integer_val_level;
+            break;
+        case luametatex_minor_version_code:
+            cur_val = lmt_version_state.minorversion;
+            cur_val_level = integer_val_level;
+            break;
+        case luametatex_release_code:
+            cur_val = lmt_version_state.release; 
+            cur_val_level = integer_val_level;
+            break;
         case luatex_version_code:
-            cur_val = lmt_version_state.version;
+            cur_val = lmt_version_state.version;  /* combined major and minor */
             cur_val_level = integer_val_level;
             break;
         case luatex_revision_code:
-            cur_val = lmt_version_state.revision;
+            cur_val = lmt_version_state.revision; /* always zero */
             cur_val_level = integer_val_level;
             break;
         case current_group_level_code:
@@ -901,6 +913,34 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                 cur_val_level = dimension_val_level;
                 break;
             }
+        case balance_shape_vsize_code:
+        case balance_shape_top_space_code:
+        case balance_shape_bottom_space_code:
+            {
+                halfword shape = balance_shape_par;
+                if (shape) {
+                    halfword index = tex_scan_integer(0, NULL);
+                    if (index >= 1) {
+                        switch (code) {
+                            case balance_shape_vsize_code:
+                                cur_val = tex_get_balance_vsize(shape, index);
+                                break;
+                            case balance_shape_top_space_code:
+                                cur_val = glue_amount(tex_get_balance_topskip(shape, index));
+                                break;
+                            case balance_shape_bottom_space_code:
+                                cur_val = glue_amount(tex_get_balance_bottomskip(shape, index));
+                                break;
+                        }
+                    } else {
+                        cur_val = 0;
+                    }
+                } else {
+                    cur_val = 0;
+                }
+                cur_val_level = dimension_val_level;
+                break;
+            }
         case glue_stretch_code:
         case glue_shrink_code:
             {
@@ -1226,6 +1266,34 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int code)
         case insert_width_code:
             cur_val = tex_get_insert_width(tex_scan_integer(0, NULL));
             cur_val_level = dimension_val_level;
+            break;
+        case insert_line_height_code:
+            cur_val = tex_get_insert_line_height(tex_scan_integer(0, NULL));
+            cur_val_level = dimension_val_level;
+            break;
+        case insert_line_depth_code:
+            cur_val = tex_get_insert_line_depth(tex_scan_integer(0, NULL));
+            cur_val_level = dimension_val_level;
+            break;
+        case split_last_depth_code:  
+            cur_val = lmt_packaging_state.split_last_depth;
+            cur_val_level = dimension_val_level;
+            break;
+        case split_last_height_code: 
+            cur_val = lmt_packaging_state.split_last_height;
+            cur_val_level = dimension_val_level;
+            break;
+        case split_last_shrink_code: 
+            cur_val = lmt_packaging_state.split_last_shrink;
+            cur_val_level = dimension_val_level;
+            break;
+        case split_last_stretch_code:
+            cur_val = lmt_packaging_state.split_last_stretch;
+            cur_val_level = dimension_val_level;
+            break;
+        case mvl_currently_active_code:
+            cur_val = tex_current_mvl(NULL, NULL);
+            cur_val_level = integer_val_level;
             break;
         default:
             tex_confusion("page property");
@@ -1585,6 +1653,14 @@ static void tex_aux_set_cur_val_by_box_property_cmd(halfword chr)
             cur_val = node_type(b) == hlist_node ? box_width(b) : box_total(b);
             cur_val_level = dimension_val_level;
             break;
+        case box_migrate_code:
+            cur_val = 0;
+            if (node_type(b) == hlist_node) {
+                if (box_pre_migrated(b))  { cur_val |= auto_migrate_pre;  }
+                if (box_post_migrated(b)) { cur_val |= auto_migrate_post; }
+            }
+            cur_val_level = integer_val_level;
+            break;
         case box_limitate_code:
             /* todo: return the delta */
             cur_val = node_type(b) == hlist_node ? box_width(b) : box_total(b);
@@ -1623,6 +1699,10 @@ static void tex_aux_set_cur_val_by_box_property_cmd(halfword chr)
                     cur_val |= has_post_migrated;
                 }
             }
+            cur_val_level = integer_val_level;
+            break;
+        case box_inserts_code:
+            cur_val = tex_identify_inserts(b, 0); /* todo: optional callback id */
             cur_val_level = integer_val_level;
             break;
     }
@@ -2005,6 +2085,12 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                                     if (index < 0) {
                                         index = count + index + 1;
                                     }
+                                    if (index > count && specification_rotate(chr)) {
+                                        index = (index % specification_count(chr));
+                                        if (index == 0) { 
+                                            index = specification_count(chr);
+                                        }
+                                    } 
                                     if (index >= 1 && index <= count) {
                                         if (specification_double(chr)) {
                                             switch (tex_scan_integer(0, NULL)) {
@@ -2019,8 +2105,10 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                                                     break;
                                             }
                                         } else {
-                                            value = tex_get_specification_penalty(chr, 2);
+                                            value = tex_get_specification_penalty(chr, index);
                                         }
+                                    } else {    
+                                        tex_specification_range_error(chr);
                                     }
                                     switch (code) {
                                         case integer_list_code:
@@ -5145,27 +5233,25 @@ static void tex_aux_scan_expr(halfword level)
             operation = expression_divide;
             break;
         case colon_token:
-//            if (etex_expr_mode) {
-//                /* according to MS some folk don't like this feature, well ... */
-//                goto PREVENTBASHING;
-//            } else {
+            if (etex_expr_mode_par) {
+                goto MAKESOMEFOLKHAPPY;
+            } else {
                 operation = expression_idivide;
-//            }
+            }
             break;
         case semi_colon_token:
-//            if (etex_expr_mode) {
-//                /* according to MS some folk don't like this feature, well ... */
-//                goto PREVENTBASHING;
-//            } else {
+            if (etex_expr_mode_par) {
+                goto MAKESOMEFOLKHAPPY;
+            } else {
                 operation = expression_imodulo;
-//            }
+            }
             break;
         /*tex
             The commented bitwise experiment as of 2020-07-20 has been removed and is now in
             |\scanbitexpr|. You can find it in the archive.
         */
         default:
-//          PREVENTBASHING:
+          MAKESOMEFOLKHAPPY:
             operation = expression_none;
             if (! top) {
                 if (cur_cmd == relax_cmd) {
@@ -5678,6 +5764,8 @@ static void tex_take_stack_entry(stack_info *target, stack_info *source, halfwor
     target->tail = current;
 }
 
+# if (0) 
+
 static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int has_fraction, int *has_unit)
 {
     do {
@@ -5835,51 +5923,50 @@ static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int
     return value;
 }
 
-// This replaces the above but I need to test it first!
+# else 
 
-// static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int has_fraction, int *has_unit)
-// {
-//     halfword num = 0;
-//     halfword denom = 0;
-//     scaled unit = 0;
-//     *has_unit = 0;
-//     switch (tex_aux_scan_unit(&num, &denom, &unit, NULL)) {
-//         case normal_unit_scanned:
-//             if (num) {
-//                 int remainder = 0;
-//                 cur_val = tex_xn_over_d_r(cur_val, num, denom, &remainder);
-//                 fraction = (num * fraction + unity * remainder) / denom;
-//                 cur_val += fraction / unity;
-//                 fraction = fraction % unity;
-//             }
-//             *has_unit = 1;
-//             goto FRACTION;
-//         case scaled_point_scanned:
-//             *has_unit = 0;
-//             return value;
-//         case relative_unit_scanned:
-//             *has_unit = 1;
-//             return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, unity));
-//         case quantitity_unit_scanned:
-//             tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
-//             value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, unity));
-//             *has_unit = 1;
-//             return value;
-//      /* case math_unit_scanned:     */ /* ignored */
-//      /* case flexible_unit_scanned: */ /* ignored */
-//      /* case no_unit_scanned:       */ /* nothing */
-//     }
-//   FRACTION:
-//     if (has_fraction) {
-//         *has_unit = 0;
-//         if (value >= 040000) { // 0x4000
-//             lmt_scanner_state.arithmic_error = 1;
-//         } else {
-//             value = value * unity + fraction;
-//         }
-//     }
-//     return value;
-// }
+static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int *has_unit) 
+{
+    halfword num = 0;
+    halfword denom = 0;
+    scaled unit = 0;
+    *has_unit = 0;
+    switch (tex_aux_scan_unit(&num, &denom, &unit, NULL)) {
+        case normal_unit_scanned:
+            if (num) {
+                int remainder = 0;
+                value = tex_xn_over_d_r(value, num, denom, &remainder);
+                fraction = (num * fraction + unity * remainder) / denom;
+                value += fraction / unity;
+                fraction = fraction % unity;
+            }
+            *has_unit = 1;
+            if (value >= 040000) { // 0x4000
+                lmt_scanner_state.arithmic_error = 1;
+                value = 040000; 
+            }
+            return value * unity + fraction;
+        case scaled_point_scanned:
+            *has_unit = 0;
+            return value;
+        case relative_unit_scanned:
+            *has_unit = 1;
+            return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, unity));
+        case quantitity_unit_scanned:
+            cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
+            value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, unity));
+            *has_unit = 1;
+            return value;
+        default: 
+            break;
+     /* case math_unit_scanned:     */ /* ignored */
+     /* case flexible_unit_scanned: */ /* ignored */
+     /* case no_unit_scanned:       */ /* nothing */
+    }
+    return value;
+}
+
+# endif 
 
 static halfword tex_scan_bit_int(int *radix)
 {
@@ -6064,7 +6151,7 @@ static halfword tex_scan_bit_dimension(int *has_fraction, int *has_unit)
         negative = ! negative;
         cur_val = - cur_val;
     }
-    cur_val = tex_aux_scan_unit_applied(cur_val, fraction, *has_fraction, has_unit);
+    cur_val = tex_aux_scan_unit_applied(cur_val, fraction, has_unit);
   ATTACH_SIGN:
     if (lmt_scanner_state.arithmic_error || (abs(cur_val) >= 010000000000)) { // 0x40000000
         tex_aux_scan_dimension_out_of_range_error();

@@ -346,7 +346,8 @@
 \immutable\integerdef\plusone         1
 \immutable\integerdef\minusone       -1
 
-\immutable\integerdef\normalpagebox 255  % hardcoded in pdftex/xetex
+\immutable\integerdef\normalpagebox  255
+\immutable\integerdef\delayedpagebox 254
 
 \immutable\integerdef\statuswrite \minusone
 

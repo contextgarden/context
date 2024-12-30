@@ -27,6 +27,11 @@ local function analyzerotate(rotation,width,height,depth,total,notfit,obeydepth)
     --
  -- print(rotation,width,height,depth,notfit,obeydepth)
     --
+    rotation = rotation % 360
+    if rotation < 0 then
+        rotation = 360 - rotation
+    end
+    --
     local sin       = sind(rotation)
     local cos       = cosd(rotation)
     local abssin    = abs(sin)
@@ -125,7 +130,7 @@ interfaces.implement {
     name      = "analyzerotate",
     actions   = analyzerotate,
     arguments = {
---         "integer",
+     -- "integer",
         "number",
         "dimension",
         "dimension",

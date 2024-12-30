@@ -28,7 +28,7 @@ return {
         "centeringfilllskip", "stretchingfilllskip", "shrinkingfilllskip",
         "zeromuskip", "onemuskip",
         "pluscxxvii", "pluscxxviii", "pluscclv", "pluscclvi",
-        "normalpagebox",
+        "normalpagebox", "delayedpagebox",
         "binaryshiftedten", "binaryshiftedtwenty", "binaryshiftedthirty",
         "thickermuskip", "continuationmuskip", "fencemuskip", "mathinterwordmuskip",
         "zerofloat",
@@ -234,6 +234,7 @@ return {
         "discardzerotabskipsnormalizecode", "flattenhleadersnormalizecode", "balanceinlinemathnormalizecode",
         --
         "normalizeparnormalizeparcode", "flattenvleadersnormalizeparcode", "limitprevgrafnormalizeparcode",
+        "keepinterlinepenaltiesnormalizeparcode", "removetrailingspacesnormalizeparcode",
         --
         "nopreslackclassoptioncode", "nopostslackclassoptioncode",
         "lefttopkernclassoptioncode", "righttopkernclassoptioncode", "leftbottomkernclassoptioncode", "rightbottomkernclassoptioncode",
@@ -258,6 +259,7 @@ return {
         --
         "repeatspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
         "presetsspecificationoptioncode", "integerspecificationoptioncode", "finalspecificationoptioncode",
+        "defaultspecificationoptioncode", "ignorespecificationoptioncode", "rotatespecificationoptioncode",
         --
      -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
      -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",
@@ -281,12 +283,16 @@ return {
         "noitaliccorrectiondiscoptioncode", "nozeroitaliccorrectiondiscoptioncode",
         "textcheckitalicdiscoptioncode",
         --
+        "ignoreprevdepthmvloptioncode", "noprevdepthmvloptioncode", "discardtopmvloptioncode", "discardbottommvloptioncode",
+        --
         "continueifinputfile", "continuewhenlmtxmode", "continuewhenmkivmode",
         --
         "uunit",
         --
         "defaultdisplaywidowpenalty", "defaultwidowpenalty", "defaultclubpenalty", "defaultbrokenpenalty",
         "defaultgriddisplaywidowpenalty", "defaultgridwidowpenalty", "defaultgridclubpenalty", "defaultgridbrokenpenalty",
+        --
+        "luametatexverboseversion", "luametatexfunctionality",
     },
     ["helpers"] = {
         --
@@ -701,6 +707,7 @@ return {
         "boxlinels", "boxliners", "boxlinelh", "boxlinerh",
         "boxlinelp", "boxlinerp", "boxlinein",
         "boxrangewd", "boxrangeht", "boxrangedp",
+        "boxlinemaxwd","boxlinemaxht", "boxlinemaxdp",
         --
         "bitwiseset", "bitwiseand", "bitwiseor", "bitwisexor", "bitwisenot", "bitwisenil",
         "ifbitwiseand", "bitwise", "bitwiseshift", "bitwiseflip",

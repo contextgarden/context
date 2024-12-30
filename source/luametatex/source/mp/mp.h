@@ -1081,6 +1081,7 @@ typedef enum mp_given_internal {
     mp_stacking_internal,
     mp_miterlimit_internal,          /* controls miter length as in \ps */
     mp_warning_check_internal,       /* controls error message when variable value is large */
+    mp_default_zero_angle_internal,   
     mp_true_corners_internal,        /* positive to make |llcorner| etc. ignore |setbounds| */
     mp_default_color_model_internal, /* the default color model for unspecified items */
     mp_restore_clip_color_internal,

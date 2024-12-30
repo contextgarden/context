@@ -750,10 +750,9 @@ typedef union Node {
 
 
 /* copy a value into a key */
-#define setnodekey(L,node,obj) \
+#define setnodekey(node,obj) \
 	{ Node *n_=(node); const TValue *io_=(obj); \
-	  n_->u.key_val = io_->value_; n_->u.key_tt = io_->tt_; \
-	  checkliveness(L,io_); }
+	  n_->u.key_val = io_->value_; n_->u.key_tt = io_->tt_; }
 
 
 /* copy a value from a key */
@@ -763,24 +762,12 @@ typedef union Node {
 	  checkliveness(L,io_); }
 
 
-/*
-** About 'alimit': if 'isrealasize(t)' is true, then 'alimit' is the
-** real size of 'array'. Otherwise, the real size of 'array' is the
-** smallest power of two not smaller than 'alimit' (or zero iff 'alimit'
-** is zero); 'alimit' is then used as a hint for #t.
-*/
-
-#define BITRAS		(1 << 7)
-#define isrealasize(t)		(!((t)->flags & BITRAS))
-#define setrealasize(t)		((t)->flags &= cast_byte(~BITRAS))
-#define setnorealasize(t)	((t)->flags |= BITRAS)
-
 
 typedef struct Table {
   CommonHeader;
   lu_byte flags;  /* 1<<p means tagmethod(p) is not present */
-  lu_byte lsizenode;  /* log2 of size of 'node' array */
-  unsigned int alimit;  /* "limit" of 'array' array */
+  lu_byte lsizenode;  /* log2 of number of slots of 'node' array */
+  unsigned int asize;  /* number of slots in 'array' array */
   Value *array;  /* array part */
   Node *node;
   struct Table *metatable;
@@ -838,13 +825,14 @@ typedef struct Table {
 LUAI_FUNC int luaO_utf8esc (char *buff, unsigned long x);
 LUAI_FUNC lu_byte luaO_ceillog2 (unsigned int x);
 LUAI_FUNC lu_byte luaO_codeparam (unsigned int p);
-LUAI_FUNC l_obj luaO_applyparam (lu_byte p, l_obj x);
+LUAI_FUNC l_mem luaO_applyparam (lu_byte p, l_mem x);
 
 LUAI_FUNC int luaO_rawarith (lua_State *L, int op, const TValue *p1,
                              const TValue *p2, TValue *res);
 LUAI_FUNC void luaO_arith (lua_State *L, int op, const TValue *p1,
                            const TValue *p2, StkId res);
 LUAI_FUNC size_t luaO_str2num (const char *s, TValue *o);
+LUAI_FUNC unsigned luaO_tostringbuff (const TValue *obj, char *buff);
 LUAI_FUNC lu_byte luaO_hexavalue (int c);
 LUAI_FUNC void luaO_tostring (lua_State *L, TValue *obj);
 LUAI_FUNC const char *luaO_pushvfstring (lua_State *L, const char *fmt,

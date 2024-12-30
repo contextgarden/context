@@ -98,7 +98,7 @@
 
 \permanent\protected\def\doifelseinsertion#1%
   {\ifcsname\??insertionnumber#1\endcsname
-     \expandafter\firstoftwoarguments
+        \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
    \fi}
@@ -117,7 +117,9 @@
 % pass pass them explicitly. Actually, when we see an insertion node at that end,
 % we already know the number.
 
-\insertmode\plustwo
+% todo: use the primitives instead of the aliases:
+
+\insertmode\plustwo \pushoverloadmode \newinteger\insertmode \popoverloadmode
 
 % \ifnum\insertmode=\plustwo
 
@@ -128,6 +130,8 @@
     \protected\def\page_inserts_set_multiplier{\insertmultiplier}
     \protected\def\page_inserts_set_penalty   {\insertpenalty}
     \protected\def\page_inserts_set_maxdepth  {\insertmaxdepth}
+    \protected\def\page_inserts_set_lineheight{\insertlineheight}
+    \protected\def\page_inserts_set_linedepth {\insertlinedepth}
 
     \protected\def\page_inserts_get_limit     {\insertlimit}
     \protected\def\page_inserts_get_distance  {\insertdistance}

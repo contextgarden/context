@@ -98,10 +98,10 @@ static pdfe_document *pdfelib_aux_check_isdocument(lua_State *L, int n, int wher
     pdfe_document *p = (pdfe_document *) lua_touserdata(L, n);
     if (p && lua_getmetatable(L, n)) {
         lua_get_metatablelua(pdfe_instance);
-        if (! p->document) { 
-            p = NULL; // todo: invalid document
-        } else if (! lua_rawequal(L, -1, -2)) {
+        if (! lua_rawequal(L, -1, -2)) {
             p = NULL; // todo: no document 
+        } else if (! p->document) { 
+            p = NULL; // todo: invalid document
         }
         lua_pop(L, 2);
         if (p) {

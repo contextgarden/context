@@ -6,10 +6,8 @@ if not modules then modules = { } end modules ["page-cst"] = {
     license   = "see context related readme files"
 }
 
--- todo: check what is used
-
 local next, type, tonumber, rawget = next, type, tonumber, rawget
-local ceil, odd, round = math.ceil, math.odd, math.round
+local ceil, odd, round, abs = math.ceil, math.odd, math.round, math.abs
 local lower = string.lower
 local copy = table.copy
 
@@ -17,64 +15,36 @@ local trace_state   = false  trackers.register("columnsets.trace",   function(v)
 local trace_details = false  trackers.register("columnsets.details", function(v) trace_details = v end)
 local trace_cells   = false  trackers.register("columnsets.cells",   function(v) trace_cells  = v end)
 
-local report       = logs.reporter("column sets")
+local report            = logs.reporter("column sets")
 
 local setmetatableindex = table.setmetatableindex
 
 local properties        = nodes.properties.data
 
-local nodecodes         = nodes.nodecodes
-
-local hlist_code        = nodecodes.hlist
-local vlist_code        = nodecodes.vlist
-local kern_code         = nodecodes.kern
-local glue_code         = nodecodes.glue
-local penalty_code      = nodecodes.penalty
-local rule_code         = nodecodes.rule
-
 local nuts              = nodes.nuts
 local tonode            = nuts.tonode
 local tonut             = nuts.tonut
 
-local vpack             = nuts.vpack
-local flushlist         = nuts.flushlist
-
 local setlink           = nuts.setlink
-local setlist           = nuts.setlist
-local setnext           = nuts.setnext
-local setprev           = nuts.setprev
-local setsubtype        = nuts.setsubtype
 local setbox            = nuts.setbox
 local getwhd            = nuts.getwhd
 local setwhd            = nuts.setwhd
-local getkern           = nuts.getkern
-local getpenalty        = nuts.getpenalty
-local getwidth          = nuts.getwidth
-local getheight         = nuts.getheight
 
-local getnext           = nuts.getnext
-local getprev           = nuts.getprev
-local getid             = nuts.getid
 local getlist           = nuts.getlist
-local getsubtype        = nuts.getsubtype
 local takebox           = nuts.takebox
-local takelist          = nuts.takelist
 local splitbox          = nuts.splitbox
-local getattribute      = nuts.getattribute
-local copylist          = nuts.copylist
+local vpack             = nuts.vpack
 
 local getbox            = nuts.getbox
-local getcount          = tex.getcount
-local getdimen          = tex.getdimen
 
-local texsetbox         = tex.setbox
+local texgetcount       = tex.getcount
+local texgetdimen       = tex.getdimen
 local texsetcount       = tex.setcount
 local texsetdimen       = tex.setdimen
 
 local theprop           = nuts.theprop
 
 local nodepool          = nuts.pool
-
 local new_vlist         = nodepool.vlist
 local new_trace_rule    = nodepool.rule
 local new_empty_rule    = nodepool.emptyrule
@@ -95,8 +65,9 @@ local v_last            = variables.last
 ----- v_wide            = variables.wide
 
 pagebuilders            = pagebuilders or { } -- todo: pages.builders
-pagebuilders.columnsets = pagebuilders.columnsets or { }
-local columnsets        = pagebuilders.columnsets
+local columnsets        = pagebuilders.columnsets or { }
+
+pagebuilders.columnsets = columnsets
 
 local data = { [""] = { } }
 
@@ -104,7 +75,7 @@ local data = { [""] = { } }
 
 local function setstate(t,start)
     if start or not t.firstcolumn then
-        t.firstcolumn = odd(getcount("realpageno")) and 1 or 2
+        t.firstcolumn = odd(texgetcount("realpageno")) and 1 or 2
     end
     if t.firstcolumn > 1 then
         t.firstcolumn = 1
@@ -129,11 +100,11 @@ function columnsets.define(t)
     dataset.nofleft       = nofleft
     dataset.nofright      = nofright
     dataset.nofcolumns    = nofcolumns
-    dataset.nofrows       = t.nofrows or 1
-    dataset.distance      = t.distance or getdimen("bodyfontsize")
-    dataset.maxwidth      = t.maxwidth or getdimen("makeupwidth")
-    dataset.lineheight    = t.lineheight or getdimen("globalbodyfontstrutheight")
-    dataset.linedepth     = t.linedepth or getdimen("globalbodyfontstrutdepth")
+    dataset.nofrows       = t.nofrows    or 1
+    dataset.distance      = t.distance   or texgetdimen("bodyfontsize")
+    dataset.maxwidth      = t.maxwidth   or texgetdimen("makeupwidth")
+    dataset.lineheight    = t.lineheight or texgetdimen("globalbodyfontstrutheight")
+    dataset.linedepth     = t.linedepth  or texgetdimen("globalbodyfontstrutdepth")
     --
     dataset.cells         = { }
     dataset.currentcolumn = 1
@@ -222,7 +193,7 @@ function columnsets.define(t)
     --
     local spreads   = copy(spans)
     dataset.spreads = spreads
-    local gap       = 2 * getdimen("backspace")
+    local gap       = 2 * texgetdimen("backspace")
     for l=1,nofleft do
         local s = spreads[l]
         local n = #s
@@ -734,7 +705,7 @@ local function findgap(dataset)
     local foundn = 0
     for c=currentcolumn,dataset.lastcolumn do
         local column = cells[c]
-foundn = 0
+        foundn = 0
         for r=currentrow,nofrows do
             if not column[r] then
                 if foundc == 0 then
@@ -755,211 +726,6 @@ end
 
 -- we can enforce grid snapping
 
--- local function checkroom(head,available,row)
---     if row == 1 then
---         while head do
---             local id = getid(head)
---             if id == glue_code then
---                 head = getnext(head)
---             else
---                 break
---             end
---         end
---     end
---     local used = 0
---     local line = false
---     while head do
---         local id = getid(head)
---         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
---             local wd, ht, dp = getwhd(head)
---             used = used + ht + dp
---             line = true
---         elseif id == glue_code then
---             if line then
---                 break
---             end
---             used = used + getwidth(head)
---         elseif id == kern_code then
---             used = used +  getkern(head)
---         elseif id == penalty_code then
---         end
---         if used > available then
---             break
---         end
---         head = getnext(head)
---     end
---     return line, used
--- end
-
-local function checkroom(head,available,row)
-    if row == 1 then
-        while head do
-            local id = getid(head)
-            if id == glue_code then
-                head = getnext(head)
-            else
-                break
-            end
-        end
-    end
-    local used = 0
-    local line = false
-    while head do
-        local id = getid(head)
-        if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
-            local wd, ht, dp = getwhd(head)
-            used = used + ht + dp
-            line = true
-            if used > available then
-                break
-            end
-        elseif id == glue_code then
-            if line then
-                break
-            end
-            used = used + getwidth(head)
-            if used > available then
-                break
-            end
-        elseif id == kern_code then
-            used = used + getkern(head)
-            if used > available then
-                break
-            end
-        elseif id == penalty_code then
-            -- not good enough ... we need to look bakck too
-            if getpenalty(head) >= 10000 then
-                line = false
-            else
-                break
-            end
-        end
-        head = getnext(head)
-    end
-    return line, used
-end
-
--- we could preroll on a cheap copy .. in fact, a split loop normally works on
--- a copy ... then we could also stepsise make the height smaller .. slow but nice
-
--- local function findslice(dataset,head,available,column,row)
---     local used       = 0
---     local first      = nil
---     local last       = nil
---     local line       = false
---     local lineheight = dataset.lineheight
---     local linedepth  = dataset.linedepth
---     if row == 1 then
---         while head do
---             local id = getid(head)
---             if id == glue_code then
---                 head = removenode(head,head,true)
---             else
---                 break
---             end
---         end
---     end
---     while head do
---         -- no direction yet, if so use backend code
---         local id = getid(head)
---         local hd = 0
---         if id == hlist_code or id == vlist_code or id == rule_code then -- <= rule_code
---             local wd, ht, dp = getwhd(head)
---             hd = ht + dp
---         elseif id == glue_code then
---             hd = getwidth(head)
---         elseif id == kern_code then
---             hd = getkern(head)
---         elseif id == penalty_code then
---         end
---         if used + hd > available then
---             if first then
---                 setnext(last)
---                 setprev(head)
---                 return used, first, head
---             else
---                 return 0
---             end
---         else
---             if not first then
---                 first = head
---             end
---             used = used + hd
---             last = head
---             head = getnext(head)
---         end
---     end
---     return used, first
--- end
-
---  todo
---
---                 first = takelist(done)
---                 head = takelist(rest)
---                 local tail = nuts.tail(first)
---                 if false then
---                     local disc = tex.lists.split_discards_head
---                     if disc then
---                         disc = tonut(disc)
---                         setlink(tail,disc)
---                         tail = nuts.tail(disc)
---                         tex.lists.split_discards_head = nil
---                     end
---                 end
---                 setlink(tail,head)
-
--- We work on a copy because we need to keep properties. We can make faster copies
--- by only doing a one-level deep copy.
-
-local function findslice(dataset,head,available,column,row)
-    local first      = nil
-    local lineheight = dataset.lineheight
-    local linedepth  = dataset.linedepth
-    local linetotal  = lineheight + linedepth
-    local slack      = 65536 -- 1pt
-    local copy       = copylist(head)
-    local attempts   = 0
-    local usedsize   = available
-    while true do
-        attempts = attempts + 1
-        texsetbox("scratchbox",tonode(new_vlist(copy)))
-        local done = splitbox("scratchbox",usedsize,"additional")
-        local used = getheight(done)
-        local rest = takebox("scratchbox")
-        if used > (usedsize+slack) then
-            if trace_details then
-                report("at (%i,%i) available %p, used %p, overflow %p",column,row,usedsize,used,used-usedsize)
-            end
-            -- flush copy
-            flushlist(takelist(done))
-            flushlist(takelist(rest))
-            -- check it we can try again
-            usedsize = usedsize - linetotal
-            if usedsize > linetotal then
-                copy = copylist(head)
-            else
-                return 0, nil, head
-            end
-        else
-            -- flush copied box
-            flushlist(takelist(done))
-            flushlist(takelist(rest))
-            -- deal with real data
-            texsetbox("scratchbox",tonode(new_vlist(head)))
-            done  = splitbox("scratchbox",usedsize,"additional")
-            rest  = takebox("scratchbox")
-            used  = getheight(done)
-            if attempts > 1 then
-                used = available
-            end
-            first = takelist(done)
-            head  = takelist(rest)
-            -- return result
-            return used, first, head
-        end
-    end
-end
-
 local nofcolumngaps = 0
 
 function columnsets.add(name,box)
@@ -974,58 +740,74 @@ function columnsets.add(name,box)
     local widths        = dataset.widths
     --
     local b = getbox(box)
-    local l = getlist(b)
--- dataset.rest = l
+    local l = b and getlist(b)
     if l then
-        setlist(b,nil)
         local hd = lineheight + linedepth
         while l do
             local foundc, foundr, foundn = findgap(dataset)
             if foundc then
                 local available = foundn * hd
-                local used, first, last = findslice(dataset,l,available,foundc,foundr)
-                if first then
-                    local v
-                    if used == available or (foundr+foundn > nofrows) then
-                        v = vpack(first,available,"exactly")
-                    else
-                        v = new_vlist(first)
-                    end
-                    nofcolumngaps = nofcolumngaps + 1
-                    -- getmetatable(v).columngap = nofcolumngaps
-                    properties[v] = { columngap = nofcolumngaps }
-                 -- report("setting gap %a at (%i,%i)",nofcolumngaps,foundc,foundr)
-                    setwhd(v,widths[currentcolumn],lineheight,linedepth)
-                    local column = cells[foundc]
-                    --
-                    column[foundr] = v
-                    used = used - hd
-                    if used > 0 then
-                        for r=foundr+1,foundr+foundn-1 do
-                            used = used - hd
-                            foundr = foundr + 1
-                            column[r] = true
-                            if used <= 0 then
-                                break
-                            end
-                        end
-                    end
-                    currentcolumn = foundc
-                    currentrow    = foundr
-                    dataset.currentcolumn = currentcolumn
-                    dataset.currentrow    = currentrow
-                    l = last
-                    dataset.rest = l
-                else
+                --
+                if available < hd then
                     local column = cells[foundc]
                     for i=foundr,foundr+foundn-1 do
                         column[i] = true
                     end
-                    l = last
+                    -- now l needs top skip
+                    -- and the rest not
+                else
+                    local first = splitbox(box,available,"additional") -- upto
+                    if first then
+
+                        local used = nuts.gettotal(first)
+                        local foundm = ceil(used/hd)
+                        if abs(foundm-foundn) == 1 then
+                            first = vpack(getlist(first),available,"exactly")
+                            used = nuts.gettotal(first)
+                            foundm = ceil(used/hd)
+                        else
+                            foundn = foundm
+                        end
+
+                        local v = first
+                        nofcolumngaps = nofcolumngaps + 1
+                        -- getmetatable(v).columngap = nofcolumngaps
+                        properties[v] = { columngap = nofcolumngaps }
+                     -- report("setting gap %a at (%i,%i)",nofcolumngaps,foundc,foundr)
+                        setwhd(v,widths[currentcolumn],lineheight,linedepth)
+                        local column = cells[foundc]
+                        --
+                        column[foundr] = v
+                        used = used - hd
+                        if used > 0 then
+                            for r=foundr+1,foundr+foundn-1 do
+                                used = used - hd
+                                foundr = foundr + 1
+                                column[r] = true
+                                if used <= 0 then
+                                    break
+                                end
+                            end
+                        end
+                        currentcolumn = foundc
+                        currentrow    = foundr
+                        dataset.currentcolumn = currentcolumn
+                        dataset.currentrow    = currentrow
+                        b = getbox(box)
+                        l = b and getlist(b)
+                    else
+                        local column = cells[foundc]
+                        for i=foundr,foundr+foundn-1 do
+                            column[i] = true
+                        end
+                        b = getbox(box)
+                        l = b and getlist(b)
+                    end
                 end
             else
-                dataset.rest = l
-                return -- save and flush
+                b = getbox(box)
+                l = b and getlist(b)
+                break
             end
         end
     end
@@ -1184,7 +966,8 @@ end
 
 -- state : repeat | start
 
-local ctx_page_grd_set_area = context.protected.page_grd_set_area
+-- local ctx_page_grd_set_area = context.protected.page_grd_set_area
+local ctx_page_grd_set_area = context.page_grd_set_area
 
 function columnsets.flushareas(name)
     local nofareas = #areas
@@ -1221,7 +1004,7 @@ function columnsets.flushareas(name)
          -- report("span, width %p, overflow %i",width,overflow)
             if overflow > 0 then
                 local used = nofcolumns - overflow
-                left  = dataset.spreads[column][used] + getdimen("backspace")
+                left  = dataset.spreads[column][used] + texgetdimen("backspace")
             end
             ctx_page_grd_set_area(name,area.name,column,row,width,height,start,left) -- or via counters / dimens
             if area.state ~= v_repeat then

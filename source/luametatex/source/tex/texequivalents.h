@@ -294,7 +294,10 @@ typedef enum glue_codes {
     left_skip_code,                /*tex glue at left of justified lines */
     right_skip_code,               /*tex glue at right of justified lines */
     top_skip_code,                 /*tex glue at top of main pages */
+    bottom_skip_code,              /*tex glue at bottom of main pages */
     split_top_skip_code,           /*tex glue at top of split pages */
+    balance_top_skip_code,
+    balance_bottom_skip_code,
     tab_skip_code,                 /*tex glue between aligned entries */
     space_skip_code,               /*tex glue between words (if not |zero_glue|) */
     xspace_skip_code,              /*tex glue after sentences (if not |zero_glue|) */
@@ -386,6 +389,8 @@ typedef enum specification_codes {
     par_shape_code,               /*tex specifies paragraph shape, internal register */
     par_passes_code,
     par_passes_exception_code,
+    balance_shape_code,
+    balance_passes_code,
     inter_line_penalties_code,    /*tex additional penalties between lines */
     club_penalties_code,          /*tex penalties for creating club lines */
     widow_penalties_code,         /*tex penalties for creating widow lines */
@@ -432,6 +437,8 @@ typedef enum page_property_codes {
     insert_height_code,
     insert_depth_code,
     insert_width_code,
+    insert_line_height_code,
+    insert_line_depth_code,
     /*tex These can't be set: */
     page_stretch_code,
     page_fistretch_code,
@@ -445,10 +452,17 @@ typedef enum page_property_codes {
     page_last_fillstretch_code,
     page_last_filllstretch_code,
     page_last_shrink_code,
+    /* these are hosted here */
+    split_last_depth_code,
+    split_last_height_code,
+    split_last_shrink_code,
+    split_last_stretch_code,
+    /* */
+    mvl_currently_active_code,
 } page_property_codes;
 
 # define first_page_property_code page_goal_code
-# define last_page_property_code  insert_width_code
+# define last_page_property_code  mvl_currently_active_code
 
 /*tex
     We cheat: these previous bases are to really bases which is why math and del get separated by
@@ -475,6 +489,7 @@ typedef enum int_codes {
     math_left_class_code,
     math_right_class_code,
     output_box_code,
+    no_output_box_error_code,
     new_line_char_code,
     end_line_char_code,
     language_code,
@@ -537,6 +552,7 @@ typedef enum int_codes {
     tracing_stats_code,                 /*tex show memory usage if \TeX\ knows it */
     tracing_paragraphs_code,            /*tex show line-break calculations */
     tracing_pages_code,                 /*tex show page-break calculations */
+    tracing_balancing_code,             /*tex show balance-break calculations */
     tracing_output_code,                /*tex show boxes when they are shipped out */
     tracing_lost_chars_code,            /*tex show characters that aren't in the font */
     tracing_commands_code,              /*tex show command codes at |big_switch| */
@@ -546,6 +562,7 @@ typedef enum int_codes {
     tracing_groups_code,                /*tex show save/restore groups */
     tracing_ifs_code,                   /*tex show conditionals */
     tracing_math_code,
+    tracing_mvl_code,
     tracing_levels_code,                /*tex show levels when tracing */
     tracing_nesting_code,               /*tex show incomplete groups and ifs within files */
     tracing_alignments_code,            /*tex show nesting of noalign and preambles */
@@ -669,7 +686,15 @@ typedef enum int_codes {
     line_break_passes_code,
     line_break_optional_code,
     line_break_checks_code,
- // etex_expr_mode_code,
+    balance_checks_code,
+    balance_break_passes_code,
+    balance_tolerance_code,
+    balance_penalty_code,
+    balance_adj_demerits_code,
+    balance_looseness_code,
+    vsplit_checks_code,
+    etex_expr_mode_code,
+    par_options_code,
     /*
         This one was added as experiment to \LUATEX\ (answer to a forwarded question) but as it
         didn't get tested it will go away. \CONTEXT\ doesn't need it and we don't need to be
@@ -749,12 +774,17 @@ typedef enum dimension_codes {
     page_extra_goal_code,
     ignore_depth_criterion_code,
     short_inline_math_threshold_code,
+    split_extra_height_code,
+    balance_emergency_stretch_code,
+    balance_emergency_shrink_code,
+    balance_vsize_code,
+    balance_line_height_code,
     /*tex total number of dimension parameters */
     number_dimension_pars,
 } dimension_codes;
 
 # define first_dimension_code par_indent_code
-# define last_dimension_code  short_inline_math_threshold_code
+# define last_dimension_code  balance_line_height_code
 
 typedef enum attribute_codes {
     /*tex total number of attribute parameters */
@@ -1327,142 +1357,302 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 
 */
 
-# define space_skip_par                   glue_parameter(space_skip_code)
-# define xspace_skip_par                  glue_parameter(xspace_skip_code)
-# define math_skip_par                    glue_parameter(math_skip_code)
-# define math_skip_mode_par               integer_parameter(math_skip_mode_code)
-# define math_double_script_mode_par      integer_parameter(math_double_script_mode_code)
-# define math_font_control_par            integer_parameter(math_font_control_code)
-# define math_display_mode_par            integer_parameter(math_display_mode_code)
-# define math_dict_group_par              integer_parameter(math_dict_group_code)
-# define math_dict_properties_par         integer_parameter(math_dict_properties_code)
-# define math_threshold_par               glue_parameter(math_threshold_code)
+# define local_left_box_par               box_parameter(local_left_box_code)
+# define local_middle_box_par             box_parameter(local_middle_box_code)
+# define local_right_box_par              box_parameter(local_right_box_code)
+
+# define balance_emergency_shrink_par     dimension_parameter(balance_emergency_shrink_code)
+# define balance_emergency_stretch_par    dimension_parameter(balance_emergency_stretch_code)
+# define balance_vsize_par                dimension_parameter(balance_vsize_code)
+# define balance_line_height_par          dimension_parameter(balance_line_height_code)
+# define box_max_depth_par                dimension_parameter(box_max_depth_code)
+# define box_max_depth_par                dimension_parameter(box_max_depth_code)
+# define delimiter_shortfall_par          dimension_parameter(delimiter_shortfall_code)
+# define display_indent_par               dimension_parameter(display_indent_code)
+# define display_width_par                dimension_parameter(display_width_code)
+# define emergency_extra_stretch_par      dimension_parameter(emergency_extra_stretch_code)
+# define emergency_stretch_par            dimension_parameter(emergency_stretch_code)
+# define glyph_x_offset_par               dimension_parameter(glyph_x_offset_code)
+# define glyph_y_offset_par               dimension_parameter(glyph_y_offset_code)
+# define hang_indent_par                  dimension_parameter(hang_indent_code)
+# define hfuzz_par                        dimension_parameter(hfuzz_code)
+# define hsize_par                        dimension_parameter(hsize_code)
+# define ignore_depth_criterion_par       dimension_parameter(ignore_depth_criterion_code)
+# define line_skip_limit_par              dimension_parameter(line_skip_limit_code)
+# define math_surround_par                dimension_parameter(math_surround_code)
+# define max_depth_par                    dimension_parameter(max_depth_code)
+# define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
+# define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
+# define overfull_rule_par                dimension_parameter(overfull_rule_code)
 # define page_extra_goal_par              dimension_parameter(page_extra_goal_code)
+# define par_indent_par                   dimension_parameter(par_indent_code)
+# define pre_display_size_par             dimension_parameter(pre_display_size_code)
+# define px_dimension_par                 dimension_parameter(px_dimension_code)
+# define script_space_par                 dimension_parameter(script_space_code)
+# define short_inline_math_threshold_par  dimension_parameter(short_inline_math_threshold_code)
+# define split_extra_height_par           dimension_parameter(split_extra_height_code)
+# define split_max_depth_par              dimension_parameter(split_max_depth_code)
+# define tab_size_par                     dimension_parameter(tab_size_code)
+# define vfuzz_par                        dimension_parameter(vfuzz_code)
+# define vsize_par                        dimension_parameter(vsize_code)
+
+# define additional_page_skip_par         glue_parameter(additional_page_skip_code)
+# define balance_bottom_skip_par          glue_parameter(balance_bottom_skip_code)
+# define balance_top_skip_par             glue_parameter(balance_top_skip_code)
+# define baseline_skip_par                glue_parameter(baseline_skip_code)
+# define bottom_skip_par                  glue_parameter(bottom_skip_code)
+# define emergency_left_skip_par          glue_parameter(emergency_left_skip_code)
+# define emergency_right_skip_par         glue_parameter(emergency_right_skip_code)
 # define initial_page_skip_par            glue_parameter(initial_page_skip_code)
 # define initial_top_skip_par             glue_parameter(initial_top_skip_code)
-# define additional_page_skip_par         glue_parameter(additional_page_skip_code)
-
-# define pre_display_size_par             dimension_parameter(pre_display_size_code)
-# define display_width_par                dimension_parameter(display_width_code)
-# define display_indent_par               dimension_parameter(display_indent_code)
-# define math_surround_par                dimension_parameter(math_surround_code)
-
-# define display_skip_mode_par            integer_parameter(math_display_skip_mode_code)
-# define math_eqno_gap_step_par           integer_parameter(math_eqno_gap_step_code)
-
-# define par_direction_par                integer_parameter(par_direction_code)
-# define text_direction_par               integer_parameter(text_direction_code)
-# define math_direction_par               integer_parameter(math_direction_code)
-
-# define first_valid_language_par         integer_parameter(first_valid_language_code)
-
-# define hsize_par                        dimension_parameter(hsize_code)
-# define vsize_par                        dimension_parameter(vsize_code)
-# define hfuzz_par                        dimension_parameter(hfuzz_code)
-# define vfuzz_par                        dimension_parameter(vfuzz_code)
-# define hbadness_par                     integer_parameter(hbadness_code)
-# define vbadness_par                     integer_parameter(vbadness_code)
-
-# define baseline_skip_par                glue_parameter(baseline_skip_code)
-# define line_skip_par                    glue_parameter(line_skip_code)
-# define par_indent_par                   dimension_parameter(par_indent_code)
-# define hang_indent_par                  dimension_parameter(hang_indent_code)
-# define hang_after_par                   integer_parameter(hang_after_code)
 # define left_skip_par                    glue_parameter(left_skip_code)
-# define right_skip_par                   glue_parameter(right_skip_code)
+# define line_skip_par                    glue_parameter(line_skip_code)
+# define math_skip_par                    glue_parameter(math_skip_code)
+# define math_threshold_par               glue_parameter(math_threshold_code)
 # define par_fill_left_skip_par           glue_parameter(par_fill_left_skip_code)
 # define par_fill_right_skip_par          glue_parameter(par_fill_right_skip_code)
 # define par_init_left_skip_par           glue_parameter(par_init_left_skip_code)
 # define par_init_right_skip_par          glue_parameter(par_init_right_skip_code)
-# define emergency_left_skip_par          glue_parameter(emergency_left_skip_code)
-# define emergency_right_skip_par         glue_parameter(emergency_right_skip_code)
+# define right_skip_par                   glue_parameter(right_skip_code)
+# define space_skip_par                   glue_parameter(space_skip_code)
+# define split_top_skip_par               glue_parameter(split_top_skip_code)
 # define tab_skip_par                     glue_parameter(tab_skip_code)
+# define top_skip_par                     glue_parameter(top_skip_code)
+# define xspace_skip_par                  glue_parameter(xspace_skip_code)
 
-# define emergency_stretch_par            dimension_parameter(emergency_stretch_code)
-# define emergency_extra_stretch_par      dimension_parameter(emergency_extra_stretch_code)
-# define pre_tolerance_par                integer_parameter(pre_tolerance_code)
-# define tolerance_par                    integer_parameter(tolerance_code)
-# define looseness_par                    integer_parameter(looseness_code)
-# define math_pre_tolerance_par           integer_parameter(math_pre_tolerance_code)
-# define math_tolerance_par               integer_parameter(math_tolerance_code)
+# define adj_demerits_par                 integer_parameter(adj_demerits_code)
 # define adjust_spacing_par               integer_parameter(adjust_spacing_code)
+# define adjust_spacing_shrink_par        integer_parameter(adjust_spacing_shrink_code)
 # define adjust_spacing_step_par          integer_parameter(adjust_spacing_step_code)
 # define adjust_spacing_stretch_par       integer_parameter(adjust_spacing_stretch_code)
-# define adjust_spacing_shrink_par        integer_parameter(adjust_spacing_shrink_code)
-# define adj_demerits_par                 integer_parameter(adj_demerits_code)
-# define protrude_chars_par               integer_parameter(protrude_chars_code)
-# define line_penalty_par                 integer_parameter(line_penalty_code)
-# define last_line_fit_par                integer_parameter(last_line_fit_code)
-# define double_penalty_mode_par          integer_parameter(double_penalty_mode_code)
-# define double_hyphen_demerits_par       integer_parameter(double_hyphen_demerits_code)
-# define final_hyphen_demerits_par        integer_parameter(final_hyphen_demerits_code)
-# define inter_line_penalty_par           integer_parameter(inter_line_penalty_code)
-# define club_penalty_par                 integer_parameter(club_penalty_code)
-# define widow_penalty_par                integer_parameter(widow_penalty_code)
-# define display_widow_penalty_par        integer_parameter(display_widow_penalty_code)
-# define single_line_penalty_par          integer_parameter(single_line_penalty_code)
-# define left_twin_demerits_par           integer_parameter(left_twin_demerits_code)
-# define right_twin_demerits_par          integer_parameter(right_twin_demerits_code)
-/*define page_boundary_penalty_par        integer_parameter(page_boundary_penalty_code) */ /* now in |\pageboundary| */
-# define line_break_passes_par            integer_parameter(line_break_passes_code)
-# define line_break_optional_par          integer_parameter(line_break_optional_code)
-# define broken_penalty_par               integer_parameter(broken_penalty_code)
-# define line_skip_limit_par              dimension_parameter(line_skip_limit_code)
-
 # define alignment_cell_source_par        integer_parameter(alignment_cell_source_code)
 # define alignment_wrap_source_par        integer_parameter(alignment_wrap_source_code)
-
-# define delimiter_shortfall_par          dimension_parameter(delimiter_shortfall_code)
-# define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
-# define script_space_par                 dimension_parameter(script_space_code)
-# define max_depth_par                    dimension_parameter(max_depth_code)
-# define box_max_depth_par                dimension_parameter(box_max_depth_code)
-# define split_max_depth_par              dimension_parameter(split_max_depth_code)
-# define overfull_rule_par                dimension_parameter(overfull_rule_code)
-# define box_max_depth_par                dimension_parameter(box_max_depth_code)
-# define ignore_depth_criterion_par       dimension_parameter(ignore_depth_criterion_code)
-# define short_inline_math_threshold_par  dimension_parameter(short_inline_math_threshold_code)
-
-# define top_skip_par                     glue_parameter(top_skip_code)
-# define split_top_skip_par               glue_parameter(split_top_skip_code)
-
-# define cur_fam_par                      integer_parameter(family_code)
-# define variable_family_par              integer_parameter(variable_family_code)
-# define eu_factor_par                    integer_parameter(eu_factor_code)
-# define space_factor_mode_par            integer_parameter(space_factor_mode)
-# define space_factor_shrink_limit_par    integer_parameter(space_factor_shrink_limit_code)
-# define space_factor_stretch_limit_par   integer_parameter(space_factor_stretch_limit_code)
-# define space_factor_overload_par        integer_parameter(space_factor_overload_code)
+# define auto_migration_mode_par          integer_parameter(auto_migration_mode_code)
+# define auto_paragraph_mode_par          integer_parameter(auto_paragraph_mode_code)
+# define automatic_hyphen_penalty_par     integer_parameter(automatic_hyphen_penalty_code)
+# define balance_adj_demerits_par         integer_parameter(balance_adj_demerits_code)
+# define balance_break_passes_par         integer_parameter(balance_break_passes_code)
+# define balance_checks_par               integer_parameter(balance_checks_code)
+# define balance_looseness_par            integer_parameter(balance_looseness_code)
+# define balance_tolerance_par            integer_parameter(balance_tolerance_code)
+# define balance_penalty_par              integer_parameter(balance_penalty_code)
 # define box_limit_mode_par               integer_parameter(box_limit_mode_code)
+# define broken_penalty_par               integer_parameter(broken_penalty_code)
+# define cat_code_table_par               integer_parameter(cat_code_table_code)
+# define club_penalty_par                 integer_parameter(club_penalty_code)
+# define copy_lua_input_nodes_par         integer_parameter(copy_lua_input_nodes_code)
+# define cur_fam_par                      integer_parameter(family_code)
+# define cur_font_par                     integer_parameter(font_code)
+# define cur_lang_par                     integer_parameter(language_code)
+# define day_par                          integer_parameter(day_code)
+# define default_hyphen_char_par          integer_parameter(default_hyphen_char_code)
+# define default_skew_char_par            integer_parameter(default_skew_char_code)
+# define delimiter_factor_par             integer_parameter(delimiter_factor_code)
+# define discretionary_options_par        integer_parameter(discretionary_options_code)
+# define display_skip_mode_par            integer_parameter(math_display_skip_mode_code)
+# define display_widow_penalty_par        integer_parameter(display_widow_penalty_code)
+# define double_hyphen_demerits_par       integer_parameter(double_hyphen_demerits_code)
+# define double_penalty_mode_par          integer_parameter(double_penalty_mode_code)
+# define end_line_char_par                integer_parameter(end_line_char_code)
+# define error_context_lines_par          integer_parameter(error_context_lines_code)
+# define escape_char_par                  integer_parameter(escape_char_code)
+# define etex_expr_mode_par               integer_parameter(etex_expr_mode_code)
+# define eu_factor_par                    integer_parameter(eu_factor_code)
+# define ex_hyphen_char_par               integer_parameter(ex_hyphen_char_code)
+# define ex_hyphen_penalty_par            integer_parameter(ex_hyphen_penalty_code)
+# define exception_penalty_par            integer_parameter(exception_penalty_code)
+# define explicit_hyphen_penalty_par      integer_parameter(explicit_hyphen_penalty_code)
+# define final_hyphen_demerits_par        integer_parameter(final_hyphen_demerits_code)
+# define first_valid_language_par         integer_parameter(first_valid_language_code)
+# define floating_penalty_par             integer_parameter(floating_penalty_code)
+# define global_defs_par                  integer_parameter(global_defs_code)
+# define glyph_data_par                   integer_parameter(glyph_data_code)
+# define glyph_options_par                integer_parameter(glyph_options_code)
+# define glyph_scale_par                  integer_parameter(glyph_scale_code)
+# define glyph_script_par                 integer_parameter(glyph_script_code)
+# define glyph_script_scale_par           integer_parameter(glyph_script_scale_code)
+# define glyph_scriptscript_scale_par     integer_parameter(glyph_scriptscript_scale_code)
+# define glyph_slant_par                  integer_parameter(glyph_slant_code)
+# define glyph_state_par                  integer_parameter(glyph_state_code)
+# define glyph_text_scale_par             integer_parameter(glyph_text_scale_code)
+# define glyph_weight_par                 integer_parameter(glyph_weight_code)
+# define glyph_x_scale_par                integer_parameter(glyph_x_scale_code)
+# define glyph_y_scale_par                integer_parameter(glyph_y_scale_code)
+# define hang_after_par                   integer_parameter(hang_after_code)
+# define hbadness_par                     integer_parameter(hbadness_code)
+# define holding_inserts_par              integer_parameter(holding_inserts_code)
+# define holding_migrations_par           integer_parameter(holding_migrations_code)
+# define hyphen_penalty_par               integer_parameter(hyphen_penalty_code)
+# define hyphenation_mode_par             integer_parameter(hyphenation_mode_code)
+# define inter_line_penalty_par           integer_parameter(inter_line_penalty_code)
+# define internal_dir_state_par           integer_parameter(internal_dir_state_code)
+# define internal_math_scale_par          integer_parameter(internal_math_scale_code)
+# define internal_math_style_par          integer_parameter(internal_math_style_code)
+# define internal_par_state_par           integer_parameter(internal_par_state_code)
+# define language_par                     integer_parameter(language_code)
+# define last_line_fit_par                integer_parameter(last_line_fit_code)
+# define left_hyphen_min_par              integer_parameter(left_hyphen_min_code)
+# define left_twin_demerits_par           integer_parameter(left_twin_demerits_code)
+# define line_break_checks_par            integer_parameter(line_break_checks_code)
+# define line_break_optional_par          integer_parameter(line_break_optional_code)
+# define line_break_passes_par            integer_parameter(line_break_passes_code)
+# define line_penalty_par                 integer_parameter(line_penalty_code)
+# define local_broken_penalty_par         integer_parameter(local_broken_penalty_code)
+# define local_interline_penalty_par      integer_parameter(local_interline_penalty_code)
+# define local_pre_tolerance_par          integer_parameter(local_pre_tolerance_code)
+# define local_tolerance_par              integer_parameter(local_tolerance_code)
+# define looseness_par                    integer_parameter(looseness_code)
+# define math_begin_class_par             integer_parameter(math_begin_class_code)
+# define math_check_fences_par            integer_parameter(math_check_fences_mode_code)
+# define math_dict_group_par              integer_parameter(math_dict_group_code)
+# define math_dict_properties_par         integer_parameter(math_dict_properties_code)
+# define math_direction_par               integer_parameter(math_direction_code)
+# define math_display_mode_par            integer_parameter(math_display_mode_code)
+# define math_display_penalty_factor_par  integer_parameter(math_display_penalty_factor_code)
+# define math_double_script_mode_par      integer_parameter(math_double_script_mode_code)
+# define math_end_class_par               integer_parameter(math_end_class_code)
+# define math_eqno_gap_step_par           integer_parameter(math_eqno_gap_step_code)
+# define math_font_control_par            integer_parameter(math_font_control_code)
+# define math_glue_mode_par               integer_parameter(math_glue_mode_code)
+# define math_grouping_mode_par           integer_parameter(math_grouping_mode_code)
+# define math_inline_penalty_factor_par   integer_parameter(math_inline_penalty_factor_code)
+# define math_left_class_par              integer_parameter(math_left_class_code)
+# define math_limits_mode_par             integer_parameter(math_limits_mode_code)
+# define math_nolimits_mode_par           integer_parameter(math_nolimits_mode_code)
+# define math_penalties_mode_par          integer_parameter(math_penalties_mode_code)
+# define math_pre_display_gap_factor_par  integer_parameter(math_pre_display_gap_factor_code)
+# define math_pre_tolerance_par           integer_parameter(math_pre_tolerance_code)
+# define math_right_class_par             integer_parameter(math_right_class_code)
+# define math_rules_fam_par               integer_parameter(math_rules_fam_code)
+# define math_rules_mode_par              integer_parameter(math_rules_mode_code)
+# define math_scripts_mode_par            integer_parameter(math_scripts_mode_code)
+# define math_skip_mode_par               integer_parameter(math_skip_mode_code)
+# define math_slack_mode_par              integer_parameter(math_slack_mode_code)
+# define math_spacing_mode_par            integer_parameter(math_spacing_mode_code)
+# define math_tolerance_par               integer_parameter(math_tolerance_code)
+# define max_dead_cycles_par              integer_parameter(max_dead_cycles_code)
+# define month_par                        integer_parameter(month_code)
+# define new_line_char_par                integer_parameter(new_line_char_code)
+# define no_output_box_error_par          integer_parameter(no_output_box_error_code)
+# define no_spaces_par                    integer_parameter(no_spaces_code)
+# define normalize_line_mode_par          integer_parameter(normalize_line_mode_code)
+# define normalize_par_mode_par           integer_parameter(normalize_par_mode_code)
+# define output_box_par                   integer_parameter(output_box_code)
+# define overload_mode_par                integer_parameter(overload_mode_code)
+# define par_direction_par                integer_parameter(par_direction_code)
+# define par_options_par                  integer_parameter(par_options_code)
+# define parameter_mode_par               integer_parameter(parameter_mode_code)
+# define pausing_par                      integer_parameter(pausing_code)
+# define post_display_penalty_par         integer_parameter(post_display_penalty_code)
+# define post_inline_penalty_par          integer_parameter(post_inline_penalty_code)
+# define post_short_inline_penalty_par    integer_parameter(post_short_inline_penalty_code)
 # define pre_display_direction_par        integer_parameter(pre_display_direction_code)
 # define pre_display_penalty_par          integer_parameter(pre_display_penalty_code)
-# define post_display_penalty_par         integer_parameter(post_display_penalty_code)
 # define pre_inline_penalty_par           integer_parameter(pre_inline_penalty_code)
-# define post_inline_penalty_par          integer_parameter(post_inline_penalty_code)
 # define pre_short_inline_penalty_par     integer_parameter(pre_short_inline_penalty_code)
-# define post_short_inline_penalty_par    integer_parameter(post_short_inline_penalty_code)
-# define short_inline_orphan_penalty_par  integer_parameter(short_inline_orphan_penalty_code)
-
+# define pre_tolerance_par                integer_parameter(pre_tolerance_code)
+# define protrude_chars_par               integer_parameter(protrude_chars_code)
+# define right_hyphen_min_par             integer_parameter(right_hyphen_min_code)
+# define right_twin_demerits_par          integer_parameter(right_twin_demerits_code)
+# define saving_hyph_codes_par            integer_parameter(saving_hyph_codes_code)
+# define saving_vdiscards_par             integer_parameter(saving_vdiscards_code)
+# define script_space_after_factor_par    integer_parameter(script_space_after_factor_code)
 # define script_space_before_factor_par   integer_parameter(script_space_before_factor_code)
 # define script_space_between_factor_par  integer_parameter(script_space_between_factor_code)
-# define script_space_after_factor_par    integer_parameter(script_space_after_factor_code)
-
-# define local_interline_penalty_par      integer_parameter(local_interline_penalty_code)
-# define local_broken_penalty_par         integer_parameter(local_broken_penalty_code)
-# define local_tolerance_par              integer_parameter(local_tolerance_code)
-# define local_pre_tolerance_par          integer_parameter(local_pre_tolerance_code)
-# define local_left_box_par               box_parameter(local_left_box_code)
-# define local_right_box_par              box_parameter(local_right_box_code)
-# define local_middle_box_par             box_parameter(local_middle_box_code)
-
-# define line_break_checks_par            integer_parameter(line_break_checks_code)
-
-# define end_line_char_par                integer_parameter(end_line_char_code)
-# define new_line_char_par                integer_parameter(new_line_char_code)
-# define escape_char_par                  integer_parameter(escape_char_code)
+# define shaping_penalties_mode_par       integer_parameter(shaping_penalties_mode_code)
+# define shaping_penalty_par              integer_parameter(shaping_penalty_code)
+# define short_inline_orphan_penalty_par  integer_parameter(short_inline_orphan_penalty_code)
+# define show_box_breadth_par             integer_parameter(show_box_breadth_code)
+# define show_box_depth_par               integer_parameter(show_box_depth_code)
+# define show_node_details_par            integer_parameter(show_node_details_code)
+# define single_line_penalty_par          integer_parameter(single_line_penalty_code)
 # define space_char_par                   integer_parameter(space_char_code)
+# define space_factor_mode_par            integer_parameter(space_factor_mode)
+# define space_factor_overload_par        integer_parameter(space_factor_overload_code)
+# define space_factor_shrink_limit_par    integer_parameter(space_factor_shrink_limit_code)
+# define space_factor_stretch_limit_par   integer_parameter(space_factor_stretch_limit_code)
+# define sup_mark_mode_par                integer_parameter(sup_mark_mode_code)
+# define text_direction_par               integer_parameter(text_direction_code)
+# define time_par                         integer_parameter(time_code)
+# define tolerance_par                    integer_parameter(tolerance_code)
+# define tracing_adjusts_par              integer_parameter(tracing_adjusts_code)
+# define tracing_alignments_par           integer_parameter(tracing_alignments_code)
+# define tracing_assigns_par              integer_parameter(tracing_assigns_code)
+# define tracing_balancing_par            integer_parameter(tracing_balancing_code)
+# define tracing_commands_par             integer_parameter(tracing_commands_code)
+# define tracing_expressions_par          integer_parameter(tracing_expressions_code)
+# define tracing_fitness_par              integer_parameter(tracing_fitness_code)
+# define tracing_full_boxes_par           integer_parameter(tracing_full_boxes_code)
+# define tracing_groups_par               integer_parameter(tracing_groups_code)
+# define tracing_hyphenation_par          integer_parameter(tracing_hyphenation_code)
+# define tracing_ifs_par                  integer_parameter(tracing_ifs_code)
+# define tracing_inserts_par              integer_parameter(tracing_inserts_code)
+# define tracing_levels_par               integer_parameter(tracing_levels_code)
+# define tracing_lists_par                integer_parameter(tracing_lists_code)
+# define tracing_loners_par               integer_parameter(tracing_loners_code)
+# define tracing_looseness_par            integer_parameter(tracing_looseness_code)
+# define tracing_lost_chars_par           integer_parameter(tracing_lost_chars_code)
+# define tracing_macros_par               integer_parameter(tracing_macros_code)
+# define tracing_marks_par                integer_parameter(tracing_marks_code)
+# define tracing_math_par                 integer_parameter(tracing_math_code)
+# define tracing_mvl_par                  integer_parameter(tracing_mvl_code)
+# define tracing_nesting_par              integer_parameter(tracing_nesting_code)
+# define tracing_nodes_par                integer_parameter(tracing_nodes_code)
+# define tracing_online_par               integer_parameter(tracing_online_code)
+# define tracing_orphans_par              integer_parameter(tracing_orphans_code)
+# define tracing_output_par               integer_parameter(tracing_output_code)
+# define tracing_pages_par                integer_parameter(tracing_pages_code)
+# define tracing_paragraphs_par           integer_parameter(tracing_paragraphs_code)
+# define tracing_passes_par               integer_parameter(tracing_passes_code)
+# define tracing_penalties_par            integer_parameter(tracing_penalties_code)
+# define tracing_restores_par             integer_parameter(tracing_restores_code)
+# define tracing_stats_par                integer_parameter(tracing_stats_code)
+# define tracing_toddlers_par             integer_parameter(tracing_toddlers_code)
+# define uc_hyph_par                      integer_parameter(uc_hyph_code)
+# define variable_family_par              integer_parameter(variable_family_code)
+# define vbadness_par                     integer_parameter(vbadness_code)
+# define vsplit_checks_par                integer_parameter(vsplit_checks_code)
+# define widow_penalty_par                integer_parameter(widow_penalty_code)
+# define year_par                         integer_parameter(year_code)
 
-//define etex_expr_mode_par               integer_parameter(etex_expr_mode_code)
+# define med_muskip_par                   muglue_parameter(med_muskip_code)
+# define petty_muskip_par                 muglue_parameter(petty_muskip_code)
+# define thick_muskip_par                 muglue_parameter(thick_muskip_code)
+# define thin_muskip_par                  muglue_parameter(thin_muskip_code)
+# define tiny_muskip_par                  muglue_parameter(tiny_muskip_code)
+
+# define end_of_group_par                 toks_parameter(end_of_group_code)
+# define error_help_par                   toks_parameter(error_help_code)
+# define every_before_par_par             toks_parameter(every_before_par_code)
+# define every_cr_par                     toks_parameter(every_cr_code)
+# define every_display_par                toks_parameter(every_display_code)
+# define every_eof_par                    toks_parameter(every_eof_code)
+# define every_hbox_par                   toks_parameter(every_hbox_code)
+# define every_job_par                    toks_parameter(every_job_code)
+# define every_math_atom_par              toks_parameter(every_math_atom_code)
+# define every_math_par                   toks_parameter(every_math_code)
+# define every_par_par                    toks_parameter(every_par_code)
+# define every_tab_par                    toks_parameter(every_tab_code)
+# define every_vbox_par                   toks_parameter(every_vbox_code)
+# define output_routine_par               toks_parameter(output_routine_code)
+
+# define adjacent_demerits_par            specification_parameter(adjacent_demerits_code)
+# define balance_passes_par               specification_parameter(balance_passes_code)
+# define balance_shape_par                specification_parameter(balance_shape_code)
+# define broken_penalties_par             specification_parameter(broken_penalties_code)
+# define club_penalties_par               specification_parameter(club_penalties_code)
+# define display_widow_penalties_par      specification_parameter(display_widow_penalties_code)
+# define fitness_classes_par              specification_parameter(fitness_classes_code)
+# define inter_line_penalties_par         specification_parameter(inter_line_penalties_code)
+# define math_backward_penalties_par      specification_parameter(math_backward_penalties_code)
+# define math_forward_penalties_par       specification_parameter(math_forward_penalties_code)
+# define orphan_line_factors_par          specification_parameter(orphan_line_factors_code)
+# define orphan_penalties_par             specification_parameter(orphan_penalties_code)
+# define par_passes_exception_par         specification_parameter(par_passes_exception_code)
+# define par_passes_par                   specification_parameter(par_passes_code)
+# define par_shape_par                    specification_parameter(par_shape_code)
+# define toddler_penalties_par            specification_parameter(toddler_penalties_code)
+# define widow_penalties_par              specification_parameter(widow_penalties_code)
 
 # define end_line_char_inactive           ((end_line_char_par < 0) || (end_line_char_par > max_endline_character))
 
@@ -1476,71 +1666,16 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 /*define pre_binary_penalty_par           integer_parameter(pre_binary_penalty_code)    */
 /*define pre_relation_penalty_par         integer_parameter(pre_relation_penalty_code)  */
 
-# define delimiter_factor_par             integer_parameter(delimiter_factor_code)
-# define math_penalties_mode_par          integer_parameter(math_penalties_mode_code)
-# define math_check_fences_par            integer_parameter(math_check_fences_mode_code)
-# define math_slack_mode_par              integer_parameter(math_slack_mode_code)
-# define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
-# define no_spaces_par                    integer_parameter(no_spaces_code)
-# define glyph_options_par                integer_parameter(glyph_options_code)
-# define glyph_scale_par                  integer_parameter(glyph_scale_code)
-# define glyph_text_scale_par             integer_parameter(glyph_text_scale_code)
-# define glyph_script_scale_par           integer_parameter(glyph_script_scale_code)
-# define glyph_scriptscript_scale_par     integer_parameter(glyph_scriptscript_scale_code)
-# define glyph_x_scale_par                integer_parameter(glyph_x_scale_code)
-# define glyph_y_scale_par                integer_parameter(glyph_y_scale_code)
-# define glyph_slant_par                  integer_parameter(glyph_slant_code)
-# define glyph_weight_par                 integer_parameter(glyph_weight_code)
-# define glyph_x_offset_par               dimension_parameter(glyph_x_offset_code)
-# define glyph_y_offset_par               dimension_parameter(glyph_y_offset_code)
-# define discretionary_options_par        integer_parameter(discretionary_options_code)
-# define math_scripts_mode_par            integer_parameter(math_scripts_mode_code)
-# define math_limits_mode_par             integer_parameter(math_limits_mode_code)
-# define math_nolimits_mode_par           integer_parameter(math_nolimits_mode_code)
-# define math_rules_mode_par              integer_parameter(math_rules_mode_code)
-# define math_rules_fam_par               integer_parameter(math_rules_fam_code)
-# define math_glue_mode_par               integer_parameter(math_glue_mode_code)
-
 typedef enum math_glue_modes {
     math_glue_stretch_code = 0x01,
     math_glue_shrink_code  = 0x02,
     math_glue_limit_code   = 0x04,
 } math_glue_modes;
 
-# define math_glue_stretch_enabled        ((math_glue_mode_par & math_glue_stretch_code) == math_glue_stretch_code)
-# define math_glue_shrink_enabled         ((math_glue_mode_par & math_glue_shrink_code) == math_glue_shrink_code)
-# define math_glue_limit_enabled          ((math_glue_mode_par & math_glue_limit_code) == math_glue_limit_code)
-# define default_math_glue_mode           (math_glue_stretch_code | math_glue_shrink_code)
-
-# define petty_muskip_par                 muglue_parameter(petty_muskip_code)
-# define tiny_muskip_par                  muglue_parameter(tiny_muskip_code)
-# define thin_muskip_par                  muglue_parameter(thin_muskip_code)
-# define med_muskip_par                   muglue_parameter(med_muskip_code)
-# define thick_muskip_par                 muglue_parameter(thick_muskip_code)
-
-# define every_math_par                   toks_parameter(every_math_code)
-# define every_display_par                toks_parameter(every_display_code)
-# define every_cr_par                     toks_parameter(every_cr_code)
-# define every_tab_par                    toks_parameter(every_tab_code)
-# define every_hbox_par                   toks_parameter(every_hbox_code)
-# define every_vbox_par                   toks_parameter(every_vbox_code)
-# define every_math_atom_par              toks_parameter(every_math_atom_code)
-# define every_eof_par                    toks_parameter(every_eof_code)
-# define every_par_par                    toks_parameter(every_par_code)
-# define every_before_par_par             toks_parameter(every_before_par_code)
-# define every_job_par                    toks_parameter(every_job_code)
-# define error_help_par                   toks_parameter(error_help_code)
-# define end_of_group_par                 toks_parameter(end_of_group_code)
-/*define end_of_par_par                   toks_parameter(end_of_par_code) */
-
-# define internal_par_state_par           integer_parameter(internal_par_state_code)
-# define internal_dir_state_par           integer_parameter(internal_dir_state_code)
-# define internal_math_style_par          integer_parameter(internal_math_style_code)
-# define internal_math_scale_par          integer_parameter(internal_math_scale_code)
-
-# define overload_mode_par                integer_parameter(overload_mode_code)
-
-# define auto_paragraph_mode_par          integer_parameter(auto_paragraph_mode_code)
+# define math_glue_stretch_enabled ((math_glue_mode_par & math_glue_stretch_code) == math_glue_stretch_code)
+# define math_glue_shrink_enabled  ((math_glue_mode_par & math_glue_shrink_code) == math_glue_shrink_code)
+# define math_glue_limit_enabled   ((math_glue_mode_par & math_glue_limit_code) == math_glue_limit_code)
+# define default_math_glue_mode    (math_glue_stretch_code | math_glue_shrink_code)
 
 typedef enum auto_paragraph_modes {
     auto_paragraph_text  = 0x01,
@@ -1549,9 +1684,6 @@ typedef enum auto_paragraph_modes {
 } auto_paragraph_modes;
 
 # define auto_paragraph_mode(flag) ((auto_paragraph_mode_par) & (flag))
-
-# define shaping_penalties_mode_par      integer_parameter(shaping_penalties_mode_code)
-# define shaping_penalty_par             integer_parameter(shaping_penalty_code)
 
 typedef enum shaping_penalties_mode_bits {
     inter_line_penalty_shaping = 0x01,
@@ -1562,24 +1694,6 @@ typedef enum shaping_penalties_mode_bits {
 
 # define is_shaping_penalties_mode(what,flag) ((what) & (flag))
 
-# define tab_size_par                    dimension_parameter(tab_size_code)
-
-# define par_shape_par                   specification_parameter(par_shape_code)
-# define par_passes_par                  specification_parameter(par_passes_code)
-# define par_passes_exception_par        specification_parameter(par_passes_exception_code)
-# define inter_line_penalties_par        specification_parameter(inter_line_penalties_code)
-# define club_penalties_par              specification_parameter(club_penalties_code)
-# define widow_penalties_par             specification_parameter(widow_penalties_code)
-# define display_widow_penalties_par     specification_parameter(display_widow_penalties_code)
-# define broken_penalties_par            specification_parameter(broken_penalties_code)
-# define orphan_penalties_par            specification_parameter(orphan_penalties_code)
-# define toddler_penalties_par           specification_parameter(toddler_penalties_code)
-# define fitness_classes_par             specification_parameter(fitness_classes_code)
-# define adjacent_demerits_par           specification_parameter(adjacent_demerits_code)
-# define orphan_line_factors_par         specification_parameter(orphan_line_factors_code)
-# define math_forward_penalties_par      specification_parameter(math_forward_penalties_code)
-# define math_backward_penalties_par     specification_parameter(math_backward_penalties_code)
-
 /*tex
     We keep these three as reference but because they are backend related they are basically
     no-ops and ignored.
@@ -1588,52 +1702,6 @@ typedef enum shaping_penalties_mode_bits {
 /*define h_offset_par                    dimension_parameter(h_offset_code) */
 /*define v_offset_par                    dimension_parameter(v_offset_code) */
 /*define mag_par                         integer_parameter(mag_code) */
-
-# define px_dimension_par                dimension_parameter(px_dimension_code)
-
-# define max_dead_cycles_par             integer_parameter(max_dead_cycles_code)
-# define output_box_par                  integer_parameter(output_box_code)
-# define holding_inserts_par             integer_parameter(holding_inserts_code)
-# define holding_migrations_par          integer_parameter(holding_migrations_code)
-# define output_routine_par              toks_parameter(output_routine_code)
-# define floating_penalty_par            integer_parameter(floating_penalty_code)
-
-# define global_defs_par                 integer_parameter(global_defs_code)
-# define cat_code_table_par              integer_parameter(cat_code_table_code)
-# define saving_vdiscards_par            integer_parameter(saving_vdiscards_code)
-
-# define tracing_output_par              integer_parameter(tracing_output_code)
-# define tracing_stats_par               integer_parameter(tracing_stats_code)
-# define tracing_online_par              integer_parameter(tracing_online_code)
-# define tracing_paragraphs_par          integer_parameter(tracing_paragraphs_code)
-# define tracing_levels_par              integer_parameter(tracing_levels_code)
-# define tracing_nesting_par             integer_parameter(tracing_nesting_code)
-# define tracing_alignments_par          integer_parameter(tracing_alignments_code)
-# define tracing_inserts_par             integer_parameter(tracing_inserts_code)
-# define tracing_marks_par               integer_parameter(tracing_marks_code)
-# define tracing_adjusts_par             integer_parameter(tracing_adjusts_code)
-# define tracing_lost_chars_par          integer_parameter(tracing_lost_chars_code)
-# define tracing_ifs_par                 integer_parameter(tracing_ifs_code)
-# define tracing_commands_par            integer_parameter(tracing_commands_code)
-# define tracing_macros_par              integer_parameter(tracing_macros_code)
-# define tracing_assigns_par             integer_parameter(tracing_assigns_code)
-//define tracing_fonts_par               integer_parameter(tracing_fonts_code)
-# define tracing_pages_par               integer_parameter(tracing_pages_code)
-# define tracing_restores_par            integer_parameter(tracing_restores_code)
-# define tracing_groups_par              integer_parameter(tracing_groups_code)
-# define tracing_math_par                integer_parameter(tracing_math_code)
-# define tracing_hyphenation_par         integer_parameter(tracing_hyphenation_code)
-# define tracing_expressions_par         integer_parameter(tracing_expressions_code)
-# define tracing_nodes_par               integer_parameter(tracing_nodes_code)
-# define tracing_full_boxes_par          integer_parameter(tracing_full_boxes_code)
-# define tracing_penalties_par           integer_parameter(tracing_penalties_code)
-# define tracing_looseness_par           integer_parameter(tracing_looseness_code)
-# define tracing_lists_par               integer_parameter(tracing_lists_code)
-# define tracing_passes_par              integer_parameter(tracing_passes_code)
-# define tracing_fitness_par             integer_parameter(tracing_fitness_code)
-# define tracing_toddlers_par            integer_parameter(tracing_toddlers_code)
-# define tracing_orphans_par             integer_parameter(tracing_orphans_code)
-# define tracing_loners_par              integer_parameter(tracing_loners_code)
 
 /*tex
     This tracer is mostly there for debugging purposes. Therefore what gets traced and how might
@@ -1649,22 +1717,6 @@ typedef enum tracing_lists_codes {
 # define tracing_direction_lists         ((tracing_lists_par & trace_direction_list_code) == trace_direction_list_code)
 # define tracing_paragraph_lists         ((tracing_lists_par & trace_paragraph_list_code) == trace_paragraph_list_code)
 # define tracing_linebreak_lists         ((tracing_lists_par & trace_linebreak_list_code) == trace_linebreak_list_code)
-
-# define show_box_depth_par              integer_parameter(show_box_depth_code)
-# define show_box_breadth_par            integer_parameter(show_box_breadth_code)
-# define show_node_details_par           integer_parameter(show_node_details_code)
-
-# define pausing_par                     integer_parameter(pausing_code)
-
-# define error_context_lines_par         integer_parameter(error_context_lines_code)
-# define copy_lua_input_nodes_par        integer_parameter(copy_lua_input_nodes_code)
-
-# define math_pre_display_gap_factor_par integer_parameter(math_pre_display_gap_factor_code)
-
-# define time_par                        integer_parameter(time_code)
-# define day_par                         integer_parameter(day_code)
-# define month_par                       integer_parameter(month_code)
-# define year_par                        integer_parameter(year_code)
 
 typedef enum hyphenation_mode_bits {
     normal_hyphenation_mode              = 0x00001,
@@ -1694,40 +1746,6 @@ typedef enum hyphenation_mode_bits {
 # define flip_hyphenation_mode(a,b)   ((b) ? set_hyphenation_mode(a,b) : unset_hyphenation_mode(a,b))
 # define default_hyphenation_mode     (normal_hyphenation_mode | automatic_hyphenation_mode | explicit_hyphenation_mode | syllable_hyphenation_mode | compound_hyphenation_mode | force_handler_hyphenation_mode | feedback_compound_hyphenation_mode)
 
-# define language_par                    integer_parameter(language_code)
-# define hyphenation_mode_par            integer_parameter(hyphenation_mode_code)
-# define uc_hyph_par                     integer_parameter(uc_hyph_code)
-# define left_hyphen_min_par             integer_parameter(left_hyphen_min_code)
-# define right_hyphen_min_par            integer_parameter(right_hyphen_min_code)
-# define ex_hyphen_char_par              integer_parameter(ex_hyphen_char_code)
-# define hyphen_penalty_par              integer_parameter(hyphen_penalty_code)
-# define ex_hyphen_penalty_par           integer_parameter(ex_hyphen_penalty_code)
-# define default_hyphen_char_par         integer_parameter(default_hyphen_char_code)
-# define default_skew_char_par           integer_parameter(default_skew_char_code)
-# define saving_hyph_codes_par           integer_parameter(saving_hyph_codes_code)
-
-# define automatic_hyphen_penalty_par    integer_parameter(automatic_hyphen_penalty_code)
-# define explicit_hyphen_penalty_par     integer_parameter(explicit_hyphen_penalty_code)
-# define exception_penalty_par           integer_parameter(exception_penalty_code)
-
-# define math_spacing_mode_par           integer_parameter(math_spacing_mode_code)
-# define math_grouping_mode_par          integer_parameter(math_grouping_mode_code)
-# define math_begin_class_par            integer_parameter(math_begin_class_code)
-# define math_end_class_par              integer_parameter(math_end_class_code)
-# define math_left_class_par             integer_parameter(math_left_class_code)
-# define math_right_class_par            integer_parameter(math_right_class_code)
-# define sup_mark_mode_par               integer_parameter(sup_mark_mode_code)
-# define math_display_penalty_factor_par integer_parameter(math_display_penalty_factor_code)
-# define math_inline_penalty_factor_par  integer_parameter(math_inline_penalty_factor_code)
-
-# define glyph_data_par                  integer_parameter(glyph_data_code)
-# define glyph_state_par                 integer_parameter(glyph_state_code)
-# define glyph_script_par                integer_parameter(glyph_script_code)
-
-/*define glue_data_par                   integer_parameter(glue_data_code) */
-
-# define cur_lang_par                    integer_parameter(language_code)
-# define cur_font_par                    integer_parameter(font_code)
 
 typedef enum normalize_line_mode_bits {
     normalize_line_mode          = 0x0001,
@@ -1750,17 +1768,12 @@ typedef enum normalize_par_mode_bits {
     /*tex Conform etex we reset but one can wonder (ms mail/discussion) so we now have a flag. */
     keep_interline_penalties_mode = 0x0008,
     /*tex Maybe add some more control over the resets. */
+    remove_trailing_spaces_mode   = 0x0010,
 } normalize_par_mode_bits;
 
 typedef enum parameter_mode_bits {
     parameter_escape_mode = 0x0001,
 } parameter_mode_bits;
-
-# define normalize_line_mode_par  integer_parameter(normalize_line_mode_code)
-# define normalize_par_mode_par   integer_parameter(normalize_par_mode_code)
-# define auto_migration_mode_par  integer_parameter(auto_migration_mode_code)
-
-# define parameter_mode_par       integer_parameter(parameter_mode_code)
 
 # define normalize_line_mode_option(a) ((normalize_line_mode_par & a) == a)
 # define normalize_par_mode_option(a)  ((normalize_par_mode_par  & a) == a)
@@ -1849,93 +1862,91 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 
 /*tex
 
-    We add a bit more abstraction when setting the system parameters. This is not really
-    needed but it move all the |eq_| assignments to a place where we can keep an eye on
-    them.
+    We add a bit more abstraction when setting the system parameters. This is not really needed 
+    but it moves all the |eq_| assignments to a place where we can keep an eye on them.
 
 */
 
-# define update_tex_glyph_data(a,v)            tex_word_define(a, internal_integer_location(glyph_data_code), v)
-# define update_tex_glyph_state(a,v)           tex_word_define(a, internal_integer_location(glyph_state_code), v)
-# define update_tex_glyph_script(a,v)          tex_word_define(a, internal_integer_location(glyph_script_code), v)
-# define update_tex_family(a,v)                tex_word_define(a, internal_integer_location(family_code), v)
-# define update_tex_variable_family(a,v)       tex_word_define(a, internal_integer_location(variable_family_code), v)
-# define update_tex_language(a,v)              tex_word_define(a, internal_integer_location(language_code), v)
-# define update_tex_font(a,v)                  tex_word_define(a, internal_integer_location(font_code), v)
+# define tex_gq_word_define tex_geq_word_define
+# define tex_gq_define      tex_geq_define
 
-/*define update_tex_glue_data(a,v)             tex_word_define(a, internal_integer_location(glue_data_code), v) */
+# define update_tex_glyph_data(a,v)             tex_word_define(a, internal_integer_location(glyph_data_code), v)
+# define update_tex_glyph_state(a,v)            tex_word_define(a, internal_integer_location(glyph_state_code), v)
+# define update_tex_glyph_script(a,v)           tex_word_define(a, internal_integer_location(glyph_script_code), v)
+# define update_tex_family(a,v)                 tex_word_define(a, internal_integer_location(family_code), v)
+# define update_tex_language(a,v)               tex_word_define(a, internal_integer_location(language_code), v)
+# define update_tex_font(a,v)                   tex_word_define(a, internal_integer_location(font_code), v)
 
-# define update_tex_display_indent(v)          tex_eq_word_define(internal_dimension_location(display_indent_code), v)
-# define update_tex_display_width(v)           tex_eq_word_define(internal_dimension_location(display_width_code), v)
-# define update_tex_hang_after(v)              tex_eq_word_define(internal_integer_location(hang_after_code), v)
-# define update_tex_hang_indent(v)             tex_eq_word_define(internal_dimension_location(hang_indent_code), v)
-# define update_tex_looseness(v)               tex_eq_word_define(internal_integer_location(looseness_code), v)
-# define update_tex_single_line_penalty(v)     tex_eq_word_define(internal_integer_location(single_line_penalty_code), v)
-# define update_tex_left_twin_demerits(v)      tex_eq_word_define(internal_integer_location(left_twin_demerits_code), v)
-# define update_tex_right_twin_demerits(v)     tex_eq_word_define(internal_integer_location(right_twin_demerits_code), v)
-# define update_tex_math_direction(v)          tex_eq_word_define(internal_integer_location(math_direction_code), v)
-# define update_tex_internal_par_state(v)      tex_eq_word_define(internal_integer_location(internal_par_state_code), v)
-# define update_tex_internal_dir_state(v)      tex_eq_word_define(internal_integer_location(internal_dir_state_code), v)
-# define update_tex_internal_math_style(v)     tex_eq_word_define(internal_integer_location(internal_math_style_code), v)
-# define update_tex_internal_math_scale(v)     tex_eq_word_define(internal_integer_location(internal_math_scale_code), v)
-# define update_tex_output_penalty(v)          tex_geq_word_define(internal_integer_location(output_penalty_code), v)
-# define update_tex_par_direction(v)           tex_eq_word_define(internal_integer_location(par_direction_code), v)
-# define update_tex_pre_display_direction(v)   tex_eq_word_define(internal_integer_location(pre_display_direction_code), v)
-# define update_tex_pre_display_size(v)        tex_eq_word_define(internal_dimension_location(pre_display_size_code), v)
-# define update_tex_text_direction(v)          tex_eq_word_define(internal_integer_location(text_direction_code), v)
-# define update_tex_line_break_checks(v)       tex_eq_word_define(internal_integer_location(line_break_checks_code), v)
+# define update_tex_display_indent(v)           tex_eq_word_define(internal_dimension_location(display_indent_code), v)
+# define update_tex_display_width(v)            tex_eq_word_define(internal_dimension_location(display_width_code), v)
+# define update_tex_hang_after(v)               tex_eq_word_define(internal_integer_location(hang_after_code), v)
+# define update_tex_hang_indent(v)              tex_eq_word_define(internal_dimension_location(hang_indent_code), v)
+# define update_tex_looseness(v)                tex_eq_word_define(internal_integer_location(looseness_code), v)
+# define update_tex_single_line_penalty(v)      tex_eq_word_define(internal_integer_location(single_line_penalty_code), v)
+# define update_tex_left_twin_demerits(v)       tex_eq_word_define(internal_integer_location(left_twin_demerits_code), v)
+# define update_tex_right_twin_demerits(v)      tex_eq_word_define(internal_integer_location(right_twin_demerits_code), v)
+# define update_tex_math_direction(v)           tex_eq_word_define(internal_integer_location(math_direction_code), v)
+# define update_tex_internal_par_state(v)       tex_eq_word_define(internal_integer_location(internal_par_state_code), v)
+# define update_tex_internal_dir_state(v)       tex_eq_word_define(internal_integer_location(internal_dir_state_code), v)
+# define update_tex_internal_math_style(v)      tex_eq_word_define(internal_integer_location(internal_math_style_code), v)
+# define update_tex_internal_math_scale(v)      tex_eq_word_define(internal_integer_location(internal_math_scale_code), v)
+# define update_tex_output_penalty(v)           tex_gq_word_define(internal_integer_location(output_penalty_code), v)
+# define update_tex_par_direction(v)            tex_eq_word_define(internal_integer_location(par_direction_code), v)
+# define update_tex_pre_display_direction(v)    tex_eq_word_define(internal_integer_location(pre_display_direction_code), v)
+# define update_tex_pre_display_size(v)         tex_eq_word_define(internal_dimension_location(pre_display_size_code), v)
+# define update_tex_text_direction(v)           tex_eq_word_define(internal_integer_location(text_direction_code), v)
+# define update_tex_line_break_checks(v)        tex_eq_word_define(internal_integer_location(line_break_checks_code), v)
 
-# define update_tex_font_identifier(v)         tex_eq_word_define(internal_integer_location(font_code), v)
-# define update_tex_glyph_scale(v)             tex_eq_word_define(internal_integer_location(glyph_scale_code), v)
-# define update_tex_glyph_x_scale(v)           tex_eq_word_define(internal_integer_location(glyph_x_scale_code), v)
-# define update_tex_glyph_y_scale(v)           tex_eq_word_define(internal_integer_location(glyph_y_scale_code), v)
-# define update_tex_glyph_slant(v)             tex_eq_word_define(internal_integer_location(glyph_slant_code), v)
-# define update_tex_glyph_weight(v)            tex_eq_word_define(internal_integer_location(glyph_weight_code), v)
+# define update_tex_font_identifier(v)          tex_eq_word_define(internal_integer_location(font_code), v)
+# define update_tex_glyph_scale(v)              tex_eq_word_define(internal_integer_location(glyph_scale_code), v)
+# define update_tex_glyph_x_scale(v)            tex_eq_word_define(internal_integer_location(glyph_x_scale_code), v)
+# define update_tex_glyph_y_scale(v)            tex_eq_word_define(internal_integer_location(glyph_y_scale_code), v)
+# define update_tex_glyph_slant(v)              tex_eq_word_define(internal_integer_location(glyph_slant_code), v)
+# define update_tex_glyph_weight(v)             tex_eq_word_define(internal_integer_location(glyph_weight_code), v)
 
-# define update_tex_math_left_class(v)         tex_eq_word_define(internal_integer_location(math_left_class_code), v)
-# define update_tex_math_right_class(v)        tex_eq_word_define(internal_integer_location(math_right_class_code), v)
+# define update_tex_math_left_class(v)          tex_eq_word_define(internal_integer_location(math_left_class_code), v)
+# define update_tex_math_right_class(v)         tex_eq_word_define(internal_integer_location(math_right_class_code), v)
 
-# define update_tex_par_shape(v)                tex_eq_define(internal_specification_location(par_shape_code),               specification_reference_cmd, v)
+# define update_tex_adjacent_demerits(v)        tex_eq_define(internal_specification_location(adjacent_demerits_code),       specification_reference_cmd, v)
+# define update_tex_balance_passes(v)           tex_eq_define(internal_specification_location(balance_passes_code),          specification_reference_cmd, v)
+# define update_tex_balance_shape(v)            tex_eq_define(internal_specification_location(balance_shape_code),           specification_reference_cmd, v)
+# define update_tex_broken_penalties(v)         tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
+# define update_tex_club_penalties(v)           tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
+# define update_tex_display_widow_penalties(v)  tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
+# define update_tex_fitness_classes(v)          tex_eq_define(internal_specification_location(fitness_classes_code),         specification_reference_cmd, v)
+# define update_tex_inter_line_penalties(v)     tex_eq_define(internal_specification_location(inter_line_penalties_code),    specification_reference_cmd, v)
+# define update_tex_orphan_line_factors_code(v) tex_eq_define(internal_specification_location(orphan_line_factors_code),     specification_reference_cmd, v)
+# define update_tex_orphan_penalties(v)         tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
 # define update_tex_par_passes(v)               tex_eq_define(internal_specification_location(par_passes_code),              specification_reference_cmd, v)
 # define update_tex_par_passes_exception(v)     tex_eq_define(internal_specification_location(par_passes_exception_code),    specification_reference_cmd, v)
-# define update_tex_inter_line_penalties(v)     tex_eq_define(internal_specification_location(inter_line_penalties_code),    specification_reference_cmd, v)
-# define update_tex_club_penalties(v)           tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
-# define update_tex_widow_penalties(v)          tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
-# define update_tex_display_widow_penalties(v)  tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
-# define update_tex_broken_penalties(v)         tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
-# define update_tex_orphan_penalties(v)         tex_eq_define(internal_specification_location(orphan_penalties_code),        specification_reference_cmd, v)
+# define update_tex_par_shape(v)                tex_eq_define(internal_specification_location(par_shape_code),               specification_reference_cmd, v)
 # define update_tex_toddler_penalties(v)        tex_eq_define(internal_specification_location(toddler_penalties_code),       specification_reference_cmd, v)
-# define update_tex_fitness_classes(v)          tex_eq_define(internal_specification_location(fitness_classes_code),         specification_reference_cmd, v)
-# define update_tex_adjacent_demerits(v)        tex_eq_define(internal_specification_location(adjacent_demerits_code),       specification_reference_cmd, v)
-# define update_tex_orphan_line_factors_code(v) tex_eq_define(internal_specification_location(orphan_line_factors_code),     specification_reference_cmd, v)
+# define update_tex_widow_penalties(v)          tex_eq_define(internal_specification_location(widow_penalties_code),         specification_reference_cmd, v)
 
-# define update_tex_end_of_group(v)            tex_eq_define(internal_toks_location(end_of_group_code), internal_toks_reference_cmd, v)
-/*define update_tex_end_of_par(v)              eq_define(internal_toks_location(end_of_par_code), internal_toks_cmd, v) */
+# define update_tex_end_of_group(v)             tex_eq_define(internal_toks_location(end_of_group_code), internal_toks_reference_cmd, v)
 
-# define update_tex_local_left_box(v)          tex_eq_define(internal_box_location(local_left_box_code),  internal_box_reference_cmd, v);
-# define update_tex_local_right_box(v)         tex_eq_define(internal_box_location(local_right_box_code), internal_box_reference_cmd, v);
-# define update_tex_local_middle_box(v)        tex_eq_define(internal_box_location(local_middle_box_code), internal_box_reference_cmd, v);
+# define update_tex_local_left_box(v)           tex_eq_define(internal_box_location(local_left_box_code),  internal_box_reference_cmd, v);
+# define update_tex_local_middle_box(v)         tex_eq_define(internal_box_location(local_middle_box_code), internal_box_reference_cmd, v);
+# define update_tex_local_right_box(v)          tex_eq_define(internal_box_location(local_right_box_code), internal_box_reference_cmd, v);
 
-# define update_tex_font_local(f,v)            tex_eq_define(f, set_font_cmd, v); /* Here |f| already has the right offset. */
-# define update_tex_font_global(f,v)          tex_geq_define(f, set_font_cmd, v); /* Here |f| already has the right offset. */
+# define update_tex_font_local(f,v)             tex_eq_define(f, set_font_cmd, v); /* Here |f| already has the right offset. */
+# define update_tex_font_global(f,v)            tex_gq_define(f, set_font_cmd, v); /* Here |f| already has the right offset. */
 
-# define update_tex_tab_skip_local(v)          tex_eq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
-# define update_tex_tab_skip_global(v)        tex_geq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
+# define update_tex_tab_skip_local(v)           tex_eq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
+# define update_tex_tab_skip_global(v)          tex_gq_define(internal_glue_location(tab_skip_code), internal_glue_reference_cmd, v);
 
-# define update_tex_box_local(n,v)             tex_eq_define(register_box_location(n), register_box_reference_cmd, v);
-# define update_tex_box_global(n,v)           tex_geq_define(register_box_location(n), register_box_reference_cmd, v);
+# define update_tex_box_local(n,v)              tex_eq_define(register_box_location(n), register_box_reference_cmd, v);
+# define update_tex_box_global(n,v)             tex_gq_define(register_box_location(n), register_box_reference_cmd, v);
 
-# define update_tex_insert_mode(a,v)           tex_word_define(a, internal_integer_location(insert_mode_code), v)
+# define update_tex_emergency_left_skip(v)      tex_eq_define(internal_glue_location(emergency_left_skip_code), internal_glue_reference_cmd, v);
+# define update_tex_emergency_right_skip(v)     tex_eq_define(internal_glue_location(emergency_right_skip_code), internal_glue_reference_cmd, v);
 
-# define update_tex_emergency_left_skip(v)     tex_eq_define(internal_glue_location(emergency_left_skip_code), internal_glue_reference_cmd, v);
-# define update_tex_emergency_right_skip(v)    tex_eq_define(internal_glue_location(emergency_right_skip_code), internal_glue_reference_cmd, v);
+# define update_tex_additional_page_skip(v)     tex_gq_define(internal_glue_location(additional_page_skip_code), internal_glue_reference_cmd, v)
 
-# define update_tex_additional_page_skip(v)    tex_geq_define(internal_glue_location(additional_page_skip_code), internal_glue_reference_cmd, v)
-
-# define update_tex_local_interline_penalty(v) tex_eq_word_define(internal_integer_location(local_interline_penalty_code), v);
-# define update_tex_local_broken_penalty(v)    tex_eq_word_define(internal_integer_location(local_broken_penalty_code), v);
-# define update_tex_local_tolerance(v)         tex_eq_word_define(internal_integer_location(local_tolerance_code), v);
-# define update_tex_local_pre_tolerance(v)     tex_eq_word_define(internal_integer_location(local_pre_tolerance_code), v);
+# define update_tex_local_interline_penalty(v)  tex_eq_word_define(internal_integer_location(local_interline_penalty_code), v);
+# define update_tex_local_broken_penalty(v)     tex_eq_word_define(internal_integer_location(local_broken_penalty_code), v);
+# define update_tex_local_tolerance(v)          tex_eq_word_define(internal_integer_location(local_tolerance_code), v);
+# define update_tex_local_pre_tolerance(v)      tex_eq_word_define(internal_integer_location(local_pre_tolerance_code), v);
 
 # define box_limit_mode_hlist ((box_limit_mode_par & box_limit_hlist) == box_limit_hlist)
 # define box_limit_mode_vlist ((box_limit_mode_par & box_limit_vlist) == box_limit_vlist)

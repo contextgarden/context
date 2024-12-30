@@ -114,25 +114,54 @@
 
 \installcorenamespace{layoutmakeupalternative}
 
+\definecolor[\v!makeup:trace][s=.5,a=1,t=.5]
+
+\installtextracker
+  {pagelayout}
+  {\def\page_boxes_show_box{\backgroundline[\v!makeup:trace]}}
+  {\let\page_boxes_show_box\relax}
+
+\let\page_boxes_show_box\relax
+
 \def\page_boxes_construct_content_makeup#1#2#3% targetbox flusher box
-  {\setbox#1\hbox
-     {\vbox to \textheight
-        {\offinterlineskip
-         \vskip\dimexpr-1\topskip+\strutheight\relax % could be an option
-         \textwidth\makeupwidth
-         \hsize\textwidth
-         \boxmaxdepth\maxdepth
-         \noindent
-         \page_otr_command_package_contents#2#3}}%
-   \wd#1\makeupwidth
-   \ht#1\textheight
-   \dp#1\zeropoint
-   \hsize\paperwidth
-   \vsize\paperheight
-   \setbox#1\vbox{\csname\??layoutmakeupalternative\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname}%
-   \wd#1\paperwidth
-   \ht#1\paperheight
-   \dp#1\zeropoint}
+  {\setbox#1\vpack\bgroup
+     \offinterlineskip
+     \calculatereducedvsizes
+     \calculatehsizes
+     \page_layouts_swap_margins\v!page
+     \setbox#1\hbox\bgroup
+       \vbox to \textheight\bgroup
+          \offinterlineskip
+          \vskip\dimexpr-1\topskip+\strutheight\relax % could be an option
+          \textwidth\makeupwidth
+          \hsize\textwidth
+          \boxmaxdepth\maxdepth
+          \noindent
+          \hpack to \zeropoint{\anch_positions_place_anchors}%
+          \page_boxes_show_box\bgroup
+            \page_otr_command_package_contents#2#3%
+          \egroup
+       \egroup
+     \egroup
+     \wd#1\makeupwidth
+     \ht#1\textheight
+     \dp#1\zeropoint
+     \hsize\paperwidth
+     \vsize\paperheight
+     \setbox#1\vbox\bgroup
+      %\settexthoffset
+      %\doifbothsidesoverruled\relax\relax{\hkern\dimexpr-\texthoffset-\cutspace+\backspace\relax}%
+       \doifbothsidesoverruled\relax\relax{\hkern\dimexpr-\paperwidth+\backspace+\makeupwidth-\cutspace+\backspace\relax}%
+       \page_boxes_show_box\bgroup
+         \csname\??layoutmakeupalternative\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname
+       \egroup
+     \egroup
+     \wd#1\paperwidth
+     \ht#1\paperheight
+     \dp#1\zeropoint
+    %\smashbox#1%
+     \box#1%
+   \egroup}
 
 \installlayoutalternative\v!makeup{\page_boxes_construct_content_makeup}
 

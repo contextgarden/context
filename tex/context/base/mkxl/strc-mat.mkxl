@@ -56,6 +56,13 @@
    \c!numberthreshold=\emwidth,
    \c!numberdistance=2\emwidth]
 
+% Kind of special: balanced (columnsets method=mvl)
+%
+% \setupformula
+%   [spacebefore=halflinebefore,
+%    spaceafter=halflineafter,
+%    grid=math]
+
 \setupformulaframed
   [%c!location=<auto set>,
    %c!width=<auto set>,
@@ -691,7 +698,8 @@
          \ifdim\prevdepth<\strutdp
            % maybe add a tracing option here
            \ifgridsnapping
-             \let\m_spacebefore\v!depth
+            %\let\m_spacebefore\v!depth
+             \checkprevdepth
            \else
              \edef\m_spacebefore{\the\dimexpr\strutdp-\prevdepth\relax}%
            \fi
@@ -985,7 +993,8 @@
   [\c!split=\v!yes, % \v!yes | \v!no | \v!line | whatever
    \c!numberlocation=,
    \c!textdistance=\zeropoint,
-   \c!interlinespace=1.125\lineheight, % back again, to be tuned
+  %\c!interlinespace=1.125\lineheight, % back again, to be tuned
+   \c!interlinespace=\ifgridsnapping\zeropoint\else1.125\lineheight\fi, % back again, to be tuned
    \c!textmargin=2\emwidth,
    \c!numbermethod=\v!down]
 

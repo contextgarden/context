@@ -47,22 +47,31 @@ insert_state_info lmt_insert_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .mode        = unset_insert_mode,
     .storing     = 0,
 };
 
 typedef enum saved_insert_entries {
-    saved_insert_index_entry  = 0, /* value_1 */
-    saved_insert_n_of_records = 1,
+    saved_insert_index_entry    = 0, 
+    saved_insert_data_entry     = 0, 
+ // saved_insert_reserved_entry = 0, 
+    saved_insert_n_of_records   = 1,
 } saved_insert_entries;
 
-# define saved_insert_index saved_value_1(saved_insert_index_entry)
+# define saved_insert_index    saved_value_1(saved_insert_index_entry)
+# define saved_insert_data     saved_value_2(saved_insert_data_entry)
+//define saved_insert_reserved saved_value_3(saved_insert_reserved_entry)
 
 static inline void saved_inserts_initialize(void)
 {
     saved_type(0) = saved_record_0;
+    saved_type(1) = saved_record_1;
+ // saved_type(2) = saved_record_2;
     saved_record(0) = insert_save_type;
+    saved_record(1) = insert_save_type;
+ // saved_record(1) = insert_save_type;
 }
 
 void tex_show_insert_group(void)
@@ -78,6 +87,9 @@ int tex_show_insert_record(void)
        case saved_record_0:
             tex_print_format("index %i", saved_insert_index);
             break;
+       case saved_record_1:
+            tex_print_format("data %i", saved_insert_data);
+            break;
         default: 
             return 0;
     }
@@ -89,7 +101,7 @@ void tex_initialize_inserts(void)
     insert_record *tmp = aux_allocate_clear_array(sizeof(insert_record), lmt_insert_state.insert_data.minimum, 1);
     if (tmp) {
         lmt_insert_state.inserts = tmp;
-        lmt_insert_state.insert_data.allocated = lmt_insert_state.insert_data.minimum * sizeof(insert_record);
+        lmt_insert_state.insert_data.allocated = lmt_insert_state.insert_data.minimum;
         lmt_insert_state.insert_data.top = lmt_insert_state.insert_data.minimum;
         lmt_insert_state.insert_data.ptr = 0;
     } else {
@@ -120,7 +132,7 @@ int tex_valid_insert_id(halfword n)
                 lmt_insert_state.insert_data.ptr = n;
                 return 1;
             } else if (n < lmt_insert_state.insert_data.maximum && lmt_insert_state.insert_data.top < lmt_insert_state.insert_data.maximum) {
-                insert_record *tmp ;
+                insert_record *tmp;
                 int top = n + lmt_insert_state.insert_data.step;
                 if (top > lmt_insert_state.insert_data.maximum) {
                     top = lmt_insert_state.insert_data.maximum;
@@ -131,7 +143,7 @@ int tex_valid_insert_id(halfword n)
                     memset(&tmp[lmt_insert_state.insert_data.top + 1], 0, extra);
                  // memset(&tmp[lmt_insert_state.insert_data.top], 0, extra);
                     lmt_insert_state.inserts = tmp;
-                    lmt_insert_state.insert_data.allocated += (int) extra;
+                    lmt_insert_state.insert_data.allocated = top;
                     lmt_insert_state.insert_data.top = top;
                     lmt_insert_state.insert_data.ptr = n;
                     return 1;
@@ -219,6 +231,24 @@ halfword tex_get_insert_content(halfword i)
     return tex_aux_insert_box(i);
 }
 
+scaled tex_get_insert_line_height(halfword i) 
+{
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        return lmt_insert_state.inserts[i].lineheight;
+    } else { 
+        return 0;
+    }
+}
+
+scaled tex_get_insert_line_depth(halfword i) 
+{
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        return lmt_insert_state.inserts[i].linedepth;
+    } else { 
+        return 0;
+    }
+}
+
 halfword tex_get_insert_storage(halfword i)
 {
     if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
@@ -304,6 +334,18 @@ void tex_set_insert_content(halfword i, halfword v) {
     switch (lmt_insert_state.mode) {
         case index_insert_mode: insert_content(i) = v; break;
         case class_insert_mode: if (tex_valid_insert_id(i)) { lmt_insert_state.inserts[i].content = v; } break;
+    }
+}
+
+void tex_set_insert_line_height(halfword i, halfword v) {
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        lmt_insert_state.inserts[i].lineheight = v;
+    }
+}
+
+void tex_set_insert_line_depth(halfword i, halfword v) {
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        lmt_insert_state.inserts[i].linedepth = v;
     }
 }
 
@@ -464,7 +506,7 @@ void tex_undump_insert_data(dumpstream f) {
     tmp = aux_allocate_clear_array(sizeof(insert_record), lmt_insert_state.insert_data.top, 1);
     if (tmp) {
         lmt_insert_state.inserts = tmp;
-        lmt_insert_state.insert_data.allocated = lmt_insert_state.insert_data.top * sizeof(insert_record);
+        lmt_insert_state.insert_data.allocated = lmt_insert_state.insert_data.top;
         undump_things(f, lmt_insert_state.inserts[0], lmt_insert_state.insert_data.ptr);
     } else {
         tex_overflow_error("inserts", lmt_insert_state.insert_data.top);
@@ -477,11 +519,43 @@ void tex_undump_insert_data(dumpstream f) {
 
 void tex_run_insert(void)
 {
+    int brace = 0;
+    halfword data = 0;
+    halfword index = -1;
+    while (1) {
+        switch (tex_scan_character("diDI", 1, 1, 1)) {
+            case 0:
+                goto DONE;
+            case 'd': case 'D':
+                /* identifier */
+                if (tex_scan_mandate_keyword("data", 1)) {
+                    data = tex_scan_integer(0, NULL);
+                }
+                break;
+            case 'i': case 'I':
+                if (tex_scan_mandate_keyword("index", 1)) {
+                    index = tex_scan_insert_index();
+                }
+                break;
+            case '{':
+                brace = 1;
+                goto DONE;
+            default:
+                goto DONE;
+        }
+    }
+  DONE:
+    if (index < 0) {
+        index = tex_scan_insert_index();
+    }
     saved_inserts_initialize();
-    saved_insert_index = tex_scan_insert_index();
+    saved_insert_index = index;
+    saved_insert_data = data;
     lmt_save_state.save_stack_data.ptr += saved_insert_n_of_records;
     tex_new_save_level(insert_group);
-    tex_scan_left_brace();
+    if (! brace) {
+        tex_scan_left_brace();
+    }
     tex_normal_paragraph(insert_par_context);
     tex_push_nest();
     cur_list.mode = internal_vmode;
@@ -514,6 +588,7 @@ void tex_finish_insert_group(void)
         p = tex_vpack(p, 0, packing_additional, max_dimension, direction_unknown, holding_none_option, NULL);
         {
             halfword index = saved_insert_index;
+            halfword data = saved_insert_data;
             halfword insert = tex_new_node(insert_node, 0);
             halfword maxdepth = tex_get_insert_maxdepth(index);
             halfword floating = tex_get_insert_penalty(index);
@@ -523,11 +598,14 @@ void tex_finish_insert_group(void)
                 tex_tail_append(insert);
             }
             insert_index(insert) = index;
+            insert_identifier(insert) = data;
             insert_total_height(insert) = box_total(p);
             insert_list(insert) = box_list(p);
             insert_split_top(insert) = q;
             insert_max_depth(insert) = has_insert_option(index, insert_option_maxdepth) ? d : maxdepth;
             insert_float_cost(insert) = has_insert_option(index, insert_option_penalty) ? f : floating;
+            insert_line_height(insert) = tex_get_insert_line_height(index);
+            insert_line_depth(insert) = tex_get_insert_line_depth(index);
             box_list(p) = null;
             tex_flush_node(p);
             if (tracing_inserts_par > 0) {
@@ -546,4 +624,134 @@ void tex_finish_insert_group(void)
             tex_build_page(insert_page_context, 0);
         }
     }
+}
+
+/*tex 
+    This one is meant for the elements (slots) in balanced lists but as we can have them packaged
+    we try to handle this. 
+*/
+
+int tex_identify_inserts(halfword b, halfword cbk)
+{
+    halfword value = 0;
+    while (b) { 
+        switch (node_type(b)) {
+            case hlist_node:
+            case vlist_node:
+                switch (node_subtype(b)) {
+                    case hbox_list:
+                    case container_list:
+                    case unknown_list:
+                        break;
+                    case balance_slot_list:
+                        goto DONE;
+                    default: 
+                        return value;
+                }
+                break;
+            default: 
+                return value; 
+        }
+        b = box_list(b);
+    }
+  DONE:
+    if (b && node_type(b) == vlist_node) {
+        halfword current = box_list(b);
+        while (current) { 
+            if (node_type(current) == insert_node) {
+                int callback = lmt_callback_defined(balance_insert_callback);
+                if (callback) {
+                    ++lmt_balance_state.n_of_callbacks;
+                    lmt_run_callback(lmt_lua_state.lua_instance, callback, "Nddd->",
+                        current, 
+                        cbk,
+                        insert_index(current),
+                        insert_identifier(current)
+                    );
+                }
+                value |= has_inserts;
+                if (insert_list(current)) {
+                    value |= has_inserts_with_content;
+                }
+                if (insert_total_height(current) > 0 && tex_get_insert_multiplier(insert_index(current)) > 0) {
+                    value |= has_inserts_with_height;
+                }
+            }
+            current = node_next(current);
+        }
+    }
+    return value;
+}
+
+scaled tex_insert_height(halfword node)
+{
+    /*tex A redundant check but we do it anyway. */
+    if (node && node_type(node) == insert_node) {
+        halfword multiplier = tex_get_insert_multiplier(insert_index(node));
+        halfword needed = insert_total_height(node);
+        if (multiplier > 0 && needed > 0) {
+            return tex_x_over_n(needed, scaling_factor) * multiplier;
+        }
+    }
+    return 0;
+}
+
+# define set_bit(bits,n) bits[n/8] |= (1 << (index % 8))
+# define get_bit(bits,n) (1 & (bits[index/8] >> (n % 8)))
+
+void tex_insert_reset_distances(void)
+{
+    for (int index = 0; index <= lmt_insert_state.insert_data.top; index++) {
+        if (lmt_insert_state.inserts[index].before) { 
+            tex_flush_node(lmt_insert_state.inserts[index].before);
+        } 
+        lmt_insert_state.inserts[index].before = null;
+        if (lmt_insert_state.inserts[index].inbetween) { 
+            tex_flush_node(lmt_insert_state.inserts[index].inbetween);
+        } 
+        lmt_insert_state.inserts[index].inbetween = null;
+    }
+}
+
+scaled tex_insert_distances(halfword first, halfword last, scaled *stretch, scaled *shrink)
+{
+    char bits[(max_n_of_inserts/8)+1] = { 0 }; /* brrr */
+    int isfirst = 1;
+    scaled amount = 0;
+    halfword c = first; 
+    while (c != last) {
+        if (node_type(c) == insert_node && insert_total_height(c) > 0 && tex_get_insert_multiplier(insert_index(c)) > 0) { 
+            halfword distance = null;
+            halfword index = insert_index(c);
+            if (isfirst) { 
+                if (lmt_insert_state.inserts[index].before) {
+                    distance = lmt_insert_state.inserts[index].before;
+                } else { 
+                    distance = lmt_get_insert_distance(index, 1); /* first */
+                    lmt_insert_state.inserts[index].before = distance;
+                }
+                isfirst = 0;
+                set_bit(bits,index);
+            } else if (insert_index(c) == index && ! get_bit(bits, index)) {
+                if (lmt_insert_state.inserts[index].inbetween) {
+                    distance = lmt_insert_state.inserts[index].inbetween;
+                } else {
+                    distance = lmt_get_insert_distance(index, 2); /* inbetween */
+                    lmt_insert_state.inserts[index].inbetween = distance;
+                }
+                set_bit(bits,index);
+            }
+            if (distance) { 
+                amount += glue_amount(distance);
+                if (stretch) {
+                    *stretch += glue_stretch(distance); /* ignore order, at least we can't handle that now */
+                }
+                if (shrink) {
+                    *shrink += glue_shrink(distance);   /* no order, no infite warning either */
+                }
+            }
+        }
+        c = node_next(c);
+    }
+    return amount;
 }

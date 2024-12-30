@@ -1,7 +1,20 @@
-
 % language=us runpath=texruns:manuals/luametatex
 
 \environment luametatex-style
+
+\setupalign
+  [depth]
+
+\setuplayout
+  [vz=2]
+
+\setuptyping
+  [align=hangright,
+   keeptogether=yes,
+%    keeptogether=paragraph,
+   numbering=]
+
+% \showframe
 
 \startdocument[title=luametatex,alternative=manual]
 
@@ -12,6 +25,7 @@
 
 \startbodymatter
     \component luametatex-engines
+    \component luametatex-principles
     \component luametatex-constructions
     \component luametatex-assumptions
     \component luametatex-internals

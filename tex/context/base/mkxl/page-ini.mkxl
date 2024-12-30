@@ -233,7 +233,6 @@
 
 \newconditional\c_page_marks_building_successive_pages \c_page_marks_building_successive_pages\conditionaltrue
 
-
 \ifdefined\??markingclass
 
     \def\page_marks_synchronize_page#1% box

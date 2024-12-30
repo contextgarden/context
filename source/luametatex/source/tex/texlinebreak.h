@@ -279,4 +279,25 @@ extern void tex_get_line_content_range(
     halfword *first, 
     halfword *last
 ); 
+
+/*tex Some more shared helpers: */
+
+extern void tex_aux_print_break_node(
+    halfword active, 
+    halfword passive, 
+    int      do_last_line_fit
+);
+
+extern void tex_aux_print_feasible_break(
+    halfword current, 
+    halfword breakpoint, 
+    halfword badness, 
+    halfword penalty, 
+    halfword d, 
+    halfword artificial_demerits, 
+    halfword fit_class, 
+    halfword printed_node
+);
+
+
 # endif
