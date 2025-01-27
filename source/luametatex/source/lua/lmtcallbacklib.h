@@ -42,6 +42,8 @@ typedef enum callback_callback_types {
     hpack_quality_callback,
     vpack_quality_callback,
     line_break_callback,
+    balance_callback,
+    show_vsplit_callback,
     show_build_callback,
     insert_par_callback,
     append_line_filter_callback,
@@ -69,6 +71,8 @@ typedef enum callback_callback_types {
     italic_correction_callback,
     show_loners_callback,
     tail_append_callback,
+    balance_boundary_callback,
+    balance_insert_callback,
     total_callbacks,
 } callback_callback_types;
 

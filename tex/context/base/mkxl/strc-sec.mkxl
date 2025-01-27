@@ -449,9 +449,21 @@
         \normalexpanded {%
             \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currentheadparent}%
+        }%
+\ifcstok{\headparameter\c!marking}\v!new % WS: so its own class
+        \normalexpanded {%
+            \definemarking[\currenthead]
+            \definemarking[\currenthead\v!number]
+            \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
+            \setupmarking [\currenthead\v!number][\c!filtercommand=\noexpand\sectionheadmarkingnumber{\currenthead}]%
+        }%
+        \letheadparameter\c!marking\empty
+\else
+        \normalexpanded {%
             \definemarking[\currenthead]         [\currentheadparent]%
             \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
         }%
+\fi
         \doifelselist\currenthead\donothing
           {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \fi
@@ -674,6 +686,11 @@
    % potential: \egroup
   %\globalpopmacro\currenthead % so we do a hard recover
    \xdef\currenthead{#1}% recover
+   \ifconditional\c_strc_sectioning_place
+     \ifx\currentheadrenderingalternative\v!horizontal\else
+       \par
+     \fi
+   \fi
    \headparameter\c!aftersection
    \expand\everyafterhead
    \resetsystemmode\currenthead
@@ -685,6 +702,8 @@
 
 % todo: add grouping but where: before/after trickery .. probably inside because one can always add
 % grouping to the before/after settings
+
+\aliased\let\namedsection\strc_sectioning_handle_nop
 
 \aliased\let\startnamedsection\strc_sectioning_start
 
@@ -751,7 +770,7 @@
    \c_strc_sectioning_hidden\conditionaltrue
    \c_strc_sectioning_section\conditionalfalse}
 
-\defcsname\??headplace\v!section\endcsname
+\defcsname\??headplace\v!section\endcsname       % we need to explain the difference with hidden
   {\c_strc_sectioning_empty\conditionaltrue
    \c_strc_sectioning_place\conditionalfalse
    \c_strc_sectioning_hidden\conditionaltrue

@@ -1,0 +1,191 @@
+%D \module
+%D   [       file=typo-bal,
+%D        version=2024.11.27,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Balancing,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Balancing}
+
+\unprotect
+
+%D Experimental:
+%D
+%D \starttyping
+%D \starttext
+%D
+%D \definebalancing
+%D   [demo]
+%D
+%D \setupbalancing
+%D   [demo]
+%D   [align={tolerant,stretch},
+%D    after=\page]
+%D
+%D \startbalancing[demo][1]
+%D     \dorecurse {10} {
+%D         \samplefile{tufte}\par
+%D         \startlinecorrection
+%D             \externalfigure[dummy]
+%D         \stoplinecorrection
+%D         \samplefile{ward}\par
+%D     }%
+%D \stopbalancing
+%D
+%D \startbalancing[demo]
+%D     \dorecurse {5} {
+%D         \blank
+%D         \samplefile{knuthmath}
+%D     }%
+%D \stopbalancing
+%D
+%D \startbalancing[demo][2]
+%D     \dorecurse {12} {
+%D         \samplefile{ward}\par
+%D         \startlinecorrection
+%D             \externalfigure[dummy]
+%D         \stoplinecorrection
+%D         \samplefile{davis}\par
+%D     }%
+%D \stopbalancing
+%D
+%D \startsetups MyBalance
+%D    \balancetolerance        2000
+%D    \balanceemergencystretch 2\lineheight
+%D    \balancebottomskip       0pt plus 2\lineheight
+%D \stopsetups
+%D
+%D \placebalancing[demo] % [setups=MyBalance]
+%D
+%D \stoptext
+%D \stoptyping
+
+% todo: \newmvl
+% todo: more than two
+
+\installcorenamespace{balancing}
+
+\installcommandhandler \??balancing {balancing} \??balancing
+
+\setupbalancing
+  [\c!distance=\emwidth,
+   \c!height=\textheight,
+   \c!setups=,
+   \c!n=\plustwo]
+
+% \appendtoks
+% \to \everydefinebalancing
+
+\permanent\tolerant\protected\def\startbalancing[#1]#*[#2]% [name] [n] | [name] | [n]
+  {\par
+   \begingroup
+   \ifchknumber#2\or
+     \scratchcounter\lastchknumber
+     \cdef\currentbalancing{#1}%
+   \orelse\ifchknumber#1\or
+     \scratchcounter\lastchknumber
+     \lettonothing\currentbalancing
+   \orelse\ifparameter#1\or
+     \scratchcounter\plusone
+     \cdef\currentbalancing{#1}%
+   \else
+     \scratchcounter\plusone
+     \lettonothing\currentbalancing
+   \fi
+   \setrigidcolumnhsize\hsize{\balancingparameter\c!distance}\plustwo % {\balancingparameter\c!n}%
+   \usealignparameter\balancingparameter
+   \beginmvl \scratchcounter}
+
+\permanent\protected\def\stopbalancing
+  {\endmvl
+   \endgroup
+   \par}
+
+\permanent\tolerant\protected\def\placebalancing[#1]#*[#2]%
+  {\begingroup
+   \cdef\currentbalancing{#1}%
+   \ifparameter#2\or
+     \setupcurrentbalancing[#2]%
+   \fi
+   % todo: loop and use box stack
+   \setbox\scratchboxone \flushmvl \plusone
+   \setbox\scratchboxtwo \flushmvl \plustwo
+   %
+ % \ifcstok{\balancingparameter\c!height}\v!max
+ %   % can overflow so we need slack
+ %   \balancevsize\htdp\ifdim\htdp\scratchboxone>\htdp\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi
+ % \else
+ %   \balancevsize\lastnamedcs
+ % \fi
+   %
+   \balancevsize            \balancingparameter\c!height
+   \balancetolerance        \plustwothousand
+   \balanceemergencystretch 2\lineheight
+   \balancetopskip          \strutht
+   \balancebottomskip       \zeropoint \s!plus 2\lineheight
+   %
+   \usesetupsparameter\balancingparameter
+   %
+   \setbox\scratchboxthree\ifvoid\scratchboxone\voidbox\else\vbalance\scratchboxone exactly\relax\fi
+   \setbox\scratchboxfour \ifvoid\scratchboxtwo\voidbox\else\vbalance\scratchboxtwo exactly\relax\fi
+   %
+   \doloop {
+     \ifvoid\scratchboxthree
+       \ifvoid\scratchboxfour
+         \donefalse
+       \else
+         \donetrue
+       \fi
+     \else
+       \donetrue
+     \fi
+     \ifdone
+       \balancingparameter\c!before\relax
+       \hpack to \hsize \bgroup
+         \setrigidcolumnhsize\hsize{\balancingparameter\c!distance}\plustwo % {\balancingparameter\c!n}%
+         \hbox to \hsize{\ifvoid\scratchboxthree\else\vbalancedtop\scratchboxthree\fi}%
+         \hss
+         \hbox to \hsize{\ifvoid\scratchboxfour \else\vbalancedtop\scratchboxfour \fi}%
+       \egroup
+       \balancingparameter\c!after\relax
+     \else
+       \exitloop
+     \fi
+   }%
+   \endgroup}
+
+%D \starttyping
+%D \definebalancing
+%D   [demo]
+%D   [align={tolerant,stretch},
+%D    after=\page]
+%D
+%D \startbalancing[demo][1]
+%D     \samplefile{tufte}\par
+%D     \the\prevdepth\par
+%D \stopbalancing
+%D \startbalancing[demo][2]
+%D     xxxxxxxxxxxxxx
+%D \stopbalancing
+%D \startbalancing[demo]
+%D     \the\prevdepth\par
+%D     \samplefile{knuthmath}
+%D \stopbalancing
+%D
+%D \placebalancing[demo]
+%D
+%D \samplefile{tufte}\par
+%D \the\prevdepth\par
+%D \the\prevdepth\par
+%D \samplefile{knuthmath}
+%D \stoptyping
+
+\protect \endinput
+
+% timestamp: Nov 2024, LEPROUS – Atonement (Drum Playthrough by Baard Kolstad)

@@ -256,6 +256,12 @@
   {\clf_analyzeitemgroup{\currentparentitemgroup}\c_strc_itemgroups_nesting\relax
    \edef\currentnofitems{\the\c_strc_itemgroups_max_items}}
 
+\permanent\protected\def\upcomingnofitems#1%
+  {\the\numexpr
+     \clf_analyzeupcomingitemgroup{#1}\numexpr\c_strc_itemgroups_nesting+\plusone\relax
+     \c_strc_itemgroups_max_items
+   \relax}
+
 % todo: \dodosetreference -> \strc_counters_register_component (to be checked)
 
 \def\strc_itemgroups_insert_reference % we will make a decent number helper

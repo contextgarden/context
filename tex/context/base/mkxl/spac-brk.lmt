@@ -20,18 +20,21 @@ if not modules then modules = { } end modules ['spac-brk'] = {
 local checklist                = { }
 nodes.handlers.linebreakchecks = checklist
 
-callback.register("line_break", function(what,checks,...)
-    local check = checklist[checks]
-    if check then
-        return check(what,checks,...)
-    else
-        -- invalid one, waste of overhead
-    end
-end)
-
 local report      = logs.reporter("linebreaks")
 local breakcodes  = tex.breakcodes
 
 checklist[-1] = function(what)
     report("callback %i : %s",what,breakcodes[what])
 end
+
+local function check(what,checks,...)
+    local check = checklist[checks]
+    if check then
+        return check(what,checks,...)
+    else
+        -- invalid one, waste of overhead
+    end
+end
+
+callback.register("line_break",check)
+callback.register("balance",   check)

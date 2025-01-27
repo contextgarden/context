@@ -3,7 +3,7 @@
 %D        version=2023.05.23,
 %D          title=\CONTEXT\ Tracing Macros,
 %D       subtitle=Linebreaks,
-%D         author=Hans Hagen,
+%D         author=Hans Hagen & Mikael Sundqvist,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -11,7 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\ifdefined\showbreakpoints \endinput \fi
+% these will become runtime commands
+
+% \ifdefined\showbreakpoints \endinput \fi
 
 \writestatus{loading}{ConTeXt Tracing Macros / Breakpoints}
 
@@ -28,43 +30,44 @@
 % simple   (only badness)
 % compact  (no ref counts)
 
+%D We only support one at a time.
+
 \unprotect
 
 \newcount\c_line_break_check
+\newcount\c_balance_check
 
-\permanent\tolerant\protected\gdef\startshowbreakpoints[#1]%
+\gdef\trac_start_show_breakpoints#1#2#3%
   {\begingroup
-   \getdummyparameters[\c!option=,\c!list=,\c!offset=\zeropoint,#1]%
+   \getdummyparameters[\c!option=,\c!list=,\c!offset=\zeropoint,\c!level=0,#1]%
    \ctxlua{tracers.breakpoints.start {
         option = "\dummyparameter\c!option",
+        level  = "\dummyparameter\c!level",
         list   = "\dummyparameter\c!list",
         offset = \number\dimexpr\dummyparameter\c!offset\relax,
     }}%
    \endgroup
-   \c_line_break_check\linebreakchecks
-   \linebreakchecks\plusone}
+   #2#3%
+   #3\plusone}
 
-\permanent\protected\gdef\stopshowbreakpoints
+\gdef\trac_stop_show_breakpoints#1#2%
   {\par
-   \linebreakchecks\c_line_break_check
+   #2#1%
    \ctxlua{tracers.breakpoints.stop()}}
 
-\permanent\tolerant\protected\gdef\showbreakpoints[#1]%
+\gdef\trac_show_breakpoints#1%
   {\begingroup
    \getdummyparameters[\c!option=,#1]%
    \switchtobodyfont[6pt]%
    \dorecurse{\cldcontext{tracers.breakpoints.nofresults()}} {
-     \startcolumns[n=3,notes=no,#1,option=]%
+     \startcolumns[\c!n=3,\c!notes=\v!no,#1,\c!option=]%
        \ctxlua{tracers.breakpoints.typesetresult(##1,"\dummyparameter\c!option")}%
      \stopcolumns
    }%
   %\ctxlua{tracers.breakpoints.reset()}%
    \endgroup}
 
-% \permanent\tolerant\protected\gdef\resetbreakpoints[#1]%
-%   {\ctxlua{tracers.breakpoints.reset()}}
-
-\permanent\tolerant\protected\gdef\drawbreakpoints[#1]%
+\gdef\trac_draw_breakpoints#1%
   {\begingroup
    \getdummyparameters[%
      \c!dx=3fs,%
@@ -83,5 +86,40 @@
         ) ;
    \stopMPcode
    \endgroup}
+
+% \gdef\trac_reset_breakpoints
+%   {\ctxlua{tracers.breakpoints.reset()}}
+
+\permanent\tolerant\protected\gdef\startshowbreakpoints[#1]%
+  {\trac_start_show_breakpoints{#1}\c_line_break_check\linebreakchecks}
+
+\permanent\protected\gdef\stopshowbreakpoints
+  {\trac_stop_show_breakpoints\c_line_break_check\linebreakchecks}
+
+\permanent\tolerant\protected\gdef\showbreakpoints[#1]%
+  {\trac_show_breakpoints{#1}}
+
+\permanent\tolerant\protected\gdef\drawbreakpoints[#1]%
+  {\trac_draw_breakpoints{#1}}
+
+% \permanent\protected\gdef\resetbreakpoints
+%   {\trac_reset_breakpoints}
+
+% Also here:
+
+\permanent\tolerant\protected\gdef\startshowbalancepoints[#1]%
+  {\trac_start_show_breakpoints{#1,\c!level=1}\c_balance_check\balancechecks}
+
+\permanent\protected\gdef\stopshowbalancepoints
+  {\trac_stop_show_breakpoints\c_balance_check\balancechecks}
+
+\permanent\tolerant\protected\gdef\showbalancepoints[#1]%
+  {\trac_show_breakpoints{#1}}
+
+\permanent\tolerant\protected\gdef\drawbalancepoints[#1]%
+  {\trac_draw_breakpoints{#1}}
+
+% \permanent\protected\gdef\resetbalancepoints
+%   {\trac_reset_breakpoints}
 
 \protect \endinput

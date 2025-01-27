@@ -1155,6 +1155,7 @@ local stripped  do
 
     stripped = function(s)
         if strip and #s > 0 then
+-- print(s)
             local x = xmlconvert(s)
             xmlwipeattributes(x)
             return tostring(x)

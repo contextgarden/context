@@ -729,13 +729,17 @@ static void mp_double_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number 
         }
     */
     if (x_orig->data.dval == 0.0 && y_orig->data.dval == 0.0) {
-        mp_error(
-            mp,
-            "angle(0,0) is taken as zero",
-            "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
-            "Proceed, with fingers crossed."
-        );
-        ret->data.dval = 0;
+        if (internal_value(mp_default_zero_angle_internal).data.dval < 0) {
+            mp_error(
+                mp,
+                "angle(0,0) is taken as zero",
+                "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
+                "Proceed, with fingers crossed."
+            );
+            ret->data.dval = internal_value(mp_default_zero_angle_internal).data.dval;
+        } else { 
+            ret->data.dval = 0;
+        }
     } else {
         ret->type = mp_angle_type;
         ret->data.dval = atan2(y_orig->data.dval, x_orig->data.dval) * (180.0 / PI) * angle_multiplier;

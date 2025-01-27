@@ -419,8 +419,58 @@
 % \permanent\protected\def\fraction#1#2{\mathematics{#1\over#2}}
 
 \permanent\protected\def\celsius   #1{#1\iffontchar\font`℃℃\else\mathematics{^\circ}C\fi}   % 0x2103
-\permanent\protected\def\inch        {\iffontchar\font`″″\else\mathematics{\prime\prime}\fi} % 0x2103
+%permanent\protected\def\inch        {\iffontchar\font`″″\else\mathematics{\prime\prime}\fi} % 0x2103
 \permanent\protected\def\fraction#1#2{\mathematics{\Uabove exact .125\exheight {#1}{#2}}}
+
+% \permanent\protected\def\fakeminute
+%   {\dontleavehmode
+%    \begingroup
+%    \doifelseitalic
+%      {\scratchwidth\fontcharwd\font\singlequoteasciicode
+%       \hpack \s!to 1.2\scratchwidth \bgroup
+%         \glyphslant\plustwohundred
+%         \glyph \s!xoffset -0.6\scratchwidth\singlequoteasciicode
+%         \hss
+%       \egroup}%
+%      {\scratchwidth\fontcharwd\font\singlequoteasciicode
+%       \hpack \s!to 1.1\scratchwidth \bgroup
+%         \glyphslant\plusfivehundred
+%         \glyph \s!xoffset -\scratchwidth\singlequoteasciicode
+%         \hss
+%       \egroup}%
+%    \endgroup}
+
+% \permanent\protected\def\fakesecond
+%   {\dontleavehmode
+%    \begingroup
+%    \doifelseitalic
+%      {\scratchwidth\fontcharwd\font\singlequoteasciicode
+%       \hpack \s!to 1.7\scratchwidth \bgroup
+%         \glyphslant\plustwohundred
+%         \glyph \s!xoffset -0.6\scratchwidth\singlequoteasciicode
+%         \glyph \s!xoffset -1.1\scratchwidth\singlequoteasciicode
+%         \hss
+%       \egroup}%
+%      {\scratchwidth\fontcharwd\font\singlequoteasciicode
+%       \hpack \s!to 1.6\scratchwidth \bgroup
+%         \glyphslant\plusfivehundred
+%         \glyph \s!xoffset    -\scratchwidth\singlequoteasciicode
+%         \glyph \s!xoffset -1.5\scratchwidth\singlequoteasciicode
+%         \hss
+%       \egroup}%
+%    \endgroup}
+
+\permanent\protected\def\fakeminute{\startimath\mathsurround\zeropoint\mathatom \mathunspacedcode{}\prime      \stopimath}
+\permanent\protected\def\fakesecond{\startimath\mathsurround\zeropoint\mathatom \mathunspacedcode{}\doubleprime\stopimath}
+
+\permanent\protected\def\mathminute{\begingroup\resetmathcollapsing\textminute\endgroup}
+\permanent\protected\def\mathsecond{\begingroup\resetmathcollapsing\textsecond\endgroup}
+
+\permanent\protected\def\minute{\ifmmode\mathminute\orelse\iffontchar\font\textminute\textminute\else\fakeminute\fi}
+\permanent\protected\def\second{\ifmmode\mathsecond\orelse\iffontchar\font\textsecond\textsecond\else\fakesecond\fi}
+
+\aliased\let\foot\minute % $12\foot + 2$ $12\foot\foot + 2$ $12\inch + 2$
+\aliased\let\inch\second
 
 %D \startbuffer
 %D \startlines

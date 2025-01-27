@@ -250,6 +250,10 @@ return {
         "xshifted",
         "yshifted",
         --
-        "reducedpath", "reducedenvelope", "enveloped",
+        "reducedpath", "reducedenvelope", "enveloped", "hasreducedcurvature",
+        --
+        "totalarea",
+        --
+        "penstroked", "nepstroke",
     },
 }

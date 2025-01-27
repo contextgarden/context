@@ -87,6 +87,7 @@
 \definesystemconstant {malayalam}      \definesystemconstant {ml}
 \definesystemconstant {macedonian}     \definesystemconstant {mk}
 \definesystemconstant {moldavian}      \definesystemconstant {mo}
+\definesystemconstant {montenegrin}    \definesystemconstant {cnr}
 \definesystemconstant {norwegian}      \definesystemconstant {no}
 \definesystemconstant {nynorsk}        \definesystemconstant {nn}
 \definesystemconstant {persian}        \definesystemconstant {pe}
@@ -192,8 +193,10 @@
 \definesystemconstant {DefaultFont}
 \definesystemconstant {default}
 \definesystemconstant {depth}
+\definesystemconstant {descend}
 \definesystemconstant {designsize}
 \definesystemconstant {direction}
+\definesystemconstant {discardable}
 \definesystemconstant {display}
 \definesystemconstant {document}
 \definesystemconstant {dodo}
@@ -231,6 +234,7 @@
 \definesystemconstant {float}
 \definesystemconstant {font}
 \definesystemconstant {forget}
+\definesystemconstant {forcedepth}
 \definesystemconstant {format}
 \definesystemconstant {fraktur}
 \definesystemconstant {fraktion}
@@ -430,6 +434,7 @@
 \definesystemconstant {top}
 \definesystemconstant {to}
 \definesystemconstant {traditional}
+\definesystemconstant {trial}
 \definesystemconstant {triple}
 \definesystemconstant {true}
 \definesystemconstant {tt}
@@ -488,6 +493,7 @@
 \definemessageconstant {references}
 \definemessageconstant {regimes}
 \definemessageconstant {structures}
+\definemessageconstant {columnset}
 \definemessageconstant {symbols}
 \definemessageconstant {system}
 \definemessageconstant {textblocks}

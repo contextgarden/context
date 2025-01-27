@@ -24,14 +24,14 @@
 
 %D The dimensions related to layout areas are represented by real dimensions.
 
-\newdimension\paperheight          \paperheight          = 297mm
-\newdimension\paperwidth           \paperwidth           = 210mm
-\newdimension\paperoffset          \paperoffset          = \zeropoint
-\newdimension\paperbleed           \paperbleed           = \zeropoint
-\newdimension\spinewidth           \spinewidth           = \zeropoint
+\newdimension\paperheight          \paperheight          297mm
+\newdimension\paperwidth           \paperwidth           210mm
+\newdimension\paperoffset          \paperoffset          \zeropoint
+\newdimension\paperbleed           \paperbleed           \zeropoint
+\newdimension\spinewidth           \spinewidth           \zeropoint
 
-\newdimension\printpaperheight     \printpaperheight     = \paperheight
-\newdimension\printpaperwidth      \printpaperwidth      = \paperwidth
+\newdimension\printpaperheight     \printpaperheight     \paperheight
+\newdimension\printpaperwidth      \printpaperwidth      \paperwidth
 
 \newdimension\makeupheight                               % calculated
 \newdimension\makeupwidth                                % calculated
@@ -39,34 +39,51 @@
 \newdimension\textheight                                 % calculated
 \newdimension\textwidth                                  % calculated
 
-\newdimension\topspace             \topspace             = 2cm
-\newdimension\backspace            \backspace            = \topspace
-\newdimension\cutspace             \cutspace             = \zeropoint
-\newdimension\bottomspace          \bottomspace          = \zeropoint
+\newdimension\topspace             \topspace             2cm
+\newdimension\backspace            \backspace            \topspace
+\newdimension\cutspace             \cutspace             \zeropoint
+\newdimension\bottomspace          \bottomspace          \zeropoint
 
-\newdimension\headerheight         \headerheight         = 2cm
-\newdimension\footerheight         \footerheight         = \headerheight
+\newdimension\headerheight         \headerheight         2cm
+\newdimension\footerheight         \footerheight         \headerheight
 
-\newdimension\topoffset            \topoffset            = \zeropoint
-\newdimension\backoffset           \backoffset           = \topoffset
+\newdimension\topoffset            \topoffset            \zeropoint
+\newdimension\backoffset           \backoffset           \topoffset
 
-\newdimension\leftmarginwidth      \leftmarginwidth      = 3cm
-\newdimension\rightmarginwidth     \rightmarginwidth     = \leftmarginwidth
+\newdimension\leftmarginwidth      \leftmarginwidth      3cm
+\newdimension\rightmarginwidth     \rightmarginwidth     \leftmarginwidth
 
-\newdimension\leftedgewidth        \leftedgewidth        = 3cm
-\newdimension\rightedgewidth       \rightedgewidth       = \leftedgewidth
+\newdimension\leftedgewidth        \leftedgewidth        3cm
+\newdimension\rightedgewidth       \rightedgewidth       \leftedgewidth
 
-\newdimension\topheight            \topheight            = \zeropoint
-\newdimension\bottomheight         \bottomheight         = \topheight
+\newdimension\topheight            \topheight            \zeropoint
+\newdimension\bottomheight         \bottomheight         \topheight
 
-\newinteger  \layoutlines          \layoutlines          = \zerocount
-\newinteger  \layoutcolumns        \layoutcolumns        = \zerocount
-\newdimension\layoutcolumndistance \layoutcolumndistance = \zeropoint
-\newdimension\layoutcolumnwidth    \layoutcolumnwidth    = \zeropoint
+\newinteger  \layoutlines          \layoutlines          \zerocount
+
+\newinteger  \layoutcolumns        \layoutcolumns        \zerocount
+\newdimension\layoutcolumndistance \layoutcolumndistance \zeropoint
+\newdimension\layoutcolumnwidth    \layoutcolumnwidth    \zeropoint
+
+\newinteger  \layoutrows            \layoutrows          \zerocount
+\newdimension\layoutrowdistance     \layoutrowdistance   \zeropoint
+\newdimension\layoutrowheight       \layoutrowheight     \zeropoint
 
 \newdimension\totaltextwidth
 
 \newdimension\textadaptive
+
+%D \starttyping
+%D \setuplayout
+%D   [columns=4,
+%D    columndistance=1em,
+%D    rows=5,
+%D    rowdistance=2lh]
+%D \stoptyping
+
+\newuserunit \lineheight        lh
+\newuserunit \layoutcolumnwidth lc
+\newuserunit \layoutrowheight   lr
 
 %D The next series of dimensions are complemented by left and rights ones.
 
@@ -117,6 +134,7 @@
 \installcorenamespace{layoutlocation}
 \installcorenamespace{layoutalternative}
 \installcorenamespace{layoutcolumn}
+\installcorenamespace{layoutrow}
 \installcorenamespace{layoutmethod}
 
 \installswitchcommandhandler \??layout {layout} \??layout
@@ -784,6 +802,7 @@
    \calculatehsizes
    \calculatevsizes
    \page_layouts_check_pseudo_columns
+   \page_layouts_check_pseudo_rows
    \page_backgrounds_recalculate}
 
 \def\page_layouts_check_direction
@@ -799,6 +818,8 @@
    \else
      \expandafter\resetsystemmode
    \fi{reverselayout}}
+
+%D Pseudo columns:
 
 \def\page_layouts_check_pseudo_columns
   {\global\layoutcolumns\layoutparameter\c!columns
@@ -817,6 +838,28 @@
 
 \permanent\def\layoutcolumnoffset#1% can travel around so we can't use \lastnamedcs
   {\csname\??layoutcolumn\ifcsname\??layoutcolumn#1\endcsname#1\else0\fi\endcsname}
+
+%D Pseudo rows:
+
+\def\page_layouts_check_pseudo_rows
+  {\global\layoutrows\layoutparameter\c!rows
+   \global\layoutrowdistance\layoutparameter\c!rowdistance
+   \global\layoutrowheight\dimexpr\makeupheight-\layoutrows\layoutrowdistance+\layoutrowdistance\relax
+   \ifnum\layoutrows>\plusone
+     \global\divideby\layoutrowheight\layoutrows
+     \dorecurse\layoutrows\page_layouts_check_pseudo_row
+   \fi}
+
+\def\page_layouts_check_pseudo_row
+  {\xdefcsname\??layoutrow\recurselevel\endcsname
+     {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutrowheight+\layoutrowdistance\relax}}
+
+\aliased\letcsname\??layoutrow0\endcsname\zeropoint
+
+\permanent\def\layoutrowoffset#1% can travel around so we can't use \lastnamedcs
+  {\csname\??layoutrow\ifcsname\??layoutrow#1\endcsname#1\else0\fi\endcsname}
+
+%D Offset:
 
 \permanent\protected\def\layoutlineoffset#1%
   {\the\dimexpr\topskip-\strutht+#1\lineheight-\lineheight\relax}
@@ -1512,15 +1555,18 @@
                 \c!adaptive=\zeropoint, % new: experiment
             \c!limitstretch=\v!auto, % catches \setupalign[depth] without setting (2 lineheight)
                  \c!columns=\plusone,
-          \c!columndistance=\zeropoint]
+          \c!columndistance=\zeropoint,
+                    \c!rows=\plusone,
+             \c!rowdistance=\zeropoint,
+          ]
 
 \pushoverloadmode
-    \newuserunit \textwidth  tw
-    \newuserunit \textheight th
+    \newuserunit \textwidth   tw
+    \newuserunit \textheight  th
     \newuserunit \paperwidth  pw
     \newuserunit \paperheight ph
-    \newuserunit \hsize      hs % just for fun
-    \newuserunit \vsize      vs % just for fun
+    \newuserunit \hsize       hs % just for fun
+    \newuserunit \vsize       vs % just for fun
 \popoverloadmode
 
 % \appendtoks

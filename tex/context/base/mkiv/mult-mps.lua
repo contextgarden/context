@@ -12,7 +12,7 @@ return {
         "tracingoutput", "tracingstats", "tracingonline", "year", "month", "day",
         "time", "hour", "minute", "charcode", "charwd", "charht", "chardp",
         "charic", "pausing", "showstopping", "texscriptmode", "overloadmode",
-        "linejoin", "linecap", "stacking", "miterlimit", "warningcheck",
+        "linejoin", "linecap", "stacking", "miterlimit", "warningcheck", "defaultzeroangle",
         "truecorners", "defaultcolormodel", "restoreclipcolor", "numbersystem", "jointolerance",
         "numberprecision", "jobname", "addto", "atleast", "begingroup",
         "controls", "curl", "delimiters", "endgroup", "everyjob", "exitif",

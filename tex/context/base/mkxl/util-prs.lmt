@@ -60,6 +60,7 @@ local escape, left, right = P("\\"), P('{'), P('}')
 --     [1] = ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
 --     [2] = left * V(1) * right
 -- }
+
 lpegpatterns.balanced = P {
     ((escape * (left+right)) + (1 - (left+right)) + V(2))^0,
     left * V(1) * right
@@ -545,6 +546,7 @@ local dquote    = P('"')
 local equal     = P('=')
 local escape    = P('\\')
 local separator = S(' ,')
+local utfbom    = lpegpatterns.utfbom^0  -- we just intercept
 
 local key       = C((1-equal)^1)
 local value     = dquote * C((1-dquote-escape*dquote)^0) * dquote
@@ -562,6 +564,7 @@ function parsers.keq_to_hash(str)
 end
 
 -- inspect(lpeg.match(pattern,[[key="value" foo="bar"]]))
+
 
 local defaultspecification = { separator = ",", quote = '"' }
 
@@ -589,7 +592,7 @@ function parsers.csvsplitter(specification)
         end
         whatever = quotedata + whatever
     end
-    local parser = Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r")^1)^0 )
+    local parser = utfbom * Ct((Ct(whatever * (separator * whatever)^0) * S("\n\r")^1)^0 )
     return function(data)
         return lpegmatch(parser,data)
     end
@@ -625,10 +628,10 @@ function parsers.rfc4180splitter(specification)
     local non_escaped = (numbers and (zero and (whotever/function(n) return tonumber(n) or 0 end) or whotever/tonumber) or Cs(whotever))
     local field       = escaped + non_escaped + (numbers and zero and Cc(0) or Cc(""))
     local record      = Ct(field * (separator * field)^1)
-    local headerline  = record * Cp()
+    local headerline  = utfbom * record * Cp()
     local morerecords = (newline^(specification.strict and -1 or 1) * record)^0
-    local headeryes   = Ct(morerecords)
-    local headernop   = Ct(record * morerecords)
+    local headeryes   = utfbom * Ct(morerecords)
+    local headernop   = utfbom * Ct(record * morerecords)
     return function(data,getheader)
         if getheader then
             local header, position = lpegmatch(headerline,data)

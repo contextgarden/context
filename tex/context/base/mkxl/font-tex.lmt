@@ -247,6 +247,25 @@ do
                     t[i] = new_kern(-c2)
                 elseif c1 == "right" then
                     t[i] = new_kern(c2)
+                elseif c1 == "offset" then
+                    local c4 = ci[4] -- c
+                    if c4 then
+                        t[i] = new_glyph(fnt or 0,c4)
+                        ----- c2 = ci[2] -- ox
+                        local c3 = ci[3] -- oy
+                        local c5 = ci[5] -- sx
+                        local c6 = ci[6] -- sy
+                        local c7 = ci[7] -- slant
+                        if c2 or c3 then
+                            nuts.setoffsets(t[i],c2 or 0,c3 or 0)
+                        end
+                     -- if c5 or c6 then
+                     --     nuts.setscales(t[i],1,(c5 or 1)*1000,(c6 or 1)*1000)
+                     -- end
+                        if c7 then
+                            nuts.setslant(t[i],c7*1000)
+                        end
+                    end
                 else
                     print("fcc todo: " .. c1)
                     goto done

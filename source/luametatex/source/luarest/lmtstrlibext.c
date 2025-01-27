@@ -415,23 +415,23 @@ static inline void strlib_aux_add_utfchar(luaL_Buffer *b, unsigned u)
     }
 }
 
-static inline void strlib_aux_add_utfnumber(lua_State *L, luaL_Buffer *b, lua_Integer index)
+static inline void strlib_aux_add_utfnumber(lua_State *L, luaL_Buffer *b, int index)
 {
     strlib_aux_add_utfchar(b, (unsigned) lmt_tounsigned(L, index));
 }
 
-static inline void strlib_aux_add_utfstring(lua_State *L, luaL_Buffer *b, lua_Integer index)
+static inline void strlib_aux_add_utfstring(lua_State *L, luaL_Buffer *b, int index)
 {
     size_t ls = 0;
     const char *s = lua_tolstring(L, index, &ls);
     luaL_addlstring(b, s, ls);
 }
 
-static inline void strlib_aux_add_utftable(lua_State *L, luaL_Buffer *b, lua_Integer index)
+static inline void strlib_aux_add_utftable(lua_State *L, luaL_Buffer *b, int index)
 {
     lua_Unsigned n = lua_rawlen(L, index);
     if (n > 0) { 
-        for (lua_Integer i = 1; i <= n; i++) {
+        for (lua_Unsigned i = 1; i <= n; i++) {
             lua_rawgeti(L, index, i);
             switch (lua_type(L, -1)) { 
                 case LUA_TNUMBER: 
@@ -1046,6 +1046,147 @@ static const luaL_Reg strlib_function_list[] = {
     { NULL,                NULL                      },
 };
 
+/*
+    The next (old, moved here) experiment was used to check if using some buffer is more efficient
+    than using a table that we concat. It makes no difference. If we ever use this, the initializer
+    |luaextend_string_buffer| will be merged into |luaextend_string|. We could gain a little on a
+    bit more efficient |luaL_checkudata| as we use elsewhere because in practice (surprise) its
+    overhead makes buffers like this {\em 50 percent} slower than the concatinated variant and
+    twice as slow when we reuse a temporary table. It's just better to stay at the \LUA\ end.
+
+    Replacing the userdata test with a dedicated test gives a speed boost but we're still some 
+    {\em 10 percent} slower. So, for now we comment this feature. 
+*/
+
+# if (0) 
+
+    typedef struct lmt_string_buffer {
+        char   *buffer;
+        size_t  length;
+        size_t  size;
+        size_t  step;
+    } lmt_string_buffer;
+
+    static lmt_string_buffer *strlib_buffer_instance(lua_State *L)
+    {
+        lmt_string_buffer *b = (lmt_string_buffer *) lua_touserdata(L, 1);
+        if (b && lua_getmetatable(L, 1)) {
+            lua_get_metatablelua(string_buffer_instance);
+            if (! lua_rawequal(L, -1, -2)) {
+                b = NULL;
+            } else if (! b->buffer) {
+                b = NULL;
+            }
+            lua_pop(L, 2);
+            return b;
+        }
+        return NULL;
+    }
+
+    static int strlib_buffer_gc(lua_State *L)
+    {
+        lmt_string_buffer *b = strlib_buffer_instance(L);
+        if (b) {
+            lmt_memory_free(b->buffer);
+        }
+        return 0;
+    }
+
+    static int strlib_buffer_new(lua_State *L)
+    {
+        size_t size = lmt_optsizet(L, 1, LUAL_BUFFERSIZE);
+        size_t step = lmt_optsizet(L, 2, size);
+        lmt_string_buffer *b = (lmt_string_buffer *) lua_newuserdatauv(L, sizeof(lmt_string_buffer), 0);
+        b->buffer = lmt_memory_malloc(size);
+        b->size   = size;
+        b->step   = step;
+        b->length = 0;
+        lua_get_metatablelua(string_buffer_instance);
+        lua_setmetatable(L, -2);
+        return 1;
+    }
+
+    static int strlib_buffer_add(lua_State *L)
+    {
+        lmt_string_buffer *b = strlib_buffer_instance(L);
+        if (b) {
+            switch (lua_type(L, 2)) {
+                case LUA_TSTRING:
+                case LUA_TNUMBER:
+                    {
+                        size_t l;
+                        const char *s = lua_tolstring(L, 2, &l);
+                        size_t length = b->length + l;
+                        if (length >= b->size) {
+                            while (length >= b->size) {
+                                 b->size += b->step;
+                            }
+                            b->buffer = lmt_memory_realloc(b->buffer, b->size);
+                        }
+                        memcpy(&b->buffer[b->length], s, l);
+                        b->length = length;
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+        return 0;
+    }
+
+    static int strlib_buffer_get_data(lua_State *L)
+    {
+        lmt_string_buffer *b = strlib_buffer_instance(L);
+        if (b) {
+            lua_pushlstring(L, b->buffer, b->length);
+            lua_pushinteger(L, (int) b->length);
+            return 2;
+        } else {
+            lua_pushnil(L);
+            return 1;
+        }
+    }
+
+    static int strlib_buffer_get_size(lua_State *L)
+    {
+        lmt_string_buffer *b = strlib_buffer_instance(L);
+        lua_pushinteger(L, b ? b->length : 0);
+        return 1;
+    }
+
+    static const luaL_Reg strlib_function_list_buffer[] = {
+        { "newbuffer",         strlib_buffer_new         },
+        { "addtobuffer",       strlib_buffer_add         },
+        { "getbufferdata",     strlib_buffer_get_data    },
+        { "getbuffersize",     strlib_buffer_get_size    },
+        { NULL,                NULL                      },
+    };
+
+    static int luaextend_string_buffer(lua_State *L)
+    {
+        lua_getglobal(L, "string");
+        for (const luaL_Reg *lib = strlib_function_list_buffer; lib->name; lib++) {
+            lua_pushcfunction(L, lib->func);
+            lua_setfield(L, -2, lib->name);
+        }
+        lua_pop(L, 1);
+        luaL_newmetatable(L, STRING_BUFFER_INSTANCE);
+        lua_pushcfunction(L, strlib_buffer_gc);
+        lua_setfield(L, -2, "__gc");
+        lua_pop(L, 1);
+        return 1;
+    }
+
+# else 
+
+    static int luaextend_string_buffer(lua_State *L)
+    {
+        (void) L;
+        return 0;
+    }
+
+# endif 
+
 int luaextend_string(lua_State * L)
 {
     lua_getglobal(L, "string");
@@ -1054,118 +1195,6 @@ int luaextend_string(lua_State * L)
         lua_setfield(L, -2, lib->name);
     }
     lua_pop(L, 1);
+    luaextend_string_buffer(L);
     return 1;
 }
-
-/*
-    The next (old, moved here) experiment was used to check if using some buffer is more efficient
-    than using a table that we concat. It makes no difference. If we ever use this, the initializer
-    |luaextend_string_buffer| will me merged into |luaextend_string|. We could gain a little on a
-    bit more efficient |luaL_checkudata| as we use elsewhere because in practice (surprise) its
-    overhead makes buffers like this {\em 50 percent} slower than the concatinated variant and
-    twice as slow when we reuse a temporary table. It's just better to stay at the \LUA\ end.
-*/
-
-/*
-# define STRING_BUFFER_METATABLE "string.buffer"
-
-typedef struct lmt_string_buffer {
-    char   *buffer;
-    size_t  length;
-    size_t  size;
-    size_t  step;
-    size_t  padding;
-} lmt_string_buffer;
-
-static int strlib_buffer_gc(lua_State* L)
-{
-    lmt_string_buffer *b = (lmt_string_buffer *) luaL_checkudata(L, 1, STRING_BUFFER_METATABLE);
-    if (b && b->buffer) {
-        lmt_memory_free(b->buffer);
-    }
-    return 0;
-}
-
-static int strlib_buffer_new(lua_State* L)
-{
-    size_t size = lmt_optsizet(L, 1, LUAL_BUFFERSIZE);
-    size_t step = lmt_optsizet(L, 2, size);
-    lmt_string_buffer *b = (lmt_string_buffer *) lua_newuserdatauv(L, sizeof(lmt_string_buffer), 0);
-    b->buffer = lmt_memory_malloc(size);
-    b->size   = size;
-    b->step   = step;
-    b->length = 0;
-    luaL_setmetatable(L, STRING_BUFFER_METATABLE);
-    return 1;
-
-}
-
-static int strlib_buffer_add(lua_State* L)
-{
-    lmt_string_buffer *b = (lmt_string_buffer *) luaL_checkudata(L, 1,  STRING_BUFFER_METATABLE);
-    switch (lua_type(L, 2)) {
-        case LUA_TSTRING:
-            {
-                size_t l;
-                const char *s = lua_tolstring(L, 2, &l);
-                size_t length = b->length + l;
-                if (length >= b->size) {
-                    while (length >= b->size) {
-                         b->size += b->step;
-                    }
-                    b->buffer = lmt_memory_realloc(b->buffer, b->size);
-                }
-                memcpy(&b->buffer[b->length], s, l);
-                b->length = length;
-            }
-            break;
-        default:
-            break;
-    }
-    return 0;
-}
-
-static int strlib_buffer_get_data(lua_State* L)
-{
-    lmt_string_buffer *b = (lmt_string_buffer *) luaL_checkudata(L, 1,  STRING_BUFFER_METATABLE);
-    if (b->buffer) {
-        lua_pushlstring(L, b->buffer, b->length);
-        lua_pushinteger(L, (int) b->length);
-        return 2;
-    } else {
-        lua_pushnil(L);
-        return 1;
-    }
-}
-
-static int strlib_buffer_get_size(lua_State* L)
-{
-    lmt_string_buffer *b = (lmt_string_buffer *) luaL_checkudata(L, 1,  STRING_BUFFER_METATABLE);
-    lua_pushinteger(L, b->length);
-    return 1;
-}
-
-static const luaL_Reg strlib_function_list_buffer[] = {
-    { "newbuffer",         strlib_buffer_new         },
-    { "addtobuffer",       strlib_buffer_add         },
-    { "getbufferdata",     strlib_buffer_get_data    },
-    { "getbuffersize",     strlib_buffer_get_size    },
-    { NULL,                NULL                      },
-};
-
-int luaextend_string_buffer(lua_State * L)
-{
-    lua_getglobal(L, "string");
-    for (const luaL_Reg *lib = strlib_function_list_buffer; lib->name; lib++) {
-        lua_pushcfunction(L, lib->func);
-        lua_setfield(L, -2, lib->name);
-    }
-    lua_pop(L, 1);
-    luaL_newmetatable(L, STRING_BUFFER_METATABLE);
-    lua_pushcfunction(L, strlib_buffer_gc);
-    lua_setfield(L, -2, "__gc");
-    lua_pop(L, 1);
-    return 1;
-}
-
-*/

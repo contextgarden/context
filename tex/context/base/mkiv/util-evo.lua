@@ -221,6 +221,8 @@ end
 
 -- the token is kind of generic and shared
 
+-- 91db1612-73fd-4500-91b2-e63b069b185c
+
 local f = replacer (
     [[curl ]] ..
     [[--silent --insecure ]] ..
@@ -228,6 +230,7 @@ local f = replacer (
     [[-H "Authorization: Basic YjAxM2FhMjYtOTcyNC00ZGJkLTg4OTctMDQ4YjlhYWRhMjQ5OnRlc3Q=" ]] ..
     [[-H "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml" ]] ..
     [[-d "Content-Type=application/x-www-form-urlencoded; charset=utf-8" ]] ..
+ -- [[-H "applicationId: %applicationid%" ]] ..
     [[-d "Host=rs.alarmnet.com/" ]] ..
     [[-d "Cache-Control=no-store no-cache" ]] ..
     [[-d "Pragma=no-cache" ]] ..
@@ -247,6 +250,7 @@ local function getaccesstoken(presets)
             password      = c.password,
             applicationid = applicationid,
         }
+ print(s)
         local r = s and resultof(s)
         local t = r and jsontolua(r)
         return result(t,"getting access token %a")
@@ -1051,9 +1055,11 @@ if utilities then
     utilities.evohome = evohome
 end
 
--- local presets = evohome.helpers.loadpresets("c:/data/develop/domotica/code/evohome-presets.lua")
+-- local presets = evohome.helpers.loadpresets("c:/data/develop/domotica/evohome/evohome-presets.lua")
+-- inspect(evohome.helpers.geteverything(presets))
 -- evohome.helpers.setzonestate(presets,"Voorkamer",22)
 -- evohome.helpers.setzonestate(presets,"Voorkamer")
+-- inspect(presets)
 
 return evohome
 

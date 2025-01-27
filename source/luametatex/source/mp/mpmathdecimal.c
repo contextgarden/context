@@ -1057,13 +1057,17 @@ static void mp_decimal_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
 static void mp_decimal_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
 {
     if (decNumberIsZero((decNumber *) x_orig->data.num) && decNumberIsZero((decNumber *) y_orig->data.num)) {
-        mp_error(
-            mp,
-            "angle(0,0) is taken as zero",
-            "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
-            "Proceed, with fingers crossed."
-        );
-        decNumberZero(ret->data.num);
+        if (decNumberIsNegative((decNumber *) internal_value(mp_default_zero_angle_internal).data.num)) {
+            mp_error(
+                mp,
+                "angle(0,0) is taken as zero",
+                "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
+                "Proceed, with fingers crossed."
+            );
+            decNumberZero(ret->data.num);
+        } else { 
+            decNumberCopy(ret->data.num, internal_value(mp_default_zero_angle_internal).data.num);
+        }
     } else {
         decNumber atan2val, oneeighty_angle;
         ret->type = mp_angle_type;

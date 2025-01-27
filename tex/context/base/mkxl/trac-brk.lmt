@@ -330,30 +330,32 @@ local showactions = {
                     end
                 end
                 --
-                local lastline = serial[#serial].line
-                for currentserial=#serial,1,-1 do
-                    local data = serial[currentserial]
-                    if data.refcount == 0 then
-                        local list = { }
-                        local done = {
-                            serial = currentserial,
-                            line   = data.line,
-                            list   = list,
-                            final  = data.final,
-                            color  = data.color
-                        }
-                        finals[#finals+1] = done
-                        while true do
-                            local previous = data.previous
-                            if previous == 0 then
-                                break
-                            else
-                                list[#list+1] = previous
-                                data = serial[previous]
+                if #serial > 0 then
+                    local lastline = serial[#serial].line
+                    for currentserial=#serial,1,-1 do
+                        local data = serial[currentserial]
+                        if data.refcount == 0 then
+                            local list = { }
+                            local done = {
+                                serial = currentserial,
+                                line   = data.line,
+                                list   = list,
+                                final  = data.final,
+                                color  = data.color
+                            }
+                            finals[#finals+1] = done
+                            while true do
+                                local previous = data.previous
+                                if previous == 0 then
+                                    break
+                                else
+                                    list[#list+1] = previous
+                                    data = serial[previous]
+                                end
                             end
+                        else
+                            break
                         end
-                    else
-                        break
                     end
                 end
                 table.reverse(finals)
@@ -394,7 +396,7 @@ function breakpoints.start(specification)
     showrefcount = true
     serials      = { }
     results      = { }
-    nestlevel    = texgetnest("ptr")
+    nestlevel    = texgetnest("ptr") + (tonumber(specification.level) or 0) -- hack
     marginoffset = specification.offset or 0
     check_options(specification.option)
     if list then
@@ -528,7 +530,7 @@ end
 -- bonus
 
 function mp.show_breakpoints(dx,dy,sx,sy,lw)
-    local results = tracers.breakpoints.getresults()[1]
+    local results = breakpoints.getresults()[1]
     local breaks  = { }
     local colors  = {
         none    = "black",

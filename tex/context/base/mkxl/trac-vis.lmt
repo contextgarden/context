@@ -177,19 +177,20 @@ visualizers.modes   = modes
 visualizers.filters = filters
 
 local usedfont, exheight, emwidth
-local l_penalty, l_glue, l_kern, l_fontkern, l_hbox, l_vbox, l_vtop, l_strut, l_whatsit, l_glyph, l_math, l_marginkern, l_mathkern, l_mathshape, l_italic, l_origin, l_discretionary, l_expansion, l_line, l_space, l_depth,
-    l_dir, l_whatsit, l_mark, l_insert, l_boundary -- , l_user
+local
+ -- l_penalty, l_glue, l_kern,
+    l_h_penalty, l_h_kern, l_h_glue,
+    l_v_penalty, l_v_kern, l_v_glue,
+    l_hbox, l_vbox, l_vtop, l_origin, l_line,
+    l_depth, l_strut,
+    l_glyph, l_discretionary, l_expansion, l_fontkern, l_italic, l_marginkern, l_space,
+    l_math, l_mathkern, l_mathshape,
+    l_dir, l_whatsit,
+    l_mark, l_insert, l_boundary
+ -- l_user
 
 local enabled = false
 local layers  = { }
-
-local preset_boxes  = modes.hbox + modes.vbox + modes.vtop + modes.origin
-local preset_makeup = preset_boxes
-                    + modes.kern + modes.glue + modes.penalty + modes.boundary
-local preset_all    = preset_makeup
-                    + modes.fontkern + modes.marginkern + modes.mathkern
-                    + modes.whatsit + modes.glyph + modes.user + modes.math
-                    + modes.dir + modes.mathglue + modes.mark + modes.insert
 
 function visualizers.setfont(id)
     usedfont = id or current_font()
@@ -240,9 +241,15 @@ local function initialize()
     l_hbox          = layers.hbox
     l_vbox          = layers.vbox
     l_vtop          = layers.vtop
-    l_glue          = layers.glue
-    l_kern          = layers.kern
-    l_penalty       = layers.penalty
+ -- l_glue          = layers.glue
+    l_v_glue        = layers.vglue
+    l_h_glue        = layers.hglue
+ -- l_kern          = layers.kern
+    l_v_kern        = layers.vkern
+    l_h_kern        = layers.hkern
+ -- l_penalty       = layers.penalty
+    l_v_penalty     = layers.vpenalty
+    l_h_penalty     = layers.hpenalty
     l_fontkern      = layers.fontkern
     l_strut         = layers.strut
     l_whatsit       = layers.whatsit
@@ -295,53 +302,65 @@ function visualizers.enable()
     end
 end
 
-local function setvisual(n,a,what,list)
-    if not n or n == "reset" then
-        return unsetvalue
-    elseif n == true or n == "makeup" then
-        if not a or a == 0 or a == unsetvalue then
-            a = preset_makeup
-        else
-            a = a | preset_makeup
-        end
-    elseif n == "boxes" then
-        if not a or a == 0 or a == unsetvalue then
-            a = preset_boxes
-        else
-            a = a | preset_boxes
-        end
-    elseif n == "all" then
-        if what == false then
+local setvisual  do
+
+    local preset_boxes  = modes.hbox + modes.vbox + modes.vtop + modes.origin
+    local preset_makeup = preset_boxes
+                        + modes.kern + modes.glue + modes.penalty + modes.boundary
+    local preset_all    = preset_makeup
+                        + modes.fontkern + modes.marginkern + modes.mathkern
+                        + modes.whatsit + modes.glyph + modes.user + modes.math
+                        + modes.dir + modes.mathglue + modes.mark + modes.insert
+
+    setvisual = function(n,a,what,list)
+        if not n or n == "reset" then
             return unsetvalue
-        elseif not a or a == 0 or a == unsetvalue then
-            a = preset_all
-        else
-            a = a | preset_all
-        end
-    elseif type(n) == "string" then
-        for s in gmatch(n,"[a-z]+") do
-            local m = modes[s]
-            if not m then
-                -- go on
-            elseif not a or a == 0 or a == unsetvalue then
-                a = m
+        elseif n == true or n == "makeup" then
+            if not a or a == 0 or a == unsetvalue then
+                a = preset_makeup
             else
-                a = a | m
+                a = a | preset_makeup
+            end
+        elseif n == "boxes" then
+            if not a or a == 0 or a == unsetvalue then
+                a = preset_boxes
+            else
+                a = a | preset_boxes
+            end
+        elseif n == "all" then
+            if what == false then
+                return unsetvalue
+            elseif not a or a == 0 or a == unsetvalue then
+                a = preset_all
+            else
+                a = a | preset_all
+            end
+        elseif type(n) == "string" then
+            for s in gmatch(n,"[a-z]+") do
+                local m = modes[s]
+                if not m then
+                    -- go on
+                elseif not a or a == 0 or a == unsetvalue then
+                    a = m
+                else
+                    a = a | m
+                end
+            end
+        elseif type(n) == "number" then
+            if not a or a == 0 or a == unsetvalue then
+                a = n
+            else
+                a = a | n
             end
         end
-    elseif type(n) == "number" then
         if not a or a == 0 or a == unsetvalue then
-            a = n
-        else
-            a = a | n
+            return unsetvalue
+        elseif not enabled then -- must happen at runtime (as we don't store layers yet)
+            enable()
         end
+        return a
     end
-    if not a or a == 0 or a == unsetvalue then
-        return unsetvalue
-    elseif not enabled then -- must happen at runtime (as we don't store layers yet)
-        enable()
-    end
-    return a
+
 end
 
 local function setfilter(n,a,what,list)
@@ -1263,7 +1282,8 @@ local ruledglue, ruledmathglue do
         [gluecodes.belowdisplayskip]      = "DB",
         [gluecodes.abovedisplayshortskip] = "SA",
         [gluecodes.belowdisplayshortskip] = "SB",
-        [gluecodes.topskip]               = "TS",
+        [gluecodes.topskip]               = "TO",
+        [gluecodes.bottomskip]            = "BO",
         [gluecodes.splittopskip]          = "ST",
         [tabskip_code]                    = "TB",
         [gluecodes.thinmuskip]            = "MS",
@@ -1306,61 +1326,6 @@ local ruledglue, ruledmathglue do
 
     local f_amount = formatters["%s:%0.3f"]
 
---     ruledglue = function(head,current,vertical,parent)
---         local subtype = getsubtype(current)
---         local width   = effectiveglue(current,parent)
---         local stag    = stags[subtype]
---         local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor) -- can be sped up
---         local info    = (vertical and g_cache_v or g_cache_h)[amount]
---         if subtype == intermathskip_code then
---             head = ruledmathglue(head, current)
---         end
---         if info then
---             -- print("glue hit")
---         else
---             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
---                 info = sometext(amount,l_glue,"trace:y")
---             elseif subtype == userskip_code then
---                 if width > 0 then
---                     info = sometext(amount,l_glue,"trace:b")
---                 elseif width < 0 then
---                     info = sometext(amount,l_glue,"trace:r")
---                 else
---                     info = sometext(amount,l_glue,"trace:g")
---                 end
---             elseif subtype == tabskip_code then
---                 info = sometext(amount,l_glue,"trace:s")
---             elseif subtype == indentskip_code or subtype == correctionskip_code then
---                 info = sometext(amount,l_glue,"trace:s")
---             elseif subtype == leftskip_code then
---                 info = sometext(amount,l_glue,"trace:y",false,true,stag)
---             elseif subtype == rightskip_code then
---                 info = sometext(amount,l_glue,"trace:y",false,false,stag)
---             elseif subtype == lefthangskip_code then
---                 info = sometext(amount,l_glue,"trace:y",false,true,stag)
---             elseif subtype == righthangskip_code then
---                 info = sometext(amount,l_glue,"trace:y",false,false,stag)
---             elseif subtype == parfillleftskip_code then
---                 info = sometext(amount,l_glue,"trace:s",false,true,stag)
---             elseif subtype == parfillrightskip_code then
---                 info = sometext(amount,l_glue,"trace:s",false,false,stag)
---             elseif subtype == parinitleftskip_code then
---                 info = sometext(amount,l_glue,"trace:s",false,true,stag)
---             elseif subtype == parinitrightskip_code then
---                 info = sometext(amount,l_glue,"trace:s",false,false,stag)
---             else
---                 info = sometext(amount,l_glue,"trace:m")
---             end
---             (vertical and g_cache_v or g_cache_h)[amount] = info
---         end
---         info = copylist(info)
---         if vertical then
---             info = vpack_nodes(info)
---         end
---         head, current = insertnodebefore(head,current,info)
---         return head, getnext(current)
---     end
-
     local g_caches = { } for k, v in next, tags do g_caches[k] = caches[v] end
 
     ruledglue = function(head,current,vertical,parent)
@@ -1368,14 +1333,15 @@ local ruledglue, ruledmathglue do
         local width   = effectiveglue(current,parent)
         local stag    = stags[subtype]
         local cache   = g_caches[subtype] or (vertical and g_cache_v) or g_cache_h
+        local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
         local info    = cache[amount]
         if subtype == intermathskip_code then
-            head = ruledmathglue(head, current)
+            head = ruledmathglue(head,current)
         end
         if info then
             -- print("glue hit")
         else
-            local amount = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
+            local l_glue = vertical and l_v_glue or l_h_glue
             if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then
                 info = sometext(amount,l_glue,"trace:y")
             elseif subtype == userskip_code then
@@ -1555,6 +1521,7 @@ local ruledkern do
         local info  = cache[kern]
         if not info then
             local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*ptfactor)
+            local l_kern = vertical and l_v_kern or l_h_kern
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
             elseif kern < 0 then
@@ -1761,11 +1728,12 @@ local ruleddiscretionary, ruledglyphdiscretionary do
     end
 
     ruledglyphdiscretionary = function(head,current,glyph)
-        local _, a = getdiscpart(glyph)
-        if a ~= 0 then
-            local info = g_cache[a]
+        local part, after, code = getdiscpart(glyph)
+-- print("part",part,"code",code)
+        if after ~= 0 then
+            local info = g_cache[after]
             if not info then
-                local code = glyphdisccodes[a] or "?"
+                local code = glyphdisccodes[after] or "?"
                 local kern = new_kern(-2*emwidth/fraction)
                 local rule = new_rule(4*emwidth/fraction,4*exheight,exheight)
                 local text, width = sometext(sub(code,1,1),l_discretionary,"trace:dd","trace:w",false,-2)
@@ -1780,7 +1748,7 @@ local ruleddiscretionary, ruledglyphdiscretionary do
                 if crappytaggingmode then
                     setattr(info,a_tagged,0)
                 end
-                g_cache[true] = info
+                g_cache[after] = info
             end
             head = insertnodebefore(head,current,copylist(info))
         end
@@ -1854,6 +1822,7 @@ local ruledpenalty do
             -- print("penalty hit")
         else
             amount = formatters[amount](penalty)
+            local l_penalty = vertical and l_v_penalty or l_h_penalty
             if ismath then
                 info = sometext(amount,l_penalty,"trace:s")
             elseif penalty > 0 then

@@ -263,9 +263,9 @@ The start and end of a sequence of characters is signalled by a \type {glue}, \t
 \type {adjust} node indicate a start or end. You can omit the last set from the
 test by setting flags in \type {\hyphenationmode}:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:hyphenationcodes]
-\stopcolumns
+\stoptworows
 
 The word start is determined as follows:
 
@@ -406,9 +406,9 @@ side effects have been explored. You can find some experimental use cases in
 
 There are also \type {\discretionaryoptions}. Some are set by the engine:
 
-\startcolumns
+\starttworows
 \getbuffer[engine:syntax:discoptioncodes]
-\stopcolumns
+\stoptworows
 
 \stopsection
 

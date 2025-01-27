@@ -179,10 +179,11 @@ extern halfword tex_badness(
 # define deplorable                            100000 /*tex more than |inf_bad|, but less than |awful_bad| */
 # define extremely_deplorable               100000000
 # define large_width_excess                   7230584
+# define large_height_excess                  7230584 /*tex same as |large_width_excess| */
 # define small_stretchability                 1663497
 # define loose_criterion                           99 
 # define decent_criterion                          12 
-# define tight_criterion                           12 /* same as |decent_criterion| */
+# define tight_criterion                           12 /*tex same as |decent_criterion| */
 # define max_calculated_badness                  8189
 # define emergency_adj_demerits                 10000
 
@@ -308,6 +309,9 @@ extern halfword tex_badness(
 # define max_n_of_math_classes                   64
 # define max_n_of_catcode_tables                256
 # define max_n_of_box_indices          max_halfword
+
+# define min_n_list_stack_entries                 7 
+# define max_n_list_stack_entries                15 
 
 # define max_character_code                0x10FFFF /*tex 1114111, the largest allowed character number; must be |< max_halfword| */
 //define max_math_character_code           0x0FFFFF /*tex 1048575, for now this is plenty, otherwise we need to store differently */
@@ -592,14 +596,14 @@ typedef union tokenword {
 # define stp_body_size         1000000
 
 # define max_node_size       100000000    /* Currently these are the memory words! */
-# define min_node_size         2000000    /* Currently these are the memory words! */
+# define min_node_size        10000000    /* Currently these are the memory words! */
 # define siz_node_size        25000000
-# define stp_node_size          500000    /* Currently these are the memory words! */
+# define stp_node_size         5000000    /* Currently these are the memory words! */
 
 # define max_token_size       10000000    /* If needed we can go much larger. */
 # define min_token_size        2000000    /* The original 10000 is a bit cheap. */
 # define siz_token_size       10000000
-# define stp_token_size         500000
+# define stp_token_size        1000000
 
 # define max_buffer_size     100000000    /* Let's be generous */
 # define min_buffer_size       1000000    /* We often need quite a bit. */
@@ -610,6 +614,10 @@ typedef union tokenword {
 # define min_nest_size            1000    /* Quite a bit more that the old default 50. */
 # define siz_nest_size           10000    /* Quite a bit more that the old default 50. */
 # define stp_nest_size            1000    /* We use this step when we increase the table. */
+
+# define max_mvl_size              500
+# define min_mvl_size               10
+# define stp_mvl_size               10
 
 # define max_in_open              2000    /* The table will grow dynamically but the file system might have limitations. */
 # define min_in_open               500    /* This used to be 100, but who knows what users load. */
@@ -737,6 +745,7 @@ typedef struct memory_data {
     int itemsize;  /* the itemsize */
     int initial;
     int offset;    /* offset of ptr and top */
+    int extra; 
 } memory_data;
 
 typedef struct limits_data {
@@ -786,6 +795,7 @@ typedef struct line_break_properties {
     halfword tracing_orphans;
     halfword tracing_passes;
     halfword paragraph_dir;
+    halfword paragraph_options;
     halfword parfill_left_skip;
     halfword parfill_right_skip;
     halfword parinit_left_skip;
@@ -850,6 +860,31 @@ typedef struct line_break_properties {
     halfword sf_factor;
     halfword sf_stretch_factor;
 } line_break_properties;
+
+typedef struct balance_properties {
+    halfword tracing_balancing;
+    halfword tracing_fitness;
+    halfword tracing_passes;
+    halfword pretolerance;
+    halfword tolerance;
+    halfword emergency_stretch;
+    halfword emergency_shrink;
+    halfword original_stretch; 
+    halfword original_shrink; 
+    halfword looseness;
+    halfword adj_demerits;
+    halfword max_adj_demerits;
+    scaled   vsize;
+    scaled   topskip;
+    scaled   bottomskip;
+    halfword shape;
+    halfword fitness_classes;
+    halfword checks;
+    halfword passes;
+    halfword penalty;
+    halfword packing;
+    halfword trial; /* packing */
+} balance_properties;
 
 typedef enum sparse_identifiers {
     unknown_sparse_identifier,
@@ -971,6 +1006,14 @@ typedef enum tex_build_context_codes {
     fireup_show_build_context,
     wrapup_show_build_context,
 } tex_build_context_codes;
+
+typedef enum tex_vsplit_context_codes {
+    initialize_show_vsplit_context,
+    continue_show_vsplit_context,
+    check_show_vsplit_context,
+    quit_show_vsplit_context,
+    wrapup_show_vsplit_context,
+} tex_vsplit_context_codes;
 
 typedef enum tex_page_context_codes {
     box_page_context,

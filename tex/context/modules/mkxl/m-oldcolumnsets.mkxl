@@ -1,0 +1,33 @@
+%D \module
+%D   [       file=m-oldcolumnsets,
+%D        version=2024.12.12,
+%D          title=Falback on old method,
+%D       subtitle=Columnsets,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is therefore copyrighted
+%D by \PRAGMA. See mreadme.pdf for details.
+
+\continuewhenlmtxmode
+
+\pushoverloadmode
+    \input {page-cst.mkxl}
+\popoverloadmode
+
+\continueifinputfile{m-oldcolumnsets.mkxl}
+
+\setuplayout[tight]
+
+\setupalign[tolerant,stretch]
+
+\definecolumnset[example][n=3]
+
+\starttext
+
+\startcolumnset[example] \dontcomplain
+    \dorecurse{100}{\samplefile{knuthmath}\par}
+\stopcolumnset
+
+\stoptext

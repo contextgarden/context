@@ -64,6 +64,7 @@ token_memory_state_info lmt_token_memory_state = {
         .ptr       = 0, /* used to register usage */
         .initial   = 0,
         .offset    = 0,
+        .extra     = 0, 
     },
     .available  = 0,
     .padding    = 0,
@@ -3377,6 +3378,15 @@ void tex_run_convert_tokens(halfword code)
                 int saved_selector;
                 push_selector;
                 tex_print_str(lmt_engine_state.luatex_banner);
+                pop_selector;
+                break;
+            }
+        case font_identifier_code:
+            {
+                int saved_selector;
+                halfword fnt = tex_scan_font_identifier(NULL);
+                push_selector;
+                tex_print_font_identifier(fnt);
                 pop_selector;
                 break;
             }

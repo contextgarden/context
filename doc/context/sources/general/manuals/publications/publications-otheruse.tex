@@ -1,3 +1,5 @@
+\pushoverloadmode
+
 \environment publications-style
 
 \startcomponent publications-otheruse
@@ -19,9 +21,9 @@ following definitions:
 \startbuffer[duane]
 @IMAGE {tug2013,
     title       = "TUG 2013",
-    url         = "http://tug.org/tug2013/",
-    url_image   = "http://tug.org/tug2013/tug2013-color-300.jpg",
-    url_thumb   = "http://tug.org/tug2013/t2013-thumb.jpg",
+    url         = "https://tug.org/tug2013/",
+    url_image   = "https://tug.org/tug2013/tug2013-color-300.jpg",
+    url_thumb   = "https://tug.org/tug2013/t2013-thumb.jpg",
     description = "Official drawing of the TUG 2013 conference",
     author      = "Duane Bibby",
     year        = 2013,
@@ -30,9 +32,9 @@ following definitions:
 
 @IMAGE {tug2014,
     title       = "TUG 2014",
-    url         = "http://tug.org/tug2014/",
-    url_image   = "http://tug.org/art/tug2014-color.jpg",
-    url_thumb   = "http://tug.org/tug2014/t2014-thumb.jpg",
+    url         = "https://tug.org/tug2014/",
+    url_image   = "https://tug.org/art/tug2014-color.jpg",
+    url_thumb   = "https://tug.org/tug2014/t2014-thumb.jpg",
     description = "Official drawing of the TUG 2014 conference",
     author      = "Duane Bibby",
     year        = 2014,
@@ -81,7 +83,6 @@ the buffer and sets up a rendering.
    method=dataset,
    numbering=no,
    criterium=all]
-
 \stopbuffer
 
 \cindex{definebtxdataset}
@@ -319,6 +320,90 @@ the \Cindex {chemical} command.
 
 \cindex{cite}
 \typebuffer [option=TEX]
+\getbuffer
+
+\stopsection
+
+\startsection[title=\METAPOST]
+
+Because it's a variant on previous examples, we just show the whole set
+of definitions and the result.
+
+\startbuffer
+\startbuffer[sample]
+\startMPpage
+    fill fullcircle scaled 4cm withcolor "darkgreen";
+\stopMPpage
+\stopbuffer
+
+\savebuffer[list={sample},file={metafun-sample-2.tex},prefix=]
+
+\startbuffer[samples]
+@IMAGE {sample1,
+    title       = "sample-1",
+    author      = "My Self",
+    mpcode      = {fill fullcircle scaled 4cm withcolor "darkblue";}
+}
+
+@IMAGE {sample2,
+    title       = "sample-2",
+    author      = "My Self",
+    mpfile      = "metafun-sample-2.tex"
+}
+\stopbuffer
+
+\definebtxdataset
+  [samples]
+
+\usebtxdataset
+  [samples]
+  [samples.buffer]
+
+\definebtx
+  [samples]
+  [default=,
+   specification=samples]
+
+\definebtx
+  [samples:list:image]
+  [samples:list]
+
+\definebtxrendering
+  [samples]
+  [specification=samples,
+   group=samples,
+   dataset=samples,
+   method=dataset,
+   numbering=no,
+   criterium=all]
+
+\startsetups btx:samples:list:image
+  \tbox \bgroup
+    \bTABLE[offset=1ex]
+      \bTR
+        \bTD[ny=4]
+          \dontleavehmode
+          \doifelsesomething{\btxflush{mpfile}} {
+            \externalfigure[\btxflush{mpfile}]
+          } {
+            \MPcode{
+                \btxflush{mpcode}
+            }
+          }
+        \eTD
+        \bTD
+            \btxflush{title}
+        \eTD
+      \eTR
+    \eTABLE
+  \egroup
+\stopsetups
+
+\placebtxrendering[samples][criterium=all]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
 \getbuffer
 
 \stopsection

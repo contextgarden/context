@@ -12,6 +12,7 @@ extern void     lmt_node_list_to_lua      (lua_State *L, halfword n);
 extern halfword lmt_node_list_from_lua    (lua_State *L, int n);
 extern int      lmt_get_math_style        (lua_State *L, int n, int dflt);
 extern int      lmt_get_math_parameter    (lua_State *L, int n, int dflt);
+extern halfword lmt_optional_isnode       (lua_State *L, int i);
 extern halfword lmt_check_isnode          (lua_State *L, int i);
 extern halfword lmt_check_isdirect        (lua_State *L, int i);
 extern halfword lmt_check_isdirectornode  (lua_State *L, int i, int *isdirect);

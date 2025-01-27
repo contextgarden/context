@@ -157,6 +157,7 @@ nest_state_info lmt_nest_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
     },
     .shown_mode = 0,
     .math_mode  = 0,
@@ -182,7 +183,7 @@ void tex_initialize_nest_state(void)
     if (lmt_nest_state.nest) {
         lmt_nest_state.nest_data.allocated = size;
     } else {
-        tex_overflow_error("nest",  size);
+        tex_overflow_error("nest", size);
     }
 }
 
@@ -216,8 +217,9 @@ void tex_initialize_nesting(void)
 {
     lmt_nest_state.nest_data.ptr = 0;
     lmt_nest_state.nest_data.top = 0;
- // lmt_nest_state.shown_mode = 0;
- // lmt_nest_state.math_mode = 0;
+# if 1
+    lmt_nest_state.shown_mode = 0;
+    lmt_nest_state.math_mode = 0;
     cur_list.mode = vmode;
     cur_list.head = contribute_head;
     cur_list.tail = contribute_head;
@@ -236,6 +238,30 @@ void tex_initialize_nesting(void)
     cur_list.math_begin = unset_noad_class;
     cur_list.math_end = unset_noad_class;
     cur_list.math_mode = 0;
+    cur_list.options = 0;
+# else 
+    cur_list = (list_state_record) {
+        .mode              = vmode,
+        .head              = contribute_head,
+        .tail              = contribute_head,
+        .delimiter         = null,
+        .prev_graf         = 0,
+        .mode_line         = 0,
+        .prev_depth        = ignore_depth, /*tex |ignore_depth_criterion_par| is not yet available! */
+        .space_factor      = default_space_factor,
+        .incomplete_noad   = null,
+        .direction_stack   = null,
+        .math_dir          = 0,
+        .math_style        = -1,
+        .math_main_style   = -1,
+        .math_parent_style = -1,
+        .math_flatten      = 1,
+        .math_begin        = unset_noad_class,
+        .math_end          = unset_noad_class,
+        .math_mode         = 0,
+        .options           = 0,
+    };
+# endif 
 }
 
 halfword tex_pop_tail(void)
@@ -273,26 +299,56 @@ void tex_push_nest(void)
  // lmt_nest_state.shown_mode = 0; // needs checking 
     lmt_nest_state.math_mode = 0;
     if (tex_aux_room_on_nest_stack()) {
-        cur_list.mode = top->mode;
-        cur_list.head = tex_new_temp_node();
-        cur_list.tail = cur_list.head;
-        cur_list.delimiter = null;
-        cur_list.prev_graf = 0;
-        cur_list.mode_line = lmt_input_state.input_line;
-        cur_list.prev_depth = top->prev_depth;
-        cur_list.space_factor = top->space_factor;
-        cur_list.incomplete_noad = top->incomplete_noad;
-        cur_list.direction_stack = null;
-        cur_list.math_dir = 0;
-        cur_list.math_style = -1;
-        cur_list.math_main_style = top->math_main_style;
-        cur_list.math_parent_style = top->math_parent_style;
-        cur_list.math_flatten = 1;
-        cur_list.math_begin = unset_noad_class;
-        cur_list.math_end = unset_noad_class;
-     // cur_list.math_begin = top->math_begin;
-     // cur_list.math_end = top->math_end;
-        cur_list.math_mode = 0;
+# if 1
+            cur_list.mode = top->mode;
+            cur_list.head = tex_new_temp_node();
+            cur_list.tail = cur_list.head;
+            cur_list.delimiter = null;
+            cur_list.prev_graf = 0;
+            cur_list.mode_line = lmt_input_state.input_line;
+            cur_list.prev_depth = top->prev_depth;
+            cur_list.space_factor = top->space_factor;
+            cur_list.incomplete_noad = top->incomplete_noad;
+            cur_list.direction_stack = null;
+            cur_list.math_dir = 0;
+            cur_list.math_style = -1;
+            cur_list.math_main_style = top->math_main_style;
+            cur_list.math_parent_style = top->math_parent_style;
+            cur_list.math_flatten = 1;
+            cur_list.math_begin = unset_noad_class;
+            cur_list.math_end = unset_noad_class;
+         // cur_list.math_begin = top->math_begin;
+         // cur_list.math_end = top->math_end;
+            cur_list.math_mode = 0;
+            cur_list.options = 0;
+# else
+            cur_list = (list_state_record) {
+                .mode              = top->mode,
+                .head              = null,
+                .tail              = null,
+                .delimiter         = null,
+                .prev_graf         = 0,
+                .mode_line         = lmt_input_state.input_line,
+                .prev_depth        = top->prev_depth,
+                .space_factor      = top->space_factor,
+                .incomplete_noad   = top->incomplete_noad,
+                .direction_stack   = null,
+                .math_dir          = 0,
+                .math_style        = -1,
+                .math_main_style   = top->math_main_style,
+                .math_parent_style = top->math_parent_style,
+                .math_flatten      = 1,
+                .math_begin        = unset_noad_class,
+                .math_end          = unset_noad_class,
+             // .math_begin        = top->math_begin,
+             // .math_end          = top->math_end,
+                .math_mode         = 0,
+                .options           = 0,
+            };
+            cur_list.head = tex_new_temp_node(),
+            cur_list.tail = cur_list.head;
+# endif
+
     } else {
         tex_overflow_error("semantic nest size", lmt_nest_state.nest_data.size);
     }
@@ -476,4 +532,323 @@ void tex_tail_append_callback(halfword p)
         p = tex_tail_apply_callback(p, c);
     }
     tex_tail_append_list(p);
+}
+
+/*tex 
+    This is an experiment. We reserve slot 0 for special purposes. 
+*/
+
+
+/* 
+    todo: stack so that we can nest 
+    todo: handle prev_depth 
+    todo: less fields needed, so actually we can have a 'register' or maybe even use a box 
+    todo: check if at the outer level 
+*/
+
+/* 
+    contribute_head : nest[0].head : temp node 
+    contribute_tail : nest[0].tail 
+*/
+
+mvl_state_info lmt_mvl_state = {
+    .mvl       = NULL,
+    .mvl_data  = {
+        .minimum   = min_mvl_size,
+        .maximum   = max_mvl_size,
+        .size      = memory_data_unset,
+        .step      = stp_mvl_size,
+        .allocated = 0,
+        .itemsize  = sizeof(list_state_record),
+        .top       = 0,
+        .ptr       = 0,
+        .initial   = memory_data_unset,
+        .offset    = 0,
+        .extra     = 0, 
+    },
+};
+
+static void tex_aux_reset_mvl(int i) 
+{
+    lmt_mvl_state.mvl[i] = (list_state_record) {
+        .mode              = vmode,
+        .head              = null,
+        .tail              = null,
+        .delimiter         = null,
+        .prev_graf         = 0,
+        .mode_line         = 0,
+        .prev_depth        = ignore_depth,   
+        .space_factor      = default_space_factor,
+        .incomplete_noad   = null,
+        .direction_stack   = null,
+        .math_dir          = 0,
+        .math_style        = -1,
+        .math_main_style   = -1,
+        .math_parent_style = -1,
+        .math_flatten      = 1,
+        .math_begin        = unset_noad_class,
+        .math_end          = unset_noad_class,
+        .options           = 0,
+    };
+}
+
+# define reserved_mvl_slots 0
+
+void tex_initialize_mvl_state(void)
+{
+    list_state_record *tmp = aux_allocate_clear_array(sizeof(list_state_record), lmt_mvl_state.mvl_data.minimum, 1);
+    if (tmp) {
+        lmt_mvl_state.mvl = tmp;
+        lmt_mvl_state.mvl_data.allocated = lmt_mvl_state.mvl_data.minimum;
+        lmt_mvl_state.mvl_data.top = lmt_mvl_state.mvl_data.minimum;
+        lmt_mvl_state.mvl_data.ptr = 0;
+    } else {
+        tex_overflow_error("mvl", lmt_mvl_state.mvl_data.minimum);
+    }
+    tex_aux_reset_mvl(0);
+    lmt_mvl_state.slot = 0;
+}
+
+static int tex_valid_mvl_id(halfword n)
+{ 
+ // if (lmt_nest_state.nest_data.ptr > 0) {
+ //     tex_handle_error(
+ //         normal_error_type,
+ //         "An mlv command can only be used at the outer level.",
+ //         "You cannot use an mlv command inside a box."
+ //     );
+ // } else 
+    if (n <= lmt_mvl_state.mvl_data.ptr) {
+        return 1;
+    } else if (n < lmt_mvl_state.mvl_data.top) {
+        lmt_mvl_state.mvl_data.ptr = n;
+        return 1;
+    } else if (n < lmt_mvl_state.mvl_data.maximum && lmt_mvl_state.mvl_data.top < lmt_mvl_state.mvl_data.maximum) {
+        list_state_record *tmp = NULL;
+        int top = n + lmt_mvl_state.mvl_data.step;
+        if (top > lmt_mvl_state.mvl_data.maximum) {
+            top = lmt_mvl_state.mvl_data.maximum;
+        }
+        tmp = aux_reallocate_array(lmt_mvl_state.mvl, sizeof(list_state_record), top, 1); // 1 slack reserved_mvl_slots
+        if (tmp) {
+            size_t extra = ((size_t) top - lmt_mvl_state.mvl_data.top) * sizeof(list_state_record);
+            memset(&tmp[lmt_mvl_state.mvl_data.top + 1], 0, extra);
+            lmt_mvl_state.mvl = tmp;
+            lmt_mvl_state.mvl_data.allocated = top;
+            lmt_mvl_state.mvl_data.top = top;
+            lmt_mvl_state.mvl_data.ptr = n;
+            return 1;
+        }
+    }
+    tex_overflow_error("mvl", lmt_mvl_state.mvl_data.maximum);
+    return 0;
+}
+
+void tex_start_mvl(void)
+{
+    halfword index = 0; 
+    halfword options = 0;
+    halfword prevdepth = max_dimen;
+    while (1) {
+        switch (tex_scan_character("iopIOP", 0, 1, 0)) {
+            case 'i': case 'I':
+                if (tex_scan_mandate_keyword("index", 1)) {
+                    index = tex_scan_integer(0, NULL);
+                }
+                break;
+            case 'o': case 'O':
+                if (tex_scan_mandate_keyword("options", 1)) {
+                    options = tex_scan_integer(0, NULL);
+                }
+                break;
+            case 'p': case 'P':
+                if (tex_scan_mandate_keyword("prevdepth", 1)) {
+                    prevdepth = tex_scan_dimension(0, 0, 0, 0, NULL);
+                }
+                break;
+            default:
+                goto DONE;
+        }
+    }
+  DONE:
+    if (! index) { 
+        index = tex_scan_integer(0, NULL);
+    }
+    if (lmt_mvl_state.slot) {
+        /*tex We're already collecting. */
+    } else if (index <= 0) {
+        /*tex We have an invalid id. */
+    } else if (! tex_valid_mvl_id(index)) {
+        /*tex We're in trouble. */
+    } else { 
+        /*tex We're can start collecting. */
+        list_state_record *mvl = &lmt_mvl_state.mvl[index];
+        int start = ! mvl->head;
+        if (options & mvl_ignore_prev_depth) { 
+            prevdepth = ignore_depth_criterion_par;
+        } else if (options & mvl_no_prev_depth) { 
+            prevdepth = 0;
+        } else if (prevdepth == max_dimen) { 
+            prevdepth = lmt_mvl_state.mvl[index].prev_depth;
+        }
+        if (tracing_mvl_par) { 
+            tex_begin_diagnostic();
+            tex_print_format("[mvl: index %i, options %x, prevdepth %p, %s]", index, options, prevdepth, start ? "start" : "restart");
+            tex_end_diagnostic();
+        }
+        if (start) { 
+            mvl->head = tex_new_temp_node();
+            mvl->tail = mvl->head;
+        }
+        mvl->options = options;
+        lmt_mvl_state.mvl[0].prev_depth = lmt_nest_state.nest[0].prev_depth;
+        lmt_nest_state.nest[0].prev_depth = prevdepth;
+        lmt_mvl_state.slot = index;
+    }
+}
+
+void tex_stop_mvl(void)
+{
+    halfword index = lmt_mvl_state.slot;
+    if (index) {
+        list_state_record *mvl = &lmt_mvl_state.mvl[index];
+        int something = mvl->tail != mvl->head;
+        if (tracing_mvl_par) { 
+            tex_begin_diagnostic();
+            tex_print_format("[mvl: index %i, options %x, stop with%s contributions]", index, mvl->options, something ? "" : "out");
+            tex_end_diagnostic();
+        }
+        if (something && (mvl->options & mvl_discard_bottom)) {
+            halfword last = mvl->tail;
+            while (last) {
+                if (non_discardable(last)) {
+                    break;
+                } else if (node_type(last) == kern_node && ! (node_subtype(last) == explicit_kern_subtype)) {
+                    break;
+                } else { 
+                    halfword preceding = node_prev(last);
+                    node_next(preceding) = null;
+                    tex_flush_node(last);
+                    mvl->tail = preceding;
+                    if (mvl->head == preceding) { 
+                        break;
+                    } else {
+                        last = preceding;
+                    }
+                }
+            }
+        }
+        mvl->prev_depth = lmt_nest_state.nest[0].prev_depth;
+        lmt_nest_state.nest[0].prev_depth = mvl->prev_depth;
+        lmt_mvl_state.slot = 0;
+    }
+}
+
+# define page_callback 1
+
+halfword tex_flush_mvl(halfword index)
+{
+ // halfword index = tex_scan_integer(0, NULL);
+    if (lmt_mvl_state.slot) { 
+        /*tex We're collecting. */
+        return null; 
+    } else if (! tex_valid_mvl_id(index)) {
+        /*tex We're in trouble. */
+        return null;
+    } else if (! lmt_mvl_state.mvl[index].tail || lmt_mvl_state.mvl[index].tail == lmt_mvl_state.mvl[index].head) {
+        /*tex We collected nothing or are invalid. */
+        return null;
+    } else { 
+        /*tex We collected something. */
+        halfword head = node_next(lmt_mvl_state.mvl[index].head);
+        tex_flush_node(lmt_mvl_state.mvl[index].head);
+        tex_aux_reset_mvl(index);
+        if (tracing_mvl_par) { 
+            tex_begin_diagnostic();
+            tex_print_format("[mvl: index %i, %s]", index, "flush");
+            tex_end_diagnostic();
+        }
+        node_prev(head) = null;
+# if page_callback
+        return tex_vpack(head, 0, packing_additional, max_dimension, 0, holding_none_option, NULL);
+# else 
+        if (head) {
+            return tex_filtered_vpack(head, 0, packing_additional, max_dimension, 0, 0, 0, node_attr(head), 0, 0, NULL);
+        } else {
+            return tex_vpack(head, 0, packing_additional, max_dimension, 0, holding_none_option, NULL);
+        }
+# endif
+    }
+}
+
+int tex_appended_mvl(halfword context, halfword boundary)
+{
+    if (! lmt_mvl_state.slot) {
+        /*tex We're not collecting. */
+        return 0;
+    } else { 
+# if page_callback
+        if (! lmt_page_builder_state.output_active) {
+            lmt_page_filter_callback(context, boundary);
+        } 
+# endif 
+        if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
+            halfword first = node_next(contribute_head); 
+            int assign = lmt_mvl_state.mvl[lmt_mvl_state.slot].tail == lmt_mvl_state.mvl[lmt_mvl_state.slot].head;
+            if (assign && (lmt_mvl_state.mvl[lmt_mvl_state.slot].options & mvl_discard_top)) {
+                while (first) {
+                    if (non_discardable(first)) {
+                        break;
+                    } else if (node_type(first) == kern_node && ! (node_subtype(first) == explicit_kern_subtype)) {
+                        break;
+                    } else { 
+                        halfword following = node_next(first);
+                        node_prev(following) = null;
+                        tex_flush_node(first);
+                        first = following;
+                    }
+                }
+            }
+            if (contribute_head != contribute_tail && first) {
+                if (tracing_mvl_par) { 
+                    tex_begin_diagnostic();
+                    tex_print_format("[mvl: index %i, %s]", lmt_mvl_state.slot, assign ? "assign" : "append");
+                    tex_end_diagnostic();
+                }
+                if (assign) { 
+                    node_next(lmt_mvl_state.mvl[lmt_mvl_state.slot].head) = first;
+                    /* what with prev */
+                } else { 
+                    tex_couple_nodes(lmt_mvl_state.mvl[lmt_mvl_state.slot].tail, first);
+                }
+                lmt_mvl_state.mvl[lmt_mvl_state.slot].tail = contribute_tail;
+            }
+            node_next(contribute_head) = null;
+            contribute_tail = contribute_head;
+        }
+        return 1;
+    }
+}
+
+int tex_current_mvl(halfword *head, halfword *tail)
+{
+    if (lmt_mvl_state.slot == 0) { 
+        if (head && tail) {
+            *head = node_next(page_head);
+            *tail = lmt_page_builder_state.page_tail;
+        }
+        return 0; 
+    } else if (lmt_mvl_state.slot > 0) {
+        if (head && tail) {
+            *head = lmt_mvl_state.mvl[lmt_mvl_state.slot].head;
+            *tail = lmt_mvl_state.mvl[lmt_mvl_state.slot].tail;
+        }
+        return lmt_mvl_state.slot; 
+    } else { 
+        if (head && tail) {
+            *head = null;
+            *tail = null;
+        }
+        return 0;
+    } 
 }

@@ -1252,7 +1252,7 @@ Here \type {\nointerlineskip} is (normally) defined as:
 \prevdepth-1000pt
 \stoptyping
 
-although in \CONTEXT\ we use \typ {\ignoredepthcriterium} instead of the hard
+although in \CONTEXT\ we use \typ {\ignoredepthcriterion} instead of the hard
 coded dimension. We now give a more extensive example:
 
 \startbuffer[definition-1]
@@ -1291,7 +1291,7 @@ coded dimension. We now give a more extensive example:
 
 \typebuffer[example][option=TEX]
 
-In this example we set \typ {\ignoredepthcriterium} to $\tf -50.0pt$ instead of the
+In this example we set \typ {\ignoredepthcriterion} to $\tf -50.0pt$ instead of the
 normal $\tf -1000pt$. The helper is defined as:
 
 \typebuffer[definition-1][option=TEX]
@@ -1302,28 +1302,28 @@ or
 
 The result is shown in \in {figures} [fig:prevdepth-1] \in {and}
 [fig:prevdepth-2]. The first case is what we normally have in text and we haven't
-set \type {prevdepth} explicitly between lines so \TEX\ will just look at the
+set \type {\prevdepth} explicitly between lines so \TEX\ will just look at the
 depth of the lines. In the second case the depth is ignored when less than the
-criterium which is why, when we set the depth of the box to a negative value we
+criterion which is why, when we set the depth of the box to a negative value we
 get somewhat interesting skips.
 
 \startplacefigure[reference=fig:prevdepth-1]
     \showmakeup[line]
-    \ignoredepthcriterium-50pt
+    \ignoredepthcriterion-50pt
     \setupwhitespace[none]
     \getbuffer[definition-1,example]
 \stopplacefigure
 
 \startplacefigure[reference=fig:prevdepth-2]
     \showmakeup[line]
-    \ignoredepthcriterium-50pt
+    \ignoredepthcriterion-50pt
     \setupwhitespace[none]
     \getbuffer[definition-2,example]
     \blank[5*line]
 \stopplacefigure
 
 I'm sure one can use this effect otherwise than intended but I doubt is any user
-is willing to do this but the fact that we can lower the criterium makes for nice
+is willing to do this but the fact that we can lower the criterion makes for nice
 experiments. Just for the record, in \in {figure} [fig:prevdepth-3] you see what
 we get with positive values:
 
@@ -1343,13 +1343,13 @@ we get with positive values:
 
 \startplacefigure[reference=fig:prevdepth-3]
     \showmakeup[line]
-    \ignoredepthcriterium50pt
+    \ignoredepthcriterion50pt
     \setupwhitespace[none]
     \getbuffer[definition-2,example]
 \stopplacefigure
 
 Watch the interline skip kicking in when we make the depth larger than in
-\typ {\ignoredepthcriterium} being $\tf 50pt$.
+\typ {\ignoredepthcriterion} being $\tf 50pt$.
 
 \stopsectionlevel
 

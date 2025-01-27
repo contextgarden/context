@@ -48,6 +48,7 @@ hash_state_info lmt_hash_state = {
         .ptr       = 0,
         .initial   = 0,
         .offset    = 0, // eqtb_size,
+        .extra     = 0, 
     },
     .eqtb_data = {
         .minimum   = min_hash_size,
@@ -60,6 +61,8 @@ hash_state_info lmt_hash_state = {
         .ptr       = 0,
         .initial   = 0,
         .offset    = 0,
+        .extra     = 0, 
+        .extra     = 0, 
     },
     .eqtb        = NULL,
     .no_new_cs   = 1,
@@ -955,7 +958,20 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             /* Mo need now for more details. */
             tex_print_str("specification ");
             if (chr) {
-                tex_aux_prim_cmd_chr(specification_cmd, node_subtype(chr), 0);
+                switch (node_subtype(chr)) {
+                    case integer_list_code:
+                        tex_print_str_esc("count");
+                        break;
+                    case dimension_list_code:
+                        tex_print_str_esc("dimen");
+                        break;
+                    case posit_list_code:
+                        tex_print_str_esc("posit");
+                        break;
+                    default:
+                        tex_aux_prim_cmd_chr(specification_cmd, node_subtype(chr), 0);
+                        break;
+                }
             } else { 
                 tex_print_str("<unset>");
             }

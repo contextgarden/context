@@ -404,7 +404,7 @@ local blackboard_tf = {
         [0x0064A] = 0x1EEA9,
     },
     lcgreek   = { -- gamma pi
-        [0x03B3]=0x0213C, [0x03C0]=0x0213D,
+        [0x03B3]=0x0213D, [0x03C0]=0x0213C,
     },
     ucgreek   = { -- Gamma pi
         [0x0393]=0x0213E, [0x03A0]=0x0213F,

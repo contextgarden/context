@@ -1577,8 +1577,8 @@ function checkers.generic(data) -- called by checkers.pdf/png/jpg
         arguments
     )
     --
---     local figure = figures_loaded[hash]
-local figure = not pagelabel and figures_loaded[hash] or nil
+ -- local figure = figures_loaded[hash]
+    local figure = not pagelabel and figures_loaded[hash] or nil
     if figure == nil then
         figure = createimage {
             filename        = name,
@@ -1600,18 +1600,18 @@ local figure = not pagelabel and figures_loaded[hash] or nil
                 page = f and f.page or page
             end
             figure.page = page
-hash = f_hash_full(
-    name,
-    page,
-    size,
-    color,
-    mask,
-    range,
-    crop,
-    conversion,
-    resolution,
-    arguments
-)
+            hash = f_hash_full(
+                name,
+                page,
+                size,
+                color,
+                mask,
+                range,
+                crop,
+                conversion,
+                resolution,
+                arguments
+            )
             if not f then
                 ds.comment = comment
                 ds.found   = false

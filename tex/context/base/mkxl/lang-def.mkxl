@@ -201,7 +201,7 @@
 \installlanguage [afrikaans]   [\s!af]
 
 % Slavic Languages: Belarussian, Russian, Ukrainian, Bulgarian,
-% Macedonian, Serbian, Croatian, Slovenian, Czech, Kushubian,
+% Macedonian, Serbian, Montenegrin, Croatian, Slovenian, Czech, Kushubian,
 % Lusatian/Sorbian/Wendish, Polish, Slovak, Albanian, Illyrian,
 % Armenian
 
@@ -383,6 +383,19 @@
    \c!rightquotation=\upperleftdoubleninequote,
    \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
 
+ \installlanguage
+  [\s!cnr]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\hbox{\endash\space},
+   \c!rightsentence=\hbox{\space\endash},
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperrightsingleninequote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\lowerleftdoubleninequote,
+   \c!rightquotation=\upperleftdoubleninequote,
+   \c!date={\v!day,{.},\space,\v!month,\space,\v!year}]
+
 \installlanguage
   [\s!mk]
   [\c!spacing=\v!packed,
@@ -419,6 +432,9 @@
 \installlanguage [\s!sr-cyrl]    [\s!sr]
 \installlanguage [\s!macedonian] [\s!mk]
 \installlanguage [\s!bulgarian]  [\s!bg]
+\installlanguage [\s!montenegrin][\s!cnr]
+\installlanguage [\s!cnr-latn]   [\s!cnr]
+\installlanguage [\s!cnr-cyrl]   [\s!cnr]
 
 
 % Uralic Languages: Cheremiss, Estonian, Finnish, Karelian, Laap,

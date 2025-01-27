@@ -26,4 +26,6 @@ extern int  lmt_get_box_id       (lua_State *L, int slot, int report);
 extern int  lmt_push_info_values (lua_State *L, value_info *values);
 extern int  lmt_push_info_keys   (lua_State *L, value_info *values);
 
+extern int  lmt_push_specification (lua_State *L, halfword ptr, int onlycount);
+
 # endif

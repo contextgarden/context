@@ -58,7 +58,7 @@ do
     directives.register("backend.cleanup.soften",  function(v) soften  = v end)
 
     nodes.handlers.cleanuppage = function(head)
-     -- local count    = 0
+        local count    = 0 -- see below
         local found    = 0
         local replaced = 0
         if flatten then

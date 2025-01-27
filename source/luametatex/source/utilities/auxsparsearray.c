@@ -49,6 +49,7 @@ sparse_state_info lmt_sparse_state = {
         .ptr       = memory_data_unset,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
 }
 };
 

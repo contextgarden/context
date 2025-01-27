@@ -2811,6 +2811,8 @@
 
 \setnewconstant\c_math_collapsing_attribute\attributeunsetvalue
 
+\permanent\protected\def\resetmathcollapsing{\c_attr_mathcollapsing\attributeunsetvalue}
+
 \letcsname\??mathcollapsing         0\endcsname\zerocount            % enforced (primes)
 \letcsname\??mathcollapsing\s!tex    \endcsname\zerocount
 \letcsname\??mathcollapsing         1\endcsname\plusone              % enforced | specials

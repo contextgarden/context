@@ -371,7 +371,9 @@ LUA_API int   (lua_next) (lua_State *L, int idx);
 LUA_API void  (lua_concat) (lua_State *L, int n);
 LUA_API void  (lua_len)    (lua_State *L, int idx);
 
-LUA_API size_t   (lua_stringtonumber) (lua_State *L, const char *s);
+#define LUA_N2SBUFFSZ	64
+LUA_API unsigned  (lua_numbertostrbuff) (lua_State *L, int idx, char *buff);
+LUA_API size_t  (lua_stringtonumber) (lua_State *L, const char *s);
 
 LUA_API lua_Alloc (lua_getallocf) (lua_State *L, void **ud);
 LUA_API void      (lua_setallocf) (lua_State *L, lua_Alloc f, void *ud);
@@ -502,6 +504,7 @@ struct lua_Debug {
   unsigned char nups;	/* (u) number of upvalues */
   unsigned char nparams;/* (u) number of parameters */
   char isvararg;        /* (u) */
+  unsigned char extraargs;  /* (t) number of extra arguments */
   char istailcall;	/* (t) */
   int ftransfer;   /* (r) index of first value transferred */
   int ntransfer;   /* (r) number of transferred values */

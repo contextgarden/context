@@ -14,13 +14,15 @@ static int valid_specification_options[] = {
     [orphan_penalties_code]        = 0,
     [par_passes_code]              = specification_option_presets,
     [par_shape_code]               = specification_option_repeat,
+    [balance_passes_code]          = specification_option_presets,
+    [balance_shape_code]           = specification_option_repeat,
     [widow_penalties_code]         = specification_option_double | specification_option_largest| specification_option_final,
     [broken_penalties_code]        = specification_option_double,
     [fitness_classes_code]         = 0,
     [adjacent_demerits_code]       = specification_option_double,
-    [integer_list_code]            = specification_option_double | specification_option_integer,
-    [dimension_list_code]          = specification_option_double | specification_option_integer,
-    [posit_list_code]              = specification_option_double | specification_option_integer,
+    [integer_list_code]            = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
+    [dimension_list_code]          = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
+    [posit_list_code]              = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
 };
 
 static halfword tex_aux_scan_specification_options(quarterword code)
@@ -29,7 +31,7 @@ static halfword tex_aux_scan_specification_options(quarterword code)
     halfword valid = valid_specification_options[code];
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("ordlpifORDLPIF", 1, 1, 1)) {
+        switch (tex_scan_character("ordlpifORDLPIF", 0, 0, 0)) {
             case 0:
                 return options;
             case 'o': case 'O':
@@ -38,13 +40,37 @@ static halfword tex_aux_scan_specification_options(quarterword code)
                 }
                 break;
             case 'r': case 'R':
-                if ((valid & specification_option_repeat) && tex_scan_mandate_keyword("repeat", 1)) {
-                    options |= specification_option_repeat;
+                switch (tex_scan_character("eoEO", 0, 0, 1)) {
+                    case 'e': case 'E':
+                        if ((valid & specification_option_repeat) && tex_scan_mandate_keyword("repeat", 2)) {
+                            options |= specification_option_repeat;
+                        }
+                        break;
+                    case 'o': case 'O':
+                        if ((valid & specification_option_rotate) && tex_scan_mandate_keyword("rotate", 2)) {
+                            options |= specification_option_rotate;
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("repeat|rotate");
+                        return options;
                 }
                 break;
             case 'd': case 'D':
-                if ((valid & specification_option_double) && tex_scan_mandate_keyword("double", 1)) {
-                    options |= specification_option_double;
+                switch (tex_scan_character("eoEO", 0, 0, 1)) {
+                    case 'e': case 'E':
+                        if ((valid & specification_option_default) && tex_scan_mandate_keyword("default", 2)) {
+                            options |= specification_option_default;
+                        }
+                        break;
+                    case 'o': case 'O':
+                        if ((valid & specification_option_double) && tex_scan_mandate_keyword("double", 2)) {
+                            options |= specification_option_double;
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("default|double");
+                        return options;
                 }
                 break;
             case 'l': case 'L':
@@ -78,6 +104,18 @@ static halfword tex_aux_scan_specification_options(quarterword code)
     list specifications. 
 */
 
+/* todo: set/get a specific slot */
+
+static void tex_aux_scan_specification_list_default(halfword p, halfword count, int pair, halfword first, halfword second)
+{
+    for (int n = 1; n <= count; n++) {
+        tex_set_specification_penalty(p, n, first);   
+        if (pair) {
+            tex_set_specification_nepalty(p, n, second);   
+        }
+    }
+}
+
 static halfword tex_aux_scan_specification_list(quarterword code)
 {
     halfword p = null;
@@ -90,29 +128,49 @@ static halfword tex_aux_scan_specification_list(quarterword code)
         switch (code) { 
             case integer_val_level:
                 p = tex_new_specification_node(count, integer_list_code, options);
-                for (int n = 1; n <= count; n++) {
-                    if (pair) {
-                        tex_set_specification_nepalty(p, n, tex_scan_integer(0, NULL));   
+                if (specification_option_default(options)) {
+                    tex_aux_scan_specification_list_default(p, count, pair, 
+                        tex_scan_integer(0, NULL), pair ? tex_scan_integer(0, NULL) : 0   
+                    );
+                } else { 
+                    for (int n = 1; n <= count; n++) {
+                        if (pair) {
+                            tex_set_specification_nepalty(p, n, tex_scan_integer(0, NULL));   
+                        }
+                        tex_set_specification_penalty(p, n, tex_scan_integer(0, NULL));   
                     }
-                    tex_set_specification_penalty(p, n, tex_scan_integer(0, NULL));   
                 }
                 break;
             case dimension_val_level:
                 p = tex_new_specification_node(count, dimension_list_code, options);
-                for (int n = 1; n <= count; n++) {
-                    if (pair) {
-                        tex_set_specification_nepalty(p, n, isint ? tex_scan_integer(0, NULL) : tex_scan_dimension(0, 0, 0, 0, NULL));   
+                if (specification_option_default(options)) {
+                    tex_aux_scan_specification_list_default(p, count, pair, 
+                        isint ? tex_scan_integer(0, NULL) : tex_scan_dimension(0, 0, 0, 0, NULL),   
+                        pair ? tex_scan_dimension(0, 0, 0, 0, NULL) : 0
+                    );
+                } else { 
+                    for (int n = 1; n <= count; n++) {
+                        if (pair) {
+                            tex_set_specification_nepalty(p, n, isint ? tex_scan_integer(0, NULL) : tex_scan_dimension(0, 0, 0, 0, NULL));   
+                        }
+                        tex_set_specification_penalty(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));   
                     }
-                    tex_set_specification_penalty(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));   
                 }
                 break;
             case posit_val_level:
                 p = tex_new_specification_node(count, posit_list_code, options);
-                for (int n = 1; n <= count; n++) {
-                    if (pair) {
-                        tex_set_specification_nepalty(p, n, isint ? tex_scan_integer(0, NULL) : tex_scan_posit(0));   
+                if (specification_option_default(options)) {
+                    tex_aux_scan_specification_list_default(p, count, pair, 
+                        isint ? tex_scan_integer(0, NULL) : tex_scan_posit(0),   
+                        pair ? tex_scan_posit(0) : 0   
+                    );
+                } else { 
+                    for (int n = 1; n <= count; n++) {
+                        if (pair) {
+                            tex_set_specification_nepalty(p, n, isint ? tex_scan_integer(0, NULL) : tex_scan_posit(0));   
+                        }
+                        tex_set_specification_penalty(p, n, tex_scan_posit(0));   
                     }
-                    tex_set_specification_penalty(p, n, tex_scan_posit(0));   
                 }
                 break;
         }
@@ -286,7 +344,11 @@ static halfword tex_aux_scan_specification_penalties(quarterword code)
         if (count == 1 || count == -1) {
             halfword nepalty = pair ? tex_scan_integer(1, NULL) : 0;
             halfword penalty = tex_scan_integer(pair ? 0 : 1, NULL);
-            if (penalty || nepalty) {
+            /*tex 
+                We always need a node unless we introduce a zero_specification_cmd which is a bit
+                of overkill. 
+            */
+         /* if (penalty || nepalty) { */
                 if (count == -1) { 
                     options |= specification_option_final;
                     count = 1; 
@@ -295,7 +357,7 @@ static halfword tex_aux_scan_specification_penalties(quarterword code)
                 specification_count(p) = count;
                 tex_set_specification_nepalty(p, 0, nepalty); 
                 tex_set_specification_penalty(p, 0, penalty);
-            }
+         /* } */
         } else if (count > 0) {
             int final = specification_option_final(options);
             p = tex_new_specification_node(final ? count + 1 : count, code, options);
@@ -340,7 +402,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
     halfword count = tex_scan_integer(1, NULL);
     if (count > 0) {
         /*tex 
-            We have no named options here. Presets are automaticly set anyway.  We might even drop 
+            We have no named options here. Presets are automaticly set anyway. We might even drop 
             the option scanning here.
         */
         halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL) : 0;
@@ -387,7 +449,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
                                                         }
                                                         break;
                                                     default:
-                                                        tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingstretch");
+                                                        tex_aux_show_keyword_error("adjustspacingstep|adjustspacingstretch");
                                                         goto DONE;
                                                 }
                                                 break;
@@ -398,7 +460,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
                                                 }
                                                 break;
                                             default:
-                                                tex_aux_show_keyword_error("adjustspacingsstep|adjustspacingshrink|adjustspacingstretch");
+                                                tex_aux_show_keyword_error("adjustspacingstep|adjustspacingshrink|adjustspacingstretch");
                                                 goto DONE;
                                         }
                                     } else {
@@ -816,11 +878,310 @@ static halfword tex_aux_scan_specification_par_passes(void)
     return p;
 }
 
+
+/* TODO: emergencyshrink */
+
+static halfword tex_aux_scan_specification_balance_passes(void)
+{
+    halfword p = null;
+    halfword count = tex_scan_integer(1, NULL);
+    if (count > 0) {
+        /*tex 
+            We have no named options here. Presets are automaticly set anyway. We might even drop 
+            the option scanning here.
+        */
+        halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL) : 0;
+        halfword n = 1;
+        if (count > 0xFF) {
+            /* todo: message */
+            count = 0xFF;
+        }
+        p = tex_new_specification_node(count, balance_passes_code, options);
+        while (n <= count) {
+            switch (tex_scan_character("acdefilnpqtACDEFILNPQT", 0, 1, 0)) {
+                case 0:
+                    goto DONE;
+                case 'a': case 'A':
+                    if (tex_scan_mandate_keyword("adjdemerits", 1)) {
+                        tex_set_balance_passes_adjdemerits(p, n, tex_scan_integer(0, NULL));
+                        tex_set_passes_okay(p, n, passes_adjdemerits_okay);
+                    }
+                    break;
+                case 'c': case 'C':
+                    if (tex_scan_mandate_keyword("classes", 1)) {
+                        tex_set_balance_passes_classes(p, n, tex_scan_integer(0, NULL));
+                        tex_set_balance_passes_features(p, n, passes_criterium_set);
+                        tex_set_balance_passes_okay(p, n, passes_classes_okay);
+                    }
+                    break;
+                case 'd': case 'D':
+                    if (tex_scan_mandate_keyword("demerits", 1)) {
+                        tex_set_balance_passes_demerits(p, n, tex_scan_integer(0, NULL));
+                        tex_set_balance_passes_features(p, n, passes_criterium_set);
+                        tex_set_balance_passes_okay(p, n, passes_demerits_okay);
+                    }
+                    break;
+                case 'e': case 'E':
+                    switch (tex_scan_character("mxMX", 0, 0, 0)) {
+                        case 'm': case 'M':
+                            if (tex_scan_mandate_keyword("emergency", 2)) {
+                                switch (tex_scan_character("fpsFPS", 0, 0, 0)) {
+                                    case 'f': case 'F':
+                                        if (tex_scan_mandate_keyword("emergencyfactor", 10)) {
+                                            tex_set_balance_passes_emergencyfactor(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_balance_passes_okay(p, n, passes_emergencyfactor_okay);
+                                        }
+                                        break;
+                                    case 'p': case 'P':
+                                        if (tex_scan_mandate_keyword("emergencypercentage", 10)) {
+                                            tex_set_balance_passes_emergencypercentage(p, n, tex_scan_integer(0, NULL));
+                                            tex_set_balance_passes_okay(p, n, passes_emergencypercentage_okay);
+                                        }
+                                        break;
+                                    case 's': case 'S':
+                                        /* todo: emergencyshrink */
+                                        if (tex_scan_mandate_keyword("emergencystretch", 10)) {
+                                            tex_set_balance_passes_emergencystretch(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));
+                                            tex_set_balance_passes_okay(p, n, passes_emergencystretch_okay);
+                                        }
+                                        break;
+                                    default:
+                                        goto NOTDONE4;
+                                }
+                            } else { 
+                             // NOTDONE4:
+                             // tex_aux_show_keyword_error("emergencyfactor|emergencystretch|emergencypercentage");
+                             // goto DONE;
+                                goto NOTDONE4;
+                            }
+                            break;
+                        default:
+                            NOTDONE4:
+                            tex_aux_show_keyword_error("emergencyfactor|emergencystretch|emergencypercentage");
+                            goto DONE;
+                    }
+                    break;
+                case 'f': case 'F':
+                    if (tex_scan_mandate_keyword("fitnessclasses", 1)) {
+                        tex_set_balance_passes_fitnessclasses(p, n, tex_aux_scan_par_specification(fitness_classes_code, tex_aux_scan_specification_fitness_classes));
+                        tex_set_balance_passes_okay(p, n, passes_fitnessclasses_okay);
+                    }
+                    break;
+                case 'i': case 'I':
+                    switch (tex_scan_character("dfDF", 0, 0, 0)) {
+                        case 'd': case 'D':
+                            if (tex_scan_mandate_keyword("identifier", 2)) {
+                                passes_identifier(p) = tex_scan_integer(0, NULL);
+                            }
+                            break;
+                        case 'f': case 'F':
+                            switch (tex_scan_character("elEL", 0, 0, 0)) {
+                                case 'e': case 'E':
+                                    if (tex_scan_mandate_keyword("ifemergencystretch", 3)) {
+                                        tex_set_balance_passes_features(p, n, passes_if_emergency_stretch);
+                                    } 
+                                    break;
+                                case 'l': case 'L':
+                                    if (tex_scan_mandate_keyword("iflooseness", 3)) {
+                                        tex_set_balance_passes_features(p, n, passes_if_looseness);
+                                    } 
+                                    break;
+                                default:
+                                    tex_aux_show_keyword_error("if[emergencystretch|looseness]");
+                                    goto DONE;
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("identifier|if[...]");
+                            goto DONE;
+                    }
+                    break;
+                case 'l': case 'L':
+                    if (tex_scan_mandate_keyword("looseness", 1)) {
+                        tex_set_balance_passes_looseness(p, n, tex_scan_integer(0, NULL));
+                        tex_set_balance_passes_okay(p, n, passes_looseness_okay);
+                    } 
+                    break;
+                case 'n': case 'N':
+                    if (tex_scan_mandate_keyword("next", 1)) {
+                        n++;
+                    }
+                    break;
+                case 'p': case 'P':
+                    if (tex_scan_mandate_keyword("page", 1)) {
+                        switch (tex_scan_character("bpBP", 0, 0, 0)) {
+                            case 'b': case 'B':
+                                if (tex_scan_mandate_keyword("pagebreakchecks", 5)) {
+                                    tex_set_balance_passes_pagebreakchecks(p, n, tex_scan_integer(0, NULL));
+                                    tex_set_balance_passes_okay(p, n, passes_balancechecks_okay);
+                                } 
+                                break;
+                            case 'p': case 'P':
+                                if (tex_scan_mandate_keyword("pagepenalty", 5)) {
+                                    tex_set_balance_passes_pagepenalty(p, n, tex_scan_integer(0, NULL));
+                                    tex_set_balance_passes_okay(p, n, passes_balancepenalty_okay);
+                                } 
+                                break;
+                            default:
+                                tex_aux_show_keyword_error("pagebreakchecks|pagepenalty");
+                                goto DONE;
+                        }
+                    }
+                    break;
+                case 'q': case 'Q':
+                    if (tex_scan_mandate_keyword("quit", 1)) {
+                        tex_set_balance_passes_features(p, n, passes_quit_pass);
+                    }
+                    break;
+                case 't': case 'T':
+                    switch (tex_scan_character("hoHO", 0, 0, 0)) {
+                        case 'h': case 'H':
+                            if (tex_scan_mandate_keyword("threshold", 2)) {
+                                tex_set_balance_passes_threshold(p, n, tex_scan_dimension(0, 0, 0, 0, NULL));
+                                tex_set_balance_passes_features(p, n, passes_criterium_set);
+                                tex_set_balance_passes_okay(p, n, passes_threshold_okay);
+                            }
+                            break;
+                        case 'o': case 'O':
+                            switch (tex_scan_character("dlDL", 0, 0, 0)) {
+                                case 'l': case 'L':
+                                    if (tex_scan_mandate_keyword("tolerance", 3)) {
+                                        tex_set_balance_passes_tolerance(p, n, tex_scan_integer(0, NULL));
+                                        tex_set_balance_passes_okay(p, n, passes_tolerance_okay);
+                                    }
+                                    break;
+                                default:
+                                    goto NOTDONE3;
+                            }
+                            break;
+                        default:
+                            NOTDONE3:
+                            tex_aux_show_keyword_error("threshold|tolerance");
+                            goto DONE;
+                    }
+                    break;
+                default:
+                    goto DONE;
+            }
+        }
+      DONE:
+        if (n < count) {
+            tex_handle_error(
+                normal_error_type,
+                "there %s only %i of %i %s specified for \\parpasses",
+                n == 1 ? "is" : "are", n, count, count == 1 ? "pass" : "passes",
+                NULL
+            );
+        }
+        {
+            halfword first = tex_aux_first_with_criterium(p, count);
+            halfword quit = tex_aux_first_with_quit(p, count);
+            if (first == 0) { 
+                tex_add_specification_option(p, specification_option_presets);
+                passes_first_final(p) = count;
+            } else if (first == 1) { 
+                tex_remove_specification_option(p, specification_option_presets);
+                passes_first_final(p) = 2;
+            } else { 
+                tex_add_specification_option(p, specification_option_presets);
+                passes_first_final(p) = first - 1;
+            }
+            if (quit) { 
+                /*tex We always want a result. */
+                passes_first_final(p) = quit == 1 ? 1 : quit - 1;
+            }
+        }
+    }
+    return p;
+}
+
+static halfword tex_aux_scan_specification_balance_shape(void)
+{
+    halfword p = null;
+    halfword count = tex_scan_integer(1, NULL);
+    if (count > 0) {
+        /*tex 
+            We have no named options here. Presets are automaticly set anyway. We might even drop 
+            the option scanning here.
+        */
+        halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL) : 0;
+        halfword n = 1;
+        if (count > 0xFF) {
+            /* todo: message */
+            count = 0xFF;
+        }
+        p = tex_new_specification_node(count, balance_shape_code, options);
+        while (n <= count) {
+            switch (tex_scan_character("itbonvITBONV", 0, 1, 0)) {
+                case 0:
+                    goto DONE;
+                case 'i': case 'I':
+                    switch (tex_scan_character("dnDN", 0, 0, 0)) {
+                        case 'd': case 'D':
+                            if (tex_scan_mandate_keyword("identifier", 2)) {
+                                balance_shape_identifier(p) = tex_scan_integer(0, NULL);
+                            }
+                            break;
+                        case 'n': case 'N':
+                            if (tex_scan_mandate_keyword("index", 2)) {
+                                tex_set_balance_index(p, n, tex_scan_integer(0, NULL));
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("identifier|index");
+                            goto DONE;
+                    } 
+                    break;
+                case 'v': case 'V':
+                    if (tex_scan_mandate_keyword("vsize", 1)) {
+                        tex_set_balance_vsize(p, n, tex_scan_dimension(0, 0, 0, 1, NULL));
+                    }
+                    break;
+                case 't': case 'T':
+                    if (tex_scan_mandate_keyword("topskip", 1)) {
+                        tex_set_balance_topskip(p, n, tex_scan_glue(glue_val_level, 0, 0));
+                    }
+                    break;
+                case 'b': case 'B':
+                    if (tex_scan_mandate_keyword("bottomskip", 1)) {
+                        tex_set_balance_bottomskip(p, n, tex_scan_glue(glue_val_level, 0, 0));
+                    }
+                    break;
+                case 'o': case 'O':
+                    if (tex_scan_mandate_keyword("options", 1)) {
+                        tex_set_balance_options(p, n, tex_scan_integer(0, NULL));
+                    }
+                    break;
+                case 'n': case 'N':
+                    if (tex_scan_mandate_keyword("next", 1)) {
+                        n++;
+                    }
+                    break;
+                default:
+                    goto DONE;
+            }
+        }
+      DONE:
+        if (n < count) {
+            tex_handle_error(
+                normal_error_type,
+                "there %s only %i of %i %s specified for \\balanceshape",
+                n == 1 ? "is" : "are", n, count, count == 1 ? "page" : "pages",
+                NULL
+            );
+        }
+    }
+    return p;
+}
+
+
 static halfword tex_aux_scan_specification(quarterword code)
 {
     switch (code) { 
         case par_shape_code: 
             return tex_aux_scan_specification_par_shape();
+        case balance_shape_code: 
+            return tex_aux_scan_specification_balance_shape();
         case fitness_classes_code: 
             return tex_aux_scan_specification_fitness_classes();
         case adjacent_demerits_code: 
@@ -828,6 +1189,8 @@ static halfword tex_aux_scan_specification(quarterword code)
         case par_passes_code: 
         case par_passes_exception_code: 
             return tex_aux_scan_specification_par_passes();
+        case balance_passes_code: 
+            return tex_aux_scan_specification_balance_passes();
         default: 
             return tex_aux_scan_specification_penalties(code);
     }
@@ -866,18 +1229,75 @@ void tex_aux_set_specification(int a, halfword target)
     }
 }
 
+void tex_specification_range_error(halfword target)
+{
+    tex_handle_error(
+        normal_error_type,
+        "Specification index should be in the range [1,%i].",
+        specification_count(target),
+        NULL
+    );
+}
+
 void tex_run_specification_spec(void)
 {
     if (cur_chr) { 
         quarterword code = node_subtype(cur_chr);
-        if (code < first_specification_list_code) {
-            halfword target = internal_specification_location(code);
-            halfword a = 0; /* local */
-            halfword p = tex_copy_node(cur_chr);
-            tex_define(a, target, specification_reference_cmd, p);
-            if (is_frozen(a) && cur_mode == hmode) {
-                tex_update_par_par(specification_reference_cmd, code);
-            }
+        switch (code) {
+            case integer_list_code:
+            case dimension_list_code:
+            case posit_list_code:
+                {
+                    halfword target = cur_chr;
+                    halfword duplex = specification_double(target);
+                    halfword index = tex_scan_integer(0, NULL);
+                    halfword first, second; 
+                    switch (code) {
+                        case integer_list_code:
+                            first = tex_scan_integer(1, NULL);
+                            second = duplex ? tex_scan_integer(0, NULL) : 0;
+                            break;
+                        case dimension_list_code:
+                            first = specification_integer(target) ? tex_scan_integer(1, NULL) : tex_scan_dimension(0, 0, 0, 0, NULL);
+                            second = duplex ? tex_scan_dimension(0, 0, 0, 0, NULL) : 0;
+                            break;
+                        case posit_list_code:
+                            first = specification_integer(target) ? tex_scan_integer(0, NULL) : tex_scan_posit(0);
+                            second = duplex ? tex_scan_posit(0) : 0;
+                            break;
+                    }
+                    if (index < 0) {
+                        index = specification_count(target) + index + 1;
+                    }
+                    if (index > specification_count(target) && specification_rotate(target)) {
+                        index = (index % specification_count(target));
+                        if (index == 0) { 
+                            index = specification_count(target);
+                        }
+                    } 
+                    if (index >= 1 && index <= specification_count(target)) {
+                        if (duplex) {
+                            tex_set_specification_penalty(target, index, second);
+                            tex_set_specification_nepalty(target, index, first);
+                        } else {
+                            tex_set_specification_penalty(target, index, first);
+                        }
+                    } else { 
+                        tex_specification_range_error(target);
+                    }
+                    break;
+                }
+            default: 
+                {
+                    halfword target = internal_specification_location(code);
+                    halfword a = 0; /* local */
+                    halfword p = tex_copy_node(cur_chr);
+                    tex_define(a, target, specification_reference_cmd, p);
+                    if (is_frozen(a) && cur_mode == hmode) {
+                        tex_update_par_par(specification_reference_cmd, code);
+                    }
+                    break;
+                }
         }
     }
 }
@@ -924,6 +1344,7 @@ halfword tex_scan_specifier(void)
 halfword tex_aux_get_specification_value(halfword spec, halfword code)
 {
     halfword count = specification_count(spec);
+    (void) code;
     switch (node_subtype(spec)) { 
         case par_shape_code:
         case par_passes_code:
@@ -931,6 +1352,10 @@ halfword tex_aux_get_specification_value(halfword spec, halfword code)
             {
                 halfword index = tex_scan_integer(0, NULL);
                 return tex_get_specification_fitness_class(spec, index); /* weird call */
+            }
+        case balance_shape_code:
+            {
+                return 0;
             }
         case adjacent_demerits_code:
             {

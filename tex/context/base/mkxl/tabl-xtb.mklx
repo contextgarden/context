@@ -537,12 +537,58 @@
     \fi
 \to \t_tabl_x_every_cell
 
+% \protected\def\tabl_x_begin_of_cell
+%   {\expand\t_tabl_x_every_cell
+%    \everypar{\delayedbegstrut}}
+%
+% \protected\def\tabl_x_end_of_cell
+%   {\ifhmode
+%      \delayedendstrut
+%      \par
+%    \else
+%      \par
+%      \ifdim\prevdepth<\zeropoint % =-1000pt ?
+%        \vskip-\strutdp
+%      \else
+%        \removebottomthings
+%      \fi
+%    \fi}
+
+% We support (mail exchange with WS):
+%
+% \defineTABLEsetup [math] [style=math]
+%
+% \bTABLE[frame=off]
+%   \bTR
+%     \bTD a \eTD \bTDs[math] + \eTDs
+%     \bTD b \eTD \bTDs[math] → \eTDs
+%     \bTD c \eTD
+%   \eTR
+% \eTABLE
+%
+% \setupxtable [math] [foregroundstyle=math]
+%
+% \startxtable[frame=off]
+%   \startxrow
+%     \startxcell a \stopxcell \startxcell[math] + \stopxcell
+%     \startxcell b \stopxcell \startxcell[math] → \stopxcell
+%     \startxcell c \stopxcell \startxcell \rightarrow \stopxcell
+%     \startxcell d \stopxcell
+%   \stopxrow
+% \stopxtable
+
 \protected\def\tabl_x_begin_of_cell
   {\expand\t_tabl_x_every_cell
-   \everypar{\delayedbegstrut}}
+   \everypar{\delayedbegstrut}
+   \ifconditional\c_font_styles_math
+     \normalstartimath
+   \fi}
 
 \protected\def\tabl_x_end_of_cell
-  {\ifhmode
+  {\ifmmode
+     \normalstopimath
+   \fi
+   \ifhmode
      \delayedendstrut
      \par
    \else

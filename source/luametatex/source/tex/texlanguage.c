@@ -28,11 +28,12 @@ language_state_info lmt_language_state = {
         .size         = memory_data_unset,
         .step         = stp_language_size,
         .allocated    = 0,
-        .itemsize     = 1,
+        .itemsize     = sizeof(tex_language *),
         .top          = 0,
         .ptr          = 0,
         .initial      = memory_data_unset,
         .offset       = 0,
+        .extra        = 0, 
     },
     .handler_table_id = 0,
     .handler_count    = 0,
@@ -104,7 +105,7 @@ static halfword tex_aux_new_language_id(halfword id)
                 tmp[i] = NULL;
             }
             lmt_language_state.languages = tmp;
-            lmt_language_state.language_data.allocated += ((size_t) top - lmt_language_state.language_data.top) * sizeof(tex_language *);
+            lmt_language_state.language_data.allocated = top;
             lmt_language_state.language_data.top = top;
             lmt_language_state.language_data.ptr += 1;
             return lmt_language_state.language_data.ptr;
@@ -123,7 +124,7 @@ void tex_initialize_languages(void)
             tmp[i] = NULL;
         }
         lmt_language_state.languages = tmp;
-        lmt_language_state.language_data.allocated += lmt_language_state.language_data.minimum * sizeof(tex_language *);
+        lmt_language_state.language_data.allocated = lmt_language_state.language_data.minimum;
         lmt_language_state.language_data.top = lmt_language_state.language_data.minimum;
     } else {
         tex_overflow_error("languages", lmt_language_state.language_data.minimum);
@@ -155,7 +156,7 @@ tex_language *tex_new_language(halfword n)
         tex_language *lang = lmt_memory_malloc(sizeof(struct tex_language));
         if (lang) {
             lmt_language_state.languages[id] = lang;
-            lmt_language_state.language_data.allocated += sizeof(struct tex_language);
+            lmt_language_state.language_data.extra += sizeof(struct tex_language);
             tex_aux_reset_language(id);
             if (saving_hyph_codes_par) {
                 /*tex
@@ -236,6 +237,7 @@ void tex_undump_language_data(dumpstream f)
             lmt_language_state.language_data.top = top;
             lmt_language_state.language_data.ptr = ptr;
             lmt_language_state.languages = tmp;
+            lmt_language_state.language_data.allocated = top;
             for (int i = 0; i < top; i++) {
                 unsigned char marker;
                 undump_uchar(f, marker);
@@ -243,7 +245,7 @@ void tex_undump_language_data(dumpstream f)
                     tex_language *lang = lmt_memory_malloc(sizeof(struct tex_language));
                     if (lang) {
                         lmt_language_state.languages[i] = lang;
-                        lmt_language_state.language_data.allocated += sizeof(struct tex_language);
+                        lmt_language_state.language_data.extra += sizeof(struct tex_language);
                         lang->exceptions = 0;
                         lang->patterns = NULL;
                         lang->wordhandler = 0;
@@ -593,10 +595,12 @@ static halfword tex_aux_insert_syllable_discretionary(halfword t, lang_variables
     if (lan->pre_hyphen_char > 0) {
         halfword g = tex_new_glyph_node(glyph_unset_subtype, glyph_font(t), lan->pre_hyphen_char, t);
         tex_set_disc_field(n, pre_break_code, g);
+        set_glyph_disccode(g, glyph_disc_syllable);
     }
     if (lan->post_hyphen_char > 0) {
         halfword g = tex_new_glyph_node(glyph_unset_subtype, glyph_font(t), lan->post_hyphen_char, t);
         tex_set_disc_field(n, post_break_code, g);
+        set_glyph_disccode(g, glyph_disc_syllable);
     }
     return n;
 }
@@ -616,6 +620,12 @@ static halfword tex_aux_compound_word_break(halfword t, halfword clang, halfword
     }
     pre  = prechar  > 0 ? tex_new_glyph_node(glyph_unset_subtype, glyph_font(t), prechar,  t) : null;
     post = postchar > 0 ? tex_new_glyph_node(glyph_unset_subtype, glyph_font(t), postchar, t) : null;
+    if (pre) { 
+        set_glyph_disccode(pre, glyph_disc_automatic);
+    }
+    if (post) { 
+        set_glyph_disccode(post, glyph_disc_automatic);
+    }
     disc = tex_aux_insert_discretionary(t, pre, post, t, automatic_discretionary_code, tex_automatic_disc_penalty(glyph_hyphenate(t)));
     return disc;
 }
@@ -683,12 +693,14 @@ static halfword tex_aux_find_exception_part(unsigned int *j, unsigned int *uword
                             tex_add_glyph_option(s, glyph_option_no_left_kern);
                             nokerning = 0;
                         }
+                        set_glyph_disccode(head, glyph_disc_syllable);
                         tail = node_next(tail);
                         break;
                     }
             }
         } else {
             head = tex_new_glyph_node(glyph_unset_subtype, glyph_font(parent), (int) uword[i + 1], parent); /* todo: data */
+            set_glyph_disccode(head, glyph_disc_syllable);
             tail = head;
         }
         i++;
@@ -1544,6 +1556,7 @@ void tex_hyphenate_list(halfword head, halfword tail)
                                 if (t && node_type(t) == glyph_node && ! tex_aux_is_hyphen_char(glyph_character(t)) && hyphenation_permitted(glyph_hyphenate(t), automatic_hyphenation_mode)) {
                                     /*tex we have a word already but the next character may not be a hyphen too */
                                     halfword g = r;
+                                    set_glyph_disccode(g, glyph_disc_automatic);
                                     r = tex_aux_compound_word_break(r, get_glyph_language(g), explicit_hyphen);
                                     if (trace > 1) {
                                         *utf8ori = 0;
@@ -1571,6 +1584,7 @@ void tex_hyphenate_list(halfword head, halfword tail)
                                 } else {
                                     /*tex We jump over the sequence of hyphens ... traditional. */
                                     while (t && node_type(t) == glyph_node && tex_aux_is_hyphen_char(glyph_character(t))) {
+                                        set_glyph_disccode(t, glyph_disc_automatic);
                                         r = t;
                                         t = node_next(r);
                                     }

@@ -17,6 +17,7 @@ fileio_state_info lmt_fileio_state = {
         .ptr       = 0,
         .initial   = memory_data_unset,
         .offset    = 0,
+        .extra     = 0, 
    },
    .io_first         = 0,
    .io_last          = 0,

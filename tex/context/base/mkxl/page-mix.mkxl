@@ -780,16 +780,16 @@
        \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
        \ifcstok{\mixedcolumnsparameter\c!direction}\v!reverse
          \dostepwiserecurse\c_page_mix_n_of_columns\plusone\minusone
-            {\page_mix_routine_package_step
-             \ifnum\recurselevel>\plusone
-               \page_mix_routine_package_separate
-             \fi}%
+           {\page_mix_routine_package_step
+            \ifnum\recurselevel>\plusone
+              \page_mix_routine_package_separate
+            \fi}%
        \else
          \dorecurse\c_page_mix_n_of_columns
-            {\page_mix_routine_package_step
-             \ifnum\recurselevel<\c_page_mix_n_of_columns
-               \page_mix_routine_package_separate
-             \fi}%
+           {\page_mix_routine_package_step
+            \ifnum\recurselevel<\c_page_mix_n_of_columns
+              \page_mix_routine_package_separate
+            \fi}%
        \fi
      \egroup
      \hskip\d_page_mix_rightskip

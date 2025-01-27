@@ -370,7 +370,6 @@
 
 \newgluespec   \s_spac_whitespace_parskip
 \newconditional\c_spac_whitespace_flexible  \c_spac_whitespace_flexible\conditionaltrue
-\newconstant   \c_spac_whitespace_grid_mode % option in layout / 1=permit_half_lines
 
 %def\v_spac_whitespace_current{\zeropoint}
 \let\v_spac_whitespace_current\v!none
@@ -413,18 +412,7 @@
 \def\spac_whitespace_setup_grid
   {\c_spac_whitespace_flexible\conditionalfalse
    \ifdim\s_spac_whitespace_parskip>\zeropoint
-     \s_spac_whitespace_parskip
-       \ifcase\c_spac_whitespace_grid_mode
-         \baselineskip
-       \or
-         \ifdim\scratchdimen=\baselineskip % maybe range
-           \baselineskip
-         \else
-           \numexpr\s_spac_whitespace_parskip/\dimexpr.5\lineheight\relax\relax\dimexpr.5\lineheight\relax
-         \fi
-       \else
-         \baselineskip
-       \fi
+     \s_spac_whitespace_parskip\baselineskip
    \fi}
 
 \permanent\protected\def\installwhitespacemethod#1#2%
@@ -1740,6 +1728,12 @@
   {%\gridsnappingtrue
    \begincsname\??gridsnappers#1\endcsname}
 
+\permanent\protected\def\resetgridsnapping
+  {\gridsnappingfalse
+   %resetsystemmode\v!grid
+   \spac_grids_snap_value_reset}
+
+
 % maybe:
 %
 % \def\spac_grids_snap_value_set#1%
@@ -2300,6 +2294,11 @@
 
 \definevspacingamount[\v!standard]    [.75\openlineheight] [.75\openlineheight] % mkii compatible
 
+% for math formulas (in balanced grid mode aka columnsets method=mvl)
+
+\definevspacing[halflinebefore][\v!keep,\v!halfline]
+\definevspacing[halflineafter] [\v!halfline]
+
 \permanent\def\bodyfontwhitespace
   {\dimexpr
      \ifzeropt\parskip
@@ -2347,9 +2346,9 @@
 \definevspacing[\v!packed]    [category:8]  % noparskip (kind of special)
 \definevspacing[\v!overlay]   [category:9]
 \definevspacing[\v!enable]    [category:10]
-
 %definevspacing[\v!noparskip] [category:8]
 %definevspacing[\v!notopskip] [category:11]
+\definevspacing[\v!keep]      [category:12]
 
 \definevspacing[\v!weak]      [order:0]
 \definevspacing[\v!strong]    [order:100]
@@ -2386,12 +2385,21 @@
 
 \spac_vspacing_define_same_page{12} % 12 levels should be more than enough as a start
 
+% \def\spac_vspacing_same_page#1#2% level offset (starts at 0)
+%   {\ifnum#1>\c_spac_vspacing_special_done
+%      \spac_vspacing_define_same_page{#1}%
+%    \fi
+%   %\writestatus{used}{\v!samepage-\number#1-\number#2}%
+%    \vspacing[\v!samepage-\number#1-\number#2]}
+
 \def\spac_vspacing_same_page#1#2% level offset (starts at 0)
-  {\ifnum#1>\c_spac_vspacing_special_done
-     \spac_vspacing_define_same_page{#1}%
-   \fi
-  %\writestatus{used}{\v!samepage-\number#1-\number#2}%
-   \vspacing[\v!samepage-\number#1-\number#2]}
+  {\ifnum#1<\zerocount\else
+     \ifnum#1>\c_spac_vspacing_special_done
+       \spac_vspacing_define_same_page{#1}%
+     \fi
+    %\writestatus{used}{\v!samepage-\number#1-\number#2}%
+     \vspacing[\v!samepage-\number#1-\number#2]%
+   \fi}
 
 \definevspacing[\v!default]  [\v!big]      % todo: needs to adapt to \setupblank
 \definevspacing[\v!before]   [\v!default]  % but we need to avoid circular references
@@ -2481,15 +2489,67 @@
 
 \installdirectcommandhandler \??hanging {hanging}
 
+% \setuphanging
+%   [\c!distance=.5\emwidth,
+%    \c!location=\v!left,
+%    \c!n=\zerocount]
+%
+% \lettonothing\m_spac_hanging_location
+%
+% \permanent\tolerant\protected\def\starthanging[#1]%
+%   {\dontleavehmode\bgroup
+%    \ifhastok={#1}%
+%      \lettonothing\m_spac_hanging_location
+%      \setupcurrenthanging[#1]%
+%    \else
+%      \edef\m_spac_hanging_location{#1}%
+%    \fi
+%    \ifempty\m_spac_hanging_location
+%      \edef\m_spac_hanging_location{\directhangingparameter\c!location}%
+%    \fi
+%    \dowithnextboxcs\spac_hanging_finish\hbox}
+%
+% \permanent\protected\def\stophanging
+%   {\endgraf
+%    \egroup}
+%
+% \def\spac_hanging_finish
+%   {\scratchdistance\directhangingparameter\c!distance\relax
+%    \ifdim\ht\nextbox>\strutht
+%      \setbox\nextbox\tbox{\box\nextbox}%
+%    \fi
+%    \scratchcounter\directhangingparameter\c!n\relax
+%    \ifnum\scratchcounter>\zerocount
+%      \frozen\hangafter-\scratchcounter
+%    \else
+%      \scratchdimen\htdp\nextbox
+%      \getnoflines\scratchdimen
+%      \frozen\hangafter-\noflines
+%    \fi
+%    \ht\nextbox\strutht
+%    \dp\nextbox\strutdp
+%    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
+%    \ifx\m_spac_hanging_location\v!right
+%      \frozen\hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
+%      \rlap{\kern\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
+%    \else
+%      \frozen\hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
+%      \llap{\box\nextbox\kern\scratchdistance}%
+%    \fi
+%    \ignorespaces}
+
 \setuphanging
   [\c!distance=.5\emwidth,
    \c!location=\v!left,
+   \c!topoffset=\zeropoint,
+   \c!bottomoffset=\zeropoint,
    \c!n=\zerocount]
 
 \lettonothing\m_spac_hanging_location
 
 \permanent\tolerant\protected\def\starthanging[#1]%
-  {\dontleavehmode\bgroup
+  {\par
+   \begingroup
    \ifhastok={#1}%
      \lettonothing\m_spac_hanging_location
      \setupcurrenthanging[#1]%
@@ -2501,34 +2561,52 @@
    \fi
    \dowithnextboxcs\spac_hanging_finish\hbox}
 
-\permanent\protected\def\stophanging
-  {\endgraf
-   \egroup}
-
 \def\spac_hanging_finish
-  {\scratchdistance\directhangingparameter\c!distance\relax
-   \ifdim\ht\nextbox>\strutht
+  {\ifdim\ht\nextbox>\strutht
      \setbox\nextbox\tbox{\box\nextbox}%
    \fi
-   \scratchcounter\directhangingparameter\c!n\relax
+   \scratchdistance    \directhangingparameter\c!distance
+   \scratchcounter     \directhangingparameter\c!n
+   \scratchtopoffset   \directhangingparameter\c!topoffset
+   \scratchbottomoffset\directhangingparameter\c!bottomoffset
    \ifnum\scratchcounter>\zerocount
-     \frozen\hangafter-\scratchcounter
+     \noflines\scratchcounter
    \else
-     \getboxheight\scratchdimen\of\box\nextbox
+     \scratchdimen\dimexpr
+       \htdp\nextbox
+       +\scratchtopoffset
+       +\scratchbottomoffset
+     \relax
      \getnoflines\scratchdimen
-     \frozen\hangafter-\noflines
    \fi
+   \boxyoffset\nextbox-\scratchtopoffset
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
+   \shapingpenalty\plustenthousand
    \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
+   \scratchhsize\dimexpr\hsize-\scratchwidth \relax
+   \parshape \numexpr\noflines+\plusone\relax
+     \ifx\m_spac_hanging_location\v!right
+       \expandedrepeat \noflines {\zeropoint \scratchhsize}
+     \else
+       \expandedrepeat \noflines {\scratchwidth \scratchhsize}
+     \fi
+     \zeropoint \hsize
+   \relax
+   \pushparagraphtweak {shift}
+   \dontleavehmode
    \ifx\m_spac_hanging_location\v!right
-     \frozen\hangindent\ifconditional\displaylefttoright-\fi\scratchwidth
-     \rlap{\kern\dimexpr\hsize-\leftskip-\wd\nextbox\relax\box\nextbox}% \leftskip is new
+     \rlap{\kern\scratchhsize\kern\scratchdistance\box\nextbox}%
    \else
-     \frozen\hangindent\ifconditional\displaylefttoright\else-\fi\scratchwidth
      \llap{\box\nextbox\kern\scratchdistance}%
    \fi
-   \ignorespaces}
+   \ignorepars}
+
+\permanent\protected\def\stophanging
+  {\par
+   \popparagraphtweak
+   \endgroup
+   \par}
 
 %D \macros
 %D   {startfixed}

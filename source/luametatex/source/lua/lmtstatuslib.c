@@ -9,7 +9,6 @@
     is here has been redone, also because we want different statistics.
 
 */
-
 # include "luametatex.h"
 
 # define STATS_METATABLE "tex.stats"
@@ -35,7 +34,7 @@ static int statslib_callbackstate(lua_State *L)
 
 static int statslib_linebreakstate(lua_State *L)
 {
-    lua_createtable(L, n_of_par_context_codes, 0);
+    lua_createtable(L, n_of_par_context_codes + 3, 0);
     for (int i = 0; i < n_of_par_context_codes; i++) {
         lua_push_key_by_index(lmt_interface.par_context_values[i].lua);
         lua_createtable(L, 0, 5);
@@ -50,6 +49,21 @@ static int statslib_linebreakstate(lua_State *L)
     lua_set_integer_by_key(L, "lefttwins",   lmt_linebreak_state.n_of_left_twins);
     lua_set_integer_by_key(L, "righttwins",  lmt_linebreak_state.n_of_right_twins);
     lua_set_integer_by_key(L, "doubletwins", lmt_linebreak_state.n_of_double_twins);
+    return 1;
+}
+
+static int statslib_balancestate(lua_State *L)
+{
+    lua_createtable(L, 9, 0);
+    lua_set_integer_by_key(L, "calls",          lmt_balance_state.passes.n_of_break_calls);
+    lua_set_integer_by_key(L, "first",          lmt_balance_state.passes.n_of_first_passes);
+    lua_set_integer_by_key(L, "second",         lmt_balance_state.passes.n_of_second_passes);
+    lua_set_integer_by_key(L, "final",          lmt_balance_state.passes.n_of_final_passes);
+    lua_set_integer_by_key(L, "specification",  lmt_balance_state.passes.n_of_specification_passes);
+    lua_set_integer_by_key(L, "sub",            lmt_balance_state.passes.n_of_sub_passes);
+    lua_set_integer_by_key(L, "foundinserts",   lmt_balance_state.total_inserts_found);
+    lua_set_integer_by_key(L, "checkedinserts", lmt_balance_state.total_inserts_checked);
+    lua_set_integer_by_key(L, "callbacks",      lmt_balance_state.n_of_callbacks);
     return 1;
 }
 
@@ -68,24 +82,24 @@ static int statslib_hyphenationstate(lua_State *L)
 static int statslib_texstate(lua_State *L)
 {
     lua_Integer approximate = 0
-        + (lua_Integer) lmt_string_pool_state .string_pool_data    .allocated * (lua_Integer) lmt_string_pool_state .string_pool_data    .itemsize
-        + (lua_Integer) lmt_string_pool_state .string_body_data    .allocated * (lua_Integer) lmt_string_pool_state .string_body_data    .itemsize
-        + (lua_Integer) lmt_node_memory_state .nodes_data          .allocated * (lua_Integer) lmt_node_memory_state .nodes_data          .itemsize
-        + (lua_Integer) lmt_node_memory_state .extra_data          .allocated * (lua_Integer) lmt_node_memory_state .extra_data          .itemsize
-        + (lua_Integer) lmt_token_memory_state.tokens_data         .allocated * (lua_Integer) lmt_token_memory_state.tokens_data         .itemsize
-        + (lua_Integer) lmt_fileio_state      .io_buffer_data      .allocated * (lua_Integer) lmt_fileio_state      .io_buffer_data      .itemsize
-        + (lua_Integer) lmt_input_state       .input_stack_data    .allocated * (lua_Integer) lmt_input_state       .input_stack_data    .itemsize
-        + (lua_Integer) lmt_input_state       .in_stack_data       .allocated * (lua_Integer) lmt_input_state       .in_stack_data       .itemsize
-        + (lua_Integer) lmt_nest_state        .nest_data           .allocated * (lua_Integer) lmt_nest_state        .nest_data           .itemsize
-        + (lua_Integer) lmt_input_state       .parameter_stack_data.allocated * (lua_Integer) lmt_input_state       .parameter_stack_data.itemsize
-        + (lua_Integer) lmt_save_state        .save_stack_data     .allocated * (lua_Integer) lmt_save_state        .save_stack_data     .itemsize
-        + (lua_Integer) lmt_hash_state        .hash_data           .allocated * (lua_Integer) lmt_hash_state        .hash_data           .itemsize
-        + (lua_Integer) lmt_fileio_state      .io_buffer_data      .allocated * (lua_Integer) lmt_fileio_state      .io_buffer_data      .itemsize
-        + (lua_Integer) lmt_font_state        .font_data           .allocated * (lua_Integer) lmt_font_state        .font_data           .itemsize
-        + (lua_Integer) lmt_language_state    .language_data       .allocated * (lua_Integer) lmt_language_state    .language_data       .itemsize
-        + (lua_Integer) lmt_mark_state        .mark_data           .allocated * (lua_Integer) lmt_mark_state        .mark_data           .itemsize
-        + (lua_Integer) lmt_insert_state      .insert_data         .allocated * (lua_Integer) lmt_insert_state      .insert_data         .itemsize
-        + (lua_Integer) lmt_sparse_state      .sparse_data         .allocated * (lua_Integer) lmt_sparse_state      .sparse_data         .itemsize
+        + (lua_Integer) lmt_string_pool_state .string_pool_data    .allocated * (lua_Integer) lmt_string_pool_state .string_pool_data    .itemsize + lmt_string_pool_state .string_pool_data    .extra
+        + (lua_Integer) lmt_string_pool_state .string_body_data    .allocated * (lua_Integer) lmt_string_pool_state .string_body_data    .itemsize + lmt_string_pool_state .string_body_data    .extra
+        + (lua_Integer) lmt_node_memory_state .nodes_data          .allocated * (lua_Integer) lmt_node_memory_state .nodes_data          .itemsize + lmt_node_memory_state .nodes_data          .extra
+        + (lua_Integer) lmt_token_memory_state.tokens_data         .allocated * (lua_Integer) lmt_token_memory_state.tokens_data         .itemsize + lmt_token_memory_state.tokens_data         .extra
+        + (lua_Integer) lmt_fileio_state      .io_buffer_data      .allocated * (lua_Integer) lmt_fileio_state      .io_buffer_data      .itemsize + lmt_fileio_state      .io_buffer_data      .extra
+        + (lua_Integer) lmt_input_state       .input_stack_data    .allocated * (lua_Integer) lmt_input_state       .input_stack_data    .itemsize + lmt_input_state       .input_stack_data    .extra
+        + (lua_Integer) lmt_input_state       .in_stack_data       .allocated * (lua_Integer) lmt_input_state       .in_stack_data       .itemsize + lmt_input_state       .in_stack_data       .extra
+        + (lua_Integer) lmt_nest_state        .nest_data           .allocated * (lua_Integer) lmt_nest_state        .nest_data           .itemsize + lmt_nest_state        .nest_data           .extra
+        + (lua_Integer) lmt_input_state       .parameter_stack_data.allocated * (lua_Integer) lmt_input_state       .parameter_stack_data.itemsize + lmt_input_state       .parameter_stack_data.extra
+        + (lua_Integer) lmt_save_state        .save_stack_data     .allocated * (lua_Integer) lmt_save_state        .save_stack_data     .itemsize + lmt_save_state        .save_stack_data     .extra
+        + (lua_Integer) lmt_hash_state        .hash_data           .allocated * (lua_Integer) lmt_hash_state        .hash_data           .itemsize + lmt_hash_state        .hash_data           .extra
+        + (lua_Integer) lmt_fileio_state      .io_buffer_data      .allocated * (lua_Integer) lmt_fileio_state      .io_buffer_data      .itemsize + lmt_fileio_state      .io_buffer_data      .extra
+        + (lua_Integer) lmt_font_state        .font_data           .allocated * (lua_Integer) lmt_font_state        .font_data           .itemsize + lmt_font_state        .font_data           .extra
+        + (lua_Integer) lmt_language_state    .language_data       .allocated * (lua_Integer) lmt_language_state    .language_data       .itemsize + lmt_language_state    .language_data       .extra
+        + (lua_Integer) lmt_mark_state        .mark_data           .allocated * (lua_Integer) lmt_mark_state        .mark_data           .itemsize + lmt_mark_state        .mark_data           .extra
+        + (lua_Integer) lmt_insert_state      .insert_data         .allocated * (lua_Integer) lmt_insert_state      .insert_data         .itemsize + lmt_insert_state      .insert_data         .extra
+        + (lua_Integer) lmt_sparse_state      .sparse_data         .allocated * (lua_Integer) lmt_sparse_state      .sparse_data         .itemsize + lmt_sparse_state      .sparse_data         .extra
+        + (lua_Integer) lmt_mvl_state         .mvl_data            .allocated * (lua_Integer) lmt_mvl_state         .mvl_data            .itemsize + lmt_mvl_state         .mvl_data            .extra
     ;
     lua_createtable(L, 0, 4);
     lua_set_integer_by_key(L, "approximate", (int) approximate);
@@ -143,12 +157,14 @@ static int statslib_aux_limits_state(lua_State* L, limits_data *data)
 
 static int statslib_aux_memory_state(lua_State* L, memory_data *data)
 {
-    lua_createtable(L, 0, 9);
+    lua_createtable(L, 0, 11);
     lua_set_integer_by_key(L, "set", data->size); /*tex Can |memory_data_unset|. */
     lua_set_integer_by_key(L, "min", data->minimum);
     lua_set_integer_by_key(L, "max", data->maximum);
     lua_set_integer_by_key(L, "mem", data->allocated);
-    lua_set_integer_by_key(L, "all", data->allocated > 0 ? (int) lmt_rounded(((double) data->allocated) * ((double) data->itemsize)) : data->allocated);
+    lua_set_integer_by_key(L, "ext", data->extra);
+    lua_set_integer_by_key(L, "itm", data->itemsize);
+    lua_set_integer_by_key(L, "all", data->allocated * data->itemsize + data->extra);
     lua_set_integer_by_key(L, "top", data->top - data->offset);
     lua_set_integer_by_key(L, "ptr", data->ptr - data->offset);
     lua_set_integer_by_key(L, "ini", data->initial); /*tex Can |memory_data_unset|. */
@@ -165,7 +181,6 @@ static int statslib_poolstate         (lua_State* L) { return statslib_aux_memor
 static int statslib_lookupstate       (lua_State* L) { return statslib_aux_memory_state(L, &lmt_hash_state        .eqtb_data); }
 static int statslib_hashstate         (lua_State* L) { return statslib_aux_memory_state(L, &lmt_hash_state        .hash_data); }
 static int statslib_nodestate         (lua_State* L) { return statslib_aux_memory_state(L, &lmt_node_memory_state .nodes_data); }
-static int statslib_extrastate        (lua_State* L) { return statslib_aux_memory_state(L, &lmt_node_memory_state .extra_data); }
 static int statslib_tokenstate        (lua_State* L) { return statslib_aux_memory_state(L, &lmt_token_memory_state.tokens_data); }
 static int statslib_inputstate        (lua_State* L) { return statslib_aux_memory_state(L, &lmt_input_state       .input_stack_data); }
 static int statslib_filestate         (lua_State* L) { return statslib_aux_memory_state(L, &lmt_input_state       .in_stack_data); }
@@ -178,6 +193,7 @@ static int statslib_languagestate     (lua_State* L) { return statslib_aux_memor
 static int statslib_markstate         (lua_State* L) { return statslib_aux_memory_state(L, &lmt_mark_state        .mark_data); }
 static int statslib_insertstate       (lua_State* L) { return statslib_aux_memory_state(L, &lmt_insert_state      .insert_data); }
 static int statslib_sparsestate       (lua_State* L) { return statslib_aux_memory_state(L, &lmt_sparse_state      .sparse_data); }
+static int statslib_mvlstate          (lua_State* L) { return statslib_aux_memory_state(L, &lmt_mvl_state         .mvl_data); }
 
 static int statslib_readstate(lua_State *L)
 {
@@ -440,7 +456,6 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "hashstate",          .value = &statslib_hashstate,          .type = 'f' },
     { .name = "lookupstate",        .value = &statslib_lookupstate,        .type = 'f' },
     { .name = "nodestate",          .value = &statslib_nodestate,          .type = 'f' },
-    { .name = "extrastate",         .value = &statslib_extrastate,         .type = 'f' },
     { .name = "tokenstate",         .value = &statslib_tokenstate,         .type = 'f' },
     { .name = "inputstate",         .value = &statslib_inputstate,         .type = 'f' },
     { .name = "filestate",          .value = &statslib_filestate,          .type = 'f' },
@@ -452,6 +467,7 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "luastate",           .value = &statslib_luastate,           .type = 'f' },
     { .name = "callbackstate",      .value = &statslib_callbackstate,      .type = 'f' },
     { .name = "linebreakstate",     .value = &statslib_linebreakstate,     .type = 'f' },
+    { .name = "balancestate",       .value = &statslib_balancestate,       .type = 'f' },
     { .name = "hyphenationstate",   .value = &statslib_hyphenationstate,   .type = 'f' },
     { .name = "errorstate",         .value = &statslib_errorstate,         .type = 'f' },
     { .name = "warningstate",       .value = &statslib_warningstate,       .type = 'f' },
@@ -461,6 +477,7 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "markstate",          .value = &statslib_markstate,          .type = 'f' },
     { .name = "insertstate",        .value = &statslib_insertstate,        .type = 'f' },
     { .name = "sparsestate",        .value = &statslib_sparsestate,        .type = 'f' },
+    { .name = "mvlstate",           .value = &statslib_mvlstate,           .type = 'f' },
 
     /*tex Lua keys: */
 
@@ -475,15 +492,22 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "filename",           .value = (void *) &tex_current_input_file_name,     .type = 'S' },
     { .name = "logfilename",        .value = (void *) &lmt_fileio_state.log_name,       .type = 'c' },
     { .name = "banner",             .value = (void *) &lmt_engine_state.luatex_banner,  .type = 'c' },
+    { .name = "copyright",          .value = (void *) &lmt_version_state.copyright,     .type = 'c' },
+    /* */
+    { .name = "majorversion",       .value = (void *) &lmt_version_state.majorversion,  .type = 'g' },
+    { .name = "minorversion",       .value = (void *) &lmt_version_state.minorversion,  .type = 'g' },
+    { .name = "release",            .value = (void *) &lmt_version_state.release,       .type = 'g' },
+    { .name = "development_id",     .value = (void *) &lmt_version_state.developmentid, .type = 'g' },
+    { .name = "format_id",          .value = (void *) &lmt_version_state.formatid,      .type = 'g' },
+    /* */
     { .name = "version",            .value = (void *) &lmt_version_state.luatexversion, .type = 'd' },
+    /* */
     { .name = "luatex_engine",      .value = (void *) &lmt_engine_state.engine_name,    .type = 'c' },
     { .name = "luatex_version",     .value = (void *) &lmt_version_state.version,       .type = 'g' },
     { .name = "luatex_revision",    .value = (void *) &lmt_version_state.revision,      .type = 'g' },
     { .name = "luatex_release",     .value = (void *) &lmt_version_state.release,       .type = 'g' },
     { .name = "luatex_verbose",     .value = (void *) &lmt_version_state.verbose,       .type = 'c' },
-    { .name = "copyright",          .value = (void *) &lmt_version_state.copyright,     .type = 'c' },
-    { .name = "development_id",     .value = (void *) &lmt_version_state.developmentid, .type = 'g' },
-    { .name = "format_id",          .value = (void *) &lmt_version_state.formatid,      .type = 'g' },
+    /* */
     { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' },
     { .name = "run_state",          .value = (void *) &lmt_main_state.run_state,        .type = 'g' },
     { .name = "permit_loadlib",     .value = (void *) &lmt_engine_state.permit_loadlib, .type = 'b' },
@@ -492,18 +516,25 @@ static struct statistic_entry statslib_entries[] = {
 };
 
 static struct statistic_entry statslib_entries_only[] = {
-    { .name = "filename",           .value = (void *) &tex_current_input_file_name,     .type = 'S' },
-    { .name = "banner",             .value = (void *) &lmt_engine_state.luatex_banner,  .type = 'c' },
-    { .name = "version",            .value = (void *) &lmt_version_state.luatexversion, .type = 'd' },
-    { .name = "luatex_engine",      .value = (void *) &lmt_engine_state.engine_name,    .type = 'c' },
-    { .name = "luatex_version",     .value = (void *) &lmt_version_state.version,       .type = 'g' },
-    { .name = "luatex_revision",    .value = (void *) &lmt_version_state.revision,      .type = 'g' },
-    { .name = "luatex_release",     .value = (void *) &lmt_version_state.release,       .type = 'g' },
-    { .name = "luatex_verbose",     .value = (void *) &lmt_version_state.verbose,       .type = 'c' },
-    { .name = "copyright",          .value = (void *) &lmt_version_state.copyright,     .type = 'c' },
-    { .name = "development_id",     .value = (void *) &lmt_version_state.developmentid, .type = 'g' },
-    { .name = "format_id",          .value = (void *) &lmt_version_state.formatid,      .type = 'g' },
-    { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' },
+    { .name = "filename",            .value = (void *) &tex_current_input_file_name,         .type = 'S' },
+    { .name = "banner",              .value = (void *) &lmt_engine_state.luatex_banner,      .type = 'c' },
+    { .name = "copyright",           .value = (void *) &lmt_version_state.copyright,         .type = 'c' },
+    /* */                                                                                    
+    { .name = "majorversion",        .value = (void *) &lmt_version_state.majorversion,      .type = 'g' },
+    { .name = "minorversion",        .value = (void *) &lmt_version_state.minorversion,      .type = 'g' },
+    { .name = "release",             .value = (void *) &lmt_version_state.release,           .type = 'g' },
+    { .name = "development_id",      .value = (void *) &lmt_version_state.developmentid,     .type = 'g' },
+    { .name = "format_id",           .value = (void *) &lmt_version_state.formatid,          .type = 'g' },
+    /* */                                                                                    
+    { .name = "version",             .value = (void *) &lmt_version_state.luatexversion,     .type = 'd' },
+    /* */                                                                                    
+    { .name = "luatex_engine",       .value = (void *) &lmt_engine_state.engine_name,        .type = 'c' },
+    { .name = "luatex_version",      .value = (void *) &lmt_version_state.version,           .type = 'g' },
+    { .name = "luatex_revision",     .value = (void *) &lmt_version_state.revision,          .type = 'g' },
+    { .name = "luatex_release",      .value = (void *) &lmt_version_state.release,           .type = 'g' },
+    { .name = "luatex_verbose",      .value = (void *) &lmt_version_state.verbose,           .type = 'c' },
+    /* */                                                                                    
+    { .name = "used_compiler",       .value = (void *) &lmt_version_state.compiler,          .type = 'c' },
 
     { .name = "lua_version_major",   .value = (void *) &lmt_version_state.luaversionmajor,   .type = 'g' },
     { .name = "lua_version_minor",   .value = (void *) &lmt_version_state.luaversionminor,   .type = 'g' },
@@ -511,7 +542,7 @@ static struct statistic_entry statslib_entries_only[] = {
     { .name = "lua_version",         .value = (void *) &lmt_version_state.luaversion,        .type = 'd' },
     { .name = "lua_format",          .value = (void *) &lmt_version_state.luaformat,         .type = 'g' },
 
-    { .name = NULL,                 .value = NULL,                                      .type = 0   },
+    { .name = NULL,                  .value = NULL,                                          .type = 0   },
 };
 
 static int statslib_aux_getstats(lua_State *L)
@@ -571,6 +602,7 @@ static const struct luaL_Reg statslib_function_list[] = {
     { "getreadstate",          statslib_readstate          },
     { "getcallbackstate",      statslib_callbackstate      },
     { "getlinebreakstate",     statslib_linebreakstate     },
+    { "getbalancestate",       statslib_balancestate       },
     { "gethyphenationstate",   statslib_hyphenationstate   },
 
     { "geterrorlinestate",     statslib_errorlinestate     },
@@ -582,7 +614,6 @@ static const struct luaL_Reg statslib_function_list[] = {
     { "gethashstate",          statslib_hashstate          },
     { "getlookupstate",        statslib_lookupstate        },
     { "getnodestate",          statslib_nodestate          },
-    { "getextrastate",         statslib_extrastate         },
     { "gettokenstate",         statslib_tokenstate         },
     { "getinputstate",         statslib_inputstate         },
     { "getfilestate",          statslib_filestate          },
@@ -595,6 +626,7 @@ static const struct luaL_Reg statslib_function_list[] = {
     { "getmarkstate",          statslib_markstate          },
     { "getinsertstate",        statslib_insertstate        },
     { "getsparsestate",        statslib_sparsestate        },
+    { "getmvlstate",           statslib_mvlstate           },
 
     { NULL,                    NULL                        },
 };

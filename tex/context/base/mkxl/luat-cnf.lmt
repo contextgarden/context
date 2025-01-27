@@ -177,7 +177,7 @@ end)
 local keys = {
     "buffersize", "expandsize", "filesize", "fontsize", "hashsize", "inputsize",
     "languagesize", "marksize", "insertsize", "nestsize", "nodesize", "parametersize", "poolsize",
-    "savesize", "stringsize", "tokensize", "errorlinesize", "halferrorlinesize",
+    "savesize", "stringsize", "tokensize", "errorlinesize", "halferrorlinesize", "mvlsize",
 }
 
 local function makestub()

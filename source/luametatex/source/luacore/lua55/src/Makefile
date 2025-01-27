@@ -15,12 +15,12 @@ CWARNSCPP= \
 	-Wdouble-promotion \
 	-Wmissing-declarations \
 	-Wconversion \
+	-Wuninitialized \
+	-Wstrict-overflow=2 \
         # the next warnings might be useful sometimes,
 	# but usually they generate too much noise
 	# -Werror \
 	# -pedantic   # warns if we use jump tables \
-	# -Wsign-conversion \
-	# -Wstrict-overflow=2 \
 	# -Wformat=2 \
 	# -Wcast-qual \
 
@@ -69,7 +69,9 @@ CWARNS= $(CWARNSCPP) $(CWARNSC) $(CWARNGCC)
 LOCAL = $(TESTS) $(CWARNS)
 
 
-# enable Linux goodies
+# To enable Linux goodies, -DLUA_USE_LINUX
+# For C89, "-std=c89 -DLUA_USE_C89"
+# Note that Linux/Posix options are not compatible with C89
 MYCFLAGS= $(LOCAL) -std=c99 -DLUA_USE_LINUX
 MYLDFLAGS= $(LOCAL) -Wl,-E
 MYLIBS= -ldl

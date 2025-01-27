@@ -9,14 +9,15 @@
 
 /* We define some constants used when calling |hpack| to deal with font expansion. */
 
-typedef enum hpack_subtypes {
+typedef enum hpack_packing_modes {
     packing_exactly,    /*tex a box dimension is pre-specified */
     packing_additional, /*tex a box dimension is increased from the natural one */
     packing_expanded,   /*tex calculate amount for font expansion after breaking paragraph into lines */
     packing_substitute, /*tex substitute fonts */
     packing_adapted, 
     packing_linebreak,  /*tex signals that we need to take the frozen adjust properties */
-} hpack_subtypes;
+ // packing_trial, 
+} hpack_packing_modes;
 
 typedef enum box_codes {
     box_code,      /*tex |chr_code| for |\box| */
@@ -25,7 +26,7 @@ typedef enum box_codes {
     last_box_code, /*tex |chr_code| for |\lastbox| */
     tsplit_code,   
     vsplit_code,   /*tex |chr_code| for |\vsplit| */
-    dsplit_code,   
+    dsplit_code,  
  /* hsplit_code, */ 
     tpack_code,    
     vpack_code,    /*tex |chr_code| for |\vpack| */
@@ -35,6 +36,14 @@ typedef enum box_codes {
     vbox_code,     /*tex |chr_code| for |\vbox| */
     dbox_code,
     hbox_code,
+    vbalance_code,
+    vbalanced_box_code,
+    vbalanced_top_code,
+    vbalanced_insert_code,
+    vbalanced_discard_code,
+    vbalanced_deinsert_code,
+    vbalanced_reinsert_code,
+    flush_mvl_box_code,
     insert_box_code,
     insert_copy_code,
     local_left_box_box_code,
@@ -42,6 +51,7 @@ typedef enum box_codes {
     local_middle_box_box_code,
     page_discards_code,
     split_discards_code,
+    copy_split_discards_code,
 } box_codes;
 
 // typedef enum saved_full_spec_items {
@@ -88,7 +98,7 @@ typedef struct packaging_state_info {
     scaled   last_overshoot;
     halfword post_adjust_tail;       /*tex tail of adjustment list */
     halfword pre_adjust_tail;
-    halfword post_migrate_tail;       /*tex tail of adjustment list */
+    halfword post_migrate_tail;      /*tex tail of adjustment list */
     halfword pre_migrate_tail;
     halfword last_leftmost_char;
     halfword last_rightmost_char;
@@ -99,6 +109,10 @@ typedef struct packaging_state_info {
     halfword page_discards_tail;
     halfword page_discards_head;
     halfword split_discards_head;
+    scaled   split_last_height;
+    scaled   split_last_depth;
+    scaled   split_last_stretch;
+    scaled   split_last_shrink;
     halfword except;
 } packaging_state_info;
 
@@ -126,7 +140,7 @@ extern halfword  tex_filtered_hpack        (halfword p, halfword qt, scaled w, i
 extern halfword  tex_filtered_vpack        (halfword p, scaled h, int m, scaled maxdepth, int grp, halfword direction, int just_pack, halfword attr, int state, int retain, int *excess);
                                            
 extern scaledwhd tex_natural_hsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
-extern scaledwhd tex_natural_vsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
+extern scaledwhd tex_natural_vsizes        (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order, int inserts);
 extern scaledwhd tex_natural_msizes        (halfword p, int ignoreprime);
 extern halfword  tex_natural_width         (halfword p, halfword pp, glueratio g_mult, int g_sign, int g_order);
 extern halfword  tex_natural_hsize         (halfword p, halfword *correction);
@@ -138,6 +152,8 @@ extern halfword  tex_vpack                 (halfword p, scaled h, int m, scaled 
 extern void      tex_repack                (halfword p, scaled w, int m);
 extern void      tex_limit                 (halfword p);
 extern void      tex_freeze                (halfword p, int recurse, int limitate, halfword factor);
+extern void      tex_migrate               (halfword head, halfword *first, halfword *last, int inserts, int marks);
+
 extern scaled    tex_stretch               (halfword p);
 extern scaled    tex_shrink                (halfword p);
                                            
@@ -147,7 +163,7 @@ extern void      tex_run_unpackage         (void);
 extern void      tex_append_to_vlist       (halfword b, int location, const line_break_properties *properties);
                                            
 extern halfword  tex_prune_page_top        (halfword p, int s);
-extern halfword  tex_vert_break            (halfword p, scaled h, scaled d);
+extern halfword  tex_vert_break            (halfword p, scaled height, scaled depth, int callback, scaled extra);
 extern halfword  tex_vsplit                (halfword n, scaled h, int m);
                                            
 extern void      tex_finish_vcenter_group  (void);

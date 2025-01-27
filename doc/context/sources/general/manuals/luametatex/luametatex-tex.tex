@@ -495,7 +495,7 @@ function tex.getskip (
 end
 
 function tex.getglue (
-    <t:string>  register, -- can also be an index
+    <t:string>  register -- can also be an index
 )
     return
         <t:integer> -- amount,
@@ -510,7 +510,6 @@ function tex.getglue (
     false
 )
     return <t:integer> amount,
-)
 end
 \stoptyping
 
@@ -548,9 +547,9 @@ function tex.expandasvalue (
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:functioncodes]
-\stopcolumns
+\stopfourrows
 
 \stopsubsection
 
@@ -701,9 +700,9 @@ end
 
 The first argument can also be an integer, actually the subtype of a mark node:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:marknames]
-\stopcolumns
+\stoptworows
 
 The largest used mark class is returned by:
 
@@ -930,27 +929,27 @@ of fields is: \showenginekeylist {tex.getnestfields()}.
 
 Possible modes are:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:modes]
-\stopcolumns
+\stoptworows
 
 Valid directions are:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:directioncodes]
-\stopcolumns
+\stoptworows
 
 Math styles conforms to:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:mathstyles]
-\stopcolumns
+\stoptworows
 
 The math begin and end classes can be built-in or \CONTEXT\ specific:
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:mathclasses]
-\stopcolumns
+\stopfourrows
 
 The helpers are:
 
@@ -1359,7 +1358,7 @@ You can feed the result of the last one in \type {tex.enableprimitives}. If
 there is already a macro with that name if will not be overloaded.
 
 \starttyping[option=LUA]
-tex.enableprimitives('normal',tex.extraprimitives(true))}
+tex.enableprimitives('normal',tex.extraprimitives(true))
 \stoptyping
 
 A complete list of primitives can be requested by:
@@ -1540,9 +1539,9 @@ end
 
 possible states are:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:pagestatecodes]
-\stopcolumns
+\stoptworows
 
 You can also check if we're in the output routine:
 
@@ -1671,9 +1670,9 @@ end
 
 In \LUAMETATEX\ valid interaction modes are:
 
-\startcolumns[n=2]
+\starttworows
 \getbuffer[engine:syntax:interactionmodes]
-\stopcolumns
+\stoptworows
 
 You can get and set the mode with:
 
@@ -2101,9 +2100,9 @@ end
 
 The bitset is made from:
 
-\startcolumns[n=3]
+\startthreerows
 \getbuffer[engine:syntax:frozenparcodes]
-\stopcolumns
+\stopthreerows
 
 This one is handy when you mess with lists and want to take some parameters
 into account that matter when building a paragraph. The returned fields are:
@@ -2280,8 +2279,6 @@ end
 % getinputindex
 % getsourcefilename
 % forceendoffile
-
-\stopsubsection
 
 \stopsection
 

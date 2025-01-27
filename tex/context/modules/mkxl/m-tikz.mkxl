@@ -244,4 +244,18 @@
 
 \installtikzlibraryhacks{calendar}{}{\tikzinputfile{pgfcalendar.code.tex}}
 
+\startsetups tikz:hacks:tikzcd
+\permanent\protected\def\starttikzcd%
+  {\starttikzinput
+   \hcontainer\bgroup
+   \tikzcd}
+
+\permanent\protected\def\stoptikzcd
+  {\endtikzcd
+   \egroup
+   \stoptikzinput}
+\stopsetups
+
+\installtikzlibraryhacks{cd}{}{\directsetup{tikz:hacks:tikzcd}}
+
 \stopmodule

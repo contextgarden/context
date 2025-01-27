@@ -2899,7 +2899,7 @@ static int mplib_getfields(lua_State *L)
             }
         case LUA_TNUMBER: 
             {
-                n = lua_tointeger(L, 1);
+                n = (int) lua_tointeger(L, 1);
                 break;
             }
         default:

@@ -42,11 +42,6 @@
 \definecolor[primcolor][darkblue]
 \definecolor[nonecolor][darkgray]
 
-\ifdefined \luametatexverboseversion \else
-    \permanent\def\luametatexverboseversion{\cldcontext{environment.luatexverbose}}
-    \permanent\def\luametatexfunctionality {\cldcontext{environment.luatexfunctionality}}
-\fi
-
 \startMPdefinitions
     vardef MyText (expr txt) =
         image (
@@ -425,28 +420,28 @@
 
 \tolerant\protected\def\showenginevalues[#1]#*#:#2%
   {\startenginesubject[title={#2}]
-     \startcolumns[n=\ifparameter#1\or#1\else2\fi]
+     \startrows[n=\ifparameter#1\or#1\else2\fi,before=\blank,after=\blank]
        \ctxlua{moduledata.engine.codes("get#2", 1)}
-     \stopcolumns
+     \stoprows
    \stopenginesubject}
 
 \tolerant\protected\def\showenginefields[#1]#*#:#2%
   {\startenginesubject[title=fields]
-     \startcolumns[n=\ifparameter#1\or#1\else3\fi]
+     \startrows[n=\ifparameter#1\or#1\else3\fi,before=\blank,after=\blank]
        \ctxlua{moduledata.node.codes("fields","#2",true)}
-     \stopcolumns
+     \stoprows
    \stopenginesubject}
 
 \tolerant\protected\def\showenginesubtypes[#1]#*#:#2%
   {\startenginesubject[title=subtypes]
-     \startcolumns[n=\ifparameter#1\or#1\else3\fi]
+     \startrows[n=\ifparameter#1\or#1\else3\fi,before=\blank,after=\blank]
        \ctxlua{moduledata.node.codes("subtypes","#2",true)}
-     \stopcolumns
+     \stoprows
   \stopenginesubject}
 
 \tolerant\protected\def\showengineprimitives[#1]%
   {%\startenginesubject[title=primitives]
-     \startcolumns[n=\ifparameter#1\or#1\else2\fi]
+     \startrows[n=\ifparameter#1\or#1\else2\fi,before=\blank,after=\blank]
      \startluacode
         local p = token.getprimitives()
         table.sort(p,function(a,b)
@@ -480,7 +475,7 @@
         end
         context.stoptabulate()
      \stopluacode
-     \stopcolumns
+     \stoprows
   }%\stopenginesubject}
 
 \tolerant\protected\def\showenginekeylist#1%
@@ -493,5 +488,25 @@
        context.typ(t[i])
      end
    \stopluacode}
+
+% \setuptyping
+%   [align=hangright,
+%    keeptogether=yes,
+%    keeptogether=paragraph,
+%    numbering=]
+
+\definerows[two]  [n=2,before=\blank,after=\blank]
+\definerows[three][n=3,before=\blank,after=\blank]
+\definerows[four] [n=4,before=\blank,after=\blank]
+
+\definerows[tworows]  [define=yes,n=2,before=\blank,after=\blank]
+\definerows[threerows][define=yes,n=3,before=\blank,after=\blank]
+\definerows[fourrows] [define=yes,n=4,before=\blank,after=\blank]
+
+\setuplinenumbering
+  [margin=0em,
+   style=\ttx,
+   width=\margindistance,
+   distance=-\margindistance]
 
 \stopenvironment

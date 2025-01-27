@@ -72,6 +72,7 @@ appendaction("processors",   "lists",       "languages.visualizediscretionaries"
 appendaction("processors",   "after",       "typesetters.marksuspects",                         nil, "nut",    "disabled"  )
 
 appendaction("shipouts",     "normalizers", "nodes.handlers.cleanuppage",                       nil, "nut",    "production")
+appendaction("shipouts",     "normalizers", "typesetters.swapping.handler",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.stacking.handler",                     nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.showsuspects",                         nil, "nut",    "disabled"  )
 appendaction("shipouts",     "normalizers", "typesetters.showinvisibles",                       nil, "nut",    "disabled"  )

@@ -352,7 +352,15 @@ static int auxgetinfo (lua_State *L, const char *what, lua_Debug *ar,
         break;
       }
       case 't': {
-        ar->istailcall = (ci != NULL && (ci->callstatus & CIST_TAIL));
+        if (ci != NULL) {
+          ar->istailcall = !!(ci->callstatus & CIST_TAIL);
+          ar->extraargs =
+                   cast_uchar((ci->callstatus & MAX_CCMT) >> CIST_CCMT);
+        }
+        else {
+          ar->istailcall = 0;
+          ar->extraargs = 0;
+        }
         break;
       }
       case 'n': {
@@ -847,7 +855,8 @@ l_noret luaG_runerror (lua_State *L, const char *fmt, ...) {
   va_start(argp, fmt);
   msg = luaO_pushvfstring(L, fmt, argp);  /* format message */
   va_end(argp);
-  if (isLua(ci)) {  /* if Lua function, add source:line information */
+  if (msg != NULL && isLua(ci)) {  /* Lua function? (and no error) */
+    /* add source:line information */
     luaG_addinfo(L, msg, ci_func(ci)->p->source, getcurrentline(ci));
     setobjs2s(L, L->top.p - 2, L->top.p - 1);  /* remove 'msg' */
     L->top.p--;

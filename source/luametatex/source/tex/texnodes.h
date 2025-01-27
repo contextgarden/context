@@ -165,7 +165,6 @@ typedef struct node_memory_state_info {
     char        *nodesizes;
     halfword     free_chain[max_chain_size];
     memory_data  nodes_data;
-    memory_data  extra_data;
     int          reserved; /*tex There are some predefined nodes. */
     int          padding;
     int          node_properties_id;
@@ -464,6 +463,7 @@ typedef enum penalty_option_codes {
     penalty_option_double_used   = 0x0800,
     penalty_option_factor_used   = 0x1000,
     penalty_option_end_of_par    = 0x2000,
+    penalty_option_in_insert     = 0x4000,
 } penalty_option_codes;
 
 typedef enum penalty_subtypes {
@@ -503,6 +503,7 @@ typedef enum glue_subtypes {
     left_skip_glue,
     right_skip_glue,
     top_skip_glue,
+    bottom_skip_glue,
     split_top_skip_glue,
     tab_skip_glue,
     space_skip_glue,
@@ -557,18 +558,22 @@ typedef enum skip_glue_codes_alias {
 # define glue_leader_ptr(a)    vinfo(a,6) /* not in spec */
 # define glue_callback(a)      vlink(a,6) /* not in spec */
 
+typedef enum glue_option_codes {
+    glue_option_normal            = 0x0000,
+    glue_option_no_auto_break     = 0x0001, /* math related */
+    glue_option_has_factor        = 0x0002,
+    glue_option_is_limited        = 0x0004,
+    glue_option_limit             = 0x0008,
+    glue_option_u_leaders_line    = 0x0010,
+    glue_option_set_discardable   = 0x0020,
+    glue_option_reset_discardable = 0x0040,
+    glue_option_non_discardable   = 0x0080,
+    glue_option_in_insert         = 0x0100,
+} glue_option_codes;
+
 static inline void tex_add_glue_option    (halfword a, halfword r) { glue_options(a) |= r; }
 static inline void tex_remove_glue_option (halfword a, halfword r) { glue_options(a) &= ~r; }
 static inline int  tex_has_glue_option    (halfword a, halfword r) { return (glue_options(a) & r) == r; }
-
-typedef enum glue_option_codes {
-    glue_option_normal         = 0x0000,
-    glue_option_no_auto_break  = 0x0001, /* math related */
-    glue_option_has_factor     = 0x0002,
-    glue_option_is_limited     = 0x0004,
-    glue_option_limit          = 0x0008,
-    glue_option_u_leaders_line = 0x0010,
-} glue_option_codes;
 
 typedef enum math_subtypes {
     begin_inline_math,
@@ -711,9 +716,20 @@ typedef enum kern_subtypes {
 
 # define font_related_kern(s) (s >= font_kern_subtype && s <= space_font_kern_subtype)
 
-# define kern_node_size    3
-# define kern_amount(a)    vlink(a,2) /*tex aka |width = vlink(a,2)| */
+# define kern_node_size    4
+# define kern_amount(a)    vlink(a,2) 
 # define kern_expansion(a) vinfo(a,2) /*tex expansion factor (hz) */
+# define kern_options(a)   vlink(a,3)
+# define kern_reserved(a)  vinfo(a,3)
+
+typedef enum kern_option_codes {
+    kern_option_normal    = 0x0000,
+    kern_option_in_insert = 0x0001,
+} kern_option_codes;
+
+// static inline void tex_add_kern_option    (halfword a, halfword r) { kern_options(a) |= r; }
+// static inline void tex_remove_kern_option (halfword a, halfword r) { kern_options(a) &= ~r; }
+// static inline int  tex_has_kern_option    (halfword a, halfword r) { return (kern_options(a) & r) == r; }
 
 /*tex
 
@@ -919,9 +935,11 @@ typedef enum list_subtypes {
     local_left_list,
     local_right_list,
     local_middle_list,
+    balance_slot_list,
+    balance_list,
 } list_subtypes ;
 
-# define last_list_subtype    local_middle_list
+# define last_list_subtype    balance_list
 # define noad_class_list_base 0x0100
 
 typedef enum list_anchors {
@@ -953,7 +971,12 @@ typedef enum list_geometries {
     anchor_geometry      = 0x4,
 } list_geometries;
 
-# define box_node_size        16
+typedef enum list_balance_states { 
+    balance_state_inserts  = 0x01,
+    balance_state_discards = 0x02,
+} list_balance_states;
+
+# define box_node_size        17
 # define box_width(a)         vlink(a,2)
 # define box_w_offset(a)      vinfo(a,2)
 # define box_depth(a)         vlink(a,3)
@@ -962,16 +985,15 @@ typedef enum list_geometries {
 # define box_h_offset(a)      vinfo(a,4)
 # define box_list(a)          vlink(a,5)   /* 5 = list_offset */
 # define box_shift_amount(a)  vinfo(a,5)
-# define box_glue_order(a)    vlink(a,6)   /* quarterword (?) */
-# define box_glue_sign(a)     vinfo(a,6)   /* quarterword (?) */
-//define box_glue_order(a)    vlink00(a,6)
-//define box_glue_sign(a)     vlink01(a,6)
-//define box_reserved_1(a)    vlink02(a,6)
-//define box_reserved_2(a)    vlink03(a,6)
+# define box_glue_order(a)    vlink(a,6)
+# define box_glue_sign(a)     vinfo01(a,6)
+# define box_balance_state(a) vinfo02(a,6)
+# define box_reserved_1(a)    vinfo03(a,6) /* can be used */
+# define box_reserved_2(a)    vinfo04(a,6) /* can be used */
 # define box_glue_set(a)      dvalue(a,7)  /* So we reserve a whole memory word! */
-# define box_dir(a)           vlink00(a,8) /* We could encode it as geomtry but not now. */
+# define box_dir(a)           vlink00(a,8) /* We could encode it as geometry but not now. */
 # define box_package_state(a) vlink01(a,8)
-# define box_axis(a)          vlink02(a,8)
+# define box_options(a)       vlink02(a,8)
 # define box_geometry(a)      vlink03(a,8)
 # define box_orientation(a)   vinfo(a,8)   /* Also used for size in alignments. */
 # define box_x_offset(a)      vlink(a,9)
@@ -986,8 +1008,10 @@ typedef enum list_geometries {
 # define box_index(a)         vinfo(a,13)
 # define box_except(a)        vlink(a,14)
 # define box_exdepth(a)       vinfo(a,14)
-# define box_input_file(a)    vlink(a,15)
-# define box_input_line(a)    vinfo(a,15)
+# define box_discardable(a)   vlink(a,15)  /* internal usage */
+# define box_reserved(a)      vinfo(a,15)  /* can be used */
+# define box_input_file(a)    vlink(a,16)  /* can be used */
+# define box_input_line(a)    vinfo(a,16)
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */
 
@@ -1005,6 +1029,12 @@ typedef enum box_pre_post_states {
     has_post_migrated = 0x8,
 } box_pre_post_states;
 
+typedef enum box_insert_states {
+    has_inserts              = 0x1,
+    has_inserts_with_content = 0x2,
+    has_inserts_with_height  = 0x4,
+} box_insert_states;
+
 /*tex These three make the bitset in |box_package_state|. */
 
 typedef enum package_states {
@@ -1015,10 +1045,6 @@ typedef enum package_states {
     dbox_package_state    = 0x04,
     /* maybe vcenter */
 } package_states;
-
-typedef enum package_line_states {
-    first_line_package_state = 0x08, /* has a par node */
-} package_line_states;
 
 typedef enum package_dimension_states {
     package_dimension_not_set  = 0x00,
@@ -1036,12 +1062,15 @@ typedef enum package_leader_states {
 # define has_box_package_state(p,s) ((box_package_state(p) & s) == s)
 # define is_box_package_state(p,s)  ((p & s) == s)
 
-typedef enum list_axis { /* or maybe math states */
-    no_math_axis = 0x01,
-} list_axis;
+typedef enum box_option_flags { 
+    box_option_no_math_axis = 0x01,
+    box_option_discardable  = 0x02,
+ // box_option_synchronize  = 0x04,
+} box_option_flags;
 
-# define has_box_axis(p,s) ((box_axis(p) & s) == s)
-# define set_box_axis(p,s) box_axis(p) |= (s & 0xFF)
+static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |= r; }
+static inline void tex_remove_box_option (halfword a, halfword r) { box_options(a) &= ~r; }
+static inline int  tex_has_box_option    (halfword a, halfword r) { return (box_options(a) & r) == r; }
 
 /*tex
     These |unset| nodes have the same layout as list nodes and at some point become an |hlist| or
@@ -1111,30 +1140,33 @@ typedef enum rule_codes {
 } rule_codes;
 
 typedef enum rule_option_codes {
-    rule_option_horizontal = 0x01, /* maybe we want both at some time */
-    rule_option_vertical   = 0x02, /* when none is set we have a math rule */
-    rule_option_thickness  = 0x04, /* future */
-    rule_option_running    = 0x08,
-    rule_option_valid      = 0x0F,
+    rule_option_horizontal  = 0x01, /* maybe we want both at some time */
+    rule_option_vertical    = 0x02, /* when none is set we have a math rule */
+    rule_option_thickness   = 0x04, /* future */
+    rule_option_running     = 0x08,
+    rule_option_discardable = 0x10,
+    rule_option_valid       = 0x1F,
 } rule_option_codes;
 
 # define last_rule_subtype image_rule_subtype
 # define first_rule_code   normal_rule_code
 # define last_rule_code    strut_rule_code
 
-# define rule_node_size    8
-# define rule_width(a)     vlink(a,2)
-# define rule_x_offset(a)  vinfo(a,2)
-# define rule_depth(a)     vlink(a,3)
-# define rule_y_offset(a)  vinfo(a,3)
-# define rule_height(a)    vlink(a,4)
-# define rule_data(a)      vinfo(a,4) /* used for linewidth */
-# define rule_options(a)   vlink(a,5)
-# define rule_thickness(a) vinfo(a,5) /* future see data */
-# define rule_left(a)      vinfo(a,6) /* depends on subtype */
-# define rule_right(a)     vlink(a,6) /* depends on subtype */
-# define rule_extra_1(a)   vinfo(a,7) /* depends on subtype */
-# define rule_extra_2(a)   vlink(a,7) /* depends on subtype */
+# define rule_node_size      9
+# define rule_width(a)       vlink(a,2)
+# define rule_x_offset(a)    vinfo(a,2)
+# define rule_depth(a)       vlink(a,3)
+# define rule_y_offset(a)    vinfo(a,3)
+# define rule_height(a)      vlink(a,4)
+# define rule_data(a)        vinfo(a,4)   /* used for linewidth */
+# define rule_options(a)     vlink(a,5)
+# define rule_thickness(a)   vinfo(a,5)   /* future see data */
+# define rule_left(a)        vinfo(a,6)   /* depends on subtype */
+# define rule_right(a)       vlink(a,6)   /* depends on subtype */
+# define rule_extra_1(a)     vinfo(a,7)   /* depends on subtype */
+# define rule_extra_2(a)     vlink(a,7)   /* depends on subtype */
+# define rule_discardable(a) vinfo(a,8)   /* internal usage */
+# define rule_reserved(a)    vlink(a,8) 
 
 # define rule_line_on         rule_extra_1    /* for user rules */
 # define rule_line_off        rule_extra_2    /* for user rules */
@@ -1214,13 +1246,15 @@ typedef enum rule_option_codes {
 # define glyph_language(a)   vinfo0(a,4)
 # define glyph_script(a)     vinfo1(a,4)
 # define glyph_control(a)    vlink0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
-# define glyph_reserved(a)   vlink1(a,4)
+# define glyph_disccode(a)   vlink1(a,4)  /*tex can be smaller */
+//define glyph_disccode(a)   vlink02(a,4) 
+//define glyph_reserved_1(a) vlink03(a,4) 
 # define glyph_options(a)    vinfo(a,5)
 # define glyph_hyphenate(a)  vlink(a,5)
 # define glyph_protected(a)  vinfo00(a,6)
 # define glyph_lhmin(a)      vinfo01(a,6)
 # define glyph_rhmin(a)      vinfo02(a,6)
-# define glyph_discpart(a)   vinfo03(a,6)
+# define glyph_discpart(a)   vinfo03(a,6) 
 # define glyph_expansion(a)  vlink(a,6)
 # define glyph_x_scale(a)    vinfo(a,7)
 # define glyph_y_scale(a)    vlink(a,7)
@@ -1243,6 +1277,7 @@ typedef enum rule_option_codes {
 # define get_glyph_language(a)  ((quarterword) glyph_language(a))
 # define get_glyph_script(a)    ((quarterword) glyph_script(a))
 # define get_glyph_control(a)   ((quarterword) glyph_control(a))
+# define get_glyph_disccode(a)  ((quarterword) glyph_disccode(a))
 # define get_glyph_x_scale(a)   ((halfword) glyph_x_scale(a))
 # define get_glyph_y_scale(a)   ((halfword) glyph_y_scale(a))
 # define get_glyph_scale(a)     ((halfword) glyph_scale(a))
@@ -1261,6 +1296,7 @@ typedef enum rule_option_codes {
 # define set_glyph_language(a,b)  glyph_language(a) = (quarterword) b
 # define set_glyph_script(a,b)    glyph_script(a) = (quarterword) b
 # define set_glyph_control(a,b)   glyph_control(a) = (quarterword) b
+# define set_glyph_disccode(a,b)  glyph_disccode(a) = (quarterword) b
 # define set_glyph_x_scale(a,b)   glyph_x_scale(a) = b
 # define set_glyph_y_scale(a,b)   glyph_y_scale(a) = b
 # define set_glyph_x_offset(a,b)  glyph_x_offset(a) = b
@@ -1461,15 +1497,21 @@ typedef enum adjust_options {
     would demand some changes that I'm not willing to make right now (and maybe never).
 */
 
-# define insert_node_size       6          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
+typedef enum insert_options {
+    insert_option_in_insert = 0x01,
+} insert_options;
+
+# define insert_node_size       7          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
 # define insert_index(a)        vinfo(a,2) /*tex The |width| is not used. */
 # define insert_float_cost(a)   vlink(a,2)
-# define insert_whatever_1(a)   vinfo(a,3) /* */
+# define insert_identifier(a)   vinfo(a,3) /*tex aka: |insert_data| but that macro messes up a field */
 # define insert_max_depth(a)    vlink(a,3)
-# define insert_whatever_2(a)   vinfo(a,4) /* */
+# define insert_options(a)      vinfo(a,4) /* */
 # define insert_total_height(a) vlink(a,4) /*tex The sum of height and depth, i.e. total. */
 # define insert_list(a)         vinfo(a,5) /*tex Is alias for |node_next|. */
 # define insert_split_top(a)    vlink(a,5)
+# define insert_line_height(a)  vinfo(a,6)
+# define insert_line_depth(a)   vlink(a,6)
 
 # define insert_first_box(a)    (a + 5)    /*tex A fake node where box_list_ptr becomes a next field. */
 
@@ -2362,6 +2404,7 @@ typedef enum boundary_subtypes {
     lua_boundary,
     par_boundary,
     adjust_boundary,
+    balance_boundary,
 } boundary_subtypes;
 
 typedef enum protrusion_boundary_options {
@@ -2574,11 +2617,17 @@ static int par_category_to_codes[par_n_of_codes] = { /* explicit size is check *
     par_ex_hyphen_penalty_category,   // par_ex_hyphen_penalty_code
 };
 
+
+typedef enum par_options {      
+    par_option_synchronize = 0x01,
+} par_options;
+
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */
 
 # define par_node_size                   35 // todo: less because we can pack some
 
-# define par_dir(a)                      vlink(a, 2)
+# define par_dir(a)                      vlink00(a, 2)
+# define par_options(a)                  vlink01(a, 2)
 # define par_box_left(a)                 vinfo(a, 2)
 # define par_box_left_width(a)           vlink(a, 3)
 # define par_box_right(a)                vinfo(a, 3)
@@ -2737,6 +2786,9 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define active_deficiency(a)              vinfo(a,4)   /* last line related, normally we can use the passive one */
 # define active_n_of_fitness_classes(a)    vlink(a,5)
 # define active_reserved(a)                vinfo(a,5)
+
+# define active_page_number(a)             vinfo(a,1)
+# define active_page_height(a)             vinfo(a,2)
 
 # define passive_node_size                 11
 # define passive_fitness(a)                vinfo1(a,0)
@@ -3023,8 +3075,8 @@ typedef enum glue_signs {
 
 # define normal_glue_multiplier 0.0
 
-static inline halfword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : sign ; }
-static inline halfword tex_checked_glue_order (halfword order) { return ((order < min_glue_order) || (order > max_glue_order)) ? normal_glue_order : order; }
+static inline singleword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : sign ; }
+static inline halfword   tex_checked_glue_order (halfword order) { return ((order < min_glue_order) || (order > max_glue_order)) ? normal_glue_order : order; }
 
 /*tex
     These are reserved nodes that sit at the start of main memory. We could actually just allocate

@@ -376,49 +376,53 @@ v.i = nil
         end)
         --
         setmetatableindex(tobesaved,function(t,k)
-            local prefix, one, two = lpegmatch(p_splitter,k)
-            local v = rawget(t,prefix)
-            if v and type(v) == "table" then
-                v = v[one]
-                if v and two then
-                    v = v[two]
+            if k then
+                local prefix, one, two = lpegmatch(p_splitter,k)
+                local v = rawget(t,prefix)
+                if v and type(v) == "table" then
+                    v = v[one]
+                    if v and two then
+                        v = v[two]
+                    end
+                    return v -- or default
+                else
+                 -- return default
                 end
-                return v -- or default
-            else
-             -- return default
             end
         end)
         --
         setmetatablenewindex(tobesaved,function(t,k,v)
-            local prefix, one, two = lpegmatch(p_splitter,k)
-            local p = rawget(t,prefix)
-            if not p then
-                p = { }
-                rawset(t,prefix,p)
-            end
-            if type(one) == "number" then -- maybe Cc(0 1 2)
-                if #p < one then
-                    for i=#p+1,one-1 do
-                        p[i] = { } -- false
-                    end
+            if k then
+                local prefix, one, two = lpegmatch(p_splitter,k)
+                local p = rawget(t,prefix)
+                if not p then
+                    p = { }
+                    rawset(t,prefix,p)
                 end
-            end
-            if two then
-                local pone = p[one]
-                if not pone then
-                    pone = { }
-                    p[one] = pone
-                end
-                if type(two) == "number" then -- maybe Cc(0 1 2)
-                    if #pone < two then
-                        for i=#pone+1,two-1 do
-                            pone[i] = { } -- false
+                if type(one) == "number" then -- maybe Cc(0 1 2)
+                    if #p < one then
+                        for i=#p+1,one-1 do
+                            p[i] = { } -- false
                         end
                     end
                 end
-                pone[two] = v
-            else
-                p[one] = v
+                if two then
+                    local pone = p[one]
+                    if not pone then
+                        pone = { }
+                        p[one] = pone
+                    end
+                    if type(two) == "number" then -- maybe Cc(0 1 2)
+                        if #pone < two then
+                            for i=#pone+1,two-1 do
+                                pone[i] = { } -- false
+                            end
+                        end
+                    end
+                    pone[two] = v
+                else
+                    p[one] = v
+                end
             end
         end)
         --

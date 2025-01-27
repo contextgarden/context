@@ -249,9 +249,11 @@ void tex_main_body(void)
     tex_engine_set_memory_data("savesize",          &lmt_save_state.save_stack_data);
     tex_engine_set_memory_data("stringsize",        &lmt_string_pool_state.string_pool_data);
     tex_engine_set_memory_data("tokensize",         &lmt_token_memory_state.tokens_data);
+    tex_engine_set_memory_data("mvlsize",           &lmt_mvl_state.mvl_data);
 
     tex_initialize_fileio_state();
     tex_initialize_nest_state();
+    tex_initialize_mvl_state();
     tex_initialize_save_stack();
     tex_initialize_input_state();
 

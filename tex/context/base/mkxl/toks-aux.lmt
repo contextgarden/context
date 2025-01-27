@@ -254,6 +254,7 @@ tex.fillcodes                = getthem(tex.getfillvalues)
 tex.mathparametercodes       = getthem(tex.getmathparametervalues)
 tex.breakcodes               = getthem(tex.getbreakcontextvalues)
 tex.buildcodes               = getthem(tex.getbuildcontextvalues)
+tex.splitcodes               = getthem(tex.getvsplitcontextvalues)
 tex.interactioncodes         = getthem(tex.getinteractionmodes,"modecode")
 tex.charactertagcodes        = getthem(tex.getcharactertagvalues)
 tex.protrusionboundarycodes  = getthem(tex.getprotrusionboundaryvalues)
@@ -266,6 +267,8 @@ tex.specificationoptioncodes = getthem(tex.getspecificationoptionvalues,"specifi
 tex.discpartcodes            = getthem(tex.getdiscpartvalues)
 tex.glyphdisccodes           = getthem(tex.getglyphdiscvalues)
 tex.runstatecodes            = getthem(tex.getrunstatevalues)
+tex.mvloptioncodes           = getthem(tex.getmvloptionvalues,"mvloptioncode")
+tex.balancecallbackcodes     = getthem(tex.getbalancecallbackvalues)
 
 local linebreakstatecodes    = getthem(tex.getlinebreakstatevalues)
 tex.linebreakstatecodes      = linebreakstatecodes

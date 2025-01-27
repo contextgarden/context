@@ -22,11 +22,12 @@ local function manipulate(tfmdata,key,value)
                     copy.effect = {
                         extend = width/copy.width
                     }
+                    copy.unicode = 0x2012
                     copy.width = width
                 end
             end
         end
-   end
+    end
 end
 
 fonts.handlers.otf.features.register {

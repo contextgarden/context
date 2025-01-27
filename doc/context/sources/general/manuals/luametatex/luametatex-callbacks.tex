@@ -691,7 +691,7 @@ function (
     <t:integer> maxdepth,
     <t:integer> direction,
     <t:node>    attributelist
-}
+)
     return <t:node> newhead
 end
 \stoptyping
@@ -1120,9 +1120,9 @@ end
 
 There are many places where a new paragraph can be triggered:
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:parcontextcodes]
-\stopcolumns
+\stopfourrows
 
 \stopsubsection
 
@@ -1391,9 +1391,9 @@ end
 Every one of these gets a \type {context} and \type {checks} passes. Possible
 contexts are:
 
-\startcolumns[n=4]
+\startfourrows
 \getbuffer[engine:syntax:linebreakcontextcodes]
-\stopcolumns
+\stopfourrows
 
 The \type {checks} parameters is the value of \type {\linebreakchecks} which
 makes it possible to plug in actions depending on that number. To give an idea if
@@ -1555,9 +1555,9 @@ end
 
 The options are those set on the encountered penalty:
 
-\startcolumns[n=3]
+\startthreerows
 \getbuffer[engine:syntax:penaltyoptioncodes]
-\stopcolumns
+\stopthreerows
 
 \stopsubsection
 

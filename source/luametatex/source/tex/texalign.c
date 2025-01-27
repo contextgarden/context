@@ -1266,7 +1266,7 @@ void tex_insert_alignment_template(void)
 
 /*tex Determine the stretch or shrink order */
 
-static inline halfword tex_aux_determine_order(scaled *total)
+static inline singleword tex_aux_determine_order(scaled *total)
 {
     if      (total[filll_glue_order]) return filll_glue_order;
     else if (total[fill_glue_order])  return fill_glue_order;
@@ -1459,7 +1459,7 @@ static int tex_aux_finish_column(void)
                 tex_aux_change_list_type(cell, unset_node);
                 box_span_count(cell) = spans;
                 if (! state) {
-                    halfword order = tex_aux_determine_order(lmt_packaging_state.total_stretch);
+                    singleword order = tex_aux_determine_order(lmt_packaging_state.total_stretch);
                     box_glue_order(cell) = order;
                     box_glue_stretch(cell) = lmt_packaging_state.total_stretch[order];
                     order = tex_aux_determine_order(lmt_packaging_state.total_shrink);

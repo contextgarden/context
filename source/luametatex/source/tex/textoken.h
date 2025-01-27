@@ -229,11 +229,20 @@ typedef enum macro_preamble_states {
 # define right_bracket_token     (other_token  + ']')
 # define left_angle_token        (other_token  + '<')
 # define right_angle_token       (other_token  + '>')
-# define zero_token              (other_token  + '0')  /*tex zero, the smallest digit */
 # define one_token               (other_token  + '1') 
+# define two_token               (other_token  + '2') 
+# define three_token             (other_token  + '3') 
+# define four_token              (other_token  + '4') 
 # define five_token              (other_token  + '5')
+# define six_token               (other_token  + '6')
 # define seven_token             (other_token  + '7')
+# define eight_token             (other_token  + '8')
 # define nine_token              (other_token  + '9')  /*tex zero, the smallest digit */
+# define zero_token              (other_token  + '0')  /*tex zero, the smallest digit */
+# define hash_token              (other_token  + '#')
+# define dollar_token            (other_token  + '$')
+# define percentage_token        (other_token  + '%')
+# define ampersand_token         (other_token  + '&')
 
 # define dollar_token_m          (math_shift_token + '$')
 

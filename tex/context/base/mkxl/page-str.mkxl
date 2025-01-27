@@ -25,7 +25,8 @@
 %D The reimplementation (or rather experimenting with the complete rewrite) was done
 %D while looping over \quotation {Wende Snijders No.9}.
 %D
-%D Remark: marknotes are gone, at least for a while.
+%D This mechanism is sort of obsolete. Take a look at columnsets with sub streams
+%D and such.
 
 \registerctxluafile{page-str}{autosuffix}
 

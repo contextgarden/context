@@ -258,9 +258,7 @@ The category is one of the types that \METAPOST\ also uses elsewhere: integer,
 boolean, numeric or known. From this you can deduce that internals in \LUAMETATEX\
 can not only be numbers but also strings or booleans. The possible actions are:
 
-% \startcolumns[n=5]
-    \ctxlua{moduledata.mplib.codes("getinternalactions")}
-% \stopcolumns
+\ctxlua{moduledata.mplib.codes("getinternalactions")}
 
 There is of course bit extra overhead involved than normal but that can be
 neglected especially because we can have more efficient calls to \LUA\ using
@@ -370,7 +368,7 @@ end
 The next set of numbers reflect for the current state of the \type {metafun:1}
 instance that is active for this specific run.
 
-\startcolumns[n=3]
+\startthreerows
 \startluacode
 local t = mplib.getstatistics(metapost.getinstancebyname("metafun:1"))
 context.starttabulate { "|l|r|" }
@@ -381,7 +379,7 @@ context.starttabulate { "|l|r|" }
     end
 context.stoptabulate()
 \stopluacode
-\stopcolumns
+\stopthreerows
 
 In this version of \MPLIB\ this is informational only. The objects are all
 allocated dynamically, so there is no chance of running out of space unless the
@@ -397,9 +395,9 @@ end
 
 where possible states are:
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getstates")}
-\stopcolumns
+\stopfourrows
 
 Macro names and variable names are stored in a hash table. You can get a list
 with entries with \type {gethashentries}, which takes an instance as first
@@ -460,7 +458,7 @@ information is only useful when doing low level development we leave it at that.
 
 \stopsection
 
-\startsubsection[title=Processing]
+\startsection[title=Processing]
 
 It is up to the user to decide what to pass to the \type {execute} function as
 long as it is valid code. Think of each chunk being a syntactically correct file.
@@ -574,9 +572,9 @@ function mplib.peninfo ( <t:mpobj> object )
 end
 \stoptyping
 
-\stopsubsection
+\stopsection
 
-\startsubsection[title=Internals]
+\startsection[title=Internals]
 
 There are a couple of helpers that can be used to query the meaning of specific
 codes and states.
@@ -593,9 +591,9 @@ function mplib.gettypes ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("gettypes")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getcolormodels ( )
@@ -603,9 +601,9 @@ function mplib.getcolormodels ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getcolormodels")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getcodes ( )
@@ -613,9 +611,9 @@ function mplib.getcodes ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getcodes")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getstates ( )
@@ -623,9 +621,9 @@ function mplib.getstates ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getstates")}
-\stopcolumns
+\stopfourrows
 
 Knots is how the \quote {points} in a curve are called internally and in paths we
 can find these:
@@ -636,9 +634,9 @@ function mplib.getknotstates ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getknotstates")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getscantypes ( )
@@ -646,9 +644,9 @@ function mplib.getscantypes ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getscantypes")}
-\stopcolumns
+\stopfourrows
 
 As with \TEX\ we can log to the console, a log file or both. But one will normally
 intercept log message anyway.
@@ -659,9 +657,9 @@ function mplib.getlogtargets ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getlogtargets")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getinternalactions ( )
@@ -669,9 +667,9 @@ function mplib.getinternalactions ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getinternalactions")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.getobjecttypes ( )
@@ -679,9 +677,9 @@ function mplib.getobjecttypes ( )
 end
 \stoptyping
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getobjecttypes")}
-\stopcolumns
+\stopfourrows
 
 The next one is of course dependent on what one runs. These statistics are for
 all instances:
@@ -692,9 +690,9 @@ function mplib.getcallbackstate ( )
 end
 \stoptyping
 
-\startcolumns[n=2]
+\starttworows
     \ctxlua{moduledata.mplib.codes("getcallbackstate")}
-\stopcolumns
+\stoptworows
 
 The text counter is only counting what gets intercepted by \METAPOST\ and as you
 can see below, the recommended \type {textext} is handled differently and not
@@ -718,13 +716,13 @@ So we get this now. The file count goes up because from the perspective of
 file. The relative high number that we see here reflects that we load quite some
 \METAFUN\ macros when an instance is initialized.
 
-\startcolumns[n=3]
+\startthreerows
     \ctxlua{moduledata.mplib.codes("getcallbackstate")}
-\stopcolumns
+\stopthreerows
 
-\stopsubsection
+\stopsection
 
-\startsubsection[title=Information]
+\startsection[title=Information]
 
 The \METAPOST\ library in \LUATEX\ starts with version~2 so in \LUAMETATEX\ we
 start with version~3, assuming that there will me no major update to the older
@@ -744,17 +742,17 @@ function mplib.showcontext ( <t:mp> instance )
 end
 \stoptyping
 
-\stopsubsection
+\stopsection
 
-\startsubsection[title=Methods]
+\startsection[title=Methods]
 
 For historical reasons we provide a few functions as methods to an instance: \typ
 {execute}, \typ {finish}, \typ {getstatistics}, \typ {getstatus} and \typ
 {solvepath}, just in case someone goes low level.
 
-\stopsubsection
+\stopsection
 
-\startsubsection[title=Scanners]
+\startsection[title=Scanners]
 
 There are quite some scanners available and they all take an instance as first
 argument. Some have optional arguments that give some control. A very basic one
@@ -776,9 +774,9 @@ basically have a look ahead scan. Contrary to \TEX\ a next token is not expanded
 want to pick up the result from an expression we use the next one where again we can
 push back the result:
 
-\startcolumns[n=4]
+\startfourrows
     \ctxlua{moduledata.mplib.codes("getscantypes")}
-\stopcolumns
+\stopfourrows
 
 \starttyping[option=LUA]
 function mplib.scanexpression ( <t:mp> instance, <t:boolean> keep )
@@ -904,9 +902,9 @@ otherwise we get the more detailed:
 
 Possible (knot, the internal name for a point) states are:
 
-\startcolumns[n=4]
+\startfourrows
 \ctxlua{moduledata.mplib.codes("getknotstates")}
-\stopcolumns
+\stopfourrows
 
 The path scanner function that produces such tables is:
 
@@ -943,9 +941,9 @@ function mplib.skiptoken ( <t:mp> instance, <t:integer> command )
 end
 \stoptyping
 
-\stopsubsection
+\stopsection
 
-\startsubsection[title=Injectors]
+\startsection[title=Injectors]
 
 The scanners are complemented by injectors. Instead of strings that have to be
 parsed by \METAPOST\ they inject the right data structures directly.
@@ -995,7 +993,7 @@ passed as table. The table can be nested and has entries like these:
         [4] = <t:number>, -- y_left
         [5] = <t:number>, -- x_right
         [6] = <t:number>, -- y_right
-    }
+    },
     "append",
     "cycle",
 }
@@ -1041,8 +1039,6 @@ function mplib.expandtex (
     return <t:whatever>
 end
 \stoptyping
-
-\stopsubsection
 
 \stopsection
 

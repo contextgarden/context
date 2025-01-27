@@ -205,6 +205,17 @@ void lmt_initialize_interface(void)
     set_build_context_value(fireup_show_build_context,     fireup);
     set_build_context_value(wrapup_show_build_context,     wrapup);
 
+    lmt_interface.vsplit_context_values = lmt_aux_allocate_value_info(wrapup_show_vsplit_context);
+
+    # define set_vsplit_context_value(n,k) lmt_interface.vsplit_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+
+    set_vsplit_context_value(initialize_show_vsplit_context, initialize);
+    set_vsplit_context_value(continue_show_vsplit_context,   continue);
+    set_vsplit_context_value(check_show_vsplit_context,      check);
+    set_vsplit_context_value(quit_show_vsplit_context,       quit);
+    set_vsplit_context_value(wrapup_show_vsplit_context,     wrapup);
+
+
     lmt_interface.par_trigger_values = lmt_aux_allocate_value_info(vrule_char_par_trigger);
 
     # define set_par_trigger_value(n,k) lmt_interface.par_trigger_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }

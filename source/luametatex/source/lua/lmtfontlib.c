@@ -69,51 +69,6 @@ static int fontlib_aux_count_hash_items(lua_State *L)
 
 /*tex
 
-    These macros set a field in the font or character records. Watch how we make a copy of a string!
-
-*/
-
-# if (1) 
-
-    # define set_numeric_field_by_index(target,name,dflt) \
-        lua_push_key(name); \
-        target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
-        lua_pop(L, 1);
-
-# else 
-
-    # define set_numeric_field_by_index(target,name,dflt) \
-        lua_push_key(name); \
-        if (lua_rawget(L, -2) == LUA_TNUMBER) { \
-            target = lmt_roundnumber(L, -1); \
-            lua_pop(L, 1); \
-            lua_push_key(name); \
-            lua_push_integer(L, target); \
-            lua_rawset(L, -3); \
-        } else { \
-            target = dflt ; \
-            lua_pop(L, 1); \
-        } 
-
-# endif 
-
-# define set_boolean_field_by_index(target,name,dflt) \
-    lua_push_key(name); \
-    target = (lua_rawget(L, -2) == LUA_TBOOLEAN) ? lua_toboolean(L, -1) : dflt ; \
-    lua_pop(L, 1);
-
-# define set_string_field_by_index(target,name) \
-    lua_push_key(name); \
-    target = (lua_rawget(L, -2) == LUA_TSTRING) ? lua_tostring(L, -1) : NULL ; \
-    lua_pop(L, 1);
-
-# define set_any_field_by_index(target,name) \
-    lua_push_key(name); \
-    target = (lua_rawget(L, -2) != LUA_TNIL); \
-    lua_pop(L, 1);
-
-/*tex
-
     Font parameters can be set by number or by name. There are seven basic \TEX\ parameters in text
     mode but in math mode there can be numerous.
 

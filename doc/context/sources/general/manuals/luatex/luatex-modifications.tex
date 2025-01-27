@@ -84,6 +84,14 @@ most still comes from the original. But we divert a bit.
     \LUATEX\ it can be that the \prm {mag} parameter already has been set.
 \stopitem
 
+\startitem
+    When \type {\globaldefs} is positive while a local assignment is asked for,
+    \type {{\global enforced}} is shown in the log when \type {\tracingcommands}
+    is larger than one. When \type {\globaldefs} is negative and a global
+    assignment is requested by \type {\global}, \type {\gdef} etc.\ the log will
+    mention \type {{\global canceled}}.
+\stopitem
+
 \stopitemize
 
 \stopsubsection

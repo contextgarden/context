@@ -734,13 +734,17 @@ static void mp_posit_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
 static void mp_posit_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
 {
     if (posit_eq_zero(x_orig->data.pval) && posit_eq_zero(y_orig->data.pval)) {
-        mp_error(
-            mp,
-            "angle(0,0) is taken as zero",
-            "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
-            "Proceed, with fingers crossed."
-        );
-        ret->data.pval = mp_posit_data.zero;
+        if (posit_lt(internal_value(mp_default_zero_angle_internal).data.pval, mp_posit_data.zero)) {
+            mp_error(
+                mp,
+                "angle(0,0) is taken as zero",
+                "The 'angle' between two identical points is undefined. I'm zeroing this one.\n"
+                "Proceed, with fingers crossed."
+            );
+            ret->data.pval = mp_posit_data.zero;
+        } else { 
+            ret->data.pval = internal_value(mp_default_zero_angle_internal).data.pval;
+        }
     } else {
         ret->type = mp_angle_type;
         /* TODO */
