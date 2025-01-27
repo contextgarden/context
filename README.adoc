@@ -1,3 +1,5 @@
+**NOTE:** This is an experimental fork of the official repository at https://github.com/contextgarden/context . The latter should preferably be used, as tere is no guarantee that the changes made in the present version have no negative effects.
+
 == ConTeXt source code
 
 This repository hosts ConTeXt, a TeX macro package. There are three versions:
