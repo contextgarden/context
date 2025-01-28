@@ -836,8 +836,8 @@
   {\dontleavehmode
    \begingroup
    \dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
-   \typo_delimited_handle_left\c!left
    \usedelimitedtextstyleandcolor\c!style\c!color
+   \typo_delimited_handle_left\c!left
    \typo_delimited_start_content
    \bgroup
    \aftergroup\typo_delimited_quoted_e
@@ -871,8 +871,8 @@
   {\dontleavehmode
    \begingroup
    \dostarttaggedchained\t!delimited\currentparentdelimitedtext\currentdelimitedtext\??delimitedtext
-   \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \usedelimitedtextstyleandcolor\c!style\c!color
+   \usedlanguageparameter{\c!left\currentparentdelimitedtext}% was: \currentdelimitedtext
    \typo_delimited_start_content
    \bgroup
    \aftergroup\typo_delimited_fontdriven_e
