@@ -4,11 +4,15 @@
 % \showenginevalues{appendlinecontextvalues}
 % \showenginevalues{automigrationvalues}
 % \showenginevalues{autoparagraphvalues}
+% \showenginevalues{getbalancestepoptionvalues}
+% \showenginevalues{getbalancecallbackvalues}
 % \showenginevalues{breakcontextvalues}
 % \showenginevalues{buildcontextvalues}
 % \showenginevalues{charactercontrolvalues}
 % \showenginevalues{charactertagvalues}
 % \showenginevalues{doublescriptoptionvalues}
+% \showenginevalues{discpartvalues}
+% \showenginevalues{glyphdiscvalues}
 % \showenginevalues{fillvalues}
 % \showenginevalues{flagvalues}
 % \showenginevalues{groupvalues}
@@ -27,6 +31,7 @@
 % \showenginevalues{mathvariantpresets}
 % \showenginevalues{mathvariantvalues}
 % \showenginevalues{modevalues}
+% \showenginevalues{mvloptionvalues}
 % \showenginevalues{normalizelinevalues}
 % \showenginevalues{normalizeparvalues}
 % \showenginevalues{packtypevalues}
@@ -141,6 +146,7 @@
 %  function node.direct.setglyphdata
 
 %  function node.direct.getid
+%  function node.direct.getidsubtype
 
 %  function node.direct.getindex
 %  function node.direct.setindex
@@ -2009,13 +2015,32 @@ the engine takes care of setting that state.
 
 \starttyping[option=LUA]
 function node.direct.getdiscpart ( <t:direct> g )
-    return <t:integer> -- bitset
+    return
+        <t:integer>, -- part
+        <t:integer>, -- after
+        <t:integer>  -- code
+
 end
 
-function node.direct.setdiscpart ( <t:direct> g, <t:integer> bitset )
+function node.direct.setdiscpart (
+    <t:direct>  g,
+    <t:integer> part
+    <t:integer> after
+    <t:integer> code
+)
     -- no return value
 end
 \stoptyping
+
+The part and after properties relate to discretionary nodes that might have been
+flattened. The complication in (tracing) here is that information is lost so we
+store the states in the glyph node.
+
+\showenginevalues{discpartvalues}
+
+The code properties relate to where the (usually hyphen) character comes from:
+
+\showenginevalues{glyphdiscvalues}
 
 When you fool around with disc nodes you need to be aware of the fact that they
 have a special internal data structure. As long as you reassign the fields when
@@ -2465,6 +2490,51 @@ end
 In the discretionaries subsection we mention accessing pre, post and replace
 fields. These functions can also be used for \type {choice} nodes. Discussing
 this is currently beyond this manual.
+
+\stopsubsection
+
+\startsubsection[title={MVL}]
+
+Some properties of the currently used main vertical list can be fetched with:
+
+\starttyping[option=LUA]
+function node.direct.getmvllist (
+    -- currently no parameters
+)
+    return
+        <t:direct>,  -- head
+        <t:direct>,  -- tail
+        <t:integer> -- mvl
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Balancing}]
+
+The \type {node.direct.vbalance} function will either disappear or get accompanied
+by related helpers (mirroring primitives); it depends on what \CONTEXT\ needs.
+
+Updating marks is done with the following set of helpers, that just call the code
+that does the same before handing over content to the output routine:
+
+\starttyping[option=LUA]
+function nodes.direct.updatetopmarks ( )
+    return <t:boolean> -- done
+end
+
+function nodes.direct.updatefirstmarks ( )
+    return <t:boolean> -- done
+end
+
+function nodes.direct.updatefirstandbotmark ( <t:direct> box )
+    -- no return value
+end
+
+function nodes.direct.updatemarks ( <t:direct> box )
+    return <t:boolean> -- done
+end
+\stoptyping
 
 \stopsubsection
 

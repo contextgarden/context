@@ -160,8 +160,8 @@
 %D \edef\luaescapestring#1{\!!bs#1\!!es}
 %D \stoptyping
 
-\permanent\protected\def\setdocumentfilename       #1#2{\clf_setdocumentfilename\numexpr#1\relax{#2}}
-\permanent          \def\getdocumentfilename         #1{\clf_getdocumentfilename\numexpr#1\relax}
+\permanent\protected\def\setdocumentfilename       #1#2{\clf_setdocumentfilename{#1}{#2}}
+\permanent          \def\getdocumentfilename         #1{\clf_getdocumentfilename{#1}}
 \permanent\protected\def\setdocumentargument       #1#2{\clf_setdocumentargument{#1}{#2}}
 \permanent          \def\getdocumentargument         #1{\clf_getdocumentargument{#1}{}}
 \permanent\protected\def\setdocumentargumentdefault#1#2{\clf_setdocumentdefaultargument{#1}{#2}}
@@ -172,9 +172,9 @@
 \permanent\def\doifelsedocumentargument    #1{\doifelsesomething{\clf_getdocumentargument{#1}}}
 \permanent\def\doifdocumentargument        #1{\doifsomething    {\clf_getdocumentargument{#1}}}
 \permanent\def\doifnotdocumentargument     #1{\doifnothing      {\clf_getdocumentargument{#1}}}
-\permanent\def\doifelsedocumentfilename    #1{\doifelsesomething{\clf_getdocumentfilename\numexpr#1\relax}}
-\permanent\def\doifdocumentfilename        #1{\doifsomething    {\clf_getdocumentfilename\numexpr#1\relax}}
-\permanent\def\doifnotdocumentfilename     #1{\doifnothing      {\clf_getdocumentfilename\numexpr#1\relax}}
+\permanent\def\doifelsedocumentfilename    #1{\doifelsesomething{\clf_getdocumentfilename{#1}}}
+\permanent\def\doifdocumentfilename        #1{\doifsomething    {\clf_getdocumentfilename{#1}}}
+\permanent\def\doifnotdocumentfilename     #1{\doifnothing      {\clf_getdocumentfilename{#1}}}
 
 \aliased\let\doifdocumentargumentelse\doifelsedocumentargument
 \aliased\let\doifdocumentfilenameelse\doifelsedocumentfilename

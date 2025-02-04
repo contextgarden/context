@@ -163,10 +163,10 @@
 
 \permanent          \def\dolookupfontbyspec     #1{\clf_fontlookupinitialize{#1}}
 \permanent          \def\dolookupnoffound         {\clf_fontlookupnoffound}
-\permanent          \def\dolookupgetkeyofindex#1#2{\clf_fontlookupgetkeyofindex{#1}\numexpr#2\relax}
+\permanent          \def\dolookupgetkeyofindex#1#2{\clf_fontlookupgetkeyofindex{#1}{#2}}
 \permanent          \def\dolookupgetkey         #1{\clf_fontlookupgetkey{#1}}
 \permanent          \def\cleanfontname          #1{\clf_cleanfontname{#1}}
-\permanent\protected\def\setfontofid            #1{\clf_setfontofid\numexpr#1\relax}
+\permanent\protected\def\setfontofid            #1{\clf_setfontofid{#1}}
 
 %D I have to put it someplace, so here:
 %D

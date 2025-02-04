@@ -391,6 +391,7 @@ typedef enum specification_codes {
     par_passes_exception_code,
     balance_shape_code,
     balance_passes_code,
+    balance_final_penalties_code,
     inter_line_penalties_code,    /*tex additional penalties between lines */
     club_penalties_code,          /*tex penalties for creating club lines */
     widow_penalties_code,         /*tex penalties for creating widow lines */
@@ -439,6 +440,8 @@ typedef enum page_property_codes {
     insert_width_code,
     insert_line_height_code,
     insert_line_depth_code,
+    insert_stretch_code,
+    insert_shrink_code,
     /*tex These can't be set: */
     page_stretch_code,
     page_fistretch_code,
@@ -546,6 +549,8 @@ typedef enum int_codes {
     show_node_details_code,             /*tex controls subtype and attribute details */
     hbadness_code,                      /*tex hboxes exceeding this badness will be shown by |hpack| */
     vbadness_code,                      /*tex vboxes exceeding this badness will be shown by |vpack| */
+    hbadness_mode_code,                 /*tex controls what gets reported */
+    vbadness_mode_code,                 /*tex controls what gets reported */
     pausing_code,                       /*tex pause after each line is read from a file */
     tracing_online_code,                /*tex show diagnostic output on terminal */
     tracing_macros_code,                /*tex show macros as they are being expanded */
@@ -623,6 +628,7 @@ typedef enum int_codes {
  // cat_code_table_code,
  // output_box_code,
     ex_hyphen_char_code,
+    ex_apostrophe_char_code,
  // adjust_spacing_code,                /*tex level of spacing adjusting */
     adjust_spacing_step_code,           /*tex level of spacing adjusting step */
     adjust_spacing_stretch_code,        /*tex level of spacing adjusting stretch */
@@ -704,6 +710,7 @@ typedef enum int_codes {
  // eu_factor_code,
     math_pre_tolerance_code,
     math_tolerance_code,
+    empty_paragraph_mode_code,
     space_factor_mode,
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
@@ -1126,16 +1133,24 @@ typedef enum unit_classes {
 
 static inline int unit_parameter_index(int l, int r) {
     if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') {
-        return unit_parameter_hash(l,r);
+        /* okay */
     } else {
-        l |= 0x60;
-        r |= 0x60;
-        if (l >= 'a' && l <= 'z' && r >= 'a' && r <= 'z') {
-            return unit_parameter_hash(l,r);
-        } else {
+        if (l >= 'A' && l <= 'Z') { 
+            l |= 0x60;
+        } else if (l >= 'a' && l <= 'z') {
+            /* okay */
+        } else { 
+            return -1;
+        }
+        if (r >= 'A' && r <= 'Z') {
+            r |= 0x60;
+        } else if (r >= 'a' && r <= 'z') {
+            /* okay */
+        } else { 
             return -1;
         }
     }
+    return unit_parameter_hash(l,r);
 }
 
 /*tex These come from |\ALEPH| aka |\OMEGA|: */
@@ -1459,6 +1474,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define etex_expr_mode_par               integer_parameter(etex_expr_mode_code)
 # define eu_factor_par                    integer_parameter(eu_factor_code)
 # define ex_hyphen_char_par               integer_parameter(ex_hyphen_char_code)
+# define ex_apostrophe_char_par           integer_parameter(ex_apostrophe_char_code)
 # define ex_hyphen_penalty_par            integer_parameter(ex_hyphen_penalty_code)
 # define exception_penalty_par            integer_parameter(exception_penalty_code)
 # define explicit_hyphen_penalty_par      integer_parameter(explicit_hyphen_penalty_code)
@@ -1480,6 +1496,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define glyph_y_scale_par                integer_parameter(glyph_y_scale_code)
 # define hang_after_par                   integer_parameter(hang_after_code)
 # define hbadness_par                     integer_parameter(hbadness_code)
+# define hbadness_mode_par                integer_parameter(hbadness_mode_code)
 # define holding_inserts_par              integer_parameter(holding_inserts_code)
 # define holding_migrations_par           integer_parameter(holding_migrations_code)
 # define hyphen_penalty_par               integer_parameter(hyphen_penalty_code)
@@ -1530,6 +1547,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define math_slack_mode_par              integer_parameter(math_slack_mode_code)
 # define math_spacing_mode_par            integer_parameter(math_spacing_mode_code)
 # define math_tolerance_par               integer_parameter(math_tolerance_code)
+# define empty_paragraph_mode_par         integer_parameter(empty_paragraph_mode_code)
 # define max_dead_cycles_par              integer_parameter(max_dead_cycles_code)
 # define month_par                        integer_parameter(month_code)
 # define new_line_char_par                integer_parameter(new_line_char_code)
@@ -1611,6 +1629,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define uc_hyph_par                      integer_parameter(uc_hyph_code)
 # define variable_family_par              integer_parameter(variable_family_code)
 # define vbadness_par                     integer_parameter(vbadness_code)
+# define vbadness_mode_par                integer_parameter(vbadness_mode_code)
 # define vsplit_checks_par                integer_parameter(vsplit_checks_code)
 # define widow_penalty_par                integer_parameter(widow_penalty_code)
 # define year_par                         integer_parameter(year_code)
@@ -1639,6 +1658,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define adjacent_demerits_par            specification_parameter(adjacent_demerits_code)
 # define balance_passes_par               specification_parameter(balance_passes_code)
 # define balance_shape_par                specification_parameter(balance_shape_code)
+# define balance_final_penalties_par      specification_parameter(balance_final_penalties_code)
 # define broken_penalties_par             specification_parameter(broken_penalties_code)
 # define club_penalties_par               specification_parameter(club_penalties_code)
 # define display_widow_penalties_par      specification_parameter(display_widow_penalties_code)
@@ -1738,6 +1758,7 @@ typedef enum hyphenation_mode_bits {
     feedback_compound_hyphenation_mode   = 0x10000,
     ignore_bounds_hyphenation_mode       = 0x20000,
     collapse_hyphenation_mode            = 0x40000,
+    replace_apostrophe_hyphenation_mode  = 0x80000,
 } hyphenation_mode_bits;
 
 # define hyphenation_permitted(a,b)   (((a) & (b)) == (b))
@@ -1745,7 +1766,6 @@ typedef enum hyphenation_mode_bits {
 # define unset_hyphenation_mode(a,b)  ((a) & ~(b))
 # define flip_hyphenation_mode(a,b)   ((b) ? set_hyphenation_mode(a,b) : unset_hyphenation_mode(a,b))
 # define default_hyphenation_mode     (normal_hyphenation_mode | automatic_hyphenation_mode | explicit_hyphenation_mode | syllable_hyphenation_mode | compound_hyphenation_mode | force_handler_hyphenation_mode | feedback_compound_hyphenation_mode)
-
 
 typedef enum normalize_line_mode_bits {
     normalize_line_mode          = 0x0001,
@@ -1910,6 +1930,7 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_adjacent_demerits(v)        tex_eq_define(internal_specification_location(adjacent_demerits_code),       specification_reference_cmd, v)
 # define update_tex_balance_passes(v)           tex_eq_define(internal_specification_location(balance_passes_code),          specification_reference_cmd, v)
 # define update_tex_balance_shape(v)            tex_eq_define(internal_specification_location(balance_shape_code),           specification_reference_cmd, v)
+# define update_tex_balance_final_penalties(v)  tex_eq_define(internal_specification_location(balance_final_penalties_code), specification_reference_cmd, v)
 # define update_tex_broken_penalties(v)         tex_eq_define(internal_specification_location(broken_penalties_code),        specification_reference_cmd, v)
 # define update_tex_club_penalties(v)           tex_eq_define(internal_specification_location(club_penalties_code),          specification_reference_cmd, v)
 # define update_tex_display_widow_penalties(v)  tex_eq_define(internal_specification_location(display_widow_penalties_code), specification_reference_cmd, v)
@@ -1968,5 +1989,14 @@ typedef enum cs_errors {
 } cs_errors;
 
 extern int tex_cs_state(halfword p) ;
+
+typedef enum badness_modes {
+    badness_mode_nothing   = 0x00,
+    badness_mode_underfull = 0x01,
+    badness_mode_loose     = 0x02,
+    badness_mode_tight     = 0x04,
+    badness_mode_overfull  = 0x08,
+    badness_mode_all       = 0x0F,
+} badness_modes;
 
 # endif

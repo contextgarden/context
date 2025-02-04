@@ -428,6 +428,14 @@ local function resolve(document,k)
     end
 end
 
+-- A plain \TEX\ test case for duplicates:
+--
+-- abc \pdfdest name {a\string\040b c}           fit \relax \eject
+-- abc \pdfdest name {a b\string\040c}           fit \relax \eject
+-- abc \pdfdest name {a\string\040b\string\040c} fit \relax \eject
+-- def \pdfdest name {a b c}                     fit \relax \eject
+-- \bye
+
 local function getnames(document,n,target) -- direct
     if n then
         local Names = n.Names
@@ -435,8 +443,29 @@ local function getnames(document,n,target) -- direct
             if not target then
                 target = { }
             end
+            local duplicates = { }
             for i=1,#Names,2 do
-                target[Names[i]] = Names[i+1]
+                local name = lpdf.fromeight(Names[i])
+--              local name = lpdf.frombytes(Names[i])
+                if target[name] then
+                    local d = duplicates[name] or 0
+                    d = d + 1
+                    duplicates[name] = d
+                    name = name .. " [duplicate." .. d .. "]"
+                end
+                target[name] = Names[i+1]
+            end
+            local Limits = n.Limits
+            if Limits then
+                local first = Limits[1]
+                local last  = Limits[2]
+                local fname = Names[1]
+                local lname = Names[#Names-1]
+                if fname ~= first or lname ~= last then
+                    report_epdf()
+                    report_epdf("check file %a, first value %a, first limit %a, last value %a, last limit %a",document.filename,fname,first,lname,last)
+                    report_epdf()
+                end
             end
         else
             local Kids = n.Kids

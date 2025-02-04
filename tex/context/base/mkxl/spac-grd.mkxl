@@ -110,8 +110,8 @@
 \def\spac_lines_initialize_corrections
   {\setbox\b_spac_lines_correction_before\hpack{\setstrut\strut}%
    \setbox\b_spac_lines_correction_after \hbox {(}%
-   \d_spac_lines_correction_before\dimexpr\ht\b_spac_lines_correction_before-\ht\b_spac_lines_correction_after\relax
-   \d_spac_lines_correction_after \dimexpr\dp\b_spac_lines_correction_before-\dp\b_spac_lines_correction_after\relax
+   \d_spac_lines_correction_before{\ht\b_spac_lines_correction_before-\ht\b_spac_lines_correction_after}%
+   \d_spac_lines_correction_after {\dp\b_spac_lines_correction_before-\dp\b_spac_lines_correction_after}%
    \ifdim\d_spac_lines_correction_before<\zeropoint\d_spac_lines_correction_before\zeropoint\fi
    \ifdim\d_spac_lines_correction_after <\zeropoint\d_spac_lines_correction_after \zeropoint\fi}
 
@@ -279,9 +279,9 @@
 
 \permanent\protected\def\dobaselinecorrection
   {\ifdim\prevdepth>\zeropoint
-     \vspacing[\the\dimexpr-\prevdepth+\strutdp\relax]%
+     \vspacing[\todimension{-\prevdepth+\strutdp}]%
    \else
-     \vspacing[\the\dimexpr\strutdp\relax]%
+     \vspacing[\the\strutdp]%
    \fi
    \prevdepth\strutdp}
 

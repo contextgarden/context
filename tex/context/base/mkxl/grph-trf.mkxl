@@ -111,25 +111,6 @@
    \c!maxwidth=\scaleparameter\c!width,
    \c!maxheight=\scaleparameter\c!height]
 
-% \permanent\tolerant\protected\def\scale[#1]#*[#2]%
-%   {\bgroup
-%    % this is quite common so we might make this a helper
-%    \ifarguments
-%      \lettonothing\currentscale
-%    \or
-%      \ifhastok={#1}%
-%        \lettonothing\currentscale
-%        \setupcurrentscale[#1]%
-%      \else
-%        \cdef\currentscale{#1}%
-%      \fi
-%    \or
-%      \cdef\currentscale{#1}%
-%      \setupcurrentscale[#2]%
-%    \fi
-%    %
-%    \dowithnextboxcs\grph_scale_finish\naturalhbox} % intercept direction
-
 \newinteger\c_grph_scale_nesting
 
 \def\grph_scale_set_nesting
@@ -168,7 +149,7 @@
    \edef\p_yscale     {\scaleparameter\c!yscale     }%
    \edef\p_width      {\scaleparameter\c!width      }%
    \edef\p_height     {\scaleparameter\c!height     }%
-   \edef\p_depth      {\scaleparameter\c!depth      }%
+ % \edef\p_depth      {\scaleparameter\c!depth      }% used once
    \edef\p_lines      {\scaleparameter\c!lines      }%
    \edef\p_factor     {\scaleparameter\c!factor     }%
    \edef\p_hfactor    {\scaleparameter\c!hfactor    }%
@@ -182,10 +163,12 @@
    \edef\p_equalheight{\scaleparameter\c!equalheight}%
    %
    \d_grph_scale_dp\dp\nextbox
-   \ifx\p_depth\v!no \ifzeropt\d_grph_scale_dp \else
+   \ifzeropt\d_grph_scale_dp
+     % nothing to do
+   \orelse\ifcstok{\scaleparameter\c!depth}\v!no
      \setbox\nextbox\naturalhpack{\raise\d_grph_scale_dp\box\nextbox}% new
-     \d_grph_scale_dp\dp\nextbox
-   \fi \fi
+    %\d_grph_scale_dp\dp\nextbox
+   \fi
    \d_grph_scale_wd\wd\nextbox
    \d_grph_scale_ht\ht\nextbox
    \d_grph_scale_dp\dp\nextbox
@@ -261,16 +244,16 @@
    \fi \fi}
 
 \def\grph_scale_check_sx_sy
-  {\ifdim\p_sx\onepoint=\onepoint\else\edef\p_width {\the\dimexpr\p_sx\d_grph_scale_wd}\fi
-   \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\the\dimexpr\p_sy\d_grph_scale_ht}\fi}
+  {\ifdim\p_sx\onepoint=\onepoint\else\edef\p_width {\todimension{\p_sx\d_grph_scale_wd}}\fi
+   \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\todimension{\p_sy\d_grph_scale_ht}}\fi}
 
 \def\grph_scale_rounded#1%
   {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax}
 
 \def\grph_scale_calculations_nop
   {\c_grph_scale_done\conditionaltrue
-   \xdef\finalscaleboxwidth {\the\dimexpr\p_sx\d_grph_scale_wd\relax}%
-   \xdef\finalscaleboxheight{\the\dimexpr\p_sy\d_grph_scale_ht\relax}%
+   \xdef\finalscaleboxwidth {\todimension{\p_sx\d_grph_scale_wd}}%
+   \xdef\finalscaleboxheight{\todimension{\p_sy\d_grph_scale_ht}}%
    \glet\finalscaleboxxscale\p_sx
    \glet\finalscaleboxyscale\p_sy
    \ifempty\finalscaleboxxscale\let\finalscaleboxxscale\!!plusone\fi
@@ -308,22 +291,22 @@
    \glet\finalscaleboxyscale \m_grph_scale_used_y_scale
    \grph_scale_calculations_report}
 
-\defcsname\??scalegrid\v!yes     \endcsname{\getnoflines   \d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
-\defcsname\??scalegrid\v!height  \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+\strutdepth}}
-\defcsname\??scalegrid\v!depth   \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight-\strutdepth}}
-\defcsname\??scalegrid\v!halfline\endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\dimexpr\noflines\lineheight+.5\lineheight}}
-\defcsname\??scalegrid\v!fit     \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\the\noflines\lineheight}}
+\defcsname\??scalegrid\v!yes     \endcsname{\getnoflines   \d_grph_scale_used_y_size\edef\p_height{\tointeger{\noflines\lineheight}}}
+\defcsname\??scalegrid\v!height  \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\todimension{\noflines\lineheight+\strutdepth}}}
+\defcsname\??scalegrid\v!depth   \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\todimension{\noflines\lineheight-\strutdepth}}}
+\defcsname\??scalegrid\v!halfline\endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\todimension{\noflines\lineheight+.5\lineheight}}}
+\defcsname\??scalegrid\v!fit     \endcsname{\getrawnoflines\d_grph_scale_used_y_size\edef\p_height{\tointeger{\noflines\lineheight}}}
 \letcsname\??scalegrid\empty     \endcsname\donothing
 
 \def\grph_scale_check_parameters % resolve self referencing loops
-  {\ifempty\p_maxwidth \else \edef\p_maxwidth {\the\dimexpr\p_maxwidth        }\fi
-   \ifempty\p_maxheight\else \edef\p_maxheight{\the\dimexpr\p_maxheight       }\fi
-   \ifempty\p_lines    \else \edef\p_height   {\the\dimexpr\p_lines\lineheight}\fi
+  {\ifempty\p_maxwidth \else \edef\p_maxwidth {\todimension{\p_maxwidth        }}\fi
+   \ifempty\p_maxheight\else \edef\p_maxheight{\todimension{\p_maxheight       }}\fi
+   \ifempty\p_lines    \else \edef\p_height   {\todimension{\p_lines\lineheight}}\fi
    \begincsname\??scalegrid\scaleparameter\c!grid\endcsname}
 
 \def\grph_scale_by_nature % where ! ! ! ! !
-  {\ifempty\p_width \else \global\d_grph_scale_used_x_size\p_width \fi
-   \ifempty\p_height\else \global\d_grph_scale_used_y_size\p_height\fi
+  {\ifempty\p_width \else \global\d_grph_scale_used_x_size{\p_width }\fi
+   \ifempty\p_height\else \global\d_grph_scale_used_y_size{\p_height}\fi
    \ifempty\p_scale \else        \c_grph_scale_used_x_scale\p_scale
                                  \c_grph_scale_used_y_scale\p_scale \fi
    \ifempty\p_xscale\else        \c_grph_scale_used_x_scale\p_xscale\fi
@@ -499,13 +482,13 @@
 \def\grph_scale_calculate_fact#1%
   {\csname\??scalefact\ifcsname\??scalefact#1\endcsname#1\else\s!unknown\fi\endcsname}
 
-\defcsname\??scalenorm\v!max    \endcsname#1#-#-#2#-{\global#1#2}
-\defcsname\??scalenorm\v!fit    \endcsname#1#-#-#-#2{\global#1#2}
-\defcsname\??scalenorm\v!broad  \endcsname#1#-#-#-#2{\global#1\dimexpr#2-4\externalfigureparameter\c!bodyfont\relax}
-\defcsname\??scalenorm\s!unknown\endcsname#1#2#-#-#-{\global#1\dimexpr#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax\relax} % brr ex
-\defcsname\??scalenorm\v!auto   \endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
-\defcsname\??scalenorm\empty    \endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
-\defcsname\??scalenorm\s!default\endcsname#1#-#2#-#-{\ifempty#2\else\global#1#2\fi}
+\defcsname\??scalenorm\v!max    \endcsname#1#-#-#2#-{\global#1{#2}}
+\defcsname\??scalenorm\v!fit    \endcsname#1#-#-#-#2{\global#1{#2}}
+\defcsname\??scalenorm\v!broad  \endcsname#1#-#-#-#2{\global#1{#2-(\externalfigureparameter\c!bodyfont\c!bodyfont)*4}} % todo
+\defcsname\??scalenorm\s!unknown\endcsname#1#2#-#-#-{\global#1{#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax}} % brr ex
+\defcsname\??scalenorm\v!auto   \endcsname#1#-#2#-#-{\ifempty#2\else\global#1{#2}\fi}
+\defcsname\??scalenorm\empty    \endcsname#1#-#2#-#-{\ifempty#2\else\global#1{#2}\fi}
+\defcsname\??scalenorm\s!default\endcsname#1#-#2#-#-{\ifempty#2\else\global#1{#2}\fi}
 
 \defcsname\??scalefact\v!min    \endcsname{\global\c_grph_scale_swap_factor\conditionaltrue}
 \defcsname\??scalefact\s!unknown\endcsname{\global\c_grph_scale_swap_factor\conditionalfalse}
@@ -552,7 +535,7 @@
        \scratchdimen\vsize % \scratchdimen=\textheight
      \orelse\ifdim\pagegoal<\maxdimen
        \ifdim\pagetotal<\pagegoal
-         \scratchdimen\dimexpr\pagegoal-\pagetotal\relax
+         \scratchdimen{\pagegoal-\pagetotal}%
        \else
          \scratchdimen\d_grph_scale_outer_v_size % \textheight
        \fi
@@ -566,12 +549,12 @@
    \ifempty\p_height
      \d_grph_scale_v_size\scratchdimen
    \else
-     \d_grph_scale_v_size\p_height
+     \d_grph_scale_v_size{\p_height}%
    \fi
    \ifempty\p_width
      \d_grph_scale_h_size\hsize
    \else
-     \d_grph_scale_h_size\p_width
+     \d_grph_scale_h_size{\p_width}%
    \fi}
 
 % \startcombination
@@ -645,7 +628,7 @@
 %D We get a rectangular piece of the figure when we say:
 %D
 %D \starttyping
-%D \clip[x=2,y=1]{\externalfigure[photo]}
+%D \clip[nx=4,x=2,y=1]{\externalfigure[photo]}
 %D \stoptyping
 %D
 %D When we want to clip to the oval we defined a few lines ago, we say:
@@ -677,27 +660,31 @@
    \fi}
 
 \def\grph_clip_yes_finish
-  {\ifdim\clippingparameter\c!width>\zeropoint
-     \scratchwidth  \clippingparameter\c!width
-     \scratchxoffset\clippingparameter\c!hoffset
+  {\scratchwidth{\clippingparameter\c!width}%
+   \ifdim\scratchwidth>\zeropoint
+     \scratchxoffset{\clippingparameter\c!hoffset}%
    \else
-     \scratchwidth\dimexpr\wd\nextbox/\clippingparameter\c!nx\relax
-     \scratchxoffset\dimexpr\clippingparameter\c!x\scratchwidth-\scratchwidth\relax
+     \scratchwidth{\wd\nextbox/\clippingparameter\c!nx}%
+     \scratchxoffset{\clippingparameter\c!x\scratchwidth-\scratchwidth}%
      \scratchwidth\clippingparameter\c!sx\scratchwidth
    \fi
    \relax % sure
-   \ifdim\clippingparameter\c!height>\zeropoint
-     \scratchheight\clippingparameter\c!height
-     \scratchyoffset\dimexpr\ht\nextbox-\clippingparameter\c!voffset-\scratchheight\relax
+   \scratchheight{\clippingparameter\c!height}%
+   \ifdim\scratchheight>\zeropoint
+     \scratchyoffset{\ht\nextbox-\clippingparameter\c!voffset-\scratchheight}%
    \else
-     \scratchheight\dimexpr\ht\nextbox/\clippingparameter\c!ny\relax
-     \scratchyoffset\dimexpr-\clippingparameter\c!y\scratchheight-\clippingparameter\c!sy\scratchheight+\scratchheight\relax
+     \scratchheight{\ht\nextbox/\clippingparameter\c!ny}%
+     \scratchyoffset{-\clippingparameter\c!y\scratchheight-\clippingparameter\c!sy\scratchheight+\scratchheight}%
      \scratchheight\clippingparameter\c!sy\scratchheight
-     \advanceby\scratchyoffset \ht\nextbox
+     \advanceby\scratchyoffset\ht\nextbox
    \fi
+   \scratchleftoffset  {\clippingparameter\c!leftoffset}%
+   \scratchrightoffset {\clippingparameter\c!rightoffset}%
+   \scratchtopoffset   {\clippingparameter\c!topoffset}%
+   \scratchbottomoffset{\clippingparameter\c!bottomoffset}%
    \setbox\nextbox\naturalhpack
-     {\advanceby\scratchxoffset -\clippingparameter\c!leftoffset  \relax
-      \advanceby\scratchyoffset -\clippingparameter\c!bottomoffset\relax
+     {\advanceby\scratchxoffset-\scratchleftoffset
+      \advanceby\scratchyoffset-\scratchbottomoffset
       \hskip-\scratchxoffset
       \lower\scratchyoffset
       \box\nextbox}%
@@ -705,14 +692,14 @@
    \ht\nextbox\zeropoint
    \dp\nextbox\zeropoint
    \setbox\nextbox\naturalhpack
-     {\advanceby\scratchwidth \dimexpr\clippingparameter\c!leftoffset  +\clippingparameter\c!rightoffset\relax
-      \advanceby\scratchheight\dimexpr\clippingparameter\c!bottomoffset+\clippingparameter\c!topoffset  \relax
+     {\advanceby\scratchwidth {\scratchleftoffset  +\scratchrightoffset}%
+      \advanceby\scratchheight{\scratchbottomoffset+\scratchtopoffset}%
       \dostartclipping{\clippingparameter\c!mp}\scratchwidth\scratchheight
         \box\nextbox
       \dostopclipping}%
    \setbox\nextbox\hcontainer
-     {\hskip-\clippingparameter\c!leftoffset
-      \lower \clippingparameter\c!bottomoffset
+     {\hskip-\scratchleftoffset
+      \lower \scratchbottomoffset
       \box\nextbox}%
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
@@ -979,7 +966,7 @@
    \d_grph_rotate_used_height\ht\nextbox
    %
    \clf_analyzerotate % rather accurate
-     \p_rotation_rotation\space
+     \p_rotation_rotation\relaxedspace
      \d_grph_rotate_width
      \d_grph_rotate_height
      \d_grph_rotate_depth
@@ -1000,7 +987,7 @@
       \kern\d_grph_rotate_y_position}%
    %
    \setbox\nextbox\naturalhpack
-     {\kern\dimexpr\d_grph_rotate_x_position+\d_grph_rotate_x_offset\relax
+     {\kern{\d_grph_rotate_x_position+\d_grph_rotate_x_offset}%
       \lower\d_grph_rotate_y_offset
       \box\nextbox}%
    %

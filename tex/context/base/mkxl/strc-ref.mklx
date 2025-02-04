@@ -1047,7 +1047,7 @@
    \postponenotes % might go
    \referencingparameter\c!left
    \doifelsereferencefound{#label}
-     {\goto{\limitatetext\currentreferencetitle{\referencingparameter\c!width}\unknown}[#label]}% not so efficient (dup lookup)
+     {\goto{\limitatetext\currentreferencetitle{\dimexpr\referencingparameter\c!width\relax}\unknown}[#label]}% not so efficient (dup lookup)
      {}% todo
    \flushnotes % might go
    \referencingparameter\c!right
@@ -1489,8 +1489,8 @@
 \newconditional\uselocationstrut \uselocationstrut\conditionaltrue
 
 \permanent\def\extrareferencearguments
-  {highlight \luaconditional\highlighthyperlinks\space
-   newwindow \luaconditional\gotonewwindow\space
+  {highlight \luaconditional\highlighthyperlinks\relaxedspace
+   newwindow \luaconditional\gotonewwindow\relaxedspace
    layer     {\currentviewerlayer}}
 
 \permanent\protected\def\directgoto
@@ -1560,8 +1560,8 @@
         {\referenceprefix}%
         {#label}%
         {%
-            height \dimexpr\interactionparameter\c!height\relax
-            depth  \dimexpr\interactionparameter\c!depth \relax
+            height {\interactionparameter\c!height}%
+            depth  {\interactionparameter\c!depth}%
             \extrareferencearguments
         }%
      \relax
@@ -1664,8 +1664,8 @@
    \iflocation
      \clf_doifelsereference{\referenceprefix}{#label}{\extrareferencearguments}%
        {\clf_injectcurrentreferencehtdp
-          \dimexpr\interactionparameter\c!height\relax
-          \dimexpr\interactionparameter\c!depth \relax
+          {\interactionparameter\c!height}%
+          {\interactionparameter\c!depth}%
         \relax
         \setlocationattributes
         \global\lastsavedreferenceattribute\lastreferenceattribute

@@ -210,6 +210,12 @@
 \newmuskip\fencemuskip        \fencemuskip        \defaultpettymuskip
 \newmuskip\continuationmuskip \continuationmuskip \zeromuskip
 
+% Handy
+
+\setnewconstant\mathstylevariantidentity  "01234567
+\setnewconstant\mathstylevariantcramped   "11335577
+\setnewconstant\mathstylevariantuncramped "00224466
+
 % Beware: we don't support mathinner any longer. We do have construct, wrapper, ellipsis etc
 % as replacements and all inner spacing is basically unset.
 
@@ -3262,7 +3268,7 @@
    #1%
    \endmathgroup}
 
-\permanent\def\triggermathstyle#1{\givenmathstyle\numexpr#1\relax}
+\permanent\def\triggermathstyle#1{\givenmathstyle{\numexpr#1\relax}}
 %permanent\def\mathstyletrigger#1{\numexpr#1\relax}
 \permanent\let\mathstyletrigger   \firstofoneargument
 
@@ -3770,6 +3776,21 @@
 \defcsname\??mathstylecommand\v!small       \endcsname{\c_math_styles_state_size\plusone}
 \defcsname\??mathstylecommand\v!big         \endcsname{\c_math_styles_state_size\plustwo}
 
+% \def\math_styles_check_style_parameter#1#2%
+%    {\ifempty{#1\c!mathstyle}%
+%       \normalexpanded{#2{\c!mathstyle}{\m_math_styles_current}}%
+%     \fi}
+
+\immutable\def\m_math_styles_current
+  {\ifmathstyle \s!display
+   \or          \s!text
+   \or          \s!text,\s!cramped
+   \or          \s!script
+   \or          \s!script,\s!cramped
+   \or          \s!scriptscript
+   \or          \s!scriptscript,\s!cramped
+   \fi}
+
 %D A \type {mathstyle} is a set of:
 %D
 %D \starttabulate[|lT|lT|]
@@ -4196,8 +4217,8 @@
 
 % this should be a primitive:
 
-\permanent\def\mathextensiblecode#1#2{\clf_extensiblecode\numexpr#1\relax\numexpr#2\relax} % todo: use public lua but needs testing
-\permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode\numexpr#1\relax\numexpr#2\relax} % todo: use public lua but needs testing
+\permanent\def\mathextensiblecode#1#2{\clf_extensiblecode{#1}{#2}}
+\permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode{#1}{#2}}
 
 % experimental:
 
@@ -4243,8 +4264,11 @@
 %D \dorecurse{10}{whatever }
 %D \stoptyping
 
-\def\m_math_inline_openup_ht{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
-\def\m_math_inline_openup_dp{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+% \def\m_math_inline_openup_ht{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+% \def\m_math_inline_openup_dp{\dimexpr\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour\relax}
+
+\def\m_math_inline_openup_ht{(\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour)}
+\def\m_math_inline_openup_dp{(\ifinsidecolumns\strutdp\else\lineheight\fi/\plusfour)}
 
 % \def\m_math_inline_openup_ht{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
 % \def\m_math_inline_openup_dp{\dimexpr\lineheight/\ifinsidecolumns\pluseight\else\plusfour\fi\relax}
@@ -4255,8 +4279,8 @@
   {\let\math_inline_openup_start_yes\math_inline_openup_normal_start}
 
 \protected\def\math_inline_openup_normal_start
-  {\scratchheight\dimexpr\ht\scratchbox+\m_math_inline_openup_ht\relax
-   \scratchdepth \dimexpr\dp\scratchbox+\m_math_inline_openup_dp\relax
+  {\scratchheight{\ht\scratchbox+\m_math_inline_openup_ht}%
+   \scratchdepth {\dp\scratchbox+\m_math_inline_openup_dp}%
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
    \begingroup
    \let\math_inline_openup_stop\math_inline_openup_normal_stop}
@@ -4268,8 +4292,8 @@
 \protected\def\math_inline_openup_traced_start
   {\scratchtopoffset   \ht\scratchbox
    \scratchbottomoffset\dp\scratchbox
-   \scratchheight      \dimexpr\scratchtopoffset   +\m_math_inline_openup_ht\relax
-   \scratchdepth       \dimexpr\scratchbottomoffset+\m_math_inline_openup_dp\relax
+   \scratchheight      {\scratchtopoffset   +\m_math_inline_openup_ht}%
+   \scratchdepth       {\scratchbottomoffset+\m_math_inline_openup_dp}%
    \vrule\s!width\zeropoint\s!height\scratchheight\s!depth\scratchdepth\relax
    \begingroup
      \dousecolorparameter{darkred}%
@@ -4783,7 +4807,7 @@
 
 \permanent\tolerant\def\mathdigits#1%
   {\ifmmode
-     \mathatom class \mathdigitcode all \mathdigitcode {#1}%
+     \mathatom \s!class \mathdigitcode \s!all \mathdigitcode {#1}%
    \else
      #1%
    \fi}
@@ -4822,22 +4846,22 @@
 
 \def\math_axis_inject_indeed#1%
   {\srule
-     \s!height
-        \dimexpr (\scratchdimentwo+\scratchdimenone)*%
-            \ifnum\c_math_m_scaled=\plusthousand
-                \glyphscale/\plusthousand
-            \else
-                \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
-            \fi
-        \relax
-     \s!depth -
-        \dimexpr (\scratchdimentwo-\scratchdimenone)*%
-            \ifnum\c_math_m_scaled=\plusthousand
-                \glyphscale/\plusthousand
-            \else
-                \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
-            \fi
-        \relax
+     \s!height {%
+        (\scratchdimentwo+\scratchdimenone)*%
+        \ifnum\c_math_m_scaled=\plusthousand
+          \glyphscale/\plusthousand
+        \else
+          \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
+        \fi
+     }%
+     \s!depth - {%
+        (\scratchdimentwo-\scratchdimenone)*%
+         \ifnum\c_math_m_scaled=\plusthousand
+           \glyphscale/\plusthousand
+         \else
+           \c_math_m_scaled*\glyphscale/\plusthousand/\plusthousand
+         \fi
+     }%
      \s!attr \mathaxisattribute#1%
    \relax}
 

@@ -1,4 +1,3 @@
-
 % language=us runpath=texruns:manuals/luametatex
 
 % run locally!
@@ -1462,6 +1461,23 @@ This is the penalty applied between slots, prety much like \prm {linepenalty}.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {balancefinalpenalties}}]
+
+This is a penalty array which values will be applied to the end of the to be
+balanced list, starting at the end. Widow, club and other encountered penalties
+will be overloaded.
+
+\starttyping
+\balancefinalpenalties 4
+    10000 9000 8000 7000
+\relax
+\stoptyping
+
+The last one is not repetitive so here at most four penalties will be injected
+between lines (that is: hlists with the line subtype).
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {balanceshape}}]
 
 \startbuffer[shape]
@@ -2087,6 +2103,22 @@ Returns the amount of stretch found (applied) in a box:
 \typebuffer
 
 gives: \inlinebuffer
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {boxsubtype}}]
+
+Returns the subtype of the given box.
+
+\startbuffer
+\setbox0\hbox           {test}[\the\boxsubtype0]
+\setbox2\hbox container {test}[\the\boxsubtype2]
+\stopbuffer
+
+\typebuffer
+
+gives: \inlinebuffer. Beware that the numbers can change so best use the symbolic
+values that can be queried via \LUA.
 
 \stopnewprimitive
 
@@ -3583,7 +3615,10 @@ control sequence when it is serialized (for instance in tracing or messages).
 \startnewprimitive[title={\prm {etexexprmode}}]
 
 When set to a positive value the \type {:} and \type {;} operators are not
-interpreted. In \CONTEXT\ we keep this value zero!
+interpreted. In \CONTEXT\ we keep this value zero! This flag was added in 2024
+for \LATEX\ where in places \type {;} is used as signal to end an expression
+instead of \type {\relax}). Because one never knows what users expect this flag
+disables both.
 
 \stopnewprimitive
 
@@ -5294,6 +5329,18 @@ value is \the \badness.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {hbadnessmode}}]
+
+This parameter determines what gets reported when the (in the horizontal packer)
+badness exceeds some limit. The current value of this bitset is {\tt
+"\tohexadecimal \hbadnessmode}.
+
+\startfourrows
+\getbuffer[engine:syntax:badnessmodecodes]
+\stopfourrows
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {hbox}}]
 
 This constructs a horizontal box. There are a lot of optional parameters so more
@@ -5775,6 +5822,12 @@ reports:
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {ifchkdimexpr}}]
+
+This primitive is like \prm {ifchkdim} but handles an expression.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {ifchknum}}]
 
 In \CONTEXT\ there are quite some cases where a variable can have a number or a
@@ -5814,6 +5867,12 @@ section:
 Here we get:
 
 {\getbuffer}
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {ifchknumexpr}}]
+
+This primitive is like \prm {ifchknum} but handles an expression.
 
 \stopnewprimitive
 
@@ -6349,6 +6408,25 @@ When a \prm {csname} is constructed and succeeds the last one is remembered and
 can be accessed with \prm {lastnamedcs}. It can however be an undefined one. That
 state can be checked with this primitive. Of course it also works with the \prm
 {ifcsname} and \prm {begincsname} variants.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {iflist}}]
+
+The \prm {ifvoid} conditional checks is a box is unset, that is, no \type {hlist}
+or \type {vlist} node is assigned. The \prm {iflist} conditional also checks is a
+list is assigned to this node. If there is a node assigned the box can of course
+have dimensions, but it's the presence of a list (content) that matters here.
+
+\startbuffer
+[\setbox0\hbox{!}\iflist0 \else no \fi list, \ifvoid0 \else not \fi void]
+[\setbox0\hbox {}\iflist0 \else no \fi list, \ifvoid0 \else not \fi void]
+[\box0           \iflist0 \else no \fi list, \ifvoid0 \else not \fi void]
+\stopbuffer
+
+\typebuffer
+
+We get: \inlinebuffer
 
 \stopnewprimitive
 
@@ -7080,6 +7158,19 @@ get. This is equivalent to \prm {dimen} in the traditional method.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {insertlinedepth}}]
+
+This property is used in the balancer where the currently checked insert has no
+depth. It is experimental.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {insertlineheight}}]
+
+This is a reserved property.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {insertmaxdepth}}]
 
 This is the maximum depth that the inserted material with the given index can
@@ -7126,6 +7217,13 @@ index.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {insertshrink}}]
+
+When set this will be taken into account. It basically turns ann insert into a
+kind of glue but without it being a valid break point.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {insertstorage}}]
 
 The value passed will enable (one) or disable (zero) the insert with the given
@@ -7136,6 +7234,13 @@ index.
 \startnewprimitive[title={\prm {insertstoring}}]
 
 The value passed will enable (one) or disable (zero) inserts.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {insertstretch}}]
+
+When set this will be taken into account. It basically turns ann insert into a
+kind of glue but without it being a valid break point.
 
 \stopnewprimitive
 
@@ -8543,6 +8648,8 @@ inserted when it is non|-|zero. There's also \prm {baselineskip} involved. The
 way spacing is handled can be influenced with \prm {mathdisplayskipmode}, which
 takes the following values:
 
+% use value reporter
+
 \starttabulate[|c|l|]
 \FL
 \BC value \BC meaning                                 \NC \NR
@@ -9396,6 +9503,8 @@ The token list passed to this primitive signals that we don't enter a table row
 yet but for instance in a \prm {halign} do something between the lines: some
 calculation or injecting inter-row material. In \LUAMETATEX\ this primitive can
 be used nested.
+
+{\em Todo: discuss keywords.}
 
 \stopoldprimitive
 
@@ -12219,7 +12328,7 @@ in the input and produce characters. Other values disable the multiple parsing i
 text and|/|or math mode:
 
 \startbuffer
-\normalsupmarkmode0 $ X^58 \quad X^^58 $ ^^58
+\normalsupmarkmode0 $ X^58 \quad X^^58 $
 \normalsupmarkmode1 $ X^58 \quad X^^58 $ ^^58
 \normalsupmarkmode2 $ X^58 \quad X^^58 $ % ^^58 : error
 \stopbuffer
@@ -12227,13 +12336,19 @@ text and|/|or math mode:
 \typebuffer
 
 In \CONTEXT\ we default to one but also have the \prm {catcode} set to \the
-\catcode`^ and the \prm {amcode} to \the \amcode `^.
+\catcode`^, and the \prm {amcode} to \the \amcode `^.
 
 \startlines
 \catcode`^=\superscriptcatcode % to make sure we handle it in math
 \amcode `^=\superscriptcatcode
 \getbuffer
 \stoplines
+
+% \startlines
+% \amcode \circumflexasciicode\superscriptcatcode
+% \catcode\circumflexasciicode\superscriptcatcode % to make sure we handle it in math
+% \getbuffer
+% \stoplines
 
 \stopnewprimitive
 
@@ -13341,6 +13456,18 @@ value is \the \badness.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {vbadnessmode}}]
+
+This parameter determines what gets reported when the (in the vertical packer)
+badness exceeds some limit. The current value of this bitset is {\tt
+"\tohexadecimal \vbadnessmode}.
+
+\startfourrows
+\getbuffer[engine:syntax:badnessmodecodes]
+\stopfourrows
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {vbalance}}]
 
 In addition to the page builder and vbox splitter we have what's called a
@@ -13380,7 +13507,7 @@ Decisions are made on badness and demerits. Like the par builder you can get
 overfull slots so in practice one might rebalance with different specifications
 if that happens.
 
-The results are collected in a box (in this exmaple box register 2) which destroys the
+The results are collected in a box (in this example box register 2) which destroys the
 original. With
 
 \starttyping
@@ -13407,7 +13534,7 @@ it in a \type {\vbox}. When there is is no more to fetch the result is void.
 This will convert the inserts in the given balancing result into a form that is
 useable for the balancer. This is not mandate but needed if you want split
 insertions. The keyword \type {descend} will locate the relevant box and \type
-{forcedepth} will make sure that we get constent depths (but expects \prm
+{forcedepth} will make sure that we get constant depths (but expects \prm
 {insertlinedepth} being set.
 
 \stopnewprimitive

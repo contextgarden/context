@@ -56,7 +56,7 @@
 % D
 % D \typebuffer \blank \getbuffer \blank
 
-\permanent\protected\def\signalcharacteralign       #1#2{\c_attr_characteralign\numexpr#1*\maxcardminusone+#2\relax} % 0xFFFF
+\permanent\protected\def\signalcharacteralign       #1#2{\c_attr_characteralign{#1*\maxcardminusone+#2}} % 0xFFFF
 \permanent\protected\def\setcharacteralign          #1#2{\clf_setcharacteralign#1{#2}}
 \permanent\protected\def\resetcharacteralign            {\clf_resetcharacteralign}
 \permanent\protected\def\nocharacteralign               {\c_attr_characteralign\attributeunsetvalue}
@@ -143,13 +143,13 @@
    \edef\p_left {\characteralignparameter\c!leftsample}%
    \edef\p_right{\characteralignparameter\c!rightsample}%
    \ifempty\p_left
-     \scratchdimenone\dimexpr\characteralignparameter\c!leftwidth\relax
+     \scratchdimenone{\characteralignparameter\c!leftwidth}%
    \else
      \setbox\scratchbox\hbox{\p_left}%
      \scratchdimenone\wd\scratchbox
    \fi
    \ifempty\p_right
-     \scratchdimentwo\dimexpr\characteralignparameter\c!rightwidth\relax
+     \scratchdimentwo{\characteralignparameter\c!rightwidth}%
    \else
      \setbox\scratchbox\hbox{\p_right}%
      \scratchdimentwo\wd\scratchbox

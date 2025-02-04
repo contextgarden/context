@@ -22,7 +22,6 @@ local getnext            = nuts.getnext
 local getprev            = nuts.getprev
 local getid              = nuts.getid
 local getattr            = nuts.getattr
-local getsubtype         = nuts.getsubtype
 local setsubtype         = nuts.setsubtype
 local getchar            = nuts.getchar
 local setchar            = nuts.setchar

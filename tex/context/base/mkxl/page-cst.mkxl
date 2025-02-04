@@ -95,13 +95,13 @@
 %D All the parameters are mandate!
 
 \permanent\tolerant\protected\def\setuppagegridlines[#1]#*[#2]#*[#3]#*[#4]% id page col value
-  {\clf_setcolumnsetlines{name {#1} page #2 column #3 value #4}}
+  {\clf_setcolumnsetlines{name {#1} page {#2} column {#3} value {#4}}}
 
 \permanent\tolerant\protected\def\setuppagegridstart[#1]#*[#2]#*[#3]#*[#4]% id page col value
-  {\clf_setcolumnsetstart{name {#1} page #2 column #3 value #4}}
+  {\clf_setcolumnsetstart{name {#1} page {#2} column {#3} value {#4}}}
 
 \protected\def\page_grd_check
-  {\dorecurse{\numexpr\pagegridparameter\c!nleft+\pagegridparameter\c!nright}
+  {\dorecurse{(\pagegridparameter\c!nleft)+(\pagegridparameter\c!nright)}
      {\page_grd_check_column{##1}}}
 
 \protected\def\page_grd_check_column#1%
@@ -109,18 +109,18 @@
    \edef\p_distance{\namedpagegridparameter{\currentpagegrid:#1}\c!distance}%
    \edef\p_width   {\namedpagegridparameter{\currentpagegrid:#1}\c!width}%
    \clf_setcolumnsetproperties {%
-      name {\currentpagegrid}
-      column \numexpr#1\relax
-      \ifempty\p_distance\else
-        distance \p_distance
+      name {\currentpagegrid}%
+      column {#1}%
+      \ifchkdimension\p_distance\or
+        distance \lastchkdimension
       \fi
-      \ifempty\p_width\orelse\ifx\p_width\v!auto\else
-        width \p_width
+      \ifx\p_width\v!auto\orelse\ifchkdimension\or
+        width \lastchkdimension
       \fi
    }}
 
 \appendtoks
-   \dorecurse{\numexpr\pagegridparameter\c!nleft+\pagegridparameter\c!nright}%
+   \dorecurse{(\pagegridparameter\c!nleft)+(\pagegridparameter\c!nright)}%
      {\chaintocurrentpagegrid{\currentpagegrid:#1}}%
 \to \everydefinepagegrid
 
@@ -141,17 +141,17 @@
      \setupcurrentpagegrid[#2]%
    \fi
    \usepageparameter\pagegridparameter
-   \c_page_grd_n_of_left \pagegridparameter\c!nleft\relax
-   \c_page_grd_n_of_right\pagegridparameter\c!nright\relax
-   \c_page_grd_n_of_rows \pagegridparameter\c!lines\relax
-   \d_page_grd_max_width \pagegridparameter\c!maxwidth\relax
-   \d_page_grd_max_height\pagegridparameter\c!maxheight\relax
-   \d_page_grd_distance  \pagegridparameter\c!distance\relax
+   \c_page_grd_n_of_left {\pagegridparameter\c!nleft}%
+   \c_page_grd_n_of_right{\pagegridparameter\c!nright}%
+   \c_page_grd_n_of_rows {\pagegridparameter\c!lines}%
+   \d_page_grd_max_width {\pagegridparameter\c!maxwidth}%
+   \d_page_grd_max_height{\pagegridparameter\c!maxheight}%
+   \d_page_grd_distance  {\pagegridparameter\c!distance}%
    %
    \automigrationmode\zerocount % for now
    %
    \ifcase\c_page_grd_n_of_rows
-      \getrawnoflines{\dimexpr\d_page_grd_max_height-\strutheight+\topskip\relax}%
+      \getrawnoflines{\d_page_grd_max_height-\strutheight+\topskip}%
       \c_page_grd_n_of_rows\noflines
    \fi
    \edef\p_width{\pagegridparameter\c!width}%
@@ -322,13 +322,13 @@
        \dostepwiserecurse\c_page_grd_last_column\c_page_grd_first_column\minusone
          {\page_grd_command_flush_page_column{##1}%
           \ifnum##1>\plusone
-            \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
+            \kern{\namedpagegridparameter{\currentpagegrid:##1}\c!distance}%
           \fi}%
      \else
        \dostepwiserecurse\c_page_grd_first_column\c_page_grd_last_column\plusone
          {\page_grd_command_flush_page_column{##1}%
           \ifnum##1<\c_page_grd_last_column
-            \kern\namedpagegridparameter{\currentpagegrid:##1}\c!distance\relax
+            \kern{\namedpagegridparameter{\currentpagegrid:##1}\c!distance}%
           \fi}%
      \fi
      \clf_finishcolumnsetflush{\currentpagegrid}%
@@ -420,7 +420,7 @@
               {\ifcase\columndirection % nog document wide
                  \page_floats_flush\s!text\plusone
                \else
-                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+                 \page_floats_flush\s!text{\tointeger{\nofcollectedfloats-\recurselevel+1}}%
                \fi
                \ifdim\wd\floatbox>\makeupwidth % \hsize
                  \hbox to \makeupwidth{\hss\box\floatbox\hss}%
@@ -669,11 +669,7 @@
   {\page_grd_span_stop}
 
 \permanent\def\pagegridspanwidth#1% assumes equal distances
-  {\the\dimexpr
-     #1\d_page_grd_column_width
-    +#1\d_page_grd_distance
-    -  \d_page_grd_distance
-   \relax}
+  {\todimension{#1\d_page_grd_column_width+#1\d_page_grd_distance-\d_page_grd_distance}}
 
 % areas
 

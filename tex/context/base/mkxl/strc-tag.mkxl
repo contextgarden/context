@@ -350,7 +350,7 @@
 \newconditional\c_strc_tags_global
 
 \permanent\protected\def\taggingpause % see pack-obj
-  {\setfalse\c_strc_tags_global}
+  {\c_strc_tags_global\conditionalfalse}
 
 \lettonothing\dotaggedplaceholder
 
@@ -472,7 +472,7 @@
    \ifexporting
      % already set up
    \orelse\ifcstok{\taggingparameter\c!state}\v!start
-     \settrue\c_strc_tags_global
+     \c_strc_tags_global\conditionaltrue
      \setsystemmode\s!tagging
      \expand\everyenableelements
    \orelse\iflastnamedcs\v!on
@@ -486,7 +486,7 @@
        \expand\everydisableelements
      \fi
    \else
-     \setfalse\c_strc_tags_global
+     \c_strc_tags_global\conditionalfalse
      \resetsystemmode\s!tagging
      \expand\everydisableelements
    \fi

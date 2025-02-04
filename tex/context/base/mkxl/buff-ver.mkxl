@@ -99,36 +99,22 @@
 
 \let\buff_verbatim_set_line_margin\relax
 
-\def\buff_verbatim_set_line_margin_indeed
-  {\hskip\doifelseoddpage{\typingparameter\c!oddmargin}{\typingparameter\c!evenmargin}\relax}
+\def\buff_verbatim_set_line_margin_indeed % we could expand this once
+  {\hskip\doifelseoddpage\d_buff_lines_odd_margin\d_buff_lines_even_margin\relax}
 
-% \def\buff_verbatim_initialize_typing_one
-%   {\usebodyfontparameter\typingparameter
-%    \ifzerodim\typingparameter\c!oddmargin\else
-%      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
-%    \fi
-%    \ifzerodim\typingparameter\c!evenmargin\else
-%      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
-%    \fi
-%    \ifrelax\buff_verbatim_set_line_margin
-%      \doadaptleftskip{\typingparameter\c!margin}%
-%    \fi
-%    \edef\p_buff_option{\typingparameter\c!option}%
-%    \ifx\p_buff_option\v!none
-%      \usetypingstyleandcolor\c!style\c!color
-%    \orelse\ifempty\p_buff_option
-%      \usetypingstyleandcolor\c!style\c!color
-%    \else
-%      \usetypingstyleparameter\c!style % no color !
-%    \fi
-%    \usealignparameter\typingparameter}
+\newconditional\c_buff_lines_as_paragraph
+
+\newdimension\d_buff_lines_even_margin
+\newdimension\d_buff_lines_odd_margin
 
 \def\buff_verbatim_initialize_typing_one
   {\usebodyfontparameter\typingparameter
-   \ifzerodim\typingparameter\c!oddmargin\else
+   \d_buff_lines_odd_margin {\typingparameter\c!oddmargin }%
+   \d_buff_lines_even_margin{\typingparameter\c!evenmargin}%
+   \ifzerodim\d_buff_lines_odd_margin\else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
-   \ifzerodim\typingparameter\c!evenmargin\else
+   \ifzerodim\d_buff_lines_even_margin\else
      \let\buff_verbatim_set_line_margin\buff_verbatim_set_line_margin_indeed
    \fi
    \ifrelax\buff_verbatim_set_line_margin
@@ -143,6 +129,7 @@
      \usetypingstyleparameter\c!style % no color !
    \fi
  % \usealignparameter\typingparameter
+   \hbadnessmode\overfullbadnessmodecode % we don't care about underfull and tight can't happen
    \edef\p_align{\typingparameter\c!align}%
    \unless\ifconditional\c_buff_lines_as_paragraph
      \dousealignparameter\p_align
@@ -974,8 +961,6 @@
 
 \newinteger\nofverbatimlines
 
-\newconditional\c_buff_lines_as_paragraph
-
 % \protected\def\buff_verbatim_begin_of_line
 %   {\ifconditional\verbatimnumberinglines
 %      \global\advanceby\nofverbatimlines\plusone
@@ -1197,7 +1182,7 @@
      \nobreak % \novbreak
    \orelse\ifnum\c_buff_verbatim_noflines=\plusthree
      \nobreak % \novbreak
-   \orelse\ifnum\c_buff_verbatim_current=\numexpr\c_buff_verbatim_noflines-\plusone\relax
+   \orelse\ifnum\c_buff_verbatim_current={\c_buff_verbatim_noflines-\plusone}%
      \nobreak % \novbreak
    \fi}
 

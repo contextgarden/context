@@ -491,7 +491,7 @@
    \gletcsname\??fontnormalizedbody\number\scratchdimen\endcsname#macro}
 
 \permanent\def\thenormalizedbodyfontsize#body%
-  {\clf_normalizedbodyfontsize\dimexpr#body\relax}
+  {\clf_normalizedbodyfontsize{#body}}
 
 \mutable\edef\normalizedglobalbodyfontsize{\thenormalizedbodyfontsize\bodyfontsize}
 \mutable\edef\normalizedlocalbodyfontsize {\thenormalizedbodyfontsize\bodyfontsize}
@@ -3306,9 +3306,9 @@
       \s!width .5\onepoint
     \relax
     \ifdim\scratchdimen>\zeropoint
-      \raise\dimexpr\strutht+\scratchdimen-1.5\exheight\relax
+      \raise{\strutht+\scratchdimen-1.5\exheight}%
     \else
-      \lower\dimexpr\strutdp-\scratchdimen-1.5\exheight\relax
+      \lower{\strutdp-\scratchdimen-1.5\exheight}%
     \fi
     \hpack to \zeropoint \bgroup\normalexpanded{%
       \tinyinfofont

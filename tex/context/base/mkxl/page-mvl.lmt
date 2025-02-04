@@ -19,8 +19,10 @@ if not modules then modules = { } end modules ["page-cst"] = {
 
 local next, type, tonumber, tostring, rawget = next, type, tonumber, tostring, rawget
 local ceil, odd, round, abs = math.ceil, math.odd, math.round, math.abs
-local format, lower = string.format, string.lower
+local format, lower, splitstring = string.format, string.lower, string.split
 local copy, concat = table.copy, table.concat
+local stepper = utilities.parsers.stepper
+local settings_to_array = utilities.parsers.settings_to_array
 
 local trace_state   = false  trackers.register("columnsets.trace",   function(v) trace_state   = v end)
 local trace_details = false  trackers.register("columnsets.details", function(v) trace_details = v end)
@@ -65,6 +67,7 @@ local implement         = interfaces.implement
 local expandmacro       = token.expandmacro
 
 local variables         = interfaces.variables
+local v_all             <const> = variables.all
 local v_here            <const> = variables.here
 local v_fixed           <const> = variables.fixed
 local v_top             <const> = variables.top
@@ -100,7 +103,7 @@ columnsets.data = data -- while we test
 
 local nofcolumngaps = 0
 
-local c_realpageno                <const> = texiscount("realpageno")
+local c_realpageno <const> = texiscount("realpageno")
 
 local d_bodyfontsize              <const> = texisdimen("bodyfontsize")
 local d_makeupwidth               <const> = texisdimen("makeupwidth")
@@ -108,15 +111,17 @@ local d_globalbodyfontstrutheight <const> = texisdimen("globalbodyfontstrutheigh
 local d_globalbodyfontstrutdepth  <const> = texisdimen("globalbodyfontstrutdepth")
 local d_backspace                 <const> = texisdimen("backspace")
 
-local c_page_mvl_reserved_state   <const> = texiscount("c_page_mvl_reserved_state")
-local c_page_mvl_first_column     <const> = texiscount("c_page_mvl_first_column")
-local c_page_mvl_last_column      <const> = texiscount("c_page_mvl_last_column")
-local c_page_mvl_current_sheet    <const> = texiscount("c_page_mvl_current_sheet")
+local c_page_mvl_reserved_state      <const> = texiscount("c_page_mvl_reserved_state")
+local c_page_mvl_first_column        <const> = texiscount("c_page_mvl_first_column")
+local c_page_mvl_last_column         <const> = texiscount("c_page_mvl_last_column")
+local c_page_mvl_current_sheet       <const> = texiscount("c_page_mvl_current_sheet")
+local c_page_mvl_current_spreadsheet <const> = texiscount("c_page_mvl_current_spreadsheet")
+local c_page_mvl_max_used_cells      <const> = texiscount("c_page_mvl_max_used_cells")
 
-local d_page_mvl_reserved_height  <const> = texisdimen("d_page_mvl_reserved_height")
-local d_page_mvl_reserved_width   <const> = texisdimen("d_page_mvl_reserved_width")
-local d_page_mvl_column_width     <const> = texisdimen("d_page_mvl_column_width")
-local d_page_mvl_span_width       <const> = texisdimen("d_page_mvl_span_width")
+local d_page_mvl_reserved_height <const> = texisdimen("d_page_mvl_reserved_height")
+local d_page_mvl_reserved_width  <const> = texisdimen("d_page_mvl_reserved_width")
+local d_page_mvl_column_width    <const> = texisdimen("d_page_mvl_column_width")
+local d_page_mvl_span_width      <const> = texisdimen("d_page_mvl_span_width")
 
 -- page    [R]   [R]   [R]   [R]
 -- sheet    1     2     3     4
@@ -223,7 +228,7 @@ local function block2(list,cells,offset,rows)
     end
 end
 
-local function check(dataset)
+local function check(dataset,byspread)
     local cells = dataset.cells
     local sheet = dataset.sheet
     local start = dataset.start
@@ -231,7 +236,7 @@ local function check(dataset)
     local count = dataset.count
     local rows  = dataset.nofrows
     --
-    if not odd(count) then
+    if byspread or not odd(count) then
         local list = rawget(start,count)
         if list then
             block1(list,cells,dataset.nofleft)
@@ -248,7 +253,7 @@ local function check(dataset)
         end
     end
     --
-    if not odd(count) then
+    if byspread or not odd(count) then
         local list = rawget(lines,count)
         if list then
             block2(list,cells,dataset.nofleft,rows)
@@ -261,6 +266,96 @@ local function check(dataset)
         local list = rawget(lines,count+1)
         if list then
             block2(list,cells,dataset.nofleft,rows)
+        end
+    end
+    --     print(count,sheet)
+    --     inspect(lines)
+    --     inspect(rawget(lines,count))
+    --     inspect(cells)
+end
+
+local function getlocations(dataset,location)
+    local locations = dataset.locations
+    if not locations then
+        local split = settings_to_array(location)
+        locations   = { }
+        for i=1,#split do
+            local t = splitstring(split[i],",")
+            local c = tonumber(t[1])
+            local r = tonumber(t[2])
+            local l = tonumber(t[3])
+            if c and r then
+                -- also check validy here
+                locations[#locations+1] = { c, r, l }
+            end
+        end
+        dataset.locations = locations
+    end
+    if not dataset.putdirect then
+        -- Quick hack: do we have another status variable?
+        local cells    = dataset.cells
+        local noflines = #cells[1]
+        for c=1,dataset.currentcolumn - 1 do
+            local f = cells[c]
+            for l=1,noflines do
+                if not f[l] then
+                    f[l] = true
+                end
+            end
+        end
+        dataset.putdirect = true
+    end
+    return locations
+end
+
+local function updatedistances(dataset)
+    dataset.distances = dataset.distances or setmetatableindex(function(t,k)
+        return dataset.distance -- use rawget to check for setting
+    end)
+end
+
+local function updatewidths(dataset)
+    dataset.widths = dataset.widths or setmetatableindex(function(t,k)
+        return dataset.width -- use rawget to check for setting
+    end)
+end
+
+local function updatespans(dataset)
+    local widths    = dataset.widths
+    local distances = dataset.distances
+    local nofleft   = dataset.nofleft
+    local nofright  = dataset.nofright
+    local spans     = { }
+    local function calculate(first,last)
+        for i=first,last do
+            local s = { }
+            local d = 0
+            for j=i,last do
+                d = d + widths[j]
+                s[#s+1] = round(d)
+                d = d + distances[j]
+            end
+            spans[i] = s
+        end
+    end
+    calculate(1,nofleft)
+    calculate(nofleft+1,nofleft+nofright)
+    dataset.spans = spans
+end
+
+local function updatespreads(dataset)
+    local nofleft   = dataset.nofleft
+    local nofright  = dataset.nofright
+    local spreads   = copy(dataset.spans)
+    dataset.spreads = spreads
+    local gap       = 2 * texgetdimen(d_backspace)
+    for l=1,nofleft do
+        local s = spreads[l]
+        local n = #s
+        local o = s[n] + gap
+        for r=1,nofright do
+            n = n + 1
+            s[n] = s[r] + o
         end
     end
 end
@@ -303,11 +398,11 @@ local function findgap(dataset,everything)
     local currentmvl    = dataset.currentmvl or 1
     local disabled      = dataset.disabled
     --
-    local foundc = 0
-    local foundr = 0
-    local foundn = 0
+    local foundc     = 0
+    local foundr     = 0
+    local foundn     = 0
     for c=currentcolumn,everything and dataset.nofcolumns or dataset.lastcolumn do
-        if mvls[c] == currentmvl and not disabled[c] then
+        if (mvls[c] == currentmvl or currentmvl == 1) and not disabled[c] then
             local column = cells[c]
             foundn = 0
             for r=currentrow,nofrows do
@@ -345,6 +440,7 @@ do
             width = 0
         end
         --
+-- print(width,dataset.autowidth)
         if width == 0 or dataset.autowidth then
             local nofleft  = dataset.nofleft
             local nofright = dataset.nofright
@@ -376,8 +472,14 @@ do
                     wr = wr - w
                 end
             end
-            dl = (wl - dl) / nl
-            dr = (wr - dr) / nr
+-- print(wl,wr,nl,nr)
+            if nl > 0 then
+                dl = (wl - dl) / nl
+            end
+            if nr > 0 then
+                dr = (wr - dr) / nr
+            end
+-- print(dl,dr)
             if dl > dr then
                 report("using %s page column width %p in columnset %a","right",dr,name)
                 width = dr
@@ -389,8 +491,10 @@ do
             end
         else
         end
+-- inspect(widths)
         width = round(width)
         dataset.width = width
+-- print(width,width/65536)
         return width
     end
 
@@ -409,88 +513,51 @@ do
             nums[last] = name
         end
         --
-        dataset.doublesided   = doublesided
-        dataset.name          = name
-        dataset.identifier    = nums[name]
-        dataset.nofleft       = nofleft
-        dataset.nofright      = nofright
-        dataset.nofcolumns    = nofcolumns
-        dataset.nofrows       = t.nofrows    or 1
-        dataset.distance      = t.distance   or texgetdimen(d_bodyfontsize)
-        dataset.maxwidth      = t.maxwidth   or texgetdimen(d_makeupwidth)
-        dataset.lineheight    = t.lineheight or texgetdimen(d_globalbodyfontstrutheight)
-        dataset.linedepth     = t.linedepth  or texgetdimen(d_globalbodyfontstrutdepth)
-        dataset.quit          = 0
-        dataset.limit         = t.limit or dataset.limit
+        dataset.doublesided     = doublesided
+        dataset.name            = name
+        dataset.identifier      = nums[name]
+        dataset.nofleft         = nofleft
+        dataset.nofright        = nofright
+        dataset.nofcolumns      = nofcolumns
+        dataset.nofrows         = t.nofrows    or 1
+        dataset.distance        = t.distance   or texgetdimen(d_bodyfontsize)
+        dataset.maxwidth        = t.maxwidth   or texgetdimen(d_makeupwidth)
+        dataset.lineheight      = t.lineheight or texgetdimen(d_globalbodyfontstrutheight)
+        dataset.linedepth       = t.linedepth  or texgetdimen(d_globalbodyfontstrutdepth)
+        dataset.quit            = 0
+        dataset.limit           = t.limit or dataset.limit
         --
-        dataset.cells         = { }
-        dataset.currentcolumn = 1
-        dataset.currentrow    = 1
-        dataset.currentmvl    = 1
+        dataset.cells           = { }
+        dataset.currentcolumn   = 1
+        dataset.currentrow      = 1
+        dataset.currentmvl      = 2
         --
-        dataset.future        = { }
+        dataset.future          = { }
         --
-        dataset.lines         = dataset.lines or setmetatableindex("table")
-        dataset.start         = dataset.start or setmetatableindex("table")
-        dataset.mvls          = dataset.mvls  or setmetatableindex(function(t,k) t[k] = 1 return 1 end)
-        dataset.disabled      = dataset.disabled or { }
+        dataset.lines           = dataset.lines or setmetatableindex("table")
+        dataset.start           = dataset.start or setmetatableindex("table")
+        dataset.mvls            = dataset.mvls  or setmetatableindex(function(t,k) t[k] = 1 return 1 end)
+        dataset.mvlc            = dataset.mvlc  or { }
+        dataset.disabled        = dataset.disabled or { }
         --
-        dataset.count         = 1
-        dataset.sheet         = 1
-        dataset.spread        = 1
+        dataset.count           = 1
+        dataset.sheet           = 1
+        dataset.spread          = 1
         --
-        dataset.sheets        = dataset.sheets    or setmetatableindex("table")
-        dataset.nofsheets     = dataset.nofsheets or 0
-        dataset.lastmvl       = dataset.lastmvl   or 1
+        dataset.sheets          = dataset.sheets          or setmetatableindex("table")
+        dataset.delayed         = dataset.delayed         or setmetatableindex("table")
+        dataset.spreadsheets    = dataset.spreadsheets    or setmetatableindex("table")
+        dataset.nofsheets       = dataset.nofsheets       or 0
+        dataset.nofdelayed      = dataset.nofdelayed      or 0
+        dataset.nofspreadsheets = dataset.nofspreadsheets or 0
+        dataset.lastmvl         = dataset.lastmvl         or 1
         --
-        local distances = dataset.distances or setmetatableindex(function(t,k)
-            return dataset.distance -- use rawget to check for setting
-        end)
-        dataset.distances = distances
-        --
-        dataset.autowidth = not t.width or t.width == 0
-        --
-        local widths = dataset.widths or setmetatableindex(function(t,k)
-            return dataset.width -- use rawget to check for setting
-        end)
-        dataset.widths = widths
-        --
-        local width = checkwidth(dataset,t.width,"define")
-        local spans = { }
-        dataset.spans = spans
-        for i=1,nofleft do
-            local s = { }
-            local d = 0
-            for j=1,nofleft-i+1 do
-                d = d + width
-                s[j] = round(d)
-                d = d + distances[j]
-            end
-            spans[i]  = s
-        end
-        for i=1,nofright do
-            local s = { }
-            local d = 0
-            for j=1,nofright-i+1 do
-                d = d + width
-                s[j] = round(d)
-                d = d + distances[j]
-            end
-            spans[nofleft+i]  = s
-        end
-        --
-        local spreads   = copy(spans)
-        dataset.spreads = spreads
-        local gap       = 2 * texgetdimen(d_backspace)
-        for l=1,nofleft do
-            local s = spreads[l]
-            local n = #s
-            local o = s[n] + gap
-            for r=1,nofright do
-                n = n + 1
-                s[n] = s[r] + o
-            end
-        end
+        updatedistances(dataset)
+        updatewidths(dataset)
+        dataset.autowidth     = not t.width or t.width == 0
+        dataset.width         = checkwidth(dataset,t.width,"define")
+        updatespans(dataset)
+        updatespreads(dataset)
         --
         texsetdimen(d_page_mvl_column_width,dataset.width) -- main width
         --
@@ -511,8 +578,10 @@ do
     function columnsets.clean(name)
         local dataset = data[name]
         if dataset then
-            dataset.sheets    = setmetatableindex("table")
-            dataset.nofsheets = 0
+            dataset.sheets     = setmetatableindex("table")
+            dataset.nofsheets  = 0
+            dataset.delayed    = setmetatableindex("table")
+            dataset.nofdelayed = 0
         end
     end
 
@@ -522,6 +591,9 @@ do
         arguments = { {
             { "name",   "string" },
             { "method", "string" },
+            { "nofleft", "integer" },
+            { "nofright", "integer" },
+            { "nofrows", "integer" },
         } }
     }
 
@@ -532,7 +604,6 @@ do
             { "name", "string" },
             { "nofleft", "integer" },
             { "nofright", "integer" },
-            { "nofcolumns", "integer" },
             { "nofrows", "integer" },
             { "lineheight", "dimension" },
             { "linedepth", "dimension" },
@@ -652,6 +723,8 @@ do
         local columns   = { }
         dataset.columns = columns
         --
+        local used = 0
+        --
         updatetopmarks()
         for c=firstcolumn,lastcolumn do
             local column = cells[c]
@@ -674,6 +747,7 @@ do
                         end
                         list = getlist(list)
                     end
+                    used = r
                 end
             end
             for r=1,nofrows-1 do
@@ -682,6 +756,8 @@ do
             columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
         end
         updatefirstmarks()
+        --
+        texsetcount("global",c_page_mvl_max_used_cells,used)
         --
         if odd(dataset.count) then
             local spread = dataset.spread
@@ -768,6 +844,12 @@ do
     end
 
     local function here(c,r,nr,nofcolumns,nofrows,cells,width,spans)
+        if c < 1 then
+            c = 1
+        end
+        if r < 1 then
+            r = 1
+        end
         local rr = r + nr - 1
         if rr > nofrows then
          -- report("%i rows needed, %i rows available, no slots free at (%i,%i), discarding",rr,nofrows,c,r)
@@ -793,10 +875,12 @@ do
         end
         for i=c,cc do
             local column = cells[i]
-            for j=r,rr do
-                if column[j] then
-                  -- report("width %p, needed %p, checking (%i,%i) x (%i,%i), %s",width,wc,c,r,nc,nr,"quit")
-                     return false
+            if column then
+                for j=r,rr do
+                    if column[j] then
+                      -- report("width %p, needed %p, checking (%i,%i) x (%i,%i), %s",width,wc,c,r,nc,nr,"quit")
+                         return false
+                    end
                 end
             end
         end
@@ -984,6 +1068,9 @@ do
         local boxnumber  = t.box
         local box        = boxnumber and getbox(boxnumber)
         --
+local ntop    = t.ntop    or 0
+local nbottom = t.nbottom or 0
+        --
         if boxwidth > 0 and boxheight > 0 then
             -- we're ok
         elseif box then
@@ -1032,7 +1119,9 @@ do
         local rfound = false
         local lastcolumn = dataset.lastcolumn
 
-        if odd(dataset.count) then
+        if dataset.byspread then
+            lastcolumn = dataset.nofleft + dataset.nofright
+        elseif odd(dataset.count) then
             c = 1
             lastcolumn = dataset.nofleft
         else
@@ -1055,26 +1144,43 @@ do
          -- report("action %s, c %i, r %i, nr %i, width %p","here",c,r,nr,w)
             cfound, rfound, nc = here(c,r,nr,lastcolumn,nofrows,cells,w,spans)
         end
+if cfound then
+    if rfound == 1 then
+        ntop = 0
+    end
+    if rfound + nr - 1 == dataset.nofrows then
+        nbottom = 0
+    end
+    if (rfound - ntop) < 0 then
+        cfound = false
+    elseif (rfound + nr + nbottom - 1) > dataset.nofrows then
+        cfound = false
+    end
+end
         if cfound then
             local ht = nr*(lineheight+linedepth)
             local wd = spans[cfound][nc]
-            dataset.reserved_ht = ht
-            dataset.reserved_wd = wd
-            dataset.reserved_c  = cfound
-            dataset.reserved_r  = rfound
-            dataset.reserved_nc = nc
-            dataset.reserved_nr = nr
+            dataset.reserved_ht      = ht
+            dataset.reserved_wd      = wd
+            dataset.reserved_c       = cfound
+            dataset.reserved_r       = rfound
+            dataset.reserved_nc      = nc
+            dataset.reserved_nr      = nr
+            dataset.reserved_ntop    = ntop
+            dataset.reserved_nbottom = nbottom
             texsetcount(c_page_mvl_reserved_state,0)
             texsetdimen(d_page_mvl_reserved_height,ht)
             texsetdimen(d_page_mvl_reserved_width,wd)
          -- report("using (%i,%i) x (%i,%i) @ (%p,%p)",cfound,rfound,nc,nr,wd,ht)
         else
-            dataset.reserved_ht = false
-            dataset.reserved_wd = false
-            dataset.reserved_c  = false
-            dataset.reserved_r  = false
-            dataset.reserved_nc = false
-            dataset.reserved_nr = false
+            dataset.reserved_ht      = false
+            dataset.reserved_wd      = false
+            dataset.reserved_c       = false
+            dataset.reserved_r       = false
+            dataset.reserved_nc      = false
+            dataset.reserved_nr      = false
+            dataset.reserved_ntop    = false
+            dataset.reserved_nbottom = false
             texsetcount(c_page_mvl_reserved_state,4)
          -- texsetdimen(d_page_mvl_reserved_height,0)
          -- texsetdimen(d_page_mvl_reserved_width,0)
@@ -1097,8 +1203,95 @@ do
          -- report("no reserved slot (%i,%i)",c,r)
             return
         end
-        local lastc = c + dataset.reserved_nc - 1
-        local lastr = r + dataset.reserved_nr - 1
+        local lastc   = c + dataset.reserved_nc - 1
+        local lastr   = r + dataset.reserved_nr - 1
+        local ntop    = dataset.reserved_ntop    or 0
+        local nbottom = dataset.reserved_nbottom or 0
+        --
+        for i=c,lastc do
+            local column = cells[i]
+            for j=r-ntop,lastr+nbottom do
+                column[j] = true
+            end
+        end
+        cells[c][r] = box
+        setwhd(box,widths[c],lineheight,linedepth)
+        dataset.reserved_c       = false
+        dataset.reserved_r       = false
+        dataset.reserved_nc      = false
+        dataset.reserved_nr      = false
+        dataset.reserved_ntop    = false
+        dataset.reserved_nbottom = false
+        --
+    end
+
+    function columnsets.resetdirect(name)
+        local dataset = data[name]
+        if dataset then
+            dataset.locations = nil
+            dataset.putdirect = nil
+        end
+    end
+
+    function columnsets.putdirect(t)
+        local boxnumber = t.box
+        local box       = boxnumber and takebox(boxnumber)
+        if not box then
+            return
+        end
+        --
+        local location = t.location
+        local lines    = t.lines
+        local span     = 1
+        if not location or not lines then
+            return
+        end
+        --
+        local dataset   = data[t.name]
+        local locations = getlocations(dataset,location)
+        if #locations == 0 then
+            return
+        end
+        --
+        local cells  = dataset.cells
+        local widths = dataset.widths
+        local future = dataset.future
+        --
+        local c, r, l, s = 0, 0, 0, 0
+        for i=1,#future do
+            cells = future[i]
+            for j=1,#locations do
+                local v = locations[j]
+                c, r, l = v[1], v[2], v[3]
+                if not cells[c][r] then
+                    s = i
+                    goto FOUND
+                end
+            end
+        end
+        if cells[c][r] then
+            cells = emptycells(dataset)
+            future[#future+1] = cells
+            for j=1,#locations do
+                local v = locations[j]
+                c, r, l = v[1], v[2], v[3]
+                if cells[c][r] then
+                    -- can't happen
+                else
+                    s = #future
+                    goto FOUND
+                end
+            end
+        end
+        --
+      ::FOUND::
+        if s == 0 then
+            return
+        end
+        local wd, ht, dp = getwhd(box)
+        --
+        local lastc = c + span  - 1
+        local lastr = r + lines - 1
         --
         for i=c,lastc do
             local column = cells[i]
@@ -1107,12 +1300,8 @@ do
             end
         end
         cells[c][r] = box
-        setwhd(box,widths[c],lineheight,linedepth)
-        dataset.reserved_c  = false
-        dataset.reserved_r  = false
-        dataset.reserved_nc = false
-        dataset.reserved_nr = false
-        --
+        -- really set the ht.dp here?
+        setwhd(box,widths[c],dataset.lineheight,dataset.linedepth)
     end
 
     -- we can enforce grid snapping
@@ -1168,6 +1357,8 @@ do
             { "method", "string" },
             { "c", "integer" },
             { "r", "integer" },
+            { "ntop", "integer" },
+            { "nbottom", "integer" },
             { "method", "string" },
             { "box", "integer" },
             { "width", "dimension" },
@@ -1184,6 +1375,23 @@ do
             { "c", "integer" },
             { "r", "integer" },
             { "method", "string" },
+            { "box", "integer" },
+        } }
+    }
+
+    implement {
+        name      = "columnsetresetdirect",
+        actions   = columnsets.resetdirect,
+        arguments = "string"
+    }
+
+    implement {
+        name      = "putincolumnsetdirect",
+        actions   = columnsets.putdirect,
+        arguments = { {
+            { "name", "string" },
+            { "location", "string" },
+            { "lines", "integer" },
             { "box", "integer" },
         } }
     }
@@ -1258,26 +1466,25 @@ do
             dataset.present = 1
             setfirstcells(dataset)
         end
-
--- no gap lookup loops
---
--- if slot then
---     local shape = dataset.shape
---     local s = shape[slot+1]
---     if s.column > 0 then
---         while dataset.present < s.spread do
---             dataset.present = dataset.present + 1
---             dataset.cells = dataset.future[dataset.present] or emptycells(dataset)
---             dataset.future[dataset.present] = dataset.cells
---         end
---         dataset.currentcolumn = s.column
---         dataset.currentrow    = s.row
---         dataset.currentcells  = s.lines
---         return
---     end
--- end
-
-        while true do
+     -- no gap lookup loops
+     --
+     -- if slot then
+     --     local shape = dataset.shape
+     --     local s = shape[slot+1]
+     --     if s.column > 0 then
+     --         while dataset.present < s.spread do
+     --             dataset.present = dataset.present + 1
+     --             dataset.cells = dataset.future[dataset.present] or emptycells(dataset)
+     --             dataset.future[dataset.present] = dataset.cells
+     --         end
+     --         dataset.currentcolumn = s.column
+     --         dataset.currentrow    = s.row
+     --         dataset.currentcells  = s.lines
+     --         return
+     --     end
+     -- end
+        local deadcycles = 1000
+        while deadcycles > 0 do
             local c, r, n = findgap(dataset,true)
             if n then
                 dataset.currentcolumn = c
@@ -1296,6 +1503,11 @@ do
                 dataset.cells = dataset.future[dataset.present] or emptycells(dataset)
                 dataset.future[dataset.present] = dataset.cells
             end
+            deadcycles = deadcycles - 1
+        end
+        if deadcycles == 0 then
+            report("fatal error: mvl %i mismatch",dataset.currentmvl or 1)
+            os.exit()
         end
     end
 
@@ -1327,9 +1539,18 @@ do
             local done       = false
             local mvls       = dataset.mvls
             local nofcolumns = dataset.nofleft + dataset.nofright
-            local columns    = utilities.parsers.settings_to_array(t.columns or "")
+            local columns    = t.columns
+            if columns == "*" or columns == v_all then
+                columns = { }
+                for i=1,nofcolumns do
+                    columns[i] = i
+                end
+            else
+                columns = utilities.parsers.settings_to_array(columns or "")
+            end
             for i=1,#columns do
                 local n = tonumber(columns[i]) or 1
+                columns[i] = n
                 -- nof columns etc are not setup yet
                 if not done then
                     lastmvl = lastmvl + 1
@@ -1337,6 +1558,7 @@ do
                 end
                 mvls[n] = lastmvl
             end
+            dataset.mvlc[t.subname] = columns
             dataset.lastmvl = lastmvl
             return lastmvl
         else
@@ -1402,22 +1624,6 @@ do
         name      = "gotocolumnsetslot",
         actions   = columnsets.gotoslot,
         arguments = "argument",
-    }
-
-    implement {
-        name      = "columnsetlastfuture",
-        arguments = "argument",
-        usage     = "value",
-        public    = true,
-        actions   = function(name)
-            local dataset = data[name]
-            local last    = 0
-            if dataset and dataset.future then
-                -- todo filled up ones
-                last = #dataset.future
-            end
-            return integer_value, last
-        end
     }
 
 end
@@ -1528,6 +1734,11 @@ do
         texsetdimen(d_page_mvl_span_width,width)
     end
 
+--     function columnsets.setcolumnhsize(name,column)
+--         local dataset = data[name]
+--         texsetdimen(d_page_mvl_column_width,dataset.widths[column])
+--     end
+
     implement {
         name      = "columnsethspan",
         arguments = { "argument", "integer", "integer" },
@@ -1536,18 +1747,29 @@ do
             local dataset = data[name]
             local total   = 0
             if dataset then
-                local widths    = dataset.widths
-                local distances = dataset.distances
-                local width     = dataset.width
-                local distance  = dataset.distance
-                for i=column,column+span-1 do
-                    total = total + widths [i] or width or 0
-                    if i > column then
-                        total = total + distances[i] or distance or 0
-                    end
+                local dataset    = data[name]
+                local nofcolumns = dataset.nofleft + dataset.nofright
+                local spanned    = dataset.spans[column]
+                if spanned then
+                    total = spanned[span] or 0
                 end
             end
             return dimension_value, total
+        end,
+    }
+
+    implement {
+        name      = "columnsetcolumnwidth",
+        arguments = { "argument", "argument" },
+        usage     = "value",
+        actions   = function(name,subname)
+            local dataset = data[name]
+            local width   = 0
+            if dataset then
+                local columns = dataset.mvlc[subname]
+                width = dataset.widths[columns and columns[1] or 1]
+            end
+            return dimension_value, width
         end,
     }
 
@@ -1731,6 +1953,48 @@ do
 
     -- 1 = left, 2 = right, 3 = both
 
+    local function hascontent(cells,nofleft,nofright)
+        local result = 0
+        if cells then
+            local function found(c)
+                for i=1,#c do
+                    if c[i] then
+                        return true
+                    end
+                end
+                return false
+            end
+            for i=1,nofleft do
+                if found(cells[i]) then
+                    result = result + 1
+                    break
+                end
+            end
+            for i=nofleft+1,nofleft+nofright do
+                if found(cells[i]) then
+                    result = result + 2
+                    break
+                end
+            end
+        end
+        return result
+    end
+
+ -- implement {
+ --     name      = "columnsethascontent",
+ --     arguments = { "argument", "integer" },
+ --     usage     = "value",
+ --     public    = true,
+ --     actions   = function(name,index)
+ --         local dataset = data[name]
+ --         local result  = 0
+ --         if dataset then
+ --             result = hascontent(dataset.future[index],dataset.nofleft,dataset.nofright)
+ --         end
+ --         return integer_value, result
+ --     end
+ -- }
+
     implement {
         name      = "columnsethascontent",
         arguments = { "argument", "integer" },
@@ -1738,35 +2002,40 @@ do
         public    = true,
         actions   = function(name,index)
             local dataset = data[name]
-            local result  = 0
+            if not dataset then
+                return integer_value, 0
+            elseif index < dataset.lastcontent then
+                return integer_value, 3
+            else
+                return integer_value, dataset.lastresult
+            end
+        end
+    }
+
+
+    implement {
+        name      = "columnsetlastfuture",
+        arguments = "argument",
+        usage     = "value",
+        public    = true,
+        actions   = function(name)
+            local dataset = data[name]
             if dataset then
-                local cells  = dataset.future[index]
-                if cells then
-                    local function found(c)
-                        for i=1,#c do
-                            if c[i] then
-                                return true
-                            end
-                        end
-                        return false
-                    end
-                    local nofleft  = dataset.nofleft
-                    local nofright = dataset.nofright
-                    for i=1,nofleft do
-                        if found(cells[i]) then
-                            result = result + 1
-                            break
-                        end
-                    end
-                    for i=nofleft+1,nofleft+nofright do
-                        if found(cells[i]) then
-                            result = result + 2
-                            break
-                        end
+                local future   = dataset.future
+                local nofleft  = dataset.nofleft
+                local nofright = dataset.nofright
+                for i=#future,1,-1 do
+                    local lastcontent = hascontent(future[i],nofleft,nofright)
+                    if lastcontent > 0 then
+                        dataset.lastcontent = i
+                        dataset.lastresult  = lastcontent
+                        return integer_value, i
                     end
                 end
+                dataset.lastcontent = 0
+                dataset.lastresult  = 0
             end
-            return integer_value, result
+            return integer_value, 0
         end
     }
 
@@ -1774,19 +2043,98 @@ end
 
 do
 
-    function columnsets.registersheet(name,sheet)
+    local s_page_mvl_temp <const> = "page:mvl:temp"
+
+    function columnsets.registerspreadsheets(name,spreadsheets)
         local dataset = data[name]
         if dataset then
-            local s = buffers.raw("sheet")
-            utilities.parsers.stepper(sheet,1,function(n)
-                local d = dataset.sheets[n]
+            local s = buffers.raw(s_page_mvl_temp)
+            stepper(spreadsheets,1,function(n)
+                local d = dataset.spreadsheets[n]
                 d[#d+1] = s
-                report("sheet %i, registering entry %i",n,#d)
-                if n > dataset.nofsheets then
-                    dataset.nofsheets = n
+                report("spreadsheets %i, registering entry %i",n,#d)
+                if n > dataset.nofspreadsheets then
+                    dataset.nofspreadsheets = n
                 end
             end)
-            buffers.erase("sheet")
+            buffers.erase(s_page_mvl_temp)
+        end
+    end
+
+    function columnsets.presetspreadsheets(name)
+        local dataset = data[name]
+        if dataset then
+            local saved        = savedstate(dataset)
+            local spreadsheets = dataset.spreadsheets
+setstate(dataset,false)
+dataset.byspread = true
+dataset.spread = 1
+dataset.count  = 1
+dataset.sheet  = 1
+            for n=1,dataset.nofspreadsheets do
+                dataset.cells = futurecells(dataset)
+                local list = rawget(spreadsheets,n)
+                if list then
+                    if trace_flush then
+                        report("presetting: spreadsheets %i, %i entries",n,#list)
+                    end
+                    texsetcount(c_page_mvl_current_spreadsheet,n)
+                    for i=1,#list do
+                        buffers.assign(s_page_mvl_temp,list[i])
+                        expandmacro("page_mvl_process_spread")
+                    end
+                    spreadsheets[n] = nil
+                else
+                    if trace_flush then
+                        report("presetting: spreadsheets %i, no entries",n)
+                    end
+                end
+-- inspect(dataset.future)
+--                 setstate(dataset,true)
+
+    dataset.spread        = dataset.spread + 1
+    dataset.count         = dataset.spread * 2 - 1
+    dataset.sheet         = dataset.spread * 2 - 1
+    dataset.state         = "left"
+    dataset.firstcolumn   = 1
+    dataset.lastcolumn    = dataset.firstcolumn + dataset.nofright
+    dataset.currentcolumn = dataset.firstcolumn
+    dataset.currentrow    = 1
+
+            end
+dataset.byspread = false
+            texsetcount(c_page_mvl_current_spreadsheet,0)
+            restorestate(dataset,saved)
+            setstate(dataset,false)
+            setfirstcells(dataset)
+            check(dataset)
+        end
+    end
+
+    function columnsets.registersheet(name,sheet,option)
+        local dataset = data[name]
+        if dataset then
+            local s = buffers.raw(s_page_mvl_temp)
+            if option == v_page then
+                stepper(sheet,1,function(n)
+                    local d = dataset.delayed[n]
+                    d[#d+1] = s
+                    report("sheet %i, registering entry %i, delayed",n,#d)
+                    if n > dataset.nofdelayed then
+                        dataset.nofdelayed = n
+                    end
+                end)
+            else
+                stepper(sheet,1,function(n)
+                    local d = dataset.sheets[n]
+                    d[#d+1] = s
+                    report("sheet %i, registering entry %i, immediate",n,#d)
+                    if n > dataset.nofsheets then
+                        dataset.nofsheets = n
+                    end
+                end)
+            end
+            buffers.erase(s_page_mvl_temp)
         end
     end
 
@@ -1803,15 +2151,15 @@ do
                 if list then
                     if trace_flush then
                         report("presetting: spread %i, count %i, sheet %i, %i entries",
-                            dataset.spread,dataset.count,dataset.sheet,list and #list or 0)
+                            dataset.spread,dataset.count,dataset.sheet,#list)
                     end
                     if dataset.sheet ~= sheet then
                         report("error: sheets are out of sync")
                     end
                     texsetcount(c_page_mvl_current_sheet,sheet)
                     for i=1,#list do
-                        buffers.assign("sheetpreset",list[i])
-                        expandmacro("getcolumsetsheetbuffer")
+                        buffers.assign(s_page_mvl_temp,list[i])
+                        expandmacro("page_mvl_process_sheet")
                     end
                     sheets[sheet] = nil
                 else
@@ -1830,10 +2178,47 @@ do
         end
     end
 
+    function columnsets.delayedsheet(name)
+        local dataset = data[name]
+        if dataset then
+            local delayed = dataset.delayed
+            local sheet   = dataset.sheet
+            local list    = rawget(delayed,sheet)
+            if list then
+                if trace_flush then
+                    report("presetting: delayed sheet %i, %i entries",n,#list)
+                end
+                for i=1,#list do
+                    buffers.assign(s_page_mvl_temp,list[i])
+                    expandmacro("page_mvl_process_delayed")
+                end
+                delayed[sheet] = nil
+            end
+        end
+    end
+
+    implement {
+        name      = "registercolumnsetspreadsheets",
+        arguments = "2 strings",
+        actions   = columnsets.registerspreadsheets,
+    }
+
+    implement {
+        name      = "presetcolumnsetspreadsheets",
+        arguments = "argument",
+        actions   = columnsets.presetspreadsheets,
+    }
+
     implement {
         name      = "registercolumnsetsheet",
-        arguments = "2 strings",
+        arguments = "3 strings",
         actions   = columnsets.registersheet,
+    }
+
+    implement {
+        name      = "delayedcolumnsetsheet",
+        arguments = "string",
+        actions   = columnsets.delayedsheet,
     }
 
     implement {
@@ -1900,7 +2285,7 @@ do
             local worst    = #shape
          -- report("spread %i, add to shape",spread)
             for c=first,#cells do
-                if mvls[c] == currentmvl and not disabled[c] then
+                if (mvls[c] == currentmvl or currentmvl == 1) and not disabled[c] then
                     local column   = cells[c]
                     local lines    = 0
                     local slot     = 0
@@ -1970,27 +2355,33 @@ shape[cnt].options = 1
             local limit  = dataset.limit or 1
             for i=1,#future do
                 local cells = future[i]
-                local first = 0
                 for c=1,#cells do
-                    local column   = cells[c]
-                    local lines    = 0
+                    local column = cells[c]
+                    local lines  = 0
+                    local first  = 0
                     local noflines = #column
                     for r=1,noflines do
                         if not column[r] then
                             if first == 0 then
+                                -- first free cell
                                 first = r
                                 lines = 1
                             else
+                                -- next free cell
                                 lines = lines + 1
                             end
                         elseif first > 0 then
                             if lines < limit then
+                                -- free range width in limit
                                 for i=first,first+lines-1 do
                                     column[i] = true
                                 end
+                            else
+                                -- more free than limit
                             end
                             lines = 0
                             first = 0
+                        else
                         end
                     end
                     if first > 0 and lines < limit then
@@ -2049,7 +2440,7 @@ shape[cnt].options = 1
                     local topskip    = lastshape.topskip
                     local bottomskip = lastshape.bottomskip
                     local spread     = lastshape.spread + 1
-            local spread     = template.spread + 1
+                    local spread     = template.spread + 1
                     local page       = template.page + 1
                     while nofshapes <= index do -- otherwise we bleed extra
                         for j=1,nofcolumns do
@@ -2120,6 +2511,24 @@ shape[cnt].options = 1
         arguments = { "argument", "integer", true },
         usage     = "value",
         actions   = columnsets.setextra
+    }
+
+    implement {
+        name      = "balanceshapeextra",
+        arguments = { "argument", "integer" },
+        usage     = "value",
+        public    = true,
+        protected = true,
+        actions   = function(name,index)
+            local dataset = data[name]
+            if dataset then
+                local shape = dataset.shape
+                if shape then
+                    return dimension_value, (shape[index] or shape[#shape]).extra
+                end
+            end
+            return dimension_value, 0
+        end
     }
 
     implement {
@@ -2235,7 +2644,7 @@ do
         if dataset then
             local future = dataset.future
             if future then
-                utilities.parsers.stepper(range or "1:*",#future,function(n)
+                stepper(range or "1:*",#future,function(n)
                     showgrid(dataset,"spread " .. n,future[n])
                 end)
             end
@@ -2345,7 +2754,7 @@ do
 
     local actions = { "spread", "page", "column", "slot", "lines", "amount" }
     local trace   = false
-    local eject   = tex.magicconstants.ejectpenalty
+    local eject   <const> = tex.magicconstants.ejectpenalty
 
     trackers.register("columnsets.breaks", function(v)
         trace = v
@@ -2796,6 +3205,9 @@ do
                     end
                 end
             end
+
+            dataset.currentrow    = 1
+            dataset.currentcolumn = 1
         end
     end
 

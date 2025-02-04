@@ -2579,7 +2579,7 @@ do
         end
         --
         local method   = specification.method
-        local internal = specification.internal or ""
+        local internal = specification.internal or 0
         --
         local prefix, rest = lpegmatch(prefixsplitter,reference)
         if rest then

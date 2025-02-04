@@ -84,8 +84,8 @@ local privateoffset       = fonts.constructors and fonts.constructors.privateoff
 
 local applyruntimefixes   = fonts.treatments and fonts.treatments.applyfixes
 
-local wildcard            = "*"
-local default             = "dflt"
+local wildcard            <const> = "*"
+local default             <const> = "dflt"
 
 local formats             = fonts.formats
 

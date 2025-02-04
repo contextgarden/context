@@ -16,6 +16,7 @@ callback_state_info lmt_callback_state = {
     .metatable_id = 0,
     .padding      = 0,
     .values       = { 0 },
+ /* .states       = { 0 }, */
 };
 
 /* todo: use lua keywords instead */
@@ -82,6 +83,7 @@ static const char *callbacklib_names[total_callbacks] = {
     "linebreak_quality",
     "paragraph_pass",
     "handle_uleader",
+    "handle_uinsert",
     "italic_correction",
     "show_loners",
     "tail_append",
@@ -517,30 +519,58 @@ static int callbacklib_callback_register(lua_State *L)
     const char *s = lua_tostring(L, 1);
     int cb = callbacklib_callback_found(s);
     if (cb >= 0) {
-        switch (lua_type(L, 2)) {
-            case LUA_TFUNCTION:
-                lmt_callback_state.values[cb] = cb;
-                break;
-            case LUA_TBOOLEAN:
-                if (lua_toboolean(L, 2)) {
-                    goto BAD; /*tex Only |false| is valid. */
-                }
-                // fall through
-            case LUA_TNIL:
-                lmt_callback_state.values[cb] = -1;
-                break;
-        }
-        lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
-        lua_pushvalue(L, 2); /*tex the function or nil */
-        lua_rawseti(L, -2, cb);
-        lua_rawseti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
-        lua_pushinteger(L, cb);
-        return 1;
+     // if (lmt_callback_state.states[cb] & callback_frozen) {
+     //     /*tex Maybe issue a message. */
+     // } else {
+            switch (lua_type(L, 2)) {
+                case LUA_TFUNCTION:
+                    lmt_callback_state.values[cb] = cb;
+                 // lmt_callback_state.states[cb] = callback_set;
+                    break;
+                case LUA_TBOOLEAN:
+                    if (lua_toboolean(L, 2)) {
+                        goto BAD; /*tex Only |false| is valid. */
+                    }
+                    // fall through
+                case LUA_TNIL:
+                    lmt_callback_state.values[cb] = -1;
+                 // lmt_callback_state.states[cb] = 0;
+                    break;
+            }
+            lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
+            lua_pushvalue(L, 2); /*tex the function or nil */
+            lua_rawseti(L, -2, cb);
+            lua_rawseti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
+            lua_pushinteger(L, cb);
+            return 1;
+     // } 
     }
   BAD:
     lua_pushnil(L);
     return 1;
 }
+
+// static int callbacklib_callback_enable(lua_State *L)
+// {
+//     int cb = lmt_tointeger(L, 1);
+//     if (cb >= 0 && cb < total_callbacks) {
+//         if (lua_toboolean(L, 2)) {
+//             lmt_callback_state.states[cb] &= ~ callback_disabled;
+//         } else {
+//             lmt_callback_state.states[cb] |= callback_disabled;
+//         }
+//     }
+//     return 0;
+// }
+// 
+// static int callbacklib_callback_freeze(lua_State *L)
+// {
+//     int cb = lmt_tointeger(L, 1);
+//     if (cb >= 0 && cb < total_callbacks) {
+//         lmt_callback_state.states[cb] |= callback_frozen;
+//     }
+//     return 0;
+// }
 
 void lmt_run_memory_callback(const char* what, int success)
 {
@@ -623,6 +653,8 @@ static const struct luaL_Reg callbacklib_function_list[] = {
     { "find",     callbacklib_callback_find     },
     { "known",    callbacklib_callback_known    },
     { "register", callbacklib_callback_register },
+ // { "enable",   callbacklib_callback_enable   },
+ // { "freeze",   callbacklib_callback_freeze   },
     { "list",     callbacklib_callback_list     },
     { "usage",    callbacklib_callback_usage    },
     { NULL,       NULL                          },

@@ -57,6 +57,9 @@ do
     directives.register("backend.cleanup.flatten", function(v) flatten = v end)
     directives.register("backend.cleanup.soften",  function(v) soften  = v end)
 
+    -- we do it in normalize but there we only handle lines, so hboxes still
+    -- have them .. so:
+
     nodes.handlers.cleanuppage = function(head)
         local count    = 0 -- see below
         local found    = 0

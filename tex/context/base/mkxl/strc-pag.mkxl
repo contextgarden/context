@@ -258,7 +258,7 @@
 \to \everybeforepagebody
 
 \permanent\def\therealsubpageno#1% new helper
-  {\the\numexpr\c_strc_subpage_first_real+#1+\minusone\relax}
+  {\tointeger{\c_strc_subpage_first_real+#1+\minusone}}
 
 % Equivalents (compatibility):
 %

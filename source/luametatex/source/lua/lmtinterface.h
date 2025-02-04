@@ -13,7 +13,6 @@
     we also create \LUA\ string entries which speeds up the interfacing.
 
 */
-
 # include "lua.h"
 # include "lauxlib.h"
 # include "lualib.h"
@@ -512,6 +511,7 @@ make_lua_key(L, auxiliary);\
 make_lua_key(L, axis);\
 make_lua_key(L, AxisHeight);\
 make_lua_key(L, balance);\
+make_lua_key(L, balancefinalpenalty);\
 make_lua_key(L, balanceslot);\
 make_lua_key(L, baselineskip);\
 make_lua_key(L, beforedisplay);\
@@ -914,6 +914,7 @@ make_lua_key(L, linepenalty);\
 make_lua_key(L, lineskip);\
 make_lua_key(L, lineskiplimit);\
 make_lua_key(L, list);\
+make_lua_key(L, lmtxexpression);\
 make_lua_key(L, local);\
 make_lua_key(L, local_box);\
 make_lua_key(L, localbox);\
@@ -1290,6 +1291,7 @@ make_lua_key(L, spacer);\
 make_lua_key(L, spaceshrink);\
 make_lua_key(L, spaceskip);\
 make_lua_key(L, spacestretch);\
+make_lua_key(L, spacing);\
 make_lua_key(L, span);\
 make_lua_key(L, spec);\
 make_lua_key(L, specification);\

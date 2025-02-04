@@ -123,18 +123,19 @@
    \else
      \useinitialcolorparameter\c!color
    \fi
+   \scratchcounter{\initialparameter\c!n}%
    \edef\p_voffset{\initialparameter\c!voffset}%
-   \scratchcounter \initialparameter\c!n\relax
-   \scratchvoffset\dimexpr\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi\relax
+   \scratchvoffset{\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi}%
+ % \scratchvoffset{\ifcstok{\initialparameter\c!voffset}\v!line\scratchcounter\lineheight-\lineheight\else\lastnamedcs\fi}%
    \clf_setinitial
         location   {\initialparameter\c!location}%
-        enabled    true\space
+        enabled    true\relaxedspace
         n          \scratchcounter
-        m          \numexpr\initialparameter\c!m\relax
+        m          {\initialparameter\c!m}%
         method     {\initialparameter\c!method}%
         continue   {\initialparameter\c!continue}%
-        distance   \dimexpr\initialparameter\c!distance\relax
-        hoffset    \dimexpr\initialparameter\c!hoffset\relax
+        distance   {\initialparameter\c!distance}%
+        hoffset    {\initialparameter\c!hoffset}%
         voffset    \scratchvoffset
         ma         \c_attr_colormodel
         ca         \c_attr_color

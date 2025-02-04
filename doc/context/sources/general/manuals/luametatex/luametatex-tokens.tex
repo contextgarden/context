@@ -1277,10 +1277,14 @@ table.sort(p,function(a,b) return a[3] < b[3] end)
 for i=1,#p do
     local m = p[i][3]
     local s = token.locatemacro(m)
-    if s > 1 then
-        table.insert(d[s],m)
+    if n[s] then
+        if s > 1 then
+            table.insert(d[s],m)
+        end
+        n[s] = n[s] + 1
+    else
+        print(">>>>>>>>>>>>>>>>>>>>>>>>>> check",s)
     end
-    n[s] = n[s] + 1
 end
 context.starttabulate { "|c|r|lpT|" }
 context.FL()

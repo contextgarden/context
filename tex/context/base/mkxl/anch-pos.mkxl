@@ -304,7 +304,8 @@
 \newfloat\f_anch_extra_y_scale
 
 \def\d_anch_extra_text_depth
-  {\dimexpr\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi\relax}
+ %{\dimexpr\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi\relax}
+  {\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi}
 
 \protected\def\anch_mark_column_box#1#2% box n
   {\global\advanceby\c_anch_column\plusone
@@ -569,8 +570,8 @@
 
 %D Moved here:
 
-\permanent\protected\def\savepos {\clf_savepos}
-\permanent\protected\def\lastxpos{\numexpr\clf_lastxpos\relax}
-\permanent\protected\def\lastypos{\numexpr\clf_lastypos\relax}
+% \savepos  % define at the lua end
+% \lastxpos % define at the lua end
+% \lastypos % define at the lua end
 
 \protect \endinput

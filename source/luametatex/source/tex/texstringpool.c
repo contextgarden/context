@@ -176,7 +176,7 @@ void tex_initialize_string_pool(void)
     if (size && nullstring) {
         lmt_string_pool_state.string_pool[0].s = nullstring;
         nullstring[0] = '\0';
-        lmt_string_pool_state.string_pool_data.ptr += 1;
+        lmt_string_pool_state.string_pool_data.ptr++;
         tex_reset_cur_string();
     } else {
         tex_overflow_error("pool", size);

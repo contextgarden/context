@@ -109,8 +109,8 @@
       \Uvextensible
          \ifcstok{\mathdelimiterparameter\c!exact}\v!yes exact \fi
          \ifcstok{\mathdelimiterparameter\c!axis }\v!yes axis  \fi
-         height \p_factor\dimexpr\mathdelimiterparameter\c!height\relax
-         depth  \p_factor\dimexpr\mathdelimiterparameter\c!depth \relax
+         \s!height {\p_factor\dimexpr\mathdelimiterparameter\c!height}%
+         \s!depth  {\p_factor\dimexpr\mathdelimiterparameter\c!depth }%
          \Umathchar\zerocount\zerocount\mathdelimiterparameter\c!symbol
       \relax
       \ifempty\p_rightoffset\else

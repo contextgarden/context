@@ -20,10 +20,10 @@
 %D In addition to the uppercase hex conversion, as needed in math families, we
 %D occasionally need a lowercase one.
 
-\permanent\def\lchexnumber #1{\clf_lchexnumber \numexpr#1\relax}
-\permanent\def\uchexnumber #1{\clf_uchexnumber \numexpr#1\relax}
-\permanent\def\lchexnumbers#1{\clf_lchexnumbers\numexpr#1\relax}
-\permanent\def\uchexnumbers#1{\clf_uchexnumbers\numexpr#1\relax}
+\permanent\def\lchexnumber #1{\clf_lchexnumber {#1}}
+\permanent\def\uchexnumber #1{\clf_uchexnumber {#1}}
+\permanent\def\lchexnumbers#1{\clf_lchexnumbers{#1}}
+\permanent\def\uchexnumbers#1{\clf_uchexnumbers{#1}}
 
 \aliased\let\hexnumber\uchexnumber
 
@@ -31,15 +31,15 @@
 %D
 %D For \UNICODE\ remapping purposes, we need octal numbers.
 
-\permanent\def\octnumber#1{\clf_octnumber\numexpr#1\relax}
+\permanent\def\octnumber#1{\clf_octnumber{#1}}
 
 %D \macros{hexstringtonumber,octstringtonumber}
 %D
 %D This macro converts a two character hexadecimal number into a decimal number,
 %D thereby taking care of lowercase characters as well.
 
-\permanent\def\hexstringtonumber#1{\clf_hexstringtonumber\numexpr#1\relax}
-\permanent\def\octstringtonumber#1{\clf_octstringtonumber\numexpr#1\relax}
+\permanent\def\hexstringtonumber#1{\clf_hexstringtonumber{#1}}
+\permanent\def\octstringtonumber#1{\clf_octstringtonumber{#1}}
 
 %D \macros{twodigits, threedigits}
 %D

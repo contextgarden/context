@@ -67,58 +67,58 @@
 %D \showsetup{romannumerals}
 %D \showsetup{Romannumerals}
 
-\permanent\def\romannumerals#1{\clf_romannumerals\numexpr#1\relax}
-\permanent\def\Romannumerals#1{\clf_Romannumerals\numexpr#1\relax}
+\permanent\def\romannumerals#1{\clf_romannumerals{#1}}
+\permanent\def\Romannumerals#1{\clf_Romannumerals{#1}}
 
 %D Arabic  etc:
 
-\permanent\def\abjadnumerals     #1{\clf_abjadnumerals     \numexpr#1\relax}
-\permanent\def\abjadnodotnumerals#1{\clf_abjadnodotnumerals\numexpr#1\relax}
-\permanent\def\abjadnaivenumerals#1{\clf_alphabetic        \numexpr#1\relax{arabic}} % okay?
+\permanent\def\abjadnumerals     #1{\clf_abjadnumerals     {#1}}
+\permanent\def\abjadnodotnumerals#1{\clf_abjadnodotnumerals{#1}}
+\permanent\def\abjadnaivenumerals#1{\clf_alphabetic        {#1}{arabic}} % okay?
 
-\permanent\def\hebrewnumerals    #1{\clf_hebrewnumerals\numexpr#1\relax}
+\permanent\def\hebrewnumerals    #1{\clf_hebrewnumerals{#1}}
 \aliased  \let\yiddishnumerals      \hebrewnumerals
 
-\permanent\def\languagecharacters#1{\clf_alphabetic\numexpr#1\relax{\currentlanguage}} % new
-\permanent\def\languageCharacters#1{\clf_Alphabetic\numexpr#1\relax{\currentlanguage}} % new
+\permanent\def\languagecharacters#1{\clf_alphabetic{#1}{\currentlanguage}} % new
+\permanent\def\languageCharacters#1{\clf_Alphabetic{#1}{\currentlanguage}} % new
 
-\permanent\def\alphabeticnumerals#1{\clf_alphabetic\numexpr#1\relax{}}
-\permanent\def\Alphabeticnumerals#1{\clf_Alphabetic\numexpr#1\relax{}}
+\permanent\def\alphabeticnumerals#1{\clf_alphabetic{#1}{}}
+\permanent\def\Alphabeticnumerals#1{\clf_Alphabetic{#1}{}}
 
-\permanent\def\thainumerals      #1{\clf_alphabetic\numexpr#1\relax{thai}}
-\permanent\def\devanagarinumerals#1{\clf_decimals  \numexpr#1\relax{devanagari}}
-\permanent\def\malayalamnumerals #1{\clf_decimals  \numexpr#1\relax{malayalam}}
-\permanent\def\tamilnumerals     #1{\clf_decimals  \numexpr#1\relax{tamil}}
-\permanent\def\kannadanumerals   #1{\clf_decimals  \numexpr#1\relax{kannada}}
-\permanent\def\telugunumerals    #1{\clf_decimals  \numexpr#1\relax{telugu}}
-\permanent\def\bengalinumerals   #1{\clf_decimals  \numexpr#1\relax{bengali}}
-\permanent\def\gujaratinumerals  #1{\clf_decimals  \numexpr#1\relax{gujarati}}
-\permanent\def\gurmurkhinumerals #1{\clf_decimals  \numexpr#1\relax{gurmurkhi}}
-\permanent\def\tibetannumerals   #1{\clf_alphabetic\numexpr#1\relax{tibetan}}
-\permanent\def\greeknumerals     #1{\clf_alphabetic\numexpr#1\relax{greek}}
-\permanent\def\Greeknumerals     #1{\clf_Alphabetic\numexpr#1\relax{greek}}
-\permanent\def\arabicnumerals    #1{\clf_alphabetic\numexpr#1\relax{arabic}}
-\permanent\def\persiannumerals   #1{\clf_alphabetic\numexpr#1\relax{persian}}
-\permanent\def\arabicdecimals    #1{\clf_decimals  \numexpr#1\relax{arabic}}
-\permanent\def\persiandecimals   #1{\clf_decimals  \numexpr#1\relax{persian}}
+\permanent\def\thainumerals      #1{\clf_alphabetic{#1}{thai}}
+\permanent\def\devanagarinumerals#1{\clf_decimals  {#1}{devanagari}}
+\permanent\def\malayalamnumerals #1{\clf_decimals  {#1}{malayalam}}
+\permanent\def\tamilnumerals     #1{\clf_decimals  {#1}{tamil}}
+\permanent\def\kannadanumerals   #1{\clf_decimals  {#1}{kannada}}
+\permanent\def\telugunumerals    #1{\clf_decimals  {#1}{telugu}}
+\permanent\def\bengalinumerals   #1{\clf_decimals  {#1}{bengali}}
+\permanent\def\gujaratinumerals  #1{\clf_decimals  {#1}{gujarati}}
+\permanent\def\gurmurkhinumerals #1{\clf_decimals  {#1}{gurmurkhi}}
+\permanent\def\tibetannumerals   #1{\clf_alphabetic{#1}{tibetan}}
+\permanent\def\greeknumerals     #1{\clf_alphabetic{#1}{greek}}
+\permanent\def\Greeknumerals     #1{\clf_Alphabetic{#1}{greek}}
+\permanent\def\arabicnumerals    #1{\clf_alphabetic{#1}{arabic}}
+\permanent\def\persiannumerals   #1{\clf_alphabetic{#1}{persian}}
+\permanent\def\arabicdecimals    #1{\clf_decimals  {#1}{arabic}}
+\permanent\def\persiandecimals   #1{\clf_decimals  {#1}{persian}}
 
-\permanent\def\mathgreeknumerals #1{\im{\clf_alphabetic\numexpr#1\relax{greek}}}
-\permanent\def\mathGreeknumerals #1{\im{\clf_Alphabetic\numexpr#1\relax{greek}}}
+\permanent\def\mathgreeknumerals #1{\im{\clf_alphabetic{#1}{greek}}}
+\permanent\def\mathGreeknumerals #1{\im{\clf_Alphabetic{#1}{greek}}}
 
 \aliased  \let\arabicexnumerals     \persiannumerals
 
-\permanent\def\koreannumerals    #1{\clf_alphabetic\numexpr#1\relax{korean}}
-\permanent\def\koreannumeralsp   #1{\clf_alphabetic\numexpr#1\relax{korean-parenthesis}}
-\permanent\def\koreannumeralsc   #1{\clf_alphabetic\numexpr#1\relax{korean-circle}}
+\permanent\def\koreannumerals    #1{\clf_alphabetic{#1}{korean}}
+\permanent\def\koreannumeralsp   #1{\clf_alphabetic{#1}{korean-parenthesis}}
+\permanent\def\koreannumeralsc   #1{\clf_alphabetic{#1}{korean-circle}}
 
 \aliased  \let\koreanparentnumerals     \koreannumeralsp
 \aliased  \let\koreanparenthesisnumerals\koreannumeralsp
 \aliased  \let\koreancirclenumerals     \koreannumeralsc
 
-\permanent\def\chinesenumerals    #1{\clf_chinesenumerals\numexpr#1\relax{normal}}
-\permanent\def\chinesecapnumerals #1{\clf_chinesenumerals\numexpr#1\relax{cap}}
-\permanent\def\chineseallnumerals #1{\clf_chinesenumerals\numexpr#1\relax{all}}
-\permanent\def\chinesedatenumerals#1{\clf_chinesenumerals\numexpr#1\relax{date}}
+\permanent\def\chinesenumerals    #1{\clf_chinesenumerals{#1}{normal}}
+\permanent\def\chinesecapnumerals #1{\clf_chinesenumerals{#1}{cap}}
+\permanent\def\chineseallnumerals #1{\clf_chinesenumerals{#1}{all}}
+\permanent\def\chinesedatenumerals#1{\clf_chinesenumerals{#1}{date}}
 
 %D \macros
 %D   {character,Character}
@@ -136,8 +136,8 @@
 %D \showsetup{character}
 %D \showsetup{Character}
 
-\permanent\def\character#1{\clf_character\numexpr#1\relax}
-\permanent\def\Character#1{\clf_Character\numexpr#1\relax}
+\permanent\def\character#1{\clf_character{#1}}
+\permanent\def\Character#1{\clf_Character{#1}}
 
 %D \macros
 %D   {characters,Characters}
@@ -148,8 +148,8 @@
 %D \showsetup{characters}
 %D \showsetup{Characters}
 
-\permanent\def\characters#1{\clf_characters\numexpr#1\relax}
-\permanent\def\Characters#1{\clf_Characters\numexpr#1\relax}
+\permanent\def\characters#1{\clf_characters{#1}}
+\permanent\def\Characters#1{\clf_Characters{#1}}
 
 %D \macros
 %D   {greeknumerals,Greeknumerals}
@@ -177,9 +177,17 @@
    \scratchwidth \wd\scratchbox
    \scratchheight\ht\scratchbox
    \scratchdimen .1\exheight
-   \vrule\s!width\scratchwidth\s!height\dimexpr\scratchheight+\scratchdimen\relax\s!depth-\dimexpr\scratchheight-+\scratchdimen\relax
+   \vrule
+     \s!width \scratchwidth
+     \s!height{\scratchheight+\scratchdimen}%
+     \s!depth {-\scratchheight+\scratchdimen}%
+   \relax
    \hskip-\scratchwidth
-   \vrule\s!width\scratchwidth\s!height\scratchdimen\s!depth\scratchdimen
+   \vrule
+     \s!width \scratchwidth
+     \s!height\scratchdimen
+     \s!depth \scratchdimen
+   \relax
    \hskip-\scratchwidth
    \box\scratchbox
    \egroup}
@@ -204,10 +212,10 @@
 %D
 %D Anyhow, the conversion looks like:
 
-\permanent\protected\def\monthlong #1{\clf_monthname\numexpr#1\relax}
-\permanent\protected\def\monthshort#1{\clf_monthmnem\numexpr#1\relax}
-\permanent\protected\def\daylong   #1{\clf_dayname\numexpr#1\relax}
-\permanent\protected\def\dayshort  #1{\clf_daymnem\numexpr#1\relax}
+\permanent\protected\def\monthlong #1{\clf_monthname{#1}}
+\permanent\protected\def\monthshort#1{\clf_monthmnem{#1}}
+\permanent\protected\def\daylong   #1{\clf_dayname{#1}}
+\permanent\protected\def\dayshort  #1{\clf_daymnem{#1}}
 \aliased            \let\convertmonth\monthlong % for old times sake
 
 %D We redefine the \TEX\ primitive \type{\month} as:
@@ -221,9 +229,9 @@
 
 \popoverloadmode
 
-\permanent\protected\def\MONTH     #1{\WORD{\clf_monthname\numexpr#1\relax}}
-\permanent\protected\def\MONTHLONG #1{\WORD{\clf_monthname\numexpr#1\relax}}
-\permanent\protected\def\MONTHSHORT#1{\WORD{\clf_monthmnem\numexpr#1\relax}}
+\permanent\protected\def\MONTH     #1{\WORD{\clf_monthname{#1}}}
+\permanent\protected\def\MONTHLONG #1{\WORD{\clf_monthname{#1}}}
+\permanent\protected\def\MONTHSHORT#1{\WORD{\clf_monthmnem{#1}}}
 
 %D We never explicitly needed this, but Tobias Burnus pointed out that it would be
 %D handy to convert to the day of the week. In doing so, we have to calculate the
@@ -243,18 +251,18 @@
 %D \showsetup{weekday}
 %D \showsetup{WEEKDAY}
 
-\permanent\protected\def\weekday #1{\clf_dayname\numexpr#1\relax}
-\permanent\protected\def\WEEKDAY #1{\WORD{\clf_dayname\numexpr#1\relax}}
-\permanent\protected\def\DAYLONG #1{\WORD{\clf_dayname\numexpr#1\relax}}
-\permanent\protected\def\DAYSHORT#1{\WORD{\clf_daymnem\numexpr#1\relax}}
+\permanent\protected\def\weekday #1{\clf_dayname{#1}}
+\permanent\protected\def\WEEKDAY #1{\WORD{\clf_dayname{#1}}}
+\permanent\protected\def\DAYLONG #1{\WORD{\clf_dayname{#1}}}
+\permanent\protected\def\DAYSHORT#1{\WORD{\clf_daymnem{#1}}}
 
 %D \macros
 %D   {getdayoftheweek, dayoftheweek}
 
 \newcount\normalweekday
 
-\permanent          \def\dayoftheweek   #1#2#3{\clf_weekdayname\numexpr#1\relax\numexpr#2\relax\numexpr#3\relax}                 % name
-\permanent\protected\def\getdayoftheweek#1#2#3{\normalweekday\clf_weekday\numexpr#1\relax\numexpr#2\relax\numexpr#3\relax\relax} % number
+\permanent          \def\dayoftheweek   #1#2#3{\clf_weekdayname{#1}{#2}{#3}}                 % name
+\permanent\protected\def\getdayoftheweek#1#2#3{\normalweekday\clf_weekday{#1}{#2}{#3}\relax} % number
 
 %D Using this macro in
 %D
@@ -300,17 +308,17 @@
 %D The number of days is available in the macro \type {\numberofdays}.
 
 \permanent\def\doifelseleapyear#1% expandable check
-  {\clf_doifelseleapyear\numexpr#1\relax}
+  {\clf_doifelseleapyear{#1}}
 
 \aliased\let\doifleapyearelse\doifelseleapyear
 
 \mutable\let\numberofdays\!!zerocount
 
 \permanent\protected\def\getdayspermonth#1#2%
-  {\edef\numberofdays{\clf_nofdays\numexpr#1\relax\numexpr#2\relax}}
+  {\edef\numberofdays{\clf_nofdays{#1}{#2}}}
 
 \permanent\def\dayspermonth#1#2%
-  {\clf_nofdays\numexpr#1\relax\numexpr#2\relax}
+  {\clf_nofdays{#1}{#2}}
 
 % \dayoftheweek{2006}{9}{15}
 % \doifleapyearelse{2000}{OK}{NOT OK}
@@ -576,7 +584,7 @@
      {\gdefcsname\??conversion#1\endcsname{#3}}}
 
 \def\syst_converters_checked_conversion#1#2%
-  {\clf_checkedconversion{#1}\numexpr#2\relax}
+  {\clf_checkedconversion{#1}{#2}}
 
 %D If a conversion is just a font switch then we need to make sure that the number
 %D is indeed ends up as number in the input, so we need to handle the second
@@ -610,7 +618,7 @@
    \fi}
 
 \permanent\def\doifelseconversionnumber#1#2% expandable
-  {\ifnum#2>\numexpr\clf_nofconversions{#1}\relax
+  {\ifnum#2>{\clf_nofconversions{#1}}%
      \expandafter\secondoftwoarguments
    \else
      \expandafter\firstoftwoarguments
@@ -641,13 +649,13 @@
 
 \permanent\def\highordinalstr#1{\high{\notsmallcapped{#1}}}
 \permanent\def\ordinalstr    #1{\notsmallcapped{#1}}
-\permanent\def\ordinalnumber #1{\clf_ordinal\numexpr#1\relax{\currentlanguage}}
-\permanent\def\Ordinalnumber #1{\Words{\clf_ordinal\numexpr#1\relax{\currentlanguage}}}
+\permanent\def\ordinalnumber #1{\clf_ordinal{#1}{\currentlanguage}}
+\permanent\def\Ordinalnumber #1{\Words{\clf_ordinal{#1}{\currentlanguage}}}
 
 \mutable\let\verbosenumberconnector\space
 
-\permanent\def\verbosenumber#1{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}
-\permanent\def\VerboseNumber#1{\Words{\clf_verbose\numexpr#1\relax{\currentlanguage}{\verbosenumberconnector}}}
+\permanent\def\verbosenumber#1{\clf_verbose{#1}{\currentlanguage}{\verbosenumberconnector}}
+\permanent\def\VerboseNumber#1{\Words{\clf_verbose{#1}{\currentlanguage}{\verbosenumberconnector}}}
 
 %D As longs as symbols are linked to levels or numbers, we can also use the
 %D conversion mechanism, but in for instance the itemization macros, we prefer
@@ -782,14 +790,14 @@
 %D feature. We do need these definitions for mechanisms like itemize that check
 %D for converters.
 
-\permanent\def\sloveniannumerals#1{\clf_alphabetic\numexpr#1\relax{sl}}
-\permanent\def\slovenianNumerals#1{\clf_Alphabetic\numexpr#1\relax{sl}}
+\permanent\def\sloveniannumerals#1{\clf_alphabetic{#1}{sl}}
+\permanent\def\slovenianNumerals#1{\clf_Alphabetic{#1}{sl}}
 
-\permanent\def\spanishnumerals  #1{\clf_alphabetic\numexpr#1\relax{es}}
-\permanent\def\spanishNumerals  #1{\clf_Alphabetic\numexpr#1\relax{es}}
+\permanent\def\spanishnumerals  #1{\clf_alphabetic{#1}{es}}
+\permanent\def\spanishNumerals  #1{\clf_Alphabetic{#1}{es}}
 
-\permanent\def\russiannumerals  #1{\clf_alphabetic\numexpr#1\relax{ru}}
-\permanent\def\russianNumerals  #1{\clf_Alphabetic\numexpr#1\relax{ru}}
+\permanent\def\russiannumerals  #1{\clf_alphabetic{#1}{ru}}
+\permanent\def\russianNumerals  #1{\clf_Alphabetic{#1}{ru}}
 
 %defineconversion [\s!sl] [character]  [\sloveniannumerals]
 %defineconversion [\s!sl] [Character]  [\slovenianNumerals]
@@ -849,7 +857,7 @@
 
 %D Handy too (expanded!):
 
-\permanent\def\unihex#1{\clf_unihex\numexpr#1\relax}
+\permanent\def\unihex#1{\clf_unihex{#1}}
 
 %D Symbol sets:
 
@@ -923,6 +931,10 @@
    \symbol{bigcircle},
    \symbol{square},
    \symbol{checkmark}]
+
+\defineconversion
+  [set 1x]
+  [\textormathchars{⋆}]
 
 \defineconversion
   [set 1]
@@ -1011,7 +1023,7 @@
 %D \stoptext
 %D \stoptyping
 
-\permanent\def\zeronumberconversion#1{\the\numexpr#1-\plusone\relax}
+\permanent\def\zeronumberconversion#1{\tointeger{#1-\plusone}}
 
 \defineconversion [zero] [\zeronumberconversion]
 

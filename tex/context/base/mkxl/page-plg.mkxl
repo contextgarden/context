@@ -154,7 +154,7 @@
      \setbox#1\hbox\bgroup
        \vbox to \textheight\bgroup
           \offinterlineskip
-          \vskip\dimexpr-1\topskip+\strutheight\relax % could be an option
+          \vskip{-1\topskip+\strutheight}% could be an option
           \textwidth\makeupwidth
           \hsize\textwidth
           \boxmaxdepth\maxdepth
@@ -172,8 +172,8 @@
      \vsize\paperheight
      \setbox#1\vbox\bgroup
       %\settexthoffset
-      %\doifbothsidesoverruled\relax\relax{\hkern\dimexpr-\texthoffset-\cutspace+\backspace\relax}%
-       \doifbothsidesoverruled\relax\relax{\hkern\dimexpr-\paperwidth+\backspace+\makeupwidth-\cutspace+\backspace\relax}%
+      %\doifbothsidesoverruled\relax\relax{\hkern{-\texthoffset-\cutspace+\backspace}}%
+       \doifbothsidesoverruled\relax\relax{\hkern{-\paperwidth+\backspace+\makeupwidth-\cutspace+\backspace}}%
        \page_boxes_show_box\bgroup
          \csname\??layoutmakeupalternative\doifbothsidesoverruled\v!page\v!rightpage\v!leftpage\endcsname
        \egroup

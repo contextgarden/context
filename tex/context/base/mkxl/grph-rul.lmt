@@ -88,6 +88,25 @@ interfaces.implement {
 }
 
 interfaces.implement {
+    name      = "roundedfill",
+    protected = true,
+    arguments = { "dimension", "dimension", "dimension", "dimension", "dimension", "string" },
+    actions   = function(w,h,d,l,r,c)
+        local rule = userrule {
+            type   = "fill",
+            width  = w,
+            height = h,
+            depth  = d,
+            line   = l,
+            radius = r,
+            corner = c,
+        }
+        setattrlist(rule,true)
+        context(tonode(rule))
+    end
+}
+
+interfaces.implement {
     name      = "framedoutline",
  -- public    = true,
  -- protected = true,

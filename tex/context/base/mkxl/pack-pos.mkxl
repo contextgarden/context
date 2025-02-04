@@ -109,7 +109,7 @@
    \fi
    #3\scratchdimen
    \ifcstok{\positioningparameter\c!state}\v!overlay\else
-     \scratchdimen\dimexpr#5\nextbox+#3\relax
+     \scratchdimen{#5\nextbox+#3}%
      \ifdim           #3<-#7\relax \global#7-#3\relax    \fi
      \ifdim\scratchdimen> #6\relax \global#6\scratchdimen\fi
   \fi}
@@ -156,8 +156,8 @@
      {\egroup
       \d_pack_positioning_x_position\the\d_pack_positioning_x_position
       \d_pack_positioning_y_position\the\d_pack_positioning_y_position
-      \setexpandedpositioningparameter\c!xoffset{\the\dimexpr\positioningparameter\c!xoffset}%
-      \setexpandedpositioningparameter\c!yoffset{\the\dimexpr\positioningparameter\c!yoffset}}%
+      \setexpandedpositioningparameter\c!xoffset{\todimension{\positioningparameter\c!xoffset}}%
+      \setexpandedpositioningparameter\c!yoffset{\todimension{\positioningparameter\c!yoffset}}}%
    \ignorespaces}
 
 \protect \endinput

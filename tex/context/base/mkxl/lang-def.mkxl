@@ -17,6 +17,8 @@
 
 \unprotect
 
+% todo: \setuplanguage[..][apostrophe=yes]
+
 % Germanic Languages: Danish, Faeroese, Icelandic, Norwegian,
 % Swedish, German, Yiddish, Afrikaans, Dutch, English, Flemush,
 % Frisian, Plattdeutsch
@@ -668,7 +670,8 @@
    \c!rightquote=’,
    \c!leftquotation=“,
    \c!rightquotation=”,
-   \c!date={\v!year,年,\space,\v!month,\v!day,日}]
+  %\c!date={\v!year,年,\space,\v!month,\v!day,日}]
+   \c!date={\v!year,年,M,月,\v!day,日}]
 
 \installlanguage
   [\s!ja]

@@ -1291,4 +1291,45 @@ rules need to be applied.
 
 \stopsection
 
+\startsection[title={Fonts}]
+
+When we started with \LUATEX\ there was only Cambria as \OPENTYPE\ math font.
+However, as soon as we could load a wide font, and basic math handling was
+adapted to handle a fonts passed via \LUA, in \CONTEXT\ we switched to \OPENTYPE\
+math exclusively. This was possible because at the same time virtual fonts were
+integrated in the engine. Because the way \TEX\ approaches math differs from
+\OPENTYPE\ we had code paths that could handle both and were somewhat complex.
+Later these code paths were split more visible and detailed control over specific
+features was introduced. The reason for this came from the fact that the Latin
+Modern Math as well as additional fonts were a mix of \OPENTYPE\ and traditional
+(metric wise). Inconsistencies were handles by \CONTEXT\ when loading and passing
+fonts and runtime patching was our way out. There is also some juggling of math
+lists in \LUA\ involved.
+
+In \LUAMETATEX\ much more control was added alongside many new features in
+rendering math. Although by making decisions with respect to fonts in the end we
+could potentially use a much simpler code base. However we keep what we have
+because we need to write articles, manuals, presentations etc.\ that show the
+differences. We settled on the fact that fonts are what they are and won't
+change. Font specific tweaks are dealt with in a math font goodie file: most
+tweaks are generic and applied to all fonts, some are optional, and many can be
+tuned by parameters. In the end one can argue that we render math a bit different
+due to different font and character properties; for instance we got rid of italic
+correction and often deal with kerning, variants and extensibles a bit different.
+
+A consequence of this is that we will not describe in detail what happens in the
+math engine, first of all because we don't expect other macro packages to follow
+\CONTEXT\ in the way it deals with rendering math and the \LUATEX\ kind of hybrid
+approach is likely good enough because after all there was never demand for more
+advanced math rendering nor attempts to extend the engines in that area. This is
+why \LUAMETATEX\ tries to be \LUATEX\ compatible when it comes to the basics
+required by potential other usage than \CONTEXT. However, we might eventually
+drop some eight bit font related features, simply because one can pass them
+wrapped in a \UNICODE\ and \OPENTYPE\ math disguise. This is to be decided.
+
+The process of upgrading math is described in manuals, articles and presentations
+by the authors. There one can find a discussion about decisions made.
+
+\stopsection
+
 \stopdocument

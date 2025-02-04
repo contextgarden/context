@@ -1997,3 +1997,14 @@ def withnamedstacking expr s  =
 enddef ;
 
 permanent namedstacking, withnamedstacking ;
+
+% \enabledirectives[metapost.annotations=actual]      % default
+% \enabledirectives[metapost.annotations=alternative]
+%
+% fill fullcircle scaled 4cm withannotation "Oh, a circle." ;
+
+def withannotation expr txt =
+    withprescript ("an_text=" & txt)
+enddef ;
+
+permanent withannotation ;

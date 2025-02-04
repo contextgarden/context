@@ -664,21 +664,25 @@ static void tex_aux_show_loner_penalty(int callback_id, halfword options, scaled
     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->", options, penalty);
 }
 
-static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, scaled exdepth, int tracing)
+static int tex_aux_topskip_restart(halfword current, int where, scaled height, scaled depth, scaled exdepth, int discard, int tracing)
 {
     if (lmt_page_builder_state.contents < contribute_box) {
         /*tex
             Initialize the current page, insert the |\topskip| glue ahead of |p|, and |goto 
             continue|.
         */
-        halfword gluenode = tex_aux_insert_topskip(height, where);
-        tex_attach_attribute_list_copy(gluenode, current);
-        tex_couple_nodes(gluenode, current);
-        tex_couple_nodes(contribute_head, gluenode);
-        if (tracing > 1) {
-            tex_begin_diagnostic();
-            tex_print_format("[page: initialize, topskip at %s]", where == contribute_box ? "box" : "rule");
-            tex_end_diagnostic();
+        if (discard) { 
+            return 2;
+        } else { 
+            halfword gluenode = tex_aux_insert_topskip(height, where);
+            tex_attach_attribute_list_copy(gluenode, current);
+            tex_couple_nodes(gluenode, current);
+            tex_couple_nodes(contribute_head, gluenode);
+            if (tracing > 1) {
+                tex_begin_diagnostic();
+                tex_print_format("[page: initialize, topskip at %s]", where == contribute_box ? "box" : "rule");
+                tex_end_diagnostic();
+            }
         }
         return 1;
     } else {
@@ -902,16 +906,30 @@ static void tex_process_mvl(halfword context, halfword boundary)
                 case vlist_node:
                     if (tex_aux_migrating_restart(current, tracing)) {
                         continue;
-                    } else if (tex_aux_topskip_restart(current, contribute_box, box_height(current), box_depth(current), box_exdepth(current), tracing)) {
-                        continue;
-                    } else {
-                        goto CONTRIBUTE;
+                    } else { 
+                        switch (tex_aux_topskip_restart(current, contribute_box, box_height(current), box_depth(current), box_exdepth(current), (box_options(current) & box_option_discardable), tracing)) {
+                            case 1: 
+                                continue;
+                            case 2: 
+                                /* todo: remove */
+                                box_height(current) = 0;
+                                box_depth(current) = 0;
+                                continue;
+                            default: 
+                                goto CONTRIBUTE;
+                        }
                     }
                 case rule_node:
-                    if (tex_aux_topskip_restart(current, contribute_rule, rule_height(current), rule_depth(current), 0, tracing)) {
-                        continue;
-                    } else {
-                        goto CONTRIBUTE;
+                    switch (tex_aux_topskip_restart(current, contribute_rule, rule_height(current), rule_depth(current), 0, (rule_options(current) & rule_option_discardable), tracing)) {
+                        case 1: 
+                            continue;
+                        case 2: 
+                            /* todo: remove */
+                            rule_height(current) = 0;
+                            rule_depth(current) = 0;
+                            continue;
+                        default: 
+                            goto CONTRIBUTE;
                     }
                 case boundary_node:
                     if (subtype == page_boundary) {

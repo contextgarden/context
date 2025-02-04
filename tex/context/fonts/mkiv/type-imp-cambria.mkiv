@@ -15,6 +15,22 @@
 
 \loadtypescriptfile[dejavu]
 
+\startluacode
+ -- if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+        fonts.handlers.otf.addfeature {
+            name  = "frac",
+            type  = "substitution",
+            files = {
+                "cambria.ttc"
+            },
+            data  = {
+                [0x2044] = 0x2215,
+                [0x2215] = 0x2044,
+            }
+        }
+ -- end
+\stopluacode
+
 \starttypescriptcollection[cambria]
 
     % \setupmathradical[\c!leftmargin=.05mq,\c!mindepth=.05mx]%

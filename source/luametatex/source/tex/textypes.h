@@ -157,6 +157,10 @@ extern halfword tex_badness(
 # define min_cardinal                               0
 # define max_integer                       0x7FFFFFFF /*tex aka |infinity| */
 # define min_integer                      -0x7FFFFFFF /*tex aka |min_infinity| */
+# define max_longinteger             0x7FFFFFFFFFFFFF 
+# define min_longinteger            -0x7FFFFFFFFFFFFF 
+# define max_doubleinteger   (double) max_longinteger
+# define min_doubleinteger   (double) min_longinteger
 # define max_posit                       max_cardinal 
 # define min_posit                       min_cardinal 
 # define max_dimension                     0x3FFFFFFF
@@ -619,6 +623,9 @@ typedef union tokenword {
 # define min_mvl_size               10
 # define stp_mvl_size               10
 
+# define max_mvl_index    max_mvl_size
+# define min_mvl_index               1
+
 # define max_in_open              2000    /* The table will grow dynamically but the file system might have limitations. */
 # define min_in_open               500    /* This used to be 100, but who knows what users load. */
 # define siz_in_open              2000    /* This used to be 100, but who knows what users load. */
@@ -644,8 +651,8 @@ typedef union tokenword {
 # define stp_mark_size              50
 
 # define max_insert_size           500
-# define min_insert_size            10
-# define stp_insert_size            10
+# define min_insert_size            25
+# define stp_insert_size            25
 
 # define max_font_size          100000    /* We're now no longer hooked into the eqtb (saved 500+ K in the format too). */
 # define min_font_size             250

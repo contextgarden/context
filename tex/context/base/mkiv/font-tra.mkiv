@@ -315,7 +315,7 @@
  % \setupcolors[\c!state=\v!start]%
    \setupalign[\v!verytolerant,\v!flushleft]%
    \startotfsample
-   \nohyphens
+ % \nohyphens (we want to see discs) could be an options
    \global\setbox\otfcompositionbox\hbox{\definedfont[#1]\relax\setotfcompositiondirection{#2}\relax#3}%
    \stopotfsample
    \endgroup}

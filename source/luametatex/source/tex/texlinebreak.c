@@ -1632,27 +1632,28 @@ void tex_check_fitness_classes(halfword fitnessclasses)
     if (! fitnessclasses) {
         tex_normal_error("linebreak", "unknown fitnessclasses");
         return;
-    }
-    halfword max = tex_get_specification_count(fitnessclasses);
-    halfword med = 0;
-    if (max >= max_n_of_fitness_values) {
-        tex_normal_error("linebreak", "too many fitnessclasses");
-        return;
-    }
-    if (max < 3) {
-        tex_normal_error("linebreak", "less than three fitnessclasses");
-        return;
-    }
-    for (med = 1; med <= max; (med)++) {
-        if (tex_get_specification_fitness_class(fitnessclasses, med) == 0) {
-            break;
+    } else { 
+        halfword max = tex_get_specification_count(fitnessclasses);
+        halfword med = 0;
+        if (max >= max_n_of_fitness_values) {
+            tex_normal_error("linebreak", "too many fitnessclasses");
+            return;
+        }
+        if (max < 3) {
+            tex_normal_error("linebreak", "less than three fitnessclasses");
+            return;
+        }
+        for (med = 1; med <= max; (med)++) {
+            if (tex_get_specification_fitness_class(fitnessclasses, med) == 0) {
+                break;
+            }
+        }
+        if ((med <= 1) || (med == max)) {
+            tex_normal_error("linebreak", "invalid decent slot in fitnessclasses");
+        } else {
+            tex_set_specification_decent(fitnessclasses, med);
         }
     }
-    if ((med <= 1) || (med == max)) {
-        tex_normal_error("linebreak", "invalid decent slot in fitnessclasses");
-        return;
-    }
-    tex_set_specification_decent(fitnessclasses, med);
 }
 
 static inline halfword tex_max_fitness(halfword fitnessclasses)
@@ -1862,8 +1863,8 @@ static int tex_aux_get_before(halfword breakpoint, int snippet[])
             break;
         case disc_node:
             {
+                halfword r = disc_pre_break_tail(breakpoint);
                 current = breakpoint;
-                halfword r = disc_pre_break_tail(current);
                 while (r) {
                     if (node_type(r) == glyph_node) {
                         if (! tex_has_glyph_option(r, glyph_option_check_twin)) {
@@ -1899,7 +1900,6 @@ static int tex_aux_get_before(halfword breakpoint, int snippet[])
                         } else {
                             break;
                         }
-                        break;
                     } else {
                         return 0;
                     }
@@ -1991,8 +1991,8 @@ static int tex_aux_get_after(halfword breakpoint, int snippet[])
             break;
         case disc_node:
             {
+                halfword r = disc_post_break_head(breakpoint);
                 current = breakpoint;
-                halfword r = disc_post_break_head(current);
                 while (r) {
                     if (node_type(r) == glyph_node) {
                         if (! tex_has_glyph_option(r, glyph_option_check_twin)) {
@@ -2029,7 +2029,6 @@ static int tex_aux_get_after(halfword breakpoint, int snippet[])
                             prop = glyph_control(current);
                             break;
                         }
-                        break;
                     } else {
                         return 0;
                     }
@@ -2204,7 +2203,7 @@ static scaled tex_aux_try_break(
             that |r = active| and |line_number (active) > old_l|.
 
         */
-lmt_linebreak_state.current_line_number = line; /* we could just use this variable */
+        lmt_linebreak_state.current_line_number = line; /* we could just use this variable */
         line = active_line_number(current);
         if (line > old_line) {
             /*tex Now we are no longer in the inner loop (well ...). */
@@ -2819,6 +2818,7 @@ lmt_linebreak_state.current_line_number = line; /* we could just use this variab
         } else { 
         }
     }
+    /* We never end up here. */
     return shortfall;
 }
 
@@ -4892,9 +4892,12 @@ static void tex_aux_set_extra_stretch(line_break_properties *properties)
     }
 }
 
+/*tex 
+    Find an active node with fewest demerits. 
+*/
+
 static int tex_aux_quit_linebreak(const line_break_properties *properties, int pass)
 {
-    /*tex Find an active node with fewest demerits. */
     if (properties->looseness == 0) {
         return 1;
     } else {
@@ -6064,7 +6067,11 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         lmt_packaging_state.pre_adjust_tail = pre_adjust_head;
         lmt_packaging_state.post_migrate_tail = post_migrate_head;
         lmt_packaging_state.pre_migrate_tail = pre_migrate_head;
-        /*tex A bonus feature. */
+        /*tex   
+            A bonus feature. However, we still have them in hboxes, som maybe we also 
+            need to move then there. And also set a flag in the box options in order
+            to avoid redundant operations. 
+        */
         if (normalize_line_mode_option(flatten_discretionaries_mode)) {
             int count = 0;
             q = tex_flatten_discretionaries(q, &count, 0); /* there is no need to nest */

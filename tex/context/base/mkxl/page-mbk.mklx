@@ -104,7 +104,7 @@
      \page_margin_blocks_start_block_save
      \vbox\bgroup
        \let\page_margin_blocks_stop_block\page_margin_blocks_stop_block_yes
-       \hsize\marginblockparameter\c!width
+       \hsize{\marginblockparameter\c!width}%
        \usealignparameter\marginblockparameter
        \usemarginblockstyleandcolor\c!style\c!color
        \begstrut
@@ -264,7 +264,7 @@
      \begingroup
      \scratchcounterone\getboxcountfromcache\s!marginblock\relax
      \ifcase\scratchcounterone\else
-       \scratchcountertwo\ifparameter#1\or\numexpr\scratchcounterone-#1+\plusone\relax\else\plusone\fi
+       \scratchcountertwo\ifparameter#1\or{\scratchcounterone-#1+\plusone}\else\plusone\fi
        \localcontrolledloop \scratchcountertwo \scratchcounterone \plusone
          {\ifcase\currentloopiterator\or
             \marginblockparameter\c!before

@@ -55,6 +55,10 @@ if not modules then modules = { } end modules ['lpdf-ini'] = {
 
 -- Comment: beware of "too many locals" problem here.
 
+-- Is there a way to prevent Acrobat to pop up this "Ask AI assistent" bar ... why
+-- should I want an summary of an image or even a text. Should we assume stupid human
+-- readers from now on? I really never longed for a summary.
+
 local setmetatable, getmetatable, type, next, tostring, tonumber, rawset = setmetatable, getmetatable, type, next, tostring, tonumber, rawset
 local concat = table.concat
 local char, byte, format, sub, tohex = string.char, string.byte, string.format, string.sub, string.tohex
@@ -1408,6 +1412,26 @@ if implement then
     local context   = context
     local pdfdirect = nodes.pool.directliteral -- we can use nuts.write deep down
     local tounicode = fonts.mappings.tounicode
+
+    -- These convert the string:
+
+    function codeinjections.startactualtext(str)
+        return f_actual_text(tosixteen(str))
+    end
+
+    function codeinjections.stopactualtext()
+        return s_actual_text_e_not
+    end
+
+    function codeinjections.startalternativetext(str)
+        return f_alternative_text(tosixteen(str))
+    end
+
+    function codeinjections.stopalternativetext()
+        return s_actual_text_e_not
+    end
+
+    -- These assume a unicode number of already converted one without bom.
 
     function codeinjections.unicodetoactualtext(unicode,pdfcode)
         return f_actual_text_p(type(unicode) == "string" and unicode or tounicode(unicode),pdfcode)

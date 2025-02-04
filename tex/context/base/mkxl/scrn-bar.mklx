@@ -115,8 +115,8 @@
   {\begingroup
   %\lettonothing\currentinteractionbar
    \setupcurrentinteractionbar[#settings]%
-   \d_scrn_bar_width   \interactionbarparameter\c!width\relax
-   \d_scrn_bar_distance\interactionbarparameter\c!distance\relax
+   \d_scrn_bar_width   {\interactionbarparameter\c!width}%
+   \d_scrn_bar_distance{\interactionbarparameter\c!distance}%
    \ifzeropt\d_scrn_bar_width
      \d_scrn_bar_width1.5\emwidth
    \fi
@@ -138,11 +138,11 @@
       \v!subpage=>\advanceby\scratchcounterone\plusfour,
       \s!unknown=>\advanceby\scratchcounterone\plusone]%
    \ifzeropt\d_scrn_bar_width
-     \scratchdimenone\dimexpr2\emwidth+\d_scrn_bar_distance\relax
-     \scratchdimentwo\dimexpr\scratchcounterone\scratchdimenone-\d_scrn_bar_distance\relax
+     \scratchdimenone{2\emwidth+\d_scrn_bar_distance}%
+     \scratchdimentwo{\scratchcounterone\scratchdimenone-\d_scrn_bar_distance}%
    \else
      \scratchdimenone\d_scrn_bar_width
-     \scratchdimentwo\dimexpr\scratchcounterone\d_scrn_bar_distance-\d_scrn_bar_distance\relax
+     \scratchdimentwo{\scratchcounterone\d_scrn_bar_distance-\d_scrn_bar_distance}%
      \advanceby\scratchdimenone -\scratchdimentwo
      \divideby\scratchdimenone \scratchcounterone
      \scratchdimentwo\d_scrn_bar_width
@@ -173,45 +173,45 @@
   {\button{\symbol[#action]}[#action]\hss}
 
 \def\scrn_bar_alternative_a
-  {\d_scrn_bar_width   \interactionbarparameter\c!width
-   \d_scrn_bar_distance\interactionbarparameter\c!distance
-   \d_scrn_bar_height  \interactionbarparameter\c!height
-   \d_scrn_bar_depth   \interactionbarparameter\c!depth
+  {\d_scrn_bar_width   {\interactionbarparameter\c!width}%
+   \d_scrn_bar_distance{\interactionbarparameter\c!distance}%
+   \d_scrn_bar_height  {\interactionbarparameter\c!height}%
+   \d_scrn_bar_depth   {\interactionbarparameter\c!depth}%
    \noindent\hbox to \d_scrn_bar_width \bgroup
-     \dontcomplain
-     \setupblackrules[\c!height=\v!max,\c!depth=\v!max]%
-     \scratchdimentwo\dimexpr\d_scrn_bar_width-4\emwidth\relax
-     \processaction
-       [\interactionbarparameter\c!step]
-       [   \v!small=>\scratchcounter 20,
-          \v!medium=>\scratchcounter 10,
-             \v!big=>\scratchcounter  5,
-         \s!unknown=>\scratchcounter 10]%
-     \scratchdimenone\dimexpr\scratchdimentwo/\scratchcounter\relax
-     \setupblackrules[\c!width=\scratchdimenone]%
-     \setbox\scratchbox\hbox to \d_scrn_bar_width
-       {\hskip2\emwidth
-        \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
-        \dorecurse\scratchcounter
-          {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\the\numexpr\recurselevel*\lastpage/\scratchcounter\relax)]}}%
-        \hss
-        \hskip2\emwidth}%
-     \wd\scratchbox\zeropoint
-     \box \scratchbox
-     \setupblackrules[\c!width=\emwidth]%
-     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
-     \hskip\emwidth
-     \ifnum\realpageno>\plusone
-       \hskip\zeropoint\s!plus\numexpr\realpageno-\plustwo\relax \s!sp\relax % cm gives overflow
-       \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
-     \fi
-     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\the\realpageno)]}% todo: \v!currentpage
-     \ifnum\realpageno<\lastpage\relax
-       \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
-       \hskip\zeropoint\s!plus\numexpr\lastpage-\realpageno-\plusone\relax \s!sp\relax % cm gives overflow
-     \fi
-     \hskip\emwidth
-     \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%
+    \dontcomplain
+    \setupblackrules[\c!height=\v!max,\c!depth=\v!max]%
+    \scratchdimentwo{\d_scrn_bar_width-4\emwidth}%
+    \processaction
+      [\interactionbarparameter\c!step]
+      [   \v!small=>\scratchcounter 20,
+         \v!medium=>\scratchcounter 10,
+            \v!big=>\scratchcounter  5,
+        \s!unknown=>\scratchcounter 10]%
+    \scratchdimenone{\scratchdimentwo/\scratchcounter}%
+    \setupblackrules[\c!width=\scratchdimenone]%
+    \setbox\scratchbox\hbox to \d_scrn_bar_width
+      {\hskip2\emwidth
+       \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
+       \dorecurse\scratchcounter
+         {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\the\numexpr\recurselevel*\lastpage/\scratchcounter\relax)]}}%
+       \hss
+       \hskip2\emwidth}%
+    \wd\scratchbox\zeropoint
+    \box \scratchbox
+    \setupblackrules[\c!width=\emwidth]%
+    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
+    \hskip\emwidth
+    \ifnum\realpageno>\plusone
+      \hskip\zeropoint\s!plus{\realpageno-\plustwo}\s!sp\relax % cm gives overflow
+      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
+    \fi
+    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\the\realpageno)]}% todo: \v!currentpage
+    \ifnum\realpageno<\lastpage\relax
+      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
+      \hskip\zeropoint\s!plus{\lastpage-\realpageno-\plusone}\s!sp\relax % cm gives overflow
+    \fi
+    \hskip\emwidth
+    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%
    \egroup}
 
 \def\scrn_bar_alternative_b
@@ -221,12 +221,12 @@
 
 \def\scrn_bar_alternative_c
   {\ifnum\lastpage>\plusone
-     \d_scrn_bar_width\interactionbarparameter\c!width
+     \d_scrn_bar_width{\interactionbarparameter\c!width}%
      \hbox to \d_scrn_bar_width
        {\setupblackrules[\c!height=\interactionbarparameter\c!height,\c!depth=\interactionbarparameter\c!depth,\c!width=\emwidth]%
-        \scratchdimen\dimexpr(\d_scrn_bar_width-4\emwidth)/\numexpr\lastpage+\minusone\relax\relax
-        \scratchdimenone\numexpr\realpageno+\minusone\relax\scratchdimen
-        \scratchdimentwo\numexpr\lastpage-\realpageno\relax\scratchdimen
+        \scratchdimen{(\d_scrn_bar_width-4\emwidth)/\numexpr\lastpage+\minusone\relax}%
+        \scratchdimenone{\numexpr\realpageno+\minusone\relax\scratchdimen}%
+        \scratchdimentwo{\numexpr\lastpage-\realpageno\relax\scratchdimen}%
         \directgotospecbox\interactionbarparameter{\blackrule}[\v!firstpage]%
         \hss
         \directgotospecbox\interactionbarparameter{\blackrule[\c!width=\scratchdimenone]}[\v!previouspage]%
@@ -265,7 +265,7 @@
      \let\scrn_bar_goto_indeed\scrn_bar_goto_b
    \fi
    \dorecurse\nofsubpages
-    %{\scratchcounter\numexpr\recurselevel+\firstsubpage+\minusone\relax
+    %{\scratchcounter{\recurselevel+\firstsubpage+\minusone}%
      {\scratchcounter\therealsubpageno\recurselevel
       \c_scrn_bar_mode
         \ifnum\scratchcounter<\realpageno \zerocount \else
@@ -278,10 +278,10 @@
 \def\scrn_bar_alternative_d
   {\ifnum\nofsubpages>\plusone
      \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
-       \d_scrn_bar_width   \interactionbarparameter\c!width
-       \d_scrn_bar_distance\interactionbarparameter\c!distance
-       \d_scrn_bar_height  \interactionbarparameter\c!height
-       \d_scrn_bar_depth   \interactionbarparameter\c!depth
+       \d_scrn_bar_width   {\interactionbarparameter\c!width}%
+       \d_scrn_bar_distance{\interactionbarparameter\c!distance}%
+       \d_scrn_bar_height  {\interactionbarparameter\c!height}%
+       \d_scrn_bar_depth   {\interactionbarparameter\c!depth}%
        \scratchdimenone\d_scrn_bar_width
        \noindent\hbox{\scrn_bar_goto_x{\hskip\d_scrn_bar_distance}}% \hpack ?
      \fi
@@ -290,12 +290,12 @@
 \def\scrn_bar_alternative_e
   {\ifnum\nofsubpages>\plusone
      \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
-       \d_scrn_bar_width   \interactionbarparameter\c!width
-       \d_scrn_bar_distance\interactionbarparameter\c!distance
-       \d_scrn_bar_height  \interactionbarparameter\c!height
-       \d_scrn_bar_depth   \interactionbarparameter\c!depth
-       \scratchdimentwo\dimexpr\nofsubpages\d_scrn_bar_distance-\d_scrn_bar_distance\relax % (n-1)
-       \scratchdimenone\dimexpr(\d_scrn_bar_width-\scratchdimentwo)/\nofsubpages\relax
+       \d_scrn_bar_width   {\interactionbarparameter\c!width}%
+       \d_scrn_bar_distance{\interactionbarparameter\c!distance}%
+       \d_scrn_bar_height  {\interactionbarparameter\c!height}%
+       \d_scrn_bar_depth   {\interactionbarparameter\c!depth}%
+       \scratchdimentwo{\nofsubpages\d_scrn_bar_distance-\d_scrn_bar_distance}% (n-1)
+       \scratchdimenone{(\d_scrn_bar_width-\scratchdimentwo)/\nofsubpages}%
        \ifdim\scratchdimenone<\d_scrn_bar_distance
          \scrn_bar_alternative_f
        \else
@@ -307,13 +307,13 @@
 \def\scrn_bar_alternative_f
   {\ifnum\nofsubpages>\plusone
      \ifcstok{\namedcounterparameter\s!subpage\c!state}\v!start
-       \d_scrn_bar_width   \interactionbarparameter\c!width
-       \d_scrn_bar_distance\interactionbarparameter\c!distance
-       \d_scrn_bar_height  \interactionbarparameter\c!height
-       \d_scrn_bar_depth   \interactionbarparameter\c!depth
+       \d_scrn_bar_width   {\interactionbarparameter\c!width}%
+       \d_scrn_bar_distance{\interactionbarparameter\c!distance}%
+       \d_scrn_bar_height  {\interactionbarparameter\c!height}%
+       \d_scrn_bar_depth   {\interactionbarparameter\c!depth}%
        \noindent \hbox to \d_scrn_bar_width \bgroup
          \doloop
-           {\scratchcounterthree\numexpr(\nofsubpages/\recurselevel)+\plusone\relax % rounding
+           {\scratchcounterthree{\nofsubpages/\recurselevel+\plusone}% rounding
             \scratchdimentwo\d_scrn_bar_distance
             \multiplyby\scratchdimentwo \scratchcounterthree
             \advanceby\scratchdimentwo -\d_scrn_bar_distance
@@ -339,8 +339,8 @@
          \else
            \let\scrn_bar_goto_indeed\scrn_bar_goto_d
          \fi
-         \scratchcounterthree\numexpr\realpageno-\plustwo\relax
-         \scratchcounterfour\numexpr\realpageno+\plustwo\relax
+         \scratchcounterthree{\realpageno-\plustwo}%
+         \scratchcounterfour{\realpageno+\plustwo}%
          \ifnum\scratchcounterthree<\plusone \scratchcounterthree\plusone \fi
          \scratchcounterfive\zerocount
          \dostepwiserecurse\firstsubpage\lastsubpage\plusone

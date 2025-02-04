@@ -103,9 +103,9 @@
 \permanent\tolerant\protected\def\setcharactercasing[#1]%
   {\clf_setcharactercasing
      {#1}%
-     \numexpr\namedcapitalsparameter{#1}\c!category\relax
-     \numexpr\namedcapitalsparameter{#1}\c!xscale\relax
-     \numexpr\namedcapitalsparameter{#1}\c!yscale\relax}
+     {\namedcapitalsparameter{#1}\c!category}%
+     {\namedcapitalsparameter{#1}\c!xscale}%
+     {\namedcapitalsparameter{#1}\c!yscale}}
 
 \protected\def\casing[#1]{\groupedcommand{\setcharactercasing[#1]}{}}
 \protected\def\nocasing  {\groupedcommand{\resetcharactercasing}{}}

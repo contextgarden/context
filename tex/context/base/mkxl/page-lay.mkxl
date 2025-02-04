@@ -220,19 +220,19 @@
 % \newconditional\reverselayout
 
 \def\page_layouts_set_dimensions
-  {\global\naturalmarginwidth        \layoutparameter\c!margin
-   \global\naturaledgewidth          \layoutparameter\c!edge
-   \global\naturalmargindistance     \layoutparameter\c!margindistance
-   \global\naturaledgedistance       \layoutparameter\c!edgedistance
-   \global\naturalleftedgedistance   \layoutparameter\c!leftedgedistance
-   \global\naturalrightedgedistance  \layoutparameter\c!rightedgedistance
-   \global\naturalleftmargindistance \layoutparameter\c!leftmargindistance
-   \global\naturalrightmargindistance\layoutparameter\c!rightmargindistance
-   \global\naturaltopdistance        \layoutparameter\c!topdistance
-   \global\naturalheaderdistance     \layoutparameter\c!headerdistance
-   \global\naturaltextdistance       \layoutparameter\c!textdistance
-   \global\naturalfooterdistance     \layoutparameter\c!footerdistance
-   \global\naturalbottomdistance     \layoutparameter\c!bottomdistance
+  {\global\naturalmarginwidth        {\layoutparameter\c!margin}%
+   \global\naturaledgewidth          {\layoutparameter\c!edge}%
+   \global\naturalmargindistance     {\layoutparameter\c!margindistance}%
+   \global\naturaledgedistance       {\layoutparameter\c!edgedistance}%
+   \global\naturalleftedgedistance   {\layoutparameter\c!leftedgedistance}%
+   \global\naturalrightedgedistance  {\layoutparameter\c!rightedgedistance}%
+   \global\naturalleftmargindistance {\layoutparameter\c!leftmargindistance}%
+   \global\naturalrightmargindistance{\layoutparameter\c!rightmargindistance}%
+   \global\naturaltopdistance        {\layoutparameter\c!topdistance}%
+   \global\naturalheaderdistance     {\layoutparameter\c!headerdistance}%
+   \global\naturaltextdistance       {\layoutparameter\c!textdistance}%
+   \global\naturalfooterdistance     {\layoutparameter\c!footerdistance}%
+   \global\naturalbottomdistance     {\layoutparameter\c!bottomdistance}%
    %
    \global\marginwidth               \naturalmarginwidth
    \global\edgewidth                 \naturaledgewidth
@@ -360,23 +360,24 @@
 \lettonothing\papersize
 \lettonothing\printpapersize
 
-\def\v_page_target_top      {\namedlayouttargetparameter\papersize\c!top   }
+\def\v_page_target_top      {\namedlayouttargetparameter\papersize\c!top}
 \def\v_page_target_bottom   {\namedlayouttargetparameter\papersize\c!bottom}
-\def\v_page_target_left     {\namedlayouttargetparameter\papersize\c!left  }
-\def\v_page_target_right    {\namedlayouttargetparameter\papersize\c!right }
-\def\v_page_target_method   {\rootlayouttargetparameter           \c!method}
-\def\v_page_target_scale    {\rootlayouttargetparameter           \c!scale }
-\def\v_page_target_nx       {\numexpr\rootlayouttargetparameter   \c!nx       \relax}
-\def\v_page_target_ny       {\numexpr\rootlayouttargetparameter   \c!ny       \relax}
-\def\v_page_target_dx       {\dimexpr\rootlayouttargetparameter   \c!dx       \relax}
-\def\v_page_target_dy       {\dimexpr\rootlayouttargetparameter   \c!dy       \relax}
-\def\v_page_target_width    {\dimexpr\rootlayouttargetparameter   \c!width    \relax}
-\def\v_page_target_height   {\dimexpr\rootlayouttargetparameter   \c!height   \relax}
-\def\v_page_target_topspace {\dimexpr\rootlayouttargetparameter   \c!topspace \relax}
-\def\v_page_target_backspace{\dimexpr\rootlayouttargetparameter   \c!backspace\relax}
-\def\v_page_target_offset   {\dimexpr\rootlayouttargetparameter   \c!offset   \relax}
+\def\v_page_target_left     {\namedlayouttargetparameter\papersize\c!left}
+\def\v_page_target_right    {\namedlayouttargetparameter\papersize\c!right}
+\def\v_page_target_method   {\rootlayouttargetparameter\c!method}
+\def\v_page_target_scale    {\rootlayouttargetparameter\c!scale}
 
-\def\v_page_target_xy       {\numexpr\v_page_target_nx*\v_page_target_ny\relax}
+\def\v_page_target_nx       {\numexpr{\rootlayouttargetparameter\c!nx}}
+\def\v_page_target_ny       {\numexpr{\rootlayouttargetparameter\c!ny}}
+\def\v_page_target_dx       {\dimexpr{\rootlayouttargetparameter\c!dx}}
+\def\v_page_target_dy       {\dimexpr{\rootlayouttargetparameter\c!dy}}
+\def\v_page_target_width    {\dimexpr{\rootlayouttargetparameter\c!width}}
+\def\v_page_target_height   {\dimexpr{\rootlayouttargetparameter\c!height}}
+\def\v_page_target_topspace {\dimexpr{\rootlayouttargetparameter\c!topspace}}
+\def\v_page_target_backspace{\dimexpr{\rootlayouttargetparameter\c!backspace}}
+\def\v_page_target_offset   {\dimexpr{\rootlayouttargetparameter\c!offset}}
+
+\def\v_page_target_xy       {\numexpr{\v_page_target_nx*\v_page_target_ny}}
 
 %D Normally we will not use this command directly but for now it works out okay. In
 %D the future we might use more of the related commands.
@@ -513,14 +514,14 @@
    \global\c_page_target_paper_mirror\conditionalfalse
    \global\c_page_target_paper_negate\conditionalfalse
    \global\c_page_target_paper_orientation\uprotationangle
-   \global\c_page_target_paper_reverse    \uprotationangle}
+   \global\c_page_target_paper_reverse\uprotationangle}
 
 \protected\def\page_paper_reset_print
   {\global\c_page_target_print_landscape\conditionalfalse
    \global\c_page_target_print_mirror\conditionalfalse
    \global\c_page_target_print_negate\conditionalfalse
    \global\c_page_target_print_orientation\uprotationangle
-   \global\c_page_target_print_reverse    \uprotationangle}
+   \global\c_page_target_print_reverse\uprotationangle}
 
 \letcsname\??layoutpaper\v!reset\endcsname\page_paper_reset_paper
 \letcsname\??layoutprint\v!reset\endcsname\page_paper_reset_print
@@ -536,19 +537,19 @@
 
 \defcsname\??layoutpaper\v!rotated\endcsname
   {\global\c_page_target_paper_orientation\rightrotationangle
-   \global\c_page_target_paper_reverse    \leftrotationangle}
+   \global\c_page_target_paper_reverse\leftrotationangle}
 
 \defcsname\??layoutpaper\the\rightrotationangle\endcsname
   {\global\c_page_target_paper_orientation\rightrotationangle
-   \global\c_page_target_paper_reverse    \leftrotationangle}
+   \global\c_page_target_paper_reverse\leftrotationangle}
 
 \defcsname\??layoutpaper\the\downrotationangle\endcsname
   {\global\c_page_target_paper_orientation\downrotationangle
-   \global\c_page_target_paper_reverse    \zerocount}
+   \global\c_page_target_paper_reverse\zerocount}
 
 \defcsname\??layoutpaper\the\leftrotationangle\endcsname
   {\global\c_page_target_paper_orientation\leftrotationangle
-   \global\c_page_target_paper_reverse    \rightrotationangle}
+   \global\c_page_target_paper_reverse\rightrotationangle}
 
 \defcsname\??layoutprint\v!landscape\endcsname
   {\global\c_page_target_print_landscape\conditionaltrue}
@@ -561,19 +562,19 @@
 
 \defcsname\??layoutprint\v!rotated\endcsname
   {\global\c_page_target_print_orientation\rightrotationangle
-   \global\c_page_target_print_reverse    \leftrotationangle}
+   \global\c_page_target_print_reverse\leftrotationangle}
 
 \defcsname\??layoutprint\the\rightrotationangle\endcsname
   {\global\c_page_target_print_orientation\rightrotationangle
-   \global\c_page_target_print_reverse    \leftrotationangle}
+   \global\c_page_target_print_reverse\leftrotationangle}
 
 \defcsname\??layoutprint\the\downrotationangle \endcsname
   {\global\c_page_target_print_orientation\downrotationangle
-   \global\c_page_target_print_reverse    \zerocount}
+   \global\c_page_target_print_reverse\zerocount}
 
 \defcsname\??layoutprint\the\leftrotationangle \endcsname
   {\global\c_page_target_print_orientation\leftrotationangle
-   \global\c_page_target_print_reverse    \rightrotationangle}
+   \global\c_page_target_print_reverse\rightrotationangle}
 
 \def\page_paper_handle_page_option #1{\begincsname\??layoutpaper#1\endcsname}
 \def\page_paper_handle_print_option#1{\begincsname\??layoutprint#1\endcsname}
@@ -601,8 +602,8 @@
    \glet\papersize\currentlayouttarget
    \page_paper_reset_paper
    \processcommacommand[\m_page_asked_paper]\page_paper_handle_page_option
-   \global\paperwidth \layouttargetparameter\c!width \relax
-   \global\paperheight\layouttargetparameter\c!height\relax
+   \global\paperwidth {\layouttargetparameter\c!width}%
+   \global\paperheight{\layouttargetparameter\c!height}%
    \ifdim\paperwidth<\d_page_minimum_paper_size
      \global\paperwidth\d_page_minimum_paper_size
    \fi
@@ -624,8 +625,8 @@
    \glet\printpapersize\currentlayouttarget
    \page_paper_reset_print
    \processcommacommand[\m_page_asked_print]\page_paper_handle_print_option
-   \global\printpaperwidth \layouttargetparameter\c!width \relax
-   \global\printpaperheight\layouttargetparameter\c!height\relax
+   \global\printpaperwidth {\layouttargetparameter\c!width}%
+   \global\printpaperheight{\layouttargetparameter\c!height}%
    \ifdim\printpaperwidth<\onepoint
      \global\printpaperwidth\paperwidth
    \fi
@@ -637,8 +638,7 @@
    \fi
    % this check can be confusing, so we've added the possibility
    % to bypass this test: \setuppapersize[option=fit]
-   \edef\m_page_asked_option{\rootlayouttargetparameter\c!option}%
-   \ifx\m_page_asked_option\v!max % \v!fit is
+   \ifcstok{\rootlayouttargetparameter\c!option}\v!max % \v!fit is
       \begingroup
       % we need to pre-swap else we get the wrong paper size
       \ifnum\c_page_target_paper_orientation=\rightrotationangle
@@ -683,104 +683,154 @@
     \let\synchronizegridsnapping\relax
 \fi
 
+%D The fit options were used for situations like this:
+%D
+%D \starttyping
+%D \setuplayout
+%D   [topspace=15pt,header=30pt,footer=30pt,bottomdistance=2.5pt,bottom=17.5pt,height=fit,
+%D    backspace=60pt,margin=30pt,margindistance=15pt,width=fit]
+%D \stoptyping
+
 \lettonothing\p_page_layouts_width
 \lettonothing\p_page_layouts_height
 
+\def\page_layouts_synchronize_width_fit
+  {\ifzeropt\cutspace
+     \global\cutspace\backspace
+   \fi
+   \global\makeupwidth{%
+     \paperwidth-\cutspace
+   }%
+   \scratchdimen{%
+      \backspace
+     -\leftedgewidth  -\leftedgedistance
+     -\leftmarginwidth-\leftmargindistance
+   }%
+   \ifdim\scratchdimen<\zeropoint
+     \scratchdimen\zeropoint
+   \fi
+   \global\advanceby\makeupwidth{%
+     -\rightmargindistance-\rightmarginwidth
+     -\rightedgedistance  -\rightedgewidth
+     -\scratchdimen
+   }}
+
+\def\page_layouts_synchronize_width_middle
+  {\ifzeropt\cutspace
+     \global\cutspace\backspace
+   \fi
+   \global\makeupwidth{%
+     \paperwidth-\backspace-\cutspace
+   }}
+
+\def\page_layouts_synchronize_width_size
+  {\global\makeupwidth{\p_page_layouts_width}%
+   \ifzeropt\cutspace
+     \global\cutspace{%
+       \paperwidth-\makeupwidth-\backspace
+     }%
+   \fi}
+
+\def\page_layouts_synchronize_height_fit
+  {\ifzeropt\bottomspace
+     \global\bottomspace\topspace
+   \fi
+   \global\makeupheight{%
+     \paperheight-\bottomspace
+   }%
+   \scratchdimen{%
+     \topspace-\topheight-\topdistance
+   }%
+   \ifdim\scratchdimen<\zeropoint
+     \scratchdimen\zeropoint
+   \fi
+   \global\advanceby\makeupheight{%
+     -\bottomdistance-\bottomheight-\scratchdimen
+   }}
+
+\def\page_layouts_synchronize_height_middle
+  {\ifzeropt\bottomspace
+     \global\bottomspace\topspace
+   \fi
+   \global\makeupheight{%
+     \paperheight-\topspace-\bottomspace
+   }}
+
+\def\page_layouts_synchronize_height_size
+  {\global\makeupheight{\p_page_layouts_height}}
+
+
+%D Beware, when the bodyfont changes (switched) this will change as well;
+%D implementing a global lineheight is tricky: should we take the bodyfont
+%D interlinespace or the one set independent of the bodyfont (before or after a
+%D layout spec); way too fuzzy, so we stick to the current method (after a night of
+%D experimenting ...2003/10/13)
+
+\def\page_layouts_synchronize_height_lines
+  {\global\makeupheight{%
+      (\layoutparameter\c!lines)*\lineheight
+     -\strutheight
+     +\topskip
+     +\headerdistance
+     +\headerheight
+     +\footerdistance
+     +\footerheight
+%    \relax}
+   }}
+
 \def\page_layouts_synchronize
   {\setups[\layoutparameter\c!preset]\relax
-   \global\leftmarginwidth \layoutparameter\c!leftmargin
-   \global\rightmarginwidth\layoutparameter\c!rightmargin
-   \global\leftedgewidth   \layoutparameter\c!leftedge
-   \global\rightedgewidth  \layoutparameter\c!rightedge
-   \global\headerheight    \layoutparameter\c!header
-   \global\footerheight    \layoutparameter\c!footer
-   \global\bottomheight    \layoutparameter\c!bottom
-   \global\topheight       \layoutparameter\c!top
-   \global\backspace       \layoutparameter\c!backspace
-   \global\topspace        \layoutparameter\c!topspace
-   \global\textadaptive    \layoutparameter\c!adaptive
+   %
+   \global\leftmarginwidth {\layoutparameter\c!leftmargin}%
+   \global\rightmarginwidth{\layoutparameter\c!rightmargin}%
+   \global\leftedgewidth   {\layoutparameter\c!leftedge}%
+   \global\rightedgewidth  {\layoutparameter\c!rightedge}%
+   \global\headerheight    {\layoutparameter\c!header}%
+   \global\footerheight    {\layoutparameter\c!footer}%
+   \global\bottomheight    {\layoutparameter\c!bottom}%
+   \global\topheight       {\layoutparameter\c!top}%
+   \global\backspace       {\layoutparameter\c!backspace}%
+   \global\cutspace        {\layoutparameter\c!cutspace}%    % moved here
+   \global\topspace        {\layoutparameter\c!topspace}%
+   \global\bottomspace     {\layoutparameter\c!bottomspace}% % moved here
+   \global\textadaptive    {\layoutparameter\c!adaptive}%
+   %
+   \global\layoutlines\ifchknumexpr\layoutparameter\c!lines\or\lastchknumber\else\zerocount\fi
+   %
    \page_layouts_set_dimensions
    \synchronizegridsnapping
    \usesetupsparameter\layoutparameter % depends on gridsnapping !
    \synchronizewhitespace
    \synchronizeblank
    \setupinterlinespace[\v!reset]% \synchronizegloballinespecs
-   \global\cutspace\layoutparameter\c!cutspace\relax
+   %
+  %\global\cutspace\layoutparameter\c!cutspace\relax % moved up
    \edef\p_page_layouts_width{\layoutparameter\c!width}%
    \ifx\p_page_layouts_width\v!middle
-     \ifzeropt\cutspace
-       \global\cutspace\backspace
-     \fi
-     \global\makeupwidth\dimexpr\paperwidth-\backspace-\cutspace\relax
+     \page_layouts_synchronize_width_middle
    \orelse\ifx\p_page_layouts_width\v!fit
-     \ifzeropt\cutspace
-       \global\cutspace\backspace
-     \fi
-     \global\makeupwidth\dimexpr\paperwidth-\cutspace\relax
-     \scratchdimen\dimexpr\backspace
-       -\leftedgewidth  -\leftedgedistance
-       -\leftmarginwidth-\leftmargindistance\relax
-     \ifdim\scratchdimen<\zeropoint
-       \scratchdimen\zeropoint
-     \fi
-     \global\advanceby\makeupwidth\dimexpr
-       -\rightmargindistance-\rightmarginwidth
-       -\rightedgedistance  -\rightedgewidth
-       -\scratchdimen\relax
+     \page_layouts_synchronize_width_fit
    \else
-     \global\makeupwidth\p_page_layouts_width\relax
-     \ifzeropt\cutspace
-       \global\cutspace\dimexpr\paperwidth-\makeupwidth-\backspace\relax
-   % \else
-       % A kind of inconsistent specification, but used
-       % in for instance s-pre-19.tex; the cutspace is
-       % used only for determining some kind of right
-       % margin; don't use this in doublesided mode
-     \fi
+     \page_layouts_synchronize_width_size
    \fi
-   \scratchdimen\layoutparameter\c!bottomspace\relax
-  %\ifzeropt\scratchdimen
-  %  \scratchdimen\topspace
-  %\fi
-   \global\bottomspace\layoutparameter\c!bottomspace\relax
-   \global\layoutlines0\number\layoutparameter\c!lines\relax % may be empty
+  %\global\bottomspace\layoutparameter\c!bottomspace\relax % moved up
    \ifcase\layoutlines
      \edef\p_page_layouts_height{\layoutparameter\c!height}%
      \ifx\p_page_layouts_height\v!middle
-       \ifzeropt\bottomspace
-         \global\bottomspace\topspace
-       \fi
-       \global\makeupheight\dimexpr\paperheight-\topspace-\bottomspace\relax
+       \page_layouts_synchronize_height_middle
      \orelse\ifx\p_page_layouts_height\v!fit
-       \ifzeropt\bottomspace
-         \global\bottomspace\topspace
-       \fi
-       \global\makeupheight\dimexpr\paperheight-\bottomspace\relax
-       \scratchdimen\dimexpr\topspace-\topheight-\topdistance\relax
-       \ifdim\scratchdimen<\zeropoint
-         \scratchdimen\zeropoint
-       \fi
-       \global\advanceby\makeupheight\dimexpr-\bottomdistance-\bottomheight-\scratchdimen\relax
+       \page_layouts_synchronize_height_fit
      \else
-       \global\makeupheight\layoutparameter\c!height\relax
-       \ifzeropt\bottomspace
-         \global\bottomspace\dimexpr\paperheight-\makeupheight-\topspace\relax
-     % \else
-         % inconsistent specification
-       \fi
+       \page_layouts_synchronize_height_size
      \fi
    \else
-     % beware, when the bodyfont changes (switched) this will change as well; implementing
-     % a global lineheight is tricky: should we take the bodyfont interlinespace or the one set
-     % independent of the bodyfont (before or after a layout spec); way too fuzzy, so we
-     % stick to the current method (after a night of experimenting ...2003/10/13)
-% \layoutlines
-     \global\makeupheight\dimexpr
-        \layoutparameter\c!lines\lineheight-\strutheight+\topskip+
-        \headerdistance+\headerheight+\footerdistance+\footerheight\relax
+     \page_layouts_synchronize_height_lines
    \fi
-   \backoffset\layoutparameter\c!horoffset\relax
-   \topoffset \layoutparameter\c!veroffset\relax
+   \ifzeropt\bottomspace
+     \global\bottomspace{\paperheight-\makeupheight-\topspace}%
+   \fi
+   \backoffset{\layoutparameter\c!horoffset}%
+   \topoffset {\layoutparameter\c!veroffset}%
    \ifdim\makeupwidth<\onepoint
      \global\makeupwidth\onepoint
    \fi
@@ -788,13 +838,13 @@
      \global\makeupheight\onepoint
    \fi
    % handy in page builder
-   \global\totaltextwidth\dimexpr
+   \global\totaltextwidth{%
       \leftedgetotal
      +\leftmargintotal
      +\makeupwidth
      +\rightmargintotal
      +\rightedgetotal
-   \relax
+   }%
    % \page_layouts_check_next % here ?
    \page_layouts_check_direction
    \page_layouts_calculate_extras
@@ -822,9 +872,13 @@
 %D Pseudo columns:
 
 \def\page_layouts_check_pseudo_columns
-  {\global\layoutcolumns\layoutparameter\c!columns
-   \global\layoutcolumndistance\layoutparameter\c!columndistance
-   \global\layoutcolumnwidth\dimexpr\makeupwidth-\layoutcolumns\layoutcolumndistance+\layoutcolumndistance\relax
+  {\global\layoutcolumns       {\layoutparameter\c!columns}%
+   \global\layoutcolumndistance{\layoutparameter\c!columndistance}%
+   \global\layoutcolumnwidth   {%
+      \makeupwidth
+     -\layoutcolumns\layoutcolumndistance
+     +\layoutcolumndistance
+   }%
    \ifnum\layoutcolumns>\plusone
      \global\divideby\layoutcolumnwidth\layoutcolumns
      \dorecurse\layoutcolumns\page_layouts_check_pseudo_column
@@ -843,8 +897,12 @@
 
 \def\page_layouts_check_pseudo_rows
   {\global\layoutrows\layoutparameter\c!rows
-   \global\layoutrowdistance\layoutparameter\c!rowdistance
-   \global\layoutrowheight\dimexpr\makeupheight-\layoutrows\layoutrowdistance+\layoutrowdistance\relax
+   \global\layoutrowdistance{\layoutparameter\c!rowdistance}%
+   \global\layoutrowheight{%
+      \makeupheight
+     -\layoutrows\layoutrowdistance
+     +\layoutrowdistance
+  }%
    \ifnum\layoutrows>\plusone
      \global\divideby\layoutrowheight\layoutrows
      \dorecurse\layoutrows\page_layouts_check_pseudo_row
@@ -856,13 +914,13 @@
 
 \aliased\letcsname\??layoutrow0\endcsname\zeropoint
 
-\permanent\def\layoutrowoffset#1% can travel around so we can't use \lastnamedcs
+\untraced\permanent\def\layoutrowoffset#1% can travel around so we can't use \lastnamedcs
   {\csname\??layoutrow\ifcsname\??layoutrow#1\endcsname#1\else0\fi\endcsname}
 
 %D Offset:
 
-\permanent\protected\def\layoutlineoffset#1%
-  {\the\dimexpr\topskip-\strutht+#1\lineheight-\lineheight\relax}
+\untraced\permanent\protected\def\layoutlineoffset#1%
+  {\todimension{\topskip-\strutht+#1\lineheight-\lineheight}}
 
 \def\page_layouts_synchronize_at_start
   {\ifdim\makeupheight=\layoutlines\lineheight \else % weird check
@@ -1157,23 +1215,17 @@
    \ifx\p_adapts_height\v!max
      \global\d_page_adapts_height\footerheight
    \else
-     \global\d_page_adapts_height\dimexpr
-        \ifnum\p_adapts_lines=\zerocount
-          \p_adapts_height
-        \else
-          \p_adapts_lines\openlineheight
-        \fi
-      \relax
-      \ifdim\d_page_adapts_height>\footerheight
-        \global\d_page_adapts_height\footerheight
-      \fi
+     \global\d_page_adapts_height{\ifnum\p_adapts_lines=\zerocount\p_adapts_height\else\p_adapts_lines\openlineheight\fi}%
+     \ifdim\d_page_adapts_height>\footerheight
+       \global\d_page_adapts_height\footerheight
+     \fi
    \fi
    %
-   \global\d_page_adapts_delta-\dimexpr\adaptlayoutparameter\c!top\relax
+   \global\d_page_adapts_delta{-(\adaptlayoutparameter\c!top)}%
    %
    \global\advanceby\textheight   \d_page_adapts_height
    \global\advanceby\footerheight-\d_page_adapts_height
-   \showmessage\m!layouts1{\the\dimexpr\d_page_adapts_height,\the\realpageno}%
+   \showmessage\m!layouts1{\the\d_page_adapts_height,\the\realpageno}%
    % this will become a better one (do we need insert correction?)
    \page_otr_command_set_vsize
    %
@@ -1235,10 +1287,12 @@
     \let\doifelselayoutsomeline\secondofthreearguments
 \fi
 
-\permanent\def\compensatevsizeheader             {\advanceby\textheight-\dimexpr\headerheight+\headerdistance\relax}
-\permanent\def\compensatevsizefooter             {\advanceby\textheight-\dimexpr\footerheight+\footerdistance\relax}
-\permanent\def\globalcompensatevsizeheader{\global\advanceby\textheight-\dimexpr\headerheight+\headerdistance\relax}
-\permanent\def\globalcompensatevsizefooter{\global\advanceby\textheight-\dimexpr\footerheight+\footerdistance\relax}
+% todo
+
+\permanent\def\compensatevsizeheader             {\textheight{\textheight-\headerheight-\headerdistance}}
+\permanent\def\compensatevsizefooter             {\textheight{\textheight-\footerheight-\footerdistance}}
+\permanent\def\globalcompensatevsizeheader{\global\textheight{\textheight-\headerheight-\headerdistance}}
+\permanent\def\globalcompensatevsizefooter{\global\textheight{\textheight-\footerheight-\footerdistance}}
 
 \permanent\def\compensatevsizeheaderzero{\headerheight\zeropoint\page_layouts_set_distances}
 \permanent\def\compensatevsizefooterzero{\footerheight\zeropoint\page_layouts_set_distances}
@@ -1281,24 +1335,22 @@
 \newconditional\innermakeupcompensation \innermakeupcompensation\conditionaltrue
 
 \permanent\def\compensatedinnermakeupmargin
-  {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
+  {\dimexpr{\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi}}
 
-\permanent\protected\def\freezetextwidth % name will change % \makeupwidth may be set to \textwidth
-  {\textwidth\makeupwidth                          % which is a tricky but valid value
-   \edef\m_currentlayout_text_width {\layoutparameter\c!textwidth }%
-   \edef\m_currentlayout_text_margin{\layoutparameter\c!textmargin}%
-   \ifempty\m_currentlayout_text_width \else
-     \textwidth\m_currentlayout_text_width % local
+\permanent\protected\def\freezetextwidth
+  {\textwidth\ifchkdimexpr\layoutparameter\c!textwidth\or
+     \lastchkdimension
+   \else
+     \makeupwidth
    \fi
    \global\innermakeupwidth\textwidth
-   \ifempty\m_currentlayout_text_margin
-     \global\innermakeupmargin\zeropoint
+   \global\innermakeupmargin\ifchkdimexpr\layoutparameter\c!textmargin\or
+     \lastchkdimension
    \else
-     \global\innermakeupmargin\m_currentlayout_text_margin\relax
+     \zeropoint
    \fi
-   \scratchdimen\dimexpr\innermakeupmargin+\innermakeupmargin\relax
-   \global\advanceby\innermakeupwidth-\scratchdimen
-   \advanceby\textwidth-\scratchdimen}   % local
+   \global\advanceby\innermakeupwidth-2\innermakeupmargin
+   \advanceby\textwidth-2\innermakeupmargin}   % local
 
 \permanent\protected\def\calculatehsizes % name will change
   {\freezetextwidth
@@ -1359,10 +1411,10 @@
 \newdimension\texthoffset
 
 \permanent\protected\def\settexthoffset % name will change
-  {\texthoffset\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}}
+  {\texthoffset\doifbothsides\backspace\backspace{\dimexpr{\paperwidth-\backspace-\makeupwidth}}}
 
 \permanent\protected\def\goleftonpage % name will change (we could cache)
-  {\hkern-\dimexpr\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth\relax}
+  {\hkern{-(\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth)}}
 
 \permanent\def\doifelsemarginswap#1#2% protected?
   {\doifbothsides{#1}{#1}{#2}}
@@ -1405,38 +1457,40 @@
 
 % swapping needs frozen
 
-\permanent\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
-\permanent\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
-\permanent\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
-\permanent\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
+% maybe \protected so that the don't expand prematurely
 
-\permanent\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
-\permanent\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
-\permanent\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
-\permanent\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
+\untraced\permanent\def\outermarginwidth   {\rightorleftpageaction\rightmarginwidth   \leftmarginwidth }
+\untraced\permanent\def\innermarginwidth   {\rightorleftpageaction\leftmarginwidth    \rightmarginwidth}
+\untraced\permanent\def\outermargindistance{\rightorleftpageaction\rightmargindistance\leftmargindistance }
+\untraced\permanent\def\innermargindistance{\rightorleftpageaction\leftmargindistance \rightmargindistance}
 
-\permanent\def\outerspacewidth    {\rightorleftpageaction\cutspace \backspace}
-\permanent\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace }
+\untraced\permanent\def\outeredgewidth     {\rightorleftpageaction\rightedgewidth   \leftedgewidth }
+\untraced\permanent\def\inneredgewidth     {\rightorleftpageaction\leftedgewidth    \rightedgewidth}
+\untraced\permanent\def\outeredgedistance  {\rightorleftpageaction\rightedgedistance\leftedgedistance }
+\untraced\permanent\def\inneredgedistance  {\rightorleftpageaction\leftedgedistance \rightedgedistance}
 
-\permanent\def\leftmargintotal    {\dimexpr\leftmarginwidth +\leftmargindistance \relax}
-\permanent\def\rightmargintotal   {\dimexpr\rightmarginwidth+\rightmargindistance\relax}
-\permanent\def\leftedgetotal      {\dimexpr\leftedgewidth   +\leftedgedistance   \relax}
-\permanent\def\rightedgetotal     {\dimexpr\rightedgewidth  +\rightedgedistance  \relax}
+\untraced\permanent\def\outerspacewidth    {\rightorleftpageaction\cutspace \backspace}
+\untraced\permanent\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace }
 
-\permanent\def\leftsidetotal      {\dimexpr\leftmarginwidth +\leftedgetotal \relax}
-\permanent\def\rightsidetotal     {\dimexpr\rightmarginwidth+\rightedgetotal\relax}
-\permanent\def\leftcombitotal     {\dimexpr\leftmargintotal +\leftedgetotal \relax}
-\permanent\def\rightcombitotal    {\dimexpr\rightmargintotal+\rightedgetotal\relax}
+\untraced\permanent\def\leftmargintotal    {\dimexpr{\leftmarginwidth +\leftmargindistance }}
+\untraced\permanent\def\rightmargintotal   {\dimexpr{\rightmarginwidth+\rightmargindistance}}
+\untraced\permanent\def\leftedgetotal      {\dimexpr{\leftedgewidth   +\leftedgedistance   }}
+\untraced\permanent\def\rightedgetotal     {\dimexpr{\rightedgewidth  +\rightedgedistance  }}
 
-\permanent\def\innermargintotal   {\dimexpr\innermarginwidth+\innermargindistance\relax}
-\permanent\def\outermargintotal   {\dimexpr\outermarginwidth+\outermargindistance\relax}
-\permanent\def\inneredgetotal     {\dimexpr\inneredgewidth  +\inneredgedistance  \relax}
-\permanent\def\outeredgetotal     {\dimexpr\outeredgewidth  +\outeredgedistance  \relax}
+\untraced\permanent\def\leftsidetotal      {\dimexpr{\leftmarginwidth +\leftedgetotal }}
+\untraced\permanent\def\rightsidetotal     {\dimexpr{\rightmarginwidth+\rightedgetotal}}
+\untraced\permanent\def\leftcombitotal     {\dimexpr{\leftmargintotal +\leftedgetotal }}
+\untraced\permanent\def\rightcombitotal    {\dimexpr{\rightmargintotal+\rightedgetotal}}
 
-\permanent\def\innercombitotal    {\dimexpr\innermargintotal+\inneredgetotal\relax}
-\permanent\def\outercombitotal    {\dimexpr\outermargintotal+\outeredgetotal\relax}
-\permanent\def\innersidetotal     {\dimexpr\innermarginwidth+\inneredgetotal\relax}
-\permanent\def\outersidetotal     {\dimexpr\outermarginwidth+\outeredgetotal\relax}
+\untraced\permanent\def\innermargintotal   {\dimexpr{\innermarginwidth+\innermargindistance}}
+\untraced\permanent\def\outermargintotal   {\dimexpr{\outermarginwidth+\outermargindistance}}
+\untraced\permanent\def\inneredgetotal     {\dimexpr{\inneredgewidth  +\inneredgedistance  }}
+\untraced\permanent\def\outeredgetotal     {\dimexpr{\outeredgewidth  +\outeredgedistance  }}
+
+\untraced\permanent\def\innercombitotal    {\dimexpr{\innermargintotal+\inneredgetotal}}
+\untraced\permanent\def\outercombitotal    {\dimexpr{\outermargintotal+\outeredgetotal}}
+\untraced\permanent\def\innersidetotal     {\dimexpr{\innermarginwidth+\inneredgetotal}}
+\untraced\permanent\def\outersidetotal     {\dimexpr{\outermarginwidth+\outeredgetotal}}
 
 %D \macros
 %D   {startlocallayout}
@@ -1727,28 +1781,28 @@
 
 \definepapersize
   [oversized]
-  [ \c!width=\dimexpr\paperwidth +\layouttargetparameter\c!distance\relax,
-   \c!height=\dimexpr\paperheight+\layouttargetparameter\c!distance\relax]
+  [ \c!width=\paperwidth+\layouttargetparameter\c!distance,
+   \c!height=\paperheight+\layouttargetparameter\c!distance]
 
 \definepapersize
   [undersized]
-  [ \c!width=\dimexpr\paperwidth -\layouttargetparameter\c!distance\relax,
-   \c!height=\dimexpr\paperheight-\layouttargetparameter\c!distance\relax]
+  [ \c!width=\paperwidth-\layouttargetparameter\c!distance,
+   \c!height=\paperheight-\layouttargetparameter\c!distance]
 
 \definepapersize
   [doublesized]
-  [ \c!width=\dimexpr \paperwidth \relax,
-   \c!height=\dimexpr2\paperheight\relax]
+  [ \c!width=\paperwidth,
+   \c!height=2\paperheight]
 
 \definepapersize
   [doubleoversized]
-  [ \c!width=\dimexpr \paperwidth +\layouttargetparameter\c!distance\relax,
-   \c!height=\dimexpr2\paperheight+\layouttargetparameter\c!distance\relax]
+  [ \c!width=\paperwidth+\layouttargetparameter\c!distance,
+   \c!height=2\paperheight+\layouttargetparameter\c!distance]
 
 \definepapersize
   [doublewide]
-  [ \c!width=\dimexpr2\paperwidth \relax,
-   \c!height=\dimexpr \paperheight\relax]
+  [ \c!width=2\paperwidth,
+   \c!height=\paperheight]
 
 % \setuppapersize
 %   [A4][A4]

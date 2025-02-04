@@ -200,7 +200,8 @@ implement {
 
 -- moved from tex to lua:
 
-local texpatterns = { "%s.mklx", "%s.mkxl", "%s.mkvi", "%s.mkiv", "%s.tex" }
+----- texpatterns = { "%s.mklx", "%s.mkxl", "%s.mkvi", "%s.mkiv", "%s.tex" }
+local texpatterns = { "%s.mkxl", "%s.mklx", "%s.mkiv", "%s.mkvi", "%s.tex" }
 local luapatterns = { "%s" .. utilities.lua.suffixes.luc, "%s.lmt", "%s.lua" }
 local cldpatterns = { "%s.cld" }
 local xmlpatterns = { "%s.xml" }
@@ -574,7 +575,7 @@ end
 
 local function poptree()
     top = remove(treestack)
-    if #top[#top].branches == 0 then
+    if top and top[#top].branches == 0 then
         top[#top].branches = nil -- saves space in tuc
     end
 end

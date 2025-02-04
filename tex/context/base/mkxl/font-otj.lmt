@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['font-otj'] = {
     license   = "see context related readme files",
 }
 
+-- todo: old checkmark code can go
+
 -- This property based variant is not faster but looks nicer than the attribute one. We
 -- need to use rawget (which is about 4 times slower than a direct access but we cannot
 -- get/set that one for our purpose! This version does a bit more with discretionaries
@@ -1902,7 +1904,7 @@ local function processmark(p,n,pn) -- p = basenode
                 end
             end
         end
-        if pn.checkmark then
+        if pn.checkmark then -- no longer needed
             local wn = getwidth(n) -- in arial marks have widths
             if wn and wn ~= 0 then
                 wn = wn/2

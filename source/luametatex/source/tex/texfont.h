@@ -340,17 +340,18 @@ extern font_state_info lmt_font_state;
 */
 
 typedef enum text_control_codes {
-    text_control_collapse_hyphens = 0x0001,
-    text_control_base_ligaturing  = 0x0002,
-    text_control_base_kerning     = 0x0004,
-    text_control_none_protected   = 0x0008,
-    text_control_has_italics      = 0x0010,
-    text_control_auto_italics     = 0x0020,
+    text_control_collapse_hyphens   = 0x0001,
+    text_control_base_ligaturing    = 0x0002,
+    text_control_base_kerning       = 0x0004,
+    text_control_none_protected     = 0x0008,
+    text_control_has_italics        = 0x0010,
+    text_control_auto_italics       = 0x0020,
+    text_control_replace_apostrophe = 0x0040,
     /* these are private */
-    text_control_quality_set      = 0x0100,
-    text_control_expansion        = 0x0200,
-    text_control_left_protrusion  = 0x0400,
-    text_control_right_protrusion = 0x0800,
+    text_control_quality_set        = 0x0100,
+    text_control_expansion          = 0x0200,
+    text_control_left_protrusion    = 0x0400,
+    text_control_right_protrusion   = 0x0800,
 } text_control_codes;
 
 # define has_font_text_control(f,c)  ((font_textcontrol(f) & c) == c)

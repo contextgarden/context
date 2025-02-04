@@ -126,9 +126,8 @@
    \ifparameter#1\or
      \setupcurrentcharacterkerning[#1]%
    \fi
-   \edef\p_width{\characterkerningparameter\c!width}%
-   \ifempty\p_width \else
-     \hbox to \p_width
+   \ifchkdimexpr\characterkerningparameter\c!width\or
+     \hbox to \lastchkdimension
    \fi
    \bgroup
    \usecharacterkerningstyleandcolor\c!style\c!color

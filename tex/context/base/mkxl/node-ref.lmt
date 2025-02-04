@@ -77,7 +77,7 @@ local getheight            = nuts.getheight
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local setattrlist          = nuts.setattrlist
-local getsubtype           = nuts.getsubtype
+local getidsubtype         = nuts.getidsubtype
 local getwhd               = nuts.getwhd
 local getdirection         = nuts.getdirection
 local setshift             = nuts.setshift
@@ -324,7 +324,7 @@ local inject_areas do
         local first, last, firstdir, reference
         local current = head
         while current do -- todo: check with loop
-            local id = getid(current)
+            local id, subtype = getidsubtype(current)
             if id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
@@ -377,7 +377,6 @@ local inject_areas do
                 goto NEXT
             elseif id == glue_code then
                 -- local skiptype = ... 0=regular 1=left 2=right
-                local subtype = getsubtype(current)
                 if subtype == leftskip_code or subtype == lefthang_code or subtype == parfillleftskip_code then
                     goto NEXT
                 elseif subtype == rightskip_code or subtype == righthang_code or subtype == parfillskip_code then
@@ -391,7 +390,6 @@ local inject_areas do
                     goto NEXT
                 end
             elseif id == whatsit_code then
-                local subtype = getsubtype(current)
                 if subtype == startrotation_code then
                     rotationlevel = rotationlevel + 1
                 elseif subtype == stoprotation_code then

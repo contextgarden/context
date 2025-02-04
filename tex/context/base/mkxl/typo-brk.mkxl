@@ -50,8 +50,8 @@
      {\reallanguagetag{\directdummyparameter\s!language}}%
      {% maybe deal with #3 at the lua end
           type \directdummyparameter\c!type
-         nleft \directdummyparameter\c!nleft
-        nright \directdummyparameter\c!nright
+         nleft {\directdummyparameter\c!nleft}%
+        nright {\directdummyparameter\c!nright}%
          right {\directdummyparameter\c!right}%
           left {\directdummyparameter\c!left}%
         middle {\directdummyparameter\c!middle}%

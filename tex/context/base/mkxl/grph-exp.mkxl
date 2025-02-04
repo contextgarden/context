@@ -65,7 +65,7 @@
 
 \permanent\protected\def\collectexported
   {\grph_exported_discard\plusone
-   \settrue\c_grph_exported
+   \c_grph_exported\conditionaltrue
    \appendtoks
      \grph_exported_flush
    \to \everystoptext}
@@ -186,23 +186,22 @@
   {\removeunwantedspaces
    \egroup
    \global\advanceby\nofexportedboxes\plusone
-   \ifzeropt
-       \dimexpr
+   \ifzeropt{%
           \justimageoffset
          +\justimageleftoffset
          +\justimagerightoffset
          +\justimagetopoffset
          +\justimagebottomoffset
-       \relax
+       }%
      \setbox\scratchbox\box\b_grph_image
    \else
      \setbox\scratchbox\hpack\bgroup
-       \kern\dimexpr\justimageoffset+\justimageleftoffset\relax
+       \kern{\justimageoffset+\justimageleftoffset}%
        \box\b_grph_image
-       \kern\dimexpr\justimageoffset+\justimagerightoffset\relax
+       \kern{\justimageoffset+\justimagerightoffset}%
      \egroup
-     \ht\scratchbox\dimexpr\ht\scratchbox+\justimageoffset+\justimagetopoffset\relax
-     \dp\scratchbox\dimexpr\dp\scratchbox+\justimageoffset+\justimagebottomoffset\relax
+     \ht\scratchbox{\ht\scratchbox+\justimageoffset+\justimagetopoffset}%
+     \dp\scratchbox{\dp\scratchbox+\justimageoffset+\justimagebottomoffset}%
    \fi
    \putboxincache\s!exported{\the\nofexportedboxes}\scratchbox
    \box\b_grph_image

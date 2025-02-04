@@ -10,6 +10,7 @@ local lpegmatch = lpeg.match
 local setmetatableindex = table.setmetatableindex
 
 local context        = context
+local commands       = commands
 
 local implement      = interfaces.implement
 local variables      = interfaces.variables
@@ -149,7 +150,7 @@ local pattern = lpeg.afterprefix("li::")
 function marks.title(tag,n)
     local listindex = lpegmatch(pattern,n)
     if listindex then
-        commands.savedlisttitle(tag,listindex,"marking")
+        commands.savedlisttitle(tag,tonumber(listindex),"marking")
     else
         context(n)
     end
@@ -158,14 +159,24 @@ end
 function marks.number(tag,n) -- no spec
     local listindex = lpegmatch(pattern,n)
     if listindex then
-        commands.savedlistnumber(tag,listindex)
+        commands.savedlistnumber(tag,tonumber(listindex))
     else
         -- no prefix (as it is the prefix)
         context(n)
     end
 end
 
+-- function marks.prefixednumber(tag,n) -- no spec
+--     local listindex = lpegmatch(pattern,n)
+--     if listindex then
+--         commands.savedlistprefixednumber(tag,tonumber(listindex))
+--     else
+--         context(n)
+--     end
+-- end
+
 -- interface
 
-implement { name = "markingtitle",  actions = marks.title, arguments = "2 strings" }
-implement { name = "markingnumber", actions = marks.number,arguments = "2 strings" }
+implement { name = "markingtitle",          actions = marks.title,          arguments = "2 strings" }
+implement { name = "markingnumber",         actions = marks.number,         arguments = "2 strings" }
+--------- { name = "markingprefixednumber", actions = marks.prefixednumber, arguments = "2 strings" }

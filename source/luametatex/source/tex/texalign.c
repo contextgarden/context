@@ -540,6 +540,14 @@ static void tex_aux_get_preamble_token(void)
         case end_template_cmd:
             tex_alignment_interwoven_error(5);
             break;
+        case internal_dimension_cmd:
+            if (cur_chr == internal_dimension_location(tab_size_code)) {
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                tex_word_define(global_defs_par > 0 ? global_flag_bit : 0, internal_dimension_location(tab_size_code), v);
+                goto RESTART;
+            } else {
+                break;
+            }
         case internal_glue_cmd:
             if (cur_chr == internal_glue_location(tab_skip_code)) {
                 halfword v = tex_scan_glue(glue_val_level, 1, 0);
@@ -548,14 +556,6 @@ static void tex_aux_get_preamble_token(void)
                 } else {
                     update_tex_tab_skip_local(v);
                 }
-                goto RESTART;
-            } else {
-                break;
-            }
-        case internal_dimension_cmd:
-            if (cur_chr == internal_dimension_location(tab_size_code)) {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
-                tex_word_define(global_defs_par > 0 ? global_flag_bit : 0, internal_dimension_location(tab_size_code), v);
                 goto RESTART;
             } else {
                 break;
@@ -603,9 +603,14 @@ static void tex_aux_scan_align_spec(quarterword c)
                 }
                 break;
             case 'c': case 'C':
+                /* We permits multiple callbacks so we |or| them. */
                 if (tex_scan_mandate_keyword("callback", 1)) {
                     options |= align_option_callback;
-                    callback = tex_scan_integer(0, NULL);
+                    if (tex_scan_character("sS", 0, 0, 0)) {
+                        callback |= tex_scan_integer(0, NULL);
+                    } else { 
+                        callback = tex_scan_integer(0, NULL);
+                    }
                 }
                 break;
             case 'd': case 'D':
@@ -785,15 +790,13 @@ static void tex_aux_run_no_align(void)
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("xoffset", 2)) {
-                            lmt_alignment_state.row_state.xoffset = (add ? lmt_alignment_state.row_state.xoffset : 0) 
-                                + tex_scan_dimension(0, 0, 0, 0, NULL);
+                            lmt_alignment_state.row_state.xoffset = (add ? lmt_alignment_state.row_state.xoffset : 0) + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("xmove", 2)) {
-                            lmt_alignment_state.row_state.xmove = (add ? lmt_alignment_state.row_state.xmove : 0) 
-                                + tex_scan_dimension(0, 0, 0, 0, NULL);
+                            lmt_alignment_state.row_state.xmove = (add ? lmt_alignment_state.row_state.xmove : 0) + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
@@ -806,15 +809,13 @@ static void tex_aux_run_no_align(void)
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("yoffset", 2)) {
-                            lmt_alignment_state.row_state.yoffset = (add ? lmt_alignment_state.row_state.yoffset : 0) 
-                                + tex_scan_dimension(0, 0, 0, 0, NULL);
+                            lmt_alignment_state.row_state.yoffset = (add ? lmt_alignment_state.row_state.yoffset : 0) + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("ymove", 2)) {
-                            lmt_alignment_state.row_state.ymove = (add ? lmt_alignment_state.row_state.ymove : 0) 
-                                + tex_scan_dimension(0, 0, 0, 0, NULL);
+                            lmt_alignment_state.row_state.ymove = (add ? lmt_alignment_state.row_state.ymove : 0) + tex_scan_dimension(0, 0, 0, 0, NULL);
                             done = 1;
                         }
                         break;
@@ -849,13 +850,14 @@ static int tex_aux_nested_no_align(void)
 {
     int state = lmt_alignment_state.no_align_level > 0;
     if (state) {
-        tex_scan_left_brace();
-        tex_new_save_level(no_align_group);
-        ++lmt_alignment_state.no_align_level;
-        tex_aux_trace_no_align("entering");
-        if (cur_list.mode == internal_vmode) {
-            tex_normal_paragraph(no_align_par_context);
-        }
+//        tex_scan_left_brace();
+//        tex_new_save_level(no_align_group);
+//        ++lmt_alignment_state.no_align_level;
+//        tex_aux_trace_no_align("entering");
+//        if (cur_list.mode == internal_vmode) {
+//            tex_normal_paragraph(no_align_par_context);
+//        }
+        tex_aux_run_no_align();
     }
     return state;
 }
@@ -1687,6 +1689,8 @@ static void tex_aux_finish_align(void)
     halfword reverse = lmt_alignment_state.options & align_option_reverse;
     halfword callback = lmt_alignment_state.options & align_option_callback;
     halfword discard = normalize_line_mode_option(discard_zero_tab_skips_mode) || (lmt_alignment_state.options & align_option_discard);
+    halfword amount = 0;
+    halfword mode = 0;
     /*tex The |align_group| was for individual entries: */
     if (cur_group != align_group) {
         tex_confusion("align, case 1");
@@ -1711,9 +1715,9 @@ static void tex_aux_finish_align(void)
         We flush the tokenlists so that in principle we can access the align record nodes as normal
         lists.
     */
-    halfword amount = saved_align_amount;
-    halfword mode = saved_align_mode;
- /* halfword callback = saved_align_callback; */ /* also in state record */
+    amount = saved_align_amount;
+    mode = saved_align_mode;
+ /* callback = saved_align_callback; */ /* also in state record */
     {
         halfword q = node_next(preamble);
         do {
@@ -2222,7 +2226,9 @@ void tex_run_alignment_error(void)
     int cmd = cur_cmd;
     int chr = cur_chr;
     if (cmd == alignment_cmd && chr == no_align_code) {
-        if (! tex_aux_nested_no_align()) {
+        if (tex_aux_nested_no_align()) {
+            /* */
+        } else { 
             tex_handle_error(
                 normal_error_type,
                 "Misplaced \\noalign",

@@ -1,0 +1,145 @@
+% language=us
+
+\environment context-2024-style
+
+\startdocument
+  [title={PDF 2.0},
+   banner={what does it mean for us},
+   location={context\enspace {\bf 2024}\enspace meeting}]
+
+\starttitle[title=Short history]
+
+\startitemize
+\startitem It started in 1992. \stopitem
+\startitem The \PDF\ format basically is flattened \POSTSCRIPT. \stopitem
+\startitem The file has objects accessed via a page tree. \stopitem
+\startitem Random access is provided via a cross reference table. \stopitem
+\startitem In principle not all in the file has to be loaded. \stopitem
+\startitem All resources (fonts, graphics) are (can be) included. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The tools]
+
+\startitemize
+\startitem A \PDF\ file was supposed to be made with Acrobat Distiller. \stopitem
+\startitem Previewing was done with Acrobat Reader. \stopitem
+\startitem Distribution was assumed to happen with Acrobat Exchange. \stopitem
+\startitem The Reader was limited in functionality. \stopitem
+\startitem Exchange was expensive (pay per document or \CD).\stopitem
+\startitem Distiller didn't come cheap either. \stopitem
+\startitem Plugins were part of the design but in the end a failure. \stopitem
+\startitem The \MSDOS\ reader was not that bad. \stopitem
+\startitem But such a lightweight viewers never made it to e.g.\ \LINUX \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Usage]
+
+\startitemize
+\startitem For printing it was to replace \POSTSCRIPT: high speed and less demanding. \stopitem
+\startitem It was suitable for for preflight and last minute fixes: object version numbers and appended objects. \stopitem
+\startitem It could be used for storing graphic editor states: undocumented extensions are possible (using objects). \stopitem
+\startitem At some point widgets (forms) entered the picture (but intended usage changed, e.g.\ \FDF). \stopitem
+\startitem Layers are a powerful feature. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Usability]
+
+\startitemize
+\startitem Media support is unreliable and changed: quicktime, flash, whatever, a missed opportunity \stopitem
+\startitem Widgets are a bit unreliable, especially initialization and inheritance (bugs becoming features). \stopitem
+\startitem There is no baseline \JAVASCRIPT\ defined so viewers lack some simple powerful things. \stopitem
+\startitem One can do a lot but open source viewers (always) lag(ged) behind. \stopitem
+\startitem Some bits (like tagging) have seen little use and support so one can wonder where that ends. \stopitem
+\startitem For instance layers could be more useful but they lack control and support in free viewers. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Standardization]
+
+\startitemize
+\startitem In order to be predictable we have all kind of \PDF\ standards (prepress, archiving, accessibility). \stopitem
+\startitem The main (big) standard is an \ISO\ specification (kind of semi free). \stopitem
+\startitem Version 1.7 was already more or less frozen for a while. \stopitem
+\startitem So version 2.0 is not really a big jump, it is mostly 1.7, so maybe more of a freeze. \stopitem
+\startitem Validation and preflight is big business \unknown \stopitem
+\startitem \unknown\ as is signing and digital right management. \stopitem
+\startitem The 2.0 standard seems kind of fluid anyway (also driven by what tools can(not) do). \stopitem
+\startitem Printing houses often have old tools (and sometimes mess with the \PDF). \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Producing \PDF]
+
+\startitemize
+\startitem The tools produce quite reliable and compact \PDF. \stopitem
+\startitem We can basically add anything we want. \stopitem
+\startitem There is no real need to adapt as \PDF\ 2.0 it is. \stopitem
+\startitem \TYPETHREE\ support in open source is inconsistent and needs care. \stopitem
+\startitem There is demand for tagging (weak and insufficient spec). \stopitem
+\startitem By going 2.0 we can in principle drop older versions. \stopitem
+\startitem We do our best to deal with encryption and signing. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Open source]
+
+\startitemize
+\startitem \TEX\ engines could produce \PDF\ (we used \DVIPSONE\ and Distiller) rather early in the game. \stopitem
+\startitem Interactive features could be supported immediately (we already supported \DVIWINDO) because we had an backend abstraction layer. \stopitem
+\startitem The real take off happened when \PDFTEX\ came around. \stopitem
+\startitem An reliable alternative route was via \DVIPDFMX. \stopitem
+\startitem For us Sumatra (\MSWINDOWS) was the first competing alternative viewer. \stopitem
+\startitem And Okular (\LINUX, \MSWINDOWS) was quite useful too. \stopitem
+\startitem I now use these two and seldom launch Acrobat Reader which has rather intrusive interfaces. \stopitem
+\startitem It is very much about not letting the tools getting in the way (productivity). \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Closed source]
+
+\startitemize
+\startitem There is a lot of commercialization of \PDF. \stopitem
+\startitem (Okay, that also happens in the \TEX\ environment.) \stopitem
+\startitem We have and get locked|-|in dependencies on the cloud and web. \stopitem
+\startitem No one really knows what happens with data and content. \stopitem
+\startitem One can be surprised about the messy \PDF\ being produced. \stopitem
+\startitem Standards become applications, applications become standards. \stopitem
+\startitem Open and closed source are different worlds with often different interests. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=New in \CONTEXT]
+
+Inclusion of pages from a \PDF\ file is controlled by:
+
+\starttyping
+compactors-preset.lua
+\stoptyping
+
+We can enable and disable checks and fixes if needed. If needed we can add some hooks.
+
+There are also options to merge references, comments, bookmarks, fields, layers
+and renditions.
+
+In \LMTX\ we add additional information that we can use in the future. We have a registered
+name space (in addition to the standard one used in the other \TEX\ engines).
+
+{\bf Demo:} fixing and normalizing rather hybrid documents.
+
+{\bf Discussion:} What do users need?
+
+\stoptitle
+
+\stopdocument
+

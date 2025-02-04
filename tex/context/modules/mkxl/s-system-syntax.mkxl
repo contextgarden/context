@@ -275,6 +275,10 @@
     \ctxlua{moduledata.engine.codes(tex.getfrozenparvalues())}
 \stopbuffer
 
+\startbuffer[engine:syntax:badnessmodecodes]
+    \ctxlua{moduledata.engine.codes(tex.getbadnessmodevalues())}
+\stopbuffer
+
 \stopmodule
 
 \continueifinputfile{s-system-syntax.mkxl}

@@ -18,6 +18,8 @@ typedef struct insert_record {
     halfword inbetween;
     scaled   lineheight;
     scaled   linedepth;
+    scaled   stretch;
+    scaled   shrink;
 } insert_record;
 
 typedef enum insert_modes {
@@ -65,6 +67,8 @@ extern halfword tex_get_insert_content     (halfword i);
 extern halfword tex_get_insert_storage     (halfword i);
 extern scaled   tex_get_insert_line_height (halfword i);
 extern scaled   tex_get_insert_line_depth  (halfword i);
+extern scaled   tex_get_insert_stretch     (halfword i);
+extern scaled   tex_get_insert_shrink      (halfword i);
                                            
 extern void     tex_set_insert_limit       (halfword i, scaled v);
 extern void     tex_set_insert_multiplier  (halfword i, halfword v);
@@ -78,6 +82,8 @@ extern void     tex_set_insert_content     (halfword i, halfword v);
 extern void     tex_set_insert_storage     (halfword i, halfword v);
 extern void     tex_set_insert_line_height (halfword i, scaled v);
 extern void     tex_set_insert_line_depth  (halfword i, scaled v);
+extern void     tex_set_insert_stretch     (halfword i, scaled v);
+extern void     tex_set_insert_shrink      (halfword i, scaled v);
                                            
 extern void     tex_wipe_insert            (halfword i);
                                            

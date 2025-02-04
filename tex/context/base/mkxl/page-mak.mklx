@@ -146,9 +146,9 @@
    \makeupparameter\c!commands % hm, what is this one doing here ?
    \forgetall % else indented flush
    \dontcomplain
-   \global\setbox\b_page_makeup\vbox to \makeupparameter\c!height \bgroup
+   \global\setbox\b_page_makeup\vbox \s!to {\makeupparameter\c!height}\bgroup
      \usemakeupstyleandcolor\c!style\c!color
-     \hsize\makeupparameter\c!width
+     \hsize{\makeupparameter\c!width}%
      \usealignparameter\makeupparameter
      \usesetupsparameter\makeupparameter % lua(..),xml(...,..),tex(..)
      \makeupparameter\c!top
@@ -208,8 +208,7 @@
 \permanent\protected\def\startcolumnmakeup % don't change
   {\bgroup
    \getrawnoflines\textheight % raw as we can have topskip
-   \setbox\scratchbox\vbox to \dimexpr\noflines\lineheight-\lineheight+\topskip\relax
-     \bgroup
+   \setbox\scratchbox\vbox \s!to {\noflines\lineheight-\lineheight+\topskip}\bgroup
      \forgetall}
 
 \permanent\protected\def\stopcolumnmakeup

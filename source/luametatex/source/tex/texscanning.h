@@ -112,6 +112,7 @@ extern halfword    tex_scan_orientation               (int optional_equal);
 extern halfword    tex_scan_anchor                    (int optional_equal);
 extern halfword    tex_scan_anchors                   (int optional_equal);
 
+extern halfword    tex_scan_expr                      (int level);
 extern int         tex_scanned_expression             (int level);
 
 extern halfword    tex_scan_integer_register_number   (void);
@@ -219,12 +220,17 @@ static inline int tex_token_is_sign(halfword t) {
     return (t == minus_token) || (t == plus_token);
 }
 
-static inline int tex_token_is_seperator(halfword t) {
+static inline int tex_token_is_separator(halfword t) {
     return (t == period_token) || (t == comma_token);
 }
 
 static inline int tex_token_is_operator(halfword t) {
     return (t == plus_token) || (t == minus_token) || (t == asterisk_token) || (t == slash_token) || (t == colon_token);
+}
+
+static inline int tex_token_is_unit(halfword t) {
+    return (t >= a_token_l && t <= z_token_l) || (t >= a_token_o && t <= z_token_o)
+        || (t >= A_token_l && t <= Z_token_l) || (t >= A_token_o && t <= Z_token_o);
 }
 
 # endif

@@ -429,7 +429,7 @@
       \calculatereducedvsizes
       \offinterlineskip
       \ifdim\topheight>\zeropoint
-        \kern\dimexpr-\topheight-\topdistance\relax
+        \kern{-\topheight-\topdistance}%
         \page_backgrounds_set_box_row\v!top\topheight
         \kern\topdistance
       \fi
@@ -558,8 +558,8 @@
    \edef\p_page_backgrounds_offset{\namedframedparameter{\??layoutbackgrounds\v!page}\c!offset}%
    \edef\p_page_backgrounds_depth {\namedframedparameter{\??layoutbackgrounds\v!page}\c!depth }%
    \edef\p_page_backgrounds_state {\namedframedparameter{\??layoutbackgrounds       }\c!state }%
-   \global\d_page_backgrounds_offset\ifempty\p_offset\zeropoint\else\p_page_backgrounds_offset\fi
-   \global\d_page_backgrounds_depth \ifempty\p_depth \zeropoint\else\p_page_backgrounds_depth \fi
+   \global\d_page_backgrounds_offset\ifempty\p_offset\zeropoint\else{\p_page_backgrounds_offset}\fi
+   \global\d_page_backgrounds_depth \ifempty\p_depth \zeropoint\else{\p_page_backgrounds_depth }\fi
    \global\pagebackgroundoffset\d_page_backgrounds_offset\relax
    \global\pagebackgrounddepth \d_page_backgrounds_depth \relax
    \ifx\p_page_backgrounds_state\v!stop

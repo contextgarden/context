@@ -14,12 +14,14 @@
 /*tex the |0xFFFFFFFF| is a flag value. */
 
 # define MATHCODESTACK   8
+# define MATHCODESTEP    8
 # define MATHCODEDEFAULT 0xFFFFFFFF
 # define MATHCODEACTIVE  0xFFFFFFFE
 
 /*tex Delcodes are also went larger. */
 
 # define DELCODESTACK   4
+# define DELCODESTEP    4
 # define DELCODEDEFAULT 0xFFFFFFFF
 
 typedef struct mathcode_state_info {
@@ -190,7 +192,7 @@ int tex_get_math_code_number(int n) /* should be unsigned */
 
 static void tex_aux_initialize_mathcode(void)
 {
-    lmt_mathcode_state.mathcode_head = sa_new_tree(mathcode_sparse_identifier, MATHCODESTACK, 4, (sa_tree_item) { .uint_value = MATHCODEDEFAULT });
+    lmt_mathcode_state.mathcode_head = sa_new_tree(mathcode_sparse_identifier, MATHCODESTACK, MATHCODESTEP, 4, (sa_tree_item) { .uint_value = MATHCODEDEFAULT });
 }
 
 static void tex_aux_dump_mathcode(dumpstream f)
@@ -305,7 +307,7 @@ int tex_get_del_code_number(int n)
 
 static void tex_aux_initialize_delcode(void)
 {
-    lmt_mathcode_state.delcode_head = sa_new_tree(delcode_sparse_identifier, DELCODESTACK, 8, (sa_tree_item) { .uint_value = DELCODEDEFAULT });
+    lmt_mathcode_state.delcode_head = sa_new_tree(delcode_sparse_identifier, DELCODESTACK, DELCODESTEP, 8, (sa_tree_item) { .uint_value = DELCODEDEFAULT });
 }
 
 static void tex_aux_dump_delcode(dumpstream f)

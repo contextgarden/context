@@ -1398,6 +1398,9 @@ function tex.getalignmentcontextvalues    ( ) return <t:table> end
 function tex.getappendlinecontextvalues   ( ) return <t:table> end
 function tex.getautomigrationvalues       ( ) return <t:table> end
 function tex.getautoparagraphvalues       ( ) return <t:table> end
+function tex.getbalancestepoptionvalues   ( ) return <t:table> end
+function tex.getbalancecallbackvalues     ( ) return <t:table> end
+function tex.getboxoptionvalues           ( ) return <t:table> end
 function tex.getbreakcontextvalues        ( ) return <t:table> end
 function tex.getbuildcontextvalues        ( ) return <t:table> end
 function tex.getcharactercontrolvalues    ( ) return <t:table> end
@@ -1419,6 +1422,7 @@ function tex.gethyphenationvalues         ( ) return <t:table> end
 function tex.getiftypes                   ( ) return <t:table> end
 function tex.getinteractionmodes          ( ) return <t:table> end
 function tex.getiovalues                  ( ) return <t:table> end
+function tex.getkernoptionvalues          ( ) return <t:table> end
 function tex.getkerneloptionvalues        ( ) return <t:table> end
 function tex.getlinebreakparameterfields  ( ) return <t:table> end
 function tex.getlinebreakresultfields     ( ) return <t:table> end
@@ -1441,6 +1445,7 @@ function tex.getmathsurroundvalues        ( ) return <t:table> end
 function tex.getmathvariantpresets        ( ) return <t:table> end
 function tex.getmathvariantvalues         ( ) return <t:table> end
 function tex.getmarknames                 ( ) return <t:table> end
+function tex.getmvloptionvalues           ( ) return <t:table> end
 function tex.getmodevalues                ( ) return <t:table> end
 function tex.getnestfields                ( ) return <t:table> end
 function tex.getnoadoptionvalues          ( ) return <t:table> end
@@ -2138,6 +2143,44 @@ end
 
 \stopsubsection
 
+\startsubsection[title=MVL]
+
+This returns the currently active main vertical list:
+
+\starttyping[option=LUA]
+function tex.getcurrentmvl ( )
+    return <t:integer>
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=Balancing]
+
+At the moment we only have a few balance related helpers. One of them can set
+the current \prm {balanceshape}.
+
+\starttyping[option=LUA]
+function tex.setbalanceshape (
+    <t:table> steps
+)
+    return <t:integer>
+end
+\stoptyping
+
+The indexed table has subtables with fields:
+
+\starttabulate[|l|l|]
+\NC \type {index}      \NC \type[option=lua]{<t:integer>}         \NC \NR
+\NC \type {options}    \NC \type[option=lua]{<t:integer>}         \NC \NR
+\NC \type {vsize}      \NC \type[option=lua]{<t:number>}          \NC \NR
+\NC \type {topskip}    \NC \type[option=lua]{<t:number> <t:node>} \NC \NR
+\NC \type {bottomskip} \NC \type[option=lua]{<t:number> <t:node>} \NC \NR
+\NC \type {extra}      \NC \type[option=lua]{<t:number>}          \NC \NR
+\stoptabulate
+
+\stopsubsection
+
 \stopsection
 
 \startsection[title={The configuration}]
@@ -2166,6 +2209,7 @@ management.
 \NC \type {savesize}          \NC number/table \NC   100000 \NC mas size of save stack \NC \NR
 \NC \type {stringsize}        \NC number/table \NC   150000 \NC max number of strings \NC \NR
 \NC \type {tokensize}         \NC number/table \NC  1000000 \NC max token memory \NC \NR
+\NC \type {mvlsize}           \NC number/table \NC       10 \NC max mvl memory \NC \NR
 \ML
 \NC \type {expandsize}        \NC number/table \NC    10000 \NC max expansion nesting \NC \NR
 \NC \type {propertiessize}    \NC number       \NC        0 \NC initial size of node properties table \NC \NR

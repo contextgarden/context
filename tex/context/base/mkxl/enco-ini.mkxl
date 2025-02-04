@@ -189,8 +189,8 @@
   {\dontleavehmode\begingroup               % but that's no fun (yet)
    \setbox\scratchboxone\hbox{#1}% accent
    \setbox\scratchboxtwo\hbox{#2}% character
-   \scratchheight\dimexpr\ht\scratchboxtwo-\ht\scratchboxone\relax
-   \scratchdepth \dimexpr\dp\scratchboxtwo-\dp\scratchboxone\relax
+   \scratchheight{\ht\scratchboxtwo-\ht\scratchboxone}%
+   \scratchdepth {\dp\scratchboxtwo-\dp\scratchboxone}%
    \scratchwidth \wd\scratchboxtwo
    \hbox to \wd\ifdim\wd\scratchboxone>\wd\scratchboxtwo\scratchboxone\else\scratchboxtwo\fi\bgroup
      \hss\box\scratchboxtwo\hss
@@ -198,9 +198,9 @@
      \hss
      \ifdim\ht\scratchboxone>\exheight
        % top accent
-       \raise\dimexpr\scratchheight+\exheight/3\relax
+       \raise{\scratchheight+\exheight/3}%
      \else
-       \lower-\dimexpr\scratchdepth+\exheight/3\relax
+       \lower{-\scratchdepth-\exheight/3}%
      \fi
      \box\scratchboxone
      \hss
@@ -377,9 +377,18 @@
 
 \permanent\protected\def\fakeunderscore
   {\relax\ifmmode
-     \vrule\s!depth .12\fontexheight\mathstylefont\normalmathstyle\s!width \fontinterwordspace\mathstylefont\normalmathstyle\s!height\zeropoint\relax
+     \vrule
+       \s!depth    .12\fontexheight\mathstylefont\normalmathstyle
+       \s!width \fontinterwordspace\mathstylefont\normalmathstyle
+       \s!height\zeropoint
+     \relax
    \else
-     \dontleavehmode\hbox{\vrule\s!depth .12\fontexheight\font\s!width \fontinterwordspace\font\s!height\zeropoint}%
+     \dontleavehmode\hbox\bgroup
+       \vrule
+         \s!depth    .12\fontexheight\font
+         \s!width \fontinterwordspace\font
+         \s!height\zeropoint
+      \egroup
    \fi}
 
 \permanent\protected\def\fakeunderscores{\enforced\let\_\fakeunderscore}
@@ -504,17 +513,17 @@
 \protected\def\enco_periods_yes[#1]%
   {\doifelseassignment{#1}
      {\setupcurrentperiods[#1]%
-      \scratchcounter\periodsparameter\c!n}
-     {\scratchcounter\ifempty{#1}\periodsparameter\c!n\else#1\fi}%
+      \scratchcounter{\periodsparameter\c!n}}
+     {\scratchcounter{\ifempty{#1}\periodsparameter\c!n\else#1\fi}}%
    \enco_periods_finish}
 
 \protected\def\enco_periods_nop
-  {\scratchcounter\periodsparameter\c!n
+  {\scratchcounter{\periodsparameter\c!n}%
    \enco_periods_finish}
 
 \protected\def\enco_periods_finish
   {\edef\p_width{\periodsparameter\c!width}%
-   \ifx\p_width\v!fit
+   \ifx\p_width\v!fit % can be \ifcstoks (*)
      \enco_periods_finish_fit
    \else
      \enco_periods_finish_width
@@ -522,13 +531,13 @@
    \egroup}
 
 \protected\def\enco_periods_finish_width
-  {\setbox\scratchbox\hbox to \p_width
+  {\setbox\scratchbox\hbox to {\p_width}% can be \lastnamedcs (*)
      {\hss\periodsparameter\c!symbol\hss}%
    \dorecurse\scratchcounter{\copy\scratchbox}}
 
 \protected\def\enco_periods_finish_fit
   {\edef\p_symbol{\periodsparameter\c!symbol}%
-   \scratchdistance\periodsparameter\c!distance
+   \scratchdistance{\periodsparameter\c!distance}%
    \hskip\scratchdistance
    \dorecurse\scratchcounter{\p_symbol\hskip\scratchdistance}}
 

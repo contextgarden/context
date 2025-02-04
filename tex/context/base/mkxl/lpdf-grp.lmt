@@ -168,7 +168,8 @@ do
 
     methods.hex = function(t)
         -- encoding is ascii hex, no checking here
-        local xresolution, yresolution = t.xresolution or 0, t.yresolution or 0
+        local xresolution = t.xresolution or 0
+        local yresolution = t.yresolution or 0
         if xresolution == 0 or yresolution == 0 then
             return -- fatal error
         end

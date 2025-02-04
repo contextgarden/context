@@ -76,8 +76,8 @@
 % a variant (no gain so we stay mkiv compatible):
 %
 % \def\page_boxes_apply_offset_indeed#box% this needs testing in real situations
-%   {\boxxoffset#box\dimexpr\boxxoffset#box\doifbothsides++-\backoffset\relax
-%    \boxyoffset#box\dimexpr\boxyoffset#box-\topoffset\relax}
+%   {\boxxoffset#box{\boxxoffset#box\doifbothsides++-\backoffset}%
+%    \boxyoffset#box{\boxyoffset#box-\topoffset}}
 
 % \def\page_boxes_apply_offset % #box
 %   {\unless\ifdim\topoffset=\zeropoint
@@ -111,7 +111,7 @@
      {\offinterlineskip
       \dorecurse{\layoutparameter\c!ny}%
         {\hpack{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
-         \vskip\layoutparameter\c!dy}%
+         \vskip{\layoutparameter\c!dy}}%
       \unskip}}
 
 \def\page_boxes_apply_orientate_paper#box%
@@ -205,8 +205,8 @@
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
    \setbox#box\hpack
-     {\advanceby\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
-      \advanceby\scratchwidth \scratchoffset
+     {\advanceby\scratchheight{\scratchdepth+2\scratchoffset}%
+      \advanceby\scratchwidth\scratchoffset
       \ifconditional#right\relax
          \scratchdimen-\scratchoffset
          \kern\scratchdimen
@@ -225,7 +225,7 @@
    \dp#box\scratchdepth}
 
 \def\page_boxes_apply_clip_paper
-  {\scratchoffset\layoutparameter\c!clipoffset\relax
+  {\scratchoffset{\layoutparameter\c!clipoffset}%
    \ifdim\scratchoffset>\zeropoint
       \expandafter\page_boxes_apply_clip_paper_indeed
    \else
@@ -237,8 +237,8 @@
    \scratchheight\ht#box%
    \scratchdepth \dp#box%
    \setbox#box\hpack
-     {\advanceby\scratchheight\dimexpr\scratchdepth+2\scratchoffset\relax
-      \advanceby\scratchwidth \scratchoffset
+     {\advanceby\scratchheight{\scratchdepth+2\scratchoffset}%
+      \advanceby\scratchwidth\scratchoffset
       \doifbothsides
         {\advanceby\scratchwidth\scratchoffset
          \scratchdimen-\scratchoffset
@@ -271,7 +271,7 @@
   {\setbox#1\vpack to \paperheight
      {\hsize\paperwidth
       \vkern\topspace
-      \hkern\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}%
+      \hkern{\doifbothsides\backspace\backspace{\paperwidth-\backspace-\makeupwidth}}%
 %       \hkern\doifbothsides\backspace\backspace\cutspace
 %       \page_layouts_swap_margins\v!page
 %       \hkern\backspace

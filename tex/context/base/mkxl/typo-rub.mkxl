@@ -65,8 +65,8 @@
   {\clf_ruby
      align   {\rubyparameter\c!align}%
      stretch {\rubyparameter\c!stretch}%
-     hoffset  \rubyparameter\c!hoffset
-     voffset  \rubyparameter\c!voffset
+     hoffset {\rubyparameter\c!hoffset}%
+     voffset {\rubyparameter\c!voffset}%
      base    {#1}%
      comment {#2}
    \relax}
@@ -83,7 +83,7 @@
 \defcsname\??rubyplacement\v!right\endcsname#1#2%
   {#1%
    \edef\p_distance{\rubyparameter\c!distance}%
-   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip\p_distance\fi
+   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip{\p_distance}\fi
    \begingroup
    \userubystyleandcolor\c!style\c!color
    \rubyparameter\c!left#2\rubyparameter\c!right
@@ -95,7 +95,7 @@
    \rubyparameter\c!left#2\rubyparameter\c!right
    \endgroup
    \edef\p_distance{\rubyparameter\c!distance}%
-   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip\p_distance\fi
+   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip{\p_distance}\relax\fi
    #1}
 
 \permanent\protected\def\setruby#1#2%
@@ -115,8 +115,8 @@
    \clf_startruby
         align   {\rubyparameter\c!align}%
         stretch {\rubyparameter\c!stretch}%
-        hoffset  \rubyparameter\c!hoffset
-        voffset  \rubyparameter\c!voffset
+        hoffset {\rubyparameter\c!hoffset}%
+        voffset {\rubyparameter\c!voffset}%
    \relax}
 
 \permanent\protected\def\stopruby

@@ -724,7 +724,12 @@
 %   {\limitatetext{#1}\currentregistermaxwidth\unknown}%
 
 \def\strc_registers_limited_entry#1%
-  {\limitated left \currentregistermaxwidth sentinel {\unknown} text {#1} freeze true\relax}
+  {\limitated
+     left     {\currentregistermaxwidth}%
+     sentinel {\unknown}%
+     text     {#1}%
+     freeze   true
+   \relax}
 
 \aliased\let\limitedregisterentry\firstofoneargument
 
@@ -925,7 +930,7 @@
 \permanent\protected\def\startregisteroutput
   {\endgraf
    \begingroup
-   \d_strc_registers_distance\registerparameter\c!distance\relax
+   \d_strc_registers_distance{\registerparameter\c!distance}%
    \dostarttaggedchained\t!register\currentregister\currentregister\??register
    \forgeteverypar
    \forgetparindent
@@ -1028,7 +1033,7 @@
    \ifnum\c_strc_register_level>\plusone
      \advanceby\leftskip\d_strc_registers_distance\relax
    \fi
-   \d_strc_registers_hangindent\registerparameter\c!distance\relax
+   \d_strc_registers_hangindent{\registerparameter\c!distance}%
    \c_strc_registers_hangafter \plusone
    \ifconditional\c_strc_registers_vertical
      \blank[\v!samepage]%
@@ -1198,7 +1203,7 @@
      \withregisterpagecommand{#2}{#3}{#4}{#5}%
      \dostoptagged
      \ifconditional\c_strc_registers_following
-       \ifnum#3=\numexpr#6-1\relax
+       \ifnum#3={#6-1}%
          \labeltext{following:\s!singular}%
        \else
          \labeltext{following:\s!plural}%

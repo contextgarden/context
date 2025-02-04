@@ -1,0 +1,313 @@
+% language=us
+
+\environment context-2024-style
+
+\startdocument
+  [title={compact fonts},
+   banner={what are the advantages},
+   location={context\enspace {\bf 2024}\enspace meeting}]
+
+\starttitle[title=Before we had \MKII]
+
+\startitemize
+\startitem It all started with rather plain \type {\font} definitions. \stopitem
+\startitem More than just fonts need to be \quote {switched}. \stopitem
+\startitem So body font switching is wrapped into macros. \stopitem
+\startitem Often in \MKII\  more fonts get loaded than are needed. \stopitem
+\startitem This comes cheap when using eight bit fonts. \stopitem
+\startitem Design sizes complicate matters. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The \MKII\ font model]
+
+\startitemize
+\startitem Eight bit fonts have a limited coverage. \stopitem
+\startitem Hyphenation relates to font encoding. \stopitem
+\startitem We need to handle font and input encodings. \stopitem
+\startitem Using small caps and|/|or old style numerals demand a different font. \stopitem
+\startitem This resulted in a multi|-|dimensional system. \stopitem
+\startitem Design sizes have been complemented by a simpler model. \stopitem
+\startitem At some point we had to support \XETEX, so support for features was introduced. \stopitem
+\startitem Loading fonts is delayed when possible so that we can mix with little overhead. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The \MKIV\ font model]
+
+\startitemize
+\startitem Font loading is delegated to \LUA, we could not support Oriental \TEX\ otherwise. \stopitem
+\startitem Dealing with font features is also up to \LUA. \stopitem
+\startitem More dynamic par building experiments demanded interplay with fonts. \stopitem
+\startitem Fonts are often large so there is more aggressive sharing and caching. \stopitem
+\startitem Runtime support for virtual fonts is integrated. \stopitem
+\startitem Way more trickery is possible because we have full access. \stopitem
+\startitem Users can tweak and extend fonts as they wish (given available glyphs). \stopitem
+\startitem Features (like small caps) can be applied dynamically. \stopitem
+\startitem Variable and color fonts were supported as soon as they showed up. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=The \LMTX\ font model]
+
+\startitemize
+    \startitem
+        We assume \LUAMETATEX\ to be used.
+    \stopitem
+    \startitem
+        We have better control over how the backend deals with fonts. This
+        was prototyped in \MKIV\ but later removed.
+    \stopitem
+    \startitem
+        To a large extend the model used is the same.
+    \stopitem
+    \startitem
+        We have a bit more virtual font magic available.
+    \stopitem
+    \startitem
+        Tweaking math fonts has been extended and is also applied.
+    \stopitem
+     \startitem
+        Of course we also have expansion but we can change that on the spot.
+     \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Some new engine features]
+     \startitem
+        Math fonts are demanding and are \quote {loaded} three times per size
+        (three families) which means three times tweaking.
+     \stopitem
+     \startitem
+        For that reason compact math fonts were introduced: load once and select (ssty)
+        and scale (script and scriptscript) on the fly.
+     \stopitem
+     \startitem
+        That meant that some additional scaling parameters had to be introduced.
+     \stopitem
+     \startitem
+        Which in turn triggered dynamic scaling in text mode.
+     \stopitem
+\stoptitle
+
+\starttitle[title=Some new engine features]
+
+\startitemize
+    \startitem
+        The engine supports \typ {\glyphscale}, \typ {\glyphxscale}, \typ
+        {\glyphyscale}, \typ {\glyphslant} and \typ {\glyphweight}.
+    \stopitem
+    \startitem
+        There are also \typ {\Umathxscale} and \typ {\Umathyscale} (per math
+        style).
+    \stopitem
+    \startitem
+        These properties ar bound to glyphs which means that dimensions (when
+        needed) are calculated on the fly.
+    \stopitem
+    \startitem
+        Specific font (and other) glyph related features can be controlled locally:
+        left|/|right kerning and ligaturing, expansion, protrusion, italic correction
+        etc.
+    \stopitem
+    \startitem
+        A new primitive \typ {\fontspecdef} can efficiently change the current
+        combination of properties.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Intermezzo: glyph nodes]
+
+\startitemize
+    \startitem
+        In \TEX\ they only contain font and character fields (in addition to the
+        common \typ {type}, \typ {subtype} and \type {next} fields.
+    \stopitem
+    \startitem
+        In \LUATEX\ they are larger and of course also have the new common \typ
+        {prev} and \typ {attr} fields plus two \SYNCTEX\ fields.
+    \stopitem
+    \startitem
+        In \LUAMETATEX\ glyph nodes are among the largest nodes, currently 14
+        times 8 bytes.
+    \stopitem
+    \startitem
+        There are 4 byte fields: \typ {font}, \typ {data}, \typ {state}, \typ
+        {options}, \typ {hyphenate}, \typ {expansion}, \typ {x_scale}, \typ
+        {y_scale}, \typ {scale}, \typ {raise}, \typ {left}, \typ {right}, \typ
+        {x_offset}, \typ {y_offset}, \typ {weight}, \typ {slant} and \typ {index}
+        (math).
+    \stopitem
+    \startitem
+        There are 2 byte fields: \typ {language}, \typ {control}, \typ
+        {properties} (math) and \typ {group} (math) and a few 1 byte fields: \typ
+        {protected}, \typ {lhmin}, \typ {rhmin} and \typ {discpart}.
+    \stopitem
+\stopitemize
+
+% one 2 byte reserved field \typ {reserved}
+
+\stoptitle
+
+\starttitle[title=Intermezzo: font spec nodes]
+
+\startitemize
+    \startitem
+        The \quote {spec} in the \typ {\fontspecdef} indicates a similarity with
+        so called \quote {glue spec}, as they also use so called nodes as storage
+        container.
+    \stopitem
+    \startitem
+        Of course such a font switch is a bit more costly than a regular \typ
+        {\font} switch.
+    \stopitem
+    \startitem
+        There are some related query commands: \typ {fontspecid}, \typ
+        {fontspecifiedsize}, \typ {fontspecscale}, \typ {fontspecxscale}, \typ
+        {fontspecyscale}, \typ {fontspecslant} and \typ {fontspecweight}.
+    \stopitem
+    \startitem
+        It is currently a 5 memory word node (5 times 8 bytes) with 4 byte
+        fields: \type {state}, \type {identifier}, \type {scale}, \type
+        {x_scale}, \type {y_scale}, \type {slant} and \type {weight}.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Compact mode]
+
+\startitemize
+    \startitem
+        Compact font mode is enabled at the top of the document (before fonts get
+        defined):
+\starttyping
+\enableexperiments[fonts.compact]
+\stoptyping
+    \stopitem
+    \startitem
+        Often performance is the same, but for large fonts there is a gain. The
+        same is true for math fonts.
+    \stopitem
+    \startitem
+        The produced \PDF\ code can (!) be more efficient which compensates the
+        larger overhead.
+    \stopitem
+    \startitem
+        The question is: will we make this default which means that we need a
+        directive that enables traditional mode.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Compact mode]
+
+The print version of \quotation {Math in \CONTEXT} currently has 290 pages.
+
+\blank[big]
+
+\starttabulate[|l|c|c|]
+\HL
+    \NC         \NC run time \NC file size \NC \NR
+\HL
+    \NC normal  \NC 13.6     \NC 2.457.962 \NC \NR
+    \NC compact \NC 10.6     \NC 2.456.630 \NC \NR
+\HL
+\stoptabulate
+
+\blank[big]
+
+105 font files loaded (see next page)
+
+\blank[big]
+
+\starttabulate[|l|c|c|c|c|c|]
+\HL
+\NC         \NC instances \NC backend \NC vectors \NC hashes \NC load time   \NC \NR
+\HL
+\NC normal  \NC 317       \NC 217               \NC 76             \NC 141           \NC 5.0 \NC \NR
+\NC compact \NC 110       \NC  43               \NC 41             \NC   2           \NC 1.9 \NC \NR
+\HL
+\stoptabulate
+
+\page
+
+105 font files loaded:
+
+\startalign[flushleft,broad,nothyphenated]
+\switchtobodyfont[tt,8pt]
+koeielettersot.ttf, lucidabrightmathot.otf, lucidabrightot.otf,
+lucidasanstypewriterot.otf, latinmodernmath-companion.otf,
+ralphsmithsformalscript-companion.otf, texgyrebonummath-companion.otf,
+texgyrepagellamath-companion.otf, texgyretermesmath-companion.otf,
+concrete-math.otf, ebgaramond-regular.otf, garamond-math.otf, erewhon-math.otf,
+erewhon-regular.otf, euler-math.otf, kpmath-bold.otf, kpmath-regular.otf,
+kpmono-regular.otf, kproman-regular.otf, libertinusmath-regular.otf,
+libertinusmono-regular.otf, libertinusserif-regular.otf, cambria.ttc,
+xcharter-math.otf, xcharter-roman.otf, iwona-regular.otf, iwonalight-regular.otf,
+kurier-regular.otf, kurierlight-regular.otf, antykwatorunska-bold.otf,
+antykwatorunska-italic.otf, antykwatorunska-regular.otf,
+antykwatorunskacond-regular.otf, antykwatorunskalight-regular.otf,
+latinmodern-math.otf, lmmono10-regular.otf, lmmonoltcond10-regular.otf,
+lmmonoproplt10-regular.otf, lmroman10-regular.otf, texgyrebonum-math.otf,
+texgyredejavu-math.otf, texgyrepagella-math.otf, texgyreschola-math.otf,
+texgyretermes-math.otf, texgyrebonum-bold.otf, texgyrebonum-italic.otf,
+texgyrebonum-regular.otf, texgyrepagella-bold.otf, texgyrepagella-bolditalic.otf,
+texgyrepagella-italic.otf, texgyrepagella-regular.otf, texgyreschola-regular.otf,
+texgyretermes-regular.otf, ex-iwonal.tfm, ex-iwonam.tfm, ex-iwonar.tfm,
+mi-iwonabi.tfm, mi-iwonali.tfm, mi-iwonami.tfm, mi-iwonari.tfm, rm-iwonab.tfm,
+rm-iwonal.tfm, rm-iwonam.tfm, rm-iwonar.tfm, sy-iwonalz.tfm, sy-iwonamz.tfm,
+sy-iwonarz.tfm, ex-kurierl.tfm, ex-kurierm.tfm, ex-kurierr.tfm, mi-kurierhi.tfm,
+mi-kurierli.tfm, mi-kuriermi.tfm, mi-kurierri.tfm, rm-kurierh.tfm,
+rm-kurierl.tfm, rm-kurierm.tfm, rm-kurierr.tfm, sy-kurierlz.tfm, sy-kuriermz.tfm,
+sy-kurierrz.tfm, ex-anttcr.tfm, ex-anttl.tfm, ex-anttr.tfm, mi-anttbi.tfm,
+mi-anttcbi.tfm, mi-anttcri.tfm, mi-anttli.tfm, mi-anttri.tfm, rm-anttb.tfm,
+rm-anttcb.tfm, rm-anttcr.tfm, rm-anttl.tfm, rm-anttr.tfm, sy-anttcrz.tfm,
+sy-anttlz.tfm, sy-anttrz.tfm, dejavusans-bold.ttf, dejavusans.ttf,
+dejavusansmono-bold.ttf, dejavusansmono-oblique.ttf, dejavusansmono.ttf,
+dejavuserif.ttf, stixtwomath-regular.ttf, stixtwotext-regular.ttf \stopalign
+
+\stoptitle
+
+\starttitle[title=Summary]
+
+\startitemize
+    \startitem
+        Compact font mode is the future, but it only works with \LUAMETATEX\ and
+        \CONTEXT\ \LMTX.
+    \stopitem
+    \startitem
+        The engine has to work harder, but the extra overhead can be neglected.
+    \stopitem
+    \startitem
+        Larger fonts have less impact.
+    \stopitem
+    \startitem
+        Using many fonts also has less impact.
+    \stopitem
+    \startitem
+        In math it is now the default anyway.
+    \stopitem
+    \startitem
+        We have larger nodes but the increase in memory usage is compensated by less fonts.
+    \stopitem
+    \startitem
+        One has to use dimension related helpers in \LUA\ (they do the scaling).
+    \stopitem
+    \startitem
+        The backend is more complex with respect to fonts so that compensates
+        the performance we gain on regular documents.
+    \stopitem
+\stopitemize
+
+\stoptitle
+
+\stopdocument
+

@@ -39,7 +39,7 @@
 %D     draw textext("\bitmapimage[x=200,y=50]{\TestBitmap{50}{200}}") xsized 10cm ;
 %D \stopMPcode
 
-\registerctxluafile{grph-raw}{}
+\registerctxluafile{grph-raw}{autosuffix}
 
 \unprotect
 
@@ -49,14 +49,15 @@
      \clf_bitmapimage
        data        {#2}%
        colorspace  {\directdummyparameter\c!color}%
-       width       {\directdummyparameter\c!width}%
-       height      {\directdummyparameter\c!height}%
-       xresolution {\directdummyparameter\c!x}%
-       yresolution {\directdummyparameter\c!y}%
+       %
+       \ifchkdimexpr\directdummyparameter\c!width \or width       \lastchkdimension \fi
+       \ifchkdimexpr\directdummyparameter\c!height\or height      \lastchkdimension \fi
+       \ifchknumexpr\directdummyparameter\c!x     \or xresolution \lastchknumber    \fi
+       \ifchknumexpr\directdummyparameter\c!y     \or yresolution \lastchknumber    \fi
      \relax
    \egroup}
 
-\permanent\protected\def\startbitmapimage[#S#1]#2\stopbitmapimage
+\permanent\protected\def\startbitmapimage[#S#1]#2\stopbitmapimage % not that efficient but seldom used
   {\bitmapimage[#1]{#2}}
 
 \permanent\protected\lettonothing\stopbitmapimage

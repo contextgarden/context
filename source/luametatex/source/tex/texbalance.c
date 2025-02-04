@@ -19,7 +19,7 @@
     \startitem We considered demerits on spread for a while. \stopitem 
     \startitem There is a balance penalty equivalent for line penalty. \stopitem 
     \startitem We added balance passes akin par passes. \stopitem 
-    \startitem Ther eis a trial mode too. \stopitem 
+    \startitem There is a trial mode too. \stopitem 
     \stopitemize 
 
     and 
@@ -49,6 +49,11 @@
     to handle glue inside there. It all complicates matters. Also, defining this at the tex end is 
     fuzzy. And then we need to adapt al the lua code that operates on vertical boxes. So, in the 
     end the code was removed. 
+
+    It might take a while before we decide that the interfaces are stable, something that also 
+    relates to other subcomponents of the engine. Furthermore, we introduced this mechanism for 
+    upgrading an existing \CONTEXT\ feature, and might apply it in other places. Of course it will
+    be kept as generic as possible but it is definitely done with a \CONTEXT\ mindset. 
 
 */
 
@@ -100,6 +105,7 @@ balance_state_info lmt_balance_state = {
     .total_inserts_found      = 0,
     .total_inserts_checked    = 0,
     .discards_found           = 0,
+    .uinserts_found           = 0,
     .n_of_callbacks           = 0,
     .passes                   = { 0 },
     .artificial_encountered   = 0, 
@@ -748,6 +754,37 @@ static scaled tex_aux_try_balance(
                         active_total_demerits(active) = lmt_balance_state.minimal_demerits[fit_class];
                         /*tex Store additional data in the new active node. */
                         tex_aux_set_quality(active, passive, best_place_short[fit_class], best_place_glue[fit_class], page_height, prev_badness);
+                        /*tex Experiment, also for documenting. */
+                        if (lmt_balance_state.uinserts_found) { 
+                            double d = 0;
+                        # if 1
+                            if (best_place_short[fit_class] > 0) {
+                                /* underfull */
+                                if (lmt_balance_state.active_height[total_stretch_amount] > 0) {
+                                    d = (double) best_place_short[fit_class] / (double) lmt_balance_state.active_height[total_stretch_amount];
+                                }
+                            } else if (best_place_short[fit_class] < 0) {
+                                /* overfull */
+                                if (lmt_balance_state.active_height[total_shrink_amount] > 0) {
+                                    d = - (double) best_place_short[fit_class] / (double) lmt_balance_state.active_height[total_shrink_amount];
+                                }
+                            }
+                        # else
+                            if (best_place_short[fit_class] > 0) {
+                                /* underfull */
+                                if (current_active_height[total_stretch_amount] > 0) {
+                                    d = (double) best_place_short[fit_class] / (double) current_active_height[total_stretch_amount];
+                                }
+                            } else if (best_place_short[fit_class] < 0) {
+                                /* overfull */
+                                if (current_active_height[total_shrink_amount] > 0) {
+                                    d = - (double) best_place_short[fit_class] / (double) current_active_height[total_shrink_amount];
+                                }
+                            }
+                        # endif 
+                            /*tex Negative means shrink. */
+                            passive_factor(passive) = d; 
+                        }
                         /*tex Append the passive node. */
                         node_next(passive) = lmt_balance_state.passive;
                         lmt_balance_state.passive = passive;
@@ -936,6 +973,7 @@ static scaled tex_aux_try_balance(
         } else { 
         }
     }
+    /* We never end up here. */
     return shortfall;
 }
 
@@ -957,10 +995,10 @@ static inline int tex_aux_emergency(const balance_properties *properties)
     }
 }
 
-static inline int tex_aux_emergency_skip(halfword s)
-{
-    return ! tex_glue_is_zero(s) && glue_stretch_order(s) == normal_glue_order && glue_shrink_order(s) == normal_glue_order;
-}
+// static inline int tex_aux_emergency_skip(halfword s)
+// {
+//     return ! tex_glue_is_zero(s) && glue_stretch_order(s) == normal_glue_order && glue_shrink_order(s) == normal_glue_order;
+// }
 
 static scaled tex_check_balance_quality(scaled shortfall, scaled *overfull, scaled *underfull, halfword *verdict, halfword *classified)
 {
@@ -1499,7 +1537,14 @@ static inline halfword tex_aux_balance_list(const balance_properties *properties
                      // if (0) { 
                      //     tex_aux_try_balance(properties, insert_float_cost(current), 0, unhyphenated_node, first, current, callback_id, checks, pass, subpass, artificial);
                      // }
+                        scaled stretch = insert_stretch(current);
+                        scaled shrink = insert_shrink(current);
                         lmt_balance_state.active_height[total_advance_amount] += height;
+                        if (stretch || shrink) {
+                            lmt_balance_state.active_height[total_stretch_amount] += stretch;
+                            lmt_balance_state.active_height[total_shrink_amount] += shrink;
+                            lmt_balance_state.uinserts_found += 1;
+                        }
                         ++lmt_balance_state.inserts_found;
                     }
                 }
@@ -1626,7 +1671,7 @@ void tex_balance_reset(balance_properties *properties)
 
 /* Should we reset extra after setting the field? */
 
-void tex_aux_check_extra(halfword head)
+static void tex_aux_check_extra(halfword head)
 {
     halfword current = head;
     scaled extra = 0;
@@ -1704,6 +1749,7 @@ void tex_balance(balance_properties *properties, halfword head)
     lmt_balance_state.warned                   = 0;
     lmt_balance_state.inserts_found            = 0;
     lmt_balance_state.discards_found           = 0;
+    lmt_balance_state.uinserts_found           = 0;
     lmt_balance_state.passes.n_of_break_calls += 1;
     lmt_balance_state.artificial_encountered   = 0;
     lmt_balance_state.current_slot_number      = 0;
@@ -1917,7 +1963,7 @@ void tex_balance(balance_properties *properties, halfword head)
             tex_aux_balance_callback_stop(lmt_balance_state.callback_id, properties->checks);
         }
     }
-    goto INDEED;
+    goto INDEED;/* We never end up here so it's more a comment. */
   DONE:
     if (lmt_balance_state.callback_id) {
         tex_aux_balance_callback_stop(lmt_balance_state.callback_id, properties->checks);
@@ -1953,6 +1999,33 @@ static void tex_aux_pre_balance(const balance_properties *properties, int callba
 }
 
 /* todo: we don't need just_box at all */
+
+static void tex_vbalanced_process_insert(halfword insert, double factor)
+{
+    halfword height = tex_insert_height(insert);
+    halfword stretch = insert_stretch(insert);
+    halfword shrink = insert_shrink(insert);
+    if (height > 0 && (stretch || shrink)) {
+        scaled amount = 0;
+        halfword callback = insert_callback(insert);
+        halfword packed = tex_vpack(insert_list(insert), 0, packing_additional, 0, 0, holding_none_option, NULL);
+        tex_attach_attribute_list_copy(packed, insert);
+        if (factor > 0) {
+            amount = scaledround(factor * stretch);
+        } else if (factor < 0) {
+            amount = scaledround(factor * shrink);
+        }
+        if (callback) {
+            /*tex Beware: is we have a split insert we callback each. */
+            halfword result = lmt_uinsert_callback(callback, insert_index(insert), insert_belongs_to(insert), packed, height, amount);
+            if (result) {
+                packed = result; 
+                insert_total_height(insert) = box_total(packed);
+            }
+        }
+        insert_list(insert) = packed; 
+    }
+}
 
 static void tex_aux_post_balance(const balance_properties *properties, int callback_id, halfword checks, int state)
 {
@@ -2009,7 +2082,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
             tex_aux_update_height_and_skips(properties, page, &target, &topskip, &bottomskip, &options, 1);
             discardable = first && first == last && (
                 (node_type(last) == rule_node  && (rule_options(last) & rule_option_discardable)) 
-             || (node_type(last) == vlist_node && (box_options(last)  & box_option_discardable ))
+             || ((node_type(last) == vlist_node || node_type(last) == hlist_node) && (box_options(last)  & box_option_discardable))
             );  
 //            if (first && ! tex_glue_is_zero(topskip)) { 
             if (first) { 
@@ -2044,7 +2117,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                     }
                     current = node_next(current);
                 }
-                ADDTOPSKIP1:
+              ADDTOPSKIP1:
                 if (glue_amount(topskip) > height) {
                     top = glue_amount(topskip) - height;
                 } else { 
@@ -2094,6 +2167,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                 node_subtype(lmt_balance_state.just_box) = balance_slot_list;
             }
             if (discardable) { 
+/* needs checking and/or comment */
                 box_height(lmt_balance_state.just_box) = 0;
                 box_depth(lmt_balance_state.just_box) = 0;
             }            
@@ -2138,7 +2212,11 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                         last = node_prev(last);
                         break;
                     case kern_node:
-                        kern_amount(last) = 0;
+                        if (kern_options(last) & kern_option_in_insert) {
+                            /* retain */
+                        } else { 
+                            kern_amount(last) = 0;
+                        }
                         break;
                 }
             } else {
@@ -2169,6 +2247,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                                 box_discardable(current) = 0;
                             } else if ((box_options(current) & box_option_discardable) && (options & balance_step_option_top)) {
                                 discard = -box_total(current);
+                                extra = -discard; /* test this */
                             }
                             goto ADDTOPSKIP2;
                         case rule_node:
@@ -2178,6 +2257,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                                 rule_discardable(current) = 0;
                             } else if ((rule_options(current) & rule_option_discardable) && (options & balance_step_option_top)) {
                                 discard = -rule_total(current);
+                                extra = -discard; /* test this */
                             }
                             goto ADDTOPSKIP2;
                         default:
@@ -2225,6 +2305,17 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
                 tex_couple_nodes(last, gluenode);
                 last = gluenode;
             }
+            /* experiment */
+            if (lmt_balance_state.uinserts_found) {
+                halfword current = first;
+                while (current) {
+                    if (node_type(current) == insert_node) { 
+                        tex_vbalanced_process_insert(current, passive_factor(cur_p));
+                    }
+                    current = node_next(current);
+                }
+            }
+            /* */
             if (properties->packing == packing_additional) {
                 lmt_balance_state.just_box = tex_vpack(first, 0, packing_additional, 0, 0, holding_none_option, NULL);
             } else {
@@ -2308,6 +2399,78 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
 //      return 1;
 // }
 
+/*tex
+
+    We only handle |... <hlist line> [penalty] [glue] <hlist line>| but ignoire trailing 
+    glue, penalties etc. 
+*/
+
+static void tex_aux_check_balance_penalties(halfword tail)
+{
+    if (balance_final_penalties_par) { 
+        halfword count = tex_get_specification_count(balance_final_penalties_par);
+        halfword index = 1;
+        while (tail) { 
+            switch (node_type(tail)) { 
+                case insert_node: 
+                case mark_node: 
+                case glue_node: 
+                case kern_node:
+                case penalty_node:
+                    tail = node_prev(tail);
+                    break;
+                default:
+                    goto INJECT_1;
+            }
+        }
+      INJECT_1:
+        while (tail && node_type(tail) == hlist_node && node_subtype(tail) == line_list && index <= count) { 
+            halfword penalty = null;
+            halfword prev = node_prev(tail);
+            while (1) {
+                switch (node_type(prev)) { 
+                    case glue_node:
+                    case insert_node: 
+                    case mark_node: 
+                        prev = node_prev(prev);
+                        break;
+                    case penalty_node:
+                        if (node_subtype(tail) != linebreak_penalty_subtype) {
+                            /*tex For now. */
+                            prev = node_prev(prev);
+                        } else if (tex_has_penalty_option(penalty, penalty_option_final_balance)) {
+                            /*tex We already added these penalties. */
+                            return;
+                        } else {
+                            penalty = prev;
+                            prev = node_prev(prev);
+                            goto INJECT_2;
+                        }
+                    default: 
+                        goto INJECT_2;
+                }
+            }
+          INJECT_2:
+            if (prev && node_type(prev) == hlist_node && node_subtype(prev) == line_list) {
+                halfword amount = tex_get_specification_penalty(balance_final_penalties_par, index);
+                if (penalty) { 
+                    /*tex We use the balance penalty instead. */
+                    penalty_amount(penalty) = amount;
+                } else {
+                    penalty = tex_new_penalty_node(amount, linebreak_penalty_subtype);
+                    tex_try_couple_nodes(penalty, node_next(prev));
+                    tex_try_couple_nodes(prev, penalty);
+                }
+                tex_add_penalty_option(penalty, penalty_option_final_balance);
+                ++index;
+                tail = prev;
+            } else { 
+                return;
+            } 
+        } 
+    }
+}
+
 extern halfword tex_vbalance (
     halfword n,
     halfword mode,
@@ -2329,28 +2492,32 @@ extern halfword tex_vbalance (
         halfword head = box_list(box);
         halfword result = null;
         if (head) {
+            halfword tail = tex_tail_of_node_list(head);
             balance_properties properties;
             tex_push_nest();
             node_next(temp_head) = head;
             tex_balance_preset(&properties);
             properties.packing = mode; 
             properties.trial = trial;
+            tex_aux_check_balance_penalties(tail);
             tex_balance(&properties, head);
             tex_balance_reset(&properties);
-            result = node_next(cur_list.head);
+            /* zero dimensions because we can overflow */
+            result = tex_new_node(vlist_node, balance_list);
+            box_list(result) = node_next(cur_list.head);
             node_next(cur_list.head) = null;
             node_next(temp_head) = null;
             tex_pop_nest();
-            /* maybe filtered because that also does the uleaders */
-            result = tex_vpack(result, 0, packing_exactly, max_dimension, 0, holding_none_option, NULL);
             if (lmt_balance_state.inserts_found) {
                 box_balance_state(result) |= balance_state_inserts;
             }
             if (lmt_balance_state.discards_found) {
                 box_balance_state(result) |= balance_state_discards;
             }
+            if (lmt_balance_state.uinserts_found) {
+                box_balance_state(result) |= balance_state_uinserts;
+            }
             tex_attach_attribute_list_copy(result, box);
-            node_subtype(result) = balance_list;
         }
         if (! trial) {
             box_list(box) = null;
@@ -2596,7 +2763,6 @@ halfword tex_vbalanced_insert(
     halfword options
 )
 {
-
     halfword box = tex_aux_locate_balance_target(n, balance_slot_list, options & balance_insert_descend);
     if (box < 0) {
         return null;
@@ -2609,6 +2775,7 @@ halfword tex_vbalanced_insert(
             if (node_type(current) == insert_node && insert_index(current) == i) {
                 halfword list = insert_list(current);
                 if (list) {
+                    /* append the list to the result */
                     if (head) {
                         tex_couple_nodes(tail, list);
                     } else { 
@@ -2647,16 +2814,19 @@ void tex_vbalanced_deinsert(
     } else if (box) {
         halfword current = box_list(box);
         int forcedepth = options & balance_deinsert_linedepth;
+        halfword belongs_to = 0;
         while (current) { 
             halfword next = node_next(current);
             if (node_type(current) == insert_node && tex_insert_height(current) > 0) {
                 halfword head = insert_list(current);
                 halfword prev = node_prev(current);
+                belongs_to++;
                 if (head && prev) {
                     halfword temp = current;
                     halfword last = null;
-                    insert_list(temp) = null;
-                    insert_options(temp) |= insert_option_in_insert;
+                    insert_list(current) = null;
+                    insert_options(current) |= insert_option_in_insert;
+                    insert_belongs_to(current) = belongs_to;
                     current = prev; 
                     while (head) { 
                         halfword next = node_next(head);
@@ -2691,6 +2861,7 @@ void tex_vbalanced_deinsert(
                                     tex_couple_nodes(current, head);
                                     node_next(head) = null;
                                     kern_options(head) |= kern_option_in_insert;
+                                    kern_belongs_to(head) = belongs_to;
                                     last = null;
                                     current = head;
                                     break;
@@ -2732,6 +2903,7 @@ void tex_vbalanced_deinsert(
                                     tex_couple_nodes(current, head);
                                     node_next(head) = null;
                                     glue_options(head) |= glue_option_in_insert;
+                                    glue_belongs_to(head) = belongs_to;
                                     last = null;
                                     current = head;
                                     break;
@@ -2741,6 +2913,7 @@ void tex_vbalanced_deinsert(
                                     tex_couple_nodes(current, head);
                                     node_next(head) = null;
                                     penalty_options(head) |= penalty_option_in_insert;
+                                    penalty_belongs_to(head) = belongs_to;
                                     current = head;
                                     break;
                                 }
@@ -2773,6 +2946,97 @@ void tex_vbalanced_deinsert(
     }
 }
 
+static inline int tex_aux_compact_insert_belongs_to(halfword current, halfword belongs_to)
+{
+    switch (node_type(current)) {
+        case kern_node   : return (kern_belongs_to   (current) == belongs_to); // && (kern_options   (current) & kern_option_in_insert)
+        case glue_node   : return (glue_belongs_to   (current) == belongs_to); // && (glue_options   (current) & glue_option_in_insert)
+        case penalty_node: return (penalty_belongs_to(current) == belongs_to); // && (penalty_options(current) & penalty_option_in_insert)
+        case insert_node : return (insert_belongs_to (current) == belongs_to); // && (insert_options (current) & insert_option_in_insert)
+        default          : return 0;
+    }
+}
+
+static halfword tex_aux_compact_insert(halfword insert, halfword boxhead)
+{
+    halfword first = insert;
+    halfword last = insert;
+    halfword head = null;
+    halfword tail = null;
+    halfword prev = null;
+    halfword next = null;
+    halfword belongs_to = insert_belongs_to(insert);
+    halfword current = node_prev(insert);
+    while (current && tex_aux_compact_insert_belongs_to(current, belongs_to)) {
+        first = current; 
+        current = node_prev(current);
+    }
+    current = node_next(insert);
+    while (current && tex_aux_compact_insert_belongs_to(current, belongs_to)) {
+        last = current; 
+        current = node_next(current);
+    }
+    current = first;
+    prev = node_prev(first);
+    next = node_next(last);
+    while (current) { 
+        halfword next = node_next(current);
+        int islast = current == last;
+        switch (node_type(current)) {
+            case kern_node:
+            case glue_node: 
+            case penalty_node: 
+                node_prev(current) = null;
+                node_next(current) = null;
+                if (head) { 
+                    tex_couple_nodes(tail, current);
+                } else { 
+                    head = current;
+                } 
+                tail = current;
+                switch (node_type(current)) {
+                    case kern_node:
+                        insert_total_height(insert) += kern_amount(current);
+                        break;
+                    case glue_node: 
+                        insert_total_height(insert) += glue_amount(current);
+                        break;
+                }
+                break;
+            case insert_node:
+                { 
+                    halfword list = insert_list(current);
+                    if (head) { 
+                        tex_couple_nodes(tail, list);
+                    } else { 
+                        head = list;
+                    } 
+                    tail = list;
+                    if (current == insert) {
+                        insert_list(current) = head;
+                    } else {
+                        insert_total_height(insert) += insert_total_height(current);
+                        insert_list(current) = null;    
+                        tex_flush_node(current);
+                    }
+                }
+                break;
+        }
+        if (islast) { 
+            break;  
+        } else { 
+            current = next;
+        }
+    }
+    tex_couple_nodes(insert, next);
+    if (prev) {
+        tex_couple_nodes(prev, insert);
+        return boxhead;
+    } else {
+        return insert;
+    }
+}
+
 void tex_vbalanced_reinsert(
     halfword n,
     halfword options 
@@ -2782,108 +3046,40 @@ void tex_vbalanced_reinsert(
     if (box < 0) {
         return;
     } else if (box) {
-        halfword current = box_list(box);
-        halfword head = null;
-        halfword tail = null;
-        halfword insert = null;
-        halfword data = 0;
-        /* saveguard, so that we have a prev ... likely topskip */
-        if (current) { 
+        halfword head = box_list(box);
+        halfword current = head;
+        while (current) { 
+            if (node_type(current) == insert_node) { 
+                head = tex_aux_compact_insert(current, head);
+            }
             current = node_next(current);
         }
-        /* */
+        box_list(box) = head;
+        current = head;
         while (current) { 
-            halfword next = node_next(current);
             switch (node_type(current)) {
                 case kern_node:
                     if (kern_options(current) & kern_option_in_insert) {
-                        if (insert) { 
-                            if (head) { 
-                                tex_couple_nodes(tail, current);
-                            } else { 
-                                head = current;
-                            } 
-                            tail = current;
-                            insert_total_height(insert) += kern_amount(current);
-                        } else {
-//printf("kern: to be decided\n");
-                            kern_amount(current) = 0; /* todo */
-                        }
-                    } else { 
-                        insert = null;
+                        /* todo: remove */
+                        kern_amount(current) = 0;
                     }
                     break;
                 case glue_node: 
                     if (glue_options(current) & glue_option_in_insert) {
-                        if (insert) { 
-                            tex_try_couple_nodes(node_prev(current), next);
-                            node_prev(current) = null;
-                            node_next(current) = null;
-                            if (head) { 
-                                tex_couple_nodes(tail, current);
-                            } else { 
-                                head = current;
-                            } 
-                            tail = current;
-                            insert_total_height(insert) += glue_amount(current);
-                        } else { 
-//printf("glue: to be decided\n");
-                            glue_amount(current) = 0;  /* todo */
-                            glue_stretch(current) = 0; /* todo */
-                            glue_shrink(current) = 0;  /* todo */
-                        }
-                    } else { 
-                        insert = null;
+                        /* todo: remove */
+                        glue_amount(current) = 0;
+                        glue_stretch(current) = 0;
+                        glue_shrink(current) = 0;
                     }
                     break;
                 case penalty_node: 
                     if (penalty_options(current) & penalty_option_in_insert) {
-                        if (insert) { 
-                            tex_try_couple_nodes(node_prev(current), next);
-                            node_prev(current) = null;
-                            node_next(current) = null;
-                            if (head) { 
-                                tex_couple_nodes(tail, current);
-                            } else { 
-                                head = current;
-                            } 
-                            tail = current;
-                        } else { 
-//printf("penalty: to be decided\n");
-                            penalty_amount(current) = 0;
-                        }
-                    } else { 
-                        insert = null;
+                        /* todo: remove */
+                        penalty_amount(current) = 0; 
                     }
-                    break;
-                case insert_node: 
-                    if (insert_options(current) & insert_option_in_insert) {
-                        if (! insert || insert_identifier(current) != data) {
-                            insert = current;
-                            head = insert_list(current);
-                            tail = insert_list(current);
-                            data = insert_identifier(current);
-                        } else { 
-                            /* insert has been set */
-                            tex_try_couple_nodes(node_prev(current), next);
-                            node_prev(current) = null;
-                            node_next(current) = null;
-                            insert_total_height(insert) += insert_total_height(current);
-                            tex_couple_nodes(tail, insert_list(current));
-                            tail = insert_list(current);
-                            insert_list(current) = null;    
-                            tex_flush_node(current);
-                        }
-                    } else { 
-                        insert = null;
-                        data   = 0;
-                    }
-                    break;
-                default: 
-                    insert = null;
                     break;
             }
-            current = next;
+            current = node_next(current);
         }
     } else { 
         tex_handle_error(

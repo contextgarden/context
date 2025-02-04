@@ -47,7 +47,7 @@ local setoffsets          = nuts.setoffsets
 local getid               = nuts.getid
 local getfont             = nuts.getfont
 local getattr             = nuts.getattr
-local getsubtype          = nuts.getsubtype
+local getidsubtype        = nuts.getidsubtype
 local getbox              = nuts.getbox
 local getlist             = nuts.getlist
 local getprev             = nuts.getprev
@@ -715,10 +715,10 @@ local ruledmark do
     local sm_cache = caches["setmark"]
     local rm_cache = caches["resetmark"]
 
-    ruledmark = function(head,current)
+    ruledmark = function(head,current,subtype)
         local index = getindex(current)
-        local info  = getsubtype(current)
-        if info == set_code then
+        local info
+        if subtype == set_code then
             info = sm_cache[index]
             if not info then
                 info = sometext(formatters["SM:%i"](index),usedfont,nil,"trace:w") -- whatsit
@@ -802,20 +802,19 @@ local ruledwhatsit do
         [whatsitcodes.setstate]       = "SET",   -- can't happen because these are added after visualizing
     }
 
-    ruledwhatsit = function(head,current)
-        local what = getsubtype(current)
-        local info = w_cache[what]
+    ruledwhatsit = function(head,current,subtype)
+        local info = w_cache[subtype]
         if info then
             -- print("hit whatsit")
         else
-            info = sometext(formatters["W:%s"](tags[what] or what),usedfont,nil,"trace:w")
+            info = sometext(formatters["W:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_whatsit)
             end
             if crappytaggingmode then
                 setattr(info,a_tagged,0)
             end
-            w_cache[what] = info
+            w_cache[subtype] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
         return head, current
@@ -835,20 +834,19 @@ local ruledboundary do
         [boundarycodes.word]       = "WRD",
     }
 
-    ruledboundary = function(head,current)
-        local what = getsubtype(current)
-        local info = b_cache[what]
+    ruledboundary = function(head,current,subtype)
+        local info = b_cache[subtype]
         if info then
             -- print("hit whatsit")
         else
-            info = sometext(formatters["B:%s"](tags[what] or what),usedfont,nil,"trace:w")
+            info = sometext(formatters["B:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_boundary)
             end
             if crappytaggingmode then
                 setattr(info,a_tagged,0)
             end
-            b_cache[what] = info
+            b_cache[subtype] = info
         end
         head, current = insertnodeafter(head,current,copylist(info))
         return head, current
@@ -874,8 +872,7 @@ local ruledpar do
 
     local getdirection    = nuts.getdirection
 
-    ruledpar = function(head,current)
-        local subtype = getsubtype(current)
+    ruledpar = function(head,current,subtype)
         local what
         if subtype == hmodepar_code or subtype == vmodepar_code then
             what = getdirection(current) == r2l_code and "RLP" or "LRP"
@@ -921,9 +918,9 @@ local ruleddir do
 
     local getdirection   = nuts.getdirection
 
-    ruleddir = function(head,current)
-        local what = getsubtype(current)
-        if what == cancel_code then
+    ruleddir = function(head,current,subtype)
+        local what
+        if subtype == cancel_code then
             what = "CAN"
         elseif getdirection(current) == r2l_code then
             what = "R2L"
@@ -953,20 +950,19 @@ end
 --
 --     local u_cache = caches["user"]
 --
---     ruleduser = function(head,current)
---         local what = getsubtype(current)
---         local info = u_cache[what]
+--     ruleduser = function(head,current,subtype)
+--         local info = u_cache[subtype]
 --         if info then
 --             -- print("hit user")
 --         else
---             info = sometext(formatters["U:%s"](what),usedfont)
+--             info = sometext(formatters["U:%s"](subtype),usedfont)
 --             if use_layers then
 --                 setattr(info,a_layer,l_user)
 --             end
 --             if crappytaggingmode then
 --                 setattr(info,a_tagged,0)
 --             end
---             u_cache[what] = info
+--             u_cache[subtype] = info
 --         end
 --         head, current = insertnodeafter(head,current,copylist(info))
 --         return head, current
@@ -1328,8 +1324,7 @@ local ruledglue, ruledmathglue do
 
     local g_caches = { } for k, v in next, tags do g_caches[k] = caches[v] end
 
-    ruledglue = function(head,current,vertical,parent)
-        local subtype = getsubtype(current)
+    ruledglue = function(head,current,subtype,vertical,parent)
         local width   = effectiveglue(current,parent)
         local stag    = stags[subtype]
         local cache   = g_caches[subtype] or (vertical and g_cache_v) or g_cache_h
@@ -1394,8 +1389,7 @@ local ruledglue, ruledmathglue do
 
     local getoptions = nuts.getoptions
 
-    ruledspace = function(head,current,parent)
-        local subtype = getsubtype(current)
+    ruledspace = function(head,current,subtype,parent)
         local width = effectiveglue(current,parent)
         local info
         if subtype ~= spaceskip_code then
@@ -1553,9 +1547,9 @@ local ruledstrut do
     local rangedimensions = nuts.rangedimensions
     local a_mathaxis      <const> = attributes.private("mathaxis")
 
-    ruledstrut = function(head,current,parent)
+    ruledstrut = function(head,current,subtype,parent)
         if getwidth(current) == 0 then
-            if getsubtype(current) == strut_code  then
+            if subtype == strut_code  then
                 local w = strut_size
                 local a = getattr(current,a_mathaxis)
                 if use_layers then
@@ -1874,9 +1868,8 @@ local ruledmath do
     local getoptions = nuts.getoptions
     local shortmath  <const> = tex.mathoptioncodes.short
 
-    ruledmath = function(head,current)
-        local what  = getsubtype(current)
-        local mtag  = mathcodes[what]
+    ruledmath = function(head,current,subtype)
+        local mtag  = mathcodes[subtype]
         local skip  = getkern(current) + getwidth(current) -- surround
         local short = (getoptions(current) & shortmath) ~= 0
         local htag  = tags[short][mtag or "math"] or tags[false].math
@@ -2027,9 +2020,9 @@ do
         local intermathskip_code <const> = nodes.skipcodes.intermathskip
 
         while current do
-            local id = getid(current) -- also get subtype
+            local id, subtype = getidsubtype(current)
             local a = forced or getattr(current,a_visual) or unsetvalue
-            local subtype, content
+            local content
             if a ~= attr then
                 prev_trace_fontkern  = trace_fontkern
                 prev_trace_italic    = trace_italic
@@ -2147,11 +2140,11 @@ do
                 goto list
             elseif id == rule_code then
                 if trace_strut then
-                    head, current = ruledstrut(head,current,parent)
+                    head, current = ruledstrut(head,current,subtype,parent)
                 end
             elseif id == whatsit_code then
                 if trace_whatsit then
-                    head, current = ruledwhatsit(head,current)
+                    head, current = ruledwhatsit(head,current,subtype)
                 end
          -- elseif id == user_code then
          --     if trace_user then
@@ -2160,21 +2153,21 @@ do
             elseif id == math_code then
                 local saved = current
                 if trace_math then
-                    head, current = ruledmath(head,current)
+                    head, current = ruledmath(head,current,subtype)
                 elseif trace_penalty then
                     head, current = ruledpenalty(head,current,false,true,getattr(saved,a_filter))
                 end
             elseif id == dir_code then
                 if trace_dir then
-                    head, current = ruleddir(head,current)
+                    head, current = ruleddir(head,current,subtype)
                 end
             elseif id == par_code then
                 if trace_par then
-                    head, current = ruledpar(head,current)
+                    head, current = ruledpar(head,current,subtype)
                 end
             elseif id == mark_code then
                 if trace_mark then
-                    head, current = ruledmark(head,current)
+                    head, current = ruledmark(head,current,subtype)
                 end
             elseif id == insert_code then
                 if trace_insert then
@@ -2182,7 +2175,7 @@ do
                 end
             elseif id == boundary_code then
                 if trace_boundary then
-                    head, current = ruledboundary(head,current)
+                    head, current = ruledboundary(head,current,subtype)
                 end
             end
             goto next
@@ -2201,7 +2194,6 @@ do
                     end
                 end
                 -- todo: discretionary
-                subtype = getsubtype(current)
                 head, current = ruledpenalty(head,current,vertical,subtype,f)
             end
           ::glue::
@@ -2221,12 +2213,11 @@ do
                         end
                     end
                 end
-                head, current = ruledglue(head,current,vertical,parent)
+                head, current = ruledglue(head,current,subtype,vertical,parent)
             else
-                subtype = getsubtype(current)
                 if subtype == spaceskip_code or subtype == xspaceskip_code or subtype == zerospaceskip_code then -- not yet all space
                     if trace_space then
-                        head, current = ruledspace(head,current,parent)
+                        head, current = ruledspace(head,current,subtype,parent)
                     end
                 elseif subtype == intermathskip_code then
                     if trace_math or trace_mathglue then
@@ -2236,7 +2227,6 @@ do
             end
             goto next
           ::kern::
-            subtype = getsubtype(current)
             if subtype == fontkern_code or subtype == spacefontkern_code then
                 if trace_fontkern or prev_trace_fontkern then
                     head, current = fontkern(head,current)
@@ -2299,7 +2289,7 @@ do
                 if trace_depth then
                     ruleddepth(current)
                 end
-                if trace_line and (getsubtype(current) == linelist_code or getsubtype(current) == rowlist_code) then
+                if trace_line and (subtype == linelist_code or subtype == rowlist_code) then
                     head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)
                 elseif trace_hbox then
                     head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)

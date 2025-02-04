@@ -44,7 +44,7 @@ local handlers          = nodes.handlers
 local nuts              = nodes.nuts
 
 local getid             = nuts.getid
-local getsubtype        = nuts.getsubtype
+----- getsubtype        = nuts.getsubtype
 local getreplace        = nuts.getreplace
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev

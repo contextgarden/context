@@ -1,7 +1,6 @@
 /*
     See license.txt in the root of this project.
 */
-
 # include "luametatex.h"
 
 /*tex 
@@ -99,22 +98,22 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
     properties->except = 0;
     while (1) {
         switch (tex_scan_character("abdeipABDEIP", 0, 1, 0)) {
-            case 'p': case 'P':
-                switch (tex_scan_character("roRO", 0, 0, 0)) {
-                    case 'r': case 'R':
-                        if (tex_scan_mandate_keyword("pre", 2)) {
-                            properties->code = pre_adjust_code;
+            case 'a': case 'A':
+                switch (tex_scan_character("ftFT", 0, 0, 0)) {
+                    case 'f': case 'F':
+                        if (tex_scan_mandate_keyword("after", 2)) {
+                            properties->options &= ~(adjust_option_before | properties->options);
                         }
                         break;
-                    case 'o': case 'O':
-                        if (tex_scan_mandate_keyword("post", 2)) {
-                            properties->code = post_adjust_code;
+                    case 't': case 'T':
+                        if (tex_scan_mandate_keyword("attr", 2)) {
+                            properties->attrlist = tex_scan_attribute(properties->attrlist);
                         }
                         break;
                     default:
-                        tex_aux_show_keyword_error("pre|post");
+                        tex_aux_show_keyword_error("after|attr");
                         goto DONE;
-                }
+                }   
                 break;
             case 'b': case 'B':
                 switch (tex_scan_character("aeAE", 0, 0, 0)) {
@@ -132,31 +131,6 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                         tex_aux_show_keyword_error("baseline|before");
                         goto DONE;
                }
-                break;
-            case 'i': case 'I':
-                if (tex_scan_mandate_keyword("index", 1)) {
-                    properties->index = tex_scan_integer(0, NULL);
-                    if (! tex_valid_adjust_index(properties->index)) {
-                        properties->index = 0; /* for now no error */
-                    }
-                }
-                break;
-            case 'a': case 'A':
-                switch (tex_scan_character("ftFT", 0, 0, 0)) {
-                    case 'f': case 'F':
-                        if (tex_scan_mandate_keyword("after", 2)) {
-                            properties->options &= ~(adjust_option_before | properties->options);
-                        }
-                        break;
-                    case 't': case 'T':
-                        if (tex_scan_mandate_keyword("attr", 2)) {
-                            properties->attrlist = tex_scan_attribute(properties->attrlist);
-                        }
-                        break;
-                    default:
-                        tex_aux_show_keyword_error("after|attr");
-                        goto DONE;
-                }   
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
@@ -193,6 +167,31 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                 if (tex_scan_mandate_keyword("except", 1)) {
                     properties->except = tex_scan_dimension(0, 0, 0, 0, NULL);
                     properties->options |= adjust_option_except;
+                }
+                break;
+            case 'i': case 'I':
+                if (tex_scan_mandate_keyword("index", 1)) {
+                    properties->index = tex_scan_integer(0, NULL);
+                    if (! tex_valid_adjust_index(properties->index)) {
+                        properties->index = 0; /* for now no error */
+                    }
+                }
+                break;
+            case 'p': case 'P':
+                switch (tex_scan_character("roRO", 0, 0, 0)) {
+                    case 'r': case 'R':
+                        if (tex_scan_mandate_keyword("pre", 2)) {
+                            properties->code = pre_adjust_code;
+                        }
+                        break;
+                    case 'o': case 'O':
+                        if (tex_scan_mandate_keyword("post", 2)) {
+                            properties->code = post_adjust_code;
+                        }
+                        break;
+                    default:
+                        tex_aux_show_keyword_error("pre|post");
+                        goto DONE;
                 }
                 break;
             default:

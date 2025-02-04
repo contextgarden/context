@@ -462,8 +462,7 @@ end
 -- inspect(l)
 -- print(s==l.s)
 
--- if not package.loaded.json then
---     package.loaded.json = json
--- end
+package.loaded["util-jsn"] = json
+package.loaded.json        = json
 
 return json

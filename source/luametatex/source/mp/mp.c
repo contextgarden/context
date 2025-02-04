@@ -5042,7 +5042,7 @@ void mp_flush_below_variable(MP mp, mp_node p)
         do {
             mp_flush_below_variable(mp, q);
             r = q;
-            q = q->link;
+            q = q->link; /* why a compiler warning here */
             mp_free_value_node(mp, r);
         } while (q != mp->end_attr);
         p->type = mp_undefined_type;
@@ -26485,7 +26485,7 @@ way of making a stand alone image is to wrap the code in a small \CONTEXT\ file 
 
 */
 
-mp_graphic_object *mp_new_graphic_object(MP mp, int type)
+static mp_graphic_object *mp_new_graphic_object(MP mp, int type)
 {
     mp_graphic_object *p;
     size_t size;

@@ -57,30 +57,30 @@ local texgetnest   = tex.getnest
 
 local variables    = interfaces.variables
 
-local v_local      = variables["local"]
-local v_global     = variables["global"]
-local v_box        = variables.box
------ v_page       = variables.page -- reserved for future use
-local v_split      = variables.split
-local v_min        = variables.min
-local v_max        = variables.max
-local v_none       = variables.none
-local v_first      = variables.first
-local v_last       = variables.last
-local v_top        = variables.top
-local v_bottom     = variables.bottom
-local v_maxheight  = variables.maxheight
-local v_minheight  = variables.minheight
-local v_mindepth   = variables.mindepth
-local v_maxdepth   = variables.maxdepth
-local v_offset     = variables.offset
-local v_strut      = variables.strut
+local v_local      <const> = variables["local"]
+local v_global     <const> = variables["global"]
+local v_box        <const> = variables.box
+----- v_page       <const> = variables.page -- reserved for future use
+local v_split      <const> = variables.split
+local v_min        <const> = variables.min
+local v_max        <const> = variables.max
+local v_none       <const> = variables.none
+local v_first      <const> = variables.first
+local v_last       <const> = variables.last
+local v_top        <const> = variables.top
+local v_bottom     <const> = variables.bottom
+local v_maxheight  <const> = variables.maxheight
+local v_minheight  <const> = variables.minheight
+local v_mindepth   <const> = variables.mindepth
+local v_maxdepth   <const> = variables.maxdepth
+local v_offset     <const> = variables.offset
+local v_strut      <const> = variables.strut
 
-local v_hfraction  = variables.hfraction
-local v_dfraction  = variables.dfraction
-local v_bfraction  = variables.bfraction
-local v_tlines     = variables.tlines
-local v_blines     = variables.blines
+local v_hfraction  <const> = variables.hfraction
+local v_dfraction  <const> = variables.dfraction
+local v_bfraction  <const> = variables.bfraction
+local v_tlines     <const> = variables.tlines
+local v_blines     <const> = variables.blines
 
 -- vertical space handler
 
@@ -353,12 +353,12 @@ end
 
 local snap_hlist  do
 
-    local v_noheight   = variables.noheight
-    local v_nodepth    = variables.nodepth
-    local v_line       = variables.line
-    local v_halfline   = variables.halfline
-    local v_line_m     = "-" .. v_line
-    local v_halfline_m = "-" .. v_halfline
+    local v_noheight   <const> = variables.noheight
+    local v_nodepth    <const> = variables.nodepth
+    local v_line       <const> = variables.line
+    local v_halfline   <const> = variables.halfline
+    local v_line_m     <const> = "-" .. v_line
+    local v_halfline_m <const> = "-" .. v_halfline
 
     local floor = math.floor
     local ceil  = math.ceil

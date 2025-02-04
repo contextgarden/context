@@ -117,7 +117,7 @@
    \cdef\currentframed{\??framedtable\currentframedtable}%
    \pack_framed_initialize
    \c_tabl_framed_r\zerocount
-   \d_tabl_framed_d\framedparameter\c!distance
+   \d_tabl_framed_d{\framedparameter\c!distance}%
    \framedparameter\c!before}
 
 \permanent\protected\def\stopframedtable

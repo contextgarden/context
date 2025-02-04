@@ -60,12 +60,14 @@
    \setupcurrentmathdelimited[#settings]%
    \math_delimited_alternative{%
      \begincsname\??mathwhateverstrut\mathdelimitedparameter\c!strut\endcsname
-     \scratchdimen\mathdelimitedparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+     \scratchdimen{\mathdelimitedparameter\c!leftmargin}%
+     \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
      \begingroup
      \usemathdelimitedcolorparameter\c!textcolor
      #body%
      \endgroup
-     \scratchdimen\mathdelimitedparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
+     \scratchdimen{\mathdelimitedparameter\c!rightmargin}%
+     \ifzeropt\scratchdimen\else\kern\scratchdimen\fi
    }%
    \endgroup}
 
@@ -74,11 +76,11 @@
 \protected\def\math_delimited_common
   {\Udelimited
      \usedcolorparameterattributes{\mathdelimitedparameter\c!symbolcolor}%
-     \s!height\dimexpr\mathdelimitedparameter\c!height+\mathdelimitedparameter\c!topoffset\relax
-     \s!depth \dimexpr\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset\relax
-     \s!source\numexpr\namedboxanchor{\mathdelimitedparameter\c!source}\relax
+     \s!height{\mathdelimitedparameter\c!height+\mathdelimitedparameter\c!topoffset}%
+     \s!depth {\mathdelimitedparameter\c!depth+\mathdelimitedparameter\c!bottomoffset}%
+     \s!source{\namedboxanchor{\mathdelimitedparameter\c!source}}%
      \s!style \normalmathstyle
-     \s!size  \numexpr\mathdelimitedparameter\c!size\relax
+     \s!size  {\mathdelimitedparameter\c!size}%
      \zerocount \mathdelimitedparameter\c!left
      \zerocount \mathdelimitedparameter\c!right
   \relax}

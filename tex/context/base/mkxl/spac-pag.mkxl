@@ -139,7 +139,7 @@
 \permanent\protected\def\signalrightpage          {\dotrackpagestate      \s!paragraph\nofraggedparagraphs} % use \dontleavehmode if needed
 \permanent\protected\def\doifelserightpage        {\doifelserightpagestate\s!paragraph\nofraggedparagraphs}
 \permanent\protected\def\rightpageorder           {\pagestaterealpageorder\s!paragraph\nofraggedparagraphs}
-\permanent\protected\def\doifelseupcomingrightpage{\doifelserightpagestate\s!paragraph{\the\numexpr\nofraggedparagraphs+\plusone}}
+\permanent\protected\def\doifelseupcomingrightpage{\doifelserightpagestate\s!paragraph{\tointeger{\nofraggedparagraphs+\plusone}}}
 
 \aliased\let\doifrightpageelse\doifelserightpage
 

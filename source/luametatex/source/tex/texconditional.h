@@ -48,6 +48,9 @@ typedef enum if_test_codes {
     /*tex 
         Here come the \if... codes. Some are just there to minimize tracing and are not faster, 
         like |\ifzerodim| (we can use |\ifcase| instead but not with |\unless|). 
+
+        For historic reasons we see a mixture if |int| and |num| here but I see no reason the 
+        change that now.  
     */
 
     if_char_code,            /*tex |\if| */
@@ -79,10 +82,12 @@ typedef enum if_test_codes {
     if_false_code,           /*tex |\iffalse| */
     if_chk_int_code,         /*tex |\ifchknum| */
     if_chk_integer_code,     /*tex |\ifchknumber| */
+    if_chk_intexpr_code,     /*tex |\ifnumexpr| */
     if_val_int_code,         /*tex |\ifnumval| */
     if_cmp_int_code,         /*tex |\ifcmpnum| */
     if_chk_dim_code,         /*tex |\ifchkdim| */
     if_chk_dimension_code,   /*tex |\ifchkdimension| */
+    if_chk_dimexpr_code,     /*tex |\ifdimexpr| */
     if_val_dim_code,         /*tex |\ifdimval| */
     if_cmp_dim_code,         /*tex |\ifcmpdim| */
     if_case_code,            /*tex |\ifcase| */
@@ -110,15 +115,16 @@ typedef enum if_test_codes {
     if_insert_code,          /*tex |\ifinsert| */
     if_in_alignment_code,    /*tex |\ifinalignment| */
     if_cramped_code,         /*tex |\ifcrampedmathstyle| */
+    if_list_code,            /*tex |\iflist| */
  // if_bitwise_and_code,     /*tex |\ifbitwiseand| */
 } if_test_codes;
 
 # define first_if_test_code fi_code
-# define last_if_test_code  if_cramped_code
+# define last_if_test_code  if_list_code
 //define last_if_test_code  if_bitwise_and_code
 
 # define first_real_if_test_code if_char_code
-# define last_real_if_test_code  if_cramped_code
+# define last_real_if_test_code  if_list_code
 //define last_real_if_test_code  if_bitwise_and_code
 
 typedef struct condition_state_info {

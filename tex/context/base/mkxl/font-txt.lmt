@@ -89,7 +89,6 @@ local setnext          = nuts.setnext
 local getprev          = nuts.getprev
 local setprev          = nuts.setprev
 local getid            = nuts.getid
-local getsubtype       = nuts.getsubtype
 local getfont          = nuts.getfont
 local getchar          = nuts.getchar
 local getdisc          = nuts.getdisc

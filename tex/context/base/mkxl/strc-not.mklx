@@ -350,7 +350,7 @@
 \startsetups[\??constructionrenderings:\v!note]
     \noindent
     \leftboundary % experiment, to be done in more places
-    \llap{\box\constructionheadbox\hskip\constructionparameter\c!distance}%
+    \llap{\box\constructionheadbox\kern{\constructionparameter\c!distance}}%
     \useconstructionstyleandcolor\c!style\c!color
     \ignorespaces
 \stopsetups
@@ -533,7 +533,7 @@
   %   \numexpr\botmarks\c_strc_notes_insert_mark\relax
   %\relax
    \clf_flushnoterange
-      \numexpr\currentnoteinsertionnumber\relax
+      {\currentnoteinsertionnumber}%
       \c_strc_notes_insert_mark
    \relax
    \endgroup}
@@ -770,14 +770,14 @@
 \protected\def\strc_notes_inject_separator % patch by WS due to request on list
   {\edef\p_textseparator{\noteparameter\c!textseparator}%
    \ifempty\p_textseparator
-     \kern\noteparameter\c!distance
+     \kern{\noteparameter\c!distance}%
    \else
      % skip or kern
      \nobreak
      \hbox\bgroup
        \usenotestyleandcolor\c!textstyle\c!textcolor
        \noteparameter\c!textcommand{\p_textseparator}%
-       \kern\noteparameter\c!distance
+       \kern{\noteparameter\c!distance}%
      \egroup
      \nobreak
    \fi}
@@ -969,7 +969,7 @@
    \ifempty\p_factor \else
      \ifnum\p_factor<\zerocount \else
 %        \global
-       \page_inserts_set_multiplier\currentnoteinsertionnumber\p_factor % new: global
+       \insertmultiplier\currentnoteinsertionnumber\p_factor % new: global
      \fi
    \fi}
 
@@ -1105,7 +1105,7 @@
       \strut
       \noteparameter\c!after}%
    % also dp now
-   \scratchdimen\dimexpr\htdp\scratchbox-\lineheight\relax
+   \scratchdimen{\htdp\scratchbox-\lineheight}%
    \ifconditional\c_page_mvl_active
      % quick hack, columnsets already handle the grid .. maybe an option
    \orelse\ifgridsnapping
@@ -1119,8 +1119,8 @@
      \s_strc_notes_distance\the\scratchdimen\relax
      % this will / has to / might become a plug
      \ifconditional\c_page_mvl_split_inserts
-       \page_inserts_set_lineheight\currentnoteinsertionnumber\space\the\strutht\relax
-       \page_inserts_set_linedepth \currentnoteinsertionnumber\space\the\strutdp\relax
+       \insertlineheight\currentnoteinsertionnumber\relaxedspace\the\strutht\relax
+       \insertlinedepth \currentnoteinsertionnumber\relaxedspace\the\strutdp\relax
      \fi}}
 
 \def\strc_notes_set_columns
@@ -1133,10 +1133,10 @@
   {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location  \currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
-   \page_inserts_set_multiplier\currentnoteinsertionnumber\numexpr(\plusthousand/\c_strc_notes_columns)*\nofmulticolumns\relax
-   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
+   \page_inserts_set_location\currentnoteinsertion\v!page % \setupinsertion[\currentnote][\c!location=\v!page]%
+   \insertmultiplier\currentnoteinsertionnumber{(\plusthousand/\c_strc_notes_columns)*\nofmulticolumns}%
+   \insertlimit     \currentnoteinsertionnumber\ifnotelimit{(\noteparameter\c!height)*\c_strc_notes_columns}\else\maxdimen\fi
+   \insertdistance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_columns
   {\c_strc_notes_delayed\conditionalfalse
@@ -1147,18 +1147,18 @@
      \c_strc_notes_columns\plusone
    \fi
    \page_inserts_set_location  \currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
-   \page_inserts_set_multiplier\currentnoteinsertionnumber\numexpr\plusthousand/\c_strc_notes_columns\relax
-   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\dimexpr\noteparameter\c!height*\c_strc_notes_columns\relax\else\maxdimen\fi
-   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
+   \insertmultiplier\currentnoteinsertionnumber{\plusthousand/\c_strc_notes_columns}%
+   \insertlimit     \currentnoteinsertionnumber\ifnotelimit{(\noteparameter\c!height)*\c_strc_notes_columns}\else\maxdimen\fi
+   \insertdistance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_somecolumn#whatcolumn%
   {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
    \page_inserts_set_location  \currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
-   \page_inserts_set_multiplier\currentnoteinsertionnumber\plusthousand
-   \page_inserts_set_limit     \currentnoteinsertionnumber\ifnotelimit\noteparameter\c!height\else\maxdimen\fi
-   \page_inserts_set_distance  \currentnoteinsertionnumber\s_strc_notes_distance}
+   \insertmultiplier\currentnoteinsertionnumber\plusthousand
+   \insertlimit     \currentnoteinsertionnumber\ifnotelimit{\noteparameter\c!height}\else\maxdimen\fi
+   \insertdistance  \currentnoteinsertionnumber\s_strc_notes_distance}
 
 \def\strc_notes_set_location_firstcolumn{\strc_notes_set_location_somecolumn\v!firstcolumn}
 \def\strc_notes_set_location_lastcolumn {\strc_notes_set_location_somecolumn\v!lastcolumn }
@@ -1167,9 +1167,9 @@
   {\c_strc_notes_delayed\conditionaltrue
    \clf_setnotestate{\currentnote}{store}%
    \page_inserts_set_location  \currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
-   \page_inserts_set_multiplier\currentnoteinsertionnumber\zerocount
-   \page_inserts_set_limit     \currentnoteinsertionnumber\maxdimen
-   \page_inserts_set_distance  \currentnoteinsertionnumber\zeropoint}
+   \insertmultiplier\currentnoteinsertionnumber\zerocount
+   \insertlimit     \currentnoteinsertionnumber\maxdimen
+   \insertdistance  \currentnoteinsertionnumber\zeropoint}
 
 \let\strc_notes_set_location_none\strc_notes_set_location_text
 
@@ -1199,7 +1199,7 @@
 %    \fi}
 
 \def\strc_notes_check_if_bottom_present_indeed % in otr !
-  {\ifzeropt\page_inserts_get_height\currentnoteinsertionnumber\else
+  {\ifzeropt\insertheight\currentnoteinsertionnumber\else
      \strc_notes_set_position
    \fi}
 
@@ -1397,7 +1397,7 @@
 \def\strc_notes_set_penalties
   {% stored in insert node
    \floatingpenalty \currentnotepenalty % now per note
-   \page_inserts_set_penalty\currentnoteinsertionnumber\currentnotepenalty
+   \insertpenalty\currentnoteinsertionnumber\currentnotepenalty
    % used when typesetting
    \interlinepenalty\plushundred % plain value
    % used when we need to split in columns
@@ -1412,7 +1412,7 @@
     \redoconvertfont % to undo \undo calls in in headings etc
     \splittopskip\strutht  % not actually needed here
     \splitmaxdepth\strutdp % not actually needed here
-\page_inserts_set_maxdepth  \currentnoteinsertionnumber\strutdp
+\insertmaxdepth  \currentnoteinsertionnumber\strutdp
     %
     % not:
     %
@@ -1465,7 +1465,7 @@
      \let\p_width\makeupwidth
      \setnoteparameter\c!width{\makeupwidth}%
    \fi
-   \hsize\p_width\relax}
+   \hsize{\p_width}}
 
 \appendtoks
     % only needed when columns (could be three \set...)
@@ -1491,7 +1491,7 @@
   {\strc_notes_set_delayed % \strc_notes_synchronize % we need to know if it's delayed
    \ifconditional\c_strc_notes_delayed \else
 %      \ifdim\ht\currentnoteinsertionnumber>\zeropoint % or a faster delayed test
-     \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
+     \ifcase\insertheight\currentnoteinsertionnumber\else
        \strc_notes_place_inserts_indeed
        \c_strc_notes_first_placed\conditionaltrue
      \fi
@@ -1528,8 +1528,8 @@
 \def\strc_notes_place_inserts_indeed
   {\relax
 %    \ifdim\ht\currentnoteinsertionnumber>\zeropoint
-   \ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
-%  \ifzeropt\page_inserts_get_height\currentnoteinsertionnumber\else
+   \ifcase\insertheight\currentnoteinsertionnumber\else
+%  \ifzeropt\insertheight\currentnoteinsertionnumber\else
      \strc_notes_place_inserts_indeed_before
      \bgroup
      \strc_notes_set_bodyfont
@@ -1616,17 +1616,17 @@
      \leftorrightvbox % cf mail from ws to list
        {\starthboxestohbox
           \iftrialtypesetting
-            \page_inserts_get_uncopied
+            \insertuncopy
           \else
-            \page_inserts_get_unboxed
+            \insertunbox
           \fi
           \currentnoteinsertionnumber
         \stophboxestohbox}%
    \else
      \iftrialtypesetting
-       \ifvmode\page_inserts_get_uncopied\else\page_inserts_get_copied\fi
+       \ifvmode\insertuncopy\else\insertcopy\fi
      \else
-       \ifvmode\page_inserts_get_unboxed \else\page_inserts_get_boxed \fi
+       \ifvmode\insertunbox \else\insertbox \fi
      \fi
      \currentnoteinsertionnumber
    \fi
@@ -1911,8 +1911,8 @@
    \strc_notes_process\strc_notes_check_presence}
 
 \def\strc_notes_check_presence
-%   {\ifdim\page_inserts_get_height\currentnoteinsertionnumber>\zeropoint % not reliable
-  {\ifcase\page_inserts_get_height\currentnoteinsertionnumber\else
+%   {\ifdim\insertheight\currentnoteinsertionnumber>\zeropoint % not reliable
+  {\ifcase\insertheight\currentnoteinsertionnumber\else
      \notespresenttrue
    \fi}
 
@@ -1941,13 +1941,13 @@
 
     \permanent\protected\def\additionaltotalnoteheight#insert% temp hacks anyway
       {\dimexpr
-         \ifnum\page_inserts_get_height#insert=\zeropoint
+         \ifnum\insertheight#insert=\zeropoint
            \zeropoint
-         \orelse\ifnum\page_inserts_get_multiplier#insert=\zeropoint
+         \orelse\ifnum\insertmultiplier#insert=\zeropoint
            \zeropoint
          \else % todo: divide by count
-           \page_inserts_get_height  #insert
-          +\page_inserts_get_distance#insert% hm, no stretch but a dimen anyway
+           \insertheight  #insert
+          +\insertdistance#insert% hm, no stretch but a dimen anyway
          \fi
       \relax}
 

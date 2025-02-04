@@ -69,6 +69,8 @@ local nextlist           = nuts.traversers.list
 local nextnode           = nuts.traversers.node
 local nextwhatsit        = nuts.traversers.whatsit
 
+local findattribute      = nuts.findattribute
+
 local is_display_math    = nuts.is_display_math
 
 local ctx_convertnumber  = context.convertnumber
@@ -237,11 +239,15 @@ end
 -- do a par before we end the line
 
 local function lineisnumbered(n) -- content node
-    for n, id, subtype, content in nextcontent, getlist(n) do
-        local a = getattr(n,a_linenumber)
-        if a and a > 0 then
-            return a
-        end
+ -- for n, id in nextcontent, getlist(n) do
+ --     local a = getattr(n,a_linenumber)
+ --     if a and a > 0 then
+ --         return a
+ --     end
+ -- end
+    local a = findattribute(getlist(n),a_linenumber,true)
+    if a and a > 0 then
+        return a
     end
 end
 

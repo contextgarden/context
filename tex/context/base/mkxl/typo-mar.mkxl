@@ -245,7 +245,7 @@
            \vtop \bgroup
              \expand\everymargindatacontent
              \usemargindatastyleandcolor\c!style\c!color
-             \hsize\currentmargindatawidth
+             \hsize{\currentmargindatawidth}%
              \raggedcommand
              \ifempty\currentmargindatastrut \else
                \synchronizestrut\currentmargindatastrut
@@ -275,15 +275,15 @@
        option      {\margindataparameter\c!option}%
        number      \nextbox
        margin      {\margindataparameter\c!margin}% local normal margin edge
-       distance    \dimexpr\margindataparameter\c!distance\relax
-       hoffset     \dimexpr\margindataparameter\c!hoffset\relax
-       voffset     \dimexpr\margindataparameter\c!voffset\relax
-       dy          \dimexpr\margindataparameter\c!dy\relax
-       bottomspace \dimexpr\margindataparameter\c!bottomspace\relax
+       distance    {\margindataparameter\c!distance}%
+       hoffset     {\margindataparameter\c!hoffset}%
+       voffset     {\margindataparameter\c!voffset}%
+       dy          {\margindataparameter\c!dy}%
+       bottomspace {\margindataparameter\c!bottomspace}%
      \ifempty\currentmarginfirstheight \else
        baseline    {\currentmarginfirstheight}%
      \fi
-       threshold   \dimexpr\margindataparameter\c!threshold\relax % overlap related, will change
+       threshold   {\margindataparameter\c!threshold}% overlap related, will change
      \ifhmode
        inline      true %
      \fi
@@ -298,7 +298,7 @@
    %   rightskip   \dimexpr\rightskip\relax
    % \fi
        align       {\margindataparameter\c!align}%
-       line        \numexpr\margindataparameter\c!line\relax
+       line        {\margindataparameter\c!line}%
        stackname   {\margindataparameter\c!stackname}%
        stack       {\margindataparameter\c!stack}%
        index       \c_typo_margins_n

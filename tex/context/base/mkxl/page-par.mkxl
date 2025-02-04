@@ -56,7 +56,7 @@
       \tf % \tf normalizes em
       \useparagraphnumberingstyleandcolor\c!style\c!color
       \convertedcounter[\v!paragraph]%
-      \kern\paragraphnumberingparameter\c!distance}}
+      \kern{\paragraphnumberingparameter\c!distance}}}
 
 \permanent\protected\def\page_par_show_number_lines
   {\ifnumberinglines

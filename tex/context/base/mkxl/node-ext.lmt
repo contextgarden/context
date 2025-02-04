@@ -338,7 +338,7 @@ do
     local startscalingnode = registerwhatsitnode("startscaling")
     local stopscalingnode  = registerwhatsitnode("stopscaling")
 
-    local function startscaling(rx, ry) -- at the tex end we use sx and sy instead of rx and ry
+    local function startscaling(rx,ry) -- at the tex end we use sx and sy instead of rx and ry
         if rx == 1 and ry == 1 then
             insert(stack,false)
         else
@@ -358,6 +358,9 @@ do
     local function stopscaling() -- at the tex end we use sx and sy instead of rx and ry
         return stopcommon(stopscalingnode)
     end
+
+    nutpool.startscaling = startscaling
+    nutpool.stopscaling  = stopscaling
 
     implement {
         name    = "startscaling",
@@ -417,6 +420,7 @@ do
     end
 
     nutpool.startrotation = startrotation
+    nutpool.stoprotation  = stoprotation
 
     implement {
         name    = "startrotation",

@@ -117,44 +117,46 @@ function splitpoints.stop()
 end
 
 function splitpoints.typesetresult(options)
-    local context, ctx_NC, ctx_BC, ctx_NR, ctx_color = context, context.NC, context.BC, context.NR, context.color
-    local awfulbad = tex.magicconstants.awful_bad
-    local maxdimen = tex.magicconstants.max_dimen
-    context.starttabulate { "|r|l|l|r|r|r|r|r|r|" }
-    ctx_BC() context("n")
-    ctx_BC() context("where")
-    ctx_BC() context("location")
-    ctx_BC() context("height")
-    ctx_BC() context("depth")
-    ctx_BC() context("total")
-    ctx_BC() context("penalty")
-    ctx_BC() context("badness")
-    ctx_BC() context("costs")
-    ctx_NC() ctx_NR()
-    for i=1,#collected do
-        local c = collected[i]
-        ctx_NC() context(i)
-        ctx_NC() context(c.where)
-        ctx_NC() context(c.location)
-        ctx_NC() context("%p",c.height)
-        ctx_NC() context("%p",c.depth)
-        ctx_NC() context("%p",c.total)
-        ctx_NC() context(c.penalty)
-        ctx_NC() context(c.badness == awfulbad and "awful" or c.badness)
-        ctx_NC() context(c.costs   == awfulbad and "awful" or c.costs)
+    if #collected > 0 then
+        local context, ctx_NC, ctx_BC, ctx_NR, ctx_color = context, context.NC, context.BC, context.NR, context.color
+        local awfulbad = tex.magicconstants.awful_bad
+        local maxdimen = tex.magicconstants.max_dimen
+        context.starttabulate { "|r|l|l|r|r|r|r|r|r|" }
+        ctx_BC() context("n")
+        ctx_BC() context("where")
+        ctx_BC() context("location")
+        ctx_BC() context("height")
+        ctx_BC() context("depth")
+        ctx_BC() context("total")
+        ctx_BC() context("penalty")
+        ctx_BC() context("badness")
+        ctx_BC() context("costs")
         ctx_NC() ctx_NR()
+        for i=1,#collected do
+            local c = collected[i]
+            ctx_NC() context(i)
+            ctx_NC() context(c.where)
+            ctx_NC() context(c.location)
+            ctx_NC() context("%p",c.height)
+            ctx_NC() context("%p",c.depth)
+            ctx_NC() context("%p",c.total)
+            ctx_NC() context(c.penalty)
+            ctx_NC() context(c.badness == awfulbad and "awful" or c.badness)
+            ctx_NC() context(c.costs   == awfulbad and "awful" or c.costs)
+            ctx_NC() ctx_NR()
+        end
+        context.stoptabulate()
+        context.starttabulate { "|l|r|i3l|r|" }
+        ctx_BC() context("result height")  ctx_NC() context("%p",collected.result.height)
+        ctx_BC() context("target  height") ctx_NC() context("%p",collected.height)         ctx_NC() ctx_NR()
+        ctx_BC() context("result depth")   ctx_NC() context("%p",collected.result.depth)
+        ctx_BC() context("maximum depth")  ctx_NC() if collected.depth == maxdimen then context("max") else context("%p",collected.depth) end ctx_NC() ctx_NR()
+        ctx_BC() context("result stretch") ctx_NC() context("%p",collected.result.stretch)
+        ctx_BC() context("extra height")   ctx_NC() context("%p",collected.extra)          ctx_NC() ctx_NR()
+        ctx_BC() context("result shrink")  ctx_NC() context("%p",collected.result.shrink)
+        ctx_BC()                           ctx_NC()                                        ctx_NC() ctx_NR()
+        context.stoptabulate()
     end
-    context.stoptabulate()
-    context.starttabulate { "|l|r|i3l|r|" }
-    ctx_BC() context("result height")  ctx_NC() context("%p",collected.result.height)
-    ctx_BC() context("target  height") ctx_NC() context("%p",collected.height)         ctx_NC() ctx_NR()
-    ctx_BC() context("result depth")   ctx_NC() context("%p",collected.result.depth)
-    ctx_BC() context("maximum depth")  ctx_NC() if collected.depth == maxdimen then context("max") else context("%p",collected.depth) end ctx_NC() ctx_NR()
-    ctx_BC() context("result stretch") ctx_NC() context("%p",collected.result.stretch)
-    ctx_BC() context("extra height")   ctx_NC() context("%p",collected.extra)          ctx_NC() ctx_NR()
-    ctx_BC() context("result shrink")  ctx_NC() context("%p",collected.result.shrink)
-    ctx_BC()                           ctx_NC()                                        ctx_NC() ctx_NR()
-    context.stoptabulate()
 end
 
 callback.register("show_vsplit", function(where,...) splitshow[where](where,...) end)

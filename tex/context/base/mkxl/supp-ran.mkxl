@@ -30,11 +30,11 @@
 
 \unprotect
 
-\permanent\protected\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax\relax}
-\permanent\protected\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen\dimexpr#2\relax\dimexpr#3\relax\scaledpoint\relax}
-\permanent\protected\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber\numexpr#2\relax\numexpr#3\relax}}
-\permanent\protected\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat\dimexpr#2\relax\dimexpr#3\relax}}
-\permanent\protected\def\setrandomseed      #1{\clf_setrandomseed\numexpr#1\relax}
+\permanent\protected\def\getrandomcount #1#2#3{#1=\clf_getrandomnumber{#2}{#3}\relax}
+\permanent\protected\def\getrandomdimen #1#2#3{#1=\clf_getrandomdimen{#2}{#3}\scaledpoint\relax}
+\permanent\protected\def\getrandomnumber#1#2#3{\edef#1{\clf_getrandomnumber{#2}{#3}}}
+\permanent\protected\def\getrandomfloat #1#2#3{\edef#1{\clf_getrandomfloat{#2}{#3}}}
+\permanent\protected\def\setrandomseed      #1{\clf_setrandomseed{#1}}
 \permanent\protected\def\getrandomseed      #1{\edef#1{\clf_getrandomseed}}
 \permanent\protected\def\newrandomseed        {\clf_getrandomseed}
 %permanent\protected\def\pushrandomseed       {\clf_pushrandomseed}

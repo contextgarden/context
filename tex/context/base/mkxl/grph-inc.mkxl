@@ -303,15 +303,13 @@
    %
    \expand\t_grph_include_local_settings
    %
-   \edef\p_width    {\externalfigureparameter\c!width}%
-   \edef\p_height   {\externalfigureparameter\c!height}%
-   \edef\p_label    {\externalfigureparameter\c!label}%
-   \edef\p_reference{\externalfigureparameter\c!reference}%
+  %\edef\p_label    {\externalfigureparameter\c!label}%
    %
    \dostarttaggednodetail\t!image
    \clf_figure_push {
         name         {\p_grph_include_name}%
-        label        {\ifempty\p_label\p_grph_include_label\else\p_label\fi}%
+      % label        {\ifempty\p_label\p_grph_include_label\else\p_label\fi}%
+        label        {\ifempty{\externalfigureparameter\c!label}\p_grph_include_label\else\lastnamedcs\fi}%
         page         {\externalfigureparameter\c!page}%
         file         {\externalfigureparameter\c!file}%
         size         {\externalfigureparameter\c!size}%
@@ -338,11 +336,11 @@
         userpassword {\externalfigureparameter\c!userpassword}%
         ownerpassword{\externalfigureparameter\c!ownerpassword}%
         crop         {\externalfigureparameter\c!crop}%
-    \ifempty\p_width \else
-        width  \dimexpr\p_width\relax
+    \ifchkdimexpr\externalfigureparameter\c!width\or
+        width  \lastchkdimension
     \fi
-    \ifempty\p_height \else
-        height \dimexpr\p_height\relax
+    \ifchkdimexpr\externalfigureparameter\c!height\or
+        height \lastchkdimension
     \fi
    }%\relax
    \clf_figure_identify
@@ -503,43 +501,42 @@
 \newbox \foundexternalfigure
 \newtoks\externalfigurepostprocessors
 
-\permanent\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
-\permanent\def\figurewidth         {\clf_figurestatus{width}{0}sp}
-\permanent\def\figureheight        {\clf_figurestatus{height}{0}sp}
-\permanent\def\figuredepth         {\clf_figurestatus{depth}{0}sp}
-\permanent\def\figurexscale        {\clf_figurestatus{xscale}{1}}
-\permanent\def\figureyscale        {\clf_figurestatus{yscale}{1}}
-\permanent\def\figurereference     {\clf_figurestatus{reference}{}}
+\permanent\untraced\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
+\permanent\untraced\def\figurewidth         {\clf_figurestatus{width}{0}sp}
+\permanent\untraced\def\figureheight        {\clf_figurestatus{height}{0}sp}
+\permanent\untraced\def\figuredepth         {\clf_figurestatus{depth}{0}sp}
+\permanent\untraced\def\figurexscale        {\clf_figurestatus{xscale}{1}}
+\permanent\untraced\def\figureyscale        {\clf_figurestatus{yscale}{1}}
+\permanent\untraced\def\figurereference     {\clf_figurestatus{reference}{}}
 
-\permanent\def\figuresize          {\clf_figurerequest{size}{}}
-\permanent\def\figurelabel         {\clf_figurerequest{label}{}}
-\permanent\def\figurefileoriginal  {\clf_figurerequest{name}{}}
-\permanent\def\figurefilepage      {\clf_figurerequest{page}{1}}
-\permanent\def\figurefileoptions   {\clf_figurerequest{options}{}}
-\permanent\def\figurefileconversion{\clf_figurerequest{conversion}{}}
-\permanent\def\figurefileresolution{\clf_figurerequest{resolution}{}}
-\permanent\def\figurefilecolor     {\clf_figurerequest{color}{}}
-\permanent\def\figurefilearguments {\clf_figurerequest{arguments}{}}
-\permanent\def\figurefilecache     {\clf_figurerequest{cache}{}}
-\permanent\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
+\permanent\untraced\def\figuresize          {\clf_figurerequest{size}{}}
+\permanent\untraced\def\figurelabel         {\clf_figurerequest{label}{}}
+\permanent\untraced\def\figurefileoriginal  {\clf_figurerequest{name}{}}
+\permanent\untraced\def\figurefilepage      {\clf_figurerequest{page}{1}}
+\permanent\untraced\def\figurefileoptions   {\clf_figurerequest{options}{}}
+\permanent\untraced\def\figurefileconversion{\clf_figurerequest{conversion}{}}
+\permanent\untraced\def\figurefileresolution{\clf_figurerequest{resolution}{}}
+\permanent\untraced\def\figurefilecolor     {\clf_figurerequest{color}{}}
+\permanent\untraced\def\figurefilearguments {\clf_figurerequest{arguments}{}}
+\permanent\untraced\def\figurefilecache     {\clf_figurerequest{cache}{}}
+\permanent\untraced\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
 
-\permanent\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\externalfigureparameter\c!defaultwidth\relax}sp}
-\permanent\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\externalfigureparameter\c!defaultheight\relax}sp}
-\permanent\def\figurexresolution   {\clf_figureused{xresolution}{0}}
-\permanent\def\figureyresolution   {\clf_figureused{yresolution}{0}}
-\permanent\def\figureorientation   {\clf_figureused{orientation}{1}}
-\permanent\def\figurerotation      {\clf_figureused{rotation}{0}}
-\permanent\def\figurexsize         {\clf_figureused{xsize}{0}}
-\permanent\def\figureysize         {\clf_figureused{ysize}{0}}
-\permanent\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
+\permanent\untraced\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\externalfigureparameter\c!defaultwidth\relax}sp}
+\permanent\untraced\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\externalfigureparameter\c!defaultheight\relax}sp}
+\permanent\untraced\def\figurexresolution   {\clf_figureused{xresolution}{0}}
+\permanent\untraced\def\figureyresolution   {\clf_figureused{yresolution}{0}}
+\permanent\untraced\def\figureorientation   {\clf_figureused{orientation}{1}}
+\permanent\untraced\def\figurerotation      {\clf_figureused{rotation}{0}}
+\permanent\untraced\def\figurexsize         {\clf_figureused{xsize}{0}}
+\permanent\untraced\def\figureysize         {\clf_figureused{ysize}{0}}
+\permanent\untraced\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
 
-\permanent\def\figurefullname      {\clf_figureused{fullname}{}}
-\permanent\def\noffigurepages      {\clf_figureused{pages}{0}}
+\permanent\untraced\def\figurefullname      {\clf_figureused{fullname}{}}
+\permanent\untraced\def\noffigurepages      {\clf_figureused{pages}{0}}
 
-
-% \permanent\def\figurefilepath      {\clf_figurefilepath} % public in lua
-% \permanent\def\figurefilename      {\clf_figurefilename} % public in lua
-% \permanent\def\figurefiletype      {\clf_figurefiletype} % public in lua
+% \permanent\untraced\def\figurefilepath      {\clf_figurefilepath} % public in lua
+% \permanent\untraced\def\figurefilename      {\clf_figurefilename} % public in lua
+% \permanent\untraced\def\figurefiletype      {\clf_figurefiletype} % public in lua
 
 \permanent\let\naturalfigurewidth  \figurenaturalwidth
 \permanent\let\naturalfigureheight \figurenaturalheight
@@ -581,10 +578,10 @@
     \clf_setfigurepaths
       {\externalfigureparameter\c!location}%
       {\externalfigureparameter\c!directory}%
-    \clf_figure_reset
+    \clf_figurereset
       \foundexternalfigure
-      \externalfigureparameter\c!defaultwidth
-      \externalfigureparameter\c!defaultheight
+      {\externalfigureparameter\c!defaultwidth}
+      {\externalfigureparameter\c!defaultheight}
     \relax
 \to \everyexternalfigureresets
 
@@ -872,13 +869,13 @@
 \permanent\tolerant\protected\def\includesvgfile[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
-   \clf_includesvgfile{#1}\dimexpr\dummyparameter\c!offset\relax
+   \clf_includesvgfile{#1}{\dummyparameter\c!offset}%
    \egroup}
 
 \permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
-   \clf_includesvgbuffer{#1}\dimexpr\dummyparameter\c!offset\relax
+   \clf_includesvgbuffer{#1}{\dummyparameter\c!offset}%
    \egroup}
 
 % Bonus:
@@ -894,13 +891,11 @@
   [\v!inline]
   [\c!height=\lineheight]
 
-\permanent\protected\def\combinationwidth
+\permanent\untraced\protected\def\combinationwidth
   {\dimexpr
-     (\textwidth
-     -\effectiveleftskip
-     -\effectiverightskip
+     (\textwidth-\effectiveleftskip-\effectiverightskip
      -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
-     )/\combinationparameter\c!nx
+     )/(\combinationparameter\c!nx)%
    \relax}
 
 \pushoverloadmode

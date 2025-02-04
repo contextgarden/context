@@ -808,10 +808,10 @@
 \newconditional\c_strc_math_qed
 
 \permanent\protected\def\strc_math_qed
-  {\global\settrue\c_strc_math_qed}
+  {\global\c_strc_math_qed\conditionaltrue}
 
 \appendtoks
-    \global\setfalse\c_strc_math_qed
+    \global\c_strc_math_qed\conditionalfalse
     \aliased\let\qed\strc_math_qed
 \to \everybeforedisplayformula
 
@@ -897,12 +897,12 @@
 %D Some tracing of distances and thresholds:
 
 \def\strc_formulas_add_distance_normal#1#2#3% maybe a skip with stretch/shrink
-  {\kern#3\c!numberdistance\relax}
+  {\kern{#3\c!numberdistance}}
 
 \def\strc_formulas_add_distance_traced#1#2#3%
   {\begingroup
-   \scratchdimenone  #3\c!numberdistance\relax
-   \scratchdimentwo  \ifconditional\c_strc_formulas_tight\formulaparameter\c!numberthreshold\else\zeropoint\fi\relax
+   \scratchdimenone{#3\c!numberdistance}%
+   \scratchdimentwo\ifconditional\c_strc_formulas_tight{\formulaparameter\c!numberthreshold}\else\zeropoint\fi\relax
    \scratchdimenthree.5\exheight
    \ifcase\scratchdimentwo\else\ifx#2\v!left
      \darkred
@@ -970,9 +970,9 @@
 
 \def\strc_math_set_split
   {\ifcstok{\formulaparameter\c!split}\v!line
-     \global\setfalse\c_strc_math_split_mode
+     \global\c_strc_math_split_mode\conditionalfalse
    \else
-     \global\settrue\c_strc_math_split_mode
+     \global\c_strc_math_split_mode\conditionaltrue
    \fi
    \mathpenaltiesmode\plusone
    \global\d_strc_math_indent\zeropoint}
@@ -1053,7 +1053,7 @@
    \ifconditional\c_strc_math_trace_hang
      \strc_math_trace_okay{darkblue}{S #1}%
    \fi
-   \scratchdimen\dimexpr\formulaparameter\c!textmargin\relax
+   \scratchdimen{\formulaparameter\c!textmargin}%
    \ifchkdimension#1\or
      \d_strc_math_hang_state\lastchkdimension
    \orelse\ifchknum#1\or
@@ -1300,9 +1300,11 @@
   %\mathgluemode\plustwo
    \c_strc_math_ragged_status\plustwo
    \edef\p_distance{\formulaparameter\c!leftmargindistance}%
-   \parinitleftskip \ifx\p_distance\v!number \wd\b_strc_formulas_number \else \p_distance \fi
+   \parinitleftskip \ifx\p_distance\v!number\wd\b_strc_formulas_number\else{\p_distance}\fi
    \edef\p_distance{\formulaparameter\c!rightmargindistance}%
-   \parfillrightskip\ifx\p_distance\v!number \wd\b_strc_formulas_number \else \p_distance \fi
+   \parfillrightskip\ifx\p_distance\v!number\wd\b_strc_formulas_number\else{\p_distance}\fi
+% \parinitleftskip \ifcstok{\formulaparameter\c!leftmargindistance }\v!number\wd\b_strc_formulas_number\else{\lastnamedcs}\fi
+% \parfillrightskip\ifcdtok{\formulaparameter\c!rightmargindistance}\v!number\wd\b_strc_formulas_number\else{\lastnamedcs}\fi
    \updateparagraphproperties} % not needed
 
 \def\strc_math_setup_align
@@ -1441,9 +1443,7 @@
   {%\setlocalhsize
    %\hsize\localhsize
    %
-   \d_strc_formulas_display_width\formulaparameter\c!width\relax
-%    \s_strc_formulas_margin_left \leftskip
-%    \s_strc_formulas_margin_right\rightskip
+   \d_strc_formulas_display_width{\formulaparameter\c!width}%
    \edef\p_margin{\formulaparameter\c!leftmargin}%
    \ifempty\p_margin \else
      \doadaptleftskip\p_margin
@@ -1452,17 +1452,11 @@
    \ifempty\p_margin \else
      \doadaptrightskip\p_margin
    \fi
-%    \edef\p_margin{\formulaparameter\c!margin}%
-%    \ifempty\p_margin \else
-%      \doadaptleftskip\p_margin
-%      \doadaptrightskip\p_margin
-%    \fi
    \s_strc_formulas_margin_left \leftskip
    \s_strc_formulas_margin_right\rightskip
-   \edef\p_interlinespace{\formulaparameter\c!interlinespace}%
-   \ifempty\p_interlinespace\else\baselineskip\p_interlinespace\fi
+   \ifchkdimexpr\formulaparameter\c!interlinespace\or\baselineskip\lastchkdimension\fi
    \global\c_strc_math_aligned_here\conditionalfalse
-\strc_math_setup_penalties
+   \strc_math_setup_penalties
    \hsize\d_strc_formulas_display_width}
 
 \def\strc_math_analyze_box
@@ -1470,9 +1464,9 @@
      stage       \plusone
      alignstate  \c_strc_math_ragged_status
      box         \b_strc_math_display
-     distance    \formulaparameter\c!textdistance
-     leftmargin  \the\dimexpr\s_strc_formulas_margin_left\relax
-     rightmargin \the\dimexpr\s_strc_formulas_margin_right\relax
+     distance    {\formulaparameter\c!textdistance}%
+     leftmargin  {\s_strc_formulas_margin_left}%
+     rightmargin {\s_strc_formulas_margin_right}%
    \relax
   %\holdingmigrations\zerocount
    \setbox\b_strc_math_display\vbox\bgroup % \vtop
@@ -1598,6 +1592,7 @@
      \let\strc_formulas_begstrut\relax
      \let\strc_formulas_endstrut\relax
    \fi
+   \noindentation
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}
 
 \protected\def\strc_formulas_start_formula_nested#1%
@@ -1779,7 +1774,7 @@
   {\begingroup
    \ifparameter#1\or
       \setupformula[\c!width=\d_strc_formulas_ _width,#1]%
-      \d_strc_formulas_display_width\formulaparameter\c!width\relax
+      \d_strc_formulas_display_width{\formulaparameter\c!width}%
    \fi
    \vcenter\bgroup
    \hsize\d_strc_formulas_display_width

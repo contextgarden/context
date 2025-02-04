@@ -86,17 +86,36 @@
      \lastnamedcs
    \else
      \vrule
-     \ifempty\p_on \else on  \p_on \fi
-     \ifempty\p_off\else off \p_off\fi
+     \ifempty\p_on \else
+       on \p_on % todo: \s!on {\p_on}%
+     \fi
+     \ifempty\p_off \else
+       off \p_off % todo: \s!off {\p_off}%
+     \fi
    \fi
-   \ifempty\p_height\else\s!height\p_height\fi
-   \ifempty\p_depth\else\s!depth\p_depth\fi
+   \ifempty\p_height \else
+     \s!height {\p_height}%
+   \fi
+   \ifempty\p_depth \else
+     \s!depth {\p_depth}%
+   \fi
    \ifdone
-     \hskip\ifempty\p_width\zeropoint\else\p_width\fi
-     \ifempty\p_stretch\else\s!plus\p_stretch\fi
-     \ifempty\p_shrink\else\s!minus\p_shrink\fi
+     \hskip
+     \ifempty\p_width
+       \zeropoint
+     \else
+       {\p_width}%
+     \fi
+     \ifempty\p_stretch \else
+       \s!plus {\p_stretch}%
+     \fi
+     \ifempty\p_shrink \else
+       \s!minus {\p_shrink}%
+     \fi
    \else
-     \ifempty\p_width\else\s!width\p_width\fi
+     \ifempty\p_width \else
+       \s!width {\p_width}%
+     \fi
    \fi
    \endgroup}
 
@@ -137,17 +156,17 @@
 \permanent\tolerant\protected\def\blackrules[#S#1]% probably never used
   {\hpack\bgroup % we keep this because breaking into lines breaks compatibility
    \ifarguments\or\setupcurrentblackrules[#1]\fi
-   \scratchwidth   \directblackrulesparameter\c!width
-   \scratchheight  \directblackrulesparameter\c!height
-   \scratchdepth   \directblackrulesparameter\c!depth
-   \scratchdistance\directblackrulesparameter\c!distance
-   \scratchcounter \directblackrulesparameter\c!n
+   \scratchwidth   {\directblackrulesparameter\c!width}%
+   \scratchheight  {\directblackrulesparameter\c!height}%
+   \scratchdepth   {\directblackrulesparameter\c!depth}%
+   \scratchdistance{\directblackrulesparameter\c!distance}%
+   \scratchcounter {\directblackrulesparameter\c!n}%
    \edef\p_alternative{\blackrulesparameter\c!alternative}%
    \ifx\p_alternative\c!b % why not just check distance
      \ifnum\scratchcounter=\plusone
        \scratchdistance\zeropoint
      \else
-       \scratchwidth\dimexpr(\scratchwidth-\scratchcounter\scratchdistance+\scratchdistance)/\scratchcounter\relax
+       \scratchwidth{(\scratchwidth-\scratchcounter\scratchdistance+\scratchdistance)/\scratchcounter}%
      \fi
    \fi
    \useblackrulesstyleandcolor\c!style\c!color
@@ -175,8 +194,8 @@
 \defcsname\??blackruletype mp\endcsname
   {\frule
      type {mp}%
-     data {\includeMPgraphic{\directblackrulesparameter\c!mp}}
-     line \dimexpr\directblackrulesparameter\c!rulethickness\relax
+     data {\includeMPgraphic{\directblackrulesparameter\c!mp}}%
+     line {\directblackrulesparameter\c!rulethickness}%
    }
 
 \letcsname\??blackruletype\s!no \endcsname\novrule
@@ -301,8 +320,8 @@
 \def\pack_textrule_check_dash#1%
    {\edef\p_on  {#1\c!on}%
     \edef\p_off {#1\c!off}%
-    \edef\p_dash{\ifempty\p_on \else on  \p_on \space\fi
-                 \ifempty\p_off\else off \p_off\space\fi}}
+    \edef\p_dash{\ifempty\p_on \else on  \p_on \relaxedspace\fi
+                 \ifempty\p_off\else off \p_off\relaxedspace\fi}}
 
 \newconstant\c_pack_thinrules_type
 
@@ -315,11 +334,11 @@
    \edef\p_background{\directthinrulesparameter\c!background}%
    \edef\p_frame     {\directthinrulesparameter\c!frame}%
    \pack_textrule_check_dash\directthinrulesparameter
-   \linewidth\dimexpr\directthinrulesparameter\c!rulethickness/\plustwo\relax
+   \linewidth{\directthinrulesparameter\c!rulethickness/\plustwo}%
    \ifzeropt\linewidth
      \c_pack_thinrules_type\zerocount
    \orelse\ifx\p_frame\v!on
-     \c_pack_thinrules_type\expandnamespaceparameter\??thinrulealternatives\directthinrulesparameter\c!alternative\v!b\relax
+     \c_pack_thinrules_type{\expandnamespaceparameter\??thinrulealternatives\directthinrulesparameter\c!alternative\v!b}%
    \else
      \c_pack_thinrules_type\zerocount
    \fi
@@ -343,8 +362,8 @@
        \ifnum\c_pack_thinrules_type=\plustwo % prevent overshoot due to rounding
          \leaders
            \hrule
-             \s!height\dimexpr\scratchheight-\linewidth\relax
-             \s!depth \dimexpr\scratchdepth -\linewidth\relax
+             \s!height{\scratchheight-\linewidth}%
+             \s!depth {\scratchdepth -\linewidth}%
              \p_dash
            \relax
            \hfill
@@ -376,7 +395,7 @@
          \hfillneg
          \leaders
            \hrule
-             \s!height\dimexpr-\scratchdepth+\linewidth\relax
+             \s!height{-\scratchdepth+\linewidth}%
              \s!depth \scratchdepth
              \p_dash
            \relax
@@ -385,7 +404,7 @@
          \leaders
            \hrule
              \s!height\scratchheight
-             \s!depth \dimexpr-\scratchheight+\linewidth\relax
+             \s!depth {-\scratchheight+\linewidth}%
              \p_dash
            \relax
            \hfill
@@ -644,9 +663,9 @@
   {\noindent % this will force side floats to be calculated
    \bgroup
    \setbox\scratchbox\hpack to \availablehsize
-     {\scratchwidth \directtextrulesparameter\c!rulethickness\relax
-      \scratchheight\dimexpr .5\exheight+.5\scratchwidth\relax
-      \scratchdepth \dimexpr-.5\exheight+.5\scratchwidth\relax
+     {\scratchwidth {\directtextrulesparameter\c!rulethickness}%
+      \scratchheight{.5\exheight+.5\scratchwidth}%
+      \scratchdepth {-.5\exheight+.5\scratchwidth}%
       \pack_textrule_check_dash\directtextrulesparameter
       \ifempty{#1}%
         % nothing
@@ -658,11 +677,11 @@
       \else
         \color[\directtextrulesparameter\c!rulecolor]
           {\vrule
-             \s!height\scratchheight
-             \s!depth \scratchdepth
-             \s!width \directtextrulesparameter\c!width
+             \s!height  \scratchheight
+             \s!depth   \scratchdepth
+             \s!width   {\directtextrulesparameter\c!width}%
              \p_dash}%
-        \hbox spread 2\dimexpr\directtextrulesparameter\c!distance\relax
+        \hbox \s!spread {(\directtextrulesparameter\c!distance)*2}%
           {\hss
            \usetextrulesstyleandcolor\c!style\c!color
            \strut#1%
@@ -695,26 +714,25 @@
      {\color[\directtextrulesparameter\c!rulecolor]
         {\pack_textrule_check_dash\directtextrulesparameter
          \hrule
-           \s!depth \directtextrulesparameter\c!rulethickness
+           \s!depth {\directtextrulesparameter\c!rulethickness}%
            \s!height\zeropoint
            \s!width \availablehsize
            \p_dash}}}
 
 \def\pack_textrule_correct_depth_yes
-  {\vskip\dimexpr
+  {\vskip{%
      \strutdp +.5\exheight
      \ifdim\prevdepth>\strutdp\else
        \ifdim\prevdepth>\zeropoint
          -\prevdepth
        \fi
      \fi
-   \relax
-   \relax}
+   }\relax}
 
 \def\pack_textrule_correct_depth_nop
-  {\vskip\dimexpr
+  {\vskip{%
      \strutdp +.5\exheight
-   \relax
+   }%
    \relax}
 
 \def\pack_textrule_following#1%
@@ -793,17 +811,17 @@
       \c!interlinespace=\directfillinrulesparameter\c!interlinespace,
       \c!before=,
       \c!after=]%
-   \scratchdistance\directfillinrulesparameter\c!distance\relax
+   \scratchdistance{\directfillinrulesparameter\c!distance}%
    \noindent
    \ifempty{#2}\else
-     \edef\p_width{\directfillinrulesparameter\c!width}%
+     \edef\p_width{\directfillinrulesparameter\c!width}% todo: \lastnamedcs
      \ifx\p_width\v!fit
        \scratchdistance\zeropoint
        \hbox
      \orelse\ifx\p_width\v!broad
        \hbox
      \else
-       \hbox to \directfillinrulesparameter\c!width
+       \hbox \s!to {\p_width}%
      \fi
      \bgroup
        \usefillinrulesstyleandcolor\c!style\c!color
@@ -887,10 +905,10 @@
   {\begingroup
    \setupcurrentfillinlines[#1]%
    \ifhmode\unskip\hfill\fi
-   \scratchdistance\directfillinlinesparameter\c!distance
-   \scratchheight\dimexpr\directfillinlinesparameter\c!rulethickness/\plustwo\relax
-   \scratchwidth \dimexpr\directfillinlinesparameter\c!width-\scratchdistance\relax
-   \ifdim\scratchwidth>\directfillinlinesparameter\c!margin\else
+   \scratchdistance{\directfillinlinesparameter\c!distance}%
+   \scratchheight  {\directfillinlinesparameter\c!rulethickness/\plustwo}%
+   \scratchwidth   {\directfillinlinesparameter\c!width-\scratchdistance}%
+   \ifdim\scratchwidth>{\directfillinlinesparameter\c!margin}\else
      \expandafter\rlap
    \fi
    {\kern\scratchdistance
@@ -899,7 +917,7 @@
        \c!width=\scratchwidth,
        \c!height=\scratchheight,
        \c!depth=\scratchheight]}%
-   \frozen\advanceby\rightskip \directfillinlinesparameter\c!margin\relax
+   \frozen\advanceby\rightskip{\directfillinlinesparameter\c!margin}\relax
    \frozen\parfillskip\zeroskip\relax
    \endgroup}
 

@@ -348,17 +348,19 @@ function job.load(filename)
     local utilitydata = load(filename)
     if utilitydata then
         local jobpacker = utilitydata.job.packed
-        unpacknumberdata(jobpacker.index)
-        for i=1,#savelist do
-            local list   = savelist[i]
-            local target = list[1]
-            local result = accesstable(target,utilitydata)
-            if result then
-                local done = packers.unpack(result,jobpacker,true)
-                if done then
-                    migratetable(target,mark(result))
-                else
-                    report_passes("pack version mismatch")
+        if jobpacker then
+            unpacknumberdata(jobpacker.index)
+            for i=1,#savelist do
+                local list   = savelist[i]
+                local target = list[1]
+                local result = accesstable(target,utilitydata)
+                if result then
+                    local done = packers.unpack(result,jobpacker,true)
+                    if done then
+                        migratetable(target,mark(result))
+                    else
+                        report_passes("pack version mismatch")
+                    end
                 end
             end
         end

@@ -19,18 +19,18 @@ typedef struct language_state_info {
     int                   hyphenated_count;
     int                   nothing_count;
     /*tex We keep thse in the heap instead of on stack: */
-    unsigned char         word_buffer[max_size_of_word_buffer];  /*tex Work buffer for bytes (can be \UTF8): */
-    unsigned              uword_buffer[max_size_of_word_buffer]; /*tex Work buffer for \UNICODE\ (often too large): */
+    unsigned char         shared_word_buffer[max_size_of_word_buffer];  /*tex Work buffer for bytes (can be \UTF8): */
+    unsigned              shared_uword_buffer[max_size_of_word_buffer]; /*tex Work buffer for \UNICODE\ (often too large): */
 } language_state_info;
 
 extern language_state_info lmt_language_state;
 
-typedef struct lang_variables {
+typedef struct language_variables {
     halfword pre_hyphen_char;
     halfword post_hyphen_char;
     halfword pre_exhyphen_char;
     halfword post_exhyphen_char;
-} lang_variables;
+} language_variables;
 
 /*tex This is used in: */
 
@@ -60,7 +60,7 @@ extern void          tex_clear_hyphenation      (struct tex_language *lang);
 extern const char   *tex_clean_hyphenation      (halfword id, const char *buffer, char **cleaned);
 
 extern void          tex_hyphenate_list         (halfword head, halfword tail);
-extern int           tex_collapse_list          (halfword head, halfword c1, halfword c2, halfword c3);
+extern int           tex_collapse_list          (halfword head, halfword c1, halfword c2, halfword c3, halfword c4);
 
 extern void          tex_set_pre_hyphen_char    (halfword lan, halfword val);
 extern void          tex_set_post_hyphen_char   (halfword lan, halfword val);

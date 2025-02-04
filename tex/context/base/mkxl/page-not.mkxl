@@ -23,10 +23,10 @@
 
 \permanent\protected\def\settotalinsertionheight
   {\calculatetotalnoteheight
-   \totalinsertionheight\dimexpr
+   \totalinsertionheight{%
      \totalnoteheight
     +\page_insert_insertion_height\s!topfloat
     +\page_insert_insertion_height\s!bottomfloat
-   \relax}
+   }}
 
 \protect \endinput

@@ -269,8 +269,9 @@ function parsers.groupedsplitat(symbol,withaction)
         local value     =
                         lbrace
                         * C((nobrace + nestedbraces)^0)
-                     -- * rbrace
-                        * (rbrace * (#symbols + P(-1))) -- new per 2023-03-11
+                     -- *  rbrace
+                     -- * (rbrace           * (#symbols + P(-1))) -- new per 2023-03-11
+                        * (rbrace * space^0 * (#symbols + P(-1))) -- new per 2025-01-29
                         +
                         C((nestedbraces + (1-(space^0*(symbols+P(-1)))))^0)
         if withaction then

@@ -155,7 +155,7 @@
    \begingroup
    \cdef\currentsynchronize{#1}%
    \setupcurrentsynchronize[#2]%
-   \scratchdistance\synchronizeparameter\c!distance
+   \scratchdistance{\synchronizeparameter\c!distance}%
    \dontcomplain
    \setbox\scratchboxtwo\hbox\bgroup
      \usesynchronizestyleandcolor\c!style\c!color
@@ -236,7 +236,7 @@
    \begingroup
    \cdef\currentsynchronize{#1}%
    \setupcurrentsynchronize[#2]%
-   \scratchdistance\synchronizeparameter\c!distance
+   \scratchdistance{\synchronizeparameter\c!distance}%
    \clf_synchronizesteps
       list   {\synchronizeparameter\c!list}%
       split  {\synchronizeparameter\c!split}%

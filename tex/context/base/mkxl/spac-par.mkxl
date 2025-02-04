@@ -530,10 +530,10 @@
    \else
      \cdef\currentoptimize{#1}%
    \fi
-   \scratchdimenone  \optimizeparameter\c!left \relax
-   \scratchdimentwo  \optimizeparameter\c!right\relax
-   \scratchcounterone\optimizeparameter\c!lines\relax
-   \scratchdistance  \optimizeparameter\c!distance\relax
+   \scratchdimenone  {\optimizeparameter\c!left }%
+   \scratchdimentwo  {\optimizeparameter\c!right}%
+   \scratchcounterone{\optimizeparameter\c!lines}%
+   \scratchdistance  {\optimizeparameter\c!distance}%
    \normalexpanded
      {\endgroup
       \looseness\the\scratchcounterone\relax

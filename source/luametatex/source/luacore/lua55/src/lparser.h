@@ -112,7 +112,7 @@ typedef struct Labeldesc {
   int pc;  /* position in code */
   int line;  /* line where it appeared */
   lu_byte nactvar;  /* number of active variables in that position */
-  lu_byte close;  /* goto that escapes upvalues */
+  lu_byte close;  /* true for goto that escapes upvalues */
 } Labeldesc;
 
 
@@ -146,6 +146,7 @@ typedef struct FuncState {
   struct FuncState *prev;  /* enclosing function */
   struct LexState *ls;  /* lexical state */
   struct BlockCnt *bl;  /* chain of current blocks */
+  Table *kcache;  /* cache for reusing constants */
   int pc;  /* next position to code (equivalent to 'ncode') */
   int lasttarget;   /* 'label' of last 'jump label' */
   int previousline;  /* last line that was saved in 'lineinfo' */

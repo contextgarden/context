@@ -123,6 +123,106 @@ end
 
 -- -- -- -- -- --
 
+local reordered = { }  do
+
+    local function addlevel(t,k)
+        local v = { }
+        setmetatableindex(v,function(t,k)
+            local v = { }
+            t[k] = v
+            return v
+        end)
+        t[k] = v
+        return v
+    end
+
+    local function reorder(kind,names)
+
+        local sublists  = setmetatableindex({ },addlevel)
+        local collected = lists.collected or { }
+
+        for i=1,#collected do
+            local entry = collected[i]
+            local metadata = entry.metadata
+            if metadata then
+                local name = metadata.name
+                -- or names[kind]
+                -- or names[numberdata.counter]
+                if name and metadata.kind == kind and names[name] then
+                    local numberdata = entry.numberdata
+                    if numberdata then
+                        local references = entry.references
+                        if references then
+                            local internal = references.internal
+                            if internal then
+                                local sublist = sublists[kind][name]
+numberdata = table.fastcopy(numberdata)
+-- numberdata.numbers = table.fastcopy(numberdata.numbers)
+                                sublist[#sublist + 1] = { internal, numberdata, entry } -- is copy needed
+                            end
+                        end
+                    end
+                end
+            end
+        end
+
+        for _, sublist in next, sublists do
+            for _, v in next, sublist do
+                local tmp = { }
+                for i=1,#v do
+                    tmp[i] = v[i]
+                end
+                sort(tmp,function(a,b) return a[1] < b[1] end)
+                for i=1,#tmp do
+                    local vi = v[i]
+                    local numberdata = tmp[i][2]
+                    vi[3].numberdata = numberdata
+                    reordered[vi[1]] = numberdata
+                end
+            end
+        end
+
+    end
+
+    local done = { }
+
+    function lists.reorder(kind,names)
+        if names then
+         --  if type(names) == "string" then
+         --      names = utilities.parsers.settings_to_array(names)
+         --  end
+            local todo = { }
+            for i=1,#names do
+                local name = names[i]
+                if not done[name] then
+                    todo[name] = true
+                    done[name] = true
+                end
+            end
+            if next(todo) then
+                reorder(kind,todo)
+            end
+        end
+    end
+
+    function lists.reordered(data)
+-- local r = reordered[numberdata]
+-- return r and r.numberdata or numberdata
+        return data.numberdata
+    end
+
+    implement {
+        name      = "reorderfloats",
+        public    = true,
+        protected = true,
+        actions   = function(names)
+            lists.reorder("float",names)
+        end,
+        arguments = "array",
+    }
+
+end
+
 local function initializer()
     -- create a cross reference between internal references
     -- and list entries
@@ -327,7 +427,7 @@ function lists.discard(n)
 end
 
 function lists.iscached(n)
-    return cached[tonumber(n)]
+    return cached[tonumber(n)] -- tonumber can go
 end
 
 -- this is the main pagenumber enhancer
@@ -454,7 +554,6 @@ local listsorters = {
 -- was: names, criterium, number, collected, forced, nested, sortorder
 
 local filters = setmetatableindex(function(t,k) return t[v_default] end)
-
 
 local used = { }
 
@@ -1104,7 +1203,7 @@ function lists.title(name,n,tag) -- tag becomes obsolete
 end
 
 function lists.hastitledata(name,n,tag)
-    local data = cached[tonumber(n)]
+    local data = cached[tonumber(n)] -- tonumber can go
     if data then
         local titledata = data.titledata
         if titledata then
@@ -1216,12 +1315,6 @@ function references.specials.order(var,actions) -- references.specials !
 end
 
 -- interface (maybe strclistpush etc)
-
-if not lists.reordered then
-    function lists.reordered(data)
-        return data.numberdata
-    end
-end
 
 implement { name = "pushlist", actions = lists.pushnesting, arguments = "integer" }
 implement { name = "poplist",  actions = lists.popnesting  }
@@ -1427,8 +1520,10 @@ implement { name = "doifelselisthaspage",   actions = { lists.haspagedata,   com
 implement { name = "doifelselisthasnumber", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
 implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = "integer" }
 
+-- keep tonumber for split marks: li::n
+
 local function savedlisttitle(name,n,tag)
-    local data = cached[tonumber(n)]
+    local data = cached[n]
     if data then
         local titledata = data.titledata
         if titledata then
@@ -1438,7 +1533,7 @@ local function savedlisttitle(name,n,tag)
 end
 
 local function savedlistnumber(name,n)
-    local data = cached[tonumber(n)]
+    local data = cached[n]
     if data then
         local numberdata = data.numberdata
         if numberdata then
@@ -1448,9 +1543,11 @@ local function savedlistnumber(name,n)
 end
 
 local function savedlistprefixednumber(name,n)
-    local data = cached[tonumber(n)]
+    local data = cached[n]
     if data then
-        local numberdata = lists.reordered(data)
+     -- local numberdata = lists.reordered(data)
+        -- nasty as we take from tobesaved so that we have something at last
+        local numberdata = reordered[n] or data.numberdata
         if numberdata then
             helpers.prefix(data,data.prefixdata)
             typesetnumber(numberdata,"number",numberdata or false)
@@ -1491,91 +1588,6 @@ implement {
     actions   = { lists.rawnumber, context },
     arguments = { "integer", "string" },
 }
-
--- new and experimental and therefore off by default
-
-lists.autoreorder = false -- true
-
-local function addlevel(t,k)
-    local v = { }
-    setmetatableindex(v,function(t,k)
-        local v = { }
-        t[k] = v
-        return v
-    end)
-    t[k] = v
-    return v
-end
-
-local internals = setmetatableindex({ }, function(t,k)
-
-    local sublists = setmetatableindex({ },addlevel)
-
-    local collected = lists.collected or { }
-
-    for i=1,#collected do
-        local entry = collected[i]
-        local numberdata = entry.numberdata
-        if numberdata then
-            local metadata = entry.metadata
-            if metadata then
-                local references = entry.references
-                if references then
-                    local kind = metadata.kind
-                    local name = numberdata.counter or metadata.name
-                    local internal = references.internal
-                    if kind and name and internal then
-                        local sublist = sublists[kind][name]
-                        sublist[#sublist + 1] = { internal, numberdata }
-                    end
-                end
-            end
-        end
-    end
-
-    for k, v in next, sublists do
-        for k, v in next, v do
-            local tmp = { }
-            for i=1,#v do
-                tmp[i] = v[i]
-            end
-            sort(v,function(a,b) return a[1] < b[1] end)
-            for i=1,#v do
-                t[v[i][1]] = tmp[i][2]
-            end
-        end
-    end
-
-    setmetatableindex(t,nil)
-
-    return t[k]
-
-end)
-
-function lists.reordered(entry)
-    local numberdata = entry.numberdata
-    if lists.autoreorder then
-        if numberdata then
-            local metadata = entry.metadata
-            if metadata then
-                local references = entry.references
-                if references then
-                    local kind = metadata.kind
-                    local name = numberdata.counter or metadata.name
-                    local internal = references.internal
-                    if kind and name and internal then
-                        return internals[internal] or numberdata
-                    end
-                end
-            end
-        end
-    else
-        function lists.reordered(entry)
-            return entry.numberdata
-        end
-    end
-    return numberdata
-end
 
 -- external data
 

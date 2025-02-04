@@ -23,20 +23,28 @@ local ctx_doifelse  = commands.doifelse
 
 local nodecodes     = nodes.nodecodes
 
-local disc_code       <const> = nodecodes.disc
-local hlist_code      <const> = nodecodes.hlist
-local vlist_code      <const> = nodecodes.vlist
-local glue_code       <const> = nodecodes.glue
-local penalty_code    <const> = nodecodes.penalty
-local glyph_code      <const> = nodecodes.glyph
-local par_code        <const> = nodecodes.par
+local disc_code         <const> = nodecodes.disc
+local hlist_code        <const> = nodecodes.hlist
+local vlist_code        <const> = nodecodes.vlist
+local glue_code         <const> = nodecodes.glue
+local penalty_code      <const> = nodecodes.penalty
+local glyph_code        <const> = nodecodes.glyph
+local par_code          <const> = nodecodes.par
+local rule_code         <const> = nodecodes.rule
 
-local indentlist_code <const> = nodes.listcodes.indent
-local topskip_code    <const> = nodes.gluecodes.topskip
-local indentskip_code <const> = nodes.gluecodes.indentskip
-local line_code       <const> = nodes.listcodes.line
+local indentlist_code   <const> = nodes.listcodes.indent
+local line_code         <const> = nodes.listcodes.line
+local balanceslot_code  <const> = nodes.listcodes.balanceslot
+----- spacing_code      <const> = nodes.listcodes.spacing
 
-local hmode_code      <const> = tex.modelevels.horizontal
+local spacing_code      <const> = nodes.rulecodes.spacing
+
+local topskip_code      <const> = nodes.gluecodes.topskip
+local indentskip_code   <const> = nodes.gluecodes.indentskip
+local userskip_code     <const> = nodes.gluecodes.userskip
+local baselineskip_code <const> = nodes.gluecodes.baselineskip
+
+local hmode_code        <const> = tex.modelevels.horizontal
 
 local nuts          = nodes.nuts
 local tonut         = nuts.tonut
@@ -48,6 +56,7 @@ local getboth       = nuts.getboth
 local getdisc       = nuts.getdisc
 local getid         = nuts.getid
 local getsubtype    = nuts.getsubtype
+local getidsubtype  = nuts.getidsubtype
 local getlist       = nuts.getlist
 local getattribute  = nuts.getattribute
 local getbox        = nuts.getbox
@@ -73,13 +82,15 @@ local setsplit      = nuts.setsplit
 local setattrlist   = nuts.setattrlist
 local setwhd        = nuts.setwhd
 local setglue       = nuts.setglue
+local setsubtype    = nuts.setsubtype
 
 local flushnode     = nuts.flushnode
 local flushlist     = nuts.flushlist
-local copy_node     = nuts.copy
+local copynode      = nuts.copy
 local copylist      = nuts.copylist
-local find_tail     = nuts.tail
+local findtail      = nuts.tail
 local getdimensions = nuts.dimensions
+local getwidth      = nuts.getwidth
 local hpack         = nuts.hpack
 local vpack         = nuts.vpack
 local traverseid    = nuts.traverseid
@@ -88,6 +99,10 @@ local free          = nuts.free
 local findtail      = nuts.tail
 local reverse       = nuts.reverse
 local effectiveglue = nuts.effectiveglue
+
+local insertbefore  = nuts.insertbefore
+local replacenode   = nuts.replace
+local insertafter   = nuts.insertafter
 
 local nextdisc      = nuts.traversers.disc
 local nextdir       = nuts.traversers.dir
@@ -100,6 +115,7 @@ local listtoutf     = nodes.listtoutf
 
 local nodepool      = nuts.pool
 local new_penalty   = nodepool.penalty
+local new_spacing   = nodepool.spacingrule
 local new_hlist     = nodepool.hlist
 local new_glue      = nodepool.glue
 
@@ -149,11 +165,11 @@ local function hyphenatedlist(head,usecolor)
             setdisc(current)
             if pre then
                 setlink(prev,new_penalty(10000),pre)
-                setlink(find_tail(pre),current)
+                setlink(findtail(pre),current)
             end
             if post then
                 setlink(current,new_penalty(10000),post)
-                setlink(find_tail(post),next)
+                setlink(findtail(post),next)
             end
         elseif id == vlist_code or id == hlist_code then
             hyphenatedlist(getlist(current))
@@ -201,9 +217,9 @@ do
                 applytochars(getlist(current),doaction,noaction,nested)
                 context.endhbox()
             elseif id ~= glyph_code then
-                noaction(tonode(copy_node(current)))
+                noaction(tonode(copynode(current)))
             else
-                doaction(tonode(copy_node(current)))
+                doaction(tonode(copynode(current)))
             end
             current = getnext(current)
         end
@@ -218,7 +234,7 @@ do
                     doaction(tonode(copylist(start,current)))
                     start = nil
                 end
-                noaction(tonode(copy_node(current)))
+                noaction(tonode(copynode(current)))
             elseif nested and (id == hlist_code or id == vlist_code) then
                 context.beginhbox()
                 applytowords(getlist(current),doaction,noaction,nested)
@@ -366,7 +382,7 @@ do
                     else
                         head = list
                     end
-                    tail = find_tail(list)
+                    tail = findtail(list)
                     -- remove last separator
                     if getid(tail) == hlist_code and getattribute(tail,a_vboxtohboxseparator) == 1 then
                         local temp = tail
@@ -375,7 +391,7 @@ do
                             local list = getlist(tail)
                             setlink(prev,list)
                             setlist(tail)
-                            tail = find_tail(list)
+                            tail = findtail(list)
                         else
                             tail = prev
                         end
@@ -532,13 +548,13 @@ end
 
 do
 
-    local tonut           = nodes.tonut
-    local takebox         = nuts.takebox
-    local flushlist       = nuts.flushlist
-    local copylist        = nuts.copylist
-    local getwhd          = nuts.getwhd
-    local setbox          = nuts.setbox
-    local new_hlist       = nuts.pool.hlist
+    ----- tonut           = nodes.tonut
+    ----- takebox         = nuts.takebox
+    ----- flushlist       = nuts.flushlist
+    ----- copylist        = nuts.copylist
+    ----- getwhd          = nuts.getwhd
+    ----- setbox          = nuts.setbox
+    ----- new_hlist       = nuts.pool.hlist
 
     local boxes           = { }
     nodes.boxes           = boxes
@@ -830,22 +846,36 @@ do
 
 end
 
-implement {
-    name    = "lastlinewidth",
-    actions = function()
+-- implement {
+--     name    = "lastlinewidth",
+--     actions = function()
+--     local getnest = tex.getnest
         local head = tex.lists.pagehead
-        -- list dimensions returns 3 value but we take the first
-        context(head and getdimensions(getlist(find_tail(tonut(tex.lists.pagehead)))) or 0)
+--         -- list dimensions returns 3 value but we take the first
+--         context(head and getdimensions(getlist(findtail(tonut(head)))) or 0)
+--     end
+-- }
+
+implement {
+    name      = "lastlinewidth",
+    usage     = "value",
+    public    = true,
+    protected = true,
+    actions   = function()
+        local n = texgetnest()
+        local l = n and getlist(tonut(n.tail))
+        -- todo: a variant that backtracks over penalties and glue
+        return dimension_value, l and getdimensions(l) or 0
     end
 }
 
-implement {
-    name      = "shiftbox",
-    arguments = { "integer", "dimension" },
-    actions   = function(n,d)
-        setshift(getbox(n),d)
-    end,
-}
+-- implement {
+--     name      = "shiftbox",
+--     arguments = { "integer", "dimension" },
+--     actions   = function(n,d)
+--         setshift(getbox(n),d)
+--     end,
+-- }
 
 implement { name = "vpackbox", arguments = "integer", actions = function(n) setbox(n,(vpack(takebox(n)))) end }
 implement { name = "hpackbox", arguments = "integer", actions = function(n) setbox(n,(hpack(takebox(n)))) end }
@@ -1067,14 +1097,14 @@ implement {
             while n do
                 n = getnext(n)
                 if n then
-                    local id = getid(n)
+                    local id, subtype = getidsubtype(n)
                     if id == glue_code then
-                        if getsubtype(n) == indentskip_code then
+                        if subtype == indentskip_code then
                             b = getwidth(n) > 0
                             break
                         end
                     elseif id == hlist_code then
-                        if getsubtype(n) == indentlist_code then
+                        if subtype == indentlist_code then
                             b = getwidth(n) > 0
                         end
                         break
@@ -1093,7 +1123,7 @@ implement {
 implement {
     name      = "noflinesinbox",
     public    = true,
-    protected = false,
+    usage     = "value",
     arguments = "integer",
     actions   = function(n)
         local c = 0
@@ -1101,21 +1131,65 @@ implement {
         if b then
             b = getlist(b)
             if b then
-             -- for n, id in traverse(b) do -- traverse_list
-             --     if id == hlist_code or id == vlist_code then
-             --         c = c + 1
-             --     end
-             -- end
-             --
-             -- for n in traverselist(b) do
-             --     c = c + 1
-             -- end
-             --
-             c = countnodes(hlist_code,b) + countnodes(vlist_code,b)
+                c = countnodes(hlist_code,b) + countnodes(vlist_code,b)
             end
         end
-        context(c)
-     -- return cardinal_value, c
+        return cardinal_value, c
+    end,
+}
+
+implement {
+    name      = "gluetolinesinbox",
+    public    = true,
+    protected = false,
+    arguments = { "integer", "dimension", "dimension", "dimension" },
+    actions   = function(n,wd,ht,dp)
+        -- maybe only inbetween
+        local box = getbox(n)
+        if box then
+            local head = getlist(box)
+            local current = head
+            while current do
+                local id, subtype = getidsubtype(current)
+                if id == glue_code and subtype == userskip_code then
+                 -- local line = new_hlist()
+                 -- setwhd(line,wd,ht,dp) -- width for tracing
+                 -- setsubtype(line,spacing_code)
+                    local line = new_spacing(wd,ht,dp) -- rule
+-- nuts.setoptions(line,16) -- discardable
+                    setattrlist(line,current)
+                    head          = insertbefore(head,current,new_glue(baselineskip_code))
+                    head, current = replacenode(head,current,line)
+                    head, current = insertafter(head,current,new_glue(baselineskip_code))
+                end
+                current = getnext(current)
+            end
+            setlist(box,head)
+        end
+    end,
+}
+
+implement {
+    name      = "ifgluelineinbox",
+    public    = true,
+    usage     = "condition",
+    arguments = "integer",
+    actions   = function(n)
+        local box   = getbox(n)
+        local found = false
+        if box and getsubtype(box) == balanceslot_code then
+            local current = getlist(box)
+            while current do
+                local id, subtype = getidsubtype(current)
+             -- if id == hlist_code and subtype == spacing_code then
+                if id == rule_code and subtype == spacing_code then
+                    found = true
+                    break
+                end
+                current = getnext(current)
+            end
+        end
+        return boolean_value, found
     end,
 }
 
@@ -1158,7 +1232,7 @@ do
     local scanbox            = tokens.scanners.box
     local scandimen          = tokens.scanners.dimen
 
-    local setsubtype         = nuts.setsubtype
+    ----- setsubtype         = nuts.setsubtype
     local removenode         = nuts.remove
     local getnormalizedline  = nuts.getnormalizedline -- we can optimize this
     local getdimensions      = nuts.dimensions
@@ -1311,7 +1385,7 @@ do
     end
 
     local function copyline(props,line,found,box,value)
-        found = copy_node(found)
+        found = copynode(found)
         setsubtype(found, unknown_code)
         if value then
             return direct_value, found

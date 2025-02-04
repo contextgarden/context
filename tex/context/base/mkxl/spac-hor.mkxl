@@ -866,8 +866,8 @@
      \fi
    \else
      \normalexpanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
-     \frozen\advanceby\leftskip \dimexpr\s_spac_narrower_left +\s_spac_narrower_middle\relax
-     \frozen\advanceby\rightskip\dimexpr\s_spac_narrower_right+\s_spac_narrower_middle\relax
+     \frozen\advanceby\leftskip {\s_spac_narrower_left +\s_spac_narrower_middle}%
+     \frozen\advanceby\rightskip{\s_spac_narrower_right+\s_spac_narrower_middle}%
    \fi
    \seteffectivehsize
    \dostarttagged\t!narrower\currentnarrower}
@@ -940,8 +940,8 @@
 \aliased\let\stopnarrow\spac_narrower_stop
 
 \newdimension\d_spac_effective_hsize     \permanent\protected\def\effectivehsize    {\hsize}
-\newdimension\d_spac_effective_leftskip  \permanent\protected\def\effectiveleftskip {\dimexpr\leftskip \relax}
-\newdimension\d_spac_effective_rightskip \permanent\protected\def\effectiverightskip{\dimexpr\rightskip\relax}
+\newdimension\d_spac_effective_leftskip  \permanent\protected\def\effectiveleftskip {\leftskip}
+\newdimension\d_spac_effective_rightskip \permanent\protected\def\effectiverightskip{\rightskip}
 
 \permanent\protected\def\seteffectivehsize
   {\setlocalhsize
@@ -968,8 +968,8 @@
 \letcsname\??skipadaptionleft \v!standard\expandafter\endcsname\csname\??skipadaptionleft \v!yes\endcsname
 \letcsname\??skipadaptionright\v!standard\expandafter\endcsname\csname\??skipadaptionright\v!yes\endcsname
 
-\permanent\protected\def\dosetleftskipadaption #1{\leftskipadaption \ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
-\permanent\protected\def\dosetrightskipadaption#1{\rightskipadaption\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
+\permanent\protected\def\dosetleftskipadaption #1{\leftskipadaption \glueexpr\ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
+\permanent\protected\def\dosetrightskipadaption#1{\rightskipadaption\glueexpr\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
 
 \permanent\protected\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\frozen\advanceby\leftskip \leftskipadaption }
 \permanent\protected\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advanceby\rightskip\rightskipadaption}
@@ -1386,9 +1386,9 @@
 \permanent\protected\def\interwordspacebefore{\wordboundary\zwnj\hskip\interwordspace\relax}
 \permanent\protected\def\interwordspaceafter {\hskip\interwordspace\relax\zwnj\wordboundary}
 
-\permanent\protected\def\interwordspacesbefore#1{\dofastloopcs{#1}\interwordspacebefore}
-\permanent\protected\def\interwordspacesafter #1{\dofastloopcs{#1}\interwordspaceafter}
-\permanent\protected\def\interwordspaces      #1{\wordboundary\zwnj\dofastloopcs{\numexpr#1+\minusone}\interwordspaceafter}
+\permanent\protected\def\interwordspacesbefore#1{\dofastloopcs{#1}\interwordspacebefore} % todo: native loop
+\permanent\protected\def\interwordspacesafter #1{\dofastloopcs{#1}\interwordspaceafter} % todo: native loop
+\permanent\protected\def\interwordspaces      #1{\wordboundary\zwnj\dofastloopcs{#1+\minusone}\interwordspaceafter}  % todo: native loop
 
 %D For mp:
 

@@ -193,9 +193,9 @@
    \clf_insertattachment
      tag               {\currentattachment}%
      registered        {\currentattachmentregistered}%
-     width             \dimexpr\currentattachmentwidth \relax
-     height            \dimexpr\currentattachmentheight\relax
-     depth             \dimexpr\currentattachmentdepth \relax
+     width             {\currentattachmentwidth}%
+     height            {\currentattachmentheight}%
+     depth             {\currentattachmentdepth}%
      color             {\attachmentparameter\c!color}%
      colormodel        \c_attr_colormodel
      colorvalue        \rawcolorattribute{\attachmentparameter\c!color}%
@@ -262,7 +262,7 @@
   {\global\setbox\b_scrn_attachment_collect\hbox\bgroup
      \ifvoid\b_scrn_attachment_collect\else
        \box\b_scrn_attachment_collect
-       \hskip\attachmentparameter\c!distance\relax
+       \hskip{\attachmentparameter\c!distance}\relax
      \fi
      \scrn_attachment_flush
    \egroup}
@@ -485,9 +485,9 @@
      title             {\commentparameter\c!title}%
      subtitle          {\commentparameter\c!subtitle}%
      author            {\commentparameter\c!author}%
-     width             \dimexpr\currentcommentwidth\relax
-     height            \dimexpr\currentcommentheight\relax
-     depth             \dimexpr\currentcommentdepth\relax
+     width             {\currentcommentwidth}%
+     height            {\currentcommentheight}%
+     depth             {\currentcommentdepth}%
      nx                {\commentparameter\c!nx}%
      ny                {\commentparameter\c!ny}%
      colormodel        \c_attr_colormodel
@@ -540,7 +540,7 @@
   {\global\setbox\b_scrn_comment_collect\hbox\bgroup
      \ifvoid\b_scrn_comment_collect\else
        \box\b_scrn_comment_collect
-       \hskip\commentparameter\c!distance\relax
+       \hskip{\commentparameter\c!distance}\relax
      \fi
      \scrn_comment_flush
    \egroup}
@@ -642,8 +642,8 @@
      \d_scrn_rendering_width \hsize
      \let\m_scrn_rendering_page\realpageno
    \else
-     \d_scrn_rendering_height\renderingwindowparameter\c!height
-     \d_scrn_rendering_width \renderingwindowparameter\c!width
+     \d_scrn_rendering_height{\renderingwindowparameter\c!height}%
+     \d_scrn_rendering_width {\renderingwindowparameter\c!width}%
      \let\m_scrn_rendering_page\realpageno
    \fi
    \letrenderingwindowparameter\c!offset\v!overlay

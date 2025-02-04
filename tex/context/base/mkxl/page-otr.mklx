@@ -128,7 +128,7 @@
      i:\the\insertheights
      \ifdim\pagetotal>\pagegoal
        ,\space
-       d:\the\dimexpr\pagetotal-\pagegoal\relax
+       d:\todimension{\pagetotal-\pagegoal}%
      \fi}}
 
 \protected\def\page_otr_trigger#penalty%
@@ -238,7 +238,7 @@
    \fi}
 
 \def\page_otr_fill_page_checked
-  {\ifdim\dimexpr\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess\relax>\pagegoal\else
+  {\ifdim{\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess}>\pagegoal\else
      \normalvfil
    \fi}
 

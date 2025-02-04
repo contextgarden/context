@@ -330,7 +330,7 @@ local figures_formats = allocate { -- magic and order will move here
     ["mps"]    = { patterns = { "^mps$", "^%d+$" } }, -- we need to anchor
     ["jpg"]    = { list = { "jpg", "jpeg" } },
     ["png"]    = { list = { "png" } },
-    ["jp2"]    = { list = { "jp2" } },
+    ["jp2"]    = { list = { "jp2", "jpx" } },
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },

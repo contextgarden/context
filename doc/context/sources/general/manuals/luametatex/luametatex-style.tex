@@ -290,13 +290,19 @@
   [oldprimitive]
   [textcolor=nonecolor]
 
+\setuplist
+  [chapter]
+  [color=maincolor,
+   style=bold,
+   before={\testpage[3]\blank}]
+
 % We use the next one because we want to check what has been done. In a document
 % like this using \type {\foo} makes more sense.
 
 \protected\def\prm#1%
 % {\doifmode{*bodypart}{\index{\tex{#1}}}\tex{#1}}
 % {\ifmode{*bodypart}\index{\tex{#1!\string#1!}}\fi\tex{#1}}
-  {\ctxlua{if string.find("#1","^U") then context.writestatus("!!!!!!","#1") end}%
+  {%ctxlua{if string.find("#1","^U") then context.writestatus("!!!!!!","#1") end}%
    \ifmode{*bodypart}\index{\tex{#1}}\fi\tex{#1}}
 
 \protected\def\stx#1%

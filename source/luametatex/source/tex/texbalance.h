@@ -45,6 +45,7 @@ typedef struct balance_state_info {
     int          total_inserts_found;
     int          total_inserts_checked;
     int          discards_found;
+    int          uinserts_found;
     int          n_of_callbacks;
     break_passes passes;
     int          artificial_encountered; 

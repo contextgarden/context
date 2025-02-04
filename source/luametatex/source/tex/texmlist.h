@@ -20,9 +20,19 @@ typedef struct kernset {
     halfword padding;
 } kernset; 
 
+typedef enum mlist_to_hlist_contexts { 
+    m_to_h_callback = 1,
+    m_to_h_cleanup  = 2, 
+    m_to_h_pre      = 3, 
+    m_to_h_post     = 4, 
+    m_to_h_replace  = 5,
+    m_to_h_sublist  = 6,
+    m_to_h_engine   = 7,
+} mlist_to_hlist_contexts;
+
 extern void     tex_mlist_to_hlist_prepare  (void);
 extern void     tex_run_mlist_to_hlist      (halfword p, halfword penalties, halfword style, int beginclass, int endclass);
-extern halfword tex_mlist_to_hlist          (halfword, int penalties, int mainstyle, int beginclass, int endclass, kernset *kerns);
+extern halfword tex_mlist_to_hlist          (halfword, int penalties, int mainstyle, int beginclass, int endclass, kernset *kerns, int where);
 extern halfword tex_make_extensible         (halfword fnt, halfword chr, scaled target, scaled min_overlap, int horizontal, halfword att, halfword size);
 extern halfword tex_new_math_glyph          (halfword fnt, halfword chr);
 extern halfword tex_math_spacing_glue       (halfword ltype, halfword rtype, halfword style);

@@ -12,12 +12,17 @@
     showed up and already cleaned up code (the many parameters) could be thrown out. That's how
     it goed and it is in retrospect good that we had not yet released.
 
+    Actually the parameter stack easily gets bumped to 128 when we have a few levels of nesting 
+    with bodyfont switches. We can save some by not pushing unchanged values but even then on 
+    mathincontext we nearly reach 1000. So we're generous with the initial stack space:  
 */
 
-# define MATHPARAMSTACK   8
+# define MATHPARAMSTACK   512
+# define MATHPARAMSTEP    256
 # define MATHPARAMDEFAULT undefined_math_parameter
 
 # define MATHFONTSTACK   8
+# define MATHFONTSTEP    8
 # define MATHFONTDEFAULT 0
 
 typedef struct math_state_info {
@@ -297,7 +302,9 @@ typedef enum math_atom_font_options {
 
 static inline int math_parameter_value_type(int n)
 {
-    if (n <= last_math_parameter) {
+    if (n >= math_parameter_first_variant && n <= math_parameter_last_variant) {
+        return math_integer_parameter;     
+    } else if (n <= last_math_parameter) {
         return lmt_interface.math_parameter_values[n].type;
     } else if (n >= math_parameter_atom_rules_first && n <= math_parameter_atom_rules_last) {
         return math_pair_parameter;
@@ -722,9 +729,9 @@ typedef enum math_control_codes {
     math_control_fraction_rule               = 0x0000010,
     math_control_accent_skew_half            = 0x0000020,
     math_control_accent_skew_apply           = 0x0000040,
-    math_control_apply_ordinary_kern_pair    = 0x0000080,
+    math_control_apply_ordinary_kern_pair    = 0x0000080, /* _ordinary_ _italic_ can go */
     math_control_apply_vertical_italic_kern  = 0x0000100,
-    math_control_apply_ordinary_italic_kern  = 0x0000200,
+    math_control_apply_ordinary_italic_kern  = 0x0000200, /* _ordinary_ _italic_ can go */
     math_control_apply_char_italic_kern      = 0x0000400, /* traditional */
     math_control_rebox_char_italic_kern      = 0x0000800, /* traditional */
     math_control_apply_boxed_italic_kern     = 0x0001000,

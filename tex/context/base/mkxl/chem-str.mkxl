@@ -168,10 +168,10 @@
      symalign      {\chemicalparameter\c!symalign}%
      axis          {\chemicalparameter\c!axis}% was \MPcolor{...}
      framecolor    {\chemicalparameter\c!framecolor}%
-     rulethickness \dimexpr\chemicalparameter\c!rulethickness\relax
-     offset        \dimexpr\chemicalparameter\c!offset\relax
-     unit          \dimexpr\chemicalparameter\c!unit\relax
-     factor        \numexpr\chemicalparameter\c!factor\relax
+     rulethickness {\chemicalparameter\c!rulethickness}%
+     offset        {\chemicalparameter\c!offset}%
+     unit          {\chemicalparameter\c!unit}%
+     factor        {\chemicalparameter\c!factor}%
    \relax
    \startnointerference}
 
@@ -222,7 +222,7 @@
    \clf_chemicalcomponent
       {#2}%
       {\detokenize{#3}}%
-      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\todimension{\chemicalparameter\c!rulethickness}}% todo: scaled points
       {\chemicalparameter\c!rulecolor}%
    \relax
    \ignorespaces}
@@ -231,7 +231,7 @@
   {\clf_chemicalcomponent
       {#1}%
       {\detokenize{#2}}%
-      {\the\dimexpr\chemicalparameter\c!rulethickness}% todo: scaled points
+      {\todimension{\chemicalparameter\c!rulethickness}}% todo: scaled points
       {\chemicalparameter\c!rulecolor}%
    \relax
    \ignorespaces}
@@ -279,7 +279,7 @@
      \kern-\d_chem_width
      \raise\d_chem_height\hpack{\lower\ht\scratchboxtwo\box\scratchboxtwo}%
      \kern-\d_chem_width
-     \lower.5\dimexpr\ht\scratchboxone-\dp\scratchboxone\relax\box\scratchboxone
+     \lower{(\ht\scratchboxone-\dp\scratchboxone)/2}\box\scratchboxone
      \kern-\d_chem_width
      \lower\d_chem_depth\hpack{\raise\dp\scratchboxthree\box\scratchboxthree}%
      \hss
@@ -337,7 +337,7 @@
    \setstrut
    \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
    \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
-   \setbox\scratchboxone\chem_box_normal_yes{\raise\dimexpr\dp\scratchboxone+\ht\scratchboxtwo\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\raise{\dp\scratchboxone+\ht\scratchboxtwo}\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
    \smashbox\scratchboxone
    \box\scratchboxone
    \box\scratchboxtwo
@@ -348,7 +348,7 @@
    \setstrut
    \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
    \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
-   \setbox\scratchboxone\chem_box_normal_yes{\lower\dimexpr\dp\scratchboxtwo+\ht\scratchboxone\relax\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
+   \setbox\scratchboxone\chem_box_normal_yes{\lower{\dp\scratchboxtwo+\ht\scratchboxone}\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
    \smashbox\scratchboxone
    \box\scratchboxone
    \box\scratchboxtwo
@@ -543,7 +543,11 @@
 \aliased\let\ic\inlinechemical
 
 \permanent\protected\def\chemicalbondrule
-  {\vrule\s!height.75\exheight\s!depth-\dimexpr.75\exheight-\linewidth\relax\s!width\emwidth\relax}
+  {\vrule
+     \s!height.75\exheight
+     \s!depth {\linewidth-.75\exheight}%
+     \s!width \emwidth
+   \relax}
 
 \permanent\protected\def\chemicalsinglebondrule
   {\hpack{\chemicalbondrule}}
@@ -867,8 +871,8 @@
     \setmathignore\Umathspaceafterscript  \plusone
     \bitwiseflip\mathscriptsmode\plusone
     \scratchcounter\chemistryparameter\c!scale
-    \glyphscriptscale      \numexpr\glyphscriptscale      *\scratchcounter/\plusthousand\relax
-    \glyphscriptscriptscale\numexpr\glyphscriptscriptscale*\scratchcounter/\plusthousand\relax
+    \glyphscriptscale      {\glyphscriptscale      *\scratchcounter/\plusthousand}%
+    \glyphscriptscriptscale{\glyphscriptscriptscale*\scratchcounter/\plusthousand}%
     \enforced\let\math_default\math_upright
     \enforced\let\ch\chem_ch
 \to \everychemistry

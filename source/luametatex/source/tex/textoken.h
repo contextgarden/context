@@ -1,4 +1,4 @@
-/*
+﻿/*
     See license.txt in the root of this project.
 */
 
@@ -215,13 +215,17 @@ typedef enum macro_preamble_states {
 # define less_token              (other_token  + '<')
 # define more_token              (other_token  + '>')
 # define exclamation_token_o     (other_token  + '!')
-# define exclamation_token_l     (letter_token + '!') /* letter */
+# define exclamation_token_l     (letter_token + '!')
 # define underscore_token        (other_token  + '_')
 # define underscore_token_o      (other_token  + '_')
-# define underscore_token_l      (letter_token + '_') /* letter */
+# define underscore_token_l      (letter_token + '_')
 # define circumflex_token        (other_token  + '^')
 # define circumflex_token_o      (other_token  + '^')
-# define circumflex_token_l      (letter_token + '^') /* letter */
+# define circumflex_token_l      (letter_token + '^')
+# define circumflex_token_s      (superscript_token + '^')
+# define bar_token               (other_token  + '|')
+# define bar_token_o             (other_token  + '|')
+# define bar_token_l             (letter_token + '|')
 # define escape_token            (other_token  + '\\')
 # define left_parent_token       (other_token  + '(')
 # define right_parent_token      (other_token  + ')')
@@ -243,6 +247,22 @@ typedef enum macro_preamble_states {
 # define dollar_token            (other_token  + '$')
 # define percentage_token        (other_token  + '%')
 # define ampersand_token         (other_token  + '&')
+# define ampersand_token_l       (letter_token + '&')
+# define ampersand_token_o       (other_token  + '&')
+# define ampersand_token_t       (alignment_token + '&')
+# define tilde_token             (other_token  + '~')
+# define tilde_token_l           (letter_token + '~')
+# define tilde_token_o           (other_token  + '~')
+
+# define element_token                  (other_token + 0x2208) // ∈
+# define not_element_token              (other_token + 0x2209) // ∉
+# define not_equal_token                (other_token + 0x2260) // ≠
+# define less_or_equal_token            (other_token + 0x2264) // ≤
+# define more_or_equal_token            (other_token + 0x2265) // ≥ 
+# define not_less_or_equal_token__token (other_token + 0x2270) // ≰
+# define not_more_or_equal_token__token (other_token + 0x2271) // ≱ 
+# define plus_minus_token               (other_token + 0x00B1) // ± plus minus  
+# define minus_plus_token               (other_token + 0x2213) // ∓ minus plus 
 
 # define dollar_token_m          (math_shift_token + '$')
 
@@ -251,6 +271,9 @@ typedef enum macro_preamble_states {
 
 # define b_token_l               (letter_token + 'b')  /*tex the smallest special hex digit */
 # define b_token_o               (other_token  + 'b')
+
+# define c_token_l               (letter_token + 'c')
+# define c_token_o               (other_token  + 'c')
 
 # define d_token_l               (letter_token + 'd')
 # define d_token_o               (other_token  + 'd')
@@ -261,8 +284,20 @@ typedef enum macro_preamble_states {
 # define f_token_l               (letter_token + 'f')  /*tex the largest special hex digit */
 # define f_token_o               (other_token  + 'f')
 
+# define g_token_l               (letter_token + 'g')
+# define g_token_o               (other_token  + 'g')
+
+# define h_token_l               (letter_token + 'h')
+# define h_token_o               (other_token  + 'h')
+
 # define i_token_l               (letter_token + 'i')
 # define i_token_o               (other_token  + 'i')
+
+# define j_token_l               (letter_token + 'j')
+# define j_token_o               (other_token  + 'j')
+
+# define k_token_l               (letter_token + 'k')
+# define k_token_o               (other_token  + 'k')
 
 # define l_token_l               (letter_token + 'l')
 # define l_token_o               (other_token  + 'l')
@@ -279,6 +314,9 @@ typedef enum macro_preamble_states {
 # define p_token_l               (letter_token + 'p')
 # define p_token_o               (other_token  + 'p')
 
+# define q_token_l               (letter_token + 'q')
+# define q_token_o               (other_token  + 'q')
+
 # define r_token_l               (letter_token + 'r')
 # define r_token_o               (other_token  + 'r')
 
@@ -291,8 +329,20 @@ typedef enum macro_preamble_states {
 # define u_token_l               (letter_token + 'u')
 # define u_token_o               (other_token  + 'u')
 
+# define v_token_l               (letter_token + 'v')
+# define v_token_o               (other_token  + 'v')
+
+# define w_token_l               (letter_token + 'w')
+# define w_token_o               (other_token  + 'w')
+
 # define x_token_l               (letter_token + 'x')
 # define x_token_o               (other_token  + 'x')
+
+# define y_token_l               (letter_token + 'y')
+# define y_token_o               (other_token  + 'y')
+
+# define z_token_l               (letter_token + 'z')
+# define z_token_o               (other_token  + 'z')
 
 # define A_token_l               (letter_token + 'A')  /*tex the smallest special hex digit */
 # define A_token_o               (other_token  + 'A')
@@ -463,7 +513,7 @@ extern int        tex_scan_keyword                (const char *s);
 extern int        tex_scan_partial_keyword        (const char *s);
 extern int        tex_scan_keyword_case_sensitive (const char *s);
 extern halfword   tex_active_to_cs                (int c, int force);
-extern halfword   tex_string_to_toks              (const char *s);
+/*     halfword   tex_string_to_toks              (const char *s); */
 extern int        tex_get_char_cat_code           (int c);
 extern halfword   tex_get_token                   (void);
 extern void       tex_get_x_or_protected          (void);

@@ -159,8 +159,8 @@
   {\defcsname\??layoutmarking#1\endcsname{#2}}
 
 \installpagecutmark\v!on
-  {%settrue\c_page_marks_add_page_lines
-   \c_page_marks_add_more_lines\conditionaltrue
+  {%c_page_marks_add_page_lines \conditionaltrue
+   \c_page_marks_add_more_lines \conditionaltrue
    \c_page_marks_add_more_number\conditionaltrue}
 
 \installpagecutmark\v!page
@@ -169,11 +169,11 @@
    \c_page_marks_add_more_number\conditionaltrue}
 
 \installpagecutmark\v!empty
-  {%settrue\c_page_marks_add_page_lines
+  {%c_page_marks_add_page_lines\conditionaltrue
    \c_page_marks_add_more_lines\conditionaltrue}
 
 \installpagecutmark\v!color
-  {%settrue\c_page_marks_add_page_lines
+  {%c_page_marks_add_page_lines\conditionaltrue
    \c_page_marks_add_more_lines\conditionaltrue
    \c_page_marks_add_more_color\conditionaltrue
    \c_page_marks_add_more_marking\conditionaltrue

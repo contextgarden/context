@@ -74,16 +74,16 @@
    \cdef\currentindentedtext{#1}%
    \c_strc_indentedtexts_nesting#2\relax
    \indentedtextparameter\c!before
-   \d_strc_indentedtexts_distance\indentedtextparameter\c!distance\relax
+   \d_strc_indentedtexts_distance{\indentedtextparameter\c!distance}%
    \ifempty{\indentedtextparameter\c!sample}%
      \setindentedtextparameter\c!sample{\indentedtextparameter\c!text}%
    \fi
    \assignwidth
-     {\indentedtextparameter\c!width}
-     {\d_strc_indentedtexts_width}
+     {\indentedtextparameter\c!width}%
+     {\d_strc_indentedtexts_width}%
      {\useindentedtextstyleandcolor\c!headstyle\c!headcolor
       \indentedtextparameter\c!sample
-      \spr{\indentedtextparameter\c!separator}}
+      \spr{\indentedtextparameter\c!separator}}%
      {\d_strc_indentedtexts_distance}%
    \advanceby\d_strc_indentedtexts_width \d_strc_indentedtexts_distance
    \setbox\scratchbox\hbox to \d_strc_indentedtexts_width

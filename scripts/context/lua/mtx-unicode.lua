@@ -130,12 +130,6 @@ local skipped = {
 for i=0x0FE00,0x0FE0F do skipped[i] = true end -- variant selector
 for i=0xE0100,0xE01EF do skipped[i] = true end -- variant selector extension
 
--- This can be done:
---
---   for i=0x1B170,0x1B2FF do skipped[i] = true end -- nushu
---
--- but then also adapt char-cjk.lua bottom part!
-
 function scripts.unicode.update()
     local unicodedata          = texttables.unicodedata
     local bidimirroring        = texttables.bidimirroring
@@ -448,6 +442,38 @@ function scripts.unicode.update()
             end
         end
     end
+    --
+    if true then
+--     if false then
+        for i=1,#characters.ranges do
+            local data   = characters.ranges[i]
+            local common = rawget(data, "common")
+            if common then
+                for unicode=data.first,data.last do
+                    local chardata = rawget(characterdata,unicode)
+                    if chardata then
+                        local same = true
+                        for k, v in next, common do
+                            if k == "description" then
+                                -- skip
+                            elseif v == common[k] then
+                                -- okay
+                            else
+                                same = false
+                                break
+                            end
+                        end
+                        if same then
+                            report("%U : wipe %s",unicode,chardata.description)
+                            rawset(characterdata,unicode,nil)
+                        else
+                            report("%U : keep %s",unicode,chardata.description)
+                        end
+                    end
+                end
+            end
+        end
+    end
     -- we need the hash .. add missing specials
     for unicode, data in sortedhash(characterdata) do
         if not data.specials or data.comment and find(data.comment,"check special") then
@@ -572,6 +598,10 @@ function scripts.unicode.load()
         dofile(fullname)
         --
         local fullname = resolvers.findfile("char-cjk.lua")
+        report("using: %s",fullname)
+        dofile(fullname)
+        --
+        local fullname = resolvers.findfile("char-ran.lua")
         report("using: %s",fullname)
         dofile(fullname)
         --

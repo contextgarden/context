@@ -2135,7 +2135,7 @@ do
         return sub(k,1,32)
     end
 
-    local options = lpdf.permissions
+    local options = lpdf.permissions -- or { }
 
     -- 1111 0000 1100 0011
 

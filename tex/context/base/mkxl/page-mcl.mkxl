@@ -99,51 +99,43 @@
 \fi
 
 \protected\def\page_mcl_command_set_hsize
-  {\d_page_mcl_available_width\dimexpr
+  {\d_page_mcl_available_width{%
       \makeupwidth
      -\d_page_mcl_leftskip
      -\d_page_mcl_rightskip
      -\nofcolumns\d_page_mcl_distance
      +\d_page_mcl_distance
-   \relax
-   \d_page_mcl_used_width\dimexpr
+   }%
+   \d_page_mcl_used_width{%
       \d_page_mcl_available_width/\nofcolumns
-   \relax
+   }%
    \textwidth\d_page_mcl_used_width
    \hsize\d_page_mcl_used_width}
 
 \protected\def\page_mcl_set_n_of_lines#1%
-  {\d_page_mcl_temp\dimexpr
+  {\d_page_mcl_temp{%
      +\textheight
       \ifdim\d_page_mcl_preceding_height>\zeropoint -\d_page_mcl_preceding_height \fi
 %       \ifdim\ht\b_page_mcl_preceding>\zeropoint -\ht\b_page_mcl_preceding \fi
      -#1%
-   \relax
+   }%
    \getnoflines\d_page_mcl_temp
    \ifnum\layoutlines>\zerocount \ifnum\noflines>\layoutlines
      \noflines\layoutlines
    \fi \fi
    \c_page_mcl_n_of_lines\noflines}
 
-
-% \protected\def\page_mcl_command_set_vsize
-%   {%%\page_one_command_set_vsize % indeed?
-%    \page_mcl_set_n_of_lines\zeropoint
-%    \d_page_mcl_temp\nofcolumns\dimexpr
-%       \c_page_mcl_n_of_lines\openlineheight
-%     %      +\m_page_mcl_overshoot_ratio\openlineheight % collect enough data
-%    \relax
-%    \global\vsize   \d_page_mcl_temp
-%    \global\pagegoal\d_page_mcl_temp} % let's do it only here, reports maxdimen anyway
-
 \protected\def\page_mcl_command_set_vsize
-  {\global\vsize\dimexpr\nofcolumns\textheight+\nofcolumns\lineheight\relax
-   \pagegoal\dimexpr
+  {\global\vsize{%
+     \nofcolumns\textheight
+    +\nofcolumns\lineheight
+   }%
+   \pagegoal{%
      \vsize
-%   -\d_page_floats_inserted_top    % needs checking
-%   -\d_page_floats_inserted_bottom % needs checking
+  % -\d_page_floats_inserted_top    % needs checking
+  % -\d_page_floats_inserted_bottom % needs checking
     -\c_page_mix_n_of_columns\insertheights
-   \relax}
+   }}
 
 \protected\def\page_mcl_command_routine
   {\ifcase\c_page_mcl_routine
@@ -185,11 +177,11 @@
   {\unvbox\b_page_mcl_preceding}
 
 \def\page_mcl_flush_preceding_ongrid
-  {\scratchdimen\dimexpr
+  {\scratchdimen{%
      \d_page_mcl_saved_pagetotal
     -\d_page_mcl_preceding_height
   % -\topskip % no, this is already part of the saved total
-   \relax
+   }%
    \box\b_page_mcl_preceding
    \kern\scratchdimen}
 
@@ -201,7 +193,7 @@
   {\bgroup
    \page_mcl_flush_packaged_columns_indeed
    \getnoflines{\htdp\b_page_mcl_page}%
-   \ht\b_page_mcl_page\dimexpr
+   \ht\b_page_mcl_page{%
      \noflines\openlineheight
      -\openstrutdepth
      \ifgridsnapping
@@ -210,7 +202,7 @@
        -\openlineheight
        +\topskip
      \fi
-   \relax
+   }%
    \dp\b_page_mcl_page\openstrutdepth
    \box\b_page_mcl_page
    \egroup}
@@ -253,7 +245,7 @@
    \ifgridsnapping \else
      \ifconditional\c_page_mcl_preceding_present
        \nointerlineskip
-       \vskip\dimexpr\openstrutheight-\topskip\relax
+       \vskip{\openstrutheight-\topskip}%
      \fi
    \fi
    \prevdepth\openstrutdepth
@@ -296,7 +288,7 @@
        \getnoflines{\ht\b_page_mcl_balance_content}%
        \divideby\noflines \nofcolumns \relax
        \ifnum\noflines<\c_page_mcl_balance_minimum \relax
-         \ifdim\dimexpr\ht\b_page_mcl_balance_content+\openlineheight\relax>\makeupheight
+         \ifdim{\ht\b_page_mcl_balance_content+\openlineheight}>\makeupheight
            \c_page_mcl_balance_possible\conditionaltrue % column exceeding text height
          \else
            \c_page_mcl_balance_possible\conditionalfalse % it seems to fit
@@ -325,7 +317,7 @@
 % \showmakeup
 
 \def\page_mcl_balance_try_one
-  {\d_page_mcl_balance_target\dimexpr\ht\b_page_mcl_balance_content+\topskip-\baselineskip\relax
+  {\d_page_mcl_balance_target{\ht\b_page_mcl_balance_content+\topskip-\baselineskip}%
    \divideby\d_page_mcl_balance_target \nofcolumns
    \vbadness\plustenthousand
    \c_page_mcl_balance_tries\zerocount
@@ -448,7 +440,7 @@
    \widowpenalty        \zerocount % will become option
    \clubpenalty         \zerocount % will become option
    %
-   \ifdim\dimexpr\pagetotal+\parskip+\openlineheight\relax<\pagegoal
+   \ifdim{\pagetotal+\parskip+\openlineheight}<\pagegoal
      \allowbreak
    \else
      \break % sometimes fails

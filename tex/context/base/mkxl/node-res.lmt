@@ -187,6 +187,7 @@ local outlinerule       = register_nut(new_nut(rule_code,rulecodes.outline)) -- 
 local imagerule         = register_nut(new_nut(rule_code,rulecodes.image))   -- setdirection(rule, lefttoright_code)
 local boxrule           = register_nut(new_nut(rule_code,rulecodes.box))     -- setdirection(rule, lefttoright_code)
 local virtualrule       = register_nut(new_nut(rule_code,rulecodes.virtual)) -- setdirection(rule, lefttoright_code)
+local spacingrule       = register_nut(new_nut(rule_code,rulecodes.spacing)) -- setdirection(rule, lefttoright_code)
 local hlist             = register_nut(new_nut(nodecodes.hlist))                setdirection(hlist,lefttoright_code)
 local vlist             = register_nut(new_nut(nodecodes.vlist))                setdirection(vlist,lefttoright_code)
 
@@ -424,6 +425,14 @@ function nutpool.virtualrule(width,height,depth,data)
     local n = copy_nut(virtualrule)
     if width or height or depth or data then
         setruledimensions(n,width,height,depth,data)
+    end
+    return n
+end
+
+function nutpool.spacingrule(width,height,depth) -- w/h/d == nil will let them adapt
+    local n = copy_nut(spacingrule)
+    if width or height or depth then
+        setwhd(n,width,height,depth)
     end
     return n
 end

@@ -13,7 +13,9 @@
 
 % http://build.contextgarden.net/waterfall?tag=c/lua(meta)tex
 
-%D Welcome to context, pronounced as kontekst (rather dutch) and not as conτεχt.
+%D Welcome to context, pronounced as kontekst (rather dutch) and not as conτεχt. The
+%D (latin) \type{con} suggests that we mean \quote {with text} which is indeed what
+%D we had in mind.
 
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
 
@@ -29,7 +31,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2024.12.30 16:05}
+\immutable\edef\contextversion{2025.02.04 17:48}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -503,7 +505,7 @@
 \loadmkxlfile{math-frc}
 \loadmkxlfile{math-mis}
 \loadmkxlfile{math-scr}
-\loadmkxlfile{math-dif}
+\loadmkxlfile{math-con}
 \loadmkxlfile{math-del}
 \loadmkxlfile{math-fen}
 \loadmkxlfile{math-lop}

@@ -19,8 +19,8 @@ inserts.stored       = inserts.stored or allocate { } -- combining them in one i
 inserts.data         = inserts.data   or allocate { } -- bytecode storage pool
 
 local variables      = interfaces.variables
-local v_page         = variables.page
-local v_auto         = variables.auto
+local v_page         <const> = variables.page
+local v_auto         <const> = variables.auto
 
 local context        = context
 local implement      = interfaces.implement
@@ -236,5 +236,87 @@ do
     inserts.attach      = attach
     inserts.detach      = detach
     inserts.nofdetached = nofdetached
+
+end
+
+-- Maybe this will get its own module.
+
+local tostring = tostring
+local abs = math.abs
+
+local nuts         = nodes.nuts
+local tonut        = nuts.tonut
+local tonode       = nuts.tonode
+local traverselist = nuts.traverselist
+local getlist      = nuts.getlist
+local setlist      = nuts.setlist
+local getattr      = nuts.getattr
+local getheight    = nuts.getheight
+local setheight    = nuts.setheight
+local hpack        = nuts.hpack
+local setattrlist  = nuts.setattrlist
+
+local setbox       = nuts.setbox
+local takebox      = nuts.takebox
+local expandmacro  = token.expandmacro
+
+do
+    -- we actually get a split one
+
+    local report = logs.reporter("balance","uinsert")
+
+    local trace  = false  trackers.register("columnsets.uinsert", function(v) trace = v end)
+
+    local a_balancescaled <const> = attributes.private("balancescaled")
+
+    local threshold <const> = 1.01
+
+    local packlist = { } -- can be reused
+
+    local function locate(p)
+        for n in traverselist(p) do
+            if getattr(n,a_balancescaled) then
+                packlist[#packlist+1] = n
+                return n
+            else
+                packlist[#packlist+1] = p
+                return locate(getlist(p),t)
+            end
+        end
+    end
+
+    local function processuinsert(l,scale)
+        setbox("b_page_inserts_uinsert",hpack(l))
+        expandmacro("page_inserts_handle_uinsert",true,tostring(scale))
+        return takebox("b_page_inserts_uinsert")
+    end
+
+    callback.register("handle_uinsert", function(callback,index,order,packed,height,amount)
+        if (callback == 1 or callback == 2) and amount ~= 0 then
+            packed = tonut(packed)
+            local p = locate(getlist(packed))
+            if p then
+                local oldheight = getheight(p)
+                local newheight = oldheight + amount
+                local scale     = newheight/oldheight
+                if abs(scale) >= threshold then
+                    if trace then
+                        report("index %i, order %i, scaling %.3f",index,order,scale)
+                    end
+                    local l = processuinsert(getlist(p),scale)
+                    setlist(p,l)
+                    setattrlist(l,insert)
+                    local h = getheight(l)
+                    for i=#packlist,1,-1 do
+                        setheight(packlist[i],h)
+                    end
+                end
+            end
+            packlist = { }
+            return tonode(packed)
+        else
+            return packed
+        end
+    end)
 
 end

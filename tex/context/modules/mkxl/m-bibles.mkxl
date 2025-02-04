@@ -175,6 +175,7 @@
   [n=2,
    align={lesswidows,lessclubs,lessbroken,lessorphans}]
 
+\definesubcolumnset[bible][1][1]
 \definesubcolumnset[bible][2][2]
 \definesubcolumnset[bible][3][3]
 \definesubcolumnset[bible][4][4]
@@ -519,6 +520,7 @@
 \BibleSetFile{3}{DutchBible.xml}
 \BibleSetFile{4}{SwedishBible.xml}
 
+\setupsubcolumnset[bible:1][language=english]
 \setupsubcolumnset[bible:2][language=polish]
 \setupsubcolumnset[bible:3][language=dutch]
 \setupsubcolumnset[bible:4][language=swedish]
@@ -528,9 +530,10 @@
 \stoptext
 
 % There is room for some speedup (like in the xml part but this is non critical code
-% used in some production environment. On my 2018 laptop I get:
+% used in some production environment. On my 2017/8 laptop I get:
 %
 % 2024-12-29 : 137.4 136.4 137.4 138.4 136.9 138.2
-%     verses : 144.4 144.6 144/8
+% 2025-10-03 : 136.7 (kind of erratic)
+%     verses : 144.4 144.6 144.8
 
 

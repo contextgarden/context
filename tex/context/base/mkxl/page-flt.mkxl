@@ -124,7 +124,7 @@
   {\clf_doifelsestackedfloats{#1}}
 
 \protected\def\page_floats_collect#1#2#3%
-  {\clf_collectfloat{#1}\dimexpr#2\relax\dimexpr#3\relax}
+  {\clf_collectfloat{#1}{#2}{#3}}
 
 \permanent\def\nofstackedfloatsincategory#1% was singular
   {\clf_nofstackedfloats{#1}}
@@ -170,7 +170,7 @@
           \blank[\rootfloatparameter\c!spacebefore]%
        \egroup
        \scratchdimen\ifconditional\c_floats_force\maxdimen\else\textheight\fi
-       \ifdim\dimexpr\htdp\scratchboxone+\htdp\scratchboxtwo+\htdp\scratchboxthree\relax>\scratchdimen
+       \ifdim{\htdp\scratchboxone+\htdp\scratchboxtwo+\htdp\scratchboxthree}>\scratchdimen
          \setbox\floatbox\box\scratchboxone
          \clf_savespecificfloat{#1}{specification{#2}}\relax
          \setbox\floatbox\box\scratchboxtwo
@@ -331,7 +331,7 @@
 
 \permanent\protected\def\placefloatplaceholder
   {\ifconditional\c_page_floats_room \else
-     \ifdim\dimexpr\pagegoal-\pagetotal-3\lineheight\relax>\zeropoint
+     \ifdim{\pagegoal-\pagetotal-3\lineheight}>\zeropoint
        \startlinecorrection[blank]
        \mhbox{\inframed{\labeltexts{placeholder}{\m_strc_floats_last_caption_tag}}}%
        \stoplinecorrection

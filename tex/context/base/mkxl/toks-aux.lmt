@@ -269,6 +269,7 @@ tex.glyphdisccodes           = getthem(tex.getglyphdiscvalues)
 tex.runstatecodes            = getthem(tex.getrunstatevalues)
 tex.mvloptioncodes           = getthem(tex.getmvloptionvalues,"mvloptioncode")
 tex.balancecallbackcodes     = getthem(tex.getbalancecallbackvalues)
+tex.badnessmodecodes         = getthem(tex.getbadnessmodevalues,"badnessmodecode")
 
 local linebreakstatecodes    = getthem(tex.getlinebreakstatevalues)
 tex.linebreakstatecodes      = linebreakstatecodes

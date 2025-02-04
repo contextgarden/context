@@ -3174,7 +3174,7 @@ function readers.expand(data)
             local wd = d.width
             if d.class == "mark" then
                 if trace_markwidth and wd ~= 0 then
-                    report_markwidth("mark %a with width %b found in %a",d.name or "<noname>",wd,basename)
+                    report_markwidth("mark %a with width %p found in %a",d.name or "<noname>",wd,basename)
                 end
                 d.width = 0
             elseif not wd then

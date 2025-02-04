@@ -91,12 +91,12 @@ the main additions are:
 
 \startitemize[packed]
 \startitem
-    There is an integrated \PDF\ backend that also supports for instance hyperlinks and
-    various annotations.
+    There is an integrated \PDF\ backend that also supports for instance
+    hyperlinks and various annotations.
 \stopitem
 \startitem
-    Expansion of glyphs (aka hz) has been added to the engine and integrated in the
-    par builder. The same is true for character protrusion (in the margin).
+    Expansion of glyphs (aka hz) has been added to the engine and integrated in
+    the par builder. The same is true for character protrusion (in the margin).
 \stopitem
 \startitem
     There is, to some extend, support for inter-character kerning.
@@ -186,6 +186,97 @@ There is of course a lot in \LUATEX\ that can be found also in \LUAMETATEX\ but
 the later one goes way beyond its predecessor. It actually provides what we always
 wanted (as \CONTEXT\ developers) but never showed up. And this brings us to a next
 topic.
+
+\stopsection
+
+\startsection[title=Reflections]
+
+The previous section, derived from the \LUATEX\ manual, might suggest that
+\LUATEX\ and therefore \LUAMETATEX\ provides most of what \PDFTEX, \ETEX, \XETEX\
+and \OMEGA\ provide but here I must disappoint the reader. So in addition to or
+variation on the above here are some reflections.
+
+We were quite involved in the early days of \PDFTEX\ development, so some
+features of that program we kept in \LUATEX, like expansion, protrusion, basic
+\PDF\ features like annotations, destinations, outlines and literals,
+transformations, image inclusion, plus a few handy extensions like \type
+{\vadjust pre}, \type {\insertht} and \type {\quitvmode} that were introduced for
+\CONTEXT, as well as positioning that when brought into \PDFTEX\ made that we no
+longer needed the indirect method using specials that we used (first with a post
+processing script filtering specials and providing positional information, later
+that became a the \type {dvipos} program). Experimental features (at that time
+introduced for \CONTEXT) like snapping lines could make sense but were easier to
+handle in \LUA\ so even those were dropped. We never used the features that were
+introduced for other macro packages, like color stacks and (un)escaping because
+we already did that otherwise. We also didn't want to burden the evolving
+\LUATEX\ engine with the other kerning features because they lacked control
+anyway.
+
+As we started in 2005 (with a first release in 2006) the \PDFTEX\ of that time is
+of course not the same as of today. I'm not sure what the last version is that
+\CONTEXT\ \MKII\ is targeting at because the version numbering changed a bit (at
+some point versions like \type {14e} became \type {140.XX}, so it might be
+around\type {140.17} or so). It might even be that recent versions break \MKII\
+without us noticing. For \LUATEX\ we basically only took what we needed for
+\CONTEXT\ at that time and assumed that \LUA\ could fill in the gaps. Because
+\CONTEXT\ didn't really use much of the \LUATEX\ backend in the end what we kept
+from \PDFTEX\ in \LUAMETATEX\ was a follow up on expansion and protrusion, for
+which that engine set the standard. If it wasn't for \PDFTEX\ the \TEX\ community
+would not be where it was now.
+
+For as much as they make sense \ETEX\ extensions are mostly there but that
+project was basically stopped after the first major release. In fact because
+\PDFTEX\ has these extensions, we never implicitly had to include \ETEX. When we
+started with \LUATEX\ we actually kept in mind the ideas we had at that time
+because before we started with \LUATEX\ we already had plans for extensions
+(flagged \type {eetex}) but those never came to fruit, just as we had some ideas
+about extending \DVI\ which were superseded by the arrival of \PDF. The token
+prepend and append primitives actually were examples of that. The \ETEX\ project
+demonstrated that extending \TEX\ was an option.
+
+Then there is \XETEX. It is supported by \MKII\ but only the font mechanism was
+extended to handle \OPENTYPE\ fonts. For a while \LUATEX\ has some compatible
+math character definition primitives but none of its features. We can assume that
+its internals are quite different when it comes to fonts from \LUATEX\ because
+\LUATEX\ basically provides support for traditional fonts and delegates
+everything \OPENTYPE\ to \LUA. In \LUATEX\ we used font loader code from
+\FONTFORGE\ and some backend code from \DVIPDFMX, although \CONTEXT\ eventually
+did all loading in \LUA .But anyway this program demonstrated that a \UNICODE\
+engine supporting publicly available (fancy) fonts was possible by adapting \TEX\
+so \XETEX\ introduced \TEX ies to the at that point still evolving world of
+\OPENTYPE.
+
+In \OMEGA\ there were input translation mechanisms that some \CONTEXT\ users used
+but that I never looked into myself. These are of course not present in \LUATEX\
+because we can use \LUA\ for input processing. In the end a bit of the
+directionality is all that we kept, most noticeably the initial \type {parnode}
+and \type {dirnode} but we made them first class nodes instead of whatsits and in
+\LUAMETATEX\ the first one serves different purposes. It got us started with
+directions.
+
+Over the last decades other engines showed up, most noticeably those for e.g.
+Japanese but I never looked into these. I'm not sure if \LUATEX\ can do the same
+with help from \LUA, but \LUAMETATEX\ has some more features so maybe it can.
+These engines serve a specific (language and script audience) but if Japanese
+\CONTEXT\ user need something more than we provide they can ask.
+
+In the end the extensions in \LUAMETATEX\ come from our own demands combined with
+trying to be complete but of course I might have missed something. It also means
+that flaws in the design are just mine (or ours in the case of \LUATEX). Of
+course quite some are common sense additions, often based what we need and what
+makes macro programming easier, but if users depend on some feature present in
+the other engines that cannot be handled by \LUA, they might ask for something
+similar but then we need details and examples and not some reference to a manual
+or macros that we are unaware of, have never seen, never used or haven't catched
+up with.
+
+Of course \LUAMETATEX\ has plenty of what \LUATEX\ has and the core of \LUATEX\
+is pretty much original \TEX. However, in \LUAMETATEX\ nearly all mechanism have
+been extended, optimized, and in the process made a bit more \CCODE-ish. The
+original documentation describes what happens, the principles behind \TEX, so to
+say. More details will be added but can also found in numerous documents in the
+\CONTEXT\ distribution, articles and presentations. In the end we owe most to Don
+Knuth, who gave is the (very original) original that we can build upon.
 
 \stopsection
 

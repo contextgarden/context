@@ -131,8 +131,8 @@
      \ifempty\p_mp\else
        \clf_set_extensible_data
           mp    {\p_mp}
-          left  \numexpr\mathradicalparameter\c!left\relax
-          right \numexpr\mathradicalparameter\c!left\relax
+          left  {\mathradicalparameter\c!left}%
+          right {\mathradicalparameter\c!left}%
        \relax
      \fi
      \scratchcounter\zerocount
@@ -143,22 +143,27 @@
      \lettonothing\p_mp
      \scratchcounter\zerocount
    \fi
+   \ifcstok{\mathradicalparameter\c!mathstyle}\s!identity
+     \frozen\Umathradicalvariant\allmathstyles\mathstylevariantidentity
+    %\frozen\Umathdegreevariant \allmathstyles\mathstylevariantidentity
+     \resetmathradicalparameter\c!mathstyle
+   \fi
    \Urooted
-     \s!height\dimexpr\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi\relax
-     \s!depth \dimexpr\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi\relax
-     \s!source\numexpr\namedboxanchor{\mathradicalparameter\c!source}\relax
+     \s!height{\ifcstok{\mathradicalparameter\c!height}\v!none\scaledpoint\else\mathradicalparameter\c!height\fi}
+     \s!depth {\ifcstok{\mathradicalparameter\c!depth }\v!none\scaledpoint\else\mathradicalparameter\c!depth \fi}
+     \s!source{\namedboxanchor{\mathradicalparameter\c!source}}%
      \s!style \normalmathstyle % not needed
      \ifzeronum\scratchcounter\else
-       \s!top\space
+       \s!top\relaxedspace
      \fi
      \usedsymbolcolorparameterattributes{\mathradicalparameter\c!symbolcolor}%
      \ifempty\p_mp\else
-       \s!usecallback\space
+       \s!usecallback\relaxedspace
      \fi
      \ifcstok{\mathradicalparameter\c!rule}\v!no
-       \s!norule\space
+       \s!norule\relaxedspace
      \orelse\ifcstok{\lastnamedcs}\v!bottom
-       \s!reflected\space
+       \s!reflected\relaxedspace
      \fi
      \zerocount \mathradicalparameter\c!left
      \zerocount \mathradicalparameter\c!right
@@ -172,13 +177,23 @@
     % we need to also adapt the strut
     \usemathstyleparameter\mathradicalparameter\c!mathstyle
     \begincsname\??mathwhateverstrut\mathradicalparameter\c!strut\endcsname
-    \scratchdimen\mathradicalparameter\c!leftmargin \relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi
-    \scratchdepth\mathradicalparameter\c!mindepth\relax
+    \scratchdimen{\mathradicalparameter\c!leftmargin}%
+    \ifzeropt\scratchdimen\else
+      \kern\scratchdimen
+    \fi
+    \scratchdepth{\mathradicalparameter\c!mindepth}
     \ifzerodim\scratchdepth\else
-      \srule \s!depth\scratchdepth\s!height\zeropoint\s!width\zeropoint\relax % in addition to strut
+      \srule
+        \s!depth \scratchdepth
+        \s!height\zeropoint
+        \s!width \zeropoint
+      \relax % in addition to strut
     \fi
     #body%
-    \scratchdimen\mathradicalparameter\c!rightmargin\relax\ifzeropt\scratchdimen\else\kern\scratchdimen\fi}%
+    \scratchdimen{\mathradicalparameter\c!rightmargin}%
+    \ifzeropt\scratchdimen\else
+      \kern\scratchdimen
+    \fi}%
    \endgroup}
 
 \def\m_math_no_degree{{}}
@@ -256,7 +271,7 @@
 
 \defcsname\??mathornamentalternative\v!mp\endcsname#body% we could use dowithnextbox
   {\begingroup
-   \scratchoffset\mathornamentparameter\c!mpoffset
+   \scratchoffset{\mathornamentparameter\c!mpoffset}%
    \setbox\nextbox\mathstylehbox{#body}%
    \d_overlay_width    \wd\nextbox
    \d_overlay_height   \ht\nextbox

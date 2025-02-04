@@ -52,15 +52,15 @@
      \global\canvaswidth\printpaperwidth
    \orelse\ifx\currentinteractionscreenwidth\v!fit
      \donefalse
-     \global\canvaswidth\dimexpr
+     \global\canvaswidth{%
        \leftcombitotal
-     + \makeupwidth
-     + \rightcombitotal
-     + 2\dimexpr
-          \interactionscreenparameter\c!backspace
-        + \interactionscreenparameter\c!horoffset
-        \relax
-     \relax
+      +\makeupwidth
+      +\rightcombitotal
+      +2*(%
+          (\interactionscreenparameter\c!backspace)%
+        + (\interactionscreenparameter\c!horoffset)%
+        )%
+     }%
    \orelse\ifx\currentinteractionscreenwidth\v!tight
      \donefalse
      \ifdim\backspace>\canvaswidth
@@ -68,14 +68,14 @@
          \global\advanceby\canvasbackoffset -\canvaswidth
        \fi
      \fi
-     \global\advanceby\canvaswidth\dimexpr
+     \global\advanceby\canvaswidth{%
        \makeupwidth
-     + \rightcombitotal
-     + 2\dimexpr
-          \interactionscreenparameter\c!backspace
-        + \interactionscreenparameter\c!horoffset
-        \relax
-     \relax
+      +\rightcombitotal
+      +2*(%
+          (\interactionscreenparameter\c!backspace)%
+         +(\interactionscreenparameter\c!horoffset)%
+        )%
+     }%
    \else
      \donefalse
      \global\canvaswidth\currentinteractionscreenwidth
@@ -84,34 +84,34 @@
      \global\canvasheight\printpaperheight
    \orelse\ifx\currentinteractionscreenheight\v!fit
      \donefalse
-     \global\canvasheight\dimexpr
+     \global\canvasheight{%
        \topheight
-     + \topdistance
-     + \makeupheight
-     + \bottomdistance
-     + \bottomheight
-     + 2\dimexpr
-          \interactionscreenparameter\c!topspace
-        + \interactionscreenparameter\c!veroffset
-        \relax
-     \relax
+      +\topdistance
+      +\makeupheight
+      +\bottomdistance
+      +\bottomheight
+      +2*(%
+         (\interactionscreenparameter\c!topspace)%
+        +(\interactionscreenparameter\c!veroffset)%
+        )%
+     }%
    \orelse\ifx\currentinteractionscreenheight\v!tight
      \donefalse
-     \global\canvasheight\dimexpr\topheight+\topdistance\relax
+     \global\canvasheight{\topheight+\topdistance}%
      \ifdim\topspace>\canvasheight
        \ifdim\topspace>\zeropoint\relax
          \global\advanceby\canvastopoffset -\canvasheight
        \fi
      \fi
-     \global\advanceby\canvasheight\dimexpr
+     \global\advanceby\canvasheight{%
        \makeupheight
-     + \bottomdistance
-     + \bottomheight
-     + 2\dimexpr
-          \interactionscreenparameter\c!topspace
-        + \interactionscreenparameter\c!veroffset
-        \relax
-     \relax
+      +\bottomdistance
+      +\bottomheight
+      +2*(%
+         (\interactionscreenparameter\c!topspace)%
+        +(\interactionscreenparameter\c!veroffset)%
+        )%
+     }%
    \else
      \donefalse
      \global\canvasheight\currentinteractionscreenheight
@@ -149,12 +149,12 @@
    \edef\p_cropoffset{\layoutparameter\c!cropoffset}%
    \ifx\p_cropoffset\v!auto
      \ifconditional\c_page_layouts_location_is_middle
-       \scratchheight\dimexpr(\printpaperheight-\paperheight)/2\relax
-       \scratchwidth \dimexpr(\printpaperwidth -\paperwidth )/2\relax
-       \layoutcropoffset\ifdim\scratchheight>\scratchwidth\scratchheight\else\scratchwidth\fi
-       \layouttrimoffset \layoutparameter\c!trimoffset
-       \layoutbleedoffset\layoutparameter\c!bleedoffset
-       \layoutartoffset  \layoutparameter\c!artoffset
+       \scratchheight{(\printpaperheight-\paperheight)/2}%
+       \scratchwidth {(\printpaperwidth -\paperwidth )/2}%
+       \layoutcropoffset \ifdim\scratchheight>\scratchwidth\scratchheight\else\scratchwidth\fi
+       \layouttrimoffset {\layoutparameter\c!trimoffset}%
+       \layoutbleedoffset{\layoutparameter\c!bleedoffset}%
+       \layoutartoffset  {\layoutparameter\c!artoffset}%
      \else
        \writestatus\m!system{auto crop etc only supported when location=middle}%
        \layoutcropoffset \zeropoint
@@ -163,10 +163,10 @@
        \layoutartoffset  \zeropoint
      \fi
    \else
-     \layoutcropoffset \layoutparameter\c!cropoffset
-     \layouttrimoffset \layoutparameter\c!trimoffset
-     \layoutbleedoffset\layoutparameter\c!bleedoffset
-     \layoutartoffset  \layoutparameter\c!artoffset
+     \layoutcropoffset {\layoutparameter\c!cropoffset}%
+     \layouttrimoffset {\layoutparameter\c!trimoffset}%
+     \layoutbleedoffset{\layoutparameter\c!bleedoffset}%
+     \layoutartoffset  {\layoutparameter\c!artoffset}%
    \fi
    \relax
 \to \everysetuplayout
@@ -203,9 +203,9 @@
 
 \def\scrn_canvas_synchronize_common {
     mode        {\interactionscreenparameter\c!option}%
-    singlesided \ifsinglesided true\else false\fi\space
-    doublesided \ifdoublesided true\else false\fi\space
-    copies      \numexpr\interactionscreenparameter\c!copies\relax
+    singlesided \ifsinglesided true\else false\fi\relaxedspace
+    doublesided \ifdoublesided true\else false\fi\relaxedspace
+    copies      {\interactionscreenparameter\c!copies}%
     print       {\interactionscreenparameter\c!print}%
 }
 
@@ -222,8 +222,8 @@
 
 \def\scrn_canvas_synchronize_set#width#height%
   {\clf_setupcanvas
-     paperwidth  \dimexpr#width\relax
-     paperheight \dimexpr#height\relax
+     paperwidth  {#width}%
+     paperheight {#height}%
    \relax}
 
 \let\scrn_canvas_synchronize_reset\scrn_canvas_synchronize_only
@@ -307,7 +307,7 @@
    \edef\currentinteractionscreendelay{\interactionscreenparameter\c!delay}%
    \clf_setpagetransition
       n     {\scrn_transitions_list}%
-      delay \ifx\currentinteractionscreendelay\v!none \zerocount\else\currentinteractionscreendelay\fi
+      delay {\ifx\currentinteractionscreendelay\v!none \zerocount\else\currentinteractionscreendelay\fi}%
    \relax
    \endgroup}
 

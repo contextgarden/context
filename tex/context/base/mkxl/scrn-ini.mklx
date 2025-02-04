@@ -174,29 +174,29 @@
 %      \colo_helpers_activate{#2\c!color}%
 %    \fi}
 
-\setfalse\c_scrn_interaction_no_style
-\setfalse\c_scrn_interaction_no_color
-\setfalse\c_scrn_interaction_no_contrastcolor
+\newconditional\c_scrn_interaction_no_style
+\newconditional\c_scrn_interaction_no_color
+\newconditional\c_scrn_interaction_no_contrastcolor
 
 \permanent\protected\def\resetinteractionstyleandcolor
-  {\settrue\c_scrn_interaction_no_style
-   \settrue\c_scrn_interaction_no_color
-   \settrue\c_scrn_interaction_no_contrastcolor}
+  {\c_scrn_interaction_no_style\conditionaltrue
+   \c_scrn_interaction_no_color\conditionaltrue
+   \c_scrn_interaction_no_contrastcolor\conditionaltrue}
 
 \permanent\protected\def\resetinteractionstyle
-  {\settrue\c_scrn_interaction_no_style}
+  {\c_scrn_interaction_no_style\conditionaltrue}
 
 \permanent\protected\def\resetinteractioncolor
-  {\settrue\c_scrn_interaction_no_color
-   \settrue\c_scrn_interaction_no_contrastcolor}
+  {\c_scrn_interaction_no_color\conditionaltrue
+   \c_scrn_interaction_no_contrastcolor\conditionaltrue}
 
 \permanent\protected\def\resetinteractioncontrastcolor
-  {\settrue\c_scrn_interaction_no_contrastcolor}
+  {\c_scrn_interaction_no_contrastcolor\conditionaltrue}
 
 \permanent\protected\def\restoreinteractionstyleandcolor
-  {\setfalse\c_scrn_interaction_no_style
-   \setfalse\c_scrn_interaction_no_color
-   \setfalse\c_scrn_interaction_no_contrastcolor}
+  {\c_scrn_interaction_no_style\conditionalfalse
+   \c_scrn_interaction_no_color\conditionalfalse
+   \c_scrn_interaction_no_contrastcolor\conditionalfalse}
 
 \appendtoks
     \iflocation

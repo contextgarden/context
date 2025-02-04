@@ -51,24 +51,20 @@
      {set vsize one}
      {insert heights=\the\insertheights,
       total insertion height=\the\totalinsertionheight,
-      delta=\the\dimexpr\insertheights-\totalinsertionheight}%
+      delta=\todimension{\insertheights-\totalinsertionheight}}%
    \page_one_command_set_vsize_new}
 
 \def\page_one_command_set_vsize_old
   {\settotalinsertionheight
-   \pagegoal\dimexpr
-      \vsize
-     -\totalinsertionheight
-   \relax}
+   \pagegoal{\vsize-\totalinsertionheight}}
 
 \def\page_one_command_set_vsize_new
-  {\pagegoal\dimexpr
+  {\pagegoal{%
       \vsize
      -\d_page_floats_inserted_top
      -\d_page_floats_inserted_bottom
      -\insertheights
-   \relax
-   }% no: \insertheights\zeropoint}
+   }}
 
 \protected\def\page_one_command_set_vsize
   {\ifgridsnapping
@@ -174,7 +170,7 @@
 \newinteger\c_page_one_stretch % we use marked pages which actually slow down a little
 
 \def\page_one_check_stretch_contents
-  {\ifdim\dimexpr\textheight-\ht\b_page_one_contents\relax<\c_page_one_stretch\lineheight
+  {\ifdim{\textheight-\ht\b_page_one_contents}<\c_page_one_stretch\lineheight
      \setbox\b_page_one_contents\vpack\bgroup
        % no need to speed up low level
        \scale[\c!height=\textheight,\c!width=\textwidth]{\box\b_page_one_contents}%
@@ -210,14 +206,14 @@
       %
       \ifgridsnapping
         \unskip % new per 2019-06-18, otherwise weird bottom floats
-        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern{\openstrutdepth-\d_page_one_natural_depth}%
         \prevdepth\openstrutdepth
         \page_otr_command_flush_bottom_insertions
         \vfil
       \orelse\ifcase\bottomraggednessmode
         % ragged (default)
         \unskip % new per 2019-06-18, otherwise weird bottom floats
-        \vkern\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+        \vkern{\openstrutdepth-\d_page_one_natural_depth}%
         \prevdepth\openstrutdepth
         % these have whitespace before but we can have some more options
         % like a \vfill or so
@@ -229,8 +225,8 @@
       \or
         % baseline
         \unskip % new per 2019-06-18, otherwise weird bottom floats
-        \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
-      % \srule depth \dimexpr\maxdepth-\d_page_one_natural_depth\relax
+        \vkern{\maxdepth-\d_page_one_natural_depth}%
+      % \srule depth {\maxdepth-\d_page_one_natural_depth}%
         \page_otr_command_flush_bottom_insertions
       \or
         % depth
@@ -248,7 +244,7 @@
        \else
          \noflines\layoutlines
        \fi
-       \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
+       \scratchoffset{\numexpr\noflines-\plusone\relax\lineheight+\topskip}%
      \else
        \scratchoffset\ht\b_page_one_contents
      \fi
@@ -298,11 +294,11 @@
      \c_page_one_top_of_insert\conditionalfalse
    \fi
    \s_page_one_between_top_insert\ifdim\d_strc_floats_top>\d_strc_floats_bottom\d_strc_floats_top\else\d_strc_floats_bottom\fi\relax
-   \global\advanceby\d_page_floats_inserted_top\dimexpr\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert\relax}
+   \global\advanceby\d_page_floats_inserted_top{\ht\floatbox+\dp\floatbox+\s_page_one_between_top_insert}}
 
 \def\page_one_insert_top_float % maybe remember last beforeskip
   {\floatingpenalty\zerocount
-   \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
+   \insert\namedinsertionnumber\s!topfloat\bgroup
      \forgetall
      \ifconditional\c_page_one_top_of_insert
        \ifconditional\c_page_one_correct_top_insert
@@ -334,7 +330,7 @@
      \ifnum\rootfloatparameter\c!nbottom=\zerocount % \ifnum\c_page_floats_n_of_bottom=\zerocount
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
-           \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
+           \ifdim{\lineheight*(\rootfloatparameter\c!nlines)+\totaltopinserted}>\textheight
              \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
              \page_otr_fill_and_eject_page % was tripple: vfilll
            \fi
@@ -380,10 +376,10 @@
 \def\page_one_command_set_bottom_insertions_indeed
   {\ifnum\noffloatinserts<\c_page_floats_n_of_bottom\relax
      \page_floats_get
-     \global\advanceby\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+     \global\advanceby\d_page_floats_inserted_bottom{\ht\floatbox+\dp\floatbox+\d_strc_floats_top}%
      \ifdim\d_page_floats_inserted_bottom<\pagegoal\relax
        \floatingpenalty\zerocount
-       \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+       \insert\namedinsertionnumber\s!bottomfloat\bgroup
          \forgetall
          \blank[\rootfloatparameter\c!spacebefore]%
          \page_otr_command_flush_float_box
@@ -408,13 +404,13 @@
    \page_one_command_set_bottom_insertions_indeed}
 
 % \protected\def\page_one_command_flush_top_insertions
-%   {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
+%   {\ifzeropt\insertheight\namedinsertionnumber\s!topfloat\else
 %      \page_one_command_flush_top_insertions_indeed % less tracing
 %    \fi
 %    \global\d_page_floats_inserted_top\zeropoint}
 
 \protected\def\page_one_command_flush_top_insertions
-  {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
+  {\ifzeropt\insertheight\namedinsertionnumber\s!topfloat\else
      \page_one_command_flush_top_insertions_indeed % less tracing
      \ifcase\bottomraggednessmode\or\else
        % will be an option because of stretch size effect when we limit
@@ -427,7 +423,7 @@
 
 \def\page_one_command_flush_top_insertions_indeed
   {\ifgridsnapping
-     \page_inserts_get_boxed\namedinsertionnumber\s!topfloat
+     \insertbox\namedinsertionnumber\s!topfloat
      \vkern-\topskip
      \vkern\strutheight % [xx] new: see icare topbleed
    \else
@@ -438,11 +434,11 @@
        \vskip-\topskip % skip !
        \vkern\strutheight
      \fi
-     \page_inserts_get_unboxed\namedinsertionnumber\s!topfloat
+     \insertunbox\namedinsertionnumber\s!topfloat
    \fi}
 
 \protected\def\page_one_command_flush_bottom_insertions
-  {\ifzeropt\page_inserts_get_height\namedinsertionnumber\s!bottomfloat\else
+  {\ifzeropt\insertheight\namedinsertionnumber\s!bottomfloat\else
      \page_one_command_flush_bottom_insertions_indeed
    \fi
    \global\d_page_floats_inserted_bottom\zeropoint
@@ -451,11 +447,11 @@
 \def\page_one_command_flush_bottom_insertions_indeed
   {\ifgridsnapping
    % \rootfloatparameter\c!bottombefore
-     \snaptogrid\hbox{\page_inserts_get_boxed\namedinsertionnumber\s!bottomfloat}%
+     \snaptogrid\hbox{\insertbox\namedinsertionnumber\s!bottomfloat}%
    % \rootfloatparameter\c!bottomafter
    \else
      \rootfloatparameter\c!bottombefore
-     \page_inserts_get_unboxed\namedinsertionnumber\s!bottomfloat
+     \insertunbox\namedinsertionnumber\s!bottomfloat
      \rootfloatparameter\c!bottomafter
    \fi}
 
@@ -538,19 +534,19 @@
    \else
      % new per 31/5/2004, should be an option, only one column mode
      \begingroup
-     \scratchdimen\dimexpr\pagetotal+\lineheight\relax
+     \scratchdimen{\pagetotal+\lineheight}%
      \ifdim\scratchdimen>\pagegoal
        \goodbreak % hack ?
      \fi
      % should be an option
      \endgroup
-     \scratchdimenone\dimexpr
+     \scratchdimenone{%
         \pagetotal
        +\floatheight
        +\d_strc_floats_top
        +\d_strc_floats_overflow
        -\pageshrink
-     \relax
+     }%
      \scratchdimentwo\pagegoal
      \relax % needed
      \ifcase\c_page_one_float_method
@@ -759,7 +755,7 @@
 \protected\def\page_one_command_set_always_insertions_bottom_indeed
   {\page_floats_flush\s!bottom\plusone
    \floatingpenalty\zerocount
-   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+   \insert\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall
      \blank[\rootfloatparameter\c!spacebefore]%
      \page_otr_command_flush_float_box
@@ -774,7 +770,7 @@
 \protected\def\page_one_command_set_always_insertions_top_indeed
   {\page_floats_flush\s!top\plusone
    \floatingpenalty\zerocount
-   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+   \insert\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall
      \blank[\rootfloatparameter\c!spacebefore]%
      \page_otr_command_flush_float_box
@@ -811,9 +807,9 @@
    \page_floats_report_total}
 
 \def\page_one_place_float_bottom_indeed
-  {\global\advanceby\d_page_floats_inserted_bottom\dimexpr\ht\floatbox+\dp\floatbox+\d_strc_floats_top\relax
+  {\global\advanceby\d_page_floats_inserted_bottom{\ht\floatbox+\dp\floatbox+\d_strc_floats_top}%
    \floatingpenalty\zerocount
-   \page_inserts_inject\namedinsertionnumber\s!bottomfloat\bgroup
+   \insert\namedinsertionnumber\s!bottomfloat\bgroup
      \forgetall
      \blank[\rootfloatparameter\c!spacebefore]%
      \page_otr_command_flush_float_box

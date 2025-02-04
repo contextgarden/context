@@ -130,9 +130,9 @@
   {\setbox\b_pack_objects\hpack{\box#1}}
 
 \def\pack_objects_package_yes#1%
-  {\d_pack_objects_width \dimexpr\wd#1+2\d_pack_objects_offset\relax
-   \d_pack_objects_height\dimexpr\ht#1+ \d_pack_objects_offset\relax
-   \d_pack_objects_depth \dimexpr\dp#1+ \d_pack_objects_offset\relax
+  {\d_pack_objects_width {\wd#1+2\d_pack_objects_offset}%
+   \d_pack_objects_height{\ht#1+ \d_pack_objects_offset}%
+   \d_pack_objects_depth {\dp#1+ \d_pack_objects_offset}%
    \setbox\b_pack_objects\hpack{\hskip\d_pack_objects_offset\box#1}%
    \wd\b_pack_objects\d_pack_objects_width
    \ht\b_pack_objects\d_pack_objects_height

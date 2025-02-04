@@ -22,7 +22,8 @@
 %setnewconstant\align_callback_showpreamble  \plusone
 \setnewconstant\align_callback_aligncharacter\plusone
 \setnewconstant\align_callback_mathalign     \plustwo
-\setnewconstant\align_callback_mathmatrix    \plusthree
+\setnewconstant\align_callback_mathmatrix    \plusfour
+\setnewconstant\align_callback_alignskip     \pluseight
 
 \definesystemattribute[aligncharacter][public]
 
@@ -38,7 +39,7 @@
   {\attribute\aligncharacterattribute\attributeunsetvalue}
 
 \permanent\def\alignmentcharactertrigger
-  {\s!callback
+  {\s!callbacks % plural as we also need to support align_callback_alignskip
      \align_callback_aligncharacter
    \s!attr % not needed, we can trigger on the callback id
      \aligncharacterattribute\plusone}

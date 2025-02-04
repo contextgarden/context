@@ -191,6 +191,8 @@ do
     local dofile       = dofile
     local savedrequire = require
 
+SAVEDREQUIRE = require
+
     function require(name,version)
         if find(name,"%.lua$") or find(name,"%.lmt$") then
             local m = dofile(findfile(name))

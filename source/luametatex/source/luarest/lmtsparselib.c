@@ -16,6 +16,7 @@
 */
 
 # define SPARSE_STACK 8
+# define SPARSE_STEP  8
 # define SPARSE_BYTES 4
 
 typedef struct sa_tree_object {
@@ -41,7 +42,7 @@ static sa_tree_object *sparselib_aux_check_is_sa_object(lua_State *L, int n)
     return NULL;
 }
 
-/* bytes=1|2|4, default=0|* */
+/* bytes=0|1|2|4, default=0|* */
 
 static int sparselib_new(lua_State *L)
 {
@@ -50,6 +51,14 @@ static int sparselib_new(lua_State *L)
     sa_tree_item item = { .int_value = defval };
     sa_tree_object *o = lua_newuserdatauv(L, sizeof(sa_tree_object), 0);
     switch (bytes) {
+        case 0:
+            {
+                int d = defval < 0 ? 0 : (defval > 0xF ? 0xF : defval);
+                for (int i = 0; i <= 7; i++) {
+                    item.uint_value = set_nibble(item.uint_value,i,d);
+                }
+                break;
+            }
         case 1:
             {
                 int d = defval < 0 ? 0 : (defval > 0xFF ? 0xFF : defval);
@@ -72,7 +81,7 @@ static int sparselib_new(lua_State *L)
             bytes = SPARSE_BYTES;
             break;
     }
-    o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, item);
+    o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, SPARSE_STEP, bytes, item);
     o->min = -1;
     o->max = -1;
     luaL_setmetatable(L, SPARSE_METATABLE_INSTANCE);
@@ -306,7 +315,7 @@ static int sparselib_wipe(lua_State *L)
         int bytes = o->tree->bytes;
         sa_tree_item dflt = o->tree->dflt;
         sa_destroy_tree(o->tree);
-        o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, bytes, dflt);
+        o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, SPARSE_STEP, bytes, dflt);
         o->min = -1;
         o->max = -1;
     }

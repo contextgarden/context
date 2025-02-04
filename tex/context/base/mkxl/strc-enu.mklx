@@ -270,17 +270,50 @@
      \strc_enumerations_full_number_nop
    \fi}
 
-\protected\def\strc_enumerations_inject_text_with_space
+% \protected\def\strc_enumerations_inject_text_with_space
+%   {\edef\p_text{\constructionparameter\c!text}%
+%    \ifempty\p_text \else
+%       \p_text
+%       \removeunwantedspaces
+%       \nobreakspace % should be a option
+%    \fi}
+
+%D \starttyping
+%D \defineenumeration
+%D   [theorem]
+%D   [text=\labeltexts{theorem},
+%D    alternative=serried,
+%D    width=fit,
+%D    space=no]
+%D
+%D \setuplabeltext
+%D   [en]
+%D   [theorem={{XYZ },{ PQR}}]
+%D
+%D \starttheorem
+%D     blablabla
+%D \stoptheorem
+%D \stoptyping
+
+\protected\def\strc_enumerations_inject_text_with_space#1%
   {\edef\p_text{\constructionparameter\c!text}%
-   \ifempty\p_text \else
-      \p_text
-      \removeunwantedspaces
-      \nobreakspace % should be a option
+   \ifempty\p_text
+      #1%
+   \orelse\ifcstok{\constructionparameter\c!space}\v!no
+     \p_text{#1}%
+   \else
+     \p_text{\removeunwantedspaces\nobreakspace#1}%
    \fi}
+
+% \protected\def\strc_enumerations_inject_text_with_space#1%
+%   {\edef\p_text{\constructionparameter\c!text}%
+%    \ifempty\p_text \else
+%       \p_text{\removeunwantedspaces\nobreakspace#1}% space should be a option
+%    \fi}
 
 \protected\def\strc_enumerations_inject_extra_text
   {\ifconditional\c_strc_constructions_title_state
-     \clf_doifelselisthastitle{\currentconstructionmain}\numexpr\currentconstructionlistentry\relax
+     \clf_doifelselisthastitle{\currentconstructionmain}{\currentconstructionlistentry}%
        \strc_enumerations_inject_extra_text_indeed
        \donothing
    \fi}
@@ -293,7 +326,7 @@
 
 \protected\def\strc_enumerations_inject_extra_text_indeed
   {\begingroup
-   \hskip\constructionparameter\c!titledistance % we listen to the headstyle
+   \hskip{\constructionparameter\c!titledistance}% we listen to the headstyle
    \useconstructionstyleandcolor\c!titlestyle\c!titlecolor
    \constructionparameter\c!titlecommand
      {\constructionparameter\c!titleleft

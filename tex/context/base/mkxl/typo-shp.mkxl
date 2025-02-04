@@ -106,19 +106,20 @@
       \pushparagraphtweak{\shapedparagraphparameter\c!method}\relax}}
 
 \def\spac_shapes_text
-  {\getnoflines{\dimexpr\htdp\b_spac_shapes+\shapedparagraphparameter\c!voffset}%
+  {\getnoflines{\dimexpr\htdp\b_spac_shapes+(\shapedparagraphparameter\c!voffset)}%
    \normalexpanded
      {\endgroup
       \clf_setparagraphshape
-          left  \the\dimexpr
-                    \wd\b_spac_shapes+\shapedparagraphparameter\c!distance
-                   +\shapedparagraphparameter\c!hoffset
-                \relax
+          left  \todimension{% expanded
+                    \wd\b_spac_shapes
+                   +(\shapedparagraphparameter\c!distance)%
+                   +(\shapedparagraphparameter\c!hoffset)%
+                }%
           right \zeropoint
-          copy  \the\numexpr
+          copy  \tointeger{% expanded
                    \noflines
-                  +\shapedparagraphparameter\c!lines
-                \relax
+                  +(\shapedparagraphparameter\c!lines)%
+                }%
           left  \zeropoint
           right \zeropoint
         % inspect
@@ -127,14 +128,15 @@
       \pushparagraphtweak{shift}%
       \dontleavehmode
       \vtop
-         xoffset \the\dimexpr
-          -\shapedparagraphparameter\c!distance
+         \s!xoffset \todimension{% expanded
+          \zeropoint % otherwise error
+          -(\shapedparagraphparameter\c!distance)%
           -\wd\b_spac_shapes
-         \relax
-         yoffset \the\dimexpr
-           \shapedparagraphparameter\c!voffset
+         }%
+         \s!yoffset \todimension{% expanded
+           (\shapedparagraphparameter\c!voffset)%
           +\strutht
-         \relax
+         }%
          {\smashbox\b_spac_shapes
           \box\b_spac_shapes}}}
 
@@ -142,9 +144,9 @@
   {\normalexpanded
      {\endgroup
       \clf_setparagraphshape
-          left  \shapedparagraphparameter\c!width
+          left  \todimension{\shapedparagraphparameter\c!width}% expanded
           right \zeropoint
-          copy  \shapedparagraphparameter\c!lines
+          copy  \tointeger{\shapedparagraphparameter\c!lines}% expanded
           left  \zeropoint
           right \zeropoint
         % inspect
@@ -164,7 +166,7 @@
      \egroup
    \fi
    \ifvoid\b_spac_shapes
-     \ifnum\shapedparagraphparameter\c!lines>\zerocount
+     \ifnum{\shapedparagraphparameter\c!lines}>\zerocount
        \spac_shapes_lines
      \else
        \spac_shapes_list
@@ -198,32 +200,6 @@
    \egroup
    \endgroup}
 
-% \permanent\protected\def\getshapetext
-%   {\vbox\bgroup
-%    \forgetall
-%    \dontcomplain
-%    \global\advanceby\shapetextindex\plusone
-%    \scratchcounter\getshapeparameter{lines}\relax
-%    \ifnum\scratchcounter>\zerocount
-%      \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
-%      \scratchheight \getshapeparameter{height}\scaledpoint\relax
-%      \setbox\scratchbox\vpack to \scratchheight
-%        {\splittopskip\strutheight
-%         \vskip\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
-%         \ifcase\numexpr\getshapeparameter{first}\relax\else
-%           \vskip\lineheight
-%         \fi
-%         \hskip\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
-%         \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
-%      \wd\scratchbox\scratchwidth
-%      \ht\scratchbox\scratchheight
-%      \dp\scratchbox\zeropoint
-%      \box\scratchbox
-%    \else
-%       % what now
-%    \fi
-%    \egroup}
-
 \permanent\protected\def\getshapetext
   {\vbox\bgroup
    \forgetall
@@ -231,20 +207,20 @@
    \global\advanceby\shapetextindex\plusone
    \scratchcounter\getshapeparameter{lines}\relax
    \ifnum\scratchcounter>\zerocount
-     \scratchwidth  \getshapeparameter{width}\scaledpoint\relax
-     \scratchheight \getshapeparameter{height}\scaledpoint\relax
-     \scratchhoffset\dimexpr\getshapeparameter{hoffset}\scaledpoint\relax
-     \scratchvoffset\dimexpr\getshapeparameter{voffset}\scaledpoint\relax
+     \scratchwidth  {\getshapeparameter{width}\scaledpoint}%
+     \scratchheight {\getshapeparameter{height}\scaledpoint}%
+     \scratchhoffset{\getshapeparameter{hoffset}\scaledpoint}%
+     \scratchvoffset{\getshapeparameter{voffset}\scaledpoint}%
      \setbox\scratchbox\vpack to \scratchheight
        {\splittopskip\strutheight
         \vskip\scratchvoffset
-        \ifcase\numexpr\getshapeparameter{first}\relax\else
+        \ifcase{\getshapeparameter{first}}\else
           \vskip\lineheight
         \fi
         \hskip\scratchhoffset
         \hpack{\vsplit\shapetextbox to \scratchcounter\lineheight}}%
-     \wd\scratchbox\dimexpr\scratchwidth +\scratchhoffset\relax
-     \ht\scratchbox\dimexpr\scratchheight+\scratchvoffset\relax
+     \wd\scratchbox{\scratchwidth +\scratchhoffset}%
+     \ht\scratchbox{\scratchheight+\scratchvoffset}%
      \dp\scratchbox\strutdp % zeropoint
      \box\scratchbox
    \else

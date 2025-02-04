@@ -1,4 +1,4 @@
-.TH "imgtopdf" "1" "01-01-2024" "version 1.1.2" "ImgToPdf"
+.TH "imgtopdf" "1" "01-01-2025" "version 1.1.2" "ImgToPdf"
 .SH NAME
  imgtopdf - ImgToPdf
 .SH SYNOPSIS

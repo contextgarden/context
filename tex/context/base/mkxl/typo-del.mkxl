@@ -72,13 +72,13 @@
 \pushoverloadmode
 
 \permanent\protected\def\compoundhyphenfont
-  {\char\compoundhyphencode}                              % tuned for font
+  {\char\compoundhyphencode}                 % tuned for font
 
 \permanent\protected\def\compoundhyphenfake
   {\char\hyphenasciicode
-  %\kern-.10775\emwidth                                   % mkiv (.25\exheight)
-  %\kern-.5\fontcharwd\font\hyphenasciicode               % for a while
-   \kern-\dimexpr\fontcharwd\font\hyphenasciicode/3\relax % okay for most
+  %\kern-.10775\emwidth                      % mkiv (.25\exheight)
+  %\kern-.5\fontcharwd\font\hyphenasciicode  % for a while
+   \kern{-\fontcharwd\font\hyphenasciicode/3}% okay for most
    \char\hyphenasciicode}
 
 \permanent\protected\def\compoundhyphen

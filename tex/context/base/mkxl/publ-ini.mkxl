@@ -477,11 +477,11 @@
 \newconstant\currentbtxauthorcount    %permanent\protected\def\btxsetauthorcount#1{\currentbtxauthorcount#1\relax} % passed directly
 \newconstant\currentbtxauthorstate    \permanent\protected\def\btxsetauthorstate#1{\currentbtxauthorstate#1\relax}
 
-\protected\def\currentbtxfirstnames_indeed{\clf_btxcurrentfirstnames\numexpr\currentbtxauthorindex\relax}
-\protected\def\currentbtxinitials_indeed  {\clf_btxcurrentinitials  \numexpr\currentbtxauthorindex\relax}
-\protected\def\currentbtxjuniors_indeed   {\clf_btxcurrentjuniors   \numexpr\currentbtxauthorindex\relax}
-\protected\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  \numexpr\currentbtxauthorindex\relax}
-\protected\def\currentbtxvons_indeed      {\clf_btxcurrentvons      \numexpr\currentbtxauthorindex\relax}
+\protected\def\currentbtxfirstnames_indeed{\clf_btxcurrentfirstnames{\currentbtxauthorindex}}
+\protected\def\currentbtxinitials_indeed  {\clf_btxcurrentinitials  {\currentbtxauthorindex}}
+\protected\def\currentbtxjuniors_indeed   {\clf_btxcurrentjuniors   {\currentbtxauthorindex}}
+\protected\def\currentbtxsurnames_indeed  {\clf_btxcurrentsurnames  {\currentbtxauthorindex}}
+\protected\def\currentbtxvons_indeed      {\clf_btxcurrentvons      {\currentbtxauthorindex}}
 
 \mutable\lettonothing\currentbtxfirstpage \permanent\protected\def\btxsetfirstpage#1{\def\currentbtxfirstpage{\btx_page_number{#1}}}
 \mutable\lettonothing\currentbtxlastpage  \permanent\protected\def\btxsetlastpage #1{\def\currentbtxlastpage {\btx_page_number{#1}}}

@@ -226,10 +226,10 @@
    \clf_insertfield
      {\currentfieldbody}%
      {%
-       title                {\currentfieldbody}
-       width                \dimexpr\fieldbodyparameter\c!width \relax
-       height               \dimexpr\fieldbodyparameter\c!height\relax
-       depth                \dimexpr\fieldbodyparameter\c!depth \relax
+       title                {\currentfieldbody}%
+       width                {\fieldbodyparameter\c!width }%
+       height               {\fieldbodyparameter\c!height}%
+       depth                {\fieldbodyparameter\c!depth }%
        align                {\fieldbodyparameter\c!align}%
        length               {\fieldbodyparameter\c!n}%
        fontstyle            {\fontstyle}%
@@ -240,11 +240,11 @@
        colorvalue           \c_attr_color
    \ifempty\currentfieldbackgroundcolor \else
        backgroundcolor      {\currentfieldbackgroundcolor}%
-       backgroundcolorvalue \numexpr\currentfieldbackgroundcolorvalue\relax
+       backgroundcolorvalue {\currentfieldbackgroundcolorvalue}%
    \fi
    \ifempty\currentfieldframecolor \else
        framecolor           {\currentfieldframecolor}%
-       framecolorvalue      \numexpr\currentfieldframecolorvalue\relax
+       framecolorvalue      {\currentfieldframecolorvalue}%
    \fi
        layer                {\fieldbodyparameter\c!fieldlayer}%
        option               {\fieldbodyparameter\c!option}%
@@ -588,7 +588,7 @@
          {\fieldtotalframedparameter\c!before
           \copy\b_scrn_field_label
           \fieldtotalframedparameter\c!after}%
-       \hskip\fieldtotalframedparameter\c!distance
+       \hskip{\fieldtotalframedparameter\c!distance}%
        \vbox \ifdim\ht\b_scrn_field_label>\ht\b_scrn_field_content to \ht\b_scrn_field_label \fi
          {\fieldtotalframedparameter\c!before
           \box\b_scrn_field_content
@@ -703,7 +703,7 @@
      \setbox\b_scrn_tooltip_text\hbox
        {\fieldbody[\currenttooltipname:txt]}%
      \setbox\b_scrn_tooltip_text\hbox
-       {\strut\lower\dimexpr.25ex+\ht\b_scrn_tooltip_text\relax\box\b_scrn_tooltip_text}%
+       {\strut\lower{.25\exheight+\ht\b_scrn_tooltip_text}\box\b_scrn_tooltip_text}%
      \edef\p_location{\tooltipparameter\c!location}%
      \ifx\p_location\v!left
        \hsmashed{\hskip\wd\b_scrn_tooltip_anchor\llap{\box\b_scrn_tooltip_text}}%

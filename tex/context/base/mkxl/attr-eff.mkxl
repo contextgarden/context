@@ -37,8 +37,8 @@
 \permanent\protected\def\starteffect[#1]%
   {\clf_seteffect
      alternative   {\namedeffectparameter{#1}\c!alternative}
-     stretch       \numexpr\namedeffectparameter{#1}\c!stretch\relax           % no longer needed
-     rulethickness \dimexpr\namedeffectparameter{#1}\c!rulethickness\relax
+     stretch       {\namedeffectparameter{#1}\c!stretch}% no longer needed
+     rulethickness {\namedeffectparameter{#1}\c!rulethickness}%
    \relax}
 
 \permanent\protected\def\stopeffect % can be special
