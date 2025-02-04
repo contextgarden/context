@@ -321,7 +321,7 @@
 %    \vbox \ifx\p_height\v!fit\else to \p_height \fi \bgroup
    \ifcsname\??combinationmethod\combinationparameter\c!method\endcsname
      \lastnamedcs\else\vbox
-   \fi\ifx\p_height\v!fit\else to \p_height \fi \bgroup
+   \fi\ifx\p_height\v!fit\else to {\p_height} \fi \bgroup
    \enforced\lettonothing\combination % permits \combination{}{} handy for cld
    \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 
@@ -349,13 +349,13 @@
    \multiplyby\c_pack_combinations_y\c_pack_combinations_x
    \tabskip\zeroskip
    \enforced\permanent\protected\edef\combinationwidth % \immutable
-     {\the\dimexpr
+     {\todimension{%
         (\hsize-\numexpr\c_pack_combinations_x-\plusone\relax\dimexpr\combinationparameter\c!distance\relax)/\c_pack_combinations_x
-      \relax}%
+      }}%
    \global\c_pack_combinations_r\zerocount
    \global\c_pack_combinations_c\zerocount
-   \halign \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
- % \halign noskips \ifx\p_width\v!fit\else to \p_width \fi \bgroup % repetitive preamble
+   \halign         \ifx\p_width\v!fit\else to {\p_width} \fi \bgroup % repetitive preamble
+ % \halign noskips \ifx\p_width\v!fit\else to {\p_width} \fi \bgroup % repetitive preamble
    \aligntab
    \m_pack_combinations_leftfiller
    \aligncontent
@@ -493,7 +493,7 @@
   {\aligntab
    \aligntab
    \aligntab
-   \kern\p_distance
+   \kern{\p_distance}%
    \aligntab
    \pack_combinations_pickup}
 
@@ -757,7 +757,7 @@
 
 \newbox      \b_pack_pairedboxes_first
 \newbox      \b_pack_pairedboxes_second
-\newdimension\s_pack_pairedboxes_size
+\newdimension\d_pack_pairedboxes_size
 
 \appendtoks
    \frozen\protected\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%
@@ -840,12 +840,12 @@
 
 \def\pack_pairedboxes_flush_left
   {\box\b_pack_pairedboxes_second
-   \kern\pairedboxparameter\c!distance
+   \kern{\pairedboxparameter\c!distance}%
    \box\b_pack_pairedboxes_first}
 
 \def\pack_pairedboxes_flush_right
   {\box\b_pack_pairedboxes_first
-   \kern\pairedboxparameter\c!distance
+   \kern{\pairedboxparameter\c!distance}%
    \box\b_pack_pairedboxes_second}
 
 \def\pack_pairedboxes_flush_top
@@ -900,8 +900,8 @@
 \defcsname\??pairedboxalign\v!bottom\endcsname{\csname\??pairedboxalign\v!low \endcsname}
 \defcsname\??pairedboxalign   \v!top\endcsname{\csname\??pairedboxalign\v!high\endcsname}
 
-\def\pack_pairedbox_valign#1{\setbox#1\vpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
-\def\pack_pairedbox_halign#1{\setbox#1\hpack to \s_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
+\def\pack_pairedbox_valign#1{\setbox#1\vpack to \d_pack_pairedboxes_size{\pack_pairedboxes_align_t\box#1\pack_pairedboxes_align_b}}
+\def\pack_pairedbox_halign#1{\setbox#1\hpack to \d_pack_pairedboxes_size{\pack_pairedboxes_align_l\box#1\pack_pairedboxes_align_r}}
 
 \def\pack_pairedboxes_before
   {\ifempty\p_location
@@ -931,20 +931,20 @@
    \fi}
 
 \def\pack_pairedboxes_between_horizontal
-  {\scratchdistance\pairedboxparameter\c!distance
-   \scratchwidth\pairedboxparameter\c!maxwidth\relax
+  {\scratchdistance{\pairedboxparameter\c!distance}%
+   \scratchwidth{\pairedboxparameter\c!maxwidth}%
    \setlocalhsize
-   \hsize\dimexpr\availablehsize-\wd\b_pack_pairedboxes_first-\scratchdistance\relax
-   \hsize\pairedboxparameter\c!width\relax % can be \hsize
-   \scratchdimen\dimexpr\wd\b_pack_pairedboxes_first+\scratchdistance\relax
-   \ifdim\dimexpr\hsize+\scratchdimen\relax>\scratchwidth
-     \hsize\dimexpr\scratchwidth-\scratchdimen\relax
+   \hsize{\availablehsize-\wd\b_pack_pairedboxes_first-\scratchdistance}%
+   \hsize{\pairedboxparameter\c!width}% can be \hsize
+   \scratchdimen{\wd\b_pack_pairedboxes_first+\scratchdistance}%
+   \ifdim{\hsize+\scratchdimen}>\scratchwidth
+     \hsize{\scratchwidth-\scratchdimen}%
    \fi}
 
 \def\pack_pairedboxes_between_vertical
-  {\scratchwidth\pairedboxparameter\c!maxwidth\relax
+  {\scratchwidth{\pairedboxparameter\c!maxwidth}%
    \hsize\wd\b_pack_pairedboxes_first
-   \hsize\pairedboxparameter\c!width\relax % can be \hsize
+   \hsize{\pairedboxparameter\c!width}% can be \hsize
    \ifdim\hsize>\scratchwidth\relax
      \hsize\scratchwidth
    \fi}
@@ -965,18 +965,20 @@
 \def\pack_pairedboxes_pack_horizontal
   {\dontleavehmode\hbox\bgroup
      \forgetall
-     \s_pack_pairedboxes_size\ht
+     \d_pack_pairedboxes_size\ht
        \ifdim\ht\b_pack_pairedboxes_first>\ht\b_pack_pairedboxes_second
          \b_pack_pairedboxes_first
        \else
          \b_pack_pairedboxes_second
        \fi
-     \vsize\s_pack_pairedboxes_size
-     \ifdim\s_pack_pairedboxes_size<\pairedboxparameter\c!height\relax % can be \vsize
-       \s_pack_pairedboxes_size\pairedboxparameter\c!height
+     \vsize\d_pack_pairedboxes_size
+     \scratchheight{\pairedboxparameter\c!height}%
+     \ifdim\d_pack_pairedboxes_size<\scratchheight % can be \vsize
+       \d_pack_pairedboxes_size\scratchheight
      \fi
-     \ifdim\s_pack_pairedboxes_size>\pairedboxparameter\c!maxheight\relax
-       \s_pack_pairedboxes_size\pairedboxparameter\c!maxheight
+     \scratchheight{\pairedboxparameter\c!maxheight}%
+     \ifdim\d_pack_pairedboxes_size>\scratchheight
+       \d_pack_pairedboxes_size\scratchheight
      \fi
      \pack_pairedbox_valign\b_pack_pairedboxes_first
      \pack_pairedbox_valign\b_pack_pairedboxes_second
@@ -986,7 +988,7 @@
 \def\pack_pairedboxes_pack_vertical
   {\dontleavehmode\vpack\bgroup
      \forgetall
-     \s_pack_pairedboxes_size\wd
+     \d_pack_pairedboxes_size\wd
        \ifdim\wd\b_pack_pairedboxes_first>\wd\b_pack_pairedboxes_second
          \b_pack_pairedboxes_first
        \else
@@ -994,16 +996,18 @@
        \fi
      \pack_pairedbox_halign\b_pack_pairedboxes_first
      \pack_pairedbox_halign\b_pack_pairedboxes_second
-     \s_pack_pairedboxes_size\ht\b_pack_pairedboxes_second
-     \vsize\s_pack_pairedboxes_size
-     \ifdim\ht\b_pack_pairedboxes_second<\pairedboxparameter\c!height\relax % can be \vsize
-       \s_pack_pairedboxes_size\pairedboxparameter\c!height\relax % \relax needed
+     \d_pack_pairedboxes_size\ht\b_pack_pairedboxes_second
+     \vsize\d_pack_pairedboxes_size
+     \scratchheight{\pairedboxparameter\c!height}%
+     \ifdim\ht\b_pack_pairedboxes_second<\scratchheight % can be \vsize
+       \d_pack_pairedboxes_size\scratchheight
      \fi
-     \ifdim\s_pack_pairedboxes_size>\pairedboxparameter\c!maxheight\relax % todo: totale hoogte
-       \s_pack_pairedboxes_size\pairedboxparameter\c!maxheight\relax % \relax needed
+     \scratchheight{\pairedboxparameter\c!maxheight}%
+     \ifdim\d_pack_pairedboxes_size>\scratchheight
+       \d_pack_pairedboxes_size\scratchheight
      \fi
-     \ifdim\s_pack_pairedboxes_size>\ht\b_pack_pairedboxes_second
-       \setbox\b_pack_pairedboxes_second\vpack to \s_pack_pairedboxes_size
+     \ifdim\d_pack_pairedboxes_size>\ht\b_pack_pairedboxes_second
+       \setbox\b_pack_pairedboxes_second\vpack to \d_pack_pairedboxes_size
          {\pack_pairedboxes_fill_top
           \box\b_pack_pairedboxes_second
           \pack_pairedboxes_fill_bottom}% \kern\zeropoint

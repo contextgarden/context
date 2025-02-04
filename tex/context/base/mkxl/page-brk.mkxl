@@ -239,12 +239,10 @@
 
 \installpagebreakmethod \v!quadruple % not yet ok inside columnsets
   {\ifdoublesided
-   % \ifcase\modulonumber\plusfour\realpageno\else
-     \ifcase\numexpr\realpageno;\plusfour\relax\else
+     \ifcase{\realpageno;\plusfour}\else
        \page_breaks_handle_direct\v!yes
        \localcontrolledrepeating
-        %{\ifcase\modulonumber\plusfour\realpageno\relax
-         {\ifcase\numexpr\realpageno;\plusfour\relax
+         {\ifcase{\realpageno;\plusfour}%
             \quitloop
           \else
             \page_breaks_handle_direct\v!empty
@@ -276,9 +274,9 @@
 
 \installpagebreakmethod{xy}% for Mojca
   {\page_breaks_handle_direct\v!yes
-   \scratchcounterone  \numexpr\rootlayouttargetparameter\c!nx*\rootlayouttargetparameter\c!ny\relax
+   \scratchcounterone  {(\rootlayouttargetparameter\c!nx)*(\rootlayouttargetparameter\c!ny)}%
    \scratchcountertwo  \luaexpr{math.mod(\the\realpageno-1,\the\scratchcounterone)}\relax
-   \scratchcounterthree\numexpr\scratchcounterone-\scratchcountertwo\relax
+   \scratchcounterthree{\scratchcounterone-\scratchcountertwo}%
    \dorecurse\scratchcounterthree{\page_breaks_handle_direct\v!empty}}
 
 % Column breaks.
@@ -364,12 +362,10 @@
    \c!offset=\zeropoint]
 
 \def\page_check_amount
-  {\dimexpr
-      \pagecheckerparameter\c!lines\lineheight
-     +\pagetotal
-     \ifdim\lastskip<\parskip+\parskip\fi
-     +\pagecheckerparameter\c!offset
-   \relax}
+  {(\pagecheckerparameter\c!lines\lineheight)%
+   +\pagetotal
+    \ifdim\lastskip<\parskip+\parskip\fi
+   +(\pagecheckerparameter\c!offset)}
 
 \permanent\tolerant\protected\def\checkpage[#1]#*[#2]%
   {\relax % look ahead prevention
@@ -387,7 +383,7 @@
 \defcsname\??pagecheckermethod 0\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
-       \ifdim\page_check_amount>.99\pagegoal
+       \ifdim{\page_check_amount}>.99\pagegoal
          \pagecheckerparameter\c!before
          \penalty-\plustenthousand
          \pagecheckerparameter\c!after
@@ -404,7 +400,7 @@
 \defcsname\??pagecheckermethod 1\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
-       \ifdim\dimexpr\page_check_amount-\pagegoal\relax>-\lineheight
+       \ifdim{\page_check_amount-\pagegoal}>-\lineheight
          \pagecheckerparameter\c!before
          \penalty-\plustenthousand
          \pagecheckerparameter\c!after
@@ -423,7 +419,7 @@
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
        \getnoflines\pagegoal
-       \ifdim\dimexpr\page_check_amount-\noflines\lineheight\relax>-\lineheight
+       \ifdim{\page_check_amount-\noflines\lineheight}>-\lineheight
          \pagecheckerparameter\c!before
          \penalty-\plustenthousand
          \pagecheckerparameter\c!after
@@ -440,7 +436,7 @@
 \defcsname\??pagecheckermethod 3\endcsname
   {\ifdim\pagegoal<\maxdimen \relax
      \ifdim\pagetotal<\pagegoal \relax
-       \ifdim\dimexpr\page_check_amount-10\scaledpoint\relax>\pagegoal
+       \ifdim{\page_check_amount-10\scaledpoint}>\pagegoal
          \pagecheckerparameter\c!before
          \penalty-\plustenthousand
          \pagecheckerparameter\c!after
@@ -448,7 +444,7 @@
          \pagecheckerparameter\c!inbetween
        \fi
      \orelse\ifdim\pagetotal>\pagegoal
-       \ifdim\dimexpr\pagetotal-\pageshrink\relax>\pagegoal
+       \ifdim{\pagetotal-\pageshrink}>\pagegoal
          \goodbreak
          \pagecheckerparameter\c!inbetween
        \else
@@ -501,7 +497,7 @@
      \letdummyparameter\c!shrink \zeropoint
      \getdummyparameters[#1]%
      \additionalpageskip
-       \dimexpr\dummyparameter\c!height+\lineheight*\dummyparameter\c!lines\relax
+       {(\dummyparameter\c!height)+\lineheight*(\dummyparameter\c!lines)}
        \s!plus \dummyparameter\c!stretch
        \s!minus\dummyparameter\c!shrink
      \relax

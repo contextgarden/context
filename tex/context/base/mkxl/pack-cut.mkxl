@@ -73,15 +73,15 @@
       \unskip}}
 
 \permanent\protected\def\verticalcuts
-  {\vpack to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
+  {\vpack to {\d_pack_cutmarks_height+\d_pack_cutmarks_depth}%
      {\hsize\cutmarklength
       \localcontrolledrepeat\verticalcutmarks{\vrule\s!height\cutmarkrulethickness\s!width\hsize\vfill}%
       \unskip}}
 
 \permanent\protected\def\baselinecuts
   {\ifdim\d_pack_cutmarks_depth>\zeropoint
-     \vpack to \dimexpr\d_pack_cutmarks_height+\d_pack_cutmarks_depth\relax
-       {\hsize\dimexpr\cutmarklength/2\relax
+     \vpack to {\d_pack_cutmarks_height+\d_pack_cutmarks_depth}%
+       {\hsize{\cutmarklength/2}%
         \vskip\zeropoint\s!plus\d_pack_cutmarks_height
         \vrule\s!height\cutmarkrulethickness\s!width\hsize
         \vskip\zeropoint\s!plus\d_pack_cutmarks_depth}%
@@ -93,7 +93,7 @@
         {\hss\infofont\cutmarksymbol\hss}%
       \hss
       \vpack to \cutmarklength
-        {\scratchdimen\dimexpr\cutmarklength/2\relax
+        {\scratchdimen{\cutmarklength/2}%
          \scratchdistance\ifempty\cutmarkhoffset\cutmarkoffset\scratchdimen\else\cutmarkhoffset\fi
          \vss
          \hbox to \d_pack_cutmarks_width
@@ -115,7 +115,7 @@
       \forgetall
       \boxmaxdepth\maxdimen
       \offinterlineskip
-      \scratchdimen\dimexpr\cutmarklength/2\relax
+      \scratchdimen{\cutmarklength/2}%
       \hsize\d_pack_cutmarks_width
       \setbox\scratchbox\vpack
         {\setbox\scratchbox\hpack{\horizontalcuts}%
@@ -145,9 +145,9 @@
       \ifrelax\cutmarksymbol \else
         \setbox\scratchbox\vpack
           {\scratchdistance\ifempty\cutmarkvoffset\cutmarkoffset\scratchdimen\else\cutmarkvoffset\fi
-           \vskip-\dimexpr\scratchdistance+\cutmarklength\relax
+           \vskip{-\scratchdistance-\cutmarklength}%
            \hpack{\cutmarksymbols\cutmarktoptext}%
-           \vskip\dimexpr\scratchdistance+\d_pack_cutmarks_height+\d_pack_cutmarks_depth+\scratchdistance\relax
+           \vskip{\scratchdistance+\d_pack_cutmarks_height+\d_pack_cutmarks_depth+\scratchdistance}%
            \hpack{\cutmarksymbols\cutmarkbottomtext}}%
         \ht\scratchbox\d_pack_cutmarks_height
         \dp\scratchbox\d_pack_cutmarks_depth

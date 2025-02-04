@@ -1144,7 +1144,7 @@ When applied to \type {\foo{1}{2}} the four variants above give us:
 
 Before we had \type {parameterdef} we had this:
 
-\startbuffer[test-5]
+\startbuffer
 \def\foo#1#2%
   {\integerdef\MyIndexOne\parameterindex\plusone % 1
    \integerdef\MyIndexTwo\parameterindex\plustwo % 2
@@ -1156,7 +1156,7 @@ Before we had \type {parameterdef} we had this:
    <\expandparameter\MyIndexTwo><\expandparameter\MyIndexTwo>}
 \stopbuffer
 
-\typebuffer[test-5]
+\typebuffer
 
 It involves more tokens, is a bit less abstract, but as it is a cheap extension
 we kept it. It actually demonstrates that one can access parameters in the stack
@@ -1167,7 +1167,29 @@ To come back to performance and memory usage, when the arguments become larger
 the fourth variant with the \type {\parameterdef} quickly gains over the others.
 But it only shows in exceptional usage. This mechanism is more about abstraction:
 it permits us to efficiently turn arguments into local variables without the
-overhead involved in creating macros.
+overhead involved in creating macros. You can test if a parameter is set
+
+\startbuffer
+\tolerant\protected\def\MyMacro[#1]#:#2%
+  {\parameterdef\MyArgumentOne\plusone
+   \parameterdef\MyArgumentTwo\plustwo
+   \ifparameter\MyArgumentOne\or
+     (\MyArgumentOne)
+   \fi
+   /\MyArgumentTwo/}
+
+\MyMacro[one]{two}
+\MyMacro{two}
+\stopbuffer
+
+\typebuffer
+
+Indeed we get:
+
+\getbuffer
+
+Of course \type {\ifparameter#1\or...} is more efficient but once you use named
+parameters like this it's probably not something you're worry too much about,
 
 \stopsectionlevel
 

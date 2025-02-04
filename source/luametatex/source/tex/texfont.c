@@ -258,7 +258,7 @@ int tex_new_font(void)
                 tex_set_font_parameter(id, i, 0);
             }
             /*tex character info zero is reserved for |notdef|. The stack size 1, default item value 0. */
-            tf->characters = sa_new_tree(fontchar_sparse_identifier, 1, 4, sa_value);
+            tf->characters = sa_new_tree(fontchar_sparse_identifier, 1, 1, 4, sa_value);
             tf->chardata = ci;
             tf->chardata_size = 1;
             tf->weight = 1.0;
@@ -335,9 +335,10 @@ static inline int aux_find_charinfo_id(halfword f, int c)
 charinfo *tex_get_charinfo(halfword f, int c)
 {
     if (proper_char_index(f, c)) {
-        sa_tree_item item; 
+        sa_tree_item item;
+        int glyph; 
         sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);
-        int glyph = (int) item.int_value;
+        glyph = (int) item.int_value;
         if (! glyph) {
             sa_tree_item sa_value = { 0 };
             int tglyph = ++lmt_font_state.fonts[f]->chardata_count;
@@ -2191,9 +2192,9 @@ scaled tex_get_math_font_y_scale(halfword f, halfword size)
 scaled tex_get_math_font_weight(halfword f, halfword size)
 {
     switch (size) {
-        case  2: return lmt_font_state.fonts[f]->mathweights[2] ; break;
-        case  1: return lmt_font_state.fonts[f]->mathweights[1] ; break;
-        default: return lmt_font_state.fonts[f]->mathweights[0] ; break;
+        case  2: return lmt_font_state.fonts[f]->mathweights[2];
+        case  1: return lmt_font_state.fonts[f]->mathweights[1];
+        default: return lmt_font_state.fonts[f]->mathweights[0];
     }
 }
 

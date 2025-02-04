@@ -40,7 +40,7 @@ assembly, for instance in multiple columns, or after some analysis fed back into
 the main vertical list.
 
 For various mechanisms it matters if they are used inside a contained boxed
-environment or in the more liberal main vertical list (from now on called mlv).
+environment or in the more liberal main vertical list (from now on called mvl).
 That's why we can intercept the mvl and use it later. Intercepting works as
 follows:
 
@@ -67,10 +67,10 @@ and then do whatever is needed. You can see what goes on with:
 \tracingmvl 1
 \stoptyping
 
-There is not much more to say other than that this is way to operate on content
-as if it were added to the page which can be different from collecting something
-in a vertical box. Think of various callbacks that can differ for the mvl and a
-box.
+There is not much more to say other than that this is the way to operate on
+content as if it were added to the page which can be different from collecting
+something in a vertical box. Think of various callbacks that can differ for the
+mvl and a box.
 
 The \type {\beginmvl} primitive takes a number or a set of keywords, as in:
 
@@ -199,7 +199,7 @@ par builders to construct a (page) snippet builder. Here are some highlights:
     We seriously considered vertical discretionaries but eventually rejected the
     idea: we just don't expect users to go through the trouble of adding lots of
     split related pre, post and replace content. It's not hard to support it but
-    in the end it also interfered with other demands that we had. We kept toe
+    in the end it also interfered with other demands that we had. We kept the
     code around for a while but then removed it. To mention one complication: if
     we add some new node we also need to intercept it in various callbacks that
     we already have in place in \CONTEXT. As with horizontal discretionaries, we
@@ -253,7 +253,7 @@ par builders to construct a (page) snippet builder. Here are some highlights:
 It's about time for some examples but before we come to that it is good to
 roughly explain how the page builder works. When the page builder is triggered it
 will take elements from the contributions list and add them to the page. When
-doing that it keeps track of the height and depth as contributed buy boxes and
+doing that it keeps track of the height and depth as contributed by boxes and
 rules. Because it will discard glue and kerns it does some checking there. An
 important feature is that the depth is added in a next iteration. The routine
 also needs to look at inserts. The variables \type {\pagegoal} (original \type
@@ -277,11 +277,11 @@ page builder does a decent job but is less sophisticated than the par builder.
 There is a badness calculation, penalties are looked at, glue is taken into
 account but there are no demerits.
 
-We want the balancer to well with column sets that are very much grid
-based. But in getting there we had some hurdles to take. Because
-the algorithm (like the par builder) happily results in overfull boxes unless
-emergency stretch is set, pages can overflow. When there is no stretch
-and|/|or shrink using emergency stretch can give an underfull page.
+We want the balancer to work well with column sets that are very much grid based.
+But in getting there we had some hurdles to take. Because the algorithm (like the
+par builder) happily results in overfull boxes unless emergency stretch is set,
+pages can overflow. When there is no stretch and|/|or shrink using emergency
+stretch can give an underfull page.
 
 The way out of this is to have non destructive trial passes and decrease the
 number of lines. Of course we can get short pages but when for instance it
@@ -471,7 +471,7 @@ our disposal so in the end it's all quite doable.
 \the\globalscratchtoks
 \stoptabulate
 
-Because the balancer can produced what otherwise the page builder produces, we
+Because the balancer can produce what otherwise the page builder produces, we
 need to handle the equivalent of top skip which is what the already shown \type
 {top} keyword takes care of. This means that the current slice (think current
 line in the par builder) has to take that into account. This can be compared to the
@@ -612,7 +612,7 @@ it) while users communicate via meetings and mailing lists. Also, rendering of
 documents that have notes are often typeset kind of traditional.
 
 Users on the other hand have come up with demands for columns, typesetting on the
-grid, multiple notes, balancing, and parallel content streams The picture we get
+grid, multiple notes, balancing, and parallel content streams. The picture we get
 from that makes us confident that what we provide is generally enough and as
 users understand the issues at hand (maybe as side effect of struggling with
 solutions) it's not that hard to explain why constraints are in place. It makes
@@ -635,7 +635,7 @@ But,
 
 \startitemize[packed]
 \startitem We can ignore complex conflicting demands. \stopitem
-\startitem As long as we get some result, were fine. \stopitem
+\startitem As long as we get some result, we're fine. \stopitem
 \startitem So users have to check what comes out. \stopitem
 \startitem We don't assume fully automated unattended usage. \stopitem
 \stopitemize
@@ -798,6 +798,14 @@ to stress that when keywords are involved, you need to prevent look|-|ahead,
 especially when an \type {\if...} or expandable loop follows, which is not
 uncommon when we balance.
 
+It is possible to define top and bottom inserts but of course these need to be
+filtered and placed at the \TEX\ end, so this is macro package specific. Here we
+just mention that it is possible to set \type {\insertstretch} and \type
+{\insertshrink} which will be taken into account. However, this can result in
+overlap so if indeed stretch or shrink is applied, the \type {handle_uinsert}
+callback should be used for bringing what actually gets inserted to the right
+dimensions. For now we consider this an experimental feature.
+
 \stopsectionlevel
 
 \startsectionlevel[title=Discardables]
@@ -928,6 +936,20 @@ and after:
 
 It currently is a playground so it might (and probably will) evolve. Although it
 was also made for a specific issue it might have other usage.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Passes]
+
+{\em todo}
+
+\starttyping
+\showmakeup[vpenalty,line]
+\balancefinalpenalties 6 10000 9000 8000 7000 6000 5000\relax
+\balancevsize 5\lineheight
+\setbox\scratchbox\vbox{\dorecurse{1}{\samplefile{tufte}\footnote{!}\par}}
+\vbalance\scratchbox
+\stoptyping
 
 \stopsectionlevel
 

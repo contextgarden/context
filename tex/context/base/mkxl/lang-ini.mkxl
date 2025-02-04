@@ -438,12 +438,14 @@
   + \feedbackcompoundhyphenationcode  % feedback compound snippets
   + \ignoreboundshyphenationcode      % just in case we have hyphens at the edges
   + \collapsehyphenationcode          % collapse -- and ---
+  + \replaceapostrophehyphenationcode % replace ' by 0x2019
 \relax
 
 \permanent \integerdef \partialhyphenationcode \numexpr
     \ignoreboundshyphenationcode      % just in case we have hyphens at the edges
 % + \explicithyphenationcode          % \-
   + \collapsehyphenationcode          % collapse -- and ---
+  + \replaceapostrophehyphenationcode % replace ' by 0x2019
 \relax
 
 \hccode"002D "002D % hyphen
@@ -465,6 +467,9 @@
 
 \permanent\protected\def\dohyphens{\hyphenationmode\completehyphenationcode}
 \permanent\protected\def\nohyphens{\hyphenationmode\partialhyphenationcode}
+
+\permanent\protected\def\doapostrophes{\hyphenationmode\bitwiseflip\hyphenationmode \replaceapostrophehyphenationcode}
+\permanent\protected\def\noapostrophes{\hyphenationmode\bitwiseflip\hyphenationmode-\replaceapostrophehyphenationcode}
 
 % \permanent\protected\def\dohyphens
 %   {\ifbitwiseand\hyphenationmode\collapsehyphenationcode
@@ -521,9 +526,12 @@
 
 \protected\def\lang_basics_synchronize_min_max % maybe store this at the lua end
   {% these values are stored along with glyph nodes
-   \lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
-   \righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
-   \hyphenationmin\numexpr0\languageparameter\s!hyphenmin\relax
+  %\lefthyphenmin \numexpr0\languageparameter\s!lefthyphenmin +\hyphenminoffset\relax
+  %\righthyphenmin\numexpr0\languageparameter\s!righthyphenmin+\hyphenminoffset\relax
+  %\hyphenationmin\numexpr0\languageparameter\s!hyphenmin\relax
+   \lefthyphenmin {\ifchknumexpr\languageparameter\s!lefthyphenmin \or\lastchknumber+\fi\hyphenminoffset}%
+   \righthyphenmin{\ifchknumexpr\languageparameter\s!righthyphenmin\or\lastchknumber+\fi\hyphenminoffset}%
+   \hyphenationmin{\ifchknumexpr\languageparameter\s!hyphenmin     \or\lastchknumber\else\zeropoint\fi}%
    % these values are stored with the language (global!)
    \prehyphenchar   \languageparameter\s!righthyphenchar\relax
    \posthyphenchar  \languageparameter\s!lefthyphenchar \relax
@@ -533,6 +541,16 @@
 \appendtoks
     \lang_basics_synchronize_min_max % todo: also sync when already in language
 \to \everylanguage
+
+\appendtoks
+    \ifcstok{\languageparameter\s!apostrophe}\v!yes
+      \doapostrophes
+    \else
+      \noapostrophes
+    \fi
+\to \everylanguage
+
+\exapostrophechar\singlequoteasciicode
 
 \permanent\protected\def\unhyphenated
   {\groupedcommand{\lefthyphenmin\maxdimen}\donothing}

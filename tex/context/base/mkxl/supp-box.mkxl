@@ -61,7 +61,7 @@
 \fi
 
 \permanent\protected\def\strutwd {\wd\strutbox}
-\permanent\protected\def\strutgap{\dimexpr\strutht-\strutdp\relax}
+\permanent\protected\def\strutgap{\dimexpr{\strutht-\strutdp}}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -202,17 +202,11 @@
 %D \stopTEXpage
 %D \stoptyping
 
-% \newinteger\c_boxes_math_style
-%
-% \protected\def\syst_boxes_math_set_nextbox#1%
-%   {\c_boxes_math_style\normalmathstyle
-%    \setbox\nextbox\hbox{\normalstartimath\mathsurround\zeropoint\triggermathstyle\c_boxes_math_style{#1}\normalstopimath}}
-
 \protected\def\syst_boxes_math_set_nextbox#1%
   {\setbox\nextbox\hbox\expandafter\bgroup
-     \expandafter\normalstartimath\expandafter\givenmathstyle\the\mathstackstyle
+     \expandafter\Ustartmathmode\the\mathstyle
      \mathsurround\zeropoint{#1}%
-     \normalstopimath
+     \Ustopmathmode
    \egroup}
 
 %D \macros
@@ -410,7 +404,7 @@
 %D regels en kent dit toe aan \type {\noflines}.
 %D
 %D \starttyping
-%D \getnoflines{dimensie}
+%D \getnoflines{dimension}
 %D \stoptyping
 %D
 %D Er wordt gedeeld door \type {\openlineheight} en een hoogte van~0pt komt overeen
@@ -423,7 +417,7 @@
 \newdimension\noflinesheight
 
 \permanent\protected\def\getnoflines#1%
-  {\noflinesheight#1\relax
+  {\noflinesheight{#1}%
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
@@ -439,7 +433,7 @@
    \fi}
 
 \permanent\protected\def\getroundednoflines#1%
-  {\noflinesheight#1\relax
+  {\noflinesheight{#1}%
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
@@ -447,13 +441,13 @@
      \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \else
-     \advanceby\noflinesheight-\roundingeps
+     \advanceby\noflinesheight-\roundingeps % what does this mean, negative \noflines
      \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
    \fi}
 
 \permanent\protected\def\getrawnoflines#1%
-  {\noflinesheight#1\relax
+  {\noflinesheight{#1}%
    \ifzeropt\noflinesheight
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
@@ -1190,7 +1184,7 @@
 \permanent\protected\def\doboundtext#1#2#3% still used?
   {\hbox
      {\setbox\scratchbox\hbox{#1}%
-      \scratchdimen#2\relax
+      \scratchdimen{#2}%
       \ifdim\wd\scratchbox>\scratchdimen
         \setbox\scratchbox\hbox{#3}%
         \advanceby\scratchdimen -\wd\scratchbox
@@ -1225,11 +1219,11 @@
   {% we could also split in \LUA
    \splitatcomma{#2}\m_syst_boxes_left\m_syst_boxes_right
    \limitated
-  \ifempty\m_syst_boxes_left\else
-      left     \m_syst_boxes_left
+  \ifchkdimension\m_syst_boxes_left\or
+      left    \lastchkdimension
   \fi
-  \ifempty\m_syst_boxes_right\else
-      right    \m_syst_boxes_right
+  \ifchkdimension\m_syst_boxes_right\or
+      right    \lastchkdimension
   \fi
       strip    true
       sentinel {#3}
@@ -1245,9 +1239,9 @@
 \permanent\protected\def\limitatefirstline#1#2#3%
   {\hbox\bgroup\strut % \hpack
    \setbox\scratchbox\hbox{\begstrut#1\endstrut}%
-   \ifdim\wd\scratchbox>#2\relax
+   \ifdim\wd\scratchbox>{#2}%
      \setbox\scratchbox\hbox{#3}%
-     \hsize#2\relax
+     \hsize{#2}%
      \advanceby\hsize-\wd\scratchbox
      \setbox\scratchbox\vbox{\forgetall\veryraggedright#1}%
      \setbox\scratchbox\vsplit\scratchbox to \lineheight
@@ -1432,7 +1426,7 @@
    \dowithnextboxcs\syst_boxes_inlined_finish\hbox}
 
 \def\syst_boxes_inlined_finish
-  {\boxyoffset\nextbox-\dimexpr(\htdp\nextbox-\lineheight)/\plustwo+\strutdp\relax
+  {\boxyoffset\nextbox{-((\htdp\nextbox-\lineheight)/\plustwo+\strutdp)}%
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \box\nextbox
@@ -1522,19 +1516,10 @@
    \hbox}
 
 \def\syst_boxes_centered_finish
-  {\boxxoffset\nextbox.5\dimexpr
-      \hsize
-     -\wd\nextbox
-     -\givenwidth
-   \relax
-   \boxyoffset\nextbox.5\dimexpr
-      \vsize
-     -\ht\nextbox
-     +\dp\nextbox
-     -\givenheight
-   \relax
-   \wd\nextbox\dimexpr\hsize-\givenwidth \relax
-   \ht\nextbox\dimexpr\vsize-\givenheight\relax
+  {\boxxoffset\nextbox{(\hsize-\wd\nextbox-\givenwidth)/2}%
+   \boxyoffset\nextbox{(\vsize-\ht\nextbox+\dp\nextbox-\givenheight)/2}%
+   \wd\nextbox{\hsize-\givenwidth }%
+   \ht\nextbox{\vsize-\givenheight}%
    \dp\nextbox\zeropoint
    \box\nextbox
    \egroup}
@@ -1605,22 +1590,22 @@
 \newdimension\rigidhsize
 \newinteger  \rigidcolumns
 
-\permanent\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
-  {\global\rigidhsize\hsize
-   \global\rigidcolumns#3\relax
-   \hsize#1\relax
-   \scratchdimen -#2\relax
-   \multiplyby\scratchdimen #3\relax
-   \advanceby\scratchdimen  #2\relax
-   \advanceby\hsize \scratchdimen
-   \divideby\hsize #3\relax}
+% \permanent\protected\def\setrigidcolumnhsize#1#2#3% todo: \dimexpr
+%   {\global\rigidhsize\hsize
+%    \global\rigidcolumns#3\relax
+%    \hsize#1\relax
+%    \scratchdimen -#2\relax
+%    \multiplyby\scratchdimen #3\relax
+%    \advanceby\scratchdimen  #2\relax
+%    \advanceby\hsize \scratchdimen
+%    \divideby\hsize #3\relax}
 
 % ==
-%
-% \def\setrigidcolumnhsize#1#2#3%
-%   {\global\rigidhsize\hsize
-%    \rigidcolumns#3\relax
-%    \hsize\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
+
+\def\setrigidcolumnhsize#1#2#3%
+  {\global\rigidhsize\hsize
+   \global\rigidcolumns{#3}%
+   \hsize{(#1-\numexpr{\rigidcolumns-1}\dimexpr{#2})/\rigidcolumns}}
 
 \permanent\protected\def\rigidcolumnbalance#1%
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie
@@ -1799,7 +1784,7 @@
 
 \permanent\protected\def\stophboxestohbox
   {\egroup
-   \clf_vboxlisttohbox\scratchbox\nextbox\dimexpr\hboxestohboxslack\relax
+   \clf_vboxlisttohbox\scratchbox\nextbox{\hboxestohboxslack}%
    \dontleavehmode
    \unhbox\nextbox
    \removeunwantedspaces
@@ -2098,7 +2083,7 @@
 
 \def\syst_boxes_tbox_finish
   {\scratchheight\strutht
-   \scratchdepth\dimexpr\htdp\nextbox-\scratchheight\relax
+   \scratchdepth{\htdp\nextbox-\scratchheight}%
    \ht\nextbox\scratchheight
    \dp\nextbox\scratchdepth
    \boxyoffset\nextbox-\scratchdepth
@@ -2107,7 +2092,7 @@
 
 \def\syst_boxes_bbox_finish
   {\scratchdepth\strutdp
-   \scratchheight\dimexpr\htdp\nextbox-\scratchdepth\relax
+   \scratchheight{\htdp\nextbox-\scratchdepth}%
    \dp\nextbox\scratchdepth
    \ht\nextbox\scratchheight
    \boxyoffset\nextbox-\scratchdepth
@@ -2248,7 +2233,7 @@
 
 \def\syst_boxes_rightbox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+   \global\boxvdisplacement{(\ht\nextbox-\dp\nextbox)/2}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2256,8 +2241,8 @@
    \egroup}
 
 \def\syst_boxes_leftbox_finish
-  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
-   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+  {\global\boxhdisplacement{-\wd\nextbox-\boxoffset}%
+   \global\boxvdisplacement{(\ht\nextbox-\dp\nextbox)/2}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2266,7 +2251,7 @@
 
 \def\syst_boxes_topbox_finish
   {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+   \global\boxvdisplacement{-\dp\nextbox-\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2274,8 +2259,8 @@
    \egroup}
 
 \def\syst_boxes_bottombox_finish
-  {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+  {\global\boxhdisplacement{-\wd\nextbox/2}%
+   \global\boxvdisplacement{\ht\nextbox+\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2283,8 +2268,8 @@
    \egroup}
 
 \def\syst_boxes_lefttopbox_finish
-  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
-   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+  {\global\boxhdisplacement{-\wd\nextbox-\boxoffset}%
+   \global\boxvdisplacement{-\dp\nextbox-\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2293,7 +2278,7 @@
 
 \def\syst_boxes_righttopbox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement\dimexpr-\dp\nextbox-\boxoffset\relax
+   \global\boxvdisplacement{-\dp\nextbox-\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2301,8 +2286,8 @@
    \egroup}
 
 \def\syst_boxes_leftbottombox_finish
-  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
-   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+  {\global\boxhdisplacement{-\wd\nextbox-\boxoffset}%
+   \global\boxvdisplacement{\ht\nextbox+\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2311,7 +2296,7 @@
 
 \def\syst_boxes_rightbottombox_finish
   {\global\boxhdisplacement\boxoffset
-   \global\boxvdisplacement\dimexpr\ht\nextbox+\boxoffset\relax
+   \global\boxvdisplacement{\ht\nextbox+\boxoffset}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2324,8 +2309,8 @@
 \permanent\protected\def\baselinerightbox {\hpack\bgroup\dowithnextboxcs\syst_boxes_baselinerightbox_finish \placedbox}
 
 \def\syst_boxes_middlebox_finish
-  {\global\boxhdisplacement-.5\wd\nextbox
-   \global\boxvdisplacement.5\dimexpr\ht\nextbox-\dp\nextbox\relax
+  {\global\boxhdisplacement{-\wd\nextbox/2}%
+   \global\boxvdisplacement{(\ht\nextbox-\dp\nextbox)/2}%
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
    \boxymove\nextbox-\boxvdisplacement
@@ -2333,7 +2318,7 @@
    \egroup}
 
 \def\syst_boxes_baselinemiddlebox_finish
-  {\global\boxhdisplacement\dimexpr-.5\wd\nextbox-\boxoffset\relax
+  {\global\boxhdisplacement{-.5\wd\nextbox-\boxoffset}%
    \global\boxvdisplacement-\boxoffset
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
@@ -2342,7 +2327,7 @@
    \egroup}
 
 \def\syst_boxes_baselineleftbox_finish
-  {\global\boxhdisplacement\dimexpr-\wd\nextbox-\boxoffset\relax
+  {\global\boxhdisplacement{-\wd\nextbox-\boxoffset}%
    \global\boxvdisplacement-\boxoffset
    \boxcursor
    \boxxmove\nextbox \boxhdisplacement
@@ -2545,7 +2530,7 @@
 \permanent\protected\def\obeydepth
   {\par % watch out for changes in math formulas
    \ifvmode\ifdim\prevdepth<\zeropoint\orelse\ifdim\prevdepth<\strutdp
-     \kern\dimexpr\strutdp-\prevdepth\relax
+     \kern{\strutdp-\prevdepth}%
      \prevdepth\strutdp
    \fi\fi}
 
@@ -2663,11 +2648,11 @@
 \installcorenamespace {box_x}
 \installcorenamespace {box_y}
 
-\permanent\protected\def\setboxllx #1#2{\edefcsname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\permanent\protected\def\setboxlly #1#2{\edefcsname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\setboxllx #1#2{\edefcsname\??box_x\number#1\endcsname{\todimension{#2}}}
+\permanent\protected\def\setboxlly #1#2{\edefcsname\??box_y\number#1\endcsname{\todimension{#2}}}
 
-\permanent\protected\def\gsetboxllx#1#2{\xdefcsname\??box_x\number#1\endcsname{\the\dimexpr#2\relax}}
-\permanent\protected\def\gsetboxlly#1#2{\xdefcsname\??box_y\number#1\endcsname{\the\dimexpr#2\relax}}
+\permanent\protected\def\gsetboxllx#1#2{\xdefcsname\??box_x\number#1\endcsname{\todimension{#2}}}
+\permanent\protected\def\gsetboxlly#1#2{\xdefcsname\??box_y\number#1\endcsname{\todimension{#2}}}
 
 \permanent\def\getboxllx#1{\ifcsname\??box_x\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
 \permanent\def\getboxlly#1{\ifcsname\??box_y\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
@@ -2878,7 +2863,7 @@
 
 %D Who knows when this comes in handy:
 
-\permanent\protected\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax}
+%permanent\protected\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax} % at lua end
 
 %D Keep as reference:
 
@@ -2888,7 +2873,9 @@
 %D This one keeps dimensions and sets the shift field (and so it's more for testing
 %D than for real usage):
 
-\permanent\protected\def\shiftbox  {\clf_shiftbox}
+%permanent\protected\def\shiftbox  {\clf_shiftbox}
+            \aliased\let\shiftbox       \boxshift
+
 \permanent\protected\def\vpackbox  {\clf_vpackbox}
 \permanent\protected\def\hpackbox  {\clf_hpackbox}
 \permanent\protected\def\vpackedbox{\clf_vpackedbox}
@@ -2899,7 +2886,7 @@
 
 \permanent\protected\def\linebox
   {\hpack\bgroup\dowithnextbox
-     {\scratchdimen\dimexpr\dimexpr\htdp\nextbox-\lineheight\relax/2+\strutdp\relax
+     {\scratchdimen{(\htdp\nextbox-\lineheight)/2+\strutdp}%
       \setbox\nextbox\hpack{\lower\scratchdimen\box\nextbox}%
       \ht\nextbox\strutht
       \dp\nextbox\strutdp
@@ -3051,7 +3038,7 @@
   {\scratchdimenone  \ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter % current size
    \scratchdimentwo  \boxrepack\scratchcounter                           % natural
    \scratchdimenthree\boxstretch\scratchcounter                          % stretch
-   \scratchdistance  \dimexpr\scratchdimenone-\scratchdimentwo\relax
+   \scratchdistance  {\scratchdimenone-\scratchdimentwo}%
    % if size - natural > stretch
    \unless\ifdim\scratchdistance>\scratchdimenthree
      % we don't stretch beyond what is acceptable
@@ -3061,7 +3048,7 @@
      % we are below the criterium
      \boxlimitate\scratchcounter\zerocount
      \global\boxstretchfixed\conditionaltrue
-     \global\boxstretchdelta\dimexpr\ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter-\boxrepack\scratchcounter\relax
+     \global\boxstretchdelta{\ifvbox\scratchcounter\ht\else\wd\fi\scratchcounter-\boxrepack\scratchcounter}%
    \else
      % we are above the criterium
      \global\boxstretchfixed\conditionalfalse

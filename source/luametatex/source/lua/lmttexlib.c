@@ -2729,7 +2729,7 @@ static halfword texlib_tobalanceshape(lua_State *L, int i)
     return null;
 }
 
-int texlib_setbalanceshape(lua_State *L)
+static int texlib_setbalanceshape(lua_State *L)
 {
     halfword p = texlib_tobalanceshape(L, 1);
     update_tex_balance_shape(p);
@@ -5617,7 +5617,7 @@ static int texlib_getrunstate(lua_State *L)
 
 static int texlib_gethyphenationvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 17);
+    lua_createtable(L, 2, 18);
     lua_push_key_at_index(L, normal,    normal_hyphenation_mode);
     lua_push_key_at_index(L, automatic, automatic_hyphenation_mode);
     lua_push_key_at_index(L, explicit,  explicit_hyphenation_mode);
@@ -5638,6 +5638,7 @@ static int texlib_gethyphenationvalues(lua_State *L)
     lua_set_string_by_index(L, force_handler_hyphenation_mode,       "forcehandler");
     lua_set_string_by_index(L, feedback_compound_hyphenation_mode,   "feedbackcompound");
     lua_set_string_by_index(L, ignore_bounds_hyphenation_mode,       "ignorebounds");
+    lua_set_string_by_index(L, replace_apostrophe_hyphenation_mode,  "replaceapostrophe");
     return 1;
 }
 
@@ -5705,7 +5706,7 @@ static int texlib_getmathoptionvalues(lua_State *L)
 
 static int texlib_getpenaltyoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 14);
+    lua_createtable(L, 2, 15);
     lua_set_string_by_index(L, penalty_option_normal,        "normal");
     lua_set_string_by_index(L, penalty_option_math_forward,  "mathforward");
     lua_set_string_by_index(L, penalty_option_math_backward, "mathbackward");
@@ -5722,6 +5723,7 @@ static int texlib_getpenaltyoptionvalues(lua_State *L)
     lua_set_string_by_index(L, penalty_option_factor_used,   "factorused");
     lua_set_string_by_index(L, penalty_option_end_of_par,    "endofpar");
     lua_set_string_by_index(L, penalty_option_in_insert,     "ininsert");
+    lua_set_string_by_index(L, penalty_option_final_balance, "finalbalance");
     return 1;
 }
 
@@ -6204,6 +6206,16 @@ static int texlib_getshapingpenaltiesvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getbadnessmodevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 2);
+    lua_set_string_by_index(L, badness_mode_underfull, "underfull");
+    lua_set_string_by_index(L, badness_mode_loose,     "loose");
+    lua_set_string_by_index(L, badness_mode_tight,     "tight");
+    lua_set_string_by_index(L, badness_mode_overfull,  "overfull");
+    return 1;
+}
+
 static int texlib_getautoparagraphvalues(lua_State *L)
 {
     lua_createtable(L, 2, 1);
@@ -6264,11 +6276,13 @@ static int texlib_getiftypes(lua_State *L)
     lua_set_string_by_index(L, if_true_code           - first_real_if_test_code, "true");
     lua_set_string_by_index(L, if_false_code          - first_real_if_test_code, "false");
     lua_set_string_by_index(L, if_chk_int_code        - first_real_if_test_code, "chknum");
-    lua_set_string_by_index(L, if_chk_integer_code    - first_real_if_test_code, "chknunber");
+    lua_set_string_by_index(L, if_chk_integer_code    - first_real_if_test_code, "chknumber");
+    lua_set_string_by_index(L, if_chk_intexpr_code    - first_real_if_test_code, "chknumexpr");
     lua_set_string_by_index(L, if_val_int_code        - first_real_if_test_code, "numval");
     lua_set_string_by_index(L, if_cmp_int_code        - first_real_if_test_code, "cmpnum");
     lua_set_string_by_index(L, if_chk_dim_code        - first_real_if_test_code, "chkdim");
     lua_set_string_by_index(L, if_chk_dimension_code  - first_real_if_test_code, "chkdimension");
+    lua_set_string_by_index(L, if_chk_dimexpr_code    - first_real_if_test_code, "chkdimexpr");
     lua_set_string_by_index(L, if_val_dim_code        - first_real_if_test_code, "dimval");
     lua_set_string_by_index(L, if_cmp_dim_code        - first_real_if_test_code, "cmpdim");
     lua_set_string_by_index(L, if_case_code           - first_real_if_test_code, "case");
@@ -6298,6 +6312,7 @@ static int texlib_getiftypes(lua_State *L)
     lua_set_string_by_index(L, if_insert_code         - first_real_if_test_code, "insert");
     lua_set_string_by_index(L, if_in_alignment_code   - first_real_if_test_code, "inalignment");
     lua_set_string_by_index(L, if_cramped_code        - first_real_if_test_code, "ifcramped");
+    lua_set_string_by_index(L, if_list_code           - first_real_if_test_code, "iflist");
  /* lua_set_string_by_index(L, if_bitwise_and_code    - first_real_if_test_code, "bitwiseand"); */ /* not (yet) used */
     return 1;
 }
@@ -6525,13 +6540,14 @@ static int texlib_getmathcontrolvalues(lua_State *L)
 
 static int texlib_gettextcontrolvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 4);
-    lua_set_string_by_index(L, text_control_collapse_hyphens, "collapsehyphens");
-    lua_set_string_by_index(L, text_control_base_ligaturing,  "baseligaturing");
-    lua_set_string_by_index(L, text_control_base_kerning,     "basekerning");
-    lua_set_string_by_index(L, text_control_none_protected,   "noneprotected");
-    lua_set_string_by_index(L, text_control_has_italics,      "hasitalics");
-    lua_set_string_by_index(L, text_control_auto_italics,     "autoitalics");
+    lua_createtable(L, 2, 5);
+    lua_set_string_by_index(L, text_control_collapse_hyphens,   "collapsehyphens");
+    lua_set_string_by_index(L, text_control_base_ligaturing,    "baseligaturing");
+    lua_set_string_by_index(L, text_control_base_kerning,       "basekerning");
+    lua_set_string_by_index(L, text_control_none_protected,     "noneprotected");
+    lua_set_string_by_index(L, text_control_has_italics,        "hasitalics");
+    lua_set_string_by_index(L, text_control_auto_italics,       "autoitalics");
+    lua_set_string_by_index(L, text_control_replace_apostrophe, "replaceapostrophe");
     return 1;
 }
 
@@ -6556,6 +6572,16 @@ static int texlib_getadjustoptionvalues(lua_State *L)
     lua_set_string_by_index(L, adjust_option_depth_check,  "depthcheck");
     lua_set_string_by_index(L, adjust_option_depth_last,   "depthlast");
     lua_set_string_by_index(L, adjust_option_except,       "except");
+    return 1;
+}
+
+static int texlib_getemptyparagraphmodevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 2);
+    lua_set_string_by_index(L, effective_empty_option_par,         "par");
+    lua_set_string_by_index(L, effective_empty_option_dir,         "dir");
+    lua_set_string_by_index(L, effective_empty_option_indent_list, "indentlist");
+    lua_set_string_by_index(L, effective_empty_option_indent_glue, "indentglue");
     return 1;
 }
 
@@ -7035,6 +7061,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getpardataspecifications",     texlib_getpardataspecifications     },
     { "getprepoststatevalues",        texlib_getprepoststatevalues        },
     { "getadjustoptionvalues",        texlib_getadjustoptionvalues        },
+    { "getemptyparagraphmodevalues",  texlib_getemptyparagraphmodevalues  },
     { "getpacktypevalues",            texlib_getpacktypevalues            },
     { "getgroupvalues",               texlib_getgroupvalues               },
     { "getparcontextvalues",          texlib_getparcontextvalues          },
@@ -7060,6 +7087,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getunitclassvalues",           texlib_getunitclassvalues           },
     { "geterrorvalues",               texlib_geterrorvalues               },
     { "getinteractionmodes",          texlib_getinteractionmodes          },
+    { "getbadnessmodevalues",         texlib_getbadnessmodevalues         },
     { "getiftypes",                   texlib_getiftypes                   },
     { "getiovalues",                  texlib_getiovalues                  },
     { "getprimitiveorigins",          texlib_getprimitiveorigins          },

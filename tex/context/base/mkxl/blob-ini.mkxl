@@ -28,10 +28,10 @@
 % \depthofstring          % defined in lua
 % \heightanddepthofstring % defined in lua
 
-\permanent\def\wdofstring#1{\dimexpr\widthofstring {#1}\relax} % assured an dimen
-\permanent\def\htofstring#1{\dimexpr\heightofstring{#1}\relax} % assured an dimen
-\permanent\def\dpofstring#1{\dimexpr\depthofstring {#1}\relax} % assured an dimen
-\permanent\def\hdofstring#1{\dimexpr\totalofstring {#1}\relax} % assured an dimen
+\permanent\def\wdofstring#1{\dimexpr{\widthofstring {#1}}} % assured an dimen
+\permanent\def\htofstring#1{\dimexpr{\heightofstring{#1}}} % assured an dimen
+\permanent\def\dpofstring#1{\dimexpr{\depthofstring {#1}}} % assured an dimen
+\permanent\def\hdofstring#1{\dimexpr{\totalofstring {#1}}} % assured an dimen
 
 \aliased\let\heightanddepthofstring\totalofstring
 \aliased\let\htdpofstring          \hdofstring

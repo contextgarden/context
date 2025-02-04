@@ -170,7 +170,7 @@
   %\triggerpagebuilder
    \scratchdimen
      \ifdim\pagegoal<\maxdimen
-       \dimexpr\pagegoal-\pagetotal\relax
+       {\pagegoal-\pagetotal}%
      \else
        \textheight
      \fi
@@ -182,19 +182,19 @@
    \fi}
 
 \def\tabl_lines_step_cell
-  {\advanceby\scratchdimen\linetablecparameter\c!width
-   \global\advanceby      \c_tabl_lines_column\plusone
-   \advanceby\scratchskip \linetablecparameter\c!distance}
+  {\advanceby\scratchdimen{\linetablecparameter\c!width}%
+   \global\advanceby\c_tabl_lines_column\plusone
+   \advanceby\scratchskip{\linetablecparameter\c!distance}}
 
 \permanent\tolerant\protected\def\startlinetablecell[#S#1]%
   {\global\setbox\b_tabl_lines_cell\hbox\bgroup
    \ifparameter#1\or
      \getparameters[\??linetable c:\the\c_tabl_lines_column][#1]%
    \fi
-   \global\c_tabl_lines_step\linetablecparameter\c!nx\relax
+   \global\c_tabl_lines_step{\linetablecparameter\c!nx}%
    \ifcase\c_tabl_lines_step\or
-     \scratchdimen\linetablecparameter\c!width
-     \scratchskip \linetablecparameter\c!distance
+     \scratchdimen{\linetablecparameter\c!width}
+     \scratchskip{\linetablecparameter\c!distance}
    \else
      \scratchdimen  \zeropoint
      \scratchskip   \zeroskip
@@ -222,13 +222,12 @@
    \setbox\scratchbox\hbox
      \bgroup
      \dontcomplain
-     \hskip\linetablecparameter\c!leftoffset\relax
+     \hskip{\linetablecparameter\c!leftoffset}%
      % 0 = width, unknown height
      % 1 = width, fixed height
      % 2 = no width, auto hsize
      \ifnum\c_tabl_lines_mode<\plustwo
-       \advanceby\scratchdimen-\linetablecparameter\c!leftoffset
-       \advanceby\scratchdimen-\linetablecparameter\c!rightoffset
+       \advanceby\scratchdimen{-\linetablecparameter\c!leftoffset-\linetablecparameter\c!rightoffset}%
      \fi
      \ifcase\c_tabl_lines_mode
        \dosetraggedcommand{\linetablecparameter\c!align}%
@@ -252,7 +251,7 @@
      \ifcase\alignmentswitch\else\hss\fi
    \fi
    \egroup
-   \hskip\linetablecparameter\c!rightoffset
+   \hskip{\linetablecparameter\c!rightoffset}\relax
    \egroup
    \ifconditional\c_tabl_lines_preroll
      \box\scratchbox
@@ -298,8 +297,8 @@
            \c!type=\linetablecparameter\c!type,
              \c!mp=\linetablecparameter\c!mp,
   \c!rulethickness=\linetablecparameter\c!rulethickness,
-         \c!height=\ifempty\p_height\ht\scratchbox\else\p_height\fi,
-          \c!depth=\ifempty\p_depth \dp\scratchbox\else\p_depth \fi,
+         \c!height=\ifchkdimension\p_height\or\lastchkdimension\else\ht\scratchbox\fi,
+          \c!depth=\ifchkdimension\p_depth \or\lastchkdimension\else\dp\scratchbox\fi,
           \c!width=\wd\scratchbox]%
       \hkern-\wd\scratchbox\box\scratchbox}}
 
@@ -395,7 +394,7 @@
    \ifconditional\c_tabl_lines_preroll
    \orelse\ifcase\c_tabl_lines_part
      % we're collecting the repeater
-   \orelse\ifdim\dimexpr\hsize-\wd\scratchbox\relax>\linetableparameter\c!stretch
+   \orelse\ifdim{\hsize-\wd\scratchbox}>{\linetableparameter\c!stretch}%
    \else
      \setbox\scratchbox\hpack to \hsize{\unhbox\scratchbox}%
    \fi}
@@ -417,7 +416,7 @@
      %%%
      \donefalse
      \ifcase\c_tabl_lines_repeat
-     \orelse\ifnum\c_tabl_lines_repeat=\numexpr\c_tabl_lines_column-\plustwo\relax % calculate ahead
+     \orelse\ifnum\c_tabl_lines_repeat={r\c_tabl_lines_column-\plustwo}% calculate ahead
        \donetrue % collecting repeater
      \fi
      %%%%
@@ -445,7 +444,7 @@
      \scratchconditiononefalse
      \ifcase\c_tabl_lines_repeat\else
        % calculate ahead
-       \ifnum\c_tabl_lines_repeat=\numexpr\c_tabl_lines_column-\plustwo\relax
+       \ifnum\c_tabl_lines_repeat={\c_tabl_lines_column-\plustwo}%
          \donetrue % collecting repeater
        \fi
      \fi
@@ -506,9 +505,9 @@
      [\linetableparameter\c!stretch]
      [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
       \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
-   \c_tabl_lines_repeat\linetableparameter\c!nleft
+   \c_tabl_lines_repeat{\linetableparameter\c!nleft}%
    \c_tabl_lines_split_state % =
-     \ifdim\linetableparameter\c!maxwidth>\zeropoint
+     \ifdim{\linetableparameter\c!maxwidth}>\zeropoint
        \zerocount \else \plusone
      \fi
    % optional prevdepth correction
@@ -590,7 +589,7 @@
    \orelse\ifx\p_height\v!line
      \c_tabl_lines_hmode \plustwo
    \else
-     \d_tabl_lines_height\dimexpr\p_height-\strutdepth\relax
+     \d_tabl_lines_height{\p_height-\strutdepth}%
    \fi
    \tabl_lines_start_part}
 

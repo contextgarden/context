@@ -78,11 +78,11 @@
      #1]%
    \startMPcode
         lua.mp.show_breakpoints(
-            \the\dimexpr\dummyparameter\c!dx\relax,
-            \the\dimexpr\dummyparameter\c!dy\relax,
-            \the\dimexpr\dummyparameter\c!sx\relax,
-            \the\dimexpr\dummyparameter\c!sy\relax,
-            \the\dimexpr\dummyparameter\c!rulethickness\relax
+            \todimension{\dummyparameter\c!dx},%
+            \todimension{\dummyparameter\c!dy},%
+            \todimension{\dummyparameter\c!sx},%
+            \todimension{\dummyparameter\c!sy},%
+            \todimension{\dummyparameter\c!rulethickness}%
         ) ;
    \stopMPcode
    \endgroup}

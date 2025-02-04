@@ -138,37 +138,37 @@
      \or
        % backspace
      \or
-       \global\d_page_sides_shift\dimexpr
+       \global\d_page_sides_shift{%
          -\d_page_sides_maximum
          -\rightorleftpageaction \leftedgedistance   \rightedgedistance
          -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
-       \relax
+       }%
      \or
-       \global\d_page_sides_shift\dimexpr
+       \global\d_page_sides_shift{%
          -\d_page_sides_maximum
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
-       \relax
+       }%
      \or
        % left
      \or
        % right
      \or
-       \global\d_page_sides_shift\dimexpr
+       \global\d_page_sides_shift{%
          -\d_page_sides_maximum
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
-       \relax
+       }%
      \or
-       \global\d_page_sides_shift\dimexpr
+       \global\d_page_sides_shift{%
          -\d_page_sides_maximum
          -\rightorleftpageaction \leftedgedistance   \rightedgedistance
          -\rightorleftpageaction \leftmarginwidth    \rightmarginwidth
          -\rightorleftpageaction \leftmargindistance \rightmargindistance
          -\compensatedinnermakeupmargin
-       \relax
+       }%
      \or
        % cutspace
      \fi
@@ -194,41 +194,41 @@
    \global\d_page_sides_leftskip \zeropoint
    \ifcase\c_page_sides_float_type
    \or % backspace
-     \global\d_page_sides_leftskip\dimexpr
+     \global\d_page_sides_leftskip{%
        +\rightorleftpageaction \backspace           \cutspace
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \or % leftedge
-     \global\d_page_sides_leftskip\dimexpr
+     \global\d_page_sides_leftskip{%
        +\rightorleftpageaction \leftmargindistance  \rightmargindistance
        +\rightorleftpageaction \leftmarginwidth     \rightmarginwidth
        +\rightorleftpageaction \leftedgedistance    \rightedgedistance
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \or % leftmargin
-     \global\d_page_sides_leftskip\dimexpr
+     \global\d_page_sides_leftskip{%
        +\rightorleftpageaction \leftmargindistance  \rightmargindistance
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \or % leftside
    \or % rightside
    \or % rightmargin
-     \global\d_page_sides_rightskip\dimexpr
+     \global\d_page_sides_rightskip{%
        +\rightorleftpageaction \rightmargindistance \leftmargindistance
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \or % rightedge
-     \global\d_page_sides_rightskip\dimexpr
+     \global\d_page_sides_rightskip{%
        +\rightorleftpageaction \rightmargindistance \leftmargindistance
        +\rightorleftpageaction \rightmarginwidth    \leftmarginwidth
        +\rightorleftpageaction \rightedgedistance   \leftedgedistance
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \or % cutspace
-     \global\d_page_sides_rightskip\dimexpr
+     \global\d_page_sides_rightskip{%
        +\rightorleftpageaction \cutspace            \backspace
        +\compensatedinnermakeupmargin
-     \relax
+     }%
    \fi
    \global\d_page_sides_leftoffset \d_page_sides_rightskip
    \global\d_page_sides_rightoffset\d_page_sides_leftskip
@@ -273,8 +273,8 @@
    \ifdim\d_page_sides_bottomskip<\zeropoint\d_page_sides_bottomskip\zeropoint\fi
    \ifdim\d_page_sides_midskip   <\zeropoint\d_page_sides_midskip   \zeropoint\fi
    %
-   \global\d_page_sides_toptotal   \dimexpr\d_page_sides_topskip   +\d_page_sides_topoffset   \relax
-   \global\d_page_sides_bottomtotal\dimexpr\d_page_sides_bottomskip+\d_page_sides_bottomoffset\relax
+   \global\d_page_sides_toptotal   {\d_page_sides_topskip   +\d_page_sides_topoffset   }%
+   \global\d_page_sides_bottomtotal{\d_page_sides_bottomskip+\d_page_sides_bottomoffset}%
    \ifcase\c_page_sides_skipmode
    \or % high
      \global\d_page_sides_toptotal   \d_page_sides_topoffset
@@ -330,7 +330,7 @@
 \def\page_sides_apply_vertical_shift
   {\ifnum\c_page_sides_align=\plusfour
      \getnoflines{\ht\floatbox}%
-     \privatescratchdimen\dimexpr\noflines\lineheight-\strutdp\relax
+     \privatescratchdimen{\noflines\lineheight-\strutdp}%
      \getrawnoflines\d_page_sides_toptotal
      \advanceby\privatescratchdimen\noflines\lineheight
      \page_sides_force_depth
@@ -367,11 +367,10 @@
    % new
    \global\c_page_sides_lines_done\zerocount
    \ifconditional\c_page_sides_shape_down
-     \global\d_page_sides_shape_down_shift\dimexpr
+     \global\d_page_sides_shape_down_shift{%
         \privatescratchdimen
        +\htdp\floatbox
-%        -\lineheight
-     \relax
+     }%
      \advanceby\privatescratchdimen\c_page_sides_n_of_lines\lineheight
 \advanceby\privatescratchdimen2\lineheight
    \else
@@ -618,7 +617,7 @@
    % on an empty page we have topskip, say 12pt
    \ignoreparskip
    % this can be 18.5pt
-   \kern-\dimexpr\lineheight+\strutdp\relax
+   \kern-{\lineheight+\strutdp}%
    % so we can actually have a -2.5pt skip on top
    \ignoreparskip
    \blank[\v!samepage]
@@ -804,10 +803,10 @@
      \advanceby\d_page_sides_progress-\d_page_sides_page_total
      \global\c_page_sides_flag\conditionalfalse
    \else
-     \ifdim\dimexpr\d_page_sides_progress+\d_page_sides_bottomtotal\relax>\pagegoal
+     \ifdim{\d_page_sides_progress+\d_page_sides_bottomtotal}>\pagegoal
        % we adapt pagegoal because we can already have placed something with
        % everypar and we hope that it triggers a flush, see test above
-       \pagegoal\dimexpr\pagegoal-\d_page_sides_bottomtotal\relax
+       \pagegoal{\pagegoal-\d_page_sides_bottomtotal}%
      \fi
      \advanceby\d_page_sides_progress-\pagetotal
    \fi}
@@ -823,14 +822,14 @@
    \orelse\ifnum\c_page_sides_float_type>\plusfive
      \global\d_page_sides_width\zeropoint
    \else
-     \global\d_page_sides_width\dimexpr\wd\floatbox+\d_page_sides_margin\relax
+     \global\d_page_sides_width{\wd\floatbox+\d_page_sides_margin}%
    \fi
    \ifdim\d_page_sides_width<\zeropoint
      \global\d_page_sides_width\zeropoint
    \fi
-   \global\d_page_sides_hsize \dimexpr\hsize-\d_page_sides_width\relax
-   \global\d_page_sides_height\dimexpr\htdp\floatbox+\d_page_sides_toptotal\relax
-   \global\d_page_sides_vsize \dimexpr\d_page_sides_height+\d_page_sides_page_total\relax
+   \global\d_page_sides_hsize {\hsize-\d_page_sides_width}%
+   \global\d_page_sides_height{\htdp\floatbox+\d_page_sides_toptotal}%
+   \global\d_page_sides_vsize {\d_page_sides_height+\d_page_sides_page_total}%
    \scratchdimenone\d_page_sides_vsize
    \scratchdimentwo\pagegoal
    \ifcase\c_page_sides_tolerance
@@ -858,7 +857,7 @@
    \ifdim\scratchdimenone>\scratchdimentwo
      \global\c_page_floats_room\conditionalfalse
    \else
-     \ifdim\dimexpr\pagegoal-\d_page_sides_vsize\relax<\d_page_sides_bottomtotal
+     \ifdim{\pagegoal-\d_page_sides_vsize}<\d_page_sides_bottomtotal
       % just weird: \global\advanceby\d_page_sides_vsize \scratchdimenone
        \global\c_page_sides_short\conditionaltrue
        % why was this \global\holdinginserts\plusone
@@ -873,7 +872,7 @@
   {\page_sides_analyse_space_stage_one
 %    \ifconditional\c_page_sides_check_same_page
 %      \ifdim\d_spac_prevcontent>\zeropoint
-%        \ifdim\dimexpr\scratchdimenone+\d_spac_prevcontent>\scratchdimentwo
+%        \ifdim{\scratchdimenone+\d_spac_prevcontent}>\scratchdimentwo
 %          \clf_pushatsame
 %          \setbox\scratchbox\vpack{\clf_popatsame}%
 %          \page
@@ -896,7 +895,7 @@
 \def\page_otr_force_new_page_one
   {\vskip\d_page_sides_height
    \penalty\outputpenalty
-   \vskip-\dimexpr\d_page_sides_height-\strutdp\relax
+   \vskip{\strutdp-\d_page_sides_height}%
    \prevdepth\strutdp}
   %\ignoreparskip}
 
@@ -1069,7 +1068,7 @@
 \protected\def\page_sides_check_floats_set_shape
   {\privatescratchtoks\emptytoks
    \privatescratchcounter\c_page_sides_n_of_lines
-   \privatescratchdimen\dimexpr\hsize-\d_page_sides_width\relax
+   \privatescratchdimen{\hsize-\d_page_sides_width}%
    \dorecurse\c_page_sides_n_of_lines
      {\toksapp\privatescratchtoks{\zeropoint\hsize}}%
    \ifnum\c_page_sides_n_of_hang>\c_page_sides_n_of_lines
@@ -1100,7 +1099,7 @@
      \d_page_sides_progress\zeropoint
    \fi
    \ifx\p_sidethreshold\v!old
-     \d_page_sides_progression\dimexpr\d_page_sides_progress+\strutht-\roundingeps\relax
+     \d_page_sides_progression{\d_page_sides_progress+\strutht-\roundingeps}%
      \c_page_sides_n_of_hang\d_page_sides_progression
      \divideby\c_page_sides_n_of_hang \baselineskip\relax
    \else
@@ -1108,11 +1107,11 @@
        \ifempty\p_sidethreshold
          \d_page_sides_progress
        \else
-         \dimexpr\d_page_sides_progress-\p_sidethreshold\relax
+         {\d_page_sides_progress-\p_sidethreshold}%
        \fi
      \getnoflines\d_page_sides_progression
      % this can be an option
-     \ifdim\dimexpr\noflines\lineheight>\dimexpr\pagegoal-\pagetotal\relax
+     \ifdim{\noflines\lineheight}>{\pagegoal-\pagetotal}%
        \getrawnoflines\d_page_sides_progression
      \fi
      %

@@ -136,11 +136,20 @@ extern void lmt_insert_par_callback(
 );
 
 extern halfword lmt_uleader_callback(
-    halfword    head,
-    halfword    index, 
-    int         context,
-    halfword    box,
-    int         location
+    halfword head,
+    halfword index, 
+    int      context,
+    halfword box,
+    int      location
+);
+
+extern halfword lmt_uinsert_callback(
+    halfword callback, 
+    halfword index,
+    halfword order,
+    halfword packed,
+    scaled   height, 
+    scaled   amount
 );
 
 extern scaled lmt_italic_correction_callback(

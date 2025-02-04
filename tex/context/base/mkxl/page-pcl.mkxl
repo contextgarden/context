@@ -84,10 +84,10 @@
 
 \protected\def\page_col_command_set_hsize
   {\global\hsize\d_page_col_column_width\relax
-   \global\d_page_col_available\dimexpr
+   \global\d_page_col_available{%
       \numexpr\c_page_col_n_of_columns-\c_page_col_current+\plusone\relax\d_page_col_column_width
     + \numexpr\c_page_col_n_of_columns-\c_page_col_current         \relax\d_page_col_distance
-   \relax
+   }%
    \global\d_page_col_sofar
    \ifnum\c_page_col_n_of_columns=\plusone
      \zeropoint
@@ -128,13 +128,13 @@
         \page_one_registered_text_area_a#1#2%
         \hsize\d_page_col_column_width
         \ifgridsnapping
-          \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+          \vskip{\openstrutdepth-\d_page_one_natural_depth}%
           \prevdepth\openstrutdepth
           \page_col_command_flush_bottom_insertions
           \vfil
         \orelse\ifcase\bottomraggednessmode
           % ragged (default)
-          \vskip\dimexpr\openstrutdepth-\d_page_one_natural_depth\relax
+          \vskip{\openstrutdepth-\d_page_one_natural_depth}%
           \prevdepth\openstrutdepth
           \page_col_command_flush_bottom_insertions
           \vfil
@@ -143,7 +143,7 @@
           \page_col_command_flush_bottom_insertions
         \or
           % baseline
-          \vkern\dimexpr\maxdepth-\d_page_one_natural_depth\relax
+          \vkern{\maxdepth-\d_page_one_natural_depth}%
           \page_col_command_flush_bottom_insertions
         \or
           % depth
@@ -160,15 +160,14 @@
          \else
            \noflines\layoutlines
          \fi
-         \scratchoffset\dimexpr\numexpr\noflines-\plusone\relax\lineheight+\topskip\relax
+         \scratchoffset{\numexpr\noflines-\plusone\relax\lineheight+\topskip}%
        \else
          \scratchoffset\ht\b_page_one_contents
        \fi
        \setbox\b_page_one_bottom_notes\hpack
          {\hsize\d_page_col_column_width
           \setupnotes[\c!width=\textwidth]%
-          \lower\dimexpr\scratchoffset-\initialpageskip\relax % watch the initialpageskip
-          \vbox{\placebottomnotes\par\kern\zeropoint}}%
+          \lower{\scratchoffset-\initialpageskip}\vbox{\placebottomnotes\par\kern\zeropoint}}%
        \ht\b_page_one_contents    \zeropoint
        \wd\b_page_one_contents    \zeropoint
        \ht\b_page_one_bottom_notes\zeropoint
@@ -197,12 +196,12 @@
 
 \protected\def\page_col_command_side_float_output
   {% % %
-   \ifzeropt\page_inserts_get_height\namedinsertionnumber\s!topfloat\else
-     \scratchwidth\page_inserts_get_width\namedinsertionnumber\s!topfloat\relax
+   \ifzeropt\insertheight\namedinsertionnumber\s!topfloat\else
+     \scratchwidth\insertwidth\namedinsertionnumber\s!topfloat\relax
      \ifdim\scratchwidth>\d_page_col_top_width
        \global\d_page_col_top_width \scratchwidth
      \fi
-     \global\d_page_col_top_height\page_inserts_get_height\namedinsertionnumber\s!topfloat\relax
+     \global\d_page_col_top_height\insertheight\namedinsertionnumber\s!topfloat\relax
    \fi
    % % %
    \setbox\scratchbox\vbox\bgroup
@@ -219,10 +218,10 @@
    % \page_col_command_flush_floats
    \else
      \ifdim\d_page_col_top_width>\zeropoint
-       \ifdim\dimexpr\d_page_col_top_width>\d_page_col_sofar\relax
+       \ifdim{\d_page_col_top_width>\d_page_col_sofar}%
          \begingroup
          \floatingpenalty\zerocount
-         \page_inserts_inject\namedinsertionnumber\s!topfloat\bgroup
+         \insert\namedinsertionnumber\s!topfloat\bgroup
            \vbox to \d_page_col_top_height{\vss}%
              % can be an option
              \page_col_command_flush_top_insertions
@@ -275,8 +274,7 @@
   {% needs packaging anyway
     \getboxfromcache{\s!pagecolumn\s!pagecolumn}{\number\mofcolumns}\scratchboxone
     \getboxfromcache{\s!pagecolumn}{\number\mofcolumns}\scratchboxtwo
-   %\ht\scratchbox\dimexpr\ht\scratchboxtwo-\initialpageskip\relax
-    \ht\scratchboxtwo\dimexpr\ht\scratchboxtwo-\ht\scratchboxone\relax
+    \ht\scratchboxtwo{\ht\scratchboxtwo-\ht\scratchboxone}%
     \page_lines_add_numbers_to_box\scratchbox\mofcolumns\c_page_col_n_of_columns\plusone % new
     \page_marks_synchronize_column\plusone\c_page_col_n_of_columns\mofcolumns\scratchboxtwo
     % backgrounds
@@ -297,20 +295,19 @@
      \global\c_page_floats_room\conditionalfalse
    \else
      % first we check the current column
-%      \ifdim\dimexpr\d_page_col_width-\naturalfloatwd\relax>-\onepoint
-     \ifdim\dimexpr\hsize-\naturalfloatwd\relax>-\onepoint
+     \ifdim{\hsize-\naturalfloatwd}>-\onepoint
        \global\c_page_floats_room\conditionaltrue
      \else
        \global\c_page_floats_room\conditionalfalse
      \fi
      \ifconditional\c_page_floats_room
        % we fit in the column but do we have room
-       \ifdim\dimexpr\pagetotal+\lineheight\relax>\pagegoal
+       \ifdim{\pagetotal+\lineheight}>\pagegoal
          % try again later
          \goodbreak
        \fi
        \ifdim\pagetotal>\zeropoint
-         \scratchdimenone\dimexpr\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink\relax
+         \scratchdimenone{\pagetotal+\floatheight+\d_strc_floats_top-\pageshrink}%
          \scratchdimentwo\pagegoal
          \relax % needed
          \ifcase\c_page_one_float_method
@@ -391,7 +388,7 @@
                  \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
                \fi
                % this could happen at the lua end instead
-               \scratchdimen\dimexpr\wd\floatbox-\naturalfloatwd\relax
+               \scratchdimen{\wd\floatbox-\naturalfloatwd}%
                \ifdim\scratchdimen<\zeropoint
                  \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
                \fi
@@ -444,7 +441,7 @@
      \ifnum\rootfloatparameter\c!nbottom=\zerocount
        \ifnum\rootfloatparameter\c!nlines>\zerocount
          \ifdim\totaltopinserted>\zeropoint\relax
-           \ifdim\dimexpr\rootfloatparameter\c!nlines\lineheight+\totaltopinserted\relax>\textheight
+           \ifdim{\rootfloatparameter\c!nlines\lineheight+\totaltopinserted}>\textheight
              \showmessage\m!floatblocks8{\rootfloatparameter\c!nlines}%
              \page_otr_fill_and_eject_page % was tripple: vfilll
            \fi
@@ -482,7 +479,7 @@
                  \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
                \fi
                % this could happen at the lua end instead
-               \scratchdimen\dimexpr\wd\floatbox-\naturalfloatwd\relax
+               \scratchdimen{\wd\floatbox-\naturalfloatwd}%
                \ifdim\scratchdimen<\zeropoint
                    \global\setbox\floatbox\hpack spread -\scratchdimen{\hss\box\floatbox\hss}%
                \fi
@@ -829,13 +826,13 @@
 \aliased\let\stoppagecolumns\relax
 
 \protected\def\page_col_start_yes
-  {\d_page_col_distance     \pagecolumnsparameter\c!distance\relax
- % \d_page_col_max_height   \pagecolumnsparameter\c!maxheight
-   \d_page_col_max_width    \pagecolumnsparameter\c!maxwidth
- % \d_page_col_balance_step \pagecolumnsparameter\c!step
+  {\d_page_col_distance     {\pagecolumnsparameter\c!distance}%
+ % \d_page_col_max_height   {\pagecolumnsparameter\c!maxheight}%
+   \d_page_col_max_width    {\pagecolumnsparameter\c!maxwidth}%
+ % \d_page_col_balance_step {\pagecolumnsparameter\c!step}%
    \c_page_col_current  \plusone
    %
-   \d_page_col_column_width\dimexpr(\d_page_col_max_width-\d_page_col_distance*\numexpr(\c_page_col_n_of_columns-\plusone)\relax)/\c_page_col_n_of_columns\relax
+   \d_page_col_column_width{(\d_page_col_max_width-\d_page_col_distance*\numexpr\c_page_col_n_of_columns-\plusone\relax)/\c_page_col_n_of_columns}%
    %
    \columnwidth    \d_page_col_column_width
    \columndistance \d_page_col_distance

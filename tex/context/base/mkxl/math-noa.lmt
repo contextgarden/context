@@ -656,6 +656,8 @@ do
     local fallbackstyleattr    = mathematics.fallbackstyleattr
     local fallbackalphabetattr = mathematics.fallbackalphabetattr
 
+    local setnodecolor = colortracers.set
+
     local function report_remap(tag,id,old,new,extra)
         if new then
             report_remapping("remapping %s in font (%s,%s) from %C to %C%s",

@@ -87,7 +87,7 @@ sql.helpers           = helpers
 local serialize       = table.fastserialize
 local deserialize     = table.deserialize
 
-local json            = require("util-jsn")
+local json            = require("json")
 local tojson          = json.tostring
 local fromjson        = json.tolua
 

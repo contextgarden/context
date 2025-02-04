@@ -132,7 +132,7 @@
 
 \newbox\b_assign_width
 
-\def\assign_width_direct#value#dimension#content#extra{#dimension=#value\relax}
+\def\assign_width_direct#value#dimension#content#extra{#dimension{#value}}
 
 % line is like fit but can be used later as signal for ...
 
@@ -140,7 +140,7 @@
                                                                                \setbox\b_assign_width\emptybox}
 \immutable\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                                \setbox\b_assign_width\emptybox}
-\immutable\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\dimexpr\wd\b_assign_width+#extra\relax
+\immutable\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension{\wd\b_assign_width+#extra}%
                                                                                \setbox\b_assign_width\emptybox}
 \immutable\setvalue{\??dimensionwidth\v!line   }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                                \setbox\b_assign_width\emptybox}

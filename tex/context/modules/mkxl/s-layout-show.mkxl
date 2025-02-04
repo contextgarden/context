@@ -236,7 +236,7 @@
          \advanceby\layoutrows\plusone
          \localcontrolledrepeat\noflines
            {\hkern-.5\lineheight\relax
-            \ifcase\numexpression\currentloopiterator mod\layoutrows\relax
+            \ifcase\numexpr\currentloopiterator;\layoutrows\relax
               \vrule
                 \s!height\scratchheight
                 \s!depth \scratchdepth

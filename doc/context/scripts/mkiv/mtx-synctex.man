@@ -1,4 +1,4 @@
-.TH "mtx-synctex" "1" "01-01-2024" "version 1.01" "SyncTeX Checker"
+.TH "mtx-synctex" "1" "01-01-2025" "version 1.01" "SyncTeX Checker"
 .SH NAME
  mtx-synctex - SyncTeX Checker
 .SH SYNOPSIS

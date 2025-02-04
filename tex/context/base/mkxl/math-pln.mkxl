@@ -107,7 +107,7 @@
      \halign{% \ialign resets everycr
        \startimath\alignmark\alignmark\stopimath
        \hfil
-       \kern\dimexpr\scratchdimentwo+\scratchdimenone\relax
+       \kern{\scratchdimentwo+\scratchdimenone}%
        \aligntab
        \thinspace
        \hfil
@@ -141,7 +141,7 @@
    \egroup
    \setbox\scratchboxtwo\hbox\bgroup
      \startimath
-     \kern\dimexpr\wd\globalscratchbox-\scratchdimenone\relax
+     \kern{\wd\globalscratchbox-\scratchdimenone}%
      \left#1\relax
      \kern-\wd\globalscratchbox
      \global\setbox\globalscratchbox\vbox\bgroup

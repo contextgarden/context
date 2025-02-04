@@ -49,8 +49,8 @@
 
 \newconditional\c_visual_local
 
-\permanent\protected\def\setlocalshowmakeup  {\settrue \c_visual_local}
-\permanent\protected\def\resetlocalshowmakeup{\setfalse\c_visual_local}
+\permanent\protected\def\setlocalshowmakeup  {\c_visual_local\conditionaltrue}
+\permanent\protected\def\resetlocalshowmakeup{\c_visual_local\conditionalfalse}
 
 \appendtoks
     \ifconditional\c_visual_local

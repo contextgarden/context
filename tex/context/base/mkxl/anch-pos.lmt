@@ -117,6 +117,9 @@ local jobpositions = {
 
 job.positions = jobpositions
 
+local dimension_code <const> = tokens.values.dimension
+local integer_code   <const> = tokens.values.integer
+
 local default = { -- not r and paragraphs etc
     __index = {
         x   = 0,     -- x position baseline
@@ -1613,7 +1616,7 @@ end
 function jobpositions.whd(id)
     local jpi = collected[id]
     if jpi then
-        return jpi.h, jpi.h, jpi.d
+        return jpi.w, jpi.h, jpi.d
     end
 end
 
@@ -1848,6 +1851,24 @@ implement {
     end
 }
 
+    implement {
+        name      = "jobposp",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local p = jpi.p
+                if p and p ~= true then
+                    return integer_code, p
+                end
+            end
+            return integer_code, 0
+        end
+    }
+
+
 implement {
     name      = "MPx",
     arguments = "argument",
@@ -1864,6 +1885,23 @@ implement {
         context('0pt')
     end
 }
+
+    implement {
+        name      = "jobposx",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local x = jpi.x
+                if x and x ~= true and x ~= 0 then
+                    return dimension_code, x*pt
+                end
+            end
+            return dimension_code, 0
+        end
+    }
 
 implement {
     name      = "MPy",
@@ -1882,6 +1920,23 @@ implement {
     end
 }
 
+    implement {
+        name      = "jobposy",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local y = jpi.y
+                if y and y ~= true and y ~= 0 then
+                    return dimension_code, y*pt
+                end
+            end
+            return dimension_code, 0
+        end
+    }
+
 implement {
     name      = "MPw",
     arguments = "argument",
@@ -1898,6 +1953,23 @@ implement {
         context('0pt')
     end
 }
+
+    implement {
+        name      = "jobposw",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local w = jpi.w
+                if w and w ~= 0 then
+                    return dimension_code, w*pt
+                end
+            end
+            return dimension_code, 0
+        end
+    }
 
 implement {
     name      = "MPh",
@@ -1916,6 +1988,23 @@ implement {
     end
 }
 
+    implement {
+        name      = "jobposh",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local w = jpi.h
+                if h and h ~= 0 then
+                    return dimension_code, h*pt
+                end
+            end
+            return dimension_code, 0
+        end
+    }
+
 implement {
     name      = "MPd",
     arguments = "argument",
@@ -1932,6 +2021,23 @@ implement {
         context('0pt')
     end
 }
+
+    implement {
+        name      = "jobposd",
+        arguments = "argument",
+        public    = true,
+        usage     = "value",
+        actions   = function(name)
+            local jpi = collected[name]
+            if jpi then
+                local d = jpi.d
+                if d and d ~= 0 then
+                    return dimension_code, d*pt
+                end
+            end
+            return dimension_code, 0
+        end
+    }
 
 implement {
     name      = "MPxy",
@@ -2378,6 +2484,31 @@ local newsavepos = nodes.pool.savepos
 jobpositions.lastx = 0
 jobpositions.lasty = 0
 
-implement { name = "savepos",  actions = function() context(newsavepos()) end }
-implement { name = "lastxpos", actions = function() context(jobpositions.lastx) end }
-implement { name = "lastypos", actions = function() context(jobpositions.lasty) end }
+implement {
+    name       = "savepos",
+    protected = true,
+    public    = true,
+    actions   = function()
+        context(newsavepos()) -- or return a node
+    end
+}
+
+implement {
+    name      = "lastxpos",
+    usage     = "value",
+    protected = true,
+    public    = true,
+    actions   = function()
+        return dimension_code, jobpositions.lastx
+    end
+}
+
+implement {
+    name      = "lastypos",
+    usage     = "value",
+    protected = true,
+    public    = true,
+    actions   = function()
+        return dimension_code, jobpositions.lasty
+    end
+}

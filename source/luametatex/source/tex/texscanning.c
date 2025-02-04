@@ -1,11 +1,13 @@
-/*
+﻿/*
     See license.txt in the root of this project.
 */
 
 # include "luametatex.h"
 
-static void tex_aux_scan_expr       (halfword level);
-static void tex_aux_scan_expression (int level);
+static void tex_aux_scan_expr                 (halfword level, int braced);
+static void tex_aux_scan_expression           (int level, int braced);
+static void tex_aux_scan_integer_expression   (int braced);
+static void tex_aux_scan_dimension_expression (int braced);
 
 /*tex
     A helper.
@@ -129,6 +131,18 @@ static void tex_aux_mu_error(int n)
     have been updated. Otherwise |cur_val| will contain the integer or scaled value in question.
 
 */
+
+/*tex 
+    Maybe some day ... we could be more granular, for instance by using a bitset and then also
+    registering the data type involved. However it would more be for internal tracing and flagging
+    than for reporting. 
+*/
+
+typedef enum arithmic_errors { 
+    arithmic_error_reset, 
+    arithmic_error_overflow, 
+    arithmic_error_division_by_zero, 
+} arithmic_errors;
 
 scanner_state_info lmt_scanner_state = {
     .current_cmd       = 0,
@@ -960,25 +974,31 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             return 1;
         case numexpr_code:
      /* case attrexpr_code: */
-            tex_aux_scan_expr(integer_val_level);
+            tex_aux_scan_expr(integer_val_level, 0);
             return 1;
         case posexpr_code:
-            tex_aux_scan_expr(posit_val_level);
+            tex_aux_scan_expr(posit_val_level, 0);
             return 1;
         case dimexpr_code:
-            tex_aux_scan_expr(dimension_val_level);
+            tex_aux_scan_expr(dimension_val_level, 0);
             return 1;
         case glueexpr_code:
-            tex_aux_scan_expr(glue_val_level);
+            tex_aux_scan_expr(glue_val_level, 0);
             return 1;
         case muexpr_code:
-            tex_aux_scan_expr(muglue_val_level);
+            tex_aux_scan_expr(muglue_val_level, 0);
             return 1;
         case numexpression_code:
-            tex_aux_scan_expression(integer_val_level);
+            tex_aux_scan_integer_expression(0);
             return 1;
         case dimexpression_code:
-            tex_aux_scan_expression(dimension_val_level);
+            tex_aux_scan_dimension_expression(0);
+            return 1;
+        case numexperimental_code:
+            tex_aux_scan_expression(integer_val_level, 0);
+            return 1;
+        case dimexperimental_code:
+            tex_aux_scan_expression(dimension_val_level, 0);
             return 1;
      // case dimen_to_scale_code:
      //     cur_val_level = integer_val_level;
@@ -1275,6 +1295,14 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int code)
             cur_val = tex_get_insert_line_depth(tex_scan_integer(0, NULL));
             cur_val_level = dimension_val_level;
             break;
+        case insert_stretch_code:
+            cur_val = tex_get_insert_stretch(tex_scan_integer(0, NULL));
+            cur_val_level = dimension_val_level;
+            break;
+        case insert_shrink_code:
+            cur_val = tex_get_insert_shrink(tex_scan_integer(0, NULL));
+            cur_val_level = dimension_val_level;
+            break;
         case split_last_depth_code:  
             cur_val = lmt_packaging_state.split_last_depth;
             cur_val_level = dimension_val_level;
@@ -1390,6 +1418,35 @@ static void tex_aux_missing_number_error(int where)
         "Missing number, case %i, treated as zero", where,
         "A number should have been here; I inserted '0'. (If you can't figure out why I\n"
         "needed to see a number, look up 'weird error' in the index to The TeXbook.)"
+    );
+}
+
+static void tex_aux_scan_dimension_out_of_range_error(int where) {
+    tex_handle_error(
+        normal_error_type,
+        "Dimension too large, case %i", where, 
+        "I can't work with sizes bigger than about 19 feet (45 Theodores as of 2023),\n"
+        "575 centimeters, 2300 Toves, 230 Ediths or 16383 points. Continue and I'll use\n"
+        "the largest value I can."
+    );
+}
+
+static void tex_aux_scan_integer_out_of_range_error(int where) {
+    tex_handle_error(
+        normal_error_type,
+        "Number too large, case %i", where, 
+        "I can only go up to 2147483647 = '17777777777 = \"7FFFFFFF, so I'm using that\n"
+        "number instead of yours."
+    );
+}
+
+static void tex_aux_improper_constant_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "Improper alphabetic constant",
+        "A one-character control sequence belongs after a ` mark. So I'm essentially\n"
+        "inserting \\0 here."
     );
 }
 
@@ -1648,6 +1705,10 @@ static void tex_aux_set_cur_val_by_box_property_cmd(halfword chr)
         case box_shrink_code:
             cur_val = box_list(b) ? tex_shrink(b) : 0;
             cur_val_level = dimension_val_level;
+            break;
+        case box_subtype_code:
+            cur_val = node_subtype(b);
+            cur_val_level = integer_val_level;
             break;
         case box_freeze_code:
             cur_val = node_type(b) == hlist_node ? box_width(b) : box_total(b);
@@ -2258,26 +2319,6 @@ halfword   tex_scan_math_class_number(int optional_equal)
 
 */
 
-static void tex_aux_number_to_big_error(void)
-{
-    tex_handle_error(
-        normal_error_type,
-        "Number too big",
-        "I can only go up to 2147483647 = '17777777777 = \"7FFFFFFF, so I'm using that\n"
-        "number instead of yours."
-    );
-}
-
-static void tex_aux_improper_constant_error(void)
-{
-    tex_handle_error(
-        back_error_type,
-        "Improper alphabetic constant",
-        "A one-character control sequence belongs after a ` mark. So I'm essentially\n"
-        "inserting \\0 here."
-    );
-}
-
 /*tex
 
     The next function is somewhat special. It is also called in other scanners and therefore
@@ -2291,7 +2332,6 @@ static void tex_aux_improper_constant_error(void)
     that is closer to the original.
 
 */
-
 
 static void tex_aux_scan_integer_no_number(int where)
 {
@@ -2314,6 +2354,11 @@ halfword tex_scan_integer(int optional_equal, int *radix)
         tex_get_x_token();
         if (cur_cmd == spacer_cmd) {
             continue;
+        } else if (cur_cmd == left_brace_cmd) {
+            tex_aux_scan_integer_expression(1);
+         // tex_aux_scan_expression(integer_val_level, 1);
+            result = cur_val;
+            goto THATSIT;
         } else if (cur_tok == equal_token) {
             if (optional_equal) {
                 optional_equal = 0;
@@ -2408,7 +2453,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
                                     vacuous = true;
                                     goto DONE;
                                 } else {
-                                    tex_aux_number_to_big_error();
+                                    tex_aux_scan_integer_out_of_range_error(1);
                                 }
                                 ok_so_far = 0;
                             }
@@ -2442,7 +2487,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
                                     vacuous = true;
                                     goto DONE;
                                 } else {
-                                    tex_aux_number_to_big_error();
+                                    tex_aux_scan_integer_out_of_range_error(2);
                                 }
                                 ok_so_far = false;
                             }
@@ -2470,7 +2515,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
                                 vacuous = true;
                                 goto DONE;
                             } else {
-                                tex_aux_number_to_big_error();
+                                tex_aux_scan_integer_out_of_range_error(3);
                             }
                             ok_so_far = false;
                         }
@@ -2487,6 +2532,7 @@ halfword tex_scan_integer(int optional_equal, int *radix)
         }
     }
     /*tex For now we still keep |cur_val| set too. */
+  THATSIT:
     cur_val = (halfword) (negative ? - result : result);
     return cur_val;
 }
@@ -2582,14 +2628,29 @@ void tex_scan_integer_validate(void)
 int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
 {
     long long result = 0;
- // do {
- //     tex_get_x_token();
- // } while (cur_cmd == spacer_cmd);
     while (1) {
         tex_get_x_token();
         if (cur_cmd != spacer_cmd) {
             if (optional_equal && (cur_tok == equal_token)) {
                 optional_equal = 0;
+            } else if (cur_cmd == left_brace_cmd) {
+                tex_aux_scan_integer_expression(1);
+             // tex_aux_scan_expression(integer_val_level, 1);
+                /* todo: what if negative */
+                if (result < 0) { 
+                 // if (dontbark) {
+                 //     return 0;
+                 // } else {
+                 //     tex_aux_missing_number_error(1);
+                 // }
+                    /*tex What to do? */
+                    result = 0;
+                    cur_val = 0;
+                    return 0;
+                } else { 
+                    result = cur_val;
+                }
+                goto THATSIT;
             } else {
                 break;
             }
@@ -2670,6 +2731,7 @@ int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
             tex_push_back(cur_tok, cur_cmd, cur_chr);
         }
     }
+  THATSIT:
     *value = (unsigned) result;
     cur_val = (halfword) result;
     return 1;
@@ -2745,16 +2807,6 @@ static void tex_aux_scan_dimension_fi_error(void) {
 
 }
 
-static void tex_aux_scan_dimension_unknown_unit_error(void) {
-    tex_handle_error(
-        normal_error_type,
-        "Illegal unit of measure (pt inserted)",
-        "Dimensions can be in units of em, ex, sp, cm, mm, es, ts, pt, bp, dk, pc, dd\n"
-        "cc or in; but yours is a new one! I'll assume that you meant to say pt, for\n"
-        "printer's points: two letters."
-    );
-}
-
 /*tex
     The Edith and Tove were introduced at BachoTeX 2023 and because the error message
     was still in feet we decided to adapt it accordingly so now in addition it reports
@@ -2762,13 +2814,22 @@ static void tex_aux_scan_dimension_unknown_unit_error(void) {
     five Ediths.
 */
 
-static void tex_aux_scan_dimension_out_of_range_error(void) {
+static void tex_aux_scan_dimension_unknown_unit_error(void) {
     tex_handle_error(
         normal_error_type,
-        "Dimension too large",
-        "I can't work with sizes bigger than about 19 feet (45 Theodores as of 2023),\n"
-        "575 centimeters, 2300 Toves, 230 Ediths or 16383 points. Continue and I'll use\n"
-        "the largest value I can."
+        "Illegal unit of measure (pt inserted)",
+        "Dimensions can be in units of em, ex, sp, cm, mm, es, ts, pt, bp, dk, pc, dd\n"
+        "cc or in; but yours is a new one! I'll assume that you meant to say pt, for\n"
+        "printer's points: two letters. User units also have at most two characters."
+    );
+}
+
+static void tex_aux_scan_expression_unexpected_negation_error(void) {
+    tex_handle_error(
+        normal_error_type,
+        "Unexpected minus, not or unequal symbol found at the start of an expression",
+        "You can use {-{...}} but not -{...} in expressions because it would give\n"
+        "unexpected results. I'll ignore this negation.\n"
     );
 }
 
@@ -3074,12 +3135,14 @@ int tex_get_userunit(halfword index, scaled *value)
             case constant_call_cmd:
                 if (chr && ! get_token_preamble(chr)) {
                     halfword list = token_link(chr);
-                    tex_begin_associated_list(list);
-                    tex_aux_scan_expr(dimension_val_level);
-                    if (cur_val_level == dimension_val_level) {
-                        *value = cur_val;
-                        return 1;
-                    }
+                 // if (list) {
+                        tex_begin_associated_list(list);
+                        tex_aux_scan_expr(dimension_val_level, 0);
+                        if (cur_val_level == dimension_val_level) {
+                            *value = cur_val;
+                            return 1;
+                        }
+                 // }
                 }
                 /*tex So we can actually have an empty macro. */
                 *value = 0;
@@ -3227,6 +3290,9 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
                     *num = 7227;
                     *denom = 100;
                     return normal_unit_scanned;
+                case unit_hashes('n','N','o','O'):
+                    /* this one is reserved so that we don't clash in the |not| scanner (unary) */
+                    return scaled_point_scanned;
              // case unit_hashes('t','T','r','R'):
              //     if (order) {
              //        if (tex_scan_mandate_keyword("true", 2)) {
@@ -3250,6 +3316,93 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
     }
 }
 
+static int tex_aux_scan_unit_only(halfword *value)
+{
+    int chrone, chrtwo, index;
+    halfword tokone, toktwo;
+    halfword save_cur_cs = cur_cs;
+    tokone = cur_tok;
+    if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+        chrone = cur_chr;
+    } else {
+        goto BACK_ONE;
+    }
+    tex_get_x_token(); /* no need for x here */
+    toktwo = cur_tok;
+    if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
+        chrtwo = cur_chr;
+    } else {
+        goto BACK_TWO;
+    }
+    cur_cs = save_cur_cs;
+    index = unit_parameter_index(chrone, chrtwo);
+    if (index >= 0) {
+        switch (index) {
+            case unit_hashes('p','P','t','T'):
+                return normal_unit_scanned;
+            case unit_hashes('c','C','m','M'):
+                *value = 1864679;
+                return normal_unit_scanned;
+            case unit_hashes('m','M','m','M'):
+                *value = 186467;
+                return normal_unit_scanned;
+            case unit_hashes('e','E','m','M'):
+                *value = tex_get_scaled_em_width(cur_font_par);
+                return relative_unit_scanned;
+            case unit_hashes('e','E','x','X'):
+                *value = tex_get_scaled_ex_height(cur_font_par);
+                return relative_unit_scanned;
+            case unit_hashes('s','S','p','P'):
+                *value = 1;
+                return scaled_point_scanned;
+            case unit_hashes('b','B','p','P'):
+                *value = 65781;
+                return normal_unit_scanned;
+            case unit_hashes('t','T','s','S'):
+                *value = 466169;
+                return normal_unit_scanned;
+            case unit_hashes('e','E','s','S'):
+                *value = 4661692;
+                return normal_unit_scanned;
+            case unit_hashes('e','E','u','U'):
+                *value = tex_round_xn_over_d(4661692, eu_factor_par, scaling_factor);
+                return normal_unit_scanned;
+            case unit_hashes('d','D','k','K'): 
+                *value = 422042;
+                return normal_unit_scanned;
+            case unit_hashes('d','D','d','D'):
+                *value = 70124;
+                return normal_unit_scanned;
+            case unit_hashes('c','C','c','C'):
+                *value = 841489;
+                return normal_unit_scanned;
+            case unit_hashes('p','P','c','C'):
+                *value = 786432;
+                return normal_unit_scanned;
+            case unit_hashes('p','P','x','X'):
+                *value = px_dimension_par;
+                return relative_unit_scanned;
+            case unit_hashes('i','I','n','N'):
+                *value = 4736286;
+                return normal_unit_scanned;
+            case unit_hashes('n','N','o','O'):
+                /* this one is reserved so that we don't clash in the |not| scanner (unary) */
+                *value = 1;
+                return normal_unit_scanned;
+            default:
+                if (tex_get_userunit(index, value)) {
+                    return relative_unit_scanned;
+                }
+        }
+    }
+  BACK_TWO:
+    tex_back_input(toktwo);
+  BACK_ONE:
+    tex_back_input(tokone);
+    cur_cs = save_cur_cs;
+    return no_unit_scanned;
+}
+
 /*tex
     When we drop |true| support we can use the next variant which is a bit more efficient and also
     handles optional units. Later we will see a more limited variant that also includes the scaler.
@@ -3265,7 +3418,7 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
     int fraction = 0;
     int num = 0;
     int denom = 0;
-    scaled v;
+    scaled v = 0;
     int save_cur_val;
     halfword cur_order = normal_glue_order;
     lmt_scanner_state.arithmic_error = 0;
@@ -3274,6 +3427,10 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
             tex_get_x_token();
             if (cur_cmd == spacer_cmd) {
                 continue;
+            } else if (cur_cmd == left_brace_cmd) {
+                tex_aux_scan_dimension_expression(1);
+                goto THATSIT;
+             // tex_aux_scan_experimental(dimension_val_level, 1);
             } else if (cur_tok == equal_token) {
                 if (optional_equal) {
                     optional_equal = 0;
@@ -3303,14 +3460,14 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
                 goto ATTACH_SIGN;
             }
         } else {
-            int has_fraction = tex_token_is_seperator(cur_tok);
+            int has_fraction = tex_token_is_separator(cur_tok);
             if (has_fraction) {
                 cur_val = 0;
             } else {
                 int cur_radix;
                 tex_back_input(cur_tok);
                 cur_val = tex_scan_integer(0, &cur_radix);
-                if (cur_radix == 10 && tex_token_is_seperator(cur_tok)) {
+                if (cur_radix == 10 && tex_token_is_separator(cur_tok)) {
                     has_fraction = 1;
                     tex_get_token();
                 }
@@ -3336,6 +3493,7 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
     } else {
         /* only when we scan for a glue (filler) component */
     }
+    // kind of weird: 
     if (cur_val < 0) {
         negative = ! negative;
         cur_val = -cur_val;
@@ -3426,20 +3584,20 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
         if (lmt_error_state.intercept) {
             lmt_error_state.last_intercept = 1;
         } else {
-            tex_aux_scan_dimension_out_of_range_error();
+            tex_aux_scan_dimension_out_of_range_error(1);
         }
         cur_val = max_dimension;
         lmt_scanner_state.arithmic_error = 0;
     }
-    if (negative) {
-        cur_val = -cur_val;
-    }
     if (order) {
         *order = cur_order;
     }
+  THATSIT:
+    if (negative) {
+        cur_val = -cur_val;
+    }
     return cur_val;
 }
-
 
 void tex_scan_dimension_validate(void)
 {
@@ -3458,12 +3616,12 @@ void tex_scan_dimension_validate(void)
             return;
         }
     } else {
-        int has_fraction = tex_token_is_seperator(cur_tok);
+        int has_fraction = tex_token_is_separator(cur_tok);
         if (! has_fraction) {
             int cur_radix;
             tex_back_input(cur_tok);
             tex_scan_integer(0, &cur_radix);
-            if (cur_radix == 10 && tex_token_is_seperator(cur_tok)) {
+            if (cur_radix == 10 && tex_token_is_separator(cur_tok)) {
                 has_fraction = 1;
                 tex_get_token();
             }
@@ -3533,6 +3691,10 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too)
             if (cur_cmd != spacer_cmd) {
                 if (optional_equal && (cur_tok == equal_token)) {
                     optional_equal = 0;
+                } else if (cur_cmd == left_brace_cmd) {
+                 // tex_back_input(cur_tok);
+                    tex_aux_scan_expr(level, 1);
+                    return cur_val;
                 } else {
                     break;
                 }
@@ -4844,10 +5006,17 @@ halfword tex_scan_macro_expand(void)
     recursive process: When the left parenthesis of a subexpression is scanned we descend to the
     next level of recursion; the previous level is resumed with the matching right parenthesis.
 
+    The states below are used for |\dimexpr|, |\numexpr| etc. as well as |\dimexpression| and 
+    |\numexpression|. At some point I might merge them with the later defines states |bit_*| where
+    we also havea priority vector. 
+
+    Maybe we can also add |abs n| but that depends on my needs. 
+
 */
 
 typedef enum expression_states {
     expression_none,     /*tex |(| or |(expr)| */
+    expression_not,      /*tex ! ~  not */
     expression_add,      /*tex |+| */
     expression_subtract, /*tex |-| */
     expression_multiply, /*tex |*| */
@@ -4855,6 +5024,35 @@ typedef enum expression_states {
     expression_scale,    /*tex |* factor| */
     expression_idivide,  /*tex |:|, is like |/| but floored */
     expression_imodulo,  /*tex |;| */
+    expression_positive, /*tex |pm| */
+    expression_negative, /*tex |mp| */
+
+    expression_bor,       /* | */
+    expression_band,      /* & */
+    expression_bxor,      /* ^ */
+    expression_bnot,      /* ~ */
+
+    expression_bset,      /* bset   */
+    expression_bunset,    /* bunset */
+
+    expression_bleft,     /* << */
+    expression_bright,    /* >> */
+
+    expression_less,      /* <      */
+    expression_lessequal, /* <=     */
+    expression_equal,     /* =   == */
+    expression_moreequal, /* >=     */
+    expression_more,      /* >      */
+    expression_unequal,   /* <>  != */
+
+//  expression_div,       /*  :       */ /* // */
+//  expression_mod,       /*  %   mod */
+
+    expression_or,        /* or  */
+    expression_and,       /* and */
+
+    expression_cor,       /* cor  */
+    expression_cand,      /* cand */
 } expression_states;
 
 /*tex
@@ -5120,7 +5318,34 @@ int tex_fract(int x, int n, int d, int max_answer)
 
 */
 
-static void tex_aux_scan_expr(halfword level)
+static void tex_aux_scan_missing_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "Missing ) inserted for expression",
+        "I was expecting to see an operator or ')' but didn't."
+    );
+}
+
+static void tex_aux_scan_unexpected_relax_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "Unexpected \\relax in expression",
+        "I was expecting to see an operator or '}' but didn't."
+    );
+}
+
+static void tex_aux_scan_unexpected_whatever_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "Unexpected token in expression",
+        "I was expecting to see an operator or '}' but didn't."
+    );
+}
+
+static void tex_aux_scan_expr(halfword level, int braced)
 {
     /*tex state of expression so far */
     int result;
@@ -5141,7 +5366,6 @@ static void tex_aux_scan_expr(halfword level)
     int error_b = 0;
     /*tex top of expression stack */
     halfword top = null;
-    int braced = 0;
     int nonelevel = level == posit_val_level ? posit_val_level : integer_val_level;
     /*tex Scan and evaluate an expression |e| of type |l|. */
     cur_val_level = level; /* for now */
@@ -5156,44 +5380,43 @@ static void tex_aux_scan_expr(halfword level)
     term = 0;
     numerator = 0;
   CONTINUE:
-//    operation = state == expression_none ? level : integer_val_level; /* we abuse operation */
-    operation = state == expression_none ? level : nonelevel; /* we abuse operation */
+    operation = state == expression_none ? level : nonelevel; 
     /*tex
         Scan a factor |f| of type |o| or start a subexpression. Get the next non-blank non-call
-        token.
+        token. The glue scanner is tricky because it grabs the amount and then later on scans the 
+        other components. 
     */
-  AGAIN:
-    do {
+    while (1) {
         tex_get_x_token();
-    } while (cur_cmd == spacer_cmd);
-    if (! braced) {
-        if (cur_cmd == left_brace_cmd) {
-            braced = 1;
-            goto AGAIN;
-        } else {
-            braced = 2;
+        if (cur_cmd == spacer_cmd) {
+            continue;
+        } else if (cur_tok == left_parent_token) { 
+            /*tex Push the expression stack and |goto restart|. */
+            halfword t = tex_get_node(expression_node_size);
+            node_type(t) = expression_node;
+            node_subtype(t) = 0;
+            /* */
+            node_next(t) = top;
+            expression_type(t) = (singleword) level;
+            expression_state(t) = (singleword) state;
+            expression_result(t) = (singleword) result;
+            expression_expression(t) = expression;
+            expression_term(t) = term;
+            expression_numerator(t) = numerator;
+            top = t;
+            level = operation;
+            goto RESTART;
+        } else { 
+            tex_back_input(cur_tok);
+            break;
         }
     }
-    if (cur_tok == left_parent_token) {
-        /*tex Push the expression stack and |goto restart|. */
-        halfword t = tex_get_node(expression_node_size);
-        node_type(t) = expression_node;
-        node_subtype(t) = 0;
-        /* */
-        node_next(t) = top;
-        expression_type(t) = (singleword) level;
-        expression_state(t) = (singleword) state;
-        expression_result(t) = (singleword) result;
-        expression_expression(t) = expression;
-        expression_term(t) = term;
-        expression_numerator(t) = numerator;
-        top = t;
-        level = operation;
-        goto RESTART;
-    }
-    if (cur_cmd != spacer_cmd) {
-        tex_back_input(cur_tok);
-    }
+    /*tex
+        In these expressions we use the integer scanner which itself accepts 
+        |{expressions}| so |-{...}| actally works here. Hoewver, as regular expr 
+        we don't handle a |-(...)| unless we add that to the integer scanner. 
+
+    */
     switch (operation) {
         case integer_val_level:
         case attribute_val_level:
@@ -5214,7 +5437,8 @@ static void tex_aux_scan_expr(halfword level)
     }
   FOUND:
     /*tex
-        Scan the next operator and set |o| and get the next non-blank non-call token.
+        Scan the next operator and set |o| and get the next non-blank non-call token. We 
+        can also have a |\relax|, |)| or |}| here ending a expression. 
     */
     do {
         tex_get_x_token();
@@ -5256,20 +5480,17 @@ static void tex_aux_scan_expr(halfword level)
             if (! top) {
                 if (cur_cmd == relax_cmd) {
                     /* we're done */
-                } else if (cur_cmd == right_brace_cmd && braced == 1) {
+                } else if (braced == 1 && cur_cmd == right_brace_cmd) {
                     /* we're done */
                 } else {
                     tex_back_input(cur_tok);
                 }
-            } else if (cur_tok != right_parent_token) {
-                tex_handle_error(
-                    back_error_type,
-                    "Missing ) inserted for expression",
-//            etex_expr_mode ?
-                    "I was expecting to see '+', '-', '*', '/', ':', ';' or ')' but didn't."
-//            :
-//                  "I was expecting to see '+', '-', '*', '/' or ')' but didn't."
-                );
+            } else if (braced == 1 && cur_cmd == right_brace_cmd) {
+                /* we're done */
+            } else if (cur_tok == right_parent_token) {
+                /* we're done */
+            } else { 
+                tex_aux_scan_missing_error();
             }
             break;
     }
@@ -5321,8 +5542,8 @@ static void tex_aux_scan_expr(halfword level)
             if ((level >= glue_val_level) && (operation != expression_none)) {
                 /*tex Do we really need to copy here? */
                 tex_aux_normalize_glue(term);
-            } else {
-                term = factor;
+         // } else {
+         //     term = factor;
             }
             break;
         case expression_multiply:
@@ -5494,15 +5715,19 @@ static void tex_aux_scan_expr(halfword level)
         tex_free_node(t, expression_node_size);
         goto FOUND;
     } else if (error_b) {
-        tex_handle_error(
-            normal_error_type,
-            "Arithmetic overflow",
-            "I can't evaluate this expression, since the result is out of range."
-        );
-        if (level >= glue_val_level) {
-            tex_reset_glue_to_zero(expression);
-        } else {
-            expression = 0;
+        switch (level) {
+            case posit_val_level:
+            case integer_val_level:
+            case attribute_val_level:
+                tex_aux_scan_integer_out_of_range_error(4);
+                expression = 0;
+                break;
+            case glue_val_level:
+            case muglue_val_level:
+                tex_reset_glue_to_zero(expression);
+            case dimension_val_level:
+                tex_aux_scan_dimension_out_of_range_error(2);
+                break;
         }
     }
     lmt_scanner_state.arithmic_error = error_a;
@@ -5511,9 +5736,268 @@ static void tex_aux_scan_expr(halfword level)
     cur_val = expression;
 }
 
+halfword tex_scan_expr(halfword level) /* maybe avoid indirectness */
+{
+    tex_aux_scan_expr(level, 0);
+    return cur_val;
+}
+
+static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int *has_unit, int has_fraction) 
+{
+    halfword num = 0;
+    halfword denom = 0;
+    scaled unit = 0;
+    *has_unit = 0;
+    switch (tex_aux_scan_unit(&num, &denom, &unit, NULL)) {
+        case normal_unit_scanned:
+            if (num) {
+                int remainder = 0;
+                value = tex_xn_over_d_r(value, num, denom, &remainder);
+                fraction = (num * fraction + unity * remainder) / denom;
+                value += fraction / unity;
+                fraction = fraction % unity;
+            }
+            *has_unit = 1;
+            if (value >= 040000) { // 0x4000
+                lmt_scanner_state.arithmic_error = 1;
+                value = 040000; 
+            }
+            return value * unity + fraction;
+        case scaled_point_scanned:
+            *has_unit = 0;
+            return value;
+        case relative_unit_scanned:
+            *has_unit = 1;
+            return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, unity));
+        case quantitity_unit_scanned:
+            cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
+            value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, unity));
+            *has_unit = 1;
+            return value;
+        case no_unit_scanned:      
+            if (has_fraction) {
+                return value * unity + fraction;
+            } else { 
+               /* what */
+            }
+        default: 
+            break;
+     /* case math_unit_scanned:     */ /* ignored */
+     /* case flexible_unit_scanned: */ /* ignored */
+    }
+    return value;
+}
+
+static halfword tex_scan_bit_integer(int *radix)
+{
+    bool negative = false;
+    long long result = 0;
+    while (1) {
+        if (cur_tok == minus_token) {
+            negative = ! negative;
+        } else if (cur_tok == plus_token) {
+            /* ignore */
+        } else if (cur_cmd == spacer_cmd) { 
+            /* ignore */
+        } else { 
+            break; 
+        }
+        tex_get_token();
+    }
+    if (cur_tok == alpha_token) {
+        tex_get_token();
+        if (cur_tok < cs_token_flag) {
+            result = cur_chr;
+        } else {
+            strnumber txt = cs_text(cur_tok - cs_token_flag);
+            if (tex_single_letter(txt)) {
+                result = aux_str2uni(str_string(txt));
+            } else if (tex_is_active_cs(txt)) {
+                result = active_cs_value(txt);
+            } else {
+                result = max_character_code + 1;
+            }
+        }
+        if (result > max_character_code) {
+            tex_aux_improper_constant_error();
+            return 0;
+        }
+    } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
+        result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
+        if (cur_val_level != integer_val_level) {
+            tex_aux_missing_number_error(2);
+            return 0;
+        }
+    } else {
+        bool vacuous = true;
+        bool ok_so_far = true;
+        switch (cur_tok) {
+            case octal_token:
+                {
+                    if (radix) {
+                        *radix = 8;
+                    }
+                    while (1) {
+                        unsigned d = 0;
+                        tex_get_x_token();
+                        if ((cur_tok >= zero_token) && (cur_tok <= seven_token)) {
+                            d = cur_tok - zero_token;
+                        } else {
+                            goto DONE;
+                        }
+                        vacuous = false;
+                        if (ok_so_far) {
+                            result = result * 8 + d;
+                            if (result > max_integer) {
+                                result = max_integer;
+                                tex_aux_scan_integer_out_of_range_error(5);
+                                ok_so_far = false;
+                            }
+                        }
+                    }
+                 // break;
+                }
+            case hex_token:
+                {
+                    if (radix) {
+                        *radix = 16;
+                    }
+                    while (1) {
+                        unsigned d = 0;
+                        tex_get_x_token();
+                        if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
+                            d = cur_tok - zero_token;
+                        } else if ((cur_tok >= A_token_l) && (cur_tok <= F_token_l)) {
+                            d = cur_tok - A_token_l + 10;
+                        } else if ((cur_tok >= A_token_o) && (cur_tok <= F_token_o)) {
+                            d = cur_tok - A_token_o + 10;
+                        } else {
+                            goto DONE;
+                        }
+                        vacuous = false;
+                        if (ok_so_far) {
+                            result = result * 16 + d;
+                            if (result > max_integer) {
+                                result = max_integer;
+                                tex_aux_scan_integer_out_of_range_error(6);
+                                ok_so_far = false;
+                            }
+                        }
+                    }
+                 // break;
+                }
+            default:
+                {
+                    if (radix) {
+                        *radix = 10;
+                    }
+                    while (1) {
+                        unsigned d = 0;
+                        if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
+                            d = cur_tok - zero_token;
+                        } else {
+                            goto DONE;
+                        }
+                        vacuous = false;
+                        if (ok_so_far) {
+                            result = result * 10 + d;
+                            if (result > max_integer) {
+                                result = max_integer;
+                                tex_aux_scan_integer_out_of_range_error(7);
+                                ok_so_far = false;
+                            }
+                        }
+                        tex_get_x_token();
+                    }
+                 // break;
+                }
+        }
+      DONE:
+        if (vacuous) {
+            tex_aux_missing_number_error(3);
+        } else {
+            tex_push_back(cur_tok, cur_cmd, cur_chr);
+        }
+    }
+    cur_val = (halfword) (negative ? - result : result);
+    return cur_val;
+}
+
+static halfword tex_scan_bit_dimension(int *has_fraction, int *has_unit)
+{
+    bool negative = false;
+    int fraction = 0;
+    *has_fraction = 0;
+    *has_unit = 1;
+    lmt_scanner_state.arithmic_error = 0;
+    while (1) {
+        if (cur_tok == minus_token) {
+            negative = ! negative;
+        } else if (cur_tok == plus_token) {
+            /* ignore */
+        } else if (cur_cmd == spacer_cmd) { 
+            /* ignore */
+        } else { 
+            break; 
+        }
+        tex_get_token();
+    }
+    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
+        if (cur_val_level == dimension_val_level) {
+            goto ATTACH_SIGN;
+        }
+    } else if (tex_token_is_unit(cur_tok) && tex_aux_scan_unit_only(&cur_val) != no_unit_scanned) {
+        goto NEARLY_DONE;
+    } else {
+        *has_fraction = tex_token_is_separator(cur_tok);
+        if (*has_fraction) {
+            /*tex We started with a |.| or |,|. */
+            cur_val = 0;
+        } else {
+            int cur_radix = 10;
+            cur_val = tex_scan_bit_integer(&cur_radix);
+            if (cur_radix == 10 && tex_token_is_separator(cur_tok)) {
+                *has_fraction = 1;
+                tex_get_token(); /* why not x */
+            }
+        }
+        if (*has_fraction) {
+            unsigned k = 0;
+            unsigned char digits[18];
+            while (1) {
+                tex_get_x_token();
+                if (cur_tok > nine_token || cur_tok < zero_token) {
+                    break;
+                } else if (k < 17) {
+                    digits[k] = (unsigned char) (cur_tok - zero_token);
+                    ++k;
+                }
+            }
+            fraction = tex_round_decimals_digits(digits, k);
+            if (cur_cmd != spacer_cmd) {
+                /* we can avoid this when parsing a unit but not now */
+                tex_back_input(cur_tok);
+            }
+        }
+    }
+    cur_val = tex_aux_scan_unit_applied(cur_val, fraction, has_unit, *has_fraction);
+  ATTACH_SIGN:
+    if (lmt_scanner_state.arithmic_error || (abs(cur_val) >= 010000000000)) { // 0x40000000
+        tex_aux_scan_dimension_out_of_range_error(3);
+        cur_val = max_dimension;
+        lmt_scanner_state.arithmic_error = 0;
+    }
+  NEARLY_DONE:
+    if (negative) {
+        cur_val = -cur_val;
+    }
+    return cur_val;
+}
+
 /*tex
 
-    Already early in \LUAMETATEX\ I wondered about adding suypport for boolean expressions but at
+    Already early in \LUAMETATEX\ I wondered about adding support for boolean expressions but at
     that time (2019) I still wanted it as part of \type |\numexpr|. I added some code that actually
     worked okay, but kept it commented. After all, we don't need it that often and \CONTEXT\ has
     helpers for it so it's best to avoid the extra overhead in other expressions.
@@ -5527,21 +6011,8 @@ static void tex_aux_scan_expr(halfword level)
     In the end I decided not to integrate it but make a dedicated |\bitexpr| instead. I played with
     some variants but the approach in the normal expression scanned is not really suitable for it.
 
-    In the end, after some variations, I decided that some reverse polish notation approach made
-    more sense and when considering an infix to rpn translation and searching the web a bit I ran
-    into nice example:
-
-        https://github.com/chidiwilliams/expression-evaluator/blob/main/simple.js
-
-    It shows how to handled the nested expressions. I made a comaprable variant in \LUA, extended
-    it for more than the usual four operators, condensed it a bit and then went on to write the code
-    below. Of course we have a completely different token parser and we use \TEX\ (temp) nodes for
-    a few stacks. I know that we can combine the loops but that becomes messy and performance is
-    quite okay, also because we move items from one to another stack with little overhead. Although
-    stacks are not that large, using static sized stacks (\CCODE\ arrays) makes no sense here.
-
     After the initial |\bitexpr| I eventually ended up with an integer and dimension scanner and
-    it became more complex that originally intended, but the current implementaiton is flexible
+    it became more complex that originally intended, but the current implementation is flexible
     enough to extend. I can probably squeeze out some more performance.
 
     Beware: details can change, for instance handling some (math) \UNICODE\ characters has been
@@ -5553,12 +6024,1786 @@ static void tex_aux_scan_expr(halfword level)
 
 */
 
+int tex_scanned_expression(int level)
+{
+    tex_aux_scan_expression(level, 0);
+    return cur_val;
+}
+
+/*tex
+    We used to only scale by 1000 when we had a fraction but that is kind of fuzzy so now we always
+    assume a fraction.
+*/
+
+halfword tex_scan_scale(int optional_equal)
+{
+    bool negative = false;
+    lmt_scanner_state.arithmic_error = 0;
+    do {
+        while (1) {
+            tex_get_x_token();
+            if (cur_cmd != spacer_cmd) {
+                if (optional_equal && (cur_tok == equal_token)) {
+                    optional_equal = 0;
+                } else {
+                    break;
+                }
+            }
+        }
+        if (cur_tok == minus_token) {
+            negative = ! negative;
+            cur_tok = plus_token;
+        }
+    } while (cur_tok == plus_token);
+    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
+    } else {
+        int has_fraction = tex_token_is_separator(cur_tok);
+        if (has_fraction) {
+            cur_val = 0;
+        } else {
+            int cur_radix;
+            tex_back_input(cur_tok);
+            cur_val = tex_scan_integer(0, &cur_radix);
+            tex_get_token();
+            if (cur_radix == 10 && tex_token_is_separator(cur_tok)) {
+                has_fraction = 1;
+            }
+        }
+        cur_val = cur_val * 1000;
+        if (has_fraction) {
+            unsigned k = 4;
+            while (1) {
+                tex_get_x_token();
+                if (cur_tok < zero_token || cur_tok > nine_token) {
+                    break;
+                } else if (k == 1) {
+                    /* rounding */
+                    if (cur_tok >= five_token && cur_tok <= nine_token) {
+                        cur_val += 1;
+                    }
+                    --k;
+                } else if (k) {
+                    cur_val = cur_val + (k == 4 ? 100 : (k == 3 ? 10 : 1)) * (cur_tok - zero_token);
+                    --k;
+                }
+            }
+        }
+        tex_push_back(cur_tok, cur_cmd, cur_chr);
+    }
+    if (negative) {
+        cur_val = -cur_val;
+    }
+    if (lmt_scanner_state.arithmic_error || (abs(cur_val) >= 0x40000000)) {
+     // scan_dimension_out_of_range_error();
+        cur_val = max_dimension;
+        lmt_scanner_state.arithmic_error = 0;
+    }
+    return cur_val;
+}
+
+/* todo: share with lmttokenlib.scan_float */
+
+# define max_posit_size 60
+
+halfword tex_scan_posit(int optional_equal)
+{
+    int hexadecimal = 1;
+    int exponent = 1;
+    bool negative = false;
+    int b = 0;
+    char buffer[max_posit_size+4] = { 0 };
+    do {
+        while (1) {
+            tex_get_x_token();
+            if (cur_cmd != spacer_cmd) {
+                if (optional_equal && (cur_tok == equal_token)) {
+                    optional_equal = 0;
+                } else {
+                    break;
+                }
+            }
+        }
+        if (cur_tok == minus_token) {
+            negative = ! negative;
+            cur_tok = plus_token;
+        }
+    } while (cur_tok == plus_token);
+    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
+        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, posit_val_level, 0, 0);
+    } else {
+        if (negative) {
+            buffer[b++] = '-';
+        }
+        /*tex we accept |[.,]digits| */
+        if (hexadecimal && (cur_tok == zero_token)) {
+            buffer[b++] = '0';
+            tex_get_x_token();
+            if (tex_token_is_hexadecimal(cur_tok)) {
+                buffer[b++] = 'x';
+                goto SCANHEXADECIMAL;
+            } else {
+                goto PICKUPDECIMAL;
+            }
+        } else {
+            goto SCANDECIMAL;
+        }
+      SCANDECIMAL:
+        if (tex_token_is_separator(cur_tok)) {
+            buffer[b++] = '.';
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_digit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (exponent) {
+                    goto DECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= 60) {
+                    goto TOOBIG;
+                }
+            }
+        } else {
+            goto PICKUPDECIMAL;
+        }
+        while (1) {
+            tex_get_x_token();
+          PICKUPDECIMAL:
+            if (tex_token_is_digit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_separator(cur_tok)) {
+                buffer[b++] = '.';
+                while (1) {
+                    tex_get_x_token();
+                    if (tex_token_is_digit(cur_tok)) {
+                        buffer[b++] = (unsigned char) cur_chr;
+                    } else {
+                        tex_back_input(cur_tok);
+                        break;
+                    }
+                }
+            } else if (exponent) {
+                goto DECIMALEXPONENT;
+            } else {
+                tex_back_input(cur_tok);
+                goto DONE;
+            }
+            if (b >= max_posit_size) {
+                goto TOOBIG;
+            }
+        }
+      DECIMALEXPONENT:
+        if (tex_token_is_exponent(cur_tok)) {
+            buffer[b++] = (unsigned char) cur_chr;
+            tex_get_x_token();
+            if (tex_token_is_sign(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_digit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            }
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_digit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else {
+                    break;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+        tex_back_input(cur_tok);
+        goto DONE;
+      SCANHEXADECIMAL:
+        tex_get_x_token();
+        if (tex_token_is_separator(cur_tok)) {
+            buffer[b++] = '.';
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (exponent) {
+                    goto HEXADECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        } else {
+            /* hm, we could avoid this pushback */
+            tex_back_input(cur_tok);
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else if (tex_token_is_separator(cur_tok)) {
+                    buffer[b++] = '.';
+                    while (1) {
+                        tex_get_x_token();
+                        if (tex_token_is_xdigit(cur_tok)) {
+                            buffer[b++] = (unsigned char) cur_chr;
+                        } else {
+                            tex_back_input(cur_tok);
+                            break;
+                        }
+                    }
+                } else if (exponent) {
+                    goto HEXADECIMALEXPONENT;
+                } else {
+                    tex_back_input(cur_tok);
+                    goto DONE;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+      HEXADECIMALEXPONENT:
+        if (tex_token_is_xexponent(cur_tok)) {
+            buffer[b++] = (unsigned char) cur_chr;
+            tex_get_x_token();
+            if (tex_token_is_sign(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            } else if (tex_token_is_xdigit(cur_tok)) {
+                buffer[b++] = (unsigned char) cur_chr;
+            }
+            while (1) {
+                tex_get_x_token();
+                if (tex_token_is_xdigit(cur_tok)) {
+                    buffer[b++] = (unsigned char) cur_chr;
+                } else {
+                    break;
+                }
+                if (b >= max_posit_size) {
+                    goto TOOBIG;
+                }
+            }
+        }
+        tex_back_input(cur_tok);
+      DONE:
+        if (b) {
+            double d = strtod(buffer, NULL);
+            cur_val = tex_double_to_posit(d).v;
+            return cur_val;
+        } else {
+            tex_aux_missing_number_error(4);
+        }
+      TOOBIG:
+        cur_val = tex_integer_to_posit(0).v;
+    }
+    return cur_val;
+}
+
+int tex_scan_tex_value(halfword level, halfword *value)
+{
+    tex_aux_scan_expr(level, 0);
+    *value = cur_val;
+    return 1;
+}
+
+quarterword tex_scan_direction(int optional_equal)
+{
+    int i = tex_scan_integer(optional_equal, NULL);
+    return (quarterword) checked_direction_value(i);
+}
+
+halfword tex_scan_geometry(int optional_equal)
+{
+    int i = tex_scan_integer(optional_equal, NULL);
+    return checked_geometry_value(i);
+}
+
+halfword tex_scan_orientation(int optional_equal)
+{
+    halfword i = tex_scan_integer(optional_equal, NULL);
+    return checked_orientation_value(i);
+}
+
+halfword tex_scan_anchor(int optional_equal)
+{
+    halfword a = tex_scan_integer(optional_equal, NULL);
+    halfword l = (a >> 16) & 0xFFFF;
+    halfword r =  a        & 0xFFFF;
+    return (checked_anchor_value(l) << 16) + checked_anchor_value(r);
+}
+
+halfword tex_scan_anchors(int optional_equal)
+{
+    halfword l = tex_scan_integer(optional_equal, NULL) & 0xFFFF;
+    halfword r = tex_scan_integer(0, NULL)              & 0xFFFF;
+    return (checked_anchor_value(l) << 16) + checked_anchor_value(r);
+}
+
+halfword tex_scan_attribute(halfword attrlist)
+{
+    halfword i = tex_scan_attribute_register_number();
+    halfword v = tex_scan_integer(1, NULL);
+    if (eq_value(register_attribute_location(i)) != v) {
+        if (attrlist) {
+            attrlist = tex_patch_attribute_list(attrlist, i, v);
+        } else {
+            attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
+        }
+    }
+    return attrlist;
+}
+
+halfword tex_scan_extra_attribute(halfword attrlist)
+{
+    halfword i = tex_scan_attribute_register_number();
+    halfword v = tex_scan_integer(1, NULL);
+    if (attrlist) {
+        attrlist = tex_patch_attribute_list(attrlist, i, v);
+    } else {
+        attrlist = tex_copy_attribute_list_set(null, i, v);
+    }
+    return attrlist;
+}
+
+# undef factor 
+
+static inline halfword tex_scan_aux_o(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case r_token_l: case r_token_o:
+            return expression_or;
+        default: 
+            tex_aux_show_keyword_error("or");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_a(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case n_token_l: case n_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case d_token_l: case d_token_o:
+                    return expression_and;
+                default:
+                    goto A_ERROR;
+            }
+        default:
+          A_ERROR:
+            tex_aux_show_keyword_error("and");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_n(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case o_token_l: case o_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case t_token_l: case t_token_o:
+                    return expression_not;
+                default:
+                    goto N_ERROR;
+            }
+        case p_token_l: case p_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case m_token_l: case m_token_o:
+                    return expression_positive;
+                default:
+                    goto N_ERROR;
+            }
+        case m_token_l: case m_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case p_token_l: case p_token_o:
+                    return expression_negative;
+                default:
+                    goto N_ERROR;
+            }
+        default:
+          N_ERROR:
+            tex_aux_show_keyword_error("not|nmp|npm");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_m(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case o_token_l: case o_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case d_token_l: case d_token_o:
+                    return expression_imodulo;
+                default:
+                    goto M_ERROR;
+            }
+        default:
+          M_ERROR:
+            tex_aux_show_keyword_error("mod");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_d(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case i_token_l: case i_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case v_token_l: case v_token_o:
+                    return expression_idivide;
+                default:
+                    goto M_ERROR;
+            }
+        default:
+          M_ERROR:
+            tex_aux_show_keyword_error("div");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_b(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case a_token_l: case a_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case n_token_l: case n_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case d_token_l: case d_token_o:
+                            return expression_band;
+                        default:
+                            goto B_ERROR;
+                    }
+                default:
+                    goto B_ERROR;
+            }
+            break;
+        case o_token_l: case o_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case r_token_l: case r_token_o:
+                    return expression_bor;
+                default:
+                    goto B_ERROR;
+            }
+            break;
+        case x_token_l: case x_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case o_token_l: case o_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case r_token_l: case r_token_o:
+                            return expression_bxor;
+                        default:
+                            goto B_ERROR;
+                    }
+                default:
+                    goto B_ERROR;
+            }
+            break;
+        case s_token_l: case s_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case e_token_l: case e_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case t_token_l: case t_token_o:
+                            return expression_bset;
+                        default:
+                            goto B_ERROR;
+                    }
+                default:
+                    goto B_ERROR;
+            }
+            break;
+        case u_token_l: case u_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case n_token_l: case n_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case s_token_l: case s_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case e_token_l: case e_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case t_token_l: case t_token_o:
+                                            return expression_bset;
+                                        default:
+                                            goto B_ERROR;
+                                    }
+                                default:
+                                    goto B_ERROR;
+                            }
+                        default:
+                            goto B_ERROR;
+                    }
+                default:
+                    goto B_ERROR;
+            }
+            break;
+        default:
+          B_ERROR:
+            tex_aux_show_keyword_error("band|bor|bxor|bset|bunset");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_c(void)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case a_token_l: case a_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case n_token_l: case n_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case d_token_l: case d_token_o:
+                            return expression_cand;
+                        default:
+                            goto C_ERROR;
+                    }
+                default:
+                    goto C_ERROR;
+            }
+            break;
+        case o_token_l: case o_token_o:
+            tex_get_x_token();
+            switch (cur_tok) {
+                case r_token_l: case r_token_o:
+                    return expression_cor;
+                default:
+                    goto C_ERROR;
+            }
+        default:
+          C_ERROR:
+            tex_aux_show_keyword_error("cand|cor");
+            return expression_none;
+    }
+}
+
+static inline halfword tex_scan_aux_equal(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case equal_token:
+            return expression_equal;
+        default:
+            *alreadygotten = 1;
+            return expression_equal;
+    }
+}
+
+static inline halfword tex_scan_aux_less(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case less_token:
+            return expression_bleft;
+        case equal_token:
+            return expression_lessequal;
+        case more_token:
+            return expression_unequal;
+        default:
+            *alreadygotten = 1;
+            return expression_less;
+    }
+}
+
+static inline halfword tex_scan_aux_more(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case more_token:
+            return expression_bright;
+        case equal_token:
+            return expression_moreequal;
+        default:
+            *alreadygotten = 1;
+            return expression_more;
+    }
+}
+
+static inline halfword tex_scan_aux_tilde(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case equal_token:
+            return expression_unequal;
+        default:
+            *alreadygotten = 1;
+            return expression_bnot;
+    }
+}
+
+static inline halfword tex_scan_aux_exclamation(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case equal_token:
+            return expression_unequal;
+        default:
+            *alreadygotten = 1;
+            return expression_not;
+    }
+}
+
+static inline halfword tex_scan_aux_ampersand(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case ampersand_token_l: case ampersand_token_o: case ampersand_token_t:
+            return expression_and;
+        default: 
+            *alreadygotten = 1;
+            return expression_band;
+    }
+}
+
+static inline halfword tex_scan_aux_bar(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case bar_token_l: case bar_token_o:
+            return expression_or;
+        default:
+            *alreadygotten = 1;
+            return expression_bor;
+    }
+}
+
+static inline long long tex_aux_double_rounded_long_long(double d)
+{
+    if (d < min_doubleinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (d > max_doubleinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    } else {
+        return llround(d);
+    }
+}
+
+/*
+static inline long long tex_aux_double_floored_long_long(double d)
+{
+    long long l = (long long) d;
+    if (l < min_longinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (l > max_longinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    } else {    
+       return llround(d);
+    }
+}
+*/
+
+static inline long long tex_aux_long_long(long long l)
+{
+    if (l < min_longinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return min_longinteger;
+    } else if (l > max_longinteger) { 
+        tex_aux_scan_integer_out_of_range_error(10);
+        return max_longinteger;
+    } else {    
+       return l;
+    }
+}
+
+static void tex_aux_scan_integer_expression(int braced)
+{
+    int result;
+    int state;
+    int operation;
+    int negate;
+    int nothing;
+    int positive;
+    int negative;
+    int bnothing;
+    long long expression;
+    long long term;
+    long long factor = 0;
+    long long numerator;
+    int error_a = lmt_scanner_state.arithmic_error;
+    int error_b = 0;
+    halfword top = null;
+    int alreadygotten = 0;
+    cur_val_level = integer_val_level;
+    lmt_scanner_state.expression_depth++;
+    if (lmt_scanner_state.expression_depth > 1000) {
+        tex_fatal_error("\\numexpression can only be nested 1000 deep");
+    }
+  RESTART:
+    result = expression_none;
+    state = expression_none;
+    expression = 0;
+    term = 0;
+    numerator = 0;
+    negate = 0;
+    nothing = 0;
+    positive = 0;
+    negative = 0;
+    bnothing = 0;
+  CONTINUE:
+ // operation = integer_val_level; 
+  AGAIN:
+    if (alreadygotten) {
+        alreadygotten = 0;
+        goto ALREADYGOTTEN;
+    }
+    while (1) {
+        tex_get_x_token();
+      ALREADYGOTTEN:
+        switch (cur_cmd) { 
+            case spacer_cmd:
+                continue;
+            case left_brace_cmd:
+                if ((negate || nothing || positive || negative) && braced == 0) { 
+                    tex_aux_scan_expression_unexpected_negation_error();
+                    break;
+                } else { 
+                    ++braced;
+                    if (braced > 1) {
+                        goto PUSH;
+                    } else { 
+                        goto AGAIN;
+                    }
+                }
+            case right_brace_cmd:
+                if (braced > 1) {
+                    --braced;
+                    goto POP;
+                } else { 
+                    break;
+                }
+            case end_paragraph_cmd:
+                if (braced) { 
+                    continue;
+                } else {
+                    break;
+                }
+            default:
+                switch (cur_tok) { 
+                    case minus_token:
+                        negate = ! negate;
+                        continue;
+                    case plus_token:
+                        continue;
+                    case n_token_l:
+                    case n_token_o:
+                        switch (tex_scan_aux_n()) { 
+                            case expression_not:
+                                nothing = ! nothing;
+                                continue;
+                            case expression_positive:
+                                positive = 1;
+                                continue;
+                            case expression_negative:
+                                negative = 1;
+                                continue;
+                            default:
+                                break;
+                        }
+                    case tilde_token_l:
+                    case tilde_token_o:
+                        if (tex_scan_aux_tilde(&alreadygotten) == expression_bnot) { 
+                            bnothing = ! bnothing;
+                            continue;
+                        } else { 
+                            alreadygotten = 0;
+                            goto ALREADYGOTTEN;
+                        }
+                    case exclamation_token_l: 
+                    case exclamation_token_o:
+                        if (tex_scan_aux_exclamation(&alreadygotten) == expression_not) { 
+                            nothing = ! nothing;
+                            continue;
+                        } else { 
+                            alreadygotten = 0;
+                            goto ALREADYGOTTEN;
+                        }
+                    case plus_minus_token:
+                        positive = 1;
+                        continue;
+                    case minus_plus_token:
+                        negative = 1;
+                        continue;
+                    case left_parent_token:
+                      PUSH:
+                        {
+                            halfword newtop = tex_get_node(lmtx_expression_node_size);
+                            node_type(newtop) = lmtx_expression_node;
+                            node_subtype(newtop) = 0;
+                            node_next(newtop) = top;
+                            lmtx_expression_type(newtop) = integer_val_level;
+                            lmtx_expression_state(newtop) = (singleword) state;
+                            lmtx_expression_result(newtop) = (singleword) result;
+                            lmtx_expression_negate(newtop) = (singleword) (negate | (nothing << 1) | (bnothing << 2) | (positive << 3) | (negative <<4)); 
+                            lmtx_expression_expression(newtop) = expression;
+                            lmtx_expression_term(newtop) = term;
+                            lmtx_expression_numerator(newtop) = numerator;
+                            top = newtop;
+                            goto RESTART;
+                        }
+                    default:
+                        goto ACTION;
+                }
+        }
+    }
+  ACTION:
+    factor = tex_scan_bit_integer(NULL);
+    if (negate) { 
+        factor = - factor;
+        negate = 0;
+    } 
+    if (nothing) {
+        factor = factor ? 0 : 1;
+        nothing = 0;
+    }
+    if (bnothing) {
+        factor = ~ factor;
+        bnothing = 0;
+    }
+    if (positive) {
+        if (factor < 0) {    
+            factor = - factor;
+        }
+        positive = 0;
+    }
+    if (negative) {
+        if (factor > 0) {
+            factor = - factor;
+        }
+        negative = 0;
+    }
+  FOUND:
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd || (braced && cur_cmd == end_paragraph_cmd));
+    switch (cur_tok) {
+        case plus_token       : operation = expression_add; break;
+        case minus_token      : operation = expression_subtract; break;
+        case asterisk_token   : operation = expression_multiply; break;
+        case slash_token      : operation = expression_divide; break;
+        case colon_token      : operation = expression_idivide; break;
+        case semi_colon_token :
+        case percentage_token : operation = expression_imodulo; break;
+        /* */
+        case equal_token : operation = tex_scan_aux_equal(&alreadygotten); break;
+        case less_token  : operation = tex_scan_aux_less(&alreadygotten); break;
+        case more_token  : operation = tex_scan_aux_more(&alreadygotten); break;
+        /* */
+        case not_equal_token     : operation = expression_unequal; break;
+        case less_or_equal_token : operation = expression_lessequal; break;
+        case more_or_equal_token : operation = expression_moreequal; break;
+        /* */
+        case a_token_l : case a_token_o : operation = tex_scan_aux_a(); break;
+        case b_token_l : case b_token_o : operation = tex_scan_aux_b(); break;
+        case c_token_l : case c_token_o : operation = tex_scan_aux_c(); break;
+        case d_token_l : case d_token_o : operation = tex_scan_aux_d(); break;
+        case m_token_l : case m_token_o : operation = tex_scan_aux_m(); break;
+        case o_token_l : case o_token_o : operation = tex_scan_aux_o(); break;
+        case v_token_l : case v_token_o : operation = expression_bor; break;
+        /* */
+        case ampersand_token_l  : 
+        case ampersand_token_o  : 
+        case ampersand_token_t  : operation = tex_scan_aux_ampersand(&alreadygotten); break;
+        case circumflex_token_l : 
+        case circumflex_token_o : 
+        case circumflex_token_s : operation = expression_bxor; break;
+        case bar_token_l        : 
+        case bar_token_o        : operation = tex_scan_aux_bar(&alreadygotten); break;
+        /* */
+        default:
+            operation = expression_none;
+            if (! top) {
+                if (cur_cmd == relax_cmd) {
+                    if (braced > 0) { 
+                        tex_aux_scan_unexpected_relax_error();
+                    } else { 
+                        /* we're done */
+                    }
+                } else if (braced == 1 && cur_cmd == right_brace_cmd) {
+                    /* we're done */
+                } else {
+                    if (braced > 0) { 
+                        tex_aux_scan_unexpected_whatever_error();
+                    }
+                    tex_back_input(cur_tok);
+                }
+            } else if (cur_cmd == right_brace_cmd) {
+                if (braced) { 
+                    --braced;
+                } else { 
+                    tex_back_input(cur_tok);
+                }
+            } else if (cur_tok != right_parent_token) {
+                tex_aux_scan_missing_error();
+            }
+            break;
+    }
+    lmt_scanner_state.arithmic_error = error_b;
+    if (state > expression_subtract) { 
+        if (factor > max_integer || factor < min_integer) {
+            lmt_scanner_state.arithmic_error = 1;
+            factor = 0;
+        }
+    }
+    switch (state) {
+        case expression_none:
+            term = factor;
+            break;
+        case expression_multiply:
+            if (operation == expression_divide) {
+                numerator = factor;
+                operation = expression_scale;
+            } else {
+                term = tex_aux_long_long((double) term * (double) factor);
+            }
+            break;
+        case expression_divide:
+            /* round */
+            term = tex_aux_double_rounded_long_long((double) term / (double) factor);
+            break;
+        case expression_scale:
+            term = tex_aux_double_rounded_long_long((double) term * (double) numerator / (double) factor);
+            break;
+        case expression_idivide:
+            term = term / factor; 
+            break;
+        case expression_imodulo:
+            term = tex_aux_double_rounded_long_long(fmod((double) term, (double) factor));
+            break;
+        case expression_equal:
+            term = term == factor;
+            break;
+        case expression_less:
+            term = term < factor;
+            break;
+        case expression_more:
+            term = term > factor;
+            break;
+        case expression_lessequal:
+            term = term <= factor;
+            break;
+        case expression_moreequal:
+            term = term >- factor;
+            break;
+        case expression_unequal:
+            term = term != factor;
+            break;
+        case expression_bleft:
+            term = term << factor;
+            break;
+        case expression_bright:
+            term = term >> factor;
+            break;
+        case expression_or:
+            term = (term || factor) ? 1 : 0;
+            break;
+        case expression_and:
+            term = (term && factor) ? 1 : 0;
+            break;
+        case expression_cor:
+            term = term ? term : (factor ? factor : 0);
+            break;
+        case expression_cand:
+            term = (term && factor) ? factor : 0;
+            break;
+        case expression_bor:
+            term |= factor;
+            break;
+        case expression_band:
+            term &= factor;
+            break;
+        case expression_bxor:
+            term ^= factor;
+            break;
+        case expression_bset:
+            term = term | ((long long) 1 << (factor - 1));
+            break;
+        case expression_bunset:
+            term = term & ~ ((long long) 1 << (factor - 1));
+            break;
+        case expression_not:
+            /* already handled, like add and subtract */
+            term = term ? 0 : 1;
+            break;
+    }
+    if (operation > expression_subtract) {
+        state = operation;
+    } else {
+        state = expression_none;
+        switch (result) { 
+            case expression_add:
+                expression = tex_aux_long_long(expression + term);
+                break;
+            case expression_subtract:
+                expression = tex_aux_long_long(expression - term);
+                break;
+            case expression_not: 
+                expression = term ? 0 : 1;
+                break;
+            case expression_bnot: 
+                expression = ~ term;
+                break;
+         // case expression_none:
+            default: 
+                expression = term;
+                break;
+        }
+        result = operation;
+    }
+    error_b = lmt_scanner_state.arithmic_error;
+    if (operation != expression_none) {
+        goto CONTINUE;
+    } else if (top) {
+      POP:
+        {
+            halfword newtop = node_next(top);
+            factor = expression;
+            expression = lmtx_expression_expression(top);
+            term = lmtx_expression_term(top);
+            numerator = lmtx_expression_numerator(top);
+            state = lmtx_expression_state(top);
+            result = lmtx_expression_result(top);
+            if (lmtx_expression_negate(top) & 0x01) {
+                factor = - factor;
+            } 
+            if (lmtx_expression_negate(top) & 0x02) {
+                factor = factor ? 0 : 1;
+            }
+            if (lmtx_expression_negate(top) & 0x04) {
+                factor = ~ factor;
+            }
+            if ((lmtx_expression_negate(top) & 0x08) && factor < 0) {
+                factor = - factor;
+            }
+            tex_free_node(top, lmtx_expression_node_size);
+            top = newtop;
+            goto FOUND;
+        }
+    } else if (error_b) {
+        tex_aux_scan_integer_out_of_range_error(8);
+        expression = 0;
+    }
+    lmt_scanner_state.arithmic_error = error_a;
+    lmt_scanner_state.expression_depth--;
+ // cur_val_level = level;
+    cur_val_level = integer_val_level;
+    if (expression < min_integer) {
+        tex_aux_scan_integer_out_of_range_error(9);
+        cur_val = min_integer;
+    } else if (expression > max_integer) {
+        tex_aux_scan_integer_out_of_range_error(9);
+        cur_val = max_integer;
+    } else { 
+        cur_val = (halfword) expression;
+    }
+}
+
+typedef enum expression_type { 
+    expression_type_integer,
+    expression_type_dimension,
+    expression_type_float,
+} expression_type;
+
+static long long tex_aux_expression_d_round(double d, halfword *termtype, halfword factortype)
+{
+    switch (*termtype) { 
+        case expression_type_integer:
+            *termtype = factortype;
+            break;
+        case expression_type_dimension:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+            }
+            break;
+        case expression_type_float:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_float;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_float;
+                    break;
+            }
+            break;
+    }
+    if (d < min_doubleinteger) { 
+        return min_longinteger;
+    } else if (d > max_doubleinteger) { 
+        return max_longinteger;
+    } else {
+        return longlonground(d);
+    }
+}
+
+static long long tex_aux_expression_d_divide(double d, halfword *termtype, halfword factortype)
+{
+    switch (*termtype) { 
+        case expression_type_integer:
+            *termtype = factortype;
+            break;
+        case expression_type_dimension:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_dimension:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+            }
+            break;
+        case expression_type_float:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_float;
+                    break;
+                case expression_type_dimension:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d *= 65536;
+                    *termtype = expression_type_float;
+                    break;
+            }
+            break;
+    }
+    if (d < min_doubleinteger) { 
+        return min_longinteger;
+    } else if (d > max_doubleinteger) { 
+        return max_longinteger;
+    } else {
+        return longlonground(d);
+    }
+}
+
+static long long tex_aux_expression_d_round_divide(double d, halfword *termtype, halfword factortype, halfword divtype)
+{
+    switch (*termtype) { 
+        case expression_type_integer:
+            *termtype = factortype;
+            break;
+        case expression_type_dimension:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+            }
+            break;
+        case expression_type_float:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_float;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_float;
+                    break;
+            }
+            break;
+    }
+    /* */
+    switch (*termtype) { 
+        case expression_type_integer:
+            *termtype = divtype;
+            break;
+        case expression_type_dimension:
+            switch (divtype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_dimension:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+            }
+            break;
+        case expression_type_float:
+            switch (divtype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_float;
+                    break;
+                case expression_type_dimension:
+                    d *= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d *= 65536;
+                    *termtype = expression_type_float;
+                    break;
+            }
+            break;
+    }
+    if (d < min_doubleinteger) { 
+        return min_longinteger;
+    } else if (d > max_doubleinteger) { 
+        return max_longinteger;
+    } else {
+        return longlonground(d);
+    }
+}
+
+static long long tex_aux_expression_d_floor(double d, halfword *termtype, halfword factortype)
+{
+    switch (*termtype) { 
+        case expression_type_integer:
+            *termtype = factortype;
+            break;
+        case expression_type_dimension:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+            }
+            break;
+        case expression_type_float:
+            switch (factortype) { 
+                case expression_type_integer:
+                    *termtype = expression_type_float;
+                    break;
+                case expression_type_dimension:
+                    d /= 65536;
+                    *termtype = expression_type_dimension;
+                    break;
+                case expression_type_float:
+                    d /= 65536;
+                    *termtype = expression_type_float;
+                    break;
+            }
+            break;
+    }
+    if (d < min_doubleinteger) { 
+        return min_longinteger;
+    } else if (d > max_doubleinteger) { 
+        return max_longinteger;
+    } else {
+        return (long long) d;
+    }
+}
+
+static void tex_aux_scan_dimension_expression(int braced)
+{
+    int result;
+    int state;
+    int operation;
+    int negate;
+    int nothing;
+    int positive;
+    int negative;
+    int expressiontype;
+    int termtype; 
+    int factortype = expression_type_integer; 
+    int numeratortype;
+    long long expression;
+    long long term; 
+    long long factor = 0;
+    long long numerator;
+    int error_a = lmt_scanner_state.arithmic_error;
+    int error_b = 0;
+    halfword top = null;
+    int alreadygotten = 0;
+    cur_val_level = dimension_val_level;
+    lmt_scanner_state.expression_depth++;
+    if (lmt_scanner_state.expression_depth > 1000) {
+        tex_fatal_error("\\dimexpression can only be nested 1000 deep");
+    }
+  RESTART:
+    result = expression_none;
+    state = expression_none;
+    expressiontype = expression_type_dimension;
+    termtype = expression_type_dimension;
+    numeratortype = expression_type_integer;
+    expression = 0;
+    term = 0;
+    numerator = 0;
+    negate = 0;
+    nothing = 0;
+    positive = 0;
+    negative = 0;
+  CONTINUE:
+    operation = dimension_val_level;  /* not needed, abused */
+  AGAIN:
+    if (alreadygotten) {
+        alreadygotten = 0;
+        goto ALREADYGOTTEN;
+    }
+    while (1) {
+        tex_get_x_token();
+      ALREADYGOTTEN:
+        switch (cur_cmd ){ 
+            case spacer_cmd:
+                continue;
+            case left_brace_cmd:
+                if ((negate || nothing || positive || negative) && braced == 0) { 
+                    tex_aux_scan_expression_unexpected_negation_error();
+                    break;
+                } else { 
+                    ++braced;
+                    if (braced > 1) {
+                        goto PUSH;
+                    } else { 
+                        goto AGAIN;
+                    }
+                }
+            case right_brace_cmd:
+                if (braced > 1) {
+                    --braced;
+                    goto POP;
+                } else { 
+                    break;
+                }
+            case end_paragraph_cmd:
+                if (braced) { 
+                    continue;
+                } else {
+                    break;
+                }
+            default:
+                switch (cur_tok) { 
+                    case minus_token:
+                        negate = ! negate;
+                        continue;
+                    case plus_token:
+                        continue;
+                    case n_token_l:
+                    case n_token_o:
+                        switch (tex_scan_aux_n()) { 
+                            case expression_not:
+                                nothing = ! nothing;
+                                continue;
+                            case expression_positive:
+                                positive = 1;
+                                continue;
+                            case expression_negative:
+                                negative = 1;
+                                continue;
+                            default:
+                                break;
+                        }
+                    case exclamation_token_l: 
+                    case exclamation_token_o:
+                        if (tex_scan_aux_exclamation(&alreadygotten) == expression_not) { 
+                            nothing = ! nothing;
+                            continue;
+                        } else { 
+                            alreadygotten = 0;
+                            goto ALREADYGOTTEN;
+                        }
+                    case plus_minus_token:
+                        positive = 1;
+                        continue;
+                    case minus_plus_token:
+                        negative = 1;
+                        continue;
+                    case left_parent_token:
+                      PUSH:
+                        { 
+                            halfword newtop = tex_get_node(lmtx_expression_node_size);
+                            node_type(newtop) = lmtx_expression_node;
+                            node_subtype(newtop) = 0;
+                            node_next(newtop) = top;
+                            lmtx_expression_type(newtop) = (singleword) dimension_val_level;
+                            lmtx_expression_state(newtop) = (singleword) state;
+                            lmtx_expression_result(newtop) = (singleword) result;
+                            lmtx_expression_negate(newtop) = (singleword) (negate | (nothing << 1) | (positive << 3) | (negative << 4)); 
+                            lmtx_expression_expression(newtop) = expression;
+                            lmtx_expression_term(newtop) = term;
+                            lmtx_expression_numerator(newtop) = numerator;
+                            lmtx_expression_type_expression(newtop) = expressiontype;
+                            lmtx_expression_type_term(newtop) = termtype;
+                            lmtx_expression_type_numerator(newtop) = numeratortype;
+                            top = newtop;
+                            goto RESTART;
+                        }
+                    default:
+                        goto ACTION;
+                }
+        }
+    }
+  ACTION:
+    {
+        int has_fraction = 0;
+        int has_unit = 1;
+        factor = tex_scan_bit_dimension(&has_fraction, &has_unit);
+        if (has_unit) { 
+            factortype = expression_type_dimension;
+        } else if (has_fraction) { 
+            factortype = expression_type_float;
+        } else {  
+            factortype = expression_type_integer;
+        }
+    }
+    if (negate) { 
+        factor = - factor;
+        negate = 0;
+    }
+    if (nothing) {
+        factor = factor ? 0 : 1;
+        nothing = 0;
+        factortype = expression_type_integer;
+    }
+    if (positive) {
+        if (factor < 0) { 
+            factor = - factor;
+        }
+        positive = 0;
+    }
+    if (negative) {
+        if (factor > 0) {
+            factor = - factor;
+        }
+        negative = 0;
+    }
+  FOUND:
+    do {
+        tex_get_x_token();
+    } while (cur_cmd == spacer_cmd || (braced && cur_cmd == end_paragraph_cmd));
+    switch (cur_tok) {
+        case plus_token       : operation = expression_add; break;
+        case minus_token      : operation = expression_subtract; break;
+        case asterisk_token   : operation = expression_multiply; break;
+        case slash_token      : operation = expression_divide; break;
+        case colon_token      : operation = expression_idivide; break;
+        case semi_colon_token :
+        case percentage_token : operation = expression_imodulo; break;
+        /* */
+        case equal_token : operation = tex_scan_aux_equal(&alreadygotten); break;
+        case less_token  : operation = tex_scan_aux_less(&alreadygotten); break;
+        case more_token  : operation = tex_scan_aux_more(&alreadygotten); break;
+        /* */
+        case not_equal_token     : operation = expression_unequal; break;
+        case less_or_equal_token : operation = expression_lessequal; break;
+        case more_or_equal_token : operation = expression_moreequal; break;
+        /* */
+        case a_token_l : case a_token_o : operation = tex_scan_aux_a(); break;
+        case c_token_l : case c_token_o : operation = tex_scan_aux_c(); break;
+        case d_token_l : case d_token_o : operation = tex_scan_aux_d(); break;
+        case m_token_l : case m_token_o : operation = tex_scan_aux_m(); break;
+        case o_token_l : case o_token_o : operation = tex_scan_aux_o(); break;
+        /* */
+        default:
+            operation = expression_none;
+            if (! top) {
+                if (cur_cmd == relax_cmd) {
+                    if (braced > 0) { 
+                        tex_aux_scan_unexpected_relax_error();
+                    } else { 
+                        /* we're done */
+                    }
+                } else if (braced == 1 && cur_cmd == right_brace_cmd) {
+                    /* we're done */
+                } else {
+                    if (braced > 0) { 
+                        tex_aux_scan_unexpected_whatever_error();
+                    }
+                    tex_back_input(cur_tok);
+                }
+            } else if (cur_cmd == right_brace_cmd) {
+                if (braced) { 
+                    --braced;
+                } else { 
+                    tex_back_input(cur_tok);
+                }
+            } else if (cur_tok != right_parent_token) {
+                tex_aux_scan_missing_error();
+            }
+            break;
+    }
+    lmt_scanner_state.arithmic_error = error_b;
+    if (llabs(factor) > max_dimension) {
+        lmt_scanner_state.arithmic_error = 1;
+        factor = 0;
+    }
+    switch (state) {
+        case expression_none:
+            term = factor;
+            termtype = factortype;
+            break;
+        case expression_multiply:
+            if (operation == expression_divide) {
+                numerator = factor;
+                numeratortype = factortype;
+                operation = expression_scale;
+            } else {
+                term = tex_aux_expression_d_round((double) term * (double) factor, &termtype, factortype);
+            }
+            break;
+        case expression_divide:
+            if (factor == 0) {
+                lmt_scanner_state.arithmic_error = 1;
+                term = 0;
+                termtype = expression_type_integer;
+            } else {
+                term = tex_aux_expression_d_divide((double) term / (double) factor, &termtype, factortype);
+            }
+            break;
+        case expression_scale:
+            if (factor == 0) {
+                lmt_scanner_state.arithmic_error = 1;
+                term = 0;
+                termtype = expression_type_integer;
+            } else { 
+             // term = tex_aux_expression_d_round((double) term * (double) numerator, &termtype, numeratortype);
+             // term = tex_aux_expression_d_divide((double) term / (double) factor, &termtype, factortype);
+                term = tex_aux_expression_d_round_divide((double) term * (double) numerator / (double) factor, &termtype, numeratortype, factortype);
+            }
+            break;
+        case expression_idivide:
+            if (factor == 0) {
+                lmt_scanner_state.arithmic_error = 1;
+                term = 0;
+                termtype = expression_type_integer;
+            } else {
+                term = tex_aux_expression_d_floor((double) term / (double) factor, &termtype, factortype);
+            }
+            break;
+        case expression_imodulo:
+            if (factor == 0) {
+                lmt_scanner_state.arithmic_error = 1;
+                term = 0;
+                termtype = expression_type_integer;
+            } else {
+                term = tex_aux_expression_d_divide(fmod((double) term, (double) factor), &termtype, factortype);
+            }
+            break;
+        /* */
+        case expression_equal:
+            /* todo: check types */
+            term = term == factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_less:
+            /* todo: check types */
+            term = term < factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_more:
+            /* todo: check types */
+            term = term > factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_lessequal:
+            /* todo: check types */
+            term = term <= factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_moreequal:
+            /* todo: check types */
+            term = term >- factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_unequal:
+            /* todo: check types */
+            term = term != factor;
+            termtype = expression_type_integer;
+            break;
+        case expression_or:
+            /* todo: check types */
+            term = (term || factor) ? 1 : 0;
+            termtype = expression_type_integer;
+            break;
+        case expression_and:
+            /* todo: check types */
+            term = (term && factor) ? 1 : 0;
+            termtype = expression_type_integer;
+            break;
+        case expression_cor:
+            if (term) { 
+                /* ok */
+            } else if (factor) {
+                term = factor; 
+                termtype = factortype;
+            } else {
+                term = 0; 
+                termtype = expression_type_integer;
+            }
+            break;
+        case expression_cand:
+            if (term && factor) { 
+                term = factor;
+                termtype = factortype;
+            } else { 
+                term = 0; 
+                termtype = expression_type_integer;
+            }
+            break;
+        case expression_not:
+            /* todo: check types */
+            /* already handled, like add and subtract */
+            term = ! term;
+            termtype = expression_type_integer;
+            break;
+        /* */
+    }
+    if (operation > expression_subtract) {
+        state = operation;
+    } else {
+        state = expression_none;
+        switch (result) { 
+            case expression_add:
+                /* depends on term type: float / dimen ok, int is sp */
+                expression = expression + term;
+                expressiontype = expression_type_dimension;
+                break;
+            case expression_subtract:
+                /* depends on term type: float / dimen ok, int is sp */
+                expression = expression - term;
+                expressiontype = expression_type_dimension;
+                break;
+            case expression_not:
+                expression = term ? 0 : 1;
+                expressiontype = expression_type_dimension;
+                break;
+         // case expression_none:
+            default:
+                expression = term;
+                expressiontype = termtype;
+                break;
+        }
+        result = operation;
+    }
+    error_b = lmt_scanner_state.arithmic_error;
+    if (operation != expression_none) {
+        goto CONTINUE;
+    } else if (top) {
+      POP:
+        { 
+            halfword newtop = node_next(top);
+            factor = expression;
+            expression = lmtx_expression_expression(top);
+            term = lmtx_expression_term(top);
+            numerator = lmtx_expression_numerator(top);
+            state = lmtx_expression_state(top);
+            result = lmtx_expression_result(top);
+            expressiontype = lmtx_expression_type_expression(top);
+            termtype = lmtx_expression_type_term(top);
+            numeratortype = lmtx_expression_type_numerator(top);
+            if (expression_negate(top) & 0x01) {
+                factor = - factor;
+            } 
+            if (expression_negate(top) & 0x02) {
+                factor = factor ? 0 : 1;
+                factortype = expression_type_integer;
+            }
+            if ((lmtx_expression_negate(top) & 0x08) && factor < 0) {
+                factor = - factor;
+            }
+            tex_free_node(top, lmtx_expression_node_size);
+            top = newtop;
+            goto FOUND;
+        }
+    } else if (error_b) {
+        tex_aux_scan_dimension_out_of_range_error(4);
+        expression = 0;
+    }
+    lmt_scanner_state.arithmic_error = error_a;
+    lmt_scanner_state.expression_depth--;
+    cur_val_level = dimension_val_level;
+    if (expression < min_dimension) {
+        tex_aux_scan_dimension_out_of_range_error(5);
+        cur_val = min_dimension;
+    } else if (expression > max_dimension) {
+        tex_aux_scan_dimension_out_of_range_error(5);
+        cur_val = max_dimension;
+    } else { 
+        cur_val = (halfword) expression;
+    }
+}
+
+/*
+    In the end, after some variations, I decided that some reverse polish notation approach made
+    more sense and when considering an infix to rpn translation and searching the web a bit I ran
+    into nice example:
+
+        https://github.com/chidiwilliams/expression-evaluator/blob/main/simple.js
+
+    It shows how to handled the nested expressions. I made a comparable variant in \LUA, extended
+    it for more than the usual four operators, condensed it a bit and then went on to write the code
+    below. Of course we have a completely different token parser and we use \TEX\ (temp) nodes for
+    a few stacks. I know that we can combine the loops but that becomes messy and performance is
+    quite okay, also because we move items from one to another stack with little overhead. Although
+    stacks are not that large, using static sized stacks (\CCODE\ arrays) makes no sense here.
+
+    Unary minus was sort of a challenge as was the fact that we also need to handle multiple 
+    (redundant) + and a possibly mixed + and - sequence. So in the end the code became a bit more
+    complex than the example. 
+
+*/
+
 typedef enum bit_expression_states {
     bit_expression_none,
 
     bit_expression_bor,       /*  |   bor  v */
     bit_expression_band,      /*  &   band   */
     bit_expression_bxor,      /*  ^   bxor   */
+    bit_expression_bnot,      /*  ~   bnot   */
 
     bit_expression_bset,      /*      bset   */
     bit_expression_bunset,    /*      bunset */
@@ -5577,16 +7822,23 @@ typedef enum bit_expression_states {
     bit_expression_subtract,  /*  -          */
 
     bit_expression_multiply,  /*  *          */
-    bit_expression_divide,    /*  /   :      */
+    bit_expression_divide,    /*  /          */
 
-    bit_expression_mod,       /*  %   mod    */
+    bit_expression_div,       /*  :   div    */
+    bit_expression_mod,       /*  ; % mod    */
 
  // bit_expression_power,     /*             */
 
-    bit_expression_not,       /* ! ~  not    */
+    bit_expression_not,       /* ! not       */
+
+    bit_expression_pm,        /* pm          */
+    bit_expression_mp,        /* mp          */
 
     bit_expression_or,        /* or          */
     bit_expression_and,       /* and         */
+
+    bit_expression_cor,       /* cor         */
+    bit_expression_cand,      /* cand        */
 
     bit_expression_open,
     bit_expression_close,
@@ -5594,14 +7846,21 @@ typedef enum bit_expression_states {
     bit_expression_number,
     bit_expression_float,
     bit_expression_dimension,
-} bit_expression_states;
 
+    bit_expression_plus,
+    bit_expression_minus,
+    bit_expression_flip,
+    bit_expression_positive,
+    bit_expression_negative,
+} bit_expression_states;
 
 static int bit_operator_precedence[] = {  /* like in lua */
     0, // bit_expression_none
+
     4, // bit_expression_bor
     6, // bit_expression_band
     5, // bit_expression_bxor
+   10, // bit_expression_bnot
 
     7, // bit_expression_bset   // like shifts
     7, // bit_expression_bunset // like shifts
@@ -5622,14 +7881,20 @@ static int bit_operator_precedence[] = {  /* like in lua */
     9, // bit_expression_multiply
     9, // bit_expression_divide
 
+    9, // bit_expression_div
     9, // bit_expression_mod
 
 // 10, // bit_expression_power
 
    10, // bit_expression_not
+   10, // bit_expression_pm
+   10, // bit_expression_mp
 
     1, // bit_expression_or
     2, // bit_expression_and
+
+    1, // bit_expression_cor
+    2, // bit_expression_cand
 
     0, // bit_expression_open
     0, // bit_expression_close
@@ -5637,13 +7902,23 @@ static int bit_operator_precedence[] = {  /* like in lua */
     0, // bit_expression_number
     0,
     0,
+
+    0,
+    0,
+    0,
+    0,
 };
 
 static const char *bit_expression_names[] = {
-    "none", "bor", "band", "bxor", "bset", "bunset",
+    "none", 
+    "bor", "band", "bxor", "bnot", "bset", "bunset",
     "<<", ">>", "<", "<=", "==", ">=", ">", "<>",
-    "+", "-", "*", "/", "mod", "not", "or", "and",
-    "open", "close", "number", "float", "dimension"
+    "+", "-", "*", "/", "div", "mod", 
+    "not", "±", "∓"
+    "or", "and", "cor", "cand",
+    "open", "close", 
+    "number", "float", "dimension",
+    "plus","minus","flip","abs", "null"
 };
 
 /*tex
@@ -5764,406 +8039,6 @@ static void tex_take_stack_entry(stack_info *target, stack_info *source, halfwor
     target->tail = current;
 }
 
-# if (0) 
-
-static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int has_fraction, int *has_unit)
-{
-    do {
-        tex_get_x_token();
-    } while (cur_cmd == spacer_cmd);
-    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
-        halfword saved_val = value;
-        value = tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
-        value = tex_nx_plus_y(saved_val, cur_val, tex_xn_over_d(cur_val, fraction, unity));
-        return value;
-    } else if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-        halfword num = 0;
-        halfword denom = 0;
-        halfword saved_cs = cur_cs;
-        halfword saved_tok = cur_tok;
-        *has_unit = 1;
-        switch (cur_chr) {
-            case 'p': case 'P':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 't': case 'T':
-                            goto NORMALUNIT;
-                        case 'c': case 'C':
-                            num = 12;
-                            denom = 1;
-                            goto NORMALUNIT;
-                        case 'x': case 'X':
-                            return tex_nx_plus_y(value, px_dimension_par, tex_xn_over_d(px_dimension_par, fraction, unity));
-                    }
-                }
-                break;
-            case 'c': case 'C':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'm': case 'M':
-                            num = 7227;
-                            denom = 254;
-                            goto NORMALUNIT;
-                        case 'c': case 'C':
-                            num = 14856;
-                            denom = 1157;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            case 's': case 'S':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'p': case 'P':
-                            return scaled_point_scanned;
-                    }
-                }
-                break;
-            case 't': case 'T':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 's': case 'S':
-                            num = 4588;
-                            denom = 645;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            case 'b': case 'B':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'p': case 'P':
-                            num = 7227;
-                            denom = 7200;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            case 'i': case 'I':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'n': case 'N':
-                            num = 7227;
-                            denom = 100;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            case 'd': case 'D':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'd': case 'D':
-                            num = 1238;
-                            denom = 1157;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            case 'e': case 'E':
-                tex_get_x_token();
-                if (cur_cmd == letter_cmd || cur_cmd == other_char_cmd) {
-                    switch (cur_chr) {
-                        case 'm': case 'M':
-                            return tex_get_scaled_em_width(cur_font_par);
-                        case 'x': case 'X':
-                            return tex_get_scaled_ex_height(cur_font_par);
-                        case 's': case 'S':
-                            num = 9176;
-                            denom = 129;
-                            goto NORMALUNIT;
-                        case 'u': case 'U':
-                            num = 9176 * eu_factor_par;
-                            denom = 129 * 10;
-                            goto NORMALUNIT;
-                    }
-                }
-                break;
-            default:
-                goto HALFUNIT;
-        }
-        goto NOUNIT;
-      NORMALUNIT:
-        if (num) {
-            int remainder = 0;
-            value = tex_xn_over_d_r(value, num, denom, &remainder);
-            fraction = (num * fraction + unity * remainder) / denom;
-            value += fraction / unity;
-            fraction = fraction % unity;
-        }
-        if (value >= 040000) { // 0x4000
-            lmt_scanner_state.arithmic_error = 1;
-        } else {
-            value = value * unity + fraction;
-        }
-        return value;
-      NOUNIT:
-        tex_back_input(cur_tok);
-      HALFUNIT:
-        tex_back_input(saved_tok);
-        cur_cs = saved_cs;
-        cur_tok = saved_tok;
-    } else {
-        tex_back_input(cur_tok);
-    }
-    if (has_fraction) {
-        *has_unit = 0;
-        if (value >= 040000) { // 0x4000
-            lmt_scanner_state.arithmic_error = 1;
-        } else {
-            value = value * unity + fraction;
-        }
-    }
-    return value;
-}
-
-# else 
-
-static halfword tex_aux_scan_unit_applied(halfword value, halfword fraction, int *has_unit) 
-{
-    halfword num = 0;
-    halfword denom = 0;
-    scaled unit = 0;
-    *has_unit = 0;
-    switch (tex_aux_scan_unit(&num, &denom, &unit, NULL)) {
-        case normal_unit_scanned:
-            if (num) {
-                int remainder = 0;
-                value = tex_xn_over_d_r(value, num, denom, &remainder);
-                fraction = (num * fraction + unity * remainder) / denom;
-                value += fraction / unity;
-                fraction = fraction % unity;
-            }
-            *has_unit = 1;
-            if (value >= 040000) { // 0x4000
-                lmt_scanner_state.arithmic_error = 1;
-                value = 040000; 
-            }
-            return value * unity + fraction;
-        case scaled_point_scanned:
-            *has_unit = 0;
-            return value;
-        case relative_unit_scanned:
-            *has_unit = 1;
-            return tex_nx_plus_y(value, unit, tex_xn_over_d(unit, fraction, unity));
-        case quantitity_unit_scanned:
-            cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, dimension_val_level, 0, 0);
-            value = tex_nx_plus_y(value, cur_val, tex_xn_over_d(cur_val, fraction, unity));
-            *has_unit = 1;
-            return value;
-        default: 
-            break;
-     /* case math_unit_scanned:     */ /* ignored */
-     /* case flexible_unit_scanned: */ /* ignored */
-     /* case no_unit_scanned:       */ /* nothing */
-    }
-    return value;
-}
-
-# endif 
-
-static halfword tex_scan_bit_int(int *radix)
-{
-    bool negative = false;
-    long long result = 0;
-    do {
-        if (cur_tok == minus_token) {
-            negative = ! negative;
-            cur_tok = plus_token;
-        }
-    } while (cur_tok == plus_token);
-    if (cur_tok == alpha_token) {
-        tex_get_token();
-        if (cur_tok < cs_token_flag) {
-            result = cur_chr;
-        } else {
-            strnumber txt = cs_text(cur_tok - cs_token_flag);
-            if (tex_single_letter(txt)) {
-                result = aux_str2uni(str_string(txt));
-            } else if (tex_is_active_cs(txt)) {
-                result = active_cs_value(txt);
-            } else {
-                result = max_character_code + 1;
-            }
-        }
-        if (result > max_character_code) {
-            tex_aux_improper_constant_error();
-            return 0;
-        }
-    } else if ((cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) || cur_cmd == parameter_cmd) {
-        result = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
-        if (cur_val_level != integer_val_level) {
-            tex_aux_missing_number_error(2);
-            return 0;
-        }
-    } else {
-        bool vacuous = true;
-        bool ok_so_far = true;
-        switch (cur_tok) {
-            case octal_token:
-                {
-                    if (radix) {
-                        *radix = 8;
-                    }
-                    while (1) {
-                        unsigned d = 0;
-                        tex_get_x_token();
-                        if ((cur_tok >= zero_token) && (cur_tok <= seven_token)) {
-                            d = cur_tok - zero_token;
-                        } else {
-                            goto DONE;
-                        }
-                        vacuous = false;
-                        if (ok_so_far) {
-                            result = result * 8 + d;
-                            if (result > max_integer) {
-                                result = max_integer;
-                                tex_aux_number_to_big_error();
-                                ok_so_far = false;
-                            }
-                        }
-                    }
-                 // break;
-                }
-            case hex_token:
-                {
-                    if (radix) {
-                        *radix = 16;
-                    }
-                    while (1) {
-                        unsigned d = 0;
-                        tex_get_x_token();
-                        if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
-                            d = cur_tok - zero_token;
-                        } else if ((cur_tok >= A_token_l) && (cur_tok <= F_token_l)) {
-                            d = cur_tok - A_token_l + 10;
-                        } else if ((cur_tok >= A_token_o) && (cur_tok <= F_token_o)) {
-                            d = cur_tok - A_token_o + 10;
-                        } else {
-                            goto DONE;
-                        }
-                        vacuous = false;
-                        if (ok_so_far) {
-                            result = result * 16 + d;
-                            if (result > max_integer) {
-                                result = max_integer;
-                                tex_aux_number_to_big_error();
-                                ok_so_far = false;
-                            }
-                        }
-                    }
-                 // break;
-                }
-            default:
-                {
-                    if (radix) {
-                        *radix = 10;
-                    }
-                    while (1) {
-                        unsigned d = 0;
-                        if ((cur_tok >= zero_token) && (cur_tok <= nine_token)) {
-                            d = cur_tok - zero_token;
-                        } else {
-                            goto DONE;
-                        }
-                        vacuous = false;
-                        if (ok_so_far) {
-                            result = result * 10 + d;
-                            if (result > max_integer) {
-                                result = max_integer;
-                                tex_aux_number_to_big_error();
-                                ok_so_far = false;
-                            }
-                        }
-                        tex_get_x_token();
-                    }
-                 // break;
-                }
-        }
-      DONE:
-        if (vacuous) {
-            tex_aux_missing_number_error(3);
-        } else {
-            tex_push_back(cur_tok, cur_cmd, cur_chr);
-        }
-    }
-    cur_val = (halfword) (negative ? - result : result);
-    return cur_val;
-}
-
-static halfword tex_scan_bit_dimension(int *has_fraction, int *has_unit)
-{
-    bool negative = false;
-    int fraction = 0;
-    *has_fraction = 0;
-    *has_unit = 1;
-    lmt_scanner_state.arithmic_error = 0;
-    do {
-        if (cur_tok == minus_token) {
-            negative = ! negative;
-            cur_tok = plus_token;
-        }
-    } while (cur_tok == plus_token);
-    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
-        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
-        if (cur_val_level == dimension_val_level) {
-            goto ATTACH_SIGN;
-        }
-    } else {
-        *has_fraction = tex_token_is_seperator(cur_tok);
-        if (*has_fraction) {
-            /*tex We started with a |.| or |,|. */
-            cur_val = 0;
-        } else {
-            int cur_radix = 10;
-            cur_val = tex_scan_bit_int(&cur_radix);
-            if (cur_radix == 10 && tex_token_is_seperator(cur_tok)) {
-                *has_fraction = 1;
-                tex_get_token();
-            }
-        }
-        if (*has_fraction) {
-            unsigned k = 0;
-            unsigned char digits[18];
-            while (1) {
-                tex_get_x_token();
-                if (cur_tok > nine_token || cur_tok < zero_token) {
-                    break;
-                } else if (k < 17) {
-                    digits[k] = (unsigned char) (cur_tok - zero_token);
-                    ++k;
-                }
-            }
-            fraction = tex_round_decimals_digits(digits, k);
-            if (cur_cmd != spacer_cmd) {
-                /* we can avoid this when parsing a unit but not now */
-                tex_back_input(cur_tok);
-            }
-        }
-    }
-    if (cur_val < 0) {
-        negative = ! negative;
-        cur_val = - cur_val;
-    }
-    cur_val = tex_aux_scan_unit_applied(cur_val, fraction, has_unit);
-  ATTACH_SIGN:
-    if (lmt_scanner_state.arithmic_error || (abs(cur_val) >= 010000000000)) { // 0x40000000
-        tex_aux_scan_dimension_out_of_range_error();
-        cur_val = max_dimension;
-        lmt_scanner_state.arithmic_error = 0;
-    }
-    if (negative) {
-        cur_val = -cur_val;
-    }
-    return cur_val;
-}
-
 static void tex_aux_trace_expression(stack_info stack, halfword level, halfword n, int what)
 {
     tex_begin_diagnostic();
@@ -6198,18 +8073,26 @@ static void tex_aux_trace_expression(stack_info stack, halfword level, halfword 
     tex_end_diagnostic();
 }
 
-/* This one is not yet okay ... work in progress. We might go for posits here. */
-
-static void tex_aux_scan_expression(int level)
+static void tex_aux_scan_expression(int level, int braced)
 {
     stack_info operators = tex_aux_new_stack();
     stack_info reverse = tex_aux_new_stack();
     stack_info stack = tex_aux_new_stack();
     halfword operation = bit_expression_none;
     bool alreadygotten = false;
-    int braced = 0;
     int trace = tracing_expressions_par;
+    halfword lastoperation = bit_expression_none;
+    int negate = 0; 
+    int nothing = 0; 
+    int positive = 0; 
+    int negative = 0; 
+    int initial = 1;
+    lmt_scanner_state.expression_depth++;
+    if (lmt_scanner_state.expression_depth > 1000) {
+        tex_fatal_error("\\*expression can only be nested 1000 deep");
+    }
     while (1) {
+      HERE:
         if (alreadygotten) {
             alreadygotten = false;
         } else {
@@ -6224,309 +8107,368 @@ static void tex_aux_scan_expression(int level)
                     braced = 1;
                     continue;
                 } else {
-                    goto NUMBER;
-                 // goto UNEXPECTED;
+                    ++braced;
+                    goto PUSH;
                 }
             case right_brace_cmd:
-                if (braced) {
+                --braced;
+                if (! braced) {
                     goto COLLECTED;
                 } else {
-                    goto NUMBER;
-                 // goto UNEXPECTED;
+                    goto POP;
                 }
             case spacer_cmd:
+            case end_paragraph_cmd:
                 continue;
-            case superscript_cmd:
-                switch (cur_chr) {
-                    case '^':
-                        operation = bit_expression_bxor;
-                        goto OKAY;
-                }
-                goto UNEXPECTED;
-            case alignment_tab_cmd:
-                switch (cur_chr) {
-                    case '&':
-                        tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                            case alignment_tab_cmd:
-                                switch (cur_chr) {
-                                    case '&':
-                                        operation = bit_expression_and;
-                                        goto OKAY;
-                                    default:
-                                        operation = bit_expression_band;
-                                        alreadygotten = true;
-                                        goto OKAY;
-                                }
-                        }
-                }
-                goto UNEXPECTED;
-            case letter_cmd:
-            case other_char_cmd:
-                switch (cur_chr) {
-                    case '(':
+            default:
+                switch (cur_tok) {
+                    case left_parent_token:
+                      PUSH:
                         tex_push_stack_entry(&operators, bit_expression_open);
+                        expression_negate(operators.tail) = negate | (nothing << 1) | (positive < 3) | (negative < 4); 
+                        negate = 0;
+                        nothing = 0;
+                        positive = 0;
+                        negative = 0;
+                        lastoperation = bit_expression_none;
                         continue;
-                    case ')':
+                    case right_parent_token:
+                      POP:
                         while (operators.tail && expression_entry(operators.tail) != bit_expression_open) {
                             tex_move_stack_entry(&reverse, &operators);
                         }
-                        tex_pop_stack_entry(&operators);
+                        if (expression_negate(operators.tail) & 0x01) {
+                            tex_push_stack_entry(&reverse, bit_expression_minus);
+                        }
+                        if (expression_negate(operators.tail) & 0x02) {
+                            tex_push_stack_entry(&reverse, bit_expression_flip);
+                        }
+                        if (expression_negate(operators.tail) & 0x04) {
+                            tex_push_stack_entry(&reverse, bit_expression_positive);
+                        }
+                        if (expression_negate(operators.tail) & 0x08) {
+                            tex_push_stack_entry(&reverse, bit_expression_negative);
+                        }
+                        tex_pop_stack_entry(&operators); /* bit_expression_open */
                         continue;
-                    case '+':
-                        operation = bit_expression_add;
-                        break;
-                    case '-':
-                        operation = bit_expression_subtract;
-                        break;
-                    case '*':
+                    case plus_token:
+                        if (lastoperation !=  bit_expression_none || initial) {
+                            operation = bit_expression_none;
+                            goto HERE;
+                        } else { 
+                            operation = bit_expression_add;
+                            break;
+                        }
+                    case minus_token:
+                        if (lastoperation !=  bit_expression_none || initial) {
+                            operation = bit_expression_none;
+                            negate = ! negate;
+                            goto HERE;
+                        } else { 
+                            operation = bit_expression_subtract;
+                            break;
+                        }
+                    case asterisk_token:
                         operation = bit_expression_multiply;
                         break;
-                    case '/':
-                    case ':':
+                    case slash_token:
                         operation = bit_expression_divide;
                         break;
-                    case '%':
-                    case ';':
+                    case colon_token:
+                        operation = bit_expression_div;
+                        break;
+                    case percentage_token:
+                    case semi_colon_token:
                         operation = bit_expression_mod;
                         break;
-                    case '&':
+                    case ampersand_token_l: case ampersand_token_o: case ampersand_token_t:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                            case alignment_tab_cmd:
-                                switch (cur_chr) {
-                                    case '&':
-                                        operation = bit_expression_and;
-                                        goto OKAY;
-                                }
+                        switch (cur_tok) {
+                            case ampersand_token_l:
+                            case ampersand_token_o:
+                            case ampersand_token_t:
+                                operation = bit_expression_and;
+                                goto OKAY;
                         }
                         operation = bit_expression_band;
-                        alreadygotten = true;
+                        alreadygotten = 1;
                         break;
-                    case '^':
+                    case not_equal_token:
+                        operation = bit_expression_unequal;
+                        break;
+                    case less_or_equal_token:
+                        operation = bit_expression_lessequal;
+                        break;
+                    case more_or_equal_token:
+                        operation = bit_expression_moreequal;
+                        break;
+                    case circumflex_token_l: case circumflex_token_o: case circumflex_token_s:
                         operation = bit_expression_bxor;
                         break;
-                    case 'v':
-                        operation = bit_expression_bor;
-                        break;
-                    case '|':
+                    case bar_token_l: case bar_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                                switch (cur_chr) {
-                                    case '|':
-                                        operation = bit_expression_or;
-                                        goto OKAY;
-                                }
+                        switch (cur_tok) {
+                            case bar_token_l: case bar_token_o:
+                                operation = bit_expression_or;
+                                goto OKAY;
                         }
                         operation = bit_expression_bor;
-                        alreadygotten = true;
+                        alreadygotten = 1;
                         break;
-                    case '<':
+                    case less_token:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                                switch (cur_chr) {
-                                    case '<':
-                                        operation = bit_expression_bleft;
-                                        goto OKAY;
-                                    case '=':
-                                        operation = bit_expression_lessequal;
-                                        goto OKAY;
-                                    case '>':
-                                        operation = bit_expression_unequal;
-                                        goto OKAY;
-                                }
+                        switch (cur_tok) {
+                            case less_token:
+                                operation = bit_expression_bleft;
+                                goto OKAY;
+                            case equal_token:
+                                operation = bit_expression_lessequal;
+                                goto OKAY;
+                            case more_token:
+                                operation = bit_expression_unequal;
+                                goto OKAY;
                         }
                         operation = bit_expression_less;
-                        alreadygotten = true;
+                        alreadygotten = 1;
                         break;
-                    case '>':
+                    case more_token:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                                switch (cur_chr) {
-                                    case '>':
-                                        operation = bit_expression_bright;
-                                        goto OKAY;
-                                    case '=':
-                                        operation = bit_expression_moreequal;
-                                        goto OKAY;
-                                }
+                        switch (cur_tok) {
+                            case more_token:
+                                operation = bit_expression_bright;
+                                goto OKAY;
+                            case equal_token:
+                                operation = bit_expression_moreequal;
+                                goto OKAY;
                         }
                         operation = bit_expression_more;
-                        alreadygotten = true;
+                        alreadygotten = 1;
                         break;
-                    case '=':
+                    case equal_token:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                                switch (cur_chr) {
-                                    case '=':
-                                        break;
-                                    default:
-                                        alreadygotten = true;
-                                        break;
-                                }
+                        switch (cur_tok) {
+                            case equal_token:
+                                break;
+                            default:
+                                alreadygotten = 1;
+                                break;
                         }
                         operation = bit_expression_equal;
                         break;
-                    case '~': case '!':
+                    case plus_minus_token:
+                        positive = 1;
+                        operation = bit_expression_none;
+                        goto HERE;
+                    case minus_plus_token:
+                        negative = 1;
+                        operation = bit_expression_none;
+                        goto HERE;
+                    case tilde_token_l: case tilde_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd:
-                            case other_char_cmd:
-                                switch (cur_chr) {
-                                    case '=':
-                                        operation = bit_expression_unequal;
-                                        goto OKAY;
-                                }
+                        switch (cur_tok) {
+                            case equal_token:
+                                operation = bit_expression_unequal;
+                                goto OKAY;
                         }
-                        operation = bit_expression_not;
-                        alreadygotten = true;
+                        operation = bit_expression_bnot;
+                        alreadygotten = 1;
                         break;
-                    case 'm': case 'M':
+                    case exclamation_token_l: case exclamation_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'o': case 'O':
-                                tex_get_x_token();
-                                switch (cur_cmd) {
-                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'd': case 'D':
-                                        operation = bit_expression_mod;
-                                        goto OKAY;
-                                    }
-                                }
-                            }
+                        switch (cur_tok) {
+                            case equal_token:
+                                operation = bit_expression_unequal;
+                                goto OKAY;
+                        }
+                        operation = bit_expression_not; /* better bitwise ~ */
+                        alreadygotten = 1;
+                        break;
+                    case m_token_l: case m_token_o:
+                        tex_get_x_token();
+                        switch (cur_tok) {
+                            case o_token_l: case o_token_o:
+                               tex_get_x_token();
+                               switch (cur_tok) {
+                                   case d_token_l: case d_token_o:
+                                       operation = bit_expression_mod;
+                                       goto OKAY;
+                               }
                         }
                         goto UNEXPECTED;
-                    case 'n': case 'N':
+                    case d_token_l: case d_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'o': case 'O':
-                                tex_get_x_token();
-                                switch (cur_cmd) {
-                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'o': case 'T':
-                                        operation = bit_expression_not;
-                                        goto OKAY;
-                                    }
-                                }
-                            }
+                        switch (cur_tok) {
+                            case i_token_l: case i_token_o:
+                               tex_get_x_token();
+                               switch (cur_tok) {
+                                   case v_token_l: case v_token_o:
+                                       operation = bit_expression_div;
+                                       goto OKAY;
+                               }
                         }
                         goto UNEXPECTED;
-                    case 'a': case 'A':
+                    case n_token_l: case n_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'n': case 'N':
+                        switch (cur_tok) {
+                            case o_token_l: case o_token_o:
+                               tex_get_x_token();
+                               switch (cur_tok) {
+                                    case t_token_l: case t_token_o:
+                                       if (lastoperation !=  bit_expression_none || initial) {
+                                           operation = bit_expression_none;
+                                           nothing = ! nothing;
+                                           goto HERE;
+                                       } else { 
+                                           operation = bit_expression_not;
+                                           goto OKAY;
+                                       }
+                               }
+                            case p_token_l: case p_token_o:
+                               tex_get_x_token();
+                               switch (cur_tok) {
+                                    case m_token_l: case m_token_o:
+                                       if (lastoperation !=  bit_expression_none || initial) {
+                                           operation = bit_expression_none;
+                                           positive = 1;
+                                           goto HERE;
+                                       } else { 
+                                           operation = bit_expression_pm;
+                                           goto OKAY;
+                                       }
+                               }
+                            case m_token_l: case m_token_o:
+                               tex_get_x_token();
+                               switch (cur_tok) {
+                                    case p_token_l: case p_token_o:
+                                       if (lastoperation !=  bit_expression_none || initial) {
+                                           operation = bit_expression_none;
+                                           negative = 1;
+                                           goto HERE;
+                                       } else { 
+                                           operation = bit_expression_mp;
+                                           goto OKAY;
+                                       }
+                               }
+                        }
+                        goto UNEXPECTED;
+                    case a_token_l: case a_token_o:
+                        tex_get_x_token();
+                        switch (cur_tok) { 
+                            case n_token_l: case n_token_o:
                                 tex_get_x_token();
-                                switch (cur_cmd) {
-                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'd': case 'D':
+                                switch (cur_tok) { 
+                                    case d_token_l: case d_token_o:
                                         operation = bit_expression_and;
                                         goto OKAY;
-                                    }
                                 }
-                            }
+                                break;
                         }
                         goto UNEXPECTED;
-                    case 'b': case 'B':
+                    case b_token_l: case b_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd: case other_char_cmd:
-                                switch (cur_chr) {
-                                    case 'a': case 'A':
+                        switch (cur_tok) {
+                            case a_token_l: case a_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) { 
+                                    case n_token_l: case n_token_o:
                                         tex_get_x_token();
-                                        switch (cur_cmd) {
-                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'n': case 'N':
-                                                tex_get_x_token();
-                                                switch (cur_cmd) {
-                                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'd': case 'D':
-                                                        operation = bit_expression_band;
-                                                        goto OKAY;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    case 'o': case 'O':
-                                        tex_get_x_token();
-                                        switch (cur_cmd) {
-                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'r': case 'R':
-                                                operation = bit_expression_bor;
+                                        switch (cur_tok) { 
+                                            case d_token_l: case d_token_o:
+                                                operation = bit_expression_band;
                                                 goto OKAY;
-                                            }
                                         }
-                                        break;
-                                    case 'x': case 'X':
-                                        tex_get_x_token();
-                                        switch (cur_cmd) {
-                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'o': case 'O':
-                                                tex_get_x_token();
-                                                switch (cur_cmd) {
-                                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'r': case 'R':
-                                                        operation = bit_expression_bxor;
-                                                        goto OKAY;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    case 's': case 'S':
-                                        tex_get_x_token();
-                                        switch (cur_cmd) {
-                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'e': case 'S':
-                                                tex_get_x_token();
-                                                switch (cur_cmd) {
-                                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 't': case 'T':
-                                                        operation = bit_expression_bset;
-                                                        goto OKAY;
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
-                                    case 'r': case 'R':
-                                        tex_get_x_token();
-                                        switch (cur_cmd) {
-                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'e': case 'E':
-                                                tex_get_x_token();
-                                                switch (cur_cmd) {
-                                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 's': case 'S':
-                                                        tex_get_x_token();
-                                                        switch (cur_cmd) {
-                                                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'e': case 'S':
-                                                                tex_get_x_token();
-                                                                switch (cur_cmd) {
-                                                                    case letter_cmd: case other_char_cmd: switch (cur_chr) { case 't': case 'T':
-                                                                        operation = bit_expression_bset;
-                                                                        goto OKAY;
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        break;
                                 }
+                                break;
+                            case o_token_l: case o_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case r_token_l: case r_token_o:
+                                        operation = bit_expression_bor;
+                                        goto OKAY;
+                                }
+                                break;
+                            case x_token_l: case x_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case o_token_l: case o_token_o:
+                                        tex_get_x_token();
+                                        switch (cur_tok) {
+                                            case r_token_l: case r_token_o:
+                                                operation = bit_expression_bxor;
+                                                goto OKAY;
+                                        }
+                                }
+                                break;
+                            case s_token_l: case s_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case e_token_l: case e_token_o:
+                                        tex_get_x_token();
+                                        switch (cur_tok) {
+                                            case t_token_l: case t_token_o:
+                                                operation = bit_expression_bset;
+                                                goto OKAY;
+                                        }
+                                }
+                                break;
+                            case u_token_l: case u_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case n_token_l: case n_token_o:
+                                        tex_get_x_token();
+                                        switch (cur_tok) {
+                                            case s_token_l: case s_token_o:
+                                                tex_get_x_token();
+                                                switch (cur_tok) {
+                                                    case e_token_l: case e_token_o:
+                                                        tex_get_x_token();
+                                                        switch (cur_tok) {
+                                                            case t_token_l: case t_token_o:
+                                                                operation = bit_expression_bset;
+                                                                goto OKAY;
+                                                        }
+                                                }
+                                        }
+                                }
+                                break;
                         }
                         goto UNEXPECTED;
-                    case 'o': case 'O':
+                    case c_token_l: case c_token_o:
                         tex_get_x_token();
-                        switch (cur_cmd) {
-                            case letter_cmd: case other_char_cmd: switch (cur_chr) { case 'r': case 'R':
+                        switch (cur_tok) {
+                            case a_token_l: case a_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) { 
+                                    case n_token_l: case n_token_o:
+                                        tex_get_x_token();
+                                        switch (cur_tok) { 
+                                            case d_token_l: case d_token_o:
+                                                operation = bit_expression_cand;
+                                                goto OKAY;
+                                        }
+                                }
+                                break;
+                            case o_token_l: case o_token_o:
+                                tex_get_x_token();
+                                switch (cur_tok) {
+                                    case r_token_l: case r_token_o:
+                                        operation = bit_expression_cor;
+                                        goto OKAY;
+                                }
+                                break;
+                        }
+                        goto UNEXPECTED;
+                    case o_token_l: case o_token_o:
+                        tex_get_x_token();
+                        switch (cur_tok) {
+                            case r_token_l: case r_token_o:
                                 operation = bit_expression_or;
                                 goto OKAY;
-                            }
                         }
                         goto UNEXPECTED;
+                    case v_token_l: case v_token_o:
+                        operation = bit_expression_bor;
+                        break;
                     default:
                         goto NUMBER;
                 }
@@ -6536,19 +8478,41 @@ static void tex_aux_scan_expression(int level)
                     tex_move_stack_entry(&reverse, &operators);
                 }
                 tex_push_stack_entry(&operators, operation);
+                lastoperation = operation;
                 break;
-            default:
               NUMBER:
+                lastoperation = bit_expression_none;
+                initial = 0;
                 /*tex These use |cur_tok|: */
                 {
                     int has_fraction = 0;
                     int has_unit = 1;
-                    operation = level == dimension_val_level ? tex_scan_bit_dimension(&has_fraction, &has_unit) : tex_scan_bit_int(NULL);
+                    operation = level == dimension_val_level ? tex_scan_bit_dimension(&has_fraction, &has_unit) : tex_scan_bit_integer(NULL);
+                    if (negate) { 
+                        operation = - operation;
+                        negate = 0;
+                    }
+                    if (nothing) { 
+                        operation = operation ? 0 : 1;
+                        nothing = 0;
+                    }
+                    if (positive) {
+                        if (operation < 0) {
+                            operation = - operation;
+                        }    
+                        positive = 0;
+                    }
+                    if (negative) {
+                        if (operation > 0) {
+                            operation = - operation;
+                        }    
+                        negative = 0;
+                    }
                     tex_push_stack_entry(&reverse, operation * factor);
                     if (level == dimension_val_level && has_unit) {
                         node_subtype(reverse.tail) = bit_expression_dimension;
                     } else if (has_fraction) {
-                        node_subtype(reverse.tail) = bit_expression_float;
+                        node_subtype(reverse.tail) = bit_expression_float; /* maybe posit */
                     } else {
                         node_subtype(reverse.tail) = bit_expression_number;
                     }
@@ -6610,114 +8574,151 @@ static void tex_aux_scan_expression(int level)
                     {
                         halfword token = (halfword) expression_entry(current);
                         long long v = 0;
-                        if (token == bit_expression_not) {
-                            v =~ stack.tail ? expression_entry(stack.tail) : 0;
-                        } else {
-                            quarterword sa, sb;
-                            long long va, vb;
-                            sb = node_subtype(stack.tail);
-                            vb = tex_pop_stack_entry(&stack);
-                            if (stack.tail) {
-                                sa = node_subtype(stack.tail);
-                                va = expression_entry(stack.tail);
-                            } else {
-                                sa = bit_expression_number;
-                                va = 0;
-                            }
-                            switch (token) {
-                                case bit_expression_bor:
-                                    v = va | vb;
-                                    break;
-                                case bit_expression_band:
-                                    v = va & vb;
-                                    break;
-                                case bit_expression_bxor:
-                                    v = va ^ vb;
-                                    break;
-                                case bit_expression_bset:
-                                    v = va | ((long long) 1 << (vb - 1));
-                                    break;
-                                case bit_expression_bunset:
-                                    v = va & ~ ((long long) 1 << (vb - 1));
-                                    break;
-                                case bit_expression_bleft:
-                                    v = va << vb;
-                                    break;
-                                case bit_expression_bright:
-                                    v = va >> vb;
-                                    break;
-                                case bit_expression_less:
-                                    v = va < vb;
-                                    break;
-                                case bit_expression_lessequal:
-                                    v = va <= vb;
-                                    break;
-                                case bit_expression_equal:
-                                    v = va == vb;
-                                    break;
-                                case bit_expression_moreequal:
-                                    v = va >= vb;
-                                    break;
-                                case bit_expression_more:
-                                    v = va > vb;
-                                    break;
-                                case bit_expression_unequal:
-                                    v = va != vb;
-                                    break;
-                                case bit_expression_add:
-                                    v = va + vb;
-                                    break;
-                                case bit_expression_subtract:
-                                    v = va - vb;
-                                    break;
-                                case bit_expression_multiply:
-                                    {
-                                        double d = (double) va * (double) vb;
-                                        if (sa == bit_expression_float) {
-                                            d = d / (65536 * factor);
-                                        } else if (sb == bit_expression_float) {
-                                            d = d / (65536 * factor);
-                                        } else {
-                                            d = d / factor;
-                                        }
-                                        if (sa == bit_expression_dimension || sb == bit_expression_dimension) {
-                                            node_subtype(stack.tail) = bit_expression_dimension;
-                                        }
-                                        v = longlonground(d);
-                                    }
-                                    break;
-                                case bit_expression_divide:
-                                    if (vb) {
-                                        double d = (double) va / (double) vb;
-                                        if (sa == bit_expression_float) {
-                                        // d = d / (65536 * factor);
-                                           d = d * (65536 * factor);
-                                        } else if (sb == bit_expression_float) {
-                                         // d = d / (65536 * factor);
-                                            d = d * (65536 * factor);
-                                        } else {
-                                            d = d * factor;
-                                        }
-                                        if (sa == bit_expression_dimension || sb == bit_expression_dimension) {
-                                            node_subtype(stack.tail) = bit_expression_dimension;
-                                        }
-                                        v = longlonground(d);
+                        switch (token) {
+                            case bit_expression_not: 
+                                v = expression_entry(stack.tail) ? 0 : 1;  /* no check?*/
+                                break;
+                            case bit_expression_bnot: 
+                                v = stack.tail ? ~expression_entry(stack.tail) : 0;
+                                break;
+                            case bit_expression_plus: 
+                                v = stack.tail ? expression_entry(stack.tail) : 0;
+                                break;
+                            case bit_expression_minus: 
+                                v = stack.tail ? - expression_entry(stack.tail) : 0;
+                                break;
+                            case bit_expression_flip: 
+                                v = stack.tail ? (expression_entry(stack.tail) ? 0 : 1) : 1;
+                                break;
+                            case bit_expression_positive: 
+                                v = stack.tail ? expression_entry(stack.tail) : 0;
+                                if (v < 0) {
+                                    v = - v;
+                                }
+                                break;
+                            case bit_expression_negative: 
+                                v = stack.tail ? expression_entry(stack.tail) : 0;
+                                if (v > 0) {
+                                    v = - v;
+                                }
+                                break;
+                            default: 
+                                {
+                                    quarterword sa, sb;
+                                    long long va, vb;
+                                    sb = node_subtype(stack.tail);
+                                    vb = tex_pop_stack_entry(&stack);
+                                    if (stack.tail) {
+                                        sa = node_subtype(stack.tail);
+                                        va = expression_entry(stack.tail);
                                     } else {
-                                        goto ZERO;
+                                        sa = bit_expression_number;
+                                        va = 0; 
                                     }
-                                    break;
-                                case bit_expression_mod:
-                                    v =  va % vb;
-                                    break;
-                                case bit_expression_or:
-                                    v = (va || vb) ? 1 : 0;
-                                    break;
-                                case bit_expression_and:
-                                    v = (va && vb) ? 1 : 0;
-                                    break;
-                                default:
-                                    v = 0;
-                                    break;
+                                    switch (token) {
+                                        case bit_expression_bor:
+                                            v = va | vb;
+                                            break;
+                                        case bit_expression_band:
+                                            v = va & vb;
+                                            break;
+                                        case bit_expression_bxor:
+                                            v = va ^ vb;
+                                            break;
+                                        case bit_expression_bset:
+                                            v = va | ((long long) 1 << (vb - 1));
+                                            break;
+                                        case bit_expression_bunset:
+                                            v = va & ~ ((long long) 1 << (vb - 1));
+                                            break;
+                                        case bit_expression_bleft:
+                                            v = va << vb;
+                                            break;
+                                        case bit_expression_bright:
+                                            v = va >> vb;
+                                            break;
+                                        case bit_expression_less:
+                                            v = va < vb;
+                                            break;
+                                        case bit_expression_lessequal:
+                                            v = va <= vb;
+                                            break;
+                                        case bit_expression_equal:
+                                            v = va == vb;
+                                            break;
+                                        case bit_expression_moreequal:
+                                            v = va >= vb;
+                                            break;
+                                        case bit_expression_more:
+                                            v = va > vb;
+                                            break;
+                                        case bit_expression_unequal:
+                                            v = va != vb;
+                                            break;
+                                        case bit_expression_add:
+                                            v = va + vb;
+                                            break;
+                                        case bit_expression_subtract:
+                                            v = va - vb;
+                                            break;
+                                        case bit_expression_multiply:
+                                            {
+                                                double d = (double) va * (double) vb;
+                                                if (sa == bit_expression_float) {
+                                                    d = d / (65536 * factor);
+                                                } else if (sb == bit_expression_float) {
+                                                    d = d / (65536 * factor);
+                                                } else {
+                                                    d = d / factor;
+                                                }
+                                                if (sa == bit_expression_dimension || sb == bit_expression_dimension) {
+                                                    node_subtype(stack.tail) = bit_expression_dimension;
+                                                }
+                                                v = longlonground(d);
+                                            }
+                                            break;
+                                        case bit_expression_divide:
+                                            if (vb) {
+                                                double d = (double) va / (double) vb;
+                                                if (sa == bit_expression_float) {
+                                                // d = d / (65536 * factor);
+                                                   d = d * (65536 * factor);
+                                                } else if (sb == bit_expression_float) {
+                                                 // d = d / (65536 * factor);
+                                                    d = d * (65536 * factor);
+                                                } else {
+                                                    d = d * factor;
+                                                }
+                                                if (sa == bit_expression_dimension || sb == bit_expression_dimension) {
+                                                    node_subtype(stack.tail) = bit_expression_dimension;
+                                                }
+                                                v = longlonground(d);
+                                            } else {
+                                                goto ZERO;
+                                            }
+                                            break;
+                                        case bit_expression_mod:
+                                            v =  va % vb;
+                                            break;
+                                        case bit_expression_div:
+                                            v =  va / vb;
+                                            break;
+                                        case bit_expression_or:
+                                            v = (va || vb) ? 1 : 0;
+                                            break;
+                                        case bit_expression_and:
+                                            v = (va && vb) ? 1 : 0;
+                                            break;
+                                        case bit_expression_cor:
+                                            v = va ? va : (vb ? vb : 0); 
+                                            break;
+                                        case bit_expression_cand:
+                                            v = (va && vb) ? vb : 0;
+                                            break;
+                                        default:
+                                            v = 0;
+                                            break;
+                                    }
                             }
                         }
                         if (v < min_integer) {
@@ -6747,351 +8748,10 @@ static void tex_aux_scan_expression(int level)
         "I was expecting to see an integer or bitwise operator. Didn't."
     );
   DONE:
+    lmt_scanner_state.expression_depth--;
     cur_val = scaledround(((double) expression_entry(stack.tail)) / factor);
     cur_val_level = level;
     tex_aux_dispose_stack(&stack);
     tex_aux_dispose_stack(&reverse);
     tex_aux_dispose_stack(&operators);
-}
-
-int tex_scanned_expression(int level)
-{
-    tex_aux_scan_expression(level);
-    return cur_val;
-}
-
-/*tex
-    We used to only scale by 1000 when we had a fraction but that is kind of fuzzy so now we always
-    assume a fraction.
-*/
-
-halfword tex_scan_scale(int optional_equal)
-{
-    bool negative = false;
-    lmt_scanner_state.arithmic_error = 0;
-    do {
-        while (1) {
-            tex_get_x_token();
-            if (cur_cmd != spacer_cmd) {
-                if (optional_equal && (cur_tok == equal_token)) {
-                    optional_equal = 0;
-                } else {
-                    break;
-                }
-            }
-        }
-        if (cur_tok == minus_token) {
-            negative = ! negative;
-            cur_tok = plus_token;
-        }
-    } while (cur_tok == plus_token);
-    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
-        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, integer_val_level, 0, 0);
-    } else {
-        int has_fraction = tex_token_is_seperator(cur_tok);
-        if (has_fraction) {
-            cur_val = 0;
-        } else {
-            int cur_radix;
-            tex_back_input(cur_tok);
-            cur_val = tex_scan_integer(0, &cur_radix);
-            tex_get_token();
-            if (cur_radix == 10 && tex_token_is_seperator(cur_tok)) {
-                has_fraction = 1;
-            }
-        }
-        cur_val = cur_val * 1000;
-        if (has_fraction) {
-            unsigned k = 4;
-            while (1) {
-                tex_get_x_token();
-                if (cur_tok < zero_token || cur_tok > nine_token) {
-                    break;
-                } else if (k == 1) {
-                    /* rounding */
-                    if (cur_tok >= five_token && cur_tok <= nine_token) {
-                        cur_val += 1;
-                    }
-                    --k;
-                } else if (k) {
-                    cur_val = cur_val + (k == 4 ? 100 : (k == 3 ? 10 : 1)) * (cur_tok - zero_token);
-                    --k;
-                }
-            }
-        }
-        tex_push_back(cur_tok, cur_cmd, cur_chr);
-    }
-    if (negative) {
-        cur_val = -cur_val;
-    }
-    if (lmt_scanner_state.arithmic_error || (abs(cur_val) >= 0x40000000)) {
-     // scan_dimension_out_of_range_error();
-        cur_val = max_dimension;
-        lmt_scanner_state.arithmic_error = 0;
-    }
-    return cur_val;
-}
-
-/* todo: share with lmttokenlib.scan_float */
-
-# define max_posit_size 60
-
-halfword tex_scan_posit(int optional_equal)
-{
-    int hexadecimal = 1;
-    int exponent = 1;
-    bool negative = false;
-    int b = 0;
-    char buffer[max_posit_size+4] = { 0 };
-    do {
-        while (1) {
-            tex_get_x_token();
-            if (cur_cmd != spacer_cmd) {
-                if (optional_equal && (cur_tok == equal_token)) {
-                    optional_equal = 0;
-                } else {
-                    break;
-                }
-            }
-        }
-        if (cur_tok == minus_token) {
-            negative = ! negative;
-            cur_tok = plus_token;
-        }
-    } while (cur_tok == plus_token);
-    if (cur_cmd >= min_internal_cmd && cur_cmd <= max_internal_cmd) {
-        cur_val = tex_aux_scan_something_internal(cur_cmd, cur_chr, posit_val_level, 0, 0);
-    } else {
-        if (negative) {
-            buffer[b++] = '-';
-        }
-        /*tex we accept |[.,]digits| */
-        if (hexadecimal && (cur_tok == zero_token)) {
-            buffer[b++] = '0';
-            tex_get_x_token();
-            if (tex_token_is_hexadecimal(cur_tok)) {
-                buffer[b++] = 'x';
-                goto SCANHEXADECIMAL;
-            } else {
-                goto PICKUPDECIMAL;
-            }
-        } else {
-            goto SCANDECIMAL;
-        }
-      SCANDECIMAL:
-        if (tex_token_is_seperator(cur_tok)) {
-            buffer[b++] = '.';
-            while (1) {
-                tex_get_x_token();
-                if (tex_token_is_digit(cur_tok)) {
-                    buffer[b++] = (unsigned char) cur_chr;
-                } else if (exponent) {
-                    goto DECIMALEXPONENT;
-                } else {
-                    tex_back_input(cur_tok);
-                    goto DONE;
-                }
-                if (b >= 60) {
-                    goto TOOBIG;
-                }
-            }
-        } else {
-            goto PICKUPDECIMAL;
-        }
-        while (1) {
-            tex_get_x_token();
-          PICKUPDECIMAL:
-            if (tex_token_is_digit(cur_tok)) {
-                buffer[b++] = (unsigned char) cur_chr;
-            } else if (tex_token_is_seperator(cur_tok)) {
-                buffer[b++] = '.';
-                while (1) {
-                    tex_get_x_token();
-                    if (tex_token_is_digit(cur_tok)) {
-                        buffer[b++] = (unsigned char) cur_chr;
-                    } else {
-                        tex_back_input(cur_tok);
-                        break;
-                    }
-                }
-            } else if (exponent) {
-                goto DECIMALEXPONENT;
-            } else {
-                tex_back_input(cur_tok);
-                goto DONE;
-            }
-            if (b >= max_posit_size) {
-                goto TOOBIG;
-            }
-        }
-      DECIMALEXPONENT:
-        if (tex_token_is_exponent(cur_tok)) {
-            buffer[b++] = (unsigned char) cur_chr;
-            tex_get_x_token();
-            if (tex_token_is_sign(cur_tok)) {
-                buffer[b++] = (unsigned char) cur_chr;
-            } else if (tex_token_is_digit(cur_tok)) {
-                buffer[b++] = (unsigned char) cur_chr;
-            }
-            while (1) {
-                tex_get_x_token();
-                if (tex_token_is_digit(cur_tok)) {
-                    buffer[b++] = (unsigned char) cur_chr;
-                } else {
-                    break;
-                }
-                if (b >= max_posit_size) {
-                    goto TOOBIG;
-                }
-            }
-        }
-        tex_back_input(cur_tok);
-        goto DONE;
-      SCANHEXADECIMAL:
-        tex_get_x_token();
-        if (tex_token_is_seperator(cur_tok)) {
-            buffer[b++] = '.';
-            while (1) {
-                tex_get_x_token();
-                if (tex_token_is_xdigit(cur_tok)) {
-                    buffer[b++] = (unsigned char) cur_chr;
-                } else if (exponent) {
-                    goto HEXADECIMALEXPONENT;
-                } else {
-                    tex_back_input(cur_tok);
-                    goto DONE;
-                }
-                if (b >= max_posit_size) {
-                    goto TOOBIG;
-                }
-            }
-        } else {
-            /* hm, we could avoid this pushback */
-            tex_back_input(cur_tok);
-            while (1) {
-                tex_get_x_token();
-                if (tex_token_is_xdigit(cur_tok)) {
-                    buffer[b++] = (unsigned char) cur_chr;
-                } else if (tex_token_is_seperator(cur_tok)) {
-                    buffer[b++] = '.';
-                    while (1) {
-                        tex_get_x_token();
-                        if (tex_token_is_xdigit(cur_tok)) {
-                            buffer[b++] = (unsigned char) cur_chr;
-                        } else {
-                            tex_back_input(cur_tok);
-                            break;
-                        }
-                    }
-                } else if (exponent) {
-                    goto HEXADECIMALEXPONENT;
-                } else {
-                    tex_back_input(cur_tok);
-                    goto DONE;
-                }
-                if (b >= max_posit_size) {
-                    goto TOOBIG;
-                }
-            }
-        }
-      HEXADECIMALEXPONENT:
-        if (tex_token_is_xexponent(cur_tok)) {
-            buffer[b++] = (unsigned char) cur_chr;
-            tex_get_x_token();
-            if (tex_token_is_sign(cur_tok)) {
-                buffer[b++] = (unsigned char) cur_chr;
-            } else if (tex_token_is_xdigit(cur_tok)) {
-                buffer[b++] = (unsigned char) cur_chr;
-            }
-            while (1) {
-                tex_get_x_token();
-                if (tex_token_is_xdigit(cur_tok)) {
-                    buffer[b++] = (unsigned char) cur_chr;
-                } else {
-                    break;
-                }
-                if (b >= max_posit_size) {
-                    goto TOOBIG;
-                }
-            }
-        }
-        tex_back_input(cur_tok);
-      DONE:
-        if (b) {
-            double d = strtod(buffer, NULL);
-            cur_val = tex_double_to_posit(d).v;
-            return cur_val;
-        } else {
-            tex_aux_missing_number_error(4);
-        }
-      TOOBIG:
-        cur_val = tex_integer_to_posit(0).v;
-    }
-    return cur_val;
-}
-
-int tex_scan_tex_value(halfword level, halfword *value)
-{
-    tex_aux_scan_expr(level);
-    *value = cur_val;
-    return 1;
-}
-
-quarterword tex_scan_direction(int optional_equal)
-{
-    int i = tex_scan_integer(optional_equal, NULL);
-    return (quarterword) checked_direction_value(i);
-}
-
-halfword tex_scan_geometry(int optional_equal)
-{
-    int i = tex_scan_integer(optional_equal, NULL);
-    return checked_geometry_value(i);
-}
-
-halfword tex_scan_orientation(int optional_equal)
-{
-    halfword i = tex_scan_integer(optional_equal, NULL);
-    return checked_orientation_value(i);
-}
-
-halfword tex_scan_anchor(int optional_equal)
-{
-    halfword a = tex_scan_integer(optional_equal, NULL);
-    halfword l = (a >> 16) & 0xFFFF;
-    halfword r =  a        & 0xFFFF;
-    return (checked_anchor_value(l) << 16) + checked_anchor_value(r);
-}
-
-halfword tex_scan_anchors(int optional_equal)
-{
-    halfword l = tex_scan_integer(optional_equal, NULL) & 0xFFFF;
-    halfword r = tex_scan_integer(0, NULL)              & 0xFFFF;
-    return (checked_anchor_value(l) << 16) + checked_anchor_value(r);
-}
-
-halfword tex_scan_attribute(halfword attrlist)
-{
-    halfword i = tex_scan_attribute_register_number();
-    halfword v = tex_scan_integer(1, NULL);
-    if (eq_value(register_attribute_location(i)) != v) {
-        if (attrlist) {
-            attrlist = tex_patch_attribute_list(attrlist, i, v);
-        } else {
-            attrlist = tex_copy_attribute_list_set(tex_current_attribute_list(), i, v);
-        }
-    }
-    return attrlist;
-}
-
-halfword tex_scan_extra_attribute(halfword attrlist)
-{
-    halfword i = tex_scan_attribute_register_number();
-    halfword v = tex_scan_integer(1, NULL);
-    if (attrlist) {
-        attrlist = tex_patch_attribute_list(attrlist, i, v);
-    } else {
-        attrlist = tex_copy_attribute_list_set(null, i, v);
-    }
-    return attrlist;
 }

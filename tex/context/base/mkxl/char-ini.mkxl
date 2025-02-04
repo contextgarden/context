@@ -47,14 +47,14 @@
 \permanent\def\utfchar #1{\clf_utfchar {#1}} % todo: define public at lua end
 \permanent\def\safechar#1{\clf_safechar{#1}} % todo: define public at lua end
 
-\permanent\protected\def\Ux #1{\tocharacter\numexpr"#1\relax} % used in xml (sometimes overloaded)
-\permanent          \def\eUx#1{\tocharacter\numexpr"#1\relax} % used in xml (sometimes overloaded)
+\permanent\protected\def\Ux #1{\tocharacter{"#1}} % used in xml (sometimes overloaded)
+\permanent          \def\eUx#1{\tocharacter{"#1}} % used in xml (sometimes overloaded)
 
 \permanent\def\expandUx{\enforced\let\Ux\eUx}
 
 \permanent          \def\checkedchar        {\relax\ifmmode\expandafter\checkedmathchar\else\expandafter\checkedtextchar\fi} % #1#2
 \permanent          \def\checkedmathchar#1#2{#2}
-\permanent\protected\def\checkedtextchar  #1{\clf_doifelsecharinfont\numexpr#1\relax{\char#1}} % {#2}
+\permanent\protected\def\checkedtextchar  #1{\clf_doifelsecharinfont{#1}{\char#1}} % {#2}
 
 \newconditional\prefermathovertextchar
 

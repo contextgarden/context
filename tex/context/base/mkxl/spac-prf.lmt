@@ -110,6 +110,7 @@ local variables         = interfaces.variables
 local v_none            <const> = variables.none
 local v_fixed           <const> = variables.fixed
 local v_strict          <const> = variables.strict
+local v_yes             <const> = variables.yes
 
 local setcolor          = nodes.tracers.colors.set
 local settransparency   = nodes.tracers.transparencies.set
@@ -940,7 +941,7 @@ do
 
     -- we could share the two arrays if needed
 
-    local a_lineprofile   = attributes.private("lineprofile")
+    local a_lineprofile   <const> = attributes.private("lineprofile")
 
     local registervalue   = attributes.registervalue
     local getvalue        = attributes.getvalue
@@ -1156,8 +1157,6 @@ do
     local defaultstep   = 65536 * 2 -- 2pt
     local defaultmethod = "a"
     local defaultfactor = 1
-
-    local v_yes = interfaces.variables.yes
 
     -- I played with different methods (like only get depths and then on the fly check with heights
     -- but there is no gain and it is also fuzzy. So for now we just do the whole scan.

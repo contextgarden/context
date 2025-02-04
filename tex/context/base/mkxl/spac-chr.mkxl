@@ -55,7 +55,7 @@
 %immutable\edef\fiveperemspace       {\tocharacter"001E}
 
 \immutable\protected\def\zerowidthnobreakspace{\penalty\plustenthousand\kern\zeropoint}
-\immutable\protected\def\fiveperemspace       {\hskip\dimexpr\emwidth/5\relax}
+\immutable\protected\def\fiveperemspace       {\hskip{\emwidth/5}}
 
 \aliased\let\ideographicspace         \enquad
 \aliased\let\ideographichalffillspace \emquad

@@ -64,7 +64,7 @@
    autoscript=position,
    autolanguage=position,
    wipemath=yes, % for instance needed for dejavu
-   textcontrol=collapsehyphens,
+   textcontrol={collapsehyphens,replaceapostrophe},
  % compoundhyphen=yes,
    checkmissing=yes,
    kern=yes,     % consider skipping the base passes when no base mode is used

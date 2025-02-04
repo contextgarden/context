@@ -44,11 +44,11 @@
      \setupcurrent_p_characterspacing[#3]%
      \clf_setupcharacterspacing
         {#1}%
-        \numexpr#2\relax
+        {#2}%
         {%
-          left        \direct_p_characterspacingparameter\c!left\space
-          right       \direct_p_characterspacingparameter\c!right\space
-          alternative \direct_p_characterspacingparameter\c!alternative\space
+          left        \direct_p_characterspacingparameter\c!left       \relaxedspace % floatexpr
+          right       \direct_p_characterspacingparameter\c!right      \relaxedspace % floatexpr
+          alternative \direct_p_characterspacingparameter\c!alternative\relaxedspace
         }%
      \relax
    \else

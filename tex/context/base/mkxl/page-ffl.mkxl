@@ -87,7 +87,7 @@
    \global\d_page_adapts_preroll\zeropoint
    \def\page_adapts_layout_indeed##1%
      {\setupcurrentadaptlayout[\c!top=\zeropoint,##1]%
-      \global\d_page_adapts_preroll\dimexpr\adaptlayoutparameter\c!top\relax}
+      \global\d_page_adapts_preroll{\adaptlayoutparameter\c!top}}
    \begincsname\??pageadaptations\number#1\endcsname
    \endgroup}
 
@@ -95,12 +95,12 @@
   {\begingroup
    \dowithnextbox
      {\page_adapts_layout_preroll{#1}%
-      \scratchdimen\dimexpr
+      \scratchdimen{%
         \htdp\nextbox+\d_page_adapts_preroll
         \ifzeropt\d_page_adapts_preroll
           +\lineheight
         \fi
-      \relax
+      }%
       \putboxincache{\v!page:\number#1}{+}\nextbox
       \normalexpanded{\adaptlayout[\number#1][\c!top=\the\scratchdimen]}%
       \global\advanceby\c_page_adapts_pushed\plusone
@@ -349,7 +349,7 @@
        \cdef\currentfacingfloat{\currentfacingfloat:#2}%
        \inheritedfacingfloatframed{\strut}%
      \egroup
-     \scratchdimenone\dimexpr\textheight-\htdp\scratchboxone+\lineheight\relax
+     \scratchdimenone{\textheight-\htdp\scratchboxone+\lineheight}%
      \dontcomplain
      \splittopskip\zeroskip
      \setbox\scratchbox\vsplit#1 upto \scratchdimenone
@@ -359,7 +359,7 @@
        \inheritedfacingfloatframed{\box\scratchbox}%
      \egroup
      \setbox\scratchbox\vbox
-       \ifdim\ht\scratchbox<\dimexpr\textheight-\scratchdimen\relax
+       \ifdim\ht\scratchbox<{\textheight-\scratchdimen}%
          {\box\scratchbox\directvspacing\p_spaceinbetween}%
        \else
          to \textheight{\box\scratchbox\vss}%

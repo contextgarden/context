@@ -124,7 +124,7 @@
  %   \balancevsize\lastnamedcs
  % \fi
    %
-   \balancevsize            \balancingparameter\c!height
+   \balancevsize            {\balancingparameter\c!height}%
    \balancetolerance        \plustwothousand
    \balanceemergencystretch 2\lineheight
    \balancetopskip          \strutht

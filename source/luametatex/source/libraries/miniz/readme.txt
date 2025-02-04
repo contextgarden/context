@@ -5,4 +5,4 @@ only use part of that single file because we do all file handling ourselves beca
 the file name regime of LuaMetaTeX that is aware of operating system specifics like wide filenames on
 MSWindows). We don't drop in updates without careful checking them first for potential clashes.\\
 
-release url: https://github.com/richgel999/miniz/releases
+release url: https://github.com/richgel999/miniz/releases  (currently 3.0.2 of 2023-01-15)

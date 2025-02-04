@@ -72,7 +72,7 @@
 
 %D A helper:
 
-\permanent\def\frameddimension#1{\the\dimexpr\framedparameter{#1}\relax}
+\permanent\def\frameddimension#1{\todimension{\framedparameter{#1}}}
 
 %D Inheritance:
 
@@ -162,11 +162,11 @@
   %\c!bottomframe=,
   %\c!leftframe=,
   %\c!rightframe=,
-   \c!radius=.5\bodyfontsize,
+   \c!radius=.5\bodyfontsize, % not used directly, see below
    \c!rulethickness=\linewidth,
    \c!dashstep=.1\emwidth,
    \c!corner=\v!rectangular,
-   \c!depth=\zeropoint,
+   \c!depth=\zeropoint, % not used directly, see below
   %\c!foregroundcolor=,
   %\c!foregroundstyle=,
   %\c!background=,
@@ -256,13 +256,13 @@
 \lettonothing\p_framed_frame            % \framedparameter\c!frame
 \lettonothing\p_framed_framecolor
 \lettonothing\p_framed_framecorner
-\lettonothing\p_framed_frameradius
+%lettonothing\p_framed_frameradius
 \lettonothing\p_framed_franalyze
 \lettonothing\p_framed_lines
 \lettonothing\p_framed_location
 \lettonothing\p_framed_minheight
 \lettonothing\p_framed_orientation
-\lettonothing\p_framed_rulethickness
+%lettonothing\p_framed_rulethickness
 \lettonothing\p_framed_setups
 \lettonothing\p_framed_synchronize
 \lettonothing\p_framed_text_depthcorrection
@@ -288,21 +288,32 @@
 
 \def\pack_framed_filled_box_radius
   {\edef\p_framed_backgroundradius{\framedparameter\c!backgroundradius}%
-   \ifzeropt\dimexpr\p_framed_backgroundradius\relax % just in case of .x\bodyfontsize
+   \ifzeropt{\p_framed_backgroundradius}% just in case of .x\bodyfontsize
      \pack_framed_filled_box_normal
    \else
      \pack_framed_filled_box_round
    \fi}
 
+% \def\pack_framed_filled_box_round
+%   {\raise\d_framed_target_dp\hpack{\frule
+%      type   fill
+%      width  \d_framed_target_wd
+%      height \d_framed_target_ht
+%      depth  \d_framed_target_dp
+%      line   \d_framed_linewidth
+%      radius \dimexpr\p_framed_backgroundradius\relax
+%      corner {\p_framed_backgroundcorner}
+%    \relax}}
+
 \def\pack_framed_filled_box_round
-  {\raise\d_framed_target_dp\hpack{\frule
-     type   fill
-     width  \d_framed_target_wd
-     height \d_framed_target_ht
-     depth  \d_framed_target_dp
-     line   \d_framed_linewidth
-     radius \p_framed_backgroundradius\space
-     corner {\p_framed_backgroundcorner}
+  {\raise\d_framed_target_dp
+   \hpack{\clf_roundedfill
+     \d_framed_target_wd
+     \d_framed_target_ht
+     \d_framed_target_dp
+     \d_framed_linewidth
+     {\p_framed_backgroundradius}%
+     {\p_framed_backgroundcorner}
    \relax}}
 
 % we keep this as reference (should still work when uncommented)
@@ -331,7 +342,7 @@
 %      height \d_framed_target_ht
 %      depth  \d_framed_target_dp
 %      line   \d_framed_linewidth
-%      radius \p_framed_frameradius\space
+%      radius \p_framed_frameradius\relaxedspace
 %      corner {\p_framed_framecorner}
 %    \relax}}
 %
@@ -353,7 +364,7 @@
      \d_framed_target_ht
      \d_framed_target_dp
      \d_framed_linewidth
-     \framedparameter\c!frameradius
+     {\framedparameter\c!frameradius}%
      {\p_framed_framecorner}
    \relax}}
 
@@ -484,21 +495,21 @@
 
 % expandable ... in a future version the space will go (in mp one can use Overlay*)
 
-\mutable  \def\overlaywidth        {\the\d_overlay_width       \space} % We preset the variables
-\mutable  \def\overlayheight       {\the\d_overlay_height      \space} % to some reasonable default
-\mutable  \def\overlaydepth        {\the\d_overlay_depth       \space} % values.
-\mutable  \def\overlayoffset       {\the\d_overlay_offset      \space} % of the frame can be (are)
-\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth   \space} % set somewhere else.
-\mutable  \def\overlaymathaxis     {\the\d_overlay_mathaxis    \space} % set somewhere else.
-\mutable  \def\overlaymathexheight {\the\d_overlay_mathexheight\space} % set somewhere else.
-\mutable  \def\overlaymathemwidth  {\the\d_overlay_mathemwidth \space} % set somewhere else.
+\mutable  \def\overlaywidth        {\the\d_overlay_width       \relaxedspace} % We preset the variables
+\mutable  \def\overlayheight       {\the\d_overlay_height      \relaxedspace} % to some reasonable default
+\mutable  \def\overlaydepth        {\the\d_overlay_depth       \relaxedspace} % values.
+\mutable  \def\overlayoffset       {\the\d_overlay_offset      \relaxedspace} % of the frame can be (are)
+\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth   \relaxedspace} % set somewhere else.
+\mutable  \def\overlaymathaxis     {\the\d_overlay_mathaxis    \relaxedspace} % set somewhere else.
+\mutable  \def\overlaymathexheight {\the\d_overlay_mathexheight\relaxedspace} % set somewhere else.
+\mutable  \def\overlaymathemwidth  {\the\d_overlay_mathemwidth \relaxedspace} % set somewhere else.
 \mutable  \def\overlayregion       {\m_overlay_region}
 
-\mutable  \def\overlayradius       {\framedparameter\c!frameradius}
+\mutable  \def\overlayradius       {\todimension{\framedparameter\c!frameradius}}
 \mutable  \def\overlaycolor        {\framedparameter\c!backgroundcolor}
 \mutable  \def\overlaylinecolor    {\framedparameter\c!framecolor}
 %mutable  \edef\overlaycorner      {\framedparameter\c!backgroundcorner}
-%mutable  \edef\overlayradius      {\framedparameter\c!backgroundradius}
+%mutable  \edef\overlayradius      {\the\dimexpr\framedparameter\c!backgroundradius\relax}
 
 \aliased\let\usedoverlaywidth       \d_overlay_width
 \aliased\let\usedoverlayheight      \d_overlay_height
@@ -645,9 +656,9 @@
       \framedbackgroundwidth \wd\b_framed_normal
       \framedbackgroundheight\ht\b_framed_normal
       \framedbackgrounddepth \dp\b_framed_normal
-      \d_framed_target_wd\dimexpr\framedbackgroundwidth +2\framedbackgroundoffset\relax
-      \d_framed_target_ht\dimexpr\framedbackgroundheight+ \framedbackgroundoffset\relax
-      \d_framed_target_dp\dimexpr\framedbackgrounddepth + \framedbackgroundoffset+\framedparameter\c!backgrounddepth\relax
+      \d_framed_target_wd{\framedbackgroundwidth +2\framedbackgroundoffset}%
+      \d_framed_target_ht{\framedbackgroundheight+ \framedbackgroundoffset}%
+      \d_framed_target_dp{\framedbackgrounddepth + \framedbackgroundoffset+\framedparameter\c!backgrounddepth}%
       \let\pack_framed_overlay_initialize\pack_framed_overlay_initialize_indeed
       \ifempty\p_framed_component
         \resetlayoutcomponentattribute
@@ -664,7 +675,7 @@
 
 \def\pack_framed_overlay_initialize_indeed
   {\d_overlay_width       \d_framed_target_wd
-   \d_overlay_height      \dimexpr\d_framed_target_ht+\d_framed_target_dp\relax
+   \d_overlay_height      {\d_framed_target_ht+\d_framed_target_dp}%
    \d_overlay_depth       \d_framed_target_dp
    \d_overlay_linewidth   \d_framed_linewidth
  % \d_overlay_mathaxis    \zeropoint
@@ -696,9 +707,9 @@
 
 \def\pack_framed_add_outline
   {\setbox\b_framed_normal\hpack % rules on top of box
-     {\d_framed_target_wd\dimexpr\wd\b_framed_normal+2\d_framed_frameoffset\relax
-      \d_framed_target_ht\dimexpr\ht\b_framed_normal+ \d_framed_frameoffset\relax
-      \d_framed_target_dp\dimexpr\dp\b_framed_normal+ \d_framed_frameoffset+\framedparameter\c!framedepth\relax
+     {\d_framed_target_wd{\wd\b_framed_normal+2\d_framed_frameoffset}%
+      \d_framed_target_ht{\ht\b_framed_normal+ \d_framed_frameoffset}%
+      \d_framed_target_dp{\dp\b_framed_normal+ \d_framed_frameoffset+\framedparameter\c!framedepth}%
       \ifdim\d_framed_target_dp<\zeropoint
         \advanceby\d_framed_target_ht \d_framed_target_dp
         \scratchdimen-\d_framed_target_dp
@@ -781,9 +792,9 @@
      \scratchdimen.5\d_framed_linewidth
      \kern\scratchdimen
      \clf_framedoutline
-       \dimexpr\d_framed_target_wd-\d_framed_linewidth\relax
-       \dimexpr\d_framed_target_ht-\scratchdimen\relax
-       \dimexpr\d_framed_target_dp-\scratchdimen\relax
+       {\d_framed_target_wd-\d_framed_linewidth}%
+       {\d_framed_target_ht-\scratchdimen}%
+       {\d_framed_target_dp-\scratchdimen}%
        \d_framed_linewidth
      \relax
    \egroup}
@@ -1051,17 +1062,16 @@
      \fi
    \fi
    \setupcurrentframed[#2]%
-   \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
-   \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
-   \d_framed_framedashstep\framedparameter\c!dashstep\relax
+   \d_framed_frameoffset  {\framedparameter\c!frameoffset}% also used in backgrounds
+   \d_framed_framedashstep{\framedparameter\c!dashstep}%
    \edef\p_framed_frame{\framedparameter\c!frame}%
    \edef\p_framed_background{\framedparameter\c!background}%
    % not here, in calling macro: setups
    \pack_framed_remove_depth
    % beware, depth goes away when we have a frame, otherwise it's retained
    \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
-     \ifempty\p_framed_rulethickness\else
-        \d_framed_linewidth\p_framed_rulethickness\relax
+     \ifchkdimexpr\framedparameter\c!rulethickness\else
+       \d_framed_linewidth\lastchkdimension
      \fi
      \pack_framed_add_outline % real or invisible frame
    \fi
@@ -1071,7 +1081,7 @@
        \ifx\p_framed_backgroundoffset\v!frame
          \d_framed_frameoffset
        \else
-         \p_framed_backgroundoffset
+         {\p_framed_backgroundoffset}%
        \fi
      \edef\p_framed_component{\framedparameter\c!component}%
      \pack_framed_add_background
@@ -1096,13 +1106,12 @@
    \ifempty\m_overlay_region\else
      \pack_framed_set_region
    \fi
-   \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}% also used in backgrounds
-   \d_framed_frameoffset\framedparameter\c!frameoffset\relax     % also used in backgrounds
+   \d_framed_frameoffset{\framedparameter\c!frameoffset}% also used in backgrounds
    \edef\p_framed_frame{\framedparameter\c!frame}%
    \edef\p_framed_background{\framedparameter\c!background}%
    \ifx\p_framed_frame\v!overlay \orelse \ifx\p_framed_frame\v!none \else
-     \ifempty\p_framed_rulethickness \else
-        \d_framed_linewidth\p_framed_rulethickness\relax
+     \ifchkdimexpr\framedparameter\c!rulethickness\else
+       \d_framed_linewidth\lastchkdimension
      \fi
      \pack_framed_add_outline % real or invisible frame
    \fi
@@ -1262,14 +1271,14 @@
    \fi}
 
 \protected\def\pack_framed_process_indeed
-  {\d_framed_frameoffset\framedparameter\c!frameoffset
-   \d_framed_framedashstep\framedparameter\c!dashstep
+  {\d_framed_frameoffset  {\framedparameter\c!frameoffset}%
+   \d_framed_framedashstep{\framedparameter\c!dashstep}%
    \edef\p_framed_backgroundoffset{\framedparameter\c!backgroundoffset}%
    \d_framed_backgroundoffset
      \ifx\p_framed_backgroundoffset\v!frame
        \d_framed_frameoffset
      \else
-       \p_framed_backgroundoffset
+       {\p_framed_backgroundoffset}%
      \fi
    % new, experimental dirty hook
    \framedparameter\c!extras
@@ -1314,9 +1323,8 @@
      \c_framed_has_frame\conditionaltrue
    \fi
    \ifconditional\c_framed_has_frame
-     \edef\p_framed_rulethickness{\framedparameter\c!rulethickness}%
-     \ifempty\p_framed_rulethickness\else
-        \d_framed_linewidth\p_framed_rulethickness\relax
+     \ifchkdimexpr\framedparameter\c!rulethickness\else
+       \d_framed_linewidth\lastchkdimension
      \fi
    \else
      \d_framed_linewidth\zeropoint
@@ -1449,9 +1457,9 @@
  %   \let\pack_framed_forgetall\relax
  %   \forgetall
  % \fi
-   \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint         \d_framed_width \else\zeropoint\fi}% public
-   \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint         \d_framed_height\else\zeropoint\fi}% public
-   \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset    \else\zeropoint\fi}% public
+   \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint\d_framed_width \else\zeropoint\fi}% public
+   \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint\d_framed_height\else\zeropoint\fi}% public
+   \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset\else\zeropoint\fi\relax}% public
    % for now: i need to think of something better
  % \bitwiseflip \normalizelinemode -\clipwidthnormalizecode % now handled in analyzer
    % but that's for later
@@ -1516,13 +1524,13 @@
    %\setlocalhsize
    \d_framed_width\localhsize}
 
-\defcsname\??framedwidthalternative\s!unknown\endcsname
-  {\c_framed_has_width\conditionaltrue
-   \d_framed_width\localwidth}
+% \defcsname\??framedwidthalternative\s!unknown\endcsname
+%   {\c_framed_has_width\conditionaltrue
+%    \d_framed_width\localwidth}
 
 \def\framed_width_alternative_unknown
   {\c_framed_has_width\conditionaltrue
-   \d_framed_width\localwidth}
+   \d_framed_width{\localwidth}}
 
 % heights
 
@@ -1542,13 +1550,13 @@
   {\c_framed_has_height\conditionaltrue
    \d_framed_height\vsize}
 
-\defcsname\??framedheightalternative\s!unknown\endcsname
-  {\c_framed_has_height\conditionaltrue
-   \d_framed_height\localheight}
+% \defcsname\??framedheightalternative\s!unknown\endcsname
+%   {\c_framed_has_height\conditionaltrue
+%    \d_framed_height\localheight}
 
 \def\framed_height_alternative_unknown
   {\c_framed_has_height\conditionaltrue
-   \d_framed_height\localheight}
+   \d_framed_height{\localheight}}
 
 % struts (use let instead?)
 
@@ -1600,14 +1608,14 @@
    \c_framed_is_overlaid\conditionalfalse
    \let\localoffset\defaultframeoffset
    \letframedparameter\c!offset\defaultframeoffset % brrr
-   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+   \d_framed_local_offset{\localoffset+\d_framed_linewidth}}
 
 \def\framed_offset_alternative_unknown
   {\c_framed_has_offset\conditionaltrue
    \c_framed_has_strut\plustwo
    \c_framed_is_overlaid\conditionalfalse
    \let\defaultframeoffset\localoffset
-   \d_framed_local_offset\dimexpr\localoffset+\d_framed_linewidth\relax}
+   \d_framed_local_offset{\localoffset+\d_framed_linewidth}}
 
 \letcsname\??framedoffsetalternative\s!unknown\endcsname\framed_offset_alternative_unknown
 
@@ -1653,7 +1661,7 @@
 %    \relax}
 %
 % \def\doassigncheckedframeoffset#1#2% could be a fast \csname .. \endcsname
-%   {#1\ifchkdimension#2\or\lastchkdimension\else\zeropoint\fi}%
+%   {#1\ifchkdimexpr#2\or\lastchkdimension\else\zeropoint\fi}%
 
 %D \macros
 %D   {ifreshapeframebox}
@@ -1898,32 +1906,32 @@
 \newdimension\d_framed_locator_ro
 
 \def\pack_framed_locator_set#1%
-  {\d_framed_locator_ht\dimexpr
+  {\d_framed_locator_ht{%
      #1+\d_framed_linewidth
      \ifconditional\c_framed_has_offset
-       +\framedparameter\c!offset
+       +(\framedparameter\c!offset)%
      \fi
-     +\framedparameter\c!toffset
-   \relax
-   \d_framed_locator_dp\dimexpr\ht\b_framed_normal-\d_framed_locator_ht\relax}
+     +(\framedparameter\c!toffset)%
+   }%
+   \d_framed_locator_dp{\ht\b_framed_normal-\d_framed_locator_ht}}
 
 \def\pack_framed_locator_set_lo
-  {\global\d_framed_locator_lo\dimexpr
+  {\global\d_framed_locator_lo{%
      \d_framed_linewidth
      \ifconditional\c_framed_has_offset
-       +\framedparameter\c!offset
+       +(\framedparameter\c!offset)%
      \fi
-     +\framedparameter\c!loffset
-   \relax}
+     +(\framedparameter\c!loffset)%
+   }}
 
 \def\pack_framed_locator_set_ro
-  {\global\d_framed_locator_ro\dimexpr
+  {\global\d_framed_locator_ro{%
      \d_framed_linewidth
      \ifconditional\c_framed_has_offset
-       +\framedparameter\c!offset
+       +(\framedparameter\c!offset)%
      \fi
-     +\framedparameter\c!roffset
-   \relax}
+     +(\framedparameter\c!roffset)%
+   }}
 
 % \ruledhbox
 %   {A
@@ -1964,15 +1972,15 @@
 \installframedlocator \v!depth % *1*
   {}
   {\setbox\b_framed_normal\hpack{\lower\strutdp\box\b_framed_normal}%
-   \ht\b_framed_normal\dimexpr\ht\b_framed_normal-\strutdp\relax
+   \ht\b_framed_normal{\ht\b_framed_normal-\strutdp}%
    \dp\b_framed_normal\strutdp
    \box\b_framed_normal}
 
 \installframedlocator \v!height % *1*
   {}
-  {\scratchdimen\dimexpr \ht\b_framed_normal - \strutht \relax
+  {\scratchdimen{\ht\b_framed_normal-\strutht}%
    \setbox\b_framed_normal\hpack{\lower\scratchdimen\box\b_framed_normal}%
-   \dp\b_framed_normal\dimexpr\ht\b_framed_normal-\strutht\relax
+   \dp\b_framed_normal{\ht\b_framed_normal-\strutht}%
    \ht\b_framed_normal\strutht
    \box\b_framed_normal}
 
@@ -2043,10 +2051,10 @@
 
 \installframedlocator \v!inline
   {}
-  {\scratchoffset\dimexpr\strutdp+\d_framed_applied_offset\relax
-   \boxyoffset\b_framed_normal\dimexpr\boxyoffset\b_framed_normal-\scratchoffset\relax
-   \ht\b_framed_normal\dimexpr\ht\b_framed_normal-\scratchoffset\relax
-   \dp\b_framed_normal\dimexpr\strutdp+\d_framed_applied_offset\relax
+  {\scratchoffset{\strutdp+\d_framed_applied_offset}%
+   \boxyoffset\b_framed_normal{\boxyoffset\b_framed_normal-\scratchoffset}%
+   \ht\b_framed_normal{\ht\b_framed_normal-\scratchoffset}%
+   \dp\b_framed_normal{\strutdp+\d_framed_applied_offset}%
    \box\b_framed_normal}
 
 % also used in fastlocalframed
@@ -2063,7 +2071,7 @@
      \setbox\b_framed_normal\hpack{\raise\d_framed_original_dp\box\b_framed_normal}%
    \fi
    \wd\b_framed_normal\d_framed_original_wd
-   \ht\b_framed_normal\dimexpr\d_framed_original_ht+\d_framed_original_dp\relax
+   \ht\b_framed_normal{\d_framed_original_ht+\d_framed_original_dp}%
    \dp\b_framed_normal\zeropoint}
 
 \def\pack_framed_restore_depth
@@ -2114,10 +2122,10 @@
 
 \def\pack_framed_check_extra_offsets % we could check h and v indepently
   {\c_framed_has_extra_offset\conditionalfalse
-   \d_framed_loffset\framedparameter\c!loffset\relax
-   \d_framed_roffset\framedparameter\c!roffset\relax
-   \d_framed_toffset\framedparameter\c!toffset\relax
-   \d_framed_boffset\framedparameter\c!boffset\relax
+   \d_framed_loffset{\framedparameter\c!loffset}%
+   \d_framed_roffset{\framedparameter\c!roffset}%
+   \d_framed_toffset{\framedparameter\c!toffset}%
+   \d_framed_boffset{\framedparameter\c!boffset}%
    \ifzeropt\d_framed_loffset\else \advanceby\d_framed_width -\d_framed_loffset \c_framed_has_extra_offset\conditionaltrue \fi
    \ifzeropt\d_framed_roffset\else \advanceby\d_framed_width -\d_framed_roffset \c_framed_has_extra_offset\conditionaltrue \fi
    \ifzeropt\d_framed_toffset\else \advanceby\d_framed_height-\d_framed_toffset \c_framed_has_extra_offset\conditionaltrue \fi
@@ -2578,7 +2586,7 @@
 \protected\def\pack_framed_vboxed_hairline % nasty overlay mess .. needed for autowidth
   {\begingroup
    \scratchoffset\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
-   \scratchwidth \dimexpr\scratchoffset+\d_framed_linewidth\relax
+   \scratchwidth{\scratchoffset+\d_framed_linewidth}%
    \par
    \nointerlineskip
    \kern\scratchoffset
@@ -2603,11 +2611,11 @@
   {\bgroup
    \scratchoffset\ifconditional\c_framed_has_offset \localoffset \else \zeropoint \fi
    \ifconditional\c_framed_has_height
-     \dimen\scratchheight\dimexpr\localheight/\plustwo+\strutdp-\plustwo\d_framed_linewidth\relax
-     \dimen\scratchdepth \dimexpr\localheight/\plustwo-\strutdp+\plustwo\d_framed_linewidth\relax
+     \dimen\scratchheight{\localheight/\plustwo+\strutdp-\plustwo\d_framed_linewidth}%
+     \dimen\scratchdepth {\localheight/\plustwo-\strutdp+\plustwo\d_framed_linewidth}%
    \else
-     \dimen\scratchheight\dimexpr\strutht+\scratchoffset\relax
-     \dimen\scratchdepth \dimexpr\strutdp+\scratchoffset\relax
+     \dimen\scratchheight{\strutht+\scratchoffset}%
+     \dimen\scratchdepth {\strutdp+\scratchoffset}%
    \fi
    \unskip
    \setbox\scratchbox\hpack
@@ -3118,12 +3126,12 @@
   {\setbox\b_framed_normal\hpack\bgroup
      \setlocalhsize
      \hsize\localhsize
-     \scratchleftoffset  \framedcontentparameter\c!leftoffset  \relax
-     \scratchrightoffset \framedcontentparameter\c!rightoffset \relax
-     \scratchtopoffset   \framedcontentparameter\c!topoffset   \relax
-     \scratchbottomoffset\framedcontentparameter\c!bottomoffset\relax
-     \advanceby\hsize\dimexpr-\scratchleftoffset-\scratchrightoffset \relax
-     \advanceby\vsize\dimexpr-\scratchtopoffset -\scratchbottomoffset\relax
+     \scratchleftoffset  {\framedcontentparameter\c!leftoffset}%
+     \scratchrightoffset {\framedcontentparameter\c!rightoffset}%
+     \scratchtopoffset   {\framedcontentparameter\c!topoffset}%
+     \scratchbottomoffset{\framedcontentparameter\c!bottomoffset}%
+     \advanceby\hsize{-\scratchleftoffset-\scratchrightoffset }%
+     \advanceby\vsize{-\scratchtopoffset -\scratchbottomoffset}%
      \kern\scratchleftoffset
      \vpack\bgroup
        \vskip\scratchtopoffset

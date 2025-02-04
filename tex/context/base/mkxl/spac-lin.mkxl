@@ -94,7 +94,7 @@
    \ifx\commalistelement\wildcardsymbol
      \hskip\d_spac_lines_indent
    \else
-     \scratchdimen\dimexpr\commalistelement\relax
+     \scratchdimen{\commalistelement}%
      \hskip
        \ifzeropt\scratchdimen
          \zeropoint
@@ -130,13 +130,13 @@
 %    \ifx\p_lines_option\v!packed
    \ifcstok{\linesparameter\c!option}\v!packed
      \let\spac_lines_break\nobreak
-     \setfalse\c_spac_lines_as_paragraph
+     \c_spac_lines_as_paragraph\conditionalfalse
    \orelse\ifcstok{\linesparameter\c!keeptogether}\v!paragraph
      \let\spac_lines_break\relax
-     \settrue\c_spac_lines_as_paragraph
+     \c_spac_lines_as_paragraph\conditionaltrue
    \else
      \let\spac_lines_break\relax
-     \setfalse\c_spac_lines_as_paragraph
+     \c_spac_lines_as_paragraph\conditionalfalse
    \fi
    \linesparameter\c!before
    \push_macro_checkindentation

@@ -318,7 +318,7 @@
      \kern\textbackgroundskip\nobreak
    \fi
    \nobreak
-   \vskip-\dimexpr\lineheight+\parskip\relax % problem: we loose the hangindent
+   \vskip{-\lineheight-\parskip}% problem: we loose the hangindent
    \nobreak
    \endgroup
    \begingroup

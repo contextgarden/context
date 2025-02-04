@@ -259,6 +259,7 @@ function step_tracers.codes(i,command,space)
 
     while c do
         local char, id = isglyph(c)
+print(nuts.tonode(c))
         if char then
             showchar(char,id)
         elseif id == dir_code or (id == par_code and startofpar(c)) then

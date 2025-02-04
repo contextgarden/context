@@ -1,4 +1,4 @@
-.TH "pstopdf" "1" "01-01-2024" "version 2.0.1" "PStoPDF"
+.TH "pstopdf" "1" "01-01-2025" "version 2.0.1" "PStoPDF"
 .SH NAME
  pstopdf - PStoPDF
 .SH SYNOPSIS

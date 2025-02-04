@@ -117,36 +117,37 @@
 % pass pass them explicitly. Actually, when we see an insertion node at that end,
 % we already know the number.
 
-% todo: use the primitives instead of the aliases:
+% Per January 2025 we use the primitives directly becuase we won't switch back
+% to the old mechanism.
 
 \insertmode\plustwo \pushoverloadmode \newinteger\insertmode \popoverloadmode
 
 % \ifnum\insertmode=\plustwo
 
-    \protected\def\page_inserts_inject        {\insert}
+%   \protected\def\page_inserts_inject        {\insert}
 
-    \protected\def\page_inserts_set_limit     {\insertlimit}
-    \protected\def\page_inserts_set_distance  {\insertdistance}
-    \protected\def\page_inserts_set_multiplier{\insertmultiplier}
-    \protected\def\page_inserts_set_penalty   {\insertpenalty}
-    \protected\def\page_inserts_set_maxdepth  {\insertmaxdepth}
-    \protected\def\page_inserts_set_lineheight{\insertlineheight}
-    \protected\def\page_inserts_set_linedepth {\insertlinedepth}
+%   \protected\def\page_inserts_set_limit     {\insertlimit}
+%   \protected\def\page_inserts_set_distance  {\insertdistance}
+%   \protected\def\page_inserts_set_multiplier{\insertmultiplier}
+%   \protected\def\page_inserts_set_penalty   {\insertpenalty}
+%   \protected\def\page_inserts_set_maxdepth  {\insertmaxdepth}
+%   \protected\def\page_inserts_set_lineheight{\insertlineheight}
+%   \protected\def\page_inserts_set_linedepth {\insertlinedepth}
 
-    \protected\def\page_inserts_get_limit     {\insertlimit}
-    \protected\def\page_inserts_get_distance  {\insertdistance}
-    \protected\def\page_inserts_get_multiplier{\insertmultiplier}
-    \protected\def\page_inserts_get_penalty   {\insertpenalty}
-    \protected\def\page_inserts_get_maxdepth  {\insertmaxdepth}
+%   \protected\def\page_inserts_get_limit     {\insertlimit}
+%   \protected\def\page_inserts_get_distance  {\insertdistance}
+%   \protected\def\page_inserts_get_multiplier{\insertmultiplier}
+%   \protected\def\page_inserts_get_penalty   {\insertpenalty}
+%   \protected\def\page_inserts_get_maxdepth  {\insertmaxdepth}
 
-    \protected\def\page_inserts_get_boxed     {\insertbox}
-    \protected\def\page_inserts_get_copied    {\insertcopy}
-    \protected\def\page_inserts_get_unboxed   {\insertunbox}
-    \protected\def\page_inserts_get_uncopied  {\insertuncopy}
+%   \protected\def\page_inserts_get_boxed     {\insertbox}
+%   \protected\def\page_inserts_get_copied    {\insertcopy}
+%   \protected\def\page_inserts_get_unboxed   {\insertunbox}
+%   \protected\def\page_inserts_get_uncopied  {\insertuncopy}
 
-    \protected\def\page_inserts_get_height    {\insertheight}
-    \protected\def\page_inserts_get_depth     {\insertdepth}
-    \protected\def\page_inserts_get_width     {\insertwidth}
+%   \protected\def\page_inserts_get_height    {\insertheight}
+%   \protected\def\page_inserts_get_depth     {\insertdepth}
+%   \protected\def\page_inserts_get_width     {\insertwidth}
 
 % \else
 %
@@ -192,9 +193,9 @@
 %             {\expandafter\the\expandafter\t_page_inserts_list
 %              \expandafter\page_inserts_process\csname\??insertionnumber\currentinsertion\endcsname}%
           \xtoksapp\t_page_inserts_list{\page_inserts_process{\currentinsertion}}%
-          \page_inserts_set_multiplier\currentinsertionnumber\plusthousand
-          \page_inserts_set_distance  \currentinsertionnumber\zeropoint
-          \page_inserts_set_limit     \currentinsertionnumber\maxdimen
+          \insertmultiplier\currentinsertionnumber\plusthousand
+          \insertdistance  \currentinsertionnumber\zeropoint
+          \insertlimit     \currentinsertionnumber\maxdimen
        \fi
     \else
       \letcsname\??insertionnumber\currentinsertion\expandafter\endcsname
@@ -225,7 +226,7 @@
 %   {\ifvoid#1\zeropoint\else1\page_inserts_get_distance#1+\ht#1\fi}
 
 \def\page_insert_insertion_height_indeed#1%
-  {\ifzeropt\page_inserts_get_height#1\zeropoint\else\dimexpr\page_inserts_get_distance#1\relax+\page_inserts_get_height#1\fi}
+  {\ifzeropt\insertheight#1\zeropoint\else\dimexpr\insertdistance#1\relax+\insertheight#1\fi}
 
 %D Tricky stuff:
 %D

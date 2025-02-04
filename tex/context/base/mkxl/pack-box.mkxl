@@ -265,8 +265,8 @@
    \fi
    \d_pack_layers_x_size\wd\b_pack_boxes_collector
    \d_pack_layers_y_size\htdp\b_pack_boxes_collector
-   \d_pack_layers_x_position\dimexpr\collectorparameter\c!x+\collectorparameter\c!hoffset\relax
-   \d_pack_layers_y_position\dimexpr\collectorparameter\c!y+\collectorparameter\c!voffset\relax
+   \d_pack_layers_x_position{\collectorparameter\c!x+\collectorparameter\c!hoffset}%
+   \d_pack_layers_y_position{\collectorparameter\c!y+\collectorparameter\c!voffset}%
    \rawprocesscommacommand[\p_collector_corner]\pack_boxes_collector_check_corner
    \setbox\nextbox\hpack
      {\alignedbox[\collectorparameter\c!location]\vpack{\box\nextbox}}%
@@ -287,13 +287,13 @@
    \d_pack_layers_y_size\htdp\b_pack_boxes_collector
    \global\setbox\b_pack_boxes_collector\hpack
      {\box\b_pack_boxes_collector
-      \kern\dimexpr
+      \kern{%
         -\d_pack_layers_x_size
         +\d_pack_layers_x_position
          \ifdim\boxhdisplacement<\zeropoint
            -\boxhdisplacement
          \fi
-      \relax
+      }%
       \lower\d_pack_layers_y_position\hpack
         {\ifdim\boxvdisplacement<\zeropoint
            \lower-\boxvdisplacement
@@ -331,8 +331,8 @@
      \letcollectorparameter\c!hoffset\zeropoint
      \letcollectorparameter\c!voffset\zeropoint
      \setupcurrentcollector[#2]%
-     \global\wd\b_pack_boxes_collector\dimexpr\wd\b_pack_boxes_collector+\collectorparameter\c!hoffset\relax
-     \global\ht\b_pack_boxes_collector\dimexpr\ht\b_pack_boxes_collector+\collectorparameter\c!voffset\relax
+     \global\wd\b_pack_boxes_collector{\wd\b_pack_boxes_collector+\collectorparameter\c!hoffset}%
+     \global\ht\b_pack_boxes_collector{\ht\b_pack_boxes_collector+\collectorparameter\c!voffset}%
    \fi
    \endgroup}
 
@@ -463,6 +463,26 @@
 %   {gans}
 %   {\externalfigure[koe][width=3cm]}
 
+% \permanent\tolerant\protected\def\ornamenttext[#1]#*[#S#2]% takes another argument
+%   {\bgroup
+%    \doifelseassignment{#1}%
+%      {\letdummyparameter\c!alternative\v!a
+%       \getdummyparameters[#1]%
+%       \ifcstok{\directdummyparameter\c!alternative}\v!a
+%         \egroup\expandafter\collectedtext
+%       \else
+%         \egroup\expandafter\layeredtext
+%       \fi[#1][#2]}%
+%      {\egroup\csname#1\endcsname}}
+%
+% \permanent\tolerant\protected\def\defineornament[#1]#*[#2]#*[#3]%
+%   {\protected\frozen\instance\defcsname#1\endcsname{\ornamenttext[#2][#3]}}
+
+%D This more indirect method permits checking if an ornament is defined so that we
+%D can use them as caption location.
+
+\installcorenamespace {ornament}
+
 \permanent\tolerant\protected\def\ornamenttext[#1]#*[#S#2]% takes another argument
   {\bgroup
    \doifelseassignment{#1}%
@@ -476,7 +496,31 @@
      {\egroup\csname#1\endcsname}}
 
 \permanent\tolerant\protected\def\defineornament[#1]#*[#2]#*[#3]%
-  {\protected\frozen\instance\defcsname#1\endcsname{\ornamenttext[#2][#3]}}
+  {\begingroup
+   \ifhastok={#2}%
+     \letdummyparameter\c!alternative\v!a
+     \letdummyparameter\c!define\v!yes
+     \getdummyparameters[#2]%
+     \ifcstok{\directdummyparameter\c!alternative}\v!a
+       \normalexpanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\collectedtext[#2][#3]%
+     \else
+       \normalexpanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\layeredtext[#2][#3]%
+     \fi
+   \else
+     \normalexpanded{\endgroup\pack_box_define_ornament_nop{#1}{\dummyparameter\c!define}{#2}}[#3]%
+   \fi}
+
+\protected\def\pack_box_define_ornament_yes#1#2#3[#4][#5]%
+  {\protected\frozen\instance\defcsname\??ornament#1\endcsname{#3[#4][#5]}%
+   \ifcstok{#2}\v!yes
+     \aliased\letcsname#1\expandafter\endcsname\csname\??ornament#1\endcsname
+   \fi}
+
+\protected\def\pack_box_define_ornament_nop#1#2#3[#4]%
+  {\protected\frozen\instance\edefcsname\??ornament#1\endcsname{\noexpand\csname#3\endcsname[#4]}%
+   \ifcstok{#2}\v!yes
+     \aliased\letcsname#1\expandafter\endcsname\csname\??ornament#1\endcsname
+   \fi}
 
 % \defineornament
 %   [affiliation]
@@ -514,7 +558,7 @@
 
 \installcorenamespace {bleeding}
 
-\installdirectcommandhandler \??bleeding {bleeding} % \??bleeding
+\installcommandhandler \??bleeding {bleeding} \??bleeding
 
 \setupbleeding
   [\c!location=l,
@@ -526,13 +570,22 @@
    \c!voffset=\scratchoffset, % is set to \bleedingparameter\c!offset
    \c!hoffset=\scratchoffset] % which often saves one resolve
 
+\appendtoks
+    \ifcstok{\bleedingparameter\c!define}\v!yes
+        \frozen\instance\protected\edefcsname\currentbleeding\endcsname{\pack_boxes_bleeding{\currentbleeding}}%
+    \fi
+\to \everydefinebleeding
+
+\newdimension \bleedingwidth
+\newdimension \bleedingheight
+
 \permanent\def\bleedwidth {\the\hsize} % these are global !
 \permanent\def\bleedheight{\the\vsize} % these are global !
 
-\newconditional\c_pack_boxes_l
-\newconditional\c_pack_boxes_r
-\newconditional\c_pack_boxes_t
-\newconditional\c_pack_boxes_b
+\newconditional\c_pack_boxes_l % left
+\newconditional\c_pack_boxes_r % right
+\newconditional\c_pack_boxes_t % top
+\newconditional\c_pack_boxes_b % bottom
 
 \installcorenamespace{bleedinglocation}
 
@@ -552,28 +605,43 @@
 \mutable\lettonothing\currentbleedposition
 \mutable\lettonothing\currentpageposition
 
-\permanent\tolerant\protected\def\bleed[#1]%
-  {\hbox\bgroup
-   \global\advanceby\c_pack_boxes_bleeds\plusone
+% \permanent\tolerant\protected\def\bleed[#1]%
+%   {\hbox\bgroup
+
+\newuserunit \bleedingwidth  bw
+\newuserunit \bleedingheight bh
+\newuserunit \paperbleed     be % bleedingextra
+
+\def\pack_boxes_bleeding_constrain
+  {\beginlocalcontrol
+   \constrained\bleedingwidth \bleedingwidth
+   \constrained\bleedingheight\bleedingheight
+   \endlocalcontrol}
+
+\tolerant\protected\def\pack_boxes_bleeding_preset#1#*[#2]%
+  {\global\advanceby\c_pack_boxes_bleeds\plusone
    %
-   \enforced\permanent\xdef\bleedwidth {\the\hsize}%
-   \enforced\permanent\xdef\bleedheight{\the\vsize}%
+   \retained\bleedingwidth \hsize
+   \retained\bleedingheight\vsize
+   \enforced\permanent\xdef\bleedwidth {\the\bleedingwidth }%
+   \enforced\permanent\xdef\bleedheight{\the\bleedingheight}%
    %
    \edef\currentbleedposition{bleed:\the\c_pack_boxes_bleeds}%
    \edef\currentpageposition {page:0}% todo: per page
    %
-   \setupcurrentbleeding[#1]%
+   \cdef\currentbleeding{#1}%
+   \setupcurrentbleeding[#2]%
    %
-   \scratchwidth  \bleedingparameter\c!width
-   \scratchheight \bleedingparameter\c!height
-   \scratchoffset \bleedingparameter\c!offset
-   \scratchhoffset\bleedingparameter\c!hoffset
-   \scratchvoffset\bleedingparameter\c!voffset
+   \scratchwidth  {\bleedingparameter\c!width}%
+   \scratchheight {\bleedingparameter\c!height}%
+   \scratchoffset {\bleedingparameter\c!offset}%
+   \scratchhoffset{\bleedingparameter\c!hoffset}% \default: \scratchoffset
+   \scratchvoffset{\bleedingparameter\c!voffset}% \default: \scratchoffset
    %
-   \c_pack_boxes_l\conditionalfalse % left
-   \c_pack_boxes_r\conditionalfalse % right
-   \c_pack_boxes_t\conditionalfalse % top
-   \c_pack_boxes_b\conditionalfalse % bottom
+   \c_pack_boxes_l\conditionalfalse
+   \c_pack_boxes_r\conditionalfalse
+   \c_pack_boxes_t\conditionalfalse
+   \c_pack_boxes_b\conditionalfalse
    %
    \csname\??bleedinglocation\bleedingparameter\c!location\endcsname
    %
@@ -583,49 +651,69 @@
      \donefalse
    \fi
    %
-   \enforced\permanent\xdef\bleedwidth{\the\dimexpr
+   \retained\bleedingwidth{%
      \ifdone
        \ifconditional\c_pack_boxes_l
-         \scratchwidth+\MPx\currentbleedposition-\MPx\currentpageposition
+         \scratchwidth+\jobposx\currentbleedposition-\jobposx\currentpageposition
        \orelse\ifconditional\c_pack_boxes_r
-         \paperwidth  -\MPx\currentbleedposition+\MPx\currentpageposition % not checked
+         \paperwidth  -\jobposx\currentbleedposition+\jobposx\currentpageposition % not checked
        \else
          \scratchwidth
        \fi
      \else
        \scratchwidth
      \fi+\scratchhoffset
-   \relax}%
-   \enforced\permanent\xdef\bleedheight{\the\dimexpr
+   }%
+   \retained\bleedingheight{%
      \ifdone
        \ifconditional\c_pack_boxes_t
-         \paperheight  -\MPy\currentbleedposition+\MPy\currentpageposition % not checked
+         \paperheight  -\jobposy\currentbleedposition+\jobposy\currentpageposition % not checked
        \orelse\ifconditional\c_pack_boxes_b
-         \scratchheight+\MPy\currentbleedposition-\MPy\currentpageposition + \MPh\currentbleedposition % not checked (\MPh added)
+         \scratchheight+\jobposy\currentbleedposition-\jobposy\currentpageposition + \jobposh\currentbleedposition % not checked (\MPh added)
        \else
          \scratchheight
        \fi
      \else
        \scratchheight
      \fi+\scratchvoffset
-   \relax}%
+   }%
+   \enforced\permanent\xdef\bleedwidth {\the\bleedingwidth }%
+   \enforced\permanent\xdef\bleedheight{\the\bleedingheight}}
+
+\tolerant\protected\def\pack_boxes_bleeding#1#*[#2]%
+  {\pack_boxes_bleeding_constrain
+   \hbox\bgroup
+   \pack_boxes_bleeding_preset{#1}[#2]%
    \dowithnextboxcontentcs\pack_boxes_bleed_settings\pack_boxes_bleed_finish\hbox}
 
+\tolerant\protected\def\startbleeding[#1]#*[#2]%
+  {\pack_boxes_bleeding_constrain
+   \hpack\bgroup
+   \pack_boxes_bleeding_preset{#1}[#2]%
+   \setbox\nextbox\hbox\bgroup
+   \pack_boxes_bleed_settings
+   \ignorespaces}
+
+\tolerant\protected\def\stopbleeding
+  {\removeunwantedspaces
+   \egroup
+   \pack_boxes_bleed_finish}  % ends with egroup
+
 \def\pack_boxes_bleed_settings
-  {\hsize\bleedwidth
-   \vsize\bleedheight}
+  {\hsize\bleedingwidth
+   \vsize\bleedingheight}
 
 \def\pack_boxes_bleed_finish
   {\ifcstok{\bleedingparameter\c!page}\v!yes
      \setbox\nextbox\topskippedbox{\box\nextbox}%
    \fi
+% todo \boxoffset\nextbox
    \setbox\nextbox\hpack to \scratchwidth
      {\ifconditional\c_pack_boxes_l\hss\fi
       \box\nextbox
       \ifconditional\c_pack_boxes_r\hss\fi}%
    \ifconditional\c_pack_boxes_b
-     \setbox\nextbox\hpack
-       {\lower\bleedheight\hpack{\raise\scratchheight\box\nextbox}}%
+       \boxyoffset\nextbox{-\ht\nextbox+\bleedheight}%
    \fi
    \wd\nextbox\scratchwidth
    \ht\nextbox\scratchheight
@@ -641,6 +729,12 @@
   [bleed] % should be \v!bleed
   [\c!width=\bleedwidth,
    \c!height=\bleedheight]
+
+\definebleeding
+  [bleed]
+  [\c!define=\v!yes] % \v!bleed
+
+\permanent\protected\def\bleeding[#1]{\pack_boxes_bleeding{#1}}
 
 % \placefigure[left]{none}
 %   {\bleed[width=5cm,height=3cm,location=lt]{\externalfigure[koe][bleed]}}
@@ -707,7 +801,7 @@
    \getdummyparameters[#3]%
    \dowithnextboxcontent
      {\forgetall
-      \hsize\directdummyparameter\c!width
+      \hsize{\directdummyparameter\c!width}%
       \usealignparameter\directdummyparameter
       \dousestyleparameter{\directdummyparameter\c!style}}
      {\setlayer[#1][#2]{\strut\dousecolorparameter{\directdummyparameter\c!color}\flushnextbox}% maybe expand the color
@@ -875,12 +969,12 @@
 
 \def\pack_boxes_offsetfinish
   {\donefalse
-   \scratchxposition   \offsetboxparameter\c!x
-   \scratchyposition   \offsetboxparameter\c!y
-   \scratchleftoffset  \offsetboxparameter\c!leftoffset
-   \scratchrightoffset \offsetboxparameter\c!rightoffset
-   \scratchtopoffset   \offsetboxparameter\c!topoffset
-   \scratchbottomoffset\offsetboxparameter\c!bottomoffset
+   \scratchxposition   {\offsetboxparameter\c!x}%
+   \scratchyposition   {\offsetboxparameter\c!y}%
+   \scratchleftoffset  {\offsetboxparameter\c!leftoffset}%
+   \scratchrightoffset {\offsetboxparameter\c!rightoffset}%
+   \scratchtopoffset   {\offsetboxparameter\c!topoffset}%
+   \scratchbottomoffset{\offsetboxparameter\c!bottomoffset}%
    \relax % really needed
    \ifzeropt\scratchleftoffset  \else\donetrue\fi
    \ifzeropt\scratchrightoffset \else\donetrue\fi
@@ -922,9 +1016,9 @@
      \ht\nextbox\htdp\nextbox
      \dp\nextbox\zeropoint
    \fi
-   \scratchwidth \offsetboxparameter\c!width
-   \scratchheight\offsetboxparameter\c!height
-   \scratchdepth \offsetboxparameter\c!depth
+   \scratchwidth {\offsetboxparameter\c!width}%
+   \scratchheight{\offsetboxparameter\c!height}%
+   \scratchdepth {\offsetboxparameter\c!depth}%
    \edef\p_location{\offsetboxparameter\c!location}%
    \setbox\nextbox\hpack
      {\kern\scratchxposition
@@ -996,9 +1090,9 @@
    \letdummyparameter\c!depth \zeropoint
    \getdummyparameters[#1]%
    \setbox\scratchbox\emptyhbox
-   \wd\scratchbox\directdummyparameter\c!width
-   \ht\scratchbox\directdummyparameter\c!height
-   \dp\scratchbox\directdummyparameter\c!depth
+   \wd\scratchbox{\directdummyparameter\c!width}%
+   \ht\scratchbox{\directdummyparameter\c!height}%
+   \dp\scratchbox{\directdummyparameter\c!depth}%
    \box\scratchbox
    \egroup}
 
@@ -1179,26 +1273,26 @@
      {\cdef\currentanchorbox{#1}%
       \setupboxanchor[#2]%
       \scratchcounterone\csname\??boxanchorbox#1\endcsname\relax
-      \scratchxoffset\boxanchorparameter\c!xoffset\relax
-      \scratchyoffset\boxanchorparameter\c!yoffset\relax
+      \scratchxoffset{\boxanchorparameter\c!xoffset}%
+      \scratchyoffset{\boxanchorparameter\c!yoffset}%
       \boxtarget\nextbox \namedanchorbox {#1}\relax
       \boxanchors\nextbox
         % target
-        \numexpr
+        {%
           \ifcsname\??boxpreset\boxanchorparameter\c!target\endcsname
             \lastnamedcs
           \else
             \halfwaytotallistanchorcode
           \fi
-        \relax
+        }%
         % source
-        \numexpr
+        {%
           \ifcsname\??boxpreset\boxanchorparameter\c!source\endcsname
             \lastnamedcs
           \else
             \halfwaytotallistanchorcode
           \fi
-        \relax
+        }%
       \ifzeropt\scratchxoffset\else
          \boxxoffset\nextbox\scratchxoffset
       \fi
@@ -1329,8 +1423,8 @@
         \cdef\currentboxanchorcontent{#2}%
         \setupcurrentboxanchorcontent[#3]%
       \fi
-      \scratchxoffset\boxanchorcontentparameter\c!xoffset
-      \scratchyoffset\boxanchorcontentparameter\c!yoffset
+      \scratchxoffset{\boxanchorcontentparameter\c!xoffset}%
+      \scratchyoffset{\boxanchorcontentparameter\c!yoffset}%
       \scratchcounter\namedboxanchor{#1}%
       \registeranchorbox
          \scratchcounter
@@ -1355,7 +1449,6 @@
 
 \permanent\tolerant\protected\def\mathboxanchored[#1]#:#2#3%
   {#3\Umathsource\iftok{#1}{nucleus}#1\fi\namedboxanchor{#2}\relax}
-
 
 % to be used as:
 %

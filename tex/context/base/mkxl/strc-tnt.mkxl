@@ -93,7 +93,7 @@
      \egroup
    \else
      \inlinebar[\currentbar]\bgroup
-       \scratchcounter\numexpr\p_n/\plustwo\relax
+       \scratchcounter{\p_n/\plustwo}%
        \ifx\p_empty\v!yes
          \interwordspacesbefore\scratchcounter
          \setnotetext[\currentnote]{#3}%

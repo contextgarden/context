@@ -25,7 +25,7 @@
    \ctxlua{tracers.splitpoints.start {
         option = "\dummyparameter\c!option",
         list   = "\dummyparameter\c!list",
-        offset = \number\dimexpr\dummyparameter\c!offset\relax,
+        offset = \number\dimexpr\dummyparameter\c!offset\relax
     }}%
    \endgroup
    \vsplitchecks\plusone}

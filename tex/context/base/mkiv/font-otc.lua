@@ -130,7 +130,7 @@ local function validspecification(specification,name)
     end
 end
 
-local function addfeature(data,feature,specifications,prepareonly)
+local function addfeature(data,feature,specifications,prepareonly,filename)
 
     -- todo: add some validator / check code so that we're more tolerant to
     -- user errors
@@ -678,6 +678,28 @@ local function addfeature(data,feature,specifications,prepareonly)
     for s=1,#dataset do
         local specification = dataset[s]
         local valid = specification.valid -- nowhere used
+        local files = specification.files
+        if files and filename then
+            local name = string.lower(file.basename(filename))
+            -- hash test
+            local okay = files[name]
+            -- list test
+            if not okay then
+                for i=1,#files do
+                    if name == files[i] then
+                        okay = true
+                        break
+                    end
+                end
+            end
+            if okay then
+             -- report_otf("feature applied to file %a",name)
+            else
+             -- report_otf("feature skipped for file %a",name)
+                return
+            end
+        end
+        --
         local feature = specification.name or feature
         if not feature or feature == "" then
             report_otf("no valid name given for extra feature")
@@ -933,7 +955,7 @@ end
 local function enhance(data,filename,raw)
     for slot=1,#extrafeatures do
         local specification = extrafeatures[slot]
-        addfeature(data,specification.name,specification)
+        addfeature(data,specification.name,specification,nil,filename)
     end
 end
 

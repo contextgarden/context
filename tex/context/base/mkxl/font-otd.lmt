@@ -126,8 +126,8 @@ local featuretypes    = otf.tables.featuretypes
 local defaultscript   = otf.features.checkeddefaultscript
 local defaultlanguage = otf.features.checkeddefaultlanguage
 
-local resolved = { } -- we only resolve a font,script,language,attribute pair once
-local wildcard = "*"
+local resolved         = { } -- we only resolve a font,script,language,attribute pair once
+local wildcard <const> = "*"
 
 -- what about analyze in local and not in font
 

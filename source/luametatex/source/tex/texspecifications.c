@@ -15,8 +15,8 @@ static int valid_specification_options[] = {
     [par_passes_code]              = specification_option_presets,
     [par_shape_code]               = specification_option_repeat,
     [balance_passes_code]          = specification_option_presets,
-    [balance_shape_code]           = specification_option_repeat,
-    [widow_penalties_code]         = specification_option_double | specification_option_largest| specification_option_final,
+    [balance_final_penalties_code] = 0,
+    [widow_penalties_code]         = specification_option_double | specification_option_largest | specification_option_final,
     [broken_penalties_code]        = specification_option_double,
     [fitness_classes_code]         = 0,
     [adjacent_demerits_code]       = specification_option_double,
@@ -31,7 +31,7 @@ static halfword tex_aux_scan_specification_options(quarterword code)
     halfword valid = valid_specification_options[code];
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("ordlpifORDLPIF", 0, 0, 0)) {
+        switch (tex_scan_character("ordlpifORDLPIF", 0, 1, 0)) {
             case 0:
                 return options;
             case 'o': case 'O':
@@ -327,6 +327,7 @@ static halfword tex_aux_scan_specification_penalties(quarterword code)
                 );
                 count = 1;
             }
+        case balance_final_penalties_code: 
         case club_penalties_code: 
         case widow_penalties_code: 
         case display_widow_penalties_code: 
@@ -1251,7 +1252,8 @@ void tex_run_specification_spec(void)
                     halfword target = cur_chr;
                     halfword duplex = specification_double(target);
                     halfword index = tex_scan_integer(0, NULL);
-                    halfword first, second; 
+                    halfword first = 0; /*tex Clang doesn't notice that we have three cases only. */ 
+                    halfword second = 0; 
                     switch (code) {
                         case integer_list_code:
                             first = tex_scan_integer(1, NULL);
@@ -1315,7 +1317,7 @@ halfword tex_scan_specifier(void)
             }
         case specification_cmd:
             {
-                quarterword code = internal_specification_number(cur_chr);
+                quarterword code = (quarterword) internal_specification_number(cur_chr);
                 halfword spec = tex_aux_scan_specification(code);
                 if (! spec) { 
                     /* We want to be able to reset. */

@@ -113,6 +113,8 @@ return {
         "autoalign",
         "transparent", "withtransparency", "withopacity",
         "property", "properties", "withproperties",
+        "namedstacking", "withnamedstacking",
+        "withannotation",
         "asgroup",
         "withpattern", "withpatternscale", "withpatternfloat",
         "infont", -- redefined using textext
@@ -204,7 +206,7 @@ return {
         "positionwhd", "positionpage", "positionregion", "positionbox", "positionx", "positiony",
         "positionanchor", "positioninregion", "positionatanchor",
         "positioncolumnbox", "overlaycolumnbox", "positioncolumnatx",
-        "positioninregion", "positioninpar",
+        "positioninregion", "positionpar",
         --
         "getposboxes", "getmultipars",
         "getpospage", "getposparagraph", "getposcolumn", "getposregion",

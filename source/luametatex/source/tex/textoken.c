@@ -1356,6 +1356,10 @@ static int tex_aux_get_next_file(void)
                     /*tex We are storing stuff in a token list or macro body. */
                 } else if ((cur_mode == mmode || lmt_nest_state.math_mode) && tex_check_active_math_char(cur_chr)) {
                     /*tex We have an intercept. */
+                } else if (lmt_scanner_state.expression_depth) {
+                    /*tex well */
+                    cur_tok = other_token + cur_chr;
+                    cur_cmd = other_char_cmd;
                 } else {
                     cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
                     cur_cmd = eq_type(cur_cs);
@@ -2181,6 +2185,10 @@ static int tex_aux_get_next_tokenlist(void)
             case active_char_cmd:
                 if ((cur_mode == mmode || lmt_nest_state.math_mode) && tex_check_active_math_char(cur_chr)) {
                     /*tex We have an intercept. */
+                } else if (lmt_scanner_state.expression_depth) {
+                    /*tex well */
+                    cur_tok = other_token + cur_chr;
+                    cur_cmd = other_char_cmd;
                 }
                 break;
             case parameter_reference_cmd:
@@ -2395,30 +2403,30 @@ void tex_get_x_or_protected(void)
 
 /*tex This changes the string |s| to a token list. */
 
-halfword tex_string_to_toks(const char *ss)
-{
-    const char *s = ss;
-    const char *se = ss + strlen(s);
-    /*tex tail of the token list */
-    halfword h = null;
-    halfword p = null;
-    /*tex new node being added to the token list via |store_new_token| */
-    while (s < se) {
-        int tl;
-        halfword t = (halfword) aux_str2uni_len((const unsigned char *) s, &tl);
-        s += tl;
-        if (t == ' ') {
-            t = space_token;
-        } else {
-            t += other_token;
-        }
-        p = tex_store_new_token(p, t);
-        if (! h) {
-            h = p;
-        }
-    }
-    return h;
-}
+// halfword tex_string_to_toks(const char *ss)
+// {
+//     const char *s = ss;
+//     const char *se = ss + strlen(s);
+//     /*tex tail of the token list */
+//     halfword h = null;
+//     halfword p = null;
+//     /*tex new node being added to the token list via |store_new_token| */
+//     while (s < se) {
+//         int tl;
+//         halfword t = (halfword) aux_str2uni_len((const unsigned char *) s, &tl);
+//         s += tl;
+//         if (t == ' ') {
+//             t = space_token;
+//         } else {
+//             t += other_token;
+//         }
+//         p = tex_store_new_token(p, t);
+//         if (! h) {
+//             h = p;
+//         }
+//     }
+//     return h;
+// }
 
 /*tex
 
@@ -3244,7 +3252,6 @@ void tex_run_convert_tokens(halfword code)
                         } else {
                             goto WHATEVER;
                         }
-                        break;
                     default:
                       WHATEVER:
                         {

@@ -1061,6 +1061,9 @@ function codeinjections.getbookmarks(filename)
          -- local title = current.Title
             local title = current("Title") -- can be pdfdoc or unicode
             if title then
+                if type(title) == "table" then
+                    title = lpdf.frombytes(title[2],title[3]) -- hack, we have an indirect one
+                end
                 local entry = {
                     level = depth,
                     title = title,
@@ -1068,7 +1071,7 @@ function codeinjections.getbookmarks(filename)
                 list[#list+1] = entry
                 setdestination(current,entry)
                 if trace_outlines then
-                    report_outline("%w%s",2*depth,title)
+                    report_outline("%w%s",2*depth,title) -- not ok
                 end
             end
             local first = current.First
@@ -1076,8 +1079,11 @@ function codeinjections.getbookmarks(filename)
                 local current = first
                 while current do
                     local title = current.Title
+                    if type(title) == "table" then
+                        title = lpdf.frombytes(title[2],title[3]) -- hack, we have an indirect one
+                    end
                     if title and trace_outlines then
-                        report_outline("%w%s",2*depth,title)
+                        report_outline("%w%s",2*depth,title) -- not ok
                     end
                     local entry = {
                         level = depth,

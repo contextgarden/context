@@ -33,18 +33,18 @@
   {\egroup
    \clf_getrivers
       box    \scratchboxone
-      margin \dimexpr\dummyparameter\c!margin\relax
-      skip   \dimexpr\dummyparameter\c!spaceinbetween\relax
-      step   \dimexpr\dummyparameter\c!step\relax
-      height \dimexpr\dummyparameter\c!height\relax
-      depth  \dimexpr\dummyparameter\c!depth\relax
+      margin {\dummyparameter\c!margin}
+      skip   {\dummyparameter\c!spaceinbetween}
+      step   {\dummyparameter\c!step}
+      height {\dummyparameter\c!height}
+      depth  {\dummyparameter\c!depth}
    \relax
    \setbox\scratchboxtwo\hbox\bgroup
      \startMPcode
         lmt_showrivers (
-           \the\numexpr\dummyparameter\c!criterium\relax,
-           \the\dimexpr\wd  \scratchboxone\relax,
-           \the\dimexpr\htdp\scratchboxone\relax,
+           \tointeger{\dummyparameter\c!criterium},
+           \todimension{\wd  \scratchboxone},
+           \todimension{\htdp\scratchboxone},
            \ifcstok{\dummyparameter\c!option}\v!test true\else false\fi
         ) ;
      \stopMPcode
@@ -64,12 +64,12 @@
    \setdummyparameter\c!spaceinbetween{.1\lineheight}%
    \getdummyparameters[#1]%
    \clf_addrivers
-      box    \numexpr#2\relax
-      margin \dimexpr\dummyparameter\c!margin\relax
-      skip   \dimexpr\dummyparameter\c!spaceinbetween\relax
-      step   \dimexpr\dummyparameter\c!step\relax
-      height \dimexpr\dummyparameter\c!height\relax
-      depth  \dimexpr\dummyparameter\c!depth\relax
+      box    {#2}%
+      margin {\dummyparameter\c!margin}%
+      skip   {\dummyparameter\c!spaceinbetween}%
+      step   {\dummyparameter\c!step}%
+      height {\dummyparameter\c!height}%
+      depth  {\dummyparameter\c!depth}%
    \relax
    \endgroup}
 

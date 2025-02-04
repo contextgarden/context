@@ -175,6 +175,16 @@ extern int       tex_show_packaging_record (void);
 extern int       tex_get_packaging_context (void);
 extern int       tex_get_packaging_shift   (void);
 
+extern int       tex_is_effectively_empty  (halfword n, halfword options); 
+
+typedef enum effective_empty_options {
+    effective_empty_option_par         = 0x0001,
+    effective_empty_option_dir         = 0x0002,
+    effective_empty_option_indent_list = 0x0004,
+    effective_empty_option_indent_glue = 0x0008,
+    effective_empty_option_all         = 0xFFFF,
+} effective_empty_options ;
+
 //# define vpack(A,B,C,D) tex_vpackage(A,B,C,max_dimension,D)
 
 # define first_un_box_code box_code

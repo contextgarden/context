@@ -118,6 +118,7 @@ local nuts = {
     getglyphdimensions      = direct.getglyphdimensions,
     getheight               = direct.getheight,
     getid                   = d_getid,
+    getidsubtype            = direct.getidsubtype,
     getindex                = direct.getindex,
     getinputfields          = direct.getinputfields,
     getkern                 = direct.getkern,

@@ -109,7 +109,7 @@
        \ifvoid\b_page_textflow_box\else
          \unvbox\b_page_textflow_box
        \fi
-       \hsize\textflowparameter\c!width\relax
+       \hsize{\textflowparameter\c!width}%
        \usetextflowstyleandcolor\c!style\c!color
        \enforced\permanent\protected\def\stoptextflow{\endgraf\egroup\endgroup}%
    \else

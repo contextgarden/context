@@ -184,6 +184,7 @@ appendaction("alignments",   "normalizers", "nodes.handlers.aligncharacter",    
 appendaction("alignments",   "normalizers", "nodes.handlers.mathalignrelocate",                 nil, "nut",    "disabled"  )
 appendaction("alignments",   "normalizers", "nodes.handlers.mathmatrixornaments",               nil, "nut",    "disabled"  )
 appendaction("alignments",   "normalizers", "nodes.handlers.mathmatrixrules",                   nil, "nut",    "disabled"  )
+appendaction("alignments",   "normalizers", "nodes.handlers.tabulateskip",                      nil, "nut",    "disabled"  )
 
 appendaction("localboxes",   "lists",       "typesetters.localboxes.handler",                   nil, "nut",    "enabled"   )
 

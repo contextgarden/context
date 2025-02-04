@@ -1,0 +1,58 @@
+%D \module
+%D   [       file=math-dif,
+%D        version=2022.05.31, % moved code
+%D          title=\CONTEXT\ Math Macros,
+%D       subtitle=Differentials,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Math Macros / Differentials}
+
+\unprotect
+
+%D The shapes are defined in \type {char-def.lua} where they get the right class
+%D too.
+%D
+%D \starttyping
+%D \setupmathematics
+%D   [differentiald=upright]
+%D \stoptyping
+
+%D Alternatively we can handle this by an attribute and do the remapping at the
+%D \LUA\ end but we're only talking of a few variables and we already had one
+%D done at the \TEX\ end.
+
+\def\math_upright_constant#1#2#3%
+  {\ifcstok{\mathematicsparameter#1}\s!upright
+     \begingroup
+       \attribute\mathalphabetattribute\attributeunsetvalue
+       \attribute\mathgreekattribute   \attributeunsetvalue
+       #2%
+     \endgroup
+   \else
+     #3%
+   \fi}
+
+\setupmathematics
+  [\s!differentiald=\mathematicsparameter\c!mathconstants,
+    \s!exponentiale=\mathematicsparameter\c!mathconstants,
+      \s!imaginaryi=\mathematicsparameter\c!mathconstants,
+      \s!imaginaryj=\mathematicsparameter\c!mathconstants,
+              \s!pi=\mathematicsparameter\c!mathconstants]
+
+% \setupmathematics
+%   [\c!mathconstants=\s!upright]
+
+\permanent\protected\def\dd{\math_upright_constant\s!differentiald\mathduprightshape \mathditalicshape }
+\permanent\protected\def\DD{\math_upright_constant\s!differentiald\mathDuprightshape \mathDitalicshape }
+\permanent\protected\def\ee{\math_upright_constant\s!exponentiale \matheuprightshape \matheitalicshape }
+\permanent\protected\def\ii{\math_upright_constant\s!imaginaryi   \mathiuprightshape \mathiitalicshape }
+\permanent\protected\def\ij{\math_upright_constant\s!imaginaryj   \mathjuprightshape \mathjitalicshape }
+\permanent\protected\def\pi{\math_upright_constant\s!pi           \mathpiuprightshape\mathpiitalicshape}
+
+\protect

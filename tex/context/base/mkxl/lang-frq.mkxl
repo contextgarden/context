@@ -127,14 +127,14 @@
 %D This macro reports the average width for the current main
 %D language (\the \dimexpr (\averagecharwidth)).
 
-\permanent\def\averagecharwidth{\dimexpr(\zeropoint\charactertable\charwidthlanguage)/100\relax}
+\permanent\def\averagecharwidth{\dimexpr{(\zeropoint\charactertable\charwidthlanguage)/100}}
 
 \permanent\protected\def\showcharfreq
   {\hbox\bgroup
      \charwidthlanguage:%
      \dostepwiserecurse\zerocount\plusfour\plusone
        {\setconstant\charwidthmethod\recurselevel\relax
-        \enspace\recurselevel/\the\dimexpr(\averagecharwidth)}%
+        \enspace\recurselevel/\todimension{\averagecharwidth}}%
    \egroup}
 
 %D Just for fun, we show a few frequency tables as graphic (\in {figure}

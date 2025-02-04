@@ -409,16 +409,22 @@ implement { name = "showlogcategories",  public = true, protected = true, action
 
 local debugger = utilities.debugger
 
+local profiling = false
+
 directives.register("system.profile",function(n)
-    luatex.registerstopactions(function()
-        debugger.disable()
-        debugger.savestats("luatex-profile.log",tonumber(n) or 0)
-        report_nl()
-        logs.report("system","profiler stopped, log saved in %a","luatex-profile.log")
-        report_nl()
-    end)
-    logs.report("system","profiler started")
-    debugger.enable()
+    if not profiling then
+        n = tonumber(n) or 0
+        luatex.registerstopactions(function()
+            debugger.disable()
+            debugger.savestats("luametatex-profile.log",n)
+            report_nl()
+            logs.report("system","profiler stopped, threshold %i, log saved in %a",n,"luametatex-profile.log")
+            report_nl()
+        end)
+        logs.report("system","profiler started")
+        debugger.enable()
+        profiling = true
+    end
 end)
 
 local report = logs.reporter("[[diagnostic]]")

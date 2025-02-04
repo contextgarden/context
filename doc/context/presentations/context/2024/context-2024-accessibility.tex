@@ -1,0 +1,811 @@
+% language=us
+
+% \setupbackend[format=pdf/ua-2]
+% \setuptagging[state=start]
+% \enabledirectives[math.extensibles=both] % todo, when tagging !
+
+% \nopdfcompression
+
+% \enabletrackers[structures.tags.blobs]
+% \enabletrackers[structures.tags]
+% \enabletrackers[structures.tags.internals]
+% \enabletrackers[structures.tags.showtree]
+
+% \unprotect \pushoverloadmode
+% \protect
+
+\environment context-2024-style
+
+\setupbodyfont[small]
+
+\setuptyping
+  [style=\switchtobodyfont[7pt,tt]]
+
+\definelayer
+  [extratext]
+  [preset=rightbottom,
+   height=\textheight,
+   width=\textwidth]
+
+\setupbackgrounds
+  [text]
+  [background=extratext]
+
+% \definehighlight[notabene][style=bf]
+\definehighlight[notabene][style=\glyphweight100\underbar]
+
+\setuptyping
+  [align=hangright,
+   keeptogether=paragraph,
+   numbering=]
+
+% In this variant we use the Ukraine flag colors as I did for all talks at ConTeXt meetings
+% since RU invaded UA.
+
+\startdocument
+  [title={Accessibility},
+ % banner={how to make sense},
+   banner={what it is about},
+%  location={bachotex\enspace {\bf 2024}\enspace meeting}]
+   location={context\enspace {\bf 2024}\enspace meeting}]
+
+\starttitle[title=What is accessibility]
+
+Accessible \PDF\ documents are a somewhat hot topic (for a while). Here are some
+definitions:
+
+\startitemize
+\startitem
+    \notabene {Greenwich:} An accessible document is a document created to be as
+    easily readable by a low vision or non-sighted reader as a sighted reader.
+\stopitem
+\startitem
+    \notabene {Harvard:} Accessible documents are easier to understand and read
+    for all of your users, not just users with disabilities.
+\stopitem
+\startitem
+    \notabene {University of California San Francisco:} An accessible digital
+    document is well-structured, providing visual information in a non-visual
+    format.
+\stopitem
+\startitem
+    \notabene {Carlton:} Accessible documents provide all text and other elements
+    in an accessible format, so that everyone can access the information in the
+    documents in some manner.
+\stopitem
+\stopitemize
+
+Such definitions are often followed by a similar list of suggestions, likely taken
+from some (government) directive.
+
+\vfilll
+
+{\em Note: This talk is a variant on the one done at Bacho\TeX\ 2024 but most examples
+are the same!}
+
+
+\stoptitle
+
+\starttitle[title=What is tagging]
+
+Tagging adds information to a \PDF\ file so that:
+
+\startitemize
+\startitem
+    \notabene {content can be extracted}: apart from basic copying we're not
+    interested in this
+\stopitem
+\startitem
+    \notabene {the text can reflow:} use an other format is that is needed
+\stopitem
+\startitem
+    \notabene {text can be spoken:} to some extend that can be useful
+\stopitem
+\stopitemize
+
+But it comes a at cost:
+
+\startitemize
+\startitem
+    There are \notabene {no real good free tools} that handle it and validation, fixing,
+    standards with respect to \PDF\ has always been a somewhat commercial enterprise.
+\stopitem
+\startitem
+    The standard is a \notabene {confusing}, and interpretation gets debated: it
+    looks like little research went ahead of it.
+\stopitem
+\startitem
+    So we can best just start from \notabene {common sense and usage} and also
+    realize that in the end (future) demands are different anyway (compare book
+    printing).
+\stopitem
+\startitem
+    Nevertheless, we always end up with a \notabene {bloated} \PDF\ file, which
+    kind of contradicts other efforts to be lean and mean.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=And so \unknown]
+
+\startitemize
+\startitem
+    We basically end up implementing a feature for the sake of the feature that might
+    be useful in the \notabene {future}.
+\stopitem
+\startitem
+    And that in the end might not work out as intended as it might be \notabene
+    {suboptimal}.
+\stopitem
+\startitem
+    And we can not check its usability so it's mostly about \notabene {conformance}
+    and playing safe.
+\stopitem
+\startitem
+    Also, we operate in a fast moving world when it comes to demands, presentation
+    models, usage and maybe coming technologies that might make this \notabene
+    {obsolete}.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Examples]
+
+So what are the consequences of tagging for a \PDF\ file? Let's have a look at
+some simple examples.
+
+\blank[2*big]
+
+\notabene {untagged:} test: \inframed[frame=closed]{$x^2 = 4$} !
+
+\blank[2*big]
+
+\notabene {tagged:} $x^2 = 4$
+
+\blank[2*big]
+
+\notabene {tagged:} test: $x^2 = 4$
+
+\blank[2*big]
+
+\notabene {tagged:} test: \inframed[frame=closed]{$x^2 = 4$} !
+
+\page
+
+% \setmarking[title]{test: \inframed[frame=closed]{$x^2 = 4$} !}
+
+\setlayerframed[extratext][frame=off]{test: \inframed[frame=closed]{$x^2 = 4$} !}
+
+\starttyping
+stream
+0 g 0 G
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 3.941792 7.979264 Tm [<000100020003000100040005>] TJ
+/F2 10 Tf
+1.195517 0 0 1.195517 33.563574 7.979264 Tm [<0001>] TJ
+0.836858 0 0 0.836858 40.398174 12.914036 Tm [<0002>] TJ
+1.195517 0 0 1.195517 48.485127 7.979264 Tm [<0003>-278<0004>] TJ
+ET
+q
+1 0 0 1 32.076871 2.455088 cm
+[] 0 d 0 J 0.3985 w 0 0 36.486178 17.507437 re S
+Q
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 72.741182 7.979264 Tm [<0006>] TJ
+ET
+0 g 0 G
+endstream
+\stoptyping
+
+% \startTEXpage[offset=.5ts]
+%     test: \inframed[frame=closed]{$x^2 = 4$} !
+% \stopTEXpage
+
+\page
+
+% \setmarking[title]{$x^2 = 4$}
+\setlayerframed[extratext][frame=off]{$x^2 = 4$}
+
+\starttyping
+stream
+0 g 0 G
+/math <</MCID 1>> BDC
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 3.941792 4.073226 Tm [<0001>] TJ
+0.836858 0 0 0.836858 10.776392 9.007999 Tm [<0002>] TJ
+1.195517 0 0 1.195517 18.863344 4.073226 Tm [<0003>-278<0004>] TJ
+ET
+EMC
+0 g 0 G
+endstream
+\stoptyping
+
+% \startTEXpage[offset=.5ts]
+%     $x^2 = 4$
+% \stopTEXpage
+
+\page
+
+% \setmarking[title]{test: $x^2 = 4$}
+\setlayerframed[extratext][frame=off]{test: $x^2 = 4$}
+
+\starttyping
+stream
+0 g 0 G
+/documentpart <</MCID 1>> BDC
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 3.941792 4.073226 Tm [<00010002000300010004>] TJ
+ET
+EMC
+/math <</MCID 2>> BDC
+BT
+/F2 10 Tf
+1.195517 0 0 1.195517 31.877621 4.073226 Tm [<0001>] TJ
+0.836858 0 0 0.836858 38.712221 9.007999 Tm [<0002>] TJ
+1.195517 0 0 1.195517 46.799174 4.073226 Tm [<0003>-278<0004>] TJ
+ET
+EMC
+0 g 0 G
+endstream
+\stoptyping
+
+% \startTEXpage[offset=.5ts]
+%     test: $x^2 = 4$
+% \stopTEXpage
+
+\page
+
+% \setmarking[title]{test: \inframed[frame=closed]{$x^2 = 4$} !}
+\setlayerframed[extratext][frame=off]{test: \inframed[frame=closed]{$x^2 = 4$} !}
+
+\starttyping
+stream
+0 g 0 G
+/documentpart <</MCID 1>> BDC
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 3.941792 7.979264 Tm [<00010002000300010004>] TJ
+ET
+EMC
+/math <</MCID 2>> BDC
+BT
+/F2 10 Tf
+1.195517 0 0 1.195517 33.563574 7.979264 Tm [<0001>] TJ
+0.836858 0 0 0.836858 40.398174 12.914036 Tm [<0002>] TJ
+1.195517 0 0 1.195517 48.485127 7.979264 Tm [<0003>-278<0004>] TJ
+ET
+EMC
+/Artifact BMC
+q
+1 0 0 1 32.076871 2.455088 cm
+[] 0 d 0 J 0.3985 w 0 0 36.486178 17.507437 re S
+Q
+EMC
+/documentpart <</MCID 3>> BDC
+BT
+/F1 10 Tf
+1.195517 0 0 1.195517 72.741182 7.979264 Tm [<0005>] TJ
+ET
+EMC
+0 g 0 G
+endstream
+\stoptyping
+
+% \startTEXpage[offset=.5ts]
+%     test: \inframed[frame=closed]{$x^2 = 4$} !
+% \stopTEXpage
+
+\page
+
+We need a lot so tracing options to figure out possible issues, like:
+
+\starttyping
+backend         > tags > begin page
+backend         > tags >
+backend         > tags > P    11 document>1 documentpart>1 navigationpage>1 : 1
+backend         > tags > T     2 document>1 documentpart>1 : test:
+backend         > tags > T     3 document>1 documentpart>1 math>1 : 𝑥[2] = 4
+backend         > tags >   -----
+backend         > tags > T     2 document>1 documentpart>1 : !
+backend         > tags >
+backend         > tags > end page
+backend         > tags >
+
+backend         > tags >     1    1  document>1 (content)
+backend         > tags >     2    1  document>1 documentpart>1 (content)
+backend         > tags >     3    1  document>1 documentpart>1 navigationpage>1 (content)
+backend         > tags >     4    1  document>1 documentpart>1 math>1 (content)
+\stoptyping
+
+But we also have visual clues: tag labels, suspects, etc.
+
+\stoptitle
+
+\starttitle[title={Checking if we're okay}]
+
+\startitemize
+\startitem
+    We can look at the file and if it opens in viewers we know that we didn't
+    mess up too badly. Looking at the \PDF\ in an editor also works.
+\stopitem
+\startitem
+    The VeraPDF checker can be used but it's not always reliable. The order of
+    reported issues can differ per run and when you fixed the last issue,
+    suddenly a new one can be shown. (There are two parsers to choose from and
+    results can differ.)
+\stopitem
+\startitem
+    The PAC 2021 checker is more powerful but hasn't been updated to handle \PDF\
+    2.0 (we can hack around that) an dit doesn't handle the role maps. But it has
+    a nice preview, shows a tag tree, etc. It's a bit slow in analyzing.
+\stopitem
+\startitem
+    We're only interested in the file being okay because there is not way to know
+    what is needed. We don't relate to pseudo \HTML\ but users can do that if
+    they want. We don't want to cook up something sub-optimal.
+\stopitem
+\startitem
+    As long as we add meaningful tags, we can expect future document analyzer to do
+    a decent job, after all a \quote {section} says what it is.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title={Structure, meaning and rolemaps (1)}]
+
+\startlinecorrection
+    \externalfigure[kingjames-001.png][height=.75th]
+\stoplinecorrection
+
+\stoptitle
+
+
+\starttitle[title={Structure, meaning and rolemaps (2)}]
+
+\startlinecorrection
+    \externalfigure[kingjames-002.png][height=.75th]
+\stoplinecorrection
+
+\stoptitle
+
+\starttitle[title={Structure, meaning and rolemaps (3)}]
+
+Let's get an idea what we're dealing with. You can forget about it after seeing
+it. The real content is this, when untagged we also have more efficient text
+streams (here between \type {<>}):
+
+\starttyping
+stream
+0 g 0 G
+BT
+/F1 10 Tf
+0.996264 0 0 0.996264 549.598217 791.184973 Tm [<0001>] TJ
+2.066252 0 0 2.066252 42.097049 741.603508 Tm [<00020003000400050006000700080009000A000B000C>] TJ
+/F2 10 Tf
+0.996264 0 0 0.996264 42.097049 710.081548 Tm [<000100020003000400050006000700080009000A0006000B0008>] TJ
+0.996264 0 0 0.996264 548.192356 710.081548 Tm [<000C>] TJ
+0.996264 0 0 0.996264 42.097049 689.160004 Tm [<000D0006000E000400050006000700080009000A0006000B0008>] TJ
+0.996264 0 0 0.996264 541.114406 689.160004 Tm [<000F00100010>] TJ
+ET
+0 g 0 G
+endstream
+\stoptyping
+
+\page
+
+When we tag we get entries like this in the page stream:
+
+\startcolumns[distance=1cm]
+\starttyping
+0 g 0 G
+/Artifact BMC
+BT
+/F1 10 Tf
+0.996264 0 0 0.996264 549.598217 791.184973 Tm [<0001>] TJ
+ET
+EMC
+/documentpart <</MCID 1>> BDC
+BT
+/F1 10 Tf
+2.066252 0 0 2.066252 42.097049 741.603508 Tm [<00020003000400050006000700080009000A000B000C>] TJ
+ET
+EMC
+/link <</MCID 2>> BDC
+EMC
+/listcontent <</MCID 3>> BDC
+BT
+/F2 10 Tf
+0.996264 0 0 0.996264 42.097049 710.081548 Tm [<000100020003000400050006000700080009000A0006000B0008>] TJ
+ET
+EMC
+/listpage <</MCID 4>> BDC
+BT
+/F2 10 Tf
+0.996264 0 0 0.996264 548.192356 710.081548 Tm [<000C>] TJ
+ET
+EMC
+/link <</MCID 5>> BDC
+EMC
+/listcontent <</MCID 6>> BDC
+BT
+/F2 10 Tf
+0.996264 0 0 0.996264 42.097049 689.160004 Tm [<000D0006000E000400050006000700080009000A0006000B0008>] TJ
+ET
+EMC
+/listpage <</MCID 7>> BDC
+BT
+/F2 10 Tf
+0.996264 0 0 0.996264 541.114406 689.160004 Tm [<000F00100010>] TJ
+ET
+EMC
+0 g 0 G
+endstream
+\stoptyping
+\stopcolumns
+
+\page
+
+The \type {/MCID 3} points into an array related to the page. Let's start at
+the top parent (\type {676}):
+
+\starttyping
+676 0 obj
+    <<
+        /K          103359 0 R
+        /Namespaces [ 678 0 R 681 0 R 682 0 R ]
+        /ParentTree 677 0 R
+        /Type       /StructTreeRoot
+    >>
+endobj
+\stoptyping
+
+The top level kids array (103359) is
+
+\starttyping
+103359 0 obj
+[ 683 0 R ]
+endobj
+\stoptyping
+
+The first entry (\type {683}) brings us to the document level
+
+\starttyping
+683 0 obj
+    <<
+        /K  [ 684 0 R ]
+        /NS 678 0 R
+        /P  676 0 R
+        /Pg 1 0 R
+        /S  /document
+    >>
+endobj
+\stoptyping
+
+\page
+
+This element has only one kid (\type {684}) and sits in a name space (\type
+{678}). The parent is (\type {676}) a way to get back, the page object is also
+references (\type {1}).
+
+\starttyping
+678 0 obj
+    <<
+        /LMTXNameSpace /context
+        /NS            <feff.....>>
+        /RoleMapNS     103357 0 R
+        /Type          /Namespace
+    >>
+endobj
+\stoptyping
+
+The name space points to a role map (\type {103357}, we have many objects here)
+so we can use nice names as we like. We map most on the default \type {NonStruct}
+as the regular subset makes little sense for us.
+
+\starttyping
+103357 0 obj
+    <<
+        /document     [ /Document  681 0 R ]
+        /documentpart [ /NonStruct 681 0 R ]
+        /link         [ /Link      681 0 R ]
+        /list         [ /NonStruct 681 0 R ]
+        /listcontent  [ /NonStruct 681 0 R ]
+        /listitem     [ /NonStruct 681 0 R ]
+        ...
+    >>
+endobj
+\stoptyping
+
+\page
+
+The mapped ones come from, a default set defines in (\type {681}):
+
+\starttyping
+681 0 obj
+    <<
+        /LMTXNameSpace /ua2
+        /NS            <feff....>
+        /Type          /Namespace
+    >>
+endobj
+\stoptyping
+
+Back to the mapping from elements on the page to real ones:
+
+\starttyping
+677 0 obj
+<<
+    /Nums [
+          0 [ 685 0 R 684 0 R 688 0 R 689 0 R 690 0 R 692 0 R 693 0 R 694 0 R ]
+          1 [ 704 0 R ]
+          2 [ .... ]
+        ...
+        738 77343 0 R
+        739 77347 0 R
+    ]
+>>
+endobj
+\stoptyping
+
+\page
+
+The second element on the page (\type {684}) is:
+
+\starttyping
+684 0 obj
+<<
+    /K [ 685 0 R 1 686 0 R ... ]
+    /NS 678 0 R
+    /P 683 0 R
+    /Pg 1 0 R
+    /S /documentpart
+>>
+endobj
+\stoptyping
+
+The kids can be followed (from \type {676}) to (\type {684}):
+
+\starttyping
+684 0 obj
+<<
+    /K [ 685 0 R 1 686 0 R .... ]
+    /NS 678 0 R
+    /P 683 0 R
+    /Pg 1 0 R
+    /S /documentpart
+>>
+endobj
+\stoptyping
+
+\page
+
+We go all the way down to:
+
+\starttyping
+686 0 obj
+<< /K [ 687 0 R 691 0 R ] /NS 678 0 R /P 684 0 R /Pg 1 0 R /S /list >>
+endobj
+687 0 obj
+<< /K [ 688 0 R 689 0 R 690 0 R ] /NS 678 0 R /P 686 0 R /Pg 1 0 R /S /listitem /T (chapter) >>
+endobj
+688 0 obj
+<< /K [ 2 ] /NS 678 0 R /P 687 0 R /Pg 1 0 R /S /link >>
+endobj
+689 0 obj
+<< /K [ 3 ] /NS 678 0 R /P 687 0 R /Pg 1 0 R /S /listcontent >>
+endobj
+690 0 obj
+<< /K [ 4 ] /NS 678 0 R /P 687 0 R /Pg 1 0 R /S /listpage >>
+endobj
+691 0 obj
+<< /K [ 692 0 R 693 0 R 694 0 R ] /NS 678 0 R /P 686 0 R /Pg 1 0 R /S /listitem /T (chapter) >>
+endobj
+\stoptyping
+
+And so on. Keep in mind that in the page stream we see the endpoints and in order
+to see where they come from one has to follow the chain back!
+
+\stoptitle
+
+\starttitle[title=Annoyances]
+
+\startitemize
+\startitem
+    One has to mark everything. There is no default to \notabene {artifact},
+    which would save a lot of (time and) file size as well as checking.
+\stopitem
+\startitem
+    \UNICODE\ lacks a code point that represents \quotation {no character, just
+    ignore me when copying or speaking} so one has to mark \notabene {private
+    slots} as artifact which is pain and dirties the backend.
+\stopitem
+\startitem
+    There are no code points that can \notabene {help the speech engine}, like
+    pauses. One can argue that this should not be in \UNICODE\ but we do have
+    linguistic and plenty odd symbols anyway.
+\stopitem
+\startitem
+    Often a nice looking and educational rich document has \notabene {more than
+    just text}, otherwise one could as well emulate a typewriter. It's also about
+    motivating and attraction. So there might be hard to catch artifacts.
+\stopitem
+\startitem
+    Validating can be \notabene {fragile}, so one never knows for sure if what is
+    okay or bad today is bad or okay tomorrow. But we can decide to ignore some
+    warnings, especially when it hard to explain why it matters.
+\stopitem
+\startitem
+    There are some \notabene {weird demands}. Why should for instance a hyperlink
+    mark as artifact still resolve to a destination. Also, one assumes viewers to
+    to not adapt so there are redundant entries (for no real reason like
+    \type {/D} and  \type {/SD} in destinations).
+\stopitem
+\stopitemize
+
+\starttitle[title=Math]
+
+\startitemize
+\startitem
+    Math tagging is somewhat complex and often \notabene {domain dependent} the
+    current state made us decide to just do what we think is best.
+\stopitem
+\startitem
+    As with math fonts it's not the \TEX\ community that drives it (although of
+    course there has been early adoption and feedback, e.g. by Ross Moore). We just
+    have to \notabene {follow the trends}.
+\stopitem
+\startitem
+    We \notabene {always} had some kind of support for tagged math, not that
+    there were applications out there that we could check it with.
+\stopitem
+\startitem
+    At EuroBacho\TEX\ 2017 there has been \notabene {ambitious plans} for future
+    projects with respect to tagged \PDF\ (mentioning involvement of publishers
+    and substantial funding) but if that happens it is outside the \CONTEXT\
+    community scope.
+\stopitem
+\startitem
+    So \unknown\ we just \notabene {go our own way} and \quote {ritmik} is what
+    we came up with, which actually is a side track of our math upgrading
+    project.
+\stopitem
+
+\vfilll % blank[3*big]
+
+\startitem
+    Sidenote: we do the same with bibliographies but that is much simpler:
+    \notabene {serialize} citations and embed \BIBTEX\ data.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=How]
+
+\startitemize
+\startitem
+    We decided to go for what we call \quotation {meaningful math}: instead of
+    relying on unknown technology we make sure that when gets \quote {read out}
+    reflects our intentions: we provide \notabene {serialized math} in addition to
+    \notabene {embedded \MATHML}.
+\stopitem
+\startitem
+    We have \notabene {quite some structure} in \CONTEXT\ and math is no
+    exception. When we add features we normally also take care of tagging.
+\stopitem
+\startitem
+    We already had a way to extract \MATHML\ from formulas, but with
+    (presentation) \MATHML\ being \notabene {unstable} (dropping features,
+    support comes and goes) we have to adapt and anticipate the worst.
+\stopitem
+\startitem
+    We can now actually make use of the already present \notabene {dictionary}
+    mechanisms and carry a bit more information around with symbols. This saves
+    some extra processing and serves serializing well.
+\stopitem
+\startitem
+    We could actually remove some rendering related output (alignments using
+    tables) by \notabene {more natural} solutions.
+\stopitem
+\startitem
+    But \unknown\ we need some information from \notabene {users}, like usage
+    patterns, specific support for \quote {fields}, and translations.
+\stopitem
+\startitem
+    We don't want to adapt the engine because it's very \notabene {macro package
+    dependent} and it's also more flexible.
+\stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=Tests]
+
+\startitemize
+\startitem
+    A university \notabene {math book} of some 300 pages with 3500 formulas, and a lot
+    of (educational) structure.
+\stopitem
+\startitem
+    The upcoming \notabene {math manual} with many examples, fancy features,
+    specific control, symbols, different structures, etc.
+\stopitem
+\startitem
+    For performance tests we use relatively simple \notabene {text only}
+    documents, like the King James bible, novels from the Gutenberg project, etc.
+\stopitem
+\startitem
+    For meaningful math we have a (growing) document that shows \notabene
+    {examples in various languages} as well as \MATHML\ from \CONTEXT\ input.
+\stopitem
+\stopitemize
+
+\blank[2*big]
+
+We can show some examples.
+
+\stoptitle
+
+\starttitle[title={Impact: King James Bible}]
+
+from xml, two columns, using unifraktur:
+
+\starttabulate[|c|c|c|c|c|c|c|c|]
+\BC fitclasses \BC passes  \BC tagging \BC pages \BC runtime \BC uncompressed \BC runtime \BC compressed \NC \NR
+\HL
+\NC default    \NC         \NC no      \NC 670   \NC 14.2    \NC              \NC         \NC            \NC \NR
+\NC default    \NC quality \NC no      \NC 670   \NC 14.2    \NC              \NC         \NC            \NC \NR
+\NC granular   \NC quality \NC no      \NC 672   \NC 14.3    \NC 24.999       \NC 14.5    \NC 4.990      \NC \NR
+\NC granular   \NC quality \NC yes     \NC 672   \NC 17.5    \NC 39.660       \NC 18.4    \NC 7.134      \NC \NR
+\stoptabulate
+
+\stoptitle
+
+\starttitle[title={Impact: Math in \CONTEXT}]
+
+all bells and whistles, interactive, screen, menus, many math fonts:
+
+\starttabulate[|c|c|c|c|c|c|]
+\BC tagging \BC pages \BC runtime \BC uncompressed \BC runtime \BC compressed \NC \NR
+\HL
+\NC no      \NC 433   \NC 15.8    \NC 43.467       \NC 15.9    \NC 7.204      \NC \NR
+\NC yes     \NC 433   \NC 18.5    \NC 52.842       \NC 18.7    \NC 8.648      \NC \NR
+\stoptabulate
+
+\stoptitle
+
+\starttitle[title={Impact: Infinitesimalkalkyl}]
+
+a lot of structure, granular, passes, interactive, thousands of formulas, graphics:
+
+\starttabulate[|c|c|c|c|c|c|c|]
+\BC synctex \BC tagging \BC pages \BC runtime \BC uncompressed \BC runtime \BC compressed \NC \NR
+\HL
+\NC no      \BC no      \NC 292   \NC         \NC              \NC  9.3    \NC 3.645      \NC \NR
+\NC yes     \BC no      \NC 292   \NC  9.7    \NC 17.379       \NC  9.8    \NC 3.645      \NC \NR
+\NC yes     \BC yes     \NC 292   \NC 15.3    \NC 27.652       \NC 15.8    \NC 5.815      \NC \NR
+\stoptabulate
+
+% 15.0
+
+\vfill
+
+\startlines[style=\small\small\small\tt,after=]
+April 25, 2024
+Dell 7220 Laptop: Intel(R) Xeon(R) CPU E3-1505M v6 @ 3.00GHz, 48.0 GB, 2TB Samsung Pro SSD
+Windows 10 Pro for Workstations
+LuaMetaTeX 2.11.02 / 20240425 (MingW64)
+\stoplines
+
+\stoptitle
+
+\stopdocument
+
+% todo: user meaning

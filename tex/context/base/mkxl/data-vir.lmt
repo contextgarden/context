@@ -16,108 +16,141 @@ trackers.register("resolvers.locating", function(v) trace_virtual = v end)
 trackers.register("resolvers.virtual",  function(v) trace_virtual = v end)
 
 local resolvers = resolvers
-local savers    = resolvers.savers
-local cleaners  = resolvers.cleaners
+local data      = { }
+local keep      = { }
 
-local data        = { }
-local keep        = { }
-local n           = 0 -- hm, number can be query
-local f_virtual_n = formatters["virtual://%s.%s"]
-local f_virtual_y = formatters["virtual://%s-%s.%s"]
+do
 
-local function virtualname(specification,suffix)
-    n = n + 1 -- one number for all namespaces
-    local path = type(specification) == "table" and specification.path or specification
-    if type(path) ~= "string" or path == "" then
-        path = "virtualfile"
-    end
-    return suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
-end
+    local n = 0 -- hm, number can be query
 
-local function directvirtual(filename,content,persistent)
-    if not content then
-        content = ""
-    end
-    if trace_virtual then
-        report_virtual("saver: file %a saved, size %i",filename,#content)
-    end
-    data[filename] = content or ""
-    keep[filename] = persistent
-    return filename
-end
+    local f_virtual_n = formatters["virtual://%s.%s"]
+    local f_virtual_y = formatters["virtual://%s-%s.%s"]
 
-function savers.virtual(specification,content,suffix)
-    return directvirtual(virtualname(specification,suffix),content)
-end
-
-savers.virtualname   = virtualname
-savers.directvirtual = directvirtual
-
-function cleaners.virtual(filename)
-    data[filename] = nil
-    keep[filename] = nil
-end
-
-local finders  = resolvers.finders
-local notfound = finders.notfound
-
-function finders.virtual(specification)
-    local original = specification.original
-    local d = data[original]
-    if d then
-        if trace_virtual then
-            report_virtual("finder: file %a found",original)
+    local function virtualname(specification,suffix)
+        n = n + 1 -- one number for all namespaces
+        local path = type(specification) == "table" and specification.path or specification
+        if type(path) ~= "string" or path == "" then
+            path = "virtualfile"
         end
-        return original
-    else
+        return suffix and f_virtual_y(path,n,suffix) or f_virtual_n(path,n)
+    end
+
+    local function directvirtual(filename,content,persistent)
+        if not content then
+            content = ""
+        end
         if trace_virtual then
-            report_virtual("finder: unknown file %a",original)
+            report_virtual("saver: file %a saved, size %i",filename,#content)
+        end
+        data[filename] = content or ""
+        keep[filename] = persistent
+        return filename
+    end
+
+    local savers = resolvers.savers
+
+    savers.virtualname   = virtualname
+    savers.directvirtual = directvirtual
+
+    function savers.virtual(specification,content,suffix)
+        return directvirtual(virtualname(specification,suffix),content)
+    end
+
+
+end
+
+do
+
+    local cleaners = resolvers.cleaners
+
+    function cleaners.virtual(filename)
+        if trace_virtual then
+            report_virtual("cleaner: file %a deleted",filename)
+        end
+        data[filename] = nil
+        keep[filename] = nil
+    end
+
+end
+
+do
+
+    local finders  = resolvers.finders
+    local notfound = finders.notfound
+
+    function finders.virtual(specification)
+        local original = specification.original
+        local d = data[original]
+        if d then
+            if trace_virtual then
+                report_virtual("finder: file %a found",original)
+            end
+            return original
+        else
+            if trace_virtual then
+                report_virtual("finder: unknown file %a",original)
+            end
+            return notfound()
+        end
+    end
+
+end
+
+do
+
+    local openers    = resolvers.openers
+    local notfound   = openers.notfound
+    local textopener = openers.helpers.textopener
+
+    function openers.virtual(specification)
+        local original = specification.original
+        local d = data[original]
+        if d then
+            if trace_virtual then
+                report_virtual("opener: file %a opened",original)
+            end
+            data[original] = nil -- when we comment this we can have error messages
+            -- With utf-8 we signal that no regime is to be applied!
+         -- characters.showstring(d)
+            return textopener("virtual",original,d,"utf-8")
+        else
+            if trace_virtual then
+                report_virtual("opener: file %a not found",original)
+            end
+            return notfound()
+        end
+    end
+
+end
+
+-- local closers = resolvers.closers
+
+-- function closers.virtual(specification)
+--     inspect(specification)
+-- end
+
+do
+
+    local loaders  = resolvers.loaders
+    local notfound = loaders.notfound
+
+    function loaders.virtual(specification)
+        local original = specification.original
+        local d = data[original]
+        if d then
+            if trace_virtual then
+                report_virtual("loader: file %a loaded",original)
+            end
+            if not keep[original] then
+                data[original] = nil
+                keep[original] = nil
+            end
+            return true, d, #d
+        end
+        if trace_virtual then
+            report_virtual("loader: file %a not loaded",original)
         end
         return notfound()
     end
-end
 
-local openers    = resolvers.openers
-local notfound   = openers.notfound
-local textopener = openers.helpers.textopener
-
-function openers.virtual(specification)
-    local original = specification.original
-    local d = data[original]
-    if d then
-        if trace_virtual then
-            report_virtual("opener: file %a opened",original)
-        end
-        data[original] = nil -- when we comment this we can have error messages
-        -- With utf-8 we signal that no regime is to be applied!
-     -- characters.showstring(d)
-        return textopener("virtual",original,d,"utf-8")
-    else
-        if trace_virtual then
-            report_virtual("opener: file %a not found",original)
-        end
-        return notfound()
-    end
-end
-
-local loaders  = resolvers.loaders
-local notfound = loaders.notfound
-
-function loaders.virtual(specification)
-    local original = specification.original
-    local d = data[original]
-    if d then
-        if trace_virtual then
-            report_virtual("loader: file %a loaded",original)
-        end
-        if not keep[original] then
-            data[original] = nil
-            keep[original] = nil
-        end
-        return true, d, #d
-    end
-    if trace_virtual then
-        report_virtual("loader: file %a not loaded",original)
-    end
-    return notfound()
 end

@@ -42,7 +42,7 @@
    \begingroup
    \cdef\currentfiller{#1}%
    \usefillerstyleandcolor\c!style\c!color
-   \scratchdimen\fillerparameter\c!leftmargin\relax
+   \scratchdimen{\fillerparameter\c!leftmargin}%
    \ifzeropt\scratchdimen\else
      \hskip\scratchdimen
    \fi
@@ -72,7 +72,7 @@
   {\removeunwantedspaces
    \begingroup
    \cdef\currentfiller{#1}%
-   \scratchdimen\dimexpr\fillerparameter\c!rightmargindistance\relax
+   \scratchdimen{\fillerparameter\c!rightmargindistance}%
    \ifzeropt\scratchdimen\else
      \parfillskip \scratchdimen\s!plus \plusone\s!fil\relax
    \fi
@@ -89,9 +89,9 @@
 
 \defcsname\??filleralternative\v!symbol\endcsname
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
-     \ifdim\fillerparameter\c!offset>\zeropoint
+     \ifdim{\fillerparameter\c!offset}>\zeropoint
         \simplealignedspreadbox
-          {2\dimexpr\fillerparameter\c!offset\relax}%
+          {2\dimexpr{\fillerparameter\c!offset}}%
           {\fillerparameter\c!align}%
           {\fillerparameter\c!symbol}%
      \else
@@ -106,13 +106,13 @@
   {\hfill}
 
 \defcsname\??filleralternative\v!space\endcsname
-  {\hskip\fillerparameter\c!distance\relax}
+  {\hskip{\fillerparameter\c!distance}\relax}
 
 \defcsname\??filleralternative\v!rule\endcsname
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \hrule
-       \s!height\fillerparameter\c!height
-       \s!depth \fillerparameter\c!depth
+       \s!height{\fillerparameter\c!height}%
+       \s!depth {\fillerparameter\c!depth}%
    \hfill}
 
 \letcsname\??fillerleadermethod\s!local \endcsname\normalleaders  % overflow ends up inbetween (current box)

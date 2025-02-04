@@ -927,10 +927,10 @@
 \newconditional\c_spac_align_hang_done
 
 \permanent\protected\def\starthangrange
-  {\setfalse\c_spac_align_hang_done}
+  {\c_spac_align_hang_done\conditionalfalse}
 
 \permanent\protected\def\stophangrange
-  {\setfalse\c_spac_align_hang_done
+  {\c_spac_align_hang_done\conditionalfalse
    \removeunwantedspaces
   %\localbreakpar
    \par}
@@ -966,7 +966,7 @@
    \ignorespaces}
 
 \permanent\protected\def\stophangrangestep
-  {\settrue\c_spac_align_hang_done}
+  {\par\c_spac_align_hang_done\conditionaltrue} % par is needed
 
 \permanent\protected\def\emptyhangrangestep
   {\strut\localbreakpar}
@@ -1294,10 +1294,10 @@
 
 \permanent\protected\def\shiftalignedline#1#2#3#4% left, right, inner, outer
   {\rightorleftpageaction
-     {\everyleftofalignedline {\hskip\dimexpr#1+#3\relax}%
-      \everyrightofalignedline{\hskip\dimexpr#2+#4\relax}}
-     {\everyleftofalignedline {\hskip\dimexpr#1+#4\relax}%
-      \everyrightofalignedline{\hskip\dimexpr#2+#3\relax}}}
+     {\everyleftofalignedline {\hskip{#1+#3}}%
+      \everyrightofalignedline{\hskip{#2+#4}}}
+     {\everyleftofalignedline {\hskip{#1+#4}}%
+      \everyrightofalignedline{\hskip{#2+#3}}}}
 
 \permanent\protected\def\doalignline#1#2% \\ == newline
   {\noindentation  % was \noindent

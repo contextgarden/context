@@ -148,6 +148,7 @@
    \orelse\ifnum\scratchcounter=\plusthree
      % offset is dimension
    \else
+     % offset is number
      \advanceby\ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi\plusone
    \fi
    \ifx\p_node_continue\v!always
@@ -164,26 +165,24 @@
          ta            \rawtransparencyattribute\p_node_color
          order         {\barparameter\c!order}%
      \ifnum\scratchcounter=\plustwo
-         height        \dimexpr\barparameter\c!height\relax
-         depth         \dimexpr\barparameter\c!depth\relax
-\ifchkdim\p_node_offset\or
-         offset        \number\dimexpr\p_node_offset\relax % dimension
-\fi
+         height        {\barparameter\c!height}%
+         depth         {\barparameter\c!depth}%
+       \ifchkdimexpr\p_node_offset\or
+         offset        \number\lastchkdimension % dimension
+       \fi
      \orelse\ifnum\scratchcounter=\plusthree
-         height        \dimexpr\barparameter\c!height\relax
-         depth         \dimexpr\barparameter\c!depth\relax
-\ifchkdim\p_node_offset\or
-         offset        \number\dimexpr\p_node_offset\relax % dimension
-\fi
+         height        {\barparameter\c!height}%
+         depth         {\barparameter\c!depth}%
+       \ifchkdimexpr\p_node_offset\or
+         offset        \number\lastchkdimension % dimension
+      \fi
      \else
          unit          {\barparameter\c!unit}%
          level         \c_node_rules_level
          stack         \ifdim\p_node_offset\onepoint<\zeropoint\c_node_rules_down\else\c_node_rules_up\fi
-         max           \barparameter\c!max\space % number
-% \ifchkdim\p_node_offset\else
-         offset        \p_node_offset\space % number
-% \fi
-         dy            \barparameter\c!dy\space % number, also fraction
+         max           \barparameter\c!max\relaxedspace % number
+         offset        \p_node_offset\relaxedspace % number
+         dy            \barparameter\c!dy\relaxedspace % number, also fraction
          empty         {\barparameter\c!empty}%
        \ifempty{\barparameter\c!text}\else
          text          \hbox{\lastnamedcs}%
@@ -524,11 +523,11 @@
        ma             \c_attr_colormodel
        ca             \rawcolorattribute\p_node_color
        ta             \rawtransparencyattribute\p_node_color
-       height         \dimexpr\linefillerparameter\c!height\relax
-       depth          \dimexpr\linefillerparameter\c!depth\relax
-       distance       \dimexpr\linefillerparameter\c!distance\relax
-       threshold      \dimexpr\linefillerparameter\c!threshold\relax
-       rulethickness  \dimexpr\linefillerparameter\c!rulethickness\relax
+       height         {\linefillerparameter\c!height}%
+       depth          {\linefillerparameter\c!depth}%
+       distance       {\linefillerparameter\c!distance}%
+       threshold      {\linefillerparameter\c!threshold}%
+       rulethickness  {\linefillerparameter\c!rulethickness}%
    \relax}
 
 \permanent\tolerant\protected\def\startlinefiller[#1]#*[#S#2]%
@@ -636,14 +635,14 @@
    \clf_setshadow
        continue {\shadowparameter\c!continue}%
        unit     {\shadowparameter\c!unit}%
-       weight    \numexpr\shadowparameter\c!weight\relax
-       method    \shadowparameter\c!method
-       dx        \shadowparameter\c!dx\space % number
-       dy        \shadowparameter\c!dy\space % number
+       weight   {\shadowparameter\c!weight}%
+       method   \shadowparameter\c!method
+       dx       \shadowparameter\c!dx\relaxedspace % number
+       dy       \shadowparameter\c!dy\relaxedspace % number
        %
-       ma        \c_attr_colormodel
-       ca        \rawcolorattribute\p_node_color
-       ta        \rawtransparencyattribute\p_node_color
+       ma       \c_attr_colormodel
+       ca       \rawcolorattribute\p_node_color
+       ta       \rawtransparencyattribute\p_node_color
    \relax}
 
 \permanent\protected\def\startshadow[#1]%
@@ -728,7 +727,7 @@
 \def\grph_line_inject_yes[#1]#*[#2]%
   {\begingroup
    \edef\m_rulecolor{\mathmatrixparameter\c!rulecolor}%
-   \d_grph_line_width\mathmatrixparameter\c!rulethickness
+   \d_grph_line_width{\mathmatrixparameter\c!rulethickness}%
    \d_grph_line_offset\zeropoint
    \c_grph_line_action\zerocount
    \processcommacommand[#2]\grph_line_inject_step % use fast one

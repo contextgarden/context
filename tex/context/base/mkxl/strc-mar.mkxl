@@ -108,11 +108,11 @@
   {\clf_resetsynchronizemarking{#1}}
 
 \tolerant\def\synchronizemarking[#1]#*[#2]#*[#3]% #3: options
-  {\clf_synchronizemarking{#1}\plusone\numexpr#2\relax}
+  {\clf_synchronizemarking{#1}\plusone{#2}}
 
 \def\strc_markings_synchronize#1#2#3% category n box
   {\ifvoid#3\orelse\ifcstok{#1}\v!page\else
-     \clf_synchronizemarking{#1}\numexpr#2\relax\numexpr#3\relax
+     \clf_synchronizemarking{#1}{#2}{#3}%
    \fi}
 
 \permanent\def\doifelsemarking#1%

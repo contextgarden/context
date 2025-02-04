@@ -125,6 +125,7 @@
 \definesystemconstant {ampersand}
 \definesystemconstant {anchor}
 \definesystemconstant {anchors}
+\definesystemconstant {apostrophe}
 \definesystemconstant {ascii}
 \definesystemconstant {attribute}
 \definesystemconstant {attr}
@@ -153,6 +154,7 @@
 \definesystemconstant {bs}
 \definesystemconstant {b}
 \definesystemconstant {callback}
+\definesystemconstant {callbacks}
 \definesystemconstant {calligraphy}
 \definesystemconstant {Calligraphy}
 \definesystemconstant {Caps}
@@ -254,9 +256,11 @@
 \definesystemconstant {hastitle}
 \definesystemconstant {head}
 \definesystemconstant {height}
+\definesystemconstant {hex}
 \definesystemconstant {hfactor}
 \definesystemconstant {hw}
 \definesystemconstant {hyphenmin}
+\definesystemconstant {identity}
 \definesystemconstant {implication}
 \definesystemconstant {indeed}
 \definesystemconstant {initializations}
@@ -467,6 +471,14 @@
 \definesystemconstant {syncpos}
 
 \definesystemconstant {tagging}
+
+\definesystemconstant {differentiald}
+\definesystemconstant {exponentiale}
+\definesystemconstant {imaginaryi}
+\definesystemconstant {imaginaryj}
+\definesystemconstant {pi}
+
+
 
 %D As the name of their define command states, the next set of constants is used in
 %D the message macro's.

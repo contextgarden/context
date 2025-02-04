@@ -43,7 +43,7 @@ local glyph_code      <const> = nodecodes.glyph
 local a_cleaner       <const> = attributes.private("cleaner")
 local unsetvalue      <const> = attributes.unsetvalue
 
-local v_reset         = interfaces.variables.reset
+local v_reset         <const> = interfaces.variables.reset
 
 
 local resetter = { -- this will become an entry in char-def

@@ -94,10 +94,7 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagxtablecell
-      {\clf_settagtablecell
-         \numexpr\tablecellrows\relax
-         \numexpr\tablecellcolumns\relax
-         \numexpr\raggedstatus\relax}%
+      {\clf_settagtablecell{\tablecellrows}{\tablecellcolumns}{\raggedstatus}}%
     \enforced\permanent\protected\def\dotagxtablesignal
       {\signalcharacter}% not used
 \to \everyenableelements
@@ -238,7 +235,7 @@
    \ifx\p_textwidth\v!local
      \d_tabl_x_textwidth\availablehsize
    \else
-     \d_tabl_x_textwidth\p_textwidth
+     \d_tabl_x_textwidth{\p_textwidth}%
    \fi}
 
 \newtoks\everypreparextable
@@ -276,12 +273,12 @@
    \clf_x_table_create
         option              {\xtableparameter\c!option}%
         textwidth           \d_tabl_x_textwidth
-        textheight          \dimexpr\xtableparameter\c!textheight\relax
-        maxwidth            \dimexpr\xtableparameter\c!maxwidth\relax
+        textheight          {\xtableparameter\c!textheight}%
+        maxwidth            {\xtableparameter\c!maxwidth}%
         lineheight          \openlineheight
-        columndistance      \dimexpr\xtableparameter\c!columndistance\relax
-        leftmargindistance  \dimexpr\xtableparameter\c!leftmargindistance\relax
-        rightmargindistance \dimexpr\xtableparameter\c!rightmargindistance\relax
+        columndistance      {\xtableparameter\c!columndistance}%
+        leftmargindistance  {\xtableparameter\c!leftmargindistance}%
+        rightmargindistance {\xtableparameter\c!rightmargindistance}%
         rowdistance         \ht\scratchbox
         header              {\xtableparameter\c!header}%
         footer              {\xtableparameter\c!footer}%
@@ -289,7 +286,7 @@
    %
    \resetxtableparameter\c!option
    % not so nice but needed as we use this in the setup
-   \linewidth\xtableparameter\c!rulethickness\relax
+   \linewidth{\xtableparameter\c!rulethickness}%
    % so we freeze it
    \c_tabl_x_swapped_max\zerocount
    \begingroup
@@ -397,7 +394,7 @@
      {\testpage[5]% for now hard coded, just as the \lineheight below, see mail end of april 2021
       \clf_x_table_flush
         method {\v!split}%
-        height \ifdim\pagegoal=\maxdimen\textheight\else\dimexpr\pagegoal-\pagetotal-\lineheight\relax\fi
+        height {\ifdim\pagegoal=\maxdimen\textheight\else\pagegoal-\pagetotal-\lineheight\fi}%
       \relax
       \ifcase\c_tabl_x_state
         \exitloop
@@ -440,7 +437,7 @@
 \protected\def\tabl_x_flush_float_split
   {\resetdirecttsplit
    \edef\extrasplitfloatlines{\xtableparameter\c!split}%
-   \d_split_minimum_free_space\dimexpr\extraxtablesplitheight+\xtableparameter\c!splitoffset\relax
+   \d_split_minimum_free_space{\extraxtablesplitheight+\xtableparameter\c!splitoffset}%
   %\c_split_minimum_free_lines\plustwo % not needed here as we're precise enough
    \let\tsplitdirectsplitter\tabl_x_split_splitter
    \let\tsplitdirectwidth   \d_tabl_x_final_width_reference
@@ -450,7 +447,7 @@
   {\setbox\b_split_result\vbox
      {\clf_x_table_flush
         method {\v!split}%
-        height \dimexpr#height\relax
+        height {#height}%
       \relax}%
    \ifcase\c_tabl_x_state
      \global\somenextsplitofffloat\conditionalfalse
@@ -504,13 +501,13 @@
   {\edef\p_left {\directxtableparameter\c!alignmentleftsample}%
    \edef\p_right{\directxtableparameter\c!alignmentrightsample}%
    \ifempty\p_left
-     \scratchdimenone\dimexpr\directxtableparameter\c!alignmentleftwidth\relax
+     \scratchdimenone{\directxtableparameter\c!alignmentleftwidth}%
    \else
      \setbox\scratchbox\hbox{\p_left}%
      \scratchdimenone\wd\scratchbox
    \fi
    \ifempty\p_right
-     \scratchdimentwo\dimexpr\directxtableparameter\c!alignmentrightwidth\relax
+     \scratchdimentwo{\directxtableparameter\c!alignmentrightwidth}%
    \else
      \setbox\scratchbox\hbox{\p_right}%
      \scratchdimentwo\wd\scratchbox
@@ -644,7 +641,7 @@
      \c_tabl_x_ny\directxtableparameter\c!ny\relax
    \fi
    %
-   \d_tabl_x_distance\xtableparameter\c!distance\relax
+   \d_tabl_x_distance{\xtableparameter\c!distance}%
    \clf_x_table_init_reflow_width_option{\xtableparameter\c!option}%
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
@@ -658,7 +655,7 @@
    \fi
    \c_tabl_x_nx\plusone
    \c_tabl_x_ny\plusone
-   \d_tabl_x_distance\xtableparameter\c!distance\relax
+   \d_tabl_x_distance{\xtableparameter\c!distance}%
    \clf_x_table_init_reflow_width
    \inheritedxtableframed\bgroup
    \tabl_x_begin_of_cell
@@ -981,7 +978,7 @@
      \gtoksapp\t_tabl_x_swapped\expandafter{\expandafter\tabl_x_c_cell_start\expandafter{\m_tabl_x_swapped_settings}[#settings]#content\tabl_x_c_cell_stop}%
    \fi
    \getdummyparameters[\c!ny=1,#settings]%
-   \scratchcounter\numexpr\dummyparameter\c!ny-\plusone\relax
+   \scratchcounter{(\dummyparameter\c!ny)-\plusone}%
    \ifcase\scratchcounter\else
      \dorecurse\scratchcounter\tabl_x_collect_advance
    \fi}

@@ -954,7 +954,7 @@ local hlist_out, vlist_out  do
                                     end
                                     cur_h = cur_h + gluewidth
                                 end
-                            elseif (id == hlist_code or id == vlist_code or id == glyph_code) and gluewidth > 0 then
+                            elseif gluewidth > 0 and (id == hlist_code or id == vlist_code or id == glyph_code) then
                                 local width, height, depth = getwhd(leader)
                                 -- no need for //
                                 if width > 0 then
@@ -1220,21 +1220,21 @@ local hlist_out, vlist_out  do
                 cur_h = cur_h + width
             elseif id == kern_code then
                 -- when we use getkerndimension we get rounded values
-                if true then
+             -- if true then
                     local kern = getkerndimension(current)
                     if kern ~= 0 then
                         cur_h = cur_h + kern
                     end
-                else
-                   local kern, factor = getkern(current,true)
-                   if kern ~= 0 then
-                       if factor ~= 0 then
-                           cur_h = cur_h + (1.0 + factor/1000000.0) * kern
-                       else
-                           cur_h = cur_h + kern
-                       end
-                   end
-                end
+             -- else
+             --    local kern, factor = getkern(current,true)
+             --    if kern ~= 0 then
+             --        if factor ~= 0 then
+             --            cur_h = cur_h + (1.0 + factor/1000000.0) * kern
+             --        else
+             --            cur_h = cur_h + kern
+             --        end
+             --    end
+             -- end
             elseif id == rule_code then
                 local width, height, depth, virtual = getruledimensions(current)
                 if width > 0 then

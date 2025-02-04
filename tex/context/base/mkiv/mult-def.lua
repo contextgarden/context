@@ -8517,9 +8517,6 @@ return {
    ["pe"]="تصحیح‌عمق",
    ["ro"]="corectieadancime",
   },
-  ["differentiald"]={
-    ["en"]="differentiald",
-  },
   ["direction"]={
    ["cs"]="smer",
    ["de"]="richtung",
@@ -10129,6 +10126,9 @@ return {
   },
   ["middleclass"]={
    ["en"]="middleclass",
+  },
+  ["mathconstants"]={
+   ["en"]="mathconstants",
   },
   ["mathlimits"]={
    ["en"]="mathlimits",

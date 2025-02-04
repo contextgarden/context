@@ -762,7 +762,8 @@ function scripts.pdf.links(filename,asked)
                         local S = a.S
                         if S == "GoTo" then
                             local D = a.D
-                            if D then
+                            local t = type(D)
+                            if t == "table" then
                                 local D1 = D[1]
                                 local R1 = reverse[D1]
                                 if not done then
@@ -770,15 +771,17 @@ function scripts.pdf.links(filename,asked)
                                     done = true
                                 end
                                 if tonumber(R1) then
-                                    report("intern, page % 4i",R1 or 0)
+                                    report("intern, page %i",R1 or 0)
                                 else
                                     report("intern, name %s",tostring(D1))
                                 end
+                            elseif t == "string" then
+                                report("intern, name %s",D)
                             end
                         elseif S == "GoToR" then
                             local D = a.D
                             if D then
-                                local F = A.F
+                                local F = a.F
                                 if F then
                                     local D1 = D[1]
                                     if not done then
@@ -786,9 +789,9 @@ function scripts.pdf.links(filename,asked)
                                         done = true
                                     end
                                     if tonumber(D1) then
-                                        report("extern, page % 4i, file %s",D1 + 1,F)
+                                        report("extern, page %i, file %s",D1 + 1,F)
                                     else
-                                        report("extern, page % 4i, file %s, name %s",0,F,D[1])
+                                        report("extern, page %i, file %s, name %s",0,F,D[1])
                                     end
                                 end
                             end
@@ -835,16 +838,121 @@ function scripts.pdf.links(filename,asked)
                     local D = v.D
                     if D then
                         local p = reverse[D[1]]
-                        report("tag %s, page % 4i",k,p)
+                        report("tag %s, page %i",k,p)
                         insert(list[p],k)
                     end
                 end
                 for k, v in sortedhash(list) do
                     report("")
-                    report("page %i, names % t",k,v)
+                    report("page %i, names : [ % | t ]",k,v)
                 end
             end
         end
+    end
+end
+
+function scripts.pdf.outlines(filename)
+
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+
+        local outlines     = pdffile.Catalog.Outlines
+        local destinations = pdffile.destinations
+        local pages        = pdffile.pages
+
+        local function showdestination(current,depth,title)
+            local action = current.A
+            if type(title) == "table" then
+                title = lpdf.frombytes(title[2],title[3])
+            end
+            if action then
+                local subtype = action.S
+                if subtype == "GoTo" then
+                    local destination = action.D
+                    local kind = type(destination)
+                    if kind == "string" then
+                        report("%wtitle %a, name %a",2*depth,title,destination)
+                    elseif kind == "table" then
+                        local pageref = #destination
+                        if pageref then
+                            local pagedata = pages[pageref]
+                            if pagedata then
+                                report("%wtitle %a, page %a",2*depth,title,pagedata.number)
+                            end
+                        end
+                    end
+                end
+            else
+                local destination = current.Dest
+                if destination then
+                    if type(destination) == "string" then
+                        report("%wtitle %a, name %a",2*depth,title,destination)
+                    else
+                        local pagedata = destination and destination[1]
+                        if pagedata and pagedata.Type == "Page" then
+                            report("%wtitle %a, page %a",2*depth,title,pagedata.number)
+                        end
+                    end
+                end
+            end
+            if title then
+--                 report("%wtitle %a, unknown",2*depth,title)
+            end
+        end
+
+        if outlines then
+
+            local function traverse(current,depth)
+                while current do
+                    local title = current.Title -- can be pdfdoc or unicode
+--                     local title = current("Title")  -- can be pdfdoc or unicode
+                    if title then
+                        showdestination(current,depth,title)
+                    end
+                    local first = current.First
+                    if first then
+                        local current = first
+                        while current do
+                            local title = current.Title
+                            if title then
+                                showdestination(current,depth,title)
+                            end
+                            traverse(current.First,depth+1)
+                            current = current.Next
+                        end
+                    end
+                    current = current.Next
+                end
+            end
+            report("")
+            report("outlines")
+            report("")
+            traverse(outlines,0)
+            report("")
+
+        else
+            report("no outlines in %a",filename)
+        end
+
+    end
+
+end
+
+function scripts.pdf.structure(filename)
+    local pdffile = loadpdffile(filename)
+    if pdffile then
+
+        local pages    = pdffile.pages
+        local nofpages = pdffile.nofpages
+
+        -- When I'm really bored, have a stack of new cd's or it's depressing
+        -- weather I might be willing to waste time on this.
+
+--         local tree = pdffile.Catalog.StructTreeRoot
+--         if tree then
+--             local kids = tree.K
+--         end
+
     end
 end
 
@@ -963,6 +1071,10 @@ elseif environment.argument("object") then
     scripts.pdf.object(filename,tonumber(environment.argument("object")))
 elseif environment.argument("links") then
     scripts.pdf.links(filename,tonumber(environment.argument("page")))
+elseif environment.argument("outlines") then
+    scripts.pdf.outlines(filename)
+elseif environment.argument("structure") then
+    scripts.pdf.structure(filename)
 elseif environment.argument("highlights") then
     scripts.pdf.highlights(filename,tonumber(environment.argument("page")))
 elseif environment.argument("comments") then

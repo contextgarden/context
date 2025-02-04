@@ -208,41 +208,41 @@
      \usedsymbolcolorparameterattributes{\mathaccentparameter\c!symbolcolor}%
  % nooverflow % there is never na overflow anyway but we do accept the key
    \ifcstok{\mathaccentparameter\c!align}\v!middle
-     \s!center\space
+     \s!center\relaxedspace
    \fi
    \ifcstok{\mathaccentparameter\c!stretch}\v!yes
-     \s!stretch\space
+     \s!stretch\relaxedspace
    \fi
    \ifcstok{\mathaccentparameter\c!shrink}\v!yes
-     \s!shrink\space
+     \s!shrink\relaxedspace
    \fi
    \ifcstok{\mathaccentparameter\c!snap}\v!yes
-     \s!single\space
+     \s!single\relaxedspace
    \fi
    \ifempty\p_mp\else
-     \s!usecallback\space
+     \s!usecallback\relaxedspace
    \fi
    \ifx\p_scale\v!keep
-     \s!keepbase\space
+     \s!keepbase\relaxedspace
    \fi
    \ifcstok{\mathaccentparameter\c!alignsymbol}\v!yes
-     \s!nooverflow\space
+     \s!nooverflow\relaxedspace
    \fi
    \ifcstok{\mathaccentparameter\c!offset}\v!auto
-     \s!base\space
+     \s!base\relaxedspace
    \fi
    \ifcase#kind\or
-     \s!top\space
+     \s!top\relaxedspace
      \m_fixed
      \fam\zerocount#top
 % \fam\mathaccentcode#top % class is signal
    \or
-     \s!bottom\space
+     \s!bottom\relaxedspace
      \m_fixed
      \fam\zerocount#bottom
 % \fam\mathaccentcode#bottom % class is signal
    \or
-     \s!both\space
+     \s!both\relaxedspace
      \m_fixed
      \fam\zerocount#bottom
      \fam\zerocount#top
@@ -399,8 +399,8 @@
   {\Umathaccent
      \usedcolorparameterattributes{\mathaccentparameter\c!symbolcolor}%
      \s!class  \mathcodechecked{#1}%
-     \s!center \space
-     \s!overlay\space
+     \s!center \relaxedspace
+     \s!overlay\relaxedspace
      \zerocount \zerocount \forwardslashasciicode
    {\usemathaccentcolorparameter\c!textcolor
     #2}} % exact when =

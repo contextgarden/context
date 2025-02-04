@@ -400,8 +400,10 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_math_family_index",          max_math_family_index);
     lua_set_integer_by_key(L, "max_math_class_code",            max_math_class_code);
     lua_set_integer_by_key(L, "max_function_reference",         max_function_reference);
-    lua_set_integer_by_key(L, "max_category_code",              max_category_code);
                                                                 
+    lua_set_integer_by_key(L, "min_mvl_index",                  min_mvl_index);
+    lua_set_integer_by_key(L, "max_mvl_index",                  max_mvl_index);
+
     lua_set_integer_by_key(L, "max_newline_character",          max_newline_character);
     lua_set_integer_by_key(L, "max_endline_character",          max_endline_character);
                                                                 

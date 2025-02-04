@@ -54,7 +54,7 @@
    \wordboundary
    \setbox\scratchboxone\hbox{T\kern\zeropoint e}%
    \setbox\scratchboxtwo\hbox{Te}%
-   \discretionary{-}{}{\kern\dimexpr\wd\scratchboxtwo-\wd\scratchboxone\relax}%
+   \discretionary{-}{}{\kern{\wd\scratchboxtwo-\wd\scratchboxone}}%
    \TeX t}
 
 \frozen\instance\protected\def\ConTeXt
@@ -297,7 +297,7 @@
          % maybe we need to compensate for the angle (sl/it/bs/bi)
        \fi
        \ifdim\wd0=\wd2\else
-         \kern\dimexpr\wd0-\wd2\relax
+         \kern{\wd0-\wd2}%
        \fi
      \fi
      \TeX
@@ -330,7 +330,10 @@
 \instance\protected\def\MPXL{MpXL} % MarkFourty : LuaMetaFun
 \instance\protected\def\MPLX{MpLX} % MarkSixty  : LuaMetaFun
 
-\instance\protected\def\LMTX{LMTX} % for LuaMetaTeX
+\instance\protected\def\LMTX{LMTX} % for LuaMetaTeX + Mk[X.|.X] i.e. the distribition / ecosystem
+
+\instance\protected\def\MKMI{MkMI} % Mark One O O One   : reserved for unvailable machine intelligence
+\instance\protected\def\MKML{MkML} % Mark One O O Fifty : reserved for unvailable machine learning
 
 \appendtoks
     \enforced\instance\def\ConTeXt   {ConTeXt}%

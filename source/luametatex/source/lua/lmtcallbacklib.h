@@ -7,7 +7,7 @@
 
 # include "lapi.h"
 
-typedef enum callback_callback_types {
+typedef enum callback_types {
     find_log_file_callback = 1,
     find_format_file_callback,
     open_data_file_callback,
@@ -68,18 +68,28 @@ typedef enum callback_callback_types {
     linebreak_quality_callback,
     paragraph_pass_callback,
     handle_uleader_callback,
+    handle_uinsert_callback,
     italic_correction_callback,
     show_loners_callback,
     tail_append_callback,
     balance_boundary_callback,
     balance_insert_callback,
     total_callbacks,
-} callback_callback_types;
+} callback_types;
+
+/* Todo: provide support for this: */
+
+typedef enum callback_states {
+    callback_set      = 0x01, /* can be used */
+    callback_disabled = 0x02, /* temporarily disabled */
+    callback_frozen   = 0x04, /* can never be set or changed again */
+} callback_states;
 
 typedef struct callback_state_info {
-    int metatable_id;
-    int padding;
-    int values[total_callbacks];
+    int      metatable_id;
+    int      padding;
+    int      values[total_callbacks];
+ /* unsigned states[total_callbacks]; */ /* can be a singleword */
 } callback_state_info;
 
 extern callback_state_info lmt_callback_state;
@@ -97,12 +107,12 @@ typedef enum callback_keys {
     callback_result_i_key  = 'r', /*tex a number (return value) but nil is also okay */
 } callback_keys;
 
-static inline int  lmt_callback_defined         (int a)                               { return lmt_callback_state.values[a]; }
-static inline int  lmt_callback_call            (lua_State *L, int i, int o, int top) { return lua_pcallk(L, i, o, top + 2, 0, NULL); }
+static inline int  lmt_callback_defined         (int i);
 
+static inline int  lmt_callback_call            (lua_State *L, int i, int o, int top);
 extern int         lmt_callback_okay            (lua_State *L, int i, int *top);
 extern void        lmt_callback_error           (lua_State *L, int top, int i);
-static inline void lmt_callback_wrapup          (lua_State *L, int top)  { lua_settop(L, top); }
+static inline void lmt_callback_wrapup          (lua_State *L, int top);
  
 extern int         lmt_run_callback             (lua_State *L, int i, const char *values, ...);
 extern int         lmt_run_and_save_callback    (lua_State *L, int i, const char *values, ...);
@@ -114,6 +124,33 @@ extern void        lmt_destroy_saved_callback   (lua_State *L, int i);
 extern void        lmt_run_memory_callback      (const char *what, int success);
 
 extern void        lmt_push_callback_usage      (lua_State *L);
+
+/* The implementation: */
+
+static inline int  lmt_callback_defined(
+    int i
+) { 
+    return lmt_callback_state.values[i];
+ // return (lmt_callback_state.states[i] & callback_disabled) ? 0 : lmt_callback_state.values[i]; 
+}
+
+static inline int  lmt_callback_call(
+    lua_State *L, 
+    int        i, 
+    int        o, 
+    int        top
+) { 
+    return lua_pcallk(L, i, o, top + 2, 0, NULL); 
+}
+
+static inline void lmt_callback_wrapup(
+    lua_State *L, 
+    int        top
+)  
+{ 
+    lua_settop(L, top); 
+}
+
 
 # endif
 

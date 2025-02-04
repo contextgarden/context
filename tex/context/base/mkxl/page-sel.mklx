@@ -74,8 +74,8 @@
       \c!category=,
       \c!alternative=\v!a,
       #settings]%
-   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
-   \scratchwidth\directwithpagesparameter\c!width\relax
+   \global\c_page_selectors_n{\directwithpagesparameter\c!n}%
+   \scratchwidth{\directwithpagesparameter\c!width}%
    \ifinset{0}{#emptylist}%
      \emptyhbox
      \page
@@ -114,8 +114,8 @@
       \c!category=,
       \c!alternative=\v!a,
       #settings]%
-   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
-   \scratchwidth\directwithpagesparameter\c!width\relax
+   \global\c_page_selectors_n{\directwithpagesparameter\c!n}%
+   \scratchwidth{\directwithpagesparameter\c!width}%
    \edef\p_selection{#selection}%
    \ifempty\p_selection
      \let\p_selection\v!all
@@ -172,7 +172,7 @@
      \scratchcounter#page\relax
      \ifnum\scratchcounter<\zerocount
         \getfiguredimensions[#filename]%
-        \scratchcounter\numexpr\noffigurepages-\scratchcounter+\plusone\relax
+        \scratchcounter{\noffigurepages-\scratchcounter+\plusone}%
      \fi
      \normalexpanded{\externalfigure[#filename][\c!page=\the\scratchcounter]}%
    \stopTEXpage}
@@ -189,8 +189,8 @@
       \c!n=\noffigurepages,
       \c!category=,
       #settings]%
-   \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
-   \scratchoffset\directwithpagesparameter\c!offset\relax
+   \global\c_page_selectors_n{\directwithpagesparameter\c!n}%
+   \scratchoffset{\directwithpagesparameter\c!offset}%
    \dorecurse\c_page_selectors_n
      {\vbox to \textheight
         {\hsize\textwidth
@@ -255,11 +255,11 @@
       #settings]%
    \global\c_page_selectors_n\directwithpagesparameter\c!n\relax
    \directwithpagesparameter\c!before
-   \scratchnx\directwithpagesparameter\c!nx
-   \scratchny\directwithpagesparameter\c!ny
-   \scratchdistance\directwithpagesparameter\c!distance\relax
-   \scratchwidth\dimexpr(\textwidth-\scratchnx\scratchdistance+\scratchdistance)/\scratchnx\relax
-   \scratchheight\dimexpr(\textheight-\scratchny\scratchdistance+\scratchdistance)/\scratchny\relax
+   \scratchnx{\directwithpagesparameter\c!nx}%
+   \scratchny{\directwithpagesparameter\c!ny}%
+   \scratchdistance{\directwithpagesparameter\c!distance}%
+   \scratchwidth{(\textwidth-\scratchnx\scratchdistance+\scratchdistance)/\scratchnx}%
+   \scratchheight{(\textheight-\scratchny\scratchdistance+\scratchdistance)/\scratchny}%
    \expandnamespaceparameter\??combinepagesalternative\directwithpagesparameter\c!alternative\v!b
    \directwithpagesparameter\c!after
    \egroup}
@@ -426,10 +426,12 @@
         \else
           \setupcurrentwithpages[#evensettings]%
         \fi
-        \hskip\directwithpagesparameter\c!offset\relax
+        \hskip{\directwithpagesparameter\c!offset}%
         \clip
-          [\c!hoffset=\directwithpagesparameter\c!hoffset,\c!voffset=\directwithpagesparameter\c!voffset,
-           \c!height=\directwithpagesparameter\c!height,\c!width=\directwithpagesparameter\c!width]
+          [\c!hoffset=\directwithpagesparameter\c!hoffset,%
+           \c!voffset=\directwithpagesparameter\c!voffset,
+           \c!height=\directwithpagesparameter\c!height,%
+           \c!width=\directwithpagesparameter\c!width]
           {\externalfigure[#filename][\c!page=\slicedpagenumber]}%
         \page
       \fi}

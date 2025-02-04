@@ -1,0 +1,125 @@
+% language=us
+
+\useMPlibrary[segments] % before we load the fonts
+
+\environment context-2024-style
+
+\definefontfeature
+  [default]
+  [default]
+  [metapost={category=segments,weight=1.75,offset=.2}]
+
+\startdocument
+  [title={segments},
+   banner={a bit of sidetracking},
+   location={context\enspace {\bf 2024}\enspace meeting}]
+
+% \definehighlight
+%   [Digits]
+%   [style=\addfeature{segmentdigits}]
+
+\starttitle[title=What is needed]
+
+\startitemize
+\startitem With digits we normally mean \Digits{0, 1, 2, 3, 4, 5, 6, 7, 8, 9 and 0}. \stopitem
+\startitem When computers are discussed \Digits{A, B, C, D, E and F} are also kind of digits. \stopitem
+\startitem When numbers are to be rendered we need a \Digits{.} and a \Digits{-}. \stopitem
+\startitem The \Digits{E} can be used for exponents. \stopitem
+\startitem On dedicated devices rendering with leds can be optimized. \stopitem
+\startitem Ah, so for clocks we need a \Digits{:} then. \stopitem
+\stopitemize
+
+\vfilll
+
+{\em Note: This was an optional talk. On the \quote {math day} The other talks
+(Ton, Frits, Willi, Bruce) were way more fun anyway!}
+
+\stoptitle
+
+\starttitle[title=How does it look]
+
+Here we use a bolder version, so we get for all (regular) elements in a segmented glyph   :
+
+\startlinecorrection[2*big]
+    \dontleavehmode
+    \scale[height=.5th]{\showglyphs\char\privatecharactercode{segment elements}}%
+    \quad
+    \quad
+    \scale[height=.5th]{\showglyphs\char\privatecharactercode{segment diagonals}}%
+\stoplinecorrection
+
+The colon is normally a dedicated segmented display and then there is no period,
+which otherwise is integrated.
+
+\stoptitle
+
+\starttitle[title=What are the challenges]
+
+\startitemize
+\startitem In \UNICODE\ we actually have the digits so let's use them. \stopitem
+\startitem But we need private slots for the hexadecimal digits and other symbols. \stopitem
+\startitem The period is within the bounding box of the segment so we need kerning. \stopitem
+\startitem Contrary to for instance Kaktovik and Riven numerals we don't need a converter. \stopitem
+\startitem Instead we just use a dynamic feature. \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=How is is done]
+
+\startitemize
+\startitem We define the private slots by name so we can access then from anywhere. \stopitem
+\startitem We define a \METAFUN\ macro that renders the glyphs. \stopitem
+\startitem We register the relevant replacement glyphs in \METAFUN. \stopitem
+\startitem We register some font features in \LUA: substitution, kerning and a ligature. \stopitem
+\startitem At the \TEX\ end the replacement glyphs can be hooked into the current font. \stopitem
+\startitem We use a highlight to (temporarily) enable the feature(s). \stopitem
+\stopitemize
+
+\stoptitle
+
+\starttitle[title=How is is used]
+
+\starttyping
+\useMPlibrary[segments]
+
+\definefontfeature
+  [default]
+  [default]
+  [metapost=segments]
+% [metapost={category=segments,weight=2.0,offset=.2}]
+\stoptyping
+
+Because \fontclass\ is somewhat bold here we used the bold definition. You can
+also slant the shapes. The module defines a highlight:
+
+\starttyping
+\definehighlight
+  [Digits]
+  [style=\addfeature{segmentdigits}]
+\stoptyping
+
+\stoptitle
+
+\starttitle[title=How does the code look]
+
+\enabledirectives[visualizers.fraction=1]
+
+Here is the basic repertoire (the space is a regular one):
+
+\starttabulate
+\NC digits  \NC \showglyphs \Digits{1 2 3 4 5 6 7 8 9 0} \NC \NR
+\NC letters \NC \showglyphs \Digits{A B C D E F}         \NC \NR
+\NC others  \NC \showglyphs \Digits{- . :}               \NC \NR
+\NC extra   \NC \showglyphs \Digits{CONTEXT}             \NC \NR
+\stoptabulate
+
+Let's have a look at:
+
+\starttyping
+meta-imp-segments.mkxl
+\stoptyping
+
+\stoptitle
+
+\stopdocument

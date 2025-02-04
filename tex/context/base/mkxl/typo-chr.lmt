@@ -39,7 +39,7 @@ local v_reset           <const> = variables.reset
 
 local stack             = { }
 
-local a_marked          = attributes.numbers['marked']
+local a_marked          <const> = attributes.numbers['marked']
 local lastmarked        = 0
 local marked            = {
     [v_all]   = 1,

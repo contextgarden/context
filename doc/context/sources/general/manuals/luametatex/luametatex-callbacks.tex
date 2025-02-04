@@ -1714,7 +1714,7 @@ function (
     <t:integer> exheight,
     <t:integer> emwidth
 )
-    return <t:node> boxed extensible
+    return <t:node> -- boxed extensible
 end
 \stoptyping
 
@@ -1734,9 +1734,60 @@ function (
     <t:node>    attributes,
     <t:node>    extensible
 )
-    return <t:node> boxed
+    return <t:node> -- boxed
 end
 \stoptyping
+
+\stopsubsection
+
+\startsubsection[title=balance]
+
+This callback is comparable with the \type {line_break} callback. We use it for
+tracing in \CONTEXT\ during development (as well as for documentation).
+
+\stopsubsection
+
+\startsubsection[title=balance_insert]
+
+This is callback kicks in every time an insert is seen when balancing.
+
+\starttyping[option=LUA]
+function (
+    <t:node>    current,
+    <t:integer> callback,
+    <t:integer> insert_index,
+    <t:integer> insert_identifier
+)
+    -- no return value
+end
+\stoptyping
+
+\startsubsection[title=balance_boundary]
+
+When balancing, this is callback kicks in every time a node resulting from \prm
+{balanceboundary} is seen.
+
+\starttyping[option=LUA]
+function (
+    <t:integer> boundary_data,
+    <t:integer> boundary_reserved,
+    <t:integer> shape_identifier,
+    <t:integer> shape_slot
+)
+    return
+        <t:integer>, -- action
+        <t:integer>, -- penalty
+        <t:integer>  -- extra
+end
+\stoptyping
+
+What happens after the callback returns control to \TEX\ depends on the first
+return value:
+
+\showenginevalues{getbalancecallbackvalues}
+
+This is an experimental feature. In due time there will be a bit more explanation
+here.
 
 \stopsubsection
 

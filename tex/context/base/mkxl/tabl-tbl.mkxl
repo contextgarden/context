@@ -565,14 +565,14 @@
    }%
    \toksapp\t_tabl_tabulate_dummy{\NC}%
    \s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\relax
-   \ifnum\c_tabl_tabulate_columns<\numexpr\c_tabl_tabulate_nofcolumns-\plusone\relax
+   \ifnum\c_tabl_tabulate_columns<{\c_tabl_tabulate_nofcolumns-\plusone}%
      \s_tabl_tabulate_post\s_tabl_tabulate_pre
    \else
      \s_tabl_tabulate_post\zeroskip
    \fi
   %\let\gettabulateexit\dogettabulateexit % still needed ?
    \d_tabl_tabulate_width\zeropoint
-   %setfalse\c_tabl_pre_is_set
+   %c_tabl_pre_is_set\conditionalfalse
    \c_tabl_post_is_set\conditionalfalse}
 
 \permanent\protected\def\installtabulatepreambleoption#1#2%
@@ -654,7 +654,7 @@
    \tabl_tabulate_set_preamble}
 
 \def\tabl_tabulate_set_preskip#1%
-  {%settrue\c_tabl_pre_is_set
+  {%\c_tabl_pre_is_set\conditionaltrue
    \doifelsenumber{#1}%
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\tabl_tabulate_set_preamble  }%
      {\s_tabl_tabulate_pre.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
@@ -666,7 +666,7 @@
      {\s_tabl_tabulate_post.5\d_tabl_tabulate_unit\tabl_tabulate_set_preamble#1}}
 
 \def\tabl_tabulate_set_preposskip#1%
-  {%settrue\c_tabl_pre_is_set
+  {%c_tabl_pre_is_set \conditionaltrue
    \c_tabl_post_is_set\conditionaltrue
    \doifelsenumber{#1}%
      {\s_tabl_tabulate_pre#1\d_tabl_tabulate_unit\s_tabl_tabulate_post\s_tabl_tabulate_pre\tabl_tabulate_set_preamble  }%
@@ -895,7 +895,7 @@
    \c_tabl_tabulate_modus\zerocount
    \c_tabl_tabulate_pwidth_set\conditionalfalse
    \c_tabl_tabulate_reshape\conditionalfalse
-   %setfalse\c_tabl_pre_is_set
+   %c_tabl_pre_is_set\conditionalfalse
    \c_tabl_post_is_set\conditionalfalse
    \t_tabl_tabulate_before\emptytoks
    \t_tabl_tabulate_after\emptytoks
@@ -950,8 +950,14 @@
 \aliased\let\settabulateentry    \tabl_tabulate_set_entry      % used at the lua end
 \aliased\let\settabulatelastentry\tabl_tabulate_set_last_entry % used at the lua end
 
+\newconditional\c_tabl_tabulate_balanced_split
+
 \def\tabl_tabulate_normalize_splitline
-  {\ifcase\c_tabl_tabulate_splitlinemode
+  {\ifconditional\c_tabl_tabulate_balanced_split
+     \boxyoffset\b_tabl_tabulate-\strutdp
+     \ht\b_tabl_tabulate\strutht
+     \dp\b_tabl_tabulate\strutdp
+   \orelse\ifcase\c_tabl_tabulate_splitlinemode
      % nothing
    \or
      \ht\b_tabl_tabulate\strutht
@@ -967,9 +973,14 @@
 
 \def\tabl_tabulate_whitespace
   {\ifdim\d_tabl_tabulate_splitoff_betweenskip>\zeropoint
-     \vskip\d_tabl_tabulate_splitoff_betweenskip
-     \global\d_tabl_tabulate_splitoff_betweenskip\zeropoint
-   \fi}
+     \ifconditional\c_tabl_tabulate_balanced_split
+       \enablealignskips
+       \noalign \s!attr \alignskipattribute\plusone{}% becomes a vskip via callback
+     \else
+       \vskip\d_tabl_tabulate_splitoff_betweenskip
+     \fi
+   \fi
+   \global\d_tabl_tabulate_splitoff_betweenskip\zeropoint}
 
 \def\tabl_tabulate_check_whitespace
   {\setbox\scratchbox\vpack
@@ -989,11 +1000,22 @@
 
 \let\tabl_tabulate_check_linenumbers\relax
 
-\def\tabl_tabulate_splitoff_box % maybe use the modern splitter
+\def\tabl_tabulate_splitoff_box
   {\dontcomplain
-   \setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column upto \lineheight % % % global ? % % %
-   \ifconditional\c_tabl_tabulate_splitoff_whitespace
-     \tabl_tabulate_check_whitespace
+   \ifconditional\c_tabl_tabulate_balanced_split
+     \setbox\b_tabl_tabulate\vbalancedbox\b_tabl_tabulate_current\c_tabl_tabulate_column
+     \ifdim\d_tabl_tabulate_splitoff_betweenskip<\zeropoint
+        % whitespace next to content
+     \orelse\ifgluelineinbox\b_tabl_tabulate
+        \global\d_tabl_tabulate_splitoff_betweenskip \lineheight % always the same
+     \else
+        \global\d_tabl_tabulate_splitoff_betweenskip-\lineheight % blocks
+     \fi
+   \else
+     \setbox\b_tabl_tabulate\vsplit\b_tabl_tabulate_current\c_tabl_tabulate_column upto \lineheight % % % global ? % % %
+     \ifconditional\c_tabl_tabulate_splitoff_whitespace
+       \tabl_tabulate_check_whitespace
+     \fi
    \fi
    \tabl_tabulate_color_repeat % needs to end up in a cell
    \setbox\b_tabl_tabulate\hpack to \wd\b_tabl_tabulate
@@ -1011,22 +1033,6 @@
 
 \def\tabl_tabulate_hook_yes{\begincsname\??tabulatehook\the\c_tabl_tabulate_column\endcsname}
 
-% \def\tabl_tabulate_pheight_reset
-%   {\global\c_tabl_tabulate_plines_min\plusone
-%    \ifdim\d_tabl_tabulate_height_p_max>\zeropoint
-%      \getnoflines\d_tabl_tabulate_height_p_max
-%      \global\c_tabl_tabulate_plines_max\noflines
-%    \else
-%      \global\c_tabl_tabulate_plines_max\zerocount
-%    \fi
-%    \global\d_tabl_tabulate_height_p_max\zeropoint}
-
-% \def\tabl_tabulate_pheight_set
-%   {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
-%    \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
-%      \global\d_tabl_tabulate_height_p_max\scratchdimen
-%    \fi}
-
 \newinteger\c_tabl_tabulate_height_p_max_lines
 
 \def\tabl_tabulate_pheight_reset
@@ -1042,10 +1048,49 @@
    \global\d_tabl_tabulate_height_p_max\zeropoint
    \global\c_tabl_tabulate_height_p_max_lines\zerocount}
 
+% \def\tabl_tabulate_pheight_set
+%   {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
+%    \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
+%      \global\d_tabl_tabulate_height_p_max\scratchdimen
+%    \fi
+%    \scratchcounter\noflinesinbox\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
+%    \ifnum\scratchcounter>\c_tabl_tabulate_height_p_max_lines
+%      \global\c_tabl_tabulate_height_p_max_lines\scratchcounter
+%    \fi}
+
+%D \starttyping
+%D \starttabulate[|p|p|]
+%D \NC \showboxes \samplefile{ward}\blank\samplefile{knuth}\blank\samplefile{tufte}
+%D \NC \showboxes \samplefile{ward}\blank\samplefile{tufte}\blank\samplefile{knuth}
+%D \NC \NR
+%D \NC \showboxes \dorecurse{6}{\samplefile{ward}\par}
+%D \NC \showboxes \dorecurse{4}{\samplefile{tufte}\par}
+%D \NC \NR
+%D \stoptabulate
+%D \stoptyping
+
+\newdimension\d_tabl_tabulate_spacing_wd
+
+\installtextracker
+  {tabulate.spacing}
+  {\d_tabl_tabulate_spacing_wd\emwidth}
+  {\d_tabl_tabulate_spacing_wd\zeropoint}
+
 \def\tabl_tabulate_pheight_set
   {\scratchdimen\ht\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
    \ifdim\scratchdimen>\d_tabl_tabulate_height_p_max
      \global\d_tabl_tabulate_height_p_max\scratchdimen
+   \fi
+   \ifconditional\c_tabl_tabulate_balanced_split
+     \gluetolinesinbox\b_tabl_tabulate_current\c_tabl_tabulate_column
+        \d_tabl_tabulate_spacing_wd \strutht \strutdp
+     \balancevsize     \lineheight
+     \balancetolerance \plustenthousand
+     \balancetopskip   \strutht
+     \balancebottomskip\strutdp
+     \global\setbox\b_tabl_tabulate_current\c_tabl_tabulate_column
+       \vbalance\b_tabl_tabulate_current\c_tabl_tabulate_column
+     \relax
    \fi
    \scratchcounter\noflinesinbox\b_tabl_tabulate_current\c_tabl_tabulate_column\relax
    \ifnum\scratchcounter>\c_tabl_tabulate_height_p_max_lines
@@ -1089,7 +1134,9 @@
 \def\tabl_tabulate_pbreak_check
   {\noalign\bgroup
      \tabl_tabulate_pbreak_inject
-     \ifconditional\c_tabl_tabulate_splitoff_whitespace
+     \ifconditional\c_tabl_tabulate_balanced_split
+       \tabl_tabulate_whitespace
+     \orelse\ifconditional\c_tabl_tabulate_splitoff_whitespace
        \tabl_tabulate_whitespace
      \fi
    \egroup}
@@ -1215,10 +1262,10 @@
    \fi}
 
 \appendtoks
-     \enforced\permanent\protected\edefcsname\e!start       \currenttabulation\endcsname{\tabl_start_defined[\currenttabulation]}%
-     \enforced\aliased            \letcsname \e!stop        \currenttabulation\endcsname\relax
-     \mutable                     \letcsname \??tabulatehead\currenttabulation\endcsname\empty
-     \mutable                     \letcsname \??tabulatefoot\currenttabulation\endcsname\empty
+    \enforced\permanent\protected\edefcsname\e!start       \currenttabulation\endcsname{\tabl_start_defined[\currenttabulation]}%
+    \enforced\aliased            \letcsname \e!stop        \currenttabulation\endcsname\relax
+    \mutable                     \letcsname \??tabulatehead\currenttabulation\endcsname\empty
+    \mutable                     \letcsname \??tabulatefoot\currenttabulation\endcsname\empty
 \to \everydefinetabulation
 
 \aliased  \let\tabulateparameter\tabulationparameter % will stay for a while
@@ -1271,10 +1318,10 @@
 
 \def\tabl_tabulate_remove_funny_line
   {\ifhmode
-%      \ifinalignment % needs testing
+    %\ifinalignment % needs testing
        \strut\crcr
        \noalign{\kern-\lineheight}%
-%      \fi
+    %\fi
    \fi}
 
 % todo: make footer synonym to tail
@@ -1548,8 +1595,8 @@
    %
    \let\m_tabl_tabulate_blank_default\p_blank
    %
-   \d_tabl_tabulate_unit\tabulationparameter\c!unit
-   \d_tabl_tabulate_margin\tabulationparameter\c!margin
+   \d_tabl_tabulate_unit{\tabulationparameter\c!unit}%
+   \d_tabl_tabulate_margin{\tabulationparameter\c!margin}%
    \let\m_tabl_tabulate_vrule_color_default\p_rulecolor
    \let\m_tabl_tabulate_hrule_color_default\p_rulecolor
    \d_tabl_tabulate_vrulethickness_default\p_rulethickness
@@ -1571,7 +1618,7 @@
    \expand\everytabulate
    \usesetupsparameter\tabulationparameter
    \tabulationparameter\c!inner % use setups now
-   \d_tabl_tabulate_indent\dimexpr\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi\relax
+   \d_tabl_tabulate_indent{\leftskip+\hangindent\ifx\p_indenting\v!yes+\parindent\fi}%
    \global\c_tabl_tabulate_column\zerocount
    \begingroup
    \catcode\hashasciicode\othercatcode
@@ -1761,14 +1808,6 @@
   {\ifcase\c_tabl_tabulate_max_vrulecolumn\else
      \tabl_tabulate_vrule_reset_indeed
    \fi}
-
-% \def\tabl_tabulate_vrule_reset_indeed
-%   {\gletcsname\??tabulatevrule0\endcsname\undefined
-%    \dofastloopcs\c_tabl_tabulate_max_vrulecolumn\tabl_tabulate_vrule_reset_step
-%    \global\c_tabl_tabulate_max_vrulecolumn\zerocount}
-%
-% \def\tabl_tabulate_vrule_reset_step % undefined or relax
-%   {\gletcsname\??tabulatevrule\the\fastloopindex\endcsname\undefined}
 
 \def\tabl_tabulate_vrule_reset_indeed
   {\localcontrolledloop\zerocount\c_tabl_tabulate_max_vrulecolumn\plusone % start at 0
@@ -1970,7 +2009,7 @@
 
 \def\tabl_tabulate_color_repeat_second % for split off lines
   {\begingroup
-   \scratchcounter\numexpr\c_tabl_tabulate_column-\plusone\relax % ugly !
+   \scratchcounter{\c_tabl_tabulate_column-\plusone}% ugly !
    \ifcsname\??tabulatecolor\the\scratchcounter\endcsname
    % \hbox \thealignbackgroundcolorattr{\csname\??tabulatecolor\the\scratchcounter\endcsname}{}% pack ?
      \hpack \expandafter\thealignbackgroundcolorattr\expandafter{\lastnamedcs}{}% pack ?
@@ -2098,7 +2137,7 @@
 \to \t_tabl_tabulate_initializers_first
 
 \def\tabl_tabulate_baselinecorrection % keep an eye on this one
-  {\def\dobaselinecorrection{\vskip\dimexpr-\prevdepth+\strutdp+\strutdp\relax}% todo: mkiv
+  {\def\dobaselinecorrection{\vskip{-\prevdepth+\strutdp+\strutdp}}% todo: mkiv
    \baselinecorrection}
 
 % some hack to prevent an allowbreak ... actually we could set up a system then
@@ -2469,13 +2508,19 @@
    \fi
    \global\c_tabl_tabulate_firstflushed\conditionaltrue}
 
+% \protected\def\tabl_tabulate_flush_second_step
+%   {\ifvoid\b_tabl_tabulate_current\currentloopiterator
+%    \else
+%      \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
+%      \ifvoid\b_tabl_tabulate_current\currentloopiterator \else
+%        \global\c_tabl_tabulate_split_done\conditionaltrue % new 27/12/2022
+%      \fi
+%    \fi}
+
 \protected\def\tabl_tabulate_flush_second_step
-  {\ifvoid\b_tabl_tabulate_current\currentloopiterator
-   \else
+  {\iflist\b_tabl_tabulate_current\currentloopiterator\relax % \ifvoid fails for balanced
      \gdef\tabl_tabulate_flush_collected_indeed{\expand\t_tabl_tabulate_dummy}%
-     \ifvoid\b_tabl_tabulate_current\currentloopiterator \else
-       \global\c_tabl_tabulate_split_done\conditionaltrue % new 27/12/2022
-     \fi
+     \global\c_tabl_tabulate_split_done\conditionaltrue % new 27/12/2022
    \fi}
 
 \def\tabl_tabulate_flush_second
@@ -2714,6 +2759,8 @@
 
 \permanent\protected\lettonothing\tabl_tabulate_anchor
 
+\definesystemattribute[alignskip][public]
+
 \def\tabl_tabulate_process
   {\c_tabl_tabulate_pass\plusone
    \tabl_tabulate_check_full_content
@@ -2722,7 +2769,7 @@
    \s_tabl_tabulate_last\s_tabl_tabulate_first
    \s_tabl_tabulate_pre\zeroskip
    \s_tabl_tabulate_post\zeroskip
-   %setfalse\c_tabl_pre_is_set
+   %c_tabl_pre_is_set\conditionalfalse
    \c_tabl_post_is_set\conditionalfalse
    \global\c_tabl_tabulate_columns\zerocount
    \global\c_tabl_tabulate_nofauto\zerocount
@@ -2785,7 +2832,6 @@
    \c_tabl_tabulate_has_rule_spec_last \zerocount
    \clf_presettabulate{\detokenizedtabulationparameter\c!format}%
    %
- % \edef\totaltabulatecolumns{\the\numexpr3*\c_tabl_tabulate_columns+\plusfour}%
    \d_tabl_tabulate_width\zeropoint
    \tabl_tabulate_initialize_boxes\c_tabl_tabulate_columns
    \toksapp\t_tabl_tabulate_preamble{%
@@ -2826,7 +2872,7 @@
       \fi
    \ifnum\c_tabl_tabulate_nofauto>\zerocount
      % so, even if the natural size is larger, in the final run, we force the calculated width
-     \d_tabl_tabulate_width\dimexpr\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w\relax
+     \d_tabl_tabulate_width{\hsize-\wd\scratchbox-\d_tabl_tabulate_width_p-\d_tabl_tabulate_width_w}%
      \ifnum\c_tabl_tabulate_nofauto>\zerocount
        \divideby\d_tabl_tabulate_width \c_tabl_tabulate_nofauto\relax
      \fi
@@ -2838,7 +2884,7 @@
      \glet\tabl_tabulate_flush_collected\tabl_tabulate_flush_second
    \fi
    \c_tabl_tabulate_totalnoflines\c_tabl_tabulate_noflines
-   \c_tabl_tabulate_minusnoflines\numexpr\c_tabl_tabulate_noflines+\minusone\relax
+   \c_tabl_tabulate_minusnoflines{\c_tabl_tabulate_noflines+\minusone}%
    \global\c_tabl_tabulate_noflines\zerocount
    %
    \c_tabl_tabulate_pass\plustwo % final pass
@@ -2866,6 +2912,7 @@
    \inhibitmargindata\conditionalfalse % new per 2012.06.13 ... really needed
    \toksapp\everycr{\noalign{\the\t_tabl_tabulate_every_real_row\tabl_tabulate_tag_stop_row\tabl_tabulate_tag_start_row\empty}}%
    \halign
+     \s!callbacks \align_callback_alignskip % always
      \ifconditional\c_tabl_sparse_skips \s!noskips\fi
      \ifconditional\c_tabl_auto_align_mode_new \alignmentcharactertrigger\fi
      \expandafter{\the\t_tabl_tabulate_preamble\crcr\tabl_tabulate_insert_content\crcr}%
@@ -2964,7 +3011,7 @@
 \permanent\tolerant\noaligned\protected\def\tabl_tabulate_TB_yes[#1]%
   {\noalign\bgroup
      \unless\ifempty{#1}%
-       \blank[#1]
+       \blank[#1]%
      \orelse\ifempty\m_tabl_tabulate_blank_default
        \blank
      \else
@@ -3299,7 +3346,6 @@
 \protected\def\tabl_synchronize_row_background_dummy
   {\iftrialtypesetting\else
      \begingroup
-    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\zerocount\zeropoint
      \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\zerocount\zeropoint
      \endgroup
    \fi}
@@ -3310,7 +3356,6 @@
      \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
      \dousecolorparameter{#1}%
      \setbox\scratchbox\hpack{}%
-    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
      \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
      \endgroup
    \fi}
@@ -3321,7 +3366,6 @@
      \clf_enablebackgroundalign % can be moved into \clf_setbackgroundrowdata
      \node_linefiller_set{#1}%
      \setbox\scratchbox\hpack{}%
-    %\clf_setbackgroundrowdata\numexpr\c_tabl_tabulate_nofrealrows+\minusone\relax\scratchbox\d_tabl_tabulate_indent
      \clf_setbackgroundrowdata\c_tabl_tabulate_nofrealrows\scratchbox\d_tabl_tabulate_indent
      \endgroup
    \fi}

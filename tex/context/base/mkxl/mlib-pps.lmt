@@ -1502,6 +1502,8 @@ local function tr_process(object,prescript,before,after)
     if cs and #cs > 0 then
         local c_b, c_a
         local sp_type = prescript.sp_type
+-- inspect(cs)
+-- inspect(prescript)
         if not sp_type then
             c_b, c_a = colorconverter(cs)
         else
@@ -1538,7 +1540,7 @@ local function tr_process(object,prescript,before,after)
                 definemultitonecolor(sp_name,sp_specs,"","")
                 sp_type = "named"
             elseif sp_type == "named" then
-                cs = { 1 } -- factor 1
+--                cs = { 1 } -- factor 1
             end
             if sp_type == "named" then
                 -- we might move this to another namespace .. also, named can be a spotcolor
@@ -1602,8 +1604,9 @@ end
 local function la_process(object,prescript,before,after)
     local la_name = prescript.la_name
     if la_name then
-        before[#before+1] = backends.codeinjections.startlayer(la_name)
-        insert(after,1,backends.codeinjections.stoplayer())
+        local codeinjections = backends.codeinjections
+        before[#before+1] = codeinjections.startlayer(la_name)
+        insert( after, 1,   codeinjections.stoplayer())
     end
 end
 
@@ -1759,14 +1762,44 @@ local ot_reset, ot_process do
 
 end
 
+-- a bit of a joke
+
+local an_process  do
+
+    local alternative = "actual" -- [ actual | alternative | none ]
+
+    directives.register("metapost.annotations", function(v)
+        alternative = v
+    end)
+
+    an_process = function(object,prescript,before,after)
+        local text = prescript.an_text
+        if text then
+            local codeinjections = backends.codeinjections
+            if alternative == true or alternative == "actual" then
+                before[#before+1] = codeinjections.startactualtext(text)
+                after [#after +1] = codeinjections.stopactualtext()
+            elseif alternative == "alternative" then
+                before[#before+1] = codeinjections.startalternativetext(text)
+                after [#after +1] = codeinjections.stopalternativetext()
+            end
+        end
+    end
+
+end
+
 -- mf_object=<string>
 
-local p1      = P("mf_object=")
-local p2      = lpeg.patterns.eol * p1
-local pattern = (1-p2)^0 * p2 + p1
+do
 
-function metapost.isobject(str)
-    return pattern and str ~= "" and lpegmatch(p,str) and true or false
+    local p1      = P("mf_object=")
+    local p2      = lpeg.patterns.eol * p1
+    local pattern = (1-p2)^0 * p2 + p1
+
+    function metapost.isobject(str)
+        return pattern and str ~= "" and lpegmatch(p,str) and true or false
+    end
+
 end
 
 local function installplugin(specification)
@@ -1783,19 +1816,20 @@ end
 
 metapost.installplugin = installplugin
 
--- definitions
+-- definitions (order matters but maybe we can just use a hash which is faster)
 
-installplugin { name = "outline",       reset = ot_reset, process = ot_process }
-installplugin { name = "color",         reset = cl_reset, process = cl_process } -- there is no cl_process
-installplugin { name = "text",          reset = tx_reset, process = tx_process }
-installplugin { name = "group",         reset = gr_reset, process = gr_process }
-installplugin { name = "pattern",       reset = pt_reset, process = pt_process }
-installplugin { name = "graphictext",   reset = gt_reset, process = gt_process }
-installplugin { name = "shade",         reset = sh_reset, process = sh_process }
-installplugin { name = "bitmap",        reset = bm_reset, process = bm_process }
-installplugin { name = "box",           reset = bx_reset, process = bx_process }
-installplugin { name = "position",      reset = ps_reset, process = ps_process }
-installplugin { name = "figure",        reset = fg_reset, process = fg_process }
-installplugin { name = "layer",         reset = la_reset, process = la_process }
-installplugin { name = "transparency",  reset = tr_reset, process = tr_process }
-installplugin { name = "graphicstates", reset = gs_reset, process = gs_process }
+installplugin { name = "outline",       process = ot_process, reset = ot_reset }
+installplugin { name = "color",                               reset = cl_reset }
+installplugin { name = "text",          process = tx_process, reset = tx_reset }
+installplugin { name = "group",         process = gr_process  }
+installplugin { name = "pattern",       process = pt_process  }
+installplugin { name = "graphictext",   process = gt_process, reset = gt_reset }
+installplugin { name = "shade",         process = sh_process  }
+installplugin { name = "bitmap",        process = bm_process  }
+installplugin { name = "box",           process = bx_process  }
+installplugin { name = "position",      process = ps_process  }
+installplugin { name = "figure",        process = fg_process  }
+installplugin { name = "layer",         process = la_process  }
+installplugin { name = "transparency",  process = tr_process  }
+installplugin { name = "graphicstates", process = gs_process  }
+installplugin { name = "annotation",    process = an_process  }

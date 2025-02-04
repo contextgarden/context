@@ -25,6 +25,7 @@
 \registerctxluafile{char-ini}{}
 \registerctxluafile{char-utf}{}
 \registerctxluafile{char-cjk}{}
+\registerctxluafile{char-ran}{}
 
 %D We enable collapsing (combining characters) by default, but since the source
 %D files are rather simple, we postpone the initialization till runtime.

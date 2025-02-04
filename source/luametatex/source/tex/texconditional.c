@@ -377,8 +377,8 @@ static void tex_aux_show_if_state(halfword code, halfword case_value)
         case if_math_parameter_code: tex_print_format("{mathparameter %i}", case_value); break;
         case if_math_style_code    : tex_print_format("{mathstyle %i}",     case_value); break;
         case if_arguments_code     : tex_print_format("{arguments %i}",     case_value); break;
-        case if_parameters_code    : tex_print_format("{parameter %i}",     case_value); break;
-        case if_parameter_code     : tex_print_format("{parameters %i}",    case_value); break;
+        case if_parameter_code     : tex_print_format("{parameter %i}",     case_value); break;
+        case if_parameters_code    : tex_print_format("{parameters %i}",    case_value); break;
         default                    : tex_print_format("{todo %i}",          case_value); break;
     }
     tex_end_diagnostic();
@@ -898,6 +898,17 @@ void tex_conditional_if(halfword code, int unless)
              /* goto CASE; */
                 goto CASECHECK;
             }
+        case if_chk_intexpr_code: /* numeric result check */
+            lmt_error_state.intercept = 1;
+            lmt_error_state.last_intercept = 0;
+            lmt_condition_state.chk_integer = tex_scan_expr(integer_val_level);
+            result = lmt_error_state.last_intercept ? check_error : check_okay;
+            if (result == check_okay) { 
+                tex_aux_check_strict(&result);
+            }
+            lmt_error_state.intercept = 0;
+            lmt_error_state.last_intercept = 0;
+            goto CASECHECK;
         case if_val_int_code:
             {
                 lmt_error_state.intercept = 1;
@@ -941,6 +952,17 @@ void tex_conditional_if(halfword code, int unless)
              /* goto CASE; */
                 goto CASECHECK;
             }
+        case if_chk_dimexpr_code: /* dimension result check */
+            lmt_error_state.intercept = 1;
+            lmt_error_state.last_intercept = 0;
+            lmt_condition_state.chk_dimension = tex_scan_expr(dimension_val_level);
+            result = lmt_error_state.last_intercept ? check_error : check_okay;
+            if (result == check_okay) { 
+                tex_aux_check_strict(&result);
+            }
+            lmt_error_state.intercept = 0;
+            lmt_error_state.last_intercept = 0;
+            goto CASECHECK;
         case if_val_dim_code:
             {
                 lmt_error_state.intercept = 1;
@@ -1102,10 +1124,10 @@ void tex_conditional_if(halfword code, int unless)
         case if_boolean_code:
             result = tex_scan_integer(0, NULL) ? 1 : 0;
             goto RESULT;
-        case if_numexpression_code:
+        case if_numexpression_code: /* boolean check */
             result = tex_scanned_expression(integer_val_level) ? 1 : 0;
             goto RESULT;
-        case if_dimexpression_code:
+        case if_dimexpression_code: /* boolean check */
             result = tex_scanned_expression(dimension_val_level) ? 1 : 0;
             goto RESULT;
         case if_math_parameter_code:
@@ -1159,13 +1181,25 @@ void tex_conditional_if(halfword code, int unless)
                     if (t < cs_token_flag && token_cmd(t) == parameter_reference_cmd) {
                         lmt_input_state.cur_input.loc = token_link(lmt_input_state.cur_input.loc);
                         result = lmt_input_state.parameter_stack[lmt_input_state.cur_input.parameter_start + token_chr(t) - 1] != null ? 1 : 2;
-                    } else {
+                    } else { 
                         /*tex 
                             We have a replacement text so we check and backtrack. This is somewhat
                             tricky because a parameter can be a condition but we assume sane usage. 
                         */
                         tex_get_token();
-                        result = cur_cmd == if_test_cmd ? 2 : 1;
+                        switch (cur_cmd) { 
+                            case if_test_cmd: 
+                                result = 2;
+                                break;
+                            case index_cmd:
+                                if (cur_chr >= 0 && cur_chr < lmt_input_state.parameter_stack_data.ptr) {
+                                    result = lmt_input_state.parameter_stack[cur_chr] != null ? 1 : 2;
+                                }
+                                break;
+                            default:
+                                result = 1;
+                                break;
+                        }
                     }          
                     /*tex Because we only have two values we can actually support |\unless|. */
                  // if (unless) { 
@@ -1297,6 +1331,12 @@ void tex_conditional_if(halfword code, int unless)
             goto RESULT;
         case if_cramped_code:
             result = tex_is_cramped_style(tex_scan_math_style_identifier(0, 0));
+            goto RESULT;
+        case if_list_code:
+            {
+                halfword n = tex_scan_box_register_number();
+                result = box_register(n) != null && box_list(box_register(n)) != null;
+            }
             goto RESULT;
      // case if_bitwise_and_code:
      //     {

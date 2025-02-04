@@ -18,6 +18,7 @@
 % todo : inserts like top
 % todo : flush pages when flush
 % todo : color now mess up grid color
+% todo : wipe all mvls
 
 %D This is the new columnset module. For sure it will evolve a bit over time.
 %D We don't really need an output routine but it just fits in.
@@ -26,9 +27,12 @@
 
 \unprotect
 
-\ifdefined\v!columnsetsheet \else \cdef\v!columnsetsheet{columnsetsheet} \fi
-\ifdefined\v!slot           \else \cdef\v!slot          {slot}           \fi
-\ifdefined\s!index          \else \cdef\s!index         {index}          \fi
+\ifdefined\v!columnset             \else \cdef\v!columnset            {columnset}             \fi
+\ifdefined\v!columnsetsheet        \else \cdef\v!columnsetsheet       {columnsetsheet}        \fi
+\ifdefined\v!columnsetsheetdelayed \else \cdef\v!columnsetsheetdelayed{columnsetsheetdelayed} \fi
+\ifdefined\v!columnsetspreadsheets \else \cdef\v!columnsetspreadsheets{columnsetspreadsheets} \fi
+\ifdefined\v!slot                  \else \cdef\v!slot                 {slot}                  \fi
+\ifdefined\s!index                 \else \cdef\s!index                {index}                 \fi
 
 \newdimension\d_page_mvl_column_width
 \newdimension\d_page_mvl_max_height
@@ -42,15 +46,20 @@
 \newdimension\d_page_mvl_last_ht
 \newdimension\d_page_mvl_last_dp
 
-\newinteger  \c_page_mvl_n_of_left
-\newinteger  \c_page_mvl_n_of_right
-\newinteger  \c_page_mvl_n_of_rows
-\newinteger  \c_page_mvl_first_column
-\newinteger  \c_page_mvl_last_column
-\newinteger  \c_page_mvl_current_sheet
+\newinteger\c_page_mvl_n_of_left
+\newinteger\c_page_mvl_n_of_right
+\newinteger\c_page_mvl_n_of_rows
+\newinteger\c_page_mvl_first_column
+\newinteger\c_page_mvl_last_column
+\newinteger\c_page_mvl_current_sheet
+\newinteger\c_page_mvl_current_spreadsheet
+\newinteger\c_page_mvl_level
+\newinteger\c_page_mvl_main_level
 
-\newbox      \b_page_mvl_collected
-\newbox      \b_page_mvl_column
+\newconditional\c_page_mvl_active
+
+\newbox\b_page_mvl_collected
+\newbox\b_page_mvl_column
 
 \permanent\protected\untraced\def\currentsheet{\the\c_page_mvl_current_sheet}
 
@@ -72,6 +81,11 @@
 %D of Jacob Collier (Piano, voice, anything) on YouTube (and yes, music keeps amazing
 %D me). It's definitely more fun to watch that than to write code like this.
 
+%D Many years later: subcolumnsets, nested columnsets, split notes, etc. much was
+%D done with Frost* on the headphone(s); new double cd plus all stuff I hadn't yet
+%D on cd gotten from bandcamp, so a 2024 crossing into 2025 timestamp, waiting for
+%D the DVD.
+
 \installcorenamespace{columnset}
 
 \installframedcommandhandler \??columnset {columnset} \??columnset
@@ -92,30 +106,62 @@
    \c!width=\v!auto,
    \c!limit=\plusone,
    \c!page=,
+   \c!state=\v!start,
    \c!direction=\v!normal, % todo
    \c!maxheight=\textheight,
    \c!maxwidth=\makeupwidth]
+
+
+%         lineheight \strutht
+%         linedepth  \strutdp
+%       \ifchkdimension\p_width\or
+%         width      \p_width
+%       \fi
+%         distance   \d_page_mvl_distance
+%         maxwidth   \d_page_mvl_max_width
+
 
 \appendtoks % could become an option
     \ifempty\currentcolumnset\else
       \frozen\instance\protected\edefcsname\e!start\currentcolumnset\endcsname{\startcolumnset[\currentcolumnset]}%
       \frozen\instance\protected\edefcsname\e!stop \currentcolumnset\endcsname{\stopcolumnset}%
       \clf_definecolumnset {
-          name {\currentcolumnset}%
+        name     {\currentcolumnset}%
+        nofrows  {\columnsetparameter\c!lines}%
+        nofleft  {\columnsetparameter\c!nleft}%
+        nofright {\columnsetparameter\c!nright}%
       }%
     \fi
 \to \everydefinecolumnset
 
+\appendtoks
+    \ifcstok{\columnsetparameter\c!state}\v!start
+       \expandafter\setmode
+    \else
+       \expandafter\resetmode
+    \fi{\v!columnset:\currentcolumnset}%
+\to \everysetupcolumnset
+
+\newtoks\t_every_columnset_yes
+\newtoks\t_every_columnset_nop
+
 %D All the parameters are mandate!
 
 \permanent\tolerant\protected\def\setupcolumnsetlines[#1]#*[#2]#*[#3]#*[#4]% id page col value
-  {\clf_setcolumnsetlines{name {#1} sheet #2 column #3 value #4}}
+  {\ifcstok{\namedcolumnsetparameter{#1}\c!state}\v!start
+     % todo : check validity of arguments
+     \clf_setcolumnsetlines{name {#1} sheet #2 column #3 value #4}%
+   \fi}
 
 \permanent\tolerant\protected\def\setupcolumnsetstart[#1]#*[#2]#*[#3]#*[#4]% id page col value
-  {\clf_setcolumnsetstart{name {#1} sheet #2 column #3 value #4}}
+  {\ifcstok{\namedcolumnsetparameter{#1}\c!state}\v!start
+     % todo : check validity of arguments
+     % todo : check validity of arguments
+     \clf_setcolumnsetstart{name {#1} sheet #2 column #3 value #4}%
+   \fi}
 
 \protected\def\page_mvl_check
-  {\dorecurse{\numexpr\columnsetparameter\c!nleft+\columnsetparameter\c!nright}
+  {\dorecurse{(\columnsetparameter\c!nleft)+(\columnsetparameter\c!nright)}%
      {\page_mvl_check_column{##1}}}
 
 \protected\def\page_mvl_check_column#1%
@@ -125,28 +171,26 @@
    % ugly coding.
    \let\tempstring\currentcolumnset
    \cdef\currentcolumnset{\currentcolumnset:#1}%
-   \edef\p_distance{\directcolumnsetparameter\c!distance}%
-   \edef\p_width   {\directcolumnsetparameter\c!width}%
    \clf_setcolumnsetproperties {%
-      name {\tempstring}
-      column \numexpr#1\relax
-      \ifchkdimension\p_distance\or
-        distance \p_distance
+      name {\tempstring}%
+      column {#1}%
+      \ifchkdimexpr\directcolumnsetparameter\c!distance\or
+        distance \lastchkdimension
       \fi
-      \ifchkdimension\p_width\or
-        width \p_width
+      \ifchkdimexpr\directcolumnsetparameter\c!width\or
+        width \lastchkdimension
       \fi
    }%
    \endgroup}
 
 \appendtoks
-   \dorecurse{\numexpr\columnsetparameter\c!nleft+\columnsetparameter\c!nright}%
+   \dorecurse{(\columnsetparameter\c!nleft)+(\columnsetparameter\c!nright)}%
      {\chaintocurrentcolumnset{\currentcolumnset:#1}}%
 \to \everydefinecolumnset
 
 % \nooutputboxerror\plusthree % bitset as we have two cases where it's checked
 
-\newconditional\c_page_mvl_active
+\mutable\let\maincolumnset\empty
 
 \def\page_mvl_unknown
   {\writestatus\m!columns{unknown columnset '\currentcolumnset'}%
@@ -154,37 +198,47 @@
 
 \permanent\tolerant\protected\def\startcolumnset[#S#1]#*[#S#2]%
   {\bgroup
-   \enforced\let\startcolumnset\page_mvl_start_dummy
+   \let\maincolumnset\currentcolumnset
    \cdef\currentcolumnset{#1}%
+   \advanceby\c_page_mvl_main_level\plusone
+   \ifcase\c_page_mvl_main_level
+     % can't happen
+   \or
+   \else
+     \enforced\let\startcolumnset\page_mvl_start_dummy
+   \fi
    \ifempty\currentcolumnset
      \expandafter\page_mvl_unknown
    \orelse\ifhastok={#1}%
      \expandafter\page_mvl_unknown
+   \orunless\ifcstok{\columnsetparameter\c!state}\v!start
+     \page_mvl_start_dummy
    \else
      \doifelsecommandhandler\??columnset\currentcolumnset
        {\setupcurrentcolumnset[#2]%
         \expandafter\page_mvl_start}
        {\expandafter\page_mvl_unknown}%
    \fi}
-%    \orelse\ifcondition\doifelsecommandhandler\??columnset\currentcolumnset
-%      \setupcurrentcolumnset[#2]%
-%      \expandafter\page_mvl_start
-%    \else
-%      \expandafter\page_mvl_unknown
-%    \fi}
+ % \orelse\ifcommandhandler{\??columnset\currentcolumnset}%
+ %   \setupcurrentcolumnset[#2]%
+ %   \expandafter\page_mvl_start
+ % \else
+ %   \expandafter\page_mvl_unknown
+ % \fi}
 
 \def\page_mvl_start
-  {\settrue\c_page_mvl_active
+  {\c_page_mvl_active\conditionaltrue
+   \expand\t_every_columnset_nop\relax
    %
    \nooutputboxerror\plusthree % bitset as we have two cases where it's checked
    %
    \usepageparameter\columnsetparameter
-   \c_page_mvl_n_of_left \columnsetparameter\c!nleft\relax
-   \c_page_mvl_n_of_right\columnsetparameter\c!nright\relax
-   \c_page_mvl_n_of_rows \columnsetparameter\c!lines\relax
-   \d_page_mvl_max_width \columnsetparameter\c!maxwidth\relax
-   \d_page_mvl_max_height\columnsetparameter\c!maxheight\relax
-   \d_page_mvl_distance  \columnsetparameter\c!distance\relax
+   \c_page_mvl_n_of_left {\columnsetparameter\c!nleft}%
+   \c_page_mvl_n_of_right{\columnsetparameter\c!nright}%
+   \c_page_mvl_n_of_rows {\columnsetparameter\c!lines}%
+   \d_page_mvl_max_width {\columnsetparameter\c!maxwidth}%
+   \d_page_mvl_max_height{\columnsetparameter\c!maxheight}%
+   \d_page_mvl_distance  {\columnsetparameter\c!distance}%
    %
    \usealignparameter\columnsetparameter
    %
@@ -192,7 +246,7 @@
      \getrawnoflines{\dimexpr\d_page_mvl_max_height-\strutheight+\topskip\relax}%
      \c_page_mvl_n_of_rows\noflines
    \fi
-   \edef\p_width{\columnsetparameter\c!width}%
+   %
    \insidecolumnstrue % will be different flag in addition
    %
    \page_mvl_check
@@ -205,12 +259,12 @@
        %topskip
         lineheight \strutht
         linedepth  \strutdp
-      \ifchkdimension\p_width\or
-        width      \p_width
+      \ifchkdimexpr\columnsetparameter\c!width\or
+        width      \lastchkdimension
       \fi
         distance   \d_page_mvl_distance
         maxwidth   \d_page_mvl_max_width
-        limit      \numexpr\columnsetparameter\c!limit\relax
+        limit      {\columnsetparameter\c!limit}%
    }%
    %
    \clf_flushcolumnsetareas{\currentcolumnset}\relax
@@ -231,11 +285,15 @@
    \page_mvl_main_mvl_begin}
 
 \tolerant\def\page_mvl_start_dummy[#S#1]#*[#S#2]%
-  {\let\page_mvl_stop\egroup}
+  {\c_page_mvl_active\conditionalfalse
+   \expand\t_every_columnset_nop\relax
+   \let\page_mvl_stop\egroup}
 
 \def\page_mvl_stop
-  {\page_mvl_main_mvl_end
+  {\scratchcounter\mvlcurrentlyactive
+   \page_mvl_main_mvl_end
    \page_mvl_command_set_vsize
+   \clf_presetcolumnsetspreadsheets\currentcolumnset
    \clf_presetcolumnsetsheets\currentcolumnset
    \clf_columnsetlimit\currentcolumnset
    \page_mvl_command_set_vsize
@@ -246,8 +304,17 @@
    %
    \automigrationmode\zerocount
    %
-   \scratchcounter\columnsetlastmvl{\currentcolumnset}\relax % lookahead
-   \localcontrolledrepeat \scratchcounter {%
+   \ifnum\scratchcounter=\plusone
+     \scratchcounterone\plusone
+     \scratchcountertwo\plusone
+   \else % \ifcsname\??subcolumnset\currentcolumnset\endcsname
+     \scratchcounterone\plustwo
+     \scratchcountertwo\columnsetlastmvl{\currentcolumnset}\relax % lookahead
+   \fi
+   \ifconditional\c_page_mvl_trace_n
+     \writestatus\m!columnset{flushing mlv: \the\scratchcounterone ..\the\scratchcountertwo}%
+   \fi
+   \localcontrolledloop \scratchcounterone \scratchcountertwo \plusone {%
      \clf_setcolumnsetmvl{\currentcolumnset}\currentloopiterator\relax
      \clf_gotocolumnsetslot{\currentcolumnset}\relax
      \setbox\scratchboxone\flushmvl\currentloopiterator\relax
@@ -255,6 +322,7 @@
    }%
    %
    \scratchcounter\columnsetlastfuture\currentcolumnset\relax % lookahead
+   \clf_columnsetresetdirect\maincolumnset\relax
    \localcontrolledrepeat \scratchcounter {%
      \clf_setcolumnsetpresent\currentcolumnset\currentloopiterator
      \scratchcounterone\columnsethascontent\currentcolumnset\currentloopiterator\relax
@@ -281,7 +349,26 @@
 \permanent\protected\def\stopcolumnset
   {\page_mvl_stop}
 
-\permanent\protected\def\reservecolumnset[#S#1]%
+\def\page_mvl_common_dummy_preset % [#1]
+  {\c_page_floats_ignore_method\conditionaltrue
+   \letdummyparameter\c!c      \zerocount
+   \letdummyparameter\c!r      \zerocount
+   \letdummyparameter\c!method \v!here
+   \letdummyparameter\c!option \v!none
+   \letdummyparameter\c!height \lineheight % convenient
+   \letdummyparameter\c!width  \emwidth    % the last one
+   \letdummyparameter\c!ntop   \zerocount
+   \letdummyparameter\c!nbottom\zerocount
+   \getdummyparameters} % [#1]
+
+\permanent\protected\def\reservecolumnset
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \expandafter\page_mvl_reserve_columnset
+   \else
+     \expandafter\gobbleoneoptional
+   \fi}
+
+\tolerant\def\page_mvl_reserve_columnset[#S#1]%
   {\begingroup
    \letdummyparameter\c!c\plusone
    \letdummyparameter\c!r\plusone
@@ -297,13 +384,16 @@
    }%
    \endgroup}
 
-\permanent\tolerant\protected\def\setcolumnset[#S#1]%
+\permanent\protected\def\setcolumnset
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \expandafter\page_mvl_set_column_set_yes
+   \else
+     \expandafter\gobbleoneoptional
+   \fi}
+
+\tolerant\def\page_mvl_set_column_set_yes[#S#1]%
   {\begingroup
-   \letdummyparameter\c!c\zerocount
-   \letdummyparameter\c!r\zerocount
-   \letdummyparameter\c!method\v!here
-   \letdummyparameter\c!option\v!none
-   \getdummyparameters[#1]%
+   \page_mvl_common_dummy_preset[#1]%
   %\dowithnextboxcs\page_mvl_set_indeed\hbox}
    \afterassigned{%
      \aftergroup\page_mvl_set_indeed
@@ -311,28 +401,40 @@
      \ignorespaces
    }\setbox\nextbox\hbox}
 
-\permanent\tolerant\protected\def\startsetcolumnset[#S#1]%
+\permanent\protected\def\startsetcolumnset % todo: interface
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \expandafter\page_mvl_start_set_column_set_yes
+   \else
+     \expandafter\page_mvl_start_set_column_set_nop
+   \fi}
+
+\tolerant\protected\def\page_mvl_start_set_column_set_yes[#S#1]%
   {\begingroup
-   \letdummyparameter\c!c\zerocount
-   \letdummyparameter\c!r\zerocount
-   \letdummyparameter\c!method\v!here
-   \letdummyparameter\c!option\v!none
-   \getdummyparameters[#1]%
+   \page_mvl_common_dummy_preset[#1]%
    \setbox\nextbox\hbox\bgroup\ignorespaces}
 
-\permanent\protected\def\stopsetcolumnset
+\def\page_mvl_start_set_column_set_nop
+  {\ignorenestedupto\startsetcolumnset\stopsetcolumnset} % todo: interface
+
+\permanent\protected\def\stopsetcolumnset % todo: interface
   {\removeunwantedspaces
    \egroup
    \page_mvl_set_indeed}
 
 \def\page_mvl_set_indeed
   {\clf_checkcolumnset {
-     name   {\currentcolumnset}
-     c      \dummyparameter\c!c
-     r      \dummyparameter\c!r
-     box    \nextbox
-     method {\dummyparameter\c!method}
-     option {\dummyparameter\c!option}
+     name    {\currentcolumnset}
+     c       \dummyparameter\c!c
+     r       \dummyparameter\c!r
+     box     \nextbox
+     method  {\dummyparameter\c!method}
+     option  {\dummyparameter\c!option}
+   \ifempty{\dummyparameter\c!ntop}\else
+     ntop    \lastnamedcs
+   \fi
+   \ifempty{\dummyparameter\c!nbottom}\else
+     nbottom \lastnamedcs
+   \fi
    }%
    \ifcase\c_page_mvl_reserved_state
      \setbox\nextbox\vpack to \d_page_mvl_reserved_height \bgroup
@@ -351,19 +453,20 @@
    \fi
    \endgroup}
 
-\permanent\tolerant\protected\def\emptycolumnset[#S#1]%
+\permanent\protected\def\emptycolumnset
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \expandafter\page_mvl_empty_columnset
+   \else
+     \expandafter\gobbleoneoptional
+   \fi}
+
+\tolerant\protected\def\page_mvl_empty_columnset[#S#1]%
   {\begingroup
-   \letdummyparameter\c!c\zerocount
-   \letdummyparameter\c!r\zerocount
-   \letdummyparameter\c!method\v!here
-   \letdummyparameter\c!option\v!none
-   \letdummyparameter\c!height\lineheight % convenient
-   \letdummyparameter\c!width \emwidth    % the last one
-   \getdummyparameters[#1]%
+   \page_mvl_common_dummy_preset[#1]%
    \setbox\nextbox\hpack\bgroup
      \page_mvl_show_ruled
-       \s!width  \dummyparameter\c!width
-       \s!height \dummyparameter\c!height
+       \s!width  {\dummyparameter\c!width}%
+       \s!height {\dummyparameter\c!height}%
    \egroup
    \page_mvl_set_indeed}
 
@@ -421,8 +524,8 @@
    \let\page_mvl_show_slot \hpack}
 
 \installtextracker{columnsets.noisy}
-  {\settrue\c_page_mvl_trace}
-  {\setfalse\c_page_mvl_trace}
+  {\c_page_mvl_trace\conditionaltrue}
+  {\c_page_mvl_trace\conditionalfalse}
 
 \let\page_mvl_show_state\relax
 \let\page_mvl_show_ruled\novrule
@@ -522,55 +625,153 @@
    }}
 
 \def\page_mvl_place_float_slot
-  {% safeguard
-   \ifempty\floatmethod
+  {\ifempty\floatmethod
      \let\floatmethod\v!here
    \fi
-   % synchronize
-   \penalty\c_page_otr_eject_penalty
-   % push
-   \setbox\savedfloatbox\box\floatbox
-   \page_mvl_command_flush_saved_floats
-   \setbox\floatbox\box\savedfloatbox
-   % pop
-   \ifconditional\c_page_floats_some_waiting
-     \page_floats_save\s!text
-     \nonoindentation
-   \else
-     \clf_checkcolumnset {
-       name   {\currentcolumnset}
-       method {\floatmethod}
-     \ifempty\floatcolumn \else
-       c      \floatcolumn
-     \fi
-     \ifempty\floatrow \else
-       r      \floatrow
-     \fi
-       box    \floatbox
-     }%
-     \ifcase\c_page_mvl_reserved_state
-       \page_mvl_place_float_here_indeed
-     \else
-       \page_floats_save\s!text
+   \ifconditional\c_page_mvl_inside_specification
+     % synchronize
+    %\penalty\c_page_otr_eject_penalty % really ?
+     % push
+     \setbox\savedfloatbox\box\floatbox
+     \page_mvl_command_flush_saved_floats
+     \setbox\floatbox\box\savedfloatbox
+     % pop
+     \ifconditional\c_page_floats_some_waiting
+       \page_floats_save\s!text % check this
        \nonoindentation
+     \else
+       \clf_checkcolumnset {
+         name   {\currentcolumnset}
+         method {\floatmethod}
+       \ifempty\floatcolumn \else
+         c      \floatcolumn
+       \fi
+       \ifempty\floatrow \else
+         r      \floatrow
+       \fi
+         box    \floatbox
+       }%
+       \ifcase\c_page_mvl_reserved_state
+         \page_mvl_place_float_here_indeed
+       \else
+         \page_floats_save\s!text
+         \nonoindentation
+       \fi
      \fi
+   \else
+     \page_mvl_place_float_force
    \fi}
 
 \def\page_mvl_place_float_fixed % todo: fallback on here
-  {\ifempty\floatcolumn
+  {\page_mvl_place_float_force}
+
+\def\page_mvl_place_float_here
+  {\ifconditional\c_page_mvl_inside_specification
      \let\floatmethod\v!here
-   \orelse\ifempty\floatrow
-     \let\floatmethod\v!here
+     \page_mvl_place_float_slot
    \else
-     \let\floatmethod\v!fixed
-   \fi
-   \page_mvl_place_float_slot}
+     \page_mvl_place_float_force
+   \fi}
 
-\def\page_mvl_place_float_page  {\page_mvl_place_float_slot} % todo: fallback on here
-\def\page_mvl_place_float_here  {\let\floatmethod\v!here\page_mvl_place_float_slot}
-\def\page_mvl_place_float_top   {\page_mvl_place_float_slot}
-\def\page_mvl_place_float_bottom{\page_mvl_place_float_slot}
+\def\page_mvl_place_float_page
+  {\ifdim\wd\floatbox>\columnwidth
+     \page_floats_save\s!text % check this
+   \else
+     \page_mvl_place_float_force
+   \fi}
 
+%D Kind of neat:
+
+\ifdefined\s!columnsettop    \else \cdef\s!columnsettop   {columnsettop}    \fi
+\ifdefined\s!columnsetbottom \else \cdef\s!columnsetbottom{columnsetbottom} \fi
+
+\defineinsertion[\s!columnsettop]
+\defineinsertion[\s!columnsetbottom]
+
+\newdimension\d_page_mvl_top_insertions_height
+\newdimension\d_page_mvl_bottom_insertions_height
+
+\definesystemattribute[balancescaled][public]
+
+\newbox\b_page_inserts_uinsert
+
+\def\c_page_mvl_traced_float_indeed
+  {\framed
+     [\c!offset=\v!overlay,
+      \c!framecolor=darkgray,
+      \c!rulethickness=5\linewidth]}
+
+\let\c_page_mvl_traced_float\relax
+
+\installtextracker{columnsets.floats}
+  {\let\c_page_mvl_traced_float\c_page_mvl_traced_float_indeed}
+  {\let\c_page_mvl_traced_float\relax}
+
+\permanent\protected\def\page_inserts_handle_uinsert#1%
+  {\setbox\b_page_inserts_uinsert\hpack\bgroup
+     \c_page_mvl_traced_float{\scale[\c!sx=1,\c!sy=#1]{\box\b_page_inserts_uinsert}}%
+   \egroup}
+
+\def\page_mvl_top_insertions
+  {\setcurrentinsertion\s!columnsettop
+   \setbox\scratchbox\hpack\bgroup\vbalancedinsert\b_page_mvl_current_content
+     \s!index \currentinsertionnumber
+     \s!descend
+   \relax\egroup
+   \global\d_page_mvl_top_insertions_height\htdp\scratchbox
+   \ifvoid\scratchbox\else
+     \box\scratchbox
+   \fi}
+
+\def\page_mvl_bottom_insertions
+  {\setcurrentinsertion\s!columnsetbottom
+   \setbox\scratchbox\hpack\bgroup\vbalancedinsert\b_page_mvl_current_content
+     \s!index \currentinsertionnumber
+     \s!descend
+   \relax\egroup
+   \global\d_page_mvl_bottom_insertions_height\htdp\scratchbox
+   \ifvoid\scratchbox\else
+     \box\scratchbox
+   \fi}
+
+\def\page_mvl_place_float_top
+  {\begingroup
+   \setcurrentinsertion\s!columnsettop
+   \insertstretch\currentinsertionnumber.5\lineheight
+ % \insertshrink \currentinsertionnumber.5\lineheight
+   \insert
+     \s!callback \plusone
+     \s!index    \currentinsertionnumber
+   \bgroup
+     \boxattribute\floatbox\balancescaledattribute\plusone
+     \box\floatbox
+     \vkern\lineheight % for the moment hard coded
+   \egroup
+   \endgroup}
+
+\def\page_mvl_place_float_bottom
+  {\begingroup
+   \setcurrentinsertion\s!columnsetbottom
+   \insertstretch\currentinsertionnumber.5\lineheight
+ % \insertshrink \currentinsertionnumber.5\lineheight
+   \insert
+     \s!callback \plustwo
+     \s!index    \currentinsertionnumber
+   \bgroup
+     \vkern\lineheight % for the moment hard coded
+     \boxattribute\floatbox\balancescaledattribute\plusone
+     \box\floatbox
+   \egroup
+   \endgroup}
+
+%permanent\untraced\protected\def\columnsetgridlines#1{\dimexpr#1lh-1sd\relax}
+\permanent\untraced\protected\def\columnsetgridlines#1{\dimexpr#1\lineheight-\strutdp\relax}
+
+%D Till here. The nbext one is used when inside a sheet or spread setting environment:
+
+\def\page_mvl_place_float_box{\box\floatbox} % none was taklen for aligned
+
+\installfloatmethod \s!columnset \s!box         \page_mvl_place_float_box
 \installfloatmethod \s!columnset \v!here        \page_mvl_place_float_here
 \installfloatmethod \s!columnset \v!force       \page_mvl_place_float_force % todo
 %installfloatmethod \s!columnset \v!left
@@ -630,6 +831,7 @@
    \c!width=\d_page_mvl_span_width,
    \c!indenting=,
    \c!indentnext=\v!yes,
+   \c!method=\s!tblr,
   %\c!alternative=\v!a, % gone
    \c!default=\v!here]
 
@@ -637,9 +839,16 @@
 
 \let\page_mvl_span_stop\relax
 
-\permanent\tolerant\protected\def\startcolumnsetspan[#1]#*[#2]#*[#3]% [#3] gobbles space
+\permanent\protected\def\startcolumnsetspan
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \expandafter\page_mvl_start_columnset_span_yes
+   \else
+   \fi}
+
+\permanent\tolerant\protected\def\page_mvl_start_columnset_span_yes[#1]#*[#2]#*[#3]% [#3] gobbles space
   {\endgraf % else rubish output if forgotten
-%    \synchronizecolumnset
+  %\synchronizecolumnset
+  %\balancesubcolumnsets\relax % [#1]%
    \bgroup
    \forgetall
    \cdef\currentcolumnsetspan{#1}%
@@ -649,9 +858,6 @@
      \usecolumnsetspanstyleandcolor\c!style\c!color
      \columnsetspanparameter\c!before
      \ignorespaces}
-
-\permanent\protected\def\columnsethspan#1#2%
-  {\clf_columnsethspan\currentcolumnset\numexpr#1\relax\numexpr#2\relax}
 
 \protected\def\page_mvl_span_stop_indeed#1%
   {\removeunwantedspaces
@@ -667,14 +873,28 @@
    \egroup
    \endgraf}
 
+\permanent\tolerant\protected\def\page_mvl_start_columnset_span_nop
+  {\ignorenestedupto\startcolumnsetspan\stopcolumnsetspan} % todo: interface
+
 \permanent\protected\def\stopcolumnsetspan % indirectness permits aliasing
   {\page_mvl_span_stop}
 
-\permanent\def\columnsetspanwidth#1% assumes equal distances
+\permanent\protected\def\columnsethspan#1#2%
+  {\ifconditional\c_page_mvl_active
+     \clf_columnsethspan\currentcolumnset{#1}{#2}%
+   \else
+     \textwidth
+   \fi}
+
+\permanent\def\columnsetspanwidth#1% assumes equal distances, expanded
   {\the\dimexpr
-     #1\d_page_mvl_column_width
-    +#1\d_page_mvl_distance
-    -  \d_page_mvl_distance
+    \ifconditional\c_page_mvl_active
+       #1\d_page_mvl_column_width
+      +#1\d_page_mvl_distance
+      -  \d_page_mvl_distance
+     \else
+       \textwidth
+     \fi
    \relax}
 
 % areas
@@ -716,9 +936,11 @@
      }%
 \to \everydefinecolumnsetarea
 
-\permanent\tolerant\protected\def\setupcolumnsetareatext[#1]#*[#S#2]%
-  {\cdef\currentcolumnsetarea{#1}%
-   \setcolumnsetareaparameter\c!text{#2}}
+\permanent\tolerant\protected\def\setupcolumnsetareatext[#1]#*[#S#2]% a it like headers and footers, use setups
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \cdef\currentcolumnsetarea{#1}%
+     \setcolumnsetareaparameter\c!text{#2}%
+   \fi}
 
 % maybe move the left/right correction to the tex end or the offset to lua
 
@@ -753,7 +975,7 @@
          [    \c!offset=\columnsetareaparameter\c!clipoffset,%
           \c!leftoffset=\columnsetareaparameter\c!rightoffset,%
              \c!hoffset=\scratchdimen,%
-               \c!width=\dimexpr\wd\nextbox-\scratchdimen\relax,%
+               \c!width=\wd\nextbox-\scratchdimen,%
             % \c!height=
          ]%
          {\box\nextbox}%
@@ -779,10 +1001,29 @@
    \page_mvl_sheet_start}
 
 \permanent\protected\defcsname\e!stop\v!columnsetsheet\endcsname
-  {\clf_registercolumnsetsheet{\currentcolumnset}{\askedsheet}\relax
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \clf_registercolumnsetsheet{\currentcolumnset}{\askedsheet}{\askedsheetoption}\relax
+   \else
+     \rawbuffer{page:mvl:temp}% no real need for usung a buffer in this case
+   \fi
    \endgroup}
 
-\tolerant\def\page_mvl_sheet_start[#1]#*[#2]%  columnset sheetnumber
+\permanent\protected\defcsname\e!start\v!columnsetsheetdelayed\endcsname
+  {\begingroup
+   \obeylines
+  %\lettonothing\currentcolumnset
+   \cdef\askedsheet{1}%
+   \page_mvl_sheet_start_delayed}
+
+\permanent\protected\defcsname\e!stop\v!columnsetsheetdelayed\endcsname
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \clf_registercolumnsetsheet{\currentcolumnset}{\askedsheet}{\v!page}\relax
+   \else
+     \rawbuffer{page:mvl:temp}% no real need for usung a buffer in this case
+   \fi
+   \endgroup}
+
+\tolerant\def\page_mvl_sheet_start_delayed[#1]#*[#2]%  columnset sheetnumber
   {\ifparameter#2\or
      \ifchknum#2\or
        \cdef\currentcolumnset{#1}%
@@ -795,24 +1036,78 @@
        \cdef\askedsheet{#1}%
      \fi
    \fi
-   \grabbufferdatadirect{sheet}{\e!start\v!columnsetsheet}{\e!stop\v!columnsetsheet}}
+   \grabbufferdatadirect{page:mvl:temp}{\e!start\v!columnsetsheetdelayed}{\e!stop\v!columnsetsheetdelayed}}
+
+\tolerant\def\page_mvl_sheet_start[#1]#*[#2]#*[#3]%  columnset sheetnumber [page]
+  {\ifparameter#2\or
+     \ifchknum#2\or
+       \cdef\currentcolumnset{#1}%
+       \cdef\askedsheet{#2}%
+       \cdef\askedsheetoption{#3}%
+     \orelse\ifchknum#1\or
+       \cdef\askedsheet{#1}%
+       \cdef\askedsheetoption{#2}%
+     \fi
+   \orelse\ifparameter#1\or
+     \ifchknum#1\or
+       \cdef\askedsheet{#1}%
+       \cdef\askedsheetoption{#2}%
+     \fi
+   \fi
+   \grabbufferdatadirect{page:mvl:temp}{\e!start\v!columnsetsheet}{\e!stop\v!columnsetsheet}}
+
+\permanent\protected\defcsname\e!start\v!columnsetspreadsheets\endcsname
+  {\begingroup
+   \obeylines
+  %\lettonothing\currentcolumnset
+   \cdef\askedspreadsheets{1}%
+   \page_mvl_spreadsheets_start}
+
+\permanent\protected\defcsname\e!stop\v!columnsetspreadsheets\endcsname
+  {\ifcstok{\columnsetparameter\c!state}\v!start
+     \clf_registercolumnsetspreadsheets{\currentcolumnset}{\askedspreadsheets}\relax
+   \else
+     \rawbuffer{page:mvl:temp}% no real need for usung a buffer in this case
+   \fi
+   \endgroup}
+
+\tolerant\def\page_mvl_spreadsheets_start[#1]#*[#2]%  columnset spreadnumber
+  {\ifparameter#2\or
+     \ifchknum#2\or
+       \cdef\currentcolumnset{#1}%
+       \cdef\askedspreadsheets{#2}%
+     \orelse\ifchknum#1\or
+       \cdef\askedspreadsheets{#1}%
+     \fi
+   \orelse\ifparameter#1\or
+     \ifchknum#1\or
+       \cdef\askedspreadsheets{#1}%
+     \fi
+   \fi
+   \grabbufferdatadirect{page:mvl:temp}{\e!start\v!columnsetspreadsheets}{\e!stop\v!columnsetspreadsheets}}
 
 % we need a discard otr .. beware: these buffers are grouped
 
-\def\getcolumsetsheetbuffer % otherwise crap after last page
+\newconditional\c_page_mvl_inside_specification
+
+\cdef\m_page_mvl_buffer{page:mvl:temp} % todo low level buffer call
+
+\def\page_mvl_process_sheet
   {\begingroup
-   \setbox\scratchbox\vpack{\getbuffer[sheetpreset]}%
+   \c_page_mvl_inside_specification\conditionaltrue
+   \setbox\scratchbox\vpack{\rawbuffer{\m_page_mvl_buffer}}%
    \endgroup}
 
-% Also ok but using pack is better:
-%
-% \def\getcolumsetsheepbuffer % otherwise crap after last page
-%   {\beginmvl \s!index \plusone\relax
-%    \getbuffer[sheetpreset]%
-%    \endmvl
-%    \setbox\scratchbox\flushmvl \plusone\relax}
+\def\page_mvl_process_delayed
+  {\begingroup
+   \c_page_mvl_inside_specification\conditionaltrue
+   \setbox\scratchbox\vpack{\rawbuffer{\m_page_mvl_buffer}}%
+   \endgroup}
 
-% state start | repeat
+\def\page_mvl_process_spread
+  {\begingroup
+   \setbox\scratchbox\vpack{\rawbuffer{\m_page_mvl_buffer}}%
+   \endgroup}
 
 %D Experimental:
 
@@ -820,37 +1115,78 @@
 
 \installcommandhandler \??subcolumnset {subcolumnset} \??subcolumnset
 
-\newinteger\c_page_mvl_level
-
 \pushoverloadmode
 
+% \permanent\tolerant\protected\def\definesubcolumnset[#1]#*[#2]#*[#3]%
+%   {\ifcsname\??subcolumnset#1\endcsname\else
+%      \xdefcsname\??subcolumnset#1\endcsname{#2}%
+%    \fi
+%    \scratchcounter\clf_definesubcolumnset
+%        name    {#1}%
+%        subname {#2}%
+%        columns {#3}%
+%    \relax
+%    \expandafter\integerdef\csname\??subcolumnset:#1:#2\endcsname\scratchcounter}
+
 \permanent\tolerant\protected\def\definesubcolumnset[#1]#*[#2]#*[#3]%
-  {\scratchcounter\clf_definesubcolumnset
+  {\ifcsname\??subcolumnset#1\endcsname\else
+     \xdefcsname\??subcolumnset#1\endcsname{#2}%
+     \ifcsname\namedsubcolumnsethash#1:#2\s!parent\endcsname\else
+       \edefcsname\??subcolumnset#1:#2:\s!parent\endcsname{\??subcolumnset#1}%
+     \fi
+   \fi
+   \scratchcounter\clf_definesubcolumnset
        name    {#1}%
        subname {#2}%
        columns {#3}%
    \relax
-   \edefcsname\??subcolumnset:#1:#2\endcsname{\the\scratchcounter}}
+   \expandafter\integerdef\csname\??subcolumnset:#1:#2\endcsname\scratchcounter}
 
 \popoverloadmode
 
+\newconditional\c_page_mvl_trace_n
+
+\installtextracker{columnsets.mvl}
+  {\c_page_mvl_trace_n\conditionaltrue}
+  {\c_page_mvl_trace_n\conditionalfalse}
+
 \def\page_mvl_sub_columnset_start#1%
    {\beginmvl
-      \s!options \numexpr\ignoreprevdepthmvloptioncode+\discardtopmvloptioncode\relax
-      \s!index   \numexpr#1\relax
-    \relax}
+      \s!options {\ignoreprevdepthmvloptioncode+\discardtopmvloptioncode}%
+      \s!index   {#1}%
+    \relax
+    \ifconditional\c_page_mvl_trace_n
+      \writestatus\m!columnset{start sub mvl \number\mvlcurrentlyactive}%
+    \fi}
+
+\def\page_mvl_sub_columnset_stop
+  {\ifconditional\c_page_mvl_trace_n
+     \writestatus\m!columnset{stop sub mvl \number\mvlcurrentlyactive}%
+   \fi
+   \endmvl}
 
 \def\page_mvl_main_mvl_begin
   {\beginmvl
-      \s!options \numexpr\ignoreprevdepthmvloptioncode+\discardtopmvloptioncode\relax
-      \s!index   \plusone
-   \relax}
+     \s!options {\ignoreprevdepthmvloptioncode+\discardtopmvloptioncode}%
+     \s!index   \plusone
+   \relax
+   \ifconditional\c_page_mvl_trace_n
+     \writestatus\m!columnset{start main mvl \number\mvlcurrentlyactive}%
+   \fi
+   \ifcsname\??subcolumnset\currentcolumnset\endcsname
+     \hsize\clf_columnsetcolumnwidth\currentcolumnset{\lastnamedcs}\relax
+   \fi}
 
 \def\page_mvl_main_mvl_end
-  {\endmvl}
+  {\ifconditional\c_page_mvl_trace_n
+     \writestatus\m!columnset{stop main mvl \number\mvlcurrentlyactive}%
+   \fi
+   \endmvl}
 
 \permanent\tolerant\protected\def\startsubcolumnset[#1]#*[#2]% #,[#1]#,#*[#2]
-  {\ifcase\c_page_mvl_level
+  {\unless\ifconditional\c_page_mvl_active
+     \par
+   \orelse\ifcase\c_page_mvl_level
      \page_mvl_main_mvl_end
      \let\page_mvl_main_mvl_end\relax
    \fi
@@ -869,16 +1205,21 @@
      \uselanguageparameter\subcolumnsetparameter
      \usesubcolumnsetstyleandcolor\c!style\c!color
      \usealignparameter\subcolumnsetparameter
-     \ifempty{\subcolumnsetparameter\c!width}\else
-       \hsize\lastnamedcs
-     \fi
+     \hsize\clf_columnsetcolumnwidth\currentcolumnset{#1}%
      \scratchcounter\ifcsname\??subcolumnset:\currentsubcolumnset\endcsname\lastnamedcs\else\plusone\fi
-     \page_mvl_sub_columnset_start\scratchcounter
+     \ifconditional\c_page_mvl_active
+       \page_mvl_sub_columnset_start\scratchcounter
+     \else
+       \subcolumnsetparameter\c!before
+     \fi
    \fi}
 
 \permanent\protected\def\stopsubcolumnset
-  {\ifnum\c_page_mvl_level=\plusone
-     \endmvl
+  {\unless\ifconditional\c_page_mvl_active
+     \par
+     \subcolumnsetparameter\c!after
+   \orelse\ifnum\c_page_mvl_level=\plusone
+     \page_mvl_sub_columnset_stop
    \fi
    \endgroup}
 
@@ -902,9 +1243,9 @@
 \newconditional\c_page_mvl_trace
 \newconditional\c_page_mvl_preroll_quit
 
-\newconditional\c_page_mvl_inserts       \settrue\c_page_mvl_inserts
-\newconditional\c_page_mvl_split_inserts \settrue\c_page_mvl_split_inserts
-\newconditional\c_page_mvl_discard       \settrue\c_page_mvl_discard
+\newconditional\c_page_mvl_inserts       \c_page_mvl_inserts      \conditionaltrue
+\newconditional\c_page_mvl_split_inserts \c_page_mvl_split_inserts\conditionaltrue
+\newconditional\c_page_mvl_discard       \c_page_mvl_discard      \conditionaltrue
 
 \newbox        \b_page_mvl_collected_content
 \newbox        \b_page_mvl_split_content
@@ -937,20 +1278,23 @@
 \newinteger\c_page_mvl_balance_last
 \newinteger\c_page_mvl_balance_page  % redundant, used for tracing
 
+\newinteger\globaldeadcycles \globaldeadcycles\plusonethousand
+\newinteger\localdeadcycles  \localdeadcycles \plushundred
+
 \def\page_mvl_process_mvl_preroll_step
   {\ifconditional\c_page_mvl_inserts
      \ifconditional\c_page_mvl_split_inserts
        \vbalanceddeinsert\scratchboxone
-         \s!descend \space
+         \s!descend \relaxedspace
          \s!forcedepth
        \relax
      \fi
    \fi
    \setbox\b_page_mvl_split_content\vbalance\scratchboxone\s!trial\relax
    \c_page_mvl_current_n_of_slots \zerocount
-   \c_page_mvl_local_dead_cycles  \plushundred
+   \c_page_mvl_local_dead_cycles  \localdeadcycles
    \c_page_mvl_previous_n_of_slots\zerocount
-   \c_page_mvl_global_dead_cycles \plushundred
+   \c_page_mvl_global_dead_cycles \globaldeadcycles
    %
    \d_page_mvl_last_ht \zeropoint
    \d_page_mvl_last_dp \zeropoint
@@ -973,7 +1317,7 @@
        \advanceby\c_page_mvl_current_n_of_slots\plusone
        \setbox\b_page_mvl_current_content\vbalancedbox\b_page_mvl_split_content
        \scratchheight\balanceshapevsize\c_page_mvl_current_n_of_slots\relax
-       \scratchdimen\dimexpr\ht\b_page_mvl_current_content-\scratchheight\relax
+       \scratchdimen{\ht\b_page_mvl_current_content-\scratchheight}%
        \d_page_mvl_last_ht\ht\b_page_mvl_current_content
        \d_page_mvl_last_dp\dp\b_page_mvl_current_content
        \ifconditional\c_page_mvl_balancing
@@ -1026,6 +1370,8 @@
    \clf_columnsetreshape\currentcolumnset\relax
    \page_mvl_process_mvl_preroll_step\relax}
 
+\newinteger\c_page_mvl_max_used_cells
+
 \def\page_mvl_process_mvl_preroll_balance
   {\relax
    \ifcase\c_page_mvl_current_n_of_slots
@@ -1037,7 +1383,7 @@
        \columnsetshowshape\currentcolumnset
      \fi
      % we need to make sure we add shapes for the rest of the spread / sheet
-     \clf_columnsetshapebalanceextend\currentcolumnset\numexpr\c_page_mvl_current_n_of_slots+\nofcolumns\relax % can be automatic
+     \clf_columnsetshapebalanceextend\currentcolumnset{\c_page_mvl_current_n_of_slots+\nofcolumns}% can be automatic
      \clf_columnsetshapesetbalancerange\currentcolumnset\c_page_mvl_current_n_of_slots
      \c_page_mvl_balance_n_of_slots\columnsetshapeslots\currentcolumnset
      \c_page_mvl_balance_first\clf_columnsetbalancefirst\currentcolumnset
@@ -1047,13 +1393,13 @@
        \writestatus\m!columnset\empty
        \writestatus\m!columnset{quit balancing, no valid slot in sheet \the\c_page_mvl_balance_page}%
        \writestatus\m!columnset\empty
-       \settrue\c_page_mvl_preroll_quit
+       \c_page_mvl_preroll_quit\conditionaltrue
      \orelse\ifcase\clf_columnsetshapebalancecheck\currentcolumnset\c_page_mvl_balance_first\relax
 % not yet ok on right sheet while actually we are on the next
        \writestatus\m!columnset\empty
        \writestatus\m!columnset{quit balancing, multiple slots in sheet \the\c_page_mvl_balance_page}%
        \writestatus\m!columnset\empty
-       \settrue\c_page_mvl_preroll_quit
+       \c_page_mvl_preroll_quit\conditionaltrue
      \or
        \ifconditional\c_page_mvl_trace
          \writestatus\m!columnset{analyzed,
@@ -1067,7 +1413,7 @@
        \fi
        % we are one ahead as we have the generic shape slot too
        \advanceby\c_page_mvl_balance_n_of_slots\minusone
-       \c_page_mvl_balance_extra\numexpr\c_page_mvl_balance_n_of_slots-\c_page_mvl_current_n_of_slots\relax
+       \c_page_mvl_balance_extra{\c_page_mvl_balance_n_of_slots-\c_page_mvl_current_n_of_slots}%
        \c_page_mvl_balance_n_of_sheets\columnsetshapepage\currentcolumnset\c_page_mvl_current_n_of_slots
        \ifconditional\c_page_mvl_trace
          \writestatus\m!columnset{\the\c_page_mvl_balance_extra\space extra slots}%
@@ -1075,13 +1421,13 @@
        \fi
        %
        \c_page_mvl_balance_n_of_columns\nofcolumns % \c_page_mvl_balance_n_of_slots
-       \c_page_mvl_balance_boundary\numexpr\c_page_mvl_balance_first+\minusone\relax
+       \c_page_mvl_balance_boundary{\c_page_mvl_balance_first+\minusone}%
        %
        \c_page_mvl_balance_dead_cycles\zerocount
        \localcontrolledendless {%
          \advanceby\c_page_mvl_balance_dead_cycles\plusone
          \page_mvl_process_mvl_preroll_balance_more
-         \ifnum\c_page_mvl_balance_dead_cycles !<\plushundred\relax
+         \ifnum\c_page_mvl_balance_dead_cycles !<\localdeadcycles\relax % todo: its own one
            \ifconditional\c_page_mvl_trace
              \writestatus\m!columnset{quit balancing, dead cycles}%
            \fi
@@ -1117,12 +1463,12 @@
    \forgetall
    \dontcomplain
    \resetgridsnapping
-   \specificationdef\d_d_page_mvl_htdp
-      \dimen\numexpr\nofcolumns\relax
+   \specificationdef\d_d_page_mvl_htdp\dimen
+      {\nofcolumns}%
       \s!options \c_page_mvl_htdp_options
       \zeropoint \zeropoint
    \relax
-   \setfalse\c_page_mvl_preroll_quit
+   \c_page_mvl_preroll_quit\conditionalfalse
    \ifconditional\c_page_mvl_trace
      \writestatus\m!columnset{before preroll, shapes \the\columnsetshapecount\currentcolumnset}%
      \columnsetshowshape\currentcolumnset
@@ -1142,12 +1488,12 @@
    \strc_notes_process\page_mvl_place_note_inserts_indeed}
 
 \def\page_mvl_place_note_inserts_indeed % similar to page
-  {\setbox\b_strc_notes_inserts\vbalancedinsert\scratchbox
+  {\setbox\b_strc_notes_inserts\vbalancedinsert\b_page_mvl_current_content
      \s!index \currentnoteinsertionnumber
      \s!descend
    \relax
    \ifvoid\b_strc_notes_inserts\else
-     \ifcase\page_inserts_get_multiplier\currentnoteinsertionnumber\else
+     \ifcase\insertmultiplier\currentnoteinsertionnumber\else
        \strc_notes_place_inserts_very_indeed\relax
        \c_strc_notes_first_placed\conditionaltrue
      \fi
@@ -1156,38 +1502,48 @@
 \def\page_mvl_process_mvl_final
   {\clf_columnsetreshape\currentcolumnset
    \setbox\scratchboxtwo\vbalance\scratchboxone\relax % otherwise loop expands
+   \ifconditional\c_page_mvl_discard
+     \vbalanceddiscard\scratchboxtwo
+       \s!descend
+     \relax
+   \fi
    \localcontrolledendless {%
      \ifvoid\scratchboxtwo
        \expandafter\quitloop
      \else
-       \setbox\scratchbox\page_mvl_show_slot\bgroup\vbalancedbox\scratchboxtwo\egroup
+       \setbox\b_page_mvl_current_content\page_mvl_show_slot\bgroup\vbalancedbox\scratchboxtwo\egroup
        \ifconditional\c_page_mvl_inserts
          \ifconditional\c_page_mvl_split_inserts
-           \vbalancedreinsert\scratchbox
+           \vbalancedreinsert\b_page_mvl_current_content
               \s!descend
            \relax
          \fi
-         \ifnum\boxinserts\scratchbox>\plusthree
-           \setbox\scratchboxfour\vpack to \ht\scratchbox\bgroup
+         \ifnum\boxinserts\b_page_mvl_current_content>\plusthree
+           \setbox\scratchboxfour\vpack to \ht\b_page_mvl_current_content\bgroup
+             \page_mvl_top_insertions
              \vfill
+             \page_mvl_bottom_insertions
              \page_mvl_place_note_inserts
            \egroup
            \ifvoid\scratchboxfour\else
-             \setbox\scratchbox\hpack to \wd\scratchbox\bgroup
-               \wd\scratchbox\zeropoint
-               \box\scratchbox
+             \setbox\b_page_mvl_current_content\hpack to \wd\b_page_mvl_current_content\bgroup
+               \wd\b_page_mvl_current_content\zeropoint
+               \getnoflines\d_page_mvl_top_insertions_height
+               \boxyoffset\b_page_mvl_current_content-\noflines\lineheight
+             % \boxyoffset\b_page_mvl_c urrent_content-\d_page_mvl_top_insertions_height % only when testing overlap
+               \box\b_page_mvl_current_content
                \box\scratchboxfour
              \egroup
            \fi
          \fi
        \fi
-       \boxyoffset\scratchbox-\strutdp
-       \clf_addtocolumnsetmvl\currentcolumnset\scratchbox\currentloopiterator
+       \boxyoffset\b_page_mvl_current_content-\strutdp
+       \clf_addtocolumnsetmvl\currentcolumnset\b_page_mvl_current_content\currentloopiterator
    \fi}}
 
 \installtextracker{columnsets.keepdiscard}
-  {\setfalse\c_page_mvl_discard}
-  {\settrue\c_page_mvl_discard}
+  {\c_page_mvl_discard\conditionalfalse}
+  {\c_page_mvl_discard\conditionaltrue}
 
 \def\page_mvl_process_mvl_flush
   {\clf_columnsetreshape\currentcolumnset
@@ -1204,7 +1560,7 @@
        \setbox\b_page_mvl_current_content\page_mvl_show_slot\bgroup\vbalancedbox\b_page_mvl_split_content\egroup
        \ifconditional\c_page_mvl_inserts
          \ifconditional\c_page_mvl_split_inserts
-           \vbalancedreinsert\scratchbox
+           \vbalancedreinsert\b_page_mvl_current_content
              \s!descend
            \relax
          \fi
@@ -1218,7 +1574,9 @@
        \fi
        \ifdone
          \setbox\scratchboxfour\vpack to \ht\b_page_mvl_current_content\bgroup
+           \page_mvl_top_insertions
            \vfill
+           \page_mvl_bottom_insertions
            \page_mvl_place_note_inserts
          \egroup
          \ifvoid\scratchboxfour\else
@@ -1241,7 +1599,7 @@
            \ifnum\currentloopiterator>\c_page_mvl_balance_boundary
              \scratchheight\d_d_page_mvl_htdp\numexpr\currentloopiterator\relax\plusone
              \scratchdepth \d_d_page_mvl_htdp\numexpr\currentloopiterator\relax\plustwo
-             \boxyoffset\b_page_mvl_current_content-\dimexpr\ht\b_page_mvl_current_content-\scratchheight\relax
+             \boxyoffset\b_page_mvl_current_content{\scratchheight-\ht\b_page_mvl_current_content}%
              \ht\b_page_mvl_current_content\scratchheight
              \dp\b_page_mvl_current_content\scratchdepth
              \clf_subtocolumnsetmvlbalance\currentcolumnset\b_page_mvl_current_content\currentloopiterator
@@ -1268,12 +1626,21 @@
    \fi}
 
 \def\page_mvl_intermediate#1%
-  {\clf_presetcolumnsetsheets\currentcolumnset
+  {\clf_presetcolumnsetspreadsheets\currentcolumnset
+   \clf_presetcolumnsetsheets\currentcolumnset
    \clf_columnsetlimit\currentcolumnset
    \begingroup
    \dontcomplain
-   \scratchcounter\columnsetlastmvl{\currentcolumnset}\relax % lookahead
-   \localcontrolledrepeat \scratchcounter {%
+   \scratchcounterone\plustwo
+   \scratchcountertwo\columnsetlastmvl{\currentcolumnset}\relax % lookahead
+   \ifnum\scratchcounterone>\scratchcountertwo
+     \scratchcounterone\plusone
+     \scratchcountertwo\plusone
+   \fi
+   \ifconditional\c_page_mvl_trace_n
+     \writestatus\m!columnset{intermediate mlv: \the\scratchcounterone ..\the\scratchcountertwo}%
+   \fi
+   \localcontrolledloop \scratchcounterone \scratchcountertwo \plusone {%
      \clf_setcolumnsetmvl{\currentcolumnset}\currentloopiterator\relax
      \clf_gotocolumnsetslot{\currentcolumnset}\relax
      \setbox\scratchboxone\flushmvl\currentloopiterator\relax
@@ -1281,40 +1648,59 @@
    }%
    \endgroup}
 
-\permanent\protected\def\flushcolumnset  {\page_mvl_intermediate\page_mvl_flush_mvl}
-\permanent\protected\def\processcolumnset{\page_mvl_intermediate\page_mvl_process_mvl}
+\permanent\protected\def\flushcolumnset
+  {\ifconditional\c_page_mvl_active
+     \page_mvl_intermediate\page_mvl_flush_mvl
+   \fi}
+
+\permanent\protected\def\processcolumnset
+  {\ifconditional\c_page_mvl_active
+     \page_mvl_intermediate\page_mvl_process_mvl
+   \fi}
 
 \permanent\tolerant\protected\def\balancesubcolumnsets[#1]%
-  {\ifcase\columnsetlastmvl{\currentcolumnset}\or
-     \settrue\c_page_mvl_balancing
+  {\unless\ifconditional\c_page_mvl_active
+     % do nothing
+%    \orelse\ifcase\columnsetlastmvl{\currentcolumnset}\or
+   \else%\ifcase\columnsetlastmvl{\currentcolumnset}\or
+    % messy, we're counting mvls from 2 if we have subs
+    %\writestatus{>>>>}{\the\columnsetlastmvl{\currentcolumnset}}%
+     \c_page_mvl_balancing\conditionaltrue
      \flushsubcolumnsets[#1]%
-     \setfalse\c_page_mvl_balancing
-   \else
-     \flushsubcolumnsets[#1]%
+     \c_page_mvl_balancing\conditionalfalse
+%    \else
+%      \flushsubcolumnsets[#1]%
    \fi
    \relax}
 
 \protected\def\page_mvl_command_flush_page
-  {\setbox\b_page_mvl_collected\hpack\bgroup
+  {\ifnum\c_page_mvl_main_level>\plusone
+     \page_mvl_flush_nested_page
+   \else % e.g. specific backgrounds
+     \clf_delayedcolumnsetsheet\currentcolumnset
+   \fi
+   \setbox\b_page_mvl_collected\hpack\bgroup
      \clf_preparecolumnsetflush{\currentcolumnset}%
      \global\setbox\globalscratchbox\emptybox
      \page_mvl_show_state
      \letcolumnsetparameter\c!region\currentcolumnset
      \ifcstok{\columnsetparameter\c!direction}\v!reverse
        \dostepwiserecurse\c_page_mvl_last_column\c_page_mvl_first_column\minusone
-         {\scratchdistance\ifnum##1>\plusone
-            \namedcolumnsetparameter{\currentcolumnset:##1}\c!distance\relax
-          \else
-            \zeropoint
-          \fi
+         {\scratchdistance
+            \ifnum##1>\plusone
+              {\namedcolumnsetparameter{\currentcolumnset:##1}\c!distance}%
+            \else
+              \zeropoint
+            \fi
           \page_mvl_command_flush_page_column{##1}\scratchdistance}%
      \else
        \dostepwiserecurse\c_page_mvl_first_column\c_page_mvl_last_column\plusone
-         {\scratchdistance\ifnum##1<\c_page_mvl_last_column
-            \namedcolumnsetparameter{\currentcolumnset:##1}\c!distance\relax
-          \else
-            \zeropoint
-          \fi
+         {\scratchdistance
+            \ifnum##1<\c_page_mvl_last_column
+              {\namedcolumnsetparameter{\currentcolumnset:##1}\c!distance}%
+            \else
+              \zeropoint
+            \fi
           \page_mvl_command_flush_page_column{##1}\scratchdistance}%
      \fi
      \clf_finishcolumnsetflush{\currentcolumnset}%
@@ -1324,10 +1710,25 @@
      \box\globalscratchbox
      \box\b_page_mvl_collected
    \egroup
-   %
-   \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_mvl_collected}% \hbox removed
-   \strc_pagenumbers_increment_counters % should hook into an every
-   }
+   \ifnum\c_page_mvl_main_level>\plusone
+     \page_mvl_flush_nested_page
+   \else
+     \page_boxes_shipout{\page_boxes_constructed_page\box\b_page_mvl_collected}% \hbox removed
+     \strc_pagenumbers_increment_counters % should hook into an every
+   \fi}
+
+\def\page_mvl_flush_nested_page
+  {\begingroup
+   \scratchtotal \ht\b_page_mvl_collected
+   \boxyoffset\b_page_mvl_collected{-\scratchtotal+\strutht}%
+   \clf_putincolumnsetdirect {
+     name     {\maincolumnset}%
+     box       \b_page_mvl_collected
+     location {\columnsetparameter\c!location}%
+     lines    {\columnsetparameter\c!lines}%
+   }%
+  %\columnsetshowgrid\maincolumnset
+   \endgroup}
 
 \permanent\tolerant\protected\def\flushsubcolumnsets[#1]%
   {\begingroup
@@ -1339,8 +1740,10 @@
    \endgroup}
 
 \permanent\protected\def\blockcolumnsetrows
-  {% maybe left and right keys, currently spread
-   \clf_columnsetsblockrows\currentcolumnset{\v!spread}\columnsetlastfuture\currentcolumnset\relax}
+  {\ifconditional\c_page_mvl_active
+     % maybe left and right keys, currently spread
+     \clf_columnsetsblockrows\currentcolumnset{\v!spread}\columnsetlastfuture\currentcolumnset\relax
+   \fi}
 
 % We start an mvl so whatever is there wil be flushed afterwards. Actually we don't
 % end up in the output routine because we intercept and directly shipout. So we can
@@ -1349,13 +1752,42 @@
 \protected\def\page_mvl_command_routine
   {\page_mvl_command_set_vsize}
 
+% \setupfloats
+%   [spacebefore=halflinebefore,
+%    spaceafter=halflineafter]
+
+% \setupfloats
+%   [spacebefore=halfline, % maybe spacearound
+%    spaceafter=halfline]
+
 \def\page_mvl_place_float_force
-  {\ifdim\wd\floatbox>\columnwidth
-     \page_floats_save\s!text
+  {\let\floatmethod\v!force
+   \ifdim\wd\floatbox>\columnwidth
+     \page_floats_save\s!text % check this
    \else
-     \startlinecorrection
+     \begingroup
+     \edef\m_spacebefore{\floatparameter\c!spacebefore}%
+     \edef\m_spaceafter {\floatparameter\c!spaceafter}%
+     \ifx\m_spacebefore\v!halfline
+       \blank[\v!keep,\v!halfline]% \direct...
+     \else
+       \blank[\m_spacebefore]%
+     \fi
+    %\snaptogrid\ruledvpack\bgroup
+     \ruledvpack\bgroup
+       \getnoflines{\ht\floatbox}%
+       \scratchheight{\noflines\lineheight-\strutdp}%
+       \boxyoffset\floatbox{\ht\floatbox-\scratchheight}%
+       \ht\floatbox\scratchheight
+       \dp\floatbox\zeropoint
        \box\floatbox
-     \stoplinecorrection
+     \egroup
+     \ifx\m_spacebefore\v!halfline
+       \blank[\v!halfline]%
+     \else
+       \blank[\m_spaceafter]%
+     \fi
+     \endgroup
    \fi}
 
 \def\page_mvl_break#1%
@@ -1364,7 +1796,7 @@
      \forgetall
      \par
      \balanceboundary#1\plusone\relax
-     \scratchcounter\numexpr\columnsetshapeworst\currentcolumnset+\plusone\relax
+     \scratchcounter{\columnsetshapeworst\currentcolumnset+\plusone}%
      \multiplyby\scratchcounter\plustwo
      \localcontrolledrepeat \scratchcounter
        {\vskip\zeropoint
@@ -1392,7 +1824,7 @@
      \ifchknumber#1\or
        \balanceboundary\plusfive#1\relax
      \orelse\ifchkdimension#1\or
-       \balanceboundary\plussix\number\dimexpr#1\relax
+       \balanceboundary\plussix\number{#1}%
      \else
        % error
      \fi
@@ -1490,6 +1922,7 @@
   {\par
    \page_mvl_wide_after\relax
    \stopsubcolumnset
+   % hm:
    \startsubcolumnset\relax
    \stopsubcolumnset
    \endgroup

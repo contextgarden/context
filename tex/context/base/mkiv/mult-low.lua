@@ -22,7 +22,7 @@ return {
         "plusfifteenhundred", "plustwentyfivehundred", "plusfortyfivehundred", "plusseventyfivehundred",
         "plusninetynine", "plusfourtytwo", "plustwentyfive",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
-        "points", "halfpoint",
+        "points", "halfpoint", "twopoints", "threepoints",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
         "centeringfillskip", "stretchingfillskip", "shrinkingfillskip",
         "centeringfilllskip", "stretchingfilllskip", "shrinkingfilllskip",
@@ -38,6 +38,8 @@ return {
         "endoflinetoken", "outputnewlinechar",
         --
         "emptytoks", "empty", "undefined",
+        --
+        "blankspace", "relaxedspace", -- old new
         --
         "prerollrun",
         --
@@ -147,6 +149,8 @@ return {
         "halfwaytotallistanchorcode", "halfwayheightlistanchorcode", "halfwaydepthlistanchorcode",
         "halfwayleftlistanchorcode", "halfwayrightlistanchorcode",
         --
+        "underfullbadnessmodecode", "loosebadnessmodecode", "tightbadnessmodecode", "overfullbadnessmodecode",
+        --
         "negatexlistsigncode", "negateylistsigncode", "negatelistsigncode",
         --
         "fontslantperpoint", "fontinterwordspace", "fontinterwordstretch", "fontinterwordshrink",
@@ -217,6 +221,8 @@ return {
         --
         "Ux", "eUx",
         --
+        "mathstylevariantidentity", "mathstylevariantcramped", "mathstylevariantuncramped",
+        --
      -- "parfillleftskip", "parfillrightskip",
         --
         "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
@@ -228,6 +234,7 @@ return {
         "automaticpenaltyhyphenationcode", "explicitpenaltyhyphenationcode", "permitgluehyphenationcode", "permitallhyphenationcode",
         "permitmathreplacehyphenationcode", "forcecheckhyphenationcode", "lazyligatureshyphenationcode", "forcehandlerhyphenationcode",
         "feedbackcompoundhyphenationcode", "ignoreboundshyphenationcode", "partialhyphenationcode", "completehyphenationcode",
+        "replaceapostrophehyphenationcode",
         --
         "normalizelinenormalizecode", "parindentskipnormalizecode", "swaphangindentnormalizecode", "swapparsshapenormalizecode",
         "breakafterdirnormalizecode", "removemarginkernsnormalizecode", "clipwidthnormalizecode", "flattendiscretionariesnormalizecode",
@@ -318,7 +325,7 @@ return {
         "globalsetmode", "globalresetmode", "globalsetsystemmode", "globalresetsystemmode",
         "booleanmodevalue",
         --
-        "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif", "newfloat",
+        "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif", "newfloat", "newmvl",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
         "newuserunit",
         --
@@ -430,7 +437,7 @@ return {
         "scratchmuskipone", "scratchmuskiptwo", "scratchmuskipthree", "scratchmuskipfour", "scratchmuskipfive", "scratchmuskipsix",
         "scratchtoksone", "scratchtokstwo", "scratchtoksthree", "scratchtoksfour", "scratchtoksfive", "scratchtokssix",
         "scratchboxone", "scratchboxtwo", "scratchboxthree", "scratchboxfour", "scratchboxfive", "scratchboxsix",
-        "scratchnx", "scratchny", "scratchmx", "scratchmy",
+        "scratchnx", "scratchny", "scratchmx", "scratchmy", "scratchsx", "scratchsy",
         "scratchunicode", "scratchunicodeone", "scratchunicodetwo", "scratchunicodethree",
         "scratchmin", "scratchmax",
         "scratchread", "scratchwrite",
@@ -481,7 +488,7 @@ return {
         --
         -- "everyendpar",
         --
-        "endgraf", "endpar", "reseteverypar", "finishpar", "empty", "null", "space", "quad", "enspace", "emspace", "charspace", "nbsp", "crlf",
+        "endgraf", "endpar", "reseteverypar", "finishpar", "null", "space", "quad", "enspace", "emspace", "charspace", "nbsp", "crlf",
         "obeyspaces", "obeylines", "obeytabs", "obeypages", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
         "normalspace", "naturalspace", "controlspace", "normalspaces",
         "ignoretabs", "ignorelines", "ignorepages", "ignoreeofs", "setcontrolspaces",
@@ -559,6 +566,8 @@ return {
         "startnointerference", "stopnointerference",
         --
         "twodigits","threedigits",
+        --
+        "jobposx", "jobposy", "jobposw", "jobposh", "jobposd",
         --
         "leftorright",
         --
@@ -679,6 +688,7 @@ return {
         --
         "lesshyphens", "morehyphens", "nohyphens", "dohyphens", "dohyphencollapsing", "nohyphencollapsing",
         "compounddiscretionary",
+        "doapostrophes", "noapostrophes",
         --
         "Ucheckedstartdisplaymath", "Ucheckedstopdisplaymath",
         --

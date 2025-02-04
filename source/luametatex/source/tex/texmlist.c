@@ -1655,9 +1655,64 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                                     chr = curchr;
                                     besttarget = total;
                                     if (total >= (targetsize - tolerance)) {
-                                        goto FOUND;
+                                        /*tex 
+
+                                            In tfm files we don't have a chain as in opentype where 
+                                            the character that we look at is a useable shape itself. 
+                                            Think of 
+
+                                            \starttyping
+                                            base -> size1 -> size2 -> size3 [with extensible recipe]
+                                            \stoptyping 
+
+                                            where in tfm we have 
+
+                                            \starttyping
+                                            base -> size1 -> size2 -> size3 -> char [with recipe]
+                                            \stoptyping 
+
+                                            The char can be anything. For braces we have a chain of 
+                                            sizes that eventually points to e.g. a bottom brace 
+                                            piece and the recipe will use that one with others. For 
+                                            brackets the same is true and both share the middle 
+                                            piece (small bar). Most characters have an initial 
+                                            extensible that is a valid shape too. So, no user will 
+                                            ever see a |\delimiter| definition that point to some 
+                                            weird glyph (like a snippet). 
+
+                                            However, in plain the |\arrowvert| has an extensible 
+                                            that does not point to a size variant but to the middle 
+                                            piece of the extensible brace (which is quite large). 
+                                            Its recipe does not refer to itself but only to a 
+                                            repeated bar like snippet. Actuallty there are three 
+                                            bars: |\vert|, |\arrowvert| and |\bracevert| where the 
+                                            last one used the thickish extensible bar piece. 
+
+                                            So, when we have a traditional font, we need to {\em 
+                                            not} look at the character that has the recipe at all! 
+                                            In \LUATEX\ (per Januari 2025) we now quit on that (as 
+                                            e.g. \PDFTEX\ does) in the loop (similar to here) that 
+                                            handles both traditional and OPENTYPE\ fonts. It is of 
+                                            course curious that this went unnoticed for decades. 
+
+                                            This is something that we can best intercept when a 
+                                            font is being loaded, but we could also check for the 
+                                            family being different. We can enable it when really 
+                                            needed but currently I have no time (or motivation) to 
+                                            test this for interference. 
+
+                                        */
+                                        # if 0
+                                            if (delimiter_small_family(delimiter) != delimiter_large_family(delimiter)) {
+                                                goto FOUND;
+                                            } else if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
+                                                goto FOUND;
+                                            }
+                                        # else 
+                                            goto FOUND;
+                                        # endif
                                     }
-                               }
+                                }
                             }
                             if (tex_char_has_tag_from_font(curfnt, curchr, extensible_tag)) {
                                 if (tex_char_has_tag_from_font(curfnt, curchr, horizontal_tag) || tex_char_has_tag_from_font(curfnt, curchr, vertical_tag)) {
@@ -1669,7 +1724,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                                     }
                                 }
                                 goto FOUND;
-                            } else if (count > scaling_factor) {
+                            } else if (count > 1000) {
                                 tex_formatted_warning("fonts", "endless loop in extensible character %U of font %F", curchr, curfnt);
                                 goto FOUND;
                             } else if (tex_char_has_tag_from_font(curfnt, curchr, list_tag)) {
@@ -2234,7 +2289,7 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                  node_next(temp_head) = null;
             }
         } else if (callback_id == 0) {
-             node_next(temp_head) = tex_mlist_to_hlist(mlist, penalties, style, beginclass, endclass, NULL);
+             node_next(temp_head) = tex_mlist_to_hlist(mlist, penalties, style, beginclass, endclass, NULL, m_to_h_engine);
         } else {
              node_next(temp_head) = null;
         }
@@ -2380,7 +2435,7 @@ static halfword tex_aux_clean_box(halfword n, int main_style, int style, quarter
             goto FOUND;
     }
     /*tex This might add some italic correction. */
-    list = tex_mlist_to_hlist(mlist, 0, main_style, unset_noad_class, unset_noad_class, kerns);
+    list = tex_mlist_to_hlist(mlist, 0, main_style, unset_noad_class, unset_noad_class, kerns, m_to_h_cleanup);
     /*tex recursive call */
     tex_aux_set_current_math_size(style); /* persists after call */
   FOUND:
@@ -3145,9 +3200,9 @@ static inline halfword tex_aux_get_radical_width(halfword target, halfword p)
 
 static void tex_aux_make_over_delimiter(halfword target, int style, int size)
 {
-    halfword result;
-    scaled delta;
-    int stack;
+    halfword result = null;
+    scaled delta = 0;
+    int stack = 0;
     scaled shift = tex_get_math_y_parameter_checked(style, math_parameter_over_delimiter_bgap);
     scaled clearance = tex_get_math_y_parameter_checked(style, math_parameter_over_delimiter_vgap);
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_over_delimiter_variant), style, math_nucleus_list, 0, NULL);
@@ -3184,9 +3239,9 @@ static void tex_aux_make_over_delimiter(halfword target, int style, int size)
 
 static void tex_aux_make_under_delimiter(halfword target, int style, int size)
 {
-    halfword result;
-    scaled delta;
-    int stack;
+    halfword result = null;
+    scaled delta = 0;
+    int stack = 0;
     scaled shift = tex_get_math_y_parameter_checked(style, math_parameter_under_delimiter_bgap);
     scaled clearance = tex_get_math_y_parameter_checked(style, math_parameter_under_delimiter_vgap);
     halfword content = tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_delimiter_variant), style, math_nucleus_list, 0, NULL);
@@ -3199,7 +3254,6 @@ static void tex_aux_make_under_delimiter(halfword target, int style, int size)
     if (! delimiter) {
         delimiter = tex_aux_make_delimiter(target, under_delimiter, size, width, 1, style, 1, &stack, NULL, 0, has_noad_option_nooverflow(target), NULL, 0, mergedattr, 0, 1);    
     }
-
     fraction_left_delimiter(target) = null;
     delimiter = tex_aux_check_radical(target, stack, delimiter, content);
     tex_aux_fixup_radical_width(target, delimiter, content);
@@ -4975,11 +5029,16 @@ static halfword tex_aux_check_ord(halfword current, halfword size, halfword next
                     if (curfnt && curchr) {
                         halfword kern = 0;
                         halfword italic = 0;
-                        if (next) {
+                        /*tex 
+                            Contrary to \LUATEX which has also checks the class of the next atom 
+                            with something |node_subtype(next) < punct_noad_type|, we control it 
+                            by flags. 
+                        */
+                        if (next && node_type(next) == simple_noad) {
                             halfword nxtnucleus = noad_nucleus(next); 
                             halfword nxtfnt = null;
                             halfword nxtchr = null;
-                            if (node_type(nxtnucleus) == math_char_node && kernel_math_family(nucleus) == kernel_math_family(nxtnucleus)) {
+                            if (nxtnucleus && node_type(nxtnucleus) == math_char_node && kernel_math_family(nucleus) == kernel_math_family(nxtnucleus)) {
                                 tex_aux_fetch(nxtnucleus, "ordinal", &nxtfnt, &nxtchr);
                                 if (nxtfnt && nxtchr) {
                                     halfword mainclass = node_subtype(current);
@@ -4989,7 +5048,7 @@ static halfword tex_aux_check_ord(halfword current, halfword size, halfword next
                                             /* ignore */
                                         } else if (tex_math_has_class_option(mainclass, check_italic_correction_class_option)) {
                                             /* ignore */
-                                        } else if (tex_aux_math_engine_control(curfnt, math_control_apply_ordinary_italic_kern)) { 
+                                        } else {
                                             kern = tex_aux_math_x_size_scaled(curfnt, tex_get_kern(curfnt, curchr, nxtchr), size);
                                         }
                                     }
@@ -4998,7 +5057,7 @@ static halfword tex_aux_check_ord(halfword current, halfword size, halfword next
                                             /* ignore */
                                         } else if (tex_math_has_class_option(mainclass, check_kern_pair_class_option)) {
                                             /* ignore */
-                                        } else if (tex_aux_math_engine_control(curfnt, math_control_apply_ordinary_italic_kern)) { 
+                                        } else {
                                             italic = tex_aux_math_x_size_scaled(curfnt, tex_char_italic_from_font(curfnt, curchr), size);
                                         }
                                     }
@@ -6885,7 +6944,7 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                     halfword ghost = node_type(target) == simple_noad && node_subtype(target) == ghost_noad_subtype;
                     halfword last = fenced ? tex_tail_of_node_list(list) : null;
                     int unpack = tex_math_has_class_option(node_subtype(target), unpack_class_option) || has_noad_option_unpacklist(target);
-                    halfword result = tex_mlist_to_hlist(list, unpack, style, unset_noad_class, unset_noad_class, kerns); /*tex Here we're nesting. */
+                    halfword result = tex_mlist_to_hlist(list, unpack, style, unset_noad_class, unset_noad_class, kerns, m_to_h_sublist); /*tex Here we're nesting. */
                     tex_aux_set_current_math_size(style);
                     package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
                     if (ghost) { 
@@ -6980,15 +7039,15 @@ static halfword tex_aux_make_choice(halfword current, halfword style)
                 choice_post_break(current) = null;
                 choice_no_break(current) = null;
                 if (pre) { 
-                    pre = tex_mlist_to_hlist(pre, 0, style, unset_noad_class, unset_noad_class, NULL);
+                    pre = tex_mlist_to_hlist(pre, 0, style, unset_noad_class, unset_noad_class, NULL, m_to_h_pre);
                     tex_set_disc_field(disc, pre_break_code, pre);
                 }
                 if (post) { 
-                    post = tex_mlist_to_hlist(post, 0, style, unset_noad_class, unset_noad_class, NULL);
+                    post = tex_mlist_to_hlist(post, 0, style, unset_noad_class, unset_noad_class, NULL, m_to_h_post);
                     tex_set_disc_field(disc, post_break_code, post);
                 }
                 if (replace) { 
-                    replace = tex_mlist_to_hlist(replace, 0, style, unset_noad_class, unset_noad_class, NULL);
+                    replace = tex_mlist_to_hlist(replace, 0, style, unset_noad_class, unset_noad_class, NULL, m_to_h_replace);
                     tex_set_disc_field(disc, no_break_code, replace);
                 }
                 disc_class(disc) = choice_class(current);
@@ -7797,8 +7856,9 @@ static void tex_mlist_aux_realign(halfword first, halfword last)
                                                                 halfword c = box_list(b);
                                                                 while (c) {
                                                                     if (node_type(c) == kern_node && node_subtype(c) == math_shape_kern_subtype) {
+                                                                        scaled delta; 
                                                                         box_width(b) -= kern_amount(c); 
-                                                                        scaled delta = box_width(b) - box_width(list);
+                                                                        delta = box_width(b) - box_width(list);
                                                                         if (delta > 0) {
                                                                             box_width(list) += delta; 
                                                                         }
@@ -8559,7 +8619,7 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
     }
 }
 
-halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int beginclass, int endclass, kernset *kerns) /* classes should be quarterwords */
+halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int beginclass, int endclass, kernset *kerns, int where) /* classes should be quarterwords */
 {
     /*tex
         We start with a little housekeeping. There are now only two variables that live across the
@@ -8579,6 +8639,8 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
         .max_depth = 0,
         .single = 0,
     };
+    (void) where; /* only used when tracing */
+ // printf("mlist to hlist %i.1\n",where);
     if (kerns) { 
         tex_math_wipe_kerns(kerns);
     }
@@ -8587,24 +8649,29 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
         Here we can deal with end_class spacing: we can inject a dummy current atom with no content and
         just a class. In fact, we can always add a begin and endclass. A nucleus is kind of mandate. 
     */
+ // printf("mlist to hlist %i.2\n",where);
     tex_mlist_to_hlist_set_boundaries(&state);
     /*tex
         This first pass processes the bodies of radicals so that we can normalize them when height
         and/or depth are set.
     */
+ // printf("mlist to hlist %i.3\n",where);
     tex_mlist_to_hlist_preroll_radicals(&state);
     /*tex
         Make a second pass over the mlist. This is needed in order to get the maximum height and 
         depth in order to make fences match.
     */
+ // printf("mlist to hlist %i.4\n",where);
     tex_mlist_to_hlist_preroll_dimensions(&state);
     /*tex
         Continuation atoms with scripts get realigned in this third pass. 
     */
+ // printf("mlist to hlist %i.5\n",where);
     tex_mlist_to_hlist_preroll_continuation(&state);
     /*tex
         The fence sizing is done in the fourth pass. Using a dedicated pass permits experimenting.
     */
+ // printf("mlist to hlist %i.6\n",where);
     tex_mlist_to_hlist_size_fences(&state);
     /*tex
         Make a fifth pass over the mlist; traditionally this was the second pass. We removing all 
@@ -8619,17 +8686,21 @@ halfword tex_mlist_to_hlist(halfword mlist, int penalties, int main_style, int b
         current end of the final hlist.} However, in \LUAMETATEX\ the fence sizing has already be 
         done in the previous pass. 
     */
+ // printf("mlist to hlist %i.7\n",where);
     tex_mlist_to_hlist_finalize_list(&state);
     /*tex
         We're done now and can restore the possibly changed values as well as provide some feedback
         about the result.
     */
-    tex_unsave_math_data(cur_level + lmt_math_state.level);
+ // printf("mlist to hlist %i.8\n",where);
+    tex_unsave_math_data(cur_level + lmt_math_state.level); // -1 
+ // printf("mlist to hlist %i.9\n",where);
     cur_list.math_begin = state.beginclass;
     cur_list.math_end = state.endclass;
     lmt_math_state.single = state.single;
     glyph_scale_par = state.scale;
     --lmt_math_state.level;
     node_prev(node_next(temp_head)) = null;
+ // printf("mlist to hlist %i.0\n",where);
     return node_next(temp_head);
 }

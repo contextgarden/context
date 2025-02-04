@@ -45,10 +45,10 @@ local report_empty       = logs.reporter("references","empty")
 local report             = report_references
 
 local variables          = interfaces.variables
-local v_page             = variables.page
-local v_auto             = variables.auto
-local v_yes              = variables.yes
-local v_name             = variables.name
+local v_page             <const> = variables.page
+local v_auto             <const> = variables.auto
+local v_yes              <const> = variables.yes
+local v_name             <const> = variables.name
 
 local context            = context
 local commands           = commands

@@ -81,7 +81,7 @@
         ma          \c_attr_colormodel
         ca          \c_attr_color
         ta          \c_attr_transparency
-        n           \numexpr\firstlineparameter\c!n\relax
+        n           {\firstlineparameter\c!n}%
         font        \fontid\font
         dynamic     \font_dynamic_value
    \relax

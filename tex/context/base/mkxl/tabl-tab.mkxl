@@ -780,8 +780,8 @@
    \!TsFinishEnlarge}
 
 \def\!TsFinishEnlarge
-  {\ht\scratchbox\dimexpr\ht\scratchbox+\!taDimenA\relax
-   \dp\scratchbox\dimexpr\dp\scratchbox+\!taDimenB\relax
+  {\ht\scratchbox{\ht\scratchbox+\!taDimenA}%
+   \dp\scratchbox{\dp\scratchbox+\!taDimenB}%
    \box\scratchbox
    \!TsSpaceFactor\relax}
 
@@ -887,8 +887,8 @@
 \def\tabl_table_normal_line_format#1#2%
   {\vrule
      \s!width \zeropoint
-     \s!height\dimexpr\tablestrutheightfactor\d_tabl_table_strut_unit+#1\d_tabl_table_strut_unit\relax
-     \s!depth \dimexpr\tablestrutdepthfactor \d_tabl_table_strut_unit+#2\d_tabl_table_strut_unit\relax
+     \s!height{\tablestrutheightfactor\d_tabl_table_strut_unit+#1\d_tabl_table_strut_unit}%
+     \s!depth {\tablestrutdepthfactor \d_tabl_table_strut_unit+#2\d_tabl_table_strut_unit}%
    \relax
    \cr}
 
@@ -1008,7 +1008,7 @@
    \tabl_table_normal_short_rule}
 
 \def\!ttGetHalfRuleThickness
-  {\scratchdimen\dimexpr
+  {\scratchdimen{%
      \ifnum\!tgCode=\plusone
        \ifempty\!tgValue
          \c_tabl_table_hrule_thickness_factor
@@ -1018,7 +1018,7 @@
        \d_tabl_table_line_thickness_unit
      \else
        \!tgValue      % user-specified dimension
-     \fi
+     \fi}%
   \divideby\scratchdimen\plustwo}
 
 % \emptyhbox prevents \unskip
@@ -2198,7 +2198,7 @@
 \def\tabl_table_local_setups
   {\directtablesparameter\c!commands\relax
    \usebodyfontparameter\directtablesparameter
-   \d_tabl_table_line_thickness_unit\dimexpr\directtablesparameter\c!rulethickness/\tablelinethicknessfactor\relax
+   \d_tabl_table_line_thickness_unit{(\directtablesparameter\c!rulethickness)/\tablelinethicknessfactor}%
    \edef\p_tabl_table_height{\directtablesparameter\c!height}%
    \edef\p_tabl_table_depth{\directtablesparameter\c!depth}%
    \ifx\p_tabl_table_height\v!strut

@@ -25,10 +25,10 @@
     % we can optimize for zero and 1000 .. maybe also options?
     \overloaded\frozen\protected\edefcsname\currenttweakedfont\endcsname
       {\begincsname\tweakedfontparameter\c!style\endcsname
-       \glyphxscale \numexpr\numericscale\tweakedfontparameter\c!xscale*\glyphxscale/\plusthousand\relax
-       \glyphyscale \numexpr\numericscale\tweakedfontparameter\c!yscale*\glyphyscale/\plusthousand\relax
-       \glyphxoffset\dimexpr\glyphxoffset+\tweakedfontparameter\c!xoffset\relax
-       \glyphyoffset\dimexpr\glyphyoffset+\tweakedfontparameter\c!yoffset\relax}%
+       \glyphxscale {\numericscale\tweakedfontparameter\c!xscale*\glyphxscale/\plusthousand}%
+       \glyphyscale {\numericscale\tweakedfontparameter\c!yscale*\glyphyscale/\plusthousand}%
+       \glyphxoffset{\glyphxoffset+(\tweakedfontparameter\c!xoffset)}%
+       \glyphyoffset{\glyphyoffset+(\tweakedfontparameter\c!yoffset)}}%
 \to \everydefinetweakedfont
 
 \setuptweakedfont

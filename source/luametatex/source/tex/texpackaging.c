@@ -168,7 +168,7 @@ int tex_show_packaging_record(void)
     tex_print_str("box, ");
     switch (saved_type(0)) { 
         case saved_record_0:
-            tex_print_format("slot %i, context %i, packing %i", save_value_1(0), saved_value_2(0), saved_value_3(0));
+            tex_print_format("slot %i, context %i, packing %i", saved_value_1(0), saved_value_2(0), saved_value_3(0));
             break;
         case saved_record_1:
             tex_print_format("amount %p, direction %i, pointer %i", saved_value_1(0), saved_value_2(0), saved_value_3(0));
@@ -1351,10 +1351,10 @@ void tex_limit(halfword p)
         double set = (double) box_glue_set(p);
         halfword order = box_glue_order(p);
         singleword sign = box_glue_sign(p);
-        int limit = set > 1 && order == normal_glue_order; 
+        int limit = set > 1.0 && order == normal_glue_order; 
         if (limit) {
-            double nonfrozen = 0;
-            double frozen = 0;
+            long long nonfrozen = 0;
+            long long frozen = 0;
             while (c) {
                 if (node_type(c) == glue_node) {
                     switch (sign) {
@@ -1380,8 +1380,8 @@ void tex_limit(halfword p)
                 }
                 c = node_next(c);
             }
-            if (frozen) { 
-                set = (set * (frozen + nonfrozen) - frozen) / nonfrozen; 
+            if (nonfrozen) { /* was: frozen, needs checking */
+                set = (double) (set * (frozen + nonfrozen) - frozen) / (double) nonfrozen; 
             } else { 
                 limit = 0;
             }
@@ -1485,8 +1485,6 @@ scaled tex_shrink(halfword p)
     }
     return shrink;
 }
-
-int nn = 0;
 
 halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direction, int retain, int limit)
 {
@@ -1873,39 +1871,40 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
             */
             lmt_packaging_state.last_badness = tex_badness(excess, lmt_packaging_state.total_stretch[normal_glue_order]);
             if (lmt_packaging_state.last_badness > hbadness_par) {
-                int callback_id = lmt_callback_defined(hpack_quality_callback);
-                const char *verdict = lmt_packaging_state.last_badness > 100 ? "underfull" : "loose" ; // beware, this needs to be adapted to the configureable 99 
-                if (callback_id > 0) {
-                    if (tail) { 
-                        halfword rule = null;
-                        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->N",
-                         // lmt_packaging_state.last_badness > 100  ? "underfull" : "loose", // beware, this needs to be adapted to the configureable 99 
-                            verdict, 
-                            lmt_packaging_state.last_badness,
-                            result,
-                            abs(lmt_packaging_state.pack_begin_line),
-                            lmt_input_state.input_line,
-                            tex_current_input_file_name(),
-                            &rule
-                        );
-                        if (rule && rule != result) {
-                            tex_aux_append_diagnostic_rule(result, rule);
+                int what = badness_mode_nothing;
+                if (hbadness_mode_par & badness_mode_loose) { 
+                    what = badness_mode_loose;
+                } else if ((hbadness_mode_par & badness_mode_underfull) && (lmt_packaging_state.last_badness > 100)) {
+                    what = badness_mode_underfull;
+                }
+                if (what != badness_mode_nothing) {
+                    int callback_id = lmt_callback_defined(hpack_quality_callback);
+                    const char *verdict = what == badness_mode_underfull ? "underfull" : "loose"; // beware, this needs to be adapted to the configureable 99 
+                    if (callback_id > 0) {
+                        if (tail) { 
+                            halfword rule = null;
+                            lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->N",
+                                verdict, 
+                                lmt_packaging_state.last_badness,
+                                result,
+                                abs(lmt_packaging_state.pack_begin_line),
+                                lmt_input_state.input_line,
+                                tex_current_input_file_name(),
+                                &rule
+                            );
+                            if (rule && rule != result) {
+                                tex_aux_append_diagnostic_rule(result, rule);
+                            }
                         }
+                    } else {
+                        tex_print_nlp();
+                        tex_print_format(
+                            "%l[package: %s \\hbox (badness %i)", 
+                            verdict,
+                            lmt_packaging_state.last_badness
+                        );
+                        goto COMMON_ENDING;
                     }
-                } else {
-                    tex_print_nlp();
-                 // if (lmt_packaging_state.last_badness > 100) {
-                 //     tex_print_format("%l[package: underfull \\hbox (badness %i)", lmt_packaging_state.last_badness);
-                 // } else {
-                 //     tex_print_format("%l[package: loose \\hbox (badness %i)", lmt_packaging_state.last_badness);
-                 // }
-                    tex_print_format(
-                        "%l[package: %s \\hbox (badness %i)", 
-                     // lmt_packaging_state.last_badness > 100 ? "underfull" : "loose",
-                        verdict,
-                        lmt_packaging_state.last_badness
-                    );
-                    goto COMMON_ENDING;
                 }
             }
         }
@@ -1936,7 +1935,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
                 /*tex Use the maximum shrinkage */
                 box_glue_set(result) = 1.0;
                 /*tex Report an overfull hbox and |goto common_ending|, if this box is sufficiently bad. */
-                if ((overshoot > hfuzz_par) || (hbadness_par < 100)) {
+                if (((overshoot > hfuzz_par) || (hbadness_par < 100)) && (hbadness_mode_par & badness_mode_overfull)) {
                     int callback_id = lmt_callback_defined(hpack_quality_callback);
                     halfword rule = null;
                     if (callback_id > 0) {
@@ -1964,7 +1963,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
             } else {
                 /*tex Report a tight hbox and |goto common_ending|, if this box is sufficiently bad. */
                 lmt_packaging_state.last_badness = tex_badness(-excess, lmt_packaging_state.total_shrink[normal_glue_order]);
-                if (lmt_packaging_state.last_badness > hbadness_par) {
+                if (lmt_packaging_state.last_badness > hbadness_par && (hbadness_mode_par & badness_mode_tight)) {
                     int callback_id = lmt_callback_defined(hpack_quality_callback);
                     if (callback_id > 0) {
                         halfword rule = null;
@@ -2797,25 +2796,30 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
                 /*tex Report an underfull vbox and |goto common_ending|, if this box is sufficiently bad. */
                 lmt_packaging_state.last_badness = tex_badness(targetexcess, lmt_packaging_state.total_stretch[normal_glue_order]);
                 if (lmt_packaging_state.last_badness > vbadness_par) {
-                    int callback_id = lmt_callback_defined(vpack_quality_callback);
-                    if (callback_id > 0) {
-                        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
-                            lmt_packaging_state.last_badness > 100 ? "underfull" : "loose",
-                            lmt_packaging_state.last_badness,
-                            box,
-                            abs(lmt_packaging_state.pack_begin_line),
-                            lmt_input_state.input_line,
-                            tex_current_input_file_name()
-                        );
-                     // goto EXIT;
-                    } else {
-                        tex_print_nlp();
-                        if (lmt_packaging_state.last_badness > 100) {
-                            tex_print_format("%l[package: underfull \\vbox (badness %i)", lmt_packaging_state.last_badness);
+                    int what = badness_mode_nothing;
+                    if (vbadness_mode_par & badness_mode_loose) { 
+                        what = badness_mode_loose;
+                    } else if ((vbadness_mode_par & badness_mode_underfull) && (lmt_packaging_state.last_badness > 100)) {
+                        what = badness_mode_underfull;
+                    }
+                    if (what != badness_mode_nothing) {
+                        int callback_id = lmt_callback_defined(vpack_quality_callback);
+                        const char *verdict = what == badness_mode_underfull ? "underfull" : "loose"; // beware, this needs to be adapted to the configureable 99 
+                        if (callback_id > 0) {
+                            lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
+                                verdict,
+                                lmt_packaging_state.last_badness,
+                                box,
+                                abs(lmt_packaging_state.pack_begin_line),
+                                lmt_input_state.input_line,
+                                tex_current_input_file_name()
+                            );
+                         // goto EXIT;
                         } else {
-                            tex_print_format("%l[package: loose \\vbox (badness %i)", lmt_packaging_state.last_badness);
+                            tex_print_nlp();
+                            tex_print_format("%l[package: %s \\vbox (badness %i)", verdict, lmt_packaging_state.last_badness);
+                            goto COMMON_ENDING;
                         }
-                        goto COMMON_ENDING;
                     }
                 }
             }
@@ -2840,7 +2844,7 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
                     /*tex Use the maximum shrinkage */
                     box_glue_set(box)  = 1.0;
                     /*tex Report an overfull vbox and |goto common_ending|, if this box is sufficiently bad. */
-                    if ((overshoot > vfuzz_par) || (vbadness_par < 100)) {
+                    if (((overshoot > vfuzz_par) || (vbadness_par < 100)) && (vbadness_mode_par & badness_mode_overfull)) {
                         int callback_id = lmt_callback_defined(vpack_quality_callback);
                         if (callback_id > 0) {
                             lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
@@ -2854,14 +2858,14 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
                          // goto EXIT;
                         } else {
                             tex_print_nlp();
-                            tex_print_format("%l[package: overfull \\vbox (%p too high)", - targetexcess - lmt_packaging_state.total_shrink[normal_glue_order]);
+                            tex_print_format("%l[package: overfull \\vbox (%p too high)", overshoot);
                             goto COMMON_ENDING;
                         }
                     }
                 } else {
                     /*tex Report a tight vbox and |goto common_ending|, if this box is sufficiently bad. */
                     lmt_packaging_state.last_badness = tex_badness(-targetexcess, lmt_packaging_state.total_shrink[normal_glue_order]);
-                    if (lmt_packaging_state.last_badness > vbadness_par) {
+                    if (lmt_packaging_state.last_badness > vbadness_par && (vbadness_mode_par & badness_mode_tight)) {
                         int callback_id = lmt_callback_defined(vpack_quality_callback);
                         if (callback_id > 0) {
                             lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "SdNddS->",
@@ -3045,8 +3049,8 @@ void tex_package(singleword nature)
     int grp = cur_group;
     scaled maxdepth = box_max_depth_par;
     tex_unsave();
+    lmt_save_state.save_stack_data.ptr -= saved_box_n_of_records;
     {
-        lmt_save_state.save_stack_data.ptr -= saved_box_n_of_records;
         halfword boxnode = null; /*tex Aka |cur_box|. */
         /*tex 
             We need to save some over the callback because it can do something that messes with 
@@ -3862,6 +3866,11 @@ halfword tex_vert_break(halfword current, scaled height, scaled depth, int callb
                 active_height[total_stretch_amount + glue_stretch_order(current)] += glue_stretch(current);
                 active_height[total_shrink_amount] += glue_shrink(current);
                 if (glue_shrink_order(current) != normal_glue_order  && glue_shrink(current)) {
+                    /*tex 
+                        Other engines now can bypass this error message but we don't follow that 
+                        approach here because we're more into \quote {mechanmism control}. We could 
+                        however, if really needed, make it |warning_error_type|. 
+                    */
                     tex_handle_error(
                         normal_error_type,
                         "Infinite glue shrinkage found in box being split",
@@ -4393,4 +4402,76 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
     }
     /*tex In simple cases, we use the box immediately. */
     tex_box_end(boxcontext, boxnode, shift, unset_noad_class, slot, callback, leaders);
+}
+
+/*tex
+
+    0x0001 : non data par nodes
+    0x0002 : direction noded
+    0x0004 : indentation nodes
+
+*/
+
+int tex_is_effectively_empty(halfword n, halfword options) 
+{
+    while (n) { 
+        switch (node_type(n)) { 
+            case par_node:
+                if (options & effective_empty_option_par) { 
+                    switch (node_subtype(n)) { 
+                        case vmode_par_par_subtype:
+                     // case local_box_par_subtype:
+                        case hmode_par_par_subtype:
+                        case parameter_par_subtype:
+                     // case local_break_par_subtype:
+                     // case math_par_subtype:   
+                            break;
+                        default:
+                            return 0;
+                    }
+                    break;
+                } else { 
+                    return 0;
+                }
+            case dir_node:
+                if (options & effective_empty_option_dir) { 
+                    break;
+                } else { 
+                    return 0;
+                }
+            case glue_node:
+                if (options & effective_empty_option_indent_glue) { 
+                    switch (node_subtype(n)) {
+                        case indent_skip_glue:
+                        case par_init_left_skip_glue:
+                        case par_init_right_skip_glue:
+                            break;
+                        default:
+                            return 0;
+                    }
+                    break;
+                } else {
+                    return 0;
+                }
+        case hlist_node:
+                if (options & effective_empty_option_indent_list) { 
+                    switch (node_subtype(n)) {
+                        case indent_list:
+                            break;
+                        default:
+                            return 0;
+                    }
+                    break;
+                } else { 
+                    return 0;
+                }
+         // case boundary_node:
+         //     /* maybe some */
+         //    return 0;
+            default: 
+                return 0;
+        }
+        n = node_next(n);
+    }
+    return 1;
 }

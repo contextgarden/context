@@ -56,22 +56,18 @@ insert_state_info lmt_insert_state = {
 typedef enum saved_insert_entries {
     saved_insert_index_entry    = 0, 
     saved_insert_data_entry     = 0, 
- // saved_insert_reserved_entry = 0, 
+    saved_insert_callback_entry = 0, 
     saved_insert_n_of_records   = 1,
 } saved_insert_entries;
 
 # define saved_insert_index    saved_value_1(saved_insert_index_entry)
 # define saved_insert_data     saved_value_2(saved_insert_data_entry)
-//define saved_insert_reserved saved_value_3(saved_insert_reserved_entry)
+# define saved_insert_callback saved_value_3(saved_insert_callback_entry)
 
 static inline void saved_inserts_initialize(void)
 {
     saved_type(0) = saved_record_0;
-    saved_type(1) = saved_record_1;
- // saved_type(2) = saved_record_2;
     saved_record(0) = insert_save_type;
-    saved_record(1) = insert_save_type;
- // saved_record(1) = insert_save_type;
 }
 
 void tex_show_insert_group(void)
@@ -83,12 +79,15 @@ void tex_show_insert_group(void)
 int tex_show_insert_record(void)
 {
     tex_print_str("insert ");
-    switch (save_type(lmt_save_state.save_stack_data.ptr)) { 
+    switch (saved_type(0)) { 
        case saved_record_0:
-            tex_print_format("index %i", saved_insert_index);
+            tex_print_format("index %i", saved_insert_index);       // saved_value_1(0)
             break;
        case saved_record_1:
-            tex_print_format("data %i", saved_insert_data);
+            tex_print_format("data %i", saved_insert_data);         // saved_value_2(0)  
+            break;
+       case saved_record_2:
+            tex_print_format("callback %i", saved_insert_callback); // saved_value_3(0)
             break;
         default: 
             return 0;
@@ -248,6 +247,23 @@ scaled tex_get_insert_line_depth(halfword i)
         return 0;
     }
 }
+scaled tex_get_insert_stretch(halfword i) 
+{
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        return lmt_insert_state.inserts[i].stretch;
+    } else { 
+        return 0;
+    }
+}
+
+scaled tex_get_insert_shrink(halfword i) 
+{
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        return lmt_insert_state.inserts[i].shrink;
+    } else { 
+        return 0;
+    }
+}
 
 halfword tex_get_insert_storage(halfword i)
 {
@@ -268,7 +284,8 @@ void tex_set_insert_limit(halfword i, scaled v)
     }
 }
 
-void tex_set_insert_multiplier(halfword i, halfword v) {
+void tex_set_insert_multiplier(halfword i, halfword v) 
+{
     if (tex_valid_insert_id(i)) {
         switch (lmt_insert_state.mode) {
             case index_insert_mode: insert_multiplier(i) = v; break;
@@ -277,21 +294,24 @@ void tex_set_insert_multiplier(halfword i, halfword v) {
     }
 }
 
-void tex_set_insert_penalty(halfword i, halfword v) {
+void tex_set_insert_penalty(halfword i, halfword v) 
+{
     if (tex_valid_insert_id(i) && lmt_insert_state.mode == class_insert_mode) {
         lmt_insert_state.inserts[i].options = set_insert_option(lmt_insert_state.inserts[i].options, insert_option_penalty);
         lmt_insert_state.inserts[i].penalty = v;
     }
 }
 
-void tex_set_insert_maxdepth(halfword i, halfword v) {
+void tex_set_insert_maxdepth(halfword i, halfword v) 
+{
     if (tex_valid_insert_id(i) && lmt_insert_state.mode == class_insert_mode) {
         lmt_insert_state.inserts[i].options = set_insert_option(lmt_insert_state.inserts[i].options, insert_option_maxdepth);
         lmt_insert_state.inserts[i].maxdepth = v;
     }
 }
 
-void tex_set_insert_distance(halfword i, halfword v) {
+void tex_set_insert_distance(halfword i, halfword v) 
+{
     if (tex_valid_insert_id(i)) {
         int d = null;
         switch (lmt_insert_state.mode) {
@@ -308,28 +328,32 @@ void tex_set_insert_distance(halfword i, halfword v) {
     }
 }
 
-void tex_set_insert_height(halfword i, scaled v) {
+void tex_set_insert_height(halfword i, scaled v) 
+{
     halfword b = tex_aux_insert_box(i);
     if (b) {
         box_height(b) = v;
     }
 }
 
-void tex_set_insert_depth(halfword i, scaled v) {
+void tex_set_insert_depth(halfword i, scaled v) 
+{
     halfword b = tex_aux_insert_box(i);
     if (b) {
         box_depth(b) = v;
     }
 }
 
-void tex_set_insert_width(halfword i, scaled v) {
+void tex_set_insert_width(halfword i, scaled v) 
+{
     halfword b = tex_aux_insert_box(i);
     if (b) {
         box_width(b) = v;
     }
 }
 
-void tex_set_insert_content(halfword i, halfword v) {
+void tex_set_insert_content(halfword i, halfword v) 
+{
     /* can have old pointer to list */
     switch (lmt_insert_state.mode) {
         case index_insert_mode: insert_content(i) = v; break;
@@ -337,15 +361,30 @@ void tex_set_insert_content(halfword i, halfword v) {
     }
 }
 
-void tex_set_insert_line_height(halfword i, halfword v) {
+void tex_set_insert_line_height(halfword i, scaled v) 
+{
     if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
         lmt_insert_state.inserts[i].lineheight = v;
     }
 }
 
-void tex_set_insert_line_depth(halfword i, halfword v) {
+void tex_set_insert_line_depth(halfword i, scaled v) 
+{
     if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
         lmt_insert_state.inserts[i].linedepth = v;
+    }
+}
+
+void tex_set_insert_stretch(halfword i, scaled v) 
+{
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        lmt_insert_state.inserts[i].stretch = v;
+    }
+}
+
+void tex_set_insert_shrink(halfword i, scaled v) {
+    if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
+        lmt_insert_state.inserts[i].shrink = v;
     }
 }
 
@@ -520,12 +559,18 @@ void tex_undump_insert_data(dumpstream f) {
 void tex_run_insert(void)
 {
     int brace = 0;
+    halfword callback = 0;
     halfword data = 0;
     halfword index = -1;
     while (1) {
-        switch (tex_scan_character("diDI", 1, 1, 1)) {
+        switch (tex_scan_character("cdiCDI", 1, 1, 1)) {
             case 0:
                 goto DONE;
+            case 'c': case 'C':
+                if (tex_scan_mandate_keyword("callback", 1)) {
+                    callback = tex_scan_integer(0, NULL);
+                }
+                break;
             case 'd': case 'D':
                 /* identifier */
                 if (tex_scan_mandate_keyword("data", 1)) {
@@ -551,6 +596,7 @@ void tex_run_insert(void)
     saved_inserts_initialize();
     saved_insert_index = index;
     saved_insert_data = data;
+    saved_insert_callback = callback;
     lmt_save_state.save_stack_data.ptr += saved_insert_n_of_records;
     tex_new_save_level(insert_group);
     if (! brace) {
@@ -589,6 +635,7 @@ void tex_finish_insert_group(void)
         {
             halfword index = saved_insert_index;
             halfword data = saved_insert_data;
+            halfword callback = saved_insert_callback;
             halfword insert = tex_new_node(insert_node, 0);
             halfword maxdepth = tex_get_insert_maxdepth(index);
             halfword floating = tex_get_insert_penalty(index);
@@ -599,6 +646,7 @@ void tex_finish_insert_group(void)
             }
             insert_index(insert) = index;
             insert_identifier(insert) = data;
+            insert_callback(insert) = callback;
             insert_total_height(insert) = box_total(p);
             insert_list(insert) = box_list(p);
             insert_split_top(insert) = q;
@@ -606,6 +654,8 @@ void tex_finish_insert_group(void)
             insert_float_cost(insert) = has_insert_option(index, insert_option_penalty) ? f : floating;
             insert_line_height(insert) = tex_get_insert_line_height(index);
             insert_line_depth(insert) = tex_get_insert_line_depth(index);
+            insert_stretch(insert) = tex_get_insert_stretch(index);
+            insert_shrink(insert) = tex_get_insert_shrink(index);
             box_list(p) = null;
             tex_flush_node(p);
             if (tracing_inserts_par > 0) {

@@ -288,19 +288,19 @@
        \d_split_available_height\textheight
        \c_tabl_split_full\conditionaltrue
      \orelse\ifdim\pagegoal<\maxdimen
-       \d_split_available_height\dimexpr\pagegoal-\pagetotal\relax
+       \d_split_available_height{\pagegoal-\pagetotal}%
        \c_tabl_split_full\conditionalfalse
      \else
        \d_split_available_height\textheight
        \c_tabl_split_full\conditionaltrue
      \fi
    \fi
-   \d_split_available_height \dimexpr
+   \d_split_available_height {%
       \d_split_available_height
      -\d_split_inbetween_height
      -\d_split_minimum_free_space
      -\extrasplitfloatlines\lineheight
-   \relax
+   }%
    \ifdim\htdp\b_split_tail>\zeropoint
      \advanceby\d_split_available_height-\htdp\b_split_tail
    \fi
@@ -345,7 +345,7 @@
            \expand\t_split_inbetween
            \unvbox\scratchbox}%
         \quitloop
-      \orelse\ifdim\dimexpr\d_split_available_height-\htdp\scratchbox-\htdp\b_split_result\relax>\zeropoint
+      \orelse\ifdim{\d_split_available_height-\htdp\scratchbox-\htdp\b_split_result}>\zeropoint
         \setbox\b_split_result\vbox
           {\unvbox\b_split_result
            \expand\t_split_inbetween
@@ -388,7 +388,7 @@
    \else
      % hack
      \ifdim\pagegoal<\maxdimen
-       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+       \pagegoal{\pagegoal+\lineheight}% etex
      \fi
      % brrr
      \ifdim\ht\b_split_result>\zeropoint
@@ -439,15 +439,15 @@
    \orelse\ifconditional\splitfloatfirstdone
      \d_split_available_height\textheight
    \orelse\ifdim\pagegoal<\maxdimen
-     \d_split_available_height\dimexpr\pagegoal-\pagetotal\relax
+     \d_split_available_height{\pagegoal-\pagetotal}%
    \else
      \d_split_available_height\textheight
    \fi
-   \d_split_available_height\dimexpr
+   \d_split_available_height{%
       \d_split_available_height
      -\d_split_minimum_free_space
      -\extrasplitfloatlines\lineheight
-   \relax
+   }%
    \tsplitdirectsplitter\d_split_available_height % also sets state
    \ifdim\ht\b_split_result>\zeropoint
      \ifconditional\somenextsplitofffloat
@@ -456,7 +456,7 @@
      \ifconditional\splitfloatfixedheight
        % not relevant
      \orelse\ifdim\pagegoal<\maxdimen
-       \pagegoal\dimexpr\pagegoal+\lineheight\relax % etex
+       \pagegoal{\pagegoal+\lineheight}%
      \fi
      \page_split_float_process{\expand\t_split_before_result\box\b_split_result\expand\t_split_after_result}%
      \global\usesamefloatnumber\conditionaltrue % new, prevent next increment
@@ -495,7 +495,7 @@
 
 \permanent\def\handlesplittext#1%
   {\setbox\b_split_result\vbox
-     {\vsplit\b_split_content to \dimexpr#1-\lineheight\relax}}
+     {\vsplit\b_split_content to {#1-\lineheight}}}
 
 \permanent\protected\def\startsplittext
   {\begingroup

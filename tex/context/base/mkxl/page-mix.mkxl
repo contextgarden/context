@@ -293,13 +293,16 @@
 %D tricky as they will spill over to the next page.
 
 \protected\def\page_mix_command_set_vsize
-  {\vsize\dimexpr\c_page_mix_n_of_columns\textheight+\c_page_mix_n_of_columns\lineheight\relax
-   \pagegoal\dimexpr
+  {\vsize{%
+     \c_page_mix_n_of_columns\textheight
+    +\c_page_mix_n_of_columns\lineheight
+   }%
+   \pagegoal{%
      \vsize
-%   -\d_page_floats_inserted_top    % needs checking
-%   -\d_page_floats_inserted_bottom % needs checking
+  % -\d_page_floats_inserted_top    % needs checking
+  % -\d_page_floats_inserted_bottom % needs checking
     -\c_page_mix_n_of_columns\insertheights
-   \relax}
+   }}
 
 %D As we use \LUA\ there is the usual amount of tracing at that end. At the tex end
 %D we only visualize boxes.
@@ -360,7 +363,7 @@
 
 \installmixedcolumnseparator\v!rule
   {\vrule
-     \s!width \mixedcolumnsparameter\c!rulethickness
+     \s!width {\mixedcolumnsparameter\c!rulethickness}%
      \s!height\mixedcolumnseparatorheight
      \s!depth \mixedcolumnseparatordepth
    \relax}
@@ -573,13 +576,13 @@
 \def\page_mix_initialize_columns
   {\page_mix_enable_grid_snapping
    %
-   \d_page_mix_distance    \mixedcolumnsparameter\c!distance
-   \c_page_mix_n_of_columns\mixedcolumnsparameter\c!n
-   \d_page_mix_max_height  \mixedcolumnsparameter\c!maxheight
-   \d_page_mix_max_width   \mixedcolumnsparameter\c!maxwidth
-   \d_page_mix_balance_step\mixedcolumnsparameter\c!step
+   \d_page_mix_distance    {\mixedcolumnsparameter\c!distance}%
+   \c_page_mix_n_of_columns{\mixedcolumnsparameter\c!n}%
+   \d_page_mix_max_height  {\mixedcolumnsparameter\c!maxheight}%
+   \d_page_mix_max_width   {\mixedcolumnsparameter\c!maxwidth}%
+   \d_page_mix_balance_step{\mixedcolumnsparameter\c!step}%
    %
-   \d_page_mix_max_width\dimexpr\d_page_mix_max_width-\leftskip-\rightskip\relax
+   \d_page_mix_max_width{\d_page_mix_max_width-\leftskip-\rightskip}%
    \d_page_mix_leftskip \leftskip
    \d_page_mix_rightskip\rightskip
    % \frozen ?
@@ -596,8 +599,8 @@
    \fi
    %
    \d_page_mix_threshold\zeropoint
-   %
-   \d_page_mix_column_width\dimexpr(\d_page_mix_max_width-\d_page_mix_distance*\numexpr(\c_page_mix_n_of_columns-\plusone)\relax)/\c_page_mix_n_of_columns\relax
+   % todo: get rid of numexpr in:
+   \d_page_mix_column_width{(\d_page_mix_max_width-\d_page_mix_distance*\numexpr(\c_page_mix_n_of_columns-\plusone)\relax)/\c_page_mix_n_of_columns}%
    %
    \columnwidth   \d_page_mix_column_width
    \columndistance\d_page_mix_distance
@@ -709,7 +712,7 @@
 %D footnotes. Eventually we will have multiple strategies available.
 
 \protected\def\page_mix_routine_construct#1%
-  {\d_page_mix_max_height\mixedcolumnsparameter\c!maxheight % can have changed due to header=high
+  {\d_page_mix_max_height{\mixedcolumnsparameter\c!maxheight}% can have changed due to header=high
    \ifconditional\c_page_mix_process_notes
      \totalnoteheight\zeropoint
    \else
@@ -794,11 +797,11 @@
      \egroup
      \hskip\d_page_mix_rightskip
    \egroup
-   \wd\b_page_mix_collected\dimexpr
+   \wd\b_page_mix_collected{%
      \d_page_mix_max_width
     +\d_page_mix_rightskip
     +\d_page_mix_leftskip
-   \relax }
+   }}
 
 \protected\def\page_mix_command_package_column
   {\page_mix_hbox to \d_page_mix_column_width \bgroup
@@ -1059,7 +1062,7 @@
 \tolerant\protected\def\page_mix_command_test_column[#1]#*[#2]% works on last column
   {\par
    \begingroup
-   \scratchdimen\dimexpr#1\lineheight\ifparameter#2\or+#2\fi\relax
+   \scratchdimen{#1\lineheight\ifparameter#2\or+#2\fi}%
    \ifdim\scratchdimen>\zeropoint
      \c_attr_checkedbreak\number\scratchdimen % why \number
      \penalty\c_page_mix_break_forced\relax

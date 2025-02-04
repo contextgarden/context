@@ -130,6 +130,7 @@ typedef enum node_types {
     split_node,
     /*tex The next set of nodes is invisible from the \LUA\ (but nesting nodes can show up). */
     expression_node,
+    lmtx_expression_node,
     loop_state_node,
     math_spec_node,
     font_spec_node,
@@ -437,11 +438,13 @@ typedef enum attribute_subtypes {
     with arguments.
 */
 
-# define penalty_node_size   4
-# define penalty_amount(a)   vlink(a,2)
-# define penalty_options(a)  vinfo(a,2)
-# define penalty_tnuoma(a)   vlink(a,3)
-# define penalty_used(a)     vinfo(a,3) /* used internally */
+# define penalty_node_size     5
+# define penalty_amount(a)     vlink(a,2)
+# define penalty_options(a)    vinfo(a,2)
+# define penalty_tnuoma(a)     vlink(a,3)
+# define penalty_used(a)       vinfo(a,3) /* used internally */
+# define penalty_belongs_to(a) vlink(a,4) /* used internally */
+# define penalty_reserved(a)   vinfo(a,4) /* used internally */
 
 static inline void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
 static inline void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~r; }
@@ -464,6 +467,7 @@ typedef enum penalty_option_codes {
     penalty_option_factor_used   = 0x1000,
     penalty_option_end_of_par    = 0x2000,
     penalty_option_in_insert     = 0x4000,
+    penalty_option_final_balance = 0x8000,
 } penalty_option_codes;
 
 typedef enum penalty_subtypes {
@@ -545,7 +549,7 @@ typedef enum skip_glue_codes_alias {
 
 # define is_leader(a) (node_subtype(a) >= a_leaders)
 
-# define glue_node_size        7
+# define glue_node_size        8
 # define glue_spec_size        5
 # define glue_options(a)       vinfo(a,2)
 # define glue_amount(a)        vlink(a,2)
@@ -557,6 +561,8 @@ typedef enum skip_glue_codes_alias {
 # define glue_data(a)          vlink(a,5) /* not in spec */
 # define glue_leader_ptr(a)    vinfo(a,6) /* not in spec */
 # define glue_callback(a)      vlink(a,6) /* not in spec */
+# define glue_belongs_to(a)    vinfo(a,7) /* not in spec */
+# define glue_reserved(a)      vlink(a,7) /* not in spec */
 
 typedef enum glue_option_codes {
     glue_option_normal            = 0x0000,
@@ -716,11 +722,11 @@ typedef enum kern_subtypes {
 
 # define font_related_kern(s) (s >= font_kern_subtype && s <= space_font_kern_subtype)
 
-# define kern_node_size    4
-# define kern_amount(a)    vlink(a,2) 
-# define kern_expansion(a) vinfo(a,2) /*tex expansion factor (hz) */
-# define kern_options(a)   vlink(a,3)
-# define kern_reserved(a)  vinfo(a,3)
+# define kern_node_size     4
+# define kern_amount(a)     vlink(a,2) 
+# define kern_expansion(a)  vinfo(a,2) /*tex expansion factor (hz) */
+# define kern_options(a)    vlink(a,3)
+# define kern_belongs_to(a) vinfo(a,3)
 
 typedef enum kern_option_codes {
     kern_option_normal    = 0x0000,
@@ -892,6 +898,8 @@ extern halfword tex_harden_spaces           (halfword head, halfword tolerance, 
     \stopitemize
 */
 
+/* we could support usertypes: > 255  */
+
 typedef enum list_subtypes {
     unknown_list,
     line_list,                 /*tex paragraph lines */
@@ -937,9 +945,10 @@ typedef enum list_subtypes {
     local_middle_list,
     balance_slot_list,
     balance_list,
-} list_subtypes ;
+    spacing_list,
+} list_subtypes;
 
-# define last_list_subtype    balance_list
+# define last_list_subtype    spacing_list
 # define noad_class_list_base 0x0100
 
 typedef enum list_anchors {
@@ -974,6 +983,7 @@ typedef enum list_geometries {
 typedef enum list_balance_states { 
     balance_state_inserts  = 0x01,
     balance_state_discards = 0x02,
+    balance_state_uinserts = 0x04,
 } list_balance_states;
 
 # define box_node_size        17
@@ -1065,7 +1075,7 @@ typedef enum package_leader_states {
 typedef enum box_option_flags { 
     box_option_no_math_axis = 0x01,
     box_option_discardable  = 0x02,
- // box_option_synchronize  = 0x04,
+ // box_option_synchronize  = 0x08,
 } box_option_flags;
 
 static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |= r; }
@@ -1130,6 +1140,7 @@ typedef enum rule_subtypes {
     math_radical_rule_subtype,
     box_rule_subtype,
     image_rule_subtype,
+    spacing_rule_subtype,
 } rule_subtypes;
 
 typedef enum rule_codes {
@@ -1148,7 +1159,7 @@ typedef enum rule_option_codes {
     rule_option_valid       = 0x1F,
 } rule_option_codes;
 
-# define last_rule_subtype image_rule_subtype
+# define last_rule_subtype spacing_rule_subtype
 # define first_rule_code   normal_rule_code
 # define last_rule_code    strut_rule_code
 
@@ -1501,7 +1512,7 @@ typedef enum insert_options {
     insert_option_in_insert = 0x01,
 } insert_options;
 
-# define insert_node_size       7          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
+# define insert_node_size       9          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
 # define insert_index(a)        vinfo(a,2) /*tex The |width| is not used. */
 # define insert_float_cost(a)   vlink(a,2)
 # define insert_identifier(a)   vinfo(a,3) /*tex aka: |insert_data| but that macro messes up a field */
@@ -1512,6 +1523,10 @@ typedef enum insert_options {
 # define insert_split_top(a)    vlink(a,5)
 # define insert_line_height(a)  vinfo(a,6)
 # define insert_line_depth(a)   vlink(a,6)
+# define insert_stretch(a)      vinfo(a,7)
+# define insert_shrink(a)       vlink(a,7)
+# define insert_callback(a)     vinfo(a,8)
+# define insert_belongs_to(a)   vlink(a,8)
 
 # define insert_first_box(a)    (a + 5)    /*tex A fake node where box_list_ptr becomes a next field. */
 
@@ -1574,14 +1589,31 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
     used when we have expressions between parenthesis.
 */
 
-# define expression_node_size     3
+//define expression_node_size     3
+# define expression_node_size     5
 # define expression_type(a)       vinfo00(a,1)   /*tex one of the value levels */
 # define expression_state(a)      vinfo01(a,1)
 # define expression_result(a)     vinfo02(a,1)
-# define expression_unused(a)     vinfo03(a,1)
+# define expression_negate(a)     vinfo03(a,1)   /*tex can be a bitset */
 # define expression_expression(a) vlink(a,1)     /*tex saved expression so far */
 # define expression_term(a)       vlink(a,2)     /*tex saved term so far */
 # define expression_numerator(a)  vinfo(a,2)     /*tex saved numerator */
+
+# define expression_type_expression(a) vlink(a,3)
+# define expression_type_term(a)       vinfo(a,3)
+# define expression_type_numerator(a)  vlink(a,4)
+
+# define lmtx_expression_node_size          6
+# define lmtx_expression_type(a)            vinfo00(a,1)
+# define lmtx_expression_state(a)           vinfo01(a,1)
+# define lmtx_expression_result(a)          vinfo02(a,1)
+# define lmtx_expression_negate(a)          vinfo03(a,1)
+# define lmtx_expression_type_expression(a) vlink(a,1)
+# define lmtx_expression_type_term(a)       vinfo(a,2)
+# define lmtx_expression_type_numerator(a)  vlink(a,2)
+# define lmtx_expression_expression(a)      lvalue(a,3) 
+# define lmtx_expression_term(a)            lvalue(a,4) 
+# define lmtx_expression_numerator(a)       lvalue(a,5) 
 
 /*tex
     Why not.
@@ -2790,7 +2822,7 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define active_page_number(a)             vinfo(a,1)
 # define active_page_height(a)             vinfo(a,2)
 
-# define passive_node_size                 11
+# define passive_node_size                 12
 # define passive_fitness(a)                vinfo1(a,0)
 # define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
 # define passive_prev_break(a)             vinfo(a,1)   /*tex points to passive node that should precede this one */
@@ -2812,6 +2844,7 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_n_of_fitness_classes(a)   vinfo(a,9)
 # define passive_ref_count(a)              vlink(a,10)
 # define passive_reserved(a)               vinfo(a,10)
+# define passive_factor(a)                 dvalue(a,11)
 
 # define delta_node_size                   6
 # define delta_field_total_glue(d)         vinfo(d,1)
@@ -3075,7 +3108,7 @@ typedef enum glue_signs {
 
 # define normal_glue_multiplier 0.0
 
-static inline singleword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : sign ; }
+static inline singleword tex_checked_glue_sign  (halfword sign)  { return ((sign  < min_glue_sign ) || (sign  > max_glue_sign )) ? normal_glue_sign  : (singleword) sign ; }
 static inline halfword   tex_checked_glue_order (halfword order) { return ((order < min_glue_order) || (order > max_glue_order)) ? normal_glue_order : order; }
 
 /*tex

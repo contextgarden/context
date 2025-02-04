@@ -367,14 +367,14 @@ void luaD_shrinkstack (lua_State *L) {
     luaD_reallocstack(L, nsize, 0);  /* ok if that fails */
   }
   else  /* don't change stack */
-    condmovestack(L,{},{});  /* (change only for debugging) */
+    condmovestack(L,(void)0,(void)0);  /* (change only for debugging) */
   luaE_shrinkCI(L);  /* shrink CI list */
 }
 
 
 void luaD_inctop (lua_State *L) {
-  luaD_checkstack(L, 1);
   L->top.p++;
+  luaD_checkstack(L, 1);
 }
 
 /* }================================================================== */

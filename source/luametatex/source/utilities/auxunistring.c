@@ -134,7 +134,7 @@ char *aux_uni2string(char *utf8_text, unsigned unic)
         *utf8_text++ = (char) (0x80 | ((unic & 0xFC0) >> 6));
         *utf8_text++ = (char) (0x80 | (unic & 0x3F));
     }
-    return (utf8_text);
+    return utf8_text;
 }
 
 /*tex This one could be more efficient because we know a bit more. */

@@ -55,8 +55,8 @@
        \setupcurrentrows[#2]%
      \fi
    \fi
-   \scratchcountertwo\rowsparameter\c!n\relax
-   \scratchdistance\rowsparameter\c!distance\relax
+   \scratchcountertwo{\rowsparameter\c!n}%
+   \scratchdistance{\rowsparameter\c!distance}%
    \setbox\scratchboxone\vbox\bgroup
      \holdingmigrations\maxcount % nota bene, maybe we shuld registering how many inserts are holded
      \ifempty{\rowsparameter\c!width}%
@@ -64,8 +64,8 @@
      \orelse\ifcstok{\lastnamedcs}\v!fit
        \hsize\distributedhsize\hsize\scratchdistance\scratchcountertwo
        \usealignparameter\rowsparameter
-     \orelse\ifchkdimension\lastnamedcs\or
-       \hsize\lastchkdimension
+     \orelse\ifchkdimexpr\lastnamedcs\or
+       \hsize{\lastchkdimension}%
        \usealignparameter\rowsparameter
      \fi}
 
@@ -74,7 +74,7 @@
    \ifvoid\scratchboxone\else
      \rowsparameter\c!before
      \forgetall
-     \scratchwidth\dimexpr
+     \scratchwidth{%
        \ifcstok{\rowsparameter\c!alternative}\v!tight
          \zeropoint
        \orelse\ifcstok{\rowsparameter\c!width}\v!fit
@@ -82,15 +82,15 @@
        \else
          \hsize/\scratchcountertwo
        \fi
-     \relax
-     \scratchcounterone\numexpr
+     }%
+     \scratchcounterone{%
        \ifcstok{\rowsparameter\c!order}\v!vertical
           \c_swapping_index * "10000
         + \scratchcountertwo
        \else
          \attributeunsetvalue
        \fi
-     \relax
+     }%
      \global\advance\c_swapping_index\plusone
      \ifempty{\rowsparameter\c!height}%
        \scratchheight\zeropoint
@@ -99,19 +99,19 @@
        \ifdim\scratchheight<\strutht
           \scratchheight\zeropoint
        \fi
-     \orelse\ifchkdimension\lastnamedcs\or
+     \orelse\ifchkdimexpr\lastnamedcs\or
        \scratchheight\lastchkdimension
      \else
        \scratchheight\zeropoint
      \fi
      \ifempty{\rowsparameter\c!depth}%
        \scratchheight\zeropoint
-     \orelse\ifcstok{\lastnamedcs}\v!max
+     \orelse\ifcstok{\lastnamedcs}\v!max % \iflastnamedcs
        \scratchdepth\boxlinemaxdp\scratchboxone\relax
        \ifdim\scratchdepth<\strutdp
           \scratchdepth\zeropoint
        \fi
-     \orelse\ifchkdimension\lastnamedcs\or
+     \orelse\ifchkdimexpr\lastnamedcs\or
        \scratchdepth\lastchkdimension
      \else
        \scratchdepth\zeropoint
@@ -172,9 +172,10 @@
        \ifnum\scratchcounterone=\attributeunsetvalue
           % nothing to do here
        \else
+         % todo: use loop
          \dostepwiserecurse {\globalscratchcounterone} \scratchcountertwo {\plusone} {%
            \ifzero\scratchwidth
-             \hskip\rowsparameter\c!distance\relax
+             \hskip{\rowsparameter\c!distance}%
            \fi
            \hpack \s!attr \swappingattribute \scratchcounterone \bgroup
              \null

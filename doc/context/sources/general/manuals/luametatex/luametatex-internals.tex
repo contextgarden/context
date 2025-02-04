@@ -1126,4 +1126,26 @@ scanning performance it all depends on usage what we gain in practice.
 
 \stopsection
 
+\startsection[title=Sparse arrays]
+
+Because original \TEX\ supports 256 characters it can use data structures and
+ranges in the main equivalent repertoire without too much overhead but with
+\LUATEX\ we went \UNICODE\ so dedicated sparse arrays were used instead for \prm
+{catcode}, \prm {lccode}, \prm {uccode} and \prm {sfcode}. The new \prm {hjcode},
+math characters, delimiters and font character arrays also use this mechanism and
+in \LUAMETATEX\ we use them even more. Although in principle we can use the
+regular save stack for pushing and popping values each sparse array comes with
+its own stack.
+
+In \LUAMETATEX\ this mechanism has been optimized. Depending on the kind of data
+we use nibbles, bytes, shorts, integers or integer pairs. There is also more
+aggressive optimization of storing the set values in the format file. Stack
+management is more efficient too, which mostly has benefits for math where we use
+sparse arrays for math parameters of which we have plenty.
+
+The sparse array mechanism is also interfaced to \LUA, and we might actually use
+that feature in \CONTEXT\ some day.
+
+\stopsection
+
 \stopdocument

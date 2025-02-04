@@ -3369,32 +3369,11 @@ static void tex_aux_run_mkern(void)
     not done right now, as it introduces pretty heavy memory leaks. This means the current code
     might be wrong in some way that relates to in-paragraph displays.
 
-*/
+    Instead of |tex_aux_only_dirs| we now uyse a configurable |tex_is_effectively_empty| so that we
+    can test cq .\ document this trickery. It also gives bit more control over hoe to deal with 
+    indentation (old school \TEX). 
 
-static int tex_aux_only_dirs(halfword n)
-{
-    while (n) {
-        switch (node_type(n)) {
-            case par_node:
-            case dir_node:
-                n = node_next(n);
-                break;
-            /*tex
-                This can become an option if realy needed but it kind of violates the enforced
-                hmode, so we stay compatible. But contrary to \LUATEX\ a |\noindent| is seen as
-                content trigger.
-            */
-            case glue_node:
-                if (tex_is_par_init_glue(n)) {
-                    n = node_next(n);
-                    break;
-                }
-            default:
-                return 0;
-        }
-    }
-    return 1;
-}
+*/
 
 void tex_end_paragraph(int group, int context)
 {
@@ -3402,9 +3381,9 @@ void tex_end_paragraph(int group, int context)
         if (cur_list.head == cur_list.tail) {
             /*tex |null| paragraphs are ignored, all contain a |par| node */
             tex_pop_nest();
-        } else if (tex_aux_only_dirs(node_next(cur_list.head))) {
+        } else if (empty_paragraph_mode_par && tex_is_effectively_empty(node_next(cur_list.head), empty_paragraph_mode_par)) {
             tex_flush_node_list(node_next(cur_list.head));
-         /* cur_list.tail = cur_list.head; */ /* probably needed */
+         /* cur_list.tail = cur_list.head; */
             tex_pop_nest();
          // if (cur_list.head == cur_list.tail || node_next(cur_list.head) == cur_list.tail) {
          //     if (node_next(cur_list.head) == cur_list.tail) {
@@ -4246,7 +4225,7 @@ static void tex_aux_arithmic_register(int a, int code)
                             case attribute_val_level:
                                 {
                                     bool asexpr = code == e_divide_code || code == e_divide_by_code;
-                                    value = tex_quotient(original, amount,  asexpr || rounded);
+                                    value = tex_quotient(original, amount, asexpr || rounded);
                                     break;
                                 }
                             case posit_val_level:
@@ -4357,13 +4336,13 @@ static void tex_aux_set_page_property(void)
             /*tex So when setting total and depth first total needs to be set! */
             lmt_page_builder_state.last_depth = 0;
             break;
-        case page_excess_code:
-            lmt_page_builder_state.excess = tex_scan_dimension(0, 0, 0, 1, NULL);
-            break;
         case page_depth_code:
             lmt_page_builder_state.depth = tex_scan_dimension(0, 0, 0, 1, NULL);
             /*tex Otherwise we have to also set that at the \TEX\ end: */
             lmt_page_builder_state.last_depth = lmt_page_builder_state.depth;
+            break;
+        case page_excess_code:
+            lmt_page_builder_state.excess = tex_scan_dimension(0, 0, 0, 1, NULL);
             break;
         case page_last_height_code:
             lmt_page_builder_state.last_height = tex_scan_dimension(0, 0, 0, 1, NULL);
@@ -4451,6 +4430,18 @@ static void tex_aux_set_page_property(void)
             {
                 int index = tex_scan_integer(0, NULL);
                 tex_set_insert_line_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+            }
+            break;
+        case insert_stretch_code:
+            {
+                int index = tex_scan_integer(0, NULL);
+                tex_set_insert_stretch(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+            }
+            break;
+        case insert_shrink_code:
+            {
+                int index = tex_scan_integer(0, NULL);
+                tex_set_insert_shrink(index, tex_scan_dimension(0, 0, 0, 1, NULL));
             }
             break;
         case page_stretch_code:                        
@@ -4718,6 +4709,13 @@ static void tex_aux_set_box_property(void)
                 }
             }
             break;
+        case box_stretch_code:
+        case box_shrink_code:
+            /* ignore: maybe apply some factor */
+            break;
+        case box_subtype_code:
+            /* ignore: maybe set it (limited subset) */
+            break;
         case box_attribute_code:
             {
                 halfword att = tex_scan_attribute_register_number();
@@ -4737,10 +4735,6 @@ static void tex_aux_set_box_property(void)
             } else { 
                 tex_run_vadjust(); /* maybe error */
             }
-            break;
-        case box_stretch_code:
-        case box_shrink_code:
-            /* ignore: maybe apply some factor  */            
             break;
         case box_inserts_code:
             break;
@@ -4809,17 +4803,17 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     tex_define_again(a, p, mathspec_cmd, tex_new_math_spec(mval, tex_mathcode));
                     break;
                 }
+            case math_uchar_def_code:
+                {
+                    mathcodeval mval = tex_scan_mathchar(umath_mathcode);
+                    tex_define_again(a, p, mathspec_cmd, tex_new_math_spec(mval, umath_mathcode));
+                    break;
+                }
             case math_dchar_def_code:
                 {
                     mathdictval dval = tex_scan_mathdict();
                     mathcodeval mval = tex_scan_mathchar(umath_mathcode);
                     tex_define_again(a, p, mathspec_cmd, tex_new_math_dict_spec(dval, mval, umath_mathcode));
-                    break;
-                }
-            case math_uchar_def_code:
-                {
-                    mathcodeval mval = tex_scan_mathchar(umath_mathcode);
-                    tex_define_again(a, p, mathspec_cmd, tex_new_math_spec(mval, umath_mathcode));
                     break;
                 }
             case count_def_code:
@@ -4832,12 +4826,6 @@ static void tex_aux_set_shorthand_def(int a, int force)
                 {
                     halfword n = tex_scan_attribute_register_number();
                     tex_define_again(a, p, register_attribute_cmd, register_attribute_location(n));
-                    break;
-                }
-            case float_def_code:
-                {
-                    scaled n = tex_scan_posit_register_number();
-                    tex_define_again(a, p, register_posit_cmd, register_posit_location(n));
                     break;
                 }
             case dimen_def_code:
@@ -4864,6 +4852,12 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     tex_define_again(a, p, register_toks_cmd, register_toks_location(n));
                     break;
                 }
+            case float_def_code:
+                {
+                    scaled n = tex_scan_posit_register_number();
+                    tex_define_again(a, p, register_posit_cmd, register_posit_location(n));
+                    break;
+                }
             case lua_def_code:
                 {
                     halfword v = tex_scan_function_reference(1);
@@ -4877,25 +4871,11 @@ static void tex_aux_set_shorthand_def(int a, int force)
                     tex_define_again(a, p, integer_cmd, v);
                     break;
                 }
-            case parameter_def_code:
-         /* case index_def_csname_code: */
-                {
-                    halfword v = tex_get_parameter_index(tex_scan_parameter_index());
-                    tex_define_again(a, p, index_cmd, v);
-                    break;
-                }
             case dimension_def_code:
          /* case dimension_def_csname_code: */
                 {
                     scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
                     tex_define_again(a, p, dimension_cmd, v);
-                    break;
-                }
-            case posit_def_code:
-         /* case posit_def_csname_code: */
-                {
-                    scaled v = tex_scan_posit(1);
-                    tex_define_again(a, p, posit_cmd, v);
                     break;
                 }
             case gluespec_def_code:
@@ -4908,6 +4888,20 @@ static void tex_aux_set_shorthand_def(int a, int force)
                 {
                     halfword v = tex_scan_glue(muglue_val_level, 1, 0);
                     tex_define_again(a, p, mugluespec_cmd, v);
+                    break;
+                }
+            case posit_def_code:
+         /* case posit_def_csname_code: */
+                {
+                    scaled v = tex_scan_posit(1);
+                    tex_define_again(a, p, posit_cmd, v);
+                    break;
+                }
+            case parameter_def_code:
+         /* case index_def_csname_code: */
+                {
+                    halfword v = tex_get_parameter_index(tex_scan_parameter_index());
+                    tex_define_again(a, p, index_cmd, v);
                     break;
                 }
             /*
@@ -6119,27 +6113,28 @@ static void tex_run_prefixed_command(void)
     halfword lastprefix = -1;
     while (cur_cmd == prefix_cmd) {
         switch (cur_chr) {
-            case frozen_code:        flags = add_frozen_flag       (flags); break;
-            case tolerant_code:      flags = add_tolerant_flag     (flags); break;
-            case protected_code:     flags = add_protected_flag    (flags); break;
-            case permanent_code:     flags = add_permanent_flag    (flags); break;
-            case immutable_code:     flags = add_immutable_flag    (flags); break;
-            case mutable_code:       flags = add_mutable_flag      (flags); break;
-            case noaligned_code:     flags = add_noaligned_flag    (flags); break;
-            case instance_code:      flags = add_instance_flag     (flags); break;
-            case untraced_code:      flags = add_untraced_flag     (flags); break;
-            case global_code:        flags = add_global_flag       (flags); break;
-            case overloaded_code:    flags = add_overloaded_flag   (flags); break;
-            case aliased_code:       flags = add_aliased_flag      (flags); break;
-            case immediate_code:     flags = add_immediate_flag    (flags); break;
-            case semiprotected_code: flags = add_semiprotected_flag(flags); break;
-            /*tex This one is bound. */
-            case always_code:        flags = add_aliased_flag      (flags); force = 1; break;
-            /*tex This one is special */
-            case inherited_code:     flags = add_inherited_flag    (flags); break;
-            case constant_code:      flags = add_constant_flag     (flags); break;
-            case retained_code:      flags = add_retained_flag     (flags); break;
-            case constrained_code:   flags = add_constrained_flag  (flags); break;
+            case frozen_code       : flags = add_frozen_flag       (flags); break;
+            case permanent_code    : flags = add_permanent_flag    (flags); break;
+            case immutable_code    : flags = add_immutable_flag    (flags); break;
+            case mutable_code      : flags = add_mutable_flag      (flags); break;
+            case noaligned_code    : flags = add_noaligned_flag    (flags); break;
+            case instance_code     : flags = add_instance_flag     (flags); break;
+            case untraced_code     : flags = add_untraced_flag     (flags); break;
+            case global_code       : flags = add_global_flag       (flags); break;
+            case tolerant_code     : flags = add_tolerant_flag     (flags); break;
+            case protected_code    : flags = add_protected_flag    (flags); break;
+            case overloaded_code   : flags = add_overloaded_flag   (flags); break;
+            case aliased_code      : flags = add_aliased_flag      (flags); break;
+            case immediate_code    : flags = add_immediate_flag    (flags); break;
+         // case deferred_code     : break;
+            case semiprotected_code: flags = add_semiprotected_flag(flags); break;            
+            case always_code       : flags = add_aliased_flag      (flags); force = 1; break; /*tex This one is bound. */
+            case inherited_code    : flags = add_inherited_flag    (flags); break;
+            case constant_code     : flags = add_constant_flag     (flags); break;
+            case retained_code     : flags = add_retained_flag     (flags); break;
+            case constrained_code  : flags = add_constrained_flag  (flags); break;
+         // case long_code         : break;  
+         // case outer_code        : break;
             default:
                 goto PICKUP;
         }
@@ -6168,20 +6163,10 @@ static void tex_run_prefixed_command(void)
         now).
     */
     switch (cur_cmd) {
-        case set_font_cmd:
-            tex_aux_set_font(flags);
-            break;
-        case def_cmd:
-            tex_aux_set_def(flags, force);
-            break;
-        case let_cmd:
-            tex_aux_set_let(flags, force);
-            break;
-        case shorthand_def_cmd:
-            tex_aux_set_shorthand_def(flags, force);
-            break;
-        case association_cmd:
-            tex_aux_set_association(flags, force);
+        case some_item_cmd: 
+            if (! tex_aux_set_some_item()) {
+                tex_aux_run_illegal_case();
+            } 
             break;
         case internal_toks_cmd:
         case register_toks_cmd:
@@ -6226,30 +6211,14 @@ static void tex_run_prefixed_command(void)
         case lua_value_cmd:
             tex_aux_set_lua_value(flags);
             break;
-        case define_char_code_cmd:
-            tex_aux_set_define_char_code(flags);
-            break;
-        case define_family_cmd:
-            tex_aux_set_define_family(flags);
-            break;
-        case math_parameter_cmd:
-            tex_aux_set_math_parameter(flags);
-            break;
-        case register_cmd:
-            if (cur_chr == token_val_level) {
-                tex_aux_set_assign_toks(flags);
-            } else {
-                tex_aux_set_register(flags);
-            }
-            break;
-        case arithmic_cmd:
-            tex_aux_arithmic_register(flags, cur_chr);
-            break;
-        case set_box_cmd:
-            tex_aux_set_box(flags);
+        case font_property_cmd:
+            tex_aux_set_font_property();
             break;
         case auxiliary_cmd:
             tex_aux_set_auxiliary(flags);
+            break;
+        case hyphenation_cmd:
+            tex_aux_set_hyph_data();
             break;
         case page_property_cmd:
             tex_aux_set_page_property();
@@ -6260,38 +6229,65 @@ static void tex_run_prefixed_command(void)
         case specification_cmd:
             tex_aux_set_specification(flags, cur_chr);
             break;
-        case hyphenation_cmd:
-            tex_aux_set_hyph_data();
+        case define_char_code_cmd:
+            tex_aux_set_define_char_code(flags);
             break;
-        case font_property_cmd:
-            tex_aux_set_font_property();
+        case define_family_cmd:
+            tex_aux_set_define_family(flags);
+            break;
+        case math_parameter_cmd:
+            tex_aux_set_math_parameter(flags);
+            break;
+        case set_font_cmd:
+            tex_aux_set_font(flags);
             break;
         case define_font_cmd:
             tex_aux_set_define_font(flags);
             break;
-        case interaction_cmd:
-            tex_aux_set_interaction(cur_chr);
-            break;
-        case combine_toks_cmd:
-            tex_aux_set_combine_toks(flags);
-            break;
-        case some_item_cmd: 
-            if (! tex_aux_set_some_item()) {
-                tex_aux_run_illegal_case();
-            } 
-            break;
         case integer_cmd:
-        case dimension_cmd:
         case posit_cmd:
+        case dimension_cmd:
         case gluespec_cmd:
         case mugluespec_cmd:
             tex_aux_set_constant_register(cur_cmd, cur_cs, flags);
             break;
-        /*tex  
-            This one is special because in this usage scenario it is not set but does something. 
-        */
         case index_cmd: 
+            /*tex  
+                This one is special because in this usage scenario it is not set but does 
+                something instead. 
+            */
             tex_inject_parameter(cur_chr); 
+            break;
+        case association_cmd:
+            tex_aux_set_association(flags, force);
+            break;
+        case interaction_cmd:
+            tex_aux_set_interaction(cur_chr);
+            break;
+        case register_cmd:
+            if (cur_chr == token_val_level) {
+                tex_aux_set_assign_toks(flags);
+            } else {
+                tex_aux_set_register(flags);
+            }
+            break;
+        case combine_toks_cmd:
+            tex_aux_set_combine_toks(flags);
+            break;
+        case arithmic_cmd:
+            tex_aux_arithmic_register(flags, cur_chr);
+            break;
+        case let_cmd:
+            tex_aux_set_let(flags, force);
+            break;
+        case shorthand_def_cmd:
+            tex_aux_set_shorthand_def(flags, force);
+            break;
+        case def_cmd:
+            tex_aux_set_def(flags, force);
+            break;
+        case set_box_cmd:
+            tex_aux_set_box(flags);
             break;
         default:
             if (lastprefix < 0) {
@@ -7404,6 +7400,9 @@ void tex_initialize_variables(void)
         script_space_before_factor_par = scaling_factor;
         script_space_between_factor_par = scaling_factor;
         script_space_after_factor_par = scaling_factor;
+        hbadness_mode_par = badness_mode_all;
+        vbadness_mode_par = badness_mode_all;
+        empty_paragraph_mode_par = effective_empty_option_all;
         aux_get_date_and_time(&time_par, &day_par, &month_par, &year_par, &lmt_engine_state.utc_time);
     }
 }

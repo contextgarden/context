@@ -823,8 +823,8 @@
    \else
      \strutdepthfactor \openlineheight
    \fi
-   \ifdim\dimexpr\minimumstrutdepth+\minimumstrutheight\relax>\zeropoint
-     \openlineheight\dimexpr\openstrutheight+\openstrutdepth\relax % new
+   \ifdim{\minimumstrutdepth+\minimumstrutheight}>\zeropoint
+     \openlineheight{\openstrutheight+\openstrutdepth}% new
    \fi
    \usedbaselineskip\openlineheight
      \ifgridsnapping\else
@@ -841,8 +841,8 @@
    \else
      \permanent\edef\spacingfactor{#1}%
    \fi
-   \edef\systemtopskipfactor {\thewithoutunit\dimexpr#1\dimexpr\topskipfactor \points}%
-   \edef\systemmaxdepthfactor{\thewithoutunit\dimexpr#1\dimexpr\maxdepthfactor\points}%
+   \edef\systemtopskipfactor {\thewithoutunit\dimexpr#1\dimexpr\topskipfactor \points}% {}
+   \edef\systemmaxdepthfactor{\thewithoutunit\dimexpr#1\dimexpr\maxdepthfactor\points}% {}
    \setnormalbaselines
    \setstrut}
 
@@ -999,13 +999,13 @@
 
 \permanent\protected\def\dosetstrut
   {\enforced\let\strut\normalstrut
-   \struthtdp\dimexpr\strutht+\strutdp\relax
+   \struthtdp{\strutht+\strutdp}%
    \ifabsnum\dimexpr\struthtdp-\lineheight\relax<\plustwo
      % compensate rounding error /- 1sp to avoid too many
      % 1sp baselineskips in for instance verbatim
      % \strutht\dimexpr\lineheight-\strutdp\relax
      % better:
-     \strutdp\dimexpr\lineheight-\strutht\relax
+     \strutdp{\lineheight-\strutht}%
      \struthtdp\lineheight
    \fi
    \strutheight\strutht
@@ -1051,18 +1051,18 @@
   {\relax
    \dontleavehmode
    \normalsrule
-      %s!height\dimexpr\strutht-\struthtdp/\plustwo\relax
+      %s!height{\strutht-\struthtdp/\plustwo}%
       %s!depth \strutdp
-      \s!pair  \dimexpr\strutht-\struthtdp/\plustwo\relax \strutdp
+      \s!pair  {\strutht-\struthtdp/\plustwo} \strutdp
    \relax}
 
 \permanent\protected\def\halflinestrut
   {\relax
    \dontleavehmode
    \normalsrule
-      %s!height\dimexpr\strutht-.5\struthtdp\relax
+      %s!height{\strutht-.5\struthtdp}%
       %s!depth \strutdp
-      \s!pair  \dimexpr\strutht-.5\struthtdp\relax \strutdp
+      \s!pair  {\strutht-.5\struthtdp} \strutdp
    \relax}
 
 \permanent\protected\def\noheightstrut
@@ -1324,7 +1324,7 @@
      {\baselineskip \the\baselineskip
       \lineskip     \the\lineskip
       \lineskiplimit\the\lineskiplimit
-      \noexpand\edef\noexpand\minimumlinedistance{\the\dimexpr\minimumlinedistance}%
+      \noexpand\edef\noexpand\minimumlinedistance{\todimension\minimumlinedistance}%
       \enforced\let\noexpand\offinterlineskip\noexpand\normaloffinterlineskip}} % \noexpand not needed
 
 \protected\def\spac_helpers_push_interlineskip_nop
@@ -1357,10 +1357,14 @@
 \permanent\protected\def\setpenalties#1#2#3%
   {\ifdefined#1% space before #3 prevents lookahead problems, needed when #3=text
      \frozen#1\ifx#1\brokenpenalties
-       \plusone#3\relax
+       \plusone{#3}%
      \else
-       \numexpr#2+\plusone\relax\space\expandedrepeat\numexpr#2\relax{ #3}\zerocount\relax
+       {#2+\plusone}%
+       \space
+       \expandedrepeat{#2}{ #3}%
+       \zerocount
      \fi
+     \relax
    \fi}
 
 %D \macros
@@ -1464,14 +1468,14 @@
 %D Next we define the lot. They can be set with the normal align commands and keys.
 
 \permanent \specificationdef \lesswidowpenalties \widowpenalties
-    \plusthree options \numexpr\largestspecificationoptioncode+\doublespecificationoptioncode\relax
+    \plusthree options   {\largestspecificationoptioncode+\doublespecificationoptioncode}%
     \plusfivethousand    \plusseventyfivehundred
     \plustwohundredfifty \plusfivehundred
     \zerocount           \zerocount
 \relax
 
 \permanent \specificationdef \lessclubpenalties \clubpenalties
-    \plusthree options \numexpr\largestspecificationoptioncode+\doublespecificationoptioncode\relax
+    \plusthree options   {\largestspecificationoptioncode+\doublespecificationoptioncode}%
     \plusfivethousand    \plusseventyfivehundred
     \plustwohundredfifty \plusfivehundred
     \zerocount           \zerocount
@@ -1989,7 +1993,7 @@
 \protected\gdef\page_layouts_calculate_overshoot
   {\ifgridsnapping\ifcase\layoutlines
      \getnoflines\textheight
-     \textovershoot\dimexpr\noflines\globalbodyfontlineheight-\textheight\relax
+     \textovershoot{\noflines\globalbodyfontlineheight-\textheight}%
    \fi\fi}
 
 \protected\def\page_layouts_report_overshoot
@@ -2059,13 +2063,13 @@
       \topskipcorrection
       \gridboxvbox % calculated size
         {\getrawnoflines{#3}% \getnoflines{#3}%
-         \scratchdimen\dimexpr#2+\lineheight\relax
+         \scratchdimen{#2+\lineheight}%
          \localcontrolledrepeat\noflines
            {\strut
             \hskip-.5\lineheight\relax
             \ifcase\gridboxlinenomode\or
               \rlap
-                {\kern\dimexpr.2\bodyfontsize+\scratchdimen\relax
+                {\kern{.2\bodyfontsize+\scratchdimen}%
                  \infofont\hbox to \emwidth{\hss\the\currentloopiterator}}%
             \or
               \llap
@@ -2147,9 +2151,9 @@
 \def\spac_vspacing_no_topskip % use grouped
   {\c_attr_skipcategory\pluseleven}
 
-%permanent\def\vspacingfromscratchtoks  {\scratchdimen\dimexpr\csname\??vspacingamount\the\scratchtoks\endcsname\relax}
-\permanent\def\vspacingpredefinedvalue#1{\s_spac_vspacing_predefined\glueexpr\csname\??vspacingamount#1\endcsname\relax}
-%permanent\def\vspacingfromtempstring   {\scratchdimen\dimexpr\csname\??vspacingamount\tempstring\endcsname\relax}
+%permanent\def\vspacingfromscratchtoks  {\scratchdimen{\csname\??vspacingamount\the\scratchtoks\endcsname}}
+\permanent\def\vspacingpredefinedvalue#1{\s_spac_vspacing_predefined{\csname\??vspacingamount#1\endcsname}}
+%permanent\def\vspacingfromtempstring   {\scratchdimen{\csname\??vspacingamount\tempstring\endcsname}}
 
 % \installcorenamespace{vspacingamountnormal}
 % \installcorenamespace{vspacingamountgrid}
@@ -2363,8 +2367,8 @@
 
 \protected\def\spac_vspacing_define_same_step#1#2% alternatively we could have samepage-n-m
   {\begingroup
-   \scratchcounterone\numexpr\plusthree*#1+#2\relax
-   \scratchcountertwo\numexpr\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\scratchcounterone\relax
+   \scratchcounterone{\plusthree*#1+#2}%
+   \scratchcountertwo{\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\scratchcounterone}%
   %\writestatus{defined}{\v!samepage-\number#1-\number#2\space=>\space penalty:\the\scratchcountertwo}%
    \normalexpanded{\definevspacing[\v!samepage-\number#1-\number#2][penalty:\the\scratchcountertwo]}%
    \endgroup}
@@ -2565,27 +2569,27 @@
   {\ifdim\ht\nextbox>\strutht
      \setbox\nextbox\tbox{\box\nextbox}%
    \fi
-   \scratchdistance    \directhangingparameter\c!distance
-   \scratchcounter     \directhangingparameter\c!n
-   \scratchtopoffset   \directhangingparameter\c!topoffset
-   \scratchbottomoffset\directhangingparameter\c!bottomoffset
+   \scratchdistance    {\directhangingparameter\c!distance}%
+   \scratchcounter     {\directhangingparameter\c!n}%
+   \scratchtopoffset   {\directhangingparameter\c!topoffset}%
+   \scratchbottomoffset{\directhangingparameter\c!bottomoffset}%
    \ifnum\scratchcounter>\zerocount
      \noflines\scratchcounter
    \else
-     \scratchdimen\dimexpr
+     \scratchdimen{%
        \htdp\nextbox
        +\scratchtopoffset
        +\scratchbottomoffset
-     \relax
+     }%
      \getnoflines\scratchdimen
    \fi
    \boxyoffset\nextbox-\scratchtopoffset
    \ht\nextbox\strutht
    \dp\nextbox\strutdp
    \shapingpenalty\plustenthousand
-   \scratchwidth\dimexpr\wd\nextbox+\scratchdistance\relax
-   \scratchhsize\dimexpr\hsize-\scratchwidth \relax
-   \parshape \numexpr\noflines+\plusone\relax
+   \scratchwidth{\wd\nextbox+\scratchdistance}%
+   \scratchhsize{\hsize-\scratchwidth}%
+   \parshape {\noflines+\plusone}%
      \ifx\m_spac_hanging_location\v!right
        \expandedrepeat \noflines {\zeropoint \scratchhsize}
      \else

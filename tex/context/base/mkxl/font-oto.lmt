@@ -31,8 +31,8 @@ otf.defaultbasealternate     = "none" -- first last
 
 local getprivate             = fonts.constructors.getprivate
 
-local wildcard               = "*"
-local default                = "dflt"
+local wildcard               <const> = "*"
+local default                <const> = "dflt"
 
 local formatters             = string.formatters
 local f_unicode              = formatters["%U"]

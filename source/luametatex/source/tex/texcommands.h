@@ -392,12 +392,12 @@ static inline int tex_normalized_mode(halfword mode)
 
 typedef enum arithmic_codes {
     advance_code,
+    advance_by_code,
     multiply_code,
+    multiply_by_code,
     divide_code,
     e_divide_code,
     r_divide_code,
-    advance_by_code,
-    multiply_by_code,
     divide_by_code,
     e_divide_by_code,
     r_divide_by_code,
@@ -632,6 +632,8 @@ typedef enum some_item_codes {
     muexpr_code,                /*tex |\muexpr| */
     numexpression_code,         /*tex |\numexpression| */
     dimexpression_code,         /*tex |\dimexpression| */
+    numexperimental_code,       /*tex |\numexperimental| */
+    dimexperimental_code,       /*tex |\dimexperimental| */
     last_chk_integer_code,      /*tex |\ifchkinteger| */
     last_chk_dimension_code,    /*tex |\ifchkdimension| */
  // dimen_to_scale_code,        /*tex |\dimentoscale| */
@@ -705,6 +707,7 @@ typedef enum box_property_codes {
     box_limit_code,
     box_stretch_code,
     box_shrink_code,
+    box_subtype_code,
     /* we actually need set_box_int_cmd, or set_box_property */
     box_attribute_code,
     box_vadjust_code,
@@ -775,20 +778,20 @@ typedef enum shorthand_def_codes {
     math_char_def_code,   /*tex |\mathchardef| */
     math_uchar_def_code,  /*tex |\Umathchardef| */
     math_dchar_def_code,  /*tex |\Umathdictdef| */
-    float_def_code,
     count_def_code,       /*tex |\countdef| */
     attribute_def_code,   /*tex |\attributedef| */
     dimen_def_code,       /*tex |\dimendef| */
     skip_def_code,        /*tex |\skipdef| */
     muskip_def_code,      /*tex |\muskipdef| */
     toks_def_code,        /*tex |\toksdef| */
+    float_def_code,
     lua_def_code,         /*tex |\luadef| */
     integer_def_code,
-    parameter_def_code,
-    posit_def_code,
     dimension_def_code,
     gluespec_def_code,
     mugluespec_def_code,
+    posit_def_code,
+    parameter_def_code,
  /* mathspec_def_code, */
     fontspec_def_code,
     specification_def_code,
@@ -1011,14 +1014,14 @@ typedef enum let_codes {
     unlet_protected_code,
     let_frozen_code,
     unlet_frozen_code,
-    let_csname_code,
     global_let_csname_code,
-    let_to_nothing_code,
+    let_csname_code,
     global_let_to_nothing_code,
+    let_to_nothing_code,
     let_to_last_named_cs_code,
 } let_codes;
 
-# define last_let_code global_let_csname_code
+# define last_let_code let_to_last_named_cs_code
 
 typedef enum message_codes {
     message_code,

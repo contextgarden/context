@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2024-12-30 16:05
+-- merge date  : 2025-02-04 17:48
 
 do -- begin closure to overcome local limits and interference
 
@@ -31281,7 +31281,7 @@ local function validspecification(specification,name)
   return specification,name
  end
 end
-local function addfeature(data,feature,specifications,prepareonly)
+local function addfeature(data,feature,specifications,prepareonly,filename)
  if not specifications then
   report_otf("missing specification")
   return
@@ -31774,6 +31774,23 @@ local function addfeature(data,feature,specifications,prepareonly)
  for s=1,#dataset do
   local specification=dataset[s]
   local valid=specification.valid 
+  local files=specification.files
+  if files and filename then
+   local name=string.lower(file.basename(filename))
+   local okay=files[name]
+   if not okay then
+    for i=1,#files do
+     if name==files[i] then
+      okay=true
+      break
+     end
+    end
+   end
+   if okay then
+   else
+    return
+   end
+  end
   local feature=specification.name or feature
   if not feature or feature=="" then
    report_otf("no valid name given for extra feature")
@@ -31994,7 +32011,7 @@ end
 local function enhance(data,filename,raw)
  for slot=1,#extrafeatures do
   local specification=extrafeatures[slot]
-  addfeature(data,specification.name,specification)
+  addfeature(data,specification.name,specification,nil,filename)
  end
 end
 otf.enhancers.enhance=enhance

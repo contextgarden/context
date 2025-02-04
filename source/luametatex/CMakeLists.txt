@@ -3,9 +3,11 @@
 # has a lot of dependencies - ssh related, compression, security, xml, etc), but maybe 
 # there is a lightweight version of CMake. 
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.9..3.28)
 
-project(luametatex VERSION 2.10 LANGUAGES C)
+project(luametatex VERSION 2.11 LANGUAGES C)
+
+# I need to check with Mojca of the compile farm can handle this. 
 
 set(CMAKE_C_STANDARD 11)
 # set(CMAKE_C_STANDARD 17) # needs 3.21
@@ -198,6 +200,8 @@ if (CMAKE_C_COMPILER_ID MATCHES "Clang")
         -Wno-unsafe-buffer-usage
         -Wno-macro-redefined
         -Wno-undef
+        -Wno-switch-default
+        -Wno-class-varargs
     )
 
 endif()
@@ -240,6 +244,9 @@ endif()
 #
 # When the old osx version is dropped and armhf is upgraded we can enable unix except solaris which
 # fails. So, only osx 10.6 and rpi 32 fail. But we will probably drop 32 bit in the future anyway.
+#
+# At the beginning of 2025 the gain is some 5 percent on the 650 page luametate manual over the 
+# default memory allocator. 
 
 # CMAKE_HOST_SYSTEM_PROCESSOR arm64 x86_64
 

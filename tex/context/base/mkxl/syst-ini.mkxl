@@ -316,14 +316,14 @@
 \permanent\countdef\c_syst_max_allocated_mark      = 206 \c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
 
 \permanent\countdef\c_syst_min_allocated_attribute = 207 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
-\permanent\countdef\c_syst_max_allocated_attribute = 208 \c_syst_min_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)} % 65535 % no allocator, managed differently
+\permanent\countdef\c_syst_max_allocated_attribute = 208 \c_syst_max_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)}
 
-\permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_integer_register_index)}   % 65535 % is adapted later on
-\permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimension_register_index)} % idem
-\permanent\countdef\c_syst_max_allocated_skip      = 213 \c_syst_max_allocated_skip      = \directlua{tex.write(tex.magicconstants.max_glue_register_index)}      % idem
-\permanent\countdef\c_syst_max_allocated_muskip    = 214 \c_syst_max_allocated_muskip    = \directlua{tex.write(tex.magicconstants.max_muglue_register_index)}    % idem
-\permanent\countdef\c_syst_max_allocated_box       = 215 \c_syst_max_allocated_box       = \directlua{tex.write(tex.magicconstants.max_box_register_index)}       % idem
-\permanent\countdef\c_syst_max_allocated_toks      = 216 \c_syst_max_allocated_toks      = \directlua{tex.write(tex.magicconstants.max_toks_register_index)}      % idem
+\permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_integer_register_index)}
+\permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimension_register_index)}
+\permanent\countdef\c_syst_max_allocated_skip      = 213 \c_syst_max_allocated_skip      = \directlua{tex.write(tex.magicconstants.max_glue_register_index)}
+\permanent\countdef\c_syst_max_allocated_muskip    = 214 \c_syst_max_allocated_muskip    = \directlua{tex.write(tex.magicconstants.max_muglue_register_index)}
+\permanent\countdef\c_syst_max_allocated_box       = 215 \c_syst_max_allocated_box       = \directlua{tex.write(tex.magicconstants.max_box_register_index)}
+\permanent\countdef\c_syst_max_allocated_toks      = 216 \c_syst_max_allocated_toks      = \directlua{tex.write(tex.magicconstants.max_toks_register_index)}
 \permanent\countdef\c_syst_max_allocated_read      = 217 \c_syst_max_allocated_read      = \c_syst_max_allocated_iohandle
 \permanent\countdef\c_syst_max_allocated_write     = 218 \c_syst_max_allocated_write     = \c_syst_max_allocated_iohandle
 \permanent\countdef\c_syst_max_allocated_float     = 220 \c_syst_max_allocated_float     = \directlua{tex.write(tex.magicconstants.max_float_register_index or 0)}     % idem
@@ -338,6 +338,10 @@
 \permanent\countdef\c_syst_last_allocated_write    = 228 \c_syst_last_allocated_write    = \c_syst_min_allocated_iohandle
 \permanent\countdef\c_syst_last_allocated_marks    = 229 \c_syst_last_allocated_marks    = \c_syst_min_allocated_mark
 \permanent\countdef\c_syst_last_allocated_float    = 230 \c_syst_last_allocated_float    = \c_syst_min_allocated_register
+
+\permanent\countdef\c_syst_min_allocated_mvl       = 231 \c_syst_min_allocated_mvl       = \directlua{tex.write(tex.magicconstants.min_mvl_index)}
+\permanent\countdef\c_syst_max_allocated_mvl       = 232 \c_syst_max_allocated_mvl       = \directlua{tex.write(tex.magicconstants.max_mvl_index)}
+\permanent\countdef\c_syst_last_allocated_mvl      = 233 \c_syst_last_allocated_mvl      = \c_syst_min_allocated_mvl
 
 \permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value       = -"7FFFFFFF
 \permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value       =  "7FFFFFFF
@@ -388,16 +392,17 @@
 %D The allocators share a common helper macro. Marks might be changed to work in lower
 %D regions and we always assumes allocation.
 
-\permanent\protected\def\newcount {\syst_basics_allocate\c_syst_last_allocated_count \count \countdef  \c_syst_max_allocated_count}
-\permanent\protected\def\newdimen {\syst_basics_allocate\c_syst_last_allocated_dimen \dimen \dimendef  \c_syst_max_allocated_dimen}
-\permanent\protected\def\newskip  {\syst_basics_allocate\c_syst_last_allocated_skip  \skip  \skipdef   \c_syst_max_allocated_skip}
-\permanent\protected\def\newmuskip{\syst_basics_allocate\c_syst_last_allocated_muskip\muskip\muskipdef \c_syst_max_allocated_muskip}
-\permanent\protected\def\newbox   {\syst_basics_allocate\c_syst_last_allocated_box   \box   \integerdef\c_syst_max_allocated_box}
-\permanent\protected\def\newtoks  {\syst_basics_allocate\c_syst_last_allocated_toks  \toks  \toksdef   \c_syst_max_allocated_toks}
-\permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read  \integerdef\c_syst_max_allocated_read}
-\permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write \integerdef\c_syst_max_allocated_write}
-\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks \integerdef\c_syst_max_allocated_mark}
-\permanent\protected\def\newfloat {\syst_basics_allocate\c_syst_last_allocated_float \float \floatdef  \c_syst_max_allocated_float}
+\permanent\protected\def\newcount {\syst_basics_allocate\c_syst_last_allocated_count \count   \countdef  \c_syst_max_allocated_count}
+\permanent\protected\def\newdimen {\syst_basics_allocate\c_syst_last_allocated_dimen \dimen   \dimendef  \c_syst_max_allocated_dimen}
+\permanent\protected\def\newskip  {\syst_basics_allocate\c_syst_last_allocated_skip  \skip    \skipdef   \c_syst_max_allocated_skip}
+\permanent\protected\def\newmuskip{\syst_basics_allocate\c_syst_last_allocated_muskip\muskip  \muskipdef \c_syst_max_allocated_muskip}
+\permanent\protected\def\newbox   {\syst_basics_allocate\c_syst_last_allocated_box   \box     \integerdef\c_syst_max_allocated_box}
+\permanent\protected\def\newtoks  {\syst_basics_allocate\c_syst_last_allocated_toks  \toks    \toksdef   \c_syst_max_allocated_toks}
+\permanent\protected\def\newread  {\syst_basics_allocate\c_syst_last_allocated_read  \read    \integerdef\c_syst_max_allocated_read}
+\permanent\protected\def\newwrite {\syst_basics_allocate\c_syst_last_allocated_write \write   \integerdef\c_syst_max_allocated_write}
+\permanent\protected\def\newmarks {\syst_basics_allocate\c_syst_last_allocated_marks \marks   \integerdef\c_syst_max_allocated_mark}
+\permanent\protected\def\newfloat {\syst_basics_allocate\c_syst_last_allocated_float \float   \floatdef  \c_syst_max_allocated_float}
+\permanent\protected\def\newmvl   {\syst_basics_allocate\c_syst_last_allocated_mvl   \flushmvl\integerdef\c_syst_max_allocated_mvl}
 
 \firstvalidlanguage \plusone % so zero is ignored in hyphenation, this might become the default
 
@@ -577,6 +582,9 @@
 \newinteger\scratchmx
 \newinteger\scratchmy
 
+\newinteger\scratchsx
+\newinteger\scratchsy
+
 \newinteger\scratchmin
 \newinteger\scratchmax
 
@@ -608,6 +616,8 @@
 
 %immutable\dimensiondef  \zeropoint     0pt
 \immutable\dimensiondef  \onepoint      1pt
+\immutable\dimensiondef  \twopoints     2pt
+\immutable\dimensiondef  \threepoints   3pt
 \immutable\dimensiondef  \halfapoint    0.5pt
 \immutable\dimensiondef  \maxdimen      16383.99999pt % 1073741823sp
 \immutable\dimensiondef  \onebasepoint  1bp
@@ -1730,6 +1740,20 @@
 %permanent\protected\untraced\def\adjdemerits        {\adjacentdemerits     \minusone}
 
 \popoverloadmode
+
+%D See \type {mult-sys.mkxl} for an explanation of \type {\blankspace} definition. This one
+%D is more explanatory when ending (for instance) a keyword.
+
+\ifdefined\relaxedspace
+  % could be a primitive
+\else
+    \normalexpanded{\permanent\let\noexpand\relaxedspace=\space\space}
+\fi
+
+%D Only when testing non \CONTEXT\ usage:
+
+% \let\saved_reqno \eqno
+% \let\saved_leqno \leqno
 
 \protect \endinput
 

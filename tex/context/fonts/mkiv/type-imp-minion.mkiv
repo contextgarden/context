@@ -14,6 +14,13 @@
 % \definefontfallback[MinionMathFallback]    [file:latinmodern-math.otf][uppercasescript]
 % \definefontfallback[MinionBoldMathFallback][file:latinmodern-math.otf][uppercasescript]
 
+% If one wants kerns, minion doesn't enable them for math:
+%
+% \definefontfeature[math]              [mathematics] [script=dflt,ssty=no]
+% \definefontfeature[math-text]         [mathematics] [script=dflt,ssty=no]
+% \definefontfeature[math-script]       [mathematics] [script=dflt,ssty=1]
+% \definefontfeature[math-scriptscript] [mathematics] [script=dflt,ssty=2]
+
 \starttypescriptcollection[minion]
 
     \starttypescript [\s!serif][minion][\s!all]

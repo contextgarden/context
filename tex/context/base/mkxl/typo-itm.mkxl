@@ -80,26 +80,9 @@
    \let\currentitems\p_typo_items_alternative
    \setupcurrentitems[#1]%
    %
-   \edef\p_typo_items_textwidth{\itemsparameter\c!textwidth}%
-   \ifempty\p_typo_items_textwidth
-     \d_typo_items_text_width\availablehsize
-   \else
-     \d_typo_items_text_width\p_typo_items_textwidth\relax
-   \fi
-   %
-   \edef\p_typo_items_width{\itemsparameter\c!width}%
-   \ifempty\p_typo_items_width
-     \d_typo_items_symbol_width1.5\emwidth
-   \else
-     \d_typo_items_symbol_width\p_typo_items_width\relax
-   \fi
-   %
-   \edef\p_typo_items_distance{\itemsparameter\c!distance}%
-   \ifempty\p_typo_items_distance
-     \d_typo_items_distance\zeropoint
-   \else
-     \d_typo_items_distance\p_typo_items_distance\relax
-   \fi
+   \d_typo_items_text_width  \ifchkdimexpr\itemsparameter\c!textwidth\or\lastchkdimension\else\availablehsize\fi
+   \d_typo_items_symbol_width\ifchkdimexpr\itemsparameter\c!width    \or\lastchkdimension\else1.5\emwidth    \fi
+   \d_typo_items_distance    \ifchkdimexpr\itemsparameter\c!distance \or\lastchkdimension\else\zeropoint     \fi
    %
    \edef\p_typo_items_symbol{\itemsparameter\c!symbol}%
    \ifempty\p_typo_items_symbol
@@ -266,7 +249,7 @@
 \defcsname\??itemsalternatives\v!left\endcsname#1%
   {\let\typo_items_make\typo_items_make_vertical
    \let\typo_items_item\typo_items_item_vertical
-   \advanceby\d_typo_items_text_width-\dimexpr\d_typo_items_symbol_width+\d_typo_items_distance\relax
+   \advanceby\d_typo_items_text_width{-\d_typo_items_symbol_width-\d_typo_items_distance}%
    \typo_items_construct_items_boxes{#1}%
    \noindent\hbox\bgroup
      \ifvoid\b_typo_items_symbols \else

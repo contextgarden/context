@@ -114,7 +114,7 @@
    \setbox\b_page_versions\vpack to \ht#1%
      {\vfill
       \settexthoffset
-      \hsize\dimexpr\scratchdimen-2\texthoffset\relax
+      \hsize{\scratchdimen-2\texthoffset}%
       \hkern\texthoffset % brrrr
       \vbox to \zeropoint{\vss\page_info_place_info}%
       \vkern\bodyfontsize}%

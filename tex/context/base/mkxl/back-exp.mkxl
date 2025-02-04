@@ -84,10 +84,7 @@
 \appendtoks
     \enforced\permanent\protected\def\dotagTABLEcell
       {\iftrialtypesetting\else
-         \clf_settagtablecell
-           \numexpr\tablecellrows\relax
-           \numexpr\tablecellcolumns\relax
-           \numexpr\raggedstatus\relax
+         \clf_settagtablecell{\tablecellrows}{\tablecellcolumns}{\raggedstatus}%
        \fi}%
     % brrr, we need to tag empty cells (unless we start numbering)
     \enforced\permanent\protected\def\dotagTABLEsignal
@@ -146,9 +143,9 @@
            {\figurefileoriginal}%
            {\figurefullname}%
            {\figurefilepage}%
-           \dimexpr\figurewidth\relax
-           \dimexpr\figureheight\relax
-           \dimexpr\figuredepth\relax
+           {\figurewidth}%
+           {\figureheight}%
+           {\figuredepth}%\relax
            {\figurelabel}%
            {\figurecategory}%
        \fi}%
@@ -158,14 +155,12 @@
     \enforced\permanent\protected\def\dotagcombination
       {\iftrialtypesetting\else
          \clf_settagcombination
-            \numexpr\combinationparameter\c!nx\relax
-            \numexpr\combinationparameter\c!ny\relax
+            {\combinationparameter\c!nx}%
+            {\combinationparameter\c!ny}%
        \fi}%
     \enforced\permanent\protected\def\dotagcombinationpair#1#2%
       {\iftrialtypesetting\else
-         \clf_settagcombinationpair
-            \numexpr#1\relax
-            \numexpr#2\relax
+         \clf_settagcombinationpair{#1}{#2}%
        \fi}%
 \to \everyenableelements
 
@@ -186,9 +181,9 @@
     \enforced\permanent\protected\def\dotagsetitemgroup
       {\iftrialtypesetting\else
          \clf_settagitemgroup
-           \ifconditional\c_strc_itemgroups_pack     true\else false\fi\space
-           \ifconditional\c_strc_itemgroups_continue true\else false\fi\space
-           \numexpr\currentitemlevel\relax
+           \ifconditional\c_strc_itemgroups_pack     true\else false\fi\relaxedspace
+           \ifconditional\c_strc_itemgroups_continue true\else false\fi\relaxedspace
+           {\currentitemlevel}%
            {\currentitemgroupsymbol}%
        \fi}%
     \enforced\permanent\protected\def\dotagsetitem#1%
@@ -346,8 +341,8 @@
    \clf_setupexport
        % we catch up later
        align      {\exportparameter\c!align}%
-       bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
-       width      \dimexpr\exportparameter\c!width\relax
+       bodyfont   {\exportparameter\c!bodyfont}%
+       width      {\exportparameter\c!width}%
        % till here
        properties {\exportparameter\c!properties}%
        hyphen     {\exportparameter\c!hyphen}%
@@ -367,8 +362,8 @@
   {\enforced\glet\dostopexport\relax
    \clf_setupexport
        align      {\exportparameter\c!align}%
-       bodyfont   \dimexpr\exportparameter\c!bodyfont\relax
-       width      \dimexpr\exportparameter\c!width\relax
+       bodyfont   {\exportparameter\c!bodyfont}%
+       width      {\exportparameter\c!width}%
    \relax
    \clf_finishexport}
 

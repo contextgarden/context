@@ -91,7 +91,7 @@
    \page[\v!left]%
   %\setsystemmode{spread}%
    \c_page_spread_busy\conditionaltrue
-   \normalexpanded{\setuplayout[\c!textwidth=\the\dimexpr2\textwidth+2\backspace\relax]}%
+   \normalexpanded{\setuplayout[\c!textwidth=\todimension{2\textwidth+2\backspace}]}%
    \enforced\let\stopspread\page_spread_stop_yes}
 
 \permanent\protected\def\page_spread_stop_yes

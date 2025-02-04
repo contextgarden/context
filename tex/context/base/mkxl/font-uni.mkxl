@@ -20,7 +20,7 @@
 
 \unprotect
 
-\permanent\def\uchar#1#2{\clf_uchar\numexpr#1\relax\numexpr#2\relax}
+\permanent\def\uchar#1#2{\clf_uchar{#1}{#2}}
 
 \aliased\let\uc\uchar
 

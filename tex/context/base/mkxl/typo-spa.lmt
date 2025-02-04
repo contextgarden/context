@@ -24,7 +24,7 @@ local unsetvalue         <const> = attributes.unsetvalue
 
 local xscaled            = font.xscaled
 
-local v_reset            = interfaces.variables.reset
+local v_reset            <const> = interfaces.variables.reset
 
 local nuts               = nodes.nuts
 

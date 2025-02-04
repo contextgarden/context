@@ -180,8 +180,8 @@
    \else
      \d_typo_paragraphs_width\p_width\relax
    \fi
-   \advanceby\d_typo_paragraphs_width-2\dimexpr\paragraphsparameter\c!offset\relax
-   \c_typo_paragraphs_max\paragraphsparameter\c!n\relax
+   \d_typo_paragraphs_width{\d_typo_paragraphs_width-(\paragraphsparameter\c!offset)*2}%
+   \c_typo_paragraphs_max{\paragraphsparameter\c!n}%
    \d_typo_paragraphs_auto\d_typo_paragraphs_width\relax
    \scratchcounter\zerocount
    \localcontrolledrepeat \c_typo_paragraphs_max
@@ -192,7 +192,7 @@
         \advanceby\d_typo_paragraphs_auto-\p_width\relax
       \fi
       \ifnum\currentloopiterator>\plusone
-        \advanceby\d_typo_paragraphs_auto-\namedparagraphsparameter{\currentparagraphs:\number\currentloopiterator}\c!distance\relax
+        \advanceby\d_typo_paragraphs_auto{-(\namedparagraphsparameter{\currentparagraphs:\number\currentloopiterator}\c!distance)}%
       \fi}%
    \ifnum\scratchcounter>\zerocount
      \divideby\d_typo_paragraphs_auto\scratchcounter
@@ -297,10 +297,10 @@
    \endgroup}
 
 \def\typo_paragraphs_separator
-  {\scratchdistance\paragraphsparameter\c!distance
+  {\scratchdistance{\paragraphsparameter\c!distance}%
    \ifcstok{\paragraphsparameter\c!rule}\v!on
-     \scratchwidth\paragraphsparameter\c!rulethickness
-     \scratchdistance\dimexpr(\scratchdistance-\scratchwidth)/2\relax
+     \scratchwidth{\paragraphsparameter\c!rulethickness}%
+     \scratchdistance{(\scratchdistance-\scratchwidth)/2}%
      \hskip\scratchdistance
      \color[\paragraphsparameter\c!rulecolor]{\vrule\s!width\scratchwidth}%
    \fi

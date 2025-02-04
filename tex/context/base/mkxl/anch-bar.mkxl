@@ -71,7 +71,7 @@
 %    distance=5pt]
 
 \setupsidebar
-  [\c!rulethickness=\dimexpr\bodyfontsize/6\relax, % 2pt default
+  [\c!rulethickness=\bodyfontsize/6, % 2pt default
    \c!rulecolor=\s!black,
    \c!alternative=0,
    \c!topoffset=\zeropoint,
@@ -97,8 +97,8 @@
      \cdef\currentsidebar{#1}%
      \setupcurrentsidebar[#2]%
    \fi
-   \scratchdistance\sidebarparameter\c!distance\relax
-   \scratchdimen\sidebarparameter\c!leftmargindistance\relax
+   \scratchdistance{\sidebarparameter\c!distance}%
+   \scratchdimen{\sidebarparameter\c!leftmargindistance}%
    \edef\m_level{\sidebarparameter\c!level}%
    \ifempty\m_level
      \ifnum\c_anch_sidebars_level=\plusone
@@ -117,21 +117,22 @@
        \d_anch_sidebars_distance\scratchdimen
      \fi
    \else
-     \d_anch_sidebars_distance\dimexpr\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax\relax
+     % test: {\scratchdimen+(\m_level-\plusone)*\scratchdistance}
+     \d_anch_sidebars_distance{\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax}%
    \fi
    \startpositionoverlay{\v!text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
-       {b:sidebar:\the\c_anch_sidebars_n}%
-       {e:sidebar:\the\c_anch_sidebars_n}%
+       {b:sidebar:\tointeger\c_anch_sidebars_n}%
+       {e:sidebar:\tointeger\c_anch_sidebars_n}%
        {mpos:sidebar}%
-       {self=sidebar:\the\c_anch_sidebars_n,
+       {self=sidebar:\tointeger\c_anch_sidebars_n,
         location=\mplocation{\sidebarparameter\c!location},
-        linewidth=\sidebarparameter\c!rulethickness,
+        linewidth=\todimension{\sidebarparameter\c!rulethickness},
         linecolor=\sidebarparameter\c!rulecolor,
         alternative=\sidebarparameter\c!alternative,
-        topoffset=\the\dimexpr\sidebarparameter\c!topoffset,
-        bottomoffset=\the\dimexpr\sidebarparameter\c!bottomoffset,
-        distance=\the\d_anch_sidebars_distance}%
+        topoffset=\todimension{\sidebarparameter\c!topoffset},
+        bottomoffset=\todimension{\sidebarparameter\c!bottomoffset},
+        distance=\todimension\d_anch_sidebars_distance}%
      }%
    \stoppositionoverlay
    \bpos{sidebar:\the\c_anch_sidebars_current}%
@@ -183,6 +184,7 @@
 \definesidebar
   [\v!margin]
   [\c!leftmargindistance=\dimexpr\leftmargindistance+\sidebarparameter\c!rulethickness/2\relax]
+ %[\c!leftmargindistance=\leftmargindistance+\sidebarparameter\c!rulethickness/2]
 
 \dorecurse{5}{\definesidebar[\v!margin:#1][\v!margin]} % let's be nice and predefine 5 levels
 

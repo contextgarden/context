@@ -27,10 +27,7 @@
   {\ifchknum#1\or
      \dontleavehmode
      \global\advanceby\c_align_point_index\plusone
-     \d_align_point_delta\clf_align_point_delta
-       \numexpr#1\relax
-       \c_align_point_index
-     \relax
+     \d_align_point_delta\clf_align_point_delta{#1}\c_align_point_index
      \xypos{ap::\number#1:\the\c_align_point_index}%
      \hkern\d_align_point_delta
   \fi}

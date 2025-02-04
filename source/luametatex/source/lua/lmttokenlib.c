@@ -4,7 +4,7 @@
 
 /*tex
 
-    The tokenlib started out as an expetiment. The first version provided a rough interface to the
+    The tokenlib started out as an experiment. The first version provided a rough interface to the
     internals but could only really be used for simple introspection and limited piping back. A major
     step up came in a second version where Taco introduced a couple of scanners. During experiments
     in \CONTEXT\ I added some more so now we have a reasonable repertoire of creators, accessors and
@@ -269,7 +269,7 @@ static inline saved_tex_scanner tokenlib_aux_save_tex_scanner(void) {
     };
 }
 
-static inline void tokenlib_aux_unsave_tex_scanner(saved_tex_scanner a)
+static inline void tokenlib_aux_unsave_tex_scanner(const saved_tex_scanner a)
 {
     cur_cmd = a.cmd;
     cur_chr = a.chr;
@@ -1037,7 +1037,7 @@ static int tokenlib_scan_float_indeed(lua_State *L, int exponent, int hexadecima
         goto SCANDECIMAL;
     }
   SCANDECIMAL:
-    if (tex_token_is_seperator(cur_tok)) {
+    if (tex_token_is_separator(cur_tok)) {
         luaL_addchar(&b, '.');
         while (1) {
             tex_get_x_token();
@@ -1058,7 +1058,7 @@ static int tokenlib_scan_float_indeed(lua_State *L, int exponent, int hexadecima
       PICKUPDECIMAL:
         if (tex_token_is_digit(cur_tok)) {
             luaL_addchar(&b, (unsigned char) cur_chr);
-        } else if (tex_token_is_seperator(cur_tok)) {
+        } else if (tex_token_is_separator(cur_tok)) {
             luaL_addchar(&b, '.');
             while (1) {
                 tex_get_x_token();
@@ -1098,7 +1098,7 @@ static int tokenlib_scan_float_indeed(lua_State *L, int exponent, int hexadecima
     goto DONE;
   SCANHEXADECIMAL:
     tex_get_x_token();
-    if (tex_token_is_seperator(cur_tok)) {
+    if (tex_token_is_separator(cur_tok)) {
        luaL_addchar(&b, '.');
         while (1) {
             tex_get_x_token();
@@ -1118,7 +1118,7 @@ static int tokenlib_scan_float_indeed(lua_State *L, int exponent, int hexadecima
             tex_get_x_token();
             if (tex_token_is_xdigit(cur_tok)) {
                 luaL_addchar(&b, (unsigned char) cur_chr);
-            } else if (tex_token_is_seperator(cur_tok)) {
+            } else if (tex_token_is_separator(cur_tok)) {
                 luaL_addchar(&b, '.');
                 while (1) {
                     tex_get_x_token();

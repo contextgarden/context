@@ -376,9 +376,9 @@
 
 \permanent\tolerant\protected\def\positionframed[#1]#*[#S#2]%
   {\setbox\scratchbox\hpack
-     {\scratchwidth \dimexpr\MPx{e:#1}-\MPx{b:#1}\relax
-      \scratchdepth \dimexpr\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}\relax
-      \scratchheight\dimexpr\scratchdepth+\MPh{b:#1}\relax
+     {\scratchwidth {\MPx{e:#1}-\MPx{b:#1}}%
+      \scratchdepth {\MPy{b:#1}-\MPy{e:#1}+\MPd{e:#1}}%
+      \scratchheight{\scratchdepth+\MPh{b:#1}}%
       \lower\scratchdepth\hpack
         {\framed[\c!width=\scratchwidth,\c!height=\scratchheight,\c!offset=\v!overlay,#2]{}}}%
    \smashedbox\scratchbox

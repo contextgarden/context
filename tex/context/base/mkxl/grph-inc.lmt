@@ -338,7 +338,7 @@ local figures_formats = allocate { -- magic and order will move here
     ["mps"]    = { patterns = { "^mps$", "^%d+$" } }, -- we need to anchor
     ["jpg"]    = { list = { "jpg", "jpeg" } },
     ["png"]    = { list = { "png" } },
-    ["jp2"]    = { list = { "jp2" } },
+    ["jp2"]    = { list = { "jp2", "jpx" } }, -- for now simple jpx aliasing
     ["jbig"]   = { list = { "jbig", "jbig2", "jb2" } },
     ["svg"]    = { list = { "svg", "svgz" } },
     ["eps"]    = { list = { "eps", "ai" } },
@@ -2215,7 +2215,7 @@ implement {
 }
 
 implement {
-    name      = "figure_reset",
+    name      = "figurereset",
     scope     = "private",
     arguments = { "integer", "dimen", "dimen" },
     actions   = function(box,width,height)

@@ -199,7 +199,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_kern, horizontal_math_kern_subtype, horizontalmathkern)
     set_value_entry_key(subtypes_kern, vertical_math_kern_subtype,   verticalmathkern)
 
-    subtypes_rule = lmt_aux_allocate_value_info(image_rule_subtype);
+    subtypes_rule = lmt_aux_allocate_value_info(spacing_rule_subtype);
 
     set_value_entry_key(subtypes_rule, normal_rule_subtype,        normal)
     set_value_entry_key(subtypes_rule, empty_rule_subtype,         empty)
@@ -213,6 +213,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_rule, math_radical_rule_subtype,  radical)
     set_value_entry_key(subtypes_rule, box_rule_subtype,           box)
     set_value_entry_key(subtypes_rule, image_rule_subtype,         image)
+    set_value_entry_key(subtypes_rule, spacing_rule_subtype,       spacing)
 
     subtypes_glyph = lmt_aux_allocate_value_info(glyph_math_accent_subtype);
 
@@ -256,7 +257,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_fence, left_operator_side,  operator)
     set_value_entry_key(subtypes_fence, no_fence_side,       no)
 
-    subtypes_list = lmt_aux_allocate_value_info(balance_list);
+    subtypes_list = lmt_aux_allocate_value_info(spacing_list);
 
     set_value_entry_key(subtypes_list, unknown_list,              unknown)
     set_value_entry_key(subtypes_list, line_list,                 line)
@@ -302,6 +303,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_list, local_middle_list,         middle)
     set_value_entry_key(subtypes_list, balance_slot_list,         balanceslot)
     set_value_entry_key(subtypes_list, balance_list,              balance)
+    set_value_entry_key(subtypes_list, spacing_list,              spacing)
 
     subtypes_math = lmt_aux_allocate_value_info(end_broken_math);
 
@@ -886,6 +888,7 @@ void lmt_nodelib_initialize(void) {
     */
 
     lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0 };
+    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(lmtxexpression),  .visible = 0 };
     lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0 };
     lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0 };
     lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0 };
@@ -5289,8 +5292,8 @@ void tex_set_disc_field(halfword target, halfword location, halfword source)
         case post_break_code: target = disc_post_break(target); break;
         case no_break_code:   target = disc_no_break(target);   break;
     }
-    node_prev(source) = null; /* don't expose this one! */
     if (source) {
+        node_prev(source) = null; /* don't expose this one! */
         node_head(target) = source;
         node_tail(target) = tex_tail_of_node_list(source);
     } else {
@@ -5358,7 +5361,7 @@ disc (pre post replace) disc
 halfword tex_flatten_discretionaries(halfword head, int *count, int nest)
 {
     halfword current = head;
-    singleword after = 0;
+    halfword after = 0;
     while (current) {
         halfword next = node_next(current);
         switch (node_type(current)) {
@@ -5740,13 +5743,13 @@ scaled tex_effective_glue(halfword parent, halfword glue)
                                         w -= glue_shrink(glue) * (double) box_glue_set(parent);
                                     }
                                     break;
+                                default: 
+                                    return (scaled) lmt_roundedfloat(w);
                             }
-                            return (scaled) lmt_roundedfloat(w);
                         }
                     default:
                         return glue_amount(glue);
                 }
-                break;
         }
     }
     return 0;

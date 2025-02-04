@@ -88,8 +88,8 @@
      \vskip-2\lineheight
      \strut
      \blank[\v!disable]
-     \leftskip \backgroundparameter\c!leftoffset
-     \rightskip\backgroundparameter\c!rightoffset}
+     \leftskip \glueexpr\backgroundparameter\c!leftoffset\relax
+     \rightskip\glueexpr\backgroundparameter\c!rightoffset\relax}
 
 \tolerant\def\pack_backgrounds_start_ignore[#S#settings]%
   {\let\pack_backgrounds_stop\pack_backgrounds_stop_ignore}
@@ -103,7 +103,7 @@
    \vskip-2\lineheight
    \strut
    % safeguard added
-   \ifdim\dimexpr\pagetotal+2\lineheight\relax>\pagegoal
+   \ifdim{\pagetotal+2\lineheight}>\pagegoal
      \page
    \fi
    % till here
@@ -127,16 +127,13 @@
           \backgroundsplitmode\plusone % split to max height
         \else
           \setbox\scratchdimentwo\vbox{\backgroundparameter\c!before}%
-          \scratchdimen\dimexpr\pagegoal-\ht\scratchdimentwo-\pagetotal\relax
+          \scratchdimen{\pagegoal-\ht\scratchdimentwo-\pagetotal}%
           \backgroundsplitmode\plustwo % split to partial height
         \fi
         \ifdim\scratchdimen<\zeropoint
             \scratchdimen\pagegoal
         \fi
-        \advanceby\scratchdimen\dimexpr
-          -\backgroundparameter\c!topoffset
-          -\backgroundparameter\c!bottomoffset
-        \relax
+        \advanceby\scratchdimen{-\backgroundparameter\c!topoffset-\backgroundparameter\c!bottomoffset}%
         \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
           \ifdim\ht\scratchboxone>\scratchdimen % larger than page
             \setbox\scratchdimentwo\vsplit\scratchboxone to \scratchdimen
@@ -145,11 +142,11 @@
             \backgroundsplitmode\zerocount % no split
           \fi
           \setbox\scratchdimentwo\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
-            {\vskip\backgroundparameter\c!topoffset
+            {\vskip{\backgroundparameter\c!topoffset}% or \vkern
              \unvcopy\scratchdimentwo
              \prevdepth\dp\scratchdimentwo
              \obeydepth
-             \vskip\backgroundparameter\c!bottomoffset
+             \vskip{\backgroundparameter\c!bottomoffset}% or \vkern
              \vfill}
           \backgroundparameter\c!before
           \ifcase\backgroundsplitmode\or\or % partial split
@@ -159,7 +156,7 @@
           \fi
           \startlinecorrection
             \ifnum\backgroundsplitmode=\plusthree
-              \hskip\scratchdistance % new **
+              \hskip\scratchdistance % new ** % or \hkern
             \fi
             \inheritedbackgroundframed{\box\scratchdimentwo}%
           \stoplinecorrection

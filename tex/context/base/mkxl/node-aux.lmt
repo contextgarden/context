@@ -31,7 +31,6 @@ local vianuts        = nuts.vianuts
 local getbox         = nuts.getbox
 local getnext        = nuts.getnext
 local getid          = nuts.getid
-local getsubtype     = nuts.getsubtype
 local getlist        = nuts.getlist
 local getattr        = nuts.getattr
 local getboth        = nuts.getboth
@@ -359,14 +358,14 @@ do
     local vmodepar_code <const> = parcodes.vmodepar
 
     local getnest       = tex.getnest
-    local getsubtype    = nuts.getsubtype
+    local getidsubtype  = nuts.getidsubtype
 
     function nuts.setparproperty(action,...)
         local tail = tonut(getnest().tail)
         while tail do
-            if getid(tail) == par_code then
-                local s = getsubtype(tail)
-                if s == hmodepar_code or s == vmodepar_code then
+            local id, subtype = getidsubtype(tail)
+            if id == par_code then
+                if subtype == hmodepar_code or subtype == vmodepar_code then
                     return action(tail,...)
                 else
                     -- something is wrong here

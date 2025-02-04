@@ -232,6 +232,26 @@
 % mcframed  xx\mcframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
 % mtframed  xx\mtframed {x^2 + \frac{2}{x} + \sqrt{\frac{2}{\sqrt{\frac{2}{x}}}}} \input tufte
 
+%D \starttyping
+%D \definemathframed
+%D   [graymath]
+%D   [frame=off,
+%D    location=mathematics,
+%D  % mathclass=ordinary,
+%D  % mathstyle=display,
+%D    background=color,
+%D    backgroundcolor=gray,
+%D    backgroundoffset=3pt]
+%D
+%D \startformula
+%D   \ln (1+x) = \graymath{x - \frac{x^2}{2}} + \frac{x^3}{3}-\cdots.
+%D \stopformula
+%D
+%D \startformula
+%D   \scriptstyle \ln (1+x) = \graymath{x - \frac{x^2}{2}} + \frac{x^3}{3}-\cdots.
+%D \stopformula
+%D \stoptyping
+
 \newinteger\c_framed_mstyle
 
 \installcorenamespace{mathframed}
@@ -249,18 +269,27 @@
   {\begingroup
    \cdef\currentmathframed{#1}%
    \setupcurrentmathframed[#2]%
-   \c_framed_mstyle\normalmathstyle
+   \scratchdistance\ifchkdimension\mathframedparameter\c!backgroundoffset\or\lastchkdimension\else\zeropoint\fi
+   \ifmmode
+     \ifempty{\mathframedparameter\c!mathstyle}%
+       \normalexpanded{\setmathframedparameter{\c!mathstyle}{\m_math_styles_current}}%
+     \fi
+     \math_atom_by_parameter\mathframedparameter
+     \bgroup
+     \ifzeropt\scratchdistance\else\kern\scratchdistance\fi
+   \fi
    \edef\m_framed_location{\mathframedparameter\c!location}%
-\dostarttaggednodetail\t!mrow
+   \dostarttaggednodetail\t!mrow
    \ifx\m_framed_location\v!mathematics
      \inheritedmathframedframed\bgroup
        \setbox\scratchbox\hbox\bgroup
          \Ustartmath
-         \triggermathstyle\c_framed_mstyle
-         \expand\t_pack_framed_mathframed
-         \mathatom \mathunspacedcode\bgroup
-           #3%
-         \egroup
+           \usemathstyleparameter\mathframedparameter\c!mathstyle
+           \expand\t_pack_framed_mathframed
+           \mathatom \mathunspacedcode
+           \bgroup
+             #3%
+           \egroup
          \Ustopmath
        \egroup
        \global\d_pack_framed_mathframed\dp\scratchbox
@@ -270,13 +299,17 @@
      \inheritedmathframedframed\bgroup
        \hbox\bgroup
          \Ustartmath
-         \triggermathstyle\c_framed_mstyle
+           \usemathstyleparameter\mathframedparameter\c!mathstyle
            #3%
          \Ustopmath
        \egroup
      \egroup
    \fi
-\dostoptagged
+   \dostoptagged
+   \ifmmode
+     \ifzeropt\scratchdistance\else\kern\scratchdistance\fi
+     \egroup
+   \fi
    \endgroup}
 
 \appendtoks
@@ -288,7 +321,7 @@
   {}
   {\pack_framed_locator_set_lo
    \ifzeropt\d_framed_locator_lo\else
-     \lower\dimexpr\d_framed_locator_lo+\d_pack_framed_mathframed\relax
+     \lower{\d_framed_locator_lo+\d_pack_framed_mathframed}%
    \fi
    \box\b_framed_normal}
 

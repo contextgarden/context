@@ -1225,7 +1225,8 @@ end
 
 The sparse library is just there because we use similar code to store all these
 character related codes that way (\type {\lccode}) and such). The entries can be
-1, 2 or 4 bytes wide.
+1 (\type {0xFF}), 2 (\type {0xFFFF}) or 4 (\type {0xFFFFFFFF}) bytes wide. When 0
+is used as width then nibbles (\type {0xF}) are assumed.
 
 \starttyping[option=LUA]
 function sparse.new (
@@ -1712,10 +1713,7 @@ but there are no guarantees that it will work.
 
 \startsubsection[title=Management]
 
-\starttyping
-foreign
-optional
-\stoptyping
+{\em Todo: something about how optionals are implemented and are supposed to work.}
 
 \stopsubsection
 
@@ -2475,6 +2473,13 @@ end
 \stoptyping
 
 \stopsubsubsubject
+
+\stopsubsection
+
+\startsubsection[title=Foreign]
+
+{\em Todo: something about how the foreign interface can be used (inspired by
+alien). Also see \typ {libs-imp-foreign.mkxl}.}
 
 \stopsubsection
 

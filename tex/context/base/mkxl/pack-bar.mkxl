@@ -13,7 +13,6 @@
 
 \writestatus{loading}{ConTeXt Packaging Macros / Bars}
 
-
 \unprotect
 
 %D This code has been moved from scrn-int to here (was some old experimental code).
@@ -38,6 +37,8 @@
 %D
 %D \typebuffer \stoplinecorrection \getbuffer \stoplinecorrection
 
+%D Maybe [n|min|max] : \numexpr...\relax
+
 \installcorenamespace{positionbar}
 
 \installsimplecommandhandler \??positionbar {positionbar} \??positionbar
@@ -51,44 +52,80 @@
    \c!height=\strutheight,
    \c!depth=\strutdepth]
 
+\def\pack_bar_common_setting
+  {\usepositionbarstyleandcolor\c!style\c!color
+   \scratchcounter{\positionbarparameter\c!n}%
+   \scratchmin{\positionbarparameter\c!min}%
+   \scratchmax{\positionbarparameter\c!max}}
+
 \permanent\protected\def\horizontalpositionbar[#S#1]%
   {\hbox to \hsize
      {\setuppositionbar[#1]%
-      \usepositionbarstyleandcolor\c!style\c!color
-      \hskip\zeropoint\s!plus \positionbarparameter\c!n  \s!fill
-      \hskip\zeropoint\s!plus-\positionbarparameter\c!min\s!fill
+      \pack_bar_common_setting
+      \hskip\zeropoint\s!plus \scratchcounter\s!fill
+      \hskip\zeropoint\s!plus-\scratchmin    \s!fill
       \positionbarparameter\c!text\relax
-      \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
-      \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
+      \hskip\zeropoint\s!plus \scratchmax    \s!fill
+      \hskip\zeropoint\s!plus-\scratchcounter\s!fill}}
 
 \permanent\protected\def\verticalpositionbar[#S#1]%
   {\vbox to \vsize
-     {\hsize\positionbarparameter\c!width
+     {\hsize{\positionbarparameter\c!width}%
       \setuppositionbar[#1]%
-      \usepositionbarstyleandcolor\c!style\c!color
-      \vskip\zeropoint\s!plus \positionbarparameter\c!n  \s!fill
-      \vskip\zeropoint\s!plus-\positionbarparameter\c!min\s!fill
+      \pack_bar_common_setting
+      \vskip\zeropoint\s!plus \scratchcounter\s!fill
+      \vskip\zeropoint\s!plus-\scratchmin    \s!fill
       \positionbarparameter\c!text\relax
-      \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
-      \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
+      \vskip\zeropoint\s!plus \scratchmax    \s!fill
+      \vskip\zeropoint\s!plus-\scratchcounter\s!fill}}
 
 \permanent\protected\def\horizontalgrowingbar[#S#1]%
   {\hpack to \hsize
      {\setuppositionbar[#1]%
-      \usepositionbarstyleandcolor\c!style\c!color
-      \vrule\s!width\zeropoint\s!height\positionbarparameter\c!height\s!depth\positionbarparameter\c!depth
-      \leaders\vrule\hskip\zeropoint\s!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
-      \hskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
-      \hskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
+      \pack_bar_common_setting
+      \vrule
+        \s!width  \zeropoint
+        \s!height {\positionbarparameter\c!height}%
+        \s!depth  {\positionbarparameter\c!depth}%
+      \relax
+      \leaders
+        \vrule
+        \hskip
+          \zeropoint
+          \s!plus\numexpr\scratchcounter-\scratchmin+\plusone\relax\s!fill
+      \relax
+      \hskip
+        \zeropoint
+        \s!plus \scratchmax\s!fill
+      \relax
+      \hskip
+        \zeropoint
+        \s!plus-\scratchcounter\s!fill
+      \relax}}
 
 \permanent\protected\def\verticalgrowingbar[#S#1]%
   {\vpack to \vsize
-     {\hsize\positionbarparameter\c!width
+     {\hsize{\positionbarparameter\c!width}%
       \setuppositionbar[#1]%
-      \usepositionbarstyleandcolor\c!style\c!color
-      \hrule\s!width\positionbarparameter\c!width\s!height\zeropoint\s!depth\zeropoint
-      \leaders\hrule\vskip\zeropoint\s!plus\numexpr\positionbarparameter\c!n-\positionbarparameter\c!min+\plusone\relax\s!fill
-      \vskip\zeropoint\s!plus \positionbarparameter\c!max\s!fill
-      \vskip\zeropoint\s!plus-\positionbarparameter\c!n  \s!fill}}
+      \pack_bar_common_setting
+      \hrule
+        \s!width  {\positionbarparameter\c!width}% can have changed
+        \s!height \zeropoint
+        \s!depth  \zeropoint
+      \relax
+      \leaders
+        \hrule
+        \vskip
+          \zeropoint
+          \s!plus \numexpr\scratchcounter-\scratchmin+\plusone\relax\s!fill
+      \relax
+      \vskip
+        \zeropoint
+        \s!plus \scratchmax\s!fill
+      \relax
+      \vskip
+        \zeropoint
+        \s!plus-\scratchcounter\s!fill
+      \relax}}
 
 \protect \endinput

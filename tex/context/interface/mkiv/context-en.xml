@@ -24788,7 +24788,28 @@
       <cd:constant type="yes"/>
       <cd:constant default="yes" type="no"/>
      </cd:parameter>
+     <cd:parameter name="mathconstants">
+      <cd:constant default="yes" type="italic"/>
+      <cd:constant type="upright"/>
+     </cd:parameter>
      <cd:parameter name="differentiald">
+      <cd:constant default="yes" type="italic"/>
+      <cd:constant type="upright"/>
+     </cd:parameter>
+     <cd:parameter name="exponentiale">
+      <cd:constant default="yes" type="italic"/>
+      <cd:constant type="upright"/>
+     </cd:parameter>
+     <cd:parameter name="imaginaryi">
+      <cd:constant default="yes" type="italic"/>
+      <cd:constant type="upright"/>
+     </cd:parameter>
+     <cd:parameter name="imaginaryj">
+      <cd:constant default="yes" type="italic"/>
+      <cd:constant type="upright"/>
+     </cd:parameter>
+     <cd:parameter name="pi">
+      <cd:constant default="yes" type="italic"/>
       <cd:constant type="upright"/>
      </cd:parameter>
      <cd:parameter name="snap">

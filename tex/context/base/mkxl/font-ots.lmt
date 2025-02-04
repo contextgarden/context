@@ -3100,8 +3100,8 @@ do -- overcome local limit
     local defaultscript   = otf.features.checkeddefaultscript
     local defaultlanguage = otf.features.checkeddefaultlanguage
 
-    local wildcard        = "*"
-    local default         = "dflt"
+    local wildcard        <const> = "*"
+    local default         <const> = "dflt"
 
     local function initialize(sequence,script,language,enabled,autoscript,autolanguage)
         local features = sequence.features
@@ -4290,7 +4290,7 @@ registerotffeature {
 }
 
 -- Moved here (up) a bit. This doesn't really belong in generic so it will move to a
--- context module some day.
+-- context module some day. It is kind of bsolete anyway.
 
 local function markinitializer(tfmdata,value)
     local properties = tfmdata.properties

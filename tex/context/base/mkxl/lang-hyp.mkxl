@@ -125,13 +125,13 @@
         characters   {\dummyparameter\c!characters}%
         hyphens      {\dummyparameter\c!hyphens}%
         joiners      {\dummyparameter\c!joiners}%
-        rightwordmin \numexpr\dummyparameter\c!rightwords\relax
+        rightwordmin {\dummyparameter\c!rightwords}%
         rightchars   {\dummyparameter\c!rightchars}%
-        charmin      \numexpr\dummyparameter\s!hyphenmin\relax
-        leftcharmin  \numexpr\dummyparameter\s!lefthyphenmin\relax
-        rightcharmin \numexpr\dummyparameter\s!righthyphenmin\relax
-        leftchar     \numexpr\dummyparameter\s!lefthyphenchar\relax
-        rightchar    \numexpr\dummyparameter\s!righthyphenchar\relax
+        charmin      {\dummyparameter\s!hyphenmin}%
+        leftcharmin  {\dummyparameter\s!lefthyphenmin}%
+        rightcharmin {\dummyparameter\s!righthyphenmin}%
+        leftchar     {\dummyparameter\s!lefthyphenchar}%
+        rightchar    {\dummyparameter\s!righthyphenchar}%
         alternative  {\dummyparameter\c!alternative}%
         rightedge    {\dummyparameter\c!rightedge}%
       % autohyphen   {\dummyparameter\c!autohyphen}

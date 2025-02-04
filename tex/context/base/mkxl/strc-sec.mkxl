@@ -207,7 +207,7 @@
         metadata {
             kind      {section}
             name      {\currentstructurename}
-            catcodes  \ifempty\currentstructurecatcodes\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi\space
+            catcodes  \ifempty\currentstructurecatcodes\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi\relaxedspace
             coding    {\currentstructurecoding}
         \ifx\currentstructurecoding\s!xml
             xmlroot   {\xmldocument}
@@ -216,7 +216,7 @@
             xmlsetup  {\currentstructurexmlsetup}
         \fi
         \ifx\currentstructuresaveinlist\v!no
-            nolist \space true\space
+            nolist true\relaxedspace
         \fi
         \ifx\currentstructureincrementnumber\v!yes
             increment {\currentstructureincrementnumber}
@@ -249,7 +249,7 @@
         numberdata {
           % block         {\currentsectionblock}
         \ifx\currentstructureshownumber\v!no
-            hidenumber    \space true\space % space needed for parser
+            hidenumber true\relaxedspace % space needed for parser
         \fi
             separatorset  {\structureparameter\c!sectionseparatorset}
             conversionset {\structureparameter\c!sectionconversionset}
@@ -329,13 +329,13 @@
 
 % \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
-\permanent\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}}         % name, level|parent
-\permanent\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}             % name
-\permanent\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}          % level, number (+/-)
-\permanent\def\getstructurenumber          #1{\clf_getstructurenumber         \numexpr#1\relax} % level
-\permanent\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}           % level, what
-\permanent\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     \numexpr#1\relax} % level
-\permanent\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}           % level, what
+\permanent\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}} % name, level|parent
+\permanent\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}     % name
+\permanent\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}  % level, number (+/-)
+\permanent\def\getstructurenumber          #1{\clf_getstructurenumber         {#1}}    % level
+\permanent\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}  % level, what
+\permanent\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     {#1}}    % level
+\permanent\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}  % level, what
 \permanent\def\getspecificstructuretitle   #1{\clf_getspecificstructuretitle {#1}{\headparameter\s!catcodes}}
 
 % structure heads (like \startchapter)
@@ -450,20 +450,20 @@
             \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currentheadparent}%
         }%
-\ifcstok{\headparameter\c!marking}\v!new % WS: so its own class
-        \normalexpanded {%
-            \definemarking[\currenthead]
-            \definemarking[\currenthead\v!number]
-            \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
-            \setupmarking [\currenthead\v!number][\c!filtercommand=\noexpand\sectionheadmarkingnumber{\currenthead}]%
-        }%
-        \letheadparameter\c!marking\empty
-\else
-        \normalexpanded {%
-            \definemarking[\currenthead]         [\currentheadparent]%
-            \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
-        }%
-\fi
+        \ifcstok{\headparameter\c!marking}\v!new % WS: so its own class
+          \normalexpanded {%
+              \definemarking[\currenthead]
+              \definemarking[\currenthead\v!number]
+              \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
+              \setupmarking [\currenthead\v!number][\c!filtercommand=\noexpand\sectionheadmarkingnumber{\currenthead}]%
+          }%
+          \letheadparameter\c!marking\empty
+        \else
+          \normalexpanded {%
+              \definemarking[\currenthead]         [\currentheadparent]%
+              \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
+          }%
+        \fi
         \doifelselist\currenthead\donothing
           {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \fi
@@ -494,7 +494,7 @@
     \clf_registersection {\currenthead} {
         coupling {\currentsectionheadcoupling}
         section  {\currentsectionheadsection}
-        level    \space \currentsectionlevel \space % space needed for parser
+        level    \currentsectionlevel \relaxedspace % space needed for parser
         parent   {\currentheadparent}
     }%
     \endgroup
@@ -1243,12 +1243,9 @@
      #1%
    \fi}
 
-%permanent\def\currentsectioncountervalue {\clf_depthnumber\numexpr\thenamedheadlevel\currenthead\relax}
-%permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
-
-\permanent\def\currentsectioncountervalue {\clf_depthnumber\numexpr\thenamedheadlevel\currenthead\relax}
-%permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\currenthead+\minusone\relax}
-\permanent\def\previoussectioncountervalue{\clf_depthnumber\numexpr\thenamedheadlevel\previoushead\relax}
+\permanent\def\currentsectioncountervalue {\clf_depthnumber{\thenamedheadlevel\currenthead}}
+%permanent\def\previoussectioncountervalue{\clf_depthnumber{\thenamedheadlevel\currenthead+\minusone}}
+\permanent\def\previoussectioncountervalue{\clf_depthnumber{\thenamedheadlevel\previoushead}}
 
 \mutable\lettonothing\previoushead
 

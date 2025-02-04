@@ -73,7 +73,7 @@
 \newbox\b_typo_normalizers
 
 \def\typo_normalizers_size#axis#size%
-  {\dimexpr\ifdim#1\b_typo_normalizers=\zeropoint
+  {\dimexpr{#1\b_typo_normalizers}=\zeropoint
      \bodyfontsize
    \else
      \luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
@@ -204,9 +204,9 @@
    \letdummyparameter\c!offset\exheight % we obey to the outer exheight
    \letdummyparameter\c!strut \v!yes    % we obey to the inner strut !
    \getdummyparameters[#1]%
-   \scratchoffset\dummyparameter\c!offset\relax
-   \setbox\scratchbox\vbox to \dummyparameter\c!height \bgroup
-   \hsize\dummyparameter\c!width\relax
+   \scratchoffset{\dummyparameter\c!offset}%
+   \setbox\scratchbox\vbox to {\dummyparameter\c!height} \bgroup
+   \hsize{\dummyparameter\c!width}%
    \emergencystretch10\scratchoffset
    \parfillskip\zeroskip
    \parfillleftskip\zeroskip
@@ -215,7 +215,7 @@
 
 \permanent\protected\def\stopnicelyfilledbox
   {\egroup
-   \vbox to \dummyparameter\c!height \bgroup
+   \vbox to {\dummyparameter\c!height} \bgroup
      \ifcstok{\dummyparameter\c!strut}\v!yes
        \dorecurse{\boxlines\scratchbox}%
          {\boxlineht\scratchbox\recurselevel\strutht
