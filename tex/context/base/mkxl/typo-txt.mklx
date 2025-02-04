@@ -73,11 +73,12 @@
 \newbox\b_typo_normalizers
 
 \def\typo_normalizers_size#axis#size%
-  {\dimexpr{#1\b_typo_normalizers}=\zeropoint
-     \bodyfontsize
-   \else
-     \luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
-   \fi\relax}
+% {\dimexpr\ifdim#1\b_typo_normalizers=\zeropoint
+   {\dimexpr\ifzeropt#1\b_typo_normalizers
+      \bodyfontsize
+    \else
+\luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
+    \fi\relax}
 
 \def\typo_normalizers_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
   {\begingroup
