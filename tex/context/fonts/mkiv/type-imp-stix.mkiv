@@ -30,6 +30,14 @@
 %D for generating these fonts. We might even switch to (smaller) unhinted \TRUETYPE\
 %D fonts at some point but then we need to generate them ourselves). Anyway, the end
 %D results are the same but we just want to be able to view it right.
+%D
+%D February, 2025: In non-compact mode the sizes of script and scriptscript
+%D come from the bodyfontenvironment. For example, for 12pt, they are 9pt and 7pt,
+%D respectively (font is loaded three times, and a bit late).
+%D In compact mode is loaded directly, and the scaling factors come from the font
+%D parameters (done in engine). We can, in both cases, override as we below. (Also
+%D possible in the goodie file.)
+
 
 \definefontfeature
   [stixtwomath]
@@ -42,8 +50,8 @@
     \doifunknownfontfeature {stixtwo-math-bold} {\definefontfeature[stixtwo-math-bold][boldened]}
 
     \starttypescript [\s!math] [stix,stixtwo,stix-nt,stixtwo-nt,xits]
-        \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
-        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.55]
+        \checkedmapfontsize[\typescripttwo][\s!script]      [.65]% 70 in font
+        \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]% 55 in font
     \stoptypescript
 
     \starttypescript [\s!math] [stix,stixtwo,xits] [\s!name]

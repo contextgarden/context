@@ -138,13 +138,13 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                         case 'a': case 'A':
                             if (tex_scan_mandate_keyword("after", 1)) {
                                 properties->options |= adjust_option_depth_after;
-                                properties->depthafter = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                properties->depthafter = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         case 'b': case 'B':
                             if (tex_scan_mandate_keyword("before", 1)) {
                                 properties->options |= adjust_option_depth_before;
-                                properties->depthbefore = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                properties->depthbefore = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         case 'c': case 'C':
@@ -165,13 +165,13 @@ static void tex_scan_adjust_keys(adjust_properties *properties)
                 break;
             case 'e': case 'E':
                 if (tex_scan_mandate_keyword("except", 1)) {
-                    properties->except = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    properties->except = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                     properties->options |= adjust_option_except;
                 }
                 break;
             case 'i': case 'I':
                 if (tex_scan_mandate_keyword("index", 1)) {
-                    properties->index = tex_scan_integer(0, NULL);
+                    properties->index = tex_scan_integer(0, NULL, NULL);
                     if (! tex_valid_adjust_index(properties->index)) {
                         properties->index = 0; /* for now no error */
                     }

@@ -602,9 +602,9 @@ void tex_conditional_if(halfword code, int unless)
         case if_int_code:
         case if_abs_int_code:
             {
-                halfword n1 = tex_scan_integer(0, NULL);
+                halfword n1 = tex_scan_integer(0, NULL, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
-                halfword n2 = tex_scan_integer(0, NULL);
+                halfword n2 = tex_scan_integer(0, NULL, NULL);
                 if (code == if_abs_int_code) {
                     if (n1 < 0) {
                         n1 = -n1;
@@ -626,13 +626,13 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_int_code:
-            result = tex_scan_integer(0, NULL) == 0;
+            result = tex_scan_integer(0, NULL, NULL) == 0;
             goto RESULT;
         case if_interval_int_code:
             {
-                scaled n0 = tex_scan_integer(0, NULL);
-                scaled n1 = tex_scan_integer(0, NULL);
-                scaled n2 = tex_scan_integer(0, NULL);
+                scaled n0 = tex_scan_integer(0, NULL, NULL);
+                scaled n1 = tex_scan_integer(0, NULL, NULL);
+                scaled n2 = tex_scan_integer(0, NULL, NULL);
                 result = n1 - n2;
                 result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
             }
@@ -679,9 +679,9 @@ void tex_conditional_if(halfword code, int unless)
         case if_dim_code:
         case if_abs_dim_code:
             {
-                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 halfword cp = tex_aux_scan_comparison(code);
-                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 if (code == if_abs_dim_code) {
                     if (n1 < 0) {
                         n1 = -n1;
@@ -703,19 +703,19 @@ void tex_conditional_if(halfword code, int unless)
             }
             goto RESULT;
         case if_zero_dim_code:
-            result = tex_scan_dimension(0, 0, 0, 0, NULL) == 0;
+            result = tex_scan_dimension(0, 0, 0, 0, NULL, NULL) == 0;
             goto RESULT;
         case if_interval_dim_code:
             {
-                scaled n0 = tex_scan_dimension(0, 0, 0, 0, NULL);
-                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
-                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n0 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 result = n1 - n2;
                 result = result == 0 ? 1 : (result > 0 ? result <= n0 : -result <= n0);
             }
             goto RESULT;
         case if_odd_code:
-            result = odd(tex_scan_integer(0, NULL));
+            result = odd(tex_scan_integer(0, NULL, NULL));
             goto RESULT;
         case if_vmode_code:
             result = is_v_mode(cur_list.mode);
@@ -888,7 +888,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1; /* maybe ++ and -- so that we can nest */
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL); 
+                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay) { 
                     tex_aux_check_strict(&result);
@@ -913,7 +913,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL);
+                lmt_condition_state.chk_integer = tex_scan_integer(0, NULL, NULL);
                 result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_integer < 0) ? value_less : (lmt_condition_state.chk_integer > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -921,8 +921,8 @@ void tex_conditional_if(halfword code, int unless)
             }
         case if_cmp_int_code:
             {
-                halfword n1 = tex_scan_integer(0, NULL);
-                halfword n2 = tex_scan_integer(0, NULL);
+                halfword n1 = tex_scan_integer(0, NULL, NULL);
+                halfword n2 = tex_scan_integer(0, NULL, NULL);
                 result = (n1 < n2) ? 0 : (n1 > n2) ? 2 : 1;
                 goto CASE;
             }
@@ -942,7 +942,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL); 
+                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL, NULL); 
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 if (result == check_okay) { 
                     tex_aux_check_strict(&result);
@@ -967,7 +967,7 @@ void tex_conditional_if(halfword code, int unless)
             {
                 lmt_error_state.intercept = 1;
                 lmt_error_state.last_intercept = 0;
-                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL);
+                lmt_condition_state.chk_dimension = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 result = lmt_error_state.last_intercept ? value_error : (lmt_condition_state.chk_dimension < 0) ? value_less : (lmt_condition_state.chk_dimension > 0) ? value_greater : value_equal;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
@@ -975,8 +975,8 @@ void tex_conditional_if(halfword code, int unless)
             }
         case if_cmp_dim_code:
             {
-                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL);
-                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL);
+                scaled n1 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                scaled n2 = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 result = (n1 < n2) ? 0 : (n1 > n2) ? 2 : 1;
                 goto CASE;
             }
@@ -986,7 +986,7 @@ void tex_conditional_if(halfword code, int unless)
                 support |\unless| for a limited case but let's not mess around to much; after 
                 all it is an original \TEX\ primitive. 
             */
-            result = tex_scan_integer(0, NULL);
+            result = tex_scan_integer(0, NULL, NULL);
             goto CASE;
         case if_defined_code:
             /*tex
@@ -1050,7 +1050,7 @@ void tex_conditional_if(halfword code, int unless)
                 } else {
                     int fl; 
                     tex_back_input(cur_tok);
-                    fl = tex_scan_integer(1, NULL); 
+                    fl = tex_scan_integer(1, NULL, NULL); 
                     result = (flag & fl) == fl;
                     if (! result) {
                         if (is_protected(fl)) {
@@ -1122,7 +1122,7 @@ void tex_conditional_if(halfword code, int unless)
                 goto RESULT;
             }
         case if_boolean_code:
-            result = tex_scan_integer(0, NULL) ? 1 : 0;
+            result = tex_scan_integer(0, NULL, NULL) ? 1 : 0;
             goto RESULT;
         case if_numexpression_code: /* boolean check */
             result = tex_scanned_expression(integer_val_level) ? 1 : 0;
@@ -1324,7 +1324,7 @@ void tex_conditional_if(halfword code, int unless)
             }
         case if_insert_code:
             /* beware: it tests */
-            result = ! tex_insert_is_void(tex_scan_integer(0, NULL));
+            result = ! tex_insert_is_void(tex_scan_integer(0, NULL, NULL));
             goto RESULT;
         case if_in_alignment_code:
             result = tex_in_alignment();

@@ -264,6 +264,13 @@ typedef enum macro_preamble_states {
 # define plus_minus_token               (other_token + 0x00B1) // ± plus minus  
 # define minus_plus_token               (other_token + 0x2213) // ∓ minus plus 
 
+# define logical_nor _token             (other_token + 0x22BD) // ⊽
+# define logical_nand_token             (other_token + 0x22BC) // ⊼
+# define logical_xnor_token             (other_token + 0x2299) // ⊙
+
+# define conditional_and_token          (other_token + 0x2227) // ∧
+# define conditional_or_token           (other_token + 0x2228) // ∨
+
 # define dollar_token_m          (math_shift_token + '$')
 
 # define a_token_l               (letter_token + 'a')  /*tex the smallest special hex digit */

@@ -193,7 +193,7 @@
       {\hskip2\emwidth
        \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
        \dorecurse\scratchcounter
-         {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\the\numexpr\recurselevel*\lastpage/\scratchcounter\relax)]}}%
+         {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\tointeger{\recurselevel*\lastpage/\scratchcounter})]}}%
        \hss
        \hskip2\emwidth}%
     \wd\scratchbox\zeropoint

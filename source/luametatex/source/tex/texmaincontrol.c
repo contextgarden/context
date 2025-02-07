@@ -215,12 +215,12 @@ static void tex_aux_run_text_char_number(void)
                             switch (tex_scan_character("osOS", 0, 0, 0)) {
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("xoffset", 2)) {
-                                        xoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                        xoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                                     }
                                     break;
                                 case 's': case 'S':
                                     if (tex_scan_mandate_keyword("xscale", 2)) {
-                                        xscale = tex_scan_integer(0, NULL);
+                                        xscale = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 default:
@@ -232,12 +232,12 @@ static void tex_aux_run_text_char_number(void)
                             switch (tex_scan_character("osOS", 0, 0, 0)) {
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("yoffset", 2)) {
-                                        yoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                        yoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                                     }
                                     break;
                                 case 's': case 'S':
                                     if (tex_scan_mandate_keyword("yscale", 2)) {
-                                        yscale = tex_scan_integer(0, NULL);
+                                        yscale = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 default:
@@ -247,7 +247,7 @@ static void tex_aux_run_text_char_number(void)
                             break;
                         case 'o': case 'O':
                             if (tex_scan_mandate_keyword("options", 1)) {
-                                options = tex_scan_integer(0, NULL) & glyph_option_valid;
+                                options = tex_scan_integer(0, NULL, NULL) & glyph_option_valid;
                             }
                             break;
                         case 'f': case 'F':
@@ -257,7 +257,7 @@ static void tex_aux_run_text_char_number(void)
                             break;
                         case 'i': case 'I':
                             if (tex_scan_mandate_keyword("id", 1)) {
-                                halfword f = tex_scan_integer(0, NULL);
+                                halfword f = tex_scan_integer(0, NULL, NULL);
                                 if (f > 0 && tex_is_valid_font(f)) {
                                     font = f;
                                 }
@@ -267,12 +267,12 @@ static void tex_aux_run_text_char_number(void)
                             switch (tex_scan_character("clCL", 0, 0, 0)) {
                                 case 'c': case 'C':
                                     if (tex_scan_mandate_keyword("scale", 2)) {
-                                        scale = tex_scan_integer(0, NULL);
+                                        scale = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 case 'l': case 'L':
                                     if (tex_scan_mandate_keyword("slant", 2)) {
-                                        slant = tex_scan_integer(0, NULL);
+                                        slant = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 default:
@@ -282,19 +282,19 @@ static void tex_aux_run_text_char_number(void)
                             break;
                         case 'l': case 'L':
                             if (tex_scan_mandate_keyword("left", 1)) {
-                                left = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                left = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         case 'r': case 'R':
                             switch (tex_scan_character("aiAI", 0, 0, 0)) {
                                 case 'i': case 'I':
                                     if (tex_scan_mandate_keyword("right", 2)) {
-                                        right = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                        right = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                                     }
                                     break;
                                 case 'a': case 'A':
                                     if (tex_scan_mandate_keyword("raise", 2)) {
-                                        raise = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                        raise = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                                     }
                                     break;
                                 default:
@@ -304,7 +304,7 @@ static void tex_aux_run_text_char_number(void)
                             break;
                         case 'w': case 'W':
                             if (tex_scan_mandate_keyword("weight", 1)) {
-                                weight = tex_scan_integer(0, NULL);
+                                weight = tex_scan_integer(0, NULL, NULL);
                             }
                             break;
                         default:
@@ -876,7 +876,7 @@ static void tex_aux_scan_box(int boxcontext, int optional_equal, scaled shift, h
 static void tex_aux_run_move(void) 
 {
     int code = cur_chr;
-    halfword val = tex_scan_dimension(0, 0, 0, 0, NULL);
+    halfword val = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
     tex_aux_scan_box(direct_box_flag, 0, code == move_forward_code ? val : - val, -1, 0, 0);
 }
 
@@ -910,7 +910,7 @@ static void tex_aux_run_leader(void)
                     break;
                 case 'c': case 'C':
                     if (tex_scan_mandate_keyword("callback", 1)) {
-                        callback = tex_scan_integer(0, NULL);
+                        callback = tex_scan_integer(0, NULL, NULL);
                     }
                     break;
                 default:
@@ -1014,16 +1014,16 @@ static void tex_aux_run_begin_paragraph_vmode(void)
             break;
         case snapshot_par_code:
             /* silently ignore */
-            tex_scan_integer(0, NULL);
+            tex_scan_integer(0, NULL, NULL);
             break;
         case attribute_par_code:
             /* silently ignore */
             tex_scan_attribute_register_number();
-            tex_scan_integer(1, NULL);
+            tex_scan_integer(1, NULL, NULL);
             break;
         case options_par_code:
             /* silently ignore */
-            tex_scan_integer(1, NULL);
+            tex_scan_integer(1, NULL, NULL);
             break;
         case wrapup_par_code:
             tex_you_cant_error(NULL);
@@ -1072,7 +1072,7 @@ static void tex_aux_run_begin_paragraph_hmode(void)
             break;
         case snapshot_par_code:
             {
-                halfword tag = tex_scan_integer(0, NULL);
+                halfword tag = tex_scan_integer(0, NULL, NULL);
                 halfword par = tex_find_par_par(cur_list.head);
                 if (par) {
                     tex_snapshot_par(par, tag);
@@ -1082,7 +1082,7 @@ static void tex_aux_run_begin_paragraph_hmode(void)
         case attribute_par_code:
             {
                 halfword att = tex_scan_attribute_register_number();
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 halfword par = tex_find_par_par(cur_list.head);
                 if (par) {
                     if (val == unused_attribute_value) {
@@ -1095,7 +1095,7 @@ static void tex_aux_run_begin_paragraph_hmode(void)
             }
         case options_par_code:
             {
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 halfword par = tex_find_par_par(cur_list.head);
                 if (par && val >= 0) {
                     par_options(par) |= (singleword) val;
@@ -1136,12 +1136,12 @@ static void tex_aux_run_begin_paragraph_mmode(void)
             }
         case snapshot_par_code:
             /* silently ignore */
-            tex_scan_integer(0, NULL);
+            tex_scan_integer(0, NULL, NULL);
             break;
         case attribute_par_code:
             /* silently ignore */
             tex_scan_attribute_register_number();
-            tex_scan_integer(1, NULL);
+            tex_scan_integer(1, NULL, NULL);
             break;
         case wrapup_par_code:
             tex_you_cant_error(NULL);
@@ -1226,7 +1226,7 @@ static void tex_aux_run_par_boundary(void)
     switch (cur_chr) {
         case page_boundary:
             {   
-                halfword n = tex_scan_integer(0, NULL);
+                halfword n = tex_scan_integer(0, NULL, NULL);
                 if (lmt_nest_state.nest_data.ptr == 0 && ! lmt_page_builder_state.output_active) {
                     halfword boundary = tex_new_node(boundary_node, page_boundary);
                     boundary_data(boundary) = n;
@@ -1244,8 +1244,8 @@ static void tex_aux_run_par_boundary(void)
             }
         case balance_boundary:
             {
-                halfword n = tex_scan_integer(0, NULL);
-                halfword m = tex_scan_integer(0, NULL);
+                halfword n = tex_scan_integer(0, NULL, NULL);
+                halfword m = tex_scan_integer(0, NULL, NULL);
                 if (cur_list.mode == vmode && ! lmt_page_builder_state.output_active) {
                     halfword boundary = tex_new_node(boundary_node, balance_boundary);
                     boundary_data(boundary) = n;
@@ -1258,7 +1258,7 @@ static void tex_aux_run_par_boundary(void)
         case par_boundary:
             {
                 halfword boundary = tex_new_node(boundary_node, par_boundary);
-                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
                 tex_tail_append(boundary);
                 break;
             }
@@ -1277,19 +1277,19 @@ static void tex_aux_run_text_boundary(void)
         case user_boundary:
         case protrusion_boundary:
         case optional_boundary:
-            boundary_data(boundary) = tex_scan_integer(0, NULL);
+            boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
             break;
         case lua_boundary:
-            boundary_data(boundary) = tex_scan_integer(0, NULL);
-            boundary_reserved(boundary) = tex_scan_integer(0, NULL);
+            boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
+            boundary_reserved(boundary) = tex_scan_integer(0, NULL, NULL);
             break;
         case balance_boundary:
             /*tex Maybe we should force vmode? For now we just ignore the value. */
-            tex_scan_integer(0, NULL);
+            tex_scan_integer(0, NULL, NULL);
             /* fall through */
         case page_boundary:
             /*tex Maybe we should force vmode? For now we just ignore the value. */
-            tex_scan_integer(0, NULL);
+            tex_scan_integer(0, NULL, NULL);
             break;
         default:
             break;
@@ -1303,22 +1303,22 @@ static void tex_aux_run_math_boundary(void)
         case user_boundary:
             {
                 halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
                 tex_tail_append(boundary);
                 break;
             }
         case lua_boundary:
             {
                 halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(boundary) = tex_scan_integer(0, NULL);
-                boundary_reserved(boundary) = tex_scan_integer(0, NULL);
+                boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
+                boundary_reserved(boundary) = tex_scan_integer(0, NULL, NULL);
                 tex_tail_append(boundary);
                 break;
             }
         case math_boundary:
             {
                 halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
-                boundary_data(boundary) = tex_scan_integer(0, NULL);
+                boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
                 switch (boundary_data(boundary)) {
                     case begin_math_implicit_boundary: 
                     case end_math_implicit_boundary: 
@@ -1327,7 +1327,7 @@ static void tex_aux_run_math_boundary(void)
                     case begin_math_explicit_boundary: 
                     case end_math_explicit_boundary: 
                         /* valid, penalty to add */
-                        boundary_reserved(boundary) = tex_scan_integer(0, NULL);
+                        boundary_reserved(boundary) = tex_scan_integer(0, NULL, NULL);
                         break;
                 }
                 tex_tail_append(boundary);
@@ -1336,7 +1336,7 @@ static void tex_aux_run_math_boundary(void)
         case protrusion_boundary:
         case page_boundary:
             /*tex We just ignore the values. */
-            tex_scan_integer(0, NULL);
+            tex_scan_integer(0, NULL, NULL);
             break;
     }
 }
@@ -1607,7 +1607,7 @@ static void tex_aux_run_catcode_table(void)
     switch (cur_chr) {
         case save_cat_code_table_code:
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if ((v < 0) || (v >= max_n_of_catcode_tables)) {
                     tex_aux_invalid_catcode_table_error();
                 } else if (v == cat_code_table_par) {
@@ -1619,7 +1619,7 @@ static void tex_aux_run_catcode_table(void)
             }
         case restore_cat_code_table_code:
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if ((v < 0) || (v >= max_n_of_catcode_tables)) {
                     tex_aux_invalid_catcode_table_error();
                 } else {
@@ -1629,7 +1629,7 @@ static void tex_aux_run_catcode_table(void)
             }
         case init_cat_code_table_code:
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if ((v < 0) || (v >= max_n_of_catcode_tables)) {
                     tex_aux_invalid_catcode_table_error();
                 } else if (v == cat_code_table_par) {
@@ -1831,7 +1831,7 @@ static inline void tex_pop_stack_entry(void)
 
 halfword tex_nested_loop_iterator(void)
 {
-    halfword delta = tex_scan_integer(0, NULL);
+    halfword delta = tex_scan_integer(0, NULL, NULL);
     halfword state = lmt_main_control_state.loop_stack_tail;
     while (delta-- > 0 && state) {
         state = node_prev(state);
@@ -1841,7 +1841,7 @@ halfword tex_nested_loop_iterator(void)
 
 halfword tex_previous_loop_iterator(void)
 {
-    halfword delta = tex_scan_integer(0, NULL);
+    halfword delta = tex_scan_integer(0, NULL, NULL);
     halfword state = lmt_main_control_state.loop_stack_head;
     while (delta-- && state) {
         state = node_next(state);
@@ -1917,9 +1917,9 @@ void tex_begin_local_control(void)
                 halfword tail;
                 int looping = code >= local_control_loop_code && code <= unexpanded_loop_code;
                 int endless = code >= local_control_endless_code && code <= unexpanded_endless_code;
-                halfword first = looping ? tex_scan_integer(1, NULL) : 1;
-                halfword last = endless ? max_integer : tex_scan_integer(1, NULL);
-                halfword step = looping ? tex_scan_integer(1, NULL) : 1;
+                halfword first = looping ? tex_scan_integer(1, NULL, NULL) : 1;
+                halfword last = endless ? max_integer : tex_scan_integer(1, NULL, NULL);
+                halfword step = looping ? tex_scan_integer(1, NULL, NULL) : 1;
                 halfword head = tex_scan_toks_normal(0, &tail);
                 if (token_link(head) && step) {
                     int savedloop = lmt_main_control_state.loop_iterator;
@@ -2489,7 +2489,7 @@ static void tex_aux_run_discretionary(void)
                             switch (tex_scan_character("eorEOR", 0, 0, 0)) {
                                 case 'e': case 'E':
                                     if (tex_scan_mandate_keyword("penalty", 2)) {
-                                        set_disc_penalty(d, tex_scan_integer(0, NULL));
+                                        set_disc_penalty(d, tex_scan_integer(0, NULL, NULL));
                                     }
                                     break;
                                 case 'o': case 'O':
@@ -2519,7 +2519,7 @@ static void tex_aux_run_discretionary(void)
                             break;
                         case 'o': case 'O':
                             if (tex_scan_mandate_keyword("options", 1)) {
-                                set_disc_options(d, tex_scan_integer(0, NULL));
+                                set_disc_options(d, tex_scan_integer(0, NULL, NULL));
                             }
                             break;
                         case 'c': case 'C':
@@ -3320,7 +3320,7 @@ static void tex_aux_run_head_for_vmode(void)
 /*
 static void tex_aux_run_kern(void)
 {
-    halfword val = tex_scan_dimension(0, 0, 0, 0, NULL);
+    halfword val = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
     tex_tail_append(tex_new_kern_node(val, explicit_kern));
 }
 */
@@ -3348,7 +3348,7 @@ static void tex_aux_run_kern(void)
             }
     }
     { 
-        scaled val = tex_scan_dimension(0, 0, 0, 0, NULL);
+        scaled val = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
         if (code == non_zero_width_kern_code && ! val) { 
             return;
         } else { 
@@ -3359,7 +3359,7 @@ static void tex_aux_run_kern(void)
 
 static void tex_aux_run_mkern(void)
 {
-    halfword val = tex_scan_dimension(1, 0, 0, 0, NULL);
+    halfword val = tex_scan_dimension(1, 0, 0, 0, NULL, NULL);
     tex_tail_append(tex_new_kern_node(val, explicit_math_kern_subtype));
 }
 
@@ -3433,7 +3433,7 @@ static void tex_aux_run_penalty(void)
             }
     }
     {
-        halfword value = tex_scan_integer(0, NULL);
+        halfword value = tex_scan_integer(0, NULL, NULL);
         tex_tail_append(tex_new_penalty_node(value, user_penalty_subtype));
         if (cur_list.mode == vmode) {
             tex_build_page(penalty_page_context, 0);
@@ -3681,12 +3681,12 @@ static void tex_aux_run_text_accent(void)
         switch (tex_scan_character("xyXY", 0, 1, 0)) {
             case 'x': case 'X':
                 if (tex_scan_mandate_keyword("xoffset", 1)) {
-                    xoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    xoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yoffset", 1)) {
-                    yoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    yoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             default:
@@ -3902,11 +3902,11 @@ static inline halfword tex_aux_get_register_value(int level, int optionalequal)
     switch (level) {
         case integer_val_level:
         case attribute_val_level:
-            return tex_scan_integer(optionalequal, NULL);
+            return tex_scan_integer(optionalequal, NULL, NULL);
         case posit_val_level:
             return tex_scan_posit(optionalequal);
         case dimension_val_level:
-            return tex_scan_dimension(0, 0, 0, optionalequal, NULL);
+            return tex_scan_dimension(0, 0, 0, optionalequal, NULL, NULL);
         default:
             return tex_scan_glue(level, optionalequal, 1);
     }
@@ -4162,7 +4162,7 @@ static void tex_aux_arithmic_register(int a, int code)
                 tex_scan_optional_keyword("by");
             case multiply_by_code:
                 {
-                    halfword amount = tex_scan_integer(0, NULL);
+                    halfword amount = tex_scan_integer(0, NULL, NULL);
                     halfword value = 0;
                     if (is_global(a) || amount != 1) {
                         lmt_scanner_state.arithmic_error = 0;
@@ -4211,7 +4211,7 @@ static void tex_aux_arithmic_register(int a, int code)
             case r_divide_by_code:
             case e_divide_by_code:
                 {
-                    halfword amount = tex_scan_integer(0, NULL);
+                    halfword amount = tex_scan_integer(0, NULL, NULL);
                     if (is_global(a) || amount != 1) {
                         bool rounded = code == r_divide_code || code == r_divide_by_code;
                         lmt_scanner_state.arithmic_error = 0;
@@ -4324,43 +4324,43 @@ static void tex_aux_set_page_property(void)
 {
     switch (cur_chr) {
         case page_goal_code:
-            lmt_page_builder_state.goal = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.goal = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_vsize_code:
-            lmt_page_builder_state.vsize = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.vsize = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_total_code:
-            lmt_page_builder_state.total = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.total = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             /*tex Otherwise we have to also set that at the \TEX\ end: */
             lmt_page_builder_state.last_height = lmt_page_builder_state.total;
             /*tex So when setting total and depth first total needs to be set! */
             lmt_page_builder_state.last_depth = 0;
             break;
         case page_depth_code:
-            lmt_page_builder_state.depth = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.depth = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             /*tex Otherwise we have to also set that at the \TEX\ end: */
             lmt_page_builder_state.last_depth = lmt_page_builder_state.depth;
             break;
         case page_excess_code:
-            lmt_page_builder_state.excess = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.excess = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_last_height_code:
-            lmt_page_builder_state.last_height = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.last_height = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_last_depth_code:
-            lmt_page_builder_state.last_depth = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.last_depth = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case dead_cycles_code:
-            lmt_page_builder_state.dead_cycles = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.dead_cycles = tex_scan_integer(1, NULL, NULL);
             break;
         case insert_penalties_code:
-            lmt_page_builder_state.insert_penalties = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.insert_penalties = tex_scan_integer(1, NULL, NULL);
             break;
         case insert_heights_code:
-            lmt_page_builder_state.insert_heights = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.insert_heights = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case insert_storing_code:
-            lmt_insert_state.storing = tex_scan_integer(1, NULL);
+            lmt_insert_state.storing = tex_scan_integer(1, NULL, NULL);
             break;
         case insert_distance_code:
             {
@@ -4368,99 +4368,99 @@ static void tex_aux_set_page_property(void)
                     We need to scan the index first because when we do that in the call we somehow
                     get an out-of-order issue (index too large). The same is true for teh rest.
                 */
-                int index = tex_scan_integer(0, NULL);
+                int index = tex_scan_integer(0, NULL, NULL);
                 tex_set_insert_distance(index, tex_scan_glue(glue_val_level, 1, 1));
             }
             break;
         case insert_multiplier_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_multiplier(index, tex_scan_integer(1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_multiplier(index, tex_scan_integer(1, NULL, NULL));
             }
             break;
         case insert_limit_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_limit(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_limit(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_storage_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_storage(index, tex_scan_integer(1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_storage(index, tex_scan_integer(1, NULL, NULL));
             }
             break;
         case insert_penalty_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_penalty(index, tex_scan_integer(1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_penalty(index, tex_scan_integer(1, NULL, NULL));
             }
             break;
         case insert_maxdepth_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_maxdepth(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_maxdepth(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_height_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_height(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_height(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_depth_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_width_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_width(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_width(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_line_height_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_line_height(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_line_height(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_line_depth_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_line_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_line_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_stretch_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_stretch(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_stretch(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case insert_shrink_code:
             {
-                int index = tex_scan_integer(0, NULL);
-                tex_set_insert_shrink(index, tex_scan_dimension(0, 0, 0, 1, NULL));
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_shrink(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
             }
             break;
         case page_stretch_code:                        
-            lmt_page_builder_state.stretch = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.stretch = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_fistretch_code:                    
-            lmt_page_builder_state.fistretch = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.fistretch = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_filstretch_code:                    
-            lmt_page_builder_state.filstretch = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.filstretch = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_fillstretch_code:                   
-            lmt_page_builder_state.fillstretch = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.fillstretch = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_filllstretch_code:                  
-            lmt_page_builder_state.filllstretch = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.filllstretch = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case page_shrink_code:                        
-            lmt_page_builder_state.shrink = tex_scan_dimension(0, 0, 0, 1, NULL);
+            lmt_page_builder_state.shrink = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         default:
             tex_confusion("page property");
@@ -4487,7 +4487,7 @@ static void tex_aux_set_auxiliary(int a)
             break;
         case prev_depth_code:
             if (cur_mode == vmode) {
-                cur_list.prev_depth = tex_scan_dimension(0, 0, 0, 1, NULL);
+                cur_list.prev_depth = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             } else {
                 tex_aux_run_illegal_case();
             }
@@ -4496,10 +4496,10 @@ static void tex_aux_set_auxiliary(int a)
             lmt_nest_state.nest[tex_vmode_nest_index()].prev_graf = tex_scan_positive_number(1);
             break;
         case interaction_mode_code:
-            tex_aux_set_interaction(tex_scan_integer(1, NULL));
+            tex_aux_set_interaction(tex_scan_integer(1, NULL, NULL));
             break;
         case insert_mode_code:
-            tex_set_insert_mode(tex_scan_integer(1, NULL));
+            tex_set_insert_mode(tex_scan_integer(1, NULL, NULL));
             break;
     }
 }
@@ -4517,7 +4517,7 @@ static void tex_aux_set_box_property(void)
     switch (code) {
         case box_width_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_width(b) = v;
                 }
@@ -4525,7 +4525,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_height_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_height(b) = v;
                 }
@@ -4533,7 +4533,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_depth_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_depth(b) = v;
                 }
@@ -4576,7 +4576,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_source_code:
             {
-                halfword v = tex_scan_integer(1, NULL);
+                halfword v = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     box_source_anchor(b) = v;
                     tex_set_box_geometry(b, anchor_geometry);
@@ -4585,7 +4585,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_target_code:
             {
-                halfword v = tex_scan_integer(1, NULL);
+                halfword v = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     box_target_anchor(b) = v;
                     tex_set_box_geometry(b, anchor_geometry);
@@ -4594,7 +4594,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_xoffset_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_x_offset(b) = v;
                     tex_set_box_geometry(b, offset_geometry);
@@ -4603,7 +4603,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_yoffset_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_y_offset(b) = v;
                     tex_set_box_geometry(b, offset_geometry);
@@ -4612,7 +4612,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_xmove_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_x_offset(b) = tex_aux_checked_dimension1(box_x_offset(b) + v);
                     box_width(b) = tex_aux_checked_dimension2(box_width(b) + v);
@@ -4622,7 +4622,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_ymove_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_y_offset(b) = tex_aux_checked_dimension1(box_y_offset(b) + v);
                     box_height(b) = tex_aux_checked_dimension2(box_height(b) + v);
@@ -4633,7 +4633,7 @@ static void tex_aux_set_box_property(void)
             }
         case box_total_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_height(b) = v / 2;
                     box_depth(b) = v - (v / 2);
@@ -4642,7 +4642,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_shift_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     box_shift_amount(b) = v;
                 }
@@ -4658,7 +4658,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_repack_code:
             {
-                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 if (b) {
                     tex_repack(b, v, packing_additional);
                 }
@@ -4666,7 +4666,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_freeze_code:
             {
-                halfword recurse = tex_scan_integer(1, NULL);
+                halfword recurse = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     tex_freeze(b, recurse, -1, 0);
                 }
@@ -4674,7 +4674,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_migrate_code:
             {
-                halfword what = tex_scan_integer(1, NULL);
+                halfword what = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     /* maybe check for post */
                     halfword first = null; 
@@ -4688,7 +4688,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_limitate_code:
             {
-                halfword recurse = tex_scan_integer(1, NULL);
+                halfword recurse = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     tex_freeze(b, recurse, node_type(b), 0);
                 }
@@ -4696,7 +4696,7 @@ static void tex_aux_set_box_property(void)
             break;
         case box_finalize_code:
             {
-                halfword factor = tex_scan_integer(0, NULL);
+                halfword factor = tex_scan_integer(0, NULL, NULL);
                 if (b) {
                     tex_freeze(b, 0, -1, factor); /* recurse makes no sense here */
                 }
@@ -4719,7 +4719,7 @@ static void tex_aux_set_box_property(void)
         case box_attribute_code:
             {
                 halfword att = tex_scan_attribute_register_number();
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 if (b) {
                     if (val == unused_attribute_value) {
                         tex_unset_attribute(b, att, val);
@@ -4867,14 +4867,14 @@ static void tex_aux_set_shorthand_def(int a, int force)
             case integer_def_code:
          /* case integer_def_csname_code: */
                 {
-                    halfword v = tex_scan_integer(1, NULL);
+                    halfword v = tex_scan_integer(1, NULL, NULL);
                     tex_define_again(a, p, integer_cmd, v);
                     break;
                 }
             case dimension_def_code:
          /* case dimension_def_csname_code: */
                 {
-                    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+                    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                     tex_define_again(a, p, dimension_cmd, v);
                     break;
                 }
@@ -4984,24 +4984,24 @@ static void tex_aux_set_hyph_data(void)
                 break;
             }
         case prehyphenchar_code:
-            tex_set_pre_hyphen_char(language_par, tex_scan_integer(1, NULL));
+            tex_set_pre_hyphen_char(language_par, tex_scan_integer(1, NULL, NULL));
             break;
         case posthyphenchar_code:
-            tex_set_post_hyphen_char(language_par, tex_scan_integer(1, NULL));
+            tex_set_post_hyphen_char(language_par, tex_scan_integer(1, NULL, NULL));
             break;
         case preexhyphenchar_code:
-            tex_set_pre_exhyphen_char(language_par, tex_scan_integer(1, NULL));
+            tex_set_pre_exhyphen_char(language_par, tex_scan_integer(1, NULL, NULL));
             break;
         case postexhyphenchar_code:
-            tex_set_post_exhyphen_char(language_par, tex_scan_integer(1, NULL));
+            tex_set_post_exhyphen_char(language_par, tex_scan_integer(1, NULL, NULL));
             break;
         case hyphenationmin_code:
-            tex_set_hyphenation_min(language_par, tex_scan_integer(1, NULL));
+            tex_set_hyphenation_min(language_par, tex_scan_integer(1, NULL, NULL));
             break;
         case hjcode_code:
             {
-                halfword lan = tex_scan_integer(0, NULL);
-                halfword val = tex_scan_integer(1, NULL);
+                halfword lan = tex_scan_integer(0, NULL, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 tex_set_hj_code(language_par, lan, val, -1);
             }
             break;
@@ -5019,14 +5019,14 @@ static void tex_aux_set_font_property(void)
         case font_hyphen_code:
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 set_font_hyphen_char(fnt, val);
                 break;
             }
         case font_skew_code:
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 set_font_skew_char(fnt, val);
                 break;
             }
@@ -5034,7 +5034,7 @@ static void tex_aux_set_font_property(void)
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_dimension(0, 0, 0, 1, NULL);
+                halfword val = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 tex_set_lpcode_in_font(fnt, chr, val);
                 break;
             }
@@ -5042,7 +5042,7 @@ static void tex_aux_set_font_property(void)
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_dimension(0, 0, 0, 1, NULL);
+                halfword val = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                 tex_set_rpcode_in_font(fnt, chr, val);
                 break;
             }
@@ -5050,7 +5050,7 @@ static void tex_aux_set_font_property(void)
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 tex_set_efcode_in_font(fnt, chr, val);
                 break;
             }
@@ -5058,7 +5058,7 @@ static void tex_aux_set_font_property(void)
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_integer(1, NULL);
+                halfword val = tex_scan_integer(1, NULL, NULL);
                 tex_set_cfcode_in_font(fnt, chr, val);
                 break;
             }
@@ -5232,7 +5232,7 @@ static void tex_aux_set_let(int flags, int force)
         case let_charcode_code:
             /*tex |\letcharcode| (todo: protection) */
             {
-                halfword character = tex_scan_integer(0, NULL);
+                halfword character = tex_scan_integer(0, NULL, NULL);
                 if (character > 0) {
                     cs = tex_active_to_cs(character, 1);
                     do {
@@ -5675,7 +5675,7 @@ static void tex_aux_set_math_parameter(int a)
         case math_parameter_set_display_post_penalty:
             {
                 halfword mathclass = tex_scan_math_class_number(0);
-                halfword penalty = tex_scan_integer(1, NULL);
+                halfword penalty = tex_scan_integer(1, NULL, NULL);
                 if (valid_math_class_code(mathclass)) {
                     switch (code) {
                         case math_parameter_set_pre_penalty:
@@ -5728,7 +5728,7 @@ static void tex_aux_set_math_parameter(int a)
                 halfword param = tex_scan_math_parameter();
                 if (param >= 0) {
                     code = internal_integer_location(first_math_ignore_code + param);
-                    value = tex_scan_integer(1, NULL);
+                    value = tex_scan_integer(1, NULL, NULL);
                     tex_word_define(a, code, value);
                 }
                 return;
@@ -5738,7 +5738,7 @@ static void tex_aux_set_math_parameter(int a)
                 halfword mathclass = tex_scan_math_class_number(0);
                 if (valid_math_class_code(mathclass)) {
                     code = internal_integer_location(first_math_options_code + mathclass);
-                    value = tex_scan_integer(1, NULL);
+                    value = tex_scan_integer(1, NULL, NULL);
                     tex_word_define(a, code, value);
                  // tex_assign_internal_integer_value(a, code, value);
                 } else {
@@ -5841,16 +5841,16 @@ static void tex_aux_set_math_parameter(int a)
         } else {
             switch (math_parameter_value_type(code)) {
                 case math_integer_parameter:
-                    value = tex_scan_integer(1, NULL);
+                    value = tex_scan_integer(1, NULL, NULL);
                     break;
                 case math_dimension_parameter:
-                    value = tex_scan_dimension(0, 0, 0, 1, NULL);
+                    value = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
                     break;
                 case math_muglue_parameter:
                     value = tex_scan_glue(muglue_val_level, 1, 0);
                     break;
                 case math_style_parameter:
-                    value = tex_scan_integer(1, NULL);
+                    value = tex_scan_integer(1, NULL, NULL);
                     if (value < 0 || value > last_math_style_variant) {
                         /* maybe a warning */
                         value = math_normal_style_variant;
@@ -5932,14 +5932,14 @@ static void tex_aux_set_define_family(int a)
 static void tex_aux_set_internal_integer(int a)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL);
+    halfword v = tex_scan_integer(1, NULL, NULL);
     tex_assign_internal_integer_value(a, p, v);
 }
 
 static void tex_aux_set_register_integer(int a)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL);
+    halfword v = tex_scan_integer(1, NULL, NULL);
     tex_word_define(a, p, v);
 }
 
@@ -5960,7 +5960,7 @@ static void tex_aux_set_register_posit(int a)
 static void tex_aux_set_internal_attribute(int a)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL);
+    halfword v = tex_scan_integer(1, NULL, NULL);
     if (internal_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
         lmt_node_memory_state.max_used_attribute = internal_attribute_number(p);
     }
@@ -5971,7 +5971,7 @@ static void tex_aux_set_internal_attribute(int a)
 static void tex_aux_set_register_attribute(int a)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL);
+    halfword v = tex_scan_integer(1, NULL, NULL);
     if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
         lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
     }
@@ -5982,14 +5982,14 @@ static void tex_aux_set_register_attribute(int a)
 static void tex_aux_set_internal_dimension(int a)
 {
     halfword p = cur_chr;
-    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
     tex_assign_internal_dimension_value(a, p, v);
 }
 
 static void tex_aux_set_register_dimension(int a)
 {
     halfword p = cur_chr;
-    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL);
+    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
     tex_word_define(a, p, v);
 }
 
@@ -6048,10 +6048,10 @@ static int tex_aux_set_some_item(void)
 {
     switch (cur_chr) {
         case lastpenalty_code:  
-            lmt_page_builder_state.last_penalty = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_penalty = tex_scan_integer(1, NULL, NULL);
             return 1;
         case lastkern_code:
-            lmt_page_builder_state.last_kern = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_kern = tex_scan_integer(1, NULL, NULL);
             return 1;
         case lastskip_code:
             if (lmt_page_builder_state.last_glue != max_halfword) {
@@ -6060,13 +6060,13 @@ static int tex_aux_set_some_item(void)
             }
             return 1;
         case lastboundary_code:
-            lmt_page_builder_state.last_boundary = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_boundary = tex_scan_integer(1, NULL, NULL);
             return 1;
         case last_node_type_code:
-            lmt_page_builder_state.last_node_type = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_node_type = tex_scan_integer(1, NULL, NULL);
             return 1;
         case last_node_subtype_code:
-            lmt_page_builder_state.last_node_subtype = tex_scan_integer(1, NULL);
+            lmt_page_builder_state.last_node_subtype = tex_scan_integer(1, NULL, NULL);
             return 1;
         case last_left_class_code:
             lmt_math_state.last_left = tex_scan_math_class_number(1);
@@ -6087,10 +6087,10 @@ static void tex_aux_set_constant_register(halfword cmd, halfword cs, halfword fl
     halfword v = null;
     switch(cmd) {
         case integer_cmd:
-            v = tex_scan_integer(1, NULL);
+            v = tex_scan_integer(1, NULL, NULL);
             break;
         case dimension_cmd:
-            v = tex_scan_dimension(0, 0, 0, 1, NULL);
+            v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
             break;
         case posit_cmd:
             v = tex_scan_posit(1);

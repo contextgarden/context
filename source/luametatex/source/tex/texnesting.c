@@ -653,17 +653,17 @@ void tex_start_mvl(void)
         switch (tex_scan_character("iopIOP", 0, 1, 0)) {
             case 'i': case 'I':
                 if (tex_scan_mandate_keyword("index", 1)) {
-                    index = tex_scan_integer(0, NULL);
+                    index = tex_scan_integer(0, NULL, NULL);
                 }
                 break;
             case 'o': case 'O':
                 if (tex_scan_mandate_keyword("options", 1)) {
-                    options = tex_scan_integer(0, NULL);
+                    options = tex_scan_integer(0, NULL, NULL);
                 }
                 break;
             case 'p': case 'P':
                 if (tex_scan_mandate_keyword("prevdepth", 1)) {
-                    prevdepth = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    prevdepth = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             default:
@@ -672,7 +672,7 @@ void tex_start_mvl(void)
     }
   DONE:
     if (! index) { 
-        index = tex_scan_integer(0, NULL);
+        index = tex_scan_integer(0, NULL, NULL);
     }
     if (lmt_mvl_state.slot) {
         /*tex We're already collecting. */

@@ -609,6 +609,8 @@ end)
 --     end
 -- end
 
+local reported = setmetatableindex("table")
+
 local function presetcontext(name,parent,features) -- will go to con and shared
     if features == "" and find(parent,"=",1,true) then
         features = parent
@@ -641,6 +643,9 @@ local function presetcontext(name,parent,features) -- will go to con and shared
                     -- reverted, so we only take from parent when not set
                     if features[k] == nil then
                         features[k] = v
+                    elseif k ~= "number" and not reported[parent][k] then
+                        report("ignoring feature overload %a in %a",k,parent)
+                        reported[parent][k] = true
                     end
                 end
             else

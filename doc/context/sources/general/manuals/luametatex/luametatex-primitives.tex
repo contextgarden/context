@@ -13856,7 +13856,9 @@ This internal number starts out with the year that the job started.
         for i=1,#primitives do
             local prim = primitives[i]
             local name = prim[3]
-            if prim[4] == 4 then
+            if not name then
+                print("no name, case 1")
+            elseif prim[4] == 4 then
                 if find(name,"U") or find(name,"math") then
                     -- ignore
                     luametatex[name] = nil
@@ -13874,11 +13876,15 @@ This internal number starts out with the year that the job started.
                 local data = index.entries
                 for i=1,#data do
                     local name = match(data[i].list[1][1],"\\tex%s*{(.-)}") or ""
-                    if luametatex[name] == false then
-                        luametatex[name] = true
+                    if name then
+                        if luametatex[name] == false then
+                            luametatex[name] = true
+                        end
+                        indexed[name] = true
+                        everything[name] = nil
+                    else
+                        print("no name, case 2")
                     end
-                    indexed[name] = true
-                    everything[name] = nil
                 end
             end
         end

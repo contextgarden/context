@@ -1662,7 +1662,7 @@ int tex_tex_def_font(int a)
         lmt_fileio_state.name_in_progress = 1;
         if (tex_scan_keyword("at")) {
             /*tex Put the positive 'at' size into |s|. */
-            s = tex_scan_dimension(0, 0, 0, 0, NULL);
+            s = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
             if ((s <= 0) || (s >= 0x8000000)) { 
                 tex_handle_error(
                     normal_error_type,
@@ -1674,7 +1674,7 @@ int tex_tex_def_font(int a)
                 s = 10 * unity;
             }
         } else if (tex_scan_keyword("scaled")) {
-            s = tex_scan_integer(0, NULL);
+            s = tex_scan_integer(0, NULL, NULL);
             if ((s <= 0) || (s > 0x8000)) {
                 tex_handle_error(
                     normal_error_type,

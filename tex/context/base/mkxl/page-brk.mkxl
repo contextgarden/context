@@ -275,7 +275,8 @@
 \installpagebreakmethod{xy}% for Mojca
   {\page_breaks_handle_direct\v!yes
    \scratchcounterone  {(\rootlayouttargetparameter\c!nx)*(\rootlayouttargetparameter\c!ny)}%
-   \scratchcountertwo  \luaexpr{math.mod(\the\realpageno-1,\the\scratchcounterone)}\relax
+  %\scratchcountertwo  \luaexpr{math.mod(\the\realpageno-1,\the\scratchcounterone)}\relax
+   \scratchcountertwo  {(\realpageno-1):\scratchcounterone}%
    \scratchcounterthree{\scratchcounterone-\scratchcountertwo}%
    \dorecurse\scratchcounterthree{\page_breaks_handle_direct\v!empty}}
 

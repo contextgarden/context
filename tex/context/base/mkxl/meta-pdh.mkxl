@@ -662,8 +662,8 @@ implementing the special more convenient.
 
 \def\MPSboundingbox#1#2#3#4%
   {\xdef\MPllx   {#1}\xdef\MPlly{#2}\xdef\MPurx{#3}\xdef\MPury{#4}%
-   \xdef\MPwidth {\the\dimexpr#3\onebasepoint-#1\onebasepoint\relax}%
-   \xdef\MPheight{\the\dimexpr#4\onebasepoint-#2\onebasepoint\relax}}
+   \xdef\MPwidth {\todimension{#3\onebasepoint-#1\onebasepoint}}%
+   \xdef\MPheight{\todimension{#4\onebasepoint-#2\onebasepoint}}}
 
 \MPSboundingbox0000
 

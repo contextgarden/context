@@ -1332,4 +1332,230 @@ by the authors. There one can find a discussion about decisions made.
 
 \stopsection
 
+\startsection[title={Scripts}]
+
+\startbuffer[show:3]
+\startlinecorrection[blank]
+    \scale[s=3]\bgroup
+        \switchtobodyfont[modern]%
+        \showmakeup[glyph,continuation]%
+        \getbuffer
+    \egroup
+\stoplinecorrection
+\stopbuffer
+
+The \LUAMETATEX\ engine has native support for prescripts and primes. Here we
+dive a bit into the former. We start with a regular sub and superscript example:
+
+\startbuffer
+\im { F _ {a} ^ {b} }
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+Depending on how the font is set up, a subscript might get a (negative) kern.
+Kerning at the top left of the nucleus is ignored, because one never sees it in
+for instance chemistry:
+
+\startbuffer
+\im { F _ {a} ^ {b} ___ {c} ^^^ {d} }
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+There can be multiple pre- and postscripts. In traditional \TEX\ one sometimes
+has to inject fake nuclei but in \LUAMETATEX\ this is done automatically. These
+are called continuation atoms.
+
+\startbuffer
+\im { F
+    _ {a} ^ {b}
+    _ {a} ^ {b}
+} \quad
+\im { F
+    _ {a} ^ {b} ___ {c} ^^^ {d}
+    _ {a} ^ {b} ___ {c} ^^^ {d}
+}
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+You will notice that the subscript no longer aligns, a feature that deals with
+rendering tensors. these features are controlled by the (four byte) \prm
+{mathdoublescriptmode} parameter. In \CONTEXT\ this one is set up as follows:
+
+\starttyping
+\mathdoublescriptmode
+  "\tohexadecimal\numexpr
+     \inheritclassdoublescriptmodecode
+   + \discardshapekerndoublescriptmodecode
+   + \realignscriptsdoublescriptmodecode
+   + \reorderprescriptsdoublescriptmodecode
+   \relax
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+   \tohexadecimal\mathcontinuationcode % 2 bytes
+\stoptyping
+
+The first byte set the options, the second the subtype of the continuation node
+and the last two set the left and right class values. In \CONTEXT\ we have a
+dedicated continuation class (\mono{0x\tohexadecimal\mathcontinuationcode}). So,
+current value of this parameter is \mono{0x\tohexadecimal\mathdoublescriptmode},
+but we can do this:
+
+\startbuffer[temp]
+\advance\mathdoublescriptmode
+   -"\tohexadecimal\discardshapekerndoublescriptmodecode 000000
+\stopbuffer
+
+\typebuffer[temp]
+
+and get:
+
+{\getbuffer[temp,show:3]}
+
+\startbuffer
+\im { F
+    _ {a} ^ {b}
+    ___ {c}
+    ___ {c}
+}
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+The next set of examples demonstrates that the \type {\noscript} injects a bogus
+atom that breaks the alignment chain. You probably never needs this feature which
+is kind of a left-over that we keep around.
+
+\startbuffer
+\im { F ^ {a}
+    ___ {a} ___ {a} ___ {a}
+} \quad
+\im { F ^ {a}
+    \noscript ___ {a} ___ {a} ___ {a}
+} \quad
+\im { F ^ {a}
+    ___ {a} \noscript ___ {a} ___ {a}
+} \quad
+\im { F ^ {a}
+    ___ {a}  ___ {a} \noscript ___ {a} ___ {a}
+}
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+\startbuffer
+\im { F ^ {a} _{a}
+    ___ {a} ___ {a} ___ {a}
+} \quad
+\im { F ^ {a} _{a}
+    \noscript ___ {a} ___ {a} ___ {a}
+} \quad
+\im { F ^ {a} _{a}
+    ___ {a} \noscript ___ {a} ___ {a}
+} \quad
+\im { F ^ {a} _{a}
+    ___ {a}  ___ {a} \noscript ___ {a} ___ {a}
+}
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+% \startbuffer
+% \m { F _ {c} }
+% \m { F _ {c} _ {d} }
+% \m { F _ {c} \noscript _ {d} \noscript _ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F ^ {c} }
+% \m { F ^ {c} ^ {d} }
+% \m { F ^ {c} \noscript ^ {d} \noscript ^ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F _c ^ {c} }
+% \m { F _c ^ {c} _ {d} ^ {d} }
+% \m { F _c ^ {c} \noscript _ {d} ^ {d} \noscript ^ {e} _ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F ___ {c} }
+% \m { F ___ {c} ___ {d} }
+% \m { F ___ {c} \noscript ___ {d} \noscript ___ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F ^^^ {c} }
+% \m { F ^^^ {c} ^^^ {d} }
+% \m { F ^^^ {c} \noscript ^^^ {d} \noscript ^^^ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F _ {c} ^ {c} }
+% \m { F _ {c} ^ {c} _ {d} ^ {d} }
+% \m { F _ {c} ^ {c} \noscript _ {d} ^ {d} \noscript ^ {e} _ {e} }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F
+%     ^{a} _{d} ^^^{d} ___ {d} \noscript
+%     ^{b} _{e} ^^^{e} ___ {e} \noscript
+%     ^{c} _{f} ^^^{f} ___ {f}
+% }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F
+%     ^^^{d} ___ {d}
+%     ^  {a} _   {d} \noscript
+%     ^  {a} _   {d} \noscript
+%     ^  {c} _   {f}
+% }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F
+%     ___ {d}
+%     _   {f}
+% }
+% \m { F
+%     ___ {d} \noscript
+%     _   {f}
+% }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+%
+% \startbuffer
+% \m { F
+%     ___ {a}
+%     _   {b} \noscript
+%     _   {c} \noscript
+%     _   {d} \noscript
+%     _   {e}
+% }
+% \stopbuffer
+%
+% \typebuffer \getbuffer[show:3]
+
+\stopsection
+
 \stopdocument

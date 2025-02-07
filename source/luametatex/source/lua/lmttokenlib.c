@@ -928,7 +928,7 @@ static int tokenlib_scaninteger(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
     int eq = lua_toboolean(L, 1);
-    halfword v = tex_scan_integer(eq, NULL);
+    halfword v = tex_scan_integer(eq, NULL, NULL);
     lua_pushinteger(L, (int) v);
     tokenlib_aux_unsave_tex_scanner(texstate);
     return 1;
@@ -951,7 +951,7 @@ static int tokenlib_gobbleinteger(lua_State *L)
     int eq = lua_toboolean(L, 1);
     lmt_error_state.intercept = 1;
     lmt_error_state.last_intercept = 0;
-    tex_scan_integer(eq, NULL);
+    tex_scan_integer(eq, NULL, NULL);
     lua_pushboolean(L, ! lmt_error_state.last_intercept);
     lmt_error_state.intercept = 0;
     lmt_error_state.last_intercept = 0;
@@ -1314,7 +1314,7 @@ static int tokenlib_scandimension(lua_State *L)
     int mu = lua_toboolean(L, 2);
     int eq = lua_toboolean(L, 3);
     halfword order;
-    halfword val = tex_scan_dimension(mu, inf, 0, eq, &order);
+    halfword val = tex_scan_dimension(mu, inf, 0, eq, &order, NULL);
     lua_pushinteger(L, val);
     tokenlib_aux_unsave_tex_scanner(texstate);
     if (inf) {
@@ -1348,7 +1348,7 @@ static int tokenlib_gobbledimension(lua_State *L)
     int eq = lua_toboolean(L, 3);
     lmt_error_state.intercept = 1;
     lmt_error_state.last_intercept = 0;
-    tex_scan_dimension(mu, inf, 0, eq, NULL);
+    tex_scan_dimension(mu, inf, 0, eq, NULL, NULL);
     lua_pushboolean(L, ! lmt_error_state.last_intercept);
     lmt_error_state.intercept = 0;
     lmt_error_state.last_intercept = 0;
@@ -1697,7 +1697,7 @@ static int tokenlib_scanintegerargument(lua_State *L)
     } else {
         wrapped = 1;
     }
-    lua_pushinteger(L, (int) tex_scan_integer(wrapped ? 0 : eq, NULL));
+    lua_pushinteger(L, (int) tex_scan_integer(wrapped ? 0 : eq, NULL, NULL));
     if (wrapped) {
         tokenlib_aux_goto_first_candidate();
         if (cur_cmd != right_brace_cmd) {
@@ -1722,7 +1722,7 @@ static int tokenlib_scandimensionargument(lua_State *L)
     } else {
         wrapped = 1;
     }
-    lua_pushinteger(L, tex_scan_dimension(mu, inf, 0, wrapped ? 0 : eq, &order));
+    lua_pushinteger(L, tex_scan_dimension(mu, inf, 0, wrapped ? 0 : eq, &order, NULL));
     if (wrapped) {
         tokenlib_aux_goto_first_candidate();
         if (cur_cmd != right_brace_cmd) {

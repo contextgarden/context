@@ -306,7 +306,7 @@
 \installsetuphandler     \??export {export}
 
 \setupexport
-  [\c!align=\number\raggedstatus,
+  [\c!align=\number\raggedstatus, % we pass as string
    \c!bodyfont=\bodyfontsize,
    \c!width=\textwidth,
    \c!title={\directinteractionparameter\c!title},

@@ -82,10 +82,10 @@
 \to \everydefinemarking
 
 \permanent\protected\tolerant\def\relatemarking[#1]#*[#2]%
-  {\ifarguments\or\else
+  {\ifarguments\or\orelse\ifcsname\??markingsyncs#1\endcsname
      \xtoksapp\csname\??markingsyncs#2\endcsname{%
        \flushmarks\csname\??markingclass#1\endcsname
-       \noexpand\the\begincsname\??markingsyncs#1\endcsname
+       \noexpand\the\csname\??markingsyncs#1\endcsname
      }%
    \fi}
 

@@ -61,7 +61,7 @@
 \fi
 
 \permanent\protected\def\strutwd {\wd\strutbox}
-\permanent\protected\def\strutgap{\dimexpr{\strutht-\strutdp}}
+\permanent\protected\def\strutgap{\dimexpr\strutht-\strutdp\relax}
 
 %D \macros
 %D   {voidbox,nextbox}
@@ -1605,7 +1605,7 @@
 \def\setrigidcolumnhsize#1#2#3%
   {\global\rigidhsize\hsize
    \global\rigidcolumns{#3}%
-   \hsize{(#1-\numexpr{\rigidcolumns-1}\dimexpr{#2})/\rigidcolumns}}
+   \hsize{(#1-\numexpr\rigidcolumns-1\relax\dimexpr#2\relax)/\rigidcolumns}}
 
 \permanent\protected\def\rigidcolumnbalance#1%
   {\ifnum\rigidcolumns=1 % tzt ook h/d correctie

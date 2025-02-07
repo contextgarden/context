@@ -485,7 +485,7 @@
         {\ifcase\columndirection % nog document wide
            \page_floats_flush\s!text\plusone
          \else
-           \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+           \page_floats_flush\s!text{\tointeger{\nofcollectedfloats-\recurselevel+1}}%
          \fi
          \hpack to \ifdim\naturalfloatwd>\makeupwidth\makeupwidth\else\naturalfloatwd\fi
            {\hss\box\floatbox\hss}%

@@ -67,12 +67,6 @@ return {
                 {
                     tweak = "wipecues",
                 },
-                {
-                    tweak = "kerns",
-                    list  = {
-                        [0x1D453] = { bottomright = -.2 },
-                    }
-                },
                 --
                 {
                     tweak = "kerns",
@@ -92,7 +86,55 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
-                        [0x00393] = { bottomright = -0.30, }, -- upright Gamma
+                        -- The font lacks italic correction and corner kerns
+                        -- It is probably meant to be "spacy", but we add bottomright
+                        -- to a few of the most used latin and greek letters
+                        --
+                        [0x1D435] = { bottomright = -.05 },   -- italic B
+                        [0x1D436] = { bottomright = -.1 },    -- italic C
+                        [0x1D437] = { bottomright = -.05 },   -- italic D
+                        [0x1D438] = { bottomright = -.1 },    -- italic E
+                        [0x1D439] = { bottomright = -.1 },    -- italic F
+                        [0x1D43A] = { bottomright = -.05 },   -- italic G
+                        [0x1D43B] = { bottomright = -.1 },    -- italic H
+                        [0x1D43C] = { bottomright = -.15 },   -- italic I
+                        [0x1D43D] = { bottomright = -.15 },   -- italic J
+                        [0x1D43E] = { bottomright = -.1 },    -- italic K
+                        [0x1D440] = { bottomright = -.1 },    -- italic M
+                        [0x1D441] = { bottomright = -.1 },    -- italic N
+                        [0x1D443] = { bottomright = -.1 },    -- italic P
+                        [0x1D446] = { bottomright = -.05 },   -- italic S
+                        [0x1D447] = { bottomright = -.3 },    -- italic T
+                        [0x1D448] = { bottomright = -.2 },    -- italic U
+                        [0x1D449] = { bottomright = -.25 },   -- italic V
+                        [0x1D44A] = { bottomright = -.2 },    -- italic W
+                        [0x1D44B] = { bottomright = -.1 },    -- italic X
+                        [0x1D44C] = { bottomright = -.25 },   -- italic Y
+                        [0x1D44D] = { bottomright = -.1 },    -- italic Z
+                        [0x1D451] = { bottomright = -.1 },    -- italic d
+                        [0x1D453] = { bottomright = -.2 },    -- italic f
+                        [0x1D45F] = { bottomright = -.1 },    -- italic r
+                        [0x1D461] = { bottomright = -.1 },    -- italic t
+                        [0x1D463] = { bottomright = -.1 },    -- italic v
+                        [0x1D464] = { bottomright = -.05 },   -- italic w
+                        [0x1D465] = { bottomright = -.05 },   -- italic x
+                        [0x1D466] = { bottomright = -.05 },   -- italic y
+                        [0x1D467] = { bottomright = -.05 },   -- italic z
+                        [0x00393] = { bottomright = -0.3, },  -- upright Gamma
+                        [0x003A5] = { bottomright = -0.2, },  -- upright Upsilon
+                        [0x003A8] = { bottomright = -0.1, },  -- upright Psi
+                        [0x02207] = { bottomright = -0.2, },  -- upright Nabla
+                        [0x1D6FB] = { bottomright = -0.2, },  -- italic Nabla
+                        [0x1D701] = { bottomright = -.15 },   -- italic zeta
+                        [0x1D703] = { bottomright = -.05 },   -- italic theta
+                        [0x1D705] = { bottomright = -.05 },   -- italic kappa
+                        [0x1D709] = { bottomright = -.15 },   -- italic xi
+                        [0x1D70B] = { bottomright = -.1 },    -- italic pi
+                        [0x1D70E] = { bottomright = -.15 },   -- italic sigma
+                        [0x1D70F] = { bottomright = -.15 },   -- italic tau
+                        [0x1D712] = { bottomright = -.15 },   -- italic chi
+                        [0x1D713] = { bottomright = -.1 },    -- italic psi
+                        [0x1D718] = { bottomright = -.05 },   -- italic varkappa
                         --
                         ["0x222B.parts.bottom"] = { bottomright = -0.20 }, -- int
                         ["0x222C.parts.bottom"] = { bottomright = -0.15 }, -- iint

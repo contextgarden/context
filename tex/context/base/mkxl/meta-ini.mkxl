@@ -1389,8 +1389,8 @@
 
 %D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
 
-\permanent\def\MPdpar#1#2{\the\dimexpr#1#2\relax\empty} % why \empty here
-\permanent\def\MPnpar#1#2{\the\numexpr#1#2\relax\empty} % why \empty here
+\permanent\def\MPdpar#1#2{\todimension{#1#2}\relaxedspace}
+\permanent\def\MPnpar#1#2{\todimension{#1#2}\relaxedspace}
 \permanent\def\MPspar#1#2{"#1#2"}
 
 %D Done.

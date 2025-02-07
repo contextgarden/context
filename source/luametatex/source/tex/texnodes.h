@@ -927,7 +927,8 @@ typedef enum list_subtypes {
     math_sup_list,
     math_sub_list,
     math_prime_list,
-    math_pre_post_list,
+    math_pre_post_sup_list,
+    math_pre_post_sub_list,
     math_degree_list,
     math_scripts_list,
     math_over_list,
@@ -1413,6 +1414,8 @@ typedef enum glyph_option_codes {
     glyph_option_check_toddler             = 0x00008000,
     glyph_option_check_twin                = 0x00010000,
     glyph_option_is_toddler                = 0x00020000,
+    /* */
+    glyph_option_is_continuation           = 0x00040000,
     /*tex We permit user options. */
     glyph_option_user_first                = 0x00100000,
     glyph_option_user_last                 = 0x40000000,
@@ -1423,7 +1426,6 @@ typedef enum glyph_option_codes {
     glyph_option_valid                     = glyph_option_system
                                            | glyph_option_user,
 } glyph_option_codes;
-
 
 typedef enum auto_discretionary_codes {
     auto_discretionary_normal = 0x0001, /* turn glyphs into discretionary with three similar components */

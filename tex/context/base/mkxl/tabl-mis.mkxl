@@ -202,14 +202,12 @@
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
    \enforced\let\\\nextparagraphs % downward compatible
-   \edef\p_offset{\paragraphsparameter\c!offset}%
-   \doifelsedimension\p_offset
-     {\scratchoffset\p_offset}%
-     {\scratchoffset\zeropoint}%
+  %\scratchoffset\ifchkdimension\paragraphsparameter\c!offset\or\lastchkdimension\else\zeropoint\fi
    \setbox\scratchbox\hpack
    \bgroup % (2)
    \forgetall
-   \advanceby\hsize-2\scratchoffset
+  %\advanceby\hsize-2\scratchoffset
+   \ifchkdimension\paragraphsparameter\c!offset\or\advanceby\hsize-2\lastchkdimension\fi
    \let\typo_paragraphs_start_cell\typo_paragraphs_start_cell_indeed
    \let\typo_paragraphs_stop_cell \typo_paragraphs_stop_cell_indeed
    \typo_paragraphs_start_cell_indeed}

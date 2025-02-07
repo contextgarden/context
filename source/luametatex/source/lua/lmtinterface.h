@@ -1112,7 +1112,8 @@ make_lua_key(L, prebox);\
 make_lua_key(L, prefix);\
 make_lua_key(L, premigrate);\
 make_lua_key(L, premigratehead);\
-make_lua_key(L, prepost);\
+make_lua_key(L, prepostsup);\
+make_lua_key(L, prepostsub);\
 make_lua_key(L, preroll);\
 make_lua_key(L, presub);\
 make_lua_key(L, presubscriptshiftdistance);\

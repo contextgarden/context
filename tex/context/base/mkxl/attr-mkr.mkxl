@@ -21,6 +21,6 @@
 \permanent\tolerant\protected\def\setmarker [#1]#*[#2]{\dosetattribute{\s!marker:#1}{#2}}
 \permanent         \protected\def\resetmarker     [#1]{\dogetattribute{\s!marker:#1}}
 \permanent                   \def\boxmarker       #1#2{attr {\dogetattributeid{\s!marker:#1}} {#2}}
-\permanent         \protected\def\marker            #1{\numexpr{\dogetattributeid{\s!marker:#1}}}
+\permanent         \protected\def\marker            #1{\numexpr\dogetattributeid{\s!marker:#1}\relax}
 
 \protect \endinput

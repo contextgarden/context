@@ -1261,7 +1261,7 @@ void tex_run_math_style(void) {
         case scaled_math_style:
             { 
                 halfword noad = tex_new_node(style_node, scaled_math_style);
-                style_scale(noad) = tex_scan_integer(0, NULL);
+                style_scale(noad) = tex_scan_integer(0, NULL, NULL);
              // style_scale(noad) = tex_scan_positive_scale(0);
                 cur_list.math_scale = style_scale(noad);
                 tex_tail_append(noad);
@@ -1883,7 +1883,7 @@ static delcodeval tex_aux_scan_extdef_del_code(int extcode, int doclass)
         case tex_mathcode:
             /*tex This is the easiest: |\delcode|,*/
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 /*tex |MFCCFCC| or |FCCFCC| */
                 if (doclass) {
                     d.small.class_value = (short) (v / 0x1000000);
@@ -1968,7 +1968,7 @@ mathcodeval tex_scan_mathchar(int extcode)
         case tex_mathcode:
             /*tex |"<4bits><4bits><8bits>| */
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if (v >= 0) {
                     if (v > 0xFFFF) {
                         v = 0xFFFF;
@@ -2431,6 +2431,14 @@ static void tex_aux_append_math_fence_val(mathcodeval mval, mathdictval dval, qu
     tex_aux_append_math_fence(fence, mathclass);
 }
 
+static void tex_trace_continuation_atom(const char *s)
+{
+    if (tracing_math_par >= 2) {
+        tex_begin_diagnostic();
+        tex_print_format("[math: continuation atom %s]", s);
+        tex_end_diagnostic();
+    }
+}
 
 halfword tex_new_math_continuation_atom(halfword node, halfword attr)
 {
@@ -2439,9 +2447,13 @@ halfword tex_new_math_continuation_atom(halfword node, halfword attr)
         halfword list = tex_new_node(sub_mlist_node, 0);
         node = tex_new_node(simple_noad, ordinary_noad_subtype);
         noad_nucleus(node) = list;
+        tex_trace_continuation_atom("added");
     } else if (! tex_math_scripts_allowed(node)) { 
+        tex_trace_continuation_atom("not allowed");
         return node; 
-    } 
+    } else { 
+        tex_trace_continuation_atom("updated");
+    }
     if (math_double_script_mode_par >= 0) { 
         /* todo: a flag that we keep classes */
         int options = (math_double_script_mode_par >> 24) & 0xFF;
@@ -2660,7 +2672,7 @@ int tex_scan_math_cmd_val(mathcodeval *mval, mathdictval *dval)
             {
                 halfword n = 0;
                 tex_back_input(cur_tok);
-                n = tex_scan_integer(0, NULL);
+                n = tex_scan_integer(0, NULL, NULL);
                 *mval = tex_mathchar_from_integer(n, umath_mathcode);
             }
             break;
@@ -2895,7 +2907,7 @@ static void tex_aux_math_math_component(halfword target, int append)
                         case 'o': case 'O':
                             /* no names, just numbers, we might also do that with other noads */
                             if (tex_scan_mandate_keyword("options", 1)) {
-                                noad_options(target) = tex_scan_integer(0, NULL);
+                                noad_options(target) = tex_scan_integer(0, NULL, NULL);
                             }
                             break;
                         case 'p': case 'P':
@@ -2921,7 +2933,7 @@ static void tex_aux_math_math_component(halfword target, int append)
                                     break;
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("source", 2)) {
-                                        noad_source(target) = tex_scan_integer(0, NULL);
+                                        noad_source(target) = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 default:
@@ -3056,15 +3068,15 @@ void tex_run_math_modifier(void)
                         if (tex_scan_keyword("nucleus")) {
                             noad_options(tail) |= noad_option_source_on_nucleus;    
                         }
-                        noad_source(tail) = tex_scan_integer(0, NULL);
+                        noad_source(tail) = tex_scan_integer(0, NULL, NULL);
                         break;
                     case openup_height_modifier_code:
                         noad_options(tail) |= noad_option_openup_height;
-                        noad_height(tail) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        noad_height(tail) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         break;
                     case openup_depth_modifier_code:
                         noad_options(tail) |= noad_option_openup_depth;
-                        noad_depth(tail) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        noad_depth(tail) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         break;
                     case display_limits_modifier_code:
                         noad_options(tail) = unset_option(noad_options(tail), noad_option_limits | noad_option_no_limits);
@@ -3086,7 +3098,7 @@ void tex_run_math_modifier(void)
                                 if (tex_scan_keyword("nucleus")) {
                                     noad_options(tail) |= noad_option_source_on_nucleus;    
                                 }
-                                noad_source(tail) = tex_scan_integer(0, NULL);
+                                noad_source(tail) = tex_scan_integer(0, NULL, NULL);
                                 break;
                         }
 
@@ -3237,7 +3249,7 @@ void tex_run_math_radical(void)
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
-                    radical_depth(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    radical_depth(radical) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'e': case 'E':
@@ -3247,7 +3259,7 @@ void tex_run_math_radical(void)
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    radical_height(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    radical_height(radical) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'l': case 'L':
@@ -3310,7 +3322,7 @@ void tex_run_math_radical(void)
                         break;
                     case 'i': case 'I':
                         if (tex_scan_mandate_keyword("size", 2)) {
-                            radical_size(radical) = tex_scan_integer(0, NULL);
+                            radical_size(radical) = tex_scan_integer(0, NULL, NULL);
                         }
                         break;
                     case 't': case 'T':
@@ -3346,7 +3358,7 @@ void tex_run_math_radical(void)
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            noad_source(radical) = tex_scan_integer(0, NULL);
+                            noad_source(radical) = tex_scan_integer(0, NULL, NULL);
                         }
                         break;
                     case 'y': case 'Y':
@@ -3371,7 +3383,7 @@ void tex_run_math_radical(void)
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("width", 1)) {
-                    noad_width(radical) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    noad_width(radical) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             default:
@@ -3649,7 +3661,7 @@ void tex_run_math_accent(void)
                         switch (tex_scan_character("frFR", 0, 0, 0)) {
                             case 'r': case 'R':
                                 if (tex_scan_mandate_keyword("fraction", 2)) {
-                                    accent_fraction(accent) = tex_scan_integer(0, NULL);
+                                    accent_fraction(accent) = tex_scan_integer(0, NULL, NULL);
                                 }
                                 break;
                             case 'f': case 'F':
@@ -3700,7 +3712,7 @@ void tex_run_math_accent(void)
                                 break;
                             case 'o': case 'O':
                                 if (tex_scan_mandate_keyword("source", 2)) {
-                                    noad_source(accent) = tex_scan_integer(0, NULL);
+                                    noad_source(accent) = tex_scan_integer(0, NULL, NULL);
                                 }
                                 break;
                             case 't': case 'T':
@@ -4247,7 +4259,7 @@ void tex_run_math_fraction(void)
             case math_above_delimited_code:
             case math_u_above_code:
             case math_u_above_delimited_code:
-                tex_scan_dimension(0, 0, 0, 0, NULL);
+                tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 break;
         }
         /*tex This is somewhat weird, this error here. */
@@ -4358,7 +4370,7 @@ void tex_run_math_fraction(void)
             /*tex We can't have keyword here because of compatibility reasons. */
             case math_above_code:
             case math_above_delimited_code:
-                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
+                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 break;
             case math_over_code:
             case math_over_delimited_code:
@@ -4415,7 +4427,7 @@ void tex_run_math_fraction(void)
                             break;
                         case 'h': case 'H':
                             if (tex_scan_mandate_keyword("hfactor", 1)) {
-                                fraction_h_factor(fraction) = tex_scan_integer(0, NULL);
+                                fraction_h_factor(fraction) = tex_scan_integer(0, NULL, NULL);
                             }
                             break;
                         case 'n': case 'N':
@@ -4458,7 +4470,7 @@ void tex_run_math_fraction(void)
                                     break;
                                 case 'o': case 'O':
                                     if (tex_scan_mandate_keyword("source", 2)) {
-                                        noad_source(fraction) = tex_scan_integer(0, NULL);
+                                        noad_source(fraction) = tex_scan_integer(0, NULL, NULL);
                                     }
                                     break;
                                 case 'y': case 'Y':
@@ -4474,7 +4486,7 @@ void tex_run_math_fraction(void)
                         case 't': case 'T':
                             if (tex_scan_mandate_keyword("thickness", 1)) {
                                 ruledone = 1;
-                                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         case 'u': case 'U':
@@ -4485,7 +4497,7 @@ void tex_run_math_fraction(void)
                             break;
                         case 'v': case 'V':
                             if (tex_scan_mandate_keyword("vfactor", 1)) {
-                                fraction_v_factor(fraction) = tex_scan_integer(0, NULL);
+                                fraction_v_factor(fraction) = tex_scan_integer(0, NULL, NULL);
                             }
                             break;
                         default:
@@ -4494,7 +4506,7 @@ void tex_run_math_fraction(void)
                 }
               DONE:
                 if (! ruledone) {
-                    rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rulethickness = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
         }
@@ -4542,8 +4554,6 @@ void tex_run_math_fraction(void)
 static halfword tex_aux_finish_math_list(halfword p)
 {
     halfword q = null;
-    /*tex We reorder prescripts here (works on |cur_list.head|). */
-    tex_mlist_to_hlist_prepare();
     /*tex So now we're ready to proceed. */
     if (cur_list.incomplete_noad) {
         halfword denominator = fraction_denominator(cur_list.incomplete_noad);
@@ -4755,7 +4765,7 @@ void tex_run_math_fence(void)
                 break;
             case 'b': case 'B':
                 if (tex_scan_mandate_keyword("bottom", 1)) {
-                    bottom = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    bottom = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'c': case 'C':
@@ -4765,7 +4775,7 @@ void tex_run_math_fence(void)
                 break;
             case 'd': case 'D':
                 if (tex_scan_mandate_keyword("depth", 1)) {
-                    dp = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    dp = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'e': case 'E':
@@ -4775,12 +4785,12 @@ void tex_run_math_fence(void)
                 break;
             case 'f': case 'F':
                 if (tex_scan_mandate_keyword("factor", 1)) {
-                    factor = tex_scan_integer(0, NULL);
+                    factor = tex_scan_integer(0, NULL, NULL);
                 }
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    ht = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    ht = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'l': case 'L':
@@ -4872,7 +4882,7 @@ void tex_run_math_fence(void)
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            source = tex_scan_integer(0, NULL);
+                            source = tex_scan_integer(0, NULL, NULL);
                         }
                         break;
                     case 'y': case 'Y':
@@ -4887,7 +4897,7 @@ void tex_run_math_fence(void)
                 break;
             case 't': case 'T':
                 if (tex_scan_mandate_keyword("top", 1)) {
-                    top = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    top = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'u': case 'U':
@@ -4899,7 +4909,7 @@ void tex_run_math_fence(void)
                 switch (tex_scan_character("aoAO", 0, 0, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("variant", 2)) {
-                            variant = tex_scan_integer(0, NULL);
+                            variant = tex_scan_integer(0, NULL, NULL);
                         }
                         break;
                     case 'o': case 'O':
@@ -5525,11 +5535,12 @@ static int tex_aux_short_math(halfword m)
                 case vlist_node:
                 case hlist_node:
                     switch (node_subtype(m)) { 
-                        case math_sup_list:        /* in hlist */
-                        case math_sub_list:        /* in hlist */ 
-                        case math_prime_list:      /* in hlist */ 
-                        case math_pre_post_list:   /* in vlist */
-                        case math_scripts_list:    /* in vlist */
+                        case math_sup_list:
+                        case math_sub_list:
+                        case math_prime_list:
+                        case math_pre_post_sup_list:
+                        case math_pre_post_sub_list:
+                        case math_scripts_list:
                            m = node_next(m);
                            break;
                     }

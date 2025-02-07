@@ -248,7 +248,7 @@
    \ifdim\p_sy\onepoint=\onepoint\else\edef\p_height{\todimension{\p_sy\d_grph_scale_ht}}\fi}
 
 \def\grph_scale_rounded#1%
-  {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax}
+  {\thewithoutunit\dimexpr#1\points*100+32768\scaledpoint\relax} % hm
 
 \def\grph_scale_calculations_nop
   {\c_grph_scale_done\conditionaltrue
@@ -664,17 +664,17 @@
    \ifdim\scratchwidth>\zeropoint
      \scratchxoffset{\clippingparameter\c!hoffset}%
    \else
-     \scratchwidth{\wd\nextbox/\clippingparameter\c!nx}%
-     \scratchxoffset{\clippingparameter\c!x\scratchwidth-\scratchwidth}%
+     \scratchwidth{\wd\nextbox/(\clippingparameter\c!nx)}%
+     \scratchxoffset{\scratchwidth*(\clippingparameter\c!x)-\scratchwidth}%
      \scratchwidth\clippingparameter\c!sx\scratchwidth
    \fi
    \relax % sure
    \scratchheight{\clippingparameter\c!height}%
    \ifdim\scratchheight>\zeropoint
-     \scratchyoffset{\ht\nextbox-\clippingparameter\c!voffset-\scratchheight}%
+     \scratchyoffset{\ht\nextbox-(\clippingparameter\c!voffset)-\scratchheight}%
    \else
-     \scratchheight{\ht\nextbox/\clippingparameter\c!ny}%
-     \scratchyoffset{-\clippingparameter\c!y\scratchheight-\clippingparameter\c!sy\scratchheight+\scratchheight}%
+     \scratchheight{\ht\nextbox/(\clippingparameter\c!ny)}%
+     \scratchyoffset{-\scratchheight*(\clippingparameter\c!y)-\clippingparameter\c!sy\scratchheight+\scratchheight}%
      \scratchheight\clippingparameter\c!sy\scratchheight
      \advanceby\scratchyoffset\ht\nextbox
    \fi

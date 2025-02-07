@@ -179,6 +179,7 @@ return {
                         [0x27EB]                = { topright = -0.1,  bottomright = -0.1  },
                         ["0x27EB.variants.*"]   = { topright = -0.2,  bottomright = -0.2  },
                         --
+                        [0x1D45F]               = { bottomright = -.20 },  -- italic r
                         ["0x222B.parts.bottom"] = { bottomright = -0.30 }, -- int
                     },
                 },

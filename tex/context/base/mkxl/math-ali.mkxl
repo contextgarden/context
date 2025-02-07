@@ -1666,7 +1666,7 @@
 
 \def\math_matrix_anchor
   {\ifcase\c_math_matrix_anchor_mode\else
-     \markanchor{matrix}{\numexpr{\c_math_eqalign_column+\plusone}}\c_math_eqalign_row
+     \markanchor{matrix}{\numexpr\c_math_eqalign_column+\plusone\relax}\c_math_eqalign_row
    \fi}
 
 \protected\def\math_matrix_anchor_first

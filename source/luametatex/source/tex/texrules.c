@@ -73,12 +73,12 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("width", 1)) {
-                    rule_width(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_width(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
-                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'd': case 'D':
@@ -88,7 +88,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 switch (tex_scan_character("eiEI", 0, 0, 0)) {
                     case 'e': case 'E':
                         if (tex_scan_mandate_keyword("depth", 2)) {
-                            rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     case 'i': case 'I':
@@ -103,14 +103,14 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 break;
             case 'p': case 'P':
                 if (tex_scan_mandate_keyword("pair", 1)) {
-                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
-                    rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                    rule_depth(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'l': case 'L':
                 if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("left", 1)) {
-                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                     }
                 } else { 
                     goto DONE;
@@ -128,7 +128,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                             break;
                         case 'i': case 'I':
                             if (tex_scan_mandate_keyword("right", 2)) {
-                                rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         default:
@@ -144,7 +144,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 't': case 'T': /* just because it's nicer */
                 if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("top", 1)) {
-                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        rule_left(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                     }
                     break;
                 } else {
@@ -153,7 +153,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'b': case 'B': /* just because it's nicer */
                 if (code != virtual_rule_code) { 
                     if (tex_scan_mandate_keyword("bottom", 1)) {
-                        rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                     }
                     break;
                 } else {
@@ -161,12 +161,12 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 }
             case 'x': case 'X':
                 if (tex_scan_mandate_keyword("xoffset", 1)) {
-                    rule_x_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_x_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yoffset", 1)) {
-                    rule_y_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                    rule_y_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                 }
                 break;
             case 'f': case 'F':
@@ -194,11 +194,11 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 if (code == normal_rule_code) { 
                     switch (tex_scan_character("nfNF", 0, 0, 0)) {
                         case 'n': case 'N':
-                            rule_line_on(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            rule_line_on(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             break;
                         case 'f': case 'F':
                             if (tex_scan_mandate_keyword("off", 2)) {
-                                rule_line_off(rule) = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                rule_line_off(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         default:

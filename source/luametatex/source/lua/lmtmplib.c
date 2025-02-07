@@ -3191,7 +3191,7 @@ static int mplib_expand_tex(lua_State *L)
                         tex_begin_inserted_list(head);
                         lmt_error_state.intercept = 1;
                         lmt_error_state.last_intercept = 0;
-                        value = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        value = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         lmt_error_state.intercept = 0;
                         while (cur_tok != deep_frozen_relax_token) {
                             tex_get_token();
@@ -3222,7 +3222,7 @@ static int mplib_expand_tex(lua_State *L)
                         tex_begin_inserted_list(head);
                         lmt_error_state.intercept = 1;
                         lmt_error_state.last_intercept = 0;
-                        value = tex_scan_integer(0, NULL);
+                        value = tex_scan_integer(0, NULL, NULL);
                         lmt_error_state.intercept = 0;
                         while (cur_tok != deep_frozen_relax_token) {
                             tex_get_token();

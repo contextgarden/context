@@ -701,7 +701,7 @@
             %\let\m_spacebefore\v!depth
              \checkprevdepth
            \else
-             \edef\m_spacebefore{\the\dimexpr\strutdp-\prevdepth\relax}%
+             \edef\m_spacebefore{\todimension{\strutdp-\prevdepth}}%
            \fi
          \fi
        \fi

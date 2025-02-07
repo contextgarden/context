@@ -147,7 +147,7 @@
     \let\page_layouts_define\definelayout % ugly hack for MS
 
     \permanent\protected\def\definelayout[#1]% intercept relative pages
-      {\normalexpanded{\page_layouts_define[\ifhastoks{+}{#1}\the\numexpr\realpageno#1\relax\else#1\fi]}}
+      {\normalexpanded{\page_layouts_define[\ifhastoks{+}{#1}\tointeger{\realpageno#1}\else#1\fi]}}
 
 \popoverloadmode
 
@@ -367,17 +367,17 @@
 \def\v_page_target_method   {\rootlayouttargetparameter\c!method}
 \def\v_page_target_scale    {\rootlayouttargetparameter\c!scale}
 
-\def\v_page_target_nx       {\numexpr{\rootlayouttargetparameter\c!nx}}
-\def\v_page_target_ny       {\numexpr{\rootlayouttargetparameter\c!ny}}
-\def\v_page_target_dx       {\dimexpr{\rootlayouttargetparameter\c!dx}}
-\def\v_page_target_dy       {\dimexpr{\rootlayouttargetparameter\c!dy}}
-\def\v_page_target_width    {\dimexpr{\rootlayouttargetparameter\c!width}}
-\def\v_page_target_height   {\dimexpr{\rootlayouttargetparameter\c!height}}
-\def\v_page_target_topspace {\dimexpr{\rootlayouttargetparameter\c!topspace}}
-\def\v_page_target_backspace{\dimexpr{\rootlayouttargetparameter\c!backspace}}
-\def\v_page_target_offset   {\dimexpr{\rootlayouttargetparameter\c!offset}}
+\def\v_page_target_nx       {\numexpr\rootlayouttargetparameter\c!nx\relax}
+\def\v_page_target_ny       {\numexpr\rootlayouttargetparameter\c!ny\relax}
+\def\v_page_target_dx       {\dimexpr\rootlayouttargetparameter\c!dx\relax}
+\def\v_page_target_dy       {\dimexpr\rootlayouttargetparameter\c!dy\relax}
+\def\v_page_target_width    {\dimexpr\rootlayouttargetparameter\c!width\relax}
+\def\v_page_target_height   {\dimexpr\rootlayouttargetparameter\c!height\relax}
+\def\v_page_target_topspace {\dimexpr\rootlayouttargetparameter\c!topspace\relax}
+\def\v_page_target_backspace{\dimexpr\rootlayouttargetparameter\c!backspace\relax}
+\def\v_page_target_offset   {\dimexpr\rootlayouttargetparameter\c!offset\relax}
 
-\def\v_page_target_xy       {\numexpr{\v_page_target_nx*\v_page_target_ny}}
+\def\v_page_target_xy       {\numexpr\v_page_target_nx*\v_page_target_ny\relax}
 
 %D Normally we will not use this command directly but for now it works out okay. In
 %D the future we might use more of the related commands.
@@ -886,7 +886,7 @@
 
 \def\page_layouts_check_pseudo_column
   {\xdefcsname\??layoutcolumn\recurselevel\endcsname
-     {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutcolumnwidth+\layoutcolumndistance\relax}}
+     {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutcolumnwidth+\layoutcolumndistance}}
 
 \aliased\letcsname\??layoutcolumn0\endcsname\zeropoint
 
@@ -910,7 +910,7 @@
 
 \def\page_layouts_check_pseudo_row
   {\xdefcsname\??layoutrow\recurselevel\endcsname
-     {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutrowheight+\layoutrowdistance\relax}}
+     {\the\numexpr\recurselevel-\plusone\relax\dimexpr\layoutrowheight+\layoutrowdistance}}
 
 \aliased\letcsname\??layoutrow0\endcsname\zeropoint
 
@@ -1335,7 +1335,7 @@
 \newconditional\innermakeupcompensation \innermakeupcompensation\conditionaltrue
 
 \permanent\def\compensatedinnermakeupmargin
-  {\dimexpr{\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi}}
+  {\dimexpr\ifconditional\innermakeupcompensation+\innermakeupmargin\else\zeropoint\fi\relax}
 
 \permanent\protected\def\freezetextwidth
   {\textwidth\ifchkdimexpr\layoutparameter\c!textwidth\or
@@ -1411,7 +1411,7 @@
 \newdimension\texthoffset
 
 \permanent\protected\def\settexthoffset % name will change
-  {\texthoffset\doifbothsides\backspace\backspace{\dimexpr{\paperwidth-\backspace-\makeupwidth}}}
+  {\texthoffset\doifbothsides\backspace\backspace{\dimexpr\paperwidth-\backspace-\makeupwidth\relax}}
 
 \permanent\protected\def\goleftonpage % name will change (we could cache)
   {\hkern{-(\leftmargindistance+\leftmarginwidth+\leftedgedistance+\leftedgewidth)}}
@@ -1472,25 +1472,25 @@
 \untraced\permanent\def\outerspacewidth    {\rightorleftpageaction\cutspace \backspace}
 \untraced\permanent\def\innerspacewidth    {\rightorleftpageaction\backspace\cutspace }
 
-\untraced\permanent\def\leftmargintotal    {\dimexpr{\leftmarginwidth +\leftmargindistance }}
-\untraced\permanent\def\rightmargintotal   {\dimexpr{\rightmarginwidth+\rightmargindistance}}
-\untraced\permanent\def\leftedgetotal      {\dimexpr{\leftedgewidth   +\leftedgedistance   }}
-\untraced\permanent\def\rightedgetotal     {\dimexpr{\rightedgewidth  +\rightedgedistance  }}
+\untraced\permanent\def\leftmargintotal    {\dimexpr\leftmarginwidth +\leftmargindistance \relax}
+\untraced\permanent\def\rightmargintotal   {\dimexpr\rightmarginwidth+\rightmargindistance\relax}
+\untraced\permanent\def\leftedgetotal      {\dimexpr\leftedgewidth   +\leftedgedistance   \relax}
+\untraced\permanent\def\rightedgetotal     {\dimexpr\rightedgewidth  +\rightedgedistance  \relax}
 
-\untraced\permanent\def\leftsidetotal      {\dimexpr{\leftmarginwidth +\leftedgetotal }}
-\untraced\permanent\def\rightsidetotal     {\dimexpr{\rightmarginwidth+\rightedgetotal}}
-\untraced\permanent\def\leftcombitotal     {\dimexpr{\leftmargintotal +\leftedgetotal }}
-\untraced\permanent\def\rightcombitotal    {\dimexpr{\rightmargintotal+\rightedgetotal}}
+\untraced\permanent\def\leftsidetotal      {\dimexpr\leftmarginwidth +\leftedgetotal \relax}
+\untraced\permanent\def\rightsidetotal     {\dimexpr\rightmarginwidth+\rightedgetotal\relax}
+\untraced\permanent\def\leftcombitotal     {\dimexpr\leftmargintotal +\leftedgetotal \relax}
+\untraced\permanent\def\rightcombitotal    {\dimexpr\rightmargintotal+\rightedgetotal\relax}
 
-\untraced\permanent\def\innermargintotal   {\dimexpr{\innermarginwidth+\innermargindistance}}
-\untraced\permanent\def\outermargintotal   {\dimexpr{\outermarginwidth+\outermargindistance}}
-\untraced\permanent\def\inneredgetotal     {\dimexpr{\inneredgewidth  +\inneredgedistance  }}
-\untraced\permanent\def\outeredgetotal     {\dimexpr{\outeredgewidth  +\outeredgedistance  }}
+\untraced\permanent\def\innermargintotal   {\dimexpr\innermarginwidth+\innermargindistance\relax}
+\untraced\permanent\def\outermargintotal   {\dimexpr\outermarginwidth+\outermargindistance\relax}
+\untraced\permanent\def\inneredgetotal     {\dimexpr\inneredgewidth  +\inneredgedistance  \relax}
+\untraced\permanent\def\outeredgetotal     {\dimexpr\outeredgewidth  +\outeredgedistance  \relax}
 
-\untraced\permanent\def\innercombitotal    {\dimexpr{\innermargintotal+\inneredgetotal}}
-\untraced\permanent\def\outercombitotal    {\dimexpr{\outermargintotal+\outeredgetotal}}
-\untraced\permanent\def\innersidetotal     {\dimexpr{\innermarginwidth+\inneredgetotal}}
-\untraced\permanent\def\outersidetotal     {\dimexpr{\outermarginwidth+\outeredgetotal}}
+\untraced\permanent\def\innercombitotal    {\dimexpr\innermargintotal+\inneredgetotal\relax}
+\untraced\permanent\def\outercombitotal    {\dimexpr\outermargintotal+\outeredgetotal\relax}
+\untraced\permanent\def\innersidetotal     {\dimexpr\innermarginwidth+\inneredgetotal\relax}
+\untraced\permanent\def\outersidetotal     {\dimexpr\outermarginwidth+\outeredgetotal\relax}
 
 %D \macros
 %D   {startlocallayout}

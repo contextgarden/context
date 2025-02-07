@@ -778,8 +778,8 @@
    \resetnaturaltableparameter\c!action% not that important
    \setupcurrentnaturaltable[#1]%
    %
-   \c_tabl_ntb_nx\naturaltableparameter\c!nx\relax
-   \c_tabl_ntb_ny\naturaltableparameter\c!ny\relax
+   \c_tabl_ntb_nx{\naturaltableparameter\c!nx}%
+   \c_tabl_ntb_ny{\naturaltableparameter\c!ny}%
    % goto first cell n/m=cellnumber
    \edef\m_tabl_ntb_n{\naturaltableparameter\c!n}%
    \edef\m_tabl_ntb_m{\naturaltableparameter\c!m}%
@@ -801,8 +801,8 @@
         \quitloop
       \fi}%
    % fill r*c cells and set span
-   \c_tabl_ntb_nx\naturaltableparameter\c!nx\relax
-   \c_tabl_ntb_ny\naturaltableparameter\c!ny\relax
+   \c_tabl_ntb_nx{\naturaltableparameter\c!nx}%
+   \c_tabl_ntb_ny{\naturaltableparameter\c!ny}%
    \ifnum\c_tabl_ntb_nx=\plusone
      \ifnum\c_tabl_ntb_ny=\plusone
        \ifnum\c_tabl_ntb_running_col>\c_tabl_ntb_maximum_col\relax
@@ -2272,7 +2272,7 @@
     ]%
 \to \everyresetTABLEnop
 
-\the\everyresetTABLEyes
+\expand\everyresetTABLEyes
 
 % \bgroup
 % \setupTABLE[column][1][aligncharacter=yes, alignmentcharacter={,}]
@@ -2293,9 +2293,9 @@
 \def\tabl_ntb_parameters_reset % we can use setters instead
   {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
-        \the\everyresetTABLEyes
+        \expand\everyresetTABLEyes
      \else
-        \the\everyresetTABLEnop
+        \expand\everyresetTABLEnop
      \fi
   \fi}
 
