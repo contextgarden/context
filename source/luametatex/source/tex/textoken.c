@@ -2956,7 +2956,7 @@ void tex_run_convert_tokens(halfword code)
         case number_code:
             {
                 int saved_selector;
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 push_selector;
                 tex_print_int(v);
                 pop_selector;
@@ -2966,10 +2966,13 @@ void tex_run_convert_tokens(halfword code)
         case to_hexadecimal_code:
             {
                 int saved_selector;
-                halfword v = tex_scan_integer(0, NULL);
-                tex_get_x_token(); /* maybe not x here */
-                if (cur_cmd != relax_cmd) {
-                    tex_back_input(cur_tok);
+                int grouped = 0;
+                halfword v = tex_scan_integer(0, NULL, &grouped);
+                if (! grouped) {
+                    tex_get_x_token(); /* maybe not x here */
+                    if (cur_cmd != relax_cmd) {
+                       tex_back_input(cur_tok);
+                    }
                 }
                 push_selector;
                 if (code == to_integer_code) {
@@ -2986,10 +2989,13 @@ void tex_run_convert_tokens(halfword code)
         case to_sparse_dimension_code:
             {
                 int saved_selector;
-                halfword v = tex_scan_dimension(0, 0, 0, 0, NULL);
-                tex_get_x_token(); /* maybe not x here */
-                if (cur_cmd != relax_cmd) {
-                    tex_back_input(cur_tok);
+                int grouped = 0;
+                halfword v = tex_scan_dimension(0, 0, 0, 0, NULL, &grouped);
+                if (! grouped) {
+                    tex_get_x_token(); /* maybe not x here */
+                    if (cur_cmd != relax_cmd) {
+                       tex_back_input(cur_tok);
+                    }
                 }
                 push_selector;
                 switch (code) {
@@ -3022,7 +3028,7 @@ void tex_run_convert_tokens(halfword code)
         case lua_function_code:
             {
              /* We can use:  tex_aux_lua_call(convert_cmd, v); */
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if (v > 0) {
                     strnumber u = tex_save_cur_string();
                     lmt_token_state.luacstrings = 0;
@@ -3038,7 +3044,7 @@ void tex_run_convert_tokens(halfword code)
             }
         case lua_bytecode_code:
             {
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 if (v < 0 || v > 65535) {
                     tex_normal_error("luabytecode", "invalid number");
                 } else {
@@ -3273,7 +3279,7 @@ void tex_run_convert_tokens(halfword code)
         case roman_numeral_code:
             {
                 int saved_selector;
-                halfword v = tex_scan_integer(0, NULL);
+                halfword v = tex_scan_integer(0, NULL, NULL);
                 push_selector;
                 tex_print_roman_int(v);
                 pop_selector;

@@ -357,6 +357,7 @@ return {
   "efcode",
   "emergencyleftskip",
   "emergencyrightskip",
+  "emptyparagraphmode",
   "endlocalcontrol",
   "endmathgroup",
   "endmvl",

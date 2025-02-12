@@ -73,24 +73,24 @@
 \newbox\b_typo_normalizers
 
 \def\typo_normalizers_size#axis#size%
-% {\dimexpr\ifdim#1\b_typo_normalizers=\zeropoint
-   {\dimexpr\ifzeropt#1\b_typo_normalizers
-      \bodyfontsize
-    \else
-\luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
-    \fi\relax}
+  {\todimension{%
+     \ifdim{#axis\b_typo_normalizers}=\zeropoint
+       \bodyfontsize
+     \else % \tenpoint
+       \luaexpr{\number\dimexpr10pt\relax*\number\dimexpr#size\relax/\number#axis\b_typo_normalizers}\scaledpoint
+     \fi}}
 
 \def\typo_normalizers_font_at_size#axis#cs#text#size#font% avoid overflow by using lua
   {\begingroup
    \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
-   \normalexpanded{\endgroup\enforced\edef\noexpand\normalizedfontsize{\the\typo_normalizers_size{#axis}{#size}}}%
+   \normalexpanded{\endgroup\enforced\edef\noexpand\normalizedfontsize{\typo_normalizers_size{#axis}{#size}}}%
    \definefont[\strippedcsname#cs][#font at \normalizedfontsize]}
 
 \protected\def\typo_normalizers_text_at_size#axis#font#size#text%
   {\dontleavehmode
    \begingroup
    \setbox\b_typo_normalizers\hbox{\definedfont[#font at 10pt]\settrialtypesetting#text}%
-   \definedfont[#font at \the\typo_normalizers_size{#axis}{#size}]#text%
+   \definedfont[#font at \typo_normalizers_size{#axis}{#size}]#text%
    \endgroup}
 
 \mutable\def\normalizedfontsize{\bodyfontsize}

@@ -91,7 +91,7 @@
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local
      \ifdim{\fillerparameter\c!offset}>\zeropoint
         \simplealignedspreadbox
-          {2\dimexpr{\fillerparameter\c!offset}}%
+          {2\dimexpr\fillerparameter\c!offset\relax}%
           {\fillerparameter\c!align}%
           {\fillerparameter\c!symbol}%
      \else

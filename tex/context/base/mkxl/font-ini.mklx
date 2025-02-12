@@ -594,7 +594,7 @@
   {\the\plusthousand}
 
 \defcsname font_basics_mapped_fontsize_2\endcsname
-  {\the\numexpr
+  {\tointeger{%
      \plusthousand
     *\dimexpr
        \ifcsname\??mappedfontsize\fontclass:2\endcsname
@@ -603,11 +603,10 @@
          \scriptface
        \fi
      \relax
-    /\dimexpr\textface\relax
-   \relax}
+    /\dimexpr\textface\relax}}
 
 \defcsname font_basics_mapped_fontsize_3\endcsname
-  {\the\numexpr
+  {\tointeger{%
      \plusthousand
     *\dimexpr
        \ifcsname\??mappedfontsize\fontclass:3\endcsname
@@ -616,8 +615,7 @@
          \scriptscriptface
        \fi
      \relax
-    /\dimexpr\textface\relax
-   \relax}
+    /\dimexpr\textface\relax}}
 
 \installcorenamespace{fontbodyknown}
 \installcorenamespace{fontclassyes}   % fontclass
@@ -1578,7 +1576,7 @@
    \orelse\ifcsname\??fontenvironments\s!default                    #parameter\endcsname\lastnamedcs\fi}
 
 \permanent\def\currentbodyfontdimension#parameter% there can be factors here
-  {\the\dimexpr
+  {\todimension{%
             \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname
      \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default #parameter\endcsname
      \orelse\ifcsname\??fontenvironments\fontclass\normalizedbodyfontsize#parameter\endcsname
@@ -1593,11 +1591,10 @@
      \lastnamedcs
      \ifchkdim\lastnamedcs\or\else
        \dimexpr\normalizedbodyfontsize\relax % we need a cheaper one
-     \fi
-   \relax}
+     \fi}}
 
 \permanent\def\bodyfontdimension#class#size#parameter#body%
-  {\the\dimexpr
+  {\todimension{%
             \ifcsname\??fontenvironments#class:\fontstyle#size#parameter\endcsname
      \orelse\ifcsname\??fontenvironments#class:\fontstyle\s!default#parameter\endcsname
      \orelse\ifcsname\??fontenvironments#class#size#parameter\endcsname
@@ -1612,8 +1609,7 @@
      \lastnamedcs
      \ifchkdim\lastnamedcs\or\else
        \dimexpr#body\relax % we need a cheaper one
-     \fi
-   \relax}
+     \fi}}
 
 %D In the following macros we use \type {\currentxfontsize} to hold the current
 %D x||size of the font. This enables us to support for instance \type {\sl} inside a

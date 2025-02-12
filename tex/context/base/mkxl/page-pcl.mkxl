@@ -385,7 +385,7 @@
               {\ifcase\columndirection % nog document wide
                  \page_floats_flush\s!text\plusone
                \else
-                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+                 \page_floats_flush\s!text{\tointeger{\nofcollectedfloats-\recurselevel+1}}%
                \fi
                % this could happen at the lua end instead
                \scratchdimen{\wd\floatbox-\naturalfloatwd}%
@@ -476,7 +476,7 @@
               {\ifcase\columndirection % nog document wide
                  \page_floats_flush\s!text\plusone
                \else
-                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+                 \page_floats_flush\s!text{\tointeger{\nofcollectedfloats-\recurselevel+1}}%
                \fi
                % this could happen at the lua end instead
                \scratchdimen{\wd\floatbox-\naturalfloatwd}%

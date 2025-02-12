@@ -230,13 +230,13 @@
    \dowithnextboxcs\page_grd_set_indeed\hbox}
 
 \def\page_grd_set_indeed
-  {\clf_checkcolumnset {
-     name   {\currentpagegrid}
-     c      \dummyparameter\c!c
-     r      \dummyparameter\c!r
+  {\clf_checkcolumnset {%
+     name   {\currentpagegrid}%
+     c      {\dummyparameter\c!c}%
+     r      {\dummyparameter\c!r}%
      box    \nextbox
-     method {\dummyparameter\c!method}
-     option {\dummyparameter\c!option}
+     method {\dummyparameter\c!method}%
+     option {\dummyparameter\c!option}%
    }%
    \ifcase\c_page_grd_reserved_state
      \setbox\nextbox\vpack to \d_page_grd_reserved_height \bgroup
@@ -703,15 +703,15 @@
    %        {\letpagegridareaparameter\c!type\v!right}%
    %        {\letpagegridareaparameter\c!type\v!left}%
    % \fi
-     \clf_registercolumnsetarea {
-        name  {\currentpagegridarea}
+     \clf_registercolumnsetarea {%
+        name  {\currentpagegridarea}%
       % type  {\p_type}
       % page  \pagegridareaparameter\c!page
-        state {\pagegridareaparameter\c!state}
-        c     \pagegridareaparameter\c!x
-        r     \pagegridareaparameter\c!y
-        nc    \pagegridareaparameter\c!nx
-        nr    \pagegridareaparameter\c!ny
+        state {\pagegridareaparameter\c!state}%
+        c     {\pagegridareaparameter\c!x}%
+        r     {\pagegridareaparameter\c!y}%
+        nc    {\pagegridareaparameter\c!nx}%
+        nr    {\pagegridareaparameter\c!ny}%
      }%
 \to \everydefinepagegridarea
 

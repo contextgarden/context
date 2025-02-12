@@ -161,16 +161,17 @@ local modes = {
 }
 
 local filters = {
-    vglue    = 0x0001,
-    hglue    = 0x0002,
- -- mglue    = 0x0004,
-    vkern    = 0x0010,
-    hkern    = 0x0020,
- -- mkern    = 0x0040,
-    vpenalty = 0x0100,
-    hpenalty = 0x0200,
- -- mpenalty = 0x0400,
-    toddler  = 0x1000,
+    vglue        = 0x0001,
+    hglue        = 0x0002,
+ -- mglue        = 0x0004,
+    vkern        = 0x0010,
+    hkern        = 0x0020,
+ -- mkern        = 0x0040,
+    vpenalty     = 0x0100,
+    hpenalty     = 0x0200,
+ -- mpenalty     = 0x0400,
+    toddler      = 0x1000,
+    continuation = 0x2000,
 }
 
 visualizers.modes   = modes
@@ -1165,9 +1166,10 @@ local ruledglyph do
     local isglyph             = nuts.isglyph
     local getoptions          = nuts.getoptions
 
-    local istoddler_code <const> = tex.glyphoptioncodes.istoddler
+    local istoddler_code      <const> = tex.glyphoptioncodes.istoddler
+    local iscontinuation_code <const> = tex.glyphoptioncodes.iscontinuation
 
-    ruledglyph = function(head,current,previous,glyph,toddler) -- wrong for vertical glyphs
+    ruledglyph = function(head,current,previous,glyph,toddler,continuation) -- wrong for vertical glyphs
         if not glyph then
             glyph = current
         end
@@ -1177,6 +1179,10 @@ local ruledglyph do
                 return head, current
             end
         end
+if continuation then
+    local options = getoptions(glyph)
+    continuation = (options & iscontinuation_code) == iscontinuation_code
+end
         local wd, ht, dp = getglyphdimensions(glyph)
         if wd ~= 0 then
             local next = getnext(current)
@@ -1196,6 +1202,9 @@ local ruledglyph do
             if toddler then
                 setlistcolor(info,"trace:g")
                 setlisttransparency(info,"trace:dg")
+            elseif continuation then
+                setlistcolor(info,"trace:b")
+                setlisttransparency(info,"trace:db")
             elseif char and type(char.unicode) == "table" then -- hackery test
                 -- ligature
                 setlistcolor(info,"trace:s")
@@ -2013,6 +2022,7 @@ do
         local vpenalty_code      <const> = filters.vpenalty
         local hpenalty_code      <const> = filters.hpenalty
         local toddler_code       <const> = filters.toddler
+        local continuation_code  <const> = filters.continuation
 
         local spaceskip_code     <const> = nodes.skipcodes.spaceskip
         local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
@@ -2104,7 +2114,8 @@ do
                 if trace_glyph then
                     local f = getattr(current,a_filter)
                     local t = f and (f & toddler_code) == toddler_code
-                    head, current = ruledglyph(head,current,previous,glyph,t)
+                    local c = f and (f & continuation_code) == continuation_code
+                    head, current = ruledglyph(head,current,previous,glyph,t,c)
                 end
                 if trace_expansion then
                     head, current = ruledglyphexpansion(head,current,glyph)

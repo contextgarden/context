@@ -1270,12 +1270,9 @@
 
 %D A few bonus macros:
 
-% todo: use \the\numexpr#1:#2\relax
-% todo: use \the\numexpr#1;#2\relax
-
-%permanent\def\modulonumber#1#2{\the\numexpr#2-((((#2+(#1/2))/#1)-1)*#1)\relax}
-\permanent\def\modulonumber#1#2{\the\numexpr#2-(#2:#1)*#1\relax}
-\permanent\def\dividenumber#1#2{\the\numexpr(#2-(#1/2))/#1\relax}
+%permanent\def\modulonumber#1#2{\tointeger{#2-((((#2+(#1/2))/#1)-1)*#1)}}
+\permanent\def\modulonumber#1#2{\tointeger {#2-(#2:#1)*#1}}
+\permanent\def\dividenumber#1#2{\tointeger{(#2-(#1/2))/#1}}
 
 %D These could be set at the \LUA\ end instead:
 

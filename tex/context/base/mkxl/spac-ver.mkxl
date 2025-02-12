@@ -879,7 +879,7 @@
       \usedbaselineskip   \the\usedbaselineskip
       \usedlineskip       \the\usedlineskip
       \usedlineskiplimit  \the\usedlineskiplimit
-      \noexpand\def\noexpand\normallineheight{\the\dimexpr\normallineheight}%
+      \noexpand\def\noexpand\normallineheight{\todimension{\normallineheight}}%
       \noexpand\normalbaselines}}
 
 %D This is the plain definition:

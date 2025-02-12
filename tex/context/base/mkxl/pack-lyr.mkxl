@@ -461,7 +461,7 @@
 \def\pack_layers_set_bottom_positions
   {\ifnum\p_pack_layers_line=\zerocount\else % can be < 0
 % {\ifzero\p_pack_layers_line\else % todo: test this
-     \edef\p_pack_layers_line{\the\numexpr-\p_pack_layers_line+\layoutlines+\plusone\relax}% use counter instead ?
+     \edef\p_pack_layers_line{\tointeger{-\p_pack_layers_line+\layoutlines+\plusone}}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_y_size>\zeropoint
      \advanceby\d_pack_layers_y_position-\d_pack_layers_y_size
@@ -472,7 +472,7 @@
 \def\pack_layers_set_right_positions
   {\ifnum\p_pack_layers_column=\zerocount\else % can be < 0
 % {\ifzero\p_pack_layers_column\else % todo: test this
-     \edef\p_pack_layers_column{\the\numexpr-\layerparameter\c!column+\layoutcolumns+\plusone\relax}% use counter instead ?
+     \edef\p_pack_layers_column{\tointeger{-\layerparameter\c!column+\layoutcolumns+\plusone}}% use counter instead ?
    \fi
    \ifdim\d_pack_layers_x_size>\zeropoint
      \advanceby\d_pack_layers_x_position-\d_pack_layers_x_size

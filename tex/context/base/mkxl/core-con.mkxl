@@ -460,9 +460,9 @@
    \getdummyparameters[#1]%
    \normalexpanded
      {\endgroup
-      \ifempty{\directdummyparameter\c!d}\else\normalday  \number\directdummyparameter\c!d\relax\fi
-      \ifempty{\directdummyparameter\c!m}\else\normalmonth\number\directdummyparameter\c!m\relax\fi
-      \ifempty{\directdummyparameter\c!y}\else\normalyear \number\directdummyparameter\c!y\relax\fi}}
+      \ifchknumber\directdummyparameter\c!d\or\normalday  \the\lastchknumber\relax\fi
+      \ifchknumber\directdummyparameter\c!m\or\normalmonth\the\lastchknumber\relax\fi
+      \ifchknumber\directdummyparameter\c!y\or\normalyear \the\lastchknumber\relax\fi}}
 
 \permanent\tolerant\protected\def\date[#1]#,[#2]% sets the date !
   {\dontleavehmode

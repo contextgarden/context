@@ -3081,7 +3081,7 @@ implement {
     actions   = structurestags.setupexport,
     arguments = {
         {
-            { "align" },
+            { "align" }, -- normally a number
             { "bodyfont", "dimen" },
             { "width", "dimen" },
             { "properties" },

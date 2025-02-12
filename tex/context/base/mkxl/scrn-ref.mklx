@@ -56,7 +56,7 @@
 % for now here, might become per link
 
 \appendtoks
-    \enabledirectives[destinations.offset=\the\dimexpr\interactionparameter\c!focusoffset\relax]%
+    \enabledirectives[destinations.offset=\todimension{\interactionparameter\c!focusoffset}]%
 \to \everysetupinteraction
 
 \mutable\lettonothing\currentinteractioncloseaction

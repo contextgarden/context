@@ -375,12 +375,12 @@
    \letdummyparameter\c!nc\plusone
    \letdummyparameter\c!nr\plusone
    \getdummyparameters[#1]%
-   \clf_blockcolumnset {
-     name {\currentcolumnset}
-     c  \dummyparameter\c!c
-     r  \dummyparameter\c!r
-     nc \dummyparameter\c!nc
-     nr \dummyparameter\c!nr
+   \clf_blockcolumnset {%
+     name {\currentcolumnset}%
+     c    {\dummyparameter\c!c}%
+     r    {\dummyparameter\c!r}%
+     nc   {\dummyparameter\c!nc}%
+     nr   {\dummyparameter\c!nr}%
    }%
    \endgroup}
 
@@ -574,7 +574,7 @@
               {\ifcase\columndirection % nog document wide
                  \page_floats_flush\s!text\plusone
                \else
-                 \page_floats_flush\s!text{\the\numexpr\nofcollectedfloats-\recurselevel+1\relax}%
+                 \page_floats_flush\s!text{\tointeger{\nofcollectedfloats-\recurselevel+1}}%
                \fi
                \ifdim\wd\floatbox>\makeupwidth % \hsize
                  \hbox to \makeupwidth{\hss\box\floatbox\hss}%
@@ -887,7 +887,7 @@
    \fi}
 
 \permanent\def\columnsetspanwidth#1% assumes equal distances, expanded
-  {\the\dimexpr
+  {\todimension{%
     \ifconditional\c_page_mvl_active
        #1\d_page_mvl_column_width
       +#1\d_page_mvl_distance
@@ -895,7 +895,7 @@
      \else
        \textwidth
      \fi
-   \relax}
+   }}
 
 % areas
 
@@ -924,15 +924,15 @@
 % lefttext and righttext or so
 
 \appendtoks
-     \clf_registercolumnsetarea {
-        name  {\currentcolumnsetarea}
-        kind  {\columnsetareaparameter\c!type}
-        sheet \columnsetareaparameter\c!sheet
-        state {\columnsetareaparameter\c!state}
-        c     \columnsetareaparameter\c!x
-        r     \columnsetareaparameter\c!y
-        nc    \columnsetareaparameter\c!nx
-        nr    \columnsetareaparameter\c!ny
+     \clf_registercolumnsetarea {%
+        name  {\currentcolumnsetarea}%
+        kind  {\columnsetareaparameter\c!type}%
+        sheet {\columnsetareaparameter\c!sheet}%
+        state {\columnsetareaparameter\c!state}%
+        c     {\columnsetareaparameter\c!x}%
+        r     {\columnsetareaparameter\c!y}%
+        nc    {\columnsetareaparameter\c!nx}%
+        nr    {\columnsetareaparameter\c!ny}%
      }%
 \to \everydefinecolumnsetarea
 
@@ -1822,9 +1822,9 @@
 \protected\def\page_mvl_command_test_column[#1][#2]% we ignore the second argument
   {\ifconditional\c_page_mvl_active
      \ifchknumber#1\or
-       \balanceboundary\plusfive#1\relax
+       \balanceboundary\plusfive\lastchknumber
      \orelse\ifchkdimension#1\or
-       \balanceboundary\plussix\number{#1}%
+       \balanceboundary\plussix\lastchkdimension
      \else
        % error
      \fi

@@ -632,13 +632,13 @@
    %
    \setupcurrentxtable[#settings]%
    %
-   \c_tabl_x_nx\directxtableparameter\c!nc\relax
-   \c_tabl_x_ny\directxtableparameter\c!nr\relax
+   \c_tabl_x_nx{\directxtableparameter\c!nc}%
+   \c_tabl_x_ny{\directxtableparameter\c!nr}%
    \ifnum\c_tabl_x_nx=\plusone
-     \c_tabl_x_nx\directxtableparameter\c!nx\relax
+     \c_tabl_x_nx{\directxtableparameter\c!nx}%
    \fi
    \ifnum\c_tabl_x_ny=\plusone
-     \c_tabl_x_ny\directxtableparameter\c!ny\relax
+     \c_tabl_x_ny{\directxtableparameter\c!ny}%
    \fi
    %
    \d_tabl_x_distance{\xtableparameter\c!distance}%

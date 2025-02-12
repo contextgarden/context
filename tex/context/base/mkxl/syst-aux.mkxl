@@ -1330,7 +1330,7 @@
 % todo: use the push back dimen trickery
 
 \permanent\def\percentdimen#1#2% dimen percentage (with %)
-  {\dimexpr{\clf_percentageof{#2}{#1}}}
+  {\dimexpr\clf_percentageof{#2}{#1}\relax}
 
 \permanent\protected\def\setpercentdimen#1#2% dimen percentage (with %)
   {#1=\clf_percentageof{#2}{#1}}
@@ -5191,8 +5191,8 @@
 % \dimensiontocount{10.49pt}\scratchcounter \the\scratchcounter / \numberofpoints{10.49pt}
 % \dimensiontocount{10.51pt}\scratchcounter \the\scratchcounter / \numberofpoints{10.51pt}
 
-\permanent\def\dimensiontocount#1#2{#2\numexpr\dimexpr{#1}/\maxcard\relax}
-\permanent\def\numberofpoints    #1{\tointeger{\dimexpr{#1}/\maxcard}}
+\permanent\def\dimensiontocount#1#2{#2\numexpr\dimexpr#1\relax/\maxcard\relax}
+\permanent\def\numberofpoints    #1{\tointeger{\dimexpr#1\relax/\maxcard}}
 
 %D \macros
 %D   {swapdimens,swapskips,swapcounts,swapmacros,
@@ -5278,10 +5278,10 @@
    \relax}
 
 \permanent\def\distributedhsize#1#2#3%
-  {\dimexpr{(1-\numexpr#3-1\relax\dimexpr{#2})/#3}}
+  {\dimexpr(#1-\numexpr#3-1\relax\dimexpr#2\relax)/#3\relax}
 
 \permanent\def\hsizefraction#1#2%
-  {\dimexpr{#1/#2}}
+  {\dimexpr#1/#2\relax}
 
 %D \macros
 %D   {doifvalue,doifnotvalue,doifelsevalue,
@@ -6338,7 +6338,7 @@
 \permanent\protected\def\setxquantity#1#2{\xdefcsname\??quantity#1\endcsname{\tointeger{#2}}} % quick way
 
 \permanent\def\quantity        {\the\quantitied}
-\permanent\def\quantitied    #1{\numexpr{\ifcsname\??quantity#1\endcsname\lastnamedcs\else\zeropoint\fi}}
+\permanent\def\quantitied    #1{\numexpr\ifcsname\??quantity#1\endcsname\lastnamedcs\else\zeropoint\fi\relax}
 \permanent\def\directquantity#1{\tointeger{#1}}
 
 % let\quantified\quantitied
@@ -6362,10 +6362,11 @@
 %D \macros
 %D   {doifdimensionelse}
 %D
-%D This is a dirty one: we simply append a unit and discard it when needed.
+%D This is a dirty one: we simply append a unit and discard it when needed. We no longer
+%D use this in core code because we just use th econditional.
 
 \permanent\def\doifelsedimension#1%
-  {\ifchkdim#1\or
+  {\ifchkdim#1\or % or \ifchkdimension
      \expandafter\firstoftwoarguments
    \else
      \expandafter\secondoftwoarguments
@@ -7137,7 +7138,7 @@
 %D This one is used in math-frc so don't change it
 
 \untraced\permanent\protected\def\glyphscaled#1% name will change
-  {\dimexpr{#1*\plusthousand/\glyphscale}}
+  {\dimexpr#1*\plusthousand/\glyphscale\relax}
 
 %D \macros {nologbuffering, linebuffering}
 %D

@@ -232,12 +232,12 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 switch (tex_scan_character("aoAO", 0, 0, 0)) {
                     case 'a': case 'A':
                         if (tex_scan_mandate_keyword("target", 2)) {
-                            target = tex_scan_integer(1, NULL);
+                            target = tex_scan_integer(1, NULL, NULL);
                         }
                         break;
                     case 'o': case 'O':
                         spec_packing = packing_exactly;
-                        spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL);
+                        spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         break;
                     default:
                         tex_aux_show_keyword_error("target|to");
@@ -288,18 +288,18 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             flag field. The keyword overloads an already given |move_cmd|.
                         */
                         if (tex_scan_mandate_keyword("shift", 2)) {
-                            shift = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            shift = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     case 'p': case 'P':
                         if (tex_scan_mandate_keyword("spread", 2)) {
                             spec_packing = packing_additional;
-                            spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            spec_amount = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     case 'o': case 'O':
                         if (tex_scan_mandate_keyword("source", 2)) {
-                            source = tex_scan_integer(1, NULL);
+                            source = tex_scan_integer(1, NULL, NULL);
                         }
                         break;
                     default:
@@ -371,12 +371,12 @@ tex_aux_show_keyword_error("direction|dir|discardable");
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("xoffset", 2)) {
-                            xoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            xoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("xmove", 2)) {
-                            xmove = tex_scan_dimension(0, 0, 0, 0, NULL);
+                            xmove = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     default:
@@ -388,12 +388,12 @@ tex_aux_show_keyword_error("direction|dir|discardable");
                 switch (tex_scan_character("omOM", 0, 0, 0)) {
                     case 'o': case 'O' :
                         if (tex_scan_mandate_keyword("yoffset", 2)) {
-                             yoffset = tex_scan_dimension(0, 0, 0, 0, NULL);
+                             yoffset = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     case 'm': case 'M' :
                         if (tex_scan_mandate_keyword("ymove", 2)) {
-                             ymove = tex_scan_dimension(0, 0, 0, 0, NULL);
+                             ymove = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                         }
                         break;
                     default:
@@ -411,7 +411,7 @@ tex_aux_show_keyword_error("direction|dir|discardable");
                             break;
                         case 't': case 'T' :
                             if (tex_scan_mandate_keyword("retain", 3)) {
-                                retain = tex_scan_integer(0, NULL);
+                                retain = tex_scan_integer(0, NULL, NULL);
                             }
                             break;
                         default:
@@ -3364,7 +3364,7 @@ void tex_run_unpackage(void)
                     stack ifs can get corrupted but I have no clue yet how that happens but temp
                     nodes have the same size so ...
                 */
-                halfword index = tex_scan_integer(0, NULL);
+                halfword index = tex_scan_integer(0, NULL, NULL);
                 if (tex_valid_insert_id(index)) {
                     halfword boxnode = tex_get_insert_content(index); /* also checks for id */
                     if (boxnode) {
@@ -4077,13 +4077,13 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                         case 't': case 'T':
                             if (tex_scan_mandate_keyword("to", 1)) {
                                 mode = packing_exactly;
-                                size = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                size = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         case 'u': case 'U':
                             if (tex_scan_mandate_keyword("upto", 1)) {
                                 mode = packing_additional;
-                                size = tex_scan_dimension(0, 0, 0, 0, NULL);
+                                size = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
                         default:
@@ -4265,14 +4265,14 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
         case flush_mvl_box_code:
             {
                 /*tex Scanning might move to the flush routine. */
-                halfword index = tex_scan_integer(0, NULL);
+                halfword index = tex_scan_integer(0, NULL, NULL);
                 boxnode = tex_flush_mvl(index);
             }
             break;
         case insert_box_code:
         case insert_copy_code:
             {
-                halfword index = tex_scan_integer(0, NULL);
+                halfword index = tex_scan_integer(0, NULL, NULL);
                 if (tex_valid_insert_id(index)) {
                     boxnode = tex_get_insert_content(index);
                     if (boxnode) {

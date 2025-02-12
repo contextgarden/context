@@ -894,7 +894,7 @@
 \permanent\untraced\protected\def\combinationwidth
   {\dimexpr
      (\textwidth-\effectiveleftskip-\effectiverightskip
-     -\numexpr\combinationparameter\c!nx-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
+     -\numexpr(\combinationparameter\c!nx)-\plusone\relax\dimexpr\combinationparameter\c!distance\relax
      )/(\combinationparameter\c!nx)%
    \relax}
 

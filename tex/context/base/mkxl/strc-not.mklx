@@ -1881,7 +1881,7 @@
   {\begingroup
    \setupcurrentnote[\c!location=]%
    \inheritednoteframed
-     {\doifelsedimension{\noteparameter\c!width}\donothing{\setexpandednoteparameter\c!width{\the\hsize}}%
+     {\ifchkdimension\noteparameter\c!width\or\else\setexpandednoteparameter\c!width{\the\hsize}\fi
       \startsimplecolumns[\c!distance=\noteparameter\c!columndistance,\c!n=\noteparameter\c!n,\c!width=\noteparameter\c!width]%
         \flushlocalnotes\currentnote
       \stopsimplecolumns}%

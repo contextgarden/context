@@ -461,7 +461,7 @@ void tex_expand_current_token(void)
                             }
                         case expand_parameter_code:
                             {
-                                halfword n = tex_scan_integer(0, NULL);
+                                halfword n = tex_scan_integer(0, NULL, NULL);
                                 if (n >= 0 && n < lmt_input_state.parameter_stack_data.ptr) {
                                     halfword p = lmt_input_state.parameter_stack[n];
                                     if (p) {
@@ -631,7 +631,7 @@ void tex_expand_current_token(void)
                                     so we don't need to optimize. If needed we can make a version
                                     where this is mandate.
                                 */
-                                int cattable = (code == retokenized_code || tex_scan_optional_keyword("catcodetable")) ? tex_scan_integer(0, NULL) : cat_code_table_par; /* no _optional_ here ? */
+                                int cattable = (code == retokenized_code || tex_scan_optional_keyword("catcodetable")) ? tex_scan_integer(0, NULL, NULL) : cat_code_table_par; /* no _optional_ here ? */
                                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
                                 strnumber u = tex_save_cur_string();
                                 halfword s = tex_scan_toks_expand(0, NULL, 0, 0);

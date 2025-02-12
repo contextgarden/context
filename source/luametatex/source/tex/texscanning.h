@@ -79,13 +79,13 @@ extern void        tex_scan_something_simple          (halfword cmd, halfword co
 extern void        tex_scan_left_brace                (void);
 extern void        tex_scan_optional_equals           (void);
 extern int         tex_scan_cardinal                  (int optional_equal, unsigned *value, int dontbark);
-extern halfword    tex_scan_integer                   (int optional_equal, int *radix);
+extern halfword    tex_scan_integer                   (int optional_equal, int *radix, int *grouped);
 extern void        tex_scan_integer_validate          (void);
 extern halfword    tex_scan_positive_integer          (int optional_equal);
 extern halfword    tex_scan_scale                     (int optional_equal);
 extern halfword    tex_scan_scale_factor              (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
-extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order);
+extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped);
 extern void        tex_scan_dimension_validate        (void);
 extern halfword    tex_scan_glue                      (int level, int optional_equal, int options_too);
 extern halfword    tex_scan_font                      (int optional_equal);

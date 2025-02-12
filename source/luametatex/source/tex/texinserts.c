@@ -474,7 +474,7 @@ halfword tex_scan_insert_index(void)
             }
             break;
         case class_insert_mode:
-            index = tex_scan_integer(0, NULL);
+            index = tex_scan_integer(0, NULL, NULL);
             if (! tex_valid_insert_id(index)) {
                 index = 0;
             }
@@ -568,13 +568,13 @@ void tex_run_insert(void)
                 goto DONE;
             case 'c': case 'C':
                 if (tex_scan_mandate_keyword("callback", 1)) {
-                    callback = tex_scan_integer(0, NULL);
+                    callback = tex_scan_integer(0, NULL, NULL);
                 }
                 break;
             case 'd': case 'D':
                 /* identifier */
                 if (tex_scan_mandate_keyword("data", 1)) {
-                    data = tex_scan_integer(0, NULL);
+                    data = tex_scan_integer(0, NULL, NULL);
                 }
                 break;
             case 'i': case 'I':

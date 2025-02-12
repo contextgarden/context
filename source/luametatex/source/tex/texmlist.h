@@ -30,7 +30,6 @@ typedef enum mlist_to_hlist_contexts {
     m_to_h_engine   = 7,
 } mlist_to_hlist_contexts;
 
-extern void     tex_mlist_to_hlist_prepare  (void);
 extern void     tex_run_mlist_to_hlist      (halfword p, halfword penalties, halfword style, int beginclass, int endclass);
 extern halfword tex_mlist_to_hlist          (halfword, int penalties, int mainstyle, int beginclass, int endclass, kernset *kerns, int where);
 extern halfword tex_make_extensible         (halfword fnt, halfword chr, scaled target, scaled min_overlap, int horizontal, halfword att, halfword size);

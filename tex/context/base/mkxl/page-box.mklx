@@ -97,10 +97,12 @@
      \expandafter\gobbleoneargument
    \fi}
 
+% \ifnum{((\layoutparameter\c!nx)>\plusone) > 1) or ((\layoutparameter\c!ny)>\plusone) > 1)}
+
 \def\page_boxes_apply_replicate
-  {\ifnum\layoutparameter\c!nx>\plusone
+  {\ifnum{\layoutparameter\c!nx}>\plusone
      \expandafter\page_boxes_apply_replicate_indeed
-   \orelse\ifnum\layoutparameter\c!ny>\plusone
+   \orelse\ifnum{\layoutparameter\c!ny}>\plusone
      \expandafter\page_boxes_apply_replicate_indeed
    \else
      \expandafter\gobbleoneargument

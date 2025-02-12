@@ -495,14 +495,14 @@
 
 % expandable ... in a future version the space will go (in mp one can use Overlay*)
 
-\mutable  \def\overlaywidth        {\the\d_overlay_width       \relaxedspace} % We preset the variables
-\mutable  \def\overlayheight       {\the\d_overlay_height      \relaxedspace} % to some reasonable default
-\mutable  \def\overlaydepth        {\the\d_overlay_depth       \relaxedspace} % values.
-\mutable  \def\overlayoffset       {\the\d_overlay_offset      \relaxedspace} % of the frame can be (are)
-\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth   \relaxedspace} % set somewhere else.
-\mutable  \def\overlaymathaxis     {\the\d_overlay_mathaxis    \relaxedspace} % set somewhere else.
-\mutable  \def\overlaymathexheight {\the\d_overlay_mathexheight\relaxedspace} % set somewhere else.
-\mutable  \def\overlaymathemwidth  {\the\d_overlay_mathemwidth \relaxedspace} % set somewhere else.
+\mutable  \def\overlaywidth        {\the\d_overlay_width       \space} % We preset the variables
+\mutable  \def\overlayheight       {\the\d_overlay_height      \space} % to some reasonable default
+\mutable  \def\overlaydepth        {\the\d_overlay_depth       \space} % values.
+\mutable  \def\overlayoffset       {\the\d_overlay_offset      \space} % of the frame can be (are)
+\mutable  \def\overlaylinewidth    {\the\d_overlay_linewidth   \space} % set somewhere else.
+\mutable  \def\overlaymathaxis     {\the\d_overlay_mathaxis    \space} % set somewhere else.
+\mutable  \def\overlaymathexheight {\the\d_overlay_mathexheight\space} % set somewhere else.
+\mutable  \def\overlaymathemwidth  {\the\d_overlay_mathemwidth \space} % set somewhere else.
 \mutable  \def\overlayregion       {\m_overlay_region}
 
 \mutable  \def\overlayradius       {\todimension{\framedparameter\c!frameradius}}
@@ -1459,7 +1459,7 @@
  % \fi
    \edef\framedwidth {\the\ifdim\d_framed_width >\zeropoint\d_framed_width \else\zeropoint\fi}% public
    \edef\framedheight{\the\ifdim\d_framed_height>\zeropoint\d_framed_height\else\zeropoint\fi}% public
-   \edef\framedoffset{\the\dimexpr\ifconditional\c_framed_has_offset\localoffset\else\zeropoint\fi\relax}% public
+   \edef\framedoffset{\the\ifconditional\c_framed_has_offset\dimexpr\localoffset\relax\else\zeropoint\fi}% public
    % for now: i need to think of something better
  % \bitwiseflip \normalizelinemode -\clipwidthnormalizecode % now handled in analyzer
    % but that's for later

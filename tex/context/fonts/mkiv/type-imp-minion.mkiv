@@ -14,12 +14,17 @@
 % \definefontfallback[MinionMathFallback]    [file:latinmodern-math.otf][uppercasescript]
 % \definefontfallback[MinionBoldMathFallback][file:latinmodern-math.otf][uppercasescript]
 
-% If one wants kerns, minion doesn't enable them for math:
+% \definefontfeature[minion:mathhack] [kern={script=dflt,language=dflt}]
+% \definefontfeature[minion:mathextra][kern={script=dflt,language=dflt}] % issues message
 %
-% \definefontfeature[math]              [mathematics] [script=dflt,ssty=no]
-% \definefontfeature[math-text]         [mathematics] [script=dflt,ssty=no]
-% \definefontfeature[math-script]       [mathematics] [script=dflt,ssty=1]
-% \definefontfeature[math-scriptscript] [mathematics] [script=dflt,ssty=2]
+% \setupbodyfont[minion]
+%
+% \starttext
+%     $ff$
+% \stoptext
+%
+% Watch out: [kern=always] won't work here as that is an node mode trick. This is actually not something
+% that one should use. It's for Mikael and Hans eyes only because they wanted t check the engine.
 
 \starttypescriptcollection[minion]
 
@@ -40,15 +45,17 @@
     \stoptypescript
 
     \starttypescript [\s!math][minion][\s!all]
+        \loadfontgoodies[minion]
         \loadfontgoodies[minion-math]
-        \definefontsynonym[\s!MathRoman]    [Minion-Math]    [\s!features={\s!math\mathsizesuffix,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionMathFallback]
-        \definefontsynonym[\s!MathRomanBold][Minion-BoldMath][\s!features={\s!math\mathsizesuffix,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionBoldMathFallback]
+        \definefontsynonym[\s!MathRoman]    [Minion-Math]    [\s!features={minion:mathhack,\s!math\mathsizesuffix,minion:mathextra,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionMathFallback]
+        \definefontsynonym[\s!MathRomanBold][Minion-BoldMath][\s!features={minion:mathhack,\s!math\mathsizesuffix,minion:mathextra,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionBoldMathFallback]
     \stoptypescript
 
     \starttypescript [\s!math][minion-medium][\s!all]
+        \loadfontgoodies[minion]
         \loadfontgoodies[minion-math]
-        \definefontsynonym[\s!MathRoman]    [Minion-Math]      [\s!features={\s!math\mathsizesuffix,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionMathFallback]
-        \definefontsynonym[\s!MathRomanBold][Minion-MediumMath][\s!features={\s!math\mathsizesuffix,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionBoldMathFallback]
+        \definefontsynonym[\s!MathRoman]    [Minion-Math]      [\s!features={minion:mathhack,\s!math\mathsizesuffix,minion:mathextra,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionMathFallback]
+        \definefontsynonym[\s!MathRomanBold][Minion-MediumMath][\s!features={minion:mathhack,\s!math\mathsizesuffix,minion:mathextra,mathextra},\s!designsize=\s!auto,\s!goodies=minion-math] % ,\s!fallbacks=MinionBoldMathFallback]
     \stoptypescript
 
     \starttypescript [minion,minion-medium]

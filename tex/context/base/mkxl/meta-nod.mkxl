@@ -124,8 +124,8 @@
    \clf_grph_nodes_initialize
    \startMPcode
      mfun_node_init(%
-        \the\dimexpr\metanodesparameter\c!dx\relax,%
-        \the\dimexpr\metanodesparameter\c!dy\relax,%
+        \todimension{\metanodesparameter\c!dx},%
+        \todimension{\metanodesparameter\c!dy},%
         \metanodesparameter\c!rotation%
      ) ;
      \the\t_meta_nodes ;
@@ -214,7 +214,7 @@
      \fi
      \space
      \ifempty\p_rulethickness \else
-       withpen pencircle scaled \the\dimexpr\p_rulethickness\relax
+       withpen pencircle scaled \todimension{\p_rulethickness} %
      \fi
      ;%
    }}}
