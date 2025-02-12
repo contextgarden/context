@@ -561,7 +561,11 @@ do
 
     local cache = table.setmetatableindex("table")
 
-    callbacks.register("missing_character", function(n,f,c)
+    -- local c = tex.getmissingcharactervalues()
+    --
+    -- where: textglyph mathglyph mathkernel
+
+    callbacks.register("missing_character", function(where,n,f,c)
         local cached = cache[f]
         local found  = cached[c]
         if found == nil then

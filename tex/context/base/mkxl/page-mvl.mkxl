@@ -111,7 +111,6 @@
    \c!maxheight=\textheight,
    \c!maxwidth=\makeupwidth]
 
-
 %         lineheight \strutht
 %         linedepth  \strutdp
 %       \ifchkdimension\p_width\or
@@ -119,7 +118,6 @@
 %       \fi
 %         distance   \d_page_mvl_distance
 %         maxwidth   \d_page_mvl_max_width
-
 
 \appendtoks % could become an option
     \ifempty\currentcolumnset\else

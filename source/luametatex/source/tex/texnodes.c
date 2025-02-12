@@ -889,7 +889,8 @@ void lmt_nodelib_initialize(void) {
     */
 
     lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0 };
-    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(lmtxexpression),  .visible = 0 };
+    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(lmtxexpression), .lua = lua_key_index(lmtxexpression),  .visible = 0 };
+    lmt_interface.node_data[rpn_expression_node] = (node_info) { .id = rpn_expression_node, .size = rpn_expression_node_size, .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(rpnexpression),  .lua = lua_key_index(rpnexpression),   .visible = 0 };
     lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0 };
     lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0 };
     lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0 };
@@ -1511,7 +1512,6 @@ static inline void tex_aux_free_sub_node(halfword source)
 }
 
 /* We don't need the checking for attributes if we make these lists frozen. */
-
 
 void tex_flush_node(halfword p)
 {
@@ -3654,17 +3654,17 @@ halfword tex_new_char_node(quarterword subtype, halfword fnt, halfword chr, int 
         set_glyph_slant(p, glyph_slant_par);
         set_glyph_weight(p, glyph_weight_par);
     }
-    if (! tex_char_exists(fnt, chr)) {
-        int callback_id = lmt_callback_defined(missing_character_callback);
-        if (callback_id > 0) {
-            /* maybe direct node */
-            lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Ndd->", p, fnt, chr);
-        }
-    } else {
+    if (tex_char_exists(fnt, chr)) {
         tex_char_process(fnt, chr);
+    } else { 
+        tex_missing_character(p, fnt, chr, missing_character_text_glyph);
     }
     return p;
 }
+
+/*tex
+    This one is called in the lua node interface so we assume checking being done at that end. 
+*/
 
 halfword tex_new_text_glyph(halfword fnt, halfword chr)
 {

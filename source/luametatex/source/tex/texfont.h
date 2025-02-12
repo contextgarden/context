@@ -526,7 +526,7 @@ typedef enum char_tag_codes {
 } char_tag_codes;
 
 /*tex
-    These low level setters are not publis and used in helpers. They might become functions
+    These low level setters are not public and used in helpers. They might become functions
     when I feel the need.
 */
 
@@ -725,6 +725,12 @@ typedef enum math_extension_locations {
 } math_extension_locations;
 */
 
+typedef enum missing_character_locations {
+    missing_character_text_glyph  = 0x01,
+    missing_character_math_glyph  = 0x02,
+    missing_character_math_kernel = 0x03,
+} missing_character_locations;
+
 extern halfword      tex_checked_font          (halfword f);
 extern int           tex_is_valid_font         (halfword f);
 extern int           tex_raw_get_kern          (halfword f, int lc, int rc);
@@ -739,7 +745,6 @@ extern void          tex_undump_font_data      (dumpstream f);
 extern void          tex_create_null_font      (void);
 extern void          tex_delete_font           (int id);
 extern int           tex_read_font_info        (char *cnom, scaled s);
-extern int           tex_fix_expand_value      (halfword f, int e);
 
 extern halfword      tex_handle_glyphrun       (halfword head, halfword group, halfword direction);
 extern halfword      tex_handle_ligaturing     (halfword head, halfword tail);
@@ -748,7 +753,7 @@ extern halfword      tex_handle_kerning        (halfword head, halfword tail);
 extern void          tex_set_cur_font          (halfword g, halfword f);
 extern int           tex_tex_def_font          (int a);
 
-extern void          tex_char_warning          (halfword f, int c);
+extern void          tex_missing_character     (halfword n, halfword f, halfword c, halfword where);
 
 extern void          tex_initialize_fonts      (void);
 

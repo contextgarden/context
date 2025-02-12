@@ -745,11 +745,11 @@ static void tex_aux_complain_missing_csname(void)
 //     return m;
 // }
 
-static inline int tex_aux_chr_to_buffer(unsigned char *b, int m, int c)
-{
-    b[m++] = (unsigned char) c;
-    return m;
-}
+// static inline int tex_aux_chr_to_buffer(unsigned char *b, int m, int c)
+// {
+//     b[m++] = (unsigned char) c;
+//     return m;
+// }
 
 static inline int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
 {

@@ -1425,8 +1425,7 @@ and get:
 \typebuffer \getbuffer[show:3]
 
 The next set of examples demonstrates that the \type {\noscript} injects a bogus
-atom that breaks the alignment chain. You probably never needs this feature which
-is kind of a left-over that we keep around.
+atom that breaks the alignment chain.
 
 \startbuffer
 \im { F ^ {a}
@@ -1457,6 +1456,19 @@ is kind of a left-over that we keep around.
 } \quad
 \im { F ^ {a} _{a}
     ___ {a}  ___ {a} \noscript ___ {a} ___ {a}
+}
+\stopbuffer
+
+\typebuffer \getbuffer[show:3]
+
+A more useful application of this is the following:
+
+\startbuffer
+\im {F
+    __ {a} \noscript
+    ^^ {b} \noscript
+    ^^ {c} \noscript
+    __ {d}
 }
 \stopbuffer
 

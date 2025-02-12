@@ -219,6 +219,7 @@ typedef enum macro_preamble_states {
 # define underscore_token        (other_token  + '_')
 # define underscore_token_o      (other_token  + '_')
 # define underscore_token_l      (letter_token + '_')
+# define underscore_token_s      (subscript_token + '_')
 # define circumflex_token        (other_token  + '^')
 # define circumflex_token_o      (other_token  + '^')
 # define circumflex_token_l      (letter_token + '^')
@@ -253,25 +254,28 @@ typedef enum macro_preamble_states {
 # define tilde_token             (other_token  + '~')
 # define tilde_token_l           (letter_token + '~')
 # define tilde_token_o           (other_token  + '~')
-
-# define element_token                  (other_token + 0x2208) // ∈
-# define not_element_token              (other_token + 0x2209) // ∉
-# define not_equal_token                (other_token + 0x2260) // ≠
-# define less_or_equal_token            (other_token + 0x2264) // ≤
-# define more_or_equal_token            (other_token + 0x2265) // ≥ 
-# define not_less_or_equal_token__token (other_token + 0x2270) // ≰
-# define not_more_or_equal_token__token (other_token + 0x2271) // ≱ 
-# define plus_minus_token               (other_token + 0x00B1) // ± plus minus  
-# define minus_plus_token               (other_token + 0x2213) // ∓ minus plus 
-
-# define logical_nor _token             (other_token + 0x22BD) // ⊽
-# define logical_nand_token             (other_token + 0x22BC) // ⊼
-# define logical_xnor_token             (other_token + 0x2299) // ⊙
-
-# define conditional_and_token          (other_token + 0x2227) // ∧
-# define conditional_or_token           (other_token + 0x2228) // ∨
-
+# define at_sign_token_l         (letter_token + '@')
+# define at_sign_token_o         (other_token  + '@')
+# define dollar_token_l          (letter_token + '$')
+# define dollar_token_o          (other_token  + '$')
 # define dollar_token_m          (math_shift_token + '$')
+
+# define element_token           (other_token + 0x2208) // ∈
+# define not_element_token       (other_token + 0x2209) // ∉
+# define not_equal_token         (other_token + 0x2260) // ≠
+# define less_or_equal_token     (other_token + 0x2264) // ≤
+# define more_or_equal_token     (other_token + 0x2265) // ≥ 
+# define not_less_or_equal_token (other_token + 0x2270) // ≰
+# define not_more_or_equal_token (other_token + 0x2271) // ≱ 
+# define plus_minus_token        (other_token + 0x00B1) // ± plus minus  
+# define minus_plus_token        (other_token + 0x2213) // ∓ minus plus 
+
+# define logical_nor_token       (other_token + 0x22BD) // ⊽
+# define logical_nand_token      (other_token + 0x22BC) // ⊼
+# define logical_xnor_token      (other_token + 0x2299) // ⊙
+
+# define conditional_and_token   (other_token + 0x2227) // ∧
+# define conditional_or_token    (other_token + 0x2228) // ∨
 
 # define a_token_l               (letter_token + 'a')  /*tex the smallest special hex digit */
 # define a_token_o               (other_token  + 'a')

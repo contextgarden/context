@@ -293,9 +293,9 @@ int tex_show_math_fraction_record(void)
 /* */
 
 typedef enum saved_radical_entries {
-    saved_radical_degree_done_entry  = 0, /* value_1 */
-    saved_radical_style_entry        = 0, /* value_2 */
-    saved_radical_n_of_records       = 1,
+    saved_radical_degree_done_entry = 0, /* value_1 */
+    saved_radical_style_entry       = 0, /* value_2 */
+    saved_radical_n_of_records      = 1,
 } saved_radical_entries;
 
 # define saved_radical_degree_done saved_value_1(saved_radical_degree_done_entry)
@@ -689,7 +689,7 @@ static void tex_aux_unsave_math(void)
 /*tex
 
     Sometimes it is necessary to destroy an mlist. The following subroutine empties the current
-    list, assuming that |abs(mode) = mmode|  aka |is_m_mode(mode)|.
+    list, assuming that |abs(mode) = mmode| aka |is_m_mode(mode)|.
 
 */
 
@@ -4068,7 +4068,11 @@ void tex_run_math_script(void)
             }
             return; 
     }
-    if ((tail == cur_list.head) || (! tex_math_scripts_allowed(tail)) || (tex_math_no_more_scripts(tail))) { 
+    if (tail == cur_list.head) { 
+        tail = tex_math_double_atom(0);
+    } else if (tex_math_no_more_scripts(tail)) { 
+        tail = tex_math_double_atom(1);
+    } else if (! tex_math_scripts_allowed(tail)) { 
         tail = tex_math_double_atom(0);
     }
     switch (code) {

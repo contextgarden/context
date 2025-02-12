@@ -83,7 +83,7 @@
 \defcsname\??rubyplacement\v!right\endcsname#1#2%
   {#1%
    \edef\p_distance{\rubyparameter\c!distance}%
-   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip{\p_distance}\fi
+   \ifempty\p_distance\orelse\ifx\p_distance\v!none\else\hskip{\p_distance}\relax\fi
    \begingroup
    \userubystyleandcolor\c!style\c!color
    \rubyparameter\c!left#2\rubyparameter\c!right

@@ -5,7 +5,7 @@
 #include "utilmem.h"
 
 #define pp_malloc util_malloc
-//#define pp_callic util_calloc
+//#define pp_calloc util_calloc
 //#define pp_realloc util_realloc
 #define pp_free util_free
 

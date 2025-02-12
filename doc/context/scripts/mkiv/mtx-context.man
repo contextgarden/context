@@ -128,6 +128,9 @@ run without stopping and do not show messages on the console
 .B --nonstopmode
 run without stopping
 .TP
+.B --nocompactfonts
+revert to less efficient (traditional) font scaling
+.TP
 .B --nosynctex
 never initializes synctex (for production runs)
 .TP
@@ -135,7 +138,7 @@ never initializes synctex (for production runs)
 run with synctex enabled (better use \setupsynctex[state=start])
 .TP
 .B --nodates
-omit runtime dates in pdf file (optional value: a number (this 1970 offset time) or string "YYYY-MM-DD HH:MM")
+omit runtime dates in pdf file (optional value: a number (1970 offset) or string "YYYY-MM-DD HH:MM")
 .TP
 .B --nocompression
 forcefully turns off compression in the backend

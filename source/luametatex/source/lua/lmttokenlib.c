@@ -1313,7 +1313,7 @@ static int tokenlib_scandimension(lua_State *L)
     int inf = lua_toboolean(L, 1);
     int mu = lua_toboolean(L, 2);
     int eq = lua_toboolean(L, 3);
-    halfword order;
+    halfword order = normal_glue_order;
     halfword val = tex_scan_dimension(mu, inf, 0, eq, &order, NULL);
     lua_pushinteger(L, val);
     tokenlib_aux_unsave_tex_scanner(texstate);
@@ -1712,7 +1712,7 @@ static int tokenlib_scandimensionargument(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
     int wrapped = 0;
-    halfword order = 0;
+    halfword order = normal_glue_order;
     int inf = lua_toboolean(L, 1);
     int mu = lua_toboolean(L, 2);
     int eq = lua_toboolean(L, 3);

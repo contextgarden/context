@@ -93,90 +93,109 @@ function job.register(collected, tobesaved, initializer, finalizer, serializer)
 end
 
 -- as an example we implement variables
-
-local tobesaved, collected, checksums = allocate(), allocate(), allocate()
-
-local jobvariables = {
-    collected = collected,
-    tobesaved = tobesaved,
-    checksums = checksums,
-}
-
+--
 -- if not checksums.old then checksums.old = md5.HEX("old") end -- used in experiment
 -- if not checksums.new then checksums.new = md5.HEX("new") end -- used in experiment
 
-job.variables = jobvariables
+do
 
-local function initializer()
-    checksums = jobvariables.checksums
-end
+    local tobesaved = allocate()
+    local collected = allocate()
+    local checksums = allocate()
 
-job.register('job.variables.checksums', 'job.variables.checksums', initializer)
+    local jobvariables = {
+        collected = collected,
+        tobesaved = tobesaved,
+        checksums = checksums,
+    }
 
-local rmethod, rvalue
-local collectedmacros, tobesavedmacros
+    job.variables = jobvariables
 
-local ctx_setxvalue = context.setxvalue
-
-local function initializer()
-    tobesaved = jobvariables.tobesaved
-    collected = jobvariables.collected
-    --
-    rvalue = collected.randomseed
-    if not rvalue then
-        rvalue = getrandom("initialize")
-        setrandomseedi(rvalue)
-        rmethod = "initialized"
-    else
-        setrandomseedi(rvalue)
-        rmethod = "resumed"
+    local function initializer()
+        checksums = jobvariables.checksums
     end
-    tobesaved.randomseed = rvalue
-    --
-    collectedmacros = collected.macros
-    tobesavedmacros = tobesaved.macros
-    if not collectedmacros then
-        collectedmacros  = { }
-        collected.macros = collectedmacros
-    end
-    if not tobesavedmacros then
-        tobesavedmacros  = { }
-        tobesaved.macros = tobesavedmacros
-    end
-    -- will become collected.macros
-    for cs, value in next, collectedmacros do
-        if type(value) == "string" then -- safeguard
-            ctx_setxvalue(cs,value)
+
+    job.register('job.variables.checksums', 'job.variables.checksums', initializer)
+
+    local rmethod, rvalue
+
+    statistics.register("randomizer", function()
+        if rmethod and rvalue then
+            return format("%s with value %s",rmethod,rvalue)
+        end
+    end)
+
+    local collectedmacros
+    local tobesavedmacros
+
+ -- local setmacro = context.setxvalue
+    local setmacro = token.setmacro
+
+    local function initializer(indeed)
+        if indeed then
+            -- can be changed due to packing
+            collected              = indeed
+            jobvariables.collected = indeed
+        end
+        --
+        rvalue = collected.randomseed
+        if not rvalue then
+            rvalue = getrandom("initialize")
+            setrandomseedi(rvalue)
+            rmethod = "initialized"
+        else
+            setrandomseedi(rvalue)
+            rmethod = "resumed"
+        end
+        collected.randomseed = rvalue
+        tobesaved.randomseed = rvalue
+        --
+        collectedmacros = collected.macros
+        tobesavedmacros = tobesaved.macros
+        if not collectedmacros then
+            collectedmacros  = { }
+            collected.macros = collectedmacros
+        end
+        if not tobesavedmacros then
+            tobesavedmacros  = { }
+            tobesaved.macros = tobesavedmacros
+        end
+        -- will become collected.macros
+        for cs, value in next, collectedmacros do
+            if type(value) == "string" then -- safeguard
+                setmacro(cs,value,"global")
+            end
         end
     end
-end
 
-job.register('job.variables.collected', tobesaved, initializer)
+    job.register('job.variables.collected', tobesaved, initializer)
 
-function jobvariables.save(cs,value)
-    tobesavedmacros[cs] = value
-end
+    function jobvariables.save(cs,value)
+        tobesavedmacros[cs] = value
+    end
 
-function jobvariables.restore(cs)
-    return collectedmacros[cs] or tobesavedmacros[cs]
-end
+    function jobvariables.restore(cs)
+        return collectedmacros[cs] or tobesavedmacros[cs]
+    end
 
-function job.getrandomseed()
-    return tobesaved.randomseed or getrandomseed()
-end
+    function job.getrandomseed()
+        return tobesaved.randomseed or getrandomseed()
+    end
 
--- checksums
+    -- checksums
 
-function jobvariables.getchecksum(tag)
-    return checksums[tag] -- no default
-end
+    function jobvariables.getchecksum(tag)
+        return checksums[tag] -- no default
+    end
 
-function jobvariables.makechecksum(data)
-    return data and md5.HEX(data) -- no default
-end
+    function jobvariables.makechecksum(data)
+        return data and md5.HEX(data) -- no default
+    end
 
-function jobvariables.setchecksum(tag,checksum)
-    checksums[tag] = checksum
+    function jobvariables.setchecksum(tag,checksum)
+        checksums[tag] = checksum
+    end
+
 end
 
 --
@@ -199,6 +218,7 @@ local skiplist = {
     "datasets",
     "userdata",
     "positions",
+--     "variables",
 }
 
 -- I'm not that impressed by the savings. It's some 5 percent on the luametatex
@@ -365,11 +385,13 @@ function job.load(filename)
             end
         end
     end
+    -- why not inside previous if
     for i=1,#savelist do
         local list        = savelist[i]
+        local target      = list[1]
         local initializer = list[3]
         if type(initializer) == "function" then
-            initializer(utilitydata and accesstable(list[1],utilitydata) or nil)
+            initializer(utilitydata and accesstable(target,utilitydata) or nil)
         end
     end
     statistics.stoptiming(loadedfiles)
@@ -452,12 +474,6 @@ statistics.register("callbacks", function()
         return result
     end
     return result
-end)
-
-statistics.register("randomizer", function()
-    if rmethod and rvalue then
-        return format("%s with value %s",rmethod,rvalue)
-    end
 end)
 
 function statistics.formatruntime(runtime)

@@ -1698,22 +1698,29 @@ int tex_tex_def_font(int a)
 }
 
 /*tex
+
     When \TEX\ wants to typeset a character that doesn't exist, the character node is not created;
     thus the output routine can assume that characters exist when it sees them. The following
-    procedure prints a warning message unless the user has suppressed it.
+    procedure prints a warning message unless the user has suppressed it. When this feature was 
+    extended in \LUATEX\ (2025) that was a good moment to get rid of the one occasion where we did
+    not yet use the callback but the message instead (in math because then we really need the 
+    character). Contrary to \LUATEX\ we never error because the backend where all is resolved can 
+    do that if needed. 
+
 */
 
-void tex_char_warning(halfword f, int c)
+void tex_missing_character(halfword n, halfword f, halfword c, halfword where) 
 {
-    if (tracing_lost_chars_par > 0) {
-        /*tex saved value of |tracing_online| */
+    int callback_id = lmt_callback_defined(missing_character_callback);
+    if (callback_id > 0) {
+        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dNdd->", where, n, f, c);
+    } else if (tracing_lost_chars_par > 0) { 
         int old_setting = tracing_online_par;
-        /*tex index to current digit; we assume that $0\L n<16^{22}$ */
         if (tracing_lost_chars_par > 1) {
             tracing_online_par = 1;
         }
         tex_begin_diagnostic();
-        tex_print_format("[font: missing character, character %c (%U), font '%s']", c, c, font_name(f));
+        tex_print_format("[font: missing character, character %c (%U), font '%s', location %i]", c, c, font_name(f), where);
         tex_end_diagnostic();
         tracing_online_par = old_setting;
     }

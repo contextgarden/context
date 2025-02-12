@@ -1196,6 +1196,7 @@ make_lua_key(L, relation);\
 make_lua_key(L, relax);\
 make_lua_key(L, remove_item);\
 make_lua_key(L, repeat);\
+make_lua_key(L, rpnexpression);\
 make_lua_key(L, replace);\
 make_lua_key(L, report);\
 make_lua_key(L, reserved);\

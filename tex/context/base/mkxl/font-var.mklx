@@ -69,9 +69,9 @@
      \expand\everycompactfontmode
      \global\everycompactfontmode\emptytoks
      \glettonothing\font_enable_compact_font_mode
-     \writestatus\m!fonts\empty
-     \writestatus\m!fonts{compact font mode enabled}%
-     \writestatus\m!fonts\empty
+     %writestatus\m!fonts\empty
+     %writestatus\m!fonts{compact font mode enabled}%
+     %writestatus\m!fonts\empty
    \else
      \font_ignore_compact_font_mode
      \font_enable_compact_font_mode
@@ -79,9 +79,9 @@
 
 \protected\def\font_ignore_compact_font_mode
   {\gdef\font_enable_compact_font_mode
-     {\writestatus\m!fonts\empty
-      \writestatus\m!fonts{compact font mode cannot be enabled}%
-      \writestatus\m!fonts\empty
+     {%writestatus\m!fonts\empty
+      %writestatus\m!fonts{compact font mode cannot be enabled}%
+      %writestatus\m!fonts\empty
       \glettonothing\font_enable_compact_font_mode
       \glettonothing\font_ignore_compact_font_mode}}
 

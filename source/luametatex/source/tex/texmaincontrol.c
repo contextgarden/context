@@ -3513,6 +3513,7 @@ static void tex_aux_run_remove_item(void)
 //        cur_list.tail = p;
 //    }
     } else {
+//  } else if (tail != head) {
         /*tex
             Officially we don't need to check what we remove because it can be only one of
             three, unless one creates one indendently (in \LUA). So, we just do check and
@@ -3538,7 +3539,7 @@ static void tex_aux_run_remove_item(void)
                     return;
                 }
             case boundary_node :
-                if (node_subtype(tail) == user_boundary && code == boundary_item_code) {
+                if (code == boundary_item_code && node_subtype(tail) == user_boundary) {
                     break;
                 } else {
                     return;
@@ -3546,26 +3547,27 @@ static void tex_aux_run_remove_item(void)
             default:
                 return;
         }
-        {
-            /*tex
-                There is some magic testing here that makes sure we don't mess up any discretionary
-                nodes. But why do we care?
-            */
-            halfword p;
-            do {
-                p = head;
-                if (p == tail && node_type(head) == disc_node) {
-                    return;
-                } else {
-                    head = node_next(p);
-                }
-            } while (head != tail);
-            node_next(p) = null;
-            tex_flush_node_list(tail);
-            cur_list.tail = p;
-        }
+        tex_flush_node(tail);
+        tex_pop_tail();
+//        {
+//            /*tex
+//                There is some magic testing here that makes sure we don't mess up any discretionary
+//                nodes. But why do we care?
+//            */
+//            halfword p;
+//            do {
+//                p = head;
+//                if (p == tail && node_type(head) == disc_node) {
+//                    return;
+//                } else {
+//                    head = node_next(p);
+//                }
+//            } while (head != tail);
+//            node_next(p) = null;
+//            tex_flush_node_list(tail);
+//            cur_list.tail = p;
+//        }
     }
-
 }
 
 /*tex

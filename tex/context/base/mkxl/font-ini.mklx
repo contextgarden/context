@@ -469,16 +469,6 @@
 
 \installcorenamespace{fontnormalizedbody}
 
-% \permanent\protected\def\normalizebodyfontsize#macro#body%
-%   {\expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\dimexpr#body\endcsname
-%    \ifrelax#macro%
-%       \normalizebodyfontsize_indeed#macro{#body}%
-%    \fi}
-%
-% \def\normalizebodyfontsize_indeed#macro#body%
-%   {\edef#macro{\clf_normalizedbodyfontsize\dimexpr#body\relax}%
-%    \gletcsname\??fontnormalizedbody\number\dimexpr#body\endcsname#macro}
-
 \permanent\protected\def\normalizebodyfontsize#macro#body%
   {\scratchdimen\ifchkdimension#body\or\lastchkdimension\else#body\dimexpr\fontbody\relax\fi
    \expandafter\let\expandafter#macro\csname\??fontnormalizedbody\number\scratchdimen\endcsname
@@ -1207,11 +1197,6 @@
      \expandafter\font_basics_define_font_b
    \fi[#1][#2][#3]}
 
-% \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
-%   {\doifelsesetups{#settings}%
-%      {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}}
-%      {\mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_parameters{#name}{#specification}{#settings}}}}
-
 \def\font_basics_define_font_a[#name][#specification][#settings]% [name][spec][1.6 | line=10pt | setup_id]
   {\ifsetups{#settings}%
      \mutable\protected\defcsname#name\endcsname{\font_basics_define_font_with_setups    {#name}{#specification}{#settings}}%
@@ -1325,15 +1310,6 @@
 
 \installcorenamespace{fontenvironments}
 
-% \permanent\def\currentfontbodysize % gets number (the normal sa 1 etc)
-%   {\ifcsname\??fontenvironments\fontclass\s!default\somefontsize\endcsname
-%      \lastnamedcs
-%    \orelse\ifcsname\??fontenvironments\s!default\somefontsize\endcsname
-%      \lastnamedcs
-%    \else
-%      \somefontsize
-%    \fi}
-
 \permanent\def\currentfontbodysize % gets number (the normal sa 1 etc)
   {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\somefontsize\endcsname
      \lastnamedcs
@@ -1350,28 +1326,6 @@
    \else
      \somefontsize
    \fi}
-
-% \permanent\def\currentfontbodyscale % gets character (x xx a etc)
-%   {\csname\??fontenvironments
-%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\fontclass           \s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname                     \s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
-%      \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\fontclass           \s!default\s!text  \orelse
-%      \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname                     \s!default\s!text  \else
-%                                                                                                         \s!default         \fi
-%    \endcsname}
-
-% \permanent\def\currentfontscale % used in default definition
-%   {\csname\??fontenvironments
-%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\fontclass:\fontstyle\s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments\fontclass           \s!default\wildcardfontsize\endcsname\fontclass           \s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments                     \s!default\wildcardfontsize\endcsname                     \s!default\fontsize\orelse
-%      \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text          \endcsname\fontclass:\fontstyle\s!default\s!text  \orelse
-%      \ifcsname\??fontenvironments\fontclass           \s!default\s!text          \endcsname\fontclass           \s!default\s!text  \orelse
-%      \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname                     \s!default\s!text  \else
-%                                                                                                                 \s!default         \fi
-%    \endcsname}
 
 \permanent\def\currentfontbodyscale % gets character (x xx a etc)
   {\csname
@@ -1394,15 +1348,6 @@
      \ifcsname\??fontenvironments                     \s!default\s!text          \endcsname\csnamestring\else
               \??fontenvironments                     \s!default                                        \fi
    \endcsname}
-
-% \def\font_currentfontbodyscale % gets character (x xx a etc)
-%   {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\fontsize\endcsname\lastnamedcs\orelse
-%    \ifcsname\??fontenvironments\fontclass           \s!default\fontsize\endcsname\lastnamedcs\orelse
-%    \ifcsname\??fontenvironments                     \s!default\fontsize\endcsname\lastnamedcs\orelse
-%    \ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\s!text  \endcsname\lastnamedcs\orelse
-%    \ifcsname\??fontenvironments\fontclass           \s!default\s!text  \endcsname\lastnamedcs\orelse
-%    \ifcsname\??fontenvironments                     \s!default\s!text  \endcsname\lastnamedcs\else
-%      \csname\??fontenvironments                     \s!default         \endcsname            \fi}
 
 \def\font_currentfontscale % used in default definition
   {\ifcsname\??fontenvironments\fontclass:\fontstyle\s!default\wildcardfontsize\endcsname\lastnamedcs\orelse
@@ -1508,28 +1453,6 @@
 % \starttext normal {\tx tx} {\small small} \stoptext
 
 \letcsname\??fontenvironments\endcsname\empty % so we default to empty
-
-% \permanent\def\bodyfontvariable#parameter%
-%   {\begincsname\??fontenvironments
-%             \ifcsname\??fontenvironments\fontclass:\fontstyle\normalizedbodyfontsize#parameter\endcsname\fontclass:\fontstyle\normalizedbodyfontsize#parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass           \normalizedbodyfontsize#parameter\endcsname\fontclass           \normalizedbodyfontsize#parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle                       #parameter\endcsname\fontclass:\fontstyle                       #parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass                                  #parameter\endcsname\fontclass                                  #parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass \s!default                        \s!parent\endcsname\lastnamedcs                                #parameter%
-%      \orelse\ifcsname\??fontenvironments                     \normalizedbodyfontsize#parameter\endcsname                     \normalizedbodyfontsize#parameter%
-%      \orelse\ifcsname\??fontenvironments           \s!default                       #parameter\endcsname\s!default                                  #parameter\fi
-%    \endcsname}
-
-% \permanent\def\bodyfontsizevariable#size#parameter% used in s-fonts-show
-%   {\begincsname\??fontenvironments
-%             \ifcsname\??fontenvironments\fontclass:\fontstyle#size#parameter\endcsname\fontclass:\fontstyle#size#parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass           #size#parameter\endcsname\fontclass           #size#parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass:\fontstyle     #parameter\endcsname\fontclass:\fontstyle#parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass                #parameter\endcsname\fontclass           #parameter%
-%      \orelse\ifcsname\??fontenvironments\fontclass \s!default      \s!parent\endcsname\lastnamedcs         #parameter%
-%      \orelse\ifcsname\??fontenvironments                     #size#parameter\endcsname                #size#parameter%
-%      \orelse\ifcsname\??fontenvironments           \s!default     #parameter\endcsname\s!default           #parameter\fi
-%    \endcsname}
 
 \permanent\def\bodyfontvariable#parameter%
   {\begincsname
@@ -2285,15 +2208,6 @@
    \font_helpers_synchronize_font}
 
 \appendtoks
-%     \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
-%       {\cdef\fontface{0}% % not used in compact mode
-%        \cdef\fontalternative{#alternative}%
-%        \ifnum#xsize=\plusfour % best just pass the number
-%          \currentxfontsize\plusone
-%        \else
-%          \currentxfontsize\plustwo
-%        \fi
-%        \font_helpers_synchronize_font}%
     \protected\def\font_helpers_set_current_xsize_alternative#xsize#alternative%
       {\cdef\fontface{0}% % not used in compact mode
        \cdef\fontalternative{#alternative}%
@@ -2602,19 +2516,6 @@
     %\font_helpers_synchronize_font
    \fi}
 
-% \prependtoks
-%     \currentxfontsize\zerocount
-%     \enforced\let\tx \normaltx
-%     \enforced\let\txx\normaltxx
-% \to \everysetupbodyfont
-
-% \prependtoks
-%     \currentxfontsize\zerocount
-%     \enforced\let\tx \normaltx
-%     \enforced\let\txx\normaltxx
-% \to \everyswitchtobodyfont
-
-% \appendtoks
 \prependtoks
     \currentxfontsize\zerocount
     \enforced\let\tx \normaltx
@@ -2623,27 +2524,11 @@
 \to \everysetupbodyfont
 
 \prependtoks
-% \appendtoks
     \currentxfontsize\zerocount
     \enforced\let\tx \normaltx
     \enforced\let\txx\normaltxx
     \font_scale_defined
 \to \everyswitchtobodyfont
-
-% \appendtoks
-%     \enforced\permanent\protected\def\resettx
-%        {\ifzeronum\currentxfontsize\else
-%          \currentxfontsize\zerocount
-%          \enforced\let\tx\normaltx
-%          \enforced\let\txx\normaltxx
-%          \let\fontsize\empty
-%         %\enforced\let\sx\normalsx
-%         %\enforced\let\sxx\normalsxx
-%          \font_scale_defined
-%         %\font_helpers_check_big_math_synchronization
-%         %\font_helpers_synchronize_font
-%        \fi}%
-% \to \everycompactfontmode
 
 \def\font_helpers_set_current_font_xxx_alternative#alternative#xsize#scriptstyle%
   {\ifmmode
@@ -2651,16 +2536,6 @@
    \else
      \font_helpers_set_current_xsize_alternative{#xsize}{#alternative}%
    \fi}
-
-% \def\font_helpers_reset_x_fontsize
-%   {\ifcase\currentxfontsize\else
-%      \currentxfontsize\zerocount
-%      % also \sx and \sxx ?
-%      \enforced\let\tx \normaltx
-%      \enforced\let\txx\normaltxx
-%    \fi}
-
-% \let\font_helpers_check_nested_x_fontsize\relax
 
 \def\font_helpers_set_current_font_x_alternative#alternative%
   {%\font_helpers_check_nested_x_fontsize
@@ -2859,27 +2734,6 @@
 
 % \newtoks \everysetupbodyfont
 % \newtoks \everyswitchtobodyfont
-
-% \permanent\protected\def\setupbodyfont
-%   {\doifelsenextoptionalcs\font_basics_setupbodyfont_yes\font_basics_setupbodyfont_nop}
-%
-% \def\font_basics_setupbodyfont_nop
-%   {\restoreglobalbodyfont
-%    \saveinterlinespace}
-%
-% \def\font_basics_setupbodyfont_yes[#specification]%
-%   {\ifempty{#specification}\else
-%      \font_helpers_set_font\plusone{#specification}%
-%      \globalbodyfontsize\localbodyfontsize
-%      \normalizebodyfontsize\normalizedglobalbodyfontsize\globalbodyfontsize
-%      \let\globalfontstyle\fontstyle
-%      \ifproductionrun
-%        \expand\everybodyfont
-%        \expand\everyglobalbodyfont
-%        \saveinterlinespace
-%      \fi
-%      \expand\everysetupbodyfont
-%    \fi}
 
 \permanent\protected\tolerant\def\setupbodyfont[#specification]%
   {\ifparameter#specification\or

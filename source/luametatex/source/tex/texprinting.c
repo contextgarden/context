@@ -364,6 +364,7 @@ void tex_print_str(const char *s)
             int newline = s[len-1] == '\n';
             if (logfile) {
                 fputs(s, lmt_print_state.logfile);
+             // fwrite(s, sizeof(char), len, lmt_print_state.logfile);
                 if (newline) {
                     lmt_print_state.logfile_offset = 0;
                 } else {
@@ -372,6 +373,7 @@ void tex_print_str(const char *s)
             }
             if (terminal) {
                 fputs(s, stdout);
+             // fwrite(s, sizeof(char), len, stdout);
                 if (newline) {
                     lmt_print_state.terminal_offset = 0;
                 } else {
@@ -828,6 +830,7 @@ void tex_print_glue(scaled d, int order, int unit)
 {
     tex_print_dimension(d, no_unit);
     if ((order < normal_glue_order) || (order > filll_glue_order)) {
+        /*tex For sure this will crash someplace becuase it is also used as index! */
         tex_print_str("foul");
     } else if (order > normal_glue_order) {
         tex_print_str("fi");

@@ -250,6 +250,10 @@ endif()
 
 # CMAKE_HOST_SYSTEM_PROCESSOR arm64 x86_64
 
+# if (APPLE)
+#     set(MI_OSX_ZONE 1)
+# endif()
+
 if (CMAKE_HOST_SOLARIS)
     # fails
 elseif (MSVC)
@@ -258,6 +262,8 @@ elseif (CMAKE_HOST_APPLE AND NOT (${CMAKE_C_COMPILER} MATCHES "arm"))
     # fails on the osx intel
 elseif (${CMAKE_SYSTEM_PROCESSOR} MATCHES "armv7l")
     # fails on the rpi 32 bit
+elseif (CMAKE_C_COMPILER_ID MATCHES "AppleClang|Clang")
+    # no motivation to figure specifics out
 else()
     set(luametatex_use_mimalloc 1)
 endif()

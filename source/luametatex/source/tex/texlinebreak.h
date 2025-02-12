@@ -173,7 +173,7 @@ typedef enum linebreak_quality_states {
 # define paragraph_has_optional(state) (state & par_has_optional)
 
 extern void tex_line_break_prepare (
-    halfword par, 
+    halfword  par, 
     halfword *tail, 
     halfword *parinit_left_skip_glue,
     halfword *parinit_right_skip_glue,

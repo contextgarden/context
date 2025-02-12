@@ -3211,7 +3211,7 @@ static int tex_aux_scan_unit(halfword *num, halfword *denom, halfword *value, ha
         } else {
             goto BACK_TWO;
         }
-        cur_cs = save_cur_cs;
+        cur_cs = save_cur_cs; /* not needed */
         index = unit_parameter_index(chrone, chrtwo);
         if (index >= 0) {
             switch (index) {
@@ -3337,7 +3337,7 @@ static int tex_aux_scan_unit_only(halfword *value)
     } else {
         goto BACK_TWO;
     }
-    cur_cs = save_cur_cs;
+    cur_cs = save_cur_cs; /* not needed */
     index = unit_parameter_index(chrone, chrtwo);
     if (index >= 0) {
         switch (index) {
@@ -3595,10 +3595,10 @@ halfword tex_scan_dimension(int mu, int inf, int shortcut, int optional_equal, h
         cur_val = max_dimension;
         lmt_scanner_state.arithmic_error = 0;
     }
+  THATSIT:
     if (order) {
         *order = cur_order;
     }
-  THATSIT:
     if (negative) {
         cur_val = -cur_val;
     }
@@ -3700,6 +3700,7 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too)
                 } else if (cur_cmd == left_brace_cmd) {
                  // tex_back_input(cur_tok);
                     tex_aux_scan_expr(level, 1);
+                    cur_val_level = level;
                     return cur_val;
                 } else {
                     break;
@@ -3750,14 +3751,14 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too)
                 return q;
             case 'p': case 'P':
                 if (tex_scan_mandate_keyword("plus", 1)) {
-                    halfword order;
+                    halfword order = normal_glue_order;
                     glue_stretch(q) = tex_scan_dimension(mu, 1, 0, 0, &order, NULL);
                     glue_stretch_order(q) = order;
                 }
                 break;
             case 'm': case 'M':
                 if (tex_scan_mandate_keyword("minus", 1)) {
-                    halfword order;
+                    halfword order = normal_glue_order;
                     glue_shrink(q) = tex_scan_dimension(mu, 1, 0, 0, &order, NULL);
                     glue_shrink_order(q) = order;
                 }
@@ -5324,6 +5325,9 @@ int tex_fract(int x, int n, int d, int max_answer)
 
 */
 
+# define max_expression_depth     1000 
+# define max_sub_expression_depth 1000 
+
 static void tex_aux_scan_missing_error(void)
 {
     tex_handle_error(
@@ -5348,6 +5352,33 @@ static void tex_aux_scan_unexpected_whatever_error(void)
         back_error_type,
         "Unexpected token in expression",
         "I was expecting to see an operator or '}' but didn't."
+    );
+}
+
+static void tex_aux_scan_brace_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "I ran into a curly brace mismatch",
+        "You seem to have a mixup of () and {} or are missing at least one of them."
+    );
+}
+
+static void tex_aux_scan_parent_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "I ran into a parenthesis mismatch",
+        "You seem to have a mixup of () and {} or are missing at least one of them."
+    );
+}
+
+static void tex_aux_scan_zero_divide_error(void)
+{
+    tex_handle_error(
+        back_error_type,
+        "I can't divide by zero",
+        "I was expecting to see a nonzero number. Didn't."
     );
 }
 
@@ -5376,8 +5407,8 @@ static void tex_aux_scan_expr(halfword level, int braced)
     /*tex Scan and evaluate an expression |e| of type |l|. */
     cur_val_level = level; /* for now */
     lmt_scanner_state.expression_depth++;
-    if (lmt_scanner_state.expression_depth > 1000) {
-        tex_fatal_error("\\*expr can only be nested 1000 deep");
+    if (lmt_scanner_state.expression_depth > max_expression_depth) {
+        tex_fatal_error("\\*expr can only be nested " LMT_TOSTRING(max_expression_depth) " deep");
     }
   RESTART:
     result = expression_none;
@@ -5709,16 +5740,16 @@ static void tex_aux_scan_expr(halfword level, int braced)
         goto CONTINUE;
     } else if (top) {
         /*tex Pop the expression stack and |goto found|. */
-        halfword t = top;
-        top = node_next(top);
+        halfword newtop = node_next(top);
         factor = expression;
-        expression = expression_expression(t);
-        term = expression_term(t);
-        numerator = expression_numerator(t);
-        state = expression_state(t);
-        result = expression_result(t);
-        level = expression_type(t);
-        tex_free_node(t, expression_node_size);
+        expression = expression_expression(top);
+        term = expression_term(top);
+        numerator = expression_numerator(top);
+        state = (singleword) expression_state(top);
+        result = (singleword) expression_result(top);
+        level = (singleword) expression_type(top);
+        tex_free_node(top, expression_node_size);
+        top = newtop;
         goto FOUND;
     } else if (error_b) {
         switch (level) {
@@ -5955,6 +5986,7 @@ static halfword tex_scan_bit_dimension(int *has_fraction, int *has_unit)
             goto ATTACH_SIGN;
         }
     } else if (tex_token_is_unit(cur_tok) && tex_aux_scan_unit_only(&cur_val) != no_unit_scanned) {
+        *has_unit = 1;
         goto NEARLY_DONE;
     } else {
         *has_fraction = tex_token_is_separator(cur_tok);
@@ -6737,6 +6769,8 @@ static inline long long tex_aux_long_long(long long l)
     }
 }
 
+/* Todo: depth () {} check */
+
 static void tex_aux_scan_integer_expression(int braced)
 {
     int result;
@@ -6755,10 +6789,11 @@ static void tex_aux_scan_integer_expression(int braced)
     int error_b = 0;
     halfword top = null;
     int alreadygotten = 0;
+    int depth = 0;
     cur_val_level = integer_val_level;
     lmt_scanner_state.expression_depth++;
-    if (lmt_scanner_state.expression_depth > 1000) {
-        tex_fatal_error("\\numexpression can only be nested 1000 deep");
+    if (lmt_scanner_state.expression_depth > max_expression_depth) {
+        tex_fatal_error("\\numexpression can only be nested " LMT_TOSTRING(max_expression_depth) " deep");
     }
   RESTART:
     result = expression_none;
@@ -6819,8 +6854,7 @@ static void tex_aux_scan_integer_expression(int braced)
                     case n_token_l:
                     case n_token_o:
                         switch (tex_scan_aux_n()) { 
-                            case expression_not:
-                                nothing = ! nothing;
+                            case expression_not: nothing = ! nothing;
                                 continue;
                             case expression_positive:
                                 positive = 1;
@@ -6857,12 +6891,16 @@ static void tex_aux_scan_integer_expression(int braced)
                         continue;
                     case left_parent_token:
                       PUSH:
+                        ++depth;
+                        if (depth > max_sub_expression_depth) {
+                            tex_fatal_error("sub expressions can only be nested " LMT_TOSTRING(max_sub_expression_depth) " deep");
+                        }
                         {
                             halfword newtop = tex_get_node(lmtx_expression_node_size);
                             node_type(newtop) = lmtx_expression_node;
-                            node_subtype(newtop) = 0;
+                            node_subtype(newtop) = cur_tok == left_parent_token ? 0x1 : 0x2;
                             node_next(newtop) = top;
-                            lmtx_expression_type(newtop) = integer_val_level;
+                            lmtx_expression_type(newtop) = (singleword) integer_val_level;
                             lmtx_expression_state(newtop) = (singleword) state;
                             lmtx_expression_result(newtop) = (singleword) result;
                             lmtx_expression_negate(newtop) = (singleword) (negate | (nothing << 1) | (bnothing << 2) | (positive << 3) | (negative << 4)); 
@@ -6908,41 +6946,41 @@ static void tex_aux_scan_integer_expression(int braced)
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd || (braced && cur_cmd == end_paragraph_cmd));
     switch (cur_tok) {
-        case plus_token       : operation = expression_add; break;
-        case minus_token      : operation = expression_subtract; break;
-        case asterisk_token   : operation = expression_multiply; break;
-        case slash_token      : operation = expression_divide; break;
-        case colon_token      : operation = expression_idivide; break;
-        case semi_colon_token :
-        case percentage_token : operation = expression_imodulo; break;
+        case plus_token      : operation = expression_add; break;
+        case minus_token     : operation = expression_subtract; break;
+        case asterisk_token  : operation = expression_multiply; break;
+        case slash_token     : operation = expression_divide; break;
+        case colon_token     : operation = expression_idivide; break;
+        case semi_colon_token:
+        case percentage_token: operation = expression_imodulo; break;
         /* */
-        case equal_token : operation = tex_scan_aux_equal(&alreadygotten); break;
-        case less_token  : operation = tex_scan_aux_less(&alreadygotten); break;
-        case more_token  : operation = tex_scan_aux_more(&alreadygotten); break;
+        case equal_token: operation = tex_scan_aux_equal(&alreadygotten); break;
+        case less_token : operation = tex_scan_aux_less(&alreadygotten); break;
+        case more_token : operation = tex_scan_aux_more(&alreadygotten); break;
         /* */
-        case not_equal_token     : operation = expression_unequal; break;
-        case less_or_equal_token : operation = expression_lessequal; break;
-        case more_or_equal_token : operation = expression_moreequal; break;
+        case not_equal_token    : operation = expression_unequal; break;
+        case less_or_equal_token: operation = expression_lessequal; break;
+        case more_or_equal_token: operation = expression_moreequal; break;
         /* */
-        case conditional_and_token : operation = expression_cand; break;
-        case conditional_or_token  : operation = expression_cor; break;
+        case conditional_and_token: operation = expression_cand; break;
+        case conditional_or_token : operation = expression_cor; break;
         /* */
-        case a_token_l : case a_token_o : operation = tex_scan_aux_a(); break;
-        case b_token_l : case b_token_o : operation = tex_scan_aux_b(); break;
-        case c_token_l : case c_token_o : operation = tex_scan_aux_c(); break;
-        case d_token_l : case d_token_o : operation = tex_scan_aux_d(); break;
-        case m_token_l : case m_token_o : operation = tex_scan_aux_m(); break;
-        case o_token_l : case o_token_o : operation = tex_scan_aux_o(); break;
-        case v_token_l : case v_token_o : operation = expression_bor; break;
+        case a_token_l: case a_token_o: operation = tex_scan_aux_a(); break;
+        case b_token_l: case b_token_o: operation = tex_scan_aux_b(); break;
+        case c_token_l: case c_token_o: operation = tex_scan_aux_c(); break;
+        case d_token_l: case d_token_o: operation = tex_scan_aux_d(); break;
+        case m_token_l: case m_token_o: operation = tex_scan_aux_m(); break;
+        case o_token_l: case o_token_o: operation = tex_scan_aux_o(); break;
+        case v_token_l: case v_token_o: operation = expression_bor; break;
         /* */
-        case ampersand_token_l  : 
-        case ampersand_token_o  : 
-        case ampersand_token_t  : operation = tex_scan_aux_ampersand(&alreadygotten); break;
-        case circumflex_token_l : 
-        case circumflex_token_o : 
-        case circumflex_token_s : operation = expression_bxor; break;
-        case bar_token_l        : 
-        case bar_token_o        : operation = tex_scan_aux_bar(&alreadygotten); break;
+        case ampersand_token_l : 
+        case ampersand_token_o : 
+        case ampersand_token_t : operation = tex_scan_aux_ampersand(&alreadygotten); break;
+        case circumflex_token_l: 
+        case circumflex_token_o: 
+        case circumflex_token_s: operation = expression_bxor; break;
+        case bar_token_l       : 
+        case bar_token_o       : operation = tex_scan_aux_bar(&alreadygotten); break;
         /* */
         default:
             operation = expression_none;
@@ -7004,57 +7042,29 @@ static void tex_aux_scan_integer_expression(int braced)
         case expression_imodulo:
             term = tex_aux_double_rounded_long_long(fmod((double) term, (double) factor));
             break;
-        case expression_equal:
-            term = term == factor;
-            break;
-        case expression_less:
-            term = term < factor;
-            break;
-        case expression_more:
-            term = term > factor;
-            break;
-        case expression_lessequal:
-            term = term <= factor;
-            break;
-        case expression_moreequal:
-            term = term >- factor;
-            break;
-        case expression_unequal:
-            term = term != factor;
-            break;
-        case expression_bleft:
-            term = term << factor;
-            break;
-        case expression_bright:
-            term = term >> factor;
-            break;
-        case expression_or:
-            term = (term || factor) ? 1 : 0;
-            break;
-        case expression_and:
-            term = (term && factor) ? 1 : 0;
-            break;
-        case expression_cor:
-            term = term ? term : (factor ? factor : 0);
-            break;
-        case expression_cand:
-            term = (term && factor) ? factor : 0;
-            break;
-        case expression_bor:
-            term |= factor;
-            break;
-        case expression_band:
-            term &= factor;
-            break;
-        case expression_bxor:
-            term ^= factor;
-            break;
-        case expression_bset:
-            term = term | ((long long) 1 << (factor - 1));
-            break;
-        case expression_bunset:
-            term = term & ~ ((long long) 1 << (factor - 1));
-            break;
+        /* */
+        case expression_equal    : term = term == factor; break;
+        case expression_less     : term = term <  factor; break;
+        case expression_more     : term = term >  factor; break;
+        case expression_lessequal: term = term <= factor; break;
+        case expression_moreequal: term = term >- factor; break;
+        case expression_unequal  : term = term != factor; break;
+        case expression_bleft    : term = term << factor; break;
+        case expression_bright   : term = term >> factor; break;
+        /* */
+        case expression_or       : term = (term || factor) ? 1 : 0; break;
+        case expression_and      : term = (term && factor) ? 1 : 0; break;
+        /* */
+        case expression_cor      : term = term             ? term   : (factor ? factor : 0); break;
+        case expression_cand     : term = (term && factor) ? factor : 0;                     break;
+        /* */                    
+        case expression_bor      : term |= factor; break;               
+        case expression_band     : term &= factor; break;               
+        case expression_bxor     : term ^= factor; break;               
+        /* */
+        case expression_bset     : term = term |   ((long long) 1 << (factor - 1)); break;               
+        case expression_bunset   : term = term & ~ ((long long) 1 << (factor - 1)); break;
+        /* */
         case expression_not:
             /* already handled, like add and subtract */
             term = term ? 0 : 1;
@@ -7065,19 +7075,12 @@ static void tex_aux_scan_integer_expression(int braced)
     } else {
         state = expression_none;
         switch (result) { 
-            case expression_add:
-                expression = tex_aux_long_long(expression + term);
-                break;
-            case expression_subtract:
-                expression = tex_aux_long_long(expression - term);
-                break;
-            case expression_not: 
-                expression = term ? 0 : 1;
-                break;
-            case expression_bnot: 
-                expression = ~ term;
-                break;
-         // case expression_none:
+            case expression_add     : expression = tex_aux_long_long(expression + term); break;
+            case expression_subtract: expression = tex_aux_long_long(expression - term); break;
+            /* */
+            case expression_not     : expression = term ? 0 : 1; break;
+            case expression_bnot    : expression = ~ term; break;
+            /* */
             default: 
                 expression = term;
                 break;
@@ -7089,6 +7092,7 @@ static void tex_aux_scan_integer_expression(int braced)
         goto CONTINUE;
     } else if (top) {
       POP:
+        --depth;
         {
             halfword newtop = node_next(top);
             factor = expression;
@@ -7097,6 +7101,26 @@ static void tex_aux_scan_integer_expression(int braced)
             numerator = lmtx_expression_numerator(top);
             state = lmtx_expression_state(top);
             result = lmtx_expression_result(top);
+            switch (node_subtype(top)) { 
+                case 0x1: /* ( ) */
+                    if (cur_tok != right_parent_token) {
+                        expression = 0;
+                        tex_aux_scan_parent_error();
+                        tex_flush_node_list(top);
+                        top = null;
+                        goto DONE;
+                    }
+                    break;
+                case 0x2: /* { } */
+                    if (cur_cmd != right_brace_cmd) {
+                        expression = 0;
+                        tex_aux_scan_brace_error();
+                        tex_flush_node_list(top);
+                        top = null;
+                        goto DONE;
+                    }
+                    break;
+            }
             if (lmtx_expression_negate(top) & 0x01) { /* negate << 0 */
                 factor = - factor;
             } 
@@ -7120,6 +7144,7 @@ static void tex_aux_scan_integer_expression(int braced)
         tex_aux_scan_integer_out_of_range_error(8);
         expression = 0;
     }
+  DONE:
     lmt_scanner_state.arithmic_error = error_a;
     lmt_scanner_state.expression_depth--;
  // cur_val_level = level;
@@ -7361,6 +7386,8 @@ static long long tex_aux_expression_d_floor(double d, halfword *termtype, halfwo
     }
 }
 
+/* Todo: depth () {} check */
+
 static void tex_aux_scan_dimension_expression(int braced)
 {
     int result;
@@ -7382,10 +7409,11 @@ static void tex_aux_scan_dimension_expression(int braced)
     int error_b = 0;
     halfword top = null;
     int alreadygotten = 0;
+    int depth = 0;
     cur_val_level = dimension_val_level;
     lmt_scanner_state.expression_depth++;
-    if (lmt_scanner_state.expression_depth > 1000) {
-        tex_fatal_error("\\dimexpression can only be nested 1000 deep");
+    if (lmt_scanner_state.expression_depth > max_expression_depth) {
+        tex_fatal_error("\\dimexpression can only be nested " LMT_TOSTRING(max_expression_depth) " deep");
     }
   RESTART:
     result = expression_none;
@@ -7476,11 +7504,15 @@ static void tex_aux_scan_dimension_expression(int braced)
                         negative = 1;
                         continue;
                     case left_parent_token:
-                      PUSH:
+                       PUSH:
+                        ++depth;
+                        if (depth > max_sub_expression_depth) {
+                            tex_fatal_error("sub expressions can only be nested " LMT_TOSTRING(max_sub_expression_depth) " deep");
+                        }
                         { 
                             halfword newtop = tex_get_node(lmtx_expression_node_size);
                             node_type(newtop) = lmtx_expression_node;
-                            node_subtype(newtop) = 0;
+                            node_subtype(newtop) = cur_tok == left_parent_token ? 0x1 : 0x2;
                             node_next(newtop) = top;
                             lmtx_expression_type(newtop) = (singleword) dimension_val_level;
                             lmtx_expression_state(newtop) = (singleword) state;
@@ -7539,30 +7571,30 @@ static void tex_aux_scan_dimension_expression(int braced)
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd || (braced && cur_cmd == end_paragraph_cmd));
     switch (cur_tok) {
-        case plus_token       : operation = expression_add; break;
-        case minus_token      : operation = expression_subtract; break;
-        case asterisk_token   : operation = expression_multiply; break;
-        case slash_token      : operation = expression_divide; break;
-        case colon_token      : operation = expression_idivide; break;
-        case semi_colon_token :
-        case percentage_token : operation = expression_imodulo; break;
+        case plus_token      : operation = expression_add; break;
+        case minus_token     : operation = expression_subtract; break;
+        case asterisk_token  : operation = expression_multiply; break;
+        case slash_token     : operation = expression_divide; break;
+        case colon_token     : operation = expression_idivide; break;
+        case semi_colon_token:
+        case percentage_token: operation = expression_imodulo; break;
         /* */
-        case equal_token : operation = tex_scan_aux_equal(&alreadygotten); break;
-        case less_token  : operation = tex_scan_aux_less(&alreadygotten); break;
-        case more_token  : operation = tex_scan_aux_more(&alreadygotten); break;
+        case equal_token: operation = tex_scan_aux_equal(&alreadygotten); break;
+        case less_token : operation = tex_scan_aux_less(&alreadygotten); break;
+        case more_token : operation = tex_scan_aux_more(&alreadygotten); break;
         /* */
-        case not_equal_token     : operation = expression_unequal; break;
-        case less_or_equal_token : operation = expression_lessequal; break;
-        case more_or_equal_token : operation = expression_moreequal; break;
+        case not_equal_token    : operation = expression_unequal; break;
+        case less_or_equal_token: operation = expression_lessequal; break;
+        case more_or_equal_token: operation = expression_moreequal; break;
         /* */
-        case conditional_and_token : operation = expression_cand; break;
-        case conditional_or_token  : operation = expression_cor; break;
+        case conditional_and_token: operation = expression_cand; break;
+        case conditional_or_token : operation = expression_cor; break;
        /* */
-        case a_token_l : case a_token_o : operation = tex_scan_aux_a(); break;
-        case c_token_l : case c_token_o : operation = tex_scan_aux_c(); break;
-        case d_token_l : case d_token_o : operation = tex_scan_aux_d(); break;
-        case m_token_l : case m_token_o : operation = tex_scan_aux_m(); break;
-        case o_token_l : case o_token_o : operation = tex_scan_aux_o(); break;
+        case a_token_l: case a_token_o: operation = tex_scan_aux_a(); break;
+        case c_token_l: case c_token_o: operation = tex_scan_aux_c(); break;
+        case d_token_l: case d_token_o: operation = tex_scan_aux_d(); break;
+        case m_token_l: case m_token_o: operation = tex_scan_aux_m(); break;
+        case o_token_l: case o_token_o: operation = tex_scan_aux_o(); break;
         /* */
         default:
             operation = expression_none;
@@ -7750,6 +7782,7 @@ static void tex_aux_scan_dimension_expression(int braced)
         goto CONTINUE;
     } else if (top) {
       POP:
+        --depth;
         { 
             halfword newtop = node_next(top);
             factor = expression;
@@ -7761,17 +7794,37 @@ static void tex_aux_scan_dimension_expression(int braced)
             expressiontype = lmtx_expression_type_expression(top);
             termtype = lmtx_expression_type_term(top);
             numeratortype = lmtx_expression_type_numerator(top);
-            if (expression_negate(top) & 0x01) { /* negate << 0 */
+            switch (node_subtype(top)) { 
+                case 0x1: /* ( ) */
+                    if (cur_tok != right_parent_token) {
+                        expression = 0;
+                        tex_aux_scan_parent_error();
+                        tex_flush_node_list(top);
+                        top = null;
+                        goto DONE;
+                    }
+                    break;
+                case 0x2: /* { } */
+                    if (cur_cmd != right_brace_cmd) {
+                        expression = 0;
+                        tex_aux_scan_brace_error();
+                        tex_flush_node_list(top);
+                        top = null;
+                        goto DONE;
+                    }
+                    break;
+            }
+            if (lmtx_expression_negate(top) & 0x01) { /* negate << 0 */
                 factor = - factor;
             } 
-            if (expression_negate(top) & 0x02) { /* nothing << 1 */
+            if (lmtx_expression_negate(top) & 0x02) { /* nothing << 1 */
                 factor = factor ? 0 : 1;
                 factortype = expression_type_integer;
             }
             if ((lmtx_expression_negate(top) & 0x08) && factor < 0) { /* positive << 3 */
                 factor = - factor;
             }
-            if((lmtx_expression_negate(top) & 0x10) && factor > 0) { /* negative << 4 */
+            if ((lmtx_expression_negate(top) & 0x10) && factor > 0) { /* negative << 4 */
                 factor = - factor;
             }
             tex_free_node(top, lmtx_expression_node_size);
@@ -7782,6 +7835,7 @@ static void tex_aux_scan_dimension_expression(int braced)
         tex_aux_scan_dimension_out_of_range_error(4);
         expression = 0;
     }
+  DONE:
     lmt_scanner_state.arithmic_error = error_a;
     lmt_scanner_state.expression_depth--;
     cur_val_level = dimension_val_level;
@@ -7796,7 +7850,17 @@ static void tex_aux_scan_dimension_expression(int braced)
     }
 }
 
-/*
+/* 
+    We have the somewhat weird |\dimexpr| and friends from \ETEX, but now prefer to use the more 
+    flexible |\dimexpression| instead. However that one still has only divide and multiply win 
+    over plus and minus. The next scanner is bit more advanced. It used to be the one used for 
+    |\dimexpression| etc.\ but now is just an extra one, currently bound to |\dimexperimental| 
+    and |\numexperimental|. 
+
+    I need to check cases where we can overflow and we might at some point delay clipping to the 
+    maxima till we return. There might also be cases where operations on mixed number types give 
+    unexpected results.
+
     In the end, after some variations, I decided that some reverse polish notation approach made
     more sense and when considering an infix to rpn translation and searching the web a bit I ran
     into nice example:
@@ -7814,6 +7878,10 @@ static void tex_aux_scan_dimension_expression(int braced)
     (redundant) + and a possibly mixed + and - sequence. So in the end the code became a bit more
     complex than the example. 
 
+*/
+
+/* 
+    todo: use subtype for all 
 */
 
 typedef enum bit_expression_states {
@@ -7859,8 +7927,10 @@ typedef enum bit_expression_states {
     bit_expression_cor,       /* cor         */
     bit_expression_cand,      /* cand        */
 
-    bit_expression_open,
-    bit_expression_close,
+    bit_expression_open_parent,
+    bit_expression_close_parent,
+    bit_expression_open_brace,
+    bit_expression_close_brace,
 
     bit_expression_number,
     bit_expression_float,
@@ -7871,9 +7941,39 @@ typedef enum bit_expression_states {
     bit_expression_flip,
     bit_expression_positive,
     bit_expression_negative,
+    
+    /* applied to top */
+
+    bit_expression_sin,
+    bit_expression_cos,
+    bit_expression_tan,
+    bit_expression_asin,
+    bit_expression_acos,
+    bit_expression_atan,
+
+    bit_expression_sinh,
+    bit_expression_cosh,
+    bit_expression_tanh,
+    bit_expression_asinh,
+    bit_expression_acosh,
+    bit_expression_atanh,
+
+    bit_expression_ceil,
+    bit_expression_floor,
+    bit_expression_round,
+    bit_expression_abs,
+
+    bit_expression_sqrt,
+    bit_expression_log,
+    bit_expression_ln, 
+    bit_expression_exp,
+
+    /* applied to two top */
+
+    bit_expression_last,
 } bit_expression_states;
 
-static int bit_operator_precedence[] = {  /* like in lua */
+static int bit_operator_precedence[bit_expression_last+1] = {  /* like in lua */
     0, // bit_expression_none
 
     4, // bit_expression_bor
@@ -7906,6 +8006,7 @@ static int bit_operator_precedence[] = {  /* like in lua */
 // 10, // bit_expression_power
 
    10, // bit_expression_not
+
    10, // bit_expression_pm
    10, // bit_expression_mp
 
@@ -7915,29 +8016,48 @@ static int bit_operator_precedence[] = {  /* like in lua */
     1, // bit_expression_cor
     2, // bit_expression_cand
 
-    0, // bit_expression_open
-    0, // bit_expression_close
+    0, // bit_expression_open_parent
+    0, // bit_expression_close_parent
+    0, // bit_expression_open_brace
+    0, // bit_expression_close_brace
 
     0, // bit_expression_number
-    0,
-    0,
+    0, // bit_expression_float
+    0, // bit_expression_dimension
 
-    0,
-    0,
-    0,
-    0,
+    0, 0, 0, 0, 0,    // plus minus flip positive negative 
+
+    0, 0, 0, 0, 0, 0, // sin cos tan asin acos atan
+    0, 0, 0, 0, 0, 0, // sinh cosh tanh asinh acosh atanh
+    0, 0, 0, 0,       // ceil floor round abs 
+    0, 0, 0, 0,       // sqrt log ln exp 
+
+    0                 // null 
 };
 
-static const char *bit_expression_names[] = {
+static const char *bit_expression_names[bit_expression_last+1] = {
     "none", 
-    "bor", "band", "bxor", "bnot", "bset", "bunset",
-    "<<", ">>", "<", "<=", "==", ">=", ">", "<>",
-    "+", "-", "*", "/", "div", "mod", 
-    "not", "±", "∓"
-    "or", "and", "cor", "cand",
-    "open", "close", 
+    "bor", "band", "bxor", "bnot", 
+    "bset", "bunset",
+    "<<", ">>", 
+    "<", "<=", "==", ">=", ">", "<>",
+    "+", "-", 
+    "*", "/", 
+    "div", "mod", 
+    "not",
+    "±", "∓"
+    "or", "and", 
+    "cor", "cand",
+    "open (", "close )", "open {", "close }", 
     "number", "float", "dimension",
-    "plus","minus","flip","abs", "null"
+    "plus","minus","flip","positive", "negative",
+    /* */
+    "sin", "cos", "tan", "asin", "acos", "atan",
+    "sinh", "cosh", "tanh", "asinh", "acosh", "atanh",    
+    "ceil", "floor", "round", "abs",   
+    "sqrt", "log", "ln", "exp",
+    /* */
+    "null"
 };
 
 /*tex
@@ -7966,17 +8086,17 @@ static void tex_aux_dispose_stack(stack_info *stack)
     halfword current = stack->head;
     while (current) {
         halfword next = node_next(current);
-        tex_free_node(current, expression_node_size);
+        tex_free_node(current, rpn_expression_node_size);
         current = next;
     }
 }
 
 static void tex_push_stack_entry(stack_info *stack, long long value)
 {
-    halfword n = tex_get_node(expression_node_size);
-    node_type(n) = expression_node;
+    halfword n = tex_get_node(rpn_expression_node_size);
+    node_type(n) = rpn_expression_node;
     node_subtype(n) = 0;
-    expression_entry(n) = value;
+    rpn_expression_entry(n) = value;
     if (! stack->head) {
         stack->head = n;
     } else if (stack->head == stack->tail)  {
@@ -7993,7 +8113,7 @@ static long long tex_pop_stack_entry(stack_info *stack)
 {
     halfword t = stack->tail;
     if (t) {
-        long long v = expression_entry(t);
+        long long v = rpn_expression_entry(t);
         if (t == stack->head) {
             stack->head = null;
             stack->tail = null;
@@ -8001,7 +8121,7 @@ static long long tex_pop_stack_entry(stack_info *stack)
             stack->tail = node_prev(t);
             node_next(stack->tail) = null;
         }
-        tex_free_node(t, expression_node_size);
+        tex_free_node(t, rpn_expression_node_size);
         return v;
     } else {
         return 0;
@@ -8035,7 +8155,7 @@ static void tex_take_stack_entry(stack_info *target, stack_info *source, halfwor
 {
     while (source->head != current) {
         halfword next = node_next(source->head);
-        tex_free_node(source->head, expression_node_size);
+        tex_free_node(source->head, rpn_expression_node_size);
         source->head = next;
     }
     if (current == source->tail) {
@@ -8073,7 +8193,9 @@ static void tex_aux_print_expression_entry(halfword type, long long value)
             tex_print_dimension(e_v(value), pt_unit);
             break;
         default:
-            tex_print_str(bit_expression_names[type]);
+            if (value >= 0 && value <= 38) {
+                tex_print_str(bit_expression_names[value]);
+            }
             break;
     }
 }
@@ -8100,10 +8222,271 @@ static void tex_aux_trace_expression(stack_info stack, halfword level, halfword 
     }
     for (halfword current = stack.head; current; current = node_next(current)) {
         tex_print_char(' ');
-        tex_aux_print_expression_entry(node_subtype(current), expression_entry(current));
+        tex_aux_print_expression_entry(node_subtype(current), rpn_expression_entry(current));
     }
     tex_print_char(']');
     tex_end_diagnostic();
+}
+
+static inline halfword tex_scan_aux_function(int *alreadygotten)
+{
+    tex_get_x_token();
+    switch (cur_tok) {
+        case a_token_l: case a_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case b_token_l: case b_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case s_token_l: case s_token_o:
+                            return bit_expression_abs;
+                    }
+                    break;
+                case c_token_l: case c_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case o_token_l: case o_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case s_token_l: case s_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case h_token_l: case h_token_o:
+                                            return bit_expression_acosh;
+                                        default:
+                                            *alreadygotten = 1;
+                                            return bit_expression_acos;
+                                    }
+                            }
+                            break;
+                    }
+                case s_token_l: case s_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case i_token_l: case i_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case n_token_l: case n_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case h_token_l: case h_token_o:
+                                            return bit_expression_asinh;
+                                        default:
+                                            *alreadygotten = 1;
+                                            return bit_expression_asin;
+                                    }
+                            }
+                            break;
+                    }
+                case t_token_l: case t_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case a_token_l: case a_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case n_token_l: case n_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case h_token_l: case h_token_o:
+                                            return bit_expression_atanh;
+                                        default:
+                                            *alreadygotten = 1;
+                                            return bit_expression_atan;
+                                    }
+                            }
+                            break;
+                    }
+            }
+            break;
+        case c_token_l: case c_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case e_token_l: case e_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case e_token_l: case e_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case i_token_l: case i_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case l_token_l: case l_token_o:
+                                            return bit_expression_ceil;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+                case o_token_l: case o_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case s_token_l: case s_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case h_token_l: case h_token_o:
+                                    return bit_expression_cosh;
+                                default:
+                                    *alreadygotten = 1;
+                                    return bit_expression_cos;
+                            }
+                    }
+                    break;
+            }
+            break;
+        case e_token_l: case e_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case x_token_l: case x_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case p_token_l: case p_token_o:
+                            return bit_expression_exp;
+                    }
+                    break;
+            }
+            break;
+        case f_token_l: case f_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case l_token_l: case l_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case o_token_l: case o_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case o_token_l: case o_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case r_token_l: case r_token_o:
+                                            return bit_expression_floor;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case l_token_l: case l_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case n_token_l: case n_token_o:
+                    return bit_expression_ln; 
+                case o_token_l: case o_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case g_token_l: case g_token_o:
+                            return bit_expression_log;
+                    }
+                    break;
+            }
+            break;
+        case r_token_l: case r_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case o_token_l: case o_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case u_token_l: case u_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case n_token_l: case n_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case d_token_l: case d_token_o:
+                                            return bit_expression_round;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case s_token_l: case s_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case i_token_l: case i_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case n_token_l: case n_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case h_token_l: case h_token_o:
+                                    return bit_expression_sinh;
+                                default:
+                                    *alreadygotten = 1;
+                                    return bit_expression_sin;
+                            }
+                    }
+                    break;
+                case q_token_l: case q_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case q_token_l: case q_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case r_token_l: case r_token_o:
+                                    tex_get_x_token();
+                                    switch (cur_tok) { 
+                                        case t_token_l: case t_token_o:
+                                            return bit_expression_sqrt;
+                                    }
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+            }
+            break;
+        case t_token_l: case t_token_o:
+            tex_get_x_token();
+            switch (cur_tok) { 
+                case a_token_l: case a_token_o:
+                    tex_get_x_token();
+                    switch (cur_tok) { 
+                        case n_token_l: case n_token_o:
+                            tex_get_x_token();
+                            switch (cur_tok) { 
+                                case h_token_l: case h_token_o:
+                                    return bit_expression_tanh;
+                                default:
+                                    *alreadygotten = 1;
+                                    return bit_expression_tan;
+                            }
+                    }
+                    break;
+            }
+            break;
+    }
+    tex_aux_show_keyword_error("function");
+    return expression_none;
+
+}
+
+static double tex_aux_function_argument(stack_info *s)
+{
+    switch (node_subtype(s->tail)) {
+        case bit_expression_float:
+        case bit_expression_dimension:
+            return (double) rpn_expression_entry(s->tail) / 65536.0;
+        default: 
+            return (double) rpn_expression_entry(s->tail);
+    }
+}
+
+static long long tex_aux_function_result(stack_info *s, double v)
+{
+    switch (node_subtype(s->tail)) {
+        case bit_expression_float:
+        case bit_expression_dimension:
+            break;
+        default: 
+            node_subtype(s->tail) = bit_expression_float;
+            break;
+    }
+    return longlonground(v * 65536);
 }
 
 static void tex_aux_scan_expression(int level, int braced)
@@ -8112,7 +8495,7 @@ static void tex_aux_scan_expression(int level, int braced)
     stack_info reverse = tex_aux_new_stack();
     stack_info stack = tex_aux_new_stack();
     halfword operation = bit_expression_none;
-    bool alreadygotten = false;
+    int alreadygotten = 0;
     int trace = tracing_expressions_par;
     halfword lastoperation = bit_expression_none;
     int negate = 0; 
@@ -8120,14 +8503,15 @@ static void tex_aux_scan_expression(int level, int braced)
     int positive = 0; 
     int negative = 0; 
     int initial = 1;
+    int depth = 0;
     lmt_scanner_state.expression_depth++;
-    if (lmt_scanner_state.expression_depth > 1000) {
-        tex_fatal_error("\\*expression can only be nested 1000 deep");
+    if (lmt_scanner_state.expression_depth > max_expression_depth) {
+        tex_fatal_error("\\*expression can only be nested " LMT_TOSTRING(max_expression_depth) " deep");
     }
     while (1) {
       HERE:
         if (alreadygotten) {
-            alreadygotten = false;
+            alreadygotten = 0;
         } else {
             tex_get_x_token();
         }
@@ -8141,6 +8525,7 @@ static void tex_aux_scan_expression(int level, int braced)
                     continue;
                 } else {
                     ++braced;
+                    tex_push_stack_entry(&operators, bit_expression_open_brace); 
                     goto PUSH;
                 }
             case right_brace_cmd:
@@ -8148,6 +8533,12 @@ static void tex_aux_scan_expression(int level, int braced)
                 if (! braced) {
                     goto COLLECTED;
                 } else {
+                    while (operators.tail && rpn_expression_entry(operators.tail) != bit_expression_open_brace) {
+                        tex_move_stack_entry(&reverse, &operators);
+                    }
+                    if (! operators.tail) { 
+                        goto BRACEERROR;
+                    }
                     goto POP;
                 }
             case spacer_cmd:
@@ -8156,9 +8547,13 @@ static void tex_aux_scan_expression(int level, int braced)
             default:
                 switch (cur_tok) {
                     case left_parent_token:
+                        tex_push_stack_entry(&operators, bit_expression_open_parent); 
                       PUSH:
-                        tex_push_stack_entry(&operators, bit_expression_open); 
-                        expression_negate(operators.tail) = negate | (nothing << 1) | (positive << 2) | (negative << 3); 
+                        ++depth;
+                        if (depth > max_sub_expression_depth) {
+                            tex_fatal_error("sub expressions can only be nested " LMT_TOSTRING(max_sub_expression_depth) " deep");
+                        }
+                        rpn_expression_negate(operators.tail) = (singleword) (negate | (nothing << 1) | (positive << 2) | (negative << 3));
                         negate = 0;
                         nothing = 0;
                         positive = 0;
@@ -8166,20 +8561,24 @@ static void tex_aux_scan_expression(int level, int braced)
                         lastoperation = bit_expression_none;
                         continue;
                     case right_parent_token:
-                      POP:
-                        while (operators.tail && expression_entry(operators.tail) != bit_expression_open) {
+                        while (operators.tail && rpn_expression_entry(operators.tail) != bit_expression_open_parent) {
                             tex_move_stack_entry(&reverse, &operators);
                         }
-                        if (expression_negate(operators.tail) & 0x01) { /* (negate << 0) */ 
+                        if (! operators.tail) { 
+                            goto PARENTERROR;
+                        }
+                      POP:
+                        --depth; /* can't become negative */
+                        if (rpn_expression_negate(operators.tail) & 0x01) { /* (negate << 0) */ 
                             tex_push_stack_entry(&reverse, bit_expression_minus);
                         }
-                        if (expression_negate(operators.tail) & 0x02) { /* (nothing << 1) */
+                        if (rpn_expression_negate(operators.tail) & 0x02) { /* (nothing << 1) */
                             tex_push_stack_entry(&reverse, bit_expression_flip);
                         }
-                        if (expression_negate(operators.tail) & 0x04) { /* (positive < 2) */
+                        if (rpn_expression_negate(operators.tail) & 0x04) { /* (positive < 2) */
                             tex_push_stack_entry(&reverse, bit_expression_positive);
                         }
-                        if (expression_negate(operators.tail) & 0x08) { /* (negative << 3) */
+                        if (rpn_expression_negate(operators.tail) & 0x08) { /* (negative << 3) */
                             tex_push_stack_entry(&reverse, bit_expression_negative);
                         }
                         tex_pop_stack_entry(&operators); /* bit_expression_open */
@@ -8201,46 +8600,39 @@ static void tex_aux_scan_expression(int level, int braced)
                             operation = bit_expression_subtract;
                             break;
                         }
-                    case asterisk_token:
-                        operation = bit_expression_multiply;
-                        break;
-                    case slash_token:
-                        operation = bit_expression_divide;
-                        break;
-                    case colon_token:
-                        operation = bit_expression_div;
-                        break;
+                    /* */
+                    case asterisk_token  : operation = bit_expression_multiply; break;
+                    case slash_token     : operation = bit_expression_divide  ; break;
+                    case colon_token     : operation = bit_expression_div     ; break;
                     case percentage_token:
-                    case semi_colon_token:
-                        operation = bit_expression_mod;
+                    case semi_colon_token: operation = bit_expression_mod     ; break;
+                    /* */
+                 // case underscore_token_l: case underscore_token_o: case underscore_token_s:
+                    case at_sign_token_l: case at_sign_token_o:
+                        if (level == dimension_val_level) {
+                            operation = tex_scan_aux_function(&alreadygotten); 
+                        } else { 
+                            goto UNEXPECTED;
+                        }
                         break;
+                    /* */
                     case ampersand_token_l: case ampersand_token_o: case ampersand_token_t:
                         tex_get_x_token();
                         switch (cur_tok) {
-                            case ampersand_token_l:
-                            case ampersand_token_o:
-                            case ampersand_token_t:
+                            case ampersand_token_l: case ampersand_token_o: case ampersand_token_t:
                                 operation = bit_expression_and;
                                 goto OKAY;
                         }
                         operation = bit_expression_band;
                         alreadygotten = 1;
                         break;
-                    case not_equal_token:
-                        operation = bit_expression_unequal;
-                        break;
-                    case less_or_equal_token:
-                        operation = bit_expression_lessequal;
-                        break;
-                    case more_or_equal_token:
-                        operation = bit_expression_moreequal;
-                        break;
-                    case conditional_and_token: 
-                        operation = bit_expression_cand; 
-                        break;
-                    case conditional_or_token: 
-                        operation = bit_expression_cor; 
-                        break;
+                    /* */
+                    case not_equal_token      : operation = bit_expression_unequal  ; break;
+                    case less_or_equal_token  : operation = bit_expression_lessequal; break;
+                    case more_or_equal_token  : operation = bit_expression_moreequal; break;
+                    case conditional_and_token: operation = bit_expression_cand     ; break;
+                    case conditional_or_token : operation = bit_expression_cor      ; break;
+                    /* */
                     case circumflex_token_l: case circumflex_token_o: case circumflex_token_s:
                         operation = bit_expression_bxor;
                         break;
@@ -8257,15 +8649,9 @@ static void tex_aux_scan_expression(int level, int braced)
                     case less_token:
                         tex_get_x_token();
                         switch (cur_tok) {
-                            case less_token:
-                                operation = bit_expression_bleft;
-                                goto OKAY;
-                            case equal_token:
-                                operation = bit_expression_lessequal;
-                                goto OKAY;
-                            case more_token:
-                                operation = bit_expression_unequal;
-                                goto OKAY;
+                            case less_token : operation = bit_expression_bleft    ; goto OKAY;
+                            case equal_token: operation = bit_expression_lessequal; goto OKAY;
+                            case more_token : operation = bit_expression_unequal  ; goto OKAY;
                         }
                         operation = bit_expression_less;
                         alreadygotten = 1;
@@ -8273,12 +8659,8 @@ static void tex_aux_scan_expression(int level, int braced)
                     case more_token:
                         tex_get_x_token();
                         switch (cur_tok) {
-                            case more_token:
-                                operation = bit_expression_bright;
-                                goto OKAY;
-                            case equal_token:
-                                operation = bit_expression_moreequal;
-                                goto OKAY;
+                            case more_token : operation = bit_expression_bright   ; goto OKAY;
+                            case equal_token: operation = bit_expression_moreequal; goto OKAY;
                         }
                         operation = bit_expression_more;
                         alreadygotten = 1;
@@ -8294,14 +8676,10 @@ static void tex_aux_scan_expression(int level, int braced)
                         }
                         operation = bit_expression_equal;
                         break;
-                    case plus_minus_token:
-                        positive = 1;
-                        operation = bit_expression_none;
-                        goto HERE;
-                    case minus_plus_token:
-                        negative = 1;
-                        operation = bit_expression_none;
-                        goto HERE;
+                    /* */
+                    case plus_minus_token: positive = 1; operation = bit_expression_none; goto HERE;
+                    case minus_plus_token: negative = 1; operation = bit_expression_none; goto HERE;
+                    /* */
                     case tilde_token_l: case tilde_token_o:
                         tex_get_x_token();
                         switch (cur_tok) {
@@ -8353,7 +8731,7 @@ static void tex_aux_scan_expression(int level, int braced)
                                tex_get_x_token();
                                switch (cur_tok) {
                                     case t_token_l: case t_token_o:
-                                       if (lastoperation !=  bit_expression_none || initial) {
+                                       if (lastoperation != bit_expression_none || initial) {
                                            operation = bit_expression_none;
                                            nothing = ! nothing;
                                            goto HERE;
@@ -8366,7 +8744,7 @@ static void tex_aux_scan_expression(int level, int braced)
                                tex_get_x_token();
                                switch (cur_tok) {
                                     case m_token_l: case m_token_o:
-                                       if (lastoperation !=  bit_expression_none || initial) {
+                                       if (lastoperation != bit_expression_none || initial) {
                                            operation = bit_expression_none;
                                            positive = 1;
                                            goto HERE;
@@ -8512,7 +8890,7 @@ static void tex_aux_scan_expression(int level, int braced)
                         goto NUMBER;
                 }
               OKAY:
-                while (operators.tail && bit_operator_precedence[expression_entry(operators.tail)] >= bit_operator_precedence[operation]) {
+                while (operators.tail && bit_operator_precedence[rpn_expression_entry(operators.tail)] >= bit_operator_precedence[operation]) {
                  // tex_push_stack_entry(&reverse, tex_pop_stack_entry(&operators));
                     tex_move_stack_entry(&reverse, &operators);
                 }
@@ -8569,9 +8947,9 @@ static void tex_aux_scan_expression(int level, int braced)
         halfword current = reverse.head;
         while (current) {
             if (node_subtype(current) == bit_expression_number) {
-                tex_push_stack_entry(&stack, expression_entry(current));
+                tex_push_stack_entry(&stack, rpn_expression_entry(current));
             } else {
-                halfword token = expression_entry(current);
+                halfword token = rpn_expression_entry(current);
                 long long v;
                 if (token == bit_expression_not) {
                     v = ~ (long long) tex_pop_stack_entry(&stack);
@@ -8611,36 +8989,41 @@ static void tex_aux_scan_expression(int level, int braced)
                     break;
                 default:
                     {
-                        halfword token = (halfword) expression_entry(current);
+                        halfword token = (halfword) rpn_expression_entry(current);
                         long long v = 0;
                         switch (token) {
-                            case bit_expression_not: 
-                                v = expression_entry(stack.tail) ? 0 : 1;  /* no check?*/
-                                break;
-                            case bit_expression_bnot: 
-                                v = stack.tail ? ~expression_entry(stack.tail) : 0;
-                                break;
-                            case bit_expression_plus: 
-                                v = stack.tail ? expression_entry(stack.tail) : 0;
-                                break;
-                            case bit_expression_minus: 
-                                v = stack.tail ? - expression_entry(stack.tail) : 0;
-                                break;
-                            case bit_expression_flip: 
-                                v = stack.tail ? (expression_entry(stack.tail) ? 0 : 1) : 1;
-                                break;
-                            case bit_expression_positive: 
-                                v = stack.tail ? expression_entry(stack.tail) : 0;
-                                if (v < 0) {
-                                    v = - v;
-                                }
-                                break;
-                            case bit_expression_negative: 
-                                v = stack.tail ? expression_entry(stack.tail) : 0;
-                                if (v > 0) {
-                                    v = - v;
-                                }
-                                break;
+                            /* */
+                            case bit_expression_bnot : v = stack.tail ? ~ rpn_expression_entry(stack.tail) : 0; break;
+                            case bit_expression_plus : v = stack.tail ?   rpn_expression_entry(stack.tail) : 0; break;
+                            case bit_expression_minus: v = stack.tail ? - rpn_expression_entry(stack.tail) : 0; break;
+                            /* */
+                            case bit_expression_not : v = stack.tail ? (rpn_expression_entry(stack.tail) ? 0 : 1) : 0; break;
+                            case bit_expression_flip: v = stack.tail ? (rpn_expression_entry(stack.tail) ? 0 : 1) : 1; break;
+                            /* */
+                            case bit_expression_positive: v = stack.tail ? rpn_expression_entry(stack.tail) : 0; if (v < 0) { v = - v; } break;
+                            case bit_expression_negative: v = stack.tail ? rpn_expression_entry(stack.tail) : 0; if (v > 0) { v = - v; } break;
+                            /* */
+                            case bit_expression_sin  : { v = stack.tail ? tex_aux_function_result(&stack, sin  (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_cos  : { v = stack.tail ? tex_aux_function_result(&stack, cos  (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_tan  : { v = stack.tail ? tex_aux_function_result(&stack, tan  (tex_aux_function_argument(&stack))) : 0; } break; // error 
+                            case bit_expression_asin : { v = stack.tail ? tex_aux_function_result(&stack, asin (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_acos : { v = stack.tail ? tex_aux_function_result(&stack, acos (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_atan : { v = stack.tail ? tex_aux_function_result(&stack, atan (tex_aux_function_argument(&stack))) : 0; } break; // error  
+                            case bit_expression_sinh : { v = stack.tail ? tex_aux_function_result(&stack, sinh (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_cosh : { v = stack.tail ? tex_aux_function_result(&stack, cosh (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_tanh : { v = stack.tail ? tex_aux_function_result(&stack, tanh (tex_aux_function_argument(&stack))) : 0; } break; // error 
+                            case bit_expression_asinh: { v = stack.tail ? tex_aux_function_result(&stack, asinh(tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_acosh: { v = stack.tail ? tex_aux_function_result(&stack, acosh(tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_atanh: { v = stack.tail ? tex_aux_function_result(&stack, atanh(tex_aux_function_argument(&stack))) : 0; } break; // error 
+                            case bit_expression_ceil : { v = stack.tail ? tex_aux_function_result(&stack, ceil (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_floor: { v = stack.tail ? tex_aux_function_result(&stack, floor(tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_round: { v = stack.tail ? tex_aux_function_result(&stack, round(tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_abs  : { v = stack.tail ? tex_aux_function_result(&stack, abs  (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_sqrt : { v = stack.tail ? tex_aux_function_result(&stack, sqrt (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_log  : { v = stack.tail ? tex_aux_function_result(&stack, log10(tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_ln   : { v = stack.tail ? tex_aux_function_result(&stack, log  (tex_aux_function_argument(&stack))) : 0; } break;
+                            case bit_expression_exp  : { v = stack.tail ? tex_aux_function_result(&stack, exp  (tex_aux_function_argument(&stack))) : 0; } break;
+                            /* */
                             default: 
                                 {
                                     quarterword sa, sb;
@@ -8649,69 +9032,45 @@ static void tex_aux_scan_expression(int level, int braced)
                                     vb = tex_pop_stack_entry(&stack);
                                     if (stack.tail) {
                                         sa = node_subtype(stack.tail);
-                                        va = expression_entry(stack.tail);
-if (sa == sb) {
-    /* okay */
-} else if (sa == bit_expression_number) {
-    va = va * 65536;
-    sa = bit_expression_float;
-    node_subtype(stack.tail) = sb; /* float or dimension */
-} else if (sb == bit_expression_number) {
-    vb = vb * 65536;
-    sb = bit_expression_float;
-} 
- 
+                                        va = rpn_expression_entry(stack.tail);
+                                        /* */
+                                        if (sa == sb) {
+                                            /* okay */
+                                        } else if (sa == bit_expression_number) {
+                                            va = va * 65536;
+                                            sa = bit_expression_float;
+                                            node_subtype(stack.tail) = sb; /* float or dimension */
+                                        } else if (sb == bit_expression_number) {
+                                            vb = vb * 65536;
+                                            sb = bit_expression_float;
+                                        } 
+                                        /* */ 
                                     } else {
                                         sa = bit_expression_number;
                                         va = 0; 
                                     }
                                     switch (token) {
-                                        case bit_expression_bor:
-                                            v = va | vb;
-                                            break;
-                                        case bit_expression_band:
-                                            v = va & vb;
-                                            break;
-                                        case bit_expression_bxor:
-                                            v = va ^ vb;
-                                            break;
-                                        case bit_expression_bset:
-                                            v = va | ((long long) 1 << (vb - 1));
-                                            break;
-                                        case bit_expression_bunset:
-                                            v = va & ~ ((long long) 1 << (vb - 1));
-                                            break;
-                                        case bit_expression_bleft:
-                                            v = va << vb;
-                                            break;
-                                        case bit_expression_bright:
-                                            v = va >> vb;
-                                            break;
-                                        case bit_expression_less:
-                                            v = va < vb;
-                                            break;
-                                        case bit_expression_lessequal:
-                                            v = va <= vb;
-                                            break;
-                                        case bit_expression_equal:
-                                            v = va == vb;
-                                            break;
-                                        case bit_expression_moreequal:
-                                            v = va >= vb;
-                                            break;
-                                        case bit_expression_more:
-                                            v = va > vb;
-                                            break;
-                                        case bit_expression_unequal:
-                                            v = va != vb;
-                                            break;
-                                        case bit_expression_add:
-                                            v = va + vb; 
-                                            break;
-                                        case bit_expression_subtract:
-                                            v = va - vb; 
-                                            break;
+                                        case bit_expression_bor      : v = va |  vb; break;
+                                        case bit_expression_band     : v = va &  vb; break;
+                                        case bit_expression_bxor     : v = va ^  vb; break;
+                                        /* */
+                                        case bit_expression_bset     : v = va |   ((long long) 1 << (vb - 1)); break;
+                                        case bit_expression_bunset   : v = va & ~ ((long long) 1 << (vb - 1)); break;
+                                        /* */
+                                        case bit_expression_bleft    : v = va << vb; break;
+                                        case bit_expression_bright   : v = va >> vb; break;
+                                        case bit_expression_less     : v = va <  vb; break;
+                                        case bit_expression_lessequal: v = va <= vb; break;
+                                        case bit_expression_equal    : v = va == vb; break;
+                                        case bit_expression_moreequal: v = va >= vb; break;
+                                        case bit_expression_more     : v = va >  vb; break;
+                                        case bit_expression_unequal  : v = va != vb; break;
+                                        /* */
+                                        case bit_expression_add      : v = va +  vb; break;
+                                        case bit_expression_subtract : v = va -  vb; break;
+                                        /* */
                                         case bit_expression_multiply:
+                                            /* needs checking */
                                             {
                                                 double d = (double) va * (double) vb;
                                                 if (sa == bit_expression_float) {
@@ -8728,6 +9087,7 @@ if (sa == sb) {
                                             }
                                             break;
                                         case bit_expression_divide:
+                                            /* needs checking */
                                             if (vb) {
                                                 double d = (double) va / (double) vb;
                                                 if (sa == bit_expression_float) {
@@ -8747,24 +9107,16 @@ if (sa == sb) {
                                                 goto ZERO;
                                             }
                                             break;
-                                        case bit_expression_mod:
-                                            v =  va % vb;
-                                            break;
-                                        case bit_expression_div:
-                                            v =  va / vb;
-                                            break;
-                                        case bit_expression_or:
-                                            v = (va || vb) ? 1 : 0;
-                                            break;
-                                        case bit_expression_and:
-                                            v = (va && vb) ? 1 : 0;
-                                            break;
-                                        case bit_expression_cor:
-                                            v = va ? va : (vb ? vb : 0); 
-                                            break;
-                                        case bit_expression_cand:
-                                            v = (va && vb) ? vb : 0;
-                                            break;
+                                        /* */
+                                        case bit_expression_mod : v =  va % vb; break;
+                                        case bit_expression_div : v =  va / vb; break;
+                                        /* */
+                                        case bit_expression_or  : v = (va || vb) ? 1 : 0 ; break;
+                                        case bit_expression_and : v = (va && vb) ? 1 : 0 ; break;
+                                        /* */
+                                        case bit_expression_cor : v = va         ? va : (vb ? vb : 0); break;
+                                        case bit_expression_cand: v = (va && vb) ? vb            : 0 ; break;
+                                        /* */
                                         default:
                                             v = 0;
                                             break;
@@ -8786,7 +9138,7 @@ if (sa == sb) {
                             }
                         }
                         /* */
-                        expression_entry(stack.tail) = v;
+                        rpn_expression_entry(stack.tail) = v;
                         break;
                     }
             }
@@ -8794,22 +9146,24 @@ if (sa == sb) {
         }
     }
     goto DONE;
+  BRACEERROR:
+    tex_aux_scan_brace_error();
+    goto DONE;
+  PARENTERROR:
+    tex_aux_scan_parent_error();
+    goto DONE;
   ZERO:
-    tex_handle_error(
-        back_error_type,
-        "I can't divide by zero",
-        "I was expecting to see a nonzero number. Didn't."
-    );
+    tex_aux_scan_zero_divide_error();
     goto DONE;
   UNEXPECTED:
     tex_handle_error(
         back_error_type,
-        "Premature end of bit expression",
+        "Premature end of expression",
         "I was expecting to see an integer or bitwise operator. Didn't."
     );
   DONE:
     lmt_scanner_state.expression_depth--;
-    cur_val = scaledround(((double) expression_entry(stack.tail)) / factor);
+    cur_val = scaledround(((double) rpn_expression_entry(stack.tail)) / factor);
     cur_val_level = level;
     tex_aux_dispose_stack(&stack);
     tex_aux_dispose_stack(&reverse);

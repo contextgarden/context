@@ -160,7 +160,7 @@ function packers.unpack(t,p,shared)
             if tp.version == (p and p.version or packers.version) then
                 unpack(t,tp.keys,tp.skip,tp.index)
             else
-               return false
+                return false
             end
             t.packer = nil
         end

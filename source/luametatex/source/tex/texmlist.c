@@ -2430,8 +2430,11 @@ static int tex_aux_fetch(halfword n, const char *where, halfword *f, halfword *c
         if (tex_char_exists(*f, *c)) {
             return 1;
         } else {
-            tex_char_warning(*f, *c);
-            return 0;
+            /*tex 
+                There is a good chance that we already have checked. 
+            */
+            tex_missing_character(n, *f, *c, missing_character_math_glyph);
+            return tex_char_exists(*f, *c) ? 1 : 0;
         }
     } else {
         *f = tex_fam_fnt(kernel_math_family(n), lmt_math_state.size);
@@ -2451,8 +2454,8 @@ static int tex_aux_fetch(halfword n, const char *where, halfword *f, halfword *c
         } else if (tex_math_char_exists(*f, *c, lmt_math_state.size)) {
             return 1;
         } else {
-            tex_char_warning(*f, *c);
-            return 0;
+            tex_missing_character(n, *f, *c, missing_character_math_kernel);
+            return tex_char_exists(*f, *c) ? 1 : 0;
         }
     }
 }
@@ -7814,8 +7817,6 @@ static void tex_mlist_aux_realign(halfword first, halfword last)
     if (realign) {
      // printf("realign needed\n");
     }
-    /* */
-    current = first;
     /* */
     current = first;
     while (current) {

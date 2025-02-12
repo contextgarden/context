@@ -131,6 +131,7 @@ typedef enum node_types {
     /*tex The next set of nodes is invisible from the \LUA\ (but nesting nodes can show up). */
     expression_node,
     lmtx_expression_node,
+    rpn_expression_node,
     loop_state_node,
     math_spec_node,
     font_spec_node,
@@ -1591,31 +1592,39 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
     used when we have expressions between parenthesis.
 */
 
-//define expression_node_size     3
-# define expression_node_size     5
-# define expression_type(a)       vinfo00(a,1)   /*tex one of the value levels */
-# define expression_state(a)      vinfo01(a,1)
-# define expression_result(a)     vinfo02(a,1)
-# define expression_negate(a)     vinfo03(a,1)   /*tex can be a bitset */
-# define expression_expression(a) vlink(a,1)     /*tex saved expression so far */
-# define expression_term(a)       vlink(a,2)     /*tex saved term so far */
-# define expression_numerator(a)  vinfo(a,2)     /*tex saved numerator */
+/*tex Traditional \ETEX\ expression: */
 
-# define expression_type_expression(a) vlink(a,3)
-# define expression_type_term(a)       vinfo(a,3)
-# define expression_type_numerator(a)  vlink(a,4)
+# define expression_node_size     3
+# define expression_type(a)       vinfo00(a,1) /* overloads attr */ /*tex one of the value levels */
+# define expression_state(a)      vinfo01(a,1) /* overloads attr */
+# define expression_result(a)     vinfo02(a,1) /* overloads attr */
+# define expression_reserved(a)   vinfo03(a,1) /* overloads attr */ /*tex not used */
+# define expression_expression(a) vlink(a,1)   /* overloads prev */ /*tex saved expression so far */
+# define expression_term(a)       vlink(a,2)   /*tex saved term so far */
+# define expression_numerator(a)  vinfo(a,2)   /*tex saved numerator */
+
+/*tex Extended traditional expression: */
 
 # define lmtx_expression_node_size          6
-# define lmtx_expression_type(a)            vinfo00(a,1)
-# define lmtx_expression_state(a)           vinfo01(a,1)
-# define lmtx_expression_result(a)          vinfo02(a,1)
-# define lmtx_expression_negate(a)          vinfo03(a,1)
-# define lmtx_expression_type_expression(a) vlink(a,1)
+# define lmtx_expression_type(a)            vinfo00(a,1) /* overloads attr */ /*tex one of the value levels, not used */
+# define lmtx_expression_state(a)           vinfo01(a,1) /* overloads attr */
+# define lmtx_expression_result(a)          vinfo02(a,1) /* overloads attr */
+# define lmtx_expression_negate(a)          vinfo03(a,1) /* overloads attr */ /* bitset */
+# define lmtx_expression_type_expression(a) vlink(a,1)   /* overloads prev */
 # define lmtx_expression_type_term(a)       vinfo(a,2)
 # define lmtx_expression_type_numerator(a)  vlink(a,2)
 # define lmtx_expression_expression(a)      lvalue(a,3) 
 # define lmtx_expression_term(a)            lvalue(a,4) 
 # define lmtx_expression_numerator(a)       lvalue(a,5) 
+
+/*tex RPN stacked expression: */
+
+# define rpn_expression_node_size 3
+# define rpn_expression_type(a)   vinfo00(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_state(a)  vinfo01(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_result(a) vinfo02(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_negate(a) vinfo03(a,1) /* overloads attr */ /*tex bitset   */
+# define rpn_expression_entry(a)  lvalue(a,2) 
 
 /*tex
     Why not.
@@ -1623,12 +1632,6 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 
 # define loop_state_node_size 2
 # define loop_state_count(a)  vinfo(a,1) /* instead if node_attr */
-
-/*tex
-    To be decided: go double
-*/
-
-# define expression_entry(a)      lvalue(a,2)
 
 /*tex
     This is a node that stores a font state. In principle we can do without but for tracing it

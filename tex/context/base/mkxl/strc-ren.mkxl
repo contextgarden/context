@@ -348,7 +348,8 @@
      \strc_rendering_initialize_line_hang
      % kind of special, we want to snap heads also according to local specs local
      \setbox\b_strc_rendering_head\hbox
-       {\hskip{\d_strc_rendering_local_leftoffset+(\headparameter\c!margin)}%
+%        {\hskip{\d_strc_rendering_local_leftoffset+(\headparameter\c!margin)}%
+       {\hskip\glueexpr\d_strc_rendering_local_leftoffset+(\headparameter\c!margin)\relax
         \box\b_strc_rendering_head
         \getheadsyncs % a latelua why not in the box
         }%
@@ -516,7 +517,7 @@
   {\headwidth         {\headparameter\c!width       }% % \zeropoint == unset
    \headnumberwidth   {\headparameter\c!numberwidth }% % \zeropoint == unset
    \headnumberdistance{\headparameter\c!distance    }%
-   \headtextdistance  {\headparameter\c!textdistance}%
+   \headtextdistance  \glueexpr\headparameter\c!textdistance\relax
    \headtextwidth     {\headparameter\c!textwidth   }} % \zeropoint == unset
 
 \permanent\protected\def\headtextcontent
@@ -687,7 +688,8 @@
                         } {
                             \scratchdistance\rightmargindistance
                         }
-                        \hskip{\d_strc_rendering_local_leftoffset+\scratchdistance}%
+%                         \hskip{\d_strc_rendering_local_leftoffset+\scratchdistance}%
+                        \hskip\glueexpr\d_strc_rendering_local_leftoffset+\scratchdistance\relax
                     }
                 }
             \else

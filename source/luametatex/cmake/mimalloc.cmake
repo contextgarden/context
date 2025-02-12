@@ -19,6 +19,12 @@ set(mimalloc_sources
     source/libraries/mimalloc/src/prim/prim.c
 )
 
+# if (MI_OSX_ZONE)
+#     list(APPEND mimalloc_sources source/libraries/mimalloc/src/prim/osx/alloc-override-zone.c)
+#     add_definitions(-DMI_OSX_ZONE=1)
+#     add_definitions(-DMI_OSX_INTERPOSE=1)
+# endif()
+
 set(mi_cflags "")
 set(mi_libraries "")
 
@@ -39,6 +45,9 @@ target_compile_definitions(mimalloc PRIVATE
     MI_DEBUG=0
     MI_SECURE=0
     NDEBUG=0
+  # MI_DEBUG=3
+  # MI_SHOW_ERRORS=1
+  # MI_PADDING=1
 )
 
 if (NOT MSVC)
@@ -47,3 +56,6 @@ if (NOT MSVC)
         -Wno-cast-qual
     )
 endif ()
+
+# list(APPEND mi_defines MI_LIBC_MUSL=1)
+# list(APPEND mi_cflags -Wno-static-in-inline)

@@ -1676,6 +1676,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
                                 ht = rule_height(gl);
                                 dp = rule_depth(gl);
                                 break;
+                            /* how about glyph_node */
                         }
                         if (ht > height) {
                             height = ht;
@@ -2148,6 +2149,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
                             ht = rule_height(gl);
                             dp = rule_depth(gl);
                             break;
+                        /* how about glyph_node */
                     }
                     if (ht) {
                         siz.ht = ht;
@@ -2298,6 +2300,7 @@ scaledwhd tex_natural_msizes(halfword p, int ignoreprime)
                             ht = rule_height(gl);
                             dp = rule_depth(gl);
                             break;
+                        /* how about glyph_node */
                     }
                     if (ht) {
                         siz.ht = ht;

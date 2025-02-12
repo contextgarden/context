@@ -7,7 +7,8 @@
 # include "luametatex.h"
 # include "lmtoptional.h"
 
-# define lzo_output_length(n)  (n + n / 16 + 64 + 64) /* we add 64 instead of 3 */
+# define lzo_output_length(n)  (n + (n/16) + 64 + 3)
+# define lzo_size_of_mem       (16384L * sizeof(unsigned char) * 2) /* or 4 ? */
 
 # define LZO_E_OK 0
 
@@ -34,11 +35,11 @@ static lzolib_state_info lzolib_state = {
 static int lzolib_compress(lua_State *L)
 {
     if (lzolib_state.initialized) {
-        char *wrkmem = lmt_memory_malloc(16384 + 32); /* we some plenty of slack, normally 2 seemss enough */
+        char *wrkmem = lmt_memory_malloc(lzo_size_of_mem);
         size_t sourcesize = 0;
         const char *source = luaL_checklstring(L, 1, &sourcesize);
         luaL_Buffer buffer;
-        size_t targetsize = lzo_output_length(sourcesize);
+        size_t targetsize = lzo_output_length(sourcesize) + 100;
         char *target = luaL_buffinitsize(L, &buffer, targetsize);
         int result = lzolib_state.lzo1x_1_compress(source, sourcesize, target, &targetsize, wrkmem);
         if (result == LZO_E_OK) {

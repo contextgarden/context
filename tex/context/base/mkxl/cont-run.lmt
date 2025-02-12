@@ -259,6 +259,14 @@ local function processjob()
 
     setoverloadmode(arguments.overloadmode)
 
+    if arguments.nocompactfonts then
+        report_system()
+        report_system("compact font mode disabled")
+        report_system()
+    else
+        token.expandmacro("font_enable_compact_font_mode")
+    end
+
     if not filename or filename == "" then
         -- skip
     elseif suffix == "svg" or arguments.forcesvg then

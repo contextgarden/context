@@ -448,6 +448,138 @@ static inline halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
     return p ? token_link(p) : null;
 }
 
+/*tex 
+    
+    We can at some point (when deemed critital in \CONTEXT) add these: 
+
+    \starttyping 
+    \counttok   token     tokenlist 
+    \counttoks  tokenlist tokenlist 
+    \countxtoks tokenlist tokenlist % expanded 
+    \countchar  chartoken tokenlist
+    \stoptyping 
+
+    but for now we keep them local (static).
+*/
+
+static halfword tex_aux_count_tok(int once)
+{
+    halfword qq = null;
+    halfword p, q;
+    halfword result = 0;
+    int save_scanner_status = lmt_input_state.scanner_status;
+    lmt_input_state.scanner_status = scanner_is_normal;
+    p = tex_get_token();
+    q = tex_aux_grab_toks(0, 0, &qq);
+    if (p == q) {
+        result = 1;
+    } else {
+        while (q) {
+            if (p == token_info(q)) {
+                result += 1;
+                if (once) { 
+                    break;
+                }
+            } else {
+                q = token_link(q);
+            }
+        }
+    }
+    if (qq) {
+        tex_flush_token_list(qq);
+    }
+    lmt_input_state.scanner_status = save_scanner_status;
+    return result;
+}
+
+static halfword tex_aux_count_toks(int once, int expand)
+{
+    halfword pp = null;
+    halfword p;
+    halfword result = 0;
+    int save_scanner_status = lmt_input_state.scanner_status;
+    lmt_input_state.scanner_status = scanner_is_normal;
+    p = tex_aux_grab_toks(expand, expand, &pp);
+    if (p) {
+        halfword qq = null;
+        halfword q = tex_aux_grab_toks(expand, expand, &qq);
+        if (p == q) {
+            result = 1;
+        } else {
+            int qh = q;
+            int ph = p;
+            while (p && q) {
+                halfword pt = token_info(p);
+                halfword qt = token_info(q);
+              AGAIN:
+                if (pt == qt) {
+                    p = token_link(p);
+                    q = token_link(q);
+                } else if (token_cmd(pt) == ignore_cmd && token_cmd(qt) >= ignore_cmd && token_cmd(qt) <= other_char_cmd) {
+                    p = token_link(p);
+                    if (token_chr(pt) == token_chr(qt)) {
+                        q = token_link(q);
+                    } else {
+                        pt = token_info(p);
+                        goto AGAIN;
+                    }
+                } else {
+                    p = ph;
+                    q = token_link(qh);
+                    qh = q;
+                }
+                if (! p) {
+                    result += 1;
+                    if (once) { 
+                        break;
+                    }
+                }
+            }
+        }
+        if (qq) {
+            tex_flush_token_list(qq);
+        }
+    }
+    if (pp) {
+        tex_flush_token_list(pp);
+    }
+    lmt_input_state.scanner_status = save_scanner_status;
+    return result;
+}
+
+static halfword tex_aux_count_char(int once)
+{
+    halfword tok;
+    halfword qq = null;
+    halfword q;
+    halfword result = 0;
+    int save_scanner_status = lmt_input_state.scanner_status;
+    lmt_input_state.scanner_status = scanner_is_normal;
+    tok = tex_get_token();
+    q = tex_aux_grab_toks(0, 0, &qq);
+    if (q) {
+        int nesting = 0;
+        while (q) {
+            if (! nesting && token_info(q) == tok) {
+                result += 1;
+                if (once) { 
+                    break;
+                }
+            } else if (token_cmd(token_info(q)) == left_brace_cmd) {
+                nesting += 1;
+            } else if (token_cmd(token_info(q)) == right_brace_cmd) {
+                nesting -= 1;
+            }
+            q = token_link(q);
+        }
+    }
+    if (qq) {
+        tex_flush_token_list(qq);
+    }
+    lmt_input_state.scanner_status = save_scanner_status;
+    return result;
+}
+
 // static inline halfword tex_aux_scan_comparison(int code)
 // {
 //     halfword r;
@@ -1212,116 +1344,15 @@ void tex_conditional_if(halfword code, int unless)
                 }
             }
         case if_has_tok_code:
-            {
-                halfword qq = null;
-                halfword p, q;
-                int save_scanner_status = lmt_input_state.scanner_status;
-                lmt_input_state.scanner_status = scanner_is_normal;
-                p = tex_get_token();
-                q = tex_aux_grab_toks(0, 0, &qq);
-                if (p == q) {
-                    result = 1;
-                } else {
-                    result = 0;
-                    while (q) {
-                        if (p == token_info(q)) {
-                            result = 1;
-                            break;
-                        } else {
-                            q = token_link(q);
-                        }
-                    }
-                }
-                if (qq) {
-                    tex_flush_token_list(qq);
-                }
-                lmt_input_state.scanner_status = save_scanner_status;
-                goto RESULT;
-            }
+            result = tex_aux_count_tok(1);
+            goto RESULT;
         case if_has_toks_code:
         case if_has_xtoks_code:
-            {
-                halfword pp = null;
-                halfword p;
-                int expand = code == if_has_xtoks_code;
-                int save_scanner_status = lmt_input_state.scanner_status;
-                lmt_input_state.scanner_status = scanner_is_normal;
-                p = tex_aux_grab_toks(expand, expand, &pp);
-                if (p) {
-                    halfword qq = null;
-                    halfword q = tex_aux_grab_toks(expand, expand, &qq);
-                    if (p == q) {
-                        result = 1;
-                    } else {
-                        int qh = q;
-                        int ph = p;
-                        result = 0;
-                        while (p && q) {
-                            halfword pt = token_info(p);
-                            halfword qt = token_info(q);
-                          AGAIN:
-                            if (pt == qt) {
-                                p = token_link(p);
-                                q = token_link(q);
-                            } else if (token_cmd(pt) == ignore_cmd && token_cmd(qt) >= ignore_cmd && token_cmd(qt) <= other_char_cmd) {
-                                p = token_link(p);
-                                if (token_chr(pt) == token_chr(qt)) {
-                                    q = token_link(q);
-                                } else {
-                                    pt = token_info(p);
-                                    goto AGAIN;
-                                }
-                            } else {
-                                p = ph;
-                                q = token_link(qh);
-                                qh = q;
-                            }
-                            if (! p) {
-                                result = 1;
-                                break;
-                            }
-                        }
-                    }
-                    if (qq) {
-                        tex_flush_token_list(qq);
-                    }
-                }
-                if (pp) {
-                    tex_flush_token_list(pp);
-                }
-                lmt_input_state.scanner_status = save_scanner_status;
-                goto RESULT;
-            }
+            result = tex_aux_count_toks(1, code == if_has_xtoks_code);
+            goto RESULT;
         case if_has_char_code:
-            {
-                halfword tok;
-                halfword qq = null;
-                halfword q;
-                int save_scanner_status = lmt_input_state.scanner_status;
-                lmt_input_state.scanner_status = scanner_is_normal;
-                tok = tex_get_token();
-                q = tex_aux_grab_toks(0, 0, &qq);
-                if (q) {
-                    int nesting = 0;
-                    result = 0;
-                    while (q) {
-                        if (! nesting && token_info(q) == tok) {
-                            result = 1;
-                            break;
-                        } else if (token_cmd(token_info(q)) == left_brace_cmd) {
-                            nesting += 1;
-                        } else if (token_cmd(token_info(q)) == right_brace_cmd) {
-                            nesting -= 1;
-                        }
-                        q = token_link(q);
-                    }
-                }
-                if (qq) {
-                    tex_flush_token_list(qq);
-                }
-                lmt_input_state.scanner_status = save_scanner_status;
-                goto RESULT;
-            }
+            result = tex_aux_count_char(1);
+            goto RESULT;
         case if_insert_code:
             /* beware: it tests */
             result = ! tex_insert_is_void(tex_scan_integer(0, NULL, NULL));

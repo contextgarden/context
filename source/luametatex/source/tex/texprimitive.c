@@ -463,7 +463,7 @@ void tex_primitive(int cmd_origin, const char *str, singleword cmd, halfword chr
 static halfword tex_aux_insert_id(halfword p, const unsigned char *str, unsigned int l)
 {
     if (cs_text(p) > 0) {
-     RESTART:
+      RESTART:
         if (lmt_hash_state.hash_data.ptr < lmt_hash_state.hash_data.allocated) {
             ++lmt_hash_state.hash_data.ptr;
             cs_next(p) = lmt_hash_state.hash_data.ptr + eqtb_size;

@@ -1041,7 +1041,7 @@ static const char *texlib_aux_scan_dimension_part(lua_State * L, const char *ss,
         We dropped the |nd| and |nc| units as well as the |true| prefix. We could use a similar
         switch as in the normal scsanner but this one is not really used, so ...
     */
-    if ((char) *str) {
+    if (str[0] && str[1]) {
         int index = unit_parameter_index(str[0], str[1]);
         if (index >= 0) {
             switch (index) {
@@ -6235,6 +6235,15 @@ static int texlib_getprimitiveorigins(lua_State *L)
     return 1;
 }
 
+static int texlib_getmissingcharactervalues(lua_State *L)
+{
+    lua_createtable(L, 2, 1);
+    lua_set_string_by_index(L,missing_character_text_glyph,  "textglyph");
+    lua_set_string_by_index(L,missing_character_math_glyph,  "mathglyph");
+    lua_set_string_by_index(L,missing_character_math_kernel, "mathkernel");
+    return 1;
+}
+
 static int texlib_getinteractionmodes(lua_State *L)
 {
     lua_createtable(L, 4, 0);
@@ -7092,6 +7101,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getiftypes",                   texlib_getiftypes                   },
     { "getiovalues",                  texlib_getiovalues                  },
     { "getprimitiveorigins",          texlib_getprimitiveorigins          },
+    { "getmissingcharactervalues",    texlib_getmissingcharactervalues    }, 
     { "getfrozenparvalues",           texlib_getfrozenparvalues           },
     { "getshapingpenaltiesvalues",    texlib_getshapingpenaltiesvalues    },
     { "getautoparagraphvalues",       texlib_getautoparagraphvalues       },

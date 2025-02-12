@@ -188,7 +188,6 @@ static int texiolib_write(lua_State *L)
     return 0;
 }
 
-
 static int texiolib_write_nl(lua_State *L)
 {
     if (lmt_main_state.ready_already == output_disabled_state || ! lmt_fileio_state.job_name) {

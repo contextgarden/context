@@ -166,6 +166,8 @@ numberdata = table.fastcopy(numberdata)
             end
         end
 
+-- inspect(sublists)
+
         for _, sublist in next, sublists do
             for _, v in next, sublist do
                 local tmp = { }

@@ -185,7 +185,7 @@ static void print_version (void) {
 static void createargtable (lua_State *L, char **argv, int argc, int script) {
   int i, narg;
   narg = argc - (script + 1);  /* number of positive indices */
-  lua_createtable(L, cast_uint(narg), cast_uint(script + 1));
+  lua_createtable(L, narg, script + 1);
   for (i = 0; i < argc; i++) {
     lua_pushstring(L, argv[i]);
     lua_rawseti(L, -2, i - script);
@@ -497,7 +497,7 @@ static void lua_freeline (char *line) {
 static void lua_initreadline (lua_State *L) {
   void *lib = dlopen(LUA_READLINELIB, RTLD_NOW | RTLD_LOCAL);
   if (lib == NULL)
-    lua_warning(L, "library '" LUA_READLINELIB "'not found", 0);
+    lua_warning(L, "library '" LUA_READLINELIB "' not found", 0);
   else {
     const char **name = cast(const char**, dlsym(lib, "rl_readline_name"));
     if (name != NULL)

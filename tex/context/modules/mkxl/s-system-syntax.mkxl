@@ -279,6 +279,10 @@
     \ctxlua{moduledata.engine.codes(tex.getbadnessmodevalues())}
 \stopbuffer
 
+\startbuffer[engine:syntax:missingcharactervalues]
+    \ctxlua{moduledata.engine.codes(tex.getmissingcharactervalues())}
+\stopbuffer
+
 \stopmodule
 
 \continueifinputfile{s-system-syntax.mkxl}

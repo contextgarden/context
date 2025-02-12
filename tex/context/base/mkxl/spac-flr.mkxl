@@ -106,7 +106,7 @@
   {\hfill}
 
 \defcsname\??filleralternative\v!space\endcsname
-  {\hskip{\fillerparameter\c!distance}\relax}
+  {\hskip\glueexpr\fillerparameter\c!distance\relax\relax}
 
 \defcsname\??filleralternative\v!rule\endcsname
   {\expandnamespaceparameter\??fillerleadermethod\fillerparameter\c!method\v!local

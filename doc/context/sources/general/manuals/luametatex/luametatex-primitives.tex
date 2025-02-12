@@ -12909,7 +12909,9 @@ loose result.
 \startoldprimitive[title={\prm {tracinglostchars}}]
 
 When set to one characters not present in a font will be reported in the log
-file, a value of two will also report this on the console.
+file, a value of two will also report this on the console. In \CONTEXT\ we use
+the \type {missing_character} instead. Contrary to in \LUATEX\ values larger than
+two have no special meaning and we don't error.
 
 \stopoldprimitive
 

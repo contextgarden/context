@@ -103,23 +103,41 @@
         \stopluacode
     \stopTEXpage
 
+    \startluacode
+        for i=1,25 do
+            context.startTEXpage()
+            context.dontleavehmode()
+            context(i)
+            context.space()
+            context.barcode {
+                alternative = "datamatrix",
+                text        = string.rep("!",i),
+            }
+            context.space()
+            context.barcode {
+                alternative = "datamatrix",
+                text        = string.rep("!",i),
+                option      = "square",
+            }
+            context.stopTEXpage()
+        end
+    \stopluacode
+
+\startbuffer[demo]
+\starttext
+    This is some \bold {bold} test snippet.
+\stoptext
+\stopbuffer
+
+    \startTEXpage[offset=1ts]
         \startluacode
-            for i=1,25 do
-                context.startTEXpage()
-                context.dontleavehmode()
-                context(i)
-                context.space()
-                context.barcode {
-                    alternative = "datamatrix",
-                    text        = string.rep("!",i),
-                }
-                context.space()
-                context.barcode {
-                    alternative = "datamatrix",
-                    text        = string.rep("!",i),
-                    option      = "square",
-                }
-                context.stopTEXpage()
-            end
+            context.dontleavehmode()
+            context.barcode {
+                alternative = "datamatrix",
+                option      = "square",
+                text        = string.gsub(buffers.getcontent("demo"),"%s+"," ")
+            }
         \stopluacode
+    \stopTEXpage
+
 \stoptext

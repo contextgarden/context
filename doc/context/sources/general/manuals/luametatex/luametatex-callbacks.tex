@@ -1148,6 +1148,7 @@ have the requested character.
 
 \starttyping[option=LUA]
 function (
+    <t:integer> location,
     <t:node>    glyph,
     <t:integer> font,
     <t:integer> character
@@ -1155,6 +1156,14 @@ function (
     -- no return value
 end
 \stoptyping
+
+When \prm {tracinglostchars} is set to a positive value a message goes to the log
+and a value larger than one also makes it show up non the terminal. In the
+callback, the location is one of:
+
+\startfourrows
+\getbuffer[engine:syntax:missingcharactervalues]
+\stopfourrows
 
 \stopsubsection
 
@@ -1593,7 +1602,6 @@ function (
 end
 \stoptyping
 
-
 \stopsubsection
 
 \startsubsection[title=get_math_dictionary]
@@ -1761,6 +1769,8 @@ function (
     -- no return value
 end
 \stoptyping
+
+\stopsubsection
 
 \startsubsection[title=balance_boundary]
 

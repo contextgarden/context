@@ -54,7 +54,6 @@ string_pool_info lmt_string_pool_state = {
         .initial   = 0,
         .offset    = 0,
         .extra     = 0, 
-        .extra     = 0, 
     },
     .reserved              = 0,
     .string_max_length     = 0,
