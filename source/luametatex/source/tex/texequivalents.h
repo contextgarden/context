@@ -1178,6 +1178,7 @@ extern void tex_unsave                 (void);                                  
 extern void tex_show_save_groups       (void);
 extern int  tex_located_save_value     (int id);
 extern void tex_show_save_stack        (void);
+extern void tex_save_stack_catch_up    (void);
 
 /*tex
 

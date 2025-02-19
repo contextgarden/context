@@ -2202,6 +2202,30 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                 }
                 break;
             }
+# if (match_experiment)
+case integer_reference_cmd:
+    {
+        halfword n = cur_chr;
+        if (node_token_flagged(n)) {
+            tex_get_token();
+            n = node_token_sum(n,cur_chr);
+        }
+        cur_val = n;
+        cur_val_level = integer_val_level;
+        break;
+    }
+case dimension_reference_cmd:
+    {
+        halfword n = cur_chr;
+        if (node_token_flagged(n)) {
+            tex_get_token();
+            n = node_token_sum(n,cur_chr);
+        }
+        cur_val = n;
+        cur_val_level = dimension_val_level;
+        break;
+    }
+# endif 
         default:
           DEFAULT:
             /*tex Complain that |\the| can not do this; give zero result. */
@@ -4716,6 +4740,18 @@ static int tex_aux_valid_macro_preamble(halfword *p, int *counter, halfword *has
                         case at_token_o:
                             cur_tok = par_command_match_token;
                             break;
+# if (match_experiment)
+case d_token_l:
+case d_token_o:
+    ++*counter;
+    cur_tok = dimension_match_token;
+    break;
+case i_token_l:
+case i_token_o:
+    ++*counter;
+    cur_tok = integer_match_token;
+    break;
+# endif 
                         case L_token_l:
                         case L_token_o:
                             cur_tok = left_match_token;

@@ -75,12 +75,10 @@ local findnode            = nuts.findnode
 
 local traverseitalic      = nuts.traverseitalic
 
-local new_correction_kern = nodepool.italickern
------ new_correction_glue = nodepool.glue
+local new_correction_kern = nodepool.italiccorrection
 
 local fonthashes          = fonts.hashes
 local fontdata            = fonthashes.identifiers
------ italicsdata         = fonthashes.italics
 local exheights           = fonthashes.exheights
 local chardata            = fonthashes.characters
 

@@ -25,7 +25,7 @@ local scanners          = tokens.scanners
 local scanword          = scanners.word
 local scanstring        = scanners.string
 local scanboolean       = scanners.boolean
-local scandimen         = scanners.dimen
+local scandimension     = scanners.dimension
 local scanfloat         = scanners.float
 local scaninteger       = scanners.integer
 local scancardinal      = scanners.cardinal
@@ -120,7 +120,7 @@ implement {
         if b == "value" then
             return dimension_code, integers[n] or 0
         else
-            integers[n] = scandimen(false,false,true)
+            integers[n] = scandimension(false,false,true)
         end
     end,
 }
@@ -228,7 +228,7 @@ implement {
                 elseif ty == "boolean" then
                     data.scanner = scanboolean
                 elseif ty == "dimension" then
-                    data.scanner = scandimen
+                    data.scanner = scandimension
                 elseif ty == "float" then
                     data.scanner = scanfloat
                 end
@@ -401,7 +401,7 @@ implement {
     actions = function(b)
         if b == "value" then
             local how  = scanword()
-            local what = scandimen()
+            local what = scandimension()
             if how then
                 local factor = dimenfactors[how]
                 if factor then
@@ -417,7 +417,7 @@ implement {
             if t then
                 local i = getindex(t)
                 if i then
-                    local d = scandimen(false,false,true)
+                    local d = scandimension(false,false,true)
                     texsetdimen(i,d)
                 end
             end

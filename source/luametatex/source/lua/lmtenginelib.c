@@ -195,7 +195,7 @@ static void enginelib_show_help(void)
         "\n"
         "The following regular options are understood:\n"
         "\n"
-        "  --credits           display credits and exit\n"
+        "  --credits           display credits and some details and exit\n"
         "  --fmt=FORMAT        load the format file FORMAT\n"
         "  --help              display help and exit\n"
         "  --ini               be ini" luametatex_name_lowercase ", for dumping formats\n"
@@ -209,7 +209,7 @@ static void enginelib_show_help(void)
         "\n"
         "Loading libraries from Lua is blocked unless one explicitly permits it:\n"
         "\n"
-        "  --permitloadlib     permit loading of external libraries (coming)\n"
+        "  --permitloadlib     permit loading of external libraries\n"
         "\n"
         "See the reference manual for more information about the startup process.\n"
         "\n"
@@ -343,16 +343,19 @@ static void enginelib_show_credits(void)
         "simple foreign interface subsystem. Although this is provided and considered part of the\n"
         "LuaMetaTeX engine it is not something ConTeXt depends (and will) depend on.\n"
         "\n"
-        "version   : " luametatex_version_string " | " LMT_TOSTRING(luametatex_development_id) "\n"
-        "format id : " LMT_TOSTRING(luametatex_format_fingerprint) "\n"
+        "version    : " luametatex_version_string " | " LMT_TOSTRING(luametatex_development_id) "\n"
+        "format id  : " LMT_TOSTRING(luametatex_format_fingerprint) "\n"
 # ifdef __DATE__
-        "date      : " __TIME__ " | " __DATE__ "\n"
+        "date       : " __TIME__ " | " __DATE__ "\n"
 # endif
 # ifdef LMT_COMPILER_USED
-        "compiler  : " LMT_COMPILER_USED "\n"
+        "compiler   : " LMT_COMPILER_USED "\n"
 # endif
-        "lua       : " LMT_TOSTRING(LUA_VERSION) "\n"
-        "luaformat : " LMT_TOSTRING(LUAC_FORMAT) "\n"
+        "lua        : " LUA_VERSION "\n"
+        "luacformat : " LMT_TOSTRING(LUAC_FORMAT) "\n"
+# ifdef LMT_PERMIT_LUA_LIBRARIES
+        "libraries  : enabled but not officially supported" "\n"
+# endif
     );
     printf("own path  : %s\n", lmt_environment_state.ownpath);
     printf("own base  : %s\n", lmt_environment_state.ownbase);

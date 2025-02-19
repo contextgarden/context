@@ -1247,7 +1247,10 @@
 \newinteger\c_math_cases_nc
 
 \def\math_cases_NC_zero
-  {\ifmmode\else\startimath\fi}
+  {\ifmmode\else
+     \startimath
+     \usemathstyleparameter\mathcasesparameter\c!mathstyle
+   \fi}
 
 \def\math_cases_NC_one
   {\mathcasesparameter\c!lefttext\relax
@@ -1255,6 +1258,7 @@
    \aligntab
    \ifmmode\else
      \startimath
+     \usemathstyleparameter\mathcasesparameter\c!mathstyle
    \fi
    \mathcasesparameter\c!righttext\relax}
 

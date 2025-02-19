@@ -362,7 +362,7 @@ do
 
     implement {
         name      = "vboxlisttohbox",
-        arguments = { "integer", "integer", "dimen" },
+        arguments = { "integer", "integer", "dimension" },
         actions   = function(original,target,inbetween)
             local current = getlist(getbox(original))
             local head = nil
@@ -1230,7 +1230,7 @@ do
 
     local scaninteger        = tokens.scanners.integer
     local scanbox            = tokens.scanners.box
-    local scandimen          = tokens.scanners.dimen
+    local scandimension      = tokens.scanners.dimension
 
     ----- setsubtype         = nuts.setsubtype
     local removenode         = nuts.remove
@@ -1451,9 +1451,9 @@ do
     }
 
     local setters_one = {
-        ["wd"]   = function(p,l,found) return setwidth (found,scandimen(false,false,true)) end,
-        ["ht"]   = function(p,l,found) return setheight(found,scandimen(false,false,true)) end,
-        ["dp"]   = function(p,l,found) return setdepth (found,scandimen(false,false,true)) end,
+        ["wd"]   = function(p,l,found) return setwidth (found,scandimension(false,false,true)) end,
+        ["ht"]   = function(p,l,found) return setheight(found,scandimension(false,false,true)) end,
+        ["dp"]   = function(p,l,found) return setdepth (found,scandimension(false,false,true)) end,
         ["set"]  = setline,
         ["get"]  = getline,
         ["copy"] = copyline,
@@ -1666,7 +1666,7 @@ do
         name      = "setsplitlisthtdp",
         public    = true,
         protected = true,
-        arguments = { "integer", "dimen", "dimen" },
+        arguments = { "integer", "dimension", "dimension" },
         actions   = setsplitlisthtdp,
     }
 end

@@ -748,6 +748,9 @@ void tex_print_cmd_flags(halfword cs, halfword cmd, int flags, int escaped)
 {
     if (flags) {
         flags = eq_flag(cs);
+        if (eq_level(cs) == level_one) { 
+            (escaped ? tex_print_str_esc : tex_print_str)("global "); 
+        }
         if (is_frozen   (flags)) { (escaped ? tex_print_str_esc : tex_print_str)("frozen "   ); }
         if (is_permanent(flags)) { (escaped ? tex_print_str_esc : tex_print_str)("permanent "); }
         if (is_immutable(flags)) { (escaped ? tex_print_str_esc : tex_print_str)("immutable "); }
@@ -934,6 +937,16 @@ void tex_print_cmd_chr(singleword cmd, halfword chr)
             tex_print_str("parameter ");
             tex_print_int(chr);
             break;
+# if (match_experiment)
+case integer_reference_cmd:
+    tex_print_str(node_token_flagged(chr) ? "large" : "small");
+    tex_print_str(" integer reference");
+    break;
+case dimension_reference_cmd:
+    tex_print_str(node_token_flagged(chr) ? "large" : "small");
+    tex_print_str(" dimension reference");
+    break;
+# endif 
         case mathspec_cmd:
             switch (node_subtype(chr)) {
                 case tex_mathcode:

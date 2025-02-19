@@ -81,7 +81,7 @@ local kern_code          <const> = nodecodes.kern
 local math_code          <const> = nodecodes.math
 
 local fontkern_code            <const> = kerncodes.fontkern
-local italickern_code          <const> = kerncodes.italiccorrection
+local italiccorrection_code    <const> = kerncodes.italiccorrection
 local leftcorrectionkern_code  <const> = kerncodes.leftcorrectionkern
 local rightcorrectionkern_code <const> = kerncodes.rightcorrectionkern
 
@@ -345,7 +345,7 @@ function breakpoints.handler(head)
                         prev  = getprev(prev)
                     elseif id == kern_code then
                         local s = getsubtype(prev)
-                        if s == fontkern_code or s == italickern_code or s == rightcorrectionkern_code_code then
+                        if s == fontkern_code or s == italiccorrection_code or s == rightcorrectionkern_code then
                             if cleft == 0 then
                                 kern = prev
                                 prev = getprev(prev)
@@ -378,7 +378,7 @@ function breakpoints.handler(head)
                             next   = getnext(next)
                         elseif id == kern_code then
                             local s = getsubtype(next)
-                            if s == fontkern_code or s == italickern_code or s == rightcorrectionkern_code then
+                            if s == fontkern_code or s == italiccorrection_code or s == rightcorrectionkern_code then
                                 if cleft == 0 then
                                     next = getnext(next)
                                 else

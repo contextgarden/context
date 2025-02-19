@@ -99,7 +99,7 @@ local atop_code              <const> = fractioncodes.atop
 local above_code             <const> = fractioncodes.above
 
 local fontkern_code          <const> = kerncodes.fontkern
-local italickern_code        <const> = kerncodes.italickern -- aka: italiccorrection
+local italiccorrection_code  <const> = kerncodes.italiccorrection
 
 local hextensible_code       <const> = nodes.radicalcodes.hextensible
 local delimited_code         <const> = nodes.radicalcodes.delimited
@@ -583,7 +583,7 @@ do
                     mtexttag = start_tagged("mtext")
                 end
                 setattr(start,a_tagged,mtexttag)
-            elseif mtexttag and id == kern_code and (subtype == fontkern_code or subtype == italickern_code) then
+            elseif mtexttag and id == kern_code and (subtype == fontkern_code or subtype == italiccorrection_code) then
                 setattr(start,a_tagged,mtexttag)
             elseif id == rule_code then
              -- setattr(start,a_tagged,start_tagged("ignore"))

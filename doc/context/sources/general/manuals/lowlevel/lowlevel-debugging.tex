@@ -1,0 +1,683 @@
+
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\usemodule[system-tokens]
+
+\definefontfeature[default][default][expansion=quality]
+
+\appendtoks\showmakeup[reset]\to\everybeforeoutput
+
+\usebodyfont[dejavu]
+\usebodyfont[pagella]
+
+\startdocument
+  [title=debugging,
+   color=darkgray]
+
+\startsectionlevel[title=Introduction]
+
+Below there will be some examples of how you can see what \TEX\ is doing. We
+start with some verbose logging but then move on to the more visual features. We
+occasionally point to some features present in the \LUAMETATEX\ engine. More
+details about what is possible can be found in documents in the \CONTEXT\
+distribution, for instance the \quote {lowlevel} manuals.
+
+Typesetting involves par building, page building, inserts (footnotes, floats),
+vertical adjusters (stuff before and after the current line), marks (used for
+running headers and footers), alignments (to build tables), math, local boxes
+(left and right of lines), hyphenation, font handling, and more and each has its
+own specific ways of tracing, either provided by the engine, or by \CONTEXT\
+itself. You can run \typ {context --trackers} to get a list of what \CONTEXT\ can
+do, as it lists most of them. But we start with the language, where tokens play
+an important role.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Token lists]
+
+There are two main types of linked lists in \TEX: token lists and node lists.
+Token lists relate to the language and node lists collect (to be) typeset content
+and are used for several stack based structures. Both are efficiently memory
+managed by the engine. Token lists have only forward links, but node lists link
+in both directions, at least in \LUATEX\ and \LUAMETATEX.
+
+When you define a macro, like the following, you get a token list:
+
+\startbuffer
+\def\test#1{\bgroup\bf#1\egroup}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Internally the \type {\test} macro has carry the argument part and the body,
+and each is encoded as a number plus a pointer to the next token.
+
+\luatokentable\test
+
+Here the first (large) number is a memory location that holds two 4 byte integers
+per token: the so called info part codes the command and sub command, the two
+smaller numbers in the table, and a link part that points to the next memory
+location, here the nest row. The last columns provide details. A character like
+\quote {a} is one token, but a control sequence like \type {\foo} is also one
+token because every control sequence gets a number. So, both take eight bytes of
+memory which is why a format file can become large and memory consumption grows
+the more macros you use.
+
+In the body of the above \type {\test} macro we used \type {\bf} so let's see how
+that looks:
+
+\luatokentable\bf
+
+Here the numbers are much lower which is an indication that they are likely in
+the format. They are also ordered, which is a side effect of \LUAMETATEX\ making
+sure that the token lists stored in the format file keep their tokens close
+together in memory which could potentially be a bit faster. But, when we are in a
+production run, the tokens come from the pool of freed or additionally allocated
+tokens:
+
+\start
+
+\startbuffer
+\tolerant\permanent\protected\def\test[#1]#:#2%
+  {{\iftok{#1}{sl}\bs\else\bf\fi#2}}
+\stopbuffer
+
+\typebuffer \getbuffer
+
+Gives us:
+
+\luatokentable\test
+
+\stop
+
+If you are familiar with \TEX\ and spend some time looking at this you will start
+recognizing entries. For instance \type {11 115} translates to \type {letter s}
+because \type {11} is the so called command code of letters (also its \type
+{\catcode}) and the \type {s} has \UTF8 value \type {115}. The \LUAMETATEX\
+specific \type {\iftok} conditional has command code \type {135} and sub code
+\type {29}. Internally these are called \type {cmd} and \type {chr} codes because
+in many cases it's characters that are the sub commands.
+
+There is more to tell about these commands and the way macros are defined, for
+instance \type {tolerant} here means that we can omit the the first argument
+(between brackets) in which case we pick up after the \type {#:}. With \type
+{protected} we indicate that the macro will not expand in for instance an \type
+{\edef} and \type {permanent} marks the macro as one that a user cannot redefine
+(assuming that overload protection is enabled). The extended macro argument
+parsing features and macro overload protection are something specific to
+\LUAMETATEX.
+
+These introspective tables can be generated with:
+
+\starttyping
+\luatokentable\test
+\stoptyping
+
+after loading the module \type {system-tokens}. The reason for having a module
+and not a built|-|in tracer is that users seldom want to do this. Instead they
+might use \typ {\showluatokens \test} that just reports something similar to the
+console and|/|or log file.
+
+There is much more to tell but most users have no need to look into these
+details unless they are curious about what \TEX\ does. In that case using \type
+{tracingall} and inspecting the log file can be revealing too, but be prepared
+for huge files. In \LUAMETATEX\ we have tried to improve these traces a bit but
+that's of course subjective and even then logs can become huge. But even if one
+doesn't understand all that is shown, it gives an impression about how much work
+\TEX\ is actually doing.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Node lists]
+
+A node list is what you get from input that is (to be) typeset. There are several
+ways to see what node lists are produced but these are all very verbose. Take for
+instance:
+
+\startbuffer
+\setbox\scratchbox\hbox{test \bf test}
+
+\showboxhere\scratchbox
+\stopbuffer
+
+\typebuffer
+
+This gives us:
+
+\starttyping[style=small,align=hangright]
+\hlist[box][color=1,colormodel=1,mathintervals=1], width 47.8457pt, height 7.48193pt, depth 0.15576pt, direction l2r, state 1
+.\list
+..\glyph[unset][color=1,colormodel=1], protected, wd 4.42041pt, ht 7.48193pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <1: DejaVuSerif @ 11.0pt>, glyph U+0074
+..\glyph[unset][color=1,colormodel=1], protected, wd 6.50977pt, ht 5.86523pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <1: DejaVuSerif @ 11.0pt>, glyph U+0065
+..\glyph[unset][color=1,colormodel=1], protected, wd 5.64502pt, ht 5.86523pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <1: DejaVuSerif @ 11.0pt>, glyph U+0073
+..\glyph[unset][color=1,colormodel=1], protected, wd 4.42041pt, ht 7.48193pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <1: DejaVuSerif @ 11.0pt>, glyph U+0074
+..\glue[spaceskip][color=1,colormodel=1] 3.49658pt plus 1.74829pt minus 1.16553pt, font 1
+..\glyph[unset][color=1,colormodel=1], protected, wd 5.08105pt, ht 7.48193pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <10: DejaVuSerif-Bold @ 11.0pt>, glyph U+0074
+..\glyph[unset][color=1,colormodel=1], protected, wd 6.99854pt, ht 5.86523pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <10: DejaVuSerif-Bold @ 11.0pt>, glyph U+0065
+..\glyph[unset][color=1,colormodel=1], protected, wd 6.19287pt, ht 5.86523pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <10: DejaVuSerif-Bold @ 11.0pt>, glyph U+0073
+..\glyph[unset][color=1,colormodel=1], protected, wd 5.08105pt, ht 7.48193pt, dp 0.15576pt, language (n=1,l=2,r=3), hyphenationmode "79F3F, options "80, font <10: DejaVuSerif-Bold @ 11.0pt>, glyph U+0074
+\stoptyping
+
+The periods indicate the nesting level and the slash in front of the initial
+field is mostly a historic curiosity because there are no \type {\hlist} and
+\type {\glue} primitives, but actually there is in \LUAMETATEX\ a \type {\glyph}
+primitive but that one definitely doesn't want the shown arguments.
+
+That said, here we have a horizontal list where the list field points to a glyph
+that itself points to a next one. The space became a glue node. In \LUATEX\ and
+even more in \LUAMETATEX\ all nodes have or get a subtype assigned that indicates
+what we're dealing with. This is shown between the first pair of brackets. Then
+there are attributes, between the second pair of brackets, which actually is a
+also a (sparse) linked list. Here we have two attributes set, the color, where
+the number points to some stored color specification, and the (here somewhat
+redundant) color space. The names of these attributes are macro package dependent
+because attributes are just a combination of a number and value. The engine
+itself doesn't do anything with them; it is the \LUA\ code you plug in that can
+do something useful based on the values.
+
+It will be clear that watching a complete page, with many nested boxes, rules,
+glyphs, discretionaries, glues, kerns, penalties, boundaries etc quickly becomes
+a challenge which is why we have other means to see what we get so let's move on
+to that now.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Visual debugging]
+
+In the early days of \CONTEXT, in the mid 90's of the previous century, one of
+the first presentations at an \NTG\ meeting was about visual debugging. This
+feature was achieved by overloading the primitives that make boxes, add glue,
+inject penalties and kerns, etc. It actually worked quite well, although in some
+cases, for instance where boxes have to be unboxed, one has to disable it. I
+remember some puzzlement among the audience about the fact that indeed these
+primitives could be overloaded without too many side effects. It will be no
+surprise that this feature has been carried on to later versions, and in
+\CONTEXT\ \MKIV\ it was implemented in a different (less intrusive) way and it
+got gradually extended.
+
+\startbuffer
+\showmakeup \hbox{test \bf test}
+\stopbuffer
+
+\typebuffer
+
+This gives us a framed horizontal box, with some text and a space glue:
+
+\startlinecorrection
+\scale[height=1cm]{\start \inlinebuffer \stop}
+\stoplinecorrection
+
+Of course not all information is well visible simply because it can be overlayed
+by what follows, but one gets the idea. Also, when you have a layer capable \PDF\
+viewer you can turn on and off categories, so you can decide to only show glue.
+You can also do that immediately, with \typ {\showmakeup [glue]}.
+
+There is a lot of granularity: \typ {hbox}, \typ {vbox}, \typ {vtop}, \typ
+{kern}, \typ {glue}, \typ {penalty}, \typ {fontkern}, \typ {strut}, \typ
+{whatsit}, \typ {glyph}, \typ {simple}, \typ {simplehbox}, \typ {simplevbox},
+\typ {simplevtop}, \typ {user}, \typ {math}, \typ {italic}, \typ {origin}, \typ
+{discretionary}, \typ {expansion}, \typ {line}, \typ {space}, \typ {depth}, \typ
+{marginkern}, \typ {mathkern}, \typ {dir}, \typ {par}, \typ {mathglue}, \typ
+{mark}, \typ {insert}, \typ {boundary}, the more selective \typ {vkern}, \typ
+{hkern}, \typ {vglue}, \typ {hglue}, \typ {vpenalty} and \typ {hpenalty}, as well
+as some presets like \typ {boxes}, \typ {makeup} and \typ {all}.
+
+When we have:
+
+\startbuffer
+\showmakeup \framed[align=normal]{\samplefile{ward}}
+\stopbuffer
+
+\typebuffer
+
+we get:
+
+\startlinecorrection
+\scale[width=1tw]{\start \inlinebuffer \stop}
+\stoplinecorrection
+
+And that is why exploring this with a layers enabled \PDF\ viewer can be of help.
+Alternatively a more selective use of \typ {\showmakup} makes sense, like
+
+\startbuffer
+\showmakeup[line,space] \framed[align=normal]{\samplefile{ward}}
+\stopbuffer
+
+\typebuffer
+
+Here we only see lines, regular spaces and spaces that are determined by the
+space factor that is driven by punctuation.
+
+\startlinecorrection
+\scale[width=1tw]{\start \inlinebuffer \stop}
+\stoplinecorrection
+
+\startbuffer[demo]
+\leftskip         2cm
+\rightskip        3cm
+\hangindent       1cm
+\hangafter        2
+\parfillrightskip 1cm
+\parfillleftskip  1cm % new
+\parinitrightskip 1cm % new
+\parinitleftskip  1cm % new
+\parindent        2cm % different
+\stopbuffer
+
+\startbuffer
+\showmakeup \framed[align=normal]{\getbuffer[demo]\samplefile{ward}}
+\stopbuffer
+
+We can typeset the previous example with these settings:
+
+\typebuffer[demo]
+
+This time we get:
+
+\startlinecorrection
+\scale[width=1tw]{\start \inlinebuffer \stop}
+\stoplinecorrection
+
+Looking at this kind of output only makes sense on screen where you can zoom in
+but what we want to demonstrate here is that in \LUAMETATEX\ we have not only a
+bit more control over the paragraph (indicated by comments) but also that we
+always have the related glue present. The reason is that we then have a more
+predictable packaged line when we look at one from the \LUA\ end. Where \TEX\
+normally moves the final line content left or right via either glue or the shifts
+property of a box, here we always use the glue. We call this normalization. Keep
+in mind that \TEX\ was not designed (implemented) with exposing its internals in
+mind, but for \LUATEX\ and \LUAMETATEX\ we have to take care of that.
+
+Another characteristic is that the paragraph stores these (and many more)
+properties in the so called initial par node so that they work well in situations
+where grouping would interfere with our objectives. As with all extensions, these
+are things that can be configured in detail but they are enabled in \CONTEXT\ by
+default.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Math]
+
+Math is a good example where this kind of tracing helps development. Here is an
+example:
+
+\startbuffer
+\im { \showmakeup y = \sqrt {2x + 4} }
+\stopbuffer
+
+\typebuffer
+
+Scaled up we get:
+
+\blank[2*big]
+
+\startlinecorrection
+\scale[height=2cm]{\inlinebuffer}
+\stoplinecorrection
+
+\blank[2*big]
+
+Instead of showing everything we can again be more selective:
+
+\startbuffer
+\im {
+    \showmakeup[mathglue,glyph]
+    y = \sqrt {2x + 4}
+}
+\stopbuffer
+
+\typebuffer
+
+Here we not only limit ourselves to math glue, but also enable showing the
+bounding boxes of glyphs.
+
+\startlinecorrection
+\scale[height=2cm]{\inlinebuffer}
+\stoplinecorrection
+
+This example also shows that in \LUAMETATEX\ we have more classes than in a
+traditional \TEX\ engine. For instance, radicals have their own class as do
+digits. The radical class is an engine one, the digit class is a user defined
+class. You can set up the spacing between each class depending on the style. For
+the record: this is just one of the many extensions to the math engine and when
+extensions are being developed it helps to have this kind of tracing. Take for
+instance the next example, where we have multiple indexes (indicated by \type
+{__}) on a nucleus, that get separated by a little so called continuation
+spacing.
+
+\startbuffer
+\im {
+    \showmakeup[mathglue,glyph]
+    y = \sqrt {x__1__a {\darkred +} x__1__b}
+}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\scale[height=2cm]{\inlinebuffer}
+\stoplinecorrection
+
+Here the variable class is used for alphabetic characters and some more, contrary
+to the more traditional (often engine assigned) ordinary class that is now used
+for the left|-|overs.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Fonts]
+
+Some of the mentioned tracing has shortcuts, for instance \typ {\showglyphs}.
+Here we show the same sample paragraph as before:
+
+\startbuffer
+\showglyphs
+\showfontkerns
+\framed[align=normal]{\samplefile{ward}}
+\stopbuffer
+
+\typebuffer
+
+Here is the upper left corner of the result:
+
+\startlinecorrection
+\clip[nx=4,n=1,ny=4,y=1]{\scale[width=4tw]{\start\inlinebuffer \stop}}
+\stoplinecorrection
+
+What font kerns we get depends on the font, here we use pagella:
+
+\startlinecorrection
+\switchtobodyfont[pagella]
+\scale[width=1tw]{\start\inlinebuffer \stop}
+\stoplinecorrection
+
+If we zoom in the kerns are more visible:
+
+\startlinecorrection
+\switchtobodyfont[pagella]
+\clip[nx=3,n=1]{\scale[width=3tw]{\start\inlinebuffer \stop}}
+\stoplinecorrection
+
+And here is another one:
+
+\startbuffer
+\showfontexpansion
+\framed[align={normal,hz}]{\samplefile{ward}}
+\stopbuffer
+
+\typebuffer
+
+\startlinecorrection
+\switchtobodyfont[pagella]
+\scale[width=1tw]{\start\inlinebuffer \stop}
+\stoplinecorrection
+
+or blown up:
+
+\startlinecorrection
+\switchtobodyfont[pagella]
+\clip[nx=3,n=1]{\scale[width=3tw]{\start\inlinebuffer \stop}}
+\stoplinecorrection
+
+The last line (normally) doesn't need expansion, unless we want it to compatible
+with preceding lines, space|-|wise. So when we do this:
+
+\startbuffer
+\showfontexpansion
+\framed[align={normal,hz,fit}]{\samplefile{ward}}
+\stopbuffer
+
+\typebuffer
+
+the \type {fit} directives results in somewhat different results:
+
+\startlinecorrection
+\switchtobodyfont[pagella]
+\clip[nx=3,n=1]{\scale[width=3tw]{\start\inlinebuffer \stop}}
+\stoplinecorrection
+
+As with other visual tracers you can get some insight in how \TEX\ turns your input into
+a typeset result.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Overflow]
+
+By default the engine is a bit stressed to make paragraphs fit well. This means that we can
+get overflowing lines. Because there is a threshold only visible overflow is reported. If you
+want a visual clue, you can do this:
+
+\startbuffer
+\enabletrackers[builders.hpack.overflow]
+\stopbuffer
+
+\typebuffer
+
+With:
+
+\startbuffer
+\ruledvbox{\hsize 3cm test test test test test test test test}
+\stopbuffer
+
+\typebuffer
+
+We get:
+
+\startlinecorrection
+\enabletrackers[builders.hpack.overflow]
+\switchtobodyfont[dejavu,12pt]
+\getbuffer
+\disabletrackers[builders.hpack.overflow]
+\stoplinecorrection
+
+The red bar indicates a potential problem. We can also get an underflow, as demonstrated here:
+
+\startbuffer
+\ruledvbox {
+    \setupalign[verytolerant,stretch]
+    \hsize 3cm test test test test test test test test
+}
+\stopbuffer
+
+\typebuffer
+
+Now we get a blue bar that indicates that we have a bit more stretch than is
+considered optimal:
+
+\startlinecorrection
+\enabletrackers[builders.hpack.overflow]
+\switchtobodyfont[dejavu,12pt]
+\getbuffer
+\disabletrackers[builders.hpack.overflow]
+\stoplinecorrection
+
+Especially in automated flows it makes sense to increase the tolerance and permit
+stretch. Only when the strict attempt fails that will kick in.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Side floats]
+
+Some mechanisms are way more complex than a user might expect from the result. An example is
+the placement of float and especially side floats.
+
+\enabletrackers[floats.anchoring]
+\startplacefigure[location=left]
+    \setupexternalfigures[location={global,default}]
+    \externalfigure[cow.pdf][width=3cm]
+\stopplacefigure
+\disabletrackers[floats.anchoring]
+
+Not only do we have to make sure that the spacing before such a float is as good
+and consistent as possible, we also need the progression to work out well, that
+is: the number of lines that we need to indent. \par For that we need to estimate
+the space needed, look at the amount of space before and after the float, check
+if it will fit and move to the next page if needed. That all involves dealing
+with interline spacing, interparagraph spacing, spacing at the top of a page,
+permitted slack at the bottom of page, the depth of the preceding lines, and so
+on. The tracer shows some of the corrections involved but leave it to the user to
+imagine what it relates to; the previous sentence gives some clues. This tracker is
+enables with:
+
+\starttyping
+\enabletrackers[floats.anchoring]
+\stoptyping
+
+\stopsectionlevel
+
+\startsectionlevel[title=Struts]
+
+We now come to one of the most important trackers, \typ {\showstruts}, and a few
+examples shows why:
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,width=.2tw]
+  {\showstruts\framed[width=.2tw]               {test}} {\type{width=.2tw}}
+  {\showstruts\framed[width=.2tw,height=1cm]    {test}} {\type{height=1cm}}
+  {\showstruts\framed[width=.2tw,offset=0pt]    {test}} {\type{offset=0pt}}
+  {\showstruts\framed[width=.2tw,offset=overlay]{test}} {\type{offset=overlay}}
+\stopcombination
+\stoplinecorrection
+
+Here in all cases we've set the width to 20 percent of the text width (\type {tw}
+is an example of a plugged in dimension). In many places \CONTEXT\ adds struts in
+order to enforce proper spacing so when spacing is not what you expect, enabling
+this tracker can help you figure out why.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Features]
+
+Compared to the time when \TEX\ showed up the current fonts are more complicated,
+especially because features go beyond only ligaturing and kerning. But even
+ligaturing can be different, because some fonts use kerning and replacement
+instead of a new character. Pagella uses a multiple to single replacement:
+
+\blank \showotfcomposition
+	{file:texgyrepagella-regular.otf*default @ 12pt}
+	{0}
+	{\nl effe fietsen}
+
+Not all features listed here are provided by the font (only the four character
+ones) because we're using \TEX\ which, it being \TEX, means that we have plenty
+more ways to mess around with additional features: it's all about detailed
+control. But what you see here are the steps taken: the font handler loops over
+the list of glyphs and here we see the intermediate results when something has
+changed. There can be way more loops that in this simple case.
+
+With Cambria we get a single replacement combined with kerning:
+
+\blank \showotfcomposition
+	{file:cambria.ttc*default @ 12pt}
+	{0}
+	{\nl effe fietsen}
+
+One complication is that hyphenation kicks in which means that whatever we do has
+to take the pre, post and replacement bits into account combined which what comes
+before and after. Especially for complex scripts this tracker can be illustrative
+but even then only for those who like to see what fonts do and|/|or when they add
+additional features runtime.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Profiling]
+
+There are some features in \CONTEXT\ that are nice but only useful in some situations. An
+example is profiling. It is something you will not turn on by default, if only because of
+the overhead it brings. The next two paragraphs (using Pagella) show the effect.
+
+\startbuffer
+The command \tex {binom} is the standard notation for binomial coefficients and is
+preferred over \tex {choose}, which is an older macro that has limited
+compatibility with newer packages and font encodings: \im{|A|=\binom{N}{k}^2}.
+Additionally, \tex {binom} uses proper spacing and size for the binomial symbol.
+In conclusion, it is recommended to use \tex {binom} instead of \tex {choose} in
+\TEX\ for typesetting binomial coefficients for better compatibility and uniform
+appearance.\par
+\stopbuffer
+
+\bgroup \hsize 130mm
+\switchtobodyfont[pagella,11pt]
+\showmakeup[line]
+\getbuffer
+\egroup
+
+The previous paragraph is what comes out by default, while the next one used
+these settings plus an additional \typ {\enabletrackers [profiling.lines.show]}.
+
+\startbuffer[demo]
+\setuplineprofile[factor=0.1,step=0.5\emwidth]
+\setupalign[profile]
+\stopbuffer
+
+\bgroup \hsize 130mm
+\switchtobodyfont[pagella,11pt]
+\showmakeup[line]
+\getbuffer[demo]
+\enabletrackers[profiling.lines.show]
+\getbuffer
+\disabletrackers[profiling.lines.show]
+\egroup
+
+This feature will bring lines together when there is no clash and is mostly of
+use when a lot of inline math is used. However, when this variant of profiling
+(we have an older one too) is enabled on a 300 page math book with thousands of
+formulas, only in a few places it demonstrated effect; it was hardly needed
+anyway. So, sometimes tracing shows what makes sense or not.
+
+\stopsectionlevel
+
+\startsectionlevel[title=Par builder]
+
+Here is is a sample paragraph from Knuths \quotation {Digital Typography}:
+
+\startshowbreakpoints%[#1]
+    \samplefile{math-knuth-dt}
+\stopshowbreakpoints
+
+There are indicators with tiny numbers that indicate the possible breakpoints and
+we can see what the verdict is:
+
+\showbreakpoints% [#1]%
+
+The last lines in the last column show the route that the result takes. Without
+going into details, here is what we did:
+
+\starttyping
+\startshowbreakpoints
+    \samplefile{math-knuth-dt}
+\stopshowbreakpoints
+
+\showbreakpoints
+\stoptyping
+
+This kind of tracing is part of a mechanism that makes it possible to influence
+the choice by choosing a specific preferred breakpoint but that is something the
+average user is unlikely to do. The main reason why we have this kind of trackers
+is that when developing the new multi|-|step par builder feature we wanted to see
+what exactly it did influence. That mechanism uses an \LUAMETATEX\ feature where
+we can plug in additional passes using the \type {\parpasses} primitive that can
+add different strategies that are tried until criteria for over- and underfull
+thresholds and|/|or badness are met. Each step can set the relevant parameters
+differently, including expansion, which actually makes for more efficient output
+and better runtime when that features is not needed to get better results.
+
+\stopsectionlevel
+
+\startsectionlevel[title=More]
+
+There are many more visual trackers, for instance \typ {layout.vz} for when you
+enabled vertical expansion, \typ {typesetters.suspects} for identifying possible
+issues in the input like invisible spaces. Trackers like \typ
+{nodes.destinations} and \typ {nodes.references} will show the areas used by
+these mechanisms. There are also trackers for positions, (cjk and other), script
+handling, rubies, tagging, italic correction, breakpoints and so on. The examples
+in the previous sections illustrate what to expect and when to use a specific
+mechanism knowing this might trigger you to check if a tracker exists. Often the
+test suite has examples of usage.
+
+\stopsectionlevel
+
+\stopdocument
+

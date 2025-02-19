@@ -42,16 +42,16 @@
 condition_state_info lmt_condition_state = {
     .cond_ptr      = null,
     .cur_if        = 0,
-    .cur_unless    = 0,
-    .if_step       = 0,
     .if_limit      = 0,
+    .cur_unless    = 0,
+    .if_unless     = 0,
+    .if_step       = 0,
+    .unused        = 0,
     .if_line       = 0,
     .if_nesting    = 0,
-    .if_unless     = 0,
     .skip_line     = 0,
     .chk_integer   = 0,
     .chk_dimension = 0,
-    .padding       = 0,
 };
 
 /*tex
@@ -653,6 +653,8 @@ static inline halfword tex_aux_scan_comparison(int code)
                     case '='   : return negate ? comparison_not_equal   : comparison_equal;
                     case '<'   : return negate ? comparison_not_less    : comparison_less;
                     case '>'   : return negate ? comparison_not_greater : comparison_greater;
+                    /* also */
+                    case '&'   : return negate ? comparison_not_element : comparison_element;
                     /* bonus */
                     case '!'   : negate = ! negate ; continue;
                     /* neat */
@@ -1162,6 +1164,7 @@ void tex_conditional_if(halfword code, int unless)
                 /* todo: each prefix */
                 tex_get_token();
                 if (cur_cmd == prefix_cmd) {
+                    /* Not all prefixes are reflected cq. stored with a contrtol sequence. */
                     switch (cur_chr) {
                         /*tex We check flags: */
                         case frozen_code        : result = is_frozen   (flag); break;
@@ -1173,11 +1176,22 @@ void tex_conditional_if(halfword code, int unless)
                         case instance_code      : result = is_instance (flag); break;
                         case untraced_code      : result = is_untraced (flag); break;
                         /*tex We check cmd: */
-                        case global_code        : result = eq_level(cs) == level_one;; break;
+                        case global_code        : result = eq_level(cs) == level_one; break;
                         case tolerant_code      : result = is_tolerant_cmd(eq_type(cs)); break;
                         case protected_code     : result = is_protected_cmd(eq_type(cs)); break;
+                     /* case overloaded_code    : */
+                     /* case aliased_code       : */
+                     /* case immediate_code     : */
+                     /* case deferred_code      : */
+                     /*      conditional_code     */
+                     /*      value_code           */
                         case semiprotected_code : result = is_semi_protected_cmd(eq_type(cs)); break;
+                     /* case enforced_code      : */ 
+                     /* case always_code        : */
+                     /* case inherited_code     : */  
                         case constant_code      : result = is_constant_cmd(eq_type(cs)); break;
+                     /* case retained_code      : */
+                     /* case constrained_code   : */                                            
                     }
                 } else {
                     int fl; 
@@ -1670,6 +1684,31 @@ void tex_show_ifs(void)
     } else {
         tex_print_str("[conditional: none active]");
     }
+}
+
+void tex_conditional_catch_up(void)
+{
+    condition_state_info saved_condition_state = lmt_condition_state;
+    while (lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].if_ptr != lmt_condition_state.cond_ptr) {
+        /* todo, more info */
+        tex_print_nlp();
+        tex_print_format("Warning: end of file when %C", if_test_cmd, lmt_condition_state.cur_if);
+        if (lmt_condition_state.if_limit == fi_code) {
+            tex_print_str_esc("else");
+        }
+        if (lmt_condition_state.if_line) {
+            tex_print_format(" entered on line %i", lmt_condition_state.if_line);
+        }
+        tex_print_str(" is incomplete");
+        lmt_condition_state.cur_if = if_limit_subtype(lmt_condition_state.cond_ptr);
+        lmt_condition_state.cur_unless = if_limit_unless(lmt_condition_state.cond_ptr);
+        lmt_condition_state.if_step = if_limit_step(lmt_condition_state.cond_ptr);
+        lmt_condition_state.if_unless = if_limit_stepunless(lmt_condition_state.cond_ptr);
+        lmt_condition_state.if_limit = if_limit_type(lmt_condition_state.cond_ptr);
+        lmt_condition_state.if_line = if_limit_line(lmt_condition_state.cond_ptr);
+        lmt_condition_state.cond_ptr = node_next(lmt_condition_state.cond_ptr);
+    }
+    lmt_condition_state = saved_condition_state;
 }
 
 /*tex 

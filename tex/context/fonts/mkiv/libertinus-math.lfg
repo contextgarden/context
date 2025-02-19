@@ -45,6 +45,13 @@ return {
                 {
                     tweak = "fixintegrals",
                 },
+-- {
+--     tweak = "dimensions",
+--     list  = {
+--         [0x302] = { width = 0 }, --hat
+--         [0x303] = { width = 0 }, --tilde
+--     },
+-- },
                 presets.scripttocalligraphic { },
                 presets.rsfstoscript         { rscale  = 0.97 },
                 presets.rsfsuprighttoscript  { rscale  = 0.97 },
@@ -88,8 +95,8 @@ return {
                 {
                     tweak = "dimensions",
                     list  = {
-                        [0x302] = { width = 0 }, --hat
-                        [0x303] = { width = 0 }, --tilde
+--                         [0x302] = { width = 0 }, --hat
+--                         [0x303] = { width = 0 }, --tilde
                         -- The middle pice is shifted compared to the larger pieces.
                         -- And the integral stick out down left.
                         -- We fix the width and shift.

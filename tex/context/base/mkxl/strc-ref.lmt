@@ -2452,15 +2452,19 @@ function references.getcurrentlabel()
     local data = currentreference and currentreference.i
     if data then
         local entry = data.titledata
-        local value = entry.label
-        if value then
-            return value
+        if entry then
+            local value = entry.label
+            if value then
+                return value
+            end
         end
-        local entry = data.metadata
-        local value = entry[tag]
-        if value then
-            return value
-        end
+     -- if entry then
+     --     local entry = data.metadata
+     --     local value = entry[tag]
+     --     if value then
+     --         return value
+     --     end
+     -- end
     end
 end
 

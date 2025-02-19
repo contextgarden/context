@@ -644,6 +644,7 @@ make_lua_key(L, depthbefore);\
 make_lua_key(L, depthafter);\
 make_lua_key(L, designsize);\
 make_lua_key(L, dimension);\
+make_lua_key(L, dimension_reference);\
 make_lua_key(L, dir);\
 make_lua_key(L, direct);\
 make_lua_key(L, direction);\
@@ -834,6 +835,7 @@ make_lua_key(L, insertheights);\
 make_lua_key(L, insertpenalties);\
 make_lua_key(L, instance);\
 make_lua_key(L, integer);\
+make_lua_key(L, integer_reference);\
 make_lua_key(L, interaction);\
 make_lua_key(L, interlinepenalties);\
 make_lua_key(L, interlinepenalty);\

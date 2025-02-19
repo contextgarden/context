@@ -2190,8 +2190,8 @@ implement {
             { "transform" },
             { "compact" },
             { "metadata" },
-            { "width", "dimen" },
-            { "height", "dimen" },
+            { "width", "dimension" },
+            { "height", "dimension" },
             { "userpassword" },
             { "ownerpassword" },
         }
@@ -2217,7 +2217,7 @@ implement {
 implement {
     name      = "figurereset",
     scope     = "private",
-    arguments = { "integer", "dimen", "dimen" },
+    arguments = { "integer", "dimension", "dimension" },
     actions   = function(box,width,height)
         figures.boxnumber     = box
         figures.defaultwidth  = width

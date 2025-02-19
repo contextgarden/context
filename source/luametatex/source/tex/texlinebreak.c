@@ -902,17 +902,17 @@ static void tex_aux_clean_up_the_memory(void)
     halfword q = node_next(active_head);
     while (q != active_head) {
         halfword p = node_next(q);
-     // tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
-        tex_flush_node(q);
+     // tex_flush_node(q);
+        tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
         q = p;
     }
     node_next(active_head) = null;
     q = lmt_linebreak_state.passive;
     while (q) {
         halfword p = node_next(q);
-     // printf("%i : %i\n",passive_serial(p),passive_ref_count(p));
+     // tex_flush_node(q);
      // tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
-        tex_flush_node(q);
+        tex_free_node(q, passive_node_size); // less overhead & testing
         q = p;
     }
     lmt_linebreak_state.passive = null;
@@ -2784,7 +2784,8 @@ static scaled tex_aux_try_break(
                     }
                 }
             }
-            tex_flush_node(current);
+         // tex_flush_node(current);
+            tex_free_node(current, get_node_size(node_type(current))); // less overhead & testing
         }
         if (previous == active_head) {
             /*tex
@@ -2800,22 +2801,24 @@ static scaled tex_aux_try_break(
                 tex_aux_add_to_target_from_delta(properties->adjust_spacing, lmt_linebreak_state.active_width, current);
                 tex_aux_set_target_to_source(properties->adjust_spacing, current_active_width, lmt_linebreak_state.active_width);
                 node_next(active_head) = node_next(current);
-                tex_flush_node(current);
+             // tex_flush_node(current);
+                tex_free_node(current, delta_node_size); // less overhead & testing
             }
         } else if (node_type(previous) == delta_node) {
             current = node_next(previous);
             if (current == active_head) {
                 tex_aux_sub_delta_from_target(properties->adjust_spacing, current_active_width, previous);
                 node_next(before_previous) = active_head;
-                tex_flush_node(previous);
+             // tex_flush_node(previous);
+                tex_free_node(previous, delta_node_size); // less overhead & testing
                 previous = before_previous;
             } else if (node_type(current) == delta_node) {
                 tex_aux_add_to_target_from_delta(properties->adjust_spacing, current_active_width, current);
                 tex_aux_add_to_delta_from_delta(properties->adjust_spacing, previous, current);
                 node_next(previous) = node_next(current);
-                tex_flush_node(current);
-            }
-        } else { 
+             // tex_flush_node(current);
+                tex_free_node(current, delta_node_size); // less overhead & testing
+           }
         }
     }
     /* We never end up here. */

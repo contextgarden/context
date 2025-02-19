@@ -567,18 +567,32 @@ local colorcomponents, withcolor, thecolor, usedcolors  do
     local hwbtorgb    = colors.hwbtorgb
     local forcedmodel = colors.forcedmodel
 
-    local p_splitcolor = -- offet lowercase ff
-        P("#") * C(p_hexdigit*p_hexdigit)^1 / function(r,g,b)
-            if not r then
+    local function to_rgb(r,g,b)
+        return "rgb",
+            (r == "00" and 0) or (r == "ff" and 1) or (r == "FF" and 1) or (tonumber(r,16)/255),
+            (g == "00" and 0) or (g == "ff" and 1) or (g == "FF" and 1) or (tonumber(g,16)/255),
+            (b == "00" and 0) or (b == "ff" and 1) or (b == "FF" and 1) or (tonumber(b,16)/255)
+    end
+
+    local function to_gray(s)
+        return "gray",
+            (s == "00" and 0) or (s == "ff" and 1) or (s == "FF" and 1) or (tonumber(s,16)/255)
+    end
+
+    local p_splitcolor =
+        P("#") * C(p_hexdigit)^1 / function(a,b,c,d,e,f)
+            if not a then
                 return "gray", 0
-            elseif not (g and b) then
-                return "gray",
-                    (r == "00" and 0) or (r == "ff" and 1) or (tonumber(r,16)/255)
+            elseif not b then
+                return to_gray(a..a)
+            elseif not c then
+                return to_gray(a..b)
+            elseif not d then
+                return to_rgb(a..a,b..b,c..c)
+            elseif e and f then
+                return to_rgb(a..b,c..d,e..f)
             else
-                return "rgb",
-                    (r == "00" and 0) or (r == "ff" and 1) or (tonumber(r,16)/255),
-                    (g == "00" and 0) or (g == "ff" and 1) or (tonumber(g,16)/255),
-                    (b == "00" and 0) or (b == "ff" and 1) or (tonumber(b,16)/255)
+                return "gray", 0
             end
         end
       + P("rgb") * p_a

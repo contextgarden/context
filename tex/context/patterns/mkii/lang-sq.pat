@@ -37,10 +37,9 @@ d2shm
 2dh.
 2dhj2dht
 2dhsh
-2dhj
+2dh2j
 2dht
 dh2r
-dh2j
 e1a
 e3ll
 e1u
@@ -256,7 +255,6 @@ sh2p
 4sh3k2r
 2shq
 2sh3nj
-2shpr
 3sh4pj
 3sh4pr
 2shr

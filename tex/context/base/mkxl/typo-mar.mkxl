@@ -468,6 +468,7 @@
         \ifconditional\headshownumber
             \headnumbercontent
             \hkern\headnumberdistance
+            \wordboundary
         \fi
         \headtextcontent
     }

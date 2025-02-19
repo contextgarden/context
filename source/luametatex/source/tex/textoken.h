@@ -96,7 +96,6 @@ typedef enum catcode_table_presets {
 
 typedef struct token_state_info {
     halfword  null_list;     /*tex permanently empty list */
-    int       in_lua_escape; /*tex obsolete, controlled differently */
     int       force_eof;
     int       luacstrings;
     /*tex These are pseudo constants, their value depends on the number of primitives etc. */
@@ -104,11 +103,11 @@ typedef struct token_state_info {
     halfword  par_token;
  /* halfword  line_par_loc;   */ /*tex See note in textoken.c|. */
  /* halfword  line_par_token; */ /*tex See note in textoken.c|. */
-    /* */
     char     *buffer;
     int       bufloc;
     int       bufmax;
     int       empty;
+    int       padding;
 } token_state_info;
 
 extern token_state_info lmt_token_state;
@@ -358,6 +357,15 @@ typedef enum macro_preamble_states {
 # define A_token_l               (letter_token + 'A')  /*tex the smallest special hex digit */
 # define A_token_o               (other_token  + 'A')
 
+# define B_token_l               (letter_token + 'B')
+# define B_token_o               (other_token  + 'B')
+
+# define C_token_l               (letter_token + 'C')
+# define C_token_o               (other_token  + 'C')
+
+# define D_token_l               (letter_token + 'D')
+# define D_token_o               (other_token  + 'D')
+
 # define E_token_l               (letter_token + 'E')
 # define E_token_o               (other_token  + 'E')
 
@@ -373,6 +381,9 @@ typedef enum macro_preamble_states {
 # define I_token_l               (letter_token + 'I') 
 # define I_token_o               (other_token  + 'I')
 
+# define J_token_l               (letter_token + 'J') 
+# define J_token_o               (other_token  + 'J')
+
 # define K_token_l               (letter_token + 'K') 
 # define K_token_o               (other_token  + 'K')
 
@@ -384,6 +395,9 @@ typedef enum macro_preamble_states {
 
 # define N_token_l               (letter_token + 'N') 
 # define N_token_o               (other_token  + 'N')
+
+# define O_token_l               (letter_token + 'O')
+# define O_token_o               (other_token  + 'O')
 
 # define P_token_l               (letter_token + 'P')
 # define P_token_o               (other_token  + 'P')
@@ -400,8 +414,20 @@ typedef enum macro_preamble_states {
 # define T_token_l               (letter_token + 'T') 
 # define T_token_o               (other_token  + 'T')
 
+# define U_token_l               (letter_token + 'U') 
+# define U_token_o               (other_token  + 'U')
+
+# define V_token_l               (letter_token + 'V') 
+# define V_token_o               (other_token  + 'V')
+
+# define W_token_l               (letter_token + 'W') 
+# define W_token_o               (other_token  + 'W')
+
 # define X_token_l               (letter_token + 'X')
 # define X_token_o               (other_token  + 'X')
+
+# define Y_token_l               (letter_token + 'Y')
+# define Y_token_o               (other_token  + 'Y')
 
 # define Z_token_l               (letter_token + 'Z')
 # define Z_token_o               (other_token  + 'Z')
@@ -442,6 +468,13 @@ typedef enum macro_preamble_states {
 # define match_angles        'X'  /* angle brackets */ 
 # define match_parentheses   'P'  /* parentheses */ 
 
+# define match_experiment 0
+
+# if (match_experiment)
+# define match_dimension     'd'  /* dimension */ 
+# define match_integer       'i'  /* integer */ 
+# endif 
+
 # define single_quote        '\''
 # define double_quote        '\"'
 
@@ -464,6 +497,11 @@ typedef enum macro_preamble_states {
 # define brackets_match_token      (match_token + match_brackets)
 # define angles_match_token        (match_token + match_angles)
 # define parentheses_match_token   (match_token + match_parentheses)
+
+# if (match_experiment)
+# define dimension_match_token     (match_token + match_dimension)
+# define integer_match_token       (match_token + match_integer)
+# endif 
 
 # define is_valid_match_ref(r) (r != thrash_match_token && r != spacer_match_token && r != keep_spacer_match_token && r != continue_match_token && r != quit_match_token)
 

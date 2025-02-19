@@ -1554,7 +1554,13 @@
     \inherited\setmathspacing \mathfunctioncode        \mathbinarycode          \allsplitstyles   \medmuskip
     \inherited\setmathspacing \mathfunctioncode        \mathbinarycode          \allunsplitstyles \pettymuskip
     %
+    % A bit more spacing before parentheses
+    %
+    \inherited\setmathspacing \mathfunctioncode        \mathopencode            \allsplitstyles    \pettymuskip
+    \inherited\setmathspacing \mathdifferentialcode    \mathopencode            \allsplitstyles    \pettymuskip
+    %
     % integral inherited from operator, with the differences below
+    %
     \inherited\setmathspacing \mathintegralcode        \mathordinarycode        \allmathstyles    \pettymuskip
     \inherited\setmathspacing \mathintegralcode        \mathdigitcode           \allmathstyles    \pettymuskip
     \inherited\setmathspacing \mathintegralcode        \mathoperatorcode        \allmathstyles    \pettymuskip
@@ -2235,6 +2241,9 @@
    \fi
 %    \ifcase#1\or % so #1 can go away
      \mathlabeltext{\currentmathfunction}%
+     % needed for StixTwo Diff
+     \scratchdimen\rightmathkern{\currentmathfunction}%
+     \ifzeropt\scratchdimen\else\hkern\scratchdimen\fi
 %    \fi
    \egroup
    \dostoptagged
@@ -4217,8 +4226,8 @@
 
 % this should be a primitive:
 
-\permanent\def\mathextensiblecode#1#2{\clf_extensiblecode{#1}{#2}}
-\permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode{#1}{#2}}
+%permanent\def\mathextensiblecode#1#2{\clf_extensiblecode{#1}{#2}} % at lua end
+%permanent\def\mathhorizontalcode#1#2{\clf_horizontalcode{#1}{#2}} % at lua end
 
 % experimental:
 

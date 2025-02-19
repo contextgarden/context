@@ -103,7 +103,7 @@ local lastline = nil
 
 interfaces.implement {
     name      = "registersynchronize",
-    arguments = { "dimen", "dimen", "dimen", "box" },
+    arguments = { "dimension", "dimension", "dimension", "box" },
     actions   = function(ht,dp,slack,box)
         index = index + 1
         box   = tonut(box)
@@ -360,14 +360,14 @@ end
 
 do
 
-    local scanners     = tokens.scanners
-    local scanword     = scanners.word
-    local scaninteger  = scanners.integer
-    local scandimen    = scanners.dimen
+    local scanners      = tokens.scanners
+    local scanword      = scanners.word
+    local scaninteger   = scanners.integer
+    local scandimension = scanners.dimension
 
-    local tonode       = nuts.tonode
-    local getbox       = nuts.getbox
-    local setbox       = nuts.setbox
+    local tonode        = nuts.tonode
+    local getbox        = nuts.getbox
+    local setbox        = nuts.setbox
 
     local direct_value <const> = tokens.values.direct
     local none_value   <const> = tokens.values.none
@@ -389,16 +389,16 @@ do
                 local key = scanword()
                 if key == "to" then
                     upto = false
-                    w = scandimen()
+                    w = scandimension()
                 elseif key == "upto" then
                     upto = true
-                    w = scandimen()
+                    w = scandimension()
                 elseif key == "width" then
-                    w = scandimen()
+                    w = scandimension()
                 elseif key == "height" then
-                    h = scandimen()
+                    h = scandimension()
                 elseif key == "depth" then
-                    d = scandimen()
+                    d = scandimension()
                 elseif key == "criterium" then
                     pcriterium = scaninteger()
                     mcriterium = scaninteger()

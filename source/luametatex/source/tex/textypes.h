@@ -1103,6 +1103,5 @@ typedef enum tex_character_control_codes {
 
 # define has_character_control(a,b) ((a & b) != 0) 
 
-
 # endif
 

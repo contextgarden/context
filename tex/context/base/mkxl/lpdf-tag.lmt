@@ -1133,12 +1133,12 @@ local function makecontent(start,parent,id,specification,range)
     if id == "image" then
         local list  = specification.taglist
         local data  = usewithcare.images[list[#list]]
-        local label = data and data.label
+        local label = data and data.label or ""
         local d = pdfdictionary {
             Type = pdf_mcr,
             Pg   = pageref,
             MCID = last,
-         -- Alt  = pdfunicode(label ~= "" and label or "image"),
+            Alt  = pdfunicode(label ~= "" and label or "image"),
         }
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then

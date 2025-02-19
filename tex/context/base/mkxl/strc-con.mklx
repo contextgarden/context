@@ -157,7 +157,7 @@
 \tolerant\permanent\protected\def\startnamedconstruction[#1]#*[#S#2]#*[#3]%
   {\begingroup
    \strc_constructions_initialize{#1}%
-   \strc_constructions_register[#3][\c!label={\constructionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
+   \strc_constructions_register[#3][\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \permanent\protected\def\stopnamedconstruction

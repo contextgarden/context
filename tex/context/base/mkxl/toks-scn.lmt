@@ -39,13 +39,11 @@ local scanletters         = scanners.letters
 local scankey             = scanners.key
 local scancode            = scanners.code
 local scanboolean         = scanners.boolean
-local scandimen           = scanners.dimen
+local scandimension       = scanners.dimension
 local scanglue            = scanners.glue
 local scangluevalues      = scanners.gluevalues
 local scangluespec        = scanners.gluespec
 local scancsname          = scanners.csname
-local scanintegerargument = scanners.integerargument
-local scandimenargument   = scanners.dimenargument
 local scandetokened       = scanners.detokened
 
 local todimen             = number.todimen
@@ -164,11 +162,11 @@ function scanners.whd()
     local width, height, depth
     while true do
         if scankeyword("width") then
-            width = scandimen()
+            width = scandimension()
         elseif scankeyword("height") then
-            height = scandimen()
+            height = scandimension()
         elseif scankeyword("depth") then
-            depth = scandimen()
+            depth = scandimension()
         else
             break
         end
@@ -256,8 +254,7 @@ local shortcuts = {
     scanglue            = scanglue, -- list
     scangluespec        = scangluespec,
     scangluevalues      = scangluevalues,
-    scandimen           = scandimen,
-    scandimension       = scandimen,
+    scandimension       = scandimension,
     scanbox             = scanners.box,
     scanhbox            = scanners.hbox,
     scanvbox            = scanners.vbox,
@@ -273,8 +270,6 @@ local shortcuts = {
     scanoptional        = scanoptional,
     scanbracketedasis   = scanbracketedasis,
     scanargumentasis    = scanargumentasis,
-    scanintegerargument = scanintegerargument,
-    scandimenargument   = scandimenargument,
     scandetokened       = scandetokened,
     scanlua             = scanlua,
     todimen             = todimen,
@@ -284,6 +279,12 @@ local shortcuts = {
     inspect             = inspect,
     report              = report_scan,
     posit               = posit,
+
+    -- obsolete:
+
+    scandimen             = scandimension,
+    scanintegerargument   = scanners.integerargument,
+    scandimensionargument = scanners.dimensionargument,
 }
 
 tokens.shortcuts = shortcuts

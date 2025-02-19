@@ -251,6 +251,10 @@ typedef enum tex_command_code {
     fontspec_cmd,
     specificationspec_cmd,
     association_cmd,
+# if (match_experiment)
+integer_reference_cmd,
+dimension_reference_cmd,
+# endif
     interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */ /* valid after |\the|, see ** */
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
     /*tex

@@ -119,15 +119,15 @@
 %    \resetdescriptionparameter\c!referencetext}
 
 \protected\def\strc_descriptions_start_setups[#S#1]%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
+  {\strc_constructions_register[][\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#1]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\tolerant\def\strc_descriptions_start_title[#1]#*#=%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
+  {\strc_constructions_register[][\c!reference={#1},\c!title={#2},\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \protected\def\strc_descriptions_start_reference[#1]%
-  {\strc_constructions_register[][\c!label={\descriptionparameter\c!text},\c!reference={#1},\c!title=,\c!bookmark=,\c!list=,\c!referencetext=]%
+  {\strc_constructions_register[][\c!reference={#1},\c!title=,\c!bookmark=,\c!list=,\c!referencetext=]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \permanent\protected\def\stopnameddescription

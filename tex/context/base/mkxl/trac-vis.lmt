@@ -568,10 +568,10 @@ function visualizers.registercache(name)
     return caches[name]
 end
 
-local fontkern, italickern, marginkern, mathkern do
+local fontkern, italiccorrection, marginkern, mathkern do
 
     local f_cache = caches["fontkern"]
-    local i_cache = caches["italickern"]
+    local i_cache = caches["italiccorrection"]
     local s_cache = caches["shapekern"]
     local m_cache = caches["marginkern"]
     local l_cache = caches["mathkern"]
@@ -613,7 +613,7 @@ local fontkern, italickern, marginkern, mathkern do
         return somekern(head,current,f_cache,"trace:ds",l_fontkern)
     end
 
-    italickern = function(head,current)
+    italiccorrection = function(head,current)
         return somekern(head,current,i_cache,"trace:do",l_italic)
     end
 
@@ -1940,7 +1940,7 @@ do
 
     local kerncodes               = nodes.kerncodes
     local fontkern_code           <const> = kerncodes.fontkern
-    local italickern_code         <const> = kerncodes.italiccorrection
+    local italiccorrection_code   <const> = kerncodes.italiccorrection
     local spacefontkern_code      <const> = kerncodes.spacefontkern
     local leftkern_code           <const> = kerncodes.leftcorrectionkern
     local rightkern_code          <const> = kerncodes.rightcorrectionkern
@@ -2245,9 +2245,9 @@ do
                 if trace_expansion or prev_trace_expansion then
                     head, current = kernexpansion(head,current)
                 end
-            elseif subtype == italickern_code or subtype == leftkern_code or subtype == rightkern_code then
+            elseif subtype == italiccorrection_code or subtype == leftkern_code or subtype == rightkern_code then
                 if trace_italic or prev_trace_italic then
-                    head, current = italickern(head,current)
+                    head, current = italiccorrection(head,current)
                 elseif trace_kern then
                     head, current = ruleditalic(head,current)
                 end

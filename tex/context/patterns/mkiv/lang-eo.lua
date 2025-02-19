@@ -14,7 +14,7 @@ return {
   ["lefthyphenmin"]=1,
   ["length"]=18238,
   ["n"]=2203,
-  ["righthyphenmax"]=1,
+  ["righthyphenmin"]=1,
  },
  ["version"]="1.001",
 }

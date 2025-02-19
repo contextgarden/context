@@ -59,13 +59,13 @@ target_compile_definitions(lua PUBLIC
   # LUAI_HASHLIMIT=6 # obsolete
   # LUAI_MAXSHORTLEN=48
     LUAI_MAXCSTACK=6000
-    LUA_UCID # permits utf8 
+    LUA_UCID # permits utf8
   # LUA_USE_JUMPTABLE=0
     LPEG_DEBUG
   # LUA_NOCVTS2N
     LUA_NOBUILTIN # disable likely usage
   # LUAI_ASSERT
-  # LUA_STRFTIMEOPTIONS="aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%" 
+  # LUA_STRFTIMEOPTIONS="aAbBcCdDeFgGhHIjmMnprRStTuUVwWxXyYzZ%"
   # MINSTRTABSIZE=65536
     NDEBUG=0
 )
@@ -97,3 +97,9 @@ endif (NOT MSVC)
 # todo: what is the right way to increase the stack (mingw)
 
 # target_compile_options(lua PRIVATE -DLUAI_MAXCSTACK=65536 -Wl,--stack,16777216)
+
+# When one want to use shared libraries:
+
+if (DEFINED LMT_PERMIT_LUA_LIBRARIES)
+    set_property(TARGET lua PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif () 

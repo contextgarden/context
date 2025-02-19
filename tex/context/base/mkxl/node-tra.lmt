@@ -494,6 +494,7 @@ local function numbertodimen(d,unit,fmt)
     elseif not unit or unit == "pt" then
         return f_pt(d)
     else
+        -- beware: unscaled em and ex
         return f_un(d*dimenfactors[unit],unit)
     end
 end

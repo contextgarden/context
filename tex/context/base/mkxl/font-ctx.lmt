@@ -26,7 +26,7 @@ local mergehashes = utilities.parsers.mergehashes
 local formatters = string.formatters
 local basename = file.basename
 
-local utfchar, utfbyte = utf.char, utf.byte
+local utfchar, utfbyte, utfsplit = utf.char, utf.byte, utf.split
 local round = math.round
 
 local context, commands = context, commands
@@ -2248,37 +2248,63 @@ end
 
 local dimenfactors = number.dimenfactors
 
-function helpers.dimenfactor(unit,id)
-    if unit == "ex" then
-        return id and exheights[id] or 282460 -- lm 10pt
-    elseif unit == "em" then
-        return id and emwidths [id] or 655360 -- lm 10pt
-    else
-        local du = dimenfactors[unit]
-        return du and 1/du or tonumber(unit) or 1
-    end
-end
+do
 
-local function digitwidth(font) -- max(quad/2,wd(0..9))
-    local tfmdata = fontdata[font]
-    local parameters = tfmdata.parameters
-    local width = parameters.digitwidth
-    if not width then
-        width = round(parameters.quad/2) -- maybe tex.scale
-        local characters = tfmdata.characters
-        for i=48,57 do
-            local wd = round(characters[i].width)
-            if wd > width then
-                width = wd
-            end
+    local xscaled = nuts.xscaled
+    local yscaled = nuts.yscaled
+    local getfont = nuts.getfont
+
+    function helpers.dimenfactor(unit,id)
+        if unit == "ex" then
+            return id and exheights[id] or 282460 -- lm 10pt
+        elseif unit == "em" then
+            return id and emwidths[id] or 655360 -- lm 10pt
+        else
+            local du = dimenfactors[unit]
+            return du and 1/du or tonumber(unit) or 1
         end
-        parameters.digitwidth = width
     end
-    return width
-end
 
-helpers.getdigitwidth = digitwidth
-helpers.setdigitwidth = digitwidth
+    function helpers.glyphdimenfactor(unit,glyph,font)
+        if unit == "ex" then
+            return yscaled(glyph,exheights[glyph and getfont(glyph) or font or true])
+        elseif unit == "em" then
+            return xscaled(glyph,emwidths[glyph and getfont(glyph) or font or true])
+        else
+            local du = dimenfactors[unit]
+            return du and 1/du or tonumber(unit) or 1
+        end
+    end
+
+    local function digitwidth(font) -- max(quad/2,wd(0..9))
+        local tfmdata = fontdata[font]
+        local parameters = tfmdata.parameters
+        local width = parameters.digitwidth
+        if not width then
+            width = round(parameters.quad/2) -- maybe tex.scale
+            local characters = tfmdata.characters
+            for i=48,57 do
+                local wd = round(characters[i].width)
+                if wd > width then
+                    width = wd
+                end
+            end
+            parameters.digitwidth = width
+        end
+        return width
+    end
+
+    helpers.getdigitwidth = digitwidth
+    helpers.setdigitwidth = digitwidth
+
+ -- local function glyphdigitwidth(glyph) -- max(quad/2,wd(0..9))
+ --     return xscaled(glyph,digitwidth(getfont(glyph)))
+ -- end
+ --
+ -- helpers.getglyphdigitwidth = glyphdigitwidth
+ -- helpers.setglyphdigitwidth = glyphdigitwidth
+
+end
 
 --
 
@@ -2469,7 +2495,7 @@ do
 
     implement {
         name      = "normalizedbodyfontsize",
-        arguments = "dimen",
+        arguments = "dimension",
         actions   = function(d)
             context(lpegmatch(stripper,f_strip(d/65536)))
         end
@@ -3351,6 +3377,7 @@ do
             return dimen_code, yscaled(c and c.height or 0)
         end
     }
+
     implement {
         name      = "descender",
         public    = true,
@@ -3363,6 +3390,7 @@ do
             return dimen_code, yscaled(c and c.depth or 0)
         end
     }
+
     implement {
         name      = "capheight",
         public    = true,
@@ -3392,5 +3420,29 @@ do
  --         return dimen_code, yscaled(parameters[true][properties[index]] or 0)
  --     end
  -- }
+
+     implement {
+        name      = "rightmathkern",
+        usage     = "value",
+        public    = true,
+        protected = true,
+        arguments = "string",
+        actions   = function(str)
+            local u = utfsplit(str)
+            local v = 0
+            if u and #u > 0 then
+                local c = characters[true][utfbyte(u[#u])]
+                local t = c.topright or 0
+                local b = c.bottomright or 0
+                if t > 0 then
+                    v = t
+                end
+                if b > t then
+                    v = b
+                end
+            end
+            return dimen_code, v
+        end
+    }
 
 end

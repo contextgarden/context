@@ -125,11 +125,11 @@ implement {
 
 do
 
-    local scanners     = tokens.scanners
-    local scanword     = scanners.word
-    local scandimen    = scanners.dimen
-    local scanstring   = scanners.string
-    local scancardinal = scanners.cardinal
+    local scanners      = tokens.scanners
+    local scanword      = scanners.word
+    local scandimension = scanners.dimension
+    local scanstring    = scanners.string
+    local scancardinal  = scanners.cardinal
 
     implement {
         name      = "setparagraphshape",
@@ -143,20 +143,20 @@ do
                 local key = scanword()
               ::AGAIN::
                 if key == "left" then
-                    local l = scandimen()
+                    local l = scandimension()
                     key = scanword()
                     if key == "right" then
-                        n = n + 1 ; t[n] = { l, a + h - l - scandimen() }
+                        n = n + 1 ; t[n] = { l, a + h - l - scandimension() }
                     elseif key == "hsize" then
-                        n = n + 1 ; t[n] = { l, a + scandimen() }
+                        n = n + 1 ; t[n] = { l, a + scandimension() }
                     else
                         n = n + 1 ; t[n] = { l, a + h }
                         goto AGAIN
                     end
                 elseif key == "right" then
-                    n = n + 1 ; t[n] = { 0, a + h - scandimen() }
+                    n = n + 1 ; t[n] = { 0, a + h - scandimension() }
                 elseif key == "both" then
-                    local b = scandimen()
+                    local b = scandimension()
                     n = n + 1 ; t[n] = { b, a + h - b - b }
                 elseif key == "copy" then
                     local c = scancardinal()

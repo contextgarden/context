@@ -206,7 +206,7 @@
      \fi
    \else
      \ifhastok={#3}%
-       \grph_include_use_indeed{#1}{#2}\empty{#3}
+       \grph_include_use_indeed{#1}{#2}\empty{#3}%
      \else
        \grph_include_use_indeed{#1}{#2}{#3}{#4}%
      \fi
@@ -580,8 +580,8 @@
       {\externalfigureparameter\c!directory}%
     \clf_figurereset
       \foundexternalfigure
-      {\externalfigureparameter\c!defaultwidth}
-      {\externalfigureparameter\c!defaultheight}
+      {\externalfigureparameter\c!defaultwidth}%
+      {\externalfigureparameter\c!defaultheight}%
     \relax
 \to \everyexternalfigureresets
 

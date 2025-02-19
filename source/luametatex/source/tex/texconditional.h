@@ -128,18 +128,18 @@ typedef enum if_test_codes {
 //define last_real_if_test_code  if_bitwise_and_code
 
 typedef struct condition_state_info {
-    halfword  cond_ptr;   /*tex top of the condition stack */
-    int       cur_if;     /*tex type of conditional being worked on */
-    int       cur_unless;
-    int       if_step;
-    int       if_limit;   /*tex upper bound on |fi_or_else| codes */
-    int       if_line;    /*tex line where that conditional began */
-    halfword  if_nesting;
-    int       if_unless;
-    int       skip_line;  /*tex skipping began here */
-    halfword  chk_integer;
-    scaled    chk_dimension;
-    halfword  padding;
+    halfword    cond_ptr;      /*tex top of the condition stack */
+    quarterword cur_if;        /*tex type of conditional being worked on */
+    quarterword if_limit;      /*tex upper bound on |fi_or_else| codes */
+    singleword  cur_unless;
+    singleword  if_unless;
+    singleword  if_step;
+    singleword  unused;
+    halfword    if_line;       /*tex line where that conditional began */
+    halfword    if_nesting;
+    halfword    skip_line;     /*tex skipping began here */
+    halfword    chk_integer;
+    scaled      chk_dimension;
 } condition_state_info ;
 
 extern condition_state_info lmt_condition_state;
@@ -148,6 +148,7 @@ extern void tex_conditional_if         (halfword code, int unless);
 extern void tex_conditional_fi_or_else (void);
 extern void tex_conditional_unless     (void);
 extern void tex_show_ifs               (void);
+extern void tex_conditional_catch_up   (void);
 /*     void tex_quit_fi                (void); */
 /*     void tex_conditional_after_fi   (void); */
 

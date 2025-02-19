@@ -134,7 +134,7 @@ nutpool.register  = register_node -- could be register_nut
 local disc              = register_nut(new_nut(nodecodes.disc))
 local kern              = register_nut(new_nut(kern_code,kerncodes.userkern))
 local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
-local italickern        = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
+local italiccorrection  = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
 local spacefontkern     = register_nut(new_nut(kern_code,kerncodes.spacefontkern))
 local penalty           = register_nut(new_nut(nodecodes.penalty))
 local glue              = register_nut(new_nut(glue_code))
@@ -249,13 +249,15 @@ function nutpool.fontkern(k)
     return n
 end
 
-function nutpool.italickern(k)
-    local n = copy_nut(italickern)
+function nutpool.italiccorrection(k)
+    local n = copy_nut(italiccorrection)
     if k and k ~= 0 then
         setkern(n,k)
     end
     return n
 end
+
+nutpool.italickern = nutpool.italiccorrection -- compatibility
 
 function nutpool.spacefontkern(k)
     local n = copy_nut(spacefontkern)

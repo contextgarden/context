@@ -474,7 +474,7 @@ do
     implement {
         name      = "settagfigure",
         actions   = setfigure,
-        arguments = { "string", "string", "string", "dimen", "dimen", "dimen", "string", "string" }
+        arguments = { "string", "string", "string", "dimension", "dimension", "dimension", "string", "string" }
     }
 
     structurestags.setfigure = setfigure

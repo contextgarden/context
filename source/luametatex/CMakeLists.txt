@@ -26,16 +26,29 @@ include(GNUInstallDirs)
 set(LMT_KPSE_TOO 1) # In case we want to manage MKII scripts (etc) with mtxrun.
 set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi stuff)
 
-# When set, because we're sparse we also strip the binary. Because we only gain some 1-2% on
-# runtime, enabling it makes not much sense:
+# This triggere link time optimization, which adds to compile time and gains (at most) a few 
+# percent on runtime. When set, because we're sparse, we also strip the binary.
 
-#set(LMT_OPTIMIZE 1)
+# set(LMT_OPTIMIZE 1)
 
 # This makes the binary some 135K smaller so it might become the default at some point which is 
 # nice (the smaller as runner the better). After all, we don't load external (Lua) libraries 
 # anyway. 
 
 set(LMT_STRIP 1)
+
+# When one wants to use Lua libraries, this is needed. But keep in mind that it's not supported, 
+# so we won't look into issues that could result from that. Getting a matching library is upto 
+# the user. Keep in mind that we might have set a different bytecode (luac) version during the 
+# alpha/beta stages of a Lua development version. 
+
+# set(LMT_PERMIT_LUA_LIBRARIES 1)
+
+if (DEFINED LMT_PERMIT_LUA_LIBRARIES)
+    unset(LMT_STRIP)
+    unset(LMT_OPTIMIZE)
+    add_definitions(-DLMT_PERMIT_LUA_LIBRARIES="yes")
+endif ()
 
 if (MSVC)
 

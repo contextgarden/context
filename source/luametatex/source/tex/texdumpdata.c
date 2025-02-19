@@ -113,12 +113,18 @@ static void tex_aux_create_fmt_name(void)
     lmt_print_state.selector = terminal_and_logfile_selector_code;
 }
 
+/*tex 
+    Dumping the |number_tex_commands| is just a safeguard for when we experiment with (temporary) 
+    extensions. 
+*/
+
 static void tex_aux_dump_preamble(dumpstream f)
 {
     dump_via_int(f, hash_size);
     dump_via_int(f, hash_prime);
     dump_via_int(f, prim_size);
     dump_via_int(f, prim_prime);
+    dump_via_int(f, number_tex_commands);
     dump_int(f, lmt_hash_state.hash_data.allocated);
     dump_int(f, lmt_hash_state.hash_data.ptr);
     dump_int(f, lmt_hash_state.hash_data.top);
@@ -141,6 +147,10 @@ static void tex_aux_undump_preamble(dumpstream f)
     }
     undump_int(f, x);
     if (x != prim_prime) {
+        goto BAD;
+    }
+    undump_int(f, x);
+    if (x != number_tex_commands) {
         goto BAD;
     }
     undump_int(f, lmt_hash_state.hash_data.allocated);

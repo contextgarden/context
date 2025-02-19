@@ -1,0 +1,205 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+% \setupalign
+%   [depth]
+
+% \setuplayout
+%   [vz=2]
+
+% \enabletrackers
+%  [layout.vz]
+
+% \showmakeup[line]
+
+\setlocalshowmakeup
+
+\startdocument
+  [title=pages,
+   color=middleyellow]
+
+\startsectionlevel[title=Introduction]
+
+There are several builder in the engine: paragraphs, math, alignments, boxes and
+if course pages. But where a paragraph is kind of complete and can be injected on
+a line by line basis, a page is less finished. When enough content is collected
+the result so far is handled over to the output routine. Calling it a routine is
+somewhat confusing because it is not really a routine, it's the token list \type
+{\output} that gets expanded and what in there is supposed to something with the
+result, like adding inserts (footnotes, moved around graphics aka floats, etc.),
+adding headers and footers, possibly using marks, and finally wrapping up and
+shipping out.
+
+The engine primarily offers a single column page so two or more columns are done
+by using tricks, like typesetting on a double height and splitting the result. If
+columns need to be balanced some extra work has to be done, and it's definitely
+non trivial when we have more that just text.
+
+In this chapter we will discuss and collect some mechanisms that deal with pages
+or operate at the outer vertical level. We might discuss some primitive but more
+likely you will see various solutions based on \TEX\ macros and \LUA\ magic.
+
+{\em This is work in progress.}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Rows becoming columns]
+
+{\em This is an experimental mechanism. We need to check|/|decide how to deal
+with penalties. We also need to do more checking.}
+
+Conceptually this is a bit strange feature but useful nevertheless. There are
+several multi-column mechanisms in \CONTEXT\ and each is made for a specific kind
+of usage. You can, to some extent, consider tabulate to produce columns too,
+however it demands a bit of handy work. Say that you have this:
+
+\startbuffer
+\starttabulate[|l|l|]
+\NC 1 \NC one   \NC \NR
+\NC 2 \NC two   \NC \NR
+\NC 3 \NC three \NC \NR
+\NC 4 \NC four  \NC \NR
+\NC 5 \NC five  \NC \NR
+\stoptabulate
+\stopbuffer
+
+\typebuffer
+
+but you don't want to waste space. So you might want:
+
+\startrows[n=2,before=\blank,after=\blank]
+\getbuffer
+\stoprows
+
+or maybe even this:
+
+\startrows[n=3,before=\blank,after=\blank]
+\getbuffer
+\stoprows
+
+but still wants to code like this:
+
+\typebuffer
+
+You can do this:
+
+\starttyping
+\startcolumns[n=3]
+\getbuffer
+\stopcolumns
+\stoptyping
+
+The (mixed) columns mechanism used here normally works ok but because of the way
+columns are packaged they don't work well with for instance \quote {vz}. Page
+columns do a better job but don't mix with single columns that well. Another
+solution is this:
+
+\starttyping
+\startrows[n=3,before=\blank,after=\blank]
+\getbuffer
+\stoprows
+\stoptyping
+
+Here the result is collected in a vertical box, post processed and flushed line
+by line. We need to explicitly handle the before and after spacing here because
+it gets discarded (if added at all). When a slice of the box is part of the
+shipped out page the cells are swapped so that instead of going horizontal we go
+vertical. Compare the original
+
+\start\showmakeup[line,hbox]
+\startrows[n=3,before=\blank,after=\blank,order=horizontal]
+\getbuffer
+\stoprows
+\stop
+
+with the swapped one:
+
+\start\showmakeup[line,hbox]
+\startrows[n=3,before=\blank,after=\blank,order=vertical]
+\getbuffer
+\stoprows
+\stop
+
+This is not really a manual but let's mention a few configuration options. The
+\type {n} parameter controls the number of columns. In order to support swapping
+this mechanism adds empty pseudo cells for as far as needed. By default the \type
+{order} is \type {vertical} but one can set it to \type {horizontal} instead. In the
+next example we have set \type {height} to \type {2\strutht} and \type {depth} to
+\type {2\strutdp}:
+
+\start\showmakeup[line,hbox]
+\startrows[n=3,before=\blank,after=\blank,height=2\strutht,depth=2\strutdp]
+\getbuffer
+\stoprows
+\stop
+
+When you set \type {height} and \type {depth} to \type {max} all cells will
+get these dimensions from the tallest cell. Compare:
+
+\startbuffer
+\starttabulate[|l|l|]
+\NC 1 \NC \im {y = x + 1}           \NC \NR
+\NC 2 \NC \im {y = x^2 + 1}         \NC \NR
+\NC 3 \NC \im {y = \sqrt{x^2} + 1}    \NC \NR
+\NC 4 \NC \im {y = \frac{1}{x^2} + 1} \NC \NR
+\stoptabulate
+\stopbuffer
+
+\start\showmakeup[line,hbox]
+\startrows[n=2,before=\blank,after=\blank]
+\getbuffer
+\stoprows
+\stop
+
+with:
+
+\start\showmakeup[line,hbox]
+\startrows[n=2,before=\blank,after=\blank,height=max,depth=max]
+\getbuffer
+\stoprows
+\stop
+
+In the examples with tabulate we honor the original dimensions but you can also
+set the \type {width}, combined with a \type {distance}. Instead of a dimension
+the \type {width} parameter can be set to \type {fit}.
+
+\start\showmakeup[line,hbox]
+\startrows[n=3,width=fit,distance=2em,align={verytolerant,stretch},before=\blank,after=\blank]
+In case one wonders, of course regular columns can be used, but this is an
+alternative that actually gives you balancing for free, but of course with the
+limitation that we have lines (or cells in tables) that can be swapped. For as
+far as possible footnotes are supported but of course floats are not.
+
+So, this rows based mechanism is not the solution for all problems but when used
+in situations where one knows what goes in, it is quite powerful anyway. It
+also has a relatively simple implementation.
+\stoprows
+\stop
+
+In the previous rendering we have set the width as mentioned but also set \type
+{align} to \typ {verytolerant,stretch} so that we don't overflow lines. The \type
+{before} and \type {after} parameters are set to \type {\blank}.
+
+\stopsectionlevel
+
+\stopdocument
+
+% \startbuffer
+%     % watch the much appreciated ; operator here
+%     \protected\def\foo#1%
+%       {\iftrialtypesetting\orelse\ifnum\numexpr#1;10\relax=\plustwo
+%          \footnote{NOTE @ #1}%
+%        \fi}%
+%     \normalexpanded {\starttabulate[|||]
+%         \expandedrepeat 500 {
+%             \NC test \foo{\the\currentloopiterator}%
+%             \NC test \the\currentloopiterator
+%             \NC \NR
+%         }
+%     \stoptabulate}
+% \stopbuffer
+%
+% \startrows[n=4]
+%     \getbuffer
+% \stoprows

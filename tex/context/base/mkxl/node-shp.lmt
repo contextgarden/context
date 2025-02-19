@@ -170,7 +170,7 @@ statistics.register("node frequencies", function()
     end
 end)
 
-do -- for the moment:
+do -- no longer used
 
     local whatsitcodes = nodes.whatsitcodes
 
@@ -215,8 +215,8 @@ do -- for the moment:
         name      = "cleanupbox",
         public    = true,
         protected = true,
+        arguments = "integer",
         actions   = handlers.cleanupbox,
-        arguments = "integerargument"
     }
 
 end

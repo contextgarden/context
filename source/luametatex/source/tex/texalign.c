@@ -322,7 +322,8 @@ static alignment_state_info lmt_alignment_state = {
 
 int tex_in_alignment(void)
 {
-    return lmt_alignment_state.cur_loop ? 1 : 0;
+ // return lmt_alignment_state.cur_loop ? 1 : 0;
+    return lmt_alignment_state.align_ptr ? 1 : 0;
 }
 
 static void tex_aux_wipe_row_state(void)

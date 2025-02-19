@@ -205,6 +205,10 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[def_cmd]                              = (command_item) { .id = def_cmd,                            .lua = lua_key_index(def),                          .name = lua_key(def),                          .kind = regular_command_item,   .min = 0,                         .max = last_def_code,                .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[set_box_cmd]                          = (command_item) { .id = set_box_cmd,                        .lua = lua_key_index(set_box),                      .name = lua_key(set_box),                      .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[hyphenation_cmd]                      = (command_item) { .id = hyphenation_cmd,                    .lua = lua_key_index(hyphenation),                  .name = lua_key(hyphenation),                  .kind = regular_command_item,   .min = 0,                         .max = last_hyphenation_code,        .base = 0,                       .fixedvalue = 0            };
+# if (match_experiment)
+    lmt_interface.command_names[integer_reference_cmd]                = (command_item) { .id = integer_reference_cmd,              .lua = lua_key_index(integer_reference),            .name = lua_key(hyphenation),                  .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
+    lmt_interface.command_names[dimension_reference_cmd]              = (command_item) { .id = dimension_reference_cmd,            .lua = lua_key_index(dimension_reference),          .name = lua_key(hyphenation),                  .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
+# endif
     lmt_interface.command_names[interaction_cmd]                      = (command_item) { .id = interaction_cmd,                    .lua = lua_key_index(interaction),                  .name = lua_key(interaction),                  .kind = regular_command_item,   .min = 0,                         .max = last_interaction_level,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[undefined_cs_cmd]                     = (command_item) { .id = undefined_cs_cmd,                   .lua = lua_key_index(undefined_cs),                 .name = lua_key(undefined_cs),                 .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[expand_after_cmd]                     = (command_item) { .id = expand_after_cmd,                   .lua = lua_key_index(expand_after),                 .name = lua_key(expand_after),                 .kind = regular_command_item,   .min = 0,                         .max = last_expand_after_code,       .base = 0,                       .fixedvalue = 0            };
@@ -1677,6 +1681,8 @@ static int tokenlib_scanargument(lua_State *L)
     return 1;
 }
 
+/*tex begin of obsolete (redundant). */
+
 static void show_right_brace_error(void)
 {
     tex_handle_error(
@@ -1717,6 +1723,7 @@ static int tokenlib_scandimensionargument(lua_State *L)
     int mu = lua_toboolean(L, 2);
     int eq = lua_toboolean(L, 3);
     tokenlib_aux_goto_first_candidate();
+    /* todo: just assumed grouped */
     if (cur_cmd != left_brace_cmd) {
         tex_back_input(cur_tok);
     } else {
@@ -1737,6 +1744,11 @@ static int tokenlib_scandimensionargument(lua_State *L)
         return 1;
     }
 }
+
+/*tex End of obsolete (redundant). */
+
+
+/* */
 
 static int tokenlib_scandelimited(lua_State *L)
 {
@@ -2352,7 +2364,7 @@ static int tokenlib_future_expand(lua_State *L)
             case other_char_cmd:
                 if (lua_tointeger(L, 1) == cur_chr) {
                     tex_back_input(t);
-                    tex_back_input(yes);
+                    tex_back_input(yes); // maybe tex_reinsert_token 
                     tokenlib_aux_unsave_tex_scanner(texstate);
                     return 0;
                 }
@@ -3836,8 +3848,8 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "scankeywordcs",         tokenlib_scankeywordcs         },
     { "scanint",               tokenlib_scaninteger           }, /* obsolete */
     { "scaninteger",           tokenlib_scaninteger           },
-    { "scanintegerargument",   tokenlib_scanintegerargument   },
-    { "scandimensionargument", tokenlib_scandimensionargument },
+    { "scanintegerargument",   tokenlib_scanintegerargument   }, /* handled by scaninteger */
+    { "scandimensionargument", tokenlib_scandimensionargument }, /* handled by scandimension */
     { "scandimenargument",     tokenlib_scandimensionargument }, /* obsolete */
     { "scancardinal",          tokenlib_scancardinal          },
     { "scanfloat",             tokenlib_scanfloat             },

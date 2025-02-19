@@ -179,9 +179,8 @@ gluecodes.parfillskip      = gluecodes.parfillskip      or gluecodes.parfillrigh
 listcodes.row              = listcodes.alignment
 listcodes.column           = listcodes.alignment
 
-kerncodes.kerning          = kerncodes.fontkern         -- will go away
 kerncodes.italiccorrection = kerncodes.italiccorrection
-kerncodes.italickern       = kerncodes.italiccorrection -- for old times sake
+kerncodes.italickern       = kerncodes.italiccorrection -- compatibility
 
 -- We use the real node code numbers.
 

@@ -1560,3 +1560,20 @@ was added to the engines, it is configurable in \LUATEX\ and has been dropped in
 %         \scratchdimentwo 20pt \the\currentstacksize\par
 %     }
 % }
+
+% Experiment
+%
+% \def\testID#i#*#d{[\the#1][\the#2]}
+% \def\testII#i#*#i{[\the#1][\number#2]}
+%
+% \startlines
+% \testID 123 123pt
+% \testID {123}{123pt}
+% \testID {123}{655360sp}
+% \testID {123}{1ex}
+% \testID {123}{2ex}
+% \testID {123}{6ex}
+% \testID {123}{10ex}
+% \testID {123}{20ex}
+% \testID {123}{123pt}
+% \stoplines

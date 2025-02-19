@@ -50,10 +50,7 @@ local fromposit = posit.fromposit
 
 local report            = logs.reporter("positions")
 
-local scanners          = tokens.scanners
-local scanstring        = scanners.string
-local scaninteger       = scanners.integer
-local scandimen         = scanners.dimen
+local scanstring        = tokens.scanners.string
 
 local implement         = interfaces.implement
 
@@ -1013,7 +1010,8 @@ implement {
     name      = "dosaveposition",
     public    = true,
     protected = true,
-    arguments = { "argument", "integerargument", "dimenargument", "dimenargument" },
+ -- arguments = { "argument", "integerargument", "dimenargument", "dimenargument" },
+    arguments = { "argument", "integer", "dimension", "dimension" },
     actions   = setall, -- name p x y
 }
 
@@ -1021,7 +1019,8 @@ implement {
     name      = "dosavepositionwhd",
     public    = true,
     protected = true,
-    arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument" },
+ -- arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument" },
+    arguments = { "argument", "integer", "dimenension", "dimension", "dimension", "dimension", "dimension" },
     actions   = setall, -- name p x y w h d
 }
 
@@ -1029,7 +1028,8 @@ implement {
     name      = "dosavepositionplus",
     public    = true,
     protected = true,
-    arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "argument" },
+ -- arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "argument" },
+    arguments = { "argument", "integer", "dimension", "dimension", "dimension", "dimension", "dimension", "argument" },
     actions   = setall,  -- name p x y w h d extra
 }
 
@@ -1398,7 +1398,8 @@ do
 
     implement {
         name      = "dosetpositionwhd",
-        arguments = { "argument", "dimenargument", "dimenargument", "dimenargument" },
+     -- arguments = { "argument", "dimenargument", "dimenargument", "dimenargument" },
+        arguments = { "argument", "dimension", "dimension", "dimension" },
         public    = true,
         protected = true,
         actions   = function(name,w,h,d)
@@ -1421,7 +1422,8 @@ do
 
     implement {
         name      = "dosetpositionbox",
-        arguments = { "argument", "integerargument" },
+     -- arguments = { "argument", "integerargument" },
+        arguments = { "argument", "integer" },
         public    = true,
         protected = true,
         actions   = function(name,n)
@@ -1446,7 +1448,8 @@ do
 
     implement {
         name      = "dosetpositionplus",
-        arguments = { "argument", "dimenargument", "dimenargument", "dimenargument" },
+     -- arguments = { "argument", "dimenargument", "dimenargument", "dimenargument" },
+        arguments = { "argument", "dimension", "dimension", "dimension" },
         public    = true,
         protected = true,
         actions   = function(name,w,h,d)
@@ -1494,7 +1497,8 @@ do
 
     implement {
         name      = "dosetpositionstrutkind",
-        arguments = { "argument", "integerargument" },
+     -- arguments = { "argument", "integerargument" },
+        arguments = { "argument", "integer" },
         public    = true,
         protected = true,
         actions   = function(name,kind)
@@ -1811,7 +1815,8 @@ jobpositions.getcolumndata = getcolumndata
 
 implement {
     name      = "replacepospxywhd",
-    arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument" },
+ -- arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument" },
+    arguments = { "argument", "integer", "dimension", "dimension", "dimension", "dimension", "dimension" },
     public    = true,
     protected = true,
     actions   = function(name,page,x,y,w,h,d)
@@ -2295,7 +2300,8 @@ local splitter = lpeg.tsplitat(",")
 
 implement {
     name      = "MPplus",
-    arguments = { "argument", "integerargument", "argument" },
+ -- arguments = { "argument", "integerargument", "argument" },
+    arguments = { "argument", "integer", "argument" },
     public    = true,
     actions   = function(name,n,default)
         local jpi = collected[name]
@@ -2367,7 +2373,8 @@ implement {
 
 implement {
     name      = "doifelsepositiononpage",
-    arguments = { "string", "integerargument" },
+ -- arguments = { "string", "integerargument" },
+    arguments = { "string", "integer" },
     public    = true,
     protected = true,
     actions   = function(name,p)
@@ -2462,7 +2469,7 @@ implement {
 
 implement {
     name      = "markregionboxtaggedkind",
-    arguments = { "integer", "string", "integer", "dimension", "posit", "integer", "dimen", "dimen", "dimen", "dimen" },
+    arguments = { "integer", "string", "integer", "dimension", "posit", "integer", "dimension", "dimension", "dimension", "dimension" },
     actions   = function(box,tag,index,depth,yscale,kind,d1,d2,d3,d4)
         markregionbox(box,tag,index,depth,fromposit(yscale),false,false,kind,d1,d2,d3,d4)
     end

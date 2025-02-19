@@ -157,14 +157,17 @@ static void tex_aux_clean_up_the_memory(void)
     halfword q = node_next(active_head);
     while (q != active_head) {
         halfword p = node_next(q);
-        tex_flush_node(q);
+     // tex_flush_node(q);
+        tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
         q = p;
     }
     node_next(active_head) = null;
     q = lmt_balance_state.passive;
     while (q) {
         halfword p = node_next(q);
-        tex_flush_node(q);
+     // tex_flush_node(q);
+     // tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
+        tex_free_node(q, passive_node_size); // less overhead & testing
         q = p;
     }
     lmt_balance_state.passive = null;
@@ -947,7 +950,8 @@ static scaled tex_aux_try_balance(
                     }
                 }
             }
-            tex_flush_node(current);
+         // tex_flush_node(current);
+            tex_free_node(current, get_node_size(node_type(current))); // less overhead & testing
         }
         if (previous == active_head) {
             current = node_next(active_head);
@@ -955,20 +959,23 @@ static scaled tex_aux_try_balance(
                 tex_aux_add_to_target_from_delta(lmt_balance_state.active_height, current);
                 tex_aux_set_target_to_source(current_active_height, lmt_balance_state.active_height);
                 node_next(active_head) = node_next(current);
-                tex_flush_node(current);
+             // tex_flush_node(current);
+                tex_free_node(current, delta_node_size); // less overhead & testing
             }
         } else if (node_type(previous) == delta_node) {
             current = node_next(previous);
             if (current == active_head) {
                 tex_aux_sub_delta_from_target(current_active_height, previous);
                 node_next(before_previous) = active_head;
-                tex_flush_node(previous);
+             // tex_flush_node(previous);
+                tex_free_node(previous, delta_node_size); // less overhead & testing
                 previous = before_previous;
             } else if (node_type(current) == delta_node) {
                 tex_aux_add_to_target_from_delta(current_active_height, current);
                 tex_aux_add_to_delta_from_delta(previous, current);
                 node_next(previous) = node_next(current);
-                tex_flush_node(current);
+             // tex_flush_node(current);
+                tex_free_node(current, delta_node_size); // less overhead & testing
             }
         } else { 
         }

@@ -111,7 +111,7 @@ local pattern = (C((1-P("%"))^1) * Carg(1)) / function(n,d)
 
 implement {
     name      = "percentageof",
-    arguments = { "string", "dimen" },
+    arguments = { "string", "dimension" },
     actions   = function(str,dim)
         context(lpegmatch(pattern,str,1,dim) or str)
     end
@@ -289,7 +289,7 @@ end
 
 implement {
     name      = "converteddimen",
-    arguments = { "dimen", "string" },
+    arguments = { "dimension", "string" },
     actions   = function(dimen,unit)
         context(number.todimen(dimen,unit or "pt","%0.5f")) -- no unit appended (%F)
     end
@@ -556,12 +556,12 @@ implement {
     actions = function() getshape("widowpenalties") end,
 }
 
--- These have beem replaced by loop primitives:
+-- These have been replaced by loop primitives:
 
 implement {
     name      = "loopcs",
     public    = true,
-    arguments = { "integerargument", "csname" },
+    arguments = { "integer", "csname" },
     actions   = function(n,cs)
        local c = context[cs]
        if n < 0 then
@@ -575,7 +575,7 @@ implement {
 implement {
     name      = "loopcsn",
     public    = true,
-    arguments = { "integerargument", "csname" },
+    arguments = { "integer", "csname" },
     actions   = function(n,cs)
        local c = context[cs]
        if n < 0 then

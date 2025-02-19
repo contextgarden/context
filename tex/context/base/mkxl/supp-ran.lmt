@@ -131,7 +131,7 @@ end
 -- todo: also open up in utilities.randomizer.*
 
 implement { name = "getrandomnumber", actions = { getrandomnumber, context }, arguments = { "integer", "integer" } }
-implement { name = "getrandomdimen",  actions = { getrandomnumber, context }, arguments = { "dimen", "dimen" } }
+implement { name = "getrandomdimen",  actions = { getrandomnumber, context }, arguments = { "dimension", "dimension" } }
 implement { name = "getrandomfloat",  actions = { getrandomnumber, context }, arguments = { "number", "number" } }
 implement { name = "getrandomseed",   actions = { getrandomseed,   context } }
 implement { name = "setrandomseed",   actions = setrandomseed, arguments = "integer" }

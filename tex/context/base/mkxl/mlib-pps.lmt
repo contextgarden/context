@@ -514,7 +514,7 @@ local factor = 65536*(7227/7200)
 
 implement {
     name       = "mpsetsxsy",
-    arguments  = { "dimen", "dimen", "dimen" },
+    arguments  = { "dimension", "dimension", "dimension" },
     actions    = function(wd,ht,dp)
         local hd = ht + dp
         setmacro("mlib_sx",wd ~= 0 and factor/wd or 0)

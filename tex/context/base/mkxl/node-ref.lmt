@@ -846,8 +846,8 @@ implement {
             { "highlight", "boolean" },
             { "newwindow", "boolean" },
             { "layer" },
-            { "height", "dimen" },
-            { "depth", "dimen" },
+            { "height", "dimension" },
+            { "depth", "dimension" },
             { "view" },
         }
     }
@@ -862,8 +862,8 @@ implement {
 --             { "highlight", "boolean" },
 --             { "newwindow", "boolean" },
 --             { "layer" },
---             { "height", "dimen" },
---             { "depth", "dimen" },
+--             { "height", "dimension" },
+--             { "depth", "dimension" },
 --             { "view" },
 --         }
 --     }
@@ -877,7 +877,7 @@ implement {
 implement {
     name      = "injectcurrentreferencehtdp",
     actions   = references.injectcurrentset,
-    arguments = { "dimen", "dimen" },
+    arguments = { "dimension", "dimension" },
 }
 
 statistics.register("interactive elements", function()

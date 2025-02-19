@@ -54,6 +54,7 @@ local setweight          = nuts.setweight
 local setoffsets         = nuts.setoffsets
 local setfield           = nuts.setfield
 local getruledata        = nuts.getruledata
+local yscaled            = nuts.yscaled
 
 local isglyph            = nuts.isglyph
 local firstglyphnode     = nuts.firstglyphnode
@@ -131,7 +132,7 @@ local fonthashes         = fonts.hashes
 local fontdata           = fonthashes.identifiers
 local fontresources      = fonthashes.resources
 
-local dimenfactor        = fonts.helpers.dimenfactor
+local glyphdimenfactor   = fonts.helpers.glyphdimenfactor
 local splitdimen         = number.splitdimen
 local setmetatableindex  = table.setmetatableindex
 
@@ -275,9 +276,11 @@ do
         -- id == disc_code
         -- id == boundary_code
         local font = nil
+        local glph = nil
         local char, id = isglyph(f)
         if char then
             font = id
+            glph = f
         elseif id == hlist_code then
             font = getattr(f,a_runningtext)
         else
@@ -328,18 +331,19 @@ do
         local transparency  = ta > 0 and ta or getattr(f,a_transparency)
         local foreground    = order == v_foreground
         local layer         = getattr(f,a_viewerlayer)
-        local e             = dimenfactor(unit,font) -- what if no glyph node
+        local e             = glyphdimenfactor(unit,glph,font)
         local rt            = tonumber(rulethickness)
         if rt then
             rulethickness = e * rulethickness / 2
         else
             local n, u = splitdimen(rulethickness)
             if n and u then -- we need to intercept ex and em and % and ...
-                rulethickness = n * dimenfactor(u,fontdata[font]) / 2
+                rulethickness = n * glyphdimenfactor(u,glyph,font) / 2
             else
                 rulethickness = 1/5
             end
         end
+
         --
         if level > max then
             level = max
@@ -509,7 +513,7 @@ do
         if next then
             setlink(list,next)
         end
-        local raise = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
+        local raise = data.dy * glyphdimenfactor(data.unit,first)
         setshift(list,raise) -- is taken into dimensions
         setwhd(list,width,height,depth)
         if trace_shifted then
@@ -800,8 +804,8 @@ do
         setlistcolor(copy,data.ca,data.ma,data.ta)
 
         head = insertnodebefore(head,first,list)
-        local xoffset = data.dx * dimenfactor(data.unit,fontdata[getfont(first)])
-        local yoffset = data.dy * dimenfactor(data.unit,fontdata[getfont(first)])
+        local xoffset = data.dx * glyphdimenfactor(data.unit,first)
+        local yoffset = data.dy * glyphdimenfactor(data.unit,first)
         local weight  = data.weight or 0
         setoffsets(list,xoffset,yoffset)
         setwhd(list,0,0,0)
