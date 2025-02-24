@@ -183,7 +183,7 @@ function node.dimensions(a,b,c,d,e)
 end
 
 function node.rangedimensions(parent,first,last)
-    return rangedimenensions(todirect(parent),todirect(first),last and todirect(last))
+    return rangedimensions(todirect(parent),todirect(first),last and todirect(last))
 end
 
 function node.effectiveglue(list,parent)

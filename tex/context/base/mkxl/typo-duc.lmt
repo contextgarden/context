@@ -980,12 +980,14 @@ local function apply_to_list(list,size,head,pardir)
 --                 head = insertnodebefore(head,c,d)
 --                 enddir = false
 --             end
+
             if enddir then
                 local d = new_direction(enddir,true)
                 setattrlist(d,current)
                 head = insertnodebefore(head,current,d)
                 enddir = false
             end
+
         elseif begindir then
             if id == par_code and startofpar(current) then
                 -- par should always be the 1st node

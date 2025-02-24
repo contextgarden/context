@@ -16,7 +16,7 @@
 
 \newcount \lastallocatedattribute \lastallocatedattribute=255
 
-\def\newattribute#1%
+\protected\def\newattribute#1%
   {\global\advance\lastallocatedattribute 1
    \attributedef#1\lastallocatedattribute}
 

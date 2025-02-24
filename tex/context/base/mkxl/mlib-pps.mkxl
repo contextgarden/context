@@ -292,13 +292,22 @@
 
 % For now here ... will be cleaned up and become macro calls instead:
 
-\newtoks\mptexttoks
 \newbox \mptextbox
+
+\newtoks\mptexttoks
 \newtoks\mpoutlinetoks
 \newtoks\mpgraphictexttoks
 
-\mptexttoks       {\global\setbox\mptextbox\hbox{\clf_mptexttoks}}
-\mpoutlinetoks    {\global\setbox\mptextbox\vbox{\clf_mpoutlinetoks}}
-\mpgraphictexttoks{\global\setbox\mptextbox\vbox{\clf_mpgraphictexttoks}}
+\newtoks\mpeveryoutlinefont
+
+\appendtoks
+    \c_math_extensibles\conditionalfalse
+    \setupmathfractions[\c!rule=\v!yes]%
+    \setupmathradical  [\c!rule=\v!yes]%
+\to \mpeveryoutlinefont
+
+\mptexttoks       {\global\setbox\mptextbox\hbox{\expand\mpeveryoutlinefont\relax\clf_mptexttoks}}
+\mpoutlinetoks    {\global\setbox\mptextbox\vbox{\expand\mpeveryoutlinefont\relax\clf_mpoutlinetoks}}
+\mpgraphictexttoks{\global\setbox\mptextbox\vbox{\expand\mpeveryoutlinefont\relax\clf_mpgraphictexttoks}}
 
 \protect \endinput

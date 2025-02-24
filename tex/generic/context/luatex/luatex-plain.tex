@@ -7,7 +7,32 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 
+%D We found out that in some cases the cm* fonts are not found and we don't
+%D want to load them anyway. So we skip the font definitions.
+
+\catcode`\{=1 % begin group
+\catcode`\}=2 % end group
+\catcode`\#=6 % macro parameter
+
+\let\normalfont            \font
+%let\normalskewchar        \skewchar
+\let\normaltextfont        \textfont
+\let\normalscriptfont      \scriptfont
+\let\normalscriptscriptfont\scriptscriptfont
+
+\def\font           #1=#2 {\immediate\write99{ignoring \string#1=\string#2}\let#1\nullfont}
+%def\skewchar       #1=#2 {\immediate\write99{ignoring \string#1=\string#2}}
+\def\textfont        #1=#2{\immediate\write99{ignoring \string\textfont        \string#1=\string#2}}
+\def\scriptfont      #1=#2{\immediate\write99{ignoring \string\scriptfont      \string#1=\string#2}}
+\def\scriptscriptfont#1=#2{\immediate\write99{ignoring \string\scriptscriptfont\string#1=\string#2}}
+
 \input plain
+
+\let\font            \normalfont
+%let\skewchar        \normalskewchar
+\let\textfont        \normaltextfont
+\let\scriptfont      \normalscriptfont
+\let\scriptscriptfont\normalscriptscriptfont
 
 \directlua {tex.enableprimitives('', tex.extraprimitives())}
 

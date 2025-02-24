@@ -14,6 +14,7 @@ return {
     mathematics = {
         parameters = {
             FractionRuleThickness             =  55,
+-- FractionDenominatorGapMin = 100,
          -- AccentBaseDepth                   = 250,
             FlattenedAccentBaseHeight         = 710,-- slightly too large in the font
             DelimiterPercent                  =  85,

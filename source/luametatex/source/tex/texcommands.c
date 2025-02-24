@@ -988,6 +988,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "toscaled",                       convert_cmd,            to_scaled_code,                           0);
         tex_primitive(luatex_command, "tosparsedimension",              convert_cmd,            to_sparse_dimension_code,                 0);
         tex_primitive(luatex_command, "tosparsescaled",                 convert_cmd,            to_sparse_scaled_code,                    0);
+        tex_primitive(luatex_command, "tolimitedfloat",                 convert_cmd,            to_limited_float_code,                    0);
         tex_primitive(luatex_command, "tocharacter",                    convert_cmd,            to_character_code,                        0);
 
         tex_primitive(tex_command,    "else",                           if_test_cmd,            else_code,                                0);

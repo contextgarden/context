@@ -497,10 +497,11 @@
      \letdummyparameter\c!stretch\zeropoint
      \letdummyparameter\c!shrink \zeropoint
      \getdummyparameters[#1]%
-     \additionalpageskip
-       {(\dummyparameter\c!height)+\lineheight*(\dummyparameter\c!lines)}
-       \s!plus \dummyparameter\c!stretch
-       \s!minus\dummyparameter\c!shrink
+     \additionalpageskip\dimexpr
+        (\dummyparameter\c!height)+\lineheight*(\dummyparameter\c!lines)%
+     \relax
+        \s!plus \dummyparameter\c!stretch
+        \s!minus\dummyparameter\c!shrink
      \relax
    \fi
    \endgroup}

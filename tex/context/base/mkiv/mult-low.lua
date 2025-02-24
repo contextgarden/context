@@ -581,6 +581,8 @@ return {
         --
         "shiftbox", "vpackbox", "hpackbox", "vpackedbox", "hpackedbox",
         --
+        "vreflected",
+        --
      -- "ordordspacing", "ordopspacing", "ordbinspacing", "ordrelspacing",
      -- "ordopenspacing", "ordclosespacing", "ordpunctspacing", "ordinnerspacing",
      -- "ordfracspacing", "ordradspacing", "ordmiddlespacing", "ordaccentspacing",
@@ -682,6 +684,7 @@ return {
         "autodirhbox", "autodirvbox", "autodirvtop",
         "leftorrighthbox", "leftorrightvbox", "leftorrightvtop",
         "lefttoright", "righttoleft", "checkedlefttoright", "checkedrighttoleft",
+        "foolbidimode",
         "synchronizelayoutdirection","synchronizedisplaydirection","synchronizeinlinedirection",
         "dirlre", "dirrle", "dirlro", "dirrlo",
         "rtltext", "ltrtext",

@@ -990,13 +990,58 @@ Here is another nice example:
     draw p[1] && p[2] withpen pencircle scaled 4 withcolor darkgreen ;
     draw p[1] -- p[2] withpen pencircle scaled 2 withcolor "orange" ;
     interim jointolerance := 100 ;
-    draw p[1] & p[2]  withpen pencircle scaled 1 withcolor darkblue ;
+    draw p[1] & p[2]  withpen pencircle scaled 1 withcolor "darkblue" ;
 \stopMPcode
 \stopbuffer
 
 \typebuffer[option=TEX]
 
 Watch how we get a curve:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Dashing]
+
+In addition to \type {dashes} we provide \type {withdashes} that distributes the
+dashes along the path in such a way that the pieces are equivalent.
+
+\startbuffer
+\startMPcode
+numeric u ; u := 10pt ;
+
+path piece, impossible ;
+
+piece := (0,2u)
+    -- xyrelative (  u,  u)
+    -- xyrelative ( 4u,-4u)
+    -- xyrelative (-4u,-4u)
+    -- xyrelative (-2u,  0)
+    -- xyrelative ( 4u, 4u)
+    -- cycle ;
+
+impossible :=
+    piece             &&
+    piece rotated  90 &&
+    piece rotated 180 &&
+    piece rotated 270 ;
+
+draw impossible
+    withpen pencircle scaled .5u
+    withcolor "darkblue" ;
+
+draw piece
+    withdashes .5u
+    withpen pencircle scaled .25u
+    withcolor white ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This turtle graphics example (by Milkael S) also demonstrates appending subpaths
+to a single path.
 
 \startlinecorrection \getbuffer \stoplinecorrection
 

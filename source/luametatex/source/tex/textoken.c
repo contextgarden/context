@@ -2969,6 +2969,15 @@ void tex_run_convert_tokens(halfword code)
                 pop_selector;
                 break;
             }
+        case to_limited_float_code:
+            {
+                int saved_selector;
+                halfword v = tex_scan_posit(0);
+                push_selector;
+                tex_print_posit_5(v);
+                pop_selector;
+                break;
+            }
         case to_mathstyle_code:
             {
                 int saved_selector;
@@ -3395,6 +3404,9 @@ strnumber tex_the_convert_string(halfword c, int i)
             break;
         case to_sparse_dimension_code:
             tex_print_sparse_dimension(i, pt_unit);
+            break;
+       case to_limited_float_code:
+            tex_print_posit_5(i);
             break;
         case roman_numeral_code:
             tex_print_roman_int(i);

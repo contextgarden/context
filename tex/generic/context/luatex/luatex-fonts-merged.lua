@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-02-19 14:24
+-- merge date  : 2025-02-24 14:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -9668,7 +9668,7 @@ function constructors.scale(tfmdata,specification)
    if c and c~=unicode then
     local cc=changed[c]
     if cc then
-     while cc do
+     while cc and cc~=unicode and c~=cc do 
       c=cc
       cc=changed[c]
      end

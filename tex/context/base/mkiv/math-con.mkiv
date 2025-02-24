@@ -28,15 +28,13 @@
 %D done at the \TEX\ end.
 
 \def\math_upright_constant#1#2#3%
-  {\ifcstok{\mathematicsparameter#1}\s!upright
-     \begingroup
-       \attribute\mathalphabetattribute\attributeunsetvalue
-       \attribute\mathgreekattribute   \attributeunsetvalue
-       #2%
-     \endgroup
-   \else
-     #3%
-   \fi}
+  {\doifelse{\mathematicsparameter#1}\s!upright
+     {\begingroup
+      \attribute\mathalphabetattribute\attributeunsetvalue
+      \attribute\mathgreekattribute   \attributeunsetvalue
+      #2%
+      \endgroup}%
+    {#3}}
 
 \setupmathematics
   [\s!differentiald=\mathematicsparameter\c!mathconstants,

@@ -1020,7 +1020,7 @@ implement {
     public    = true,
     protected = true,
  -- arguments = { "argument", "integerargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument", "dimenargument" },
-    arguments = { "argument", "integer", "dimenension", "dimension", "dimension", "dimension", "dimension" },
+    arguments = { "argument", "integer", "dimension", "dimension", "dimension", "dimension", "dimension" },
     actions   = setall, -- name p x y w h d
 }
 

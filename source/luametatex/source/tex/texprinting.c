@@ -599,6 +599,13 @@ void tex_print_posit(halfword s)
     tex_print_str(b);
 }
 
+void tex_print_posit_5(halfword s)
+{
+    char b[32];
+    sprintf(b, "%.5g", tex_posit_to_double(s));
+    tex_print_str(b);
+}
+
 /*tex
 
     Hexadecimal printing of nonnegative integers is accomplished by |print_hex|. We have a few 

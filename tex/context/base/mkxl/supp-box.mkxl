@@ -3072,6 +3072,16 @@
 % }%
    \endgroup}
 
+%D Just in case:
+%D
+%D \starttyping
+%D \vreflected{±}
+%D \stoptyping
+
+\permanent\protected\def\vreflected
+  {\dontleavehmode
+   \dowithnextbox{\hpack \s!orientation "712 \s!swap{\box\nextbox}}\hbox}
+
 \protect \endinput
 
 % alternative

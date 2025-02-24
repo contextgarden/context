@@ -378,6 +378,7 @@ end
 
 -- Messy ... todo:
 
+--                            current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slnt or slant,weight)
 local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,ssx,ssy)
     if current then
         local char, font = isglyph(current)
@@ -395,8 +396,9 @@ local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,f
             local width  = data.width or 0
             local height = data.height or 0
             local depth  = data.depth or 0
-            local sx = 1
-            local sy = 1
+            local s  = 1000
+            local sx = 1000
+            local sy = 1000
             if csx then sx = sx * csx end
             if csy then sy = sy * csy end
             if ssx then sx = sx * ssx end

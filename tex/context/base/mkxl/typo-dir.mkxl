@@ -115,6 +115,13 @@
 \definecolor[bidi:right:reversed][r=.6,g=.6]
 \definecolor[bidi:mirrored]      [r=.6,b=.6]
 
+% Bah, see bidi-001.tex
+%
+% \strc_enumerations_inject_extra_text_indeed
+
+\permanent\protected\def\foolbidimode
+  {\ifzero\currentbidimode\else\bidilre\fi}
+
 \protect \endinput
 
 % bidi test

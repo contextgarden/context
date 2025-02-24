@@ -54,7 +54,7 @@ local iftrue        <const> = cache["iftrue"].index
 local conditioncode <const> = commandcodes.if_test
 local integercode   <const> = commandcodes.integer
 
--- local dimencode     <const> = commandcodes.register_dimenension
+-- local dimencode     <const> = commandcodes.register_dimension
 -- local countcode     <const> = commandcodes.register_integer
 -- local tokencode     <const> = commandcodes.register_toks
 -- local skipcode      <const> = commandcodes.register_glue

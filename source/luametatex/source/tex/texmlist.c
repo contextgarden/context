@@ -4432,7 +4432,8 @@ static halfword tex_aux_check_nucleus_complexity (
 
 /*
     For easy configuration ... fonts are somewhat inconsistent and the values for italic correction 
-    run from 30 to 60\% of the width.
+    run from 30 to 60\% of the width. In \CONTEXT\ we default to 1 (font driven). At some point this
+    will become the default and the parameter might go away. 
 */
 
 static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, scaled *bot)
@@ -4661,7 +4662,6 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         }
         if (vshift) {
             halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
-//            tex_attach_attribute_list_copy(kern, target);
             tex_attach_attribute_list_copy(kern, superscript);
             tex_couple_nodes(kern, kernel);
             tex_couple_nodes(superscript, kern);
@@ -4670,7 +4670,6 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         }
         if (vkern) {
             halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
-//            tex_attach_attribute_list_copy(kern, target);
             tex_attach_attribute_list_copy(kern, superscript);
             tex_couple_nodes(kern, superscript);
             box_list(result) = kern;
@@ -4693,7 +4692,6 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         }
         if (vshift) {
             halfword kern = tex_new_kern_node(vshift, vertical_math_kern_subtype);
-//            tex_attach_attribute_list_copy(kern, target);
             tex_attach_attribute_list_copy(kern, subscript);
             tex_couple_nodes(kernel, kern);
             tex_couple_nodes(kern, subscript);
@@ -4702,7 +4700,6 @@ static scaled tex_aux_op_do_limits(halfword target, int style, int size, int ita
         }
         if (vkern) {
             halfword kern = tex_new_kern_node(vkern, vertical_math_kern_subtype);
-//            tex_attach_attribute_list_copy(kern, target);
             tex_attach_attribute_list_copy(kern, subscript);
             tex_couple_nodes(subscript, kern);
         }

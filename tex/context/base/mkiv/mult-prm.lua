@@ -827,6 +827,7 @@ return {
   "toksapp",
   "tokspre",
   "tolerant",
+  "tolimitedfloat",
   "tomathstyle",
   "toscaled",
   "tosparsedimension",

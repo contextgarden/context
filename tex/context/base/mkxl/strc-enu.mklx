@@ -328,9 +328,11 @@
    \hskip{\constructionparameter\c!titledistance}% we listen to the headstyle
    \useconstructionstyleandcolor\c!titlestyle\c!titlecolor
    \constructionparameter\c!titlecommand
-     {\constructionparameter\c!titleleft
+     {\foolbidimode % experiment
+      \constructionparameter\c!titleleft
       \clf_savedlisttitle{\currentconstructionmain}\currentconstructionlistentry\relax
-      \constructionparameter\c!titleright}%
+      \constructionparameter\c!titleright
+      }%
    \endgroup}
 
 \protected\def\strc_enumerations_inject_symbol % todo check

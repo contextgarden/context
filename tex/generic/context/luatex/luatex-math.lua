@@ -6,6 +6,9 @@ if not modules then modules = { } end modules ['luatex-math'] = {
     license   = "see context related readme files"
 }
 
+-- This is an experiment that evolved from some luametatex math developments
+-- and observations (by Mikael Sundqvist and Hans Hagen in 2023/2024).
+
 local gaps = {
     [0x1D455] = 0x0210E,
     [0x1D49D] = 0x0212C,
@@ -111,89 +114,102 @@ local italics = table.tohash { 8458, 8459, 8462, 8464, 8466, 8475, 8492, 8495,
 120761, 120762, 120763, 120764, 120765, 120766, 120767, 120768, 120769, 120770,
 120771 }
 
+-- local function emulatelmtx(tfmdata,key,value)
+--     if tfmdata.mathparameters and not tfmdata.emulatedlmtx then
+--         tfmdata.fonts = { { id = 0 } }
+--         tfmdata.type = "virtual"
+--         tfmdata.properties.virtualized = true
+--     end
+-- end
+
+-- fonts.handlers.otf.features.register {
+--     name         = "emulate lmtx",
+--     description  = "emulate lmtx mode",
+--     default      = emulate,
+--     manipulators = { base = emulatelmtx },
+-- }
+
+local report = logs.reporter("math")
+
+fonts.constructors.emulatelmtx = false -- true
+
 local function emulatelmtx(tfmdata,key,value)
     if tfmdata.mathparameters and not tfmdata.emulatedlmtx then
-        tfmdata.fonts = { { id = 0 } }
-        tfmdata.type = "virtual"
-        tfmdata.properties.virtualized = true
-    end
-end
-
-fonts.handlers.otf.features.register {
-    name         = "emulate lmtx",
-    description  = "emulate lmtx mode",
-    default      = emulate,
-    manipulators = { base = emulatelmtx },
-}
-
-local function emulatelmtx(tfmdata,key,value)
-    if tfmdata.mathparameters and not tfmdata.emulatedlmtx then
-        local targetcharacters   = tfmdata.characters
-        local targetdescriptions = tfmdata.descriptions
-        local factor             = tfmdata.parameters.factor
-        local function getllx(u)
-            local d = targetdescriptions[u]
-            if d then
-                local b = d.boundingbox
-                if b then
-                    local llx = b[1]
-                    if llx < 0 then
-                        return - llx
+        if fonts.constructors.emulatelmtx then
+            local targetcharacters   = tfmdata.characters
+            local targetdescriptions = tfmdata.descriptions
+            local factor             = tfmdata.parameters.factor
+            local function getllx(u)
+                local d = targetdescriptions[u]
+                if d then
+                    local b = d.boundingbox
+                    if b then
+                        local llx = b[1]
+                        if llx < 0 then
+                            return - llx
+                        end
                     end
                 end
+                return false
             end
-            return false
-        end
-        for u, c in next, targetcharacters do
-            local uc = c.unicode or u
-            if integrals[uc] then
-                -- skip this one
-            else
-                local accent = c.top_accent
-                local italic = c.italic
-                local width  = c.width  or 0
-                local llx    = getllx(u)
-                local bl, br, tl, tr
-                if llx then
-                    llx   = llx * factor
-                    width = width + llx
-                    bl    = - llx
-                    tl    = bl
-                    c.commands = { { "right", llx }, { "slot", 0, u } }
+            for u, c in next, targetcharacters do
+                local uc = c.unicode or u
+                if integrals[uc] then
+                    -- skip this one
+                else
+                    local accent = c.top_accent
+                    local italic = c.italic
+                    local width  = c.width  or 0
+                    local llx    = getllx(u)
+                    local bl, br, tl, tr
+                    if llx then
+                        llx   = llx * factor
+                        width = width + llx
+                        bl    = - llx
+                        tl    = bl
+                        c.commands = { { "right", llx }, { "slot", 0, u } }
+                        if accent then
+                            accent = accent + llx
+                        end
+                    end
                     if accent then
-                        accent = accent + llx
+                        if italics[uc] then
+                            c.top_accent = accent
+                        else
+                            c.top_accent = nil
+                        end
                     end
-                end
-                if accent then
-                    if italics[uc] then
-                        c.top_accent = accent
-                    else
-                        c.top_accent = nil
+                    if italic and italic ~= 0 then
+                        width = width + italic
+                        br    = - italic
                     end
-                end
-                if italic and italic ~= 0 then
-                    width = width + italic
-                    br    = - italic
-                end
-                c.width = width
-                if italic then
-                    c.italic = nil
-                end
-                if bl or br or tl or tr then
-                    -- watch out: singular and _ because we are post copying / scaling
-                    c.mathkern = {
-                        bottom_left  = bl and { { height = 0,             kern = bl } } or nil,
-                        bottom_right = br and { { height = 0,             kern = br } } or nil,
-                        top_left     = tl and { { height = c.height or 0, kern = tl } } or nil,
-                        top_right    = tr and { { height = c.height or 0, kern = tr } } or nil,
-                    }
+                    c.width = width
+                    if italic then
+                        c.italic = nil
+                    end
+                    if bl or br or tl or tr then
+                        -- watch out: singular and _ because we are post copying / scaling
+                        c.mathkern = {
+                            bottom_left  = bl and { { height = 0,             kern = bl } } or nil,
+                            bottom_right = br and { { height = 0,             kern = br } } or nil,
+                            top_left     = tl and { { height = c.height or 0, kern = tl } } or nil,
+                            top_right    = tr and { { height = c.height or 0, kern = tr } } or nil,
+                        }
+                    end
                 end
             end
+            tfmdata.fonts = { { id = 0 } }
+            tfmdata.type = "virtual"
+            tfmdata.properties.virtualized = true
+            tfmdata.emulatedlmtx = true
+        else
+            report()
+            report("lmtx emulation is disabled for %a scaled %i",
+                file.basename(tfmdata.properties.filename),
+                math.round(tfmdata.parameters.factor)
+            )
+            report()
         end
-        tfmdata.fonts = { { id = 0 } }
-        tfmdata.type = "virtual"
-        tfmdata.properties.virtualized = true
-        tfmdata.emulatedlmtx = true
     end
 end
 

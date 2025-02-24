@@ -162,10 +162,11 @@ end
 -- As you can see here, latin modern is less complete than dejavu but
 -- in practice one will not notice it.
 --
--- The while loop is needed because we need to resolve for instance pseudo names like
--- hyphen_hyphen to endash so in practice we end up with a bit too many definitions but the
--- overhead is neglectable. We can have changed[first] or changed[second] but it quickly becomes
--- messy if we need to take that into account.
+-- The while loop is needed because we need to resolve for instance pseudo names
+-- like hyphen_hyphen to endash so in practice we end up with a bit too many
+-- definitions but the overhead is neglectable. We can have changed[first] or
+-- changed[second] but it quickly becomes messy if we need to take that into
+-- account.
 
 local function makefake(tfmdata,name,present)
     local private   = getprivate(tfmdata)

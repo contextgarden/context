@@ -8081,7 +8081,7 @@ static const char *bit_expression_names[bit_expression_last+1] = {
     "*", "/", 
     "div", "mod", 
     "not",
-    "±", "∓"
+    "±", "∓",
     "or", "and", 
     "cor", "cand",
     "open (", "close )", "open {", "close }", 
@@ -8229,7 +8229,7 @@ static void tex_aux_print_expression_entry(halfword type, long long value)
             tex_print_dimension(e_v(value), pt_unit);
             break;
         default:
-            if (value >= 0 && value <= 38) {
+            if (value >= 0 && value <= bit_expression_last) {
                 tex_print_str(bit_expression_names[value]);
             }
             break;
@@ -9095,12 +9095,13 @@ static void tex_aux_scan_expression(int level, int braced)
                                         /* */
                                         case bit_expression_bleft    : v = va << vb; break;
                                         case bit_expression_bright   : v = va >> vb; break;
-                                        case bit_expression_less     : v = va <  vb; break;
-                                        case bit_expression_lessequal: v = va <= vb; break;
-                                        case bit_expression_equal    : v = va == vb; break;
-                                        case bit_expression_moreequal: v = va >= vb; break;
-                                        case bit_expression_more     : v = va >  vb; break;
-                                        case bit_expression_unequal  : v = va != vb; break;
+                                        /* */
+                                        case bit_expression_less     : v = va <  vb; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_lessequal: v = va <= vb; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_equal    : v = va == vb; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_moreequal: v = va >= vb; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_more     : v = va >  vb; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_unequal  : v = va != vb; node_subtype(stack.tail) = bit_expression_number; break;
                                         /* */
                                         case bit_expression_add      : v = va +  vb; break;
                                         case bit_expression_subtract : v = va -  vb; break;
@@ -9147,11 +9148,11 @@ static void tex_aux_scan_expression(int level, int braced)
                                         case bit_expression_mod : v =  va % vb; break;
                                         case bit_expression_div : v =  va / vb; break;
                                         /* */
-                                        case bit_expression_or  : v = (va || vb) ? 1 : 0 ; break;
-                                        case bit_expression_and : v = (va && vb) ? 1 : 0 ; break;
+                                        case bit_expression_or  : v = (va || vb) ? 1 : 0 ; node_subtype(stack.tail) = bit_expression_number; break;
+                                        case bit_expression_and : v = (va && vb) ? 1 : 0 ; node_subtype(stack.tail) = bit_expression_number; break;
                                         /* */
                                         case bit_expression_cor : v = va         ? va : (vb ? vb : 0); break;
-                                        case bit_expression_cand: v = (va && vb) ? vb            : 0 ; break;
+                                        case bit_expression_cand: v = (va && vb) ? vb : 0            ; break;
                                         /* */
                                         default:
                                             v = 0;

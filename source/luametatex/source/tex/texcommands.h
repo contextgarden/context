@@ -482,6 +482,7 @@ typedef enum convert_codes {
     to_sparse_scaled_code,    /*tex command code for |\tosparsescaled| (also gobbles |\relax|) */
     to_dimension_code,        /*tex command code for |\todimension| (also gobbles |\relax|) */
     to_sparse_dimension_code, /*tex command code for |\tosparsedimension| */
+    to_limited_float_code,    /*tex command code for |\tolimitedfloat| */
     to_mathstyle_code,        /*tex command code for |\tomathstyle| */
     lua_code,                 /*tex command code for |\directlua| */
     lua_function_code,        /*tex command code for |\luafunction| */

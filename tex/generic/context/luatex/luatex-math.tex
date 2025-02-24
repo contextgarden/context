@@ -16,14 +16,6 @@
 %D In the perspective of the TUG Lucida Opentype project Bruno Voisin checked the code
 %D and definitions below and suggested some improvements.
 
-% we provide a remap feature
-
-% \protected makes our mp test work (no expansion)
-
-\ifdefined\directlua
-    \directlua{dofile(kpse.find_file('luatex-math.lua'))}
-\fi
-
 % a bunch of fonts:
 
 \let \teni    = \relax
@@ -36,16 +28,27 @@
 \let \sevenbf = \relax
 \let \fivebf  = \relax
 
+\protected\def\emulatelmtxmath
+  {\global\let\emulatelmtxmath\relax
+   \directlua {
+     dofile(kpse.find_file('luatex-math.lua'))
+   % uncomment when testing very plain engine usage
+     fonts.constructors.emulatelmtx = true
+   }}
+
+% \protected makes our mp test work (no expansion)
+
 \protected\def\latinmodern
-  {\font\tenrm   = file:lmroman10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
+  {\emulatelmtxmath
+   \font\tenrm   = file:lmroman10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
    \font\sevenrm = file:lmroman7-regular.otf:+liga;+kern;+tlig;+trep  at  7pt
    \font\fiverm  = file:lmroman5-regular.otf:+liga;+kern;+tlig;+trep  at  5pt
    %
-   \font\tentt   = file:lmmono10-regular.otf                               at 10pt
-   \font\tensl   = file:lmromanslant10-regular.otf:+liga;+kern;+tlig;+trep at 10pt
-   \font\tenit   = file:lmroman10-italic.otf:+liga;+kern;+tlig;+trep       at 10pt
-   \font\tenbf   = file:lmroman10-bold.otf:+liga;+kern;+tlig;+trep         at 10pt
-   \font\tenbi   = file:lmroman10-bolditalic.otf:+liga;+kern;+tlig;+trep   at 10pt
+   \font\tentt   = file:lmmono10-regular.otf                                     at 10pt
+   \font\tensl   = file:lmromanslant10-regular.otf:+liga;+kern;+tlig;+trep;+itlc at 10pt
+   \font\tenit   = file:lmroman10-italic.otf:+liga;+kern;+tlig;+trep;+itlc       at 10pt
+   \font\tenbf   = file:lmroman10-bold.otf:+liga;+kern;+tlig;+trep               at 10pt
+   \font\tenbi   = file:lmroman10-bolditalic.otf:+liga;+kern;+tlig;+trep;+itlc   at 10pt
    %
    \font\tenos   = file:lmroman10-regular.otf:+onum;+liga;+kern;+tlig;+trep at 10pt
    \font\sevenos = file:lmroman7-regular.otf:+onum;+liga;+kern;+tlig;+trep  at  7pt
@@ -66,15 +69,16 @@
    \tenrm}
 
 \protected\def\lucidabright
-  {\font\tenrm   = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at 10pt
+  {\emulatelmtxmath
+   \font\tenrm   = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at 10pt
    \font\sevenrm = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  7pt
    \font\fiverm  = file:lucidabrightot.otf:+liga;+kern;+tlig;+trep at  5pt
    %
-   \font\tentt   = file:lucidasanstypewriterot.otf                             at 10pt
-   \font\tensl   = file:lucidabrightot.otf:slant=0.167;+liga;+kern;+tlig;+trep at 10pt
-   \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep      at 10pt
-   \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep        at 10pt
-   \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep  at 10pt
+   \font\tentt   = file:lucidasanstypewriterot.otf                                   at 10pt
+   \font\tensl   = file:lucidabrightot.otf:slant=0.167;+liga;+kern;+tlig;+trep;+itlc at 10pt
+   \font\tenit   = file:lucidabrightot-italic.otf:+liga;+kern;+tlig;+trep;+itlc      at 10pt
+   \font\tenbf   = file:lucidabrightot-demi.otf:+liga;+kern;+tlig;+trep              at 10pt
+   \font\tenbi   = file:lucidabrightot-demiitalic.otf:+liga;+kern;+tlig;+trep;+itlc  at 10pt
    %
    \font\tenos   = file:lucidabrightot.otf:+onum;+liga;+kern;+tlig;+trep at 10pt
    \font\sevenos = file:lucidabrightot.otf:+onum;+liga;+kern;+tlig;+trep at  7pt
@@ -1785,10 +1789,10 @@
 \protected\def\hookleftarrow             {\Umathchar  "3"0"0021A9 }
 \protected\def\hookrightarrow            {\Umathchar  "3"0"0021AA }
 \protected\def\hslash                    {\Umathchar  "0"0"00210F }
-\protected\def\iiint                     {\Umathchar  "1"0"00222D }
-\protected\def\iiintop                   {\Umathchar  "0"0"00222D }
-\protected\def\iint                      {\Umathchar  "1"0"00222C }
-\protected\def\iintop                    {\Umathchar  "0"0"00222C }
+\protected\def\iiintop                   {\Umathchar  "1"0"00222D }
+\protected\def\iintop                    {\Umathchar  "1"0"00222C }
+\protected\def\iiint                     {\iiintop\nolimits}
+\protected\def\iint                      {\iintop \nolimits}
 \protected\def\Im                        {\Umathchar  "0"0"002111 }
 \protected\def\imaginaryi                {\Umathchar  "0"0"002148 }
 \protected\def\imaginaryj                {\Umathchar  "0"0"002149 }
@@ -1796,11 +1800,12 @@
 \protected\def\imply                     {\Umathchar  "3"0"0021D2 }
 \protected\def\in                        {\Umathchar  "0"0"002208 }
 \protected\def\infty                     {\Umathchar  "0"0"00221E }
-\protected\def\int                       {\Umathchar  "1"0"00222B }
-\protected\def\intclockwise              {\Umathchar  "1"0"002231 }
+\protected\def\intop                     {\Umathchar  "1"0"00222B }
+\protected\def\intclockwiseop            {\Umathchar  "1"0"002231 }
+\protected\def\int                       {\intop         \nolimits}
+\protected\def\intclockwise              {\intclockwiseop\nolimits}
 \protected\def\integers                  {\Umathchar  "0"0"002124 }
 \protected\def\intercal                  {\Umathchar  "2"0"0022BA }
-\protected\def\intop                     {\Umathchar  "0"0"00222B }
 \protected\def\Iota                      {\Umathchar  "0"0"000399 }
 \protected\def\iota                      {\Umathchar  "0"0"0003B9 }
 \protected\def\jmath                     {\Umathchar  "0"0"01D6A5 }
@@ -1982,11 +1987,16 @@
 \protected\def\nwsearrow                 {\Umathchar  "3"0"002921 }
 \protected\def\odot                      {\Umathchar  "2"0"002299 }
 \protected\def\ohm                       {\Umathchar  "0"0"002126 }
-\protected\def\oiiint                    {\Umathchar  "1"0"002230 }
-\protected\def\oiint                     {\Umathchar  "1"0"00222F }
-\protected\def\oint                      {\Umathchar  "1"0"00222E }
-\protected\def\ointclockwise             {\Umathchar  "1"0"002232 }
-\protected\def\ointctrclockwise          {\Umathchar  "1"0"002233 }
+\protected\def\oiiintop                  {\Umathchar  "1"0"002230 }
+\protected\def\oiintop                   {\Umathchar  "1"0"00222F }
+\protected\def\ointop                    {\Umathchar  "1"0"00222E }
+\protected\def\ointclockwiseop           {\Umathchar  "1"0"002232 }
+\protected\def\ointctrclockwiseop        {\Umathchar  "1"0"002233 }
+\protected\def\oiiint                    {\oiiintop          \nolimits}
+\protected\def\oiint                     {\oiintop           \nolimits}
+\protected\def\oint                      {\ointop            \nolimits}
+\protected\def\ointclockwise             {\ointclockwiseop   \nolimits}
+\protected\def\ointctrclockwise          {\ointctrclockwiseop\nolimits}
 \protected\def\Omega                     {\Umathchar  "0"0"0003A9 }
 \protected\def\omega                     {\Umathchar  "0"0"0003C9 }
 \protected\def\Omicron                   {\Umathchar  "0"0"00039F }

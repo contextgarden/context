@@ -104,6 +104,7 @@ typedef enum saved_box_options {
     saved_box_limit_option       = 0x04,
     saved_box_mathtext_option    = 0x08,
     saved_box_discardable_option = 0x10,
+    saved_box_swap_htdp_option   = 0x20,
 } saved_box_options;
 
 static inline void saved_box_initialize(void)
@@ -280,7 +281,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 }
                 break;
             case 's': case 'S':
-                switch (tex_scan_character("hpoHPO", 0, 0, 0)) {
+                switch (tex_scan_character("hpowHPOW", 0, 0, 0)) {
                     case 'h': case 'H':
                         /*tex
                             This is a bonus because we decoupled the shift amount from the context,
@@ -302,8 +303,13 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             source = tex_scan_integer(1, NULL, NULL);
                         }
                         break;
+                    case 'w': case 'W':
+                        if (tex_scan_mandate_keyword("swap", 2)) {
+                            options |= saved_box_swap_htdp_option;
+                        }
+                        break;
                     default:
-                        tex_aux_show_keyword_error("shift|spread|source");
+                        tex_aux_show_keyword_error("shift|spread|source|swap");
                         goto DONE;
                 }
                 break;
@@ -3187,6 +3193,11 @@ void tex_package(singleword nature)
 if (options & saved_box_discardable_option) {
     box_options(boxnode) |= box_option_discardable;
 }
+        if (options & saved_box_swap_htdp_option) {
+            halfword ht = box_height(boxnode);
+            box_height(boxnode) = box_depth(boxnode);
+            box_depth(boxnode) = ht;
+        }        
         box_package_state(boxnode) |= (singleword) state;
         tex_pop_nest();
         tex_box_end(context, boxnode, shift, mainclass, slot, callback, leaders);

@@ -652,7 +652,7 @@ function constructors.scale(tfmdata,specification)
             if c and c ~= unicode then
                 local cc = changed[c]
                 if cc then
-                    while cc do
+                    while cc and cc ~= unicode and c ~= cc do -- bidi symbol swap catch
                         c = cc
                         cc = changed[c]
                     end

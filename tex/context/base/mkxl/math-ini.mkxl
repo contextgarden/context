@@ -60,35 +60,37 @@
 
 \unprotect
 
-\newdimension  \mathstrutht
-\newdimension  \mathstrutdp
-\newinteger    \mathnestinglevel
+\newdimension   \mathstrutht
+\newdimension   \mathstrutdp
+\newinteger     \mathnestinglevel
 
-\newcount      \c_math_strc_hangafter
-\newdimen      \d_math_strc_hangindent
+\newcount       \c_math_strc_hangafter
+\newdimen       \d_math_strc_hangindent
 
-\newcount      \c_strc_math_n_of_lines
+\newcount       \c_strc_math_n_of_lines
 
-\newdimension  \d_strc_math_max_right
-\newdimension  \d_strc_math_first_right
-\newdimension  \d_strc_math_last_right
+\newdimension   \d_strc_math_max_right
+\newdimension   \d_strc_math_first_right
+\newdimension   \d_strc_math_last_right
 
-\newdimension  \d_strc_math_max_left
-\newdimension  \d_strc_math_first_left
-\newdimension  \d_strc_math_last_left
+\newdimension   \d_strc_math_max_left
+\newdimension   \d_strc_math_first_left
+\newdimension   \d_strc_math_last_left
 
-\newdimension  \d_strc_math_first_height
-\newdimension  \d_strc_math_last_depth
+\newdimension   \d_strc_math_first_height
+\newdimension   \d_strc_math_last_depth
 
-\newdimension  \d_strc_math_display_width
-\newdimension  \d_strc_math_indent
-\newconditional\c_strc_math_indent
+\newdimension   \d_strc_math_display_width
+\newdimension   \d_strc_math_indent
+\newconditional \c_strc_math_indent
 
-\newdimension  \d_strc_math_left_shift
-\newdimension  \d_strc_math_right_shift
+\newdimension   \d_strc_math_left_shift
+\newdimension   \d_strc_math_right_shift
 
-\newinteger    \currentmathblob
-\newinteger    \currentmathblobnesting % could be a primitive
+\newinteger     \currentmathblob
+\newinteger     \currentmathblobnesting % could be a primitive
+
+\newconditional \c_math_extensibles \c_math_extensibles\conditionaltrue
 
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}

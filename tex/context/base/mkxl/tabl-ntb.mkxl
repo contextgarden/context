@@ -1104,10 +1104,18 @@
 \permanent\let\bTH\relax \permanent\protected\def\eTH{\ignorespaces}
 \permanent\let\bTN\relax \permanent\protected\def\eTN{\ignorespaces}
 
+\newconditional\c_tabl_ntb_reverse % we might need this info more often
+
 \permanent\protected\def\eTABLE % beware, we need to get rid of spurious spaces when in hmode
   {% tricky and dirty order -)
    \c_tabl_ntb_okay\conditionalfalse
    % head
+   \c_tabl_ntb_reverse
+     \ifcstok{\naturaltablelocalparameter\c!direction}\v!reverse
+       \conditionaltrue
+     \else
+       \conditionalfalse
+     \fi
    \ifempty\t_tabl_ntb_head
      \c_tabl_ntb_head\zerocount
      \c_tabl_ntb_n_of_head_lines\zerocount % was 1
@@ -1148,7 +1156,11 @@
          \localcontrolledloop\plusone\c_tabl_ntb_maximum_row\plusone
            {\tabl_ntb_row_start
               \c_tabl_ntb_current_row\currentloopiterator\relax
-              \localcontrolledloop\plusone\c_tabl_ntb_maximum_col\plusone
+              \ifconditional\c_tabl_ntb_reverse
+                \localcontrolledloop\c_tabl_ntb_maximum_col\plusone\minusone
+              \else
+                \localcontrolledloop\plusone\c_tabl_ntb_maximum_col\plusone
+              \fi
                 {\c_tabl_ntb_current_col\currentloopiterator\relax
                  \normalexpanded{\tabl_ntb_cell{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}}%
             \tabl_ntb_row_stop}%
