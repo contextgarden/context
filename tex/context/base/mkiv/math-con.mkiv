@@ -41,16 +41,18 @@
     \s!exponentiale=\mathematicsparameter\c!mathconstants,
       \s!imaginaryi=\mathematicsparameter\c!mathconstants,
       \s!imaginaryj=\mathematicsparameter\c!mathconstants,
-              \s!pi=\mathematicsparameter\c!mathconstants]
+      \s!constantpi=\mathematicsparameter\c!mathconstants]
 
 % \setupmathematics
 %   [\c!mathconstants=\s!upright]
 
-\permanent\protected\def\dd{\math_upright_constant\s!differentiald\mathduprightshape \mathditalicshape }
-\permanent\protected\def\DD{\math_upright_constant\s!differentiald\mathDuprightshape \mathDitalicshape }
-\permanent\protected\def\ee{\math_upright_constant\s!exponentiale \matheuprightshape \matheitalicshape }
-\permanent\protected\def\ii{\math_upright_constant\s!imaginaryi   \mathiuprightshape \mathiitalicshape }
-\permanent\protected\def\ij{\math_upright_constant\s!imaginaryj   \mathjuprightshape \mathjitalicshape }
-\permanent\protected\def\pi{\math_upright_constant\s!pi           \mathpiuprightshape\mathpiitalicshape}
+\aliased\let\mathpiuprightshape\pi
+
+\permanent\protected\def\dd  {\math_upright_constant\s!differentiald\mathduprightshape \mathditalicshape }
+\permanent\protected\def\DD  {\math_upright_constant\s!differentiald\mathDuprightshape \mathDitalicshape }
+\permanent\protected\def\ee  {\math_upright_constant\s!exponentiale \matheuprightshape \matheitalicshape }
+\permanent\protected\def\ii  {\math_upright_constant\s!imaginaryi   \mathiuprightshape \mathiitalicshape }
+\permanent\protected\def\ij  {\math_upright_constant\s!imaginaryj   \mathjuprightshape \mathjitalicshape }
+\permanent\protected\def\pipi{\math_upright_constant\s!constantpi   \mathpiuprightshape\mathpiitalicshape}
 
 \protect

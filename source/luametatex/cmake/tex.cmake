@@ -50,6 +50,7 @@ set(tex_sources
     source/tex/texcommands.c
     source/tex/texconditional.c
     source/tex/texdirections.c
+    source/tex/texdiscretionaries.c
     source/tex/texdumpdata.c
     source/tex/texequivalents.c
     source/tex/texerrors.c

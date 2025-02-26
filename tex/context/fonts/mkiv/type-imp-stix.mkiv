@@ -11,6 +11,9 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+%D We recommend using the ttf files because we noticed that they are more original but
+%D becuase we can't be sure what a distribution provides we don't use a suffix below.
+
 %D We provide typescripts for version one and two of the stix fonts. There is a
 %D xits variant based on the first (not opentype) release that also provides
 %D bidirectional math. With (in 2022) stixtwo being frozsen for 2 years we can make
@@ -55,21 +58,21 @@
     \stoptypescript
 
     \starttypescript [\s!math] [stix,stixtwo,xits] [\s!name]
-        \definefontsynonym[\s!MathRoman]    [\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
-        \definefontsynonym[\s!MathRomanBold][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
+        \definefontsynonym[\s!MathRoman]    [\s!file:stixtwomath-regular][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
+        \definefontsynonym[\s!MathRomanBold][\s!file:stixtwomath-regular][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra},\s!goodies=stixtwo-math]
     \stoptypescript
 
     \starttypescript [\s!math] [stix-nt,stixtwo-nt] [\s!name]
-        \definefontsynonym[\s!MathRoman][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra}]
-        \definefontsynonym[\s!MathRomanBold][\s!file:stixtwomath-regular.ttf][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRoman]    [\s!file:stixtwomath-regular][\s!features={\s!math\mathsizesuffix,stixtwomath,stixtwo:mathextra,mathextra}]
+        \definefontsynonym[\s!MathRomanBold][\s!file:stixtwomath-regular][\s!features={\s!math\mathsizesuffix,stixtwo-math-bold,stixtwomath,stixtwo:mathextra,mathextra}]
     \stoptypescript
 
     \starttypescript [\s!serif] [stix,stixtwo,xits] [\s!name]
         \setups[\s!font:\s!fallback:\s!serif]
-        \definefontsynonym[\s!Serif]          [\s!file:stixtwotext-regular.ttf]   [\s!features=\s!default,\s!goodies=stixtwo-text]
-        \definefontsynonym[\s!SerifBold]      [\s!file:stixtwotext-bold.ttf]      [\s!features=\s!default,\s!goodies=stixtwo-text]
-        \definefontsynonym[\s!SerifItalic]    [\s!file:stixtwotext-italic.ttf]    [\s!features=\s!default,\s!goodies=stixtwo-text]
-        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixtwotext-bolditalic.ttf][\s!features=\s!default,\s!goodies=stixtwo-text]
+        \definefontsynonym[\s!Serif]          [\s!file:stixtwotext-regular]   [\s!features=\s!default,\s!goodies=stixtwo-text]
+        \definefontsynonym[\s!SerifBold]      [\s!file:stixtwotext-bold]      [\s!features=\s!default,\s!goodies=stixtwo-text]
+        \definefontsynonym[\s!SerifItalic]    [\s!file:stixtwotext-italic]    [\s!features=\s!default,\s!goodies=stixtwo-text]
+        \definefontsynonym[\s!SerifBoldItalic][\s!file:stixtwotext-bolditalic][\s!features=\s!default,\s!goodies=stixtwo-text]
     \stoptypescript
 
     \starttypescript[stix,stixtwo,xits,stix-nt,stixtwo-nt]

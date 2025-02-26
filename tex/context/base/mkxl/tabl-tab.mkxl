@@ -836,7 +836,7 @@
 \bgroup \catcode\tildeasciicode\activecatcode
 
     \appendtoks
-%         \catcode\barasciicode\activecatcode
+       %\catcode\barasciicode\activecatcode
         \enforced\protected\def ~{\kern.5em}%
         \enforced\protected\def\\{\ifhmode\space\else\par\fi}%
     \to \everytable
@@ -1429,7 +1429,7 @@
 
 \permanent\protected\def\definetabletemplate % to be redone
   {\bgroup
-   \catcode\barasciicode\othercatcode
+  %\catcode\barasciicode\othercatcode % see mail WS 2025-02-22
    \tabl_table_define_template}
 
 \tolerant\def\tabl_table_define_template[#1]#*[#2]#*[#3]#*[#4]%

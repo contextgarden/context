@@ -237,7 +237,7 @@ return {
    ["fr"]="enmargegauche",
    ["it"]="atleftmargin",
    ["nl"]="oplinkermarge",
-   ["pe"]="درحاشیه‌چپ",
+ --["pe"]="درحاشیه‌چپ",  -- in/at clash
    ["ro"]="atleftmargin",
   },
   ["atpage"]={
@@ -257,7 +257,7 @@ return {
    ["fr"]="enmargedroite",
    ["it"]="atrightmargin",
    ["nl"]="oprechtermarge",
-   ["pe"]="درحاشیه‌راست",
+ --["pe"]="درحاشیه‌راست",  -- in/at clash
    ["ro"]="atrightmargin",
   },
   ["background"]={
@@ -2241,7 +2241,7 @@ return {
    ["fr"]="dansmargegauche",
    ["it"]="inmarginesinistro",
    ["nl"]="inlinkermarge",
-   ["pe"]="درحاشیه‌چپ",
+ --["pe"]="درحاشیه‌چپ",  -- in/at clash
    ["ro"]="inmargineastanga",
   },
   ["inline"]={
@@ -2361,7 +2361,7 @@ return {
    ["fr"]="dansmargedroite",
    ["it"]="inmarginedestro",
    ["nl"]="inrechtermarge",
-   ["pe"]="درحاشیه‌راست",
+ --["pe"]="درحاشیه‌راست",  -- in/at clash
    ["ro"]="inmargineadreapta",
   },
   ["installlanguage"]={
@@ -14821,7 +14821,7 @@ return {
    ["fr"]="enmargegauche",
    ["it"]="atleftmargin",
    ["nl"]="oplinkermarge",
-   ["pe"]="درحاشیه‌چپ",
+ --["pe"]="درحاشیه‌چپ",  -- in/at clash
    ["ro"]="atleftmargin",
   },
   ["atmargin"]={
@@ -14851,7 +14851,7 @@ return {
    ["fr"]="enmargedroite",
    ["it"]="atrightmargin",
    ["nl"]="oprechtermarge",
-   ["pe"]="درحاشیه‌راست",
+ --["pe"]="درحاشیه‌راست",  -- in/at clash
    ["ro"]="atrightmargin",
   },
   ["attachment"]={

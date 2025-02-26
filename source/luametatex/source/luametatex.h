@@ -107,7 +107,7 @@
 # define luametatex_release          07
 # define luametatex_version_string   "2.11.07"
 # define luametatex_version_number   211.7
-# define luametatex_development_id   20250221
+# define luametatex_development_id   20250226
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -330,10 +330,11 @@ extern version_state_info lmt_version_state;
 # include "tex/texbuildpage.h"
 # include "tex/texmaincontrol.h"
 # include "tex/texdumpdata.h"
-# include "tex/texmainbody.h"
+//include "tex/texmainbody.h"
 # include "tex/texnodes.h"
 # include "tex/texspecifications.h"
 # include "tex/texdirections.h"
+# include "tex/texdiscretionaries.h"
 # include "tex/texlinebreak.h"
 # include "tex/texmath.h"
 # include "tex/texmlist.h"

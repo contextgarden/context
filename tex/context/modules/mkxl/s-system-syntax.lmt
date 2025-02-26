@@ -422,6 +422,7 @@ syntax.discretionary = newsyntax {
         optional(keyword("nobreak")),
         optional(keyword("options"),s_integer),
         optional(keyword("class"),s_integer),
+        optional(keyword("standalone")),
         sequence(s_tokens,s_tokens,s_tokens)
     ),
     explicitdiscretionary   = false,

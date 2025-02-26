@@ -1097,6 +1097,11 @@ void tex_conditional_if(halfword code, int unless)
             lmt_error_state.intercept = 0;
             lmt_error_state.last_intercept = 0;
             goto CASECHECK;
+        /* too messy as it expects a { } so best use \ifchkdimension 
+         case if_chk_dimexpression_code:
+         case if_chk_dimensionexpr_code: // alias
+          // lmt_condition_state.chk_dimension = tex_scanned_expression(dimension_val_level);
+        */
         case if_val_dim_code:
             {
                 lmt_error_state.intercept = 1;

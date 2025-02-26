@@ -219,7 +219,9 @@ function interfaces.setuserinterface(interface,response)
                 nofconstants = nofconstants + 1
                 setmacro("c!" .. given,given,"immutable","constant")
                 if reversetoo then
+                 -- can be a let
                     setmacro("k!" .. constant,given,"immutable","constant")
+--                     setmacro("k!" .. constant,given,"constant")
                 end
                 report_constant("%-40s: %s",given,constant)
             end

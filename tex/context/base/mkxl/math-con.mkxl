@@ -28,7 +28,7 @@
 %D done at the \TEX\ end.
 
 \def\math_upright_constant#1#2#3%
-  {\ifcstok{\mathematicsparameter#1}\s!upright
+  {\ifcstok{\mathematicsparameter{#1}}\s!upright
      \begingroup
        \attribute\mathalphabetattribute\attributeunsetvalue
        \attribute\mathgreekattribute   \attributeunsetvalue
@@ -43,16 +43,29 @@
     \s!exponentiale=\mathematicsparameter\c!mathconstants,
       \s!imaginaryi=\mathematicsparameter\c!mathconstants,
       \s!imaginaryj=\mathematicsparameter\c!mathconstants,
-              \s!pi=\mathematicsparameter\c!mathconstants]
+      \s!constantpi=\mathematicsparameter\c!mathconstants]
 
 % \setupmathematics
 %   [\c!mathconstants=\s!upright]
 
-\permanent\protected\def\dd{\math_upright_constant\s!differentiald\mathduprightshape \mathditalicshape }
-\permanent\protected\def\DD{\math_upright_constant\s!differentiald\mathDuprightshape \mathDitalicshape }
-\permanent\protected\def\ee{\math_upright_constant\s!exponentiale \matheuprightshape \matheitalicshape }
-\permanent\protected\def\ii{\math_upright_constant\s!imaginaryi   \mathiuprightshape \mathiitalicshape }
-\permanent\protected\def\ij{\math_upright_constant\s!imaginaryj   \mathjuprightshape \mathjitalicshape }
-\permanent\protected\def\pi{\math_upright_constant\s!pi           \mathpiuprightshape\mathpiitalicshape}
+\aliased\let\mathpiuprightshape\pi
+
+\permanent\protected\def\dd  {\math_upright_constant\s!differentiald\mathduprightshape \mathditalicshape }
+\permanent\protected\def\DD  {\math_upright_constant\s!differentiald\mathDuprightshape \mathDitalicshape }
+\permanent\protected\def\ee  {\math_upright_constant\s!exponentiale \matheuprightshape \matheitalicshape }
+\permanent\protected\def\ii  {\math_upright_constant\s!imaginaryi   \mathiuprightshape \mathiitalicshape }
+\permanent\protected\def\ij  {\math_upright_constant\s!imaginaryj   \mathjuprightshape \mathjitalicshape }
+\permanent\protected\def\pipi{\math_upright_constant\s!constantpi   \mathpiuprightshape\mathpiitalicshape}
+
+% \definemathconstant[JJ][J]    \setupmathematics[constantJJ=upright]
+% \definemathconstant[XY][X][Y] \setupmathematics[constantXY=upright]
+
+\permanent\protected\tolerant\def\definemathconstant[#1]#S[#2]#S[#3]%
+  {\setmathematicsparameter{\s!constant#1}{\mathematicsparameter\c!mathconstants}%
+   \ifparameter#3\or
+     \protected\instance\defcsname#1\endcsname{\math_upright_constant{\s!constant#1}{#2}{#3}}%
+   \else
+     \protected\instance\defcsname#1\endcsname{\math_upright_constant{\s!constant#1}{\mathupright#2}{\mathitalic#2}}%
+   \fi}
 
 \protect

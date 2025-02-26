@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\nologbuffering
+
 \unprotect
 
 \installcorenamespace{multilingual}
@@ -27,6 +29,10 @@
 \permanent\def\userinterfacetag{\ifcsname\??multilingual\currentinterface\endcsname\lastnamedcs\else en\fi}
 \permanent\def\userresponsestag{\ifcsname\??multilingual\currentresponses\endcsname\lastnamedcs\else en\fi}
 
+\pushoverloadmode
+
 \clf_setuserinterface{\userinterfacetag}{\userresponsestag}
+
+\popoverloadmode
 
 \protect \endinput

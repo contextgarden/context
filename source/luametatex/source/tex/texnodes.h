@@ -810,6 +810,7 @@ typedef enum disc_option_codes {
     /* */
     disc_option_no_italic_correction      = 0x00000040,
     disc_option_no_zero_italic_correction = 0x00000080,
+    disc_option_stand_alone               = 0x00000100,
     /*tex We permit user options. */
     disc_option_user_first                = 0x00010000,
     disc_option_user_last                 = 0x40000000,
@@ -861,12 +862,6 @@ static inline int  tex_has_disc_option    (halfword a, halfword r) { return (dis
 # define disc_pre_break_tail(a)  node_tail(disc_pre_break_node(a))
 # define disc_post_break_tail(a) node_tail(disc_post_break_node(a))
 # define disc_no_break_tail(a)   node_tail(disc_no_break_node(a))
-
-extern void     tex_set_disc_field          (halfword target, halfword location, halfword source);
-extern void     tex_check_disc_field        (halfword target);
-extern void     tex_set_discpart            (halfword d, halfword h, halfword t, halfword code);
-extern halfword tex_flatten_discretionaries (halfword head, int *count, int nest);
-extern void     tex_soften_hyphens          (halfword head, int *found, int *replaced);
 
 typedef enum uleader_locations {
     uleader_filtered_hpack,

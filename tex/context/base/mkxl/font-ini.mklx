@@ -2112,6 +2112,8 @@
    \orelse\ifx\m_font_keyword\v!reset
      \lettonothing\fontstyle % new 31/7/2006
      \lettonothing\fontsize
+   \orelse\ifx\m_font_keyword\v!keep
+     \font_keep_x_size % experiment
    \orelse\ifcsname\??fontstyle\m_font_keyword\endcsname
      \let\fontstyle\m_font_keyword
    \else
@@ -2123,6 +2125,7 @@
      \fi
      \font_helpers_set_fontstyle_of_fontclass
    \fi}
+
 
 \def\font_helpers_set_fontstyle_of_fontclass % will be overloaded later
   {\let\fontstyle\s!rm}
@@ -2611,6 +2614,11 @@
      %{\glyphscale\dimexpr\textface*\plushundred/\onepoint\relax
      %{\glyphscale\dimexpr\font_rscale_xx\fontstyle\dimexpr\textface*\plushundred/\onepoint\relax\relax
       {\glyphscale\dimexpr\f_font_rscale_used\dimexpr\textface*\plushundred/\onepoint\relax\relax
+       \ifempty\fontclass
+         \applyfontstrategies
+       \else % otherwise no \tfd etc adaptation
+         \applyfontclassstrategies
+       \fi
        \ifskipfontcharacteristics \else
          \expand\everyfont % \setfontcharacteristics
          \expand\everyfontswitch
@@ -2632,8 +2640,6 @@
          \expand\everyfontswitch
        \fi}%
 \to \everycompactfontmode
-
-% to freeze or not ...
 
 \permanent\protected\def\tx
   {\currentxfontsize\plusone
@@ -2684,6 +2690,40 @@
 
 \lettonothing\useinheritxsizes % will go
 \lettonothing\usedefinedxsizes % will go
+
+%D Experiment: at some point we can decide to remember keep i.e. when given once
+%D we always keep.
+
+\newconstant\c_font_keep_x_size
+\newinteger \c_font_saved_x_size
+
+\def\font_keep_x_size
+  {\ifcase\c_font_keep_x_size
+     \c_font_keep_x_size\plusone % experiment, when \plustwo we always do it
+   \fi}
+
+\def\font_push_x_size
+  {\c_font_saved_x_size\currentxfontsize}
+
+\def\font_pop_x_size
+  {\ifcase\c_font_keep_x_size
+     % disabled
+   \or
+     % one shot
+     \c_font_keep_x_size\zerocount
+     \font_pop_x_size_indeed
+   \else
+     % always
+     \font_pop_x_size_indeed
+   \fi}
+
+\def\font_pop_x_size_indeed
+  {\ifcase\c_font_saved_x_size\or
+     \currentxfontsize\c_font_saved_x_size\tx
+   \or
+     \currentxfontsize\c_font_saved_x_size\txx
+   \fi
+   \c_font_saved_x_size\zerocount}
 
 %D When asking for a complete font switch, for instance from 10 to 12~points, the
 %D next macro does the job. First we normalize the size, next we define the current
@@ -2737,6 +2777,7 @@
 
 \permanent\protected\tolerant\def\setupbodyfont[#specification]%
   {\ifparameter#specification\or
+     \font_push_x_size % experiment
      \font_helpers_set_font\plusone{#specification}%
      \globalbodyfontsize\localbodyfontsize
      \normalizebodyfontsize\normalizedglobalbodyfontsize\globalbodyfontsize
@@ -2747,6 +2788,7 @@
        \saveinterlinespace
      \fi
      \expand\everysetupbodyfont
+     \font_pop_x_size % experiment
    \else
      \restoreglobalbodyfont
      \saveinterlinespace
@@ -2759,6 +2801,7 @@
 
 \protected\def\font_basics_switchtobodyfont#specification%
   {\edef\m_font_step{\font_bodyfontvariable{#specification}}%
+   \font_push_x_size % experiment
    \ifempty\m_font_step
      \font_helpers_set_font\zerocount{#specification}%
    \else
@@ -2766,8 +2809,9 @@
    \fi
    \expand\everybodyfont
    \expand\everyswitchtobodyfont
-\expand\everyfont
-\expand\everyfontswitch
+   \expand\everyfont
+   \expand\everyfontswitch
+   \font_pop_x_size % experiment
    }
 
 \permanent\protected\def\usebodyfontparameter#1%

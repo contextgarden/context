@@ -446,6 +446,8 @@
 % + \explicithyphenationcode          % \-
   + \collapsehyphenationcode          % collapse -- and ---
   + \replaceapostrophehyphenationcode % replace ' by 0x2019
+  + \permitgluehyphenationcode        % turn glue into kern in \discretionary
+  + \permitallhyphenationcode         % okay, let's be even more tolerant
 \relax
 
 \hccode"002D "002D % hyphen

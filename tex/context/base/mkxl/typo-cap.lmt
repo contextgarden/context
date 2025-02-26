@@ -355,7 +355,7 @@ function cases.handler(head)
                                 local cnt = count
                                 for g in nextglyph, replace do
                                     cnt = cnt + 1
-                                    getattr(g,a_cases)
+                                    getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"replace",g)
                                     if quit then
                                         break
@@ -366,7 +366,7 @@ function cases.handler(head)
                                 local cnt = count
                                 for g in nextglyph, pre do
                                     cnt = cnt + 1
-                                    getattr(g,a_cases)
+                                    getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"pre",g)
                                     if quit then
                                         break
@@ -377,7 +377,7 @@ function cases.handler(head)
                                 local cnt = count
                                 for g in nextglyph, post do
                                     cnt = cnt + 1
-                                    getattr(g,a_cases)
+                                    getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"post",g)
                                     if quit then
                                         break

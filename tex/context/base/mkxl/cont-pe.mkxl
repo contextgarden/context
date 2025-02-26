@@ -14,7 +14,6 @@
 \catcode`\{=1 \catcode`\}=2
 
 \immutable\def\defaultinterface  {persian}
-\immutable\def\messageinterface  {english}
 \immutable\def\defaultlanguagetag{pe}
 
 \input context.mkxl

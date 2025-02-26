@@ -184,6 +184,7 @@
 \definesystemconstant {compare}
 \definesystemconstant {complex}
 \definesystemconstant {container}
+\definesystemconstant {constant}
 \definesystemconstant {counter}
 \definesystemconstant {cramped}
 \definesystemconstant {current}
@@ -477,7 +478,7 @@
 \definesystemconstant {exponentiale}
 \definesystemconstant {imaginaryi}
 \definesystemconstant {imaginaryj}
-\definesystemconstant {pi}
+\definesystemconstant {constantpi}
 
 %D As the name of their define command states, the next set of constants is used in
 %D the message macro's.

@@ -5823,6 +5823,7 @@ static int texlib_getdiscoptionvalues(lua_State *L)
     lua_set_string_by_index(L, disc_option_prefer_nobreak,            "prefernobreak");
     lua_set_string_by_index(L, disc_option_no_italic_correction,      "noitaliccorrection");
     lua_set_string_by_index(L, disc_option_no_zero_italic_correction, "nozeroitaliccorrection");
+    lua_set_string_by_index(L, disc_option_stand_alone,               "standalone");
     lua_set_string_by_index(L, disc_option_user_first,                "userfirst");
     lua_set_string_by_index(L, disc_option_user_last,                 "userlast");
     return 1;

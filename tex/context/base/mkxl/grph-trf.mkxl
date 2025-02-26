@@ -1060,7 +1060,7 @@
   {\egroup
    \endgroup}
 
-%D Thi sis used in:
+%D This is used in:
 
 \permanent\protected\def\startclipeffect
    {\begingroup
@@ -1081,8 +1081,8 @@
 \permanent\protected\def\stopclipeffect
   {\endgroup}
 
-\setbox0\hbox{\strut\starteffect[clip]mikael\stopeffect}
-
+% \setbox0\hbox{\strut\starteffect[clip]mikael\stopeffect}
+%
 % \startgraphicgroup
 %     \startoverlay
 %       {\copy0}
