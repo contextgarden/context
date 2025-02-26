@@ -490,8 +490,9 @@
       \setupcurrentsimplelist[#2]%
       \enforced\let\synonymentry\strc_synonym_normal
       % so we can hook tabulate into before and after
-      \normalexpanded{\simplelistparameter\c!before
-        \noexpand\clf_processsynonyms
+      \normalexpanded{%
+        \simplelistparameter\c!before
+        \clf_processsynonyms
            {#1}%
            {%
                criterium {\simplelistparameter\c!criterium}%
@@ -499,8 +500,8 @@
                method    {\simplelistparameter\c!method}%
            }%
         \relax
-      \simplelistparameter\c!after}%
-      \relax}%
+      \simplelistparameter\c!after
+      }\relax}%
      {}% todo: message that invalid
    \endgroup}
 
@@ -698,8 +699,9 @@
      \enforced\let\synonymentry\strc_sorting_command
    \fi
    % so we can hook tabulate into before and after
-   \normalexpanded{\simplelistparameter\c!before
-     \noexpand\clf_processsynonyms
+   \normalexpanded{%
+     \simplelistparameter\c!before
+     \clf_processsynonyms
         {#1}%
         {%
             criterium {\simplelistparameter\c!criterium}%
@@ -707,7 +709,8 @@
             method    {\simplelistparameter\c!method}%
         }%
      \relax
-   \simplelistparameter\c!after}%
+     \simplelistparameter\c!after
+   }%
    \endgroup}
 
 \permanent\tolerant\protected\def\completelistofsorts[#1]#*[#S#2]%

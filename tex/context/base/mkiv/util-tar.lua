@@ -216,7 +216,7 @@ local function unpacktar(whatever,filename,verbose)
             report("number of links : %i",metadata.noflinks)
             report("number of bytes : %i",metadata.nofbytes)
             report("")
-            report("runtime needed  : %s",statistics.elapsedseconds(metadata))
+            report("runtime needed  : %s",statistics.elapsedseconds(metadata) or 0)
             report("")
         end
         t.close()

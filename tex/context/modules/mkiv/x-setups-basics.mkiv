@@ -121,6 +121,9 @@
 \unexpanded\def\setupalwcolor{}
 \unexpanded\def\setupoptcolor{darkgray}
 
+% \detokenize is redundant because we already need to pass verbatim due to
+% percent characters
+
 \unexpanded\def\setupvarword#1{\detokenize{#1}}
 \unexpanded\def\setupintword#1{\WORD{\detokenize{#1}}}
 \unexpanded\def\setuptxtword#1{\detokenize{#1}}
@@ -217,9 +220,11 @@
 
     local context        = context
 
-    local setupvarword   = context.formatted.setupvarword
-    local setupintword   = context.formatted.setupintword
-    local setuptxtword   = context.formatted.setuptxtword
+    -- we can have percent signs here so we need to be verbatim
+
+    local setupvarword   = context.verbatim.setupvarword
+    local setupintword   = context.verbatim.setupintword
+    local setuptxtword   = context.verbatim.setuptxtword
 
     local getsetupstring = interfaces.getsetupstring
 

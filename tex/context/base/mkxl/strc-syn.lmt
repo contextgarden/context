@@ -411,6 +411,7 @@ implement {
 implement {
     name      = "processsynonyms",
     actions   = synonyms.process,
+    protected = true,
     arguments = {
         "string",
         {
