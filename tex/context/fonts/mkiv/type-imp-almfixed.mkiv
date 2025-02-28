@@ -17,9 +17,24 @@
         \definefontsynonym [ALMFixed-Regular] [\s!file:almfixed] [\s!features=\s!none]
     \stoptypescript
 
+  % \starttypescript [\s!mono] [almfixed]
+  %     \setups[\s!font:\s!fallback:\s!mono]
+  %     \definefontsynonym [\s!Mono] [ALMFixed-Regular] [\s!features=\s!none]
+  % \stoptypescript
+
+    \doifunknownfontfeature {alm-fixed-tf} {\definefontfeature[alm-fixed-bf][\s!features=\s!none}
+    \doifunknownfontfeature {alm-fixed-bf} {\definefontfeature[alm-fixed-bf][\s!features=\s!none,effect={width=0.30,auto=yes}]}
+    \doifunknownfontfeature {alm-fixed-sl} {\definefontfeature[alm-fixed-sl][\s!features=\s!none,effect={slant=0.10,auto=yes}]}
+    \doifunknownfontfeature {alm-fixed-bs} {\definefontfeature[alm-fixed-bs][\s!features=\s!none,effect={width=0.30,slant=.15,auto=yes}]}
+
     \starttypescript [\s!mono] [almfixed]
         \setups[\s!font:\s!fallback:\s!mono]
-        \definefontsynonym [\s!Mono] [ALMFixed-Regular]
+        \definefontsynonym [\s!Mono]            [ALMFixed-Regular] [\s!features=alm-fixed-tf]
+        \definefontsynonym [\s!MonoBold]        [ALMFixed-Regular] [\s!features=alm-fixed-bf]
+        \definefontsynonym [\s!MonoSlanted]     [ALMFixed-Regular] [\s!features=alm-fixed-sl]
+        \definefontsynonym [\s!MonoItalic]      [ALMFixed-Regular] [\s!features=alm-fixed-sl]
+        \definefontsynonym [\s!MonoBoldSlanted] [ALMFixed-Regular] [\s!features=alm-fixed-bs]
+        \definefontsynonym [\s!MonoBoldItalic]  [ALMFixed-Regular] [\s!features=alm-fixed-bs]
     \stoptypescript
 
     \starttypescript [almfixed]

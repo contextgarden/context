@@ -60,7 +60,7 @@
 \startinterface italian  \definecolor[LocalColor][r=.25,g=.75,b=.75]    \stopinterface
 \startinterface czech    \definecolor[LocalColor][r=.75,g=.25,b=.75]    \stopinterface
 \startinterface romanian \definecolor[LocalColor][r=.5,g=.4,b=.3]       \stopinterface
-%                        \definecolor[LocalColor][r=.5,g=.3,b=.4]
+\startinterface persian  \definecolor[LocalColor][r=.5,g=.3,b=.4]       \stopinterface
 %                        \definecolor[LocalColor][r=.4,g=.3,b=.5]
 %                        \definecolor[LocalColor][r=.4,g=.5,b=.3]
 %                        \definecolor[LocalColor][r=.3,g=.4,b=.5]
@@ -73,22 +73,34 @@
 \startinterface italian  \definecolor[TitleColor][r=.375,g=.125,b=.375] \stopinterface
 \startinterface czech    \definecolor[TitleColor][r=.125,g=.375,b=.375] \stopinterface
 \startinterface romanian \definecolor[TitleColor][r=.25,g=.20,b=.15]    \stopinterface
-%                        \definecolor[TitleColor][r=.25,g=.15,b=.20]
+\startinterface persian  \definecolor[TitleColor][r=.25,g=.15,b=.20]    \stopinterface
 %                        \definecolor[TitleColor][r=.20,g=.15,b=.25]
 %                        \definecolor[TitleColor][r=.20,g=.25,b=.15]
 %                        \definecolor[TitleColor][r=.15,g=.20,b=.25]
 %                        \definecolor[TitleColor][r=.15,g=.25,b=.20]
 
+% \setupdirections[method=unicode,bidi=global]
+
 \definecolor [lightgray] [s=.9]
 \definecolor [darkgray]  [s=.1]
 
-\usetypescript[palatino]
+\usetypescriptfile[texgyre]
+\usetypescriptfile[almfixed]
+
+\definetypeface [pagella] [rm] [serif] [pagella]  [default]
+\definetypeface [pagella] [ss] [sans]  [modern]   [default] [rscale=1.075]
+\definetypeface [pagella] [tt] [mono]  [almfixed] [default] [rscale=1.075]
+\definetypeface [pagella] [mm] [math]  [pagella]  [default]
 
 \doifelsemode {setups:mapping} {
-    \setupbodyfont[palatino,8pt]
+    \setupbodyfont[pagella,8pt]
 } {
-    \setupbodyfont[palatino,9pt]
+    \setupbodyfont[pagella,9pt]
 }
+
+\startinterface persian
+    \setupdirections[\c!bidi=\v!global,\c!method=\v!unicode,\c!fences=\v!no]
+\stopinterface
 
 \defineoverlay
   [cover]
@@ -198,13 +210,14 @@
   [titlepage]
 
 \startsetups text:commands
-    \startinterface dutch    \strut commando's   \par \stopinterface
-    \startinterface english  \strut commands     \par \stopinterface
-    \startinterface german   \strut befehle      \par \stopinterface
-    \startinterface french   \strut commandes    \par \stopinterface
-    \startinterface czech    \strut p\v{r}ikazy  \par \stopinterface
-    \startinterface italian  \strut comandi      \par \stopinterface
-    \startinterface romanian \strut comenzile    \par \stopinterface
+    \startinterface dutch    \strut commando's \par \stopinterface
+    \startinterface english  \strut commands   \par \stopinterface
+    \startinterface german   \strut befehle    \par \stopinterface
+    \startinterface french   \strut commandes  \par \stopinterface
+    \startinterface czech    \strut přikazy    \par \stopinterface
+    \startinterface italian  \strut comandi    \par \stopinterface
+    \startinterface romanian \strut comenzile  \par \stopinterface
+    \startinterface persian  \strut commands   \par \stopinterface % todo
 \stopsetups
 
 \startsetups text:uppercase
@@ -215,16 +228,18 @@
     \startinterface czech    CS\stopinterface
     \startinterface italian  IT\stopinterface
     \startinterface romanian RO\stopinterface
+    \startinterface persian  PE\stopinterface
 \stopsetups
 
 \startsetups text:lowercase
-    \startinterface dutch    \strut nl / nederlands     \par \stopinterface
-    \startinterface english  \strut en / english        \par \stopinterface
-    \startinterface german   \strut de / deutsch        \par \stopinterface
-    \startinterface french   \strut fr / fran\c{c}ais   \par \stopinterface
-    \startinterface czech    \strut cs / \v{c}esk\'y    \par \stopinterface
-    \startinterface italian  \strut it / italiano       \par \stopinterface
-    \startinterface romanian \strut ro / rom\^{a}n\u{a} \par \stopinterface
+    \startinterface dutch    \strut nl / nederlands \par \stopinterface
+    \startinterface english  \strut en / english    \par \stopinterface
+    \startinterface german   \strut de / deutsch    \par \stopinterface
+    \startinterface french   \strut fr / français   \par \stopinterface
+    \startinterface czech    \strut cs / český      \par \stopinterface
+    \startinterface italian  \strut it / italiano   \par \stopinterface
+    \startinterface romanian \strut ro / română     \par \stopinterface
+    \startinterface persian  \strut pe / persian    \par \stopinterface
 \stopsetups
 
 \startmakeup[\v!standard]
@@ -296,10 +311,9 @@
     \definedfont[RegularBold at 24pt]\setupinterlinespace
     \setupalign[\v!left]
     \vfill
-    PRAGMA ADE \par
-    Ridderstraat 27 \par
-    8061GH Hasselt NL \par
-    www.pragma-ade.com \par
+    www.pragma-ade.nl      \par
+    wiki.contextgarden.net \par
+    www.tug.org            \par
     \stopcolor
 \stopmakeup
 

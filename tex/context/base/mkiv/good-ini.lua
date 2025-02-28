@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['good-ini'] = {
 local type, next = type, next
 local gmatch, find, topattern = string.gmatch, string.find, string.topattern
 local sortedhash, insert, contains = table.sortedhash, table.insert, table.contains
+local addsuffix = file.addsuffix
 
 local fonts              = fonts
 
@@ -60,7 +61,7 @@ local function locate(filename)
     local suffixes = fontgoodies.suffixes
     for i=1,#suffixes do
         local suffix = suffixes[i]
-        local fullname = findfile(file.addsuffix(filename,suffix))
+        local fullname = findfile(addsuffix(filename,suffix))
         if fullname and fullname ~= "" then
             return fullname
         end
@@ -76,6 +77,7 @@ local function loadgoodies(filename) -- maybe a merge is better
         if not fullname or fullname == "" then
             report_goodies("goodie file %a is not found (suffixes: % t)",filename,fontgoodies.suffixes)
             data[filename] = false -- signal for not found
+            resolvers.missinglibrary(addsuffix(filename,fontgoodies.suffixes[1]))
         else
             goodies = dofile(fullname) or false
             if not goodies then

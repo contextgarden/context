@@ -66,6 +66,62 @@
 
 % Todo: use lua instead of synonyms
 
+% \permanent\protected\def\righttoleftstring#1{\begingroup\righttoleft#1\endgroup}
+% \permanent\protected\def\lefttorightstring#1{\begingroup\lefttoright#1\endgroup}
+%
+% \startluacode
+%     local find  = string.find
+%     local getid = lxml.getid
+%
+%     local lefttorightstring = context.verbatim.lefttorightstring
+%     local righttoleftstring = context.verbatim.righttoleftstring
+%
+%     local notcatcodes = tex.notcatcodes
+%
+%     interfaces.implement {
+%         name      = "xmldiratt",
+%         public    = true,
+%         arguments = "2 strings",
+%         actions   = function(id,name)
+%             local e = lxml.getid(id)
+%             if e then
+%                 local at = e.at
+%                 if at then
+%                     att = at[name]
+%                     if att then
+%                         if find(att,"[a-zA-Z]") then -- todo: check for arabic instead
+%                             lefttorightstring(att)
+%                         else
+%                             righttoleftstring(att)
+%                         end
+%                     end
+%                 end
+%             end
+%         end
+%     }
+%
+%     interfaces.implement {
+%         name      = "dirstring",
+%         public    = true,
+%         arguments = "string",
+%         actions   = function(str)
+%             if find(str,"[a-zA-Z]") then -- todo: check for arabic instead
+%                 lefttorightstring(str)
+%             else
+%                 righttoleftstring(str)
+%             end
+%         end
+%     }
+% \stopluacode
+%
+% \let\dircheckedstring\firstofoneargument
+% \let\dircheckedxmlatt\xmlatt
+%
+% \startinterface persian
+%     \let\dircheckedstring\dirstring
+%     \let\dircheckedxmlatt\xmldiratt
+% \stopinterface
+
 \unprotect
 
 % We might apply this locally!
@@ -987,12 +1043,14 @@
     }
 \stopxmlsetups
 
+% \enabletrackers[typesetters.directions*]%
+
 \startxmlsetups xml:setups:inherit
   % \cmd_column_two_start{}{}
         \rawsetupstring{cd:inherits}:
         \enspace
         \letterbackslash
-        \xmlatt{#1}{name}
+        \xmlatt{#1}{name}% maybe hboxed
   % \cmd_column_two_stop
     \ignorespaces
 \stopxmlsetups

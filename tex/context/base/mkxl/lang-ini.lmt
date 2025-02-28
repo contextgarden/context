@@ -1405,9 +1405,11 @@ local expand ; do
     end
 
     function languages.addgoodiesfile(tag,filename)
-        local fullname = resolvers.findfile(file.addsuffix(filename,"llg")) or ""
+        local askedname = file.addsuffix(filename,"llg")
+        local fullname  = resolvers.findfile(askedname) or ""
         if fullname == "" then
             report_goodies("file %a is not found",filename)
+            resolvers.missinglibrary(askedname)
         else
             local list = table.load(fullname)
             if not list then

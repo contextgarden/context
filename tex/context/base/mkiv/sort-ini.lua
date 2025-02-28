@@ -312,6 +312,10 @@ end
 local function setlanguage(l,m,d,u) -- this will become a specification table (also keep this one as it's used in manuals)
     language = (l ~= "" and l) or constants.defaultlanguage
     data     = definitions[language or constants.defaultlanguage] or definitions[constants.defaultlanguage]
+    if not data then
+        report_sorters("unknown language %a",language)
+        data = definitions.en
+    end
     method   = (m ~= "" and m) or (data.method ~= "" and data.method) or constants.defaultmethod
     digits   = (d ~= "" and d) or (data.digits ~= "" and data.digits) or constants.defaultdigits
     if trace_tests then

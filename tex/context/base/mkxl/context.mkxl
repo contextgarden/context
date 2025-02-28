@@ -31,7 +31,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2025.02.26 21:58}
+\immutable\edef\contextversion{2025.02.28 18:12}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error

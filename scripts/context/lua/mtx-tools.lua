@@ -223,8 +223,17 @@ function scripts.tools.showfile()
     end
 end
 
+function scripts.tools.libraries()
+    dofile(resolvers.findfile("data-ctx.lua"))
+    if resolvers.collectlibraries then
+        resolvers.collectlibraries()
+    end
+end
+
 if environment.argument("disarmutfbomb") then
     scripts.tools.disarmutfbomb()
+elseif environment.argument("libraries") then
+    scripts.tools.libraries()
 elseif environment.argument("dirtoxml") then
     scripts.tools.dirtoxml()
 elseif environment.argument("downcase") then

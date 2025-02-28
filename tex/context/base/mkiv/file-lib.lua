@@ -9,7 +9,9 @@ if not modules then modules = { } end modules ['file-lib'] = {
 -- todo: check all usage of truefilename at the tex end and remove
 -- files there (and replace definitions by full names)
 
+local type = type
 local format, gsub = string.format, string.gsub
+local loadtable = table.load
 
 local trace_libraries = false  trackers.register("resolvers.libraries", function(v) trace_libraries = v end)
 ----- trace_files     = false  trackers.register("resolvers.readfile",  function(v) trace_files     = v end)
@@ -34,10 +36,41 @@ local function defaultfailure(name)
 end
 
 local ignoredfiles = { }
+local distributed  = nil -- becomes false when not found
+local reported     = false
 
 function resolvers.ignorelibrary(name)
     ignoredfiles[name] = true
 end
+
+local function missinglibrary(expected)
+    if not expected then
+        return
+    end
+    if distributed == nil then
+        distributed = loadtable(resolvers.findfile("context-libraries.tma") or "") or false
+    end
+    if distributed then
+        local f = distributed.files
+        if f then
+            if type(expected) == "string" then
+                expected = { expected }
+            end
+            for i=1,#expected do
+                local e = expected[i]
+                if f[e] then
+                    report_library()
+                    report_library("file %a should be in the installed distribution",e,category)
+                    report_library()
+                    f[e] = false -- so we report once
+                    reported = true
+                end
+            end
+        end
+    end
+end
+
+resolvers.missinglibrary = missinglibrary
 
 function resolvers.uselibrary(specification) -- todo: reporter
     local name = specification.name
@@ -53,7 +86,8 @@ function resolvers.uselibrary(specification) -- todo: reporter
             local foundname = getreadfilename("any",".",somename) -- maybe some day also an option not to backtrack .. and ../.. (or block global)
             return foundname ~= "" and foundname
         end
-        local loaded = libraries[patterns]
+        local loaded   = libraries[patterns]
+        local expected = { }
         for i=1,#files do
             local filename = files[i]
             if not loaded[filename] then
@@ -79,6 +113,7 @@ function resolvers.uselibrary(specification) -- todo: reporter
                             if foundname then
                                 break
                             end
+                            expected[#expected+1] = wanted
                         else
                             -- can be a bogus path (coming from a test)
                         end
@@ -104,11 +139,31 @@ function resolvers.uselibrary(specification) -- todo: reporter
                             loaded[filename] = true -- todo: base this on return value
                         end
                     end
+                else
+                    missinglibrary(expected)
                 end
             end
         end
     end
 end
+
+statistics.register("missing files", function()
+    if reported then
+        local report = logs.reporter("system")
+        logs.startfilelogging(report,"missing files")
+        report()
+        for k, v in table.sortedhash(distributed.files) do
+            if not v then
+                report("  %s",k)
+            end
+        end
+        report()
+        report("  These files should have been there but might have been dropped by the")
+        report("  distribution that you use. There is not much we can do about that.")
+        report()
+        logs.stopfilelogging()
+    end
+end)
 
 -- We keep these in the commands namespace even if it's not that logical
 -- but this way we are compatible.
