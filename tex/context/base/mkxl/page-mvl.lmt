@@ -2750,8 +2750,6 @@ end
 
 do
 
-    local div, mod = math.div, math.mod
-
     local actions = { "spread", "page", "column", "slot", "lines", "amount" }
     local trace   = false
     local eject   <const> = tex.magicconstants.ejectpenalty

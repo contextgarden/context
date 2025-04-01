@@ -100,7 +100,9 @@ local potracefromfile do -- this will move to another module
         end
         content = zlibdecompress(content)
         content = decodestrip(openstring(content),xsize,ysize,1)
-        content = simplify(content,threshold)
+        if not parameters.raw then
+            content = simplify(content,threshold)
+        end
         pngfile:close()
         return content, xsize, ysize
     end
@@ -348,7 +350,7 @@ local potraceflush, potracechecked, potraceconvert do
         pk  = potracefrompk,
     }
 
-    local function potracefromfile(parameters)
+    potracefromfile = function(parameters)
         local filename = parameters.filename
         if filename and filename ~= "" then
             local handle = filehandles[filesuffix(filename)]
@@ -364,6 +366,16 @@ local potraceflush, potracechecked, potraceconvert do
             local bytes = getbuffer(buffer)
             if bytes and bytes ~= "" then
                 return potracechecked(bytes,width,height)
+            end
+        end
+    end
+
+    local function potracefrombytemap(parameters,width,height)
+        local bytemap = parameters.bytemap
+        if tonumber(bytemap) then
+            local nx, ny, nz, bytes = mp.getbytemapdata(bytemap)
+            if bytes and nz == 1 then -- todo: gray
+                return bytes, nx, ny
             end
         end
     end
@@ -404,6 +416,12 @@ local potraceflush, potracechecked, potraceconvert do
         end
         if not bytes then
             local b, w, h = potracefrombuffer(parameters,width,height)
+            if b then
+                bytes, width, height = b, w, h
+            end
+        end
+        if not bytes then
+            local b, w, h = potracefrombytemap(parameters,width,height)
             if b then
                 bytes, width, height = b, w, h
             end
@@ -503,3 +521,24 @@ potrace.fromfile    = potracefromfile
 potrace.contourplot = potracecontourplot
 potrace.checked     = potracechecked
 potrace.convert     = potraceconvert
+
+-- for now we put this here:
+
+function mp.bytemap_load_from_file(index,filename)
+ -- local bytes, nx, ny, nz = potrace.fromfile {
+    local fullname = resolvers.findfile(filename) or ""
+    if fullname ~= "" then
+        local bytes, nx, ny, nz = potracefromfile {
+            filename = fullname,
+            raw      = true,
+        }
+        if not nz then
+            nz = 1
+        end
+        mp.newbytemap(index,nx,ny,nz,bytes)
+        return mp.color(nx, ny, nz)
+    else
+        mp.newbytemap(index,1,1)
+        return mp.color(1,1,1)
+    end
+end

@@ -175,10 +175,11 @@ do
 
     updaters.register("backends.pdf.latebindings",function()
         job.positions.registerhandlers {
-            getpos  = drivers.getpos,
-            getrpos = drivers.getrpos,
-            gethpos = drivers.gethpos,
-            getvpos = drivers.getvpos,
+            getpos    = drivers.getpos,
+            gethvrpos = drivers.gethvrpos,
+            gethpos   = drivers.gethpos,
+            getvpos   = drivers.getvpos,
+            getrpos   = drivers.getrpos,
         }
         pdfgetmatrix = lpdf.getmatrix
         pdfhasmatrix = lpdf.hasmatrix
@@ -1455,7 +1456,7 @@ if implement then
 
     implement {
         name      = "startactualtext",
-        arguments = "string",
+        arguments = "argument",
         actions   = function(str)
             context(pdfdirect(f_actual_text(tosixteen(str))))
         end
@@ -1470,7 +1471,7 @@ if implement then
 
     implement {
         name      = "startalternativetext",
-        arguments = "string",
+        arguments = "argument",
         actions   = function(str)
             context(pdfdirect(f_alternative_text(tosixteen(str))))
         end
@@ -1495,7 +1496,7 @@ if implement then
 
     implement {
         name      = "pdfsetuserdata",
-        arguments = "2 strings",
+        arguments = "2 arguments",
         protected = true,
         public    = true,
         actions   = lpdf.setuserdata

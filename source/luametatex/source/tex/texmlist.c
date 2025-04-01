@@ -204,6 +204,11 @@ because, after all, we can't test that anyway.
     means that we also no longer have to stare at somewhat fuzzy code originating in dealing 
     with italics. It depends on how well our latest heuristic tweaks work out. 
 
+    In 2025, in \LUATEX\ we decided to assume that fonts will never follow the specification 
+    but keep using italic correction for anchoring (sub)scripts. Therefore we removed control 
+    options and accepted potential sub-optimal rendering. It basically means that the remarks
+    in the \OPENTYPE\ specification with regards to italic correction are ignored. 
+
 */
 
 # include "luametatex.h"
@@ -4436,41 +4441,41 @@ static halfword tex_aux_check_nucleus_complexity (
     will become the default and the parameter might go away. 
 */
 
-static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, scaled *bot)
-{
-    switch (mode) {
-        case 0:
-            /*tex full bottom correction */
-            *top = 0;
-            *bot = -delta;
-            break;
-        case 1:
-            /*tex |MathConstants| driven */
-            *top =  tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sup_factor, 0), scaling_factor);
-            *bot = -tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sub_factor, 0), scaling_factor);
-            break ;
-        case 2:
-            /*tex no correction */
-            *top = 0;
-            *bot = 0;
-            break ;
-        case 3:
-            /*tex half bottom correction */
-            *top =  0;
-            *bot = -tex_half_scaled(delta);
-            break;
-        case 4:
-            /*tex half bottom and top correction */
-            *top =  tex_half_scaled(delta);
-            *bot = -tex_half_scaled(delta);
-            break;
-        default :
-            /*tex above 15: for quickly testing values */
-            *top =  0;
-            *bot = (mode > 15) ? -tex_round_xn_over_d(delta, mode, scaling_factor) : 0;
-            break;
-    }
-}
+// static void tex_aux_get_shifts(int mode, int style, scaled delta, scaled *top, scaled *bot)
+// {
+//     switch (mode) {
+//         case 0:
+//             /*tex full bottom correction */
+//             *top = 0;
+//             *bot = -delta;
+//             break;
+//         case 1:
+//             /*tex |MathConstants| driven */
+//             *top =  tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sup_factor, 0), scaling_factor);
+//             *bot = -tex_round_xn_over_d(delta, tex_get_math_parameter_default(style, math_parameter_nolimit_sub_factor, 0), scaling_factor);
+//             break ;
+//         case 2:
+//             /*tex no correction */
+//             *top = 0;
+//             *bot = 0;
+//             break ;
+//         case 3:
+//             /*tex half bottom correction */
+//             *top =  0;
+//             *bot = -tex_half_scaled(delta);
+//             break;
+//         case 4:
+//             /*tex half bottom and top correction */
+//             *top =  tex_half_scaled(delta);
+//             *bot = -tex_half_scaled(delta);
+//             break;
+//         default :
+//             /*tex above 15: for quickly testing values */
+//             *top =  0;
+//             *bot = (mode > 15) ? -tex_round_xn_over_d(delta, mode, scaling_factor) : 0;
+//             break;
+//     }
+// }
 
 static scaled tex_aux_op_no_limits(halfword target, int style, int size, int italic, kernset *kerns, int forceitalics)
 {
@@ -4490,7 +4495,9 @@ static scaled tex_aux_op_no_limits(halfword target, int style, int size, int ita
         if (localkerns.topright || localkerns.bottomright) {
             italic = 0;
         }
-        tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &topshift, &botshift);
+     /* tex_aux_get_shifts(math_nolimits_mode_par, style, italic, &topshift, &botshift); */
+        topshift =  tex_round_xn_over_d(italic, tex_get_math_parameter_default(style, math_parameter_nolimit_sup_factor, 0), scaling_factor);
+        botshift = -tex_round_xn_over_d(italic, tex_get_math_parameter_default(style, math_parameter_nolimit_sub_factor, 0), scaling_factor);
         tex_aux_make_scripts(target, kernel, 0, style, topshift, botshift, 0, &localkerns, 0);
     } else {
         tex_aux_assign_new_hlist(target, kernel);
@@ -5460,6 +5467,11 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
         scaled krn_l = 0;
         scaled krn_r = 0;
         scaled krn = 0;
+        halfword kernelsize = lmt_math_state.size;
+        halfword scriptsize = lmt_math_state.size;
+        if (scriptsize < 2) { 
+            ++scriptsize; 
+        }
         switch (cmd) {
             case superscript_cmd:
                 /*tex bottom of superscript */
@@ -5468,9 +5480,13 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
                     scaled corr_height_bot = -tex_char_depth_from_font(r_f, r_c) + shift;
                     krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_top, 0);
                     krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_top, 0);
+                    krn_l = tex_aux_math_x_size_scaled(l_f, krn_l, kernelsize);
+                    krn_r = tex_aux_math_x_size_scaled(l_f, krn_r, scriptsize);
                     krn = krn_l + krn_r;
                     krn_l = tex_aux_math_kern_at(l_f, l_c, top_right_kern, corr_height_bot, 0);
                     krn_r = tex_aux_math_kern_at(r_f, r_c, bottom_left_kern, corr_height_bot, 0);
+                    krn_l = tex_aux_math_x_size_scaled(l_f, krn_l, kernelsize);
+                    krn_r = tex_aux_math_x_size_scaled(l_f, krn_r, scriptsize);
                 }
                 break;
             case subscript_cmd:
@@ -5480,19 +5496,29 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
                     scaled corr_height_bot = -tex_char_depth_from_font(l_f, l_c);
                     krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_top, 0);
                     krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_top, 0);
+                    krn_l = tex_aux_math_x_size_scaled(l_f, krn_l, kernelsize);
+                    krn_r = tex_aux_math_x_size_scaled(l_f, krn_r, scriptsize);
                     krn = krn_l + krn_r;
                     krn_l = tex_aux_math_kern_at(l_f, l_c, bottom_right_kern, corr_height_bot, 0);
                     krn_r = tex_aux_math_kern_at(r_f, r_c, top_left_kern, corr_height_bot, 0);
+                    krn_l = tex_aux_math_x_size_scaled(l_f, krn_l, kernelsize);
+                    krn_r = tex_aux_math_x_size_scaled(l_f, krn_r, scriptsize);
                 }
                 break;
             default:
                 return tex_confusion("find math kern");
         }
         *found = 1;
-        if ((krn_l + krn_r) < krn) {
+        /*tex 
+            The |>=| was |<| pre TL 2026 but because in \LUATEX\ we changed it in order to 
+            accomodate \LATEX\ and plain \TEX\ expectations (based on \XETEX) and we also 
+            now assume \OPENTYPE\ to be like traditional \TEX\ fonts and therefore we change
+            it here too. It doesn't hurt \CONTEXT\ which has a different approach and setup.
+        */
+        if ((krn_l + krn_r) >= krn) {
             krn = krn_l + krn_r;
         }
-        return krn ? tex_aux_math_x_size_scaled(l_f, krn, lmt_math_state.size) : 0;
+        return krn;
     } else {
         return MATH_KERN_NOT_FOUND;
     }

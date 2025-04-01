@@ -822,8 +822,14 @@ do
                     if contents then
                         contents = strip_content(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
                         contents = contenttostring(contents)
+                        local compressed = lpdf.compressdata(contents) -- how about encryption
+                        if compressed then
+                            contents = compressed
+                            object.__raw__.Filter = "FlateDecode"
+                        else
+                            object.__raw__.Filter = nil
+                        end
                         object.__raw__.Length = #contents
-                        object.__raw__.Filter = nil
                         getmetatable(object).__call = function() return contents end
                         object.__content_remapped__ = true
                     end

@@ -882,7 +882,7 @@ end
 
 implement {
     name      = "traversemath",
-    arguments = { "string",  "string", "string", "csname" },
+    arguments = { "argument",  "argument", "argument", "csname" },
     actions   = function(style,alternative,set,command)
         local d = alphabets[style]
         if d then
@@ -904,7 +904,7 @@ local blocks = characters.blocks
 
 implement {
     name      = "traverseblock",
-    arguments = { "string", "csname" },
+    arguments = { "argument", "csname" },
     actions   = function(name,command)
         local b = blocks[string.nospaces(name)]
         if b then

@@ -258,8 +258,8 @@ endif()
 # When the old osx version is dropped and armhf is upgraded we can enable unix except solaris which
 # fails. So, only osx 10.6 and rpi 32 fail. But we will probably drop 32 bit in the future anyway.
 #
-# At the beginning of 2025 the gain is some 5 percent on the 650 page luametate manual over the 
-# default memory allocator. 
+# At the beginning of 2025 on Windows 10 the gain is some 5 percent on the 650 page luametatex 
+# manual over the default memory allocator. 
 
 # CMAKE_HOST_SYSTEM_PROCESSOR arm64 x86_64
 

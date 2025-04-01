@@ -243,27 +243,15 @@ do
         if xresolution == 0 or yresolution == 0 or data == "" then
             return -- fatal error
         end
-        data = hextocharacters(data)
+        if not t.bytes then
+            data = hextocharacters(data)
+        end
         if not data then
             return
         end
         local colorspace = t.colorspace
         local colordepth = 8
         local colors     = 1
---         if colorspace ~= "rgb" and colorspace ~= "gray" then
---             -- not that efficient but ok
---             local d = gsub(t.data,"[^0-9a-f]","")
---             local b = round(#d / (xresolution * yresolution))
---             if b == 2 then
---                 colorspace = "gray"
---                 colors     = 1
---             elseif b == 6 then
---                 colorspace = "rgb"
---                 colors     = 3
---             elseif b == 8 then
---                 return -- for now, todo: convert
---             end
---         end
         if colorspace ~= "rgb" and colorspace ~= "gray" then
             local b = round(#data / (xresolution * yresolution))
             if b == 1 then
@@ -302,6 +290,24 @@ do
             Length           = #data,
             Filter           = pdfconstant("FlateDecode"),
         }
+        --
+        local mask = tonumber(t.mask)
+        if mask then
+            -- we can share masks when we have the same size and value
+            mask = string.char(mask > 255 and 255 or mask)
+            mask = zlibcompress(string.rep(mask,xresolution*yresolution),compresslevel)
+            local d = pdfdictionary {
+                Type             = pdfconstant("XObject"),
+                Subtype          = pdfconstant("Image"),
+                Width            = xresolution,
+                Height           = yresolution,
+                BitsPerComponent = 8,
+                ColorSpace       = pdfconstant("DeviceGray"),
+                Length           = #mask,
+                Filter           = pdfconstant("FlateDecode"),
+            }
+            xobject.SMask = pdfreference(lpdf.flushstreamobject(mask,d()))
+        end
         local image = createimage {
 --             bbox     = { 0, 0, round(width/xresolution), round(height/yresolution) }, -- mandate
             bbox     = { 0, 0, round(width), round(height) }, -- mandate

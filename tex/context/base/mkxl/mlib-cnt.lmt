@@ -1871,7 +1871,7 @@ local f_color = formatters [ [[
          function_value    = z
          return %s
      end
- ]] ]
+]] ]
 
 function mp.lmt_surface_do(specification)
     --

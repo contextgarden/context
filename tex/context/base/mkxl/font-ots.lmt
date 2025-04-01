@@ -517,7 +517,7 @@ local no_right_ligature_code <const> = glyphoptioncodes.norightligature
 ----- no_left_kern_code      <const> = glyphoptioncodes.noleftkern
 local no_right_kern_code     <const> = glyphoptioncodes.norightkern
 
-local hasglyphoption         = nuts.hasglyphoption
+local hasglyphoption         = nuts.hasglyphoption -- also looks at neighbours
 
 -- in lmtx we need to check the components and can be slightly more clever
 
@@ -2321,7 +2321,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
                 if keepdisc then
                     keepdisc = false
                     if notmatchpost[current] ~= notmatchreplace[current] then
--- print(notmatchpost[current],notmatchreplace[current])
                         backtrackdisc = current
                     end
                     -- we assume a simple text only replace (we could use nuts.count)
@@ -2406,9 +2405,9 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             setdisc(lookaheaddisc,cf,post,new)
         end
         start          = getprev(lookaheaddisc)
-if done then -- new 2022-12-22 : discretionary-001.tex
-        useddisc       = lookaheaddisc -- new 2022-09-25
-end
+        if done then -- new 2022-12-22 : discretionary-001.tex
+            useddisc   = lookaheaddisc -- new 2022-09-25
+        end
         sweephead[cf]  = getnext(clast) or false
         sweephead[new] = getnext(cl) or false
     elseif backtrackdisc then
@@ -2469,9 +2468,9 @@ end
             setdisc(backtrackdisc,pre,post,replace)
         end
         start              = getprev(backtrackdisc)
-if done then -- new 2022-12-22 : discretionary-001.tex
-        useddisc           = backtrackdisc -- new 2022-09-25
-end
+        if done then -- new 2022-12-22 : discretionary-001.tex
+            useddisc       = backtrackdisc -- new 2022-09-25
+        end
         sweephead[post]    = getnext(clast) or false
         sweephead[replace] = getnext(last) or false
     else
@@ -3407,6 +3406,8 @@ local function testrun(disc,t_run,c_run,...)
             else
                 replace = new
             end
+         -- nuts.checkdiscretionary(disc)
+            renewed = true
         else
             -- we stay inside the disc
             if posttail then
@@ -3949,9 +3950,8 @@ do
                     local prv, char, id = isprevchar(start,font,dynamic,state)
                     if char then
                         local m = merged[char]
-currentscale, currentxscale, currentyscale = getscales(start)
+                        currentscale, currentxscale, currentyscale = getscales(start) -- before if test
                         if m then
---                             currentscale, currentxscale, currentyscale = getscales(start)
                             for i=m[1],m[2] do
                                 local step = steps[i]
                                 local lookupcache = step.coverage
@@ -3986,9 +3986,8 @@ currentscale, currentxscale, currentyscale = getscales(start)
                         if char then
                             -- no skiphash check here
                             local lookupmatch = lookupcache[char]
-currentscale, currentxscale, currentyscale = getscales(start)
+                            currentscale, currentxscale, currentyscale = getscales(start) -- before if test
                             if lookupmatch then
---                                 currentscale, currentxscale, currentyscale = getscales(start)
                                 local ok, df
                                 head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                 if df then
@@ -4033,9 +4032,8 @@ currentscale, currentxscale, currentyscale = getscales(start)
                         if char then
                             -- no skiphash check here
                             local m = merged[char]
-currentscale, currentxscale, currentyscale = getscales(start)
+                            currentscale, currentxscale, currentyscale = getscales(start) -- before if test
                             if m then
---                                 currentscale, currentxscale, currentyscale = getscales(start)
                                 local ok, df
                                 for i=m[1],m[2] do
                                     local step = steps[i]
@@ -4165,9 +4163,8 @@ currentscale, currentxscale, currentyscale = getscales(start)
                         local step = steps[i]
                         local lookupcache = step.coverage
                         local lookupmatch = lookupcache[char]
-currentscale, currentxscale, currentyscale = getscales(start)
+                        currentscale, currentxscale, currentyscale = getscales(start) -- before if test
                         if lookupmatch then
---                             currentscale, currentxscale, currentyscale = getscales(start)
                             local ok
                             head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                             if ok then

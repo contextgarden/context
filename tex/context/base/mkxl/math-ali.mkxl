@@ -1306,22 +1306,12 @@
 %D \starttyping
 %D \dm {
 %D     \startcases[righttext=\mtext{if }]
-%D         \NC x  \NC x > 0 \NR
-%D         \NC -x \NC x < 0 \NR
+%D         \NC -x \NC x < 0 \NR % see (**)
+%D         \NC  x \NC x > 0 \NR
 %D
 %D     \stopcases
 %D }
 %D \stoptyping
-
-% \noaligned\tolerant\permanent\protected\def\math_cases_NR#.[#1]#*[#2]%
-%   {\unskip
-%    \ifmmode\stopimath\fi
-%    \aligntab
-%    \global\c_math_cases_nc\zerocount
-%    \strc_formulas_place_number_nested{#1}{#2}%
-%    \math_number_right_of_eqalign
-%    \box\b_strc_formulas_number
-%    \crcr}
 
 \noaligned\tolerant\permanent\protected\def\math_cases_NR#.[#1]#*[#2]%
   {\unskip
@@ -1364,7 +1354,7 @@
    \math_fenced_start_wrap{\mathcasesparameter\c!fences}%
    \mathatom \s!class \mathconstructcode \bgroup
    \vcenter\bgroup
-   \mathbeginclass\zerocount % added, cases can be in an alignment cell
+   \mathbeginclass\mathbegincode % not really needed, see (**)
    \enforced\let\MC\math_cases_NC
    \enforced\let\NC\math_cases_NC
    \enforced\let\NR\math_cases_NR
@@ -3905,7 +3895,7 @@
    \math_left_of_eqalign  % \hfil
    \ignorespaces
    \math_align_strut
-   \mathbeginclass\ifcsname\??mathsimpleendclass\tointeger{\c_math_eqalign_column-\plusone}\endcsname\lastnamedcs\else\mathunsetcode\fi
+  %\mathbeginclass\ifcsname\??mathsimpleendclass\tointeger{\c_math_eqalign_column-\plusone}\endcsname\lastnamedcs\else\mathunsetcode\fi
    \mathbeginclass\mathbegincode
    \startforceddisplaymath
    \aligncontent

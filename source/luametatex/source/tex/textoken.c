@@ -872,8 +872,8 @@ static void tex_aux_invalid_character_error(void)
     );
 }
 
-static int tex_aux_process_sup_mark(void);
-
+static int tex_aux_process_sup_mark     (void);
+/*     int tex_aux_process_comment      (void); */
 static int tex_aux_scan_control_sequence(void);
 
 typedef enum next_line_retval {
@@ -1316,6 +1316,30 @@ halfword tex_active_to_cs(int c, int force)
 
 */
 
+/*tex
+
+    The commented |comment_cmd| with |\commentmode| primitive experiment is not enabled. The two
+    values (1 and 2) either make two comment tokens into an escape or make it into a comment  
+    trigger. Comment tokens at the beginning of the line always trigger a comment. Anything more 
+    advanced interferes badly. 
+
+    \starttyping 
+    test 10%  single
+
+    test 10%% double
+
+    test 10%  %% single and double
+
+    test 10%% % double and single
+
+    % single begin of line
+    \stoptyping 
+
+    In the end it just remained an experiment but we keep the code around as reminder (so that we
+    don't try the same again because we forgot about it).
+
+*/
+
 static int tex_aux_get_next_file(void)
 {
   SWITCH:
@@ -1408,9 +1432,38 @@ static int tex_aux_get_next_file(void)
             case mid_line_state    + comment_cmd:
             case new_line_state    + comment_cmd:
             case skip_blanks_state + comment_cmd:
-                /*tex Finish line, |goto switch|; */
+                /*tex Finish line, |goto switch|. */
                 lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
                 goto SWITCH;
+        # if (0) /*tex Experiment, see commented in |texequivalents.h| and |texcommands.c|. */
+            case mid_line_state    + comment_cmd:
+                switch (comment_mode_par) { 
+                    case 0: 
+                        /*tex Explicit zero test. */
+                      OBEY_COMMENT:
+                        /*tex Finish line, |goto switch|. */
+                        lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
+                        goto SWITCH;
+                    case 1: 
+                        if (tex_aux_process_comment()) {
+                            goto OBEY_COMMENT;
+                        } else { 
+                            break;
+                        }
+                    case 2: 
+                        if (! tex_aux_process_comment()) {
+                            goto OBEY_COMMENT;
+                        } else { 
+                            break;
+                        }
+                    default:
+                        goto OBEY_COMMENT;
+                }
+                /*tex Assume an other character category and continue. */
+                cur_tok = other_token + cur_chr;
+                cur_cmd = other_char_cmd;
+                break;
+        # endif 
             case new_line_state + end_line_cmd:
                 if (! auto_paragraph_mode(auto_paragraph_go_on)) {
                     lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
@@ -1624,6 +1677,19 @@ static int tex_aux_process_sup_mark(void)
     }
     return 0;
 }
+
+# if (0) /* experiment */ 
+
+static int tex_aux_process_comment(void)
+{
+    if (cur_chr == lmt_fileio_state.io_buffer[lmt_input_state.cur_input.loc]) {
+        lmt_input_state.cur_input.loc += 1;
+        return 1; 
+    }
+    return 0;
+}
+
+# endif 
 
 /*tex
 

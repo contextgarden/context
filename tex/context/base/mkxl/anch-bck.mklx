@@ -105,12 +105,12 @@
 \newconstant   \c_anch_backgrounds_pos_state
 \newconditional\c_anch_backgrounds_pos_no_shape
 
-\def\anch_backgrounds_bpos
-  {\ifconditional\c_anch_backgrounds_pos_no_shape
-     \bposkind\v_anch_backgrounds_text_current\plusthree
-   \else
-     \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
-   \fi}
+% \def\anch_backgrounds_bpos % redefined later
+%   {\ifconditional\c_anch_backgrounds_pos_no_shape
+%      \bposkind\v_anch_backgrounds_text_current\plusthree
+%    \else
+%      \bposkind\v_anch_backgrounds_text_current\c_anch_backgrounds_pos_state
+%    \fi}
 
 \def\anch_backgrounds_epos
   {\ifconditional\c_anch_backgrounds_pos_no_shape

@@ -642,7 +642,7 @@ typedef enum int_codes {
     math_display_skip_mode_code,
     math_scripts_mode_code,
     math_limits_mode_code,
-    math_nolimits_mode_code,
+ // math_nolimits_mode_code,
     math_rules_mode_code,
     math_rules_fam_code,
     math_penalties_mode_code,
@@ -675,6 +675,7 @@ typedef enum int_codes {
     math_inline_penalty_factor_code,
     math_display_penalty_factor_code,
     sup_mark_mode_code,
+ /* comment_mode_code, */ /* experiment: maybe some day when ther eis demand for it */
  // par_direction_code,
  // text_direction_code,
  // math_direction_code,
@@ -1536,7 +1537,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define math_inline_penalty_factor_par   integer_parameter(math_inline_penalty_factor_code)
 # define math_left_class_par              integer_parameter(math_left_class_code)
 # define math_limits_mode_par             integer_parameter(math_limits_mode_code)
-# define math_nolimits_mode_par           integer_parameter(math_nolimits_mode_code)
+/*       math_nolimits_mode_par           integer_parameter(math_nolimits_mode_code) */
 # define math_penalties_mode_par          integer_parameter(math_penalties_mode_code)
 # define math_pre_display_gap_factor_par  integer_parameter(math_pre_display_gap_factor_code)
 # define math_pre_tolerance_par           integer_parameter(math_pre_tolerance_code)
@@ -1591,6 +1592,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define space_factor_shrink_limit_par    integer_parameter(space_factor_shrink_limit_code)
 # define space_factor_stretch_limit_par   integer_parameter(space_factor_stretch_limit_code)
 # define sup_mark_mode_par                integer_parameter(sup_mark_mode_code)
+/*       comment_mode_par                 integer_parameter(comment_mode_code) */ /* experiment */
 # define text_direction_par               integer_parameter(text_direction_code)
 # define time_par                         integer_parameter(time_code)
 # define tolerance_par                    integer_parameter(tolerance_code)

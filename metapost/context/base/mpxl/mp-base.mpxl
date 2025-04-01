@@ -998,8 +998,13 @@ permanent range, thru ;
 
 string extra_beginfig, extra_endfig ;
 
-extra_beginfig := "" ;
-extra_endfig   := "" ;
+extra_beginfig       := "" ;
+extra_endfig         := "" ;
+
+string every_before_shipout, every_after_shipout ;
+
+every_before_shipout := "" ;
+every_after_shipout  := "" ;
 
 newinternal boolean makingfigure ; makingfigure := false ;
 
@@ -1019,7 +1024,9 @@ enddef ;
 def endfig =
     ; % added by HH
     scantokens extra_endfig ;
-    shipit ;
+    scantokens every_before_shipout ;
+    shipout currentpicture ; % shipit ;
+    scantokens every_after_shipout ;
     endgroup
 enddef ;
 

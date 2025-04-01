@@ -4523,7 +4523,7 @@ enddef;
 permanent crossprod ;
 
 newinternal scrutinizing ; scrutinizing := 3 ;
-newinternal curvarturetolerance ; curvarturetolerance := 5eps ;
+newinternal curvaturetolerance ; curvaturetolerance := 5eps ;
 newinternal boolean tracereducedpath ; tracereducedpath := false ;
 
 vardef hasreducedcurvature(expr p,i,tolerance) =
@@ -4550,8 +4550,8 @@ vardef reducedpath(expr target) =
         if tracereducedpath : message("  length of path is " & decimal oldlength) ; fi
         for i = 1 upto oldlength :
             if tracereducedpath : message("  iteration " & decimal(i)) ; fi
-            if hasreducedcurvature(result, i - 1, curvarturetolerance) or
-               hasreducedcurvature(result, i, curvarturetolerance) :
+            if hasreducedcurvature(result, i - 1, curvaturetolerance) or
+               hasreducedcurvature(result, i, curvaturetolerance) :
                 if tracereducedpath : message("  not two lines, skipping") ; fi
             else :
                 if tracereducedpath : message("  two lines, checking") ; fi
@@ -4571,7 +4571,7 @@ vardef reducedpath(expr target) =
                     break
                 elseif iproduct < -1 + eps :
                     if tracereducedpath : message("  parallel but opposite, more testing needed") ; fi
-                    if not hasreducedcurvature(result, i + 1, curvarturetolerance) :
+                    if not hasreducedcurvature(result, i + 1, curvaturetolerance) :
                         if tracereducedpath : message("  the next segment is straight") ; fi
                         iproduct :=
                             unitvector( point (i + 2) of result - point (i + 1) of result)
@@ -4656,12 +4656,12 @@ vardef reducedenvelope(expr target) =
     curi := 0 ;
     n := 0 ;
     for i = 0 upto (l + 1) :
-        if not hasreducedcurvature(original, i, curvarturetolerance) :
+        if not hasreducedcurvature(original, i, curvaturetolerance) :
             % message("Are we here?" & decimal(i)) ;
             iproduct := (unitvector (point i + 1 of original - point i of original))
                         dotprod
                         (unitvector (point i of original - precontrol i of original)) ;
-            if (i > 0) and (not hasreducedcurvature(original, i - 1, curvarturetolerance)) :
+            if (i > 0) and (not hasreducedcurvature(original, i - 1, curvaturetolerance)) :
                 vproduct := (unitvector (point i of original - point (i - 1) of original))
                             crossprod
                             (unitvector (point (i + 1) of original - point i of original)) ;

@@ -1366,21 +1366,35 @@ end
 -- bitmaps
 
 local function bm_process(object,prescript,before,after)
-    local bm_xresolution = prescript.bm_xresolution
-    local bm_yresolution = prescript.bm_yresolution
+    local bytemap
+    local bm_xresolution
+    local bm_yresolution
+    if prescript.bytemap then
+        bytemap = object.bytemap
+        bm_xresolution = bytemap.width
+        bm_yresolution = bytemap.height
+    else
+        bm_xresolution = prescript.bm_xresolution
+        bm_yresolution = prescript.bm_yresolution
+    end
     if bm_xresolution then
      -- before[#before+1] = f_cm_b(cm(object))
         local sx, rx, ry, sy, tx, ty = cm(object)
-        local postscript = object.postscript
+        local data = bytemap and bytemap.data or object.postscript
+        local mask = bytemap and bytemap.mask or prescript.bytemask
         before[#before+1] = function()
             context.MPLIBscaledcm(
                 function()
+                    local nx = tonumber(bm_xresolution)
+                    local ny = tonumber(bm_yresolution)
                     figures.bitmapimage {
-                        xresolution = tonumber(bm_xresolution),
-                        yresolution = tonumber(bm_yresolution),
+                        xresolution = nx,
+                        yresolution = ny,
                         width       = 1/basepoints,
                         height      = 1/basepoints,
-                        data        = postscript,
+                        data        = data,
+                        mask        = mask,
+                        bytes       = true,
                         format      = "png",
                     }
                 end,

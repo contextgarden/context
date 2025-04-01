@@ -2008,3 +2008,20 @@ def withannotation expr txt =
 enddef ;
 
 permanent withannotation ;
+
+% experimental
+
+every_after_shipout := every_after_shipout & " resetbytemaps ; " ;
+    % withmaskmap maybe too but then the number is a bytemap so we need to pass it too
+
+def withbytemask expr n =
+    withprescript "bytemask = " & decimal n
+enddef ;
+
+permanent withbytemask ;
+
+vardef loadbytemapfromfile(expr index, filename) =
+    lua.mp.bytemap_load_from_file(index, filename)
+enddef ;
+
+permanent loadbytemapfromfile ;

@@ -13,7 +13,7 @@ extern char      *mp_strdup                 (const char *s);
 extern char      *mp_strndup                (const char *s, size_t l);
 /*     int        mp_strcmp                 (const char *a, const char *b); */
 extern void       mp_initialize_strings     (MP mp);
-extern void       mp_dealloc_strings        (MP mp);
+extern void       mp_free_strings           (MP mp);
 /*     char      *mp_str                    (MP mp, mp_string s); */
 extern mp_string  mp_rtsl                   (MP mp, const char *s, size_t l);
 extern mp_string  mp_rts                    (MP mp, const char *s);
@@ -46,16 +46,8 @@ static inline int mp_strcmp (const char *a, const char *b)
 
 # define MAX_STR_REF 127 
 
-# define add_str_ref(A) { if ( (A)->refs < MAX_STR_REF ) ((A)->refs)++; }
-
-# define delete_str_ref(A) do {  \
-    if ((A)->refs < MAX_STR_REF) { \
-        if ((A)->refs > 1) \
-            ((A)->refs)--; \
-        else \
-            mp_flush_string(mp, (A)); \
-    } \
-  } while (0)
+extern void mp_add_string_reference    (MP mp, mp_string s);
+extern void mp_delete_string_reference (MP mp, mp_string s);
 
 # endif
 

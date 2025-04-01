@@ -56,6 +56,9 @@ local setchar            = nuts.setchar
 local setglue            = nuts.setglue -- todo
 local setattrlist        = nuts.setattrlist
 
+local setprop            = nuts.setprop
+local getprop            = nuts.getprop
+
 local texsetattribute    = tex.setattribute
 
 local unsetvalue         <const> = attributes.unsetvalue
@@ -253,7 +256,10 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok,scale) -- prev is 
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+if not getprop(boundary,"lspkern") then
                 setkern(boundary,getkern(boundary) + scale*quaddata[getfont(prev)]*krn) -- ,userkern_code)
+    setprop(boundary,"lspkern",true)
+end
                 return boundary, true
             end
         end
@@ -280,20 +286,23 @@ local function inject_end(boundary,next,keeptogether,krn,ok,scale)
             end
         end
     elseif id == kern_code then
-        if getsubtype(tail) == fontkern_code then
-            local inject = true
-            if keeptogether then
-                local prev = getprev(tail)
-                if getid(prev) == glyph_code and keeptogether(prev,two) then
-                    inject = false
-                end
-            end
-            if inject then
-                -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                setkern(tail,getkern(tail) + scale*quaddata[getfont(next)]*krn) -- ,userkern_code)
-                return boundary, true
-            end
-        end
+       if getsubtype(tail) == fontkern_code then
+           local inject = true
+           if keeptogether then
+               local prev = getprev(tail)
+               if getid(prev) == glyph_code and keeptogether(prev,two) then
+                   inject = false
+               end
+           end
+           if inject then
+               -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+if not getprop(tail,"lspkern") then
+               setkern(tail,getkern(tail) + scale*quaddata[getfont(next)]*krn) -- ,userkern_code)
+    setprop(tail,"lspkern",true)
+end
+               return boundary, true
+           end
+       end
     end
     return boundary, ok
 end
@@ -328,7 +337,10 @@ local function process_list(head,keeptogether,krn,font,okay)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
+if not getprop(prev,"lspkern") then
                             setkern(prev,getkern(prev) + scale*kern) -- ,userkern_code)
+    setprop(prev,"lspkern",true)
+end
                             okay = true
                         end
                     end
@@ -449,7 +461,10 @@ function kerns.handler(head)
                             end
                             if inject then
                                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-                                setkern(prev,getkern(prev) + scale*quaddata[font]*krn) -- ,userkern_code)
+if not getprop(prev,"lspkern") then
+    setprop(prev,"lspkern",true)
+                               setkern(prev,getkern(prev) + scale*quaddata[font]*krn) -- ,userkern_code)
+end
                             end
                         end
                     elseif previd == glyph_code then

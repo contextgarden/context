@@ -206,7 +206,7 @@ extern int  luaextend_xcomplex  (lua_State *L);
     lua_pushstring(L, s); \
     lua_rawset(L, -3);
 
-# define mlua_push_lstring_at_key(L,k,s,l) \
+# define lua_push_lstring_at_key(L,k,s,l) \
     lua_push_key(k); \
     lua_pushlstring(L, s, l); \
     lua_rawset(L, -3);
@@ -1521,6 +1521,7 @@ make_lua_key_alias(L, string_buffer_instance,   STRING_BUFFER_INSTANCE);\
 # define declare_metapost_lua_keys(L) \
 /* */\
 /*          (L, close); */\
+make_lua_key(L, bytemap);\
 make_lua_key(L, color);\
 make_lua_key(L, curl);\
 make_lua_key(L, curled);\
@@ -1587,6 +1588,7 @@ make_lua_key(L, run_internal);\
 make_lua_key(L, run_logger);\
 make_lua_key(L, run_overload);\
 make_lua_key(L, run_script);\
+make_lua_key(L, run_status);\
 make_lua_key(L, run_warning);\
 make_lua_key(L, rx);\
 make_lua_key(L, ry);\
@@ -1605,6 +1607,7 @@ make_lua_key(L, strings);\
 make_lua_key(L, sx);\
 make_lua_key(L, sy);\
 make_lua_key(L, symbols);\
+make_lua_key(L, tense);\
 make_lua_key(L, tertiary);\
 /*          (L, text); */\
 make_lua_key(L, text_mode);\
@@ -1663,15 +1666,15 @@ extern lmt_keys_info lmt_keys;
 
 */
 
-//define lmt_rounded(d)            (lua_Integer) (round(d))
-//define lmt_roundedfloat(f)       (lua_Integer) (round((double) f))
+//define lmt_rounded(d)            (lua_Integer)  (round(d))
+//define lmt_roundedfloat(f)       (lua_Integer)  (round((double) f))
 
-# define lmt_rounded(d)            (lua_Integer) (llround(d))
-# define lmt_roundedfloat(f)       (lua_Integer) (llround((double) f))
+# define lmt_rounded(d)            (lua_Integer)  (llround(d))
+# define lmt_roundedfloat(f)       (lua_Integer)  (llround((double) f)) 
 
-# define lmt_tolong(L,i)           (long)        lua_tointeger(L,i)
-# define lmt_checklong(L,i)        (long)        luaL_checkinteger(L,i)
-# define lmt_optlong(L,i,j)        (long)        luaL_optinteger(L,i,j)
+# define lmt_tolong(L,i)           (long)         lua_tointeger(L,i)
+# define lmt_checklong(L,i)        (long)         luaL_checkinteger(L,i)
+# define lmt_optlong(L,i,j)        (long)         luaL_optinteger(L,i,j)
 
 # define lmt_tointeger(L,i)        (int)          lua_tointeger(L,i)
 # define lmt_checkinteger(L,i)     (int)          luaL_checkinteger(L,i)

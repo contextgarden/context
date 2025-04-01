@@ -434,14 +434,6 @@
    language=dflt,
    script=math]
 
-\ifdefined\mathnolimitsmode
-    \mathnolimitsmode\plusone % font driven (only opentype)
-\fi
-
-% \ifdefined\variablefam
-%     \variablefam 63
-% \fi
-
 \definefontfeature[virtualmath]       [mathematics]
 
 \definefontfeature[math]              [mathematics] [ssty=no]

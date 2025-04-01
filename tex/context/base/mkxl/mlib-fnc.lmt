@@ -1,0 +1,388 @@
+if not modules then modules = { } end modules ['mlib-fnc'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- The code below is based on an article
+--
+--     Efficient plotting the functions with discontinuities
+--     Tomáš Bayer, Charles University in Prague, Faculty of Science
+--     Geoinformatics FCE CTU 17(2), 2018, doi:10.14311/gi.17.2.2
+--
+-- with code titles "Adaptive sampling class" available at:
+--
+--    https://github.com/bayertom/sampling
+--
+-- author   : Tomáš Bayer
+-- license  : GNU Lesser General Public License version 3 or later
+-- copyright: 2017-2018.
+--
+-- We (Mikael Sundqvist and Hans Hagen) translated part to Lua and added
+-- a few options as well as (we think) fixed begin/end point artifacts. So,
+-- any errors are ours.
+
+local abs, acos, sqrt, random = math.abs, math.acos, math.sqrt, math.random
+local load, type = load, type
+local find = string.find
+
+local pi  = math.pi
+local NaN = xmath.nan
+local Inf = xmath.inf
+
+local getparameterset = metapost.getparameterset
+
+do
+
+    local function curvature(x1, y1, x2, y2, x3, y3)
+        -- angle between 2 line segments of the sampled line
+        local dx1 = x3 - x2
+        local dx2 = x1 - x2
+        local dy1 = y3 - y2
+        local dy2 = y1 - y2
+        local cross = dx1*dy2 - dx2*dy1
+        return sqrt(cross*cross)
+    end
+
+    -- Detect discontinuity using LR criterion
+
+    local function discontinuity(f, xi, eps, fmin, fmax)
+        local xi1  = xi   + eps
+        local xi2  = xi1  + eps
+        local x_i1 = xi   - eps
+        local x_i2 = x_i1 - eps
+        --
+        local fxi = f(xi)
+        if fxi == NaN or fxi == Inf or fxi < fmin or fxi > fmax then
+            return true -- singularity at xi
+        end
+        local fxi1 = f(xi1)
+        if fxi1 == NaN or fxi1 == Inf or fxi1 < fmin or fxi1 > fmax then
+            return true -- singularity at xi1
+        end
+        fxi2 = f(xi2)
+        if fxi2 == NaN or fxi2 == Inf or fxi2 < fmin or fxi2 > fmax then
+            return true -- singularity at xi2
+        end
+        fx_i1 = f(x_i1)
+        if fx_i1 == NaN or fx_i1 == Inf or fx_i1 < fmin or fx_i1 > fmax then
+            return true -- singularity at x_i1
+        end
+        fx_i2 = f(x_i2)
+        if fx_i2 == NaN or fx_i2 == Inf or fx_i2 < fmin or fx_i2 > fmax then
+            return true -- singularity at x_i2
+        end
+        -- LR criterion
+        local fr = 3 * fxi - 4 * fxi1  + fxi2
+        local fl = 3 * fxi - 4 * fx_i1 + fx_i2
+        local rr = fr * fr
+        local ll = fl * fl
+        local lr = abs((rr - ll) / (rr + ll + 0.0001))
+        --
+        return lr > 0.8  -- possible discontinuity when true
+    end
+
+    -- Adaptive sampling, recursive implementation, method M3
+
+    local function adaptivesampling(points, f, a, b, ya, yb, d, dmin, dmax, fmin, fmax, eps, ff)
+        -- 3 recursive calls are used, split to 4 subintervals
+        if d >= dmax then
+          return -- we're done
+        end
+        local delta = b - a
+        if delta < eps then
+            return -- interval is too narrow
+        end
+        -- take 3 random points inside the interval (u,v)
+        local r1 = 0.45 + 0.1*random()
+        local r2 = 0.45 + 0.1*random()
+        local r3 = 0.45 + 0.1*random()
+        --
+        local x1 = a + r1 * delta * 0.5
+        local x2 = a + r2 * delta
+        local x3 = a + r3 * delta * 1.5
+        -- function vaules at x1, x2, x3
+        local y1 = f(x1)
+        local y2 = f(x2)
+        local y3 = f(x3)
+        -- singular cases
+        local heps = 0.5 * eps
+        if discontinuity(f, x1, heps, fmin, fmax) then
+            return x1
+        end
+        if discontinuity(f, x2, heps, fmin, fmax) then
+            return x2
+        end
+        if discontinuity(f, x3, heps, fmin, fmax) then
+            return x3
+        end
+        -- check if another recursive step is required
+        local alpha1 = curvature( a, ya, x1, y1, x2, y2)
+        local alpha2 = curvature(x1, y1, x2, y2, x3, y3)
+        local alpha3 = curvature(x2, y2, x3, y3,  b, yb)
+        -- we're not flat, recursion depth < dmax
+        if alpha1 > ff or alpha2 > ff or alpha3 > ff or d < dmin then
+            -- first sub interval
+            if alpha1 > ff or d < dmin then
+                local r = adaptivesampling(points, f, a, x1, ya, y1, d+1, dmin, dmax, fmin, fmax, eps, ff)
+                if r then
+                    return r
+                end
+            end
+            points[#points+1] = { x1, y1 }
+            -- second sub interval
+            if alpha1 > ff or alpha2 > ff or d < dmin then
+                local r = adaptivesampling(points, f, x1, x2, y1, y2, d+1, dmin, dmax, fmin, fmax, eps, ff)
+                if r then
+                    return r
+                end
+            end
+            points[#points+1] = { x2, y2 }
+            -- third sub interval
+            if alpha2 > ff or alpha3 > ff or d < dmin then
+                local r = adaptivesampling(points, f, x2, x3, y2, y3, d+1, dmin, dmax, fmin, fmax, eps, ff)
+                if r then
+                    return r
+                end
+            end
+            points[#points+1] = { x3, y3 }
+            -- fourth sub interval
+            if alpha3 > ff or d < dmin then
+                local r = adaptivesampling(points, f, x3, b, y3, yb, d+1, dmin, dmax, fmin, fmax, eps, ff)
+                if r then
+                    return r
+                end
+            end
+            -- no point
+        end
+    end
+
+    -- adaptive sampling with discontinuities: recursive version
+
+    local function samplefunction(fragments, f, a, b, fmin, fmax, s, smax, dmin, dmax, eps, ff)
+        -- check for too many splits, a suspected function
+        if s > smax then
+            return fragments -- { }
+        end
+        -- skip incorrect interval
+        if a > b then
+            return fragments
+        end
+        -- skip empty interval
+        if abs(b - a) < 2 * eps then
+            return fragments
+        end
+        -- sub list
+        local points = { }
+        -- function values at a, b
+        local fa = f(a)
+        local fb = f(b)
+        local c
+        -- singular case at a
+        local heps = 0.5 * eps
+        if discontinuity(f, a, heps, fmin, fmax) then
+            c = a
+            goto singularity
+        end
+        -- singular case at b
+        if discontinuity(f, b, heps, fmin, fmax) then
+            c = b
+            goto singularity
+        end
+        -- first point a
+        points[#points+1] = { a, fa }
+        -- adaptive sampling (recursive)
+        c = adaptivesampling(points, f, a, b, fa, fb, 1, dmin, dmax, fmin, fmax, eps, ff)
+        if c then
+            goto singularity
+        end
+        -- last point b
+        points[#points+1] = { b, fb }
+        --
+        fragments[#fragments+1] = points
+        goto done
+      ::singularity::
+        if a <= c and abs(c - a) < eps then
+            -- c is lower bound: shift lower bound
+            a = a + eps
+            fragments = samplefunction(fragments, f, a, b, fmin, fmax, s + 1, smax, dmin, dmax, eps, ff)
+        elseif b >= c and abs(c - b) < eps then
+            -- c is upper bound: shift upper bound
+            b = b - eps
+            fragments = samplefunction(fragments, f, a, b, fmin, fmax, s + 1, smax, dmin, dmax, eps, ff)
+        elseif a < c and b > c and abs(c - a) > eps and abs(c - b) > eps then
+            -- c inside interval (a, b): split interval into 2 subintervals
+            local bl = c - eps
+            local ar = c + eps
+            -- first subinterval
+            local teps = 2 * eps
+            if a < bl and abs(bl - a) > teps then
+                fragments = samplefunction(fragments, f, a, bl, fmin, fmax, s + 1, smax, dmin, dmax, eps, ff)
+            end
+            -- second subinterval
+            if ar < b and abs(b - ar) > teps then
+                fragments = samplefunction(fragments, f, ar, b, fmin, fmax, s + 1, smax, dmin, dmax, eps, ff)
+            end
+        end
+       ::done::
+        return fragments
+    end
+
+    ----------------------------
+
+    local fragments = false
+
+    function mp.lmt_samplefunctions_cleanup()
+        fragments = false
+    end
+
+    function mp.lmt_samplefunction_do()
+        local p = getparameterset("samplefunction")
+        --
+        local preamble  = p.preamble   or ""
+        local code      = p.code       or "return x"
+        local xmin      = p.xmin       or   -1 -- a
+        local xmax      = p.xmax       or    1 -- b
+        local ymin      = p.ymin       or   -1 -- fmin
+        local ymax      = p.ymax       or    1 -- fmin
+        local dmin      = p.dmin       or    3
+        local dmax      = p.dmax       or   50
+        local smax      = p.smax       or 5000
+        local eps       = p.eps        or    0.001
+        local tolerance = p.tolerance  or    0.4
+
+        if not find(code,"return") then
+            code = "return " .. code
+        end
+
+        code = preamble .. " " .. "return function(x) " .. code .. " end"
+
+        local action = load(code)
+
+        if type(action) ~= "function" then
+            return
+        else
+            action = action()
+        end
+        --
+        fragments = samplefunction(
+            { }, action,
+            xmin, xmax,
+            ymin, ymax,
+            0, smax,
+            dmin, dmax,
+            eps, tolerance
+        )
+        -- todo: flush whole or flush segments
+    end
+
+    function mp.lmt_samplefunction_flush()
+        if fragments then
+            for i=1,#fragments do
+                fragments[i] = {
+                    path   = fragments[i],
+                    append = true,
+                }
+            end
+            if #fragments == 0 then
+                fragments = { { 0, 0 } }
+            end
+            mp.inject.path(fragments)
+            fragments = false
+        end
+    end
+
+end
+
+-- https://www.realtimerendering.com/resources/GraphicsGems/gemsv/ch4-4/aspc.c
+
+do
+
+    local function flat(x,y,t1,t2,tm,tolerance)
+        local xp = x(t2) - x(tm)
+        local yp = y(t2) - y(tm)
+        local xq = x(t1) - x(tm)
+        local yq = y(t1) - y(tm)
+        local cross = xp*yq - xq*yp
+        return cross*cross < tolerance*tolerance
+    end
+
+    local function sample(points,x,y,t1,t2,nesting,tolerance)
+        local tm = t1 + (0.45 + 0.1*random()) * (t2 - t1)
+        if flat(x,y,t1,t2,tm,tolerance) and nesting > 0 then
+            points[#points+1] = { x(t1), y(t1) }
+            points[#points+1] = { x(t2), y(t2) }
+        else
+            nesting = nesting + 1
+            sample(points,x,y,t1,tm,nesting,tolerance)
+            sample(points,x,y,tm,t2,nesting,tolerance)
+        end
+        return points
+    end
+
+    local function parametricplot(x,y,tmin,tmax,tolerance)
+        return sample({},x,y,tmin,tmax,0,tolerance)
+    end
+
+    ----------------------------
+
+    local points = false
+
+    function mp.lmt_parametricplot_cleanup()
+        points = false
+    end
+
+    function mp.lmt_parametricplot_do()
+        local p = getparameterset("parametricplot")
+        --
+        local preamble  = p.preamble   or ""
+        local xcode     = p.xcode      or "return t"
+        local ycode     = p.ycode      or "return t"
+        local rcode     = p.rcode      or nil
+        local tmin      = p.tmin       or   -1
+        local tmax      = p.tmax       or    1
+        local tolerance = p.tolerance  or    0.0001
+        if not find(xcode,"return") then
+            xcode = "return " .. xcode
+        end
+        if not find(ycode,"return") then
+            ycode = "return " .. ycode
+        end
+
+        if rcode then
+            xcode = preamble .. " " .. "return function(t) return (" .. rcode .. ") * cos(t) end"
+            ycode = preamble .. " " .. "return function(t) return (" .. rcode .. ") * sin(t) end"
+        else
+            xcode = preamble .. " " .. "return function(t) " .. xcode .. " end"
+            ycode = preamble .. " " .. "return function(t) " .. ycode .. " end"
+        end
+
+        local xaction = load(xcode)
+        local yaction = load(ycode)
+
+        if type(xaction) ~= "function" then
+            return
+        elseif type(yaction) ~= "function" then
+            return
+        else
+            xaction = xaction()
+            yaction = yaction()
+        end
+        --
+        points = parametricplot(
+            xaction, yaction,
+            tmin, tmax,
+            tolerance
+        )
+        -- todo: flush whole or flush segments
+    end
+
+    function mp.lmt_parametricplot_flush()
+        if points then
+            mp.inject.path(points)
+        end
+    end
+
+end

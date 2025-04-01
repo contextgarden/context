@@ -174,7 +174,7 @@
 
 \permanent\protected\def\MPLIBscaledcm#1#2#3#4#5#6#7% 2-7: sx,rx,ry,sy,tx,ty
   {\begingroup
-% \setbox\MPbox
+\setbox\MPbox % needed for bytemaps
    \hpack\bgroup
      \dotransformnextbox{#2}{#3}{#4}{#5}{#6}{#7}%
     %\dotransformnextbox{\luaexpr{#2/10}}{\luaexpr{#3/10}}{\luaexpr{#4/10}}{\luaexpr{#5/10}}{\luaexpr{#6/10}}{\luaexpr{#7/10}}%
@@ -186,7 +186,8 @@
        \egroup
      \egroup
    \egroup
-% \smashbox\MPbox\box\MPbox
+\smashbox\MPbox
+\box\MPbox
    \endgroup}
 
 \permanent\protected\def\MPLIBgraphictext#1% use at mp end

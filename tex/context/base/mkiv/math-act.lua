@@ -373,11 +373,25 @@ do
             if integrals[uc] then
                 -- skip this one
             else
-                local accent = c.top_accent
-                local italic = c.italic
-                local width  = c.width  or 0
-                local llx    = getllx(u)
+                local accent   = c.top_accent
+                local italic   = c.italic
+                local width    = c.width  or 0
+                local llx      = getllx(u)
+                local mathkern = c.mathkern
                 local bl, br, tl, tr
+                if mathkern then
+                    bl = mathkern.bottom_left
+                    br = mathkern.bottom_right
+                    tl = mathkern.top_left
+                    tr = mathkern.top_right
+                    if bl then bl = bl[1].kern end
+                    if br then br = br[1].kern end
+                    if tl then tl = tl[#tl].kern end
+                    if tr then tr = tr[#tr].kern end
+                end
+             -- if bl or tl then
+             --  -- to be decided
+             -- elseif llx then
                 if llx then
                     llx   = llx * factor
                     width = width + llx
@@ -397,7 +411,9 @@ do
                 end
                 if italic and italic ~= 0 then
                     width = width + italic
-                    br    = - italic
+                    if not br then
+                        br = - italic
+                    end
                 end
                 c.width = width
                 if italic then

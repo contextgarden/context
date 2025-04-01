@@ -1,4 +1,4 @@
-    if not modules then modules = { } end modules ['typo-krn'] = {
+if not modules then modules = { } end modules ['typo-krn'] = {
     version   = 1.001,
     comment   = "companion to typo-krn.mkiv",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",

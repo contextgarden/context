@@ -377,7 +377,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "mathinlinepenaltyfactor",        internal_integer_cmd,   math_inline_penalty_factor_code,          internal_integer_base);
         tex_primitive(luatex_command, "mathleftclass",                  internal_integer_cmd,   math_left_class_code,                     internal_integer_base);
         tex_primitive(luatex_command, "mathlimitsmode",                 internal_integer_cmd,   math_limits_mode_code,                    internal_integer_base);
-        tex_primitive(luatex_command, "mathnolimitsmode",               internal_integer_cmd,   math_nolimits_mode_code,                  internal_integer_base);
+     /* tex_primitive(luatex_command, "mathnolimitsmode",               internal_integer_cmd,   math_nolimits_mode_code,                  internal_integer_base); */
         tex_primitive(luatex_command, "mathpenaltiesmode",              internal_integer_cmd,   math_penalties_mode_code,                 internal_integer_base);
         tex_primitive(luatex_command, "mathpretolerance",               internal_integer_cmd,   math_pre_tolerance_code,                  internal_integer_base);
         tex_primitive(luatex_command, "mathrightclass",                 internal_integer_cmd,   math_right_class_code,                    internal_integer_base);
@@ -439,6 +439,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "spacefactoroverload",            internal_integer_cmd,   space_factor_overload_code,               internal_integer_base);
         tex_primitive(luatex_command, "boxlimitmode",                   internal_integer_cmd,   box_limit_mode_code,                      internal_integer_base);
         tex_primitive(luatex_command, "supmarkmode",                    internal_integer_cmd,   sup_mark_mode_code,                       internal_integer_base);
+     /* tex_primitive(luatex_command, "commentmode",                    internal_integer_cmd,   comment_mode_code,                        internal_integer_base); */ /* experiment */
         tex_primitive(luatex_command, "textdirection",                  internal_integer_cmd,   text_direction_code,                      internal_integer_base);
         tex_primitive(tex_command,    "time",                           internal_integer_cmd,   time_code,                                internal_integer_base);
         tex_primitive(tex_command,    "tolerance",                      internal_integer_cmd,   tolerance_code,                           internal_integer_base);

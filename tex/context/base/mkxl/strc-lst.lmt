@@ -1237,7 +1237,7 @@ function lists.hasnumberdata(name,n)
     return false
 end
 
-function lists.rawnumber(n,name)
+function lists.rawnumber(name,n)
     local data = lists.result[n]
     if data then
         local numberdata = data.numberdata
@@ -1270,6 +1270,21 @@ function lists.realpage(name,n)
         return 0
     end
 end
+
+lists.rawrealpage = lists.realpage
+
+function lists.userpage(name,n)
+    local data = lists.result[n]
+    if data then
+        local pagedata = structures.pages.analyze(data,pagespec)
+        if pagedata then
+            return pagedata.number or 0
+        end
+    end
+    return 0
+end
+
+lists.rawuserpage = lists.userpage
 
 -- numbers stored in entry.numberdata + entry.numberprefix
 
@@ -1487,8 +1502,12 @@ implement { name = "listsize",       actions = { lists.size,       context } }
 implement { name = "listexternal",   actions = { lists.external,   context }, arguments = "integer" }
 implement { name = "listlocation",   actions = { lists.location,   context }, arguments = "integer" }
 implement { name = "listlabel",      actions = { lists.label,      context }, arguments = { "integer", "string" } }
-implement { name = "listrealpage",   actions = { lists.realpage,   context }, arguments = { "string", "integer" } }
 implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = "2 strings", }
+
+implement { name = "listrawnumber",   actions = { lists.rawnumber,   context }, arguments = { "string", "integer" } }
+implement { name = "listrawrealpage", actions = { lists.rawrealpage, context }, arguments = { "string", "integer" } }
+implement { name = "listrawuserpage", actions = { lists.rawuserpage, context }, arguments = { "string", "integer" } }
+
 
 implement {
     name    = "currentsectiontolist",
@@ -1583,12 +1602,6 @@ implement {
     name      = "discardfromlist",
     actions   = lists.discard,
     arguments = "integer"
-}
-
-implement {
-    name      = "rawlistnumber",
-    actions   = { lists.rawnumber, context },
-    arguments = { "integer", "string" },
 }
 
 -- external data

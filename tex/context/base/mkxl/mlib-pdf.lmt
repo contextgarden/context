@@ -478,6 +478,18 @@ local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
                                                 setmetatable(object, {
                                                     __index = original
                                                 })
+                                                --
+                                                if object.bytemap then
+                                                    -- We trigger the bm plugin. There can be a prescript "bytemask=n" so we
+                                                    -- need to preserve that. In that plugin we use object.bytemap directly.
+                                                    local bm_trigger = "bytemap=true"
+                                                    if object.prescript and object.prescript ~= "" then
+                                                        object.prescript = bm_trigger .. "\n" .. object.prescript
+                                                    else
+                                                        object.prescript = bm_trigger
+                                                    end
+                                                end
+                                                --
                                                 local before,
                                                       after,
                                                       options    = processplugins(object)

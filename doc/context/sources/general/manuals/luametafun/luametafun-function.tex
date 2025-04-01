@@ -291,6 +291,90 @@ kind of code is not that hard to follow) is:
 \LL
 \stoptabulate
 
+
+In the beginning of 2025 we added support for sampled functions and parametric
+plots. Here are some examples but keep in mind that the interfaces might be
+extended.
+
+\startbuffer
+\startMPcode
+path p ; p := lmt_samplefunction [
+    preamble  = "local tan = math.tan",
+    code      = "return tan(x)",
+    xmin      = -5*pi,
+    xmax      =  5*pi,
+    ymin      =  -10,
+    ymax      =   10,
+  % tolerance = 0.001,
+] scaled 10 ;
+
+draw    p withpen pencircle scaled 10   withcolor "darkred" ;
+drawdot p withpen pencircle scaled  2.5 withcolor white ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We draw with a thick line and show the points that make up the paths. As you can
+see in \in {figure} [function:sample] the density is larger where more points are
+needed.
+
+\startplacefigure[reference=function:sample]
+    \getbuffer
+\stopplacefigure
+
+\startbuffer[1]
+\startMPcode
+path p ; p := lmt_parametricplot [
+    preamble  = "local sin, cos = math.sin, math.cos",
+    xcode     = "2*cos(t/3)*cos(t)",
+    ycode     = "2*cos(t/3)*sin(t)",
+    tmin      =   0,
+    tmax      =   4*pi,
+    tolerance = 0.001,
+] ysized 5cm ;
+
+draw    p withpen pencircle scaled 10   withcolor "darkred" ;
+drawdot p withpen pencircle scaled  2.5 withcolor white ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[2]
+\startMPcode
+path p ; p := lmt_parametricplot [
+    preamble  = "local sin, cos = math.sin, math.cos",
+    rcode     = "1 + cos(t)",
+    tmin      =   0,
+    tmax      =   2*pi,
+    tolerance = 0.00025,
+] ysized 5cm ;
+
+draw    p withpen pencircle scaled 10   withcolor "darkred" ;
+drawdot p withpen pencircle scaled  2.5 withcolor white ;
+\stopMPcode
+\stopbuffer
+
+A parameteric plot runs over a range and gets two or one function passed:
+
+\typebuffer[option=TEX][1]
+
+and
+
+\typebuffer[option=TEX][2]
+
+show this. The results are collected in \in {figure} [function:parameter] where
+again we also highlight the points that make the curve. Drawing these function is
+of course up to \METAPOST\ but the calculations happen at the \LUA\ end.
+
+\startplacefigure[reference=function:parametric]
+    \startcombination
+        {\getbuffer[1]} {two functions}
+        {\getbuffer[2]} {one function}
+    \stopcombination
+\stopplacefigure
+
 \stopchapter
 
 \stopcomponent
+
+

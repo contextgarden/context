@@ -2662,6 +2662,20 @@ do
         lpdf.setcompression(0,0,true)
     end
 
+    function lpdf.compressdata(data) -- how about encryption
+        if data and compress then
+            local size = #data
+            local comp = compressdata(data,size)
+            if comp and #comp < size then
+                return comp
+            else
+                return false
+            end
+        else
+            return false
+        end
+    end
+
 end
 
 local addtocache, flushcache, cache do

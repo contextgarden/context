@@ -6,6 +6,29 @@
 # include "mpstrings.h"
 
 /*tex
+    Housekeeping: 
+*/
+
+void mp_add_string_reference(MP mp, mp_string s) 
+{
+    (void) mp;
+    if (s->refs < MAX_STR_REF) {
+        (s->refs)++;
+    }
+}
+
+void mp_delete_string_reference(MP mp, mp_string s) 
+{
+    if (s->refs < MAX_STR_REF) { 
+        if (s->refs > 1) {
+            (s->refs)--; 
+        } else {
+            mp_flush_string(mp, s); 
+        }
+    } 
+}
+
+/*tex
     Here is a routine that compares two strings in the string pool, and it does not assume that 
     they have the same length. If the first string is lexicographically greater than, less than, 
     or equal to the second, the result is respectively positive, negative, or zero.
@@ -111,7 +134,7 @@ void mp_initialize_strings(MP mp)
     mp->cur_string_size = 0;
 }
 
-void mp_dealloc_strings(MP mp)
+void mp_free_strings(MP mp)
 {
     if (mp->strings != NULL) {
         avl_destroy(mp->strings);
@@ -147,7 +170,7 @@ mp_string mp_rtsl(MP mp, const char *s, size_t l)
         nstr = (mp_string) avl_find(str, mp->strings);
     }
     delete_strings_entry(str);
-    add_str_ref(nstr);
+    mp_add_string_reference(mp, nstr);
     return nstr;
 }
 
@@ -225,7 +248,7 @@ void mp_reset_cur_string(MP mp)
 
 void mp_flush_string(MP mp, mp_string s) {
     if (s->refs == 0) {
-        mp->strs_in_use--;
+        mp->strings_in_use--;
         mp->pool_in_use = mp->pool_in_use - (int) s->len;
         avl_del(s, mp->strings, NULL);
     }
@@ -253,12 +276,11 @@ mp_string mp_intern(MP mp, const char *s)
 
 mp_string mp_make_string(MP mp)
 {
-    /* current string enters the pool */
-    mp_string str;
-    mp_lstring tmp;
-    tmp.str = mp->cur_string;
-    tmp.len = mp->cur_length;
-    str = (mp_string) avl_find(&tmp, mp->strings);
+    mp_lstring tmp = {
+        .str = mp->cur_string,
+        .len = mp->cur_length,
+    };
+    mp_string str = (mp_string) avl_find(&tmp, mp->strings);
     if (str == NULL) {
         str = mp_memory_allocate(sizeof(mp_lstring));
         str->str = mp->cur_string;
@@ -266,16 +288,16 @@ mp_string mp_make_string(MP mp)
         avl_ins(str, mp->strings, avl_false);
         str = (mp_string) avl_find(&tmp, mp->strings);
         mp->pool_in_use = mp->pool_in_use + (int) str->len;
-        if (mp->pool_in_use > mp->max_pl_used) {
-            mp->max_pl_used = mp->pool_in_use;
+        if (mp->pool_in_use > mp->max_pool_used) {
+            mp->max_pool_used = mp->pool_in_use;
         }
-        mp->strs_in_use++;
-        if (mp->strs_in_use > mp->max_strs_used) {
-            mp->max_strs_used = mp->strs_in_use;
+        mp->strings_in_use++;
+        if (mp->strings_in_use > mp->max_strings_used) {
+            mp->max_strings_used = mp->strings_in_use;
         }
     }
-    add_str_ref(str);
-    mp_reset_cur_string (mp);
+    mp_add_string_reference(mp, str);
+    mp_reset_cur_string(mp);
     return str;
 }
 

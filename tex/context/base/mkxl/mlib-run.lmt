@@ -50,6 +50,7 @@ metapost.exectime     = metapost.exectime or { } -- hack
 metapost.nofruns      = 0
 
 local mpxformats      = { }
+local mpxnames        = { }
 local nofformats      = 0
 local mpxpreambles    = { }
 local mpxterminals    = { }
@@ -213,9 +214,14 @@ function metapost.load(name,method)
         maketext        = metapost.maketext,
         handlers        = {
             log         = metapost.newlogger(),
-         -- warning     = function(...) end,
-         -- error       = function(...) end,
+         -- warning     = function() end,
+         -- error       = function() end,
+         -- status      = function() end,
         },
+    }
+    mpxnames[mpx] = {
+        name   = name,
+        method = method,
     }
     report_metapost("initializing number mode %a",method)
     local result
@@ -624,12 +630,17 @@ end
 
 local getstatistics = mplib.getstatistics
 
+local function currentusage(mpx)
+    return 0 -- todo
+end
+
 function metapost.getstatistics(memonly)
     if memonly then
         local n, m = 0, 0
         for name, mpx in next, mpxformats do
+            local s = getstatistics(mpx)
             n = n + 1
-            m = m + getstatistics(mpx).memory
+            m = currentusage(mpx)
         end
         return n, m
     else
@@ -667,6 +678,11 @@ end
 function metapost.getinstancebyname(name)
     return mpxformats[name]
 end
+
+function metapost.getinstanceinfo(mpx)
+    return mpxnames[mpx] or { name = "unknown", method = "unknown" }
+end
+
 
 -- This used to be in mlib-pdf but is also used elsewhere so we need to
 -- define it early.

@@ -1555,6 +1555,7 @@ static int tokenlib_scanstring(lua_State *L)
     switch (cur_cmd) {
         case left_brace_cmd:
             {
+                /*tex So we expand by default! */
                 halfword defref = lmt_input_state.def_ref;
                 halfword result = tex_scan_toks_expand(1, NULL, 0, 0);
                 lmt_token_list_to_luastring(L, result, 0, 0, 1);
@@ -1569,7 +1570,10 @@ static int tokenlib_scanstring(lua_State *L)
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
             {
-                /*tex It is pretty unlikely to end up here, because we expand. */
+                /*tex 
+                    It is pretty unlikely to end up here, because we expand. Beware: the rest 
+                    of the token list is wiped. The argument scanner below is more reliable. 
+                */
                 halfword t = token_link(cur_chr);
                 lmt_token_list_to_luastring(L, t, 0, 0, 1);
                 break;
@@ -1582,8 +1586,8 @@ static int tokenlib_scanstring(lua_State *L)
                 while (1) {
                     tokenlib_aux_add_utf_char_to_buffer(&b, cur_chr);
                     tex_get_x_token();
-                    if (cur_cmd != letter_cmd && cur_cmd != other_char_cmd ) {
-                        break ;
+                    if (cur_cmd != letter_cmd && cur_cmd != other_char_cmd) {
+                        break;
                     }
                 }
                 tex_back_input(cur_tok);
@@ -1657,16 +1661,10 @@ static int tokenlib_scanargument(lua_State *L)
         case letter_cmd:
         case other_char_cmd:
             {
+                /*tex Contrary to |scanstring| we only grab one \UTF\ character. */
                 luaL_Buffer b;
                 luaL_buffinit(L, &b);
-             //  while (1) {
-                    tokenlib_aux_add_utf_char_to_buffer(&b, cur_chr);
-             //      get_x_token();
-             //      if (cur_cmd != letter_cmd && cur_cmd != other_char_cmd ) {
-             //          break ;
-             //      }
-             //  }
-             // back_input(cur_tok);
+                tokenlib_aux_add_utf_char_to_buffer(&b, cur_chr);
                 luaL_pushresult(&b);
                 break;
             }

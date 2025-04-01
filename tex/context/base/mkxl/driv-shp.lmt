@@ -137,10 +137,11 @@ local flushspace
 
 -- make local
 
-function drivers.getpos () return round(pos_h), round(pos_v) end
-function drivers.getrpos() return round(pos_h), round(pos_v), pos_r end
-function drivers.gethpos() return round(pos_h) end
-function drivers.getvpos() return round(pos_v) end
+function drivers.getpos   () return round(pos_h), round(pos_v) end
+function drivers.gethvrpos() return round(pos_h), round(pos_v), pos_r end
+function drivers.gethpos  () return round(pos_h) end
+function drivers.getvpos  () return round(pos_v) end
+function drivers.getrpos  () return pos_r end
 
 -- characters
 
@@ -884,6 +885,9 @@ local hlist_out, vlist_out  do
      --     current = getlist(this_box)
      -- end
 
+local boxr = pos_r == 1
+local boxh = pos_h
+
         -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
         for current, id, subtype in nextnode, current do
@@ -1326,7 +1330,7 @@ local hlist_out, vlist_out  do
                     goto synced
                 end
             elseif id == whatsit_code then
-                flushwhatsit[subtype](current,pos_h,pos_v)
+                flushwhatsit[subtype](current,pos_h,pos_v,pos_r)
             elseif id == disc_code then
                 local replace, tail = getreplace(current)
                 -- actually, we no longer have these select discs in the packaged list ... it's about
@@ -1670,7 +1674,7 @@ local hlist_out, vlist_out  do
                     end
                 end
             elseif id == whatsit_code then
-                flushwhatsit[subtype](current,pos_h,pos_v)
+                flushwhatsit[subtype](current,pos_h,pos_v,pos_r)
             else
                 -- penalty
                 goto synced

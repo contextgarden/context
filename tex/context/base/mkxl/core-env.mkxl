@@ -47,8 +47,6 @@
 
 % TODO: make them mutable, also at the lua end
 
-\installcorenamespace{modestack}
-
 \immutable\def\??mode{mode>} % special namespace, also used at lua end
 
 \permanent\protected\def\newmode              #1{\ifcsname                            \??mode#1\endcsname\else\resetmode{#1}\fi}
@@ -63,19 +61,23 @@
 \permanent\protected\def\globalsetsystemmode  #1{\global\expandafter\integerdef\csname\??mode\systemmodeprefix#1\endcsname\plusone}
 \permanent\protected\def\globalresetsystemmode#1{\global\expandafter\integerdef\csname\??mode\systemmodeprefix#1\endcsname\zerocount}
 
+\expandafter\integerdef\csname\??mode\systemmodeprefix trialtypesetting\endcsname\zerocount
+
 \expandafter \appendtoks
-    \expandafter\integerdef\csname\??mode\systemmodeprefix trialtypesetting\endcsname\plusone
+    \csname\??mode\systemmodeprefix trialtypesetting\endcsname\plusone
     \luacopyinputnodes\plusone
 \to \everysettrialtypesetting
 
 \expandafter \appendtoks
-    \expandafter\integerdef\csname\??mode\systemmodeprefix trialtypesetting\endcsname\zerocount
+    \csname\??mode\systemmodeprefix trialtypesetting\endcsname\zerocount
     \luacopyinputnodes\zerocount
 \to \everyresettrialtypesetting
 
 \pushoverloadmode \newsystemmode{trialtypesetting} \popoverloadmode
 
 \the\everyresettrialtypesetting
+
+\installcorenamespace{modestack}
 
 % user ones
 

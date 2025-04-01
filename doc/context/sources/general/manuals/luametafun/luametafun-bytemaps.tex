@@ -1,0 +1,482 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-bytemaps
+
+\startchapter[title={Bytemaps}]
+
+In this chapter we explore bytemaps, which essentially are arrays of bytes
+thatcan be used to store states. There are two variants: single bytes and
+triplets, or in \METAPOST\ speak: numerics or colors. The reason why we added
+this to the engine is that we expect these to be used in situations where storing
+states efficiently makes sense. The results can of course be bitmaps but also
+become a path.
+
+In the following example we create three bytemaps: one with a single row of
+bytes, one with ten rows and columns black and white, and a same size bytemap
+with three color components.
+
+\startbuffer
+\startMPcode
+newbytemap 1 of  10;
+newbytemap 2 of (10,10);
+newbytemap 3 of (10,10,3);
+
+for i=1 upto 3 :
+
+    setbytemap i to 100 ;
+
+    setbyte (0,0) of i to 150 ;
+    setbyte (1,1) of i to 200 ;
+
+    setbyte (8,0) of i to (150,150,0) ;
+    setbyte (6,2) of i to (150,0,150) ;
+
+    setbyte (3,3,1,2) of i to 150 ;
+    setbyte (7,7,2,2) of i to (0,150,150) ;
+
+    setbyte (2,7,1) of i to 0 ;
+    setbyte (2,7,2) of i to 0 ;
+    setbyte (2,7,0) of i to 255 ;
+
+    fill
+        unitsquare scaled 100
+        shifted ((i-1)*110,0)
+        withbytemap i ;
+
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+When the \type {setbyte} command gets two arguments, they indicate the
+coordinates. When a third argument is passed, it specifies the (color) channel.
+When four arguments are passes, the last two indicate the width and height of the
+area to be set. When a color is assigned to a singly byte pane the color gets
+reduced to a gray scale.
+
+A bytemap is drawn using a path and \type {withbytemap} specifier. A \type {fill}
+create a tight result, while a \type {draw} adds half the pen to the dimensions.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Before we show some more methods, we will do the same as above from the \LUA\
+end.
+
+\startbuffer
+\startluacode
+local random = math.random
+local setbytemap = mp.setbytemap
+
+function MP.MakeByteMap(i)
+    mp.newbytemap(i,200,50,3)
+    mp.fillbytemap(i,100,100,100)
+    for j=1,5000 do
+        setbytemap(i,
+            random(0,199), random(0,49),
+            random(0,255), random(0,255), random(0,255)
+        )
+    end
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+Next we use this \LUA\ function:
+
+\startbuffer
+\startMPcode
+lua.MP.MakeByteMap(4);
+
+fill
+    unitsquare xyscaled (200,50)
+    withbytemap 4 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Instead of a bitmap you can also get a path:
+
+\startbuffer
+\startluacode
+local random = math.random
+local setbytemap = mp.setbytemap
+
+function MP.MakeBytePath(i)
+    mp.newbytemap(i,100,100,1)
+    mp.fillbytemap(i,100)
+    for j=1,2500 do
+        setbytemap(i,
+            random(0,99),
+            random(0,99),
+            random(1,10)
+        )
+    end
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\getbuffer
+
+This function will fill a gray scale bytemap. We can filter the values
+and turn the result into a path:
+
+\startbuffer
+\startMPcode
+lua.MP.MakeBytePath(5);
+
+picture p[] ;
+
+p[1] := image (
+    for i=1 upto 10 :
+        if bytefound i of 5 :
+            drawdot (bytepath i of 5) shifted (.5,.5)
+            withpen pencircle scaled (i/2) ;
+        fi ;
+    endfor ;
+) ;
+
+p[2] := image (
+    for i=1 step 2 until 10 :
+        if bytefound (i,i+1) of 5 :
+            drawdot (bytepath (i,i+1) of 5) shifted (.5,.5)
+            withpen pencircle scaled ((i+.5)/2) ;
+        fi ;
+    endfor ;
+) ;
+
+draw p[1]                 withcolor red    withtransparency (1,.5) ;
+draw p[2] shifted (110,0) withcolor green  withtransparency (1,.5) ;
+draw p[1] shifted (220,0) withcolor blue   withtransparency (1,.5) ;
+draw p[2] shifted (220,0) withcolor yellow withtransparency (1,.5) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can of course fill a bytemap with more meaningful data, as in:
+
+\startbuffer
+\startMPcode
+newbytemap 1 of (100,102) ;
+setbyte (0,0,100,102) of 1 to 150 ;
+
+for i=0 upto 99 :
+    setbyte(i,99*sin((i/99)*pi),2,4) of 1 to (2.55*i) ;
+endfor ;
+
+fill unitsquare xyscaled (400,100) withbytemap 1 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+And just show the result as it is. Here we fill small areas:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+These bytemaps are not implemented as datatype because it would not only
+complicate matters but also be inconsistent with for instance equations and
+scanning. The interface more looks like function calls. Currently we have these,
+but more (variants) might show up:
+
+\starttyping[option=MP]
+newbytemap         index of (nx,ny) ;
+newbytemap         index of (nx,ny,nz) ;
+copybytemap        index to m ;
+resetbytemap       index ;
+resetbytemaps      ;
+setbytemap         index to value;
+setbytemap         index to (r,g,b);
+
+setbytemapoption   of index to n ;
+setbytemapoffset   of index to (x,y) ;
+reducebytemap      of index ;
+setbyte            (x,y) of index to value ;
+setbyte            (x,y) of index to (r,g,b) ;
+setbyte            (x,y,z) of index to value ;
+setbyte            (x,y,z) of index to (r,g,b) ;
+setbyte            (x,y,dx,dy) of index to value ;
+setbyte            (x,y,dx,dy) of index to (r,g,b) ;
+
+withbytemap        index
+withbytemask       value
+bytevalue          (x,y) of index
+bytevalue          (x,y,[z]) of index
+bytefound          value of index
+bytefound          (min,max) of index
+bytepath           value of index
+bytepath           (min,max) of index
+\stoptyping
+
+The \type {withbytemask} directive is not really a primitive but a backend option
+instead.
+
+Currently the following \LUA\ functions are available:
+
+\starttyping[option=LUA]
+mp.newbytemap     (nx,ny,nz)
+mp.setbytemap     (x,y,value)
+mp.setbytemap     (x,y,r,g,b)
+mp.getbytemap     (x,y)
+mp.getbytemap     (x,y,z)
+mp.fillbytemap    (x,y,value)
+mp.fillbytemap    (x,y,r,g,b)
+
+mp.getbytemapdata ()     : return nx, ny, nz
+mp.getbytemapdata (true) : return nx, ny, nz, data
+\stoptyping
+
+These use the \type {mplib} library functions that expect an instance as argument
+but in the \CONTEXT\ \type {mp} library that is taken care of automatically.
+
+You can stack a bitmap result on top of another object without it covering that
+object by using the \type {withbytemask} directive.
+
+\startbuffer
+\startMPcode
+newbytemap 2 of (10,10,3);
+
+setbytemap 2 to (100,0,0) ;
+
+fill unitcircle scaled 100                 withcolor blue ;
+fill unitsquare scaled 100 shifted (110,0) withbytemap 2 ;
+fill unitcircle scaled 100 shifted (220,0) withcolor blue ;
+fill unitsquare scaled 100 shifted (220,0) withbytemap 2 withbytemask 100 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can clip a bytemap to what actually is used.
+
+\startbuffer
+\startMPcode
+newbytemap 4 of (4,4) ;
+setbytemap 4 to 255 ;
+
+setbyte (1,1) of 4 to 100 ;
+setbyte (1,2) of 4 to 200 ;
+setbyte (2,1) of 4 to 200 ;
+setbyte (2,2) of 4 to 100 ;
+
+pickup pencircle scaled 2;
+
+fill unitsquare scaled 100 withbytemap 4 ;
+draw unitsquare scaled 100 withcolor "darkred" ;
+
+path b ; b := bytemapbounds 255 of 4;
+
+message (llcorner b); % metapost > message 1 1
+message (urcorner b); % metapost > message 2 2
+
+copybytemap 4 to 5 ;
+clipbytemap 5 to 255 ;
+
+fill unitsquare scaled 100 shifted (110,0) withbytemap 5 ;
+draw unitsquare scaled 100 shifted (110,0) withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here we copy the bytemap because we want to show the original and when we draw
+(fill) the bytemap we only add a reference so the bitmap that gets embedded is
+the last one assigned to that slot!
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In \LUAMETAFUN\ you can use \POTRACE\ to turn a bitmap into an outline and
+bytemaps can be a source too:
+
+\startbuffer
+\startMPcode
+newbytemap 1 of (10,10) ;
+setbytemap 1 to 100 ;
+
+for i=2 upto 8 :
+    for j=2 upto 8 :
+        setbyte (i,j) of 1 to 200 ; % 49 "1"
+    endfor ;
+endfor ;
+for i=3 upto 7 :
+    for j=3 upto 7 :
+        setbyte (i,j) of 1 to 150;
+    endfor ;
+endfor ;
+
+picture p[] ;
+
+p[1] := image (
+    fill unitsquare ysized 50 withbytemap 1 ;
+);
+
+p[2] := image (
+    draw lmt_potraced [
+        explode = true,
+        value   = (char 200), % "1",
+        bytemap = 1
+    ] ysized 50
+    withcolor "darkblue"
+    withpen pencircle scaled 1 ;
+);
+
+p[3] := image (
+    draw lmt_potraced [
+        explode = true,
+        value   = (char 150),
+        bytemap = 1
+    ] ysized 50
+    withcolor "darkred"
+    withpen pencircle scaled 1 ;
+);
+
+for i=1 upto 3 :
+    draw p[i]
+        shifted - center p[i]
+        shifted ((i-1) * 60,0)
+    ;
+endfor ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+You need to scald these images to your needs; here we just normalize them to the
+same size. Of course you might need to fine tune the tracing.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+You can also load a bitmap from file, for instance:
+
+\startbuffer
+\startMPcode
+triplet bm ; bm := loadbytemapfromfile(3, "mill.png") ;
+numeric nx ; nx := redpart bm;
+numeric ny ; ny := greenpart bm;
+
+newinternal v ;
+for col=nx/3 upto 2nx/3 :
+    for row=ny/3 upto 2ny/3 :
+        v := bytevalue (col,row) of 3 ;
+        if (v > 50) and (v < 150) :
+            setbyte (col,row) of 3 to 255 ;
+        fi
+    endfor ;
+endfor ;
+
+draw image (
+    fill unitsquare xyscaled (nx,ny)
+        withbytemap 3 ;
+    draw unitsquare xyscaled (nx/3,ny/3)
+        shifted (nx/3,ny/3)
+        withpen pencircle scaled 5
+        withcolor "darkred" ;
+) ysized 8cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Of course manipulating bitmaps will add to the the runtime but in this case it
+can be neglected (see \in {figure} [fig:bytemap-mill]).
+
+\startplacefigure[reference=fig:bytemap-mill,title={A bytemap loaded from file.}]
+    \getbuffer
+\stopplacefigure
+
+Here are a few more examples. We fill a few areas first. Of course this can be
+done with regular paths but imagine more complex patterns. We make a copy of that
+bytemap and then convert the pixels to gray scales:
+
+\startbuffer
+\startMPcode
+newbytemap 4 of (50,50,3) ;
+
+setbyte (1,1,47,47) of 4 to (0,200,0) ;
+setbyte (5,5,42,42) of 4 to (0,0,200) ;
+setbyte (9,9,34,34) of 4 to (200,0,0) ;
+
+fill unitsquare
+  scaled 50
+  withbytemap 4 ;
+
+copybytemap 4 to 8;
+
+reducebytemap 8;
+
+fill unitsquare
+  scaled 50 shifted (55,0)
+  withbytemap 8 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+This example shows how to use an offset (which can save some calculations) as
+well as the fact that we can rotate a bitmap (see \in {figure}
+[fig:bytemap-rotate]).
+
+\startbuffer
+\startMPcode
+newbytemap 3 of (100,100,3) ;
+setbytemap 3 to 50 ;
+setbytemapoffset (1,1) of 3;
+
+for i=1 step 5 until 100 :
+    numeric n ; n := 100 ;
+    for j=1 step 5 until 100 :
+        setbyte (i,j) of 3 to n ;
+        n := n + 5 ;
+    endfor ;
+endfor ;
+
+draw unitsquare
+  scaled 200
+  rotated 45
+  withbytemap 3 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:bytemap-rotate,title={Using offset.}]
+    \getbuffer
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent
+

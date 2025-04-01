@@ -595,6 +595,9 @@ local function singlepart(b,e,p,realpage,r,left,right)
         rx = rx + left
         rw = rw - right
     end
+if b.dir then
+    rw, rx = rx, rw
+end
     if ex == rx then
         -- We probably have a strut at the next line so we force a width
         -- although of course it is better to move up. But as we have whitespace
@@ -655,6 +658,9 @@ local function firstpart(b,e,p,realpage,r,left,right)
         rx = rx + left
         rw = rw - right
     end
+if b.dir then
+    rw, rx = rx, rw
+end
     local area = shape("first",b,p,realpage,rx,rw,rd,rh,bh,false)
     if not area then
         if b.k == 2 then
@@ -692,6 +698,9 @@ local function middlepart(b,e,p,realpage,r,left,right)
         rx = rx + left
         rw = rw - right
     end
+if b.dir then
+    rw, rx = rx, rw
+end
     local area = shape("middle",b,p,realpage,rx,rw,rd,rh,false,false)
     if not area then
         area = {
@@ -722,6 +731,9 @@ local function lastpart(b,e,p,realpage,r,left,right)
         rx = rx + left
         rw = rw - right
     end
+if b.dir then
+    rw, rx = rx, rw
+end
     local area  = shape("last",b,p,realpage,rx,rw,rd,rh,false,ed)
     if not area then
         if b.k == 2 then

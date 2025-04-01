@@ -55,6 +55,7 @@
 \newinteger\c_page_mvl_current_spreadsheet
 \newinteger\c_page_mvl_level
 \newinteger\c_page_mvl_main_level
+\newinteger\c_page_mvl_max_used_cells
 
 \newconditional\c_page_mvl_active
 
@@ -1367,8 +1368,6 @@
    \fi
    \clf_columnsetreshape\currentcolumnset\relax
    \page_mvl_process_mvl_preroll_step\relax}
-
-\newinteger\c_page_mvl_max_used_cells
 
 \def\page_mvl_process_mvl_preroll_balance
   {\relax

@@ -388,16 +388,20 @@
 \aliased\let\structurelistexternal\strc_lists_structurelistexternal
 \aliased\let\structurelistlocation\strc_lists_structurelistlocation
 
-\permanent\def\structurelistrawnumber#1%
-  {\clf_rawlistnumber{\currentlistindex}{#1}}
+% unformatted (the name #1 is for consistency and only makes sense for number)
 
-\permanent\def\structurelistrealpagenumber
-  {\clf_listrealpage{\currentlist}{\currentlistindex}}
+\permanent\def\structurelistrawnumber        #1{\clf_listrawnumber  {#1}{\currentlistindex}}
+\permanent\def\structurelistrawpagenumber    #1{\clf_listrawuserpage{#1}{\currentlistindex}}
+\permanent\def\structurelistrawrealpagenumber#1{\clf_listrawrealpage{#1}{\currentlistindex}}
+
+\permanent\def\structurelistnumber        {\clf_listrawnumber  {\currentlist}{\currentlistindex}}
+\permanent\def\structurelistuserpagenumber{\clf_listrawuserpage{\currentlist}{\currentlistindex}}
+\permanent\def\structurelistrealpagenumber{\clf_listrawrealpage{\currentlist}{\currentlistindex}}
 
 \permanent\protected\def\structurelistpagenumber
   {\dostarttaggednodetail\t!listpage
    \ifconditional\c_lists_show_realpage
-     \clf_listrealpage{\currentlist}{\currentlistindex}%
+     \clf_listrawrealpage{\currentlist}{\currentlistindex}%
    \else
      \clf_listprefixedpage
        {\currentlist}%

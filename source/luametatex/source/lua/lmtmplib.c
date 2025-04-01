@@ -80,7 +80,7 @@ static const char *mplib_fill_fields[] = {
     "pen", "color",
     "linejoin", "miterlimit",
     "prescript", "postscript",
-    "stacking", "curvature",
+    "stacking", "curvature", "bytemap",
     NULL
 };
 
@@ -91,7 +91,7 @@ static const char *mplib_stroked_fields[] =  {
     "linejoin", "miterlimit", "linecap",
     "dash",
     "prescript", "postscript",
-    "stacking", "curvature",
+    "stacking", "curvature", "bytemap",
     NULL
 };
 
@@ -185,6 +185,7 @@ static const char *mplib_codes[] = {
     "interim",         /* mp_interim_command             */ /* interim */
     "let",             /* mp_let_command                 */ /* let */
     "newinternal",     /* mp_new_internal_command        */ /* newinternal */
+    "newbytemap",  
     "macrodef",        /* mp_macro_def_command           */ /* def vardef (etc) */
     "shipout",         /* mp_ship_out_command            */ /* shipout */
     "addto",           /* mp_add_to_command              */ /* addto */
@@ -323,6 +324,7 @@ typedef struct mplib_state_info {
     int overload_callbacks;
     int error_callbacks;
     int warning_callbacks;
+    int status_callbacks;
 } mplib_state_info;
 
 static mplib_state_info mplib_state = {
@@ -333,6 +335,7 @@ static mplib_state_info mplib_state = {
     .overload_callbacks = 0,
     .error_callbacks    = 0,
     .warning_callbacks  = 0,
+    .status_callbacks   = 0,
 };
 
 /*tex
@@ -350,7 +353,7 @@ static mplib_state_info mplib_state = {
 
 /*tex
     This is used for heuristics wrt curves or lines. The default value is rather small
-    and often leads to curved rectangles.
+    and often leads to curved rectangles ($2 * 10^-3 = 0.002$). 
 
     \starttabulate[||||]
     \NC 131/65536.0           \NC 0.0019989013671875 \NC default \NC \NR
@@ -361,12 +364,16 @@ static mplib_state_info mplib_state = {
 
 */
 
-# define default_bend_tolerance 131/65536.0
-# define default_move_tolerance 131/65536.0
+// # define default_bend_tolerance (2 * 10^-3) // 131/65536.0
+// # define default_move_tolerance (2 * 10^-3) // 131/65536.0
+
+# define default_bend_tolerance (131/65536.0)
+# define default_move_tolerance (131/65536.0)
 
 typedef enum mp_variables {
     mp_bend_tolerance = 1,
     mp_move_tolerance = 2,
+    mp_main_instance  = 3,
 } mp_variables;
 
 static lua_Number mplib_aux_get_bend_tolerance(lua_State *L, int slot)
@@ -387,6 +394,15 @@ static lua_Number mplib_aux_get_move_tolerance(lua_State *L, int slot)
     return tolerance;
 }
 
+static MP mplib_aux_get_main_instance(lua_State *L, int slot)
+{
+    MP mp;
+    lua_getiuservalue(L, slot, mp_main_instance);
+    mp = lua_touserdata(L, -1);
+    lua_pop(L, 1);
+    return mp;
+}
+
 static void mplib_aux_set_bend_tolerance(lua_State *L, lua_Number tolerance)
 {
     lua_pushnumber(L, tolerance);
@@ -397,6 +413,12 @@ static void mplib_aux_set_move_tolerance(lua_State *L, lua_Number tolerance)
 {
     lua_pushnumber(L, tolerance);
     lua_setiuservalue(L, -2, mp_move_tolerance);
+}
+
+static void mplib_aux_set_main_instance(lua_State *L, MP mp)
+{
+    lua_pushlightuserdata(L, mp);
+    lua_setiuservalue(L, -2, mp_main_instance);
 }
 
 static inline char *lmt_string_from_index(lua_State *L, int n)
@@ -517,7 +539,7 @@ static void mplib_aux_initialize_lua(lua_State *L)
     mplib_values_knot[mp_end_cycle_knot] = lua_key_index(end_cycle);
 }
 
-static void mplib_aux_push_pentype(lua_State *L, mp_graphic_knot h)
+static void mplib_aux_push_pentype(lua_State *L, mp_knot_object_node h)
 {
     if (h && h == h->next) {
         lua_push_value_at_key(L, type, elliptical);
@@ -613,6 +635,12 @@ static int mplib_aux_run_error_function(lua_State *L, MP_options *options)
 {
     options->run_error_id = mplib_aux_register_function(L, options->run_error_id);
     return (! options->run_error_id);
+}
+
+static int mplib_aux_run_status_function(lua_State *L, MP_options *options)
+{
+    options->run_status_id = mplib_aux_register_function(L, options->run_status_id);
+    return (! options->run_status_id);
 }
 
 static int mplib_aux_open_file_function(lua_State *L, MP_options *options)
@@ -898,6 +926,20 @@ static void mplib_aux_run_error(MP mp, const char *str, const char *help, int in
     }
 }
 
+static void mplib_aux_run_status(MP mp)
+{
+    if (mp->run_status_id) {
+        lua_State *L = (lua_State *) mp_userdata(mp);
+        int stacktop = lua_gettop(L);
+        lua_rawgeti(L, LUA_REGISTRYINDEX, mp->run_status_id);
+        ++mplib_state.status_callbacks;
+        if (lua_pcall(L, 0, 0, 0)) {
+           tex_formatted_warning("mplib", "run status: %s", lua_tostring(L, -1));
+        }
+        lua_settop(L, stacktop);
+    }
+}
+
 /*
 
     We keep all management in Lua, so for now we don't create an object. Files are normally closed
@@ -1130,7 +1172,7 @@ static int mplib_scan_property(lua_State *L)
     A circle has 8 points and a square 4 so let's just start with 8 slots in the table. 
 */
 
-// static int aux_is_curved_gr(mp_graphic_knot ith, mp_graphic_knot pth, lua_Number tolerance)
+// static int aux_is_curved_gr(mp_knot_object_node ith, mp_knot_object_node pth, lua_Number tolerance)
 // {
 //     lua_Number d = pth->left_x - ith->right_x;
 //     if (fabs(ith->right_x - ith->x_coord - d) <= tolerance && fabs(pth->x_coord - pth->left_x - d) <= tolerance) {
@@ -1144,7 +1186,7 @@ static int mplib_scan_property(lua_State *L)
 
 /*tex 
 
-The first three tests are okay for most cases, but control points can run ourside the natural 
+The first three tests are okay for most cases, but control points can run outside the natural 
 boundingbox of the path. So we need two more tests. The final two tests are for the case when the 
 control point lie on the other side of the other point (so to say). One could use a different 
 factor in front of the parentheses, but I have not managed to find it (there are two control 
@@ -1152,13 +1194,13 @@ points, so t might be complicated in the end). Here we only test if it is on the
 of the other point. If so, we mark it as curve. Thus, if this is not the case, then the control 
 points lie between the points, and we should be safe.
 
-We (MS & HH) dis lots of tests and eventually decided that adding |withcurvature| made sense, 
+We (MS & HH) did lots of tests and eventually decided that adding |withcurvature| made sense, 
 if only for experimenting and documentation. The current solution is different from what we had 
 before (pre March 2024). 
 
 */
 
-static int aux_is_curved_gr(mp_graphic_knot ith, mp_graphic_knot pth, lua_Number tolerance)
+static int aux_is_curved_gr(mp_knot_object_node ith, mp_knot_object_node pth, lua_Number tolerance)
 {
     lua_Number v1x, v1y, v2x, v2y, v3x, v3y, eps;
     v1x = ith->right_x - ith->x_coord;
@@ -1198,7 +1240,7 @@ static int aux_is_curved_gr(mp_graphic_knot ith, mp_graphic_knot pth, lua_Number
     return 0;
 }
 
-static int aux_is_duplicate_gr(mp_graphic_knot pth, mp_graphic_knot nxt, lua_Number tolerance)
+static int aux_is_duplicate_gr(mp_knot_object_node pth, mp_knot_object_node nxt, lua_Number tolerance)
 {
     return (fabs(pth->x_coord - nxt->x_coord) <= tolerance && fabs(pth->y_coord - nxt->y_coord) <= tolerance);
 }
@@ -1208,17 +1250,17 @@ static int aux_is_duplicate_gr(mp_graphic_knot pth, mp_graphic_knot nxt, lua_Num
 // -68.031485 2.83464 l
 // -68.031485 2.83464 -68.031485 -2.83464 -68.031485 -2.83464 c
 
-static void mplib_aux_push_path(lua_State *L, mp_graphic_knot h, int ispen, lua_Number bendtolerance, lua_Number movetolerance, int curvature)
+static void mplib_aux_push_path(lua_State *L, mp_knot_object_node h, int ispen, lua_Number bendtolerance, lua_Number movetolerance, int curvature)
 {
     if (h) {
         int i = 0;
-        mp_graphic_knot p = h;
-        mp_graphic_knot q = h;
+        mp_knot_object_node p = h;
+        mp_knot_object_node q = h;
         int iscycle = 1;
         curvature = curvature == mp_always_curvature_code;
         lua_createtable(L, ispen ? 1 : MPLIB_PATH_SIZE, ispen ? 2 : 1);
         do {
-            mp_graphic_knot n = p->next;
+            mp_knot_object_node n = p->next;
             int lt = p->left_type;
             int rt = p->right_type;
             if (ispen) {
@@ -1716,6 +1758,7 @@ static int mplib_new(lua_State *L)
         options->run_logger      = mplib_aux_run_logger;
         options->run_overload    = mplib_aux_run_overload;
         options->run_error       = mplib_aux_run_error;
+        options->run_status      = mplib_aux_run_status;
         options->make_text       = mplib_aux_make_text;
         options->shipout_backend = mplib_shipout_backend;
         if (lua_type(L, 1) == LUA_TTABLE) {
@@ -1767,6 +1810,10 @@ static int mplib_new(lua_State *L)
                     } else if (lua_key_eq(s, run_error)) {
                         if (mplib_aux_run_error_function(L, options)) {
                             tex_normal_warning("mplib", "run error: function expected");
+                        }
+                    } else if (lua_key_eq(s, run_status)) {
+                        if (mplib_aux_run_status_function(L, options)) {
+                            tex_normal_warning("mplib", "run status: function expected");
                         }
                     } else if (lua_key_eq(s, open_file)) {
                         if (mplib_aux_open_file_function(L, options)) {
@@ -1840,7 +1887,7 @@ static int mplib_instance_tostring(lua_State *L)
     return 1;
 }
 
-static int mplib_aux_wrapresults(lua_State *L, mp_run_data *res, int status, lua_Number bendtolerance, lua_Number movetolerance)
+static int mplib_aux_wrapresults(lua_State *L, MP mp, mp_run_data *res, int status, lua_Number bendtolerance, lua_Number movetolerance)
 {
     lua_newtable(L);
     if (res->edges) {
@@ -1852,10 +1899,11 @@ static int mplib_aux_wrapresults(lua_State *L, mp_run_data *res, int status, lua
         lua_push_key(fig);
         lua_newtable(L);
         while (p) {
-            struct mp_edge_object **v = lua_newuserdatauv(L, sizeof(struct mp_edge_object *), 2);
+            struct mp_edge_object **v = lua_newuserdatauv(L, sizeof(struct mp_edge_object *), 3);
             *v = p;
             mplib_aux_set_bend_tolerance(L, bendtolerance);
             mplib_aux_set_move_tolerance(L, movetolerance);
+            mplib_aux_set_main_instance(L, mp);
          // luaL_getmetatable(L, MP_METATABLE_FIGURE);
             lua_get_metatablelua(mplib_figure);
             lua_setmetatable(L, -2);
@@ -1881,7 +1929,7 @@ static int mplib_execute(lua_State *L)
         const char *s = lua_isstring(L, 2) ? lua_tolstring(L, 2, &l) : NULL;
         int h = mp_execute(mp, s, l);
         mp_run_data *res = mp_rundata(mp);
-        return mplib_aux_wrapresults(L, res, h, bendtolerance, movetolerance);
+        return mplib_aux_wrapresults(L, mp, res, h, bendtolerance, movetolerance);
     }
     lua_pushnil(L);
     return 1;
@@ -1896,7 +1944,7 @@ static int mplib_finish(lua_State *L)
         lua_Number movetolerance = mplib_aux_get_move_tolerance(L, 1);
         int h = mp_execute(mp, NULL, 0);
         mp_run_data *res = mp_rundata(mp);
-        int i = mplib_aux_wrapresults(L, res, h, bendtolerance, movetolerance);
+        int i = mplib_aux_wrapresults(L, mp, res, h, bendtolerance, movetolerance);
         mp_finish(mp);
         *mpud = NULL;
         return i;
@@ -1923,7 +1971,7 @@ static int mplib_gethashentry(lua_State *L)
         MP mp = *mpud;
         char *name = (char *) lua_tostring(L, 2);
         if (name) {
-            mp_symbol_entry *s = (mp_symbol_entry *) mp_fetch_symbol(mp, name);
+            mp_symbol s = (mp_symbol) mp_fetch_symbol(mp, name);
             if (s) {
                 mp_node q = s->type == mp_tag_command ? s->v.data.node : NULL;
                 lua_pushinteger(L, s->type);
@@ -1953,7 +2001,7 @@ static int mplib_gethashentries(lua_State *L)
             size_t n = 0;
             lua_newtable(L);
             while (1) {
-                mp_symbol_entry *s = (mp_symbol_entry *) mp_fetch_symbol_traverse(mp);
+                mp_symbol s = (mp_symbol) mp_fetch_symbol_traverse(mp);
                 if (s) {
                     if (full) {
                         mp_node q = s->type == mp_tag_command ? s->v.data.node : NULL;
@@ -1994,25 +2042,82 @@ static int mplib_version(lua_State *L)
     return 1;
 }
 
+static void mplib_push_memory_statistics(lua_State *L, MP mp, int pool)
+{
+    lua_createtable(L, 0, 6);
+    switch (mp->memory_pool[pool].state) {
+        case mp_pool_counted:
+            lua_set_string_by_key (L, "state", "counted");
+            lua_set_integer_by_key(L, "used",  mp->memory_pool[pool].used);
+            lua_set_integer_by_key(L, "count", mp->memory_pool[pool].count);
+            break;
+        case mp_pool_pooled:
+            lua_set_string_by_key (L, "state", "pooled");
+            lua_set_integer_by_key(L, "max",   mp->memory_pool[pool].max ? mp->memory_pool[pool].max : mp->memory_pool[pool].used);
+            lua_set_integer_by_key(L, "pool",  mp->memory_pool[pool].pool);
+            lua_set_integer_by_key(L, "used",  mp->memory_pool[pool].used);
+            lua_set_integer_by_key(L, "kept",  mp->memory_pool[pool].kept);
+            lua_set_integer_by_key(L, "size",  mp->memory_pool[pool].size);
+            break;
+        case mp_pool_persistent:
+            lua_set_string_by_key (L, "state", "persistent");
+            lua_set_integer_by_key(L, "max",   mp->memory_pool[pool].max ? mp->memory_pool[pool].max : mp->memory_pool[pool].used);
+            lua_set_integer_by_key(L, "used",  mp->memory_pool[pool].used);
+            lua_set_integer_by_key(L, "size",  mp->memory_pool[pool].size);
+            break;
+    }
+    lua_rawset(L, -3);
+}
+
 static int mplib_getstatistics(lua_State *L)
 {
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
-        lua_createtable(L, 0, 9);
-        lua_push_integer_at_key(L, memory,     mp->var_used);                     /* bytes of node memory */
-        lua_push_integer_at_key(L, hash,       mp->st_count);
-        lua_push_integer_at_key(L, parameters, mp->max_param_stack);              /* allocated: mp->param_size */
-        lua_push_integer_at_key(L, input,      mp->max_in_stack);                 /* allocated: mp->stack_size */
-        lua_push_integer_at_key(L, tokens,     mp->num_token_nodes);
-        lua_push_integer_at_key(L, pairs,      mp->num_pair_nodes);
-        lua_push_integer_at_key(L, knots,      mp->num_knot_nodes);
-        lua_push_integer_at_key(L, nodes,      mp->num_value_nodes);
-        lua_push_integer_at_key(L, symbols,    mp->num_symbolic_nodes);
-        lua_push_integer_at_key(L, characters, mp->max_pl_used);
-        lua_push_integer_at_key(L, strings,    mp->max_strs_used);
-        lua_push_integer_at_key(L, internals,  mp->int_ptr);                      /* allocates: mp->max_internal */
-     /* lua_push_integer_at_key(L, buffer,     mp->max_buf_stack + 1); */         /* allocated: mp->buf_size */
-     /* lua_push_integer_at_key(L, open,       mp->in_open_max - file_bottom); */ /* allocated: mp->max_in_open - file_bottom */
+        lua_createtable(L, 0, 15);
+
+        /* maxima */
+
+        lua_push_integer_at_key(L, parameters, mp->max_parameter_stack); 
+        lua_push_integer_at_key(L, input,      mp->max_input_stack);     
+        lua_push_integer_at_key(L, characters, mp->max_pool_used);
+        lua_push_integer_at_key(L, strings,    mp->max_strings_used);
+        
+        lua_pushstring(L, "bytes");   lua_pushinteger(L, mp->memory_pool[mp_bytemap_data_pool].count); lua_rawset(L, -3);
+        lua_pushstring(L, "buffer");  lua_pushinteger(L, mp->max_buf_stack + 1);                       lua_rawset(L, -3);
+        lua_pushstring(L, "maxopen"); lua_pushinteger(L, mp->in_open_max - mp_file_bottom_text);       lua_rawset(L, -3);
+
+        /* in reserve */
+
+        lua_push_key(tokens);             mplib_push_memory_statistics(L, mp, mp_token_pool);
+        lua_push_key(pairs);              mplib_push_memory_statistics(L, mp, mp_pair_pool);
+        lua_pushstring(L, "colors");      mplib_push_memory_statistics(L, mp, mp_color_pool);
+        lua_pushstring(L, "transforms");  mplib_push_memory_statistics(L, mp, mp_transform_pool);
+        lua_push_key(dashes);             mplib_push_memory_statistics(L, mp, mp_dash_pool);
+        lua_pushstring(L, "shapes");      mplib_push_memory_statistics(L, mp, mp_shape_pool);
+        lua_push_key(knots);              mplib_push_memory_statistics(L, mp, mp_knot_pool);
+        lua_pushstring(L, "values");      mplib_push_memory_statistics(L, mp, mp_value_pool);
+        lua_push_key(symbols);            mplib_push_memory_statistics(L, mp, mp_symbolic_pool);
+        lua_push_key(start);              mplib_push_memory_statistics(L, mp, mp_start_pool);
+        lua_push_key(stop);               mplib_push_memory_statistics(L, mp, mp_stop_pool);
+        lua_push_key(save);               mplib_push_memory_statistics(L, mp, mp_save_pool);
+        lua_push_key(ifstack);            mplib_push_memory_statistics(L, mp, mp_if_pool);
+        lua_push_key(loopstate);          mplib_push_memory_statistics(L, mp, mp_loop_pool);
+        lua_pushstring(L, "subst");       mplib_push_memory_statistics(L, mp, mp_subst_pool);
+
+        lua_pushstring(L, "avlsymbols");   mplib_push_memory_statistics(L, mp, mp_symbol_pool);
+
+        lua_pushstring(L, "edgeobjects");  mplib_push_memory_statistics(L, mp, mp_edge_object_pool);
+        lua_pushstring(L, "dashobjects");  mplib_push_memory_statistics(L, mp, mp_dash_object_pool);
+        lua_pushstring(L, "knotobjects");  mplib_push_memory_statistics(L, mp, mp_knot_object_pool);
+        lua_pushstring(L, "edgeheaders");  mplib_push_memory_statistics(L, mp, mp_edge_header_pool);
+        lua_pushstring(L, "shapeobjects"); mplib_push_memory_statistics(L, mp, mp_shape_object_pool);
+        lua_pushstring(L, "startobjects"); mplib_push_memory_statistics(L, mp, mp_start_object_pool);
+        lua_pushstring(L, "stopobjects");  mplib_push_memory_statistics(L, mp, mp_stop_object_pool);
+
+        lua_pushstring(L, "identifiers");  mplib_push_memory_statistics(L, mp, mp_identifiers_pool);
+        lua_pushstring(L, "internals");    mplib_push_memory_statistics(L, mp, mp_internals_pool);
+        lua_pushstring(L, "bytemaps");     mplib_push_memory_statistics(L, mp, mp_bytemaps_pool);
+
     } else {
         lua_pushnil(L);
     }
@@ -2095,7 +2200,7 @@ static int mplib_aux_set_right_control(lua_State *L, MP mp, mp_knot p) {
     }
 }
 
-static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l)
+static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, int numpoints, int *curled, int *tense, int *cyclic, mp_knot *first, mp_knot *p, mp_knot *q, mp_knot *f, mp_knot *l)
 {
     int midcycle = 0;
     for (int i = 1; i <= numpoints; i++) {
@@ -2129,6 +2234,22 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                             y1 = y0;
                             x2 = x0;
                             y2 = y0;
+// mp_set_knot_left_control(mp, *p, x1, y1);
+// mp_set_knot_right_control(mp, *p, x2, y2);
+                        } else if (*tense) {
+                            /* todo */
+                            x1 = x0;
+                            y1 = y0;
+                            x2 = x0;
+                            y2 = y0;
+// mp_set_knot_left_control(mp, *p, x1, y1);
+// mp_set_knot_right_control(mp, *p, x2, y2);
+// if (*q) {
+// mp_set_knot_left_tension(mp, *q, 1.0);
+// mp_set_knot_right_tension(mp, *q, 1.0);
+// }
+// mp_set_knot_left_tension(mp, *p, 1.0);
+// mp_set_knot_right_tension(mp, *p, 1.0);
                         } else {
                             lua_rawgeti(L, -1, 3);
                             lua_rawgeti(L, -2, 4);
@@ -2139,6 +2260,8 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                             x2 = luaL_optnumber(L, -2, x0);
                             y2 = luaL_optnumber(L, -1, y0);
                             lua_pop(L, 4);
+// mp_set_knot_left_control(mp, *p, x1, y1);
+// mp_set_knot_right_control(mp, *p, x2, y2);
                         }
                         mp_set_knot_left_control(mp, *p, x1, y1);
                         mp_set_knot_right_control(mp, *p, x2, y2);
@@ -2319,6 +2442,7 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
         const char *errormsg = NULL;
         int cyclic = 0;
         int curled = 0;
+        int tense = 0;
         int solve = 0;
         int numpoints = (int) lua_rawlen(L, index);
         /*tex
@@ -2348,6 +2472,15 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
             }
             lua_pop(L, 1);
         }
+     // if (multiple && lua_type(L, index + 3) == LUA_TBOOLEAN) {
+     //     tense = lua_toboolean(L, index + 3);
+     // } else {
+     //     lua_push_key(tense);
+     //     if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
+     //         tense = lua_toboolean(L, -1);
+     //     }
+     //     lua_pop(L, 1);
+     // }
         /*tex We build up the path. */
         if (lua_rawgeti(L, index, 1) == LUA_TTABLE) {
             lua_Unsigned len = lua_rawlen(L, -1);
@@ -2355,7 +2488,10 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
             if (len >= 2) {
                 /* .. : p1 .. controls a and b         .. p2  : { p1 a   b   } */
                 /* -- : p1 .. { curl 1 } .. { curl 1 } .. p2  : { p1 nil nil } */
-                errormsg = mplib_aux_with_path_indexed(L, mp, index, numpoints, &curled, &cyclic, &first, &p, &q, &f, &l);
+// if (tense) {
+//     solve = 1;
+// }
+                errormsg = mplib_aux_with_path_indexed(L, mp, index, numpoints, &curled, &tense, &cyclic, &first, &p, &q, &f, &l);
                 if (errormsg) {
                    goto BAD;
                 }
@@ -2374,7 +2510,10 @@ static int mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int m
                                 lua_push_key(path);
                                 if (lua_rawget(L, -2) == LUA_TTABLE) {
                                     int n = (int) lua_rawlen(L, -1);
-                                    errormsg = mplib_aux_with_path_indexed(L, mp, -1, n, &curled, &cyclic, &first, &p, &q, &f, &l);
+// if (tense) {
+//     solve = 1;
+// }
+                                    errormsg = mplib_aux_with_path_indexed(L, mp, -1, n, &curled, &tense, &cyclic, &first, &p, &q, &f, &l);
                                     if (errormsg) {
                                        goto BAD;
                                     }
@@ -2510,7 +2649,8 @@ static int mplib_figure_collect(lua_State *L)
 {
     struct mp_edge_object **hh = mplib_aux_is_figure(L, 1);
     if (*hh) {
-        mp_graphic_toss_objects(*hh);
+        MP mp = mplib_aux_get_main_instance(L, 1);
+        mp_graphic_toss_objects(mp, *hh);
         *hh = NULL;
     }
     return 0;
@@ -2524,12 +2664,14 @@ static int mplib_figure_objects(lua_State *L)
         struct mp_graphic_object *p = (*hh)->body;
         lua_Number bendtolerance = mplib_aux_get_bend_tolerance(L, 1);
         lua_Number movetolerance = mplib_aux_get_move_tolerance(L, 1);
+        MP mp = mplib_aux_get_main_instance(L, 1);
         lua_newtable(L);
         while (p) {
-            struct mp_graphic_object **v = lua_newuserdatauv(L, sizeof(struct mp_graphic_object *), 2);
+            struct mp_graphic_object **v = lua_newuserdatauv(L, sizeof(struct mp_graphic_object *), 3);
             *v = p;
             mplib_aux_set_bend_tolerance(L, bendtolerance);
             mplib_aux_set_move_tolerance(L, movetolerance);
+            mplib_aux_set_main_instance(L, mp);
          // luaL_getmetatable(L, MP_METATABLE_OBJECT);
             lua_get_metatablelua(mplib_object);
             lua_setmetatable(L, -2);
@@ -2660,7 +2802,8 @@ static int mplib_object_collect(lua_State *L)
 {
     struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
     if (*hh) {
-        mp_graphic_toss_object(*hh);
+        MP mp = mplib_aux_get_main_instance(L, 1);
+        mp_graphic_toss_object(mp, *hh);
         *hh = NULL;
     }
     return 0;
@@ -2678,11 +2821,11 @@ static int mplib_object_tostring(lua_State *L)
 # define aspect_default 1.0
 # define eps            0.0001
 
-static double mplib_aux_coord_range_x(mp_graphic_knot h, double dz)
+static double mplib_aux_coord_range_x(mp_knot_object_node h, double dz)
 {
     double zlo = 0.0;
     double zhi = 0.0;
-    mp_graphic_knot f = h;
+    mp_knot_object_node f = h;
     while (h) {
         double z = h->x_coord;
         if (z < zlo) {
@@ -2710,11 +2853,11 @@ static double mplib_aux_coord_range_x(mp_graphic_knot h, double dz)
     return (zhi - zlo <= dz) ? aspect_bound : aspect_default;
 }
 
-static double mplib_aux_coord_range_y(mp_graphic_knot h, double dz)
+static double mplib_aux_coord_range_y(mp_knot_object_node h, double dz)
 {
     double zlo = 0.0;
     double zhi = 0.0;
-    mp_graphic_knot f = h;
+    mp_knot_object_node f = h;
     while (h) {
         double z = h->y_coord;
         if (z < zlo) {
@@ -2749,8 +2892,8 @@ static int mplib_object_peninfo(lua_State *L)
         lua_pushnil(L);
         return 1;
     } else {
-        mp_graphic_knot p = NULL;
-        mp_graphic_knot path = NULL;
+        mp_knot_object_node p = NULL;
+        mp_knot_object_node path = NULL;
         switch ((*hh)->type) { 
             case mp_fill_code:
             case mp_stroked_code:
@@ -2986,11 +3129,12 @@ static int mplib_getcallbackstate(lua_State *L)
     lua_push_integer_at_key(L, overloaded, mplib_state.overload_callbacks);
     lua_push_integer_at_key(L, error,      mplib_state.error_callbacks);
     lua_push_integer_at_key(L, warning,    mplib_state.warning_callbacks);
+    lua_push_integer_at_key(L, status,     mplib_state.status_callbacks);
     lua_push_integer_at_key(L, count,
           mplib_state.file_callbacks     + mplib_state.text_callbacks
         + mplib_state.script_callbacks   + mplib_state.log_callbacks
         + mplib_state.overload_callbacks + mplib_state.error_callbacks
-        + mplib_state.warning_callbacks
+        + mplib_state.warning_callbacks  + mplib_state.status_callbacks
     );
     return 1;
 }
@@ -3071,6 +3215,19 @@ static void mplib_aux_push_dash(lua_State *L, struct mp_shape_object *h)
     }
 }
 
+static void mplib_aux_push_bytemap(lua_State *L, struct mp_shape_object *h)
+{
+    if (h && h->bytemap) {
+        lua_newtable(L);
+        lua_push_integer_at_key(L, width, h->bytemapnx);
+        lua_push_integer_at_key(L, height, h->bytemapny);
+        lua_push_integer_at_key(L, depth, h->bytemapnz);
+        lua_push_lstring_at_key(L, data, h->bytemap, h->bytemapnx * h->bytemapny * h->bytemapnz);
+    } else {
+        lua_pushnil(L);
+    }
+}
+
 static void mplib_aux_shape(lua_State *L, const char *s, struct mp_shape_object *h, lua_Number bendtolerance, lua_Number movetolerance)
 {
     if (lua_key_eq(s, path)) {
@@ -3099,6 +3256,9 @@ static void mplib_aux_shape(lua_State *L, const char *s, struct mp_shape_object 
         lua_pushlstring(L, h->post_script, h->post_length);
     } else if (lua_key_eq(s, dash)) {
         mplib_aux_push_dash(L, h);
+    } else if (lua_key_eq(s, bytemap)) {
+        mplib_aux_push_bytemap(L, h);
+
     } else {
         lua_pushnil(L);
     }
@@ -3257,6 +3417,152 @@ static int mplib_expand_tex(lua_State *L)
 
 /* */
 
+# define bm_current_y(ny,y)  (ny-y-1)
+# define bm_first_y(ny,y,dy) (bm_current_y(ny,y)-dy+1)
+# define bm_last_y(ny,y,dy)  (bm_current_y(ny,y)-1)
+
+static int mplib_bytemap_new(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        int index = lmt_tointeger(L, 2);
+        int nx = lmt_tointeger(L, 3);
+        int ny = lmt_optinteger(L, 4, 1);
+        int nz = lmt_optinteger(L, 5, 1);
+        unsigned char *data = NULL;
+        if (lua_type(L, 6) == LUA_TSTRING) { 
+            size_t size = 0;
+            const char *d = lua_tolstring(L, 6, &size);
+            if (size == nx * ny * nz) { 
+                data = mp_memory_allocate(size);
+                memcpy(data, d, size);
+            }
+        }
+        lua_toboolean(L, mp_bytemap_new_by_index(mp, index, nx, ny, nz, data));
+    } else { 
+        lua_toboolean(L, 0);
+    }
+    return 0;
+}
+
+static int mplib_bytemap_set(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        int index = lmt_tointeger(L, 2);
+        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        if (b) { 
+            int x = lmt_roundnumber(L, 3);
+            int y = lmt_roundnumber(L, 4);
+            if (x >= 0 && x < b->nx && y >= 0 && y < b->ny) { 
+                 y = bm_current_y(b->ny,y);
+                 switch (b->nz) { 
+                     case 1:
+                        {
+                             b->data[y * b->nx + x] = (unsigned char) lmt_optroundnumber(L, 5, 0);
+                             break;
+                        }
+                     case 3:
+                        {
+                             int o = (y * b->nx * b->nz) + x * b->nz;
+                             b->data[o]   = (unsigned char) lmt_optroundnumber(L, 5, 0);
+                             b->data[o+1] = (unsigned char) lmt_optroundnumber(L, 6, 0);
+                             b->data[o+2] = (unsigned char) lmt_optroundnumber(L, 7, 0);
+                             break;
+                        }
+                 }
+            }
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_get(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        int index = lmt_tointeger(L, 2);
+        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        if (b) { 
+            int x = lmt_tointeger(L, 3);
+            int y = lmt_tointeger(L, 4);
+            if (x >= 0 && x < b->nx && y >= 0 && y < b->ny) { 
+                int o = y * b->ny + x;
+                y = bm_current_y(b->ny,y);
+                switch (b->nz) { 
+                    case 1:
+                        lua_pushinteger(L, (int) b->data[o]);
+                        return 1;
+                    case 3:
+                        lua_pushinteger(L, (int) b->data[o]);
+                        lua_pushinteger(L, (int) b->data[o+1]);
+                        lua_pushinteger(L, (int) b->data[o+2]);
+                        return 3;
+                }
+            }
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_fill(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        int index = lmt_tointeger(L, 2);
+        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        if (b) { 
+            switch (b->nz) { 
+                case 1:
+                    memset(b->data, (unsigned char) lmt_optinteger(L, 3, 0), b->nx * b->ny);
+                    break;
+                case 3:
+                    if (lua_type(L, 4) == LUA_TNUMBER) { 
+                        unsigned char *p = b->data;
+                        b->data[0] = (unsigned char) lmt_optinteger(L, 3, 0);
+                        b->data[1] = (unsigned char) lmt_optinteger(L, 4, 0);
+                        b->data[2] = (unsigned char) lmt_optinteger(L, 5, 0);
+                        if (b->nx > 3) {
+                            for (int i = 1; i < b->nx; i++) {
+                                memcpy(p + i * 3, p, 3);
+                            }
+                            for (int i = 1; i < b->ny; i++) {
+                                memcpy(p + i * 3 * b->nx, p, 3 * b->nx);
+                            }
+                        }
+                    } else { 
+                        memset(b->data, (unsigned char) lmt_optinteger(L, 3, 0), b->nx * b->ny * 3);
+                    }
+                    break;
+            }
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_data(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        int index = lmt_tointeger(L, 2);
+        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        if (b) { 
+            lua_pushinteger(L, b->nx);
+            lua_pushinteger(L, b->ny);
+            lua_pushinteger(L, b->nz);
+            if (lua_toboolean(L, 3)) { 
+                lua_pushlstring(L, (const char *) b->data, (size_t) (b->nx * b->ny * b->nz));
+                return 4;
+            } else { 
+                return 3;
+            }
+        }
+    }
+    return 0;
+}
+
+/* */
+
 static const struct luaL_Reg mplib_instance_metatable[] = {
     { "__gc",       mplib_instance_collect  },
     { "__tostring", mplib_instance_tostring },
@@ -3357,6 +3663,12 @@ static const struct luaL_Reg mplib_functions_list[] = {
     { "injectwhatever",     mplib_inject_whatever    },
     /* */                                            
     { "expandtex",          mplib_expand_tex         },
+    /* */                                            
+    { "newbytemap",         mplib_bytemap_new        },
+    { "setbytemap",         mplib_bytemap_set        },
+    { "getbytemap",         mplib_bytemap_get        },
+    { "fillbytemap",        mplib_bytemap_fill       },
+    { "getbytemapdata",     mplib_bytemap_data       },
     /* */                                            
     { NULL,                 NULL                     },
 };

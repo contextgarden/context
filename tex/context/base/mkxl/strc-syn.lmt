@@ -359,16 +359,16 @@ end
 
 -- todo: local higher up
 
-implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arguments = "2 strings" }
-implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = "2 strings" }
+implement { name = "registerusedsynonym",  actions = synonyms.registerused,  arguments = "2 arguments" }
+implement { name = "registershownsynonym", actions = synonyms.registershown, arguments = "2 arguments" }
 implement { name = "synonymmeaning",       actions = synonyms.meaning,       arguments = "2 arguments" }
 implement { name = "synonymname",          actions = synonyms.synonym,       arguments = "2 arguments" }
 implement { name = "synonympages",         actions = synonyms.pages,         arguments = "2 arguments" }
 implement { name = "enhancesynonym",       actions = synonyms.enhance,       arguments = "2 arguments" }
---        { name = "resetusedsynonyms",    actions = resetused,              arguments = "string" }
---        { name = "resetshownsynonyms",   actions = resetshown,             arguments = "string" }
---        { name = "resetlistsynonyms",    actions = resetlist,              arguments = "string" }
-implement { name = "resetsynonyms",        actions = synonyms.reset,         arguments = "2 strings" }
+--        { name = "resetusedsynonyms",    actions = resetused,              arguments = "argument" }
+--        { name = "resetshownsynonyms",   actions = resetshown,             arguments = "argument" }
+--        { name = "resetlistsynonyms",    actions = resetlist,              arguments = "argument" }
+implement { name = "resetsynonyms",        actions = synonyms.reset,         arguments = "2 arguments" }
 
 implement {
     name      = "doifelsesynonymused",
@@ -386,8 +386,8 @@ implement {
     name      = "registersynonym",
     actions   = synonyms.register,
     arguments = {
-        "string",
-        "string",
+        "argument",
+        "argument",
         {
             { "metadata", {
                     { "catcodes", "integer" },
@@ -413,7 +413,7 @@ implement {
     actions   = synonyms.process,
     protected = true,
     arguments = {
-        "string",
+        "argument",
         {
             { "criterium" },
             { "language" },

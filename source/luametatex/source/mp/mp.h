@@ -43,7 +43,7 @@ rid of the intermediate \POSTSCRIPT\ representation or add a little more abstrac
 
 */
 
-# define metapost_version "3.14"
+# define metapost_version "3.15.01"
 
 typedef struct MP_instance *MP;
 
@@ -87,6 +87,7 @@ typedef void  (*mp_log_runner)      (MP, int, const char *s, size_t l);
 typedef int   (*mp_overload_runner) (MP, int, const char *, int);
 typedef void  (*mp_error_runner)    (MP, const char *, const char *, int);
 typedef void  (*mp_warning_runner)  (MP, const char *);
+typedef void  (*mp_status_runner)   (MP);
 typedef char *(*mp_text_maker)      (MP, const char *, size_t, int);
 typedef void *(*mp_file_opener)     (MP, const char *, const char *, int);
 typedef char *(*mp_file_reader)     (MP, void *, size_t *);
@@ -128,6 +129,14 @@ typedef enum mp_math_mode {
     mp_math_posit_mode
 } mp_math_mode;
 
+typedef struct mp_graphic_object *mp_graphic_object_node;
+typedef struct mp_dash_object    *mp_dash_object_node;
+typedef struct mp_shape_object   *mp_shape_object_node;
+typedef struct mp_start_object   *mp_start_object_node;
+typedef struct mp_stop_object    *mp_stop_object_node;
+typedef struct mp_edge_object    *mp_edge_object_node;
+typedef struct mp_knot_object    *mp_knot_object_node;
+
 typedef struct mp_knot_data *mp_knot;
 
 typedef struct mp_knot_data {
@@ -151,7 +160,10 @@ typedef struct mp_knot_data {
         mp_number right_y;       /* the |y| coordinate of next control point */
         mp_number right_tension; /* tension information when leaving this knot */
     };
-    mp_knot       next;
+    union { 
+        mp_knot next; 
+        mp_knot link; /* fr memory pool */ 
+    };
     mp_knot       prev;
     unsigned char left_type;
     unsigned char right_type;
@@ -161,23 +173,24 @@ typedef struct mp_knot_data {
     /* we now have some 3 bytes slack that we can use */
 } mp_knot_data;
 
-typedef struct mp_graphic_knot_data *mp_graphic_knot;
-
-typedef struct mp_graphic_knot_data {
-    double          x_coord;
-    double          y_coord;
-    double          left_x;
-    double          left_y;
-    double          right_x;
-    double          right_y;
-    mp_graphic_knot next;
-    mp_graphic_knot prev;
-    unsigned char   left_type;
-    unsigned char   right_type;
-    unsigned char   originator;
-    unsigned char   state;
-    signed int      info;
-} mp_graphic_knot_data;
+typedef struct mp_knot_object {
+    double                  x_coord;
+    double                  y_coord;
+    double                  left_x;
+    double                  left_y;
+    double                  right_x;
+    double                  right_y;
+    union { 
+        mp_knot_object_node next;
+        mp_knot_object_node link;
+    };
+    mp_knot_object_node     prev;
+    unsigned char           left_type;
+    unsigned char           right_type;
+    unsigned char           originator;
+    unsigned char           state;
+    signed int              info;
+} mp_knot_object;
 
 enum mp_knot_originator {
     mp_program_code,  /* not created by a user */
@@ -195,8 +208,8 @@ enum mp_knot_states {
 # undef term_out
 
 typedef struct mp_run_data {
-    void                  *term_in; /* dummy pointer */
-    struct mp_edge_object *edges;
+    void                *term_in; /* dummy pointer */
+    mp_edge_object_node  edges;
 } mp_run_data;
 
 typedef struct mp_color {
@@ -218,82 +231,106 @@ typedef struct mp_color {
     };
 } mp_color;
 
-typedef struct mp_dash_object {
-    double  offset;
-    double *array;
-} mp_dash_object;
-
 /*TEX
     This mp_graphic_object gets cast onto the fill and stroke. For some reason we don't distinguish
-    between start and stop here.
+    between start and stop here. The regular \METAPOST\ nodes get transformed into these. The 
+    backend uses doubles while the frontend uses scaled, doubles, posits or decimals. 
 */
 
 typedef struct mp_graphic_object {
-    int                       type;
-    int                       stacking;
-    struct mp_graphic_object *next;
+    int                        type;
+    int                        stacking;
+    union { 
+        mp_graphic_object_node link;
+        mp_graphic_object_node next;
+    };
 } mp_graphic_object;
 
+typedef struct mp_dash_object {
+    double                   offset;
+    double                  *array;
+    union { 
+        mp_dash_object_node  link;
+        mp_dash_object_node  next;
+    };
+} mp_dash_object;
+
 typedef struct mp_shape_object {
-    int                       type;
-    int                       stacking;
-    struct mp_graphic_object *next;
-    char                     *pre_script;
-    char                     *post_script;
-    size_t                    pre_length;
-    size_t                    post_length;
-    mp_color                  color;
-    mp_graphic_knot           path;
-    mp_graphic_knot           htap;
-    mp_graphic_knot           pen;
-    double                    miterlimit;
-    mp_dash_object           *dash;
-    unsigned char             color_model;
-    unsigned char             linejoin;
-    unsigned char             linecap;
-    unsigned char             padding_0; /* pen_type */
-    unsigned char             curvature;
-    unsigned char             padding_1;
-    unsigned char             padding_2;
-    unsigned char             padding_3;
+    int                        type;
+    int                        stacking;
+    union { 
+        mp_graphic_object_node link;
+        mp_graphic_object_node next;
+    };
+    char                      *pre_script;
+    char                      *post_script;
+    size_t                     pre_length;
+    size_t                     post_length;
+    mp_color                   color;
+    mp_knot_object_node        path;
+    mp_knot_object_node        htap;
+    mp_knot_object_node        pen;
+    double                     miterlimit;
+    mp_dash_object            *dash;
+    unsigned char              color_model;
+    unsigned char              linejoin;
+    unsigned char              linecap;
+    unsigned char              padding_0; /* pen_type */
+    unsigned char              curvature;
+    unsigned char              padding_1;
+    unsigned char              padding_2;
+    unsigned char              padding_3;
+    char                      *bytemap;
+    int                        bytemapnx;
+    int                        bytemapny;
+    int                        bytemapnz;
 } mp_shape_object;
 
 typedef struct mp_start_object {
-    int                       type;
-    int                       stacking;
-    struct mp_graphic_object *next;
-    char                     *pre_script;
-    char                     *post_script;
-    size_t                    pre_length;
-    size_t                    post_length;
-    mp_graphic_knot           path;
+    int                      type;
+    int                      stacking;
+    union {
+        mp_edge_object_node  next;
+        mp_edge_object_node  link;
+    };
+    char                    *pre_script;
+    char                    *post_script;
+    size_t                   pre_length;
+    size_t                   post_length;
+    mp_knot_object_node      path;
 } mp_start_object;
 
 typedef struct mp_stop_object {
-    int                       type;
-    int                       stacking;
-    struct mp_graphic_object *next;
-    char                     *pre_script;
-    char                     *post_script;
-    size_t                    pre_length;
-    size_t                    post_length;
-    mp_graphic_knot           path;
+    int                      type;
+    int                      stacking;
+    union {
+        mp_edge_object_node  next;
+        mp_edge_object_node  link;
+    };
+    char                    *pre_script;
+    char                    *post_script;
+    size_t                   pre_length;
+    size_t                   post_length;
+    mp_knot_object_node      path;
 } mp_stop_object;
 
 typedef struct mp_edge_object {
-    struct mp_graphic_object *body;
-    struct mp_edge_object    *next;
-    MP                        parent;
-    double                    minx;
-    double                    miny;
-    double                    maxx;
-    double                    maxy;
-    double                    width;
-    double                    height;
-    double                    depth;
-    double                    italic;
-    int                       charcode;
-    int                       padding;
+    mp_graphic_object_node  body;
+    union {
+        mp_edge_object_node next;
+        mp_edge_object_node link;
+    };
+    MP                      parent;
+    double                  minx;
+    double                  miny;
+    double                  maxx;
+    double                  maxy;
+    double                  width;
+    double                  height;
+    double                  depth;
+    double                  italic;
+    int                     charcode;
+    int                     padding;
 } mp_edge_object;
 
 typedef void (*mp_backend_writer) (MP, void *);
@@ -312,6 +349,7 @@ typedef struct MP_options {
     mp_overload_runner run_overload;
     mp_error_runner    run_error;
     mp_warning_runner  run_warning;
+    mp_status_runner   run_status;
     mp_text_maker      make_text;
     mp_file_opener     open_file;
     mp_file_closer     close_file;
@@ -324,6 +362,7 @@ typedef struct MP_options {
     int                run_overload_id;
     int                run_error_id;
     int                run_warning_id;
+    int                run_status_id;
     int                make_text_id;
     int                open_file_id;
     int                interaction;
@@ -383,6 +422,7 @@ typedef enum mp_command_code {
     mp_interim_command,             /* save an internal quantity (|interim|) */
     mp_let_command,                 /* redefine a symbolic token (|let|) */
     mp_new_internal_command,        /* define a new internal quantity (|newinternal|) */
+    mp_bytemap_command,   
     mp_macro_def_command,           /* define a macro (|def|, |vardef|, etc.) */
     mp_ship_out_command,            /* output a character (|shipout|) */
     mp_add_to_command,              /* add to edges (|addto|) */
@@ -572,6 +612,7 @@ typedef enum mp_name_type_type {
     mp_hex_operation,               /* operation code for |hex| */
     mp_ASCII_operation,             /* operation code for |ASCII| */
     mp_char_operation,              /* operation code for |char| */
+    mp_segments_operation,          /* operation code for |segments| */
     mp_length_operation,            /* operation code for |length| */
     mp_no_length_operation,         /* operation code for |nolength| */
     mp_turning_operation,           /* operation code for |turningnumber| */
@@ -652,6 +693,7 @@ typedef enum mp_name_type_type {
     /* the |of| operations: */
     mp_substring_operation,         /* operation code for |substring| */
     mp_subpath_operation,           /* operation code for |subpath| */
+    mp_segment_operation,           /* operation code for |subpath| */
     mp_direction_time_operation,    /* operation code for |directiontime| */
     mp_point_operation,             /* operation code for |point| */
     mp_precontrol_operation,        /* operation code for |precontrol| */
@@ -675,6 +717,10 @@ typedef enum mp_name_type_type {
     mp_version_operation,           /* operation code for |mpversion| */
     mp_envelope_operation,          /* operation code for |envelope| */
     mp_boundingpath_operation,      /* operation code for |boundingpath| */
+    mp_bytemap_value_operation,
+    mp_bytemap_found_operation,
+    mp_bytemap_path_operation,
+    mp_bytemap_bounds_operation,
 } mp_name_type_type;
 
 # define mp_min_of_operation mp_substring_operation
@@ -738,6 +784,19 @@ typedef enum mp_only_set_codes {
     mp_max_knot_pool_code,
 } mp_only_set_codes;
 
+typedef enum mp_bytemap_codes {
+    mp_bytemap_set_byte_code,
+    mp_bytemap_set_offset_code,
+    mp_bytemap_copy_code,
+    mp_bytemap_new_code,
+    mp_bytemap_set_code,
+    mp_bytemap_clip_code,
+    mp_bytemap_reduce_code,
+    mp_bytemap_set_options_code,
+    mp_bytemap_reset_code,
+    mp_bytemap_reset_all_code,
+} mp_bytemap_codes;
+
 typedef enum mp_for_codes {
     mp_end_for_code,           /* command modifier for |endfor| */
     mp_start_forever_code,     /* command modifier for |forever| */
@@ -791,6 +850,7 @@ typedef enum mp_with_codes {
     mp_with_linejoin_code,
     mp_with_miterlimit_code,
     mp_with_curvature_code,
+    mp_with_bytemap_code,
     mp_with_nothing_code,    /* quits scanning of a with, avoids lookahead */
 } mp_with_codes;
 
@@ -1012,16 +1072,46 @@ typedef struct math_data {
     set_precision_func                md_set_precision;
 } math_data;
 
-typedef struct mp_value_node_data *mp_value_node;
-typedef struct mp_node_data       *mp_node;
-typedef struct mp_symbol_entry    *mp_symbol;
-
 typedef unsigned short quarterword; /* 1/4 of a 64 bit word */
 typedef int            halfword;    /* 1/2 of a 64 bit word */
 
+/*tex 
+
+    It is more convenient toi have these in one place. The records are defined later. Some 
+    nodes are for housekeeping, others concern graphics. We also encounter export related 
+    objects. 
+
+    Some nodes are mized in linked lists to then we cast them in away that the common fields 
+    overlap. 
+
+*/
+
+typedef struct mp_value_node_data     *mp_value_node;
+typedef struct mp_node_data           *mp_node;
+typedef struct mp_symbol_data         *mp_symbol;       
+typedef struct mp_subst_data          *mp_subst_node;            /* will become mp_subst */
+
+typedef struct mp_save_data           *mp_save;
+typedef struct mp_loop_data           *mp_loop_node;             /* will become mp_loop */
+typedef struct mp_if_data             *mp_if_node;               /* will become mp_if */
+
+typedef struct mp_node_data           *mp_symbolic_node;
+typedef struct mp_node_data           *mp_token_node;
+
+typedef struct mp_pair_node_data      *mp_pair_node;
+typedef struct mp_transform_node_data *mp_transform_node;
+typedef struct mp_color_node_data     *mp_color_node;
+typedef struct mp_shape_node_data     *mp_shape_node;
+typedef struct mp_start_node_data     *mp_start_node;
+typedef struct mp_stop_node_data      *mp_stop_node;
+typedef struct mp_dash_node_data      *mp_dash_node;
+
 typedef struct mp_independent_data {
-    int scale;  /* only for |indep_scale|, used together with |serial| */
-    int serial; /* only for |indep_value|, used together with |scale| */
+    union { 
+        int serial;      /* only for |indep_value|, used together with |scale| */
+        int equivalent; 
+    };
+    int scale;           /* only for |indep_scale|, used together with |serial| */
 } mp_independent_data;
 
 typedef struct mp_value_data {
@@ -1053,6 +1143,7 @@ typedef enum mp_given_internal {
     mp_tracing_titles_internal,      /* show titles online when they appear */
     mp_tracing_equations_internal,   /* show each variable when it becomes known */
     mp_tracing_capsules_internal,    /* show capsules too */
+    mp_tracing_dependencies_internal,/* show dependencies (de)allocation */
     mp_tracing_choices_internal,     /* show the control points chosen for paths */
     mp_tracing_specs_internal,       /* show path subdivision prior to filling with polygonal a pen */
     mp_tracing_commands_internal,    /* show commands and operations before they are performed */
@@ -1099,13 +1190,27 @@ typedef struct mp_internal {
     int       padding;
 } mp_internal;
 
-typedef struct mp_symbol_entry {
+typedef enum mp_bytemap_options {
+    mp_bytemap_option_persistent = 1,
+} mp_bytemap_options;
+
+typedef struct mp_bytemap {
+    unsigned char *data;
+    int            nx;
+    int            ny;
+    int            nz;
+    int            ox;
+    int            oy;
+    int            options; 
+} mp_bytemap;
+
+typedef struct mp_symbol_data {
     int        type;
     int        property; /* we had padding room anyway */
     mp_value   v;
     mp_string  text;
-    void      *parent;
-} mp_symbol_entry;
+    void      *parent; /* can be MP */
+} mp_symbol_data;
 
 typedef enum mp_macro_info {
     mp_general_macro,    /* preface to a macro defined with a parameter list */
@@ -1133,8 +1238,6 @@ enum mp_bb_code {
     mp_y_code  /* index for |miny| and |maxy| */
 };
 
-typedef struct mp_dash_node_data *mp_dash_node;
-
 typedef struct mp_in_state_record {
     int       start_field;
     int       loc_field;
@@ -1145,14 +1248,14 @@ typedef struct mp_in_state_record {
     mp_string name_field;
 } mp_in_state_record;
 
-typedef struct mp_subst_list_item {
-    mp_name_type_type          info_mod;
-    int                        value_mod;
-    int                        value_data;
-    int                        padding;
-    mp_symbol                  info;
-    struct mp_subst_list_item *link;
-} mp_subst_list_item;
+typedef struct mp_subst_data {
+    mp_name_type_type info_mod;
+    int               value_mod;
+    int               value_data;
+    int               padding;
+    mp_symbol         info;
+    mp_subst_node     link;
+} mp_subst_data;
 
 typedef struct mp_loop_data {
     mp_symbol            var ;        /* the var of the loop */
@@ -1172,11 +1275,356 @@ typedef struct File {
     FILE *f;
 } File;
 
-/* constants in the outer block */
+typedef struct mp_if_data {
+    mp_variable_type        type;
+    mp_name_type_type       name_type;
+    struct mp_if_data      *link;
+ // int                     hasnumber;
+    int                     if_line_field;
+} mp_if_data;
+
+/*tex
+
+The user's terminal acts essentially like other files of text, except that it is used both for input
+and for output. When the terminal is considered an input file, the file variable is called |term_in|,
+and when it is considered an output file the file variable is |term_out|.
+
+Sometimes it is necessary to synchronize the input/output mixture that happens on the user's terminal,
+and three system-dependent procedures are used for this purpose. The first of these, |update_terminal|,
+is called when we want to make sure that everything we have output to the terminal so far has actually
+left the computer's internal buffers and been sent. The second, |clear_terminal|, is called when we
+wish to cancel any input that the user may have typed ahead (since we are about to issue an unexpected
+error message). The third, |wake_up_terminal|, is supposed to revive the terminal if the user has
+disabled it by some instruction to the operating system. The following macros show how these operations
+can be specified:The global variable |loc| should be set so that the character to be read next by \MP\
+is in |buffer [loc]|. This character should not be blank, and we should have |loc < last|.
+
+*/
+
+// # define update_terminal()  mp_print_nl_only(mp); /* empty the terminal output buffer */
+// # define clear_terminal()                         /* clear the terminal input buffer */
+// # define wake_up_terminal() mp_print_nl_only(mp); /* cancel the user's cancellation of output */
+
+typedef enum mp_selectors {
+    mp_new_string_selector,   /* printing is deflected to the string pool */
+    mp_no_print_selector,     /* |selector| setting that makes data disappear */
+    mp_term_only_selector,    /* printing is destined for the terminal only */
+    mp_log_only_selector,     /* printing is destined for the transcript file only */
+    mp_term_and_log_selector, /* normal |selector| setting */
+    mp_first_file_selector,   /* first write file selector */
+} mp_selectors;
+
+typedef enum mp_logging_targets {
+    mp_void_logging_target,
+    mp_term_logging_target,
+    mp_file_logging_target,
+    mp_both_logging_target,
+    mp_error_logging_target,
+} mp_logging_targets;
+
+# define mp_fputs(b,f)            (mp->write_file)(mp, f, b)
+# define mp_log_string(target,s)  (mp->run_logger)(mp, target, s, strlen(s))
+# define mp_log_mpstr(target,s,l) (mp->run_logger)(mp, target, s, l)
+# define mp_log_cr(target)        (mp->run_logger)(mp, target, "\n", 1)
+# define mp_log_chr(target,s)     { unsigned char ss[2] = { s, 0 }; (mp->run_logger)(mp, target, (const char *) ss, 1); }
+# define mp_log_error(s)          (mp->run_logger)(mp, mp_error_logging_target, s, strlen(s))
+
+typedef struct mp_node_data {
+    union {
+        mp_command_code  command;
+        mp_variable_type type;
+    };
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    mp_value_data        data;
+} mp_node_data;
+
+typedef enum mp_linecap_codes {
+    mp_butt_linecap_code,
+    mp_rounded_linecap_code,
+    mp_squared_linecap_code,
+    /* see below */
+    mp_weird_linecap_code,
+} mp_linecap_codes;
+
+typedef enum mp_linejoin_codes {
+    mp_mitered_linejoin_code,
+    mp_rounded_linejoin_code,
+    mp_beveled_linejoin_code,
+    /* we see this value being used */
+    mp_weird_linejoin_code,
+} mp_linejoin_codes;
+
+typedef enum mp_curvature_codes {
+    mp_default_curvature_code,
+    mp_always_curvature_code,
+    /* we see this value being used */
+    mp_weird_curvature_code,
+} mp_curvature_codes;
+
+# define internal_value(A)        mp->internal[(A)].v.data.n
+# define internal_string(A)       mp->internal[A].v.data.str
+# define set_internal_string(A,B) mp->internal[(A)].v.data.str=(B)
+# define internal_name(A)         mp->internal[(A)].intname
+# define set_internal_name(A,B)   mp->internal[(A)].intname=(B)
+# define internal_type(A)         mp->internal[A].v.type
+# define set_internal_type(A,B)   mp->internal[(A)].v.type=(B)
+# define internal_run(A)          mp->internal[(A)].run
+# define set_internal_run(A,B)    mp->internal[(A)].run=(B)
+
+typedef struct mp_value_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    mp_value_data        data;
+    mp_number            subscript;
+    mp_symbol            hashloc;
+    mp_node              parent;
+    mp_node              attr_head;
+    mp_node              subscr_head;
+} mp_value_node_data;
+
+typedef struct mp_pair_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    mp_node              x_part;
+    mp_node              y_part;
+} mp_pair_node_data;
+
+typedef struct mp_transform_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    mp_node              tx_part;
+    mp_node              ty_part;
+    mp_node              xx_part;
+    mp_node              yx_part;
+    mp_node              xy_part;
+    mp_node              yy_part;
+} mp_transform_node_data;
+
+typedef struct mp_color_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    union {
+        mp_node red_part;
+        mp_node cyan_part;
+        mp_node x_part;
+    };
+    union {
+        mp_node green_part;
+        mp_node magenta_part;
+        mp_node y_part;
+    };
+    union {
+        mp_node blue_part;
+        mp_node yellow_part;
+        mp_node z_part;
+    };
+    union {
+        mp_node grey_part;
+        mp_node black_part;
+        mp_node w_part;
+    };
+} mp_color_node_data;
+
+typedef struct mp_shape_node_data {
+    mp_variable_type           type;
+    mp_name_type_type          name_type;
+    struct mp_shape_node_data *link;
+ // int                        hasnumber;
+ // int                        stacking;
+    /*common */
+    int                        stacking;
+    mp_string                  pre_script;
+    mp_string                  post_script;
+    union {                    
+        mp_number              red;
+        mp_number              cyan;
+    };                         
+    union {                    
+        mp_number              green;
+        mp_number              magenta;
+    };                         
+    union {                    
+        mp_number              blue;
+        mp_number              yellow;
+    };                         
+    union {                    
+        mp_number              black;
+        mp_number              grey;
+    };
+    /* specific to paths */
+    mp_knot                    path;
+    mp_knot                    pen;
+    mp_node                    dash;
+    mp_number                  dashscale;
+    mp_number                  miterlimit;
+    unsigned char              color_model;
+    unsigned char              linejoin;
+    unsigned char              linecap;
+    unsigned char              pen_type;
+    unsigned char              curvature;
+    unsigned char              padding_1;
+    short                      bytemap;
+} mp_shape_node_data;
+
+typedef struct mp_start_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  stacking;
+    /* specific */
+    int                  stacking;
+    mp_string            pre_script;
+    mp_string            post_script;
+    mp_knot              path;
+} mp_start_node_data;
+
+typedef struct mp_stop_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  stacking;
+    /* specific */
+    int                  stacking;
+} mp_stop_node_data;
+
+typedef struct mp_dash_node_data {
+    mp_variable_type          type;
+    mp_name_type_type         name_type;
+    struct mp_dash_node_data *link;
+ // int                       hasnumber;
+ // int                       padding;
+    /* specific */
+    mp_number                 start_x; /* the starting $x$~coordinate in a dash node */
+    mp_number                 stop_x;  /* the ending $x$~coordinate in a dash node */
+    mp_number                 dash_y;  /* $y$ value for the dash list in an edge header */
+    mp_node                   dash_info;
+} mp_dash_node_data;
+
+typedef struct mp_edge_header_node_data {
+    mp_variable_type     type;
+    mp_name_type_type    name_type;
+    struct mp_node_data *link;
+ // int                  hasnumber;
+ // int                  padding;
+    /* specific */
+    mp_number            start_x;
+    mp_number            stop_x;
+    mp_number            dash_y;
+    mp_node              dash_info;
+    mp_number            minx;
+    mp_number            miny;
+    mp_number            maxx;
+    mp_number            maxy;
+    mp_node              bblast;
+    int                  bbtype; /* tells how bounding box data depends on |truecorners| */
+    int                  ref_count; 
+    mp_node              list;
+    mp_node              obj_tail;  
+} mp_edge_header_node_data;
+
+typedef struct mp_edge_header_node_data *mp_edge_header_node;
+
+typedef enum mp_bound_codes {
+    mp_no_bounds_code,    /* |bbtype| value when bounding box data is valid for all |truecorners| values */
+    mp_bounds_set_code,   /* |bbtype| value when bounding box data is for |truecorners|${}\le 0$ */
+    mp_bounds_unset_code, /* |bbtype| value when bounding box data is for |truecorners|${}>0$ */
+} mp_bound_codes;
+
+typedef enum mp_expression_scan_types {
+    mp_expression_scan_code,
+    mp_primary_scan_code,
+    mp_secondary_scan_code,
+    mp_tertiary_scan_code,
+} mp_expression_scan_types;
+
+typedef enum mp_internal_action_types {
+    mp_initialize_internal_code,
+    mp_save_internal_code, 
+    mp_restore_internal_code, 
+ // mp_tracing_internal_code, 
+} mp_internal_action_types; 
+
+typedef struct mp_memory_pool_data {
+    void *list;  /* head of available list */
+    int   used;  /* currently used */
+    int   max;   /* maximum used */
+    int   pool;  /* size of pool */
+    union { 
+        int   kept;  /* kept in reserve */
+        int   step;  /* step up when full */
+    };
+    union { 
+        size_t size;  /* size or record */
+        size_t count; /* allocated bytes */
+    };
+    int   state; 
+} mp_memory_pool_data;
+
+typedef enum mp_memory_pool_states { 
+    mp_pool_uknown,
+    mp_pool_counted,
+    mp_pool_pooled,
+    mp_pool_persistent,
+} mp_memory_pool_states;
+
+typedef enum mp_memory_pool_types { 
+    mp_token_pool,
+    mp_symbol_pool, /* not a pool, just statistics */
+    mp_pair_pool,
+    mp_color_pool,
+    mp_transform_pool,
+    mp_dash_pool,
+    mp_knot_pool,
+    mp_shape_pool,
+    mp_start_pool,
+    mp_stop_pool,
+    mp_edge_header_pool,
+    mp_value_pool,
+    mp_symbolic_pool,
+    mp_save_pool,
+    mp_if_pool,
+    mp_loop_pool,
+    mp_subst_pool,
+    mp_edge_object_pool,
+    mp_dash_object_pool,
+    mp_knot_object_pool,
+    mp_shape_object_pool,
+    mp_start_object_pool,
+    mp_stop_object_pool,
+    mp_identifiers_pool,
+    mp_internals_pool,
+    mp_bytemaps_pool,
+    mp_bytemap_data_pool,
+    mp_max_pool,
+} mp_memory_pool_types;
 
 /* The size of stack for bisection algorithms; it should probably be left at this value. */
 
 # define bistack_size 1500
+
+/*tex Constants and variables per instance: */
 
 typedef struct MP_instance {
     /*  */
@@ -1194,6 +1642,7 @@ typedef struct MP_instance {
     mp_overload_runner  run_overload;
     mp_error_runner     run_error;
     mp_warning_runner   run_warning;
+    mp_status_runner    run_status;
     mp_text_maker       make_text;
     mp_file_opener      open_file;
     mp_file_closer      close_file;
@@ -1206,6 +1655,7 @@ typedef struct MP_instance {
     int                 run_overload_id;
     int                 run_error_id;
     int                 run_warning_id;
+    int                 run_status_id;
     int                 make_text_id;
     int                 open_file_id;
     /*  */
@@ -1221,7 +1671,6 @@ typedef struct MP_instance {
     math_data          *math;
     /*  */
     int                 max_in_open;            /* maximum number of input files and error insertions that can be going on simultaneously */
-    int                 param_size;             /* maximum number of simultaneous macro parameters */
     /*  */
     char               *name_of_file;           /* the name of a system file */
     /*  */
@@ -1239,9 +1688,9 @@ typedef struct MP_instance {
     size_t              cur_string_size;        /*  malloced size of |cur_string| */
     /*  */
     int                 pool_in_use;            /* total number of string bytes actually in use */
-    int                 max_pl_used;            /* maximum |pool_in_use| so far */
-    int                 strs_in_use;            /* total number of strings actually in use */
-    int                 max_strs_used;          /* maximum |strs_in_use| so far */
+    int                 max_pool_used;          /* maximum |pool_in_use| so far */
+    int                 strings_in_use;         /* total number of strings actually in use */
+    int                 max_strings_used;       /* maximum |strs_in_use| so far */
     /*  */
     unsigned int        selector;               /* where to print a message */
     unsigned int        term_offset;            /* the number of characters on the current terminal line */
@@ -1249,12 +1698,10 @@ typedef struct MP_instance {
     /*  */
     int                 history;                /* has the source input been clean so far? */
     int                 error_count;            /* the number of scrolled errors since the last statement ended */
+    mp_string           error_help;             /* a string set up by |errhelp| */
+    int                 long_help_seen;         /* has the long |\\errmessage| help been used? */
     /*  */
-    int                 use_err_help;           /* should the |err_help| string be shown? */
-    int                 padding_help;           /* well ... why not.  */
-    mp_string           err_help;               /* a string set up by |errhelp| */
-    /*  */
-    jmp_buf            *jump_buf;
+    jmp_buf            *jump_buffer;
     /*  */
     int                 run_state;              /* are we processing input ? */
     int                 finished;               /* set true by |close_files_and_terminate| */
@@ -1263,22 +1710,8 @@ typedef struct MP_instance {
     /*  */
     mp_number           randoms[55];            /* the last 55 random values generated */
     int                 j_random;               /* the number of unused |randoms| */
-    int                 j_padding;              /* the number of unused |randoms| */
     /*  */
-    mp_node             token_nodes;
-    mp_node             pair_nodes;
-    int                 num_token_nodes;
-    int                 num_pair_nodes;
-    mp_knot             knot_nodes;
-    mp_node             value_nodes;
-    int                 max_knot_nodes;
-    int                 num_knot_nodes;
-    int                 num_value_nodes;
-    mp_node             symbolic_nodes;
-    int                 num_symbolic_nodes;
-    /*  */
-    size_t              var_used;               /* how much memory is in use */
-    size_t              var_used_max;           /* how much memory was in use max */
+    mp_memory_pool_data memory_pool[mp_max_pool];
     /*  */
     mp_dash_node        null_dash;
     mp_value_node       dep_head;
@@ -1292,14 +1725,13 @@ typedef struct MP_instance {
     mp_node             spec_head;
     /*  */
     mp_internal        *internal;               /* the values of internal quantities */
-    int                 int_ptr;                /* the maximum internal quantity defined so far */
-    int                 max_internal;           /* current maximum number of internal quantities */
+    /*  */
+    mp_bytemap         *bytemaps;
     /*  */
     unsigned int        old_selector;
     /*  */
     int                 char_class[256];
     /*  */
-    int                 st_count;               /* total number of known identifiers */
     avl_tree            symbols;                /* avl tree of symbolic tokens */
     avl_tree            frozen_symbols;         /* avl tree of frozen symbolic tokens */
     avl_iterator        symbol_iterator;
@@ -1386,19 +1818,20 @@ typedef struct MP_instance {
     /*  */
     mp_in_state_record *input_stack;
     int                 input_ptr;              /* first unused location of |input_stack| */
-    int                 max_in_stack;           /* largest value of |input_ptr| when pushing */
+    int                 max_input_stack;        /* largest value of |input_ptr| when pushing */
     mp_in_state_record  cur_input;              /* the \quote {top} input state */
     int                 stack_size;             /* maximum number of simultaneous input sources */
     /*  */
     int                 in_open;                /* the number of lines in the buffer, less one */
     int                 in_open_max;            /* highest value of |in_open| ever seen */
     unsigned int        open_parens;            /* the number of open text files */
-    void              **input_file;
-    int                *line_stack;             /* the line number for each file */
+    void              **input_files;
+    int                *input_lines;            /* the line number for each file */
     /*  */
-    mp_node            *param_stack;            /* token list pointers for parameters */
-    int                 param_ptr;              /* first unused entry in |param_stack| */
-    int                 max_param_stack;        /* largest value of |param_ptr| */
+    mp_node            *parameter_stack;        /* token list pointers for parameters */
+    int                 parameter_ptr;          /* first unused entry in |parameter_stack| */
+    int                 max_parameter_stack;    /* largest value of |parameter_ptr| */
+    int                 parameter_size;         /* maximum number of simultaneous macro parameters */
     /*  */
     int                 file_ptr;               /* shallowest level shown by |show_context| */
     /*  */
@@ -1415,7 +1848,7 @@ typedef struct MP_instance {
     int                 expand_depth_count;     /* current expansion depth */
     int                 expand_depth;           /* current expansion depth */
     /*  */
-    mp_node             cond_ptr;               /* top of the condition stack */
+    mp_if_node          cond_ptr;               /* top of the condition stack */
     int                 if_limit;               /* upper bound on |fi_or_else| codes */
     int                 cur_if;                 /* type of conditional being worked on */
     int                 if_line;                /* line where that conditional began */
@@ -1427,13 +1860,14 @@ typedef struct MP_instance {
     int                 quoted_filename;        /* whether the filename is wrapped in " markers */
     /*  */
     int                 max_read_files;         /* maximum number of simultaneously open |readfrom| files */
-    void              **rd_file;                /* |readfrom| files */
-    char              **rd_fname;               /* corresponding file name or 0 if file not open */
-    int                 read_files;             /* number of valid entries in the above arrays */
+    int                 n_of_read_files;        /* number of valid entries in the above arrays */
+    void              **read_filehandles;       /* |readfrom| files */
+    char              **read_filenames;         /* corresponding file name or 0 if file not open */
+    /*  */
     int                 max_write_files;        /* maximum number of simultaneously open |write| */
-    void              **wr_file;                /* |write| files */
-    char              **wr_fname;               /* corresponding file name or 0 if file not open */
-    int                 write_files;            /* number of valid entries in the above arrays */
+    int                 n_of_write_files;       /* number of valid entries in the above arrays */
+    void              **write_filehandles;      /* |write| files */
+    char              **write_filenames;        /* corresponding file name or 0 if file not open */
     /*  */
     mp_value            cur_exp;                /* the value of the expression just found */
     /*  */
@@ -1459,314 +1893,10 @@ typedef struct MP_instance {
     /*  */
     mp_symbol           every_job_sym;
     /*  */
-    int                 long_help_seen;         /* has the long |\\errmessage| help been used? */
-    /*  */
     int                 ten_pow[10];            /* $10^0..10^9$ */
     int                 scaled_out;             /* amount of |scaled| that was taken out in |divide_scaled| */
     /*  */
 } MP_instance;
-
-/*tex
-
-The user's terminal acts essentially like other files of text, except that it is used both for input
-and for output. When the terminal is considered an input file, the file variable is called |term_in|,
-and when it is considered an output file the file variable is |term_out|.
-
-Sometimes it is necessary to synchronize the input/output mixture that happens on the user's terminal,
-and three system-dependent procedures are used for this purpose. The first of these, |update_terminal|,
-is called when we want to make sure that everything we have output to the terminal so far has actually
-left the computer's internal buffers and been sent. The second, |clear_terminal|, is called when we
-wish to cancel any input that the user may have typed ahead (since we are about to issue an unexpected
-error message). The third, |wake_up_terminal|, is supposed to revive the terminal if the user has
-disabled it by some instruction to the operating system. The following macros show how these operations
-can be specified:The global variable |loc| should be set so that the character to be read next by \MP\
-is in |buffer [loc]|. This character should not be blank, and we should have |loc < last|.
-
-*/
-
-// # define update_terminal()  mp_print_nl_only(mp); /* empty the terminal output buffer */
-// # define clear_terminal()                         /* clear the terminal input buffer */
-// # define wake_up_terminal() mp_print_nl_only(mp); /* cancel the user's cancellation of output */
-
-typedef enum mp_selectors {
-    mp_new_string_selector,   /* printing is deflected to the string pool */
-    mp_no_print_selector,     /* |selector| setting that makes data disappear */
-    mp_term_only_selector,    /* printing is destined for the terminal only */
-    mp_log_only_selector,     /* printing is destined for the transcript file only */
-    mp_term_and_log_selector, /* normal |selector| setting */
-    mp_first_file_selector,   /* first write file selector */
-} mp_selectors;
-
-typedef enum mp_logging_targets {
-    mp_void_logging_target,
-    mp_term_logging_target,
-    mp_file_logging_target,
-    mp_both_logging_target,
-    mp_error_logging_target,
-} mp_logging_targets;
-
-# define mp_fputs(b,f)            (mp->write_file)(mp, f, b)
-# define mp_log_string(target,s)  (mp->run_logger)(mp, target, s, strlen(s))
-# define mp_log_mpstr(target,s,l) (mp->run_logger)(mp, target, s, l)
-# define mp_log_cr(target)        (mp->run_logger)(mp, target, "\n", 1)
-# define mp_log_chr(target,s)     { unsigned char ss[2] = { s, 0 }; (mp->run_logger)(mp, target, (const char *) ss, 1); }
-# define mp_log_error(s)          (mp->run_logger)(mp, mp_error_logging_target, s, strlen(s))
-
-typedef struct mp_node_data {
-    union {
-        mp_command_code  command;
-        mp_variable_type type;
-    };
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_value_data        data;
-} mp_node_data;
-typedef struct mp_node_data *mp_symbolic_node;
-
-typedef enum mp_linecap_codes {
-    mp_butt_linecap_code,
-    mp_rounded_linecap_code,
-    mp_squared_linecap_code,
-    /* see below */
-    mp_weird_linecap_code,
-} mp_linecap_codes;
-
-typedef enum mp_linejoin_codes {
-    mp_mitered_linejoin_code,
-    mp_rounded_linejoin_code,
-    mp_beveled_linejoin_code,
-    /* we see this value being used */
-    mp_weird_linejoin_code,
-} mp_linejoin_codes;
-
-typedef enum mp_curvature_codes {
-    mp_default_curvature_code,
-    mp_always_curvature_code,
-    /* we see this value being used */
-    mp_weird_curvature_code,
-} mp_curvature_codes;
-
-# define internal_value(A)        mp->internal[(A)].v.data.n
-# define internal_string(A)       mp->internal[A].v.data.str
-# define set_internal_string(A,B) mp->internal[(A)].v.data.str=(B)
-# define internal_name(A)         mp->internal[(A)].intname
-# define set_internal_name(A,B)   mp->internal[(A)].intname=(B)
-# define internal_type(A)         mp->internal[A].v.type
-# define set_internal_type(A,B)   mp->internal[(A)].v.type=(B)
-# define internal_run(A)          mp->internal[(A)].run
-# define set_internal_run(A,B)    mp->internal[(A)].run=(B)
-
-typedef struct mp_node_data *mp_token_node;
-
-typedef struct mp_value_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_value_data        data;
-    mp_number            subscript;
-    mp_symbol            hashloc;
-    mp_node              parent;
-    mp_node              attr_head;
-    mp_node              subscr_head;
-} mp_value_node_data;
-
-typedef struct mp_pair_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_node              x_part;
-    mp_node              y_part;
-} mp_pair_node_data;
-
-typedef struct mp_pair_node_data *mp_pair_node;
-
-typedef struct mp_transform_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_node              tx_part;
-    mp_node              ty_part;
-    mp_node              xx_part;
-    mp_node              yx_part;
-    mp_node              xy_part;
-    mp_node              yy_part;
-} mp_transform_node_data;
-
-typedef struct mp_transform_node_data *mp_transform_node;
-
-typedef struct mp_color_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    union {
-        mp_node red_part;
-        mp_node cyan_part;
-    };
-    union {
-        mp_node green_part;
-        mp_node magenta_part;
-    };
-    union {
-        mp_node blue_part;
-        mp_node yellow_part;
-    };
-    union {
-        mp_node grey_part;
-        mp_node black_part;
-    };
-} mp_color_node_data;
-
-typedef struct mp_color_node_data *mp_color_node;
-
-typedef struct mp_shape_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  stacking;
-    struct mp_node_data *link;
-    /*common */
-    mp_string            pre_script;
-    mp_string            post_script;
-    union {
-        mp_number        red;
-        mp_number        cyan;
-    };
-    union {
-        mp_number        green;
-        mp_number        magenta;
-    };
-    union {
-        mp_number        blue;
-        mp_number        yellow;
-    };
-    union {
-        mp_number        black;
-        mp_number        grey;
-    };
-    /* specific to paths */
-    mp_knot              path;
-    mp_knot              pen;
-    mp_node              dash;
-    mp_number            dashscale;
-    mp_number            miterlimit;
-    unsigned char        color_model;
-    unsigned char        linejoin;
-    unsigned char        linecap;
-    unsigned char        pen_type;
-    unsigned char        curvature;
-    unsigned char        padding_1;
-    unsigned char        padding_2;
-    unsigned char        padding_3;
-} mp_shape_node_data;
-
-typedef struct mp_shape_node_data *mp_shape_node;
-
-typedef struct mp_start_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  stacking;
-    struct mp_node_data *link;
-    /* specific */
-    mp_string            pre_script;
-    mp_string            post_script;
-    mp_knot              path;
-} mp_start_node_data;
-
-typedef struct mp_start_node_data *mp_start_node;
-
-typedef struct mp_stop_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  stacking;
-    struct mp_node_data *link;
-    /* specific */
-} mp_stop_node_data;
-
-typedef struct mp_stop_node_data *mp_stop_node;
-
-typedef struct mp_dash_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_number            start_x; /* the starting $x$~coordinate in a dash node */
-    mp_number            stop_x;  /* the ending $x$~coordinate in a dash node */
-    mp_number            dash_y;  /* $y$ value for the dash list in an edge header */
-    mp_node              dash_info;
-} mp_dash_node_data;
-
-typedef struct mp_edge_header_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  padding;
-    struct mp_node_data *link;
-    /* specific */
-    mp_number            start_x;
-    mp_number            stop_x;
-    mp_number            dash_y;
-    mp_node              dash_info;
-    mp_number            minx;
-    mp_number            miny;
-    mp_number            maxx;
-    mp_number            maxy;
-    mp_node              bblast;
-    int                  bbtype; /* tells how bounding box data depends on |truecorners| */
-    int                  ref_count; 
-    mp_node              list;
-    mp_node              obj_tail;  
-} mp_edge_header_node_data;
-
-typedef struct mp_edge_header_node_data *mp_edge_header_node;
-
-typedef enum mp_bound_codes {
-    mp_no_bounds_code,    /* |bbtype| value when bounding box data is valid for all |truecorners| values */
-    mp_bounds_set_code,   /* |bbtype| value when bounding box data is for |truecorners|${}\le 0$ */
-    mp_bounds_unset_code, /* |bbtype| value when bounding box data is for |truecorners|${}>0$ */
-} mp_bound_codes;
-
-typedef struct mp_if_node_data {
-    mp_variable_type     type;
-    mp_name_type_type    name_type;
-    int                  hasnumber;
-    int                  if_line_field;
-    struct mp_node_data *link;
-} mp_if_node_data;
-
-typedef struct mp_if_node_data *mp_if_node;
-
-typedef enum mp_expression_scan_types {
-    mp_expression_scan_code,
-    mp_primary_scan_code,
-    mp_secondary_scan_code,
-    mp_tertiary_scan_code,
-} mp_expression_scan_types;
-
-typedef enum mp_internal_action_types {
-    mp_initialize_internal_code,
-    mp_save_internal_code, 
-    mp_restore_internal_code, 
- // mp_tracing_internal_code, 
-} mp_internal_action_types; 
 
 /* mp header stuff */
 
@@ -1840,10 +1970,9 @@ extern  void            mp_push_path_value            (MP mp, mp_knot k);
 
 extern  void            mp_new_randoms                (MP mp);
 
-/* mplib export header stuff */
+/* library interfaces */
 
 extern MP               mp_initialize                 (MP_options *opt);
-extern void             mplib_shipout_backend         (MP mp, void *h);
 extern  int             mp_run                        (MP mp);
 extern  int             mp_execute                    (MP mp, const char *s, size_t l);
 extern  int             mp_finish                     (MP mp);
@@ -1854,10 +1983,13 @@ extern void            *mp_userdata                   (MP mp);
 extern int              mp_status                     (MP mp);
 extern int              mp_finished                   (MP mp);
 
+extern void             mplib_shipout_backend         (MP mp, void *h);
 
-extern mp_edge_object  *mp_graphic_export             (MP mp, mp_edge_header_node h);
-extern void             mp_graphic_toss_objects       (mp_edge_object *hh);
-extern void             mp_graphic_toss_object        (mp_graphic_object *p);
+extern mp_bytemap      *mp_bytemap_get_by_index       (MP mp, int index);
+extern int              mp_bytemap_new_by_index       (MP mp, int index, int nx, int ny, int nz, unsigned char *data);
+
+extern void             mp_graphic_toss_object        (MP mp, mp_graphic_object_node p);
+extern void             mp_graphic_toss_objects       (MP mp, mp_edge_object_node p);
 
 /* memory management header stuff */
 

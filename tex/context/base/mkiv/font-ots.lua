@@ -3355,6 +3355,7 @@ local function testrun(disc,t_run,c_run,...)
                 replace = nil
             end
         end
+        renewed = true
         setlink(disc,next)
      -- pre, post, replace, pretail, posttail, replacetail = getdisc(disc,true)
     end

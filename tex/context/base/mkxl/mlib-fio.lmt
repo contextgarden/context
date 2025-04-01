@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['mlib-fio'] = {
 }
 
 local type = type
-local find = string.find
+local find, formatters = string.find, string.formatters
 local concat = table.concat
 local suffix, addsuffix, is_writable = file.suffix, file.addsuffix, file.is_writable
 local urlhashed = url.hashed
@@ -309,6 +309,100 @@ local function handlewarning(instance, message)
     report()
 end
 
+local function handlestatus(instance)
+    local info = metapost.getinstanceinfo(instance)
+    local stat = mplib.getstatistics(instance)
+    local call = mplib.getcallbackstate(instance)
+    local fstr = "    %-12s : %s"
+    local fnum = "    %-12s : %i"
+    local function showpool(name)
+        local t     = stat[name]
+        local state = t.state
+        local used  = t.used
+        if state == "pooled" then -- max pool used kept size
+            local pool = t.pool
+            local max  = t.max
+            local size = t.size
+            report(fstr,name,formatters
+                ["pool %i, kept %i, used %i, max %i, size %i, memory %i, pooled %i"](
+                    pool, t.kept, used, max, size, max * size, pool * size
+                )
+            )
+        elseif state == "persistent" then -- max used size
+            local size = t.size
+            local max  = t.max
+            if max > 0 and max ~= used then
+                report(fstr,name,formatters
+                    ["used %i, max %i, size %i, memory %i"](
+                        used, max, size, used * size
+                    )
+                )
+            else
+                report(fstr,name,formatters
+                    ["used %i, size %i, memory %i"](
+                        used, size, used * size
+                    )
+                )
+            end
+        elseif state == "counted" then -- used count
+            report(fstr,name,formatters
+                ["used %i, memory %i"](
+                    used, t.count
+                )
+            )
+        end
+    end
+    report()
+    report("current status")
+    report("  instance")
+        report(fstr,"name",info.name)
+        report(fstr,"method",info.method)
+    report("  pooled")
+        showpool("symbols")
+        showpool("knots")
+        showpool("tokens")
+        showpool("pairs")
+        showpool("colors")
+        showpool("transforms")
+        showpool("dashes")
+        showpool("shapes")
+        showpool("values")
+        showpool("start")
+        showpool("stop")
+        showpool("save")
+        showpool("ifstack")
+        showpool("loopstate")
+        showpool("subst")
+        showpool("avlsymbols")
+        showpool("edgeobjects")
+        showpool("dashobjects")
+        showpool("knotobjects")
+        showpool("edgeheaders")
+        showpool("shapeobjects")
+        showpool("startobjects")
+        showpool("stopobjects")
+    report("  permanent")
+        showpool("identifiers")
+        showpool("internals")
+        showpool("bytemaps")
+    report("  callbacks")
+      for k, v in table.sortedhash(call) do
+        report(fnum,k, v)
+      end
+        report(fnum,"total",call.count)
+    report("  todo")
+        report(fnum,"characters",stat.characters)
+        report(fnum,"strings",stat.strings)
+        report(fnum,"bytes",stat.bytes)
+        report(fnum,"input",stat.input)
+        report(fnum,"parameters",stat.parameters)
+        report(fnum,"maxopen",stat.maxopen)
+        report(fnum,"buffer",stat.buffer)
+    call.count = nil
+    report()
+end
+
+
 function mplib.new(specification)
     local openfile = fileopener()
     local handlers = specification.handlers
@@ -333,6 +427,7 @@ function mplib.new(specification)
         run_logger     = handlers.log     or function(...) handlelog    (instance,...) end,
         run_error      = handlers.error   or function(...) handleerror  (instance,...) end,
         run_warning    = handlers.warning or function(...) handlewarning(instance,...) end,
+        run_status     = handlers.status  or function(...) handlestatus (instance,...) end,
     }
     return instance, openfile("terminal")
 end

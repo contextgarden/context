@@ -374,7 +374,7 @@ static char *mp_string_scaled(MP mp, int s)
         s = -s;
     }
     /*tex The integer part: */
-    snprintf ((scaled_string+i), 12, "%d", (int) (s / unity));
+    snprintf((scaled_string+i), 12, "%d", (int) (s / unity));
     while (*(scaled_string+i)) {
         i++;
     }
@@ -656,13 +656,13 @@ static int mp_round_decimals(MP mp, unsigned char *b, int k)
 {
     unsigned a = 0;
     (void) mp; 
-    for (int l = k-1; l >= 0; l-- ) {
+    for (int l = k - 1; l >= 0; l--) {
         if (l < 16) {
-            /*tex digits for |k>=17| cannot affect the result */
-            a = (a + (unsigned) (*(b+l) - '0') * two) / 10;
+            /*tex digits for |k >= 17| cannot affect the result */
+            a = (a + (unsigned) (*(b + l) - '0') * two) / 10;
         }
     }
-    return (int) (a + 1)/2;
+    return (int) (a + 1)/2; /* (a + 1)  >> 1 */
 }
 
 /*tex 
@@ -709,7 +709,7 @@ static void mp_scaled_scan_fractional_token(MP mp, int n)
         k++;
         mp->cur_input.loc_field++;
     } while (mp->char_class[mp->buffer[mp->cur_input.loc_field]] == mp_digit_class);
-    f = mp_round_decimals(mp, (unsigned char *)(mp->buffer+mp->cur_input.loc_field-k), (int) k);
+    f = mp_round_decimals(mp, (unsigned char *)(mp->buffer + mp->cur_input.loc_field - k), (int) k);
     if (f == unity) {
         n++;
         f = 0;
@@ -795,7 +795,7 @@ static void mp_scaled_velocity(MP mp, mp_number *ret, mp_number *st, mp_number *
     result is $+1$, 0, or~$-1$ in the three respective cases.
 */
 
-static int mp_scaled_ab_vs_cd (mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
+static int mp_scaled_ab_vs_cd(mp_number *a_orig, mp_number *b_orig, mp_number *c_orig, mp_number *d_orig)
 {
     int a = a_orig->data.val;
     int b = b_orig->data.val;
@@ -1523,7 +1523,7 @@ static void mp_next_random(MP mp, mp_number *ret)
     if ( mp->j_random == 0) {
         mp_new_randoms(mp);
     } else {
-        mp->j_random = mp->j_random-1;
+        mp->j_random = mp->j_random - 1;
     }
     mp_scaled_clone(ret, &(mp->randoms[mp->j_random]));
 }

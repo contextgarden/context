@@ -71,9 +71,9 @@
 
 % This will become a more advanced layout controller soon:
 
-\newconditional\layoutlefttoright   \layoutlefttoright\conditionaltrue
+\newconditional\layoutlefttoright   \layoutlefttoright \conditionaltrue
 \newconditional\displaylefttoright  \displaylefttoright\conditionaltrue
-\newconditional\inlinelefttoright   \inlinelefttoright\conditionaltrue
+\newconditional\inlinelefttoright   \inlinelefttoright \conditionaltrue
 
 \permanent\protected\def\lefttoright
   {\ifvmode

@@ -123,7 +123,7 @@ lpegpatterns.urlunescaper  = unescaper
 lpegpatterns.urlgetcleaner = getcleaner
 
 function url.unescapeget(str)
-    return lpegmatch(getcleaner,str)
+    return str and lpegmatch(getcleaner,str) or ""
 end
 
 -- todo: reconsider Ct as we can as well have five return values (saves a table)

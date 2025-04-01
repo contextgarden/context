@@ -2944,3 +2944,102 @@ def lmt_showrivers(expr stepsize, width, height, showpolygon) =
     setbounds q to last_potraced_bounds enlarged (-2,-2) ;
     draw q xysized (width,height) ;
 enddef;
+
+% Sampled Functions
+
+% draw lmt_samplefunction [
+%     preamble = "local pi, sin, cos,  tan = math.pi, math.sin, math.cos, math.tan"
+%   % code     = "return sin(x*x)",
+%   % code     = "return acos(sin(10*x))",
+%   % code     = "return math.max(0,sin(x))",
+%   % code     = "return sin(1/x)",
+%   % code     = "return sin(x)/x",
+%   % code     = "return x/abs(x)",
+%   % code     = "return 1/x",
+%   % code     = "return tan(x)",
+%   % code     = "return x > 0 and (1 + x) or 0",
+%   % code     = "if x > 0 then return cos(x) else return 0 end",
+%   % code     = "return x % 1",
+%   % code     = "return math.floor(x)",
+%   % code     = "return x*x*x/(2*x*x - 6)",
+%     code     = "return sin(x) % 1",
+%   % code     = "return math.acos(sin(10*x))",
+%   % code     = "return x/sin(x)",
+%     %
+%     xmin     = -5*pi,
+%     xmax     =  5*pi,
+%     ymin     =   -pi,
+%     ymax     =  5*pi,
+% ]
+
+presetparameters "samplefunction" [
+    preamble   = "",
+  % code       = "1/x",
+  % xmin       =   -1,
+  % xmax       =    1,
+  % ymin       =   -1,
+  % ymax       =    1,
+  % dmin       =    3,
+  % dmax       =   50,
+  % smax       = 5000,
+  % eps        =    0.001,
+  % curvature  =    0.4,
+] ;
+
+def lmt_samplefunction = applyparameters "samplefunction" "lmt_do_samplefunction" enddef ;
+
+def lmt_load_mlib_fnc =
+    runscript("lua.registercode('mlib-fnc')");
+    extra_beginfig := extra_beginfig & % todo: use different hook
+        "runscript(" & ditto & "mp.lmt_samplefunctions_cleanup()" & ditto & ")" ;
+    let lmt_load_mlib_fnc = relax ;
+enddef ;
+
+vardef lmt_do_samplefunction =
+    lmt_load_mlib_fnc ;
+
+    pushparameters "samplefunction" ;
+
+    lua.mp.lmt_samplefunction_do()
+
+    popparameters ;
+
+    lua.mp.lmt_samplefunction_flush()
+enddef ;
+
+% Parametric plots
+
+
+% path p ; p := lmt_parametricplot [
+%     preamble  = "local sin, cos = math.sin, math.cos",
+%     xcode     = "return 0.1*t*cos(t)",
+%     ycode     = "return 0.1*t*sin(t)",
+%     tmin      =  -4pi,
+%     tmax      =   4pi,
+%     tolerance = 0.001,
+% ] scaled 10 ;
+%
+% draw p ; drawdot p withcolor red ;
+
+presetparameters "parametricplot" [
+    preamble  = "",
+  % xcode     = "t",
+  % ycode     = "t",
+  % tmin      = -1,
+  % tmax      =  1,
+  % tolerance =  0.001,
+] ;
+
+def lmt_parametricplot = applyparameters "parametricplot" "lmt_do_parametricplot" enddef ;
+
+vardef lmt_do_parametricplot =
+    lmt_load_mlib_fnc ;
+
+    pushparameters "parametricplot" ;
+
+    lua.mp.lmt_parametricplot_do()
+
+    popparameters ;
+
+    lua.mp.lmt_parametricplot_flush()
+enddef ;

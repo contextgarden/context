@@ -52,6 +52,7 @@ local nuts = {
     append                  = direct.append,
     appendaftertail         = direct.appendaftertail,
     checkdiscretionaries    = direct.checkdiscretionaries,
+    checkdiscretionary      = direct.checkdiscretionary,
     collapsing              = direct.collapsing,
     copy                    = direct.copy,
     copylist                = direct.copylist,

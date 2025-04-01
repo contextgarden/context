@@ -28,6 +28,8 @@ function figures.bitmapimage(t)
             width       = t.width,
             height      = t.height,
             data        = data,
+            mask        = t.mask,
+            bytes       = t.bytes,
             colorspace  = t.colorspace,
             format      = t.format,
         }

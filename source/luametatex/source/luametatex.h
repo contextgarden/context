@@ -107,7 +107,7 @@
 # define luametatex_release          07
 # define luametatex_version_string   "2.11.07"
 # define luametatex_version_number   211.7
-# define luametatex_development_id   20250226
+# define luametatex_development_id   20250401
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"

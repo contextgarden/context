@@ -13,7 +13,7 @@
 
 \writestatus{loading}{ConTeXt Structure Macros / Document Structure}
 
-\registerctxluafile{strc-doc}{}
+\registerctxluafile{strc-doc}{autosuffix}
 
 \unprotect
 

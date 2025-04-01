@@ -1304,7 +1304,7 @@ static void mp_next_random(MP mp, mp_number *ret)
     if (mp->j_random == 0) {
         mp_new_randoms(mp);
     } else {
-        mp->j_random = mp->j_random-1;
+        mp->j_random = mp->j_random - 1;
     }
     mp_decimal_clone(ret, &(mp->randoms[mp->j_random]));
 }

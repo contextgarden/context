@@ -257,7 +257,7 @@ implement {
     name      = "mathclassvalue",
  -- usage     = "value",
     public    = true,
-    arguments = "string",
+    arguments = "string", -- here we also accent \mathclassvalue foo so no {}
     actions = function(name)
      -- return integer_value, classes[name] or ordinary_class
         context(tostring(classes[name] or ordinary_class))
@@ -488,13 +488,13 @@ do
 
     implement {
         name      = "registergroupset",
-        arguments = "2 strings",
+        arguments = "2 arguments",
         actions   = dictionaries.registergroupset,
     }
 
     implement {
         name      = "groupsetgroup",
-        arguments = "string",
+        arguments = "argument",
         actions   = { dictionaries.groupsetgroup, context },
     }
 
@@ -1188,7 +1188,7 @@ do -- experimental, not stored in the format
 
     implement {
         name      = "tagmfunctionlab", -- this one will be replaced by the next
-        arguments = { "integer", "string", "string" },
+        arguments = { "integer", "argument", "argument" },
         actions   = function(kind,tag,method)
             texsetattribute(a_mathcategory,identify(kind,tag,method))
         end
@@ -1197,7 +1197,7 @@ do -- experimental, not stored in the format
     implement {
         name      = "tagmfunctionlabattribute",
         usage     = "value",
-        arguments = { "integer", "string", "string" },
+        arguments = { "integer", "argument", "argument" },
         actions   = function(kind,tag,method)
             return integer_value, identify(kind,tag,method)
         end

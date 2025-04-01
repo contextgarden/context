@@ -289,17 +289,17 @@
 %     \stopchapter
 % \stoptext
 
-% todo: #1 => "#1" ... adapt lua code for name and number
+% definec at the lua end:
 
-\permanent\def\structurenumber               {\clf_structurenumber}
-\permanent\def\structuretitle                {\clf_structuretitle}
-\permanent\def\structurevariable           #1{\clf_structurevariable         {#1}}
-\permanent\def\structureuservariable       #1{\clf_structureuservariable     {#1}}
-\permanent\def\structurecatcodedget        #1{\clf_structurecatcodedget      {#1}}    % bad name
-\permanent\def\structuregivencatcodedget #1#2{\clf_structuregivencatcodedget {#1}#2 } % bad name
-\permanent\def\structureautocatcodedget  #1#2{\clf_structureautocatcodedget  {#1}{#2}}
-\permanent\def\namedstructurevariable    #1#2{\clf_namedstructurevariable    {#1}{#2}}
-\permanent\def\namedstructureuservariable#1#2{\clf_namedstructureuservariable{#1}{#2}}
+%permanent\def\structurenumber               {\clf_structurenumber}
+%permanent\def\structuretitle                {\clf_structuretitle}
+%permanent\def\structurevariable           #1{\clf_structurevariable         {#1}}
+%permanent\def\structureuservariable       #1{\clf_structureuservariable     {#1}}
+%permanent\def\structurecatcodedget        #1{\clf_structurecatcodedget      {#1}}    % bad name
+%permanent\def\structuregivencatcodedget #1#2{\clf_structuregivencatcodedget {#1}#2 } % bad name
+%permanent\def\structureautocatcodedget  #1#2{\clf_structureautocatcodedget  {#1}{#2}}
+%permanent\def\namedstructurevariable    #1#2{\clf_namedstructurevariable    {#1}{#2}}
+%permanent\def\namedstructureuservariable#1#2{\clf_namedstructureuservariable{#1}{#2}}
 
 % compatibility issue:
 %
@@ -329,13 +329,16 @@
 
 % \newconditional\c_strc_rendering_continuous % not used (mkii ?)
 
-\permanent\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}} % name, level|parent
-\permanent\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}     % name
-\permanent\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}  % level, number (+/-)
-\permanent\def\getstructurenumber          #1{\clf_getstructurenumber         {#1}}    % level
-\permanent\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}  % level, what
-\permanent\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     {#1}}    % level
-\permanent\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}  % level, what
+% defined at the lua end:
+%
+%permanent\def\setstructurelevel         #1#2{\clf_setstructurelevel         {#1}{#2}} % name, level|parent
+%permanent\def\getstructurelevel           #1{\clf_getstructurelevel         {#1}}     % name
+%permanent\def\setstructurenumber        #1#2{\clf_setstructurenumber         #1{#2}}  % level, number (+/-)
+%permanent\def\getstructurenumber          #1{\clf_getstructurenumber         {#1}}    % level
+%permanent\def\getsomestructurenumber    #1#2{\clf_getsomestructurenumber     #1{#2}}  % level, what
+%permanent\def\getfullstructurenumber      #1{\clf_getfullstructurenumber     {#1}}    % level
+%permanent\def\getsomefullstructurenumber#1#2{\clf_getsomefullstructurenumber #1{#2}}  % level, what
+
 \permanent\def\getspecificstructuretitle   #1{\clf_getspecificstructuretitle {#1}{\headparameter\s!catcodes}}
 
 % structure heads (like \startchapter)

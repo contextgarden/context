@@ -8,7 +8,7 @@ return {
     primitives = {
         --
         "tracingtitles", "tracingequations", "tracingcapsules", "tracingchoices",
-        "tracingspecs", "tracingcommands", "tracingrestores", "tracingmacros",
+        "tracingspecs", "tracingcommands", "tracingrestores", "tracingmacros", "tracingdependencies",
         "tracingoutput", "tracingstats", "tracingonline", "year", "month", "day",
         "time", "hour", "minute", "charcode", "charwd", "charht", "chardp",
         "charic", "pausing", "showstopping", "texscriptmode", "overloadmode",
@@ -56,6 +56,11 @@ return {
         "withgreyscale", "withcolor", "withrgbcolor", "withcmykcolor", "clip",
         "setgroup", "setbounds", "message", "errmessage", "errhelp",
         "lessdigits",
+        --
+        "newbytemap", "copybytemap", "resetbytemap", "resetbytemaps",
+        "withbytemap", "bytevalue", "bytefound", "bytepath",
+        "setbytemapoption", "setbytemapoffset", "reducebytemap",
+        "setbytemap", "bytemapbounds", "clipbytemap", "setbyte",
         --
         -- aliased
         --
@@ -137,6 +142,8 @@ return {
         "showproperty", "showhashentry",
         --
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
+        --
+        "withbytemask",
     },
     internals = { -- we need to remove duplicates above
         --

@@ -107,6 +107,8 @@
     tex.enableprimitives("normal",primitives)
 
     function tex.enableprimitives() end
+
+    if tex.permitmathobsolete then tex.permitmathobsolete(true) end
 }
 
 \def\space{ }

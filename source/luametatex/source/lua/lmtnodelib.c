@@ -424,23 +424,6 @@ int lmt_get_math_parameter(lua_State *L, int n, int dflt)
 
 */
 
-// void lmt_push_node(lua_State *L)
-// {
-//     halfword n = null;
-//     if (lua_type(L, -1) == LUA_TNUMBER) {
-//         n = lmt_tohalfword(L, -1);
-//     }
-//     lua_pop(L, 1);
-//     if ((! n) || (n > lmt_node_memory_state.nodes_data.allocated)) {
-//         lua_pushnil(L);
-//     } else {
-//         halfword *a = lua_newuserdatauv(L, sizeof(halfword), 0);
-//         *a = n;
-//         lua_get_metatablelua(node_instance);
-//         lua_setmetatable(L, -2);
-//     }
-// }
-
 void lmt_push_node(lua_State *L)
 {
     halfword n = null;
@@ -10286,12 +10269,7 @@ static int nodelib_direct_checkdiscretionaries(lua_State *L) {
 static int nodelib_direct_checkdiscretionary(lua_State *L) {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == disc_node) {
-        halfword p = disc_pre_break_head(n);
-        disc_pre_break_tail(n) = p ? tex_tail_of_node_list(p) : null;
-        p = disc_post_break_head(n);
-        disc_post_break_tail(n) = p ? tex_tail_of_node_list(p) : null;
-        p = disc_no_break_head(n);
-        disc_no_break_tail(n) = p ? tex_tail_of_node_list(p) : null;
+        tex_check_disc_field(n);
     }
     return 0;
 }

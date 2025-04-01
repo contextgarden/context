@@ -86,10 +86,10 @@ local installwhatsits  do
         leaderlevel = leaderlevel - 1
     end
 
-    local function flushlatelua(current,h,v)
+    local function flushlatelua(current,h,v,r)
         -- Here we assume management by the lua function so currently we don't
         -- need to check for leaderlevel and it can even be counterproductive.
-        return latelua(current,h,v)
+        return latelua(current,h,v,r)
     end
 
     local function flushwriteout(current)
@@ -110,10 +110,11 @@ local installwhatsits  do
         end
     end
 
-    local function flushsavepos(current,pos_h,pos_v)
+    local function flushsavepos(current,pos_h,pos_v,pos_r)
         local jp = job.positions
         jp.lastx = round(pos_h)
         jp.lasty = round(pos_v)
+        jp.lastr = pos_r or 0
     end
 
     local function flushuserdefined()

@@ -6876,7 +6876,7 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         /* */
 
         case vadjust_cmd:          mode == vmode ? tex_aux_run_illegal_case()  : tex_run_vadjust();           break;
-        case discretionary_cmd:    mode == vmode ? tex_aux_run_new_paragraph() : tex_run_discretionary(); break;
+        case discretionary_cmd:    mode == vmode ? tex_aux_run_new_paragraph() : tex_run_discretionary();     break;
         case explicit_space_cmd:   mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_space();         break;
         case hmove_cmd:            mode == vmode ? tex_aux_run_move()          : tex_aux_run_illegal_case();  break;
         case vmove_cmd:            mode == vmode ? tex_aux_run_illegal_case()  : tex_aux_run_move();          break;    

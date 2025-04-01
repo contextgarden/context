@@ -135,6 +135,7 @@ local default = { -- not r and paragraphs etc
         ps  = false, -- parshape
         dir = 0,     -- obsolete
         r2l = false, -- righttoleft
+        dir = false,
     }
 }
 
@@ -148,9 +149,10 @@ local f_region     = formatters["region:%s"]
 local f_tag_three  = formatters["%s:%s:%s"]
 local f_tag_two    = formatters["%s:%s"]
 
-local c_realpageno <const> = texiscount("realpageno")
-local d_strutht    <const> = texisdimen("strutht")
-local d_strutdp    <const> = texisdimen("strutdp")
+local c_realpageno        <const> = texiscount("realpageno")
+local d_strutht           <const> = texisdimen("strutht")
+local d_strutdp           <const> = texisdimen("strutdp")
+local c_inlinelefttoright <const> = texiscount("inlinelefttoright")
 
 -- Because positions are set with a delay we cannot yet make the tree -- so that
 -- is a finalizer step. But, we already have a dual split.
@@ -864,16 +866,18 @@ local nofpages   = nil
 local getpos, gethpos, getvpos, getrpos
 
 function jobpositions.registerhandlers(t)
-    getpos  = t and t.getpos  or function() return 0, 0 end
-    getrpos = t and t.getrpos or function() return 0, 0, 0 end
-    gethpos = t and t.gethpos or function() return 0 end
-    getvpos = t and t.getvpos or function() return 0 end
+    getpos    = t and t.getpos    or function() return 0, 0 end
+    gethvrpos = t and t.gethvrpos or function() return 0, 0, 0 end
+    gethpos   = t and t.gethpos   or function() return 0 end
+    getvpos   = t and t.getvpos   or function() return 0 end
+    getrpos   = t and t.getrpos   or function() return 0 end
 end
 
-function jobpositions.getpos () return getpos () end
-function jobpositions.getrpos() return getrpos() end
-function jobpositions.gethpos() return gethpos() end
-function jobpositions.getvpos() return getvpos() end
+function jobpositions.getpos   () return getpos   () end
+function jobpositions.gethvrpos() return gethvrpos() end
+function jobpositions.gethpos  () return gethpos  () end
+function jobpositions.getvpos  () return getvpos  () end
+function jobpositions.getrpos  () return getrpos  () end
 
 -------- jobpositions.getcolumn() return column end
 
@@ -890,7 +894,8 @@ local function setall(name,p,x,y,w,h,d,extra)
         e = extra ~= "" and extra or nil,
         r = region,
         c = column,
-        r2l = texgetinteger("inlinelefttoright") == 1 and true or nil,
+        r2l = texgetinteger(c_inlinelefttoright) == 1 and true or nil,
+        dir = texget("pardirection") == 1 and true or nil,
     }
 end
 
@@ -916,7 +921,13 @@ local function enhance(data)
         local y = getvpos()
         data.y = y ~= 0 and y or nil
     end
-
+-- if data.r2l then
+--     print(">>>",data.r2l,getrpos())
+-- end
+-- local r2l = getrpos()
+-- if r2l == 1 then
+--     data.r2l = nil
+-- end
     -- This is a quick hack. We also need to handel the other text areas
     -- end. It has to do with backgrounds (see mathincontext-setups.tex)
 
@@ -1068,7 +1079,7 @@ jobpositions.e_column = e_column
 
 implement {
     name      = "bposcolumn",
-    arguments = "string",
+    arguments = "argument",
     actions   = function(tag)
         insert(columns,tag)
         column = tag
@@ -1077,7 +1088,7 @@ implement {
 
 implement {
     name      = "bposcolumnregistered",
-    arguments = "string",
+    arguments = "argument",
     actions   = function(tag)
         insert(columns,tag)
         column = tag
@@ -1389,7 +1400,8 @@ do
                 x   = true,
                 y   = true,
                 n   = nofparagraphs > 0 and nofparagraphs or nil,
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
             }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
@@ -1413,8 +1425,9 @@ do
                 h   = h ~= 0 and h or nil,
                 d   = d ~= 0 and d or nil,
                 n   = nofparagraphs > 0 and nofparagraphs or nil,
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
-            }
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
+           }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
         end
@@ -1439,7 +1452,8 @@ do
                 h = h ~= 0 and h or nil,
                 d = d ~= 0 and d or nil,
                 n = nofparagraphs > 0 and nofparagraphs or nil,
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
             }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
@@ -1464,7 +1478,8 @@ do
                 d   = d ~= 0 and d or nil,
                 n   = nofparagraphs > 0 and nofparagraphs or nil,
                 e   = scanstring(),
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
             }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
@@ -1488,7 +1503,8 @@ do
                 h   = h ~= 0 and h or nil,
                 d   = d ~= 0 and d or nil,
                 n   = nofparagraphs > 0 and nofparagraphs or nil,
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
             }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
@@ -1514,7 +1530,8 @@ do
                 h   = h ~= 0 and h or nil,
                 d   = d ~= 0 and d or nil,
                 n   = nofparagraphs > 0 and nofparagraphs or nil,
-                r2l = texgetinteger("inlinelefttoright") == 1 or nil,
+                r2l = texgetinteger(c_inlinelefttoright) == 1 or nil,
+                dir = texget("pardirection") == 1 and true or nil,
             }
             tobesaved[name] = spec
             ctx_latelua { action = enhance, specification = spec }
@@ -2395,7 +2412,7 @@ implement {
 
 implement {
     name      = "doifelsepositionsonsamepage",
-    arguments = "argument", -- string
+    arguments = "argument",
     public    = true,
     protected = true,
     actions   = function(list)
@@ -2405,7 +2422,7 @@ implement {
 
 implement {
     name      = "doifelsepositionsonthispage",
-    arguments = "argument", -- string
+    arguments = "argument",
     public    = true,
     protected = true,
     actions   = function(list)
@@ -2490,6 +2507,7 @@ local newsavepos = nodes.pool.savepos
 
 jobpositions.lastx = 0
 jobpositions.lasty = 0
+jobpositions.lastr = 0
 
 implement {
     name       = "savepos",
@@ -2517,5 +2535,15 @@ implement {
     public    = true,
     actions   = function()
         return dimension_code, jobpositions.lasty
+    end
+}
+
+implement {
+    name      = "lastrpos",
+    usage     = "value",
+    protected = true,
+    public    = true,
+    actions   = function()
+        return integer_code, jobpositions.lastr
     end
 }
