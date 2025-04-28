@@ -1059,9 +1059,9 @@ local makeelement  do
                 Pg         = pageref,
                 K          = pdfreference(knum),
                 A          = attributes,
-             -- Alt        = alternate,
+                Alt        = actualtext or nil,
                 NS         = namespace,
-                ActualText = actualtext or nil,
+             -- ActualText = actualtext or nil, -- shared object with Alt?
                 AF         = af or nil,
             }
             dnum = pdfflushobject(dict)
@@ -1087,9 +1087,9 @@ local makeelement  do
                 Pg         = pageref,
                 K          = kids,
                 A          = attributes,
-             -- Alt        = alternate,
+                Alt        = actualtext or nil,
                 NS         = namespace,
-                ActualText = actualtext or nil,
+             -- ActualText = actualtext or nil, -- shared object with Alt?
                 AF         = af or nil,
             }
             dnum = pdfreserveobject()
@@ -1138,8 +1138,8 @@ local function makecontent(start,parent,id,specification,range)
             Type = pdf_mcr,
             Pg   = pageref,
             MCID = last,
-            Alt  = pdfunicode(label ~= "" and label or "image"),
         }
+        parent.dict.Alt  = pdfunicode(label ~= "" and label or "image")
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then
         kids[#kids+1] = last

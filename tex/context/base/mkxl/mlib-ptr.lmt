@@ -522,7 +522,9 @@ potrace.contourplot = potracecontourplot
 potrace.checked     = potracechecked
 potrace.convert     = potraceconvert
 
--- for now we put this here:
+-- For now we put this here. Timestamp: bytemaps were added in March 2025, around the time I
+-- enjoyed attending Pineapple Thief (good view on the drums) and Rendezvous Point (perfect,
+-- also sound-wise for all instruments) concerts as a reward.
 
 function mp.bytemap_load_from_file(index,filename)
  -- local bytes, nx, ny, nz = potrace.fromfile {

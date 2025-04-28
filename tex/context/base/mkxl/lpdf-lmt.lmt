@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['lpdf-lmt'] = {
 
 -- There is no way that a lua based backend can compete performance wise with the
 -- original one for relative simple text runs. And we're talking seconds here on say
--- 500 pages with paragraphs alternativng between three fonts and colors. But such
+-- 500 pages with paragraphs alternating between three fonts and colors. But such
 -- documents are rare so in practice we are quite okay, especially because in
 -- ConTeXt we can gain quite a bit elsewhere. So, when we loose 30% on such simple
 -- documents, we break even on for instance the manual, and gain 30% on Thomas's
@@ -3323,22 +3323,42 @@ local openfile, closefile  do
         usedname = filename
     end
 
+    local function geterrorfilename()
+        if environment.arguments.signal == "qr" then
+            if file.nameonly(tex.jobname) == "s-system-error" then
+                -- recursing
+            else
+                -- if really needed we can generate a pdf directly
+                local pdfname = tex.jobname .. "-errorstate.pdf"
+                table.save("context-lmtx-error.lua",job.errorstate)
+             -- local joke = os.execute ("context --global --purgeall --once s-system-error.mkxl --result=" .. pdfname)
+                local joke = os.resultof("context --global --purgeall --once s-system-error.mkxl --result=" .. pdfname)
+                if lfs.isfile(pdfname) then
+                    return pdfname
+                end
+            end
+        end
+        return resolvers.findfile("context-lmtx-error.pdf")
+    end
+
     closefile = function(abort)
         if abort then
             close(f)
             if not environment.arguments.nodummy then
                 f = io.open(abort,"wb")
                 if f then
-                    local name = resolvers.findfile("context-lmtx-error.pdf")
+                f:close()
+                    local name = geterrorfilename()
                     if name then
                         local data = io.loaddata(name)
                         if data then
+                f = io.open(abort,"wb")
                             f:write(data)
                             f:close()
                             return
                         end
                     end
-                    f:close()
+--                     f:close()
                 end
             end
             os.remove(abort)

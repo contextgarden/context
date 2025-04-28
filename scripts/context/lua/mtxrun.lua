@@ -2142,7 +2142,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 42643, stripped down to: 23053
+-- original size: 44262, stripped down to: 24008
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2309,6 +2309,61 @@ function table.allkeys(t)
   end
  end
  return sortedkeys(keys)
+end
+if lua.getcheckedkeys then
+ local getcheckedkeys=lua.getcheckedkeys
+ local getstringkeys=lua.getstringkeys
+ local getnumerickeys=lua.getnumerickeys
+ local getkeys=lua.getallkeys
+ local comparekeys=lua.comparekeys
+ local sort=table.sort
+ sortedkeys=function(tab)
+  if tab then
+   local srt,category=getcheckedkeys(tab)
+   if category==0 then
+   elseif category==3 then
+    sort(srt,comparekeys)
+   else
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedhashonly=function(tab)
+  if tab then
+   local srt,n=getstringkeys(tab)
+   if n>1 then
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedindexonly=function(tab)
+  if tab then
+   local srt,n=getnumerickeys(tab)
+   if n>1 then
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedhashkeys=function(tab,cmp) 
+  if tab then
+   local srt,n=getkeys(tab) 
+   if n>1 then
+    sort(srt,cmp)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
 end
 table.sortedkeys=sortedkeys
 table.sortedhashonly=sortedhashonly
@@ -16577,6 +16632,88 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-sig"] = package.loaded["util-sig"] or true
+
+-- original size: 3509, stripped down to: 1836
+
+if not modules then modules={} end modules ['util-sig']={
+ version=1.001,
+ comment="companion to luat-lib.mkiv",
+ author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+ copyright="PRAGMA ADE / ConTeXt Development Team",
+ license="see context related readme files"
+}
+local type,dofile=type,dofile
+local format=string.format
+local resultof=os.resultof
+utilities=utilities or {}
+utilities.signals=utilities.signals or {}
+local signals=utilities.signals
+local loaded=table.setmetatableindex(function(t,signal)
+ local signalled=false
+ if type(signal)=="string" then
+  local found=resolvers.findfile("util-sig-imp-"..signal..".lua") or ""
+  if found~="" then
+   local triggers=dofile(found)
+   if triggers then
+    signalled=triggers.trigger
+   end
+  end
+  if type(signalled)~="function" then
+   signalled=function(state,run)
+    local c=format("mtxrun --script %s --state=%s --run=%i",signal,state,run)
+    resultof(c)
+   end
+  end
+ end
+ t[signal]=signalled
+ return signalled
+end)
+utilities.signals.version=1.001
+local configuration="ctxsignals.lua"
+signals.configuration=configuration
+function signals.loadstate()
+ local name=resolvers.findfile(configuration)
+ if name then
+  local data=table.load(name)
+  if data then
+   return data,name
+  end
+ end
+end
+function signals.savestate(data)
+ if data then
+  local name=resolvers.findfile(configuration) or ""
+  if name=="" then
+   name=configuration
+  end
+  table.save(name,data)
+  return name
+ end
+end
+function signals.initialize(signal)
+ if signal then
+  local data=signals.loadstate()
+  if not data then
+  elseif not data.signals or not data.signals[signal] then
+  elseif data.usage.enabled==false then
+   return false
+  elseif data.signals[signal].enabled==false then
+   return false
+  else
+   return loaded[signal] or false
+  end
+ else
+  return false
+ end
+end
+signals.report=logs.reporter("signal")
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
 -- original size: 62465, stripped down to: 36432
@@ -26695,10 +26832,10 @@ end
 
 end -- of closure
 
--- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
+-- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1068598
--- stripped bytes    : 426011
+-- original bytes    : 1073726
+-- stripped bytes    : 428348
 
 -- end library merge
 
@@ -26780,6 +26917,8 @@ local ownlibs = { -- order can be made better
     'luat-env.lua', -- can come before inf (as in mkiv)
 
     'util-zip.lua',
+
+    'util-sig.lua',
 
     'lxml-tab.lua',
     'lxml-lpt.lua',

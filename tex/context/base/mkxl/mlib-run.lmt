@@ -46,6 +46,7 @@ local metapost        = metapost
 metapost.showlog      = false
 metapost.lastlog      = ""
 metapost.texerrors    = false
+metapost.quitonerror  = true
 metapost.exectime     = metapost.exectime or { } -- hack
 metapost.nofruns      = 0
 
@@ -99,8 +100,9 @@ local function executempx(mpx,data)
     return result
 end
 
-directives.register("mplib.texerrors",  function(v) metapost.texerrors = v end)
-trackers.register  ("metapost.showlog", function(v) metapost.showlog   = v end)
+directives.register("mplib.quitonerror", function(v) metapost.quitonerror = v end)
+directives.register("mplib.texerrors",   function(v) metapost.texerrors   = v end)
+trackers  .register("metapost.showlog",  function(v) metapost.showlog     = v end)
 
 function metapost.resetlastlog()
     metapost.lastlog = ""
@@ -538,6 +540,9 @@ do
                 stoptiming(metapost.exectime)
                 if not metapost.reporterror(result) and result.fig then
                     converted = metapost.convert(specification,result)
+                end
+                if result and result.status > 2 and metapost.quitonerror then
+                    luatex.abort()
                 end
             else
                 report_metapost("error: invalid graphic")

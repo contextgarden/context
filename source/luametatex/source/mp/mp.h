@@ -624,6 +624,7 @@ typedef enum mp_name_type_type {
     mp_postscript_part_operation,   /* operation code for |postscriptpart| */
     mp_stacking_part_operation,     /* operation code for |stackingpart| */
     mp_sqrt_operation,              /* operation code for |sqrt| */
+    mp_norm_operation,              /* operation code for |knownnorm| */
     mp_m_exp_operation,             /* operation code for |mexp| */
     mp_m_log_operation,             /* operation code for |mlog| */
     mp_sin_d_operation,             /* operation code for |sind| */
@@ -634,9 +635,9 @@ typedef enum mp_name_type_type {
     mp_lr_corner_operation,         /* operation code for |lrcorner| */
     mp_ul_corner_operation,         /* operation code for |ulcorner| */
     mp_ur_corner_operation,         /* operation code for |urcorner| */
+    mp_corners_operation,           /* operation code for |corners| */
     mp_center_of_operation,         /* operation code for |centerof| */
     mp_center_of_mass_operation,    /* operation code for |centerofmass| */
-    mp_corners_operation,           /* operation code for |corners| */
     mp_x_range_operation,           /* operation code for |xrange| */
     mp_y_range_operation,           /* operation code for |yrange| */
     mp_delta_point_operation,       /* operation code for |deltapoint| */
@@ -665,6 +666,10 @@ typedef enum mp_name_type_type {
     mp_power_operation,             /* operation code for \.^ */
     mp_pythag_add_operation,        /* operation code for |++| */
     mp_pythag_sub_operation,        /* operation code for |+-+| */
+    mp_dotprod_operation,           /* operation code for |knowndotprod| */
+    mp_crossprod_operation,         /* operation code for |knowncrossprod| */
+    mp_div_operation,               /* operation code for |knowndiv| */
+    mp_mod_operation,               /* operation code for |knownmod| */
     mp_or_operation,                /* operation code for |or| */
     mp_and_operation,               /* operation code for |and| */
     mp_less_than_operation,         /* operation code for \.< */
@@ -944,6 +949,10 @@ typedef void   (*init_randoms_func)                 (MP mp, int seed);
 typedef void   (*allocate_number_func)              (MP mp, mp_number *A, mp_number_type t);
 typedef void   (*allocate_number_clone_func)        (MP mp, mp_number *A, mp_number_type t, mp_number *B);
 typedef void   (*allocate_number_abs_func)          (MP mp, mp_number *A, mp_number_type t, mp_number *B);
+typedef void   (*allocate_number_div_func)          (MP mp, mp_number *A, mp_number_type t, mp_number *B, mp_number *C);
+typedef void   (*allocate_number_mul_func)          (MP mp, mp_number *A, mp_number_type t, mp_number *B, mp_number *C);
+typedef void   (*allocate_number_add_func)          (MP mp, mp_number *A, mp_number_type t, mp_number *B, mp_number *C);
+typedef void   (*allocate_number_sub_func)          (MP mp, mp_number *A, mp_number_type t, mp_number *B, mp_number *C);
 typedef void   (*allocate_number_double_func)       (MP mp, mp_number *A, double B);
 typedef void   (*free_number_func)                  (MP mp, mp_number *n);
 typedef void   (*fraction_to_round_scaled_func)     (mp_number *n);
@@ -1000,6 +1009,10 @@ typedef struct math_data {
     allocate_number_func              md_allocate;
     allocate_number_clone_func        md_allocate_clone;
     allocate_number_abs_func          md_allocate_abs;
+    allocate_number_div_func          md_allocate_div;
+    allocate_number_mul_func          md_allocate_mul;
+    allocate_number_add_func          md_allocate_add;
+    allocate_number_sub_func          md_allocate_sub;
     allocate_number_double_func       md_allocate_double;
     free_number_func                  md_free;
     number_from_int_func              md_from_int;
@@ -1125,7 +1138,6 @@ typedef struct mp_value_data {
 
 typedef struct mp_value {
     mp_variable_type type;
-    int              padding;
     mp_value_data    data;
 } mp_value;
 
@@ -1192,6 +1204,7 @@ typedef struct mp_internal {
 
 typedef enum mp_bytemap_options {
     mp_bytemap_option_persistent = 1,
+    mp_bytemap_option_posit      = 2,
 } mp_bytemap_options;
 
 typedef struct mp_bytemap {
@@ -1706,7 +1719,7 @@ typedef struct MP_instance {
     int                 run_state;              /* are we processing input ? */
     int                 finished;               /* set true by |close_files_and_terminate| */
     /*  */
-    int                 arith_error;
+    int                 arithmic_error;
     /*  */
     mp_number           randoms[55];            /* the last 55 random values generated */
     int                 j_random;               /* the number of unused |randoms| */

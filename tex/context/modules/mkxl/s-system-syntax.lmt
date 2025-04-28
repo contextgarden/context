@@ -10,9 +10,9 @@ moduledata.mplib   = moduledata.mplib  or { }
 moduledata.pdfe    = moduledata.pdfe   or { }
 moduledata.node    = moduledata.node   or { }
 
-local primitives   = token.getprimitives()
-local commandnames = tokens.commands
-local origins      = tex.getprimitiveorigins()
+local primitives   = token and token.getprimitives() or { }
+local commandnames = tokens and tokens.commands
+local origins      = tex and tex.getprimitiveorigins()
 local commandhash  = { }
 local keywords     = setmetatableindex("number")
 
@@ -297,6 +297,7 @@ syntax.charnumber = newsyntax {
         optional(sequence(keyword("options"),s_integer)),
         optional(sequence(keyword("font"),s_integer)),
         optional(sequence(keyword("id"),s_integer)),
+        optional(keyword("keepspacing")),
         s_integer
     ),
 }
@@ -546,15 +547,22 @@ local common_rule = sequence(
     optional(sequence(keyword("width"),s_dimension)),
     optional(sequence(keyword("height"),s_dimension)),
     optional(sequence(keyword("depth"),s_dimension)),
+    optional(sequence(keyword("pair"),s_dimension,s_dimension)),
     optional(sequence(keyword("xoffset"),s_dimension)),
-    optional(sequence(keyword("yoffset"),s_dimension))
+    optional(sequence(keyword("yoffset"),s_dimension)),
+    optional(keyword("running")),
+    optional(keyword("discardable")),
+    optional(keyword("keepspacing")),
+    optional(keyword("resetspacing"))
 )
 
 local normal_rule = sequence(common_rule,
     optional(sequence(keyword("left"),s_dimension)),
     optional(sequence(keyword("right"),s_dimension)),
     optional(sequence(keyword("top"),s_dimension)),
-    optional(sequence(keyword("bottom"),s_dimension))
+    optional(sequence(keyword("bottom"),s_dimension)),
+    optional(sequence(keyword("on"),s_dimension)),
+    optional(sequence(keyword("off"),s_dimension))
 )
 
 local strut_rule = sequence(common_rule,sequence(
@@ -1078,7 +1086,8 @@ do
         optional(keyword("retain")),
         optional(keyword("container")),
         optional(keyword("mathtext")),
-     -- optional(keyword("discarded")),
+     -- optional(keyword("discardable")),
+        optional(keyword("keepspacing")),
         optional(sequence(keyword("class"),s_integer)),
         optional(keyword("swap")),
         s_tokens
@@ -2204,7 +2213,9 @@ end
 
 -- end of syntax specification
 
-do
+if context then
+
+    local context = context
 
     local P   = lpeg.P
     local R   = lpeg.R
@@ -2350,7 +2361,7 @@ do
 
 end
 
-do
+if context then
 
     local context = context
 

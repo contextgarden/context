@@ -2387,8 +2387,15 @@ end
 
         -- markers are a quite rediculous thing .. let's assume simple usage for now
 
-        function handlers.marker()
-            -- todo: is just a def too
+        function handlers.marker(c)
+         -- local a = c.at
+         -- if a then
+         --     local id = rawget(a,"id")
+         --     if id then
+         --         definitions["#"     .. id       ] = c
+         --         definitions["url(#" .. id .. ")"] = c
+         --     end
+         -- end
         end
 
         -- kind of local svg ... so make a generic one
@@ -2800,13 +2807,22 @@ end
                     end
                 end
 
-                if stroke and stroke ~= "none" then
-                    local begmarker = rawget(at,"marker-start")
-                    local midmarker = rawget(at,"marker-mid")
-                    local endmarker = rawget(at,"marker-end")
-                    if begmarker or midmarker or endmarker then
-                        list = grablist(l)
-                    end
+                -- usflag in BT flags presentation, todo: in manual with a few
+                -- more flags (greenland and canada crushing it or so)
+
+local begmarker = rawget(at,"marker-start")
+local midmarker = rawget(at,"marker-mid")
+local endmarker = rawget(at,"marker-end")
+local hasmarker = begmarker or midmarker or endmarker
+
+                if (stroke and stroke ~= "none") then
+                 -- local begmarker = rawget(at,"marker-start")
+                 -- local midmarker = rawget(at,"marker-mid")
+                 -- local endmarker = rawget(at,"marker-end")
+                 -- local hasmarker = begmarker or midmarker or endmarker
+                 -- if hasmarker then
+                 --     list = grablist(l)
+                 -- end
                     local pen, dashing, color, opacity = drawproperties(stroke,at)
                     local cap, join, limits = lineproperties(at)
                     if btransform then
@@ -2821,10 +2837,19 @@ end
                     if join    then r = r + 1 ; result[r] = f_withlinejoin  (join)  end
                     if limit   then r = r + 1 ; result[r] = f_withmiterlimit(limit) end
                     r = r + 1 result[r] = etransform or "  ;"
-                    if list then
-                        addmarkers(list,begmarker,midmarker,endmarker,at)
-                    end
+                 -- if list then
+                 --     addmarkers(list,begmarker,midmarker,endmarker,at)
+                 -- end
                 end
+
+if hasmarker then
+    if btransform then
+        r = r + 1 ; result[r] = btransform
+    end
+    list = grablist(l)
+    addmarkers(list,begmarker,midmarker,endmarker,at)
+    r = r + 1 result[r] = etransform or "  ;"
+end
 
                 if cpath then
                     r = r + 1 ; result[r] = f_clip_stop(cpath.path,ctransform)

@@ -84,6 +84,7 @@
     2.10.10 : around the ctx 2023 meeting 
     2.10.11 : first half of 2024
     2.10.12 : around the ctx 2024 meeting
+    2.11.07 : just after texlive 2025 code freeze
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
     is what comes with \CONTEXT\ and that long term support and stabilty is guaranteed and that no 
@@ -93,6 +94,7 @@
 
     PS. Does anyone use (lib)cerf? If so, should I strip it a bit? 
     PS. Maybe use the Lua randomizer.
+    PS. Should we stay with mimalloc (too different platform code?)
 
 */
 
@@ -107,7 +109,7 @@
 # define luametatex_release          07
 # define luametatex_version_string   "2.11.07"
 # define luametatex_version_number   211.7
-# define luametatex_development_id   20250401
+# define luametatex_development_id   20250427
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"

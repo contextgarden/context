@@ -59,7 +59,7 @@ return {
         --
         "newbytemap", "copybytemap", "resetbytemap", "resetbytemaps",
         "withbytemap", "bytevalue", "bytefound", "bytepath",
-        "setbytemapoption", "setbytemapoffset", "reducebytemap",
+        "setbytemapoptions", "setbytemapoffset", "reducebytemap",
         "setbytemap", "bytemapbounds", "clipbytemap", "setbyte",
         --
         -- aliased

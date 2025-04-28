@@ -75,6 +75,7 @@ local wordboundary_code <const> = boundarycodes.word
 local protectglyphs     = nuts.protectglyphs
 local unprotectglyphs   = nuts.unprotectglyphs
 local protectglyphsnone = nuts.protectglyphsnone
+local protectglyphsbase = nuts.protectglyphsbase
 
 local setmetatableindex = table.setmetatableindex
 
@@ -466,7 +467,7 @@ local kerning    = nuts.kerning
 --         else
 --             for font, processors in next, usedfonts do -- unordered
 --                 for i=1,#processors do
---                     head = processors[i](head,font,0,direction,u) -- u triggers disc optimizer
+--                     head = processors[i](head,font,0,direction)
 --                 end
 --             end
 --         end
@@ -484,7 +485,7 @@ local kerning    = nuts.kerning
 --             for font, dynamics in next, dynamicfonts do
 --                 for dynamic, processors in next, dynamics do -- unordered, dynamic can switch in between
 --                     for i=1,#processors do
---                         head = processors[i](head,font,dynamic,direction,d) -- d triggers disc optimizer
+--                         head = processors[i](head,font,dynamic,direction)
 --                     end
 --                 end
 --             end
@@ -592,34 +593,37 @@ do
  --     end
  -- end
 
---     local function setnode(font,dynamic) -- we could use prevfont and prevdynamic when we set them first
---         if dynamic > 0 then
---             local used = dynamicfonts[font]
---             if not used then
---                 used = { }
---                 dynamicfonts[font] = used
---             end
---             if not used[dynamic] then
---                 local fd = setfontdynamics[font]
---                 if fd then
---                     used[dynamic] = fd[dynamic]
---                     d = d + 1
---                 end
---             end
---         else
---             local used = usedfonts[font]
---             if not used then
---                 lastfont = font
---                 lastproc = fontprocesses[font]
---                 if lastproc then
---                     usedfonts[font] = lastproc
---                     u = u + 1
---                 end
---             end
---         end
---     end
+local experiment = true
+-- local experiment = false
 
-    local function setnode() -- we could use prevfont and prevdynamic when we set them first
+local setnode
+
+if experiment then
+
+    setnode = function()
+        if prevdynamic > 0 then
+            local hash = (prevdynamic << 16) + prevfont
+            if not dynamicfonts[hash] then
+                local fd = setfontdynamics[prevfont]
+                if fd then
+                    dynamicfonts[hash] = fd[prevdynamic]
+                    d = d + 1
+                end
+            end
+        else
+            if not dynamicfonts[prevfont] then
+                local fd = fontprocesses[prevfont]
+                if fd then
+                    dynamicfonts[prevfont] = fd
+                    d = d + 1
+                end
+            end
+        end
+    end
+
+else
+
+    setnode = function() -- we could use prevfont and prevdynamic when we set them first
         if prevdynamic > 0 then
             local used = dynamicfonts[prevfont]
             if not used then
@@ -645,6 +649,8 @@ do
             end
         end
     end
+
+end
 
     -- local hasglyph = nuts.hasglyph
 
@@ -779,6 +785,7 @@ do
         end
 
         if redundant then
+            -- head = removefromlist(head, redundant) -- needs testing
             for i=1,r do
                 local r = redundant[i]
                 local p, n = getboth(r)
@@ -835,17 +842,51 @@ do
             protectglyphsnone(head)
         end
 
+if basedone then
+    local start = head
+    start = ligaturing(start)
+    start = kerning(start)
+    if head ~= start then
+        head = start
+    end
+    protectglyphsbase(head)
+end
+
+if experiment then
+
+        if d == 0 then
+            -- skip
+        elseif d == 1 then
+            local hash, processors = next(dynamicfonts)
+            local font    = hash & 0xFFFF
+            local dynamic = hash >> 16
+            for i=1,#processors do
+                head = processors[i](head,font,dynamic,direction)
+            end
+        else
+            for hash, processors in next, dynamicfonts do
+                local font    = hash & 0xFFFF
+                local dynamic = hash >> 16
+                for i=1,#processors do
+                    head = processors[i](head,font,dynamic,direction)
+                end
+            end
+        end
+
+else
         -- in context we always have at least 2 processors
         if u == 0 then
             -- skip
         elseif u == 1 then
+         -- report_fonts("U 1 : font %i",lastfont)
             for i=1,#lastproc do
                 head = lastproc[i](head,lastfont,0,direction)
             end
         else
             for font, processors in next, usedfonts do -- unordered
+             -- report_fonts("U N : font %i, processors %i",font,#processors)
                 for i=1,#processors do
-                    head = processors[i](head,font,0,direction,u) -- u triggers disc optimizer
+                    head = processors[i](head,font,0,direction)
                 end
             end
         end
@@ -855,6 +896,7 @@ do
         elseif d == 1 then
             local font, dynamics = next(dynamicfonts)
             for dynamic, processors in next, dynamics do -- unordered, dynamic can switch in between
+             -- report_fonts("D 1 : font %i, dynamic %i, processors %i",font,dynamic,#processors)
                 for i=1,#processors do
                     head = processors[i](head,font,dynamic,direction)
                 end
@@ -862,21 +904,24 @@ do
         else
             for font, dynamics in next, dynamicfonts do
                 for dynamic, processors in next, dynamics do -- unordered, dynamic can switch in between
+                 -- report_fonts("D N : font %i, dynamic %i, processors %i",font,dynamic,#processors)
                     for i=1,#processors do
-                        head = processors[i](head,font,dynamic,direction,d) -- d triggers disc optimizer
+                        head = processors[i](head,font,dynamic,direction)
                     end
                 end
             end
         end
 
-        if basedone then
-            local start = head
-            start = ligaturing(start)
-            start = kerning(start)
-            if head ~= start then
-                head = start
-            end
-        end
+end
+
+--         if basedone then
+--             local start = head
+--             start = ligaturing(start)
+--             start = kerning(start)
+--             if head ~= start then
+--                 head = start
+--             end
+--         end
 
         stoptiming(nodes)
 

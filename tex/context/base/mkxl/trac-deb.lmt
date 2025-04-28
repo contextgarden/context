@@ -149,7 +149,7 @@ local function processerror(offset,errortype)
     local lastmpserror   = match(lasttexerror,[[^.-mp%serror:%s*(.*)$]])
     resetmessages()
     lastluaerror = gsub(lastluaerror,"%[\\directlua%]","[ctxlua]")
-    tracers.printerror {
+    local specification = {
         filename       = filename,
         linenumber     = linenumber,
         skiplinenumber = skiplinenumber,
@@ -162,6 +162,8 @@ local function processerror(offset,errortype)
         lasttexhelp    = tex.gethelptext and tex.gethelptext() or nil,
         errortype      = errortype,
     }
+    job.errorstate = specification
+    tracers.printerror(specification)
     if job and type(job.disablesave) == "function" then
         job.disablesave()
     end

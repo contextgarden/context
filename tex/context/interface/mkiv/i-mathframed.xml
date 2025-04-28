@@ -4,6 +4,31 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
+    <cd:command name="defineframedmath" file="pack-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupmathframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupmathframed" file="pack-mat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="">
+                    <cd:constant type=""/>
+                </cd:parameter>
+                <cd:inherit name="setupframed"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+
+
+
     <cd:command name="definemathframed" file="pack-mat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>

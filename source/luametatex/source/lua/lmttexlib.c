@@ -5653,7 +5653,7 @@ static int texlib_gethyphenationvalues(lua_State *L)
 
 static int texlib_getglyphoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 3, 16);
+    lua_createtable(L, 3, 17);
     lua_set_string_by_index(L, glyph_option_normal_glyph,              "normal");
     lua_set_string_by_index(L, glyph_option_no_left_ligature,          "noleftligature");
     lua_set_string_by_index(L, glyph_option_no_right_ligature,         "norightligature");
@@ -5674,6 +5674,7 @@ static int texlib_getglyphoptionvalues(lua_State *L)
     lua_set_string_by_index(L, glyph_option_check_twin,                "checktwin");
     lua_set_string_by_index(L, glyph_option_is_toddler,                "istoddler");
     lua_set_string_by_index(L, glyph_option_is_continuation,           "iscontinuation");
+    lua_set_string_by_index(L, glyph_option_keep_spacing ,             "keepspacing");
     lua_set_string_by_index(L, glyph_option_user_first,                "userfirst");
     lua_set_string_by_index(L, glyph_option_user_last,                 "userlast");
     return 1;
@@ -5840,20 +5841,22 @@ static int texlib_getdiscoptionvalues(lua_State *L)
 
 static int texlib_getruleoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 2);
-    lua_set_string_by_index(L, rule_option_horizontal,  "horizontal");
-    lua_set_string_by_index(L, rule_option_vertical,    "vertical");
-    lua_set_string_by_index(L, rule_option_thickness,   "thickness");
-    lua_set_string_by_index(L, rule_option_running,     "running");
-    lua_set_string_by_index(L, rule_option_discardable, "discardable");
+    lua_createtable(L, 2, 4);
+    lua_set_string_by_index(L, rule_option_horizontal,   "horizontal");
+    lua_set_string_by_index(L, rule_option_vertical,     "vertical");
+    lua_set_string_by_index(L, rule_option_thickness,    "thickness");
+    lua_set_string_by_index(L, rule_option_running,      "running");
+    lua_set_string_by_index(L, rule_option_discardable,  "discardable");
+    lua_set_string_by_index(L, rule_option_keep_spacing, "keepspacing");
     return 1;
 }
 
 static int texlib_getboxoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 0);
+    lua_createtable(L, 2, 1);
     lua_set_string_by_index(L, box_option_no_math_axis, "nomathaxis");
     lua_set_string_by_index(L, box_option_discardable,  "discardable");
+    lua_set_string_by_index(L, box_option_keep_spacing, "keepspacing");
     return 1;
 }
 

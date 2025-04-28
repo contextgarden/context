@@ -185,6 +185,9 @@
                 <cd:parameter name="numberdistance">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="mathematics">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
                 <cd:inherit name="setupcounter"/>
             </cd:assignments>
         </cd:arguments>

@@ -1596,35 +1596,17 @@
             <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="spaces"/>
                 <cd:constant type="nospaces"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="global"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="tolerant"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="frozen"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="permanent"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="instance"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="mutable"/>
                 <cd:constant type="immutable"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="protected"/>
                 <cd:constant type="semiprotected"/>
                 <cd:constant type="unexpanded"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="expanded"/>
-            </cd:keywords>
-            <cd:keywords delimiters="none" optional="yes">
                 <cd:constant type="singleempty"/>
                 <cd:constant type="doubleempty"/>
                 <cd:constant type="tripleempty"/>

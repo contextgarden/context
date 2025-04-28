@@ -39,7 +39,7 @@
 
 \installcorenamespace{layouttexts}
 \installcorenamespace{layouttextsline}
-\installcorenamespace{layouttextsreset}
+%installcorenamespace{layouttextsreset}
 \installcorenamespace{layouttextssynchronize}
 \installcorenamespace{layouttextstrut}
 \installcorenamespace{layouttextspecial}
@@ -92,14 +92,6 @@
 
 \mutable\lettonothing\currenttextstate
 \mutable\lettonothing\previoustextstate
-
-\def\page_layouts_reset_element_status#vertical%
-  {\gdefcsname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
-
-\def\page_layouts_set_element_status_normal#vertical%
-  {\gletcsname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
-   \gletcsname\??layouttextsreset#vertical\endcsname\relax
-   \page_layouts_synchronize_element{#vertical}}
 
 \def\page_layouts_synchronize_element#vertical%
   {\xdef\previoustextstate{\csname\??layouttextssynchronize#vertical\endcsname}% can be a let
@@ -238,16 +230,36 @@
      {\page_layouts_process_element_single{#first}}
      {\page_layouts_process_element_single{#second}}}
 
+% \protected\def\page_layouts_process_element_indeed#style#color#width%
+%   {\begingroup
+%    \lefttoright % new
+%    \uselayoutelementstyleandcolor#style#color%
+%    \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
+%    \ignorecrlf
+%    \edef\p_width{\layoutelementparameter#width}%
+%    \ifempty\p_width\else
+%      \expandafter\page_layouts_process_element_limited
+%    \fi\p_text
+%    \endgroup}
+
 \protected\def\page_layouts_process_element_indeed#style#color#width%
   {\begingroup
-   \lefttoright % new
-   \uselayoutelementstyleandcolor#style#color%
-   \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
-   \ignorecrlf
-   \edef\p_width{\layoutelementparameter#width}%
-   \ifempty\p_width\else
-     \expandafter\page_layouts_process_element_limited
-   \fi\p_text
+   \ifcstok{\layoutelementparameter\c!state}\v!empty
+     \page_layouts_reset_element_status_current
+ % \orelse\ifcstok{\layoutelementparameter\c!state}\v!stop
+   \orelse\iflastnamedcs\v!stop
+     %
+   \else
+     \lefttoright % new
+     \uselayoutelementstyleandcolor#style#color%
+     \begincsname\??layouttextstrut\layoutelementparameter\c!strut\endcsname
+     \ignorecrlf
+     \edef\p_width{\layoutelementparameter#width}%
+     \ifempty\p_width\else
+       \expandafter\page_layouts_process_element_limited
+     \fi
+     \p_text
+   \fi
    \endgroup}
 
 \def\page_layouts_process_element_limited#content% are the {}{}{} still needed?
@@ -372,12 +384,47 @@
 
 %D The following macro has to be called after a page is flushed.
 
+% \permanent\protected\def\resetlayouttextlines % public
+%   {\begincsname\??layouttextsreset\v!top   \endcsname
+%    \begincsname\??layouttextsreset\v!header\endcsname
+%    \begincsname\??layouttextsreset\v!text  \endcsname
+%    \begincsname\??layouttextsreset\v!footer\endcsname
+%    \begincsname\??layouttextsreset\v!bottom\endcsname
+%    \ifconditional\resyncaftertextline
+%      \calculateglobalvsizes
+%      \page_backgrounds_recalculate
+%      \global\resyncaftertextline\conditionalfalse
+%    \fi}
+%
+% \def\page_layouts_reset_element_status#vertical%
+%   {\gdefcsname\??layouttextsreset#vertical\endcsname{\page_layouts_set_element_status_normal#vertical}}
+%
+% \def\page_layouts_set_element_status_normal#vertical%
+%   {\gletcsname\namedlayoutelementhash#vertical\c!state\endcsname\v!normal
+%    \gletcsname\??layouttextsreset#vertical\endcsname\relax
+%    \page_layouts_synchronize_element{#vertical}}
+
+\newtoks\t_page_layouts_texts
+
+\def\page_layouts_reset_element_status#vertical%
+  {\xtoksapp\t_page_layouts_texts{\page_layouts_set_element_status_normal{#vertical}}}
+
+\def\page_layouts_reset_element_status_current
+  {\xtoksapp\t_page_layouts_texts{\page_layouts_set_element_status_current{\currentlayoutelement}}}
+
+\protected\def\page_layouts_set_element_status_normal#vertical%
+  {\gletcsname\namedlayoutelementhash{#vertical}\c!state\endcsname\v!normal
+   \page_layouts_synchronize_element{#vertical}}
+
+\protected\def\page_layouts_set_element_status_current#current%
+  {\gletcsname\namedlayoutelementhash{#current}\c!state\endcsname\v!normal}
+
 \permanent\protected\def\resetlayouttextlines % public
-  {\begincsname\??layouttextsreset\v!top   \endcsname
-   \begincsname\??layouttextsreset\v!header\endcsname
-   \begincsname\??layouttextsreset\v!text  \endcsname
-   \begincsname\??layouttextsreset\v!footer\endcsname
-   \begincsname\??layouttextsreset\v!bottom\endcsname
+  {\ifempty\t_page_layouts_texts
+   \else
+     \expand\t_page_layouts_texts
+     \global\t_page_layouts_texts\emptytoks
+   \fi
    \ifconditional\resyncaftertextline
      \calculateglobalvsizes
      \page_backgrounds_recalculate

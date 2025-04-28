@@ -624,6 +624,134 @@ static int lualib_sub_nibble(lua_State *L)
 
 /* */
 
+//  lua_createtable(L, 0, 0);
+//  lua_pushnil(L);
+//  while (lua_next(L, 1)) {
+//      lua_pushvalue(L, -2);
+//      lua_insert(L, -2);
+//      lua_settable(L, -4);
+//  }
+
+static int lualib_get_checked_keys(lua_State *L) 
+{
+    int category = 0; //  0=unknown 1=string 2=number 3=mixed
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        int index = 0;
+        lua_pushnil(L);
+        while (lua_next(L, 1)) {
+            index++;
+            lua_pop(L, 1);  
+        }
+        lua_createtable(L, index, 0); 
+        index = 0;
+        lua_pushnil(L);
+        while (lua_next(L, 1)) {
+            if (category != 3) {
+                int tkey = lua_type(L, -2);
+                if (category == 1) {
+                    if (tkey != LUA_TSTRING) {
+                        category = 3;
+                    }
+                } else if (category == 2) {
+                    if (tkey != LUA_TNUMBER) {
+                        category = 3;
+                    }
+                } else {
+                    if (tkey == LUA_TSTRING) {
+                        category = 1;
+                    } else if (tkey == LUA_TNUMBER) {
+                        category = 2;
+                    } else {
+                        category = 3;
+                    }
+                }
+            }
+            /* -3:new -2:key -1:value */
+            lua_pushvalue(L, -2);
+            lua_rawseti(L, -4, ++index);
+            lua_pop(L, 1);  
+        }
+        if (index < 2) {
+            category = 0;
+        }
+    } else { 
+        lua_createtable(L, 0, 0); 
+    }
+    lua_pushinteger(L, category);
+    return 2;
+}
+
+static int lualib_get_string_keys(lua_State *L) 
+{
+    int index = 0;
+    lua_createtable(L, 0, 0); 
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        lua_pushnil(L);
+        while (lua_next(L, 1)) {
+            if (lua_type(L, -2) != LUA_TSTRING) {
+                lua_pushvalue(L, -2);
+                lua_rawseti(L, -4, ++index);
+            }
+            lua_pop(L, 1);  
+        }
+    }
+    lua_pushinteger(L, index);
+    return 2;
+}
+
+static int lualib_get_numeric_keys(lua_State *L) 
+{
+    int index = 0;
+    lua_createtable(L, 0, 0); 
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        lua_pushnil(L);
+        while (lua_next(L, 1)) {
+            if (lua_type(L, -2) != LUA_TNUMBER) {
+                lua_pushvalue(L, -2);
+                lua_rawseti(L, -4, ++index);
+            }
+            lua_pop(L, 1);  
+        }
+    }
+    lua_pushinteger(L, index);
+    return 2;
+}
+
+static int lualib_get_all_keys(lua_State *L) 
+{
+    int index = 0;
+    lua_createtable(L, 0, 0); 
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        lua_pushnil(L);
+        while (lua_next(L, 1)) {
+            lua_pushvalue(L, -2);
+            lua_rawseti(L, -4, ++index);
+            lua_pop(L, 1);  
+        }
+    }
+    lua_pushinteger(L, index);
+    return 2;
+}
+
+static int lualib_compare_keys(lua_State *L) 
+{
+    /* luaL_tolstring pushes on the stack but no need to clean up here */
+    int ta = lua_type(L, 1);
+    int tb = lua_type(L, 2);
+    int result = 0;
+    if (ta == LUA_TNUMBER && tb == LUA_TNUMBER) {
+        result = lua_tonumber(L, 1) < lua_tonumber(L, 2);
+    } else { 
+        const char *a = (ta == LUA_TSTRING) ? lua_tostring(L, 1) : luaL_tolstring(L, 1, NULL);
+        const char *b = (tb == LUA_TSTRING) ? lua_tostring(L, 2) : luaL_tolstring(L, 2, NULL);
+        result = (a && b) ? strcmp(a, b) < 0 : 0;
+    }
+    lua_pushboolean(L, result);
+    return 1;
+}
+
+/* */
+
 static const struct luaL_Reg lualib_function_list[] = {
     /* lua */
     { "getstacktop",         lualib_get_stack_top       },
@@ -654,6 +782,12 @@ static const struct luaL_Reg lualib_function_list[] = {
     { "addnibble",           lualib_add_nibble          },
     { "subnibble",           lualib_sub_nibble          },
     /* */
+    { "getstringkeys",       lualib_get_string_keys     },
+    { "getnumerickeys",      lualib_get_numeric_keys    },
+    { "getallkeys",          lualib_get_all_keys        },
+    { "getcheckedkeys",      lualib_get_checked_keys    },
+    { "comparekeys",         lualib_compare_keys        },
+    /* */
     { NULL,                  NULL                       },
 };
 
@@ -679,6 +813,12 @@ static const struct luaL_Reg lualib_function_list_only[] = {
     { "getnibble",           lualib_get_nibble         },
     { "addnibble",           lualib_add_nibble         },
     { "subnibble",           lualib_sub_nibble         },
+    /* */
+    { "getstringkeys",       lualib_get_string_keys    },
+    { "getnumerickeys",      lualib_get_numeric_keys   },
+    { "getallkeys",          lualib_get_all_keys       },
+    { "getcheckedkeys",      lualib_get_checked_keys   },
+    { "comparekeys",         lualib_compare_keys       },
     /* */
     { NULL,                  NULL                      },
 };

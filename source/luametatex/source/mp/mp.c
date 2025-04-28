@@ -804,6 +804,10 @@ The first set of numerical values goes into the header
 # define mp_new_angle_clone(A,B)                    mp->math->md_allocate_clone(mp, &(A), mp_angle_type, &(B))
 # define mp_new_number_from_double(mp,A,B)          mp->math->md_allocate_double(mp, &(A), B)
 # define mp_new_number_abs(A,B)                     mp->math->md_allocate_abs(mp, &(A), mp_scaled_type, &(B))
+# define mp_new_number_from_div(A,B,C)              mp->math->md_allocate_div(mp, &(A), mp_scaled_type, &(B), &(C))
+# define mp_new_number_from_mul(A,B,C)              mp->math->md_allocate_mul(mp, &(A), mp_scaled_type, &(B), &(C))
+# define mp_new_number_from_add(A,B,C)              mp->math->md_allocate_add(mp, &(A), mp_scaled_type, &(B), &(C))
+# define mp_new_number_from_sub(A,B,C)              mp->math->md_allocate_sub(mp, &(A), mp_scaled_type, &(B), &(C))
 # define mp_free_number(A)                          mp->math->md_free(mp, &(A))
 # define mp_set_precision()                         mp->math->md_set_precision(mp)
 # define mp_free_math()                             mp->math->md_free_math(mp)
@@ -3235,14 +3239,14 @@ A single computation might use several subroutine calls, and it is desirable to 
 multiple error messages in case of arithmetic overflow. So the routines below set the global variable
 |arith_error| to |true| instead of reporting errors directly to the user.
 
-At crucial points the program will say |check_arith|, to test if an arithmetic error has been
+At crucial points the program will say |mp_check_arithmic|, to test if an arithmetic error has been
 detected.
 
 */
 
-static void check_arith(MP mp)
+static void mp_check_arithmic(MP mp)
 {
-    if (mp->arith_error) {
+    if (mp->arithmic_error) {
         mp_error(
             mp,
             "Arithmetic overflow",
@@ -3250,7 +3254,7 @@ static void check_arith(MP mp)
             "large, so I'm afraid your answers will be somewhat askew. You'll probably have to\n"
             "adopt different tactics next time. But I shall try to carry on anyway."
         );
-        mp->arith_error = 0;
+        mp->arithmic_error = 0;
     }
 }
 
@@ -3332,11 +3336,10 @@ static mp_node mp_new_symbolic_node(MP mp)
     if (p) {
         mp->memory_pool[mp_symbolic_pool].list = p->link;
         mp->memory_pool[mp_symbolic_pool].pool--;
-        p->link = NULL;
     } else {
         p = mp_memory_allocate(sizeof(mp_node_data)); /* !! */
-        mp_new_number(p->data.n);
     }
+    mp_new_number(p->data.n);
     p->link = NULL;
     p->type = mp_symbol_node_type;
     p->name_type = mp_normal_operation;
@@ -3346,6 +3349,9 @@ static mp_node mp_new_symbolic_node(MP mp)
 static void mp_free_symbolic_node(MP mp, mp_node p)
 {
     if (p) {
+        if (mp->math_mode > mp_math_double_mode) { /* no need when posit so we can change the order */
+            mp_free_number(((mp_value_node) p)->data.n);
+        }
         mp->memory_pool[mp_symbolic_pool].used--;
         if (mp->memory_pool[mp_symbolic_pool].pool < mp->memory_pool[mp_symbolic_pool].kept) {
             mp->memory_pool[mp_symbolic_pool].pool++;
@@ -3543,6 +3549,7 @@ static const char *mp_op_string_names[] = {
     [mp_postscript_part_operation]   = "postscriptpart",
     [mp_stacking_part_operation]     = "stackingpart",
     [mp_sqrt_operation]              = "sqrt",
+    [mp_norm_operation]              = "knownnorm",
     [mp_m_exp_operation]             = "mexp",
     [mp_m_log_operation]             = "mlog",
     [mp_sin_d_operation]             = "sind",
@@ -3553,9 +3560,9 @@ static const char *mp_op_string_names[] = {
     [mp_lr_corner_operation]         = "lrcorner",
     [mp_ul_corner_operation]         = "ulcorner",
     [mp_ur_corner_operation]         = "urcorner",
+    [mp_corners_operation]           = "corners",
     [mp_center_of_operation]         = "centerof",
     [mp_center_of_mass_operation]    = "centerofmass",
-    [mp_corners_operation]           = "corners",
     [mp_x_range_operation]           = "xrange",
     [mp_y_range_operation]           = "yrange",
     [mp_delta_point_operation]       = "deltapoint",
@@ -3584,6 +3591,10 @@ static const char *mp_op_string_names[] = {
     [mp_power_operation]             = "^",
     [mp_pythag_add_operation]        = "++",
     [mp_pythag_sub_operation]        = "+-+",
+    [mp_dotprod_operation]           = "dotprod",
+    [mp_crossprod_operation]         = "crossprod",
+    [mp_div_operation]               = "div",
+    [mp_mod_operation]               = "mod",
     [mp_or_operation]                = "or",
     [mp_and_operation]               = "and",
     [mp_less_than_operation]         = "<",
@@ -3996,8 +4007,8 @@ static mp_node mp_new_token_node(MP mp)
         mp->memory_pool[mp_token_pool].pool--;
     } else {
         p = mp_memory_allocate(sizeof(mp_node_data));
-        mp_new_number(p->data.n);
     }
+    mp_new_number(p->data.n);
     p->link = NULL;
     p->type = mp_token_node_type;
     return (mp_node) p;
@@ -4006,15 +4017,15 @@ static mp_node mp_new_token_node(MP mp)
 static void mp_free_token_node(MP mp, mp_node p)
 {
     if (p) {
+        if (mp->math_mode > mp_math_double_mode) { /* no need when posit so we can change the order */
+            mp_free_number(((mp_value_node) p)->data.n);
+        }
         mp->memory_pool[mp_token_pool].used--;
         if (mp->memory_pool[mp_token_pool].pool < mp->memory_pool[mp_token_pool].kept) {
             p->link = mp->memory_pool[mp_token_pool].list;
             mp->memory_pool[mp_token_pool].list = p;
             mp->memory_pool[mp_token_pool].pool++;
         } else {
-            if (mp->math_mode > mp_math_double_mode) { /* no need when posit so we can change the order */
-                mp_free_number(((mp_value_node) p)->data.n);
-            }
             mp_memory_free(p);
         }
     }
@@ -4336,9 +4347,9 @@ static mp_node mp_new_value_node(MP mp)
         mp->memory_pool[mp_value_pool].pool--;
     } else {
         p = mp_memory_allocate(sizeof(mp_value_node_data));
-        mp_new_number(p->data.n);
-        mp_new_number(p->subscript);
     }
+    mp_new_number(p->data.n);
+    mp_new_number(p->subscript);
     p->link = NULL;
     p->type = mp_value_node_type;
     return (mp_node) p;
@@ -4348,15 +4359,15 @@ static void mp_free_value_node(MP mp, mp_node p)
 {
     if (p) {
         mp->memory_pool[mp_value_pool].used--;
+        if (mp->math_mode > mp_math_double_mode) {
+            mp_free_number(((mp_value_node) p)->data.n);
+            mp_free_number(((mp_value_node) p)->subscript);
+        }
         if (mp->memory_pool[mp_value_pool].pool < mp->memory_pool[mp_value_pool].kept) {
             mp->memory_pool[mp_value_pool].pool++;
             p->link = mp->memory_pool[mp_value_pool].list;
             mp->memory_pool[mp_value_pool].list = p;
         } else {
-            if (mp->math_mode > mp_math_double_mode) {
-                mp_free_number(((mp_value_node) p)->data.n);
-                mp_free_number(((mp_value_node) p)->subscript);
-            }
             mp_memory_free(p);
         }
     }
@@ -5984,9 +5995,9 @@ static void mp_make_choices(MP mp, mp_knot knots)
     int k, n;     /* current and final knot numbers */
     mp_knot s, t; /* registers for list traversal */
     /*tex
-        Make sure that |arith_error=false|.
+        Make sure that |arithmic_error=false|.
     */
-    check_arith(mp);
+    mp_check_arithmic(mp);
     if (mp_number_positive(internal_value(mp_tracing_choices_internal))) {
         mp_print_path(mp, knots, ", before choices", 1);
     }
@@ -6165,7 +6176,7 @@ static void mp_make_choices(MP mp, mp_knot knots)
     if (mp_number_positive(internal_value(mp_tracing_choices_internal))) {
         mp_print_path(mp, knots, ", after choices", 1);
     }
-    if (mp->arith_error) {
+    if (mp->arithmic_error) {
         mp_back_error(
             mp,
             "Some number got too big",
@@ -6173,7 +6184,7 @@ static void mp_make_choices(MP mp, mp_knot knots)
             "Proceed, for a laugh."
         );
         mp_get_x_next(mp);
-        mp->arith_error = 0;
+        mp->arithmic_error = 0;
     }
 }
 
@@ -6271,8 +6282,7 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         mp_number narg;
                         mp_new_angle(narg);
                         mp_n_arg(narg, mp->delta_x[0], mp->delta_y[0]);
-                        mp_new_number(arg1);
-                        mp_set_number_from_subtraction(arg1, p->right_given, narg);
+                        mp_new_number_from_sub(arg1, p->right_given, narg);
                         mp_n_sin_cos(arg1, mp->ct, mp->st);
                         mp_set_number_from_subtraction(arg1, q->left_given, narg);
                         mp_n_sin_cos(arg1, mp->cf, mp->sf);
@@ -6308,11 +6318,10 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         mp_new_number_abs(rt, p->right_tension);
                         if (mp_number_unity(rt)) {
                             mp_number arg2;
-                            mp_new_number(arg2);
                             if (mp_number_nonnegative(mp->delta_x[0])) {
-                                mp_set_number_from_addition(arg2, mp->delta_x[0], mp_epsilon_t);
+                                mp_new_number_from_add(arg2, mp->delta_x[0], mp_epsilon_t);
                             } else {
-                                mp_set_number_from_subtraction(arg2, mp->delta_x[0], mp_epsilon_t);
+                                mp_new_number_from_sub(arg2, mp->delta_x[0], mp_epsilon_t);
                             }
                             mp_set_number_int_div(arg2, 3);
                             mp_set_number_from_addition(p->right_x, p->x_coord, arg2);
@@ -6338,11 +6347,10 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         }
                         if (mp_number_unity(lt)) {
                             mp_number arg2;
-                            mp_new_number(arg2);
                             if (mp_number_nonnegative(mp->delta_x[0])) {
-                                mp_set_number_from_addition(arg2, mp->delta_x[0], mp_epsilon_t);
+                                mp_new_number_from_add(arg2, mp->delta_x[0], mp_epsilon_t);
                             } else {
-                                mp_set_number_from_subtraction(arg2, mp->delta_x[0], mp_epsilon_t);
+                                mp_new_number_from_sub(arg2, mp->delta_x[0], mp_epsilon_t);
                             }
                             mp_set_number_int_div(arg2, 3);
                             mp_set_number_from_subtraction(q->left_x, q->x_coord, arg2);
@@ -6468,7 +6476,6 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                                 mp_number_double(dd);
                             } else {
                                 mp_number arg1, arg2, ret;
-                                mp_new_number(arg1);
                                 mp_new_number_abs(arg2, r->right_tension);
                                 mp_number_multiply_int(arg2, 3);
                                 mp_number_subtract(arg2, mp_unity_t);
@@ -6476,7 +6483,7 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                                 mp_number_abs_clone(arg2, r->right_tension);
                                 mp_new_fraction(ret);
                                 mp_make_fraction(ret, mp_unity_t, arg2);
-                                mp_set_number_from_subtraction(arg1, mp_fraction_three_t, ret);
+                                mp_new_number_from_sub(arg1, mp_fraction_three_t, ret);
                                 mp_take_fraction(arg2, mp->delta[k], arg1);
                                 mp_number_clone(dd, arg2);
                                 mp_free_number(ret);
@@ -6490,7 +6497,6 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                                 mp_number_double(ee);
                             } else {
                                 mp_number arg1, arg2, ret;
-                                mp_new_number(arg1);
                                 mp_new_number_abs(arg2, t->left_tension);
                                 mp_number_multiply_int(arg2, 3);
                                 mp_number_subtract(arg2, mp_unity_t);
@@ -6498,7 +6504,7 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                                 mp_number_abs_clone(arg2, t->left_tension);
                                 mp_new_fraction(ret);
                                 mp_make_fraction(ret, mp_unity_t, arg2);
-                                mp_set_number_from_subtraction(arg1, mp_fraction_three_t, ret);
+                                mp_new_number_from_sub(arg1, mp_fraction_three_t, ret);
                                 mp_take_fraction(ee, mp->delta[k - 1], arg1);
                                 mp_free_number(ret);
                                 mp_free_number(arg1);
@@ -6573,8 +6579,7 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         if (mp_right_type(r) == mp_curl_knot) {
                             mp_number r1, arg2;
                             mp_new_fraction(r1);
-                            mp_new_number(arg2);
-                            mp_set_number_from_subtraction(arg2, mp_fraction_one_t, ff);
+                            mp_new_number_from_sub(arg2, mp_fraction_one_t, ff);
                             mp_take_fraction(r1, mp->psi[1], arg2);
                             mp_set_number_to_zero(mp->ww[k]);
                             mp_set_number_from_subtraction(mp->vv[k], acc, r1);
@@ -6583,8 +6588,7 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         } else {
                             mp_number arg1, r1;
                             mp_new_fraction(r1);
-                            mp_new_number(arg1);
-                            mp_set_number_from_subtraction(arg1, mp_fraction_one_t, ff);
+                            mp_new_number_from_sub(arg1, mp_fraction_one_t, ff);
                             /*tex This is $B_k/(C_k+B_k-u_{k-1}A_k)<5$. */
                             mp_make_fraction(ff, arg1, cc);
                             mp_free_number(arg1);
@@ -6693,10 +6697,9 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                             mp_number arg1, arg2, r1;
                             mp_new_fraction(r1);
                             mp_new_fraction(arg1);
-                            mp_new_number(arg2);
                             mp_take_fraction(arg1, mp->vv[n - 1], ff);
                             mp_take_fraction(r1, ff, mp->uu[n - 1]);
-                            mp_set_number_from_subtraction(arg2, mp_fraction_one_t, r1);
+                            mp_new_number_from_sub(arg2, mp_fraction_one_t, r1);
                             mp_make_fraction(mp->theta[n], arg1, arg2);
                             mp_number_negate(mp->theta[n]);
                             mp_free_number(r1);
@@ -7308,19 +7311,19 @@ int mp_solve_path(MP mp, mp_knot first)
     } else if (path_needs_fixing(first)) {
         return 0;
     } else {
-        int saved_arith_error = mp->arith_error;
+        int saved_arithmic_error = mp->arithmic_error;
         int retval = 1;
         jmp_buf *saved_jump_buffer = mp->jump_buffer;
         mp->jump_buffer = mp_memory_allocate(sizeof(jmp_buf));
         if (mp->jump_buffer == NULL || setjmp(*(mp->jump_buffer)) != 0) {
             return 0;
         } else {
-            mp->arith_error = 0;
+            mp->arithmic_error = 0;
             mp_make_choices(mp, first);
-            if (mp->arith_error) {
+            if (mp->arithmic_error) {
                 retval = 0;
             }
-            mp->arith_error = saved_arith_error;
+            mp->arithmic_error = saved_arithmic_error;
             mp_memory_free(mp->jump_buffer);
             mp->jump_buffer = saved_jump_buffer;
             return retval;
@@ -7812,7 +7815,7 @@ static void mp_arc_test(MP mp,
             mp_number_add(arc, arc1);
         } else {
             mp_free_number(tmp);
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             if (mp_number_infinite(*a_goal)) {
                 mp_set_number_to_inf(*ret);
             } else {
@@ -7907,38 +7910,33 @@ static void mp_arc_test(MP mp,
                 shall define a function |solve_rising_cubic| that finds $\tau$ given $a$, $b$,
                 $c$, and $x$.
             */
-            mp_number tmp;
-            mp_number tmp2;
-            mp_number tmp3;
-            mp_number tmp4;
-            mp_number tmp5;
-            mp_new_number_clone(tmp, *v02);
-            mp_new_number(tmp2);
-            mp_new_number(tmp3);
-            mp_new_number(tmp4);
-            mp_new_number(tmp5);
-            mp_number_add_scaled(tmp, 2);
-            mp_number_half(tmp);
-            mp_number_half(tmp); /* (v02+2) / 4 */
+            mp_number tmp1, tmp2, tmp3, tmp4;
+            mp_new_number_clone(tmp1, *v02);
+            mp_number_add_scaled(tmp1, 2);
+            mp_number_half(tmp1);
+            mp_number_half(tmp1); /* (v02+2) / 4 */
             if (mp_number_lessequal(*a_goal, arc1)) {
-                mp_number_clone(tmp2, *v0);
+                mp_new_number_clone(tmp2, *v0);
                 mp_number_half(tmp2);
-                mp_set_number_from_subtraction(tmp3, arc1, tmp2);
-                mp_number_subtract(tmp3, tmp);
-                mp_solve_rising_cubic(mp, &tmp5, &tmp2, &tmp3, &tmp, a_goal);
-                mp_number_half(tmp5);
+                mp_new_number_from_sub(tmp3, arc1, tmp2);
+                mp_number_subtract(tmp3, tmp1);
+                mp_new_number(tmp4);
+                mp_solve_rising_cubic(mp, &tmp4, &tmp2, &tmp3, &tmp1, a_goal);
+                mp_number_half(tmp4);
                 mp_set_number_to_unity(tmp3);
-                mp_number_subtract(tmp5, tmp3);
-                mp_number_subtract(tmp5, tmp3);
-                mp_number_clone(*ret, tmp5);
+                mp_number_subtract(tmp4, tmp3);
+                mp_number_subtract(tmp4, tmp3);
+                mp_number_clone(*ret, tmp4);
             } else {
-                mp_number_clone(tmp2, *v2);
+                mp_number tmp5;
+                mp_new_number(tmp5);
+                mp_new_number_clone(tmp2, *v2);
                 mp_number_half(tmp2);
-                mp_set_number_from_subtraction(tmp3, arc, arc1);
-                mp_number_subtract(tmp3, tmp);
+                mp_new_number_from_sub(tmp3, arc, arc1);
+                mp_number_subtract(tmp3, tmp1);
                 mp_number_subtract(tmp3, tmp2);
-                mp_set_number_from_subtraction(tmp4, *a_goal, arc1);
-                mp_solve_rising_cubic(mp, &tmp5, &tmp, &tmp3, &tmp2, &tmp4);
+                mp_new_number_from_sub(tmp4, *a_goal, arc1);
+                mp_solve_rising_cubic(mp, &tmp5, &tmp1, &tmp3, &tmp2, &tmp4);
                 mp_number_half(tmp5);
                 mp_set_number_to_unity(tmp2);
                 mp_set_number_to_unity(tmp3);
@@ -7946,12 +7944,12 @@ static void mp_arc_test(MP mp,
                 mp_number_subtract(tmp2, tmp3);
                 mp_number_subtract(tmp2, tmp3);
                 mp_set_number_from_addition(*ret, tmp2, tmp5);
+                mp_free_number(tmp5);
             }
-            mp_free_number(tmp);
+            mp_free_number(tmp1);
             mp_free_number(tmp2);
             mp_free_number(tmp3);
             mp_free_number(tmp4);
-            mp_free_number(tmp5);
         }
     } else {
         /*tex
@@ -8077,7 +8075,6 @@ void mp_solve_rising_cubic(MP mp, mp_number *ret, mp_number *a_orig, mp_number *
         mp_confusion(mp, "rising cubic");
     }
     mp_new_number(t);
-    mp_new_number(abc);
     mp_new_number_clone(a, *a_orig);
     mp_new_number_clone(b, *b_orig);
     mp_new_number_clone(c, *c_orig);
@@ -8087,7 +8084,7 @@ void mp_solve_rising_cubic(MP mp, mp_number *ret, mp_number *a_orig, mp_number *
     mp_new_number(ac);
     mp_new_number(xx);
     mp_new_number(neg_x);
-    mp_set_number_from_addition(abc, a, b);
+    mp_new_number_from_add(abc, a, b);
     mp_number_add(abc, c);
     if (mp_number_nonpositive(x)) {
         mp_set_number_to_zero(*ret);
@@ -8164,7 +8161,7 @@ static void mp_do_arc_test(MP mp,
     mp_pyth_add(v1, *dx1, *dy1);
     mp_pyth_add(v2, *dx2, *dy2);
     if ((mp_number_greaterequal(v0, mp_fraction_four_t)) || (mp_number_greaterequal(v1, mp_fraction_four_t)) || (mp_number_greaterequal(v2, mp_fraction_four_t))) {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         if (mp_number_infinite(*a_goal)) {
             mp_set_number_to_inf(*ret);
         } else {
@@ -8239,7 +8236,7 @@ static void mp_get_arc_length(MP mp, mp_number *ret, mp_knot h)
     mp_free_number(arg4);
     mp_free_number(arg5);
     mp_free_number(arg6);
-    check_arith(mp);
+    mp_check_arithmic(mp);
     mp_number_clone(*ret, a_tot);
     mp_free_number(a_tot);
 }
@@ -8292,7 +8289,7 @@ static void mp_get_subarc_length(MP mp, mp_number *ret, mp_knot h, mp_number *fi
     mp_free_number(arg4);
     mp_free_number(arg5);
     mp_free_number(arg6);
-    check_arith(mp);
+    mp_check_arithmic(mp);
     mp_number_clone(*ret, a_tot);
     mp_free_number(a_cnt);
     mp_free_number(a_tot);
@@ -8330,7 +8327,7 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
             mp_toss_knot_list(mp, p);
             mp_free_number(neg_arc0);
         }
-        check_arith(mp);
+        mp_check_arithmic(mp);
     } else {
         mp_knot p, q, k;                              /*tex for traversing the path */
         mp_number t_tot;                              /*tex accumulator for the result */
@@ -8376,16 +8373,14 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
             if (q == h) {
                 /*tex
                     Update |t_tot| and |arc| to avoid going around the cyclic path too many times but
-                    set |arith_error := 1 | and |goto done| on overflow.
+                    set |arithmic_error := 1 | and |goto done| on overflow.
                 */
                 if (mp_number_positive(arc)) {
                     mp_number n, n1, d1, v1;
                     mp_new_number(n);
-                    mp_new_number(n1);
-                    mp_new_number(d1);
                     mp_new_number(v1);
-                    mp_set_number_from_subtraction(d1, arc0, arc); /* d1 = arc0 - arc */
-                    mp_set_number_from_div(n1, arc, d1);           /* n1 = (arc / d1) */
+                    mp_new_number_from_sub(d1, arc0, arc); /* d1 = arc0 - arc */
+                    mp_new_number_from_div(n1, arc, d1);           /* n1 = (arc / d1) */
                     mp_floor_scaled(n1); /* added */
                     mp_number_clone(n, n1);
                     mp_set_number_from_mul(n1, n1, d1);            /* n1 = (n1 * d1) */
@@ -8395,8 +8390,8 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
                     mp_number_add(v1, mp_epsilon_t);               /* v1 = v1 + 1 */
                     mp_set_number_from_div(d1, d1, v1);            /* |d1 = EL_GORDO / v1| */
                     if (mp_number_greater(t_tot, d1)) {
-                        mp->arith_error = 1;
-                        check_arith(mp);
+                        mp->arithmic_error = 1;
+                        mp_check_arithmic(mp);
                         mp_set_number_to_inf(*ret);
                         mp_free_number(n);
                         mp_free_number(n1);
@@ -8413,7 +8408,7 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
             }
             p = q;
         }
-        check_arith(mp);
+        mp_check_arithmic(mp);
         if (local) {
             mp_number_add(t, mp_two_t);
             mp_number_clone(*ret, t);
@@ -8515,14 +8510,10 @@ void mp_print_pen_only(MP mp, mp_knot h)
             Print the elliptical pen |h|.
         */
         mp_number lxx, lyy, rxx, ryy;
-        mp_new_number(lxx);
-        mp_new_number(lyy);
-        mp_new_number(rxx);
-        mp_new_number(ryy);
-        mp_set_number_from_subtraction(lxx, h->left_x, h->x_coord);
-        mp_set_number_from_subtraction(rxx, h->right_x, h->x_coord);
-        mp_set_number_from_subtraction(lyy, h->left_y, h->y_coord);
-        mp_set_number_from_subtraction(ryy, h->right_y, h->y_coord);
+        mp_new_number_from_sub(lxx, h->left_x, h->x_coord);
+        mp_new_number_from_sub(rxx, h->right_x, h->x_coord);
+        mp_new_number_from_sub(lyy, h->left_y, h->y_coord);
+        mp_new_number_from_sub(ryy, h->right_y, h->y_coord);
         mp_print_format(mp, "pencircle transformed (%N,%N,%N,%N,%N,%N)", h->x_coord, h->y_coord, lxx, rxx, lyy, ryy);
         mp_free_number(lxx);
         mp_free_number(lyy);
@@ -8583,18 +8574,14 @@ static void mp_make_path(MP mp, mp_knot h)
         mp_number width_x, width_y;   /* the effect of a unit change in $x$ */
         mp_number height_x, height_y; /* the effect of a unit change in $y$ */
         mp_number dx, dy;             /* the vector from knot |p| to its right control point */
-        mp_new_number(width_x);
-        mp_new_number(width_y);
-        mp_new_number(height_x);
-        mp_new_number(height_y);
         mp_new_number(dx);
         mp_new_number(dy);
         mp_new_number_clone(center_x, h->x_coord);
         mp_new_number_clone(center_y, h->y_coord);
-        mp_set_number_from_subtraction(width_x, h->left_x, center_x);
-        mp_set_number_from_subtraction(width_y, h->left_y, center_y);
-        mp_set_number_from_subtraction(height_x, h->right_x, center_x);
-        mp_set_number_from_subtraction(height_y, h->right_y, center_y);
+        mp_new_number_from_sub(width_x, h->left_x, center_x);
+        mp_new_number_from_sub(width_y, h->left_y, center_y);
+        mp_new_number_from_sub(height_x, h->right_x, center_x);
+        mp_new_number_from_sub(height_y, h->right_y, center_y);
         p = h;
         for (int k = 0; k <= 7; k++) {
             /*tex
@@ -9306,14 +9293,10 @@ static void mp_get_pen_scale(MP mp, mp_number *ret, mp_knot p)
         mp_set_number_to_zero(*ret);
     } else {
         mp_number a, b, c, d;
-        mp_new_number(a);
-        mp_new_number(b);
-        mp_new_number(c);
-        mp_new_number(d);
-        mp_set_number_from_subtraction(a, p->left_x, p->x_coord);
-        mp_set_number_from_subtraction(b, p->right_x, p->x_coord);
-        mp_set_number_from_subtraction(c, p->left_y,    p->y_coord);
-        mp_set_number_from_subtraction(d, p->right_y, p->y_coord);
+        mp_new_number_from_sub(a, p->left_x, p->x_coord);
+        mp_new_number_from_sub(b, p->right_x, p->x_coord);
+        mp_new_number_from_sub(c, p->left_y,    p->y_coord);
+        mp_new_number_from_sub(d, p->right_y, p->y_coord);
         mp_sqrt_det(mp, ret, &a, &b, &c, &d);
         mp_free_number(a);
         mp_free_number(b);
@@ -9492,25 +9475,25 @@ static mp_dash_node mp_new_dash_node(MP mp)
     } else {
         p = mp_memory_allocate(sizeof(mp_dash_node_data));
         p->type = mp_dash_node_type;
-        mp_new_number(p->start_x);
-        mp_new_number(p->stop_x);
-        mp_new_number(p->dash_y);
     }
+    mp_new_number(p->start_x);
+    mp_new_number(p->stop_x);
+    mp_new_number(p->dash_y);
     p->link = NULL;
     return p;
 }
 
 static void mp_free_dash_node(MP mp, mp_dash_node p)
 {
+    mp_free_number(p->start_x);
+    mp_free_number(p->stop_x);
+    mp_free_number(p->dash_y);
     mp->memory_pool[mp_dash_pool].used--;
     if (mp->memory_pool[mp_dash_pool].pool < mp->memory_pool[mp_dash_pool].kept) {
         mp->memory_pool[mp_dash_pool].pool++;
         p->link = mp->memory_pool[mp_dash_pool].list;
         mp->memory_pool[mp_dash_pool].list = p;
     } else {
-        mp_free_number(p->start_x);
-        mp_free_number(p->stop_x);
-        mp_free_number(p->dash_y);
         mp_memory_free(p);
     }
 }
@@ -9537,7 +9520,6 @@ static mp_edge_header_node mp_new_edge_header_node(MP mp)
         mp->memory_pool[mp_edge_header_pool].pool--;
     } else {
         p = mp_memory_allocate(sizeof(mp_edge_header_node_data));
-//        p->type = mp_header_node_type;
     }
     p->link = NULL;
     /* */
@@ -10139,14 +10121,10 @@ static mp_edge_header_node mp_make_dashes(MP mp, mp_edge_header_node h)
                             if (mp_number_less(x0, x1) || mp_number_less(x1, x2) || mp_number_less(x2, x3)) {
                                 mp_number a1, a2, a3, a4;
                                 int test;
-                                mp_new_number(a1);
-                                mp_new_number(a2);
-                                mp_new_number(a3);
-                                mp_new_number(a4);
-                                mp_set_number_from_subtraction(a1, x2, x1);
-                                mp_set_number_from_subtraction(a2, x2, x1);
-                                mp_set_number_from_subtraction(a3, x1, x0);
-                                mp_set_number_from_subtraction(a4, x3, x2);
+                                mp_new_number_from_sub(a1, x2, x1);
+                                mp_new_number_from_sub(a2, x2, x1);
+                                mp_new_number_from_sub(a3, x1, x0);
+                                mp_new_number_from_sub(a4, x3, x2);
                                 test = mp_ab_vs_cd(a1, a2, a3, a4);
                                 mp_free_number(a1);
                                 mp_free_number(a2);
@@ -10242,13 +10220,12 @@ static mp_edge_header_node mp_make_dashes(MP mp, mp_edge_header_node h)
                         mp_new_number(r2);
                         dln = (mp_dash_node) d->link;
                         dd = mp_get_dash_list(hh);
-                        mp_new_number(xoff);
                         mp_new_number(dashoff);
                         mp_dash_offset(mp, &dashoff, (mp_dash_node) hh);
                         mp_take_scaled(r1, hsf, dd->start_x);
                         mp_take_scaled(r2, hsf, dashoff);
                         mp_number_add(r1, r2);
-                        mp_set_number_from_subtraction(xoff, dln->start_x, r1);
+                        mp_new_number_from_sub(xoff, dln->start_x, r1);
                         mp_free_number(dashoff);
                         mp_take_scaled(r1, hsf, dd->start_x);
                         mp_take_scaled(r2, hsf, hh->dash_y);
@@ -10477,11 +10454,10 @@ static void mp_box_ends(MP mp, mp_knot p, mp_knot pp, mp_edge_header_node h)
                         bounding box to accommodate it.
                     */
                     mp_number r1, r2, arg1;
-                    mp_new_number(arg1);
                     mp_new_fraction(r1);
                     mp_new_fraction(r2);
                     mp_find_offset(mp, &dx, &dy, pp);
-                    mp_set_number_from_subtraction(arg1, xx, mp->cur_x);
+                    mp_new_number_from_sub(arg1, xx, mp->cur_x);
                     mp_take_fraction(r1, arg1, dx);
                     mp_set_number_from_subtraction(arg1, yy, mp->cur_y);
                     mp_take_fraction(r2, arg1, dy);
@@ -10952,7 +10928,6 @@ static mp_knot mp_offset_prep(MP mp, mp_knot c, mp_knot h)
         */
         {
             mp_number r1, r2, arg1;
-            mp_new_number(arg1);
             mp_new_fraction(r1);
             mp_new_fraction(r2);
             mp_take_fraction(r1, x0, y2);
@@ -10960,7 +10935,7 @@ static mp_knot mp_offset_prep(MP mp, mp_knot c, mp_knot h)
             mp_number_half(r1);
             mp_number_half(r2);
             mp_set_number_from_subtraction(t0, r1, r2);
-            mp_set_number_from_addition(arg1, y0, y2);
+            mp_new_number_from_add(arg1, y0, y2);
             mp_take_fraction(r1, x1, arg1);
             mp_set_number_from_addition(arg1, x0, x2);
             /*|mp_take_fraction(r1, y1, arg1);|*/ /* The old one, is it correct? */
@@ -11001,12 +10976,11 @@ static mp_knot mp_offset_prep(MP mp, mp_knot c, mp_knot h)
             mp_number tmp1, tmp2, r1, r2, arg1;
             mp_new_fraction(r1);
             mp_new_fraction(r2);
-            mp_new_number(arg1);
             mp_new_number(tmp1);
             mp_new_number(tmp2);
             mp_set_number_from_of_the_way(tmp1, t, u0, u1);
             mp_set_number_from_of_the_way(tmp2, t, v0, v1);
-            mp_set_number_from_addition(arg1, x0, x2);
+            mp_new_number_from_add(arg1, x0, x2);
             mp_take_fraction(r1, arg1, tmp1);
             mp_set_number_from_addition(arg1, y0, y2);
             mp_take_fraction(r2, arg1, tmp2);
@@ -11943,10 +11917,8 @@ static mp_knot mp_make_envelope(MP mp, mp_knot c, mp_knot h, int linejoin, int l
             }
             if ((join_type == 1) || (k == zero_offset)) {
                 mp_number xtot, ytot;
-                mp_new_number(xtot);
-                mp_new_number(ytot);
-                mp_set_number_from_addition(xtot, qx, w->x_coord);
-                mp_set_number_from_addition(ytot, qy, w->y_coord);
+                mp_new_number_from_add(xtot, qx, w->x_coord);
+                mp_new_number_from_add(ytot, qy, w->y_coord);
                 q = mp_insert_knot(mp, q, &xtot, &ytot);
                 mp_free_number(xtot);
                 mp_free_number(ytot);
@@ -11979,19 +11951,17 @@ static mp_knot mp_make_envelope(MP mp, mp_knot c, mp_knot h, int linejoin, int l
                         mp_number xtot, ytot, xsub, ysub;
                         mp_new_fraction(xsub);
                         mp_new_fraction(ysub);
-                        mp_new_number(xtot);
-                        mp_new_number(ytot);
                         mp_set_number_from_subtraction(tmp, q->x_coord, p->x_coord);
-                        mp_take_fraction(r1, tmp, dyout);
                         mp_set_number_from_subtraction(tmp, q->y_coord, p->y_coord);
+                        mp_take_fraction(r1, tmp, dyout);
                         mp_take_fraction(r2, tmp, dxout);
                         mp_set_number_from_subtraction(tmp, r1, r2);
                         mp_make_fraction(r1, tmp, det);
                         mp_number_clone(tmp, r1);
                         mp_take_fraction(xsub, tmp, dxin);
                         mp_take_fraction(ysub, tmp, dyin);
-                        mp_set_number_from_addition(xtot, p->x_coord, xsub);
-                        mp_set_number_from_addition(ytot, p->y_coord, ysub);
+                        mp_new_number_from_add(xtot, p->x_coord, xsub);
+                        mp_new_number_from_add(ytot, p->y_coord, ysub);
                         r = mp_insert_knot(mp, p, &xtot, &ytot);
                         mp_free_number(xtot);
                         mp_free_number(ytot);
@@ -12394,8 +12364,7 @@ static void mp_find_direction_time(MP mp, mp_number *ret, mp_number *x_orig, mp_
                         if (mp_ab_vs_cd(y1, y2, mp_zero_t, mp_zero_t) < 0) {
                             mp_number tmp, arg2;
                             mp_new_number(tmp);
-                            mp_new_number(arg2);
-                            mp_set_number_from_subtraction(arg2, y1, y2);
+                            mp_new_number_from_sub(arg2, y1, y2);
                             mp_make_fraction(t, y1, arg2);
                             mp_free_number(arg2);
                             mp_set_number_from_of_the_way(x1, t, x1, x2);
@@ -12434,8 +12403,7 @@ static void mp_find_direction_time(MP mp, mp_number *ret, mp_number *x_orig, mp_
                                     goto FOUND;
                                 } else if (mp_ab_vs_cd(x1, x3, x2, x2) <= 0) {
                                     mp_number arg2;
-                                    mp_new_number(arg2);
-                                    mp_set_number_from_subtraction(arg2, x1, x2);
+                                    mp_new_number_from_sub(arg2, x1, x2);
                                     mp_make_fraction(t, x1, arg2);
                                     mp_free_number(arg2);
                                     mp_number_clone(tt, t);
@@ -17569,14 +17537,14 @@ void mp_begin_iteration(MP mp)
                         */
                         {
                             if (cur_exp_type != mp_known_type) {
-                                mp_bad_for (mp, "initial value");
+                                mp_bad_for(mp, "initial value");
                             }
                             mp_number_clone(s->value, cur_exp_value_number);
                             mp_number_clone(s->old_value, cur_exp_value_number);
                             mp_get_x_next(mp);
                             mp_scan_expression(mp);
                             if (cur_exp_type != mp_known_type) {
-                                mp_bad_for (mp, "step size");
+                                mp_bad_for(mp, "step size");
                             }
                             mp_number_clone(s->step_size, cur_exp_value_number);
                             if (cur_cmd != mp_until_command) {
@@ -17590,7 +17558,7 @@ void mp_begin_iteration(MP mp)
                             mp_get_x_next(mp);
                             mp_scan_expression(mp);
                             if (cur_exp_type != mp_known_type) {
-                                mp_bad_for (mp, "final value");
+                                mp_bad_for(mp, "final value");
                             }
                             mp_number_clone(s->final_value, cur_exp_value_number);
                             s->type = MP_PROGRESSION_FLAG;
@@ -19032,7 +19000,7 @@ static void mp_recycle_independent_value(MP mp, mp_node p)
         if (mp->fix_needed) {
             mp_fix_dependencies(mp);
         }
-        check_arith(mp);
+        mp_check_arithmic(mp);
         mp_free_number(ret);
     }
     mp_free_number(v);
@@ -19718,9 +19686,13 @@ static void mp_finish_read(MP mp)
     mp_set_cur_exp_str(mp, mp_make_string(mp));
 }
 
-static void mp_do_nullary(MP mp, int c)
+/*tex
+    Scan a nullary operation.
+*/
+
+static void mp_do_command_nullary(MP mp, int c)
 {
-    check_arith(mp);
+    mp_check_arithmic(mp);
     if (mp_number_greater(internal_value(mp_tracing_commands_internal), mp_two_t)) {
         mp_show_cmd_mod(mp, mp_nullary_command, c);
     }
@@ -19775,7 +19747,7 @@ static void mp_do_nullary(MP mp, int c)
             }
             break;
     }
-    check_arith(mp);
+    mp_check_arithmic(mp);
 }
 
 /*tex
@@ -19988,61 +19960,6 @@ static void mp_negate_value(MP mp, mp_node r)
         mp_number_negate(mp_get_value_number(r));
     } else {
         mp_negate_dep_list(mp, (mp_value_node) mp_get_dep_list((mp_value_node) r));
-    }
-}
-static void negate_cur_expr(MP mp)
-{
-    switch (cur_exp_type) {
-        case mp_color_type:
-        case mp_cmykcolor_type:
-        case mp_pair_type:
-        case mp_independent_type:
-            {
-                mp_node q = cur_exp_node;
-                mp_make_exp_copy(mp, q, 2);
-                if (cur_exp_type == mp_dependent_type) {
-                    mp_negate_dep_list(mp, (mp_value_node) mp_get_dep_list((mp_value_node) cur_exp_node));
-                } else if (cur_exp_type <= mp_pair_type) {
-                    /* |mp_color_type| |mp_cmykcolor_type|, or |mp_pair_type| */
-                    mp_node p = mp_get_value_node(cur_exp_node);
-                 // mp_node r; /* for list manipulation */
-                    switch (cur_exp_type) {
-                        case mp_pair_type:
-                            mp_negate_value(mp, mp_x_part(p));
-                            mp_negate_value(mp, mp_y_part(p));
-                            break;
-                        case mp_color_type:
-                            mp_negate_value(mp, mp_red_part(p));
-                            mp_negate_value(mp, mp_green_part(p));
-                            mp_negate_value(mp, mp_blue_part(p));
-                            break;
-                        case mp_cmykcolor_type:
-                            mp_negate_value(mp, mp_cyan_part(p));
-                            mp_negate_value(mp, mp_magenta_part(p));
-                            mp_negate_value(mp, mp_yellow_part(p));
-                            mp_negate_value(mp, mp_black_part(p));
-                            break;
-                        default:
-                            break;
-                    }
-                }
-                /* if |cur_type=mp_known| then |cur_exp=0| */
-                mp_recycle_value(mp, q);
-                mp_free_value_node(mp, q);
-            }
-            break;
-        case mp_dependent_type:
-        case mp_proto_dependent_type:
-            mp_negate_dep_list(mp, (mp_value_node) mp_get_dep_list((mp_value_node) cur_exp_node));
-            break;
-        case mp_known_type:
-            if (is_number(cur_exp_value_number)) {
-                mp_number_negate(cur_exp_value_number);
-            }
-            break;
-        default:
-            mp_bad_unary(mp, mp_minus_operation);
-            break;
     }
 }
 
@@ -20326,22 +20243,6 @@ static void mp_take_picture_part(MP mp, int c)
             mp_flush_cur_exp(mp, new_expr);
             break;
     }
-}
-
-static void mp_str_to_num(MP mp)
-{
-    int n; /* accumulator */
-    mp_value new_expr;
-    memset(&new_expr, 0, sizeof(mp_value));
-    mp_new_number(new_expr.data.n);
-    if (cur_exp_str->len == 0) {
-       n = -1;
-    } else {
-       n = cur_exp_str->str[0];
-    }
-    mp_number_clone(new_expr.data.n, mp_unity_t);
-    mp_number_multiply_int(new_expr.data.n, n);
-    mp_flush_cur_exp(mp, new_expr);
 }
 
 static void mp_path_length(MP mp, mp_number *n)
@@ -20793,241 +20694,961 @@ static void mp_do_read_or_close(MP mp, int c)
     mp_finish_read(mp);
 }
 
+static void mp_set_up_not(MP mp, int c)
+{
+    if (cur_exp_type != mp_boolean_type) {
+        mp_bad_unary(mp, mp_not_operation);
+    } else {
+        mp_set_cur_exp_value_boolean(mp, (cur_exp_value_boolean == mp_true_operation) ? mp_false_operation : mp_true_operation);
+    }
+}
+
+static void mp_set_up_sqrt(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n;
+        mp_new_number(n);
+        mp_square_rt(n, cur_exp_value_number);
+        mp_set_cur_exp_value_number(mp, &n);
+        mp_free_number(n);
+    }
+}
+
+static void mp_set_up_norm(MP mp, int c) /* for 3D experiments */
+{
+    mp_number r; 
+    switch (cur_exp_type) { 
+        case mp_numeric_type:
+        case mp_known_type:
+            mp_new_number_from_mul(r, cur_exp_value_number, cur_exp_value_number);
+            goto OKAY;
+        case mp_pair_type:
+            if (mp_pair_is_known(mp_get_value_node(cur_exp_node))) {
+                /* a = sqrt(a dotprod a) */
+                mp_number x, y;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_add(r, x, y);
+                mp_free_number(x);
+                mp_free_number(y);
+                goto OKAY;
+            } else { 
+                break;
+            }
+       case mp_color_type:
+            if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
+                mp_number x, y, z;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(z, mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_add(r, x, y);
+                mp_number_add(r, z);
+                mp_free_number(x);
+                mp_free_number(y);
+                mp_free_number(z);
+                goto OKAY;
+            } else { 
+                break;
+            }
+        case mp_cmykcolor_type:
+            if (mp_cmyk_color_is_known(mp_get_value_node(cur_exp_node))) {
+                mp_number x, y, z, w;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_cyan_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_cyan_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_magenta_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_magenta_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(z, mp_get_value_number(mp_yellow_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_yellow_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(w, mp_get_value_number(mp_black_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_black_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_add(r, x, y);
+                mp_number_add(r, z);
+                mp_number_add(r, w);
+                mp_free_number(x);
+                mp_free_number(y);
+                mp_free_number(z);
+                mp_free_number(w);
+                goto OKAY;
+            } else { 
+                break;
+            }
+        default:
+            break;
+    }
+    mp_bad_unary(mp, c);
+    return;
+  OKAY:
+    mp_square_rt(r, r);
+    {
+        mp_value new_expr;
+        memset(&new_expr, 0, sizeof(mp_value));
+        new_expr.data.n = r;
+        mp_flush_cur_exp(mp, new_expr);
+    }
+}
+
+static void mp_set_up_m_exp(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n;
+        mp_new_number(n);
+        mp_m_exp(n, cur_exp_value_number);
+        mp_set_cur_exp_value_number(mp, &n);
+        mp_free_number(n);
+    }
+}
+
+static void mp_set_up_m_log(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n;
+        mp_new_number(n);
+        mp_m_log(n, cur_exp_value_number);
+        mp_set_cur_exp_value_number(mp, &n);
+        mp_free_number(n);
+    }
+}
+
+static void mp_set_up_sin_cos_d(MP mp, int c)
+{
+    /*tex
+        This is rather inefficient, esp decimal, to calculate both each time. We could pass
+        NULL as signal to do only one, or just have n_sin and n_cos.
+    */
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n_sin, n_cos, arg1, arg2;
+        mp_new_number(arg1);
+        mp_new_number(arg2);
+        mp_new_fraction(n_sin);
+        mp_new_fraction(n_cos);
+        mp_number_clone(arg1, cur_exp_value_number);
+        mp_number_clone(arg2, mp_unity_t); /* maybe dp360 */
+        mp_number_multiply_int(arg2, 360);
+        mp_number_modulo(arg1, arg2);
+        mp_convert_scaled_to_angle(arg1);
+        mp_n_sin_cos(arg1, n_cos, n_sin);
+        if (c == mp_sin_d_operation) {
+            mp_fraction_to_round_scaled(n_sin);
+            mp_set_cur_exp_value_number(mp, &n_sin);
+        } else {
+            mp_fraction_to_round_scaled(n_cos);
+            mp_set_cur_exp_value_number(mp, &n_cos);
+        }
+        mp_free_number(arg1);
+        mp_free_number(arg2);
+        mp_free_number(n_sin);
+        mp_free_number(n_cos);
+    }
+}
+
+static void mp_set_up_floor(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n;
+        mp_new_number(n);
+        mp_number_clone(n, cur_exp_value_number);
+        mp_floor_scaled(n);
+        mp_set_cur_exp_value_number(mp, &n);
+        mp_free_number(n);
+    }
+}
+
+static void mp_set_up_uniform_deviate(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_number n;
+        mp_new_number(n);
+        mp_m_unif_rand(n, cur_exp_value_number);
+        mp_set_cur_exp_value_number(mp, &n);
+        mp_free_number(n);
+    }
+}
+
+static void mp_set_up_odd(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_set_cur_exp_value_boolean(mp, mp_number_odd(cur_exp_value_number) ? mp_true_operation : mp_false_operation);
+        cur_exp_type = mp_boolean_type;
+    }
+}
+
+static void mp_set_up_angle(MP mp, int c)
+{
+    if (mp_nice_pair (mp, cur_exp_node, cur_exp_type)) {
+        mp_value expr;
+        mp_node p; /* for list manipulation */
+        mp_number narg;
+        memset(&expr, 0, sizeof(mp_value));
+        mp_new_number(expr.data.n);
+        mp_new_angle(narg);
+        p = mp_get_value_node(cur_exp_node);
+        mp_n_arg(narg, mp_get_value_number(mp_x_part(p)), mp_get_value_number(mp_y_part(p)));
+        mp_number_clone(expr.data.n, narg);
+        mp_convert_angle_to_scaled(expr.data.n);
+        mp_free_number(narg);
+        mp_flush_cur_exp(mp, expr);
+    } else {
+        mp_bad_unary(mp, mp_angle_operation);
+    }
+}
+
+static void mp_set_up_char(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, mp_char_operation);
+    } else {
+        int n = mp_round_unscaled(cur_exp_value_number) % 256;
+        unsigned char s[2];
+        mp_set_cur_exp_value_scaled(mp, n);
+        cur_exp_type = mp_string_type;
+        if (mp_number_negative(cur_exp_value_number)) {
+            n = mp_number_to_scaled(cur_exp_value_number) + 256;
+            mp_set_cur_exp_value_scaled(mp, n);
+        }
+        s[0] = (unsigned char) mp_number_to_scaled(cur_exp_value_number);
+        s[1] = '\0';
+        mp_set_cur_exp_str(mp, mp_rtsl (mp, (char *) s, 1));
+    }
+}
+
+static void mp_set_up_decimal(MP mp, int c)
+{
+    if (cur_exp_type != mp_known_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        int selector = mp->selector;
+        mp->selector = mp_new_string_selector;
+        mp_print_number(mp, cur_exp_value_number);
+        mp_set_cur_exp_str(mp, mp_make_string(mp));
+        mp->selector = selector;
+        cur_exp_type = mp_string_type;
+    }
+}
+
+static void mp_set_up_to_string(MP mp, int c)
+{
+    if (cur_exp_type != mp_string_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        int n; /* accumulator */
+        mp_value new_expr;
+        memset(&new_expr, 0, sizeof(mp_value));
+        mp_new_number(new_expr.data.n);
+        if (cur_exp_str->len == 0) {
+           n = -1;
+        } else {
+           n = cur_exp_str->str[0];
+        }
+        mp_number_clone(new_expr.data.n, mp_unity_t);
+        mp_number_multiply_int(new_expr.data.n, n);
+        mp_flush_cur_exp(mp, new_expr);
+    }
+}
+
+static void mp_set_up_segments(MP mp, int c)
+{
+    switch (cur_exp_type) {
+        case mp_path_type:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_path_segments(mp, &expr.data.n);
+                mp_flush_cur_exp(mp, expr);
+                break;
+            }
+        default:
+            mp_bad_unary(mp, c);
+            break;
+    }
+}
+
+static void mp_set_up_length(MP mp, int c)
+{
+    /*tex
+        The length operation is somewhat unusual in that it applies to a variety of different
+        types of operands. *
+    */
+    switch (cur_exp_type) {
+        case mp_string_type:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_number_clone(expr.data.n, mp_unity_t);
+                /* Kind of weird, this multiply: */
+                mp_number_multiply_int(expr.data.n, (int) cur_exp_str->len);
+                mp_flush_cur_exp(mp, expr);
+                break;
+            }
+        case mp_path_type:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_path_length(mp, &expr.data.n);
+                mp_flush_cur_exp(mp, expr);
+                break;
+            }
+        case mp_known_type:
+            {
+                mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
+                mp_number_abs(cur_exp_value_number);
+                break;
+            }
+        case mp_picture_type:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_picture_length(mp, &expr.data.n);
+                mp_flush_cur_exp(mp, expr);
+                break;
+            }
+        default:
+            if (mp_nice_pair (mp, cur_exp_node, cur_exp_type)) {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_pyth_add(expr.data.n,
+                    mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))),
+                    mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node)))
+                );
+                mp_flush_cur_exp(mp, expr);
+            } else {
+                mp_bad_unary(mp, c);
+            }
+            break;
+    }
+}
+
+static void mp_set_up_no_length(MP mp, int c)
+{
+    /*tex
+        For now we only support paths.
+    */
+    switch (cur_exp_type) {
+        case mp_path_type:
+            {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_path_no_length(mp, &expr.data.n);
+                mp_flush_cur_exp(mp, expr);
+                cur_exp_type = mp_boolean_type;
+                break;
+            }
+        case mp_string_type:
+        case mp_known_type:
+        case mp_picture_type:
+        default:
+            mp_bad_unary(mp, c);
+            break;
+    }
+}
+
+static void mp_set_up_turning(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        mp_value expr;
+        memset(&expr, 0, sizeof(mp_value));
+        mp_new_number(expr.data.n);
+        mp_flush_cur_exp(mp, expr);
+    } else if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, mp_turning_operation);
+    } else if (mp_left_type(cur_exp_knot) == mp_endpoint_knot) {
+        mp_value expr;
+        memset(&expr, 0, sizeof(mp_value));
+        mp_new_number(expr.data.n);
+        expr.data.p = NULL;
+        mp_flush_cur_exp(mp, expr); /* not a cyclic path */
+    } else {
+        mp_value expr;
+        memset(&expr, 0, sizeof(mp_value));
+        mp_new_number(expr.data.n);
+        mp_turn_cycles_wrapper(mp, &expr.data.n, cur_exp_knot);
+        mp_flush_cur_exp(mp, expr);
+    }
+}
+
+static void mp_set_up_type_1(MP mp, int c)
+{
+    mp_value expr;
+    /*tex They are parallel but with 2 increments (known and unknown): */
+    int type = (c - mp_boolean_type_operation) * 2 + mp_boolean_type ;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    mp_set_number_from_boolean(expr.data.n, (cur_exp_type == type || cur_exp_type == (type + 1)) ? mp_true_operation : mp_false_operation);
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_type_2(MP mp, int c)
+{
+    mp_value expr;
+    /*tex They are parallel: */
+    int type = (c - mp_transform_type_operation) + mp_transform_type;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    mp_set_number_from_boolean(expr.data.n, cur_exp_type == type ? mp_true_operation : mp_false_operation);
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_type_3(MP mp, int c)
+{
+    mp_value expr;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    mp_set_number_from_boolean(expr.data.n, (cur_exp_type >= mp_known_type && cur_exp_type <= mp_independent_type) ? mp_true_operation : mp_false_operation);
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_known(MP mp, int c)
+{
+    mp_value expr;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    mp_set_number_from_boolean(expr.data.n, mp_test_known(mp, c));
+    mp_flush_cur_exp(mp, expr);
+    /* !! do not replace with |mp_set_cur_exp_node(mp, )| !! */
+    cur_exp_node = NULL;
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_cycle(MP mp, int c)
+{
+    mp_value expr;
+    int b = 0;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    if (cur_exp_type != mp_path_type) {
+        b = (c == mp_cycle_operation) ? mp_false_operation : mp_true_operation;
+    } else if (mp_left_type(cur_exp_knot) != mp_endpoint_knot) {
+        b = (c == mp_cycle_operation) ? mp_true_operation : mp_false_operation;
+    } else {
+        b = (c == mp_cycle_operation) ? mp_false_operation : mp_true_operation;
+    }
+    mp_set_number_from_boolean(expr.data.n, b);
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_arc_length(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        mp_pair_to_path(mp);
+    }
+    if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, mp_arc_length_operation);
+    } else {
+        mp_value expr;
+        memset(&expr, 0, sizeof(mp_value));
+        mp_new_number(expr.data.n);
+        mp_get_arc_length(mp, &expr.data.n, cur_exp_knot);
+        mp_flush_cur_exp(mp, expr);
+    }
+}
+
+static void mp_set_up_group(MP mp, int c)
+{
+    mp_value expr;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    if (cur_exp_type != mp_picture_type) {
+        mp_set_number_from_boolean(expr.data.n, mp_false_operation);
+    } else if (mp_edge_list(cur_exp_node)->link == NULL) {
+        mp_set_number_from_boolean(expr.data.n, mp_false_operation);
+    } else {
+        /* they are parallel: */
+        int type = c - mp_filled_operation + mp_fill_node_type;
+        mp_set_number_from_boolean(expr.data.n, mp_edge_list(cur_exp_node)->link->type == type ? mp_true_operation: mp_false_operation);
+    }
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+static void mp_set_up_reverse(MP mp, int c)
+{
+    switch (cur_exp_type) {
+        case mp_path_type:
+            {
+                mp_knot pk = mp_htap_ypoc(mp, cur_exp_knot);
+                if (mp_right_type(pk) == mp_endpoint_knot) {
+                    pk = mp_next_knot(pk);
+                }
+                mp_toss_knot_list(mp, cur_exp_knot);
+                mp_set_cur_exp_knot(mp, pk);
+            }
+            break;
+        case mp_pair_type:
+            mp_pair_to_path(mp);
+            break;
+        default:
+            mp_bad_unary(mp, mp_reverse_operation);
+            break;
+    }
+}
+
+static void mp_set_up_uncycle(MP mp, int c)
+{
+    switch (cur_exp_type) {
+        case mp_path_type:
+            mp_right_type(mp_prev_knot(cur_exp_knot)) = mp_endpoint_knot;
+            mp_left_type(cur_exp_knot) = mp_endpoint_knot;
+            break;
+        case mp_pair_type:
+            mp_pair_to_path(mp);
+            break;
+        default:
+            mp_bad_unary(mp, mp_uncycle_operation);
+            break;
+    }
+}
+
+static void mp_set_up_center_of(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        /*tex We keep the pair. */
+    } else if (mp_get_cur_bbox(mp)) {
+        /* todo: make this a function call */
+        mp_number x, y;
+        mp_new_number(x);
+        mp_new_number(y);
+        mp_set_number_half_from_subtraction(x, mp_maxx, mp_minx);
+        mp_set_number_half_from_subtraction(y, mp_maxy, mp_miny);
+        mp_number_add(x, mp_minx);
+        mp_number_add(y, mp_miny);
+        mp_pair_value(mp, &x, &y);
+    } else {
+        mp_bad_unary(mp, mp_center_of_operation);
+    }
+}
+
+static void mp_set_up_center_of_mass(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        /*tex We keep the pair. */
+    } else if (cur_exp_type == mp_path_type) {
+        /* no overflow detection here .. todo: make this a function call */
+        mp_knot p = cur_exp_knot;
+        int l = 0;
+        mp_number x, y;
+        mp_new_number(x);
+        mp_new_number(y);
+        do {
+            ++l;
+            p = mp_next_knot(p);
+            mp_number_add(x, p->x_coord);
+            mp_number_add(y, p->y_coord);
+        } while (p != cur_exp_knot);
+        mp_number_divide_int(x, l);
+        mp_number_divide_int(y, l);
+        mp_pair_value(mp, &x, &y);
+        mp_free_number(x);
+        mp_free_number(y);
+    } else {
+        mp_bad_unary(mp, mp_center_of_mass_operation);
+    }
+}
+
+static void mp_set_up_delta(MP mp, int c)
+{
+    if (cur_exp_type == mp_known_type) {
+        mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
+        if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
+            mp_knot p = mp->loop_ptr->point;
+            int n = mp_round_unscaled(cur_exp_value_number);
+            if (n > 0) {
+                while (n--) {
+                    p = mp_next_knot(p);
+                }
+            } else if (n < 0) {
+                while (n++) {
+                    p = mp_prev_knot(p);
+                }
+            }
+            mp_push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
+        }
+    } else {
+        mp_bad_unary(mp, c);
+    }
+}
+
+static void mp_set_up_pen(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        mp_pair_to_path(mp);
+    }
+    if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, mp_make_pen_operation);
+    } else {
+        cur_exp_type = mp_pen_type;
+        mp_set_cur_exp_knot(mp, mp_make_pen(mp, cur_exp_knot, 1));
+    }
+}
+
+static void mp_set_up_nep(MP mp, int c)
+{
+    if (cur_exp_type == mp_pair_type) {
+        mp_pair_to_path(mp);
+    }
+    if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        cur_exp_type = mp_nep_type;
+        mp_set_cur_exp_knot(mp, cur_exp_knot);
+    }
+}
+
+static void mp_set_up_convexed(MP mp, int c)
+{
+    if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        cur_exp_type = mp_path_type;
+        mp_set_cur_exp_knot(mp, mp_convex_hull(mp, cur_exp_knot));
+        mp_simplify_path(mp, cur_exp_knot);
+    }
+}
+
+static void mp_set_up_uncontrolled(MP mp, int c)
+{
+    if (cur_exp_type != mp_path_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        cur_exp_type = mp_path_type;
+        mp_simplify_path(mp, cur_exp_knot);
+    }
+}
+
+static void mp_set_up_make_path(MP mp, int c)
+{
+    if (cur_exp_type != mp_pen_type && cur_exp_type != mp_nep_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        cur_exp_type = mp_path_type;
+        mp_make_path(mp, cur_exp_knot);
+    }
+}
+
+static void mp_set_up_corner(MP mp, int c)
+{
+    if (mp_get_cur_bbox(mp)) {
+        switch (c) {
+            case mp_ll_corner_operation:
+                mp_pair_value(mp, &mp_minx, &mp_miny);
+                break;
+            case mp_lr_corner_operation:
+                mp_pair_value(mp, &mp_maxx, &mp_miny);
+                break;
+            case mp_ul_corner_operation:
+                mp_pair_value(mp, &mp_minx, &mp_maxy);
+                break;
+            case mp_ur_corner_operation:
+                mp_pair_value(mp, &mp_maxx, &mp_maxy);
+                break;
+            case mp_corners_operation:
+                mp_make_bounding_box(mp);
+                break;
+        } 
+    } else { 
+        mp_bad_unary(mp, c);
+    }
+}
+
+static void mp_set_up_range(MP mp, int c)
+{
+    switch (c) {
+        case mp_x_range_operation:
+            if (mp_get_cur_xbox(mp)) {
+                mp_pair_value(mp, &mp_minx, &mp_maxx);
+                return;
+            } else { 
+                break;
+            }
+        case mp_y_range_operation:
+            if (mp_get_cur_ybox(mp)) {
+                mp_pair_value(mp, &mp_miny, &mp_maxy);
+                return;
+            } else { 
+                break;
+            }
+        default: 
+            break;
+    }
+    mp_bad_unary(mp, c);
+}
+
+static void mp_set_up_from(MP mp, int c)
+{
+    if (cur_exp_type != mp_string_type) {
+        mp_bad_unary(mp, c);
+    } else {
+        mp_do_read_or_close(mp, c);
+    }
+}
+
+static void mp_set_up_plus(MP mp, int c)
+{
+    if (cur_exp_type < mp_color_type) {
+        mp_bad_unary(mp, c);
+    }
+}
+
+static void mp_set_up_minus(MP mp, int c)
+{
+    switch (cur_exp_type) {
+        case mp_color_type:
+        case mp_cmykcolor_type:
+        case mp_pair_type:
+        case mp_independent_type:
+            {
+                mp_node q = cur_exp_node;
+                mp_make_exp_copy(mp, q, 2);
+                if (cur_exp_type == mp_dependent_type) {
+                    mp_negate_dep_list(mp, (mp_value_node) mp_get_dep_list((mp_value_node) cur_exp_node));
+                } else if (cur_exp_type <= mp_pair_type) {
+                    /* |mp_color_type| |mp_cmykcolor_type|, or |mp_pair_type| */
+                    mp_node p = mp_get_value_node(cur_exp_node);
+                 // mp_node r; /* for list manipulation */
+                    switch (cur_exp_type) {
+                        case mp_pair_type:
+                            mp_negate_value(mp, mp_x_part(p));
+                            mp_negate_value(mp, mp_y_part(p));
+                            break;
+                        case mp_color_type:
+                            mp_negate_value(mp, mp_red_part(p));
+                            mp_negate_value(mp, mp_green_part(p));
+                            mp_negate_value(mp, mp_blue_part(p));
+                            break;
+                        case mp_cmykcolor_type:
+                            mp_negate_value(mp, mp_cyan_part(p));
+                            mp_negate_value(mp, mp_magenta_part(p));
+                            mp_negate_value(mp, mp_yellow_part(p));
+                            mp_negate_value(mp, mp_black_part(p));
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                /* if |cur_type=mp_known| then |cur_exp=0| */
+                mp_recycle_value(mp, q);
+                mp_free_value_node(mp, q);
+            }
+            break;
+        case mp_dependent_type:
+        case mp_proto_dependent_type:
+            mp_negate_dep_list(mp, (mp_value_node) mp_get_dep_list((mp_value_node) cur_exp_node));
+            break;
+        case mp_known_type:
+            if (is_number(cur_exp_value_number)) {
+                mp_number_negate(cur_exp_value_number);
+            }
+            break;
+        default:
+            mp_bad_unary(mp, c);
+            break;
+    }
+}
+
+static void mp_set_up_part(MP mp, int c)
+{
+    switch (cur_exp_type) {
+        case mp_known_type:
+            switch (c) { 
+                case mp_grey_part_operation:
+                    /* self */
+                    return;
+                default:
+                    goto BAD;
+            }
+        case mp_pair_type:
+            switch (c) { 
+                case mp_x_part_operation:
+                case mp_y_part_operation:
+                    /* take */
+                    break;
+                default: 
+                    goto BAD;
+            }
+            break;
+        case mp_transform_type:
+            switch (c) { 
+                case mp_x_part_operation:
+                case mp_y_part_operation:
+                case mp_xx_part_operation:
+                case mp_xy_part_operation:
+                case mp_yx_part_operation:
+                case mp_yy_part_operation:
+                    /* take */
+                    break;
+                default: 
+                    goto BAD;
+            }
+            break;
+        case mp_picture_type:
+            switch (c) { 
+                case mp_x_part_operation:
+                case mp_y_part_operation:
+                case mp_xx_part_operation:
+                case mp_xy_part_operation:
+                case mp_yx_part_operation:
+                case mp_yy_part_operation:
+                    break;
+                case mp_red_part_operation:
+                case mp_green_part_operation:
+                case mp_blue_part_operation:
+                    if (mp_pict_color_type(mp, mp_rgb_model)) {
+                        break;
+                    } else {
+                        mp_bad_color_part(mp, c);
+                        return;
+                    }
+                case mp_cyan_part_operation:
+                case mp_magenta_part_operation:
+                case mp_yellow_part_operation:
+                case mp_black_part_operation:
+                    if (mp_pict_color_type(mp, mp_cmyk_model)) {
+                        break;
+                    } else {
+                        mp_bad_color_part(mp, c);
+                        return;
+                    }
+                case mp_grey_part_operation:
+                    if (mp_pict_color_type(mp, mp_grey_model)) {
+                        break;
+                    } else {
+                        mp_bad_color_part(mp, c);
+                        return;
+                    }
+                case mp_color_model_operation:
+                case mp_path_part_operation:
+                case mp_pen_part_operation:
+                case mp_dash_part_operation:
+                case mp_prescript_part_operation:
+                case mp_postscript_part_operation:
+                case mp_stacking_part_operation:
+                    break;
+                default: 
+                    goto BAD;
+            }
+            mp_take_picture_part(mp, c);
+            return;
+        case mp_color_type:
+            switch (c) { 
+                case mp_red_part_operation:
+                case mp_green_part_operation:
+                case mp_blue_part_operation:
+                    /* take */
+                    break;
+                default: 
+                    goto BAD;
+            }
+            break;
+        case mp_cmykcolor_type:
+            switch (c) { 
+                case mp_cyan_part_operation:
+                case mp_magenta_part_operation:
+                case mp_yellow_part_operation:
+                case mp_black_part_operation:
+                    /* take */
+                    break;
+                default: 
+                    goto BAD;
+            }
+            break;
+        default: 
+            goto BAD;
+    }
+    mp_take_part(mp, c);
+    return;
+  BAD:
+    mp_bad_unary(mp, c);
+}
+
+/* Trace the current unary operation */
+
+static void mp_trace_unary(MP mp, int c) 
+{
+    mp_begin_diagnostic(mp);
+    mp_print_nl(mp, "{");
+    mp_print_operator(mp, c);
+    mp_print_char(mp, '(');
+    mp_print_exp(mp, NULL, 0); /* show the operand, but not verbosely */
+    mp_print_string(mp, ")}");
+    mp_end_diagnostic(mp, 0);
+}
+
 static void mp_do_unary(MP mp, int c)
 {
-    check_arith(mp);
+    mp_check_arithmic(mp);
     if (mp_number_greater(internal_value(mp_tracing_commands_internal), mp_two_t)) {
-        /* Trace the current unary operation */
-        mp_begin_diagnostic(mp);
-        mp_print_nl(mp, "{");
-        mp_print_operator(mp, c);
-        mp_print_char(mp, '(');
-        mp_print_exp(mp, NULL, 0); /* show the operand, but not verbosely */
-        mp_print_string(mp, ")}");
-        mp_end_diagnostic(mp, 0);
+        mp_trace_unary(mp, c); 
     }
-    /*tex
-        This is a mix of combined and not combined. We could combine more or less and let the
-        compiler deal with it.
-    */
     switch (c) {
         case mp_plus_operation:
-            if (cur_exp_type < mp_color_type) {
-                mp_bad_unary(mp, mp_plus_operation);
-            }
+            mp_set_up_plus(mp, c);
             break;
         case mp_minus_operation:
-            negate_cur_expr(mp);
+            mp_set_up_minus(mp, c);
             break;
         case mp_not_operation:
-            if (cur_exp_type != mp_boolean_type) {
-                mp_bad_unary(mp, mp_not_operation);
-            } else {
-                mp_set_cur_exp_value_boolean(mp, (cur_exp_value_boolean == mp_true_operation) ? mp_false_operation : mp_true_operation);
-            }
+            mp_set_up_not(mp, c);
             break;
-            /* We could use something function[mp_sqrt_operation] here: */
         case mp_sqrt_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n;
-                mp_new_number(n);
-                mp_square_rt(n, cur_exp_value_number);
-                mp_set_cur_exp_value_number(mp, &n);
-                mp_free_number(n);
-            }
+            mp_set_up_sqrt(mp, c);
+            break;
+        case mp_norm_operation:
+            mp_set_up_norm(mp, c);
             break;
         case mp_m_exp_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n;
-                mp_new_number(n);
-                mp_m_exp(n, cur_exp_value_number);
-                mp_set_cur_exp_value_number(mp, &n);
-                mp_free_number(n);
-            }
+            mp_set_up_m_exp(mp, c);
             break;
         case mp_m_log_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n;
-                mp_new_number(n);
-                mp_m_log(n, cur_exp_value_number);
-                mp_set_cur_exp_value_number(mp, &n);
-                mp_free_number(n);
-            }
+            mp_set_up_m_log(mp, c);
             break;
         case mp_sin_d_operation:
         case mp_cos_d_operation:
-            /*tex
-               This is rather inefficient, esp decimal, to calculate both each time. We could pass
-               NULL as signal to do only one, or just have n_sin and n_cos.
-            */
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n_sin, n_cos, arg1, arg2;
-                mp_new_number(arg1);
-                mp_new_number(arg2);
-                mp_new_fraction(n_sin);
-                mp_new_fraction(n_cos);
-                mp_number_clone(arg1, cur_exp_value_number);
-                mp_number_clone(arg2, mp_unity_t); /* maybe dp360 */
-                mp_number_multiply_int(arg2, 360);
-                mp_number_modulo(arg1, arg2);
-                mp_convert_scaled_to_angle(arg1);
-                mp_n_sin_cos(arg1, n_cos, n_sin);
-                if (c == mp_sin_d_operation) {
-                    mp_fraction_to_round_scaled(n_sin);
-                    mp_set_cur_exp_value_number(mp, &n_sin);
-                } else {
-                    mp_fraction_to_round_scaled(n_cos);
-                    mp_set_cur_exp_value_number(mp, &n_cos);
-                }
-                mp_free_number(arg1);
-                mp_free_number(arg2);
-                mp_free_number(n_sin);
-                mp_free_number(n_cos);
-            }
+            mp_set_up_sin_cos_d(mp, c);
             break;
         case mp_floor_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n;
-                mp_new_number(n);
-                mp_number_clone(n, cur_exp_value_number);
-                mp_floor_scaled(n);
-                mp_set_cur_exp_value_number(mp, &n);
-                mp_free_number(n);
-            }
+            mp_set_up_floor(mp, c);
             break;
         case mp_uniform_deviate_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_number n;
-                mp_new_number(n);
-                mp_m_unif_rand(n, cur_exp_value_number);
-                mp_set_cur_exp_value_number(mp, &n);
-                mp_free_number(n);
-            }
+            mp_set_up_uniform_deviate(mp, c);
             break;
         case mp_odd_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_set_cur_exp_value_boolean(mp, mp_number_odd(cur_exp_value_number) ? mp_true_operation : mp_false_operation);
-                cur_exp_type = mp_boolean_type;
-            }
+            mp_set_up_odd(mp, c);
             break;
         case mp_angle_operation:
-            if (mp_nice_pair (mp, cur_exp_node, cur_exp_type)) {
-                mp_value expr;
-                mp_node p; /* for list manipulation */
-                mp_number narg;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_new_angle(narg);
-                p = mp_get_value_node(cur_exp_node);
-                mp_n_arg(narg, mp_get_value_number(mp_x_part(p)), mp_get_value_number(mp_y_part(p)));
-                mp_number_clone(expr.data.n, narg);
-                mp_convert_angle_to_scaled(expr.data.n);
-                mp_free_number(narg);
-                mp_flush_cur_exp(mp, expr);
-            } else {
-                mp_bad_unary(mp, mp_angle_operation);
-            }
+            mp_set_up_angle(mp, c);
             break;
         case mp_x_part_operation:
         case mp_y_part_operation:
-            switch (cur_exp_type) {
-                case mp_pair_type:
-                case mp_transform_type:
-                    mp_take_part(mp, c);
-                    break;
-                case mp_picture_type:
-                    mp_take_picture_part(mp, c);
-                    break;
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
-            break;
         case mp_xx_part_operation:
         case mp_xy_part_operation:
         case mp_yx_part_operation:
         case mp_yy_part_operation:
-            switch (cur_exp_type) {
-                case mp_transform_type:
-                    mp_take_part(mp, c);
-                    break;
-                case mp_picture_type:
-                    mp_take_picture_part(mp, c);
-                    break;
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
-            break;
         case mp_red_part_operation:
         case mp_green_part_operation:
         case mp_blue_part_operation:
-            switch (cur_exp_type) {
-                case mp_color_type:
-                    mp_take_part(mp, c);
-                    break;
-                case mp_picture_type:
-                    if (mp_pict_color_type(mp, mp_rgb_model)) {
-                        mp_take_picture_part(mp, c);
-                    } else {
-                        mp_bad_color_part(mp, c);
-                    }
-                    break;
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
-            break;
         case mp_cyan_part_operation:
         case mp_magenta_part_operation:
         case mp_yellow_part_operation:
         case mp_black_part_operation:
-            switch (cur_exp_type) {
-                case mp_cmykcolor_type:
-                    mp_take_part(mp, c);
-                    break;
-                case mp_picture_type:
-                    if (mp_pict_color_type(mp, mp_cmyk_model)) {
-                        mp_take_picture_part(mp, c);
-                    } else {
-                        mp_bad_color_part(mp, c);
-                    }
-                    break;
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
-            break;
         case mp_grey_part_operation:
-            switch (cur_exp_type) {
-                case mp_known_type:
-                    break;
-                case mp_picture_type:
-                    if (mp_pict_color_type(mp, mp_grey_model)) {
-                        mp_take_picture_part(mp, c);
-                    } else {
-                        mp_bad_color_part(mp, c);
-                    }
-                    break;
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
-            break;
         case mp_color_model_operation:
         case mp_path_part_operation:
         case mp_pen_part_operation:
@@ -21035,487 +21656,116 @@ static void mp_do_unary(MP mp, int c)
         case mp_prescript_part_operation:
         case mp_postscript_part_operation:
         case mp_stacking_part_operation:
-            if (cur_exp_type == mp_picture_type) {
-                mp_take_picture_part(mp, c);
-            } else {
-                mp_bad_unary(mp, c);
-            }
+            mp_set_up_part(mp, c);
             break;
         case mp_char_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, mp_char_operation);
-            } else {
-                int n = mp_round_unscaled(cur_exp_value_number) % 256;
-                unsigned char s[2];
-                mp_set_cur_exp_value_scaled(mp, n);
-                cur_exp_type = mp_string_type;
-                if (mp_number_negative(cur_exp_value_number)) {
-                    n = mp_number_to_scaled(cur_exp_value_number) + 256;
-                    mp_set_cur_exp_value_scaled(mp, n);
-                }
-                s[0] = (unsigned char) mp_number_to_scaled(cur_exp_value_number);
-                s[1] = '\0';
-                mp_set_cur_exp_str(mp, mp_rtsl (mp, (char *) s, 1));
-            }
+            mp_set_up_char(mp, c);
             break;
         case mp_decimal_operation:
-            if (cur_exp_type != mp_known_type) {
-                mp_bad_unary(mp, mp_decimal_operation);
-            } else {
-                int selector = mp->selector;
-                mp->selector = mp_new_string_selector;
-                mp_print_number(mp, cur_exp_value_number);
-                mp_set_cur_exp_str(mp, mp_make_string(mp));
-                mp->selector = selector;
-                cur_exp_type = mp_string_type;
-            }
+            mp_set_up_decimal(mp, c);
             break;
         case mp_oct_operation:
         case mp_hex_operation:
         case mp_ASCII_operation:
-            if (cur_exp_type != mp_string_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_str_to_num(mp);
-            }
+            mp_set_up_to_string(mp, c);
             break;
         case mp_segments_operation:
-            switch (cur_exp_type) {
-                case mp_path_type:
-                    {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_path_segments(mp, &expr.data.n);
-                        mp_flush_cur_exp(mp, expr);
-                        break;
-                    }
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
+            mp_set_up_segments(mp, c);
             break;
         case mp_length_operation:
-            /*tex
-                The length operation is somewhat unusual in that it applies to a variety of different
-                types of operands. *
-            */
-            switch (cur_exp_type) {
-                case mp_string_type:
-                    {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_number_clone(expr.data.n, mp_unity_t);
-                        /* Kind of weird, this multiply: */
-                        mp_number_multiply_int(expr.data.n, (int) cur_exp_str->len);
-                        mp_flush_cur_exp(mp, expr);
-                        break;
-                    }
-                case mp_path_type:
-                    {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_path_length(mp, &expr.data.n);
-                        mp_flush_cur_exp(mp, expr);
-                        break;
-                    }
-                case mp_known_type:
-                    {
-                        mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
-                        mp_number_abs(cur_exp_value_number);
-                        break;
-                    }
-                case mp_picture_type:
-                    {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_picture_length(mp, &expr.data.n);
-                        mp_flush_cur_exp(mp, expr);
-                        break;
-                    }
-                default:
-                    if (mp_nice_pair (mp, cur_exp_node, cur_exp_type)) {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_pyth_add(expr.data.n,
-                            mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))),
-                            mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node)))
-                        );
-                        mp_flush_cur_exp(mp, expr);
-                    } else {
-                        mp_bad_unary(mp, c);
-                    }
-                    break;
-            }
+            mp_set_up_length(mp, c);
             break;
         case mp_no_length_operation:
-            /*tex
-                For now we only support paths.
-            */
-            switch (cur_exp_type) {
-                case mp_path_type:
-                    {
-                        mp_value expr;
-                        memset(&expr, 0, sizeof(mp_value));
-                        mp_new_number(expr.data.n);
-                        mp_path_no_length(mp, &expr.data.n);
-                        mp_flush_cur_exp(mp, expr);
-                        cur_exp_type = mp_boolean_type;
-                        break;
-                    }
-                case mp_string_type:
-                case mp_known_type:
-                case mp_picture_type:
-                default:
-                    mp_bad_unary(mp, c);
-                    break;
-            }
+            mp_set_up_no_length(mp, c);
             break;
         case mp_turning_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_flush_cur_exp(mp, expr);
-            } else if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, mp_turning_operation);
-            } else if (mp_left_type(cur_exp_knot) == mp_endpoint_knot) {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                expr.data.p = NULL;
-                mp_flush_cur_exp(mp, expr); /* not a cyclic path */
-            } else {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_turn_cycles_wrapper(mp, &expr.data.n, cur_exp_knot);
-                mp_flush_cur_exp(mp, expr);
-            }
+            mp_set_up_turning(mp, c);
             break;
-        /*tex
-            Here we could do some delta(operation,type) trickery as with filled.
-        */
         case mp_boolean_type_operation:
         case mp_string_type_operation:
         case mp_pen_type_operation:
         case mp_nep_type_operation:
         case mp_path_type_operation:
         case mp_picture_type_operation:
-            {
-                mp_value expr;
-                /*tex They are parallel but with 2 increments (known and unknown): */
-                int type = (c - mp_boolean_type_operation) * 2 + mp_boolean_type ;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_set_number_from_boolean(expr.data.n, (cur_exp_type == type || cur_exp_type == (type + 1)) ? mp_true_operation : mp_false_operation);
-                mp_flush_cur_exp(mp, expr);
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_type_1(mp, c);
+            break;
         case mp_transform_type_operation:
         case mp_color_type_operation:
         case mp_cmykcolor_type_operation:
         case mp_pair_type_operation:
-            {
-                mp_value expr;
-                /*tex They are parallel: */
-                int type = (c - mp_transform_type_operation) + mp_transform_type;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_set_number_from_boolean(expr.data.n, cur_exp_type == type ? mp_true_operation : mp_false_operation);
-                mp_flush_cur_exp(mp, expr);
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_type_2(mp, c);
+            break;
         case mp_numeric_type_operation:
-            {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_set_number_from_boolean(expr.data.n, (cur_exp_type >= mp_known_type && cur_exp_type <= mp_independent_type) ? mp_true_operation : mp_false_operation);
-                mp_flush_cur_exp(mp, expr);
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_type_3(mp, c);
+            break;
         case mp_known_operation:
         case mp_unknown_operation:
-            {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_set_number_from_boolean(expr.data.n, mp_test_known(mp, c));
-                mp_flush_cur_exp(mp, expr);
-                /* !! do not replace with |mp_set_cur_exp_node(mp, )| !! */
-                cur_exp_node = NULL;
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_known(mp, c);
+            break;
         case mp_cycle_operation:
         case mp_no_cycle_operation:
-            {
-                mp_value expr;
-                int b = 0;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                if (cur_exp_type != mp_path_type) {
-                    b = (c == mp_cycle_operation) ? mp_false_operation : mp_true_operation;
-                } else if (mp_left_type(cur_exp_knot) != mp_endpoint_knot) {
-                    b = (c == mp_cycle_operation) ? mp_true_operation : mp_false_operation;
-                } else {
-                    b = (c == mp_cycle_operation) ? mp_false_operation : mp_true_operation;
-                }
-                mp_set_number_from_boolean(expr.data.n, b);
-                mp_flush_cur_exp(mp, expr);
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_cycle(mp, c);
+            break;
         case mp_arc_length_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_pair_to_path(mp);
-            }
-            if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, mp_arc_length_operation);
-            } else {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                mp_get_arc_length(mp, &expr.data.n, cur_exp_knot);
-                mp_flush_cur_exp(mp, expr);
-            }
+            mp_set_up_arc_length(mp, c);
             break;
         case mp_filled_operation:
         case mp_stroked_operation:
         case mp_clipped_operation:
         case mp_grouped_operation:
         case mp_bounded_operation:
-            {
-                mp_value expr;
-                memset(&expr, 0, sizeof(mp_value));
-                mp_new_number(expr.data.n);
-                if (cur_exp_type != mp_picture_type) {
-                    mp_set_number_from_boolean(expr.data.n, mp_false_operation);
-                } else if (mp_edge_list(cur_exp_node)->link == NULL) {
-                    mp_set_number_from_boolean(expr.data.n, mp_false_operation);
-                } else {
-                    /* they are parallel: */
-                    int type = c - mp_filled_operation + mp_fill_node_type;
-                    mp_set_number_from_boolean(expr.data.n, mp_edge_list(cur_exp_node)->link->type == type ? mp_true_operation: mp_false_operation);
-                }
-                mp_flush_cur_exp(mp, expr);
-                cur_exp_type = mp_boolean_type;
-                break;
-            }
+            mp_set_up_group(mp, c);
+            break;
         case mp_make_pen_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_pair_to_path(mp);
-            }
-            if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, mp_make_pen_operation);
-            } else {
-                cur_exp_type = mp_pen_type;
-                mp_set_cur_exp_knot(mp, mp_make_pen(mp, cur_exp_knot, 1));
-            }
+            mp_set_up_pen(mp, c);
             break;
         case mp_make_nep_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_pair_to_path(mp);
-            }
-            if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                cur_exp_type = mp_nep_type;
-                mp_set_cur_exp_knot(mp, cur_exp_knot);
-            }
+            mp_set_up_nep(mp, c);
             break;
         case mp_convexed_operation:
-            if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, mp_convexed_operation);
-            } else {
-                cur_exp_type = mp_path_type;
-                mp_set_cur_exp_knot(mp, mp_convex_hull(mp, cur_exp_knot));
-                mp_simplify_path(mp, cur_exp_knot);
-            }
+            mp_set_up_convexed(mp, c);
             break;
         case mp_uncontrolled_operation:
-            if (cur_exp_type != mp_path_type) {
-                mp_bad_unary(mp, mp_uncontrolled_operation);
-            } else {
-                cur_exp_type = mp_path_type;
-                mp_simplify_path(mp, cur_exp_knot);
-            }
+            mp_set_up_uncontrolled(mp, c);
             break;
         case mp_make_path_operation:
-            if (cur_exp_type != mp_pen_type && cur_exp_type != mp_nep_type) {
-                mp_bad_unary(mp, mp_make_path_operation);
-            } else {
-                cur_exp_type = mp_path_type;
-                mp_make_path(mp, cur_exp_knot);
-            }
+            mp_set_up_make_path(mp, c);
             break;
         case mp_reverse_operation:
-            switch (cur_exp_type) {
-                case mp_path_type:
-                    {
-                        mp_knot pk = mp_htap_ypoc(mp, cur_exp_knot);
-                        if (mp_right_type(pk) == mp_endpoint_knot) {
-                            pk = mp_next_knot(pk);
-                        }
-                        mp_toss_knot_list(mp, cur_exp_knot);
-                        mp_set_cur_exp_knot(mp, pk);
-                    }
-                    break;
-                case mp_pair_type:
-                    mp_pair_to_path(mp);
-                    break;
-                default:
-                    mp_bad_unary(mp, mp_reverse_operation);
-                    break;
-            }
+            mp_set_up_reverse(mp, c);
             break;
         case mp_uncycle_operation:
-            switch (cur_exp_type) {
-                case mp_path_type:
-                    mp_right_type(mp_prev_knot(cur_exp_knot)) = mp_endpoint_knot;
-                    mp_left_type(cur_exp_knot) = mp_endpoint_knot;
-                    break;
-                case mp_pair_type:
-                    mp_pair_to_path(mp);
-                    break;
-                default:
-                    mp_bad_unary(mp, mp_uncycle_operation);
-                    break;
-            }
+            mp_set_up_uncycle(mp, c);
             break;
         case mp_ll_corner_operation:
-            if (mp_get_cur_bbox(mp)) {
-                mp_pair_value(mp, &mp_minx, &mp_miny);
-            } else {
-                mp_bad_unary(mp, mp_ll_corner_operation);
-            }
-            break;
         case mp_lr_corner_operation:
-            if (mp_get_cur_bbox(mp)) {
-                mp_pair_value(mp, &mp_maxx, &mp_miny);
-            } else {
-                mp_bad_unary(mp, mp_lr_corner_operation);
-            }
-            break;
         case mp_ul_corner_operation:
-            if (mp_get_cur_bbox(mp)) {
-                mp_pair_value(mp, &mp_minx, &mp_maxy);
-            } else {
-                mp_bad_unary(mp, mp_ul_corner_operation);
-            }
-            break;
         case mp_ur_corner_operation:
-            if (! mp_get_cur_bbox(mp)) {
-                mp_bad_unary(mp, mp_ur_corner_operation);
-            } else {
-                mp_pair_value(mp, &mp_maxx, &mp_maxy);
-            }
+        case mp_corners_operation:
+            mp_set_up_corner(mp, c);
             break;
         case mp_center_of_operation:
-            if (cur_exp_type == mp_pair_type) {
-                /*tex We keep the pair. */
-            } else if (mp_get_cur_bbox(mp)) {
-                /* todo: make this a function call */
-                mp_number x, y;
-                mp_new_number(x);
-                mp_new_number(y);
-                mp_set_number_half_from_subtraction(x, mp_maxx, mp_minx);
-                mp_set_number_half_from_subtraction(y, mp_maxy, mp_miny);
-                mp_number_add(x, mp_minx);
-                mp_number_add(y, mp_miny);
-                mp_pair_value(mp, &x, &y);
-            } else {
-                mp_bad_unary(mp, mp_center_of_operation);
-            }
+            mp_set_up_center_of(mp, c);
             break;
         case mp_center_of_mass_operation:
-            if (cur_exp_type == mp_pair_type) {
-                /*tex We keep the pair. */
-            } else if (cur_exp_type == mp_path_type) {
-                /* no overflow detection here .. todo: make this a function call */
-                mp_knot p = cur_exp_knot;
-                int l = 0;
-                mp_number x, y;
-                mp_new_number(x);
-                mp_new_number(y);
-                do {
-                    ++l;
-                    p = mp_next_knot(p);
-                    mp_number_add(x, p->x_coord);
-                    mp_number_add(y, p->y_coord);
-                } while (p != cur_exp_knot);
-                mp_number_divide_int(x, l);
-                mp_number_divide_int(y, l);
-                mp_pair_value(mp, &x, &y);
-                mp_free_number(x);
-                mp_free_number(y);
-            } else {
-                mp_bad_unary(mp, mp_center_of_mass_operation);
-            }
-            break;
-        case mp_corners_operation:
-            if (! mp_get_cur_bbox(mp)) {
-                mp_bad_unary(mp, mp_corners_operation);
-            } else {
-                mp_make_bounding_box(mp);
-            }
+            mp_set_up_center_of_mass(mp, c);
             break;
         case mp_x_range_operation:
-            if (mp_get_cur_xbox(mp)) {
-                mp_pair_value(mp, &mp_minx, &mp_maxx);
-            } else {
-                mp_bad_unary(mp, mp_x_range_operation);
-            }
-            break;
         case mp_y_range_operation:
-            if (mp_get_cur_ybox(mp)) {
-                mp_pair_value(mp, &mp_miny, &mp_maxy);
-            } else {
-                mp_bad_unary(mp, mp_y_range_operation);
-            }
+            mp_set_up_range(mp, c);
             break;
         case mp_delta_point_operation:
         case mp_delta_precontrol_operation:
         case mp_delta_postcontrol_operation:
         case mp_delta_direction_operation:
-            if (cur_exp_type == mp_known_type) {
-                mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
-                if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
-                    mp_knot p = mp->loop_ptr->point;
-                    int n = mp_round_unscaled(cur_exp_value_number);
-                    if (n > 0) {
-                        while (n--) {
-                            p = mp_next_knot(p);
-                        }
-                    } else if (n < 0) {
-                        while (n++) {
-                            p = mp_prev_knot(p);
-                        }
-                    }
-                    mp_push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
-                }
-            } else {
-                mp_bad_unary(mp, c);
-            }
+            mp_set_up_delta(mp, c);
             break;
         case mp_read_from_operation:
         case mp_close_from_operation:
-            if (cur_exp_type != mp_string_type) {
-                mp_bad_unary(mp, c);
-            } else {
-                mp_do_read_or_close(mp, c);
-            }
+            mp_set_up_from(mp, c);
             break;
     }
-    check_arith(mp);
+    mp_check_arithmic(mp);
 }
 
 /*tex
@@ -21589,10 +21839,8 @@ static void mp_bezier_slope(MP mp, mp_number *ret, mp_number *AX, mp_number *AY,
     double cy = mp_number_to_double(*CY);
     double dx = mp_number_to_double(*DX);
     double dy = mp_number_to_double(*DY);
-    mp_new_number(deltax);
-    mp_new_number(deltay);
-    mp_set_number_from_subtraction(deltax, *BX, *AX);
-    mp_set_number_from_subtraction(deltay, *BY, *AY);
+    mp_new_number_from_sub(deltax, *BX, *AX);
+    mp_new_number_from_sub(deltay, *BY, *AY);
     if (mp_number_zero(deltax) && mp_number_zero(deltay)) {
         mp_set_number_from_subtraction(deltax, *CX, *AX);
         mp_set_number_from_subtraction(deltay, *CY, *AY);
@@ -22254,11 +22502,10 @@ static void mp_number_trans(MP mp, mp_number *p, mp_number *q)
     mp_number r1, r2, v;
     mp_new_number(r1);
     mp_new_number(r2);
-    mp_new_number(v);
     mp_take_scaled(r1, *p, mp->txx);
     mp_take_scaled(r2, *q, mp->txy);
     mp_number_add(r1, r2);
-    mp_set_number_from_addition(v, r1, mp->tx);
+    mp_new_number_from_add(v, r1, mp->tx);
     mp_take_scaled(r1, *p, mp->tyx);
     mp_take_scaled(r2, *q, mp->tyy);
     mp_number_add(r1, r2);
@@ -22399,9 +22646,8 @@ static mp_edge_header_node mp_edges_trans(MP mp, mp_edge_header_node h)
             Scale the bounding box by |txx+txy| and |tyx+tyy|; then shift by |(tx,ty)|.
         */
         mp_number tot, ret;
-        mp_new_number(tot);
         mp_new_number(ret);
-        mp_set_number_from_addition(tot,mp->txx,mp->txy);
+        mp_new_number_from_add(tot,mp->txx,mp->txy);
         mp_take_scaled(ret, h->minx, tot);
         mp_set_number_from_addition(h->minx,ret, mp->tx);
         mp_take_scaled(ret, h->maxx, tot);
@@ -22855,7 +23101,7 @@ static void mp_find_point(MP mp, mp_number *v_orig, int c)
 
 static void mp_finish_binary(MP mp, mp_node old_p, mp_node old_exp)
 {
-    check_arith(mp);
+    mp_check_arithmic(mp);
     /* Recycle any sidestepped |independent| capsules */
     if (old_p != NULL) {
         mp_recycle_value(mp, old_p);
@@ -22948,9 +23194,9 @@ static void mp_set_up_plus_minus(MP mp, mp_node p, int c)
 
 static void mp_set_up_compare(MP mp, mp_node p, int c)
 {
-    check_arith(mp);
+    mp_check_arithmic(mp);
     /*tex
-        At this point |arith_error| should be |false|?
+        At this point |arithmic_error| should be |false|?
     */
     if ((cur_exp_type > mp_pair_type) && (p->type > mp_pair_type)) {
         /*tex |cur_exp := (p) - cur_exp| */
@@ -23195,7 +23441,7 @@ static void mp_set_up_compare(MP mp, mp_node p, int c)
     /*tex
         Ignore overflow in comparisons.
     */
-    mp->arith_error = 0;
+    mp->arithmic_error = 0;
 }
 
 static void mp_set_up_and_or(MP mp, mp_node p, int c)
@@ -23279,7 +23525,7 @@ static void mp_set_up_power(MP mp, mp_node p, int c)
         mp_number r;
         mp_new_number(r);
         mp_power_of(r, mp_get_value_number(p), cur_exp_value_number);
-        check_arith(mp);
+        mp_check_arithmic(mp);
         mp_set_cur_exp_value_number(mp, &r);
         mp_free_number(r);
     } else {
@@ -23304,6 +23550,177 @@ static void mp_set_up_pythag(MP mp, mp_node p, int c)
     }
 }
 
+static void mp_set_up_dotprod(MP mp, mp_node p, int c) /* for 3D experiments */
+{
+    mp_number r; 
+    switch (cur_exp_type) { 
+        case mp_numeric_type:
+        case mp_known_type:
+            if (p->type == mp_numeric_type || p->type == mp_known_type) {
+                mp_new_number_from_mul(r, cur_exp_value_number, mp_get_value_number(p));
+                goto OKAY;
+            } else { 
+                break;
+            }
+        case mp_pair_type:
+            if (mp_pair_is_known(mp_get_value_node(cur_exp_node)) && mp_nice_pair(mp, p, p->type)) {
+                mp_number x, y;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_x_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_y_part(mp_get_value_node(p))));
+                mp_new_number_from_add(r, x, y);
+                mp_free_number(x);
+                mp_free_number(y);
+                goto OKAY;
+            } else { 
+                break;
+            }
+        case mp_color_type:
+            if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node)) && p->type == mp_color_type && mp_rgb_color_is_known(mp_get_value_node(p))) {
+                mp_number x, y, z;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_red_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_green_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(z, mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
+                mp_new_number_from_add(r, x, y);
+                mp_number_add(r, z);
+                mp_free_number(x);
+                mp_free_number(y);
+                mp_free_number(z);
+                goto OKAY;
+            } else { 
+                break;
+            }
+        case mp_cmykcolor_type:
+            if (mp_cmyk_color_is_known(mp_get_value_node(cur_exp_node)) && p->type == mp_cmykcolor_type && mp_cmyk_color_is_known(mp_get_value_node(p))) {
+                mp_number x, y, z, w;
+                mp_new_number_from_mul(x, mp_get_value_number(mp_cyan_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_cyan_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(y, mp_get_value_number(mp_magenta_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_magenta_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(z, mp_get_value_number(mp_yellow_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_yellow_part(mp_get_value_node(p))));
+                mp_new_number_from_mul(w, mp_get_value_number(mp_black_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_black_part(mp_get_value_node(p))));
+                mp_new_number_from_add(r, x, y);
+                mp_number_add(r, z);
+                mp_number_add(r, w);
+                mp_free_number(x);
+                mp_free_number(y);
+                mp_free_number(z);
+                mp_free_number(w);
+                goto OKAY;
+            } else { 
+                break;
+            }
+        default:
+            break;
+    }
+    mp_bad_binary(mp, p, c);
+    return;
+  OKAY:
+    {
+        mp_value new_expr;
+        memset(&new_expr, 0, sizeof(mp_value));
+        new_expr.data.n = r;
+        mp_flush_cur_exp(mp, new_expr);
+    }
+}
+
+static void mp_set_up_crossprod(MP mp, mp_node p, int c) /* for 3D experiments */
+{
+    switch (cur_exp_type) { 
+        case mp_pair_type:
+            if (mp_pair_is_known(mp_get_value_node(cur_exp_node)) && mp_nice_pair(mp, p, p->type)) {
+                mp_number xy, yx, r;
+                mp_new_number_from_mul(xy, mp_get_value_number(mp_x_part(mp_get_value_node(p))), mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(yx, mp_get_value_number(mp_y_part(mp_get_value_node(p))), mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                mp_set_number_from_subtraction(r, xy, yx);
+                mp_free_number(xy);
+                mp_free_number(yx);
+                {
+                    mp_value new_expr;
+                    memset(&new_expr, 0, sizeof(mp_value));
+                    new_expr.data.n = r;
+                    mp_flush_cur_exp(mp, new_expr);
+                }
+                return;
+            } else { 
+                break;
+            }
+        case mp_color_type:
+            if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node)) && p->type == mp_color_type && mp_rgb_color_is_known(mp_get_value_node(p))) {
+                /* (greenpart a * bluepart  b  - bluepart  a * greenpart b) */
+                /* (bluepart  a * redpart   b  - redpart   a * bluepart  b) */
+                /* (redpart   a * greenpart b  - greenpart a * redpart   b) */
+                mp_number gb, bg, br, rb, rg, gr;
+                mp_new_number_from_mul(gb, mp_get_value_number(mp_green_part(mp_get_value_node(p))), mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(bg, mp_get_value_number(mp_blue_part(mp_get_value_node(p))), mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(br, mp_get_value_number(mp_blue_part(mp_get_value_node(p))), mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(rb, mp_get_value_number(mp_red_part(mp_get_value_node(p))), mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(rg, mp_get_value_number(mp_red_part(mp_get_value_node(p))), mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
+                mp_new_number_from_mul(gr, mp_get_value_number(mp_green_part(mp_get_value_node(p))), mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
+                mp_set_number_from_subtraction(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))), gb, bg);
+                mp_set_number_from_subtraction(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))), br, rb);
+                mp_set_number_from_subtraction(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))), rg, gr);
+                mp_free_number(gb);
+                mp_free_number(bg);
+                mp_free_number(br);
+                mp_free_number(rb);
+                mp_free_number(rg);
+                mp_free_number(gr);
+                return;
+            } else { 
+                break;
+            }
+     // case mp_cmykcolor_type:
+            /* we could return the cmy one */
+        default:
+            break;
+    }
+    mp_bad_binary(mp, p, c);
+}
+
+static void mp_set_up_div(MP mp, mp_node p, int c) /* for 3D experiments */
+{
+    switch (cur_exp_type) { 
+        case mp_numeric_type:
+        case mp_known_type:
+            if (p->type == mp_numeric_type || p->type == mp_known_type) {
+                /* x div y = floor(x/y) */
+                mp_number r; 
+                mp_new_number_from_div(r, mp_get_value_number(p), cur_exp_value_number);
+                mp_floor_scaled(r);
+                mp_set_cur_exp_value_number(mp, &r);
+                mp_free_number(r);
+                return;
+            } else { 
+                break;
+            }
+        default:
+            break;
+    }
+    mp_bad_binary(mp, p, c);
+}
+
+static void mp_set_up_mod(MP mp, mp_node p, int c) /* for 3D experiments */
+{
+    switch (cur_exp_type) { 
+        case mp_numeric_type:
+        case mp_known_type:
+            if (p->type == mp_numeric_type || p->type == mp_known_type) {
+                /* x mod y = x - y*floor(x/y) */
+                mp_number r; 
+                mp_new_number_from_div(r, mp_get_value_number(p), cur_exp_value_number);
+                mp_floor_scaled(r);
+                mp_set_number_from_mul(r, r, cur_exp_value_number);
+                mp_set_number_from_subtraction(r, mp_get_value_number(p), r);
+                mp_set_cur_exp_value_number(mp, &r);
+                mp_free_number(r);
+                return;
+            } else { 
+                break;
+            }
+        default:
+            break;
+    }
+    mp_bad_binary(mp, p, c);
+}
+
 static int mp_set_up_times(MP mp, mp_node p, int c, mp_node old_p, mp_node old_exp)
 {
     if ((cur_exp_type < mp_color_type) || (p->type < mp_color_type)) {
@@ -23312,6 +23729,8 @@ static int mp_set_up_times(MP mp, mp_node p, int c, mp_node old_p, mp_node old_e
     } else if ((cur_exp_type == mp_known_type) || (p->type == mp_known_type)) {
         /*tex
             Multiply when at least one operand is known.
+
+            pair * number or number * pair or number * number 
         */
         mp_number vv;
         mp_new_fraction(vv);
@@ -23362,8 +23781,8 @@ static int mp_set_up_times(MP mp, mp_node p, int c, mp_node old_p, mp_node old_e
         mp_free_number(vv);
         mp_finish_binary(mp, old_p, old_exp);
         return 1;
-    } else if ((mp_nice_color_or_pair(mp, p, p->type)  && (cur_exp_type > mp_pair_type))
-            || (mp_nice_color_or_pair(mp, cur_exp_node, cur_exp_type) && (p->type          > mp_pair_type))) {
+    } else if ((mp_nice_color_or_pair(mp, p, p->type) && (cur_exp_type > mp_pair_type))
+            || (mp_nice_color_or_pair(mp, cur_exp_node, cur_exp_type) && (p->type > mp_pair_type))) {
         mp_hard_times(mp, p);
         mp_finish_binary(mp, old_p, old_exp);
         return 1;
@@ -23469,9 +23888,8 @@ static void mp_set_up_arc_point_list(MP mp, mp_node p, int c)
         mp_new_number(seg);
         mp_new_number(tot);
         mp_new_number(tim);
-        mp_new_number(stp);
         mp_number_clone(idx, mp_get_value_number(p));
-        mp_set_number_from_div(stp, aln, idx);
+        mp_new_number_from_div(stp, aln, idx);
         mp_new_number(cnt);
         mp_new_number(acc);
         mp_get_subarc_length(mp, &acc, cur_exp_knot, &mp_zero_t, &mp_unity_t);
@@ -23841,8 +24259,7 @@ static void mp_set_up_subpath(MP mp, mp_node p, int c)
                 mp_free_knot(mp, ss);
                 if (rr == ss) {
                     mp_number arg1, arg2;
-                    mp_new_number(arg1);
-                    mp_set_number_from_subtraction(arg1, mp_unity_t, a);
+                    mp_new_number_from_sub(arg1, mp_unity_t, a);
                     mp_new_number_clone(arg2, b);
                     mp_make_scaled(b, arg2, arg1);
                     mp_free_number(arg1);
@@ -23852,8 +24269,7 @@ static void mp_set_up_subpath(MP mp, mp_node p, int c)
             }
             if (mp_number_negative(b)) {
                 mp_number arg1;
-                mp_new_number(arg1);
-                mp_set_number_from_addition(arg1, b, mp_unity_t);
+                mp_new_number_from_add(arg1, b, mp_unity_t);
                 mp_convert_scaled_to_fraction(arg1);
                 mp_split_cubic(mp, rr, &arg1);
                 mp_free_number(arg1);
@@ -23931,7 +24347,7 @@ static void mp_set_up_direction(MP mp, mp_node p, int c)
 static void mp_do_binary(MP mp, mp_node p, int c)
 {
     mp_node old_p, old_exp; /* capsules to recycle */
-    check_arith(mp);
+    mp_check_arithmic(mp);
     if (mp_number_greater(internal_value(mp_tracing_commands_internal), mp_two_t)) {
         /*tex
             Trace the current binary operation.
@@ -24031,6 +24447,18 @@ static void mp_do_binary(MP mp, mp_node p, int c)
         case mp_pythag_add_operation:
         case mp_pythag_sub_operation:
             mp_set_up_pythag(mp, p, c);
+            break;
+        case mp_dotprod_operation:
+            mp_set_up_dotprod(mp, p, c);
+            break;
+        case mp_crossprod_operation:
+            mp_set_up_crossprod(mp, p, c);
+            break;
+        case mp_div_operation:
+            mp_set_up_div(mp, p, c);
+            break;
+        case mp_mod_operation:
+            mp_set_up_mod(mp, p, c);
             break;
         case mp_rotated_operation:
         case mp_slanted_operation:
@@ -24695,7 +25123,7 @@ void mp_do_assignment(MP mp)
             mp_do_assignment(mp);
         }
         if (mp_number_greater(internal_value(mp_tracing_commands_internal), mp_two_t)) {
-            trace_assignment (mp, lhs);
+            trace_assignment(mp, lhs);
         }
         if (lhs->name_type == mp_internal_operation) {
             /*tex Assign the current expression to an internal variable. */
@@ -24727,6 +25155,7 @@ void mp_do_assignment(MP mp)
                                 } else {
                                     mp_bad_internal_assignment_precision(mp, lhs, &mp_precision_min, &mp_precision_max);
                                 }
+                                break;
                             case mp_less_digits_internal:
                                 if (cur_exp_type == mp_boolean_type) {
                                      mp_number_clone(internal_value(mp_get_sym_info(lhs)), cur_exp_value_number);
@@ -24960,7 +25389,7 @@ void mp_make_eq(MP mp, mp_node lhs)
             announce_bad_equation(mp, lhs);
             break;
     }
-    check_arith(mp);
+    mp_check_arithmic(mp);
     mp_recycle_value(mp, lhs);
     mp_free_number(v);
     mp_free_value_node(mp, lhs);
@@ -26012,6 +26441,26 @@ static inline int mp_aux_weighted(int r, int g, int b)
     return round(0.299 * r + 0.587 * b + 0.114 * r );
 }
 
+static inline int mp_aux_bytemap_get_byte(MP mp, mp_bytemap *bytemap, mp_number *source)
+{
+    if (bytemap->options & mp_bytemap_option_posit) { 
+        posit8_t p = convertDoubleToP8(mp_number_to_double(*source));
+        return (int) p.v; 
+    } else {
+        return (int) mp_round_unscaled(*source);
+    }
+}
+
+static inline void mp_aux_bytemap_set_byte(MP mp, mp_bytemap *bytemap, mp_number *target, int value)
+{ 
+    if (bytemap->options & mp_bytemap_option_posit) {
+        posit8_t p = { .v = (uint8_t) value };
+        mp_set_number_from_double(*target, convertP8ToDouble(p));
+    } else {
+        mp_set_number_from_int(*target, value);
+    }
+}
+
 static inline void mp_aux_set_bytemap_gray(mp_bytemap *bytemap, int x, int y, int s)
 {
     if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny) {
@@ -26328,6 +26777,7 @@ static int mp_aux_bytemap_bounds(mp_bytemap *b, int value, int *lx, int *ly, int
         case 1:
             for (int y = 0; y < ny; y++) {
                 for (int x = 0; x < nx; x++) {
+                    /* here posit */
                     if (*d != value) {
                         if (y < lly) { lly = y; }
                         if (y > ury) { ury = y; }
@@ -26344,6 +26794,7 @@ static int mp_aux_bytemap_bounds(mp_bytemap *b, int value, int *lx, int *ly, int
         case 3:
             for (int y = 0; y < ny; y++) {
                 for (int x = 0; x < nx; x++) {
+                    /* here posit */
                     if (*d != value || *(d+1) != value || *(d+2) != value) {
                         if (y < lly) { lly = y; }
                         if (y > ury) { ury = y; }
@@ -26388,9 +26839,10 @@ static void mp_bytemap_clip(MP mp)
                     case mp_numeric_type:
                     case mp_known_type:
                         {
-                            int value = mp_round_unscaled(cur_exp_value_number);
+                         // int value = mp_round_unscaled(cur_exp_value_number);
                             if (mp_bytemap_valid_data(mp, index)) {
                                 mp_bytemap *b = &mp->bytemaps[index];
+                                int value = mp_aux_bytemap_get_byte(mp, b, &(cur_exp_value_number));
                                 int llx = 0;
                                 int urx = b->nx;
                                 int lly = 0;
@@ -26518,7 +26970,7 @@ static void mp_bytemap_reduce(MP mp)
                             case 1: /* average */
                                 for (int g = 0; g < nx * ny; g++) {
                                     int s = round( (double) (
-                                        (unsigned char) color[c]
+                                          (unsigned char) color[c]
                                         + (unsigned char) color[c+1]
                                         + (unsigned char) color[c+2]
                                     ) / 3.0);
@@ -26530,7 +26982,7 @@ static void mp_bytemap_reduce(MP mp)
                                 for (int g = 0; g < nx * ny; g++) {
                                     int s = round( (double) (
                                         max_of_three(color[c], color[c+1], color[c+2]),
-                                        + min_of_three(color[c], color[c+1], color[c+2])
+                                      + min_of_three(color[c], color[c+1], color[c+2])
                                     ) / 2.0);
                                     c += 3;
                                     gray[g] = s > 255 ? 255 : (unsigned char) s;
@@ -26539,7 +26991,7 @@ static void mp_bytemap_reduce(MP mp)
                             default: /* weighted */
                                 for (int g = 0; g < nx * ny; g++) {
                                     int s = round(
-                                            0.299 * (unsigned char) color[c]
+                                          0.299 * (unsigned char) color[c]
                                         + 0.587 * (unsigned char) color[c+1]
                                         + 0.114 * (unsigned char) color[c+2]
                                     );
@@ -26599,7 +27051,7 @@ static void mp_bytemap_value(MP mp, mp_node p, int c)
                         break;
                 }
                 mp_new_number(r);
-                mp_set_number_from_int(r, mp_bytemap_get_byte(mp, index, x, y, z));
+                mp_aux_bytemap_set_byte(mp, &(mp->bytemaps[index]), &r, mp_bytemap_get_byte(mp, index, x, y, z));
                 mp_set_cur_exp_value_number(mp, &r);
                 mp_free_number(r);
             }
@@ -26621,21 +27073,27 @@ static void mp_bytemap_found(MP mp, mp_node p, int c)
                 switch (p->type) {
                     case mp_numeric_type:  /* needed ? */
                     case mp_known_type:
-                        found = mp_bytemap_has_byte_gray(mp, index,
+                         /* here posit */
+                         found = mp_bytemap_has_byte_gray(mp, index,
                             // mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)))
-                            mp_round_unscaled(mp_get_value_number(p))
+                            // mp_round_unscaled(mp_get_value_number(p))
+                            mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)))
                         );
                         break;
                     case mp_pair_type:
                         if (mp_pair_is_known(mp_get_value_node(p))) {
+                            /* here posit */
                             found = mp_bytemap_has_byte_range(mp, index,
-                                mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
-                                mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
+                            // mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
+                            // mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
+                               mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p))))),
+                               mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))))
                             );
                         }
                         break;
                     case mp_color_type:
                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
+                            /* here posit */
                             found = mp_bytemap_has_byte_rgb(mp, index,
                                 mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
                                 mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
@@ -26678,16 +27136,20 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
                                 switch (p->type) {
                                     case mp_numeric_type:  /* needed ? */
                                     case mp_known_type:
-                                        value = mp_round_unscaled(mp_get_value_number(p));
+                                     // value = mp_round_unscaled(mp_get_value_number(p));
+                                        value = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)));
                                         break;
                                     case mp_pair_type:
                                         if (mp_pair_is_known(mp_get_value_node(p))) {
-                                            value = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
-                                            range = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
+                                         // value = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
+                                         // range = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
+                                            value = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p)))));
+                                            range = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))));
                                         }
                                         break;
                                     case mp_color_type:
                                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
+                                            /* here posit */
                                             value = mp_aux_weighted(
                                                 mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
                                                 mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
@@ -26704,6 +27166,7 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
                                     unsigned char *p = mp->bytemaps[index].data;
                                     for (int y = 0; y < ny; y++) {
                                         for (int x = 0; x < nx; x++) {
+                                            /* here posit */
                                             if (*p >= value && *p <= range) {
                                                 mp_knot k = mp_simple_int_knot(mp, x, bm_current_y(ny,y));
                                                 if (head) {
@@ -26724,6 +27187,7 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
                                     for (int y = 0; y < ny; y++) {
                                         int yy = bm_current_y(ny,y);
                                         for (int x = 0; x < nx; x++) {
+                                            /* here posit */
                                             if (*p++ == value) {
                                                 mp_knot k = mp_simple_int_knot(mp, x, yy);
                                                 if (head) {
@@ -26748,7 +27212,6 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
                                 switch (p->type) {
                                     case mp_numeric_type:  /* needed ? */
                                     case mp_known_type:
-        //                                                value = mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)));
                                         r = mp_round_unscaled(mp_get_value_number(p));
                                         g = r;
                                         b = r;
@@ -26770,6 +27233,7 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
                                     for (int y = 0; y < ny; y++) {
                                         int yy = bm_current_y(ny,y);
                                         for (int x = 0; x < nx; x++) {
+                                            /* here posit */
                                             if ((*p++ == r) && (*p++ == g) && (*p++ == b)) {
                                                 mp_knot k = mp_simple_int_knot(mp, x, yy);
                                                 if (head) {
@@ -26822,7 +27286,8 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
                     switch (p->type) {
                         case mp_numeric_type:  /* needed ? */
                         case mp_known_type:
-                            value = mp_valid_byte(mp_round_unscaled(mp_get_value_number(p)));
+                         // value = mp_valid_byte(mp_round_unscaled(mp_get_value_number(p)));
+                            value = mp_valid_byte(mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p))));
                             break;
                         default:
                             /* error */
@@ -26860,6 +27325,7 @@ static void mp_bytemap_set_options(MP mp)
                     options = mp_round_unscaled(cur_exp_value_number);
                 }
                 if (mp_bytemap_valid_data(mp, index)) {
+                    /* here posit */
                     mp->bytemaps[index].options = options;
                 }
             }
@@ -26885,16 +27351,19 @@ static void mp_bytemap_set(MP mp)
                     case mp_numeric_type:
                     case mp_known_type:
                         if (mp_bytemap_valid_data(mp, index)) {
+                            /* here posit */
                             mp_aux_set_bytemap_slice_gray(
                                 &(mp->bytemaps[index]),
                                 0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
-                                mp_round_unscaled(cur_exp_value_number)
+                             // mp_round_unscaled(cur_exp_value_number)
+                                mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
                             );
                         }
                         break;
                     case mp_color_type:
                         if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
                             if (mp_bytemap_valid_data(mp, index)) {
+                                /* here posit */
                                 mp_aux_set_bytemap_slice_rgb(
                                     &(mp->bytemaps[index]),
                                     0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
@@ -27003,7 +27472,7 @@ static void mp_bytemap_set_byte(MP mp)
                                             mp_aux_set_bytemap_gray(
                                                 &(mp->bytemaps[index]),
                                                 x, y,
-                                                mp_round_unscaled(cur_exp_value_number)
+                                                mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
                                             );
                                         }
                                         break;
@@ -27067,7 +27536,7 @@ static void mp_bytemap_set_byte(MP mp)
                                             mp_aux_set_bytemap_channel(
                                                 &(mp->bytemaps[index]),
                                                 x, y, z,
-                                                mp_round_unscaled(cur_exp_value_number)
+                                                mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number)) 
                                             );
                                         }
                                         break;
@@ -27118,11 +27587,12 @@ static void mp_bytemap_set_byte(MP mp)
                                                 mp_aux_set_bytemap_slice_gray(
                                                     &(mp->bytemaps[index]),
                                                     x, y, dx, dy,
-                                                    mp_round_unscaled(cur_exp_value_number)
+                                                    mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
                                                 );
                                                 break;
                                             case mp_color_type:
                                                 if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
+                                                    /* here posit */
                                                     mp_aux_set_bytemap_slice_rgb(
                                                         &(mp->bytemaps[index]),
                                                         x, y, dx, dy,
@@ -29694,548 +30164,599 @@ static void mp_primary_error(MP mp)
     mp_flush_cur_exp(mp, new_expr);
 }
 
+/*tex
+    Scan a delimited primary.
+*/
+
+static void mp_do_command_left_delimiter(MP mp) 
+{
+    mp_symbol l_delim = cur_sym;
+    mp_symbol r_delim = eq_symbol(cur_sym);
+    mp_get_x_next(mp);
+    mp_scan_expression(mp);
+    if ((cur_cmd == mp_comma_command) && (cur_exp_type >= mp_known_type)) {
+        /*tex
+            Scan the rest of a delimited set of numerics.
+        */
+        mp_node q = mp_new_value_node(mp);
+        mp_node p1 = mp_stash_cur_exp(mp);
+        mp_node r; /* temporary node */
+        q->name_type = mp_capsule_operation;
+        mp_get_x_next(mp);
+        mp_scan_expression(mp);
+        /*tex
+            Make sure the second part of a pair or color has a numeric type.
+        */
+        if (cur_exp_type < mp_known_type) {
+            mp_primary_error(mp);
+        }
+        if (cur_cmd != mp_comma_command) {
+            /*tex
+                Package the pair.
+            */
+            mp_init_pair_node(mp, q);
+            r = mp_get_value_node(q);
+            mp_stash_in(mp, mp_y_part(r));
+            mp_unstash_cur_exp(mp, p1);
+            mp_stash_in(mp, mp_x_part(r));
+        } else {
+            mp_node p2 = mp_stash_cur_exp(mp);
+            /*tex
+                Scan the last of a triplet of numerics.
+            */
+            mp_get_x_next(mp);
+            mp_scan_expression(mp);
+            if (cur_exp_type < mp_known_type) {
+                mp_primary_error(mp);
+            }
+            if (cur_cmd != mp_comma_command) {
+                /*tex
+                    Package the rgb color.
+                */
+                mp_init_color_node(mp, q, mp_color_type);
+                r = mp_get_value_node(q);
+                mp_stash_in(mp, mp_blue_part(r));
+                mp_unstash_cur_exp(mp, p1);
+                mp_stash_in(mp, mp_red_part(r));
+                mp_unstash_cur_exp(mp, p2);
+                mp_stash_in(mp, mp_green_part(r));
+            } else {
+                mp_node p3 = mp_stash_cur_exp(mp);
+                mp_get_x_next(mp);
+                mp_scan_expression(mp);
+                if (cur_exp_type < mp_known_type) {
+                    mp_primary_error(mp);
+                }
+                if (cur_cmd != mp_comma_command) {
+                    /*tex
+                        Package the cmyk color.
+                    */
+                    mp_init_color_node(mp, q, mp_cmykcolor_type);
+                    r = mp_get_value_node(q);
+                    mp_stash_in(mp, mp_black_part(r));
+                    mp_unstash_cur_exp(mp, p1);
+                    mp_stash_in(mp, mp_cyan_part(r));
+                    mp_unstash_cur_exp(mp, p2);
+                    mp_stash_in(mp, mp_magenta_part(r));
+                    mp_unstash_cur_exp(mp, p3);
+                    mp_stash_in(mp, mp_yellow_part(r));
+                } else {
+                    mp_node p4 = mp_stash_cur_exp(mp);
+                    mp_node p5;
+                    mp_get_x_next(mp);
+                    mp_scan_expression(mp);
+                    if (cur_exp_type < mp_known_type) {
+                        mp_primary_error(mp);
+                        p5 = mp_stash_cur_exp(mp);
+                        goto HERE;
+                    }
+                    if (cur_cmd != mp_comma_command) {
+                        mp_primary_error(mp);
+                        p5 = mp_stash_cur_exp(mp);
+                        goto HERE;
+                    }
+                    p5 = mp_stash_cur_exp(mp);
+                    mp_get_x_next(mp);
+                    mp_scan_expression(mp);
+                    if (cur_exp_type < mp_known_type) {
+                        mp_primary_error(mp);
+                    }
+                    HERE:
+                    mp_init_transform_node(mp, q);
+                    /*tex Package the transform: |xx xy yx yy tx ty|. */
+                    r = mp_get_value_node(q);
+                    mp_stash_in(mp, mp_ty_part(r));
+                    mp_unstash_cur_exp(mp, p5);
+                    mp_stash_in(mp, mp_tx_part(r));
+                    mp_unstash_cur_exp(mp, p4);
+                    mp_stash_in(mp, mp_yy_part(r));
+                    mp_unstash_cur_exp(mp, p3);
+                    mp_stash_in(mp, mp_yx_part(r));
+                    mp_unstash_cur_exp(mp, p2);
+                    mp_stash_in(mp, mp_xy_part(r));
+                    mp_unstash_cur_exp(mp, p1);
+                    mp_stash_in(mp, mp_xx_part(r));
+                }
+            }
+        }
+        mp_check_delimiter(mp, l_delim, r_delim);
+        cur_exp_type = q->type;
+        mp_set_cur_exp_node(mp, q);
+    } else {
+        mp_check_delimiter(mp, l_delim, r_delim);
+    }
+}
+
+/*tex
+    Convert a suffix to a boolean.
+*/
+
+static void mp_do_command_void(MP mp) 
+{
+    mp_value new_expr;
+    memset(&new_expr, 0, sizeof(mp_value));
+    mp_new_number(new_expr.data.n);
+    mp_get_x_next(mp);
+    mp_scan_suffix(mp);
+    if (cur_exp_node == NULL) {
+        mp_set_number_from_boolean(new_expr.data.n, mp_true_operation);
+    } else {
+        mp_set_number_from_boolean(new_expr.data.n, mp_false_operation);
+    }
+    mp_flush_cur_exp(mp, new_expr);
+    cur_exp_node = NULL; /* !! do not replace with |mp_set_cur_exp_node(mp, )| !! */
+    cur_exp_type = mp_boolean_type;
+}
+
+/*tex
+    Scan a string constant.
+*/
+
+static void mp_do_command_string(MP mp) 
+{
+    cur_exp_type = mp_string_type;
+    mp_set_cur_exp_str(mp, cur_mod_str);
+}
+
+/*tex
+    Scan a grouped primary. The local variable |group_line| keeps track of the line
+    where a |begingroup| command occurred; this will be useful in an error message
+    if the group doesn't actually end.
+*/
+
+static void mp_do_command_group(MP mp) 
+{
+    int group_line = mp_true_line(mp); /* where a group began */
+    if (mp_number_positive(internal_value(mp_tracing_commands_internal))) {
+        mp_show_cmd_mod(mp, cur_cmd, cur_mod);
+    }
+    mp_save_boundary(mp);
+    do {
+        mp_do_statement(mp); /* ends with |cur_cmd >= semicolon| */
+    } while (cur_cmd == mp_semicolon_command);
+    if (cur_cmd != mp_end_group_command) {
+        char msg[256];
+        snprintf(msg, 256, "A group begun on line %d never ended", (int) group_line);
+        mp_back_error(
+            mp,
+            msg,
+            "I saw a 'begingroup' back there that hasn't been matched by 'endgroup'. So I've\n"
+            "inserted 'endgroup' now."
+        );
+        set_cur_cmd(mp_end_group_command);
+    }
+    mp_unsave(mp);
+    /*tex
+        This might change |cur_type|, if independent variables are recycled.
+    */
+    if (mp_number_positive(internal_value(mp_tracing_commands_internal))) {
+        mp_show_cmd_mod(mp, cur_cmd, cur_mod);
+    }
+}
+
+/*tex
+    Scan an internal numeric quantity. If an internal quantity appears all by itself on
+    the left of an assignment, we return a token list of length one, containing the
+    address of the internal quantity, with |name_type| equal to |mp_internal_operation|.
+    (This accords with the conventions of the save stack, as described earlier.)
+*/
+
+static int mp_do_command_internal(MP mp, int my_var_flag) 
+{
+    int qq = cur_mod;
+    if (my_var_flag == mp_assignment_command) {
+        mp_get_x_next(mp);
+        if (cur_cmd == mp_assignment_command) {
+            mp_set_cur_exp_node(mp, mp_new_symbolic_node(mp));
+            mp_set_sym_info(cur_exp_node, qq);
+            cur_exp_node->name_type = mp_internal_operation;
+            cur_exp_type = mp_token_list_type;
+            return 1;
+        }
+        mp_back_input(mp);
+    }
+    if (internal_type(qq) == mp_string_type) {
+        mp_set_cur_exp_str(mp, internal_string(qq));
+    } else {
+        mp_set_cur_exp_value_number(mp, &(internal_value(qq)));
+        // if (qq == mp_tracing_online_internal) {
+        //     mp->run_internal(mp, 3, qq, mp_number_to_int(internal_value(qq)), internal_name(qq));
+        // }
+    }
+    cur_exp_type = internal_type(qq);
+    return 0;
+}
+
+/*tex
+    Scan a primary that starts with a numeric token. A numeric token might be a
+    primary by itself, or it might be the numerator of a fraction composed solely of
+    numeric tokens, or it might multiply the primary that follows (provided that the
+    primary doesn't begin with a plus sign or a minus sign). The code here uses the
+    facts that |max_primary_command = plus_or_minus| and |max_primary_command-1 =
+    numeric_token|. If a fraction is found that is less than unity, we try to retain
+    higher precision when we use it in scalar multiplication.
+*/
+
+static int mp_do_command_numeric(MP mp, int my_var_flag) 
+{
+    mp_number num, denom; /*tex For primaries that are fractions, like $1/2$. */
+    (void) my_var_flag;
+    mp_set_cur_exp_value_number(mp, &cur_mod_number);
+    cur_exp_type = mp_known_type;
+    mp_get_x_next(mp);
+    if (cur_cmd != mp_slash_command) {
+        mp_new_number(num);
+        mp_new_number(denom);
+    } else {
+        mp_get_x_next(mp);
+        if (cur_cmd != mp_numeric_command) {
+            mp_back_input(mp);
+            set_cur_cmd(mp_slash_command);
+            set_cur_mod(mp_over_operation);
+            set_cur_sym(mp->frozen_slash);
+            return 1;
+        } else {
+            mp_new_number_clone(num, cur_exp_value_number);
+            mp_new_number_clone(denom, cur_mod_number);
+            if (mp_number_zero(denom)) {
+                mp_error(mp, "Division by zero", "I'll pretend that you meant to divide by 1.");
+            } else {
+                mp_number ret;
+                mp_new_number(ret);
+                mp_make_scaled(ret, num, denom);
+                mp_set_cur_exp_value_number(mp, &ret);
+                mp_free_number(ret);
+            }
+            mp_check_arithmic(mp);
+            mp_get_x_next(mp);
+        }
+    }
+    if (cur_cmd >= mp_min_primary_command && cur_cmd < mp_numeric_command) {
+        /* in particular, |cur_cmd<>plus_or_minus| */
+        mp_number absnum, absdenom;
+        mp_node p = mp_stash_cur_exp(mp);
+        mp_scan_primary(mp);
+        mp_new_number_abs(absnum, num);
+        mp_new_number_abs(absdenom, denom);
+        if (mp_number_greaterequal(absnum, absdenom) || (cur_exp_type < mp_color_type)) {
+            mp_do_binary(mp, p, mp_times_operation);
+        } else {
+            mp_frac_mult(mp, &num, &denom);
+            mp_free_value_node(mp, p);
+        }
+        mp_free_number(absnum);
+        mp_free_number(absdenom);
+    }
+    mp_free_number(num);
+    mp_free_number(denom);
+    return 1;
+}
+
+/*tex
+    Convert a suffix to a string.
+*/
+
+static void mp_do_command_str(MP mp) 
+{
+    int selector = mp->selector;
+    mp_get_x_next(mp);
+    mp_scan_suffix(mp);
+    mp->selector = mp_new_string_selector;
+    /* Here the periods creep in, we could have a simple one. */
+    mp_show_token_list(mp, cur_exp_node, NULL);
+    /* */
+    mp_flush_token_list(mp, cur_exp_node);
+    mp_set_cur_exp_str(mp, mp_make_string(mp));
+    mp->selector = selector;
+    cur_exp_type = mp_string_type;
+}
+
+/*
+    Scan a unary operation.
+*/
+
+static void mp_do_command_plus_or_minus(MP mp) 
+{
+    int c = (int) cur_mod; /* a primitive operation code */
+    mp_get_x_next(mp);
+    mp_scan_primary(mp);
+    mp_do_unary(mp, c);
+}
+
+/*tex
+    Scan a binary operation with |of| between its operands.
+*/
+
+static void mp_do_command_of_binary(MP mp) 
+{
+    mp_node p;             /*tex for list manipulation */
+    int c = (int) cur_mod; /*tex a primitive operation code */
+    mp_get_x_next(mp);
+    mp_scan_expression(mp);
+    if (cur_cmd != mp_of_command) {
+        char msg[256];
+        mp_string sname;
+        int selector = mp->selector;
+        mp->selector = mp_new_string_selector;
+        mp_print_cmd_mod(mp, mp_of_binary_command, c);
+        mp->selector = selector;
+        sname = mp_make_string(mp);
+        snprintf(msg, 256, "Missing 'of' has been inserted for %s", mp_str(mp, sname));
+        mp_delete_string_reference(mp, sname);
+        mp_back_error(mp, msg, "I've got the first argument; will look now for the other.");
+    }
+    p = mp_stash_cur_exp(mp);
+    mp_get_x_next(mp);
+    mp_scan_primary(mp);
+    mp_do_binary(mp, p, c);
+}
+
+/*tex
+    Scan a variable primary; |goto restart| if it turns out to be a macro.
+*/
+
+static int mp_do_command_tag(MP mp, int my_var_flag) 
+{
+    mp_node macro_ref = 0;    /*tex reference count for a suffixed macro */
+    int tt = mp_vacuous_type; /*tex approximation to the type of the variable-so-far */
+    mp_node pre_head = mp_new_symbolic_node(mp);
+    mp_node tail = pre_head;
+    mp_node post_head = NULL;
+    while (1) {
+        mp_node t = mp_cur_tok(mp);
+        tail->link = t;
+        if (tt != mp_undefined_type) {
+            /*tex
+                Find the approximate type |tt| and corresponding~|q|. Every time we call
+                |get_x_next|, there's a chance that the variable we've been looking at
+                will disappear. Thus, we cannot safely keep |q| pointing into the
+                variable structure; we need to start searching from the root each time.
+            */
+            mp_node p = pre_head->link;
+            mp_node q = NULL; 
+            mp_symbol qq = mp_get_sym_sym(p);
+            tt = mp_undefined_type;
+            // if (eq_type(qq) % mp_outer_tag_command == mp_tag_command) {
+            if (eq_type(qq) == mp_tag_command) {
+                q = eq_node(qq);
+                if (q == NULL) {
+                    goto DONE; /* done */
+                }
+                while (1) {
+                    p = p->link;
+                    if (p == NULL) {
+                        tt = q->type;
+                        goto DONE; /* done */
+                    }
+                    if (q->type != mp_structured_type) {
+                        goto DONE; /* done */
+                    }
+                    /*tex The |mp_collective_subscript| attribute: */
+                    q = mp_get_attribute_head(q)->link;
+                    if (p->type == mp_symbol_node_type) {
+                        /*tex it's not a subscript */
+                        do {
+                            q = q->link;
+                        } while (! (mp_get_hashloc(q) >= mp_get_sym_sym(p)));
+                        if (mp_get_hashloc(q) > mp_get_sym_sym(p)) {
+                            goto DONE; /* done */
+                        }
+                    }
+                }
+            }
+          DONE:
+            if (tt >= mp_unsuffixed_macro_type) {
+                /*tex
+                    Either begin an unsuffixed macro call or prepare for a suffixed one.
+                */
+                tail->link = NULL;
+                if (tt > mp_unsuffixed_macro_type) {
+                    /* |tt=mp_suffixed_macro| */
+                    post_head = mp_new_symbolic_node(mp);
+                    tail = post_head;
+                    tail->link = t;
+                    tt = mp_undefined_type;
+                    macro_ref = mp_get_value_node(q);
+                    mp_add_mac_ref(macro_ref);
+                } else {
+                    /*tex
+                        Set up unsuffixed macro call and |goto restart|. The only
+                        complication associated with macro calling is that the prefix
+                        and \quote {at} parameters must be packaged in an appropriate
+                        list of lists.
+                    */
+                    mp_node p = mp_new_symbolic_node(mp);
+                    mp_set_sym_sym(pre_head, pre_head->link);
+                    pre_head->link = p;
+                    mp_set_sym_sym(p, t);
+                    mp_macro_call(mp, mp_get_value_node(q), pre_head, NULL);
+                    mp_get_x_next(mp);
+                    return 2; /* restart */
+                }
+            }
+        }
+        mp_get_x_next(mp);
+        tail = t;
+        if (cur_cmd == mp_left_bracket_command) {
+            /*tex
+                Scan for a subscript; replace |cur_cmd| by |numeric_token| if found.
+            */
+            mp_get_x_next(mp);
+            mp_scan_expression(mp);
+            if (cur_cmd != mp_right_bracket_command) {
+                /*tex
+                    Put the left bracket and the expression back to be rescanned. The
+                    left bracket that we thought was introducing a subscript might have
+                    actually been the left bracket in a mediation construction like
+                    |x[a,b]|. So we don't issue an error message at this point; but we
+                    do want to back up so as to avoid any embarrassment about our
+                    incorrect assumption.
+                */
+                mp_back_input(mp);
+                /*tex That was the token following the current expression. */
+                mp_back_expr(mp);
+                set_cur_cmd(mp_left_bracket_command);
+                set_cur_mod_number(mp_zero_t);
+                set_cur_sym(mp->frozen_left_bracket);
+            } else {
+                if (cur_exp_type != mp_known_type) {
+                    mp_bad_subscript(mp);
+                }
+                set_cur_cmd(mp_numeric_command);
+                set_cur_mod_number(cur_exp_value_number);
+                set_cur_sym(NULL);
+            }
+        }
+        if (cur_cmd > mp_max_suffix_token) {
+            break;
+        } else if (cur_cmd < mp_min_suffix_token) {
+            break;
+        }
+    }
+    /*tex
+        Now |cur_cmd| is |internal_quantity|, |tag_token|, or |numeric_token|. Handle
+        unusual cases that masquerade as variables, and |goto restart| or |goto done| if
+        appropriate; otherwise make a copy of the variable and |goto done| If the
+        variable does exist, we also need to check for a few other special cases before
+        deciding that a plain old ordinary variable has, indeed, been scanned.
+    */
+    if (post_head != NULL) {
+        /*tex
+            Set up suffixed macro call and |goto restart|. If the \quote {variable} that
+            turned out to be a suffixed macro no longer exists, we don't care, because
+            we have reserved a pointer (|macro_ref|) to its token list.
+        */
+        mp_node p, q;
+        mp_back_input(mp);
+        p = mp_new_symbolic_node(mp);
+        q = post_head->link;
+        mp_set_sym_sym(pre_head, pre_head->link);
+        pre_head->link = post_head;
+        mp_set_sym_sym(post_head, q);
+        post_head->link = p;
+        mp_set_sym_sym(p, q->link);
+        q->link = NULL;
+        mp_macro_call(mp, macro_ref, pre_head, NULL);
+        mp_decr_mac_ref(macro_ref);
+        mp_get_x_next(mp);
+        return 2; /* restart */
+    } else {
+        mp_node q = pre_head->link;
+        mp_free_symbolic_node(mp, pre_head);
+        if (cur_cmd == my_var_flag) {
+            cur_exp_type = mp_token_list_type;
+            mp_set_cur_exp_node(mp, q);
+            return 1; /* done */
+        } else {
+            mp_node p = mp_find_variable(mp, q);
+            if (p != NULL) {
+                mp_make_exp_copy(mp, p, 27);
+            } else {
+                char *msg = mp_obliterated(mp, q);
+                mp_value new_expr;
+                memset(&new_expr, 0, sizeof(mp_value));
+                mp_new_number(new_expr.data.n);
+                mp_back_error(
+                    mp,
+                    msg,
+                    "While I was evaluating the suffix of this variable, something was redefined, and\n"
+                    "it's no longer a variable! In order to get back on my feet, I've inserted '0'\n"
+                    "instead."
+                );
+                mp_memory_free(msg);
+                mp_get_x_next(mp);
+                mp_flush_cur_exp(mp, new_expr);
+            }
+            mp_flush_node_list(mp, q);
+            return 1; /* done */
+        }
+    }
+    return 0;
+}
+
 void mp_scan_primary(MP mp)
 {
     mp_command_code my_var_flag = mp->var_flag;
     mp->var_flag = 0;
   RESTART:
-    check_arith(mp);
-    /*tex
-        Supply diagnostic information, if requested.
-    */
+    mp_check_arithmic(mp);
     switch (cur_cmd) {
         case mp_left_delimiter_command:
-            {
-                /*tex
-                    Scan a delimited primary.
-                */
-                mp_symbol l_delim = cur_sym;
-                mp_symbol r_delim = eq_symbol(cur_sym);
-                mp_get_x_next(mp);
-                mp_scan_expression(mp);
-                if ((cur_cmd == mp_comma_command) && (cur_exp_type >= mp_known_type)) {
-                    /*tex
-                        Scan the rest of a delimited set of numerics.
-                    */
-                    mp_node q = mp_new_value_node(mp);
-                    mp_node p1 = mp_stash_cur_exp(mp);
-                    mp_node r; /* temporary node */
-                    q->name_type = mp_capsule_operation;
-                    mp_get_x_next(mp);
-                    mp_scan_expression(mp);
-                    /*tex
-                        Make sure the second part of a pair or color has a numeric type.
-                    */
-                    if (cur_exp_type < mp_known_type) {
-                        mp_primary_error(mp);
-                    }
-                    if (cur_cmd != mp_comma_command) {
-                        /*tex
-                            Package the pair.
-                        */
-                        mp_init_pair_node(mp, q);
-                        r = mp_get_value_node(q);
-                        mp_stash_in(mp, mp_y_part(r));
-                        mp_unstash_cur_exp(mp, p1);
-                        mp_stash_in(mp, mp_x_part(r));
-                    } else {
-                        mp_node p2 = mp_stash_cur_exp(mp);
-                        /*tex
-                            Scan the last of a triplet of numerics.
-                        */
-                        mp_get_x_next(mp);
-                        mp_scan_expression(mp);
-                        if (cur_exp_type < mp_known_type) {
-                            mp_primary_error(mp);
-                        }
-                        if (cur_cmd != mp_comma_command) {
-                            /*tex
-                                Package the rgb color.
-                            */
-                            mp_init_color_node(mp, q, mp_color_type);
-                            r = mp_get_value_node(q);
-                            mp_stash_in(mp, mp_blue_part(r));
-                            mp_unstash_cur_exp(mp, p1);
-                            mp_stash_in(mp, mp_red_part(r));
-                            mp_unstash_cur_exp(mp, p2);
-                            mp_stash_in(mp, mp_green_part(r));
-                        } else {
-                            mp_node p3 = mp_stash_cur_exp(mp);
-                            mp_get_x_next(mp);
-                            mp_scan_expression(mp);
-                            if (cur_exp_type < mp_known_type) {
-                                mp_primary_error(mp);
-                            }
-                            if (cur_cmd != mp_comma_command) {
-                                /*tex
-                                    Package the cmyk color.
-                                */
-                                mp_init_color_node(mp, q, mp_cmykcolor_type);
-                                r = mp_get_value_node(q);
-                                mp_stash_in(mp, mp_black_part(r));
-                                mp_unstash_cur_exp(mp, p1);
-                                mp_stash_in(mp, mp_cyan_part(r));
-                                mp_unstash_cur_exp(mp, p2);
-                                mp_stash_in(mp, mp_magenta_part(r));
-                                mp_unstash_cur_exp(mp, p3);
-                                mp_stash_in(mp, mp_yellow_part(r));
-                            } else {
-                                mp_node p4 = mp_stash_cur_exp(mp);
-                                mp_node p5;
-                                mp_get_x_next(mp);
-                                mp_scan_expression(mp);
-                                if (cur_exp_type < mp_known_type) {
-                                    mp_primary_error(mp);
-                                    p5 = mp_stash_cur_exp(mp);
-                                    goto HERE;
-                                }
-                                if (cur_cmd != mp_comma_command) {
-                                    mp_primary_error(mp);
-                                    p5 = mp_stash_cur_exp(mp);
-                                    goto HERE;
-                                }
-                                p5 = mp_stash_cur_exp(mp);
-                                mp_get_x_next(mp);
-                                mp_scan_expression(mp);
-                                if (cur_exp_type < mp_known_type) {
-                                    mp_primary_error(mp);
-                                }
-                              HERE:
-                                mp_init_transform_node(mp, q);
-                                /*tex Package the transform: |xx xy yx yy tx ty|. */
-                                r = mp_get_value_node(q);
-                                mp_stash_in(mp, mp_ty_part(r));
-                                mp_unstash_cur_exp(mp, p5);
-                                mp_stash_in(mp, mp_tx_part(r));
-                                mp_unstash_cur_exp(mp, p4);
-                                mp_stash_in(mp, mp_yy_part(r));
-                                mp_unstash_cur_exp(mp, p3);
-                                mp_stash_in(mp, mp_yx_part(r));
-                                mp_unstash_cur_exp(mp, p2);
-                                mp_stash_in(mp, mp_xy_part(r));
-                                mp_unstash_cur_exp(mp, p1);
-                                mp_stash_in(mp, mp_xx_part(r));
-                            }
-                        }
-                    }
-                    mp_check_delimiter(mp, l_delim, r_delim);
-                    cur_exp_type = q->type;
-                    mp_set_cur_exp_node(mp, q);
-                } else {
-                    mp_check_delimiter(mp, l_delim, r_delim);
-                }
-            }
+            mp_do_command_left_delimiter(mp);
             break;
         case mp_begin_group_command:
-            /*tex
-                Scan a grouped primary. The local variable |group_line| keeps track of the line
-                where a |begingroup| command occurred; this will be useful in an error message
-                if the group doesn't actually end.
-            */
-            {
-                int group_line = mp_true_line(mp); /* where a group began */
-                if (mp_number_positive(internal_value(mp_tracing_commands_internal))) {
-                    mp_show_cmd_mod(mp, cur_cmd, cur_mod);
-                }
-                mp_save_boundary(mp);
-                do {
-                    mp_do_statement(mp); /* ends with |cur_cmd >= semicolon| */
-                } while (cur_cmd == mp_semicolon_command);
-                if (cur_cmd != mp_end_group_command) {
-                    char msg[256];
-                    snprintf(msg, 256, "A group begun on line %d never ended", (int) group_line);
-                    mp_back_error(
-                        mp,
-                        msg,
-                        "I saw a 'begingroup' back there that hasn't been matched by 'endgroup'. So I've\n"
-                        "inserted 'endgroup' now."
-                    );
-                    set_cur_cmd(mp_end_group_command);
-                }
-                mp_unsave(mp);
-                /*tex
-                    This might change |cur_type|, if independent variables are recycled.
-                */
-                if (mp_number_positive(internal_value(mp_tracing_commands_internal))) {
-                    mp_show_cmd_mod(mp, cur_cmd, cur_mod);
-                }
-            }
+            mp_do_command_group(mp);
             break;
         case mp_string_command:
-            /*tex
-                Scan a string constant.
-            */
-            cur_exp_type = mp_string_type;
-            mp_set_cur_exp_str(mp, cur_mod_str);
+            mp_do_command_string(mp);
             break;
         case mp_numeric_command:
-            {
-                /*tex
-                    Scan a primary that starts with a numeric token. A numeric token might be a
-                    primary by itself, or it might be the numerator of a fraction composed solely of
-                    numeric tokens, or it might multiply the primary that follows (provided that the
-                    primary doesn't begin with a plus sign or a minus sign). The code here uses the
-                    facts that |max_primary_command = plus_or_minus| and |max_primary_command-1 =
-                    numeric_token|. If a fraction is found that is less than unity, we try to retain
-                    higher precision when we use it in scalar multiplication.
-                */
-                mp_number num, denom; /*tex For primaries that are fractions, like $1/2$. */
-                mp_set_cur_exp_value_number(mp, &cur_mod_number);
-                cur_exp_type = mp_known_type;
-                mp_get_x_next(mp);
-                if (cur_cmd != mp_slash_command) {
-                    mp_new_number(num);
-                    mp_new_number(denom);
-                } else {
-                    mp_get_x_next(mp);
-                    if (cur_cmd != mp_numeric_command) {
-                        mp_back_input(mp);
-                        set_cur_cmd(mp_slash_command);
-                        set_cur_mod(mp_over_operation);
-                        set_cur_sym(mp->frozen_slash);
-                        goto DONE;
-                    } else {
-                        mp_new_number_clone(num, cur_exp_value_number);
-                        mp_new_number_clone(denom, cur_mod_number);
-                        if (mp_number_zero(denom)) {
-                            mp_error(mp, "Division by zero", "I'll pretend that you meant to divide by 1.");
-                        } else {
-                            mp_number ret;
-                            mp_new_number(ret);
-                            mp_make_scaled(ret, num, denom);
-                            mp_set_cur_exp_value_number(mp, &ret);
-                            mp_free_number(ret);
-                        }
-                        check_arith(mp);
-                        mp_get_x_next(mp);
-                    }
-                }
-                if (cur_cmd >= mp_min_primary_command && cur_cmd < mp_numeric_command) {
-                    /* in particular, |cur_cmd<>plus_or_minus| */
-                    mp_number absnum, absdenom;
-                    mp_node p = mp_stash_cur_exp(mp);
-                    mp_scan_primary(mp);
-                    mp_new_number_abs(absnum, num);
-                    mp_new_number_abs(absdenom, denom);
-                    if (mp_number_greaterequal(absnum, absdenom) || (cur_exp_type < mp_color_type)) {
-                        mp_do_binary(mp, p, mp_times_operation);
-                    } else {
-                        mp_frac_mult(mp, &num, &denom);
-                        mp_free_value_node(mp, p);
-                    }
-                    mp_free_number(absnum);
-                    mp_free_number(absdenom);
-                }
-                mp_free_number(num);
-                mp_free_number(denom);
+            if (mp_do_command_numeric(mp, my_var_flag)) { 
                 goto DONE;
+            } else { 
+                break;
             }
         case mp_nullary_command:
-            /*tex
-                Scan a nullary operation.
-            */
-            mp_do_nullary(mp, (int) cur_mod);
+            mp_do_command_nullary(mp, cur_mod);
             break;
         case mp_unary_command:
         case mp_type_name_command:
         case mp_cycle_command:
         case mp_plus_or_minus_command:
-            {
-                /*
-                    Scan a unary operation.
-                */
-                int c = (int) cur_mod; /* a primitive operation code */
-                mp_get_x_next(mp);
-                mp_scan_primary(mp);
-                mp_do_unary(mp, c);
-                goto DONE;
-            }
+            mp_do_command_plus_or_minus(mp);
+            goto DONE;
         case mp_of_binary_command:
-            {
-                /*tex
-                    Scan a binary operation with |of| between its operands.
-                */
-                mp_node p;             /*tex for list manipulation */
-                int c = (int) cur_mod; /*tex a primitive operation code */
-                mp_get_x_next(mp);
-                mp_scan_expression(mp);
-                if (cur_cmd != mp_of_command) {
-                    char msg[256];
-                    mp_string sname;
-                    int selector = mp->selector;
-                    mp->selector = mp_new_string_selector;
-                    mp_print_cmd_mod(mp, mp_of_binary_command, c);
-                    mp->selector = selector;
-                    sname = mp_make_string(mp);
-                    snprintf(msg, 256, "Missing 'of' has been inserted for %s", mp_str(mp, sname));
-                    mp_delete_string_reference(mp, sname);
-                    mp_back_error(mp, msg, "I've got the first argument; will look now for the other.");
-                }
-                p = mp_stash_cur_exp(mp);
-                mp_get_x_next(mp);
-                mp_scan_primary(mp);
-                mp_do_binary(mp, p, c);
-                goto DONE;
-            }
+            mp_do_command_of_binary(mp);
+            goto DONE;
         case mp_str_command:
-            {
-                /*tex
-                    Convert a suffix to a string.
-                */
-                int selector = mp->selector;
-                mp_get_x_next(mp);
-                mp_scan_suffix(mp);
-                mp->selector = mp_new_string_selector;
-                /* Here the periods creep in, we could have a simple one. */
-                mp_show_token_list(mp, cur_exp_node, NULL);
-                /* */
-                mp_flush_token_list(mp, cur_exp_node);
-                mp_set_cur_exp_str(mp, mp_make_string(mp));
-                mp->selector = selector;
-                cur_exp_type = mp_string_type;
-                goto DONE;
-            }
+            mp_do_command_str(mp);
+            goto DONE;
         case mp_void_command:
-            {
-                /*tex
-                    Convert a suffix to a boolean.
-                */
-                mp_value new_expr;
-                memset(&new_expr, 0, sizeof(mp_value));
-                mp_new_number(new_expr.data.n);
-                mp_get_x_next(mp);
-                mp_scan_suffix(mp);
-                if (cur_exp_node == NULL) {
-                    mp_set_number_from_boolean(new_expr.data.n, mp_true_operation);
-                } else {
-                    mp_set_number_from_boolean(new_expr.data.n, mp_false_operation);
-                }
-                mp_flush_cur_exp(mp, new_expr);
-                cur_exp_node = NULL; /* !! do not replace with |mp_set_cur_exp_node(mp, )| !! */
-                cur_exp_type = mp_boolean_type;
-                goto DONE;
-            }
+            mp_do_command_void(mp);
+            goto DONE;
         case mp_internal_command:
-            /*tex
-                Scan an internal numeric quantity. If an internal quantity appears all by itself on
-                the left of an assignment, we return a token list of length one, containing the
-                address of the internal quantity, with |name_type| equal to |mp_internal_operation|.
-                (This accords with the conventions of the save stack, as described earlier.)
-            */
-            {
-                int qq = cur_mod;
-                if (my_var_flag == mp_assignment_command) {
-                    mp_get_x_next(mp);
-                    if (cur_cmd == mp_assignment_command) {
-                        mp_set_cur_exp_node(mp, mp_new_symbolic_node(mp));
-                        mp_set_sym_info(cur_exp_node, qq);
-                        cur_exp_node->name_type = mp_internal_operation;
-                        cur_exp_type = mp_token_list_type;
-                        goto DONE;
-                    }
-                    mp_back_input(mp);
-                }
-                if (internal_type(qq) == mp_string_type) {
-                    mp_set_cur_exp_str(mp, internal_string(qq));
-                } else {
-                    mp_set_cur_exp_value_number(mp, &(internal_value(qq)));
-                 // if (qq == mp_tracing_online_internal) {
-                 //     mp->run_internal(mp, 3, qq, mp_number_to_int(internal_value(qq)), internal_name(qq));
-                 // }
-                }
-                cur_exp_type = internal_type(qq);
+            if (mp_do_command_internal(mp, my_var_flag)) { 
+                goto DONE;
+            } else { 
+                break;
             }
-            break;
         case mp_capsule_command:
             mp_make_exp_copy(mp, cur_mod_node, 26);
             break;
         case mp_tag_command:
-            /*tex
-                Scan a variable primary; |goto restart| if it turns out to be a macro.
-            */
-            {
-                mp_node p = 0;            /*tex for list manipulation */
-                mp_node q = 0;            /*tex for list manipulation */
-                mp_node t = 0;
-                mp_node macro_ref = 0;    /*tex reference count for a suffixed macro */
-                int tt = mp_vacuous_type; /*tex approximation to the type of the variable-so-far */
-                mp_node pre_head = mp_new_symbolic_node(mp);
-                mp_node tail = pre_head;
-                mp_node post_head = NULL;
-                while (1) {
-                    t = mp_cur_tok(mp);
-                    tail->link = t;
-                    if (tt != mp_undefined_type) {
-                        /*tex
-                            Find the approximate type |tt| and corresponding~|q|. Every time we call
-                            |get_x_next|, there's a chance that the variable we've been looking at
-                            will disappear. Thus, we cannot safely keep |q| pointing into the
-                            variable structure; we need to start searching from the root each time.
-                        */
-                        mp_symbol qq;
-                        p = pre_head->link;
-                        qq = mp_get_sym_sym(p);
-                        tt = mp_undefined_type;
-                     // if (eq_type(qq) % mp_outer_tag_command == mp_tag_command) {
-                        if (eq_type(qq) == mp_tag_command) {
-                            q = eq_node(qq);
-                            if (q == NULL) {
-                                goto DONE2;
-                            }
-                            while (1) {
-                                p = p->link;
-                                if (p == NULL) {
-                                    tt = q->type;
-                                    goto DONE2;
-                                }
-                                if (q->type != mp_structured_type) {
-                                    goto DONE2;
-                                }
-                                /*tex The |mp_collective_subscript| attribute: */
-                                q = mp_get_attribute_head(q)->link;
-                                if (p->type == mp_symbol_node_type) {
-                                    /*tex it's not a subscript */
-                                    do {
-                                        q = q->link;
-                                    } while (! (mp_get_hashloc(q) >= mp_get_sym_sym(p)));
-                                    if (mp_get_hashloc(q) > mp_get_sym_sym(p)) {
-                                        goto DONE2;
-                                    }
-                                }
-                            }
-                        }
-                      DONE2:
-                        if (tt >= mp_unsuffixed_macro_type) {
-                            /*tex
-                                Either begin an unsuffixed macro call or prepare for a suffixed one.
-                            */
-                            tail->link = NULL;
-                            if (tt > mp_unsuffixed_macro_type) {
-                                /* |tt=mp_suffixed_macro| */
-                                post_head = mp_new_symbolic_node(mp);
-                                tail = post_head;
-                                tail->link = t;
-                                tt = mp_undefined_type;
-                                macro_ref = mp_get_value_node(q);
-                                mp_add_mac_ref(macro_ref);
-                            } else {
-                                /*tex
-                                    Set up unsuffixed macro call and |goto restart|. The only
-                                    complication associated with macro calling is that the prefix
-                                    and \quote {at} parameters must be packaged in an appropriate
-                                    list of lists.
-                                */
-                                p = mp_new_symbolic_node(mp);
-                                mp_set_sym_sym(pre_head, pre_head->link);
-                                pre_head->link = p;
-                                mp_set_sym_sym(p, t);
-                                mp_macro_call(mp, mp_get_value_node(q), pre_head, NULL);
-                                mp_get_x_next(mp);
-                                goto RESTART;
-                            }
-                        }
-                    }
-                    mp_get_x_next(mp);
-                    tail = t;
-                    if (cur_cmd == mp_left_bracket_command) {
-                        /*tex
-                            Scan for a subscript; replace |cur_cmd| by |numeric_token| if found.
-                        */
-                        mp_get_x_next(mp);
-                        mp_scan_expression(mp);
-                        if (cur_cmd != mp_right_bracket_command) {
-                            /*tex
-                                Put the left bracket and the expression back to be rescanned. The
-                                left bracket that we thought was introducing a subscript might have
-                                actually been the left bracket in a mediation construction like
-                                |x[a,b]|. So we don't issue an error message at this point; but we
-                                do want to back up so as to avoid any embarrassment about our
-                                incorrect assumption.
-                            */
-                            mp_back_input(mp);
-                            /*tex That was the token following the current expression. */
-                            mp_back_expr(mp);
-                            set_cur_cmd(mp_left_bracket_command);
-                            set_cur_mod_number(mp_zero_t);
-                            set_cur_sym(mp->frozen_left_bracket);
-                        } else {
-                            if (cur_exp_type != mp_known_type) {
-                                mp_bad_subscript(mp);
-                            }
-                            set_cur_cmd(mp_numeric_command);
-                            set_cur_mod_number(cur_exp_value_number);
-                            set_cur_sym(NULL);
-                        }
-                    }
-                    if (cur_cmd > mp_max_suffix_token) {
-                        break;
-                    } else if (cur_cmd < mp_min_suffix_token) {
-                        break;
-                    }
-                }
-                /*tex
-                    Now |cur_cmd| is |internal_quantity|, |tag_token|, or |numeric_token|. Handle
-                    unusual cases that masquerade as variables, and |goto restart| or |goto done| if
-                    appropriate; otherwise make a copy of the variable and |goto done| If the
-                    variable does exist, we also need to check for a few other special cases before
-                    deciding that a plain old ordinary variable has, indeed, been scanned.
-                */
-                if (post_head != NULL) {
-                    /*tex
-                        Set up suffixed macro call and |goto restart|. If the \quote {variable} that
-                        turned out to be a suffixed macro no longer exists, we don't care, because
-                        we have reserved a pointer (|macro_ref|) to its token list.
-                    */
-                    mp_back_input(mp);
-                    p = mp_new_symbolic_node(mp);
-                    q = post_head->link;
-                    mp_set_sym_sym(pre_head, pre_head->link);
-                    pre_head->link = post_head;
-                    mp_set_sym_sym(post_head, q);
-                    post_head->link = p;
-                    mp_set_sym_sym(p, q->link);
-                    q->link = NULL;
-                    mp_macro_call(mp, macro_ref, pre_head, NULL);
-                    mp_decr_mac_ref(macro_ref);
-                    mp_get_x_next(mp);
-                    goto RESTART;
-                }
-                q = pre_head->link;
-                mp_free_symbolic_node(mp, pre_head);
-                if (cur_cmd == my_var_flag) {
-                    cur_exp_type = mp_token_list_type;
-                    mp_set_cur_exp_node(mp, q);
+            switch (mp_do_command_tag(mp, my_var_flag)) { 
+                case 1: 
                     goto DONE;
-                }
-                p = mp_find_variable(mp, q);
-                if (p != NULL) {
-                    mp_make_exp_copy(mp, p, 27);
-                } else {
-                    mp_value new_expr;
-                    char *msg = mp_obliterated (mp, q);
-                    memset(&new_expr, 0, sizeof(mp_value));
-                    mp_new_number(new_expr.data.n);
-                    mp_back_error(
-                        mp,
-                        msg,
-                        "While I was evaluating the suffix of this variable, something was redefined, and\n"
-                        "it's no longer a variable! In order to get back on my feet, I've inserted '0'\n"
-                        "instead."
-                    );
-                    mp_memory_free(msg);
-                    mp_get_x_next(mp);
-                    mp_flush_cur_exp(mp, new_expr);
-                }
-                mp_flush_node_list(mp, q);
-                goto DONE;
+                case 2: 
+                    goto RESTART;
+                default:
+                    break;
             }
-            break;
         default:
             mp_bad_exp(mp, "A primary");
             goto RESTART;
-            break;
     }
-    /*tex the routines |goto done| if they don't want this. */
+    /*tex The routines jump over this if they don't want this. */
     mp_get_x_next(mp);
   DONE:
     check_for_mediation(mp);
@@ -30847,10 +31368,8 @@ static int mp_scan_path(MP mp)
                 if (! (mp_number_equal(path_q->x_coord, pp->x_coord)) || ! (mp_number_equal(path_q->y_coord, pp->y_coord))) {
                     if (mp_number_greater(internal_value(mp_join_tolerance_internal), mp_zero_t)) {
                         mp_number dx, dy;
-                        mp_new_number(dx);
-                        mp_new_number(dy);
-                        mp_set_number_from_subtraction(dx, path_q->x_coord, pp->x_coord);
-                        mp_set_number_from_subtraction(dy, path_q->y_coord, pp->y_coord);
+                        mp_new_number_from_sub(dx, path_q->x_coord, pp->x_coord);
+                        mp_new_number_from_sub(dy, path_q->y_coord, pp->y_coord);
                         mp_number_abs(dx);
                         mp_number_abs(dy);
                         if (mp_number_lessequal(dx, internal_value(mp_join_tolerance_internal))
@@ -30918,10 +31437,8 @@ static int mp_scan_path(MP mp)
             case mp_tolerant_append_operation:
                 {
                     mp_number dx, dy;
-                    mp_new_number(dx);
-                    mp_new_number(dy);
-                    mp_set_number_from_subtraction(dx, path_q->x_coord, pp->x_coord);
-                    mp_set_number_from_subtraction(dy, path_q->y_coord, pp->y_coord);
+                    mp_new_number_from_sub(dx, path_q->x_coord, pp->x_coord);
+                    mp_new_number_from_sub(dy, path_q->y_coord, pp->y_coord);
                     mp_number_abs(dx);
                     mp_number_abs(dy);
                     if (mp_number_lessequal(dx, mp_epsilon_t) && mp_number_lessequal(dy, mp_epsilon_t)) {
@@ -31360,6 +31877,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "penpart",               mp_unary_command,            mp_pen_part_operation);
     mp_primitive(mp, "dashpart",              mp_unary_command,            mp_dash_part_operation);
     mp_primitive(mp, "sqrt",                  mp_unary_command,            mp_sqrt_operation);
+    mp_primitive(mp, "knownnorm",             mp_unary_command,            mp_norm_operation);
     mp_primitive(mp, "mexp",                  mp_unary_command,            mp_m_exp_operation);
     mp_primitive(mp, "mlog",                  mp_unary_command,            mp_m_log_operation);
     mp_primitive(mp, "sind",                  mp_unary_command,            mp_sin_d_operation);
@@ -31370,9 +31888,9 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "lrcorner",              mp_unary_command,            mp_lr_corner_operation);
     mp_primitive(mp, "ulcorner",              mp_unary_command,            mp_ul_corner_operation);
     mp_primitive(mp, "urcorner",              mp_unary_command,            mp_ur_corner_operation);
+    mp_primitive(mp, "corners",               mp_unary_command,            mp_corners_operation);
     mp_primitive(mp, "centerof",              mp_unary_command,            mp_center_of_operation);
     mp_primitive(mp, "centerofmass",          mp_unary_command,            mp_center_of_mass_operation);
-    mp_primitive(mp, "corners",               mp_unary_command,            mp_corners_operation);
     mp_primitive(mp, "xrange",                mp_unary_command,            mp_x_range_operation);
     mp_primitive(mp, "yrange",                mp_unary_command,            mp_y_range_operation);
     mp_primitive(mp, "deltapoint",            mp_unary_command,            mp_delta_point_operation);
@@ -31406,6 +31924,10 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "++",                    mp_tertiary_binary_command,  mp_pythag_add_operation);
     mp_primitive(mp, "+-+",                   mp_tertiary_binary_command,  mp_pythag_sub_operation);
     mp_primitive(mp, "or",                    mp_tertiary_binary_command,  mp_or_operation);
+    mp_primitive(mp, "knowndotprod",          mp_tertiary_binary_command,  mp_dotprod_operation);
+    mp_primitive(mp, "knowncrossprod",        mp_tertiary_binary_command,  mp_crossprod_operation);
+    mp_primitive(mp, "knowndiv",              mp_tertiary_binary_command,  mp_div_operation);
+    mp_primitive(mp, "knownmod",              mp_tertiary_binary_command,  mp_mod_operation);
 
     mp_primitive(mp, "and",                   mp_and_command,              mp_and_operation);
 
@@ -31682,7 +32204,6 @@ static void mp_initialize_tables(MP mp)
 
     mp->zero_val = mp_new_value_node(mp);
     mp_set_value_number(mp->zero_val, mp_zero_t);
-
 }
 
 /*tex
@@ -31757,15 +32278,14 @@ MP mp_initialize(MP_options *opt)
             mp->math = mp_initialize_double_math(mp);
             break;
     }
-    /*tex  allocate or initialize variables */
-    mp->parameter_size  = 4;
-    mp->max_in_open     = 0;
-    mp->halt_on_error   = opt->halt_on_error ? 1 : 0;
-    mp->utf8_mode       = opt->utf8_mode     ? 1 : 0;
-    mp->text_mode       = opt->text_mode     ? 1 : 0;
-    mp->show_mode       = opt->show_mode     ? 1 : 0;
-    mp->buf_size        = 200;
-    mp->buffer          = mp_memory_allocate((size_t) (mp->buf_size + 1) * sizeof(unsigned char));
+    mp->parameter_size = 4;
+    mp->max_in_open = 0;
+    mp->halt_on_error = opt->halt_on_error ? 1 : 0;
+    mp->utf8_mode = opt->utf8_mode ? 1 : 0;
+    mp->text_mode = opt->text_mode ? 1 : 0;
+    mp->show_mode = opt->show_mode ? 1 : 0;
+    mp->buf_size = 200;
+    mp->buffer = mp_memory_allocate((size_t) (mp->buf_size + 1) * sizeof(unsigned char));
     mp_initialize_strings(mp);
     mp->interaction = opt->interaction;
     if (mp->interaction == mp_unspecified_mode || mp->interaction > mp_silent_mode) {
@@ -31774,11 +32294,11 @@ MP mp_initialize(MP_options *opt)
     if (mp->interaction < mp_unspecified_mode) {
         mp->interaction = mp_batch_mode;
     }
-    mp->finished     = 0;
-    mp->arith_error  = 0;
-    mp->less_digits  = 0;
-    mp->math_mode    = opt->math_mode;
-    mp->random_seed  = opt->random_seed;
+    mp->finished = 0;
+    mp->arithmic_error = 0;
+    mp->less_digits = 0;
+    mp->math_mode = opt->math_mode;
+    mp->random_seed = opt->random_seed;
 
     for (int i = 0; i < 55; i++) {
         mp_new_fraction(mp->randoms[i]);

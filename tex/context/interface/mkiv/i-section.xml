@@ -101,6 +101,12 @@
                 <cd:parameter name="insidesection">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="beforehead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="afterhead">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
                 <cd:parameter name="incrementnumber">
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>

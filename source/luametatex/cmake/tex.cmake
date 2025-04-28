@@ -43,6 +43,7 @@ set(tex_sources
     source/luarest/lmtsparselib.c
     source/luarest/lmtposit.c
     source/luarest/lmtpotrace.c
+    source/luarest/lmtqrcodegen.c
 
     source/tex/texalign.c
     source/tex/texarithmetic.c
@@ -105,4 +106,5 @@ target_include_directories(tex PRIVATE
     source/libraries/mimalloc/include
     source/libraries/softposit/source/include
     source/libraries/potrace/src
+    source/libraries/qrcodegen
 )

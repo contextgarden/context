@@ -952,6 +952,15 @@ function scripts.context.run(ctxdata,filename)
                 --
                 multipass_copypdffile(jobname,a_keeppdf or analysis.keeppdf)
                 --
+                local signal = analysis.signal or environment.arguments.signal
+                if type(signal) == "string" then
+                    signalled = utilities.signals.initialize(signal)
+                end
+                --
+                if signalled then
+                    signalled("reset",0)
+                end
+                --
                 for currentrun=1,maxnofruns do
                     --
                     c_flags.final      = false
@@ -961,8 +970,13 @@ function scripts.context.run(ctxdata,filename)
                     c_flags.currentrun = currentrun
                     c_flags.noarrange  = a_noarrange or a_arrange or nil
                     c_flags.profile    = a_profile and (tonumber(a_profile) or 0) or nil
+                    c_flags.signal     = signal
                     --
                     print("") -- cleaner, else continuation on same line
+                    --
+                    if signalled then
+                        signalled("busy",currentrun)
+                    end
                     --
                     local returncode = environment.run_format(
                         formatfile,
@@ -979,8 +993,11 @@ function scripts.context.run(ctxdata,filename)
                             result_save_error(oldbase,newbase)
                         end
                         os.exit(1)
+                        if signalled then
+                            signalled("error",currentrun)
+                        end
                         break
-                    elseif returncode == 0 then
+                    elseif returncode == 0 or signal == "qr" then
                         multipass_copyluafile(jobname,a_keeptuc and currentrun)
                         multipass_copylogfile(jobname,a_keeplog and currentrun)
                         if not multipass_forcedruns then
@@ -988,15 +1005,27 @@ function scripts.context.run(ctxdata,filename)
                             if multipass_changed(oldhash,newhash) then
                                 changed[jobname] = true
                                 oldhash = newhash
+                                if signalled then
+                                    signalled(currentrun == maxnofruns and "maxruns" or "done",currentrun)
+                                end
                             else
+                                if signalled then
+                                    signalled("finished",currentrun)
+                                end
                                 break
                             end
                         elseif currentrun == multipass_forcedruns then
+                            if signalled then
+                                signalled("maxruns",currentrun)
+                            end
                             report("quitting after force %i runs",multipass_forcedruns)
                             break
                         end
                     else
                         report("fatal error: return code: %s",returncode or "?")
+                        if signalled then
+                            signalled("error",currentrun)
+                        end
                         if resultname then
                             result_save_error(oldbase,newbase)
                         end

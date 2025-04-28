@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?context-directive job ctxfile x-setups.ctx ?>
+
+<cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
+
+    <cd:command name="definetransliteration" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name-optional"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptransliteration"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setuptransliteration" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="define">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
+                <cd:parameter name="style">
+                    <cd:resolve name="value-style"/>
+                </cd:parameter>
+                <cd:parameter name="color">
+                    <cd:constant type="cd:color"/>
+                </cd:parameter>
+                <cd:parameter name="language">
+                    <cd:constant type="cd:language"/>
+                </cd:parameter>
+                <cd:parameter name="vector">
+                    <cd:constant type="cd:name"/>
+                </cd:parameter>
+                <cd:parameter name="before">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="after">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="left">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+                <cd:parameter name="right">
+                    <cd:constant type="cd:command"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="settransliteration" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="settransliteration" variant="argument" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliterationexception" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-text"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteration" type="environment" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptransliteration"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteration" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteration" variant="argument" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteration" type="environment" generated="yes" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setuptransliteration"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteration" generated="yes" file="lang-tra.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="resettransliteration" file="lang-tra.mkxl"/>
+
+    <cd:command name="usetransliteration" file="lang-tra.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-file-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliterate" file="lang-tra.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteratebuffer" file="lang-tra.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-buffer"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliterated" file="lang-tra.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-text"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="transliteratedbuffer" file="lang-tra.lmt">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="argument-buffer"/>
+        </cd:arguments>
+    </cd:command>
+
+</cd:interface>

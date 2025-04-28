@@ -1,8 +1,8 @@
 %D \module
-%D   [      file=s-system-tokens.mkxl,
+%D   [      file=s-system-macros.mkxl,
 %D        version=2020.06.02,
 %D          title=\CONTEXT\ Style File,
-%D       subtitle=System Tokens Checking,
+%D       subtitle=System Macros Checking,
 %D         author=Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]

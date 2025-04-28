@@ -99,12 +99,13 @@ typedef enum saved_box_entries {
 } saved_box_entries;
 
 typedef enum saved_box_options { 
-    saved_box_reverse_option     = 0x01,
-    saved_box_container_option   = 0x02,
-    saved_box_limit_option       = 0x04,
-    saved_box_mathtext_option    = 0x08,
-    saved_box_discardable_option = 0x10,
-    saved_box_swap_htdp_option   = 0x20,
+    saved_box_reverse_option      = 0x01,
+    saved_box_container_option    = 0x02,
+    saved_box_limit_option        = 0x04,
+    saved_box_mathtext_option     = 0x08,
+    saved_box_discardable_option  = 0x10,
+    saved_box_swap_htdp_option    = 0x20,
+    saved_box_keep_spacing_option = 0x40,
 } saved_box_options;
 
 static inline void saved_box_initialize(void)
@@ -226,7 +227,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
     int brace = 0;
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("tascdoxyrlmTASCDOXYRLM", 1, 1, 1)) {
+        switch (tex_scan_character("tascdoxyrklmTASCDOXYRKLM", 1, 1, 1)) {
             case 0:
                 goto DONE;
             case 't': case 'T':
@@ -319,7 +320,8 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                         /*tex 
                             For the sake of third party code that assumes \LUATEX's old directives 
                             we can support |dir TRT| and |dir TLT|; only these. But \unknown\ that 
-                            would also mean we have to deal with |\textdir| and such. 
+                            would also mean we have to deal with |\textdir| and such. This will be 
+                            dropped at some point. 
                         */
 # if (0) 
                         if (tex_scan_mandate_keyword("direction", 2)) {
@@ -328,8 +330,8 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
 # else 
                         if (tex_scan_keyword("rection")) {
                             spec_direction = tex_scan_direction(0);
-} else if (tex_scan_keyword("scardable")) {
-    options |= saved_box_discardable_option;
+                        } else if (tex_scan_keyword("scardable")) {
+                            options |= saved_box_discardable_option;
                         } else if (tex_scan_character("rR", 0, 0, 0)) {
                             /*tex This is undocumented. */
                             if (tex_scan_character("tT", 0, 1, 0)) {
@@ -352,8 +354,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                                 goto DONE;
                             }
                         } else {
-//                            tex_aux_show_keyword_error("direction|dir");
-tex_aux_show_keyword_error("direction|dir|discardable");
+                            tex_aux_show_keyword_error("direction|dir|discardable");
                             goto DONE;
                         }
 # endif 
@@ -441,6 +442,11 @@ tex_aux_show_keyword_error("direction|dir|discardable");
                     default:
                         tex_aux_show_keyword_error("container|class");
                         goto DONE;
+                }
+                break;
+            case 'k': case 'K':
+                if (tex_scan_mandate_keyword("keepspacing", 1)) {
+                    options |= saved_box_keep_spacing_option;
                 }
                 break;
             case 'l': case 'L':
@@ -3190,9 +3196,12 @@ void tex_package(singleword nature)
         } else { 
             tex_remove_box_option(boxnode, box_option_no_math_axis);
         }
-if (options & saved_box_discardable_option) {
-    box_options(boxnode) |= box_option_discardable;
-}
+        if (options & saved_box_discardable_option) {
+            box_options(boxnode) |= box_option_discardable;
+        }
+        if (options & saved_box_keep_spacing_option) {
+            box_options(boxnode) |= box_option_keep_spacing;
+        }
         if (options & saved_box_swap_htdp_option) {
             halfword ht = box_height(boxnode);
             box_height(boxnode) = box_depth(boxnode);
@@ -4406,7 +4415,6 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                         tex_begin_token_list(every_vbox_par, every_vbox_text);
                     }
                 } else {
-                    cur_list.space_factor = default_space_factor;
                     if (every_hbox_par) {
                         tex_begin_token_list(every_hbox_par, every_hbox_text);
                     }

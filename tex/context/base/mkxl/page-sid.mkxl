@@ -28,7 +28,7 @@
 %D
 %D This code had been redone many times because we kept running into spacing issues
 %D and it's not that much fun (or rewarding). It's probably the module that made
-%D me go into distraciton mode most often (like watching amusing Walk of The
+%D me go into distraction mode most often (like watching amusing Walk of The
 %D Earth, sophisticated Massive Attack video clips, impressive Davie504 movies
 %D and so on).
 
@@ -686,17 +686,37 @@
 %D The following needs some more work .. consider this a quick hack. We probably
 %D need an mkiv hanging grid option.
 
+% \def\page_sides_place_snap_to_grid#1%
+%   {\edef\p_grid{\floatparameter\c!grid}%
+%    \ifempty\p_grid\else
+%      \snaptogrid[none]%
+%    \fi
+%    \hpack{#1}%
+%
+% \def\page_sides_place_float_grid
+%   {\getrawnoflines\d_page_sides_height % raw ?
+%    \d_page_sides_height\noflines\lineheight
+%    \page_sides_push_float_inline\page_sides_place_snap_to_grid}
+
+%D This is a hack: we will pick up on this after we're done with the mvl
+%D balancer.
+
 \def\page_sides_place_snap_to_grid#1%
-  {\edef\p_grid{\floatparameter\c!grid}%
-   \ifempty\p_grid\else
-     \snaptogrid[\p_grid]%
-   \fi
-   \hpack{#1}}
+  {\begingroup % todo: prevent snapping
+   \setbox\scratchbox\hpack{\vrule width 1mm #1}%
+   \dp\scratchbox\strutdp
+   \ht\scratchbox\dimexpr\d_page_sides_height-\strutdp\relax
+   \boxyoffset\scratchbox-\strutdp
+   \box\scratchbox
+   \endgroup}
 
 \def\page_sides_place_float_grid
   {\getrawnoflines\d_page_sides_height % raw ?
    \d_page_sides_height\noflines\lineheight
+   \vkern-\strutht
    \page_sides_push_float_inline\page_sides_place_snap_to_grid}
+
+%D End of hack.
 
 \let\strc_floats_mark_par_as_free\relax
 
@@ -813,9 +833,9 @@
 
 \def\page_sides_analyse_space_stage_one
   {\global\c_page_sides_flag\conditionaltrue
-% \ifdim\pagegoal=\maxdimen
-%     \pagegoal\textheight % maybe
-% \fi
+   % \ifdim\pagegoal=\maxdimen
+   %     \pagegoal\textheight % maybe
+   % \fi
    \global\d_page_sides_page_total\pagetotal % global
    \ifnum\c_page_sides_float_type<\plusfour
      \global\d_page_sides_width \zeropoint

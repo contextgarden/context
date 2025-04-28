@@ -1157,9 +1157,18 @@
 %D When enabled, sigstruts will remove themselves if nothing goes inbetween. For
 %D practical reasons we define some boundary characters here.
 
-\permanent\protected\def\leftboundary   {\protrusionboundary\plusone}
-\permanent\protected\def\rightboundary  {\protrusionboundary\plustwo}
-\permanent\protected\def\signalcharacter{\boundary\plusone\char\zerocount\boundary\plustwo} % not the same as strut signals
+\permanent\protected\def\leftboundary {\protrusionboundary\plusone}
+\permanent\protected\def\rightboundary{\protrusionboundary\plustwo}
+
+\permanent\protected\def\signalcharacter % not the same as strut signals
+  {\boundary\plusone
+   \char\zerocount
+   \boundary\plustwo}
+
+\permanent\protected\def\signalglyph
+  {\boundary \plusone
+   \glyph \s!keepspacing \zerocount
+   \boundary \plustwo}
 
 %D \starttyping
 %D $ \ifhmode H1\fi x \ifhmode H2\fi $\par

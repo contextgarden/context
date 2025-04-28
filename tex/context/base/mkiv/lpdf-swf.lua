@@ -36,6 +36,28 @@ local report_swf = logs.reporter("backend","swf")
 
 --------------------------------------------------------------------------------------
 
+function codeinjections.getpreviewfigure(request)
+    local figure = figures.initialize(request)
+    if not figure then
+        return
+    end
+    figure = figures.identify(figure)
+    if not (figure and figure.status and figure.status.fullname) then
+        return
+    end
+    figure = figures.check(figure)
+    if not (figure and figure.status and figure.status.fullname) then
+        return
+    end
+    local image = figure.status.private
+    if image then
+        embedimage(image)
+    end
+    return figure
+end
+
+--------------------------------------------------------------------------------------
+
 local createimage = images.create
 local embedimage  = images.embed
 

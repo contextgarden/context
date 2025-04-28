@@ -332,61 +332,19 @@ do
 
 end
 
-function codeinjections.setfigurealternative(data,figure)
-    local request = data.request
-    local display = request.display
-    if display and display ~= ""  then
-        local nested = figures.push {
-            name   = display,
-            page   = request.page,
-            size   = request.size,
-            prefix = request.prefix,
-            cache  = request.cache,
-            width  = request.width,
-            height = request.height,
-        }
-        figures.identify()
-        local displayfigure = figures.check()
-        if displayfigure then
-        --  figure.aform = true
-            embedimage(figure)
-            local a = pdfarray {
-                pdfdictionary {
-                    Image              = pdfreference(figure.objnum),
-                    DefaultForPrinting = true,
-                }
-            }
-            local d = pdfdictionary {
-                Alternates = pdfreference(pdfflushobject(a)),
-            }
-            displayfigure.attr = d()
-            figures.pop()
-            return displayfigure, nested
-        else
-            figures.pop()
-        end
-    end
-end
+-- This feature has been removed. It made sense in the previous century but we never
+-- really used it. Also, the standard now recommendates using optional
+--
+-- -- function codeinjections.setfigurealternative(data,figure)
+--        -- gone
+-- -- end
 
-function codeinjections.getpreviewfigure(request)
-    local figure = figures.initialize(request)
-    if not figure then
-        return
-    end
-    figure = figures.identify(figure)
-    if not (figure and figure.status and figure.status.fullname) then
-        return
-    end
-    figure = figures.check(figure)
-    if not (figure and figure.status and figure.status.fullname) then
-        return
-    end
-    local image = figure.status.private
-    if image then
-        embedimage(image)
-    end
-    return figure
-end
+-- This feature is only needed for flash which was introduced as the new thing for
+-- media and then as with other media things removed again.
+--
+-- -- function codeinjections.getpreviewfigure(request)
+--        -- moved to the obsolete lpdf-swf.lua file
+-- -- end
 
 local masks = {
     demomask = {

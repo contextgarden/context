@@ -356,11 +356,11 @@ drawdot p withpen pencircle scaled  2.5 withcolor white ;
 
 A parameteric plot runs over a range and gets two or one function passed:
 
-\typebuffer[option=TEX][1]
+\typebuffer[1][option=TEX]
 
 and
 
-\typebuffer[option=TEX][2]
+\typebuffer[2][option=TEX]
 
 show this. The results are collected in \in {figure} [function:parameter] where
 again we also highlight the points that make the curve. Drawing these function is
@@ -372,6 +372,49 @@ of course up to \METAPOST\ but the calculations happen at the \LUA\ end.
         {\getbuffer[2]} {one function}
     \stopcombination
 \stopplacefigure
+
+\in {Figure} [function:tracedsample] shows a bit more decorated example,
+taken from Mikaels lecture notes. The rightmost variant shows the density of the
+points.
+
+\startbuffer
+
+% usage: \useMPgraphic{sample}{trace=0}
+
+\startuseMPgraphic{sample}{trace}
+path p ; p := lmt_samplefunction [
+    code = "return x*x*x/(2*x*x - 6)", % no preamble needed
+    xmin = -6,
+    xmax =  6,
+    ymin = -6,
+    ymax =  6,
+] scaled 10 ;
+
+if \MPvar{trace} == 1 :
+    draw    p withpen pencircle scaled 2 withcolor .4white ;
+    drawdot p withpen pencircle scaled 1 withcolor   white ;
+else :
+    draw p ;
+fi ;
+
+drawarrow (-60,  0) -- (60, 0) ;
+drawarrow (  0,-60) -- ( 0,60) ;
+draw (( sqrt(3)*10,-60) -- ( sqrt(3)*10,60)) withdashes 2 ;
+draw ((-sqrt(3)*10,-60) -- (-sqrt(3)*10,60)) withdashes 2 ;
+draw ((-60,-30) -- (60,30))                  withdashes 2 ;
+\stopuseMPgraphic
+\stopbuffer
+
+\startplacefigure[reference=function:tracedsample]
+\getbuffer
+\startcombination
+  {\useMPgraphic{sample}{trace=0}} {untraced}
+  {\useMPgraphic{sample}{trace=1}} {traced}
+\stopcombination
+\stopplacefigure
+
+\typebuffer[option=TEX]
+
 
 \stopchapter
 

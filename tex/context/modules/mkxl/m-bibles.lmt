@@ -158,6 +158,38 @@ bibles.biblefiles["HebrewBible.xml"] = {
     chapter    = "Chapter",
 }
 
+bibles.biblefiles["Swedish2015Bible.xml"] = {
+    filename   = "Swedish2015Bible.xml",
+    title      = "Svenska 2015",
+    books      = bibles.books.swedish,
+    testaments = bibles.testaments.swedish,
+    chapter    = "Kapitel",
+}
+
+bibles.biblefiles["Swedish2000Bible.xml"] = {
+    filename   = "Swedish2000Bible.xml",
+    title      = "Svenska 2000",
+    books      = bibles.books.swedish,
+    testaments = bibles.testaments.swedish,
+    chapter    = "Kapitel",
+}
+
+bibles.biblefiles["SwedishFolkBible.xml"] = {
+    filename   = "SwedishFolkBible.xml",
+    title      = "Svenska folkbibln 1998",
+    books      = bibles.books.swedish,
+    testaments = bibles.testaments.swedish,
+    chapter    = "Kapitel",
+}
+
+bibles.biblefiles["SwedishSFBBible.xml"] = {
+    filename   = "SwedishSFBBible.xml",
+    title      = "Svenska folkbibln 2015",
+    books      = bibles.books.swedish,
+    testaments = bibles.testaments.swedish,
+    chapter    = "Kapitel",
+}
+
 if context then
 
     local biblefiles = bibles.biblefiles

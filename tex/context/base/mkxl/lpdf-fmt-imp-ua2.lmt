@@ -1,0 +1,66 @@
+return {
+    version   = 1.001,
+    comment   = "companion to lpdf-fmt.lmt",
+    author    = "Peter, Hans & Mikael",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    features  = {
+        version      = 2.0,
+        format       = "PDF/UA-2",
+        xmpfile      = "lpdf-pua.xml",
+        intent       = "GTS_PDFA1",
+        gray         = true,
+        cmyk         = true,
+        rgb          = true,
+        spot         = true,
+        calibrated   = true, -- unknown
+        cielab       = true, -- unknown
+        intents      = true,
+        forms        = true,
+        tagging      = true,
+        internal     = true,
+        transparency = true,
+        jbig2        = true,
+        jpeg2000     = true,
+        compression  = true,
+        info         = false,
+        acrobat      = false,
+        attachments  = true,
+        layers       = true,
+        metadata     = {
+            {
+                "replacexmpinfo",
+                "xml://rdf:RDF/pdfuaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfuaid='http://www.aiim.org/pdfua/ns/id/'>
+      <pdfuaid:part>2</pdfuaid:part>
+      <pdfuaid:rev>2024</pdfuaid:rev>
+    </rdf:Description>
+]]
+            }
+        },
+--         conformance  = {
+--             {
+--                 "replacexmpinfo",
+--                 "xml://rdf:RDF/wtpdf-placeholder",
+-- [[
+-- <rdf:Description rdf:about='' xmlns:pdfd='http://pdfa.org/declarations/'>
+--       <pdfd:declarations>
+--         <rdf:Bag>
+--           <rdf:li rdf:parseType='Resource'>
+--              <pdfd:conformsTo>http://pdfa.org/declarations/wtpdf#accessibility1.0</pdfd:conformsTo>
+--           </rdf:li>
+--           <rdf:li rdf:parseType='Resource'>
+--              <pdfd:conformsTo>http://pdfa.org/declarations/wtpdf#reuse1.0</pdfd:conformsTo>
+--           </rdf:li>
+--         </rdf:Bag>
+--       </pdfd:declarations>
+--     </rdf:Description>
+-- ]]
+--             },
+--         },
+    },
+}
+
+
+

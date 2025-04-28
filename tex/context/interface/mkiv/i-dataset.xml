@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedataset" level="system" file="core-dat.mkiv">
+    <cd:command name="definedataset" level="system" file="core-dat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdataset" level="system" file="core-dat.mkiv">
+    <cd:command name="setupdataset" level="system" file="core-dat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -26,7 +26,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdataset" level="system" file="core-dat.mkiv">
+    <cd:command name="setdataset" level="system" file="core-dat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -34,8 +34,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="datasetvariable" level="system" file="core-dat.mkiv">
+    <cd:command name="datasetvariable" level="system" file="core-dat.mkxl">
         <cd:arguments>
+            <cd:resolve name="keyword-file-optional"/>
             <cd:resolve name="argument-name"/>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:name"/>
@@ -45,6 +46,32 @@
                 <cd:constant type="cd:key"/>
                 <cd:constant type="realpage"/>
             </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="datasetsize" level="system" file="core-dat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-file-optional"/>
+            <cd:resolve name="argument-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="datasetindex" level="system" file="core-dat.mkxl"/>
+
+    <cd:command name="datasetentry" level="system" file="core-dat.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:key"/>
+                <cd:constant type="realpage"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processdataset" level="system" file="core-dat.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-file-optional"/>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 

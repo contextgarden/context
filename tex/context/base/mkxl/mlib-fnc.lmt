@@ -251,7 +251,7 @@ do
         local dmax      = p.dmax       or   50
         local smax      = p.smax       or 5000
         local eps       = p.eps        or    0.001
-        local tolerance = p.tolerance  or    0.4
+        local tolerance = p.tolerance  or    0.0001
 
         if not find(code,"return") then
             code = "return " .. code

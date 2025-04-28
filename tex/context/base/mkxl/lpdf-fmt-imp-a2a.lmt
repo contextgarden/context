@@ -1,0 +1,43 @@
+-- Only PDF/A Attachments are allowed but we don't check the attachments
+-- for any quality: they are just blobs.
+
+return {
+    version   = 1.001,
+    comment   = "companion to lpdf-fmt.lmt",
+    author    = "Peter, Hans & Mikael",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    features  = {
+        version      = 1.7,
+        format       = "PDF/A-2a",
+        xmpfile      = "lpdf-pda.xml",
+        intent       = "GTS_PDFA1",
+        gray         = true,
+        cmyk         = true,
+        rgb          = true,
+        spot         = true,
+        calibrated   = true, -- unknown
+        cielab       = true, -- unknown
+        intents      = true,
+        forms        = true,
+        tagging      = true,
+        internal     = true,
+        transparency = true, -- new
+        jbig2        = true,
+        jpeg2000     = true, -- new
+        compression  = true, -- new
+        attachments  = true, -- new
+        metadata     = {
+            {
+                "replacexmpinfo",
+                "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>2</pdfaid:part>
+      <pdfaid:conformance>A</pdfaid:conformance>
+    </rdf:Description>
+]]
+            },
+        },
+    },
+}

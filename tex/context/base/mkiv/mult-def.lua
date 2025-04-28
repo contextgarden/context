@@ -14479,16 +14479,6 @@ return {
    ["pe"]="جستجوی‌نوشتار",
    ["ro"]="CautaDocument",
   },
-  ["ShowBookmarks"]={
-   ["cs"]="UkazZalozky",
-   ["de"]="ShowBookmarks",
-   ["en"]="ShowBookmarks",
-   ["fr"]="MontrerMarquepages",
-   ["it"]="MostraSegnalibro",
-   ["nl"]="ShowBookmarks",
-   ["pe"]="نمایش‌چوبخط",
-   ["ro"]="ShowBookmarks",
-  },
   ["ShowField"]={
    ["cs"]="UkazPole",
    ["de"]="ZeigeFeld",
@@ -14498,16 +14488,6 @@ return {
    ["nl"]="ToonVeld",
    ["pe"]="نمایش‌میدان",
    ["ro"]="AfiseazaCamp",
-  },
-  ["ShowThumbs"]={
-   ["cs"]="UkazNahledy",
-   ["de"]="ShowThumbs",
-   ["en"]="ShowThumbs",
-   ["fr"]="MontrerVignettes",
-   ["it"]="MostraThumbs",
-   ["nl"]="ShowThumbs",
-   ["pe"]="نمایش‌شصت",
-   ["ro"]="ShowThumbs",
   },
   ["StartMovie"]={
    ["cs"]="SpustitFilm",

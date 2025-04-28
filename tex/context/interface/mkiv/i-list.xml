@@ -665,4 +665,28 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="structurelistrawnumber" level="style" category="structure" file="strc-lst.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="structurelistrawpagenumber" level="style" category="structure" file="strc-lst.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="structurelistrawrealpagenumber" level="style" category="structure" file="strc-lst.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-list"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="structurelistnumber" level="style" category="structure" file="strc-lst.mklx"/>
+
+    <cd:command name="structurelistuserpagenumber" level="style" category="structure" file="strc-lst.mklx"/>
+
+    <cd:command name="structurelistrealpagenumber" level="style" category="structure" file="strc-lst.mklx"/>
+
 </cd:interface>

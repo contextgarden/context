@@ -740,8 +740,11 @@
    \nobreak
    \begingroup
    \strc_notes_interaction_check_inline\strc_notes_set_style_color_inline\c!textstyle\c!textcolor
-   \hbox \strc_notes_get_reference_attribute_symbol \strc_notes_get_destination_attribute_symbol \bgroup
-  % \hbox \strc_notes_get_reference_attribute_symbol \bgroup \strc_notes_destination_hack
+   \hbox
+     \s!keepspacing
+     \strc_notes_get_reference_attribute_symbol
+     \strc_notes_get_destination_attribute_symbol
+   \bgroup
      \strc_references_flush_destination_nodes % a bit late but ok
      \dostarttagged\t!descriptionsymbol\currentnote
      \dotagsetnotesymbol

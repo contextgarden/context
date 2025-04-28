@@ -1,0 +1,36 @@
+return {
+    version   = 1.001,
+    comment   = "companion to lpdf-fmt.lmt",
+    author    = "Peter, Hans & Mikael",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    features  = {
+        version     = 1.4,
+        format      = "PDF/X-1a:2003",
+        xmpfile     = "lpdf-pdx.xml",
+        intent      = "GTS_PDFX",
+        gray        = true,
+        cmyk        = true,
+        spot        = true,
+        internal    = true,
+        cidsets     = true,
+        charsets    = true,
+        procsets    = true,
+        attachments = false,
+        metadata    = {
+            {
+                "addtoinfo",
+                "GTS_PDFXVersion","PDF/X-1a:2003",
+            },
+            {
+                "replacexmpinfo",
+                "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-1a:2003</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+            }
+        }
+    },
+}

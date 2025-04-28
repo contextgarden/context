@@ -29,7 +29,6 @@ local helpinfo = [[
 </application>
 ]]
 
-
 local find = string.find
 local filesuffix, replacesuffix = file.suffix, file.replacesuffix
 local isfile = lfs.isfile

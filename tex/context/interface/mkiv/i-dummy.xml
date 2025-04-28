@@ -29,6 +29,13 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="setexpandeddummyparameter" level="system" category="commandhandler" file="mult-aux.mkiv">
+        <cd:arguments>
+            <cd:resolve name="argument-key"/>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="letdummyparameter" level="system" category="commandhandler" file="mult-aux.mkiv">
         <cd:arguments>
             <cd:resolve name="argument-key"/>

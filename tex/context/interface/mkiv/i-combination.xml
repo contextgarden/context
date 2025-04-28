@@ -71,6 +71,10 @@
                 <cd:parameter name="method">
                     <cd:constant type="formula"/>
                 </cd:parameter>
+                <cd:parameter name="strut">
+                    <cd:constant type="yes" default="yes"/>
+                    <cd:constant type="no"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>

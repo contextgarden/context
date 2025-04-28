@@ -231,7 +231,7 @@ local function sortedhashkeys(tab,cmp) -- fast one
         local s   = 0
         for key in next, tab do
             if key then
-                s= s + 1
+                s = s + 1
                 srt[s] = key
             end
         end
@@ -252,6 +252,75 @@ function table.allkeys(t)
         end
     end
     return sortedkeys(keys)
+end
+
+-- if false then
+if lua.getcheckedkeys then
+
+    local getcheckedkeys = lua.getcheckedkeys
+    local getstringkeys  = lua.getstringkeys
+    local getnumerickeys = lua.getnumerickeys
+    local getkeys        = lua.getallkeys
+    local comparekeys    = lua.comparekeys
+ -- local comparekeys    = compare
+
+    -- Unfortunately the sort function is not in the Lua API so
+    -- we need to wrap here.
+
+    local sort = table.sort
+
+    sortedkeys = function(tab)
+        if tab then
+            local srt, category = getcheckedkeys(tab)
+            if category == 0 then
+                -- nothing to sort
+            elseif category == 3 then
+                sort(srt,comparekeys)
+            else
+                sort(srt)
+            end
+            return srt
+        else
+            return { }
+        end
+    end
+
+    sortedhashonly = function(tab)
+        if tab then
+            local srt, n = getstringkeys(tab)
+            if n > 1 then
+                sort(srt)
+            end
+            return srt
+        else
+            return { }
+        end
+    end
+
+    sortedindexonly = function(tab)
+        if tab then
+            local srt, n = getnumerickeys(tab)
+            if n > 1 then
+                sort(srt)
+            end
+            return srt
+        else
+            return { }
+        end
+    end
+
+    sortedhashkeys = function(tab,cmp) -- fast one
+        if tab then
+            local srt, n = getkeys(tab) -- todo: only strings and numerics
+            if n > 1 then
+                sort(srt,cmp)
+            end
+            return srt
+        else
+            return { }
+        end
+    end
+
 end
 
 table.sortedkeys      = sortedkeys

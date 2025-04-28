@@ -655,7 +655,7 @@ LUA_API int lua_pushthread (lua_State *L) {
   setthvalue(L, s2v(L->top.p), L);
   api_incr_top(L);
   lua_unlock(L);
-  return (G(L)->mainthread == L);
+  return (mainthread(G(L)) == L);
 }
 
 
@@ -681,6 +681,11 @@ static int auxgetstr (lua_State *L, const TValue *t, const char *k) {
 }
 
 
+/*
+** The following function assumes that the registry cannot be a weak
+** table, so that en mergency collection while using the global table
+** cannot collect it.
+*/
 static void getGlobalTable (lua_State *L, TValue *gt) {
   Table *registry = hvalue(&G(L)->l_registry);
   lu_byte tag = luaH_getint(registry, LUA_RIDX_GLOBALS, gt);
@@ -883,9 +888,8 @@ LUA_API void lua_settable (lua_State *L, int idx) {
   api_checkpop(L, 2);
   t = index2value(L, idx);
   luaV_fastset(t, s2v(L->top.p - 2), s2v(L->top.p - 1), hres, luaH_pset);
-  if (hres == HOK) {
+  if (hres == HOK)
     luaV_finishfastset(L, t, s2v(L->top.p - 1));
-  }
   else
     luaV_finishset(L, t, s2v(L->top.p - 2), s2v(L->top.p - 1), hres);
   L->top.p -= 2;  /* pop index and value */
@@ -1070,7 +1074,7 @@ static void f_call (lua_State *L, void *ud) {
 LUA_API int lua_pcallk (lua_State *L, int nargs, int nresults, int errfunc,
                         lua_KContext ctx, lua_KFunction k) {
   struct CallS c;
-  int status;
+  TStatus status;
   ptrdiff_t func;
   lua_lock(L);
   api_check(L, k == NULL || !isLua(L->ci),
@@ -1107,14 +1111,14 @@ LUA_API int lua_pcallk (lua_State *L, int nargs, int nresults, int errfunc,
   }
   adjustresults(L, nresults);
   lua_unlock(L);
-  return status;
+  return APIstatus(status);
 }
 
 
 LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data,
                       const char *chunkname, const char *mode) {
   ZIO z;
-  int status;
+  TStatus status;
   lua_lock(L);
   if (!chunkname) chunkname = "?";
   luaZ_init(L, &z, reader, data);
@@ -1131,7 +1135,7 @@ LUA_API int lua_load (lua_State *L, lua_Reader reader, void *data,
     }
   }
   lua_unlock(L);
-  return status;
+  return APIstatus(status);
 }
 
 
@@ -1154,7 +1158,7 @@ LUA_API int lua_dump (lua_State *L, lua_Writer writer, void *data, int strip) {
 
 
 LUA_API int lua_status (lua_State *L) {
-  return L->status;
+  return APIstatus(L->status);
 }
 
 

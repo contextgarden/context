@@ -574,7 +574,7 @@ return {
         "offinterlineskip", "oninterlineskip", "nointerlineskip",
         --
         "strut", "halfstrut", "quarterstrut", "depthstrut", "halflinestrut", "noheightstrut", "setstrut", "strutbox", "strutht", "strutdp", "strutwd", "struthtdp", "strutgap", "begstrut", "endstrut", "lineheight",
-        "leftboundary", "rightboundary", "signalcharacter",
+        "leftboundary", "rightboundary", "signalcharacter", "signalglyph",
         "ascender", "descender", "capheight",
         --
         "aligncontentleft", "aligncontentmiddle", "aligncontentright",

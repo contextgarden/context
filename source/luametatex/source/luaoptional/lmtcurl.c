@@ -253,8 +253,10 @@ static const int curl_options[] = {
 # define curl_option_min             1
 # define curl_option_max           227
 # define curl_option_writedata       1
+# define curl_option_readdata        9
 # define curl_option_url             2
 # define curl_option_writefunction  11
+# define curl_option_readfunction   12
 
 # define curl_integer_base       0 /* long */
 # define curl_string_base    10000
@@ -372,6 +374,31 @@ static size_t curllib_write_cb(char *data, size_t n, size_t l, void *b)
     return n * l;
 }
 
+// typedef struct read_data { 
+//     union {     
+//         char       *data;
+//         const char *str;
+//     };
+//     size_t   size;
+//     size_t   position;
+// } read_data;
+
+// static size_t curllib_read_cb(char *data, size_t n, size_t l, void *b) /* size == 1 */
+// {
+//     read_data *d = (read_data *) b;
+//     /* untested */
+//     if (! d->data || d->position >= d->size) { 
+//         return 0;
+//     } else { 
+//         if (d->position + l > d->size) {
+//             l = d->size - d->position; 
+//         }
+//         data = d->data + d->position;
+//         d->position = d->position + l;
+//         return l;
+//     }
+// }
+
 /*tex
     Always assume a table as we need to sanitize keys anyway. A former variant also accepted strings
     but why have more code than needed.
@@ -380,14 +407,24 @@ static size_t curllib_write_cb(char *data, size_t n, size_t l, void *b)
 static int curllib_fetch(lua_State * L)
 {
     if (curllib_state.initialized) {
-        if (lua_type(L,1) == LUA_TTABLE) {
+        if (lua_type(L, 1) == LUA_TTABLE) {
             curl_instance *curl = curllib_state.curl_easy_init();
             if (curl)  {
-                int result; 
-                luaL_Buffer buffer;
-                luaL_buffinit(L, &buffer);
-                curllib_state.curl_easy_setopt(curl, curl_object_base + curl_option_writedata, &buffer);
+                int result = 0; 
+                luaL_Buffer writedata;
+             // struct read_data readdata = { 
+             //     .data     = NULL, 
+             //     .size     = 0,
+             //     .position = 0,
+             // }; 
+             // readdata.str = lua_type(L, 2) == LUA_TSTRING ? lua_tolstring(L, 2, &readdata.size) : NULL;
+                luaL_buffinit(L, &writedata);
                 curllib_state.curl_easy_setopt(curl, curl_function_base + curl_option_writefunction, &curllib_write_cb);
+                curllib_state.curl_easy_setopt(curl, curl_object_base + curl_option_writedata, &writedata);
+             // if (readdata.size) {
+             //     curllib_state.curl_easy_setopt(curl, curl_function_base + curl_option_readfunction, &curllib_read_cb);
+             //     curllib_state.curl_easy_setopt(curl, curl_object_base + curl_option_readdata, &readdata);
+             // }
                 lua_pushnil(L);  /* first key */
                 while (lua_next(L, 1) != 0) {
                     if (lua_type(L, -2) == LUA_TNUMBER) {
@@ -425,11 +462,13 @@ static int curllib_fetch(lua_State * L)
                 }
                 result = curllib_state.curl_easy_perform(curl);
                 if (result) {
+                    /* can crash on bad specificications */
+                    const char *error = curllib_state.curl_easy_strerror(result);
                     lua_pushboolean(L, 0);
-                    lua_pushstring(L, curllib_state.curl_easy_strerror(result));
+                    lua_pushstring(L, error);
                     result = 2;
                 } else {
-                    luaL_pushresult(&buffer);
+                    luaL_pushresult(&writedata);
                     result = 1;
                 }
                 curllib_state.curl_easy_cleanup(curl);

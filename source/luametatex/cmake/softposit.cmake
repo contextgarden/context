@@ -82,8 +82,8 @@ set(softposit_sources
   source/libraries/softposit/source/i32_to_p32.c
   source/libraries/softposit/source/i64_to_p32.c
   source/libraries/softposit/source/s_approxRecipSqrt_1Ks.c
-# source/libraries/softposit/source/c_convertDecToPosit8.c
-# source/libraries/softposit/source/c_convertPosit8ToDec.c
+  source/libraries/softposit/source/c_convertDecToPosit8.c
+  source/libraries/softposit/source/c_convertPosit8ToDec.c
 # source/libraries/softposit/source/c_convertDecToPosit16.c
 # source/libraries/softposit/source/c_convertPosit16ToDec.c
 # source/libraries/softposit/source/c_convertQuire8ToPosit8.c

@@ -116,6 +116,35 @@ static void mp_posit_allocate_abs(MP mp, mp_number *n, mp_number_type t, mp_numb
     n->data.pval = posit_fabs(v->data.pval);
 }
 
+
+static void mp_posit_allocate_div(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.pval = posit_div(a->data.pval, b->data.pval);
+}
+
+static void mp_posit_allocate_mul(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.pval = posit_mul(a->data.pval, b->data.pval);
+}
+
+static void mp_posit_allocate_add(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.pval = posit_add(a->data.pval, b->data.pval);
+}
+
+static void mp_posit_allocate_sub(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.pval = posit_sub(a->data.pval, b->data.pval);
+}
+
 static void mp_posit_allocate_double(MP mp, mp_number *n, double v)
 {
     (void) mp;
@@ -361,13 +390,13 @@ static void mp_posit_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numbe
         if (posit_le(y_orig->data.pval, posit_sub(mp_posit_data.EL_GORDO, x_orig->data.pval))) {
             ret->data.pval = posit_add(x_orig->data.pval, y_orig->data.pval);
         } else {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             ret->data.pval = mp_posit_data.EL_GORDO;
         }
     } else if (posit_le(posit_neg(y_orig->data.pval), posit_add(mp_posit_data.EL_GORDO, x_orig->data.pval))) {
         ret->data.pval = posit_add(x_orig->data.pval, y_orig->data.pval);
     } else {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.pval = mp_posit_data.negative_EL_GORDO;
     }
 }
@@ -678,7 +707,7 @@ static void mp_posit_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_numbe
             mp_error(
                 mp,
                 msg,
-                "Since I don't take square roots of negative numbers, Im zeroing this one.\n"
+                "Since I don't take square roots of negative numbers, I'm zeroing this one.\n"
                 "Proceed, with fingers crossed."
             );
         }
@@ -692,7 +721,7 @@ static void mp_posit_power_of(MP mp, mp_number *ret, mp_number *a_orig, mp_numbe
     errno = 0;
     ret->data.pval = posit_pow(a_orig->data.pval, b_orig->data.pval);
     if (errno) {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.pval = mp_posit_data.EL_GORDO;
     }
 }
@@ -723,7 +752,7 @@ static void mp_posit_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     ret->data.pval = posit_exp(posit_div(x_orig->data.pval,mp_posit_data.d256));
     if (errno) {
         if (posit_gt(x_orig->data.pval,mp_posit_data.zero)) {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             ret->data.pval = mp_posit_data.EL_GORDO;
         } else {
             ret->data.pval = mp_posit_data.zero;
@@ -1134,6 +1163,10 @@ math_data *mp_initialize_posit_math(MP mp)
     math->md_free            = mp_posit_free_number;
     math->md_allocate_clone  = mp_posit_allocate_clone;
     math->md_allocate_abs    = mp_posit_allocate_abs;
+    math->md_allocate_div    = mp_posit_allocate_div;
+    math->md_allocate_mul    = mp_posit_allocate_mul;
+    math->md_allocate_add    = mp_posit_allocate_add;
+    math->md_allocate_sub    = mp_posit_allocate_sub;
     math->md_allocate_double = mp_posit_allocate_double;
     /* precission */
     mp_posit_allocate_number(mp, &math->md_precision_default, mp_scaled_type);

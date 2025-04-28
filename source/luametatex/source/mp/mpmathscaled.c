@@ -117,6 +117,34 @@ static void mp_scaled_allocate_abs(MP mp, mp_number *n, mp_number_type t, mp_num
     n->data.val = abs(v->data.val);
 }
 
+static void mp_scaled_allocate_div(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.val = a->data.val / b->data.val;
+}
+
+static void mp_scaled_allocate_mul(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.val = a->data.val * b->data.val;
+}
+
+static void mp_scaled_allocate_add(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.val = a->data.val + b->data.val;
+}
+
+static void mp_scaled_allocate_sub(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.val = a->data.val - b->data.val;
+}
+
 static void mp_scaled_allocate_double(MP mp, mp_number *n, double v)
 {
     (void) mp;
@@ -410,13 +438,13 @@ static void mp_scaled_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
         if (y <= EL_GORDO - x) {
             ret->data.val = x + y;
         } else {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             ret->data.val =  EL_GORDO;
         }
     } else if (-y <= EL_GORDO + x) {
         ret->data.val = x + y;
     } else {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.val = negative_EL_GORDO;
     }
 }
@@ -429,7 +457,7 @@ static void mp_scaled_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
     |make_fraction(t,t) = fraction| is valid; and it's also possible to use the subroutine \quote 
     {backwards,} using the relation |make_fraction(t,fraction) = t| between scaled types.
 
-    If the result would have magnitude $2^{31}$ or more, |make_fraction| sets |arith_error := 
+    If the result would have magnitude $2^{31}$ or more, |make_fraction| sets |arithmic_error := 
     true|. Most of \MP's internal computations have been designed to avoid this sort of error.
 
     If this subroutine were programmed in assembly language on a typical machine, we could simply
@@ -467,7 +495,7 @@ static int mp_scaled_aux_make_fraction(MP mp, int p, int q)
         if ((p ^ q) >= 0) {
             d += 0.5;
             if (d >= TWEXP31) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
                 return EL_GORDO;
             } else {
                 int i = (int) d;
@@ -479,7 +507,7 @@ static int mp_scaled_aux_make_fraction(MP mp, int p, int q)
         } else {
             d -= 0.5;
             if (d <= -TWEXP31) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
@@ -514,7 +542,7 @@ static int mp_scaled_aux_take_fraction(MP mp, int p, int q)
         d += 0.5;
         if (d >= TWEXP31) {
             if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 040000) == 0) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
             }
             return EL_GORDO;
         } else {
@@ -528,7 +556,7 @@ static int mp_scaled_aux_take_fraction(MP mp, int p, int q)
         d -= 0.5;
         if (d <= -TWEXP31) {
             if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
@@ -566,7 +594,7 @@ static int mp_take_scaled(MP mp, int p, int q)
         d += 0.5;
         if (d >= TWEXP31) {
             if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
             }
             return EL_GORDO;
         } else {
@@ -580,7 +608,7 @@ static int mp_take_scaled(MP mp, int p, int q)
         d -= 0.5;
         if (d <= -TWEXP31) {
             if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
             }
             return -negative_EL_GORDO;
         } else {
@@ -617,7 +645,7 @@ static int mp_make_scaled(MP mp, int p, int q)
         if ((p ^ q) >= 0) {
             d += 0.5;
             if (d >= TWEXP31) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
                 return EL_GORDO;
             } else {
                 int i = (int) d;
@@ -629,7 +657,7 @@ static int mp_make_scaled(MP mp, int p, int q)
         } else {
             d -= 0.5;
             if (d <= -TWEXP31) {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
                 return -negative_EL_GORDO;
             } else {
                 int i = (int) d;
@@ -1089,7 +1117,7 @@ static void mp_scaled_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
             if (a < fraction_two) {
                 a = a + a + a + a;
             } else {
-                mp->arith_error = 1;
+                mp->arithmic_error = 1;
                 a = EL_GORDO;
             }
         }
@@ -1162,12 +1190,12 @@ static void mp_scaled_power_of(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     long r = lround(p * 65536.0);
     if (r > 0) {
         if (r >= EL_GORDO) {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             r = EL_GORDO;
         }
     } else if (r < 0) {
         if (r <= - EL_GORDO) {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             r = - EL_GORDO;
         }
     }
@@ -1248,7 +1276,7 @@ static void mp_scaled_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     int x = x_orig->data.val;
     if (x > 174436200) {
         /* $2^{24}\ln((2^{31}-1)/2^{16})\approx 174436199.51$ */
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.val = EL_GORDO;
     } else if (x < -197694359) {
         /* $2^{24}\ln(2^{-1}/2^{16})\approx-197694359.45$ */
@@ -1655,6 +1683,10 @@ math_data *mp_initialize_scaled_math(MP mp)
     math->md_free            = mp_scaled_free_number;
     math->md_allocate_clone  = mp_scaled_allocate_clone;
     math->md_allocate_abs    = mp_scaled_allocate_abs;
+    math->md_allocate_div    = mp_scaled_allocate_div;
+    math->md_allocate_mul    = mp_scaled_allocate_mul;
+    math->md_allocate_add    = mp_scaled_allocate_add;
+    math->md_allocate_sub    = mp_scaled_allocate_sub;
     math->md_allocate_double = mp_scaled_allocate_double;
     /* precission */
     mp_scaled_allocate_number(mp, &math->md_precision_default, mp_scaled_type);

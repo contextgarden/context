@@ -1,0 +1,248 @@
+% language=us runpath=texruns:manuals/tagging
+
+\usemodule
+  [abbreviations-logos,scite,math-verbatim,system-pdf]
+
+\setupbodyfont
+  [pagella,12pt]
+
+\setuplayout
+  [header=0pt,
+   width=middle]
+
+\setupheadertexts
+  []
+
+% \setupfootertexts
+%   [chapter]
+%   [pagenumber]
+
+\setupfootertexts
+  [pagenumber]
+
+\setupwhitespace
+  [big]
+
+% \setuphead
+%   [chapter]
+%   [style=\bfc,
+%    interaction=all]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+% \setuphead
+%   [subsection]
+%   [style=\bfa]
+
+% \setuphead
+%   [subsubsection]
+%   [style=\bf,
+%    after=]
+
+% \setuplist
+%   [interaction=all]
+
+\setupbackend
+  [format=pdf/a4]
+
+\setuptyping
+  [option=TEX]
+
+\setupdocument
+  [before=\directsetup{document:titlepage}]
+
+\startuseMPgraphic{titlepage}
+    numeric n ; n := 150 ;
+    numeric f ; f := 5 ;
+    numeric w ; w := f * 21 ;
+    numeric h ; h := f * 30 ;
+
+    newbytemap 1 of (w,h,3) ;
+
+    setbytemapoffset (-1,-1) of 1 ;
+
+    color c[] ;
+
+    c[0] := (n,n,n) ;
+    c[1] := (n,0,0) ; c[2] := (0,n,0) ; c[3] := (0,0,n) ;
+    c[4] := (0,n,n) ; c[5] := (n,n,0) ; c[6] := (n,0,n) ;
+
+    for i=1 upto w :
+        for j=1 upto h :
+            setbyte (i,j) of 1 to c[floor(uniformdeviate 7)] ;
+        endfor ;
+    endfor ;
+
+    fill unitsquare xysized(PaperWidth,PaperHeight)
+        withbytemap 1 ;
+
+    draw textext.rt("\ttd \strut \documentvariable{title}")
+        xsized (PaperWidth-2cm)
+        shifted llcorner currentpicture
+        shifted (1cm,4cm)
+        withcolor white ;
+
+    draw textext.rt("\ttd \strut \documentvariable{subtitle}")
+        xsized (PaperWidth/2)
+        shifted llcorner currentpicture
+        shifted (PaperWidth/4,2cm)
+        withcolor white ;
+\stopuseMPgraphic
+
+\startsetups document:titlepage
+    \startTEXpage
+        \useMPgraphic{titlepage}
+    \stopTEXpage
+\stopsetups
+
+\startdocument[title={pdf standards},subtitle={basic setup}]
+
+Given the range of possibilities to decorate a \PDF\ document it is no surprise
+that there has been attempts to standardize, especially when it comes to
+printing. Reasons are:
+
+\startitemize
+\startitem
+    Printing is normally done in the \CMYK\ color space, which is sensitive for
+    the kind of ink and paper used. You might want to be sure that the right
+    colors come out.
+\stopitem
+\startitem
+    Not all rasterization software is capable of supporting features like
+    transparency, so those either have to be avoided or flattened.
+\stopitem
+\startitem
+    When \PDF\ came around printing technology and related software and workflows
+    had to be adapted and that took a while. You don't replace six or more
+    figures worth equipment just because some new printing format shows up.
+\stopitem
+\startitem
+    Because \PDF\ is also meant for storing (e.g.) states and features of editing
+    software as well as for previewing on screen, some features might interfere
+    (or confuse) printing workflows.
+\stopitem
+\startitem
+    Some (interactive) features were introduced without proper software support
+    and therefore evolved and/or were dropped. And who knows what bugs in
+    software became features or limitations. This made the format unreliable in
+    places and as a consequence constraints made sense.
+\stopitem
+\stopitemize
+
+You can imagine some more arguments for permitting only a subset of features in a
+\PDF\ document and indeed that is what these (retrospective) standards do. Add to
+that the fact that there is validating and cleanup software in use and the
+picture for users become blurry, especially because:
+
+\startitemize
+\startitem
+    The various \PDF\ standards are non free and don't come cheap so for free
+    software development some guesswork is needed.
+\stopitem
+\startitem
+    Interpreting standards demands some knowledge of the \PDF\ internals. There
+    are very advanced features in \PDF\ that are not permitted in standards while
+    relative trivial ones are forbidden. This can be confusing.
+\stopitem
+\startitem
+    Supporting standards interferes with the fact that software had to adapt to
+    for instance viewers that themselves had to interpret the more vague format.
+    Therefore support for standards is also a matter of adding and dropping
+    features, combined with testing viewing software that differs in
+    interpretation of the evolving specification.
+\stopitem
+\stopitemize
+
+The good news is that users can live without bothering. Nobody can force you to
+enable a specific standard, certainly not for your own documents. And when you
+want them printed, if what comes out looks fine to you, so be it. The average
+user will not notice a bit different colors; a consistent makeup and interesting
+content is more important. However, when you're forced to obey a standard, the
+solution is not hard:
+
+\starttyping
+\setupbackend
+  [format=pdf/a4]
+\stoptyping
+
+The complete list of standards that are supported is given at the end. Not all
+parameters in a definition are used (any longer) but we keep them as indicators
+of what is involved. Of course these definitions and variable names are \CONTEXT\
+specific. The standards are defined in the \type {type-fmt-imp-*.lmt} files
+(before they were in a single file).
+
+When setting up the backend, the only keys that really matter here are \type
+{intent} and \type {profile}. The first parameter controls the output medium, the
+second the color profiles that are included. Of course you can wonder if that all
+makes sense: let the printing company take care of that.
+
+In principle you can have three color spaces us use (more if you also consider
+spot colors and combined color spaces (n). So in the next mix we need to make
+sure that, if we use for instance an \RGB\ target (intent) we also communicate
+how \CMYK\ maps to that. Below all values are \type {.75}.
+
+\definecolor[red]    [r=.75]
+\definecolor[green]  [g=.75]
+\definecolor[blue]   [b=.75]
+\definecolor[gray]   [s=.75]
+\definecolor[cyan]   [c=.75]
+\definecolor[magenta][m=.75]
+\definecolor[yellow] [y=.75]
+
+\startlinecorrection
+    \dontleavehmode
+    \blackrule[width=1tw/3,height=1cm,color=red]%
+    \blackrule[width=1tw/3,height=1cm,color=green]%
+    \blackrule[width=1tw/3,height=1cm,color=blue]
+    \blank
+    \dontleavehmode
+    \blackrule[width=1tw,height=1cm,color=gray]
+    \blank
+    \dontleavehmode
+    \blackrule[width=1tw/3,height=1cm,color=cyan]%
+    \blackrule[width=1tw/3,height=1cm,color=magenta]%
+    \blackrule[width=1tw/3,height=1cm,color=yellow]
+\stoplinecorrection
+
+When \type {intent} is set to \type {default}, \type {rgb} or \type {cmyk} and
+the \type {profile} value is unset, the following is assumed. If you want
+something different you can set up these profiles yourself. The default setting
+might evolve over time. Setting the \type {intent} parameter to nothing prevents
+inclusion, which is normally fine, unless you are bothered by a validation tool
+complaining loudly.
+
+\starttabulate[||p|]
+\NC \type {default} \NC \type {profile={sRGB-v4.icc,sGrey-v4.icc,CGATS001Compat-v2-micro.icc}} \par
+                        \type {intent=sRGB-v4.icc} \NC \NR
+\NC \type {rgb}     \NC \type {profile={sRGB-v4.icc,sGrey-v4.icc,CGATS001Compat-v2-micro.icc}} \par
+                        \type {intent=sRGB-v4.icc} \NC \NR
+\NC \type {cmyk}    \NC \type {profile={sRGB-v4.icc,sGrey-v4.icc}}                             \par
+                        \type {intent=CGATS001Compat-v2-micro.icc} \NC \NR
+\stoptabulate
+
+The file \type {colorprofiles.xml} is used to get some properties of profiles if
+needed. The ones used above come from \hyphenatedurl
+{https://github.com/saucecontrol/Compact-ICC-Profiles} and are as small as
+possible: \quotation {better something small that nothing at all} has been the
+motto here.
+
+If you're somehow forced to support tagging, we suggest that you read the \type
+{tagging.pdf} manual on that. In that case the standards are \type {PDF/UA-1} and
+\type {PDF/UA-2} where the later sort of assumes \type {PDF/A-4} as baseline.
+
+\page
+
+\doloopoverlist {\ctxlua{moduledata.system.pdf.getlist()}} {
+    \testpage[20]
+    \startsubject[title=#1]
+        \startcolumns[n=2]
+            \ctxlua{moduledata.system.pdf.showone("#1")}%
+        \stopcolumns
+    \stopsubject
+}
+
+\ctxlua{moduledata.system.pdf.showall()}
+
+\stopdocument

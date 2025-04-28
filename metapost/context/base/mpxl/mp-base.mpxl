@@ -25,8 +25,10 @@ def exitunless expr c =
     exitif not c
 enddef ;
 
-let relax = \ ; % ignore the word relax, as in TeX
-let \\    = \ ; % double relaxation is like single
+let relax        = \ ; % ignore the word relax, as in TeX
+let norelax      = \ ; % LuaMetaTeX
+let relaxedspace = \ ; % LuaMetaTeX
+let \\           = \ ; % double relaxation is like single
 
 def [[ = [ [ enddef ;
 def ]] = ] ] enddef ;
@@ -356,7 +358,7 @@ primarydef w dotprod z =
     (xpart w * xpart z + ypart w * ypart z)
 enddef ;
 
-permanent mod, div, dotprod ;
+permanent mod, div, dotprod, crossprod ;
 
 % primarydef x**y =
 %     if y = 2 :

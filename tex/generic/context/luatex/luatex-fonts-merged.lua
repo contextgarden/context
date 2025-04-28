@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-04-01 09:54
+-- merge date  : 2025-04-28 14:22
 
 do -- begin closure to overcome local limits and interference
 
@@ -1217,6 +1217,61 @@ function table.allkeys(t)
   end
  end
  return sortedkeys(keys)
+end
+if lua.getcheckedkeys then
+ local getcheckedkeys=lua.getcheckedkeys
+ local getstringkeys=lua.getstringkeys
+ local getnumerickeys=lua.getnumerickeys
+ local getkeys=lua.getallkeys
+ local comparekeys=lua.comparekeys
+ local sort=table.sort
+ sortedkeys=function(tab)
+  if tab then
+   local srt,category=getcheckedkeys(tab)
+   if category==0 then
+   elseif category==3 then
+    sort(srt,comparekeys)
+   else
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedhashonly=function(tab)
+  if tab then
+   local srt,n=getstringkeys(tab)
+   if n>1 then
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedindexonly=function(tab)
+  if tab then
+   local srt,n=getnumerickeys(tab)
+   if n>1 then
+    sort(srt)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
+ sortedhashkeys=function(tab,cmp) 
+  if tab then
+   local srt,n=getkeys(tab) 
+   if n>1 then
+    sort(srt,cmp)
+   end
+   return srt
+  else
+   return {}
+  end
+ end
 end
 table.sortedkeys=sortedkeys
 table.sortedhashonly=sortedhashonly
@@ -27604,7 +27659,6 @@ local currentfont=false
 local factor=0
 local threshold=0
 local checkmarks=false
-local discs=false
 local spaces=false
 local sweepnode=nil
 local sweephead={} 
@@ -30580,21 +30634,14 @@ otf.helpers=otf.helpers or {}
 otf.helpers.txtdirstate=txtdirstate
 otf.helpers.pardirstate=pardirstate
 do
- local fastdisc=true
  local testdics=false
- directives.register("otf.fastdisc",function(v) fastdisc=v end)
  local otfdataset=nil 
- local getfastdisc={ __index=function(t,k)
-  local v=usesfont(k,currentfont)
-  t[k]=v
-  return v
- end }
  local getfastspace={ __index=function(t,k)
   local v=isspace(k,threshold) or false
   t[k]=v
   return v
  end }
- function otf.featuresprocessor(head,font,attr,direction,n)
+ function otf.featuresprocessor(head,font,attr,direction)
   local sequences=sequencelists[font] 
   nesting=nesting+1
   if nesting==1 then
@@ -30611,7 +30658,6 @@ do
    if not otfdataset then
     otfdataset=otf.dataset
    end
-   discs=fastdisc and n and n>1 and setmetatable({},getfastdisc) 
    spaces=setmetatable({},getfastspace)
   elseif currentfont~=font then
    report_warning("nested call with a different font, level %s, quitting",nesting)
@@ -30722,16 +30768,12 @@ do
       elseif char==false or id==glue_code then
        start=getnext(start)
       elseif id==disc_code then
-       if not discs or discs[start]==true then
-        if gpossing then
-         start=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-        elseif forcetestrun then
-         start=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-        else
-         start=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-        end
+       if gpossing then
+        start=kernrun(start,k_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+       elseif forcetestrun then
+        start=testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
        else
-        start=getnext(start)
+        start=comprun(start,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
        end
       elseif id==math_code then
        start=getnext(endofmath(start))
@@ -30787,16 +30829,12 @@ do
       elseif char==false or id==glue_code then
        start=getnext(start)
       elseif id==disc_code then
-       if not discs or discs[start]==true then
-        if gpossing then
-         start=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-        elseif forcetestrun then
-         start=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-        else
-         start=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-        end
+       if gpossing then
+        start=kernrun(start,k_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+       elseif forcetestrun then
+        start=testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
        else
-        start=getnext(start)
+        start=comprun(start,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
        end
       elseif id==math_code then
        start=getnext(endofmath(start))
@@ -30919,7 +30957,7 @@ do
    tfmdata.shared.plugin=plugins[value]
   end
  end
- function otf.pluginprocessor(head,font,dynamic,direction) 
+ function otf.pluginprocessor(head,font,dynamic,direction)
   local s=fontdata[font].shared
   local p=s and s.plugin
   if p then

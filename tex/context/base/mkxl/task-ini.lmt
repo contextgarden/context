@@ -42,6 +42,7 @@ appendaction("processors",   "characters",  "typesetters.cases.handler",        
 appendaction("processors",   "characters",  "typesetters.breakpoints.handler",                  nil, "nut",    "disabled"  )
 appendaction("processors",   "characters",  "scripts.injectors.handler",                        nil, "nut",    "disabled"  )
 
+appendaction("processors",   "words",       "typesetters.compare.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "words",       "languages.words.check",                            nil, "nut",    "disabled"  )
 appendaction("processors",   "words",       "languages.hyphenators.handler",                    nil, "nut",    "enabled"   )
 appendaction("processors",   "words",       "typesetters.initials.handler",                     nil, "nut",    "disabled"  )

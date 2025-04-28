@@ -137,9 +137,9 @@ local mapping = {
     ["password"]                = 174,
     ["port"]                    =   3,
     ["post"]                    =  47,
- -- ["postfields"]              =  15,
- -- ["postfieldsize"]           =  60,
- -- ["postfieldsizelarge"]      = 120,
+    ["postfields"]              =  15,
+    ["postfieldsize"]           =  60,
+    ["postfieldsizelarge"]      = 120,
     ["postquote"]               =  39,
     ["postredir"]               = 161,
     ["prequote"]                =  93,
@@ -262,7 +262,7 @@ local function okay()
     return okay()
 end
 
-local function fetch(options)
+local function fetch(options,data)
     if okay() then
         local t = type(options)
         if t == "table" then
@@ -276,7 +276,7 @@ local function fetch(options)
          -- if o.capath == true then
          --     o.capath = libpath
          -- end
-            return curl_fetch(o)
+            return curl_fetch(o,data)
         elseif t == "string" then
             return curl_fetch { [mapping.url] = options }
         else

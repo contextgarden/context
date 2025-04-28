@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupboxanchor" file="pack.box.mkxl">
+    <cd:command name="setupboxanchor" file="pack-box.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="xoffset">
@@ -23,31 +23,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineanchorbox" file="pack.box.mkxl">
+    <cd:command name="defineanchorbox" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineanchorboxoverlay" file="pack.box.mkxl">
+    <cd:command name="defineanchorboxoverlay" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedanchorbox" file="pack.box.mkxl">
+    <cd:command name="namedanchorbox" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayanchorbox" file="pack.box.mkxl">
+    <cd:command name="overlayanchorbox" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setanchorbox" file="pack.box.mkxl">
+    <cd:command name="setanchorbox" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxanchorpresetcode" file="pack.box.mkxl">
+    <cd:command name="boxanchorpresetcode" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-boxpreset"/>
@@ -66,11 +66,104 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxanchoring" type="environment" file="pack.box.mkxl">
+    <cd:command name="boxanchoring" type="environment" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="+"/>
                 <cd:constant type="cd:name"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="registerboxanchor" file="pack-box.mkxl"/>
+
+    <cd:command name="defineboxanchor" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifnotanchorbox" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namedboxanchor" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="namespacedboxanchor" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="setupboxanchorcontent" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name-list-optional"/>
+            <cd:assignments list="yes">
+                <cd:parameter name="xoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="yoffset">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="corner">
+                    <cd:resolve name="value-boxpreset"/>
+                </cd:parameter>
+                <cd:parameter name="location">
+                    <cd:resolve name="value-boxpreset"/>
+                </cd:parameter>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="defineboxanchorcontent" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:assignments list="yes" optional="yes">
+                <cd:inherit name="setupboxanchorcontent"/>
+            </cd:assignments>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathrowanchored" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathcellanchored" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="mathboxanchored" file="pack-box.mkxl">
+        <cd:arguments>
+            <cd:keywords optional="yes">
+                <cd:constant type="nucleus"/>
+            </cd:keywords>
+            <cd:resolve name="argument-text"/>
+            <cd:keywords delimiters="braces">
+                <cd:constant type="cd:name"/>
+                <cd:constant type="cd:number"/>
             </cd:keywords>
         </cd:arguments>
     </cd:command>

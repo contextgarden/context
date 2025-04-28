@@ -1380,8 +1380,12 @@ local function bm_process(object,prescript,before,after)
     if bm_xresolution then
      -- before[#before+1] = f_cm_b(cm(object))
         local sx, rx, ry, sy, tx, ty = cm(object)
-        local data = bytemap and bytemap.data or object.postscript
-        local mask = bytemap and bytemap.mask or prescript.bytemask
+        local data   = bytemap and bytemap.data      or object.postscript
+        local mask   = bytemap and bytemap.mask      or prescript.bytemask
+        local expand = bytemap and bytemap.expansion or prescript.byteexpansion
+        if expand then
+            data = posit.expand(data,tonumber(expand) or 4)
+        end
         before[#before+1] = function()
             context.MPLIBscaledcm(
                 function()
@@ -1394,8 +1398,8 @@ local function bm_process(object,prescript,before,after)
                         height      = 1/basepoints,
                         data        = data,
                         mask        = mask,
-                        bytes       = true,
-                        format      = "png",
+                        bytes       = bytemap and true  or false,
+                        format      = bytemap and "png" or "hex",
                     }
                 end,
                 sx, rx, ry, sy, tx, ty

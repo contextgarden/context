@@ -318,6 +318,7 @@
         <cd:constant type="rlbt"/>
         <cd:constant type="fxbt"/>
         <cd:constant type="fixd"/>
+        <cd:constant type="append"/>
     </cd:define>
 
     <!-- sortorder = ... -->

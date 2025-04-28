@@ -1,0 +1,372 @@
+if not modules then modules = { } end modules ['typo-dif'] = {
+    version   = 1.001,
+    comment   = "companion to typo-dif.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- This is more a proof of concept than a useful module. It was made as
+-- answer to a question on the mailing list and found useful as demo in
+-- the perspective of columnsets and parallel rendering.
+--
+-- https://en.wikipedia.org/wiki/Longest_common_subsequence
+--
+-- This code is not that fast but it makes little sense to speed it up.
+
+-- todo: use false instead of zero (0) as signal
+
+----- is_letter      = characters.is_letter
+local is_punctuation = characters.is_punctuation
+local unicodes       = fonts.hashes.unicodes
+
+--------------------------------------------------------------------------
+
+local type = type
+local newindex = lua.newindex
+local max = math.max
+local concat = table.concat
+local utfchar = utf.char
+----- unpack = unpack
+----- copy = table.copy
+
+local function collect(t, x, y, i, j, xx, yy)
+    local xi = x[i]
+    local yj = y[j]
+    if i >= 0 and j >= 0 and xi == yj then
+        collect(t, x, y, i-1, j-1, xx, yy)
+    elseif j > 0 and (i == 0 or t[i][j-1] >= t[i-1][j]) then
+        collect(t, x, y, i, j-1, xx, yy)
+        -- xj ?
+        if yj then
+            yy[j] = 0
+--             yy[j] = false
+        end
+    elseif i > 0 and (j == 0 or t[i][j-1] < t[i-1][j]) then
+        collect(t, x, y, i-1, j, xx, yy)
+        if xi then
+            xx[i] = 0
+--             xx[i] = false
+        end
+        if yi then
+            yy[j] = 0
+--             yy[j] = false
+        end
+    end
+end
+
+function longestcommon(first,second)
+    local m = #first
+    local n = #second
+    local t = newindex(m)
+    for i=0,m  do
+        local ti = newindex(n)
+        t[i] = ti
+        ti[0] = 0
+    end
+    local t0 = t[0]
+    for j=1,n do
+        t0[j] = 0
+    end
+    for i=1,m do
+        local current  = t[i]
+        local previous = t[i-1]
+        for j=1,n do
+            if first[i] == second[j] then
+                current[j] = previous[j-1] + 1
+            else
+                current[j] = max(current[j-1],previous[j])
+            end
+        end
+    end
+    -- do we need the copy ?
+ -- local xx = copy(first)
+ -- local yy = copy(second)
+ -- local xx = { unpack(first) }
+ -- local yy = { unpack(second) }
+    local nx = #first  local xx = newindex(nx) for i=1,nx do xx[i] = first [i] end
+    local ny = #second local yy = newindex(ny) for i=1,ny do yy[i] = second[i] end
+    collect(t, first, second, m, n, xx, yy)
+    return xx, yy
+end
+
+--------------------------------------------------------------------------
+
+typesetters         = typesetters or { }
+local typesetters   = typesetters
+
+local compare       = typesetters.compare or { }
+typesetters.compare = compare
+
+-- local report        = logs.reporter("compare")
+-- local trace_compare = false  trackers.register("typesetters.compare", function(v) trace_compare = v end)
+
+local v_word        <const> = interfaces.variables.word
+local v_character   <const> = interfaces.variables.character
+
+local a_comparetext <const> = attributes.private("comparetext")
+
+local nuts        = nodes.nuts
+
+local getattr     = nuts.getattr
+local getchar     = nuts.getchar
+local getcharspec = nuts.getcharspec
+local getdisc     = nuts.getdisc
+
+local getprop     = nuts.getprop
+local setprop     = nuts.setprop
+
+local setcolor    = nodes.tracers.colors.set
+
+local nextglyph   = nuts.traversers.glyph
+local nextnode    = nuts.traversers.node
+
+local nodecodes   = nodes.nodecodes
+
+local glyph_code <const> = nodecodes.glyph
+local kern_code  <const> = nodecodes.kern
+----- disc_code  <const> = nodecodes.disc
+----- hlist_code <const> = nodecodes.hlist
+----- vlist_code <const> = nodecodes.vlist
+
+local fontkern_code <const> = nodes.kerncodes.fontkern
+
+local unsetvalue <const> = attributes.unsetvalue
+
+-- maybe second array with node
+
+local collectors = { }
+local markers    = { }
+local list       = { }
+local collect    = false
+local mark       = false
+
+collectors[v_character] = function(data,head)
+    local unic = false
+    local font = false
+    for n, id in nextnode, head do
+        if id == glyph_code then
+            local c, f = getcharspec(n)
+            if font ~= f then
+                font = f
+                unic = unicodes[f]
+            end
+            data[#data+1] = unic[c] or c
+        end
+    end
+end
+
+collectors[v_word] = function(data,head)
+    local unic = false
+    local font = false
+    local word = { }
+    local w    = 0
+    local d    = 0
+    for n, id, subtype in nextnode, head do
+        if id == glyph_code then
+            local c, f = getcharspec(n)
+            if font ~= f then
+                font = f
+                unic = unicodes[f]
+            end
+            local u = unic[c] or c
+            if special and is_punctuation[u] then
+                if w > 0 then
+                    d = d + 1 ; data[d] = concat(word,"",1,w) ; w = 0
+                end
+                setprop(n,"difference",true)
+            end
+            w = w + 1 ; word[w] = utfchar(u)
+        elseif id == kern_code then
+            if subtype ~= fontkern_code and w > 0 then
+                d = d + 1 ; data[d] = concat(word,"",1,w) ; w = 0
+            end
+        elseif w > 0 then
+            d = d + 1 ; data[d] = concat(word,"",1,w) ; w = 0
+        end
+    end
+    if w > 0 then
+        d = d + 1 ; data[d] = concat(word,"",1,w) ; w = 0
+    end
+end
+
+markers[v_character] = function(original,data,head,color,d)
+    for n, id in nextnode, head do
+        if id == glyph_code then
+            d = d + 1
+            if data[d] == 0 then
+--             if not data[d] then
+                if special and getprop(n,"difference") then
+                    setcolor(n,special)
+                else
+                    setcolor(n,color)
+                end
+            end
+        end
+    end
+end
+
+markers[v_word] = function(original,data,head,color,d)
+    local going = false
+    local okay  = false
+-- print("original : ",concat(original, " | "))
+-- print("analyzed : ",concat(data, " | "))
+    for n, id, subtype in nextnode, head do
+        if id == glyph_code then
+            local oeps = special and getprop(n,"difference")
+            if oeps then
+                going = false
+            end
+            if not going then
+                d = d + 1
+--                 okay = data[d] == 0
+                okay = type(data[d]) == "number"
+--                 okay = not data[d]
+                going = true
+-- print(original[d],d,okay,utfchar(getchar(n)))
+            end
+            if okay then
+                if oeps then
+                    setcolor(n,special)
+                    okay = false
+                    going = false
+                else
+                    setcolor(n,color)
+                end
+            end
+        elseif id == kern_code then
+            if subtype ~= fontkern_code then
+               going = false
+            end
+        else
+           going = false
+        end
+    end
+end
+
+collect = collectors[v_character]
+mark    = markers   [v_character]
+
+local function cleanup()
+end
+
+local settings_to_array = utilities.parsers.settings_to_array
+local enableaction    = nodes.tasks.enableaction
+local texsetattribute = tex.setattribute
+
+local enabled    = false
+local active     = false
+local firstdata  = { }
+local seconddata = { }
+local firsthead  = false
+local secondhead = false
+local channels   = { "darkred", "darkred" }
+local method     = ""
+local names      = { }
+
+local first      = 0
+local second     = 0
+
+function compare.handler(head)
+    if active and first ~= 0 and second ~= 0 then
+        local channel = getattr(head,a_comparetext)
+        if channel == first then
+            firsthead  = head
+            secondhead = nil
+            firstdata  = { }
+            seconddata = { }
+            collect(firstdata,firsthead)
+        elseif channel == second then
+            secondhead = head
+            collect(seconddata,secondhead)
+            local firstresult, secondresult = longestcommon(firstdata,seconddata)
+-- check if firsthead is a valid one of same type
+            for i=1,#firstresult do
+                if firstresult[i] == 0 then
+                    mark(firstdata,firstresult,firsthead,channels[first],0)
+                    cleanup()
+                    break
+                end
+            end
+            for i=1,#secondresult do
+                if secondresult[i] == 0 then
+                    mark(seconddata,secondresult,secondhead,channels[second],0)
+                    cleanup()
+                end
+            end
+        end
+    end
+    return head
+end
+
+function compare.reset()
+    active = false
+    texsetattribute(a_comparetext,unsetvalue)
+end
+
+function compare.setup(name,channel,color)
+    if channel > 0 then
+        channels[channel] = color
+        names   [name]    = channel
+    end
+end
+
+function compare.set(channel)
+    if channel > 0 then
+        active = true
+        texsetattribute(a_comparetext,channel)
+    else
+        active = false
+        texsetattribute(a_comparetext,unsetvalue)
+    end
+end
+
+local default_collector = collectors[v_character]
+local default_marker    = markers   [v_character]
+
+function compare.setpair(pair,method,color)
+    special = color ~= "" and color or false
+    collect = collectors[method] or default_collector
+    mark    = markers   [method] or default_marker
+    --
+    local t = settings_to_array(pair)
+    if #t == 2 then
+        first  = names[t[1]]
+        second = names[t[2]]
+        if first and second and channels[first] and channels[second] then
+            if not enabled then
+                enableaction("processors","typesetters.compare.handler")
+                enabled = true
+            end
+            return
+        end
+    end
+    --
+    first   = 0
+    second  = 0
+end
+
+-- interface
+
+interfaces.implement {
+    name      = "setupcomparingtext",
+    actions   = compare.setup,
+    arguments = { "argument", "integer", "argument" }
+}
+
+interfaces.implement {
+    name      = "setcomparingtext",
+    actions   = compare.set,
+    arguments = "integer",
+}
+
+interfaces.implement {
+    name      = "resetcomparingtext",
+    actions   = compare.reset,
+}
+
+interfaces.implement {
+    name      = "setcomparetext",
+    actions   = compare.setpair,
+    arguments = { "argument", "argument", "argument" }
+}

@@ -6826,7 +6826,7 @@
 %D Signal. Some fonts have a char0 rendering so we need to make sure that it is not
 %D set in the font! (This will be overloaded)
 
-\protected\def\signalcharacter{\char\zerocount} % \zwj
+\protected\def\signalcharacter{\char\zerocount} % overloaded in spac-ver !
 
 % %D A few secial variants of commands defined here. Some more will be moved here
 % %D e.g.from the table modules. This code is no longer needed.

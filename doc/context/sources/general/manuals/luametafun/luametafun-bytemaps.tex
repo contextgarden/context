@@ -476,6 +476,113 @@ draw unitsquare
     \getbuffer
 \stopplacefigure
 
+We store bytes which normally represent a small integer value, or in our case an
+unsigned cardinal (in \MODULA\ speak). However, we can also use that byte for storing
+a small float, in our case a posit. The number of possible value sis of course
+limited, as can be seen in \in {table} [bytemaps:posit].
+
+\startbuffer[mybuffer]
+\startluacode
+ -- local s = posit.tochar(1.23)
+ -- local n = posit.fromchar(s)
+    context.startsimplecolumns { n = 6 }
+        context.starttabulate { "|rTj0|lT|" }
+            for i=0,255 do
+                local n = posit.frombyte(i)
+                context.NC() context(n)
+                context.NC() context.formatted.darkred("%02X",i)
+                context.NR()
+            end
+        context.stoptabulate()
+    context.stopsimplecolumns()
+\stopluacode
+\stopbuffer
+
+\startplacetable[title={Possible float values in a bytemap.},reference=bytemaps:posit]
+    \scale[height=.8th]{\getbuffer[mybuffer]}
+\stopplacetable
+
+In order to get this working, we need to set option ~2, as in the following
+example. Because we use small values, we get a rather dark result but we can
+expand the bitmap.
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (10,10) ;
+    setbytemapoptions 1 to 2 ;
+  % setbytemap 1 to 255 ;
+  % setbytemap 1 to 1.5 ;
+    for i=0 upto 9 :
+        for j=0 upto 9 :
+            n := uniformdeviate(1) ;
+            setbyte (i,j) of 1 to n ;
+          % show((n,bytevalue (i,j) of 1)) ;
+        endfor ;
+    endfor ;
+
+    draw image (
+        draw unitsquare                 withbytemap 1 ;
+        draw unitsquare shifted (1.1,0) withbytemap 1 withbyteexpansion 127 ;
+        draw unitsquare shifted (2.2,0) withbytemap 1 withbyteexpansion 255 ;
+    ) scaled 100;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This expansion option is mostly there because of tracing (and showing off in the
+manual) but we can imagine users finding some application.
+
+\startlinecorrection
+    \getbuffer
+\stoplinecorrection
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (20,5) ;
+    setbytemapoptions 1 to 2 ;
+    setbytemap 1 to 0 ;
+    for i=0 upto 19 :
+        for j=0 upto 4 :
+            n := 0 randomized 10 ;
+            setbyte (i,j) of 1 to n ;
+            show((n,bytevalue (i,j) of 1)) ;
+        endfor ;
+    endfor ;
+
+    pickup pencircle scaled 2 ;
+    drawdot (bytepath (1,2) of 1) scaled 10 withcolor "darkred" ;
+    drawdot (bytepath (2,3) of 1) scaled 10 withcolor "darkgreen" ;
+    drawdot (bytepath (3,4) of 1) scaled 10 withcolor "darkblue" ;
+
+    for i=0 upto 19 :
+        for j=0 upto 4 :
+            n := bytevalue (i,j) of 1;
+            draw
+                textext (decimal n)
+                scaled .2
+                shifted (10i,10j-3)
+            ;
+        endfor ;
+    endfor ;
+\stopMPcode
+\stopbuffer
+
+The next code produces \in {figure} [bytemaps:moreposit] which demonstrates that
+we get back a float instead of an integer in some cases. Posits (for now) only
+make sense for numeric bytemaps.
+
+\typebuffer[option=TEX]
+
+A nice aspect of posits is that a comparison is very fast because we can directly
+compare the integer representation. Another advantage over for instance so called
+minifloats is that they waste less on \type {NaN} and \type {Infinity} as well as
+are most accurate in the smaller values.
+
+\startplacefigure[title={Some operations return posits.},reference=bytemaps:moreposit]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
 \stopchapter
 
 \stopcomponent

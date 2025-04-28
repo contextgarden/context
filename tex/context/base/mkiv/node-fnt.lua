@@ -455,7 +455,7 @@ do
             local attr = a > 0 and 0 or false -- 0 is the savest way
             for font, processors in next, usedfonts do -- unordered
                 for i=1,#processors do
-                    head = processors[i](head,font,attr,direction,u)
+                    head = processors[i](head,font,attr,direction)
                 end
             end
         end
@@ -472,7 +472,7 @@ do
             for font, dynamics in next, attrfonts do
                 for attribute, processors in next, dynamics do -- unordered, attr can switch in between
                     for i=1,#processors do
-                        head = processors[i](head,font,attribute,direction,a)
+                        head = processors[i](head,font,attribute,direction)
                     end
                 end
             end

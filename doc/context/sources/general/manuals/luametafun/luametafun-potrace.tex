@@ -250,7 +250,7 @@ io.savedata("temp.txt",[[
 \stopluacode
 \stopbuffer
 
-\typebuffer[option=TEX]
+\typebuffer[option=TEX] \getbuffer
 
 With:
 
@@ -280,6 +280,103 @@ Indeed we get:
 \startsection[title=Fonts]
 
 {\em maybe}
+
+\stopsection
+
+\startsection[title=Contour type graphics]
+
+By combining some \LUA\ with potrace we can do contour graphics. There is currently no
+interface for this; we give one example. Say that we want to plot the solutions to
+the equation
+
+\startformula
+  xy^2 + 2x^3y^3 - y - 1 = 0
+\stopformula
+
+for \m {-5 \leq x \leq 5} and \m {-5 \leq y \leq 5}. We can then do
+
+\startbuffer[luacontour]
+\startluacode
+  local N   = 2000
+  local xmin   = -5
+  local ymin   = -5
+  local xmax   = 5
+  local ymax   = 5
+  local xstep  = (xmax - xmin)/N
+  local ystep  = (ymax - ymin)/N
+
+  local function f(x,y)
+    local x = xmin + xstep*x
+    local y = ymin + ystep*y
+    local z = x*y^2 + 2*x^3*y^3 - y - 1
+    if z > 0 then
+      return '1'
+    else
+      return '0'
+    end
+  end
+
+  potrace.setbitmap("mybitmap", potrace.contourplot(N,N,f))
+\stopluacode
+\stopbuffer
+
+\typebuffer[luacontour][option=TEX]
+\getbuffer[luacontour]
+
+Then we can make a graphic with
+
+\startbuffer[mpcontourone]
+\startMPcode
+  numeric N ; N := 2000 ;
+  path p ; p := lmt_potraced [
+    stringname = "mybitmap",
+    value      = "1",
+    tolerance  = 0.001,
+    threshold  = 1,
+    optimize   = true,
+  ] ;
+  p := p shifted (-N/2,-N/2) ;
+  message(boundingbox p) ;
+  p := p xsized 10cm ;
+  draw p withpen pencircle scaled 1 withcolor "darkblue" ;
+  drawpoints p withcolor "orange" ;
+  drawpointlabels p ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[mpcontourone][option=TEX]
+\startlinecorrection \getbuffer[luacontour,mpcontourone] \stoplinecorrection
+
+By looking at the result we see that we want the subpaths from point 42 to 43
+(yes, it is sometimes a bit curious on where potrace starts and stops), 0 to 38,
+and 47 to 101. Now we can instead do
+
+\startbuffer[mpcontourtwo]
+\startMPcode
+  numeric N ; N := 2000 ;
+  path p ; p := lmt_potraced [
+    stringname = "mybitmap",
+    value      = "1",
+    tolerance  = 0.001,
+    threshold  = 1,
+    optimize   = true,
+  ] ;
+  p := p shifted (-N/2,-N/2) ;
+  message(boundingbox p) ;
+  p := p xsized 10cm ;
+  fill p withcolor 0.75[darkred,white] ;
+  p := subpath(42,43) of p && subpath(0,38) of p && subpath(47,101) of p  ;
+  draw p withpen pencircle scaled 1 ;
+  drawarrow (0,-5cm) -- (0,5cm) ;
+  drawarrow (-5cm,0) -- (5cm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[mpcontourtwo][option=TEX]
+
+to get
+
+\startlinecorrection \getbuffer[luacontour,mpcontourtwo] \stoplinecorrection
 
 \stopsection
 

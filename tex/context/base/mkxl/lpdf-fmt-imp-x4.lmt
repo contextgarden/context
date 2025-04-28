@@ -1,0 +1,54 @@
+return {
+    version   = 1.001,
+    comment   = "companion to lpdf-fmt.lmt",
+    author    = "Peter, Hans & Mikael",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    features  = {
+        version      = 1.6,
+        format       = "PDF/X-4p",
+        xmpfile      = "lpdf-pdx.xml",
+        intent       = "GTS_PDFX",
+        gray         = true,
+        cmyk         = true,
+        rgb          = true,
+        calibrated   = true,
+        spot         = true,
+        cielab       = true,
+        internal     = true,
+        external     = true,
+        intents      = true,
+        layers       = true,
+        transparency = true,
+        jbig2        = true,
+        jpeg2000     = true,
+        compression  = true,
+        cidsets      = true,
+        charsets     = true,
+        procsets     = true,
+        attachments  = false,
+        metadata     = {
+            {
+                "replacexmpinfo",
+                "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfxid='http://www.npes.org/pdfx/ns/id/'>
+      <pdfxid:GTS_PDFXVersion>PDF/X-4p</pdfxid:GTS_PDFXVersion>
+    </rdf:Description>
+]]
+            },
+            {
+                "insertxmpinfo",
+                "xml://rdf:Description/xmpMM:InstanceID",
+                [[<xmpMM:VersionID>1</xmpMM:VersionID>]],
+                false
+            },
+            {
+                "insertxmpinfo",
+                "xml://rdf:Description/xmpMM:InstanceID",
+                [[<xmpMM:RenditionClass>default</xmpMM:RenditionClass>]],
+                false
+            },
+        },
+    },
+}

@@ -2054,43 +2054,60 @@
    \c!style=\v!type,
    \c!color=]
 
-\definereference [\v!CloseDocument    ] [action(close)]
-\definereference [\v!ExitViewer       ] [action(exit)]
+% officially in the standard
+
 \definereference [\v!FirstPage        ] [action(first)]
-\definereference [\v!LastPage         ] [action(last)]
-\definereference [\v!NextJump         ] [action(forward)]
 \definereference [\v!NextPage         ] [action(next)]
-\definereference [\v!PauseRendering   ] [action(pauserendering)]
-\definereference [\v!PreviousJump     ] [action(backward)]
 \definereference [\v!PreviousPage     ] [action(previous)]
-\definereference [\v!PrintDocument    ] [action(print)]
-\definereference [\v!SaveForm         ] [action(exportform)]
-\definereference [\v!LoadForm         ] [action(importform)]
+\definereference [\v!LastPage         ] [action(last)]
+
+% will never make it into the standard
+
+\definereference [\v!PreviousJump     ] [action(backward)]
+\definereference [\v!NextJump         ] [action(forward)]
+
+% we can forget about it
+
 \definereference [\v!ResetForm        ] [action(resetform)]
-\definereference [\v!ResumeRendering  ] [action(resumerendering)]
+\definereference [\v!SubmitForm       ] [action(submitform)]
+
+% we can forget about these, now in lpdf-imp-acrobat
+
+\definereference [\v!LoadForm         ] [action(importform)]
+\definereference [\v!SaveForm         ] [action(exportform)]
+\definereference [\v!PrintDocument    ] [action(print)]
+\definereference [\v!ExitViewer       ] [action(exit)]
+\definereference [\v!CloseDocument    ] [action(close)]
 \definereference [\v!SaveDocument     ] [action(save)]
 \definereference [\v!SaveNamedDocument] [action(savenamed)]
 \definereference [\v!OpenNamedDocument] [action(opennamed)]
-\definereference [\v!SearchDocument   ] [action(search)]
-\definereference [\v!SearchAgain      ] [action(searchagain)]
-\definereference [\v!StartRendering   ] [action(startrendering)]
-\definereference [\v!StopRendering    ] [action(stoprendering)]
-\definereference [\v!SubmitForm       ] [action(submitform)]
 \definereference [\v!ToggleViewer     ] [action(toggle)]
 \definereference [\v!ViewerHelp       ] [action(help)]
-\definereference [\v!HideField        ] [action(hide)]
-\definereference [\v!ShowField        ] [action(show)]
+\definereference [\v!SearchDocument   ] [action(search)]
+\definereference [\v!SearchAgain      ] [action(searchagain)]
 \definereference [\v!GotoPage         ] [action(gotopage)]
 \definereference [\v!Query            ] [action(query)]
 \definereference [\v!QueryAgain       ] [action(queryagain)]
 \definereference [\v!FitWidth         ] [action(fitwidth)]
 \definereference [\v!FitHeight        ] [action(fitheight)]
-\definereference [\v!ShowThumbs       ] [action(thumbnails)]
-\definereference [\v!ShowBookmarks    ] [action(bookmarks)]
+
+% lpdf-wid
+
+\definereference [\v!ResumeRendering  ] [action(resumerendering)]
+\definereference [\v!StartRendering   ] [action(startrendering)]
+\definereference [\v!StopRendering    ] [action(stoprendering)]
+\definereference [\v!PauseRendering   ] [action(pauserendering)]
+
+\definereference [\v!HideField        ] [action(hide)]
+\definereference [\v!ShowField        ] [action(show)]
+
+% lpdf-ren
 
 \definereference [\v!HideLayer        ] [action(hidelayer)]
 \definereference [\v!VideLayer        ] [action(videlayer)]
 \definereference [\v!ToggleLayer      ] [action(togglelayer)]
+
+% generic
 
 \definereference [\v!firstpage]       [page(firstpage)]
 \definereference [\v!previouspage]    [page(previouspage)]

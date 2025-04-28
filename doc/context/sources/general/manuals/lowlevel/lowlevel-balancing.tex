@@ -44,7 +44,7 @@ environment or in the more liberal main vertical list (from now on called mvl).
 That's why we can intercept the mvl and use it later. Intercepting works as
 follows:
 
-\starttyping
+\starttyping[option=TEX]
 \beginmvl 1
 various content
 \endmvl
@@ -56,14 +56,14 @@ various content
 
 When at some point you want this content, you can do this:
 
-\starttyping
+\starttyping[option=TEX]
 \setbox\scratchboxone\flushmvl 2
 \setbox\scratchboxtwo\flushmvl 1
 \stoptyping
 
 and then do whatever is needed. You can see what goes on with:
 
-\starttyping
+\starttyping[option=TEX]
 \tracingmvl 1
 \stoptyping
 
@@ -74,7 +74,7 @@ mvl and a box.
 
 The \type {\beginmvl} primitive takes a number or a set of keywords, as in:
 
-\starttyping
+\starttyping[option=TEX]
 \beginmvl
     index   1
     options \numexpr "01 + "04\relax
@@ -84,7 +84,7 @@ The \type {\beginmvl} primitive takes a number or a set of keywords, as in:
 There is of course some possible interference with mechanism that check the page
 properties like \type {\pagegoal}. If needed one can check this:
 
-\starttyping
+\starttyping[option=TEX]
 \ifcase\mvlcurrentlyactive
   % main mvl
 \or
@@ -130,7 +130,7 @@ options.
 \ruledhbox {\llap{1\quad}\flushmvl 1}
 \stopbuffer
 
-\typebuffer \start \showmakeup[line] \getbuffer \stop
+\typebuffer[option=TEX] \start \showmakeup[line] \getbuffer \stop
 
 \startbuffer
 \beginmvl
@@ -149,7 +149,7 @@ options.
 \ruledhbox {\llap{2\quad}\flushmvl 2}
 \stopbuffer
 
-\typebuffer \start \showmakeup[line] \getbuffer \stop
+\typebuffer[option=TEX] \start \showmakeup[line] \getbuffer \stop
 
 \startbuffer
 \beginmvl 3 % when no keywords are used we expect a number
@@ -162,7 +162,7 @@ options.
 \ruledhbox {\llap{3\quad}\flushmvl 3}
 \stopbuffer
 
-\typebuffer \start \showmakeup[line] \getbuffer \stop
+\typebuffer[option=TEX] \start \showmakeup[line] \getbuffer \stop
 
 \startbuffer
 \beginmvl index 4 options 1
@@ -175,7 +175,7 @@ options.
 \ruledhbox {\llap{4\quad}\flushmvl 4}
 \stopbuffer
 
-\typebuffer \start \showmakeup[line] \getbuffer \stop
+\typebuffer[option=TEX] \start \showmakeup[line] \getbuffer \stop
 
 \stopsectionlevel
 
@@ -347,7 +347,7 @@ examples of simple situations, for real applications more code is needed.
     topskip    \strutht
     bottomskip \strutdp
 next
-    vsize       5\lineheight
+    vsize      5\lineheight
     topskip    \strutht
     bottomskip \strutdp
 next
@@ -383,23 +383,23 @@ next
 We start with some content in a box. This can of course be a flushed
 mvl but here we just set it directly:
 
-\typebuffer[one]
+\typebuffer[one][option=TEX]
 
 We will split this box in columns. If you are familiar with \TEX\ you might know
 that a paragraph of text can follow a shape defined by \type {\parshape}. In a
 similar way as lines are split by width, we can split a vertical list by height.
 For that we define a balance shape:
 
-\typebuffer[two]
+\typebuffer[two][option=TEX]
 
-\typebuffer[three]
+\typebuffer[three][option=TEX]
 
 Contrary to a \type {\parshape}, a \type {\balanceshape} is not wiped after the
 work is done. It also expects keys and values. As with \type {\parpasses} each
 step is separated by \type {next}. This makes it an extensible mechanism. Finally
 we will split the box according to this shape:
 
-\typebuffer[four]
+\typebuffer[four][option=TEX]
 
 The result is shown here:
 
@@ -412,7 +412,7 @@ The result is shown here:
 Like the par builder we can end up with overfull boxes but we can deal with that
 by using trial runs.
 
-\starttyping
+\starttyping[option=TEX]
 \setbox\scratchboxtwo\vbalance\scratchboxone trial
 \stoptyping
 
@@ -551,7 +551,7 @@ have a half line spacing.
 
 Because the initial application of balancing was in column sets, we also need the
 ability to goto a next slot (step in a shape), column (possibly more steps), page
-(depending on the page state), and spread (for instance if we are doubles ided).
+(depending on the page state), and spread (for instance if we are double-sided).
 For this we use \type {\balanceboundary}. It takes two values and when the
 boundary node triggers a callback in the builder these are passed along with a
 shape identifier and current shape slot. That callback can then signal back that
@@ -560,7 +560,7 @@ we know at which slot we have a slot, column, page or spread break. Multiple
 slots can be skipped by multiple boundaries. There is one pitfall: we need
 something in a slot in order to break at all, so one ends up with for instance:
 
-\starttyping
+\starttyping[option=TEX]
 \balanceboundary 3 1\relax
 \vskip\zeropoint
 \balanceboundary 3 0\relax
@@ -669,7 +669,7 @@ passes to balance the result we noticed over four million checks for note relate
 spacing. We could bring that down to one tenth so in the end we are still slower
 but less noticeable. Here are the helper primitives for inserts:
 
-\starttyping
+\starttyping[option=TEX]
 <state> = \boxinserts <box>
 <box>   = \vbalancedinsert <box> <class>
 <state> = \boxinserts <box>
@@ -696,7 +696,7 @@ a mvl with a sample text and a single footnote.
 \endgroup
 \stopbuffer
 
-\typebuffer[populate]
+\typebuffer[populate][option=TEX]
 
 We fetch the footnote number, which is one of many possible defined
 inserts
@@ -706,7 +706,7 @@ inserts
 \scratchcounter\currentnoteinsertionnumber
 \stopbuffer
 
-\typebuffer[whatever]
+\typebuffer[whatever][option=TEX]
 
 The quick and dirty balancer uses a simple shape of 5 lines with normal strut
 properties. From the balanced result we take two columns. We test if there is an
@@ -741,7 +741,7 @@ them. So we work per column.
 \endgroup
 \stopbuffer
 
-\typebuffer[balance]
+\typebuffer[balance][option=TEX]
 
 The result is:
 
@@ -768,7 +768,7 @@ and when there are more in a row, it might be that a column overflows. This is
 why we have some support for split notes. This is accomplished by two additional
 commands:
 
-\starttyping
+\starttyping[option=TEX]
 \setbox\scratchboxone\vbalance\scratchboxone\relax
 \vbalanceddeinsert\scratchboxone\relax
 \stoptyping
@@ -777,7 +777,7 @@ Here we convert inserts in such a way that they are taken into account by the
 balancer so that multi|-|slot optimization takes place. Afterwards, when we loop
 over the result we can reconstruct the inserts:
 
-\starttyping
+\starttyping[option=TEX]
 \setbox\scratchboxtwo\vbalancedbox\scratchboxone
 \vbalancedreinsert\scratchboxtwo\relax
 \stoptyping
@@ -786,7 +786,7 @@ Among the reasons that these are explicit actions, is that we want to experiment
 but also be able to see the effect by selectively enabling it. You can get better
 results by forcing depth correction.
 
-\starttyping
+\starttyping[option=TEX]
 \setbox\scratchboxone\vbalance\scratchboxone
 \vbalanceddeinsert\scratchboxone forcedepth\relax
 \stoptyping
@@ -835,7 +835,7 @@ This is a preliminary explanation.
 \endgroup
 \stopbuffer
 
-\typebuffer[populate]
+\typebuffer[populate][option=TEX]
 
 \startbuffer[balance]
 \setbox\scratchboxone\flushmvl 5
@@ -863,7 +863,7 @@ This is a preliminary explanation.
 \egroup
 \stopbuffer
 
-\typebuffer[balance,flush]
+\typebuffer[balance,flush][option=TEX]
 
 \start
     \forgetall
@@ -919,7 +919,7 @@ away in which case we also adapt the topskip accordingly.
 You need to juggle a bit with skips and penalties to get this working as you
 like. Instead of rules you can also use boxes, for example before:
 
-\starttyping
+\starttyping[option=TEX]
 \vskip\zeropoint
 \ruledvbox discardable {\hpack{\strut BEFORE}}
 \par
@@ -927,7 +927,7 @@ like. Instead of rules you can also use boxes, for example before:
 
 and after:
 
-\starttyping
+\starttyping[option=TEX]
 \forgetall \par \vskip\zeropoint
 \ruledvbox discardable {\hpack{\strut AFTER}}%
 \penalty\minusone % !
@@ -939,15 +939,17 @@ was also made for a specific issue it might have other usage.
 
 \stopsectionlevel
 
-\startsectionlevel[title=Passes]
+\startsectionlevel[title=Penalties]
 
 {\em todo}
 
-\starttyping
+\starttyping[option=TEX]
 \showmakeup[vpenalty,line]
 \balancefinalpenalties 6 10000 9000 8000 7000 6000 5000\relax
 \balancevsize 5\lineheight
-\setbox\scratchbox\vbox{\dorecurse{1}{\samplefile{tufte}\footnote{!}\par}}
+\setbox\scratchbox\vbox\bgroup
+    \dorecurse{1}{\samplefile{tufte}\footnote{!}\par}
+\egroup
 \vbalance\scratchbox
 \stoptyping
 
@@ -961,7 +963,7 @@ passes over the paragraph to get the best result. The balancer has a similar
 feature: \type {\balancepasses}. As with \type {\parpasses} we have an
 infrastructure for tracing.
 
-\starttyping
+\starttyping[option=TEX]
 % threshold
 % tolerance
 % looseness

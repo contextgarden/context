@@ -77,6 +77,7 @@ extern int  luaopen_pdfe        (lua_State *L);
 extern int  luaopen_pngdecode   (lua_State *L);
 extern int  luaopen_posit       (lua_State *L);
 extern int  luaopen_potrace     (lua_State *L);
+extern int  luaopen_qrcodegen   (lua_State *L);
 extern int  luaopen_sha2        (lua_State *L);
 extern int  luaopen_sio         (lua_State *L);
 extern int  luaopen_socket_core (lua_State *L);
@@ -1826,44 +1827,28 @@ static inline void lmt_newline_to_buffer(void)
 
 /* moved here */
 
-# if (1) 
+# define lua_pop_one(L) lua_pop(L, 1)
 
-    # define set_numeric_field_by_index(target,name,dflt) \
-        lua_push_key(name); \
-        target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
-        lua_pop(L, 1);
+//define lua_pop_one(L) L->top.p--
 
-# else 
-
-    # define set_numeric_field_by_index(target,name,dflt) \
-        lua_push_key(name); \
-        if (lua_rawget(L, -2) == LUA_TNUMBER) { \
-            target = lmt_roundnumber(L, -1); \
-            lua_pop(L, 1); \
-            lua_push_key(name); \
-            lua_push_integer(L, target); \
-            lua_rawset(L, -3); \
-        } else { \
-            target = dflt ; \
-            lua_pop(L, 1); \
-        } 
-
-# endif 
+# define set_numeric_field_by_index(target,name,dflt) \
+    lua_push_key(name); \
+    target = (lua_rawget(L, -2) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : dflt ; \
+    lua_pop_one(L);
 
 # define set_boolean_field_by_index(target,name,dflt) \
     lua_push_key(name); \
     target = (lua_rawget(L, -2) == LUA_TBOOLEAN) ? lua_toboolean(L, -1) : dflt ; \
-    lua_pop(L, 1);
+    lua_pop_one(L);
 
 # define set_string_field_by_index(target,name) \
     lua_push_key(name); \
     target = (lua_rawget(L, -2) == LUA_TSTRING) ? lua_tostring(L, -1) : NULL ; \
-    lua_pop(L, 1);
+    lua_pop_one(L);
 
 # define set_any_field_by_index(target,name) \
     lua_push_key(name); \
     target = (lua_rawget(L, -2) != LUA_TNIL); \
-    lua_pop(L, 1);
-
+    lua_pop_one(L);
 
 # endif

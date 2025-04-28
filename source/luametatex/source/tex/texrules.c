@@ -47,6 +47,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             default: 
                 break;
         }
+        rule_options(rule) |= rule_option_keep_spacing;
     } else { 
         switch (type) {
             case h_rule_type:
@@ -63,7 +64,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         }
     }
     while (1) {
-        switch (tex_scan_character("awhdpxylrtbcfoAWHDPXYLRTBCFO", 0, 1, 0)) {
+        switch (tex_scan_character("awhdkpxylrtbcfoAWHDPKXYLRTBCFO", 0, 1, 0)) {
             case 0:
                 goto DONE;
             case 'a': case 'A':
@@ -118,7 +119,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 break;
             case 'r': case 'R':
                 if (code != virtual_rule_code) { 
-                    switch (tex_scan_character("uiUI", 0, 0, 0)) {
+                    switch (tex_scan_character("uieUIE", 0, 0, 0)) {
                         case 'u': case 'U':
                             if (tex_scan_mandate_keyword("running", 2)) {
                                 rule_width(rule) = null_flag;
@@ -131,13 +132,30 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                                 rule_right(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
                             }
                             break;
+                        case 'e': case 'E':
+                            if (tex_scan_mandate_keyword("resetspacing", 2)) {
+                                tex_remove_rule_option(rule, rule_option_keep_spacing);
+                            }
+                            break;
                         default:
-                            tex_aux_show_keyword_error("right|running");
+                            tex_aux_show_keyword_error("right|running|resetspacing");
                             goto DONE;
                     }
                 } else {
-                    if (tex_scan_mandate_keyword("running", 1)) {
-                        tex_set_rule_font(rule, tex_scan_font_identifier(NULL));
+                    switch (tex_scan_character("ueUE", 0, 0, 0)) {
+                        case 'u': case 'U':
+                            if (tex_scan_mandate_keyword("running", 2)) {
+                                tex_set_rule_font(rule, tex_scan_font_identifier(NULL));
+                            }
+                            break;
+                        case 'e': case 'E':
+                            if (tex_scan_mandate_keyword("resetspacing", 2)) {
+                                tex_remove_rule_option(rule, rule_option_keep_spacing);
+                            }
+                            break;
+                        default:
+                            tex_aux_show_keyword_error("running|resetspacing");
+                            goto DONE;
                     }
                 }
                 break;
@@ -167,6 +185,11 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yoffset", 1)) {
                     rule_y_offset(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                }
+                break;
+            case 'k': case 'K':
+                if (tex_scan_mandate_keyword("keepspacing", 1)) {
+                    rule_options(rule) |= rule_option_keep_spacing;
                 }
                 break;
             case 'f': case 'F':
@@ -258,7 +281,9 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
 void tex_aux_run_vrule(void)
 {
     tex_tail_append(tex_aux_scan_rule_spec(v_rule_type, cur_chr));
-    cur_list.space_factor = default_space_factor;
+    if (! (rule_options(cur_list.tail) & rule_option_keep_spacing)) {
+        cur_list.space_factor = default_space_factor;
+    }
 }
 
 void tex_aux_run_hrule(void)

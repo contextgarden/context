@@ -14,6 +14,7 @@ local node, nodes, fonts, characters = node, nodes, fonts, characters
 local file, lpeg, table, string = file, lpeg, table, string
 
 local type, next, tonumber, toboolean = type, next, tonumber, toboolean
+local round = math.round
 local gmatch = string.gmatch
 local fastcopy = table.fastcopy
 local formatters = string.formatters
@@ -25,6 +26,14 @@ local setfont            = nuts.setfont
 local nextchar           = nuts.traversers.char
 local getscales          = nuts.getscales
 local setscales          = nuts.setscales
+local getslant           = nuts.getslant
+local setslant           = nuts.setslant
+local getweight          = nuts.getweight
+local setweight          = nuts.setweight
+local getxscale          = nuts.getxscale
+local setxscale          = nuts.setxscale
+local getyscale          = nuts.getyscale
+local setyscale          = nuts.setyscale
 local setprop            = nuts.setprop
 local getcharspec        = nuts.getcharspec
 
@@ -494,6 +503,59 @@ local function apply(n,char,font,vector,vect)
         setscales(n,s*rscale,x,y)
     end
     setfont(n,newfont,newchar)
+--
+-- squeeze (1000) extend (1000) slant (0) weight (0)
+--
+local neweffect = propdata[newfont].compacteffect
+if neweffect then
+    local oldeffect  = propdata[font].compacteffect
+    local newslant   = neweffect.slant
+    local newweight  = neweffect.weight
+    local newextend  = neweffect.extend
+    local newsqueeze = neweffect.squeeze
+    -- todo: scale, xscale, yscale, slant, weight = getglyphspec(n) -- combine with above rscale
+    if newslant ~= 0 then
+        local oldslant = oldeffect.slant
+        if oldslant ~= 0 then
+            local useslant = getslant(n)
+            if useslant ~= 0 then
+                newslant = round(newslant*useslant/oldslant)
+            end
+        end
+        setslant(n,newslant)
+    end
+    if newweight ~= 0 then
+        local oldweight = oldeffect.weight
+        if oldweight ~= 0 then
+            local useweight = getweight(n)
+            if useweight ~= 0 then
+                newweight = round(newweight*useweight/oldweight)
+            end
+        end
+        setweight(n,newweight)
+    end
+    if newextend ~= 1000 then
+        local oldextend = oldeffect.extend
+        if oldextend ~= 0 then
+            local useextend = getxscale(n)
+            if useextend ~= 0 then
+                newextend = round(newextend*useextend/oldextend)
+            end
+        end
+        setxscale(n,newextend)
+    end
+    if newsqueeze ~= 1000 then
+        local oldsqueeze = oldeffect.squeeze
+        if oldsqueeze ~= 0 then
+            local usesqueeze = getyscale(n)
+            if usesqueeze ~= 0 then
+                newsqueeze = round(newsqueeze*usesqueeze/oldsqueezed)
+            end
+        end
+        setyscale(n,newsqueeze)
+    end
+end
+    --
     setprop(n, "original", { font = font, char = char })
 end
 

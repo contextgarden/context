@@ -42,9 +42,7 @@ local application = logs.application {
 
 local report = application.report
 
-if not fontloader then fontloader = fontforge end
-
-dofile(resolvers.findfile("colo-icc.lua","tex"))
+local colors = dofile(resolvers.findfile("colo-icc.lua","tex"))
 
 scripts        = scripts        or { }
 scripts.colors = scripts.colors or { }

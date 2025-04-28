@@ -222,6 +222,7 @@ local nuts = {
     protectglyph            = direct.protectglyph,
     protectglyphs           = direct.protectglyphs,
     protectglyphsnone       = direct.protectglyphsnone,
+    protectglyphsbase       = direct.protectglyphsbase,
     protrusionskippable     = direct.protrusionskippable,
     rangedimensions         = direct.rangedimensions,
     remove                  = d_remove_node,

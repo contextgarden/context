@@ -3009,14 +3009,13 @@ enddef ;
 
 % Parametric plots
 
-
 % path p ; p := lmt_parametricplot [
 %     preamble  = "local sin, cos = math.sin, math.cos",
 %     xcode     = "return 0.1*t*cos(t)",
 %     ycode     = "return 0.1*t*sin(t)",
 %     tmin      =  -4pi,
 %     tmax      =   4pi,
-%     tolerance = 0.001,
+%     tolerance = 0.0001,
 % ] scaled 10 ;
 %
 % draw p ; drawdot p withcolor red ;
@@ -3027,7 +3026,7 @@ presetparameters "parametricplot" [
   % ycode     = "t",
   % tmin      = -1,
   % tmax      =  1,
-  % tolerance =  0.001,
+  % tolerance =  0.0001,
 ] ;
 
 def lmt_parametricplot = applyparameters "parametricplot" "lmt_do_parametricplot" enddef ;

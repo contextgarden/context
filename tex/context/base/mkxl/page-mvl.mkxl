@@ -250,20 +250,21 @@
    %
    \page_mvl_check
    %
-   \clf_resetcolumnset {
-        name       {\currentcolumnset}
-        nofrows    \c_page_mvl_n_of_rows
-        nofleft    \c_page_mvl_n_of_left
-        nofright   \c_page_mvl_n_of_right
+   \clf_resetcolumnset {%
+        name        {\currentcolumnset}
+        nofrows     \c_page_mvl_n_of_rows
+        nofleft     \c_page_mvl_n_of_left
+        nofright    \c_page_mvl_n_of_right
        %topskip
-        lineheight \strutht
-        linedepth  \strutdp
+        lineheight  \strutht
+        linedepth   \strutdp
       \ifchkdimexpr\columnsetparameter\c!width\or
-        width      \lastchkdimension
+        width       \lastchkdimension
       \fi
-        distance   \d_page_mvl_distance
-        maxwidth   \d_page_mvl_max_width
-        limit      {\columnsetparameter\c!limit}%
+        distance    \d_page_mvl_distance
+        maxwidth    \d_page_mvl_max_width
+        limit       {\columnsetparameter\c!limit}%
+        doublesided \ifconditional\layoutisdoublesided tru\else fals\fi e
    }%
    %
    \clf_flushcolumnsetareas{\currentcolumnset}\relax

@@ -1,0 +1,120 @@
+%D \module
+%D   [      file=s-system-pdf.mkxl,
+%D        version=2025.04.11,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=System PDF standards,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\startluacode
+
+moduledata.system     = moduledata.system     or { }
+moduledata.system.pdf = moduledata.system.pdf or { }
+
+local list   = false
+local data   = false
+local fields = { }
+local count  = 0
+
+local function loadstandards()
+    if not data then
+        list = lpdf.supportedformats()
+        data = lpdf.formats.data
+        for i=1,#list do
+            local n = list[i]
+            local d = data[n]
+            for k, v in next, d do
+                fields[k] = true
+                count = count + 1
+            end
+        end
+        table.sort(list)
+    end
+end
+
+local function showentry(entry,f)
+    local e = entry[f]
+    if e ~= nil then
+        if type(e) == "table" or type(e) == "function" then
+            context("<%s>",type(e))
+        elseif e == rawget(entry,f) then
+            context(tostring(e))
+        elseif e then
+            context.color( { "darkgreen" }, tostring(e))
+        else
+            context.color( { "darkred" }, tostring(e))
+        end
+    end
+end
+
+function moduledata.system.pdf.getlist()
+    loadstandards()
+    context("%,t",list)
+end
+
+function moduledata.system.pdf.showall()
+    loadstandards()
+    context.startTEXpage { offset = "1ts" }
+        context.starttabulate { "|c" .. string.rep("|c",count) .. "|" }
+            context.FL()
+                context.BC()
+                context("tag")
+                for f in table.sortedhash(fields) do
+                    context.BC()
+                    context(f)
+                end
+                context.NC()
+                context.NR()
+            context.ML()
+                for k, entry in table.sortedhash(data) do
+                    context.NC() context(k)
+                    for f in table.sortedhash(fields) do
+                        context.NC() showentry(entry,f)
+                    end
+                    context.NC() context.NR()
+                end
+            context.LL()
+        context.stoptabulate()
+        context.blank()
+        context.leftaligned("\\strut Not all parameters are used and some are kept for historic reasons. The {\\darkred red} and {\\darkgreen green} values are not set and fall back to defaults.")
+    context.stopTEXpage()
+end
+
+function moduledata.system.pdf.showone(tag)
+    loadstandards()
+    local entry = data[tag]
+    if entry then
+        context.starttabulate { "|l|l|" }
+            for f in table.sortedhash(fields) do
+                context.BC() context(f)
+                context.NC() showentry(entry,f)
+                context.NC() context.NR()
+            end
+        context.stoptabulate()
+    end
+end
+
+\stopluacode
+
+\continueifinputfile{s-system-pdf.mkxl}
+
+\usemodule[article-basic]
+
+\starttext
+
+    \ctxlua{moduledata.system.pdf.showall()}
+
+    \doloopoverlist {\ctxlua{moduledata.system.pdf.getlist()}} {
+        \startsubject[title=#1]
+            \startcolumns[n=3]
+                \ctxlua{moduledata.system.pdf.showone("#1")}%
+            \stopcolumns
+        \stopsubject
+    }
+
+\stoptext

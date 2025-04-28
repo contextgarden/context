@@ -15,7 +15,6 @@ local find = string.find
 local formatters           = string.formatters
 local sortedkeys           = table.sortedkeys
 local sortedhash           = table.sortedhash
-local tohash               = table.tohash
 local setmetatableindex    = table.setmetatableindex
 
 local report_error         = logs.reporter("otf reader","error")

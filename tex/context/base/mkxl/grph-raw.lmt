@@ -17,7 +17,7 @@ local report_bitmap = logs.reporter("graphics","bitmaps")
 local context = context
 local texsp   = tex.sp
 
-function figures.bitmapimage(t)
+local function bitmapimage(t)
     local data        = t.data
     local xresolution = t.xresolution
     local yresolution = t.yresolution
@@ -32,6 +32,7 @@ function figures.bitmapimage(t)
             bytes       = t.bytes,
             colorspace  = t.colorspace,
             format      = t.format,
+            bytes       = t.bytes or false,
         }
         if n then
          -- context.hpack(n)
@@ -44,9 +45,11 @@ function figures.bitmapimage(t)
     end
 end
 
+figures.bitmapimage = bitmapimage
+
 interfaces.implement {
     name      = "bitmapimage",
-    actions   = figures.bitmapimage,
+    actions   = bitmapimage,
     arguments = {
         {
             { "data" },
@@ -57,4 +60,34 @@ interfaces.implement {
             { "yresolution", "integer" },
         }
     }
+}
+
+local function qrbitmap(str,width)
+    local data, size = qrcodegen.generate(str)
+    bitmapimage {
+        xresolution = size,
+        yresolution = size,
+        width       = width or size,
+        height      = width or size,
+        data        = data,
+        format      = "png",
+        bytes       = true,
+     }
+end
+
+qrcodegen.bitmap = qrbitmap
+figures.qrcode   = qrbitmap
+
+interfaces.implement {
+    name      = "qrcodestring",
+    arguments = { "string", "dimension" },
+    actions   = qrbitmap
+}
+
+interfaces.implement {
+    name      = "qrcodebuffer",
+    arguments = { "string", "dimension" },
+    actions   = function(str,width)
+        qrbitmap(buffers.getcontent(str),width)
+    end
 }

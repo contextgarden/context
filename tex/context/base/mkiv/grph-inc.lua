@@ -1557,9 +1557,6 @@ function checkers.generic(data)
             end
             figure = f
         end
-        local f, d = codeinjections.setfigurealternative(data,figure)
-        figure = f or figure
-        data   = d or data
         figures_loaded[hash] = figure
         if trace_conversion then
             report_inclusion("new graphic, using hash %a",hash)

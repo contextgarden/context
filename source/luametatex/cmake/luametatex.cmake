@@ -25,6 +25,7 @@ target_link_libraries(luametatex
     miniz
     softposit
     potrace
+    qrcodegen
 )
 
 if (LUAMETATEX_NOLDL) 

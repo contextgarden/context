@@ -275,6 +275,7 @@
 %definesystemconstant {it}
 \definesystemconstant {itemgroupcolumns}
 \definesystemconstant {keepbase}
+\definesystemconstant {keepspacing}
 \definesystemconstant {kernpairs}
 \definesystemconstant {language}
 \definesystemconstant {lcgreek}

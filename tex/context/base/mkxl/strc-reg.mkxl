@@ -376,7 +376,8 @@
    % penalty is also no solution
    \dostarttagged\t!registerlocation\currentregister
    \c_attr_destination\lastdestinationattribute
-   \signalcharacter % no \strut as it will be removed during cleanup
+ % \signalcharacter % no \strut as it will be removed during cleanup
+   \signalglyph     % no \strut as it will be removed during cleanup
    \dotagregisterlocation
    \dostoptagged
    \endgroup}

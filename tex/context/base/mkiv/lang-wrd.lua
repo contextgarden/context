@@ -174,6 +174,7 @@ local function mark_words(head,whenfound) -- can be optimized and shared
                 action()
                 language = a
             end
+            -- still unicode
             local data = chardata[code]
             if is_letter[data.category] then
                 n = n + 1

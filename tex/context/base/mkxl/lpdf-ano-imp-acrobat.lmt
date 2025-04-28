@@ -1,0 +1,40 @@
+if not modules then modules = { } end modules ['lpdf-imp-acrobat'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-ini.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Given remarks in the PDF/A-4 reference there is zero change that the repertoire
+-- of named actions will be extended. And it makes no sense to have acrobat only
+-- features hanging around.
+
+local references      = structures.references
+local executers       = references.executers
+
+local pdfdictionary   = lpdf.dictionary
+local pdfconstant     = lpdf.constant
+
+local pdf_named       = pdfconstant("Named")
+
+executers.backward    = pdfdictionary { S = pdf_named, N = pdfconstant("GoBack") }
+executers.forward     = pdfdictionary { S = pdf_named, N = pdfconstant("GoForward") }
+
+executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
+executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }
+executers.print       = pdfdictionary { S = pdf_named, N = pdfconstant("Print") }
+executers.exit        = pdfdictionary { S = pdf_named, N = pdfconstant("Quit") }
+executers.close       = pdfdictionary { S = pdf_named, N = pdfconstant("Close") }
+executers.save        = pdfdictionary { S = pdf_named, N = pdfconstant("Save") }
+executers.savenamed   = pdfdictionary { S = pdf_named, N = pdfconstant("SaveAs") }
+executers.opennamed   = pdfdictionary { S = pdf_named, N = pdfconstant("Open") }
+executers.help        = pdfdictionary { S = pdf_named, N = pdfconstant("HelpUserGuide") }
+executers.toggle      = pdfdictionary { S = pdf_named, N = pdfconstant("FullScreen") }
+executers.search      = pdfdictionary { S = pdf_named, N = pdfconstant("Find") }
+executers.searchagain = pdfdictionary { S = pdf_named, N = pdfconstant("FindAgain") }
+executers.gotopage    = pdfdictionary { S = pdf_named, N = pdfconstant("GoToPage") }
+executers.query       = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:Query") }
+executers.queryagain  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:NextHit") }
+executers.fitwidth    = pdfdictionary { S = pdf_named, N = pdfconstant("FitWidth") }
+executers.fitheight   = pdfdictionary { S = pdf_named, N = pdfconstant("FitHeight") }

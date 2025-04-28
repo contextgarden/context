@@ -55,7 +55,7 @@ even.
 
 */
 
-static inline double mp_double_make_fraction (double p, double q) { 
+static inline double mp_double_make_fraction(double p, double q) { 
  // return (p / q) * fraction_multiplier; 
     return p == 0.0 ? 0.0 : (p / q) * fraction_multiplier; 
 }
@@ -92,6 +92,34 @@ static void mp_double_allocate_abs(MP mp, mp_number *n, mp_number_type t, mp_num
     (void) mp;
     n->type = t;
     n->data.dval = fabs(v->data.dval);
+}
+
+static void mp_double_allocate_div(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.dval = a->data.dval == 0.0 ? 0.0 : a->data.dval / b->data.dval;
+}
+
+static void mp_double_allocate_mul(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.dval = a->data.dval == 0.0 || b->data.dval == 0.0 ? 0.0 : a->data.dval * b->data.dval;
+}
+
+static void mp_double_allocate_add(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.dval = a->data.dval + b->data.dval;
+}
+
+static void mp_double_allocate_sub(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->type = t;
+    n->data.dval = a->data.dval - b->data.dval;
 }
 
 static void mp_double_allocate_double(MP mp, mp_number *n, double v)
@@ -362,13 +390,13 @@ static void mp_double_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
         if (y <= EL_GORDO - x) {
             ret->data.dval = x + y;
         } else {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             ret->data.dval = EL_GORDO;
         }
     } else if (-y <= EL_GORDO + x) {
         ret->data.dval = x + y;
     } else {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.dval = negative_EL_GORDO;
     }
 }
@@ -630,7 +658,7 @@ static void mp_double_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     errno = 0;
     ret->data.dval = sqrt(a*a + b*b);
     if (errno) {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.dval = EL_GORDO;
     }
 }
@@ -652,7 +680,7 @@ static void mp_double_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
             mp_error(
                 mp,
                 msg,
-                "Since I don't take square roots of negative numbers, Im zeroing this one.\n"
+                "Since I don't take square roots of negative numbers, I'm zeroing this one.\n"
                 "Proceed, with fingers crossed."
             );
         }
@@ -666,7 +694,7 @@ static void mp_double_power_of(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     errno = 0;
     ret->data.dval = pow(a_orig->data.dval, b_orig->data.dval);
     if (errno) {
-        mp->arith_error = 1;
+        mp->arithmic_error = 1;
         ret->data.dval = EL_GORDO;
     }
 }
@@ -696,7 +724,7 @@ static void mp_double_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     ret->data.dval = exp(x_orig->data.dval / 256.0);
     if (errno) {
         if (x_orig->data.dval > 0) {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             ret->data.dval = EL_GORDO;
         } else {
             ret->data.dval = 0;
@@ -1032,6 +1060,10 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_free            = mp_double_free_number;
     math->md_allocate_clone  = mp_double_allocate_clone;
     math->md_allocate_abs    = mp_double_allocate_abs;
+    math->md_allocate_div    = mp_double_allocate_div;
+    math->md_allocate_mul    = mp_double_allocate_mul;
+    math->md_allocate_add    = mp_double_allocate_add;
+    math->md_allocate_sub    = mp_double_allocate_sub;
     math->md_allocate_double = mp_double_allocate_double;
     /* precission */
     mp_double_allocate_number(mp, &math->md_precision_default, mp_scaled_type);

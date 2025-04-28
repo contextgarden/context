@@ -294,7 +294,6 @@ local factor             = 0
 local threshold          = 0
 local checkmarks         = false
 
-local discs              = false
 local spaces             = false
 
 local sweepnode          = nil
@@ -2585,7 +2584,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                 goto next
                             end
                         elseif id == disc_code then
-                     -- elseif id == disc_code and (not discs or discs[last]) then
                             discseen              = true
                             discfound             = last
                             notmatchpre[last]     = nil
@@ -2693,7 +2691,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                     end
                                     break
                                 elseif id == disc_code then
-                             -- elseif id == disc_code and (not discs or discs[prev]) then
                                     -- the special case: f i where i becomes dottless i ..
                                     discseen              = true
                                     discfound             = prev
@@ -2825,7 +2822,6 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                                     goto next
                                 end
                             elseif id == disc_code then
-                         -- elseif id == disc_code and (not discs or discs[current]) then
                                 discseen                 = true
                                 discfound                = current
                                 notmatchpre[current]     = nil
@@ -3806,25 +3802,13 @@ otf.helpers.pardirstate = pardirstate
 
 do
 
-    -- This is a measurable experimental speedup (only with hyphenated text and multiple
-    -- fonts per processor call), especially for fonts with lots of contextual lookups.
-
-    local fastdisc = true
     local testdics = false
-
-    directives.register("otf.fastdisc",function(v) fastdisc = v end) -- normally enabled
 
     -- using a merged combined hash as first test saves some 30% on ebgaramond and
     -- about 15% on arabtype .. then moving the a test also saves a bit (even when
     -- often a is not set at all so that one is a bit debatable
 
     local otfdataset = nil -- todo: make an installer
-
-    local getfastdisc = { __index = function(t,k)
-        local v = usesfont(k,currentfont)
-        t[k] = v
-        return v
-    end }
 
     local getfastspace = { __index = function(t,k)
         -- we don't pass the id so that one can overload isspace
@@ -3833,7 +3817,7 @@ do
         return v
     end }
 
-    function otf.featuresprocessor(head,font,attr,direction,n)
+    function otf.featuresprocessor(head,font,attr,direction)
 
         local sequences = sequencelists[font] -- temp hack
 
@@ -3855,7 +3839,6 @@ do
                 otfdataset = otf.dataset
             end
 
-            discs  = fastdisc and n and n > 1 and setmetatable({},getfastdisc) -- maybe inline
             spaces = setmetatable({},getfastspace)
 
         elseif currentfont ~= font then
@@ -4010,16 +3993,12 @@ do
                             -- a different font|state or glue (happens often)
                             start = getnext(start)
                         elseif id == disc_code then
-                            if not discs or discs[start] == true then
-                                if gpossing then
-                                    start = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-                                elseif forcetestrun then
-                                    start = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-                                else
-                                    start = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
-                                end
+                            if gpossing then
+                                start = kernrun(start,k_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+                            elseif forcetestrun then
+                                start = testrun(start,t_run_single,c_run_single,font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                             else
-                                start = getnext(start)
+                                start = comprun(start,c_run_single,             font,attr,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                             end
                         elseif id == math_code then
                             start = getnext(endofmath(start))
@@ -4086,16 +4065,12 @@ do
                             -- a different font|state or glue (happens often)
                             start = getnext(start)
                         elseif id == disc_code then
-                            if not discs or discs[start] == true then
-                                if gpossing then
-                                    start = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-                                elseif forcetestrun then
-                                    start = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-                                else
-                                    start = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
-                                end
+                            if gpossing then
+                                start = kernrun(start,k_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
+                            elseif forcetestrun then
+                                start = testrun(start,t_run_multiple,c_run_multiple,font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                             else
-                                start = getnext(start)
+                                start = comprun(start,c_run_multiple,               font,attr,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                             end
                         elseif id == math_code then
                             start = getnext(endofmath(start))
@@ -4267,7 +4242,7 @@ do
         end
     end
 
-    function otf.pluginprocessor(head,font,dynamic,direction) -- n
+    function otf.pluginprocessor(head,font,dynamic,direction)
         local s = fontdata[font].shared
         local p = s and s.plugin
         if p then

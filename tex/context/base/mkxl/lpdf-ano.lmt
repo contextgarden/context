@@ -855,7 +855,7 @@ end
 
 local pdffilelink  do
 
-    local valid = table.setmetatableindex(function(t,filename)
+    local valid = setmetatableindex(function(t,filename)
         local found = false
         if lfs.isfile(filename) then
             report_destinations("loading destinations from file %a",filename)
@@ -1800,29 +1800,64 @@ function specials.highlight(var)
  -- return pdfhighlight(var.operation,var.arguments)
 end
 
-executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
-executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }
-executers.first       = pdfdictionary { S = pdf_named, N = pdfconstant("FirstPage") }
-executers.previous    = pdfdictionary { S = pdf_named, N = pdfconstant("PrevPage") }
-executers.next        = pdfdictionary { S = pdf_named, N = pdfconstant("NextPage") }
-executers.last        = pdfdictionary { S = pdf_named, N = pdfconstant("LastPage") }
-executers.backward    = pdfdictionary { S = pdf_named, N = pdfconstant("GoBack") }
-executers.forward     = pdfdictionary { S = pdf_named, N = pdfconstant("GoForward") }
-executers.print       = pdfdictionary { S = pdf_named, N = pdfconstant("Print") }
-executers.exit        = pdfdictionary { S = pdf_named, N = pdfconstant("Quit") }
-executers.close       = pdfdictionary { S = pdf_named, N = pdfconstant("Close") }
-executers.save        = pdfdictionary { S = pdf_named, N = pdfconstant("Save") }
-executers.savenamed   = pdfdictionary { S = pdf_named, N = pdfconstant("SaveAs") }
-executers.opennamed   = pdfdictionary { S = pdf_named, N = pdfconstant("Open") }
-executers.help        = pdfdictionary { S = pdf_named, N = pdfconstant("HelpUserGuide") }
-executers.toggle      = pdfdictionary { S = pdf_named, N = pdfconstant("FullScreen") }
-executers.search      = pdfdictionary { S = pdf_named, N = pdfconstant("Find") }
-executers.searchagain = pdfdictionary { S = pdf_named, N = pdfconstant("FindAgain") }
-executers.gotopage    = pdfdictionary { S = pdf_named, N = pdfconstant("GoToPage") }
-executers.query       = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:Query") }
-executers.queryagain  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:NextHit") }
-executers.fitwidth    = pdfdictionary { S = pdf_named, N = pdfconstant("FitWidth") }
-executers.fitheight   = pdfdictionary { S = pdf_named, N = pdfconstant("FitHeight") }
+-- The 32000-2-2020 specification mentions (12.6.4.12) four actions (since 1.2) that
+-- processors need (!) to support: NextPage, PrevPage, FirstPage and LastPage. To me
+-- these four look easy to implement in viewers. It also tells us that that further
+-- names may be added in the future. The note that non standard named actions can be
+-- there refers to the fact that Acrobat supports actions like going backward,
+-- forward close document etc. all very handy for presentations, and also very
+-- efficient in terms of generating. because we can expect validators to cry about
+-- unknown ones we need to disable them.
+
+-- Still permitted, but who knows:
+
+executers.first    = pdfdictionary { S = pdf_named, N = pdfconstant("FirstPage") }
+executers.previous = pdfdictionary { S = pdf_named, N = pdfconstant("PrevPage") }
+executers.next     = pdfdictionary { S = pdf_named, N = pdfconstant("NextPage") }
+executers.last     = pdfdictionary { S = pdf_named, N = pdfconstant("LastPage") }
+
+-- Only acrobat as no more additions, real bad:
+
+-- executers.backward    = pdfdictionary { S = pdf_named, N = pdfconstant("GoBack") }
+-- executers.forward     = pdfdictionary { S = pdf_named, N = pdfconstant("GoForward") }
+
+-- Only acrobat, but not installed so no testing:
+
+-- executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
+-- executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }
+-- executers.print       = pdfdictionary { S = pdf_named, N = pdfconstant("Print") }
+-- executers.exit        = pdfdictionary { S = pdf_named, N = pdfconstant("Quit") }
+-- executers.close       = pdfdictionary { S = pdf_named, N = pdfconstant("Close") }
+-- executers.save        = pdfdictionary { S = pdf_named, N = pdfconstant("Save") }
+-- executers.savenamed   = pdfdictionary { S = pdf_named, N = pdfconstant("SaveAs") }
+-- executers.opennamed   = pdfdictionary { S = pdf_named, N = pdfconstant("Open") }
+-- executers.help        = pdfdictionary { S = pdf_named, N = pdfconstant("HelpUserGuide") }
+-- executers.toggle      = pdfdictionary { S = pdf_named, N = pdfconstant("FullScreen") }
+-- executers.search      = pdfdictionary { S = pdf_named, N = pdfconstant("Find") }
+-- executers.searchagain = pdfdictionary { S = pdf_named, N = pdfconstant("FindAgain") }
+-- executers.gotopage    = pdfdictionary { S = pdf_named, N = pdfconstant("GoToPage") }
+-- executers.query       = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:Query") }
+-- executers.queryagain  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroSrch:NextHit") }
+-- executers.fitwidth    = pdfdictionary { S = pdf_named, N = pdfconstant("FitWidth") }
+-- executers.fitheight   = pdfdictionary { S = pdf_named, N = pdfconstant("FitHeight") }
+
+setmetatableindex(executers, function(t,k)
+    setmetatableindex(executers,nil)
+    if codeinjections.getformatoption("acrobat") ~= false then
+        report_references("loading (unofficial) acrobat actions")
+        local fullname = resolvers.findfile("lpdf-ano-imp-acrobat.lmt") or ""
+        if fullname ~= "" then
+            dofile(fullname)
+        end
+    end
+    local v = rawget(executers,k)
+    if v == nil then
+        report_references("(acrobat) action %a is not supported",k)
+        v = false
+        executers[k] = v
+    end
+    return v
+end)
 
 local function fieldset(arguments)
     -- [\dogetfieldset{#1}]

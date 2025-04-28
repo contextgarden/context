@@ -5,6 +5,8 @@
     We can also support using a lua file: icc.lcg (color goodies) in which case
     the filename is the hash.
 
+    When the id is "Custom" we assume that embedding is needed.
+
 -->
 
 <!--
@@ -25,6 +27,60 @@
 
 <profiles>
 
+    <!-- https://github.com/saucecontrol/Compact-ICC-Profiles -->
+
+    <profile>
+        <filename>sRGB-v4.icc</filename>
+        <colorspace>RGB</colorspace>
+        <class>mntr</class>
+        <id>Custom</id>
+        <info>sRGB v4 Minimal</info>
+        <url>https://github.com/saucecontrol/Compact-ICC-Profiles</url>
+        <outputcondition>small rgb profile</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>sGrey-v4.icc</filename>
+        <colorspace>GRAY</colorspace>
+        <class>mntr</class>
+        <id>Custom</id>
+        <info>GRAY v4 Minimal</info>
+        <url>https://github.com/saucecontrol/Compact-ICC-Profiles</url>
+        <outputcondition>small gray profile</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>CGATS001Compat-v2-micro.icc</filename>
+        <colorspace>CMYK</colorspace>
+        <class>mntr</class>
+        <id>Custom</id>
+        <info>CMYK CGATS001 Minimal</info>
+        <url>https://github.com/saucecontrol/Compact-ICC-Profiles</url>
+        <outputcondition>small cmyk profile</outputcondition>
+    </profile>
+
+    <!-- These use points instead of curves. -->
+
+    <profile>
+        <filename>sRGB-v2-magic.icc</filename>
+        <colorspace>RGB</colorspace>
+        <class>mntr</class>
+        <id>Custom</id>
+        <info>sRGB v2 Minimal</info>
+        <url>https://github.com/saucecontrol/Compact-ICC-Profiles</url>
+        <outputcondition>small rgb profile</outputcondition>
+    </profile>
+
+    <profile>
+        <filename>sGrey-v2-magic.icc</filename>
+        <colorspace>GRAY</colorspace>
+        <class>mntr</class>
+        <id>Custom</id>
+        <info>GRAY v2 Minimal</info>
+        <url>https://github.com/saucecontrol/Compact-ICC-Profiles</url>
+        <outputcondition>small gray profile</outputcondition>
+    </profile>
+
     <!-- ghostscript profiles -->
 
     <profile>
@@ -32,6 +88,7 @@
         <filename>default_cmyk.icc</filename>
         <colorspace>CMYK</colorspace>
         <class>prtr</class>
+        <id>Custom</id>
         <info>Artifex PS CMYK Profile</info>
         <checksum>de955d740998369ea1051a4e3e84eb90</checksum>
         <version>42000000</version>
@@ -41,7 +98,8 @@
         <type>default</type>
         <filename>default_gray.icc</filename>
         <colorspace>GRAY</colorspace>
-        <class>scnr</class>
+        <class>mntr</class>
+        <id>Custom</id>
     </profile>
 
     <profile>
@@ -49,13 +107,15 @@
         <filename>default_rgb.icc</filename>
         <colorspace>RGB</colorspace>
         <class>mntr</class>
+        <id>Custom</id>
     </profile>
 
     <profile>
         <type>default</type>
         <filename>lab.icc</filename>
         <colorspace>Lab</colorspace>
-        <class>spac</class>
+        <class>prtr</class>
+        <id>Custom</id>
     </profile>
 
     <profile>
@@ -64,8 +124,7 @@
         <colorspace>CMYK</colorspace>
         <class>prtr</class>
         <info>U.S. Web Coated (SWOP) v2</info>
-        <checksum>79d7e984ea3ac74eed7cc92bf6b22a0d</checksum>
-        <version>21000000</version>
+        <id>Custom</id>
     </profile>
 
     <profile>
@@ -73,6 +132,7 @@
         <filename>ps_gray.icc</filename>
         <colorspace>GRAY</colorspace>
         <class>mntr</class>
+        <id>Custom</id>
     </profile>
 
     <profile>
@@ -80,20 +140,15 @@
         <filename>ps_rgb.icc</filename>
         <colorspace>RGB</colorspace>
         <class>mntr</class>
+        <id>Custom</id>
     </profile>
 
     <profile>
         <type>default</type>
         <filename>sgray.icc</filename>
         <colorspace>GRAY</colorspace>
-        <class>scnr</class>
-    </profile>
-
-    <profile>
-        <type>default</type>
-        <filename>srgb.icc</filename>
-        <colorspace>RGB</colorspace>
         <class>mntr</class>
+        <id>Custom</id>
     </profile>
 
     <!-- srgb.icc also as output intent -->
@@ -133,7 +188,6 @@
         <checksum>915f373c10daf2e295c0e707d3beb856</checksum>
         <version>40000000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -145,9 +199,7 @@
         <checksum>cd8ccdb2b8ee902100cfc45a75b84579</checksum>
         <version>40000000</version>
         <url>>http://www.color.org</url>
-        <outputcondition/>
     </profile>
-
 
     <!-- GWG recommendated ICC profiles; see http://www.gwg.org/colormanagement.phtml for the details -->
 
@@ -160,7 +212,6 @@
         <checksum>74ff62f330bf0dbe4495b5720542d511</checksum>
         <version>21000000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -172,7 +223,6 @@
         <checksum>cc7a6196271b13dbae4622aa1fa0fca9</checksum>
         <version>20000000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -280,7 +330,6 @@
         <checksum>fa5be8d5b4eb756bf1399afc2cda7d1c</checksum>
         <version>2100000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -292,7 +341,6 @@
         <checksum>f8607e551233cefdda26d7d6baaa2a4f</checksum>
         <version>2100000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -304,7 +352,6 @@
         <checksum>8d48c9b10937672a0690b724e0527247</checksum>
         <version>4100000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -316,7 +363,6 @@
         <checksum>7fbad4c0ae1cb7195c34bfc20e623437</checksum>
         <version>2000000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -328,7 +374,6 @@
         <checksum>34f7c3c809b926b173ee54e13d655bee</checksum>
         <version>2000000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -340,7 +385,6 @@
         <checksum>e3d8676356f2709a7b120036b7ada996</checksum>
         <version>2100000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <profile>
@@ -352,7 +396,6 @@
         <checksum>6e3b77d09d3613bc52ba7f63048d4638</checksum>
         <version>2100000</version>
         <url>http://www.color.org</url>
-        <outputcondition/>
     </profile>
 
     <!--
@@ -418,10 +461,7 @@
         <checksum>728f70371f82e930637e60c760876a3d</checksum>
         <version>2000000</version>
         <url>http://www.eci.org</url>
-        <outputcondition>Gravure printing according to ISO 12647-4, paper type MF (machine finished), 55 g/m2
-        </outputcondition>
+        <outputcondition>Gravure printing according to ISO 12647-4, paper type MF (machine finished), 55 g/m2</outputcondition>
     </profile>
-
-    <!-- End of 'GWG recommendated ICC profiles' -->
 
 </profiles>

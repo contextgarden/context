@@ -637,7 +637,7 @@ function kerns.set(factor)
             enableaction("processors","typesetters.kerns.handler")
             enabled = true
         end
-        local a = factors[factor]
+        local a = factors[factor] -- todo: also spacefactor
         if not a then
             a = #mapping + 1
             factors[factors], mapping[a] = a, factor

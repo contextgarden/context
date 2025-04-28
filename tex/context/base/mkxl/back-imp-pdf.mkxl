@@ -16,6 +16,21 @@
 %D {\pdf*} ones completely. For the moment I keep them commented but even that will
 %D go away.
 
+% semi-automatic:
+%
+% profile=,intent=default => profile={sRGB-v4.icc,CGATS001Compat-v2-micro.icc,sGrey-v4.icc}
+% profile=,intent=rgb     => profile={sRGB-v4.icc,CGATS001Compat-v2-micro.icc,sGrey-v4.icc}
+% profile=,intent=cmyk    => profile={sRGB-v4.icc,CGATS001Compat-v2-micro.icc}
+%
+% manual:
+%
+% profile={sRGB-v4.icc,CGATS001Compat-v2-micro.icc,sGrey-v4.icc},
+%
+% or:
+%
+% profile={sRGB-v4.icc,CGATS001Compat-v2-micro.icc,sGrey-v4.icc},
+% intent={sRGB-v4.icc},
+
 %D Todo: a few delayed binding left:
 
 % ./lpdf-ini.lmt : reserve | immediate | positions | matrix | pos | fontobject
@@ -108,7 +123,9 @@
 %D PDF/X (maybe combine the two lua calls)
 
 \setupbackend
-  [xmpfile=]
+  [xmpfile=,
+   profile=,
+   intent=default]
 
 \appendtoks
     \edef\p_file{\backendparameter{xmpfile}}%
@@ -126,7 +143,7 @@
          option  {\backendparameter\c!option}%
          profile {\backendparameter\c!profile}%
          intent  {\backendparameter\c!intent}%
-         file    {\backendparameter\c!file}%
+         file    {\backendparameter\c!file}% profile database
     \relax
 \to \everysetupbackend
 

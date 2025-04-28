@@ -1059,19 +1059,23 @@ do
 
     lpdf.protectresources = true
 
-    local catalog = pdfdictionary { Type = pdfconstant("Catalog") } -- nicer, but when we assign we nil the Type
-    local info    = pdfdictionary { Type = pdfconstant("Info")    } -- nicer, but when we assign we nil the Type
-    ----- names   = pdfdictionary { Type = pdfconstant("Names")   } -- nicer, but when we assign we nil the Type
+    local info    = pdfdictionary { Type = pdfconstant("Info") }
+    local catalog = pdfdictionary { Type = pdfconstant("Catalog") }
+    ----- names   = pdfdictionary { Type = pdfconstant("Names")   }
 
     local function checkcatalog()
-        if not environment.initex then
+        if environment.initex then
+            -- nothing
+        else
             trace_flush("catalog")
             return true
         end
     end
 
     local function checkinfo()
-        if not environment.initex then
+        if environment.initex then
+            -- nothing
+        elseif lpdf.getformatoption("info") then
             trace_flush("info")
             if lpdf.majorversion() > 1 then
                 for k, v in next, info do
@@ -1148,7 +1152,7 @@ do
     end
 
     function lpdf.getinfo()
-        if checkinfo() then
+        if info and checkinfo() then
             return pdfreference(pdfimmediateobject(tostring(info)))
         end
     end
@@ -1161,7 +1165,7 @@ do
     end
 
     function lpdf.addtoinfo(k,v)
-        if not (lpdf.protectresources and info[k]) then
+        if type(info) == "table" and not (lpdf.protectresources and info[k]) then
             trace_set("info",k)
             info[k] = v
         end
@@ -1585,23 +1589,18 @@ do
 
     -- This is obsolete but old viewers might still use it as directive for what to send to a
     -- postscript printer. The bad is that even 2.0 validation can bark about it missing but
-    -- maybe we should no longer care abotu that.
+    -- maybe we should no longer care about that.
 
     local a_procset = nil
     local d_procset = nil
-    local include   = false
 
     lpdf.registerinitializer(function()
         a_procset = nil
         d_procset = nil
     end)
 
-    function lpdf.setincludeprocset(v)
-        include = v
-    end
-
     function lpdf.procset(dict)
-        if not include or lpdf.majorversion() > 1 then
+        if not lpdf.getformatoption("procsets") or lpdf.majorversion() > 1 then
             return nil
         else
             if not a_procset then

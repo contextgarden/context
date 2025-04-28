@@ -4516,8 +4516,26 @@ enddef ;
 %D not always fast but the results can be rewarding. And yes, we have much fun figuring it
 %D out (a lot of chatting).
 
+% primarydef w dotprod z =
+%     if (pair w) and (pair z) :
+%         (xpart w * xpart z + ypart w * ypart z)
+%     elseif (color w) and (color z) :
+%         (redpart w * redpart z + greenpart w * greenpart z + bluepart w * bluepart z)
+%     elseif (cmykcolor w) and (cmykcolor z) :
+%         (cyanpart w * cyanpart z + magentapart w * magentapart z + yellowpart w * yellowpart z + blackpart w * blackpart z)
+%     fi
+% enddef ;
+
 primarydef a crossprod b =
-    (xpart a * ypart b) - (ypart a * xpart b)
+    if (pair a) and (pair b) :
+        (xpart a * ypart b) - (ypart a * xpart b)
+    elseif (color a) and (color b) :
+        (
+            (greenpart a * bluepart  b  - bluepart  a * greenpart b),
+            (bluepart  a * redpart   b  - redpart   a * bluepart  b),
+            (redpart   a * greenpart b  - greenpart a * redpart   b)
+        )
+    fi
 enddef;
 
 permanent crossprod ;

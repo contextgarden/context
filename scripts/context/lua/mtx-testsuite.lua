@@ -1,12 +1,41 @@
-if not modules then modules = { } end modules ['mtx-testsuite'] = {
-    version   = 1.002,
+if not modules then modules = { } end modules['mtx-testsuite'] = {
+    version   = 1.001,
     comment   = "companion to mtxrun.lua",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
 }
 
--- maybe use a list
+-- runtestsparallel.cmd:
+
+-- @echo off
+--
+-- REM ~ echo %path%
+--
+-- mtxrun  --generate %1
+-- context --make en %1
+-- mtxrun  --script font --reload --force
+-- mtxrun  --script testsuite --parallel --pattern=**/*.tex --purge %1
+--
+-- echo.
+-- echo results:
+-- echo.
+--
+-- type testsuite-process.lua
+--
+-- echo.
+-- echo.
+
+-- runtestsparallel.sh:
+
+-- #! /bin/sh
+--
+-- mtxrun  --generate $1
+-- context --make en $1
+-- mtxrun  --script font --reload --force
+-- mtxrun  --script testsuite --parallel --pattern=**/*.tex --purge $1
+--
+-- cat testsuite-process.lua
 
 -- (1) mtxrun --script testsuite --compare --oldname=foo --newname=bar --objects --pattern=*.tex
 -- (2) move/mv bar.lua foo.lua
@@ -126,6 +155,7 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
     if pattern then
         local cleanup = environment.argument("cleanup")
         local engine  = environment.argument("luatex") and "--luatex" or ""
+        local signal  = environment.argument("signal")
         local results = { }
         local start   = statistics.starttiming(scripts.testsuite.process)
         local files   = dir.glob(pattern)
@@ -134,6 +164,14 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
         local total   = #files
         local runners = tonumber(environment.argument("parallel")) or 8
         local count   = 0
+        local problem = false
+        local signalled = signal and function(state)
+            local c = format("mtxrun --script %s --state=%s --run=1 --all",signal,state)
+            os.resultof(c)
+        end or false
+        if signalled then
+            signalled("busy")
+        end
         while true do
             local done = false
             for i=1,runners do
@@ -150,6 +188,12 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
                         local bad = not r or n > 0
                         if bad then
                             results[pi[2]] = { detail, n }
+                        end
+                        if bad then
+                            if signalled and not problem then
+                                signalled("problem")
+                            end
+                            problem = true
                         end
                         report("%02i : %04i : %s : %s : %0.3f ",i,pi[3],bad and "error" or "done ",pi[2],clock()-pi[4])
                         process[i] = false
@@ -178,6 +222,10 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
 -- result:setvbuf("full",64*1024)
                             process[i] = { result, filename, count, clock() }
                         else
+                            if signalled and not problem then
+                                signalled("problem")
+                                problem = true
+                            end
                             results[filename] = "error"
                         end
                         report("%02i : %04i : %s : %s",i,count,result and "start" or "error",filename)
@@ -194,6 +242,9 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
         statistics.stoptiming(scripts.testsuite.process)
         results.runtime = statistics.elapsedtime(scripts.testsuite.process)
         io.savedata(luaname,table.serialize(results,true))
+        if signalled then
+            signalled(problem and "error" or "finished")
+        end
         report()
         report("files: %i, runtime: %s, overview: %s",total,results.runtime,luaname)
         report()

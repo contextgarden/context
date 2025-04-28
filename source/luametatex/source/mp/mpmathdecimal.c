@@ -115,7 +115,7 @@ static void mp_decnumber_check(MP mp, decNumber *dec, decContext *context)
     if (decNumberIsZero(dec) && decNumberIsNegative(dec)) {
         decNumberZero(dec);
     }
-    mp->arith_error = test;
+    mp->arithmic_error = test;
 }
 
 /* See mpmathdouble for documentation. */
@@ -165,7 +165,7 @@ static double decNumberToDouble(decNumber *A)
         return res;
     } else {
         mp_memory_free(buffer);
-        /* |mp->arith_error = 1;| */
+        /* |mp->arithmic_error = 1;| */
         return 0.0;
     }
 }
@@ -294,6 +294,42 @@ static void mp_decimal_allocate_abs(MP mp, mp_number *n, mp_number_type t, mp_nu
     n->type = t;
     decNumberZero(n->data.num); /* not needed */
     decNumberAbs(n->data.num, v->data.num, &mp_decimal_data.set);
+}
+
+static void mp_decimal_allocate_div(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->data.num = mp_memory_allocate(sizeof(decNumber));
+    n->type = t;
+    decNumberZero(n->data.num); /* not needed */
+    decNumberDivide(n->data.num, a->data.num, b->data.num, &mp_decimal_data.set);
+}
+
+static void mp_decimal_allocate_mul(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->data.num = mp_memory_allocate(sizeof(decNumber));
+    n->type = t;
+    decNumberZero(n->data.num); /* not needed */
+    decNumberMultiply(n->data.num, a->data.num, b->data.num, &mp_decimal_data.set);
+}
+
+static void mp_decimal_allocate_add(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->data.num = mp_memory_allocate(sizeof(decNumber));
+    n->type = t;
+    decNumberZero(n->data.num); /* not needed */
+    decNumberAdd(n->data.num, a->data.num, b->data.num, &mp_decimal_data.set);
+}
+
+static void mp_decimal_allocate_sub(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
+{
+    (void) mp;
+    n->data.num = mp_memory_allocate(sizeof(decNumber));
+    n->type = t;
+    decNumberZero(n->data.num); /* not needed */
+    decNumberSubtract(n->data.num, a->data.num, b->data.num, &mp_decimal_data.set);
 }
 
 static void mp_decimal_allocate_double(MP mp, mp_number *n, double v)
@@ -522,7 +558,7 @@ static int mp_decimal_to_int(mp_number *A)
     result = decNumberToInt32(A->data.num, &mp_decimal_data.set);
     if (mp_decimal_data.set.status == DEC_Invalid_operation) {
         mp_decimal_data.set.status = 0;
-        /* |mp->arith_error = 1;| */
+        /* |mp->arithmic_error = 1;| */
         return 0;
     } else {
         return result;
@@ -536,7 +572,7 @@ static int mp_decimal_to_boolean(mp_number *A)
     result = decNumberToUInt32(A->data.num, &mp_decimal_data.set);
     if (mp_decimal_data.set.status == DEC_Invalid_operation) {
         mp_decimal_data.set.status = 0;
-        /* |mp->arith_error = 1;| */
+        /* |mp->arithmic_error = 1;| */
         return mp_false_operation;
     } else {
         return result ;
@@ -553,7 +589,7 @@ static double mp_decimal_to_double(mp_number *A)
         return res;
     } else {
         mp_memory_free(buffer);
-        /* |mp->arith_error = 1;| */
+        /* |mp->arithmic_error = 1;| */
         return 0.0;
     }
 }
@@ -966,7 +1002,7 @@ static void mp_decimal_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_num
     decNumberSquareRoot(ret->data.num, &a, &mp_decimal_data.set);
     /*
     if (set.status != 0) {
-      mp->arith_error = 1;
+      mp->arithmic_error = 1;
       decNumberCopy(ret->data.num, &mp_decimal_data.EL_GORDO_decNumber);
     }
     */
@@ -1044,7 +1080,7 @@ static void mp_decimal_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     decNumberExp(ret->data.num, &temp, &mp_decimal_data.limitedset);
     if (mp_decimal_data.limitedset.status & DEC_Clamped) {
         if (decNumberIsPositive((decNumber *) x_orig->data.num)) {
-            mp->arith_error = 1;
+            mp->arithmic_error = 1;
             decNumberCopy(ret->data.num, &mp_decimal_data.EL_GORDO_decNumber);
         } else {
             decNumberZero(ret->data.num);
@@ -1445,6 +1481,10 @@ math_data *mp_initialize_decimal_math(MP mp)
     math->md_free            = mp_decimal_free_number;
     math->md_allocate_clone  = mp_decimal_allocate_clone;
     math->md_allocate_abs    = mp_decimal_allocate_abs;
+    math->md_allocate_div    = mp_decimal_allocate_div;
+    math->md_allocate_mul    = mp_decimal_allocate_mul;
+    math->md_allocate_add    = mp_decimal_allocate_add;
+    math->md_allocate_sub    = mp_decimal_allocate_sub;
     math->md_allocate_double = mp_decimal_allocate_double;
     mp_decimal_allocate_number(mp, &math->md_precision_default, mp_scaled_type);
     decNumberFromInt32(math->md_precision_default.data.num, DECPRECISION_DEFAULT);

@@ -114,7 +114,7 @@
 
 \permanent\protected\lettonothing\stopMPinitializations
 
-\permanent\tolerant\protected\def\startMPinclusions[#1]#*#=#:#3\stopMPinclusions
+\permanent\tolerant\protected\def\startMPinclusions[#1]#*#:#=#:#3\stopMPinclusions
   {\let\m_meta_saved_instance\currentMPinstance % \pushmacro
    \cdef\currentMPinstance{#2}%
    \ifempty\currentMPinstance
@@ -514,9 +514,19 @@
 \def\meta_mpvar_default{\MPcolor{black}\space}
 %def\meta_mpvar_default{0 }
 
+\installmacrostack\currentmpcategory
+
 \permanent\def\MPvar#1% todo: could be a framed chain
   {\beginlocalcontrol
    \edef\m_meta_current_variable{\mpcategoryparameter{#1}}%
+   % new:
+   \ifempty\m_meta_current_variable
+     \push_macro_currentmpcategory
+     \let\currentmpcategory\currentMPgraphicname
+     \edef\m_meta_current_variable{\mpcategoryparameter{#1}}%
+     \pop_macro_currentmpcategory
+   \fi
+   %
    \endlocalcontrol
    \ifempty\m_meta_current_variable
      \meta_mpvar_default
@@ -536,6 +546,14 @@
 \permanent\def\MPrawvar#1#2% todo: could be a framed chain
   {\beginlocalcontrol
    \edef\m_meta_current_variable{\namedmpcategoryparameter{#1}{#2}}%
+   % new
+ % \ifempty\m_meta_current_variable
+ %   \push_macro_currentmpcategory
+ %   \let\currentmpcategory\currentMPgraphicname
+ %   \edef\m_meta_current_variable{\namedmpcategoryparameter{#1}{#2}}%
+ %   \pop_macro_ currentmpcategory
+ % \fi
+   %
    \endlocalcontrol
    \ifempty\m_meta_current_variable
      \meta_mpvar_default
@@ -1389,8 +1407,10 @@
 
 %D Some more helpers (see \type {meta-grd.mkiv} for an example of usage):
 
-\permanent\def\MPdpar#1#2{\todimension{#1#2}\relaxedspace}
-\permanent\def\MPnpar#1#2{\todimension{#1#2}\relaxedspace}
+% \relaxedspace fails on grid test
+
+\permanent\def\MPdpar#1#2{\todimension{#1#2} }% \space}
+\permanent\def\MPnpar#1#2{\todimension{#1#2} }% \space}
 \permanent\def\MPspar#1#2{"#1#2"}
 
 %D Done.

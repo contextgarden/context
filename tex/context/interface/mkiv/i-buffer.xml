@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="doifelsebuffer" level="system" category="buffer" keywords="conditional" file="buff-ini.mkiv">
+    <cd:command name="doifelsebuffer" level="system" category="buffer" keywords="conditional" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-buffer"/>
             <cd:resolve name="argument-true"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifbufferelse" level="system" category="buffer" keywords="conditional" file="buff-ini.mkiv">
+    <cd:command name="doifbufferelse" level="system" category="buffer" keywords="conditional" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-buffer"/>
             <cd:resolve name="argument-true"/>
@@ -20,19 +20,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetbuffer" level="system" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="resetbuffer" level="system" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buffer" type="environment" level="document" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="buffer" type="environment" level="document" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="grabbufferdata" level="system" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="grabbufferdata" level="system" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-category-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -41,7 +41,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="grabbufferdatadirect" level="system" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="grabbufferdatadirect" level="system" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
@@ -49,13 +49,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buffer" type="environment" begin="set" end="end" level="system" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="buffer" type="environment" begin="set" end="end" level="system" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbuffer" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="setupbuffer" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-list-optional"/>
             <cd:assignments list="yes">
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definebuffer" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="definebuffer" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-buffer-optional"/>
@@ -83,25 +83,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getbuffer" level="document" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="getbuffer" level="document" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getdefinedbuffer" level="system" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="getdefinedbuffer" level="system" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inlinebuffer" level="document" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="inlinebuffer" level="document" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-list-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buffer" type="environment" generated="yes" variant="instance" category="buffer" level="document" file="buff-ini.mkiv">
+    <cd:command name="buffer" type="environment" generated="yes" variant="instance" category="buffer" level="document" file="buff-ini.mkxl">
         <cd:sequence>
             <cd:instance value="buffer"/>
         </cd:sequence>
@@ -110,14 +110,14 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="getbuffer" generated="yes" variant="instance" level="document" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="getbuffer" generated="yes" variant="instance" level="document" category="buffer" file="buff-ini.mkxl">
         <cd:sequence>
             <cd:string value="get"/>
             <cd:instance value="buffer"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="processtexbuffer" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="processtexbuffer" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:sequence>
             <cd:string value="processTEXbuffer"/>
         </cd:sequence>
@@ -126,18 +126,19 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savebuffer" variant="list" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="savebuffer" variant="list" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-list"/>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="savebuffer" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="savebuffer" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
+            <cd:resolve name="keyword-buffer-list-optional"/>
             <cd:assignments list="yes">
                 <cd:parameter name="list">
-                    <cd:constant type="cd:name"/>
+                    <cd:constant type="cd:buffer"/>
                 </cd:parameter>
                 <cd:parameter name="file">
                     <cd:constant type="cd:file"/>
@@ -146,23 +147,29 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="option">
+                    <cd:constant type="append"/>
+                </cd:parameter>
+                <cd:parameter name="directory">
+                    <cd:constant type="cd:text"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="ctxluabuffer" level="style" category="buffer" keywords="lua" file="buff-ini.mkiv">
+    <cd:command name="ctxluabuffer" level="style" category="buffer" keywords="lua" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mkvibuffer" level="style" category="buffer" file="buff-ini.mkiv">
+    <cd:command name="mkvibuffer" level="style" category="buffer" file="buff-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getbufferdata" level="style" category="buffer" file="buff-ini.mkiv">  
+    <cd:command name="getbufferdata" level="style" category="buffer" file="buff-ini.mkxl">  
         <cd:arguments>
             <cd:resolve name="keyword-buffer-optional"/>
         </cd:arguments>

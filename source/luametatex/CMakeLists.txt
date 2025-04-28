@@ -10,7 +10,8 @@ project(luametatex VERSION 2.11 LANGUAGES C)
 # I need to check with Mojca of the compile farm can handle this. 
 
 set(CMAKE_C_STANDARD 11)
-# set(CMAKE_C_STANDARD 17) # needs 3.21
+# set(CMAKE_C_STANDARD 17)
+# set(CMAKE_C_STANDARD 23)
 
 # https://sourceforge.net/p/predef/wiki/OperatingSystems/
 # https://sourceforge.net/p/predef/wiki/Architectures/
@@ -303,5 +304,6 @@ include(cmake/pplib.cmake)
 include(cmake/miniz.cmake)
 include(cmake/softposit.cmake)
 include(cmake/potrace.cmake)
+include(cmake/qrcodegen.cmake)
 
 include(cmake/luametatex.cmake)

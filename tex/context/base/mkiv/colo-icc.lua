@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['colo-icc'] = {
     license   = "see context related readme files"
 }
 
+-- https://www.color.org/icc32.pdf etc
+
 local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
 local band = bit32.band
@@ -65,7 +67,8 @@ function colors.iccprofile(filename,verbose)
             z = readnumber(f,4),
         },
         profilecreator     = readnumber(f,4),
-        id                 = strip(readstring(f,16)),
+        -- 84-127
+     -- id                 = strip(readstring(f,16)), --rubish
     }
     local tags = { }
     for i=1,readnumber(f,128,4) do
@@ -235,3 +238,5 @@ colors.labtoxyz = labtoxyz
 colors.xyztorgb = xyztorgb
 colors.rgbtoxyz = rgbtoxyz
 colors.labtorgb = labtorgb
+
+return colors

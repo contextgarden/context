@@ -1,0 +1,29 @@
+% \usemodule[libs-imp-zint]
+
+\startTEXpage
+    \startluacode
+        local specification = table.load("context-lmtx-error.lua")
+        local errortext = "unknown error, ask a human"
+    --  inspect(specification)
+        if specification then
+            local lasttexerror = specification.lasttexerror or ""
+            local lasttexhelp  = specification.lasttexhelp  or ""
+            if lasttexerror ~= "" then
+                errortext = lasttexerror
+                if lasttexhelp  ~= "" then
+                    errortext = errortext .. ": " .. lasttexhelp
+                end
+            elseif lasttexhelp  ~= "" then
+                errortext = lasttexhelp
+            end
+        end
+        context.dontleavehmode()
+    --  context.barcode {
+    --      alternative = "qr",
+    --      option      = "square",
+    --      text        = string.gsub(errortext,"%s+"," "),
+    --  }
+        errortext = string.gsub(errortext,"%s+"," ")
+        figures.qrcode(errortext,tex.sp("10cm"))
+    \stopluacode
+\stopTEXpage

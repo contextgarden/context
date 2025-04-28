@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['node-res'] = {
 local type, next, rawset = type, next, rawset
 local gmatch, format = string.gmatch, string.format
 local round = math.round
+local concat, sortedhash, setmetatableindex = table.concat, table.sortedhash, table.setmetatableindex
 
 local nodes, node = nodes, node
 
@@ -48,6 +49,7 @@ nuts.pool          = nutpool
 
 local tonut        = nuts.tonut
 local tonode       = nuts.tonode
+local isdirect     = nuts.isdirect
 
 local getbox       = nuts.getbox
 local getid        = nuts.getid
@@ -83,7 +85,7 @@ local flush_nut    = nuts.flush
 -- at some point we could have a dual set (the overhead of tonut is not much larger than
 -- metatable associations at the lua/c end esp if we also take assignments into account
 
--- table.setmetatableindex(nodepool,function(t,k,v)
+-- setmetatableindex(nodepool,function(t,k,v)
 --  -- report_nodes("defining nodepool[%s] instance",k)
 --     local f = nutpool[k]
 --     local v = function(...)
@@ -96,7 +98,7 @@ local flush_nut    = nuts.flush
 -- -- we delay one step because that permits us a forward reference
 -- -- e.g. in pdfsetmatrix
 
-table.setmetatableindex(nodepool,function(t,k,v)
+setmetatableindex(nodepool,function(t,k,v)
  -- report_nodes("defining nodepool[%s] instance",k)
     local v = function(...)
         local f = nutpool[k]
@@ -607,15 +609,52 @@ statistics.register("cleaned up reserved nodes", function()
     return format("%s nodes, %s lists of %s", cleanup(texgetcount("c_syst_last_allocated_box")))
 end) -- \topofboxstack
 
+-- local function pusage()
+--     local check = setmetatableindex(function(t,k)
+--         local v = { good = 0, bad = 0 }
+--         t[k] = v
+--         return v
+--     end)
+--     for k, v in next, nodeproperties do
+--         local ck = check[nodecodes[getid(k)]]
+--         if isdirect(k) then
+--             ck.good = ck.good + 1
+--         else
+--             ck.bad = ck.bad + 1
+--         end
+--     end
+--     return check
+-- end
+
 statistics.register("node memory usage", function() -- comes after cleanup !
     local used = usage()
+    local t, n, s = { }, 0, nil
     if next(used) then
-        local t, n = { }, 0
-        for k, v in table.sortedhash(used) do
+        for k, v in sortedhash(used) do
             n = n + 1 ; t[n] = format("%s %s",v,k)
         end
-        return table.concat(t,", ")
     end
+    local c = table.count(nodeproperties)
+    if c > 0 then
+        n = n + 1 ; t[n] = format("stale properties: %i",c)
+    end
+    if n > 0 then
+        s = concat(t,", ")
+    end
+ -- local prop = pusage()
+ -- if next(prop) then
+ --     if s then
+ --         s = s .. ", "
+ --     else
+ --         s = ""
+ --     end
+ --     n, t, s = { }, 0, s .. "properties: "
+ --     for k, v in sortedhash(prop) do
+ --         n = n + 1 ; t[n] = format("%s %i:%i",k,v.good,v.bad)
+ --     end
+ --     s = s .. concat(t,", ")
+ -- end
+    return s
 end)
 
 lua.registerinitexfinalizer(cleanup, "cleanup reserved nodes")
@@ -625,13 +664,13 @@ do
     local glyph      = glyph
     local traverseid = nuts.traverseid
 
-    local traversers = table.setmetatableindex(function(t,k)
+    local traversers = setmetatableindex(function(t,k)
         local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph)
         t[k] = v
         return v
     end)
 
-    local treversers = table.setmetatableindex(function(t,k)
+    local treversers = setmetatableindex(function(t,k)
         local v = traverseid(type(k) == "number" and k or nodecodes[k],glyph,true)
         t[k] = v
         return v

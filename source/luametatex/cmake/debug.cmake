@@ -11,3 +11,8 @@
 
 # add_compile_options(-p -gdwarf)
 # set(CMAKE_EXE_LINKER_FLAGS "-p -gdwarf")
+
+# One day I need to test this: 
+#
+# gprofng collect app  ....
+# gprofng display text ....

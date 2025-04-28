@@ -62,4 +62,19 @@
 
 \permanent\protected\lettonothing\stopbitmapimage
 
+% Built in:
+
+\permanent\protected\def\qrcode[#1]%
+  {\bgroup
+     \getdummyparameters
+       [\c!text=,\c!buffer=,\c!width=4cm,#1]%
+     \ifempty{\dummyparameter\c!buffer}%
+        \clf_qrcodestring{\dummyparameter\c!text}%
+     \else
+        \clf_qrcodebuffer{\dummyparameter\c!buffer}%
+     \fi
+     \dummyparameter\c!width
+     \relax
+   \egroup}
+
 \protect \endinput

@@ -122,6 +122,10 @@
                 <cd:parameter name="synchronize">
                     <cd:constant type="background"/>
                 </cd:parameter>
+                <cd:parameter name="direction">
+                    <cd:constant type="normal" default="yes"/>
+                    <cd:constant type="reverse"/>
+                </cd:parameter>
                 <cd:inherit name="setupframed"/>
             </cd:assignments>
         </cd:arguments>

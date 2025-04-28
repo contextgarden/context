@@ -1,3 +1,5 @@
+% signal=runner
+
 %D \module
 %D   [       file=m-bibles,
 %D        version=2024.11.01,
@@ -22,7 +24,7 @@
 
 % todo: use labeltext
 
-% \enablemode[balance-verses] % too late
+\enablemode[balance-verses] % too late
 
 \startmodule [bibles]
 
@@ -36,7 +38,7 @@
 
 \registerctxluafile{m-bibles}{}
 
-\enableexperiments[fonts.compact]
+% \enableexperiments[fonts.compact]
 
 \dontcomplain
 
@@ -362,9 +364,9 @@
 
 \startxmlsetups xml:bible
     \page[left]
-    \startcolumnset [bible]
-%         \localcontrolledloop 1 4 1 {
-        \localcontrolledrepeat 4 {
+    \startcolumnset[bible]\relax
+        \localcontrolledloop 1 4 1 {
+%         \localcontrolledrepeat 4 {
             \startsubcolumnset[#I]\relax
                 \startnamedsection[title:#I][title={\BibleTitleName{\number#I}}]
                     \placelist[chapter:#I][criterium=text]
@@ -399,7 +401,7 @@
     \xdef\BibleChapter{1}
 % \ifnum\BibleBook<\plustwo
     \startcolumnset [bible]
-        \startsubcolumnset\relax
+        \startsubcolumnset[1]\relax
             \namedsection[section:1][title={\BibleBookName{1}\BibleBook}]
         \stopsubcolumnset
         \localcontrolledloop 2 4 1 {

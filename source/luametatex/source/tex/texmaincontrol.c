@@ -208,7 +208,7 @@ static void tex_aux_run_text_char_number(void)
                 halfword chr = 0;
                 halfword glyph;
                 while (1) {
-                    switch (tex_scan_character("xyofislrwXYOFISLRW", 0, 1, 0)) {
+                    switch (tex_scan_character("xyofisklrwXYOFISKLRW", 0, 1, 0)) {
                         case 0:
                             goto DONE;
                         case 'x': case 'X':
@@ -247,7 +247,13 @@ static void tex_aux_run_text_char_number(void)
                             break;
                         case 'o': case 'O':
                             if (tex_scan_mandate_keyword("options", 1)) {
+                                /* resets ! */
                                 options = tex_scan_integer(0, NULL, NULL) & glyph_option_valid;
+                            }
+                            break;
+                        case 'k': case 'K':
+                            if (tex_scan_mandate_keyword("keepspacing", 1)) {
+                                options |= glyph_option_keep_spacing;
                             }
                             break;
                         case 'f': case 'F':
@@ -313,7 +319,9 @@ static void tex_aux_run_text_char_number(void)
                 }
               DONE:
                 chr = tex_scan_char_number(0);
-                tex_aux_adjust_space_factor(chr);
+                if (! (options & glyph_option_keep_spacing)) { 
+                    tex_aux_adjust_space_factor(chr);
+                }
                 glyph = tex_new_char_node(glyph_unset_subtype, font, chr, 1);
                 set_glyph_options(glyph, options);
                 set_glyph_x_scale(glyph, xscale);
@@ -2810,7 +2818,9 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                         }
                         break;
                     case hmode:
-                        cur_list.space_factor = default_space_factor;
+                        if (! (box_options(boxnode) & box_option_keep_spacing)) { 
+                            cur_list.space_factor = default_space_factor;
+                        }
                         tex_couple_nodes(cur_list.tail, boxnode);
                         cur_list.tail = boxnode;
                         break;
@@ -6698,6 +6708,8 @@ halfword tex_expand_parameter(halfword tok, halfword *tail)
         case S_token_l: case S_token_o: return tex_aux_expand_escaped(space_token_o, tail);
         case T_token_l: case T_token_o: return tex_aux_expand_escaped(tab_token_o, tail);
         case X_token_l: case X_token_o: return tex_aux_expand_escaped(backslash_token_o, tail);
+     // case left_brace_token:          return tex_aux_expand_escaped(left_brace_token_o, tail);
+     // case right_brace_token:         return tex_aux_expand_escaped(right_brace_token_o, tail);
      // case Z_token_l: case Z_token_o: return tex_aux_expand_escaped(zws_token_o, tail);
         /* rest */
         default:                        return null;

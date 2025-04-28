@@ -1,0 +1,38 @@
+return {
+    version   = 1.001,
+    comment   = "companion to lpdf-fmt.lmt",
+    author    = "Peter, Hans & Mikael",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+    features  = {
+        version     = 1.4,
+        format      = "PDF/A-1b:2005",
+        xmpfile     = "lpdf-pda.xml",
+        intent      = "GTS_PDFA1",
+        gray        = true,
+        cmyk        = true,
+        rgb         = true,
+        spot        = true,
+        calibrated  = true, -- unknown
+        cielab      = true, -- unknown
+        intents     = true,
+        forms       = true,
+        internal    = true,
+        cidsets     = true,
+        charsets    = true,
+        procsets    = true,
+        attachments = false,
+        metadata    = {
+            {
+                "replacexmpinfo",
+                "xml://rdf:RDF/pdfaid-placeholder",
+[[
+<rdf:Description rdf:about='' xmlns:pdfaid='http://www.aiim.org/pdfa/ns/id/'>
+      <pdfaid:part>1</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+]]
+            },
+        },
+    },
+}

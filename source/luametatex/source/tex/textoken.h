@@ -233,6 +233,8 @@ typedef enum macro_preamble_states {
 # define right_bracket_token     (other_token  + ']')
 # define left_angle_token        (other_token  + '<')
 # define right_angle_token       (other_token  + '>')
+# define left_brace_token_o      (other_token  + '{')
+# define right_brace_token_o     (other_token  + '}')
 # define one_token               (other_token  + '1') 
 # define two_token               (other_token  + '2') 
 # define three_token             (other_token  + '3') 

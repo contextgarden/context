@@ -91,6 +91,12 @@
                 <cd:constant type="always"/>
                 <cd:constant type="profile"/>
                 <cd:constant type="fit"/>
+                <cd:constant type="noorphans"/>
+                <cd:constant type="keeporphans"/>
+                <cd:constant type="notwins"/>
+                <cd:constant type="keeptwins"/>
+                <cd:constant type="notoddlers"/>
+                <cd:constant type="keeptoddlers"/>
                 <cd:constant type="granular"/>
                 <!--
                     <cd:constant type="cd:name"/>

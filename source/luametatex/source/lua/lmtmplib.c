@@ -338,6 +338,16 @@ static mplib_state_info mplib_state = {
     .status_callbacks   = 0,
 };
 
+static void mplib_aux_invalid_object_warning(const char *detail)
+{
+    tex_formatted_warning("mp lib","lua <mp %s> expected", detail);
+}
+
+static void mplib_aux_invalid_object_error(const char * detail)
+{
+    tex_formatted_error("mp lib","lua <mp %s> expected", detail);
+}
+
 /*tex
 
     We need a few metatable identifiers in order to access the metatables for the main object and result
@@ -399,6 +409,9 @@ static MP mplib_aux_get_main_instance(lua_State *L, int slot)
     MP mp;
     lua_getiuservalue(L, slot, mp_main_instance);
     mp = lua_touserdata(L, -1);
+    if (! mp) {
+        mplib_aux_invalid_object_warning("instance");
+    }
     lua_pop(L, 1);
     return mp;
 }
@@ -434,16 +447,6 @@ static inline char *lmt_lstring_from_index(lua_State *L, int n, size_t *l)
     const char *x = lua_tolstring(L, n, l);
  // return  (x && l > 0) ? lmt_generic_strdup(x) : NULL;
     return  (x && l > 0) ? lmt_memory_strdup(x) : NULL;
-}
-
-static void mplib_aux_invalid_object_warning(const char * detail)
-{
-    tex_formatted_warning("mp lib","lua <mp %s> expected", detail);
-}
-
-static void mplib_aux_invalid_object_error(const char * detail)
-{
-    tex_formatted_error("mp lib","lua <mp %s> expected", detail);
 }
 
 static inline MP *mplib_aux_is_mpud(lua_State *L, int n)
@@ -2124,6 +2127,17 @@ static int mplib_getstatistics(lua_State *L)
     return 1;
 }
 
+static int mplib_getresultstates(lua_State *L)
+{
+    lua_createtable(L, 5, 0);
+    lua_set_string_by_index(L, mp_spotless,             "spotless");
+    lua_set_string_by_index(L, mp_warning_issued,       "warningissued");
+    lua_set_string_by_index(L, mp_error_message_issued, "errorissued");
+    lua_set_string_by_index(L, mp_fatal_error_stop,     "fatalerror");
+    lua_set_string_by_index(L, mp_system_error_stop,    "systemerror");
+    return 1;
+};
+
 static int mplib_getstatus(lua_State *L)
 {
     MP mp = mplib_aux_is_mp(L, 1);
@@ -2650,7 +2664,9 @@ static int mplib_figure_collect(lua_State *L)
     struct mp_edge_object **hh = mplib_aux_is_figure(L, 1);
     if (*hh) {
         MP mp = mplib_aux_get_main_instance(L, 1);
-        mp_graphic_toss_objects(mp, *hh);
+        if (mp) {
+            mp_graphic_toss_objects(mp, *hh);
+        }
         *hh = NULL;
     }
     return 0;
@@ -2665,21 +2681,23 @@ static int mplib_figure_objects(lua_State *L)
         lua_Number bendtolerance = mplib_aux_get_bend_tolerance(L, 1);
         lua_Number movetolerance = mplib_aux_get_move_tolerance(L, 1);
         MP mp = mplib_aux_get_main_instance(L, 1);
-        lua_newtable(L);
-        while (p) {
-            struct mp_graphic_object **v = lua_newuserdatauv(L, sizeof(struct mp_graphic_object *), 3);
-            *v = p;
-            mplib_aux_set_bend_tolerance(L, bendtolerance);
-            mplib_aux_set_move_tolerance(L, movetolerance);
-            mplib_aux_set_main_instance(L, mp);
-         // luaL_getmetatable(L, MP_METATABLE_OBJECT);
-            lua_get_metatablelua(mplib_object);
-            lua_setmetatable(L, -2);
-            lua_rawseti(L, -2, i);
-            i++;
-            p = p->next;
+        if (mp) {
+            lua_newtable(L);
+            while (p) {
+                struct mp_graphic_object **v = lua_newuserdatauv(L, sizeof(struct mp_graphic_object *), 3);
+                *v = p;
+                mplib_aux_set_bend_tolerance(L, bendtolerance);
+                mplib_aux_set_move_tolerance(L, movetolerance);
+                mplib_aux_set_main_instance(L, mp);
+             // luaL_getmetatable(L, MP_METATABLE_OBJECT);
+                lua_get_metatablelua(mplib_object);
+                lua_setmetatable(L, -2);
+                lua_rawseti(L, -2, i);
+                i++;
+                p = p->next;
+            }
+            /*tex Prevent a double free: */
         }
-        /*tex Prevent a double free: */
         (*hh)->body = NULL;
     } else {
         lua_pushnil(L);
@@ -2803,7 +2821,9 @@ static int mplib_object_collect(lua_State *L)
     struct mp_graphic_object **hh = mplib_aux_is_graphic_object(L, 1);
     if (*hh) {
         MP mp = mplib_aux_get_main_instance(L, 1);
-        mp_graphic_toss_object(mp, *hh);
+        if (mp) { 
+            mp_graphic_toss_object(mp, *hh);
+        }
         *hh = NULL;
     }
     return 0;
@@ -3550,7 +3570,7 @@ static int mplib_bytemap_data(lua_State *L)
             lua_pushinteger(L, b->nx);
             lua_pushinteger(L, b->ny);
             lua_pushinteger(L, b->nz);
-            if (lua_toboolean(L, 3)) { 
+            if (lua_toboolean(L, 3)) {
                 lua_pushlstring(L, (const char *) b->data, (size_t) (b->nx * b->ny * b->nz));
                 return 4;
             } else { 
@@ -3616,6 +3636,7 @@ static const struct luaL_Reg mplib_functions_list[] = {
     { "getlogtargets",      mplib_getlogtargets      },
     { "getinternalactions", mplib_getinternalactions },
     { "getcallbackstate",   mplib_getcallbackstate   },
+    { "getresultstatus",    mplib_getresultstates    },
     /* */                                            
     { "settolerance",       mplib_set_tolerance      },
     { "gettolerance",       mplib_get_tolerance      },

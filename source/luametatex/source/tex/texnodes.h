@@ -1072,6 +1072,7 @@ typedef enum package_leader_states {
 typedef enum box_option_flags { 
     box_option_no_math_axis = 0x01,
     box_option_discardable  = 0x02,
+    box_option_keep_spacing = 0x04,
  // box_option_synchronize  = 0x08,
 } box_option_flags;
 
@@ -1148,12 +1149,13 @@ typedef enum rule_codes {
 } rule_codes;
 
 typedef enum rule_option_codes {
-    rule_option_horizontal  = 0x01, /* maybe we want both at some time */
-    rule_option_vertical    = 0x02, /* when none is set we have a math rule */
-    rule_option_thickness   = 0x04, /* future */
-    rule_option_running     = 0x08,
-    rule_option_discardable = 0x10,
-    rule_option_valid       = 0x1F,
+    rule_option_horizontal    = 0x01, /* maybe we want both at some time */
+    rule_option_vertical      = 0x02, /* when none is set we have a math rule */
+    rule_option_thickness     = 0x04, /* future */
+    rule_option_running       = 0x08,
+    rule_option_discardable   = 0x10,
+    rule_option_keep_spacing  = 0x20,
+    rule_option_valid         = 0x2F,
 } rule_option_codes;
 
 # define last_rule_subtype spacing_rule_subtype
@@ -1190,6 +1192,10 @@ typedef enum rule_option_codes {
 # define rule_total(a) (rule_height(a) + rule_depth(a))
 
 # define set_rule_options(a,b)  rule_options(a) |= b
+
+static inline void tex_add_rule_option    (halfword a, halfword r) { rule_options(a) |= r; }
+static inline void tex_remove_rule_option (halfword a, halfword r) { rule_options(a) &= ~r; }
+static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rule_options(a) & r) == r; }
 
 /*tex
 
@@ -1254,9 +1260,9 @@ typedef enum rule_option_codes {
 # define glyph_language(a)   vinfo0(a,4)
 # define glyph_script(a)     vinfo1(a,4)
 # define glyph_control(a)    vlink0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
-# define glyph_disccode(a)   vlink1(a,4)  /*tex can be smaller */
-//define glyph_disccode(a)   vlink02(a,4) 
-//define glyph_reserved_1(a) vlink03(a,4) 
+//define glyph_disccode(a)   vlink1(a,4)  /*tex can be smaller */
+# define glyph_disccode(a)   vlink02(a,4) 
+# define glyph_processing(a) vlink03(a,4) 
 # define glyph_options(a)    vinfo(a,5)
 # define glyph_hyphenate(a)  vlink(a,5)
 # define glyph_protected(a)  vinfo00(a,6)
@@ -1280,47 +1286,51 @@ typedef enum rule_option_codes {
 # define glyph_input_file(a) vinfo(a,13)
 # define glyph_input_line(a) vlink(a,13)
 
-# define get_glyph_data(a)      ((halfword) glyph_data(a))
-# define get_glyph_state(a)     ((halfword) glyph_state(a))
-# define get_glyph_language(a)  ((quarterword) glyph_language(a))
-# define get_glyph_script(a)    ((quarterword) glyph_script(a))
-# define get_glyph_control(a)   ((quarterword) glyph_control(a))
-# define get_glyph_disccode(a)  ((quarterword) glyph_disccode(a))
-# define get_glyph_x_scale(a)   ((halfword) glyph_x_scale(a))
-# define get_glyph_y_scale(a)   ((halfword) glyph_y_scale(a))
-# define get_glyph_scale(a)     ((halfword) glyph_scale(a))
-# define get_glyph_raise(a)     ((halfword) glyph_raise(a))
-# define get_glyph_lhmin(a)     ((halfword) glyph_lhmin(a))
-# define get_glyph_rhmin(a)     ((halfword) glyph_rhmin(a))
-# define get_glyph_left(a)      ((halfword) glyph_left(a))
-# define get_glyph_right(a)     ((halfword) glyph_right(a))
-# define get_glyph_hyphenate(a) ((halfword) glyph_hyphenate(a))
-# define get_glyph_options(a)   ((halfword) glyph_options(a))
-# define get_glyph_discpart(a)  ((halfword)   (glyph_discpart(a)       & 0xF))
-# define get_glyph_discafter(a) ((halfword) ( (glyph_discpart(a) >> 4) & 0xF))
+# define get_glyph_data(a)       ((halfword) glyph_data(a))
+# define get_glyph_state(a)      ((halfword) glyph_state(a))
+# define get_glyph_language(a)   ((quarterword) glyph_language(a))
+# define get_glyph_script(a)     ((quarterword) glyph_script(a))
+# define get_glyph_control(a)    ((quarterword) glyph_control(a))
+//define get_glyph_disccode(a)   ((quarterword) glyph_disccode(a))
+# define get_glyph_disccode(a)   ((singleword) glyph_disccode(a))
+# define get_glyph_processing(a) ((singleword) glyph_disccode(a))
+# define get_glyph_x_scale(a)    ((halfword) glyph_x_scale(a))
+# define get_glyph_y_scale(a)    ((halfword) glyph_y_scale(a))
+# define get_glyph_scale(a)      ((halfword) glyph_scale(a))
+# define get_glyph_raise(a)      ((halfword) glyph_raise(a))
+# define get_glyph_lhmin(a)      ((halfword) glyph_lhmin(a))
+# define get_glyph_rhmin(a)      ((halfword) glyph_rhmin(a))
+# define get_glyph_left(a)       ((halfword) glyph_left(a))
+# define get_glyph_right(a)      ((halfword) glyph_right(a))
+# define get_glyph_hyphenate(a)  ((halfword) glyph_hyphenate(a))
+# define get_glyph_options(a)    ((halfword) glyph_options(a))
+# define get_glyph_discpart(a)   ((halfword)   (glyph_discpart(a)       & 0xF))
+# define get_glyph_discafter(a)  ((halfword) ( (glyph_discpart(a) >> 4) & 0xF))
 
-# define set_glyph_data(a,b)      glyph_data(a) = b
-# define set_glyph_state(a,b)     glyph_state(a) = b
-# define set_glyph_language(a,b)  glyph_language(a) = (quarterword) b
-# define set_glyph_script(a,b)    glyph_script(a) = (quarterword) b
-# define set_glyph_control(a,b)   glyph_control(a) = (quarterword) b
-# define set_glyph_disccode(a,b)  glyph_disccode(a) = (quarterword) b
-# define set_glyph_x_scale(a,b)   glyph_x_scale(a) = b
-# define set_glyph_y_scale(a,b)   glyph_y_scale(a) = b
-# define set_glyph_x_offset(a,b)  glyph_x_offset(a) = b
-# define set_glyph_y_offset(a,b)  glyph_y_offset(a) = b
-# define set_glyph_slant(a,b)     glyph_slant(a) = b
-# define set_glyph_weight(a,b)    glyph_weight(a) = b
-# define set_glyph_scale(a,b)     glyph_scale(a) = b
-# define set_glyph_raise(a,b)     glyph_raise(a) = b
-# define set_glyph_left(a,b)      glyph_left(a) = b
-# define set_glyph_right(a,b)     glyph_right(a) = b
-# define set_glyph_lhmin(a,b)     glyph_lhmin(a) = ((singleword) (b))
-# define set_glyph_rhmin(a,b)     glyph_rhmin(a) = ((singleword) (b))
-# define set_glyph_hyphenate(a,b) glyph_hyphenate(a) = ((halfword) (b))
-# define set_glyph_options(a,b)   glyph_options(a) = ((halfword) (b))
-# define set_glyph_discpart(a,b)  glyph_discpart(a) = (glyph_discpart(a) | (singleword)  ((b) & 0xF)      )
-# define set_glyph_discafter(a,b) glyph_discpart(a) = (glyph_discpart(a) | (singleword) (((b) & 0xF) << 4))
+# define set_glyph_data(a,b)       glyph_data(a) = b
+# define set_glyph_state(a,b)      glyph_state(a) = b
+# define set_glyph_language(a,b)   glyph_language(a) = (quarterword) b
+# define set_glyph_script(a,b)     glyph_script(a) = (quarterword) b
+# define set_glyph_control(a,b)    glyph_control(a) = (quarterword) b
+//define set_glyph_disccode(a,b)   glyph_disccode(a) = (quarterword) b
+# define set_glyph_disccode(a,b)   glyph_disccode(a) = (singleword) b
+# define set_glyph_processing(a,b) glyph_processing(a) = (singleword) b
+# define set_glyph_x_scale(a,b)    glyph_x_scale(a) = b
+# define set_glyph_y_scale(a,b)    glyph_y_scale(a) = b
+# define set_glyph_x_offset(a,b)   glyph_x_offset(a) = b
+# define set_glyph_y_offset(a,b)   glyph_y_offset(a) = b
+# define set_glyph_slant(a,b)      glyph_slant(a) = b
+# define set_glyph_weight(a,b)     glyph_weight(a) = b
+# define set_glyph_scale(a,b)      glyph_scale(a) = b
+# define set_glyph_raise(a,b)      glyph_raise(a) = b
+# define set_glyph_left(a,b)       glyph_left(a) = b
+# define set_glyph_right(a,b)      glyph_right(a) = b
+# define set_glyph_lhmin(a,b)      glyph_lhmin(a) = ((singleword) (b))
+# define set_glyph_rhmin(a,b)      glyph_rhmin(a) = ((singleword) (b))
+# define set_glyph_hyphenate(a,b)  glyph_hyphenate(a) = ((halfword) (b))
+# define set_glyph_options(a,b)    glyph_options(a) = ((halfword) (b))
+# define set_glyph_discpart(a,b)   glyph_discpart(a) = (glyph_discpart(a) | (singleword)  ((b) & 0xF)      )
+# define set_glyph_discafter(a,b)  glyph_discpart(a) = (glyph_discpart(a) | (singleword) (((b) & 0xF) << 4))
 
 # define get_glyph_dohyph(a) (hyphenation_permitted(glyph_hyphenate(a), syllable_hyphenation_mode ) || hyphenation_permitted(glyph_hyphenate(a), force_handler_hyphenation_mode))
 # define get_glyph_uchyph(a) (hyphenation_permitted(glyph_hyphenate(a), uppercase_hyphenation_mode) || hyphenation_permitted(glyph_hyphenate(a), force_handler_hyphenation_mode))
@@ -1367,6 +1377,14 @@ typedef enum glyph_subtypes {
 
 # define last_glyph_subtype glyph_math_accent_subtype
 
+/* todo: set based on font but then also setfont(g,f) needs to check it */
+
+typedef enum glyph_processing_codes {
+    glyph_processing_none = 0x1,
+    glyph_processing_base = 0x2,
+    glyph_processing_node = 0x3,
+} glyph_processing_codes;
+
 /* todo: make this a bitset so that we can also register breakpoints */
 
 typedef enum glyph_discpart_codes {
@@ -1412,12 +1430,13 @@ typedef enum glyph_option_codes {
     glyph_option_is_toddler                = 0x00020000,
     /* */
     glyph_option_is_continuation           = 0x00040000,
+    glyph_option_keep_spacing              = 0x00080000,
     /*tex We permit user options. */
-    glyph_option_user_first                = 0x00100000,
+    glyph_option_user_first                = 0x01000000,
     glyph_option_user_last                 = 0x40000000,
     /*tex These ranges can change! */
     glyph_option_system                    = 0x0001FFFF,
-    glyph_option_user                      = 0x4FF00000,
+    glyph_option_user                      = 0x4F000000,
     /*tex Keep this in sync with the above! */
     glyph_option_valid                     = glyph_option_system
                                            | glyph_option_user,

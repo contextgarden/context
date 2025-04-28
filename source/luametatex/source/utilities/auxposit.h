@@ -5,6 +5,7 @@
 # ifndef LMT_UTILITIES_POSIT_H
 # define LMT_UTILITIES_POSIT_H
 
+// # define SOFTPOSIT_EXACT 1
 # include "libraries/softposit/source/include/softposit.h"
 # include <math.h>
 

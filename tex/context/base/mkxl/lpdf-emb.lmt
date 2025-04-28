@@ -119,7 +119,7 @@ end
 
 -- A couple of shared helpers.
 
-local tounicodedictionary, widtharray, lmtxregistry, collectindices, subsetname, includecidset, forcecidset, tocidsetdictionary
+local tounicodedictionary, widtharray, lmtxregistry, collectindices, subsetname, forcecidset, tocidsetdictionary
 
 do
 
@@ -387,22 +387,21 @@ end
         return resolved, include, minindex, maxindex
     end
 
-    includecidset = false -- nicer for standard checking
-    forcecidset   = false -- for private testing only
+    forcecidset = false -- for private testing only
 
-    function lpdf.setincludecidset(v)
-        -- incredible ... it's obselete, no viewer needs it but then validators (depending on verison
-        -- and parser used) require it ... so in the end it had to be introduced again but now we just
-        -- ditch it in versions > 1 and ignore warnings (basically obsolete should not invalidate)
-        includecidset = v
-    end
+ -- function lpdf.setincludecidset(v)
+ --     -- incredible ... it's obselete, no viewer needs it but then validators (depending on version
+ --     -- and parser used) require it ... so in the end it had to be introduced again but now we just
+ --     -- ditch it in versions > 1 and ignore warnings (basically obsolete should not invalidate)
+ --     includecidset = v
+ -- end
 
     directives.register("backend.pdf.forcecidset",function(v)
         forcecidset = v
     end)
 
  -- tocidsetdictionary = function(indices,min,max) -- also works ok
- --     if includecidset or forcecidset then
+ --     if lpdf.getformatoption("cidsets") or forcecidset then
  --         local s = sparse.new(1)
  --         sparse.set(s,0)
  --         for i=min,max do
@@ -440,7 +439,7 @@ end
     tocidsetdictionary = function(indices,min,max)
         if lpdf.majorversion() > 1 then
             return nil
-        elseif includecidset or forcecidset then
+        elseif lpdf.getformatoption("cidsets") or forcecidset then
             local b = tocidset(indices,min,max,true)
             return pdfreference(pdfflushstreamobject(b))
         end

@@ -208,7 +208,6 @@ halfword lmt_optional_isnode(lua_State *L, int i)
     return lmt_maybe_isnode(L, i);
 }
 
-
 /* helpers */
 
 static void nodelib_push_direct_or_node(lua_State *L, int direct, halfword n)
@@ -3190,7 +3189,7 @@ static int nodelib_direct_setoptions(lua_State *L)
                 tex_add_glue_option(n, lmt_tohalfword(L, 2));
                 return 1;
             case rule_node:
-                set_rule_options(n, lmt_tohalfword(L, 2) & rule_option_valid);
+                tex_add_rule_option(n, lmt_tohalfword(L, 2) & rule_option_valid);
                 break;
             case math_node:
                 tex_add_math_option(n, lmt_tohalfword(L, 2));
@@ -4861,22 +4860,43 @@ static int nodelib_direct_removefromlist(lua_State *L)
     halfword head = nodelib_valid_direct_from_index(L, 1);
     int count = 0;
     if (head) {
-        halfword id = lmt_tohalfword(L, 2);
-        halfword subtype = lmt_opthalfword(L, 3, -1);
-        halfword current = head;
-        while (current) {
-            halfword next = node_next(current);
-            if (node_type(current) == id && (subtype < 0 || node_subtype(current) == subtype)) {
-                if (current == head) {
-                    head = next;
-                    node_prev(next) = null;
-                } else {
-                    tex_try_couple_nodes(node_prev(current), next);
+        if (lua_type(L, 2) == LUA_TTABLE) { 
+            lua_Unsigned l = lua_rawlen(L, 2);
+            for (lua_Integer i = 1; i <= l; i++) {
+                lua_rawgeti(L, 2, i);
+                { 
+                    halfword current = nodelib_valid_direct_from_index(L, -1);
+                    if (current) { 
+                        halfword next = node_next(current);
+                        if (current == head) {
+                            head = next;
+                            node_prev(next) = null;
+                        } else {
+                            tex_try_couple_nodes(node_prev(current), next);
+                        }
+                        tex_flush_node(current);
+                        ++count;
+                    }
                 }
-                tex_flush_node(current);
-                ++count;
             }
-            current = next;
+        } else {
+            halfword id = lmt_tohalfword(L, 2);
+            halfword subtype = lmt_opthalfword(L, 3, -1);
+            halfword current = head;
+            while (current) {
+                halfword next = node_next(current);
+                if (node_type(current) == id && (subtype < 0 || node_subtype(current) == subtype)) {
+                    if (current == head) {
+                        head = next;
+                        node_prev(next) = null;
+                    } else {
+                        tex_try_couple_nodes(node_prev(current), next);
+                    }
+                    tex_flush_node(current);
+                    ++count;
+                }
+                current = next;
+            }
         }
     }
     nodelib_push_direct_or_nil(L, head);
@@ -9280,6 +9300,57 @@ static int nodelib_direct_protectglyphsnone(lua_State *L)
     return 0;
 }
 
+/*tex This is an experiment. */
+
+static inline void nodelib_aux_protect_all_base(halfword h)
+{
+    while (h) {
+        if (node_type(h) == glyph_node) {
+            halfword f =  glyph_font(h);
+            if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && (has_font_text_control(f, text_control_base_ligaturing) || has_font_text_control(f, text_control_base_kerning))) {
+                glyph_protected(h) = glyph_protected_text_code;
+            }
+        }
+        h = node_next(h);
+    }
+}
+
+static inline void nodelib_aux_protect_node_base(halfword n)
+{
+    switch (node_type(n)) {
+        case glyph_node:
+            {
+                halfword f =  glyph_font(n);
+                if (f >= 0 && f <= lmt_font_state.font_data.ptr && lmt_font_state.fonts[f] && (has_font_text_control(f, text_control_base_ligaturing) || has_font_text_control(f, text_control_base_kerning))) {
+                    glyph_protected(n) = glyph_protected_text_code;
+                }
+            }
+            break;
+        case disc_node:
+            nodelib_aux_protect_all_base(disc_no_break_head(n));
+            nodelib_aux_protect_all_base(disc_pre_break_head(n));
+            nodelib_aux_protect_all_base(disc_post_break_head(n));
+            break;
+    }
+}
+
+static int nodelib_direct_protectglyphsbase(lua_State *L)
+{
+    halfword head = nodelib_valid_direct_from_index(L, 1);
+    halfword tail = nodelib_valid_direct_from_index(L, 2);
+    if (head) {
+        while (head) {
+            nodelib_aux_protect_node_base(head);
+            if (head == tail) {
+                break;
+            } else {
+                head = node_next(head);
+            }
+        }
+    }
+    return 0;
+}
+
 /* node.direct.first_glyphnode */
 /* node.direct.first_glyph */
 /* node.direct.first_char */
@@ -11688,6 +11759,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "protectglyph",            nodelib_direct_protectglyph           },
     { "protectglyphs",           nodelib_direct_protectglyphs          },
     { "protectglyphsnone",       nodelib_direct_protectglyphsnone      },
+    { "protectglyphsbase",       nodelib_direct_protectglyphsbase      },
     { "protrusionskippable",     nodelib_direct_protrusionskipable     },
     { "rangedimensions",         nodelib_direct_rangedimensions        }, /* maybe get... */
     { "remove",                  nodelib_direct_remove                 },
@@ -12390,12 +12462,12 @@ halfword lmt_vpack_filter_callback(
 # define get_dimension_par(P,A,B) \
     lua_push_key(A); \
     P = (lua_rawget(L, -3) == LUA_TNUMBER) ? lmt_roundnumber(L, -1) : B; \
-    lua_pop(L, 1);
+    lua_pop_one(L);
 
 # define get_integer_par(P,A,B) \
     lua_push_key(A); \
     P = (lua_rawget(L, -3) == LUA_TNUMBER) ? lmt_tohalfword(L, -1) : B; \
-    lua_pop(L, 1);
+    lua_pop_one(L);
 
 int lmt_par_pass_callback(
     halfword               head,
