@@ -59,7 +59,7 @@ if not modules then modules = { } end modules ['font-txt'] = {
 -- needs a bit more work (so it might never happen).
 --
 -- Usage: see m-fonts-plugins.mkiv. As it's a nice test for ffi support that file
--- migth be added to the distribution somewhere in the middle of 2017 when the ffi
+-- might be added to the distribution somewhere in the middle of 2017 when the ffi
 -- interface has been tested a bit more. Okay, it's 2012 now and we're way past that
 -- date but we never had a reason for adding it to the ConTeXt distribution. It
 -- should still work okay because I occasionally checked it against progress made in

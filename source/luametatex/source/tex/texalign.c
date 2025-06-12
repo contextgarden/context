@@ -185,7 +185,7 @@
     the program documentation still applies. Of course we have callbacks. Attributes are a bit
     complicating here. I experimented with some row and cell specific ones but grouping will always
     make it messy. One never knows what a preamble injects. So leaving it as-is is better than a
-    subtoptimal solution with side effects. To mention one aspect: we have unset nodes that use the
+    suboptimal solution with side effects. To mention one aspect: we have unset nodes that use the
     attribute fields for other purposes and get adapted later on anyway. I'll look into it again
     at some point.
 
@@ -355,7 +355,7 @@ static void tex_aux_finish_align      (void);
 
 /*tex
     We get |alignment_record| into |unset_node| and |unset_node| into |[hv]list_node|. And because
-    we can access the fields later on w emake sure that we wipe them. The box orientation field kind
+    we can access the fields later on we make sure that we wipe them. The box orientation field kind
     of protects reading them but still it's nicer this way. In general in \LUATEX\ and \LUAMETATEX\
     we need to be more careful because we expose fields.
 */
@@ -379,12 +379,12 @@ static inline void tex_aux_change_list_type(halfword n, quarterword type)
 
     It makes not much sense to add support for an |attr| keyword to |\halign| and |\valign| because
     then we need to decide if we tag rows or cells or both or come up with |cellattr| and |rowattr|
-    and such. But then it even makes sense to have explicit commands (in addition to the seperator)
+    and such. But then it even makes sense to have explicit commands (in addition to the separator)
     to tags individual cells. It's too much hassle for now and the advantages are not that large.
 
     This code has a history so changing it now is tricky. For instance we could the top of the align 
     stack instead of the copied values. On the other hand, working with copies makes that we can 
-    mess with these. And the gain would be little anywya, if at all. 
+    mess with these. And the gain would be little anyway, if at all. 
 
 */
 
@@ -519,8 +519,8 @@ static void tex_aux_pop_alignment(void)
     related properties (commands, lists, etc.) The command codes have been reshuffled and
     combined. Instead of dedicated cmd codes, we have a shared cmd with subtypes. The logic
     hasn't changed, just the triggering of actions. In theory there can be a performance penalty
-    (due to extra checking) but in practice that will not be noticed becasue this seldom happens.
-    The advange is that we have a uniform token interface. It also makes it possible to extend
+    (due to extra checking) but in practice that will not be noticed because this seldom happens.
+    The advantage is that we have a uniform token interface. It also makes it possible to extend
     the code.
 
 */
@@ -923,11 +923,11 @@ static void tex_aux_align_peek(void)
 
 /*tex
 *
-    Magick numbers are used to indicate the level of alignment. However, keep in  mind that in
+    Magic numbers are used to indicate the level of alignment. However, keep in  mind that in
     \LUANETATEX\ the fundamental parts of the rendering are separated. Contrary to traditional
     \TEX\ we don't have the interwoven hyphenation, ligature building, kerning, etc.\ code.
 
-    In the end we have a list starting and ending with tabskips and align records seperated by
+    In the end we have a list starting and ending with tabskips and align records separated by
     such skips.
 
 */
@@ -1237,7 +1237,7 @@ static void tex_aux_initialize_column(void)
 /*tex
 
     The scanner sets |align_state| to zero when the |u_j| template ends. When a subsequent |\cr|
-    or |\span| or tab mark occurs with |align_state=0|, the scanner activates the following code,
+    or |\span| or tab mark occurs with |align_state = 0|, the scanner activates the following code,
     which fires up the |v_j| template. We need to remember the |cur_chr|, which is either
     |cr_cr_code|, |cr_code|, |span_code|, or a character code, depending on how the column text has
     ended.
@@ -1509,7 +1509,7 @@ static void tex_aux_finish_row(void)
         row = tex_filtered_hpack(cur_list.head, cur_list.tail, 0, packing_additional, finish_row_group, direction_unknown, 0, null, 0, 0);
         tex_pop_nest();
         if (lmt_alignment_state.cur_pre_adjust_head != lmt_alignment_state.cur_pre_adjust_tail) {
-            tex_inject_adjust_list(lmt_alignment_state.cur_pre_adjust_head, 0, null, NULL);
+            tex_inject_adjust_list(lmt_alignment_state.cur_pre_adjust_head, pre_append_adjust_context, 0, null, NULL);
         }
         if (lmt_alignment_state.cur_pre_migrate_head != lmt_alignment_state.cur_pre_migrate_tail) {
             tex_append_list(lmt_alignment_state.cur_pre_migrate_head, lmt_alignment_state.cur_pre_migrate_tail);
@@ -1519,7 +1519,7 @@ static void tex_aux_finish_row(void)
             tex_append_list(lmt_alignment_state.cur_post_migrate_head, lmt_alignment_state.cur_post_migrate_tail);
         }
         if (lmt_alignment_state.cur_post_adjust_head != lmt_alignment_state.cur_post_adjust_tail) {
-            tex_inject_adjust_list(lmt_alignment_state.cur_post_adjust_head, 0, null, NULL);
+            tex_inject_adjust_list(lmt_alignment_state.cur_post_adjust_head, post_append_adjust_context, 0, null, NULL);
         }
     } else {
         row = tex_filtered_vpack(node_next(cur_list.head), 0, packing_additional, max_depth_par, finish_row_group, direction_unknown, 0, null, 0, 0, NULL);
@@ -1713,7 +1713,7 @@ static void tex_aux_finish_align(void)
         for some postprocessing can be to align (vertically) at a specific location in a cell
         but then we also need to process twice (and adapt the width in the preamble record).
 
-        We flush the tokenlists so that in principle we can access the align record nodes as normal
+        We flush the token lists so that in principle we can access the align record nodes as normal
         lists.
     */
     amount = saved_align_amount;
@@ -1741,7 +1741,7 @@ static void tex_aux_finish_align(void)
         be the maximum of the natural widths of all entries that span columns $i$ through $j$,
         inclusive. The alignrecord for column~$i$ contains  $w_{ii}$ in its |width| field, and there
         is also a linked list of the nonzero $w_{ij}$ for increasing $j$, accessible via the |info|
-        field; these span nodes contain the value $j-i+|min_quarterword|$ in their |link| fields.
+        field; these span nodes contain the value $j - i + |min_quarterword|$ in their |link| fields.
         The values of $w_{ii}$ were initialized to |null_flag|, which we regard as $-\infty$.
 
         The final column widths are defined by the formula $$ w_j = \max_{1\L i\L j} \biggl( w_{ij}

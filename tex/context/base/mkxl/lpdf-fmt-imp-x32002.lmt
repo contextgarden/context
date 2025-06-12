@@ -21,6 +21,7 @@ return {
         charsets    = true,
         procsets    = true,
         attachments = false,
+        extensions  = false,
         metadata    = {
             {
                 "addtoinfo",

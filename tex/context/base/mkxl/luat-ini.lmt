@@ -19,9 +19,9 @@ parametersets = parametersets or { } -- for special purposes
 table.setmetatableindex(moduledata,"table")
 table.setmetatableindex(thirddata, "table")
 
-if not global then
-    global  = _G
-end
+-- if not global then
+--     global = _G -- global has become a keyword in 5.5
+-- end
 
 LUATEXVERSION       = status.version
 LUATEXVERBOSE       = status.luatex_verbose

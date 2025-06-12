@@ -48,7 +48,7 @@
     switch} can select the appropriate thing to do by computing the value |abs(mode) + cur_cmd|,
     where |mode| is the current mode and |cur_cmd| is the current command code.
 
-    Per end December 2022 we no longer use the larg emode numbers that also encode the command at 
+    Per end December 2022 we no longer use the large mode numbers that also encode the command at 
     hand. That code is in the archive. 
 
 */
@@ -212,6 +212,10 @@ static int tex_aux_room_on_nest_stack(void) /* quite similar to save_stack check
     }
     return 1;
 }
+
+/*tex 
+    We start out with the page, that is, the main vertical list. 
+*/
 
 void tex_initialize_nesting(void)
 {
@@ -384,7 +388,7 @@ void tex_show_activities(void)
         tex_print_format("%l[%M entered at line %i%s]", n.mode, abs(n.mode_line), n.mode_line < 0 ? " (output routine)" : ""); // %L
         if (p == 0) {
             /*tex Show the status of the current page */
-            if (page_head != lmt_page_builder_state.page_tail) {
+            if (page_head != lmt_page_builder_state.tail) {
                 tex_print_format("%l[current page:%s]", lmt_page_builder_state.output_active ? " (held over for next output)" : "");
                 tex_show_box(node_next(page_head));
                 if (lmt_page_builder_state.contents != contribute_nothing) {
@@ -464,18 +468,22 @@ int tex_vmode_nest_index(void)
 
 void tex_tail_prepend(halfword n) 
 {
-    tex_couple_nodes(node_prev(cur_list.tail), n);
-    tex_couple_nodes(n, cur_list.tail);
-    if (cur_list.tail == cur_list.head) {
-        cur_list.head = n;
+    if (n) {
+        tex_couple_nodes(node_prev(cur_list.tail), n);
+        tex_couple_nodes(n, cur_list.tail);
+        if (cur_list.tail == cur_list.head) {
+            cur_list.head = n;
+        }
     }
 }
 
 void tex_tail_append(halfword p)
 {
-    node_next(cur_list.tail) = p;
-    node_prev(p) = cur_list.tail;
-    cur_list.tail = p;
+    if (p) {
+        node_next(cur_list.tail) = p;
+        node_prev(p) = cur_list.tail;
+        cur_list.tail = p;
+    }
 }
 
 /*tex
@@ -789,7 +797,7 @@ int tex_appended_mvl(halfword context, halfword boundary)
     } else { 
 # if page_callback
         if (! lmt_page_builder_state.output_active) {
-            lmt_page_filter_callback(context, boundary);
+            lmt_buildpage_callback(context, boundary);
         } 
 # endif 
         if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
@@ -835,7 +843,7 @@ int tex_current_mvl(halfword *head, halfword *tail)
     if (lmt_mvl_state.slot == 0) { 
         if (head && tail) {
             *head = node_next(page_head);
-            *tail = lmt_page_builder_state.page_tail;
+            *tail = lmt_page_builder_state.tail;
         }
         return 0; 
     } else if (lmt_mvl_state.slot > 0) {

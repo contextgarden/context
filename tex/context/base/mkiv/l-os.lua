@@ -265,6 +265,10 @@ do
         return gettimeofday() - startuptime
     end
 
+    function os.startuptime()
+        return startuptime
+    end
+
     -- print(os.gettimeofday()-os.time())
     -- os.sleep(1.234)
     -- print (">>",os.runtime())
@@ -688,4 +692,8 @@ do
         return osexit()
     end
 
+end
+
+if serial and serial.write then
+    os.serialwrite = serial.write -- for a while
 end

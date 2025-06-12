@@ -11,6 +11,7 @@
     <flag name="script"><short>run an mtx script (lua prefered method) (<ref name="noquotes"/>), no script gives list</short></flag>
     <flag name="evaluate"><short>run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)</short></flag>
     <flag name="execute"><short>run a script or program (texmfstart method) (<ref name="noquotes"/>)</short></flag>
+    <flag name="direct"><short>run a program </short></flag>
     <flag name="resolve"><short>resolve prefixed arguments</short></flag>
     <flag name="ctxlua"><short>run internally (using preloaded libs)</short></flag>
     <flag name="internal"><short>run script using built in libraries (same as <ref name="ctxlua"/>)</short></flag>
@@ -34,11 +35,13 @@
     <flag name="verbose"><short>give a bit more info</short></flag>
     <flag name="trackers" value="list"><short>enable given trackers</short></flag>
     <flag name="progname" value="str"><short>format or backend</short></flag>
+    <flag name="platform" value="str"><short>show platform as seen by script</short></flag>
     <flag name="systeminfo" value="str"><short>show current operating system, processor, etc</short></flag>
    </subcategory>
    <subcategory>
     <flag name="edit"><short>launch editor with found file</short></flag>
     <flag name="launch"><short>launch files like manuals, assumes os support (<ref name="all"/>,<ref name="list"/>)</short></flag>
+    <flag name="associate"><short>launch files like manuals, assumes os support via suffix association</short></flag>
    </subcategory>
    <subcategory>
     <flag name="timedrun"><short>run a script and time its run</short></flag>
@@ -72,9 +75,22 @@
     <flag name="var-value"><short>report value of variable</short></flag>
     <flag name="find-file"><short>report file location</short></flag>
     <flag name="find-path"><short>report path of file</short></flag>
+    <flag name="format-path"><short>report path where format files end up</short></flag>
    </subcategory>
    <subcategory>
     <flag name="pattern" value="string"><short>filter variables</short></flag>
+    <flag name="all" value="string"><short>report all (when applicable)</short></flag>
+    <flag name="format" value="string"><short>filter by file format (when applicable)</short></flag>
+   </subcategory>
+   <subcategory>
+    <flag name="selfclean" value="string"><short>remove libraries (maintainance)</short></flag>
+    <flag name="selfmerge" value="string"><short>embed libraries (maintainance)</short></flag>
+    <flag name="selfupdate" value="string"><short>move to bin path (maintainance)</short></flag>
+   <subcategory>
+   </subcategory>
+    <flag name="help" value="string"><short>show help info</short></flag>
+    <flag name="help" value="string"><short>show version info</short></flag>
+    <flag name="gethelp" value="string"><short>launch the given help info (<ref name="url"/>)</short></flag>
    </subcategory>
   </category>
  </flags>

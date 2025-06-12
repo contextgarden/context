@@ -30,6 +30,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "TeXGyrePagellaMath-Regular",
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 1.632",
                 },

@@ -1913,7 +1913,7 @@ function readers.pack(data)
                     end
                 end
 
-                packdeltas(variable.global)
+                packdeltas(variable["global"])
                 packdeltas(variable.horizontal)
                 packdeltas(variable.vertical)
                 packdeltas(variable.metrics)
@@ -2014,7 +2014,7 @@ function readers.pack(data)
                             end
                         end
                     end
-                    unpackdeltas(variable.global)
+                    unpackdeltas(variable["global"])
                     unpackdeltas(variable.horizontal)
                     unpackdeltas(variable.vertical)
                     unpackdeltas(variable.metrics)
@@ -2481,7 +2481,7 @@ function readers.unpack(data)
                     end
                 end
 
-                unpackdeltas(variable.global)
+                unpackdeltas(variable["global"])
                 unpackdeltas(variable.horizontal)
                 unpackdeltas(variable.vertical)
                 unpackdeltas(variable.metrics)

@@ -10,7 +10,8 @@ local nuts          = nodes.nuts
 local getid         = nuts.getid
 local getnext       = nuts.getnext
 local getattr       = nuts.getattr
-local isglyph       = nuts.isglyph
+local getxscale     = nuts.getxscale
+local isnextglyph   = nuts.isnextglyph
 
 local fontdata      = fonts.hashes.identifiers
 local getkernpair   = fonts.handlers.otf.getkern
@@ -29,12 +30,13 @@ local a_extrakern <const> = attributes.private("extrafontkern")
 typesetters.fontkerns = { }
 
 function typesetters.fontkerns.handler(head)
-    local current   = head
-    local lastfont  = nil
-    local lastchar  = nil
-    local lastdata  = nil
+    local current  = head
+    local lastfont = nil
+    local lastchar = nil
+    local lastdata = nil
+    local lastnode = nil
     while current do
-        local char, font = isglyph(current)
+        local nxt, char, font = isnextglyph(current)
         if char then
             local a = getattr(current,a_extrakern)
             if a then
@@ -47,6 +49,12 @@ function typesetters.fontkerns.handler(head)
                         local data  = fontdata[font]
                         local kern1 = getkernpair(lastdata,lastchar,char)
                         local kern2 = getkernpair(data,lastchar,char)
+                        if kern1 ~= 0 then
+                            kern1 = getxscale(lastnode) * kern1
+                        end
+                        if kern1 ~= 0 then
+                            kern2 = getxscale(current) * kern2
+                        end
                         if a == 1 then
                             kern = kern1 > kern2 and kern2 or kern1 -- min
                         elseif a == 2 then
@@ -67,22 +75,32 @@ function typesetters.fontkerns.handler(head)
                     end
                     local kern = getkernpair(lastdata,lastchar,char)
                     if kern ~= 0 then
+                        local s1 = getxscale(lastnode)
+                        local s2 = getxscale(current)
+                        if s1 > s2 then
+                            kern = s1 * kern
+                        else
+                            kern = s2 * kern
+                        end
                         head = insertbefore(head,current,new_kern(kern))
                     end
                 end
                 lastchar = char
                 lastfont = font
+                lastnode = current -- we need to pickup the xscale
             elseif lastfont then
                 lastfont = nil
                 lastchar = nil
                 lastdata = nil
+             -- lastnode = nil -- redundant
             end
         elseif lastfont then
             lastfont = nil
             lastchar = nil
             lastdata = nil
+         -- lastnode = nil -- redundant
         end
-        current = getnext(current)
+        current = nxt
     end
     return head
 end

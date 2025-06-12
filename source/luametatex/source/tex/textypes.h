@@ -558,7 +558,7 @@ typedef union tokenword {
 
     We're coming from \PASCAL\ which has a boolean type, while in \CCODE\ an |int| is used. However,
     as we often have callbacks and and a connection with the \LUA\ end using |boolean|, |true| and
-    |false| is often somewhat inconstent. For that reason we now use |int| instead. It also prevents
+    |false| is often somewhat inconsistent. For that reason we now use |int| instead. It also prevents
     interference with a different definition of |boolean|, something that we can into a few times in
     the past with external code.
 
@@ -767,7 +767,7 @@ extern void tex_undump_constants (dumpstream f);
 
 /*tex
 
-This is an experimental feature, different approaces to the main command dispatcher:
+This is an experimental feature, different approaches to the main command dispatcher:
 
 \starttabulate[|l|l|l|l|l|l]
 \BC n  \BC method          \BC [vhm]mode   \BC binary    \BC manual \BC comment \NC \NR
@@ -1039,14 +1039,26 @@ typedef enum tex_page_context_codes {
     triggered_page_context
 } tex_page_context_codes;
 
-typedef enum tex_append_line_context_codes {
-    box_append_line_context,
-    pre_box_append_line_context,
-    pre_adjust_append_line_context,
-    post_adjust_append_line_context,
-    pre_migrate_append_line_context,
-    post_migrate_append_line_context,
-} tex_append_line_context_codes;
+/* linebreak math alignment box */
+
+typedef enum tex_append_adjust_context_codes {
+    pre_append_adjust_context,  
+    post_append_adjust_context, 
+} tex_append_adjust_context_codes;
+
+/* linebreak */
+
+typedef enum tex_append_migrate_context_codes {
+    pre_append_migrate_context,  
+    post_append_migrate_context, 
+} tex_append_migrate_context_codes;
+
+/* linebreak */
+
+// typedef enum tex_append_line_context_codes {
+//     pre_box_append_line_context,
+//     box_append_line_context,
+// } tex_append_line_context_codes;
 
 typedef enum tex_par_trigger_codes {
     normal_par_trigger,

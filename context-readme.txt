@@ -72,3 +72,14 @@ After installing you need to run 'mtxrun --generate' so that a successive
 
 You can get help and more information on the context garden, mailing lists and user
 forums cq. platforms.
+
+Per mid 2025 the reference installation described here uses some 340 MB disk
+space, much of which is taken by the documentation. If needed you can also
+install context in texlive in which case you end up with 9.2 GB for a full
+installation and even 560 MB for context only because quite some files and
+programs get installed that we don't need or even support. For the record:
+luametatex formats are generated but luatex not (xetex format generation fails
+and hb engines are present but not supported anyway). Just stick to the regular
+'mtxrun' and 'context' commands. Also be aware that support for commercial (os
+related) fonts are not installed by default. Support on the mailing lists uses
+the reference installation so in case of troubles, try that one first.

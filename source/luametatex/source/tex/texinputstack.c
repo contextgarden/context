@@ -208,13 +208,13 @@ void tex_copy_to_parameter_stack(halfword *pstack, int n)
     called |open_parens| because it relates to the way files are reported), the |input_file| and
     the current line number in the current source file |line|. Furthermore some stacks:
     |line_stack|. |source_filename_stack| and |full_source_filename_stack|. The |scanner_status|
-    tells if we can a end a subfile now. There is an obscure identifier relevant to non-|normal|
+    tells if we can a end a sub-file now. There is an obscure identifier relevant to non-|normal|
     scanner status |warning_index|. Then there is the often used reference count pointer of token
     list being defined: |def_ref|.
 
-    Here is a procedure that uses |scanner_status| to print a warning message when a subfile has
+    Here is a procedure that uses |scanner_status| to print a warning message when a sub-file has
     ended, and at certain other crucial times. Actually it is only called when we run out of
-    token memory. Because memory errors can be of any kind, we normall will not use the \TEX\
+    token memory. Because memory errors can be of any kind, we normally will not use the \TEX\
     error handler (but we do have a callback).
 
     Similar code is is us in |texerrors.c| for use with the error callback. Maybe some day that
@@ -452,13 +452,13 @@ static void tex_aux_print_current_input_state(void)
     Here it is necessary to explain a little trick. We don't want to store a long string that
     corresponds to a token list, because that string might take up lots of memory; and we are
     printing during a time when an error message is being given, so we dare not do anything that
-    might overflow one of \TEX's tables. So \quote {pseudoprinting} is the answer: We enter a mode
+    might overflow one of \TEX's tables. So \quote {pseudo printing} is the answer: We enter a mode
     of printing that stores characters into a buffer of length |error_line|, where character $k +
     1$ is placed into |trick_buf [k mod error_line]| if |k < trick_count|, otherwise character |k|
     is dropped. Initially we set |tally := 0| and |trick_count := 1000000|; then when we reach the
     point where transition from line 1 to line 2 should occur, we set |first_count := tally| and
     |trick_count := tmax > (error_line, tally + 1 + error_line - half_error_line)|. At the end
-    of the pseudoprinting, the values of |first_count|, |tally|, and |trick_count| give us all the
+    of the pseudo printing, the values of |first_count|, |tally|, and |trick_count| give us all the
     information we need to print the two lines, and all of the necessary text is in |trick_buf|.
 
     Namely, let |l| be the length of the descriptive information that appears on the first line.
@@ -585,7 +585,7 @@ void tex_show_context(void)
                     }
                     lmt_print_state.selector = saved_selector;
                 }
-                /*tex Print two lines using the tricky pseudoprinted information. */
+                /*tex Print two lines using the tricky pseudo printed information. */
                 if (! skip) {
                     int p; /*tex Starting or ending place in |trick_buf|. */
                     int m; /*tex Context information gathered for line 2. */

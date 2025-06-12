@@ -108,6 +108,7 @@ end -- end of namespace closure
 --  <!DOCTYPE Something PUBLIC "... ..." "..." >
 --  <!DOCTYPE Something SYSTEM "... ..." [ ... ] >
 --  <!DOCTYPE Something SYSTEM "... ..." >
+--  <!DOCTYPE Something [ <!ATTLIST whatever xml:lang CDATA "eng"> ] >
 --  <!DOCTYPE Something [ ... ] >
 --  <!DOCTYPE Something >
 --
@@ -1083,9 +1084,16 @@ local function install(spacenewline,spacing,anything)
 
     entitydoctype          = entitydoctype + entityresolve
 
+    -- e.g. : <!ATTLIST whatever xml:lang CDATA "eng">
+
+    local attlistdoctype   = optionalspace * P("<!ATTLIST")
+                           * somespace
+                           * (1-close)^0 -- for now we just skip over it
+                           * optionalspace * close
+
     -- we accept comments in doctypes
 
-    local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + entityresolve + basiccomment + space)^0 * optionalspace * endset
+    local doctypeset       = beginset * optionalspace * P(elementdoctype + entitydoctype + entityresolve + attlistdoctype + basiccomment + space)^0 * optionalspace * endset
     local definitiondoctype= doctypename * somespace * doctypeset
     local publicdoctype    = doctypename * somespace * P("PUBLIC") * somespace * value * somespace * value * somespace * doctypeset
     local systemdoctype    = doctypename * somespace * P("SYSTEM") * somespace * value * somespace * doctypeset

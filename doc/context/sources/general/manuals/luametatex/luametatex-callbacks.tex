@@ -2,6 +2,9 @@
 
 \environment luametatex-style
 
+% callback.names
+% also numbers
+
 \startdocument[title=Callbacks]
 
 \startsection[title={Introduction}]
@@ -586,7 +589,7 @@ helpers from the font library.
 
 \startsection[title=Typesetting]
 
-\startsubsection[title=pre_output_filter]
+\startsubsection[title=pre_output]
 
 This callback is called when \TEX\ is ready to start boxing the box 255 for \prm
 {output}. The callback does not replace any internal code.
@@ -606,7 +609,7 @@ end
 
 \stopsubsection
 
-\startsubsection[title=buildpage_filter]
+\startsubsection[title=buildpage]
 
 This callback is called whenever \LUAMETATEX\ is ready to move stuff to the main
 vertical list. You can use this callback to do specialized manipulation of the
@@ -646,7 +649,7 @@ callback are:
 
 \stopsubsection
 
-\startsubsection[title=hpack_filter]
+\startsubsection[title=hpack]
 
 This callback is called when \TEX\ is ready to start boxing some horizontal mode
 material. Math items and line boxes are ignored at the moment. The callback does
@@ -672,15 +675,15 @@ the number is in scaled points.
 
 \stopsubsection
 
-\startsubsection[title=vpack_filter]
+\startsubsection[title=vpack]
 
 This callback is called when \TEX\ is ready to start boxing some vertical mode
 material. Math displays are ignored at the moment. The callback does not replace
 any internal code.
 
-This function is very similar to \type {hpack_filter}. Besides the fact
-that it is called at different moments, there is an extra variable that matches
-\TEX's \type {\maxdepth} setting.
+This function is very similar to \type {hpack}. Besides the fact that it is
+called at different moments, there is an extra variable that matches \TEX's \type
+{\maxdepth} setting.
 
 \starttyping[option=LUA]
 function (
@@ -773,10 +776,10 @@ mode.
 \startsubsection[title=glyph_run]
 
 When set this callback is triggered when \TEX\ normally handles the ligaturing
-and kerning. In \LUATEX\ you use the \typ {hpack_filter} and \typ
-{per_linebreak_filter} callbacks for that (where each passes different
-arguments). This callback doesn't get triggered when there are no glyphs (in
-\LUATEX\ this optimization is controlled by a a variable).
+and kerning. In \LUATEX\ you use the \typ {hpack} and \typ {pre_linebreak}
+callbacks for that (where each passes different arguments). This callback doesn't
+get triggered when there are no glyphs (in \LUATEX\ this optimization is
+controlled by a a variable).
 
 \starttyping[option=LUA]
 function (
@@ -794,7 +797,7 @@ they are kind of obsolete.)
 
 \stopsubsection
 
-\startsubsection[title=pre_linebreak_filter]
+\startsubsection[title=pre_linebreak]
 
 This callback is called just before \LUATEX\ starts converting a list of nodes
 into a stack of \type {\hbox}es, after the addition of \type {\parfillskip}. The
@@ -811,8 +814,8 @@ end
 
 The string called \type {groupcode} identifies the nodelist's context within
 \TEX's processing. The range of possibilities is given in the table below, but
-not all of those can actually appear here, some are for the \type {hpack_filter}
-and \type {vpack_filter} callbacks.
+not all of those can actually appear here, some are for the \type {hpack} and
+\type {vpack} callbacks.
 
 \starttabulate[|l|p|]
 % \DB value                \BC explanation                                     \NC \NR
@@ -856,7 +859,7 @@ three things:
 
 \stopsubsection
 
-\startsubsection[title=linebreak_filter]
+\startsubsection[title=linebreak]
 
 This callback replaces \LUATEX's line breaking algorithm. The callback does not
 replace any internal code.
@@ -885,7 +888,7 @@ possible you will end up in an unfixable \quote {deadcycles loop}.
 
 \stopsubsection
 
-\startsubsection[title=post_linebreak_filter]
+\startsubsection[title=post_linebreak]
 
 This callback is called just after \LUATEX\ has converted a list of nodes into a
 stack of \type {\hbox}es.
@@ -901,7 +904,7 @@ end
 
 \stopsubsection
 
-\startsubsection[title=append_to_vlist_filter]
+\startsubsection[title=append_to_vlist]
 
 This callback is called whenever \LUATEX\ adds a box to a vertical list (the
 \type {mirrored} argument is obsolete):
@@ -924,7 +927,7 @@ normal prevdepth correction will be applied, based on the first node.
 
 \stopsubsection
 
-\startsubsection[title=alignment_filter]
+\startsubsection[title=alignment]
 
 This is an experimental callback that when set is called several times during the
 construction of an alignment. The context values are available in \typ
@@ -946,7 +949,7 @@ can be unpredictable and, as with other node related callbacks, crash the engine
 
 \stopsubsection
 
-\startsubsection[title=local_box_filter]
+\startsubsection[title=local_box]
 
 Local boxes are a somewhat tricky and error prone feature so use this callback
 with care because the paragraph is easily messed up. A line can have a left,
@@ -980,10 +983,10 @@ mechanisms before it will be declared stable.
 
 \stopsubsection
 
-\startsubsection[title=packed_vbox_filter]
+\startsubsection[title=packed_vbox]
 
-After the \type {vpack_filter} callback (see previous section) is triggered the
-box get packed and after that this callback can be configured to kick in.
+After the \type {vpack} callback (see previous section) is triggered the box get
+packed and after that this callback can be configured to kick in.
 
 \starttyping[option=LUA]
 function (
@@ -1058,7 +1061,7 @@ as otherwise \TEX\ can get confused.
 
 \stopsubsection
 
-\startsubsection[title=append_line_filter]
+\startsubsection[title=append_line]
 
 Every time a line is added this callback is triggered, when set. migrated
 material and adjusts also qualify as such and the detail relates to the adjust

@@ -16,7 +16,7 @@
     because one could run them from that medium, format files were shared. In order to do that the
     file had to be endian neutral. Unfortunately the choice was such that for the most commonly
     architecture (intel) the dump items had to be swapped. This could slow down a startup, depending
-    on how rigourous a compiler of operating system was in testing (it is a reason why startup on
+    on how rigorous a compiler of operating system was in testing (it is a reason why startup on
     \MSWINDOWS\ was somewhat slower).
 
     Because in \LUATEX\ we can also store \LUA\ bytecodes it made no sense to take that portability
@@ -41,8 +41,8 @@
     initial = 2020//4 - 2020//100 + 2020//400 = 490
     \stoptyping
 
-    Although \LUAMETATEX\ is already a bit older, we sort of released in leapyear 2020 so we take
-    the number of leapyears since zero (which is kind of \type {\undefined} as starting point). This
+    Although \LUAMETATEX\ is already a bit older, we sort of released in leap year 2020 so we take
+    the number of leap years since zero (which is kind of \type {\undefined} as starting point). This
     number actually jumps whenever something affects the format file (which can be an extra command or
     some reshuffling of codes) so it is not always an indication of something really need.
 
@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 719
+# define luametatex_format_fingerprint 720
 
 /* These end up in the string pool. */
 

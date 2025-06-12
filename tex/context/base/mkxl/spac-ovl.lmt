@@ -12,7 +12,6 @@ local settings_to_array  = utilities.parsers.settings_to_array
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
 local nuts               = nodes.nuts
-local tonut              = nodes.tonut
 
 local newrule            = nuts.pool.virtualrule
 local insertbefore       = nuts.insertbefore
@@ -96,7 +95,7 @@ local actions = {
             for currentserial=1,#serial do
                 local data       = serial[currentserial]
                 local breakpoint = data.breakpoint
-                local current    = tonut(breakpoint)
+                local current    = breakpoint
                 while current do
                     local id = getid(current)
                     if id == penalty_code or id == glue_code or id == kern_code or id == math_code then

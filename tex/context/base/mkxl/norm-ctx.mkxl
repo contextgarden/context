@@ -20,3 +20,56 @@
 %let\mathbottomaccent\normalunderline
 
 \protect  \endinput
+
+% these will be adapted cq. no longer used, we just go primitive
+
+% \normaladjustspacing
+% \normalcleaders
+% \normalcontrolspace
+% \normalday
+% \normaldiscretionary
+% \normaldump
+% \normalend
+% \normaleqno              -> generate error message (also aliases)
+% \normaleqno              norm-ctx.mkxl
+% \normaleverypar
+% \normalexpanded            % will stay
+% \normalgleaders
+% \normalhyphenationcode
+% \normalinput
+% \normalinput             maybe
+% \normalitaliccorrection
+% \normallanguage
+% \normalleaders
+% \normalmathbin
+% \normalmathclose
+% \normalmathinner
+% \normalmathop
+% \normalmathopen
+% \normalmathord
+% \normalmathpunct
+% \normalmathrel
+% \normalmathstyle
+% \normalmathstyle
+% \normalmeaning
+% \normalmeaningless
+% \normaloverline          norm-ctx.mkxl
+% \normaloverloadmode
+% \normalpagebox
+% \normalpar               -> \par    (strong protected)
+% \normalprotrudechars
+% \normalreqno             norm-ctx.mkxl
+% \normalspace
+% \normalsrule             -> \srule
+% \normalstartdmath
+% \normalstartimath
+% \normalstopdmath
+% \normalstopimath
+% \normalsubscript
+% \normalsuperscript
+% \normaltime
+% \normaltime
+% \normalunderline         norm-ctx.mkxl
+% \normalweekday
+% \normalxleaders
+% \normalyear

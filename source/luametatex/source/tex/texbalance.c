@@ -1724,7 +1724,7 @@ void tex_balance(balance_properties *properties, halfword head)
     lmt_balance_state.no_shrink_error_yet      = 1;
     lmt_balance_state.threshold                = properties->pretolerance;
     lmt_balance_state.quality                  = 0;
-    lmt_balance_state.callback_id              = properties->checks ? lmt_callback_defined(balance_callback) : 0;
+    lmt_balance_state.callback_id              = properties->checks ? lmt_callback_defined(balance_check_callback) : 0;
     lmt_balance_state.extra_background_stretch = 0;
     lmt_balance_state.extra_background_shrink  = 0;
     lmt_balance_state.passive                  = null;
@@ -2408,7 +2408,7 @@ static void tex_aux_post_balance(const balance_properties *properties, int callb
 
 /*tex
 
-    We only handle |... <hlist line> [penalty] [glue] <hlist line>| but ignoire trailing 
+    We only handle |... <hlist line> [penalty] [glue] <hlist line>| but ignore trailing 
     glue, penalties etc. 
 */
 

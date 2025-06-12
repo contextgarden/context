@@ -36,7 +36,7 @@
     special nature is easily discernible. The expandable commands come first.
 
     The extensions on top of standard \TEX\ came with extra |cmd| categories so at some point it
-    make sense to normalize soms of that. Similar commands became one category. Some more could be
+    make sense to normalize some of that. Similar commands became one category. Some more could be
     combined, like rules and move etc.\ but for now it makes no sense. We could also move the mode
     tests to the runners and make the main lookup simpler. Some commands need their own category
     because they also can bind to characters (like super and subscript).
@@ -291,7 +291,7 @@ dimension_reference_cmd,
         they became |protected_call_cmd|. After that we also got two frozen variants and later four
         tolerant so we ended up with eight. When I wanted some more, a different solution was
         chosen, so now we have just one again instead of |[tolerant_][frozen_][protected_]call_cmd|.
-        But ... in the end I setteled again for four basic call commands because it's nicer in
+        But ... in the end I settled again for four basic call commands because it's nicer in
         the token interface.
 
         The todo cmds come from a todo list and relate to |\expand| but then like \expand{...} even

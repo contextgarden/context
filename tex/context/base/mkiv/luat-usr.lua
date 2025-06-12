@@ -6,8 +6,6 @@ if not modules then modules = { } end modules ['luat-usr'] = {
     license   = "see context related readme files"
 }
 
-local global            = global
-
 local moduledata        = moduledata
 local thirddata         = thirddata
 local userdata          = userdata
@@ -66,7 +64,7 @@ local function runscript(code)
 end
 
 local threads = setmetatableindex(function(t,k)
-    local v = setmetatableindex({},global)
+    local v = setmetatableindex({},_G)
     t[k] = v
     return v
 end)
@@ -119,7 +117,7 @@ local function registername(name,message)
     local report = reporter("lua instance",message)
     local proxy = {
         -- we can access all via:
-        global       = global, -- or maybe just a metatable
+        ["global"]   = _G, -- or maybe just a metatable
         -- some protected data
         moduledata   = setmetatableindex(moduledata),
         thirddata    = setmetatableindex(thirddata),

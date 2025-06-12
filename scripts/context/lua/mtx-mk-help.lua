@@ -13,7 +13,6 @@ context                            --exporthelp=all %targetpath%\mkiv\context.tm
 mtxrun --script context            --exporthelp=all %targetpath%\mkiv\mtx-context.tmp
 
 mtxrun --script babel              --exporthelp=all %targetpath%\mkiv\mtx-babel.tmp
-mtxrun --script base               --exporthelp=all %targetpath%\mkiv\mtx-base.tmp
 mtxrun --script cache              --exporthelp=all %targetpath%\mkiv\mtx-cache.tmp
 mtxrun --script chars              --exporthelp=all %targetpath%\mkiv\mtx-chars.tmp
 mtxrun --script check              --exporthelp=all %targetpath%\mkiv\mtx-check.tmp

@@ -10,16 +10,16 @@ if not modules then modules = { } end modules ['math-act'] = {
 -- have been removed (no longer viable) but can be found in the .lua variant.
 
 -- The tweaks here evolved from experiments with, discussions about and upgrades of
--- the math subsystem, a project that Mikael Sundvist and I started end 2021 and
+-- the math subsystem, a project that Mikael Sundqvist and I started end 2021 and
 -- that is still ongoing in 2023 (and probably beyond as we find new challenges as
 -- we go).
 
-local type, next, tonumber = type, next, tonumber
+local type, next, tonumber, tostring = type, next, tonumber, tostring
 local fastcopy, copytable, insert, remove, concat = table.fastcopy, table.copy, table.insert, table.remove, table.concat
-local formatters = string.formatters
+local formatters, gsub, lower = string.formatters, string.gsub, string.lower
 local byte = string.byte
 local max = math.max
-local setmetatableindex, sortedkeys, sortedhash  = table.setmetatableindex, table.sortedkeys, table.sortedhash
+local setmetatableindex, sortedkeys, sortedhash, concat = table.setmetatableindex, table.sortedkeys, table.sortedhash, table.concat
 local lpegmatch = lpeg.match
 
 local trace_defining   = false  trackers.register("math.defining",   function(v) trace_defining   = v end)
@@ -4028,30 +4028,59 @@ end
 
 do
 
-    local reported = { }
-
-    function mathtweaks.version(target,original,parameters)
+    local function check(target,original,parameters,field,what,reported)
         local metadata = original.shared.rawdata.metadata
         if metadata then
-            local version = string.strip(metadata.version or "") -- some have trailing spaces
-            if version then
-                local expected = parameters.expected
-                local fontname = metadata.fontname or false
-                local message  = parameters.message
-             -- version = tonumber(string.match(version,"%d+.%d+"))
-                if version ~= expected and not reported[fontname] then
-                    report_tweak("version %a found, version %a expected",target,original,version,expected)
-                elseif trace_tweaking then
-                    report_tweak("version %a found",target,original,version)
+            local value    = string.strip(metadata[field] or "")
+            local expected = parameters.expected
+            if value and expected then
+                if type(expected) ~= "table" then
+                    expected = { expected }
                 end
-                if message and message ~= "" and not reported[fontname] then
+                local valid = { }
+                for i=1,#expected do
+                    valid[gsub(lower(tostring(expected[i] or true )),"[%s%-]","")] = true
+                end
+                local value    = gsub(lower(tostring(metadata[field] or false)),"[%s%-]","")
+                local message  = parameters.message
+                local hasissue = not valid[value] and not reported[value]
+                if hasissue then
+                    report_tweak("%s %a found, %s one of [% | t] expected",target,original,what,value,what,expected)
+                elseif trace_tweaking then
+                    report_tweak("%s %a found",target,original,what,value)
+                end
+                if message and message ~= "" and not reported[value] then
                     report_tweak()
                     report_tweak("%s",target,original,message)
                     report_tweak()
                 end
-                reported[fontname] = true
-                target.tweakversion = version
+                reported[value] = true
+                if hasissue then
+                    return value, expected and concat(expected," | ") or "?"
+                end
             end
+        end
+    end
+
+    local reported = { }
+
+    function mathtweaks.version(target,original,parameters)
+        check(target,original,parameters,"version","version",reported)
+    end
+
+    local reported = { }
+
+    function mathtweaks.fontname(target,original,parameters)
+        local bad, good = check(target,original,parameters,"fontname","fontname",reported)
+        if bad and good and parameters.abort then
+         -- environment.arguments.signal = "qr"
+            tex.error(
+                'We have a font issue!',
+                'Are you sure that you use the right math font file? I expected\n' ..
+                '"' .. good .. '" and not "' .. bad .. '"\n' ..
+                'so you might consider contacting those responsible for the\n' ..
+                'distribution that you use.'
+            )
         end
     end
 

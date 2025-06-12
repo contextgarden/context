@@ -75,6 +75,9 @@ static void tex_aux_pass_text(void)
         tex_get_next();
         if (cur_cmd == if_test_cmd) {
             switch (cur_chr) {
+                case if_code:
+                   ++level;
+                   break;
                 case fi_code:
                     if (level == 0) {
                         lmt_input_state.scanner_status = status;

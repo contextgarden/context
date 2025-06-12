@@ -32,7 +32,7 @@ do -- these are only for testing and might go to a module eventually
 
     local codes             = tex.codes
 
-    local global_code       <const> = tex.flagcodes.global
+    local global_code       <const> = tex.flagcodes["global"]
 
     local savelua           = token.savelua
     ----- isdefined         = token.isdefined

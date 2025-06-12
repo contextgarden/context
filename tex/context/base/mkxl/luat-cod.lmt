@@ -206,7 +206,7 @@ if not environment.luafilechunk then
         local data = loadfile(fullname)
         texio.write("terminal_and_logfile","<",data and "+ " or "- ",fullname,">")
         if data then
--- package.loaded[gsub(filename,"%..-$"] =
+         -- package.loaded[gsub(filename,"%..-$"] =
             data()
         end
         return data
@@ -232,12 +232,10 @@ if not environment.engineflags then -- raw flags
 
 end
 
--- We need a few premature callbacks in the format generator. We
--- also do this when the format is loaded as otherwise we get
--- a kpse error when disabled. This is an engine issue that will
--- be sorted out in due time.
-
--- print("!!!!!!!!!!!!!!!!!!!!!!",lfs.isfile) os.exit()
+-- We need a few premature callbacks in the format generator. We also do this when
+-- the format is loaded as otherwise we get a kpse error when disabled. This is an
+-- engine issue that will be sorted out in due time. The reader is basically only
+-- there for reading the main context file.
 
 if not lfs.isfile then
 
@@ -279,15 +277,15 @@ local function target_file(name)
     return targetpath .. "/" .. name
 end
 
-local function find_log_file(name)
+local function find_log_file_callback(name)
     return target_file(name)
 end
 
-local function find_data_file(name)
+local function find_data_file_callback(name)
     return source_file(name)
 end
 
-local function open_data_file(name)
+local function open_data_file_callback(name)
     local fullname = source_file(name)
     if fullname then
         local f = io.open(fullname,'rb')
@@ -304,11 +302,7 @@ local function open_data_file(name)
     end
 end
 
-callback.register('find_log_file',   find_log_file)
-callback.register('find_data_file' , find_data_file )
-callback.register('open_data_file' , open_data_file )
-
-callback.register("trace_memory", function(what,success)
+local function trace_memory_callback(what,success)
     success = success and "succeeded" or "failed"
     if logs then
         logs.report("tex memory","bumping category %a %s, details: %s",
@@ -318,4 +312,9 @@ callback.register("trace_memory", function(what,success)
             what,success))
     end
  -- os.exit()
-end)
+end
+
+callback.register("find_log_file",find_log_file_callback)
+callback.register("find_data_file",find_data_file_callback)
+callback.register("open_data_file",open_data_file_callback)
+callback.register("trace_memory",trace_memory_callback)

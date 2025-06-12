@@ -66,6 +66,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "STIXTwoMath-Regular",
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 2.12 b168",
                 },

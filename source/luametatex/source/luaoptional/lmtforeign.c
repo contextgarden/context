@@ -20,7 +20,7 @@
     calls than need some compile time properties that normally come from the h files generated on
     the system and I don't want to impose on users to also install and compile a whole chain of
     dependencies. We could (and maybe some day will if users really need it) provide callbacks
-    too but then we also need to keep some system specific 'constants' in sync. We then probaly
+    too but then we also need to keep some system specific 'constants' in sync. We then probably
     also need to provide libraries at the contextgarden.
 
     The basics of an interface as used in this module (running over specs) is given in the \LUA\
@@ -32,7 +32,7 @@
 
     For the record: when testing, I just used a version of libffi that came with inkscape and I
     saw several other instances on my system disk. A quick test with loading showed that it is no
-    problem in the ecosystem that we use in \TEX. The buildot on the contextgarden generates
+    problem in the ecosystem that we use in \TEX. The buildbot on the contextgarden generates
     binaries for several platforms and one can observe that some platforms (like bsd) are not
     that downward compatible, so there we have multiple versions. This also means that finding
     matching libraries can be an issue. In \CONTEXT\ we never depend on external or evolving
@@ -42,7 +42,7 @@
     it's often the libraries that make for the - sometimes incompatible - changes which in turn
     demands adaptation of the scripts etc in the build farm. We try to avoid that as much as
     possible but if we ever decide to also provide libraries that match the binaries, but it
-    remains a depencenie that you want to avoid in long running projects.
+    remains a dependency that you want to avoid in long running projects.
 
     Comment: I might look into a vararg variant some day, just for fun. Actually, this module is
     mostly about the fun, so it will take some time to evolve.
@@ -1143,7 +1143,7 @@ static void foreignlib_populate(lua_State *L)
 }
 
 /*tex
-    Finally it all somes together in the initializer. We expect the caller to handle the lookup
+    Finally it all comes together in the initializer. We expect the caller to handle the lookup
     of |libffi| which can have different names per operating system.
 */
 

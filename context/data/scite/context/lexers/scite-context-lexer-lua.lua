@@ -24,10 +24,10 @@ local stringlexer   = lexers.load("scite-context-lexer-lua-longstring")
 
 local directives = { } -- communication channel
 
-local keywords = {
-    "and", "break", "do", "else", "elseif", "end", "false", "for", "function", -- "goto",
-    "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true",
-    "until", "while",
+local keywords = { -- "goto"
+    "and", "break", "do", "else", "elseif", "end", "false", "for", "function",
+    "global", "if", "in", "local", "nil", "not", "or", "repeat", "return",
+    "then", "true", "until", "while",
 }
 
 local functions = {

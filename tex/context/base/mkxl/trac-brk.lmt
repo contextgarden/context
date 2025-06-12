@@ -15,7 +15,6 @@ local settings_to_array = utilities.parsers.settings_to_array
 local settings_to_hash  = utilities.parsers.settings_to_hash
 
 local nuts              = nodes.nuts
-local tonut             = nodes.tonut
 
 local newrule           = nuts.pool.virtualrule
 local insertbefore      = nuts.insertbefore
@@ -196,7 +195,7 @@ local showactions = {
             for currentserial=1,#serial do
                 local data       = serial[currentserial]
                 local breakpoint = data.breakpoint
-                local current    = tonut(breakpoint)
+                local current    = breakpoint
                 local trigger    = getid(current)
                 while current do
                     local id = getid(current)
@@ -218,7 +217,6 @@ local showactions = {
     [breakcodes.line] = function(checks,line,badness,overshoot,shrink,stretch,linum,ser)
         if showdetails and texgetnest("ptr") == nestlevel then
             linenumber = linenumber + 1
-            line = tonut(line)
             local linedata   = getnormalizedline(line,true) -- get more details
             local natural    = linedata.size
             local linewd     = linedata.width

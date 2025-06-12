@@ -36,6 +36,8 @@ local tonode              = nuts.tonode
 
 local setlink             = nuts.setlink
 local gettail             = nuts.tail
+local getlist             = nuts.getlist
+local setlist             = nuts.setlist
 local vpack               = nuts.vpack
 
 local newgluespec         = nuts.pool.gluespec -- nodes.pool.gluespec
@@ -527,27 +529,39 @@ notes.check_spacing = check_spacing
 
 -- only notes, kind of hardcoded .. bah
 
-local function action(index,slot)
+local function insert_distance_callback(index,slot)
     local state = notes.numbers[index]
     if state then
-        return tonode(newgluespec(check_spacing(index,slot)))
+        return newgluespec(check_spacing(index,slot))
     else
-        return tonode(newgluespec())
+        return newgluespec()
     end
 end
 
-callbacks.register("insert_distance",action,"check spacing around inserts")
+callbacks.register {
+    name    = "insert_distance",
+    action  = insert_distance_callback,
+    comment = "check spacing around inserts",
+    frozen  = true,
+}
 
 -- New, for columnsets:
 
 local inserts = table.setmetatableindex("table")
 
-callback.register("balance_insert", function(n, cbk, index, data)
+local function balance_insert_callback(n,cbk,index,data)
     if cbk == 0 and getinsertmultiplier(index) == 0 then
-        inserts[index][data] = tonut(n.list)
-        n.list = nil
+        inserts[index][data] = getlist(n)
+        setlist(n)
     end
-end)
+end
+
+callbacks.register {
+    name    = "balance_insert",
+    action  = balance_insert_callback,
+    comment = "collect inserts from balance slot",
+    frozen  = true,
+}
 
 function notes.flushrange(index,mark) -- (index,first,last)
     local first = tonumber(getmark("first", mark)) or 0

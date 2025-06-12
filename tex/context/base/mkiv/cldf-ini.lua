@@ -222,7 +222,7 @@ local p_resolve = ((1-lpegP("."))^1 / function(s) f_resolve = f_resolve[s] end *
 
 local function resolvestoredfunction(str)
     if type(str) == "string" then
-        f_resolve = global -- namespace
+        f_resolve = _G
         lpegmatch(p_resolve,str)
         return f_resolve
     else

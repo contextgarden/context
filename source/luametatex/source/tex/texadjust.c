@@ -324,7 +324,7 @@ halfword tex_prepend_adjust_list(halfword head, halfword tail, halfword adjust, 
     return tail;
 }
 
-void tex_inject_adjust_list(halfword adjust, int obeyoptions, halfword nextnode, const line_break_properties *properties)
+void tex_inject_adjust_list(halfword adjust, halfword context, int obeyoptions, halfword nextnode, const line_break_properties *properties)
 {
     if (adjust && node_type(adjust) == temp_node) {
         adjust = node_next(adjust);
@@ -419,7 +419,7 @@ void tex_inject_adjust_list(halfword adjust, int obeyoptions, halfword nextnode,
                 tex_tail_append_list(list);
             }
             if (! lmt_page_builder_state.output_active) {
-                lmt_append_line_filter_callback(post_adjust_append_line_context, adjust_index(adjust));
+                lmt_append_adjust_callback(context, adjust_index(adjust));
             }
             adjust_list(adjust) = null;
         }
@@ -427,7 +427,6 @@ void tex_inject_adjust_list(halfword adjust, int obeyoptions, halfword nextnode,
         adjust = next;
     }
 }
-
 
 void tex_adjust_attach(halfword box, halfword adjust)
 {

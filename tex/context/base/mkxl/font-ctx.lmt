@@ -71,6 +71,8 @@ local hashes              = fonts.hashes
 local currentfont         = font.current
 local definefont          = font.define
 
+local getfontoffamily     = tex.getfontoffamily
+
 local getprivateslot      = helpers.getprivateslot
 
 local cleanname           = names.cleanname
@@ -1243,7 +1245,7 @@ do  -- else too many locals
             "integer",
         },
         actions   = function (
-            global,          -- \ifx\fontclass\empty\s!false\else\s!true\fi
+            isglobal,        -- \ifx\fontclass\empty\s!false\else\s!true\fi
             cs,              -- {#csname}%
             str,             -- \somefontfile
             size,            -- \d_font_scaled_font_size
@@ -1301,7 +1303,7 @@ do  -- else too many locals
             specification.textsize  = textsize
             specification.goodies   = goodies
             specification.cs        = cs
-            specification.global    = global
+            specification["global"] = isglobal
             specification.scalemode = scaledfontmode -- context specific
             if detail and detail ~= "" then
                 specification.method = method or "*"
@@ -1422,8 +1424,8 @@ end
                     csnames[id] = specification.cs
                     properties.id = id -- already set
                     definers.register(tfmdata,id) -- to be sure, normally already done
-                    texdefinefont(global,cs,id)
-                 -- texdefinefont(cs,id,global and "global")
+                    texdefinefont(isglobal,cs,id)
+                 -- texdefinefont(cs,id,isglobal and "global")
                     constructors.finalize(tfmdata)
                     if trace_defining then
                         report_defining("defining %a, id %a, target %a, features %a / %a, fallbacks %a / %a, step %a",
@@ -1452,8 +1454,8 @@ end
                 end
                 csnames[tfmdata] = specification.cs
                 -- \definedfont ends up here
-                texdefinefont(global,cs,tfmdata)
-             -- texdefinefont(cs,tfmdata,global and "global")
+                texdefinefont(isglobal,cs,tfmdata)
+             -- texdefinefont(cs,tfmdata,isglobal and "global")
                 -- resolved (when designsize is used):
                 local size = round(fontdata[tfmdata].parameters.size or 0)
                 if scaledfontmode ~= 4 then
@@ -1560,9 +1562,9 @@ end
             if cs == "" then
                 cs = nil
                 specification.cs = nil
-                specification.global = false
-            elseif specification.global == nil then
-                specification.global = false
+                specification["global"] = false
+            elseif specification["global"] == nil then
+                specification["global"] = false
             end
             --
             local tfmdata = definers.read(specification,specification.size)
@@ -1570,8 +1572,8 @@ end
                 return -1, nil
             elseif type(tfmdata) == "number" then
                 if cs then
-                    texdefinefont(specification.global,cs,tfmdata)
-                 -- texdefinefont(cs,tfmdata,specification.global and "global")
+                    texdefinefont(specification["global"],cs,tfmdata)
+                 -- texdefinefont(cs,tfmdata,specification["global"] and "global")
                     csnames[tfmdata] = cs
                 end
                 stoptiming(fonts)
@@ -1581,8 +1583,8 @@ end
                 tfmdata.properties.id = id
                 definers.register(tfmdata,id)
                 if cs then
-                    texdefinefont(specification.global,cs,id)
-                 -- texdefinefont(cs,id,specification.global and "global")
+                    texdefinefont(specification["global"],cs,id)
+                 -- texdefinefont(cs,id,specification["global"] and "global")
                     csnames[id] = cs
                 end
                 constructors.finalize(tfmdata)
@@ -1634,11 +1636,16 @@ end
         return id, csnames[id]
     end
 
-    local function read(name,size)
+    local function define_font_callback(name,size)
         return (define { name = name, size = size } or 0)
     end
 
-    callbacks.register("define_font",read,"define and/or load a font")
+    callbacks.register {
+        name    = "define_font",
+        action  = define_font_callback,
+        comment = "define and/or load a font",
+        frozen  = true,
+    }
 
     -- here
 
@@ -1849,13 +1856,16 @@ local pattern = P("P")
               * (lpeg.patterns.hexdigit^4 / function(s) return tonumber(s,16) end)
               * P(-1)
 
-local function nametoslot(name,id) -- also supports PXXXXX (4+ positions)
+local function nametoslot(font,name) -- also supports PXXXXX (4+ positions)
+    if name then
+        font = tonumber(font) or true
+    else
+        name = font
+        font = true
+    end
     local t = type(name)
     if t == "string" then
-        if not id then
-            id = true
-        end
-        local unic = unicodes[id]
+        local unic = unicodes[font]
         local slot = unic[name]
         if slot then
             return slot
@@ -1871,7 +1881,7 @@ local function nametoslot(name,id) -- also supports PXXXXX (4+ positions)
         if not aglunicodes then
             aglunicodes = encodings.agl.unicodes
         end
-        local char = characters[id]
+        local char = characters[font]
         local slot = aglunicodes[name]
         if slot and char[slot] then
             return slot
@@ -1882,7 +1892,7 @@ local function nametoslot(name,id) -- also supports PXXXXX (4+ positions)
         end
         -- not in font
     elseif t == "number" then
-        if characters[id][name] then
+        if characters[font][name] then
             return slot
         else
             -- not in font
@@ -1892,13 +1902,19 @@ end
 
 local found = { }
 
-local function descriptiontoslot(name)
+local function descriptiontoslot(font,name)
+    if name then
+        font = tonumber(font) or true
+    else
+        name = font
+        font = true
+    end
     local t = type(name)
     if t == "string" then
         -- slow
         local list = sortedkeys(chardata) -- can be a cache with weak tables
         local slot = found[name]
-        local char = characters[true]
+        local char = characters[font]
         if slot then
             return char[slot] and slot or nil
         end
@@ -1960,7 +1976,9 @@ local function descriptiontoslot(name)
 end
 
 local function indextoslot(font,index)
-    if not index then
+    if index then
+        font = tonumber(font) or true
+    else
         index = font
         font  = true
     end
@@ -2032,7 +2050,7 @@ do -- else too many locals
             end,
         -- unicode description (synonym)
         u = function(name)
-                local n = descriptiontoslot(name,false)
+                local n = descriptiontoslot(name)
                 return n and utfchar(n) or name
             end,
         -- all
@@ -2043,6 +2061,22 @@ do -- else too many locals
         -- char
         c = function(name)
                 return name
+            end,
+        --
+        ["mn"] = function(name)
+                local f = getfontoffamily(0)
+                local n = nametoslot(f,name)
+                return n and utfchar(n) or name
+            end,
+        ["mu"] = function(name)
+                local f = getfontoffamily(0)
+                local n = descriptiontoslot(f,name)
+                return n and utfchar(n) or name
+            end,
+        ["ma"] = function(name)
+                local f = getfontoffamily(0)
+                local n = nametoslot(f,name) or descriptiontoslot(f,name)
+                return n and utfchar(n) or name
             end,
     }
 
@@ -2056,7 +2090,7 @@ do -- else too many locals
     --
     -- -- more efficient:
 
-    local splitter = C(1) * P(":") * C(P(1)^1) / function(method,name)
+    local splitter = C((1-P(":"))^1) * P(":") * C(P(1)^1) / function(method,name)
         local action = methods[method]
         return action and action(name) or name
     end
@@ -2077,6 +2111,8 @@ do -- else too many locals
     helpers.indextoslot       = indextoslot
     helpers.tochar            = tochar
 
+    local integer_value       = tokens.values.integer
+
     -- interfaces:
 
     implement {
@@ -2095,6 +2131,21 @@ do -- else too many locals
         name      = "tochar",
         actions   = { tochar, ctx_safechar },
         arguments = "string",
+    }
+
+
+ -- \definemathoperator[mystar][summations][left=\tounicharnum{mn:uF5825}]
+
+    implement {
+        name      = "tounicharnum",
+        public    = true,
+        usage     = "value",
+        arguments = "string",
+        actions   = function(str)
+            local n = tochar(str)
+            local u = n and utfbyte(n) or utfbyte("?")
+            return integer_value, u
+        end
     }
 
 end

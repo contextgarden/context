@@ -1137,6 +1137,8 @@
      %
      \c_page_sides_n_of_hang\noflines
    \fi
+   % indeed we can have a negative number of lines in which case we end up
+   % here again later
    \global\c_page_sides_hangafter\zerocount
    \ifnum\c_page_sides_n_of_hang>\zerocount
      \ifcase\c_page_sides_n_of_lines

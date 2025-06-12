@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-04-28 14:22
+-- merge date  : 2025-06-12 14:18
 
 do -- begin closure to overcome local limits and interference
 
@@ -3596,7 +3596,7 @@ end
 string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
 local preamble=""
 local environment={
- global=global or _G,
+ ["global"]=_G,
  lpeg=lpeg,
  type=type,
  tostring=tostring,
@@ -25794,7 +25794,7 @@ function readers.pack(data)
       end
      end
     end
-    packdeltas(variable.global)
+    packdeltas(variable["global"])
     packdeltas(variable.horizontal)
     packdeltas(variable.vertical)
     packdeltas(variable.metrics)
@@ -25879,7 +25879,7 @@ function readers.pack(data)
        end
       end
      end
-     unpackdeltas(variable.global)
+     unpackdeltas(variable["global"])
      unpackdeltas(variable.horizontal)
      unpackdeltas(variable.vertical)
      unpackdeltas(variable.metrics)
@@ -26258,7 +26258,7 @@ function readers.unpack(data)
       end
      end
     end
-    unpackdeltas(variable.global)
+    unpackdeltas(variable["global"])
     unpackdeltas(variable.horizontal)
     unpackdeltas(variable.vertical)
     unpackdeltas(variable.metrics)

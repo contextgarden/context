@@ -6,7 +6,7 @@
 
     Here we implement sparse arrays with an embedded save stack. These functions are called very
     often but a few days of experimenting proved that there is not much to gain (if at all) from
-    using macros or optimizations like preallocating and fast access to the first 128 entries. In
+    using macros or optimizations like pre-allocating and fast access to the first 128 entries. In
     practice the overhead is mostly in accessing memory and not in (probably inlined) calls. So, we
     should accept fate and wait for faster memory. It's the price we pay for being unicode on the
     one hand and sparse on the other.
@@ -19,7 +19,7 @@
 
         v // 4  v % 4  =>  v >> 2  v & 3
 
-    but let's just assume that the compiler optimzes it. 
+    but let's just assume that the compiler optimizes it. 
 
     We could also pack the catcodes in single bytes but then we need to work with 
     
@@ -37,7 +37,7 @@
 
 /* 
  
-    We don't need to test if a tree is defined because we assuem that this happens in the callers 
+    We don't need to test if a tree is defined because we assume that this happens in the callers 
     which saves some overhead here. (See older code for commented tests.)
 
  */

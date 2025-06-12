@@ -53,7 +53,7 @@ made _command (it was already somewhat inconsistent anyway). When something gets
 
 (Hans Hagen, 2019+)
 
-At some point a new round of cleanup started (2025) as preparation for soem extensions that Mikael
+At some point a new round of cleanup started (2025) as preparation for some extensions that Mikael
 S and I had in mind. Part of that involved some reconfiguring of memory management so that we got
 more insight in memory usage. Being more specific (node wise) and share less the memory footprint
 could be brought down a bit.
@@ -76,7 +76,7 @@ GUST font team use their own tools around \MP\ anyway.
 
 This variant (below) is therefore a stripped down library. Everything related to loading fonts is
 gone, and if a \PS\ backend is needed the functionality has to go into its own module (as with \SVG\
-and \PNG). This means that code removed here has to go there. One problen then is that the output
+and \PNG). This means that code removed here has to go there. One problem then is that the output
 primitives have to be brought in too, but in good \CWEB\ practices, that then can be done via change
 files (basically extending the data structures and such). However, a more modern variant could be to
 just use the library with \LUA, produce \PDF\ and convert that to any format needed. This is what we
@@ -153,7 +153,7 @@ Todo: primitive curveto
 
 /*tex
 
-As with \LUATEX\ (and \LUAMETATEX) weve tried to keep the original documentation close to where it
+As with \LUATEX\ (and \LUAMETATEX) we've tried to keep the original documentation close to where it
 makes sense but sometimes we have to compromise. Sorry for that.
 
 */
@@ -201,7 +201,7 @@ At some point I started adding features to the library (think of stacking) but t
 additions came when Mikael Sundqvist and we side tracked from extending math at the \TEX\ end to
 more \METAFUN: intersection lists, arctime lists, path iteration, a few more helpers, some fixes, a
 bit more control, access to previously hidden functionality, appended paths, etc. And there is
-undoubtly more to come. As with all \LUATEX\ and \LUAMETATEX\ development, most gets explained in
+likely more to come. As with all \LUATEX\ and \LUAMETATEX\ development, most gets explained in
 the history documents in the \CONTEXT\ distribution and articles. It was around version 3.14 (end
 May 2022).
 
@@ -231,7 +231,7 @@ preceding parameters, the following quantities can be changed to extend or reduc
 
 Here are some macros for common programming idioms (incr and decr are now inlined). The order of
 comments is (still) sub-optimal but will be adapted over time (years). We also have macros that
-interface to (previously glonbal) variables. Comments might refer to these without showing the
+interface to (previously global) variables. Comments might refer to these without showing the
 definitions as these are in the header file.
 
 */
@@ -301,7 +301,7 @@ As said before, now each number system has its own implementation.
 Finally, a normal deviate with mean zero and unit standard deviation can readily be obtained with the
 ratio method (Algorithm 3.4.1R in {\em The Art of Computer Programming}). This is the original one,
 that stays as reference: Now each number system has its own implementation, true to the original as
-much as possibile.
+much as possible.
 
 The random related code is now in the number system modules!
 
@@ -387,7 +387,7 @@ identifications. The relative values are not critical, except for |true_code..fa
 |x_part_operation..mp_blue_part_operation|, and the ordering of |filled_op..bounded_op| must match
 that of the code values they test for.
 
-Beware! The operation and type unumerations in some places run in parallel (with an offset. That
+Beware! The operation and type enumerations in some places run in parallel (with an offset. That
 makes it possible the handle types with common code using a delta. In some cases the delta is
 multiplied by 2 because we have knowns and unknowns. A less sensitive to patches would be to just
 duplicate the code (or to use a function call).
@@ -587,7 +587,7 @@ structure is not worth the minimal extra code clarification.
 /*tex
 
 Setting the |hashloc| field of |end_attr| to a value greater than any legal hash address is done by
-assigning $-1$ typecasted to |mp_symbol|, hopefully resulting in all bits being set. On systems that
+assigning $-1$ typecast to |mp_symbol|, hopefully resulting in all bits being set. On systems that
 support negative pointer values or where typecasting $-1$ does not result in all bits in a pointer
 being set, something else needs to be done.
 
@@ -969,7 +969,7 @@ dash nodes.
 
 */
 
-/* still mneeded ? */
+/* still needed ? */
 
 # define mp_get_dash_list(A)   (mp_dash_node) (((mp_dash_node) (A))->link)
 # define mp_set_dash_list(A,B) ((mp_dash_node) (A))->link = (mp_dash_node) ((B))
@@ -1704,7 +1704,7 @@ discovered. Heights, depths, and italic corrections are different from widths no
 list length is more severely restricted, but also because zero values do not need to be put into the
 list.
 
-To print |scaled| value to PDF output we need some subroutines to ensure accurary.
+To print |scaled| value to PDF output we need some subroutines to ensure accuracy.
 
 */
 
@@ -1715,10 +1715,10 @@ To print |scaled| value to PDF output we need some subroutines to ensure accurar
 Shipping pictures out.
 
 The |ship_out| procedure, to be described below, is given a pointer to an edge structure.
-Originally the output was targeted at \POSTSCRIPT\ but the library has no backend. It privides the
+Originally the output was targeted at \POSTSCRIPT\ but the library has no backend. It provides the
 result as a structure that reflects the original \POSTSCRIPT\ backend. We could use more direct
 methods but for now we follow the route with an intermediate. Actually, it's that intermediate that
-is kind of the standard output \API. We no longer report the shipped outfigure because the  backend
+is kind of the standard output \API. We no longer report the shipped out figure because the  backend
 can do that, but we keep the number.
 
 */
@@ -2412,7 +2412,7 @@ static void mp_free_instance(MP mp)
     }
     mp_memory_free(mp->internal);
     /* */
-    for (int i = 0; i <= 15; i++) {
+    for (int i = 0; i < mp->memory_pool[mp_bytemaps_pool].max; i++) {
         mp_memory_free(mp->bytemaps[i].data);
     }
     mp_memory_free(mp->bytemaps);
@@ -3157,7 +3157,7 @@ static void mp_print_nl(MP mp, const char *str)
 The global variable |interaction| has four settings, representing increasing amounts of user
 interaction:
 
-Set it here so it can be overwritten by the commandline\MP\ is careful not to call |error| when the
+Set it here so it can be overwritten by the command line \MP\ is careful not to call |error| when the
 print |selector| setting might be unusual. The only possible values of |selector| at the time of
 error messages are
 
@@ -3202,8 +3202,8 @@ a particular error.
 
 The program uses a |jump_buf| to handle this, this is initialized at three spots: the start of
 |mp_new|, the start of |mp_initialize|, and the start of |mp_run|. Those are the only library entry
-points.If the array of internals is still |NULL| when |jump_out| is called, a crash occured during
-initialization, and it is not safe to run the normal cleanup routine.
+points. If the array of internals is still |NULL| when |jump_out| is called, a crash will occur 
+during initialization, and it is not safe to run the normal cleanup routine.
 
 Individual lines of help are recorded in the array |help_line|, which contains entries in positions
 |0 .. (help_ptr - 1)|. They should be printed in reverse order, i.e., with |help_line [0]| appearing
@@ -3237,7 +3237,7 @@ void mp_error(MP mp, const char *msg, const char *hlp)
 
 A single computation might use several subroutine calls, and it is desirable to avoid producing
 multiple error messages in case of arithmetic overflow. So the routines below set the global variable
-|arith_error| to |true| instead of reporting errors directly to the user.
+|arithmic_error| to |true| instead of reporting errors directly to the user.
 
 At crucial points the program will say |mp_check_arithmic|, to test if an arithmetic error has been
 detected.
@@ -3379,7 +3379,7 @@ Conversely, when some node |p| of size |s| is no longer needed, the operation |f
 make its words available, by inserting |p| as a new empty node just before where |rover| now points.
 
 A symbolic node is recycled by calling |free_symbolic_node|. Actually, all node types now have
-dedicated pool control. So, the original documentation with respect to mmemory allocation no longer
+dedicated pool control. So, the original documentation with respect to memory allocation no longer
 applies. We went from self-controlled (scaled) management to dynamic (multiple number systems) to
 a more granular one. At some point we might split this large file in pieces and collect all memory
 management in its own file.
@@ -3762,8 +3762,8 @@ static void mp_begin_diagnostic_print(MP mp, const char *s, const char *t, int n
 
 /*tex
 
-Here are the functions needed for the avl construction.The avl comparison function is a straightword
-version of |strcmp|, except that checks for the string lengths first.
+Here are the functions needed for the avl construction.The avl comparison function is a 
+straight forward version of |strcmp|, except that checks for the string lengths first.
 
 */
 
@@ -5191,7 +5191,7 @@ void mp_flush_below_variable(MP mp, mp_node p)
         q = r->link;
         mp_recycle_value(mp, r);
         mp_free_value_node(mp, r);
-        /*tex We know that |q| is okay biut the compiler likes a check for |NULL|. */
+        /*tex We know that |q| is okay but the compiler likes a check for |NULL|. */
         if (q) {
             do {
                 mp_flush_below_variable(mp, q);
@@ -10061,7 +10061,7 @@ static mp_edge_header_node mp_make_dashes(MP mp, mp_edge_header_node h)
         mp_dash_node dln;       /*tex |mp_link(d)| */
         mp_edge_header_node hh; /*tex an edge header that tells how to break up |dln| */
         mp_node ds;             /*tex the stroked node from which |hh| and |hsf| are derived */
-        mp_new_number(y0);         /*tex the initial $y$ coordinate */
+        mp_new_number(y0);      /*tex the initial $y$ coordinate */
         p0 = NULL;
         p = mp_edge_list(h)->link;
         while (p != NULL) {
@@ -10362,12 +10362,12 @@ saved the dashed stroked nodes in the corresponding dash nodes, we must be prepa
 dashes into smaller dashes.
 
 The name of this module is a bit of a lie because we just find the first |dd| where |mp_take_scaled(hsf,
-stop_x(dd))| is large enough to make an overlap possible. It could be that the unoffset version of
+stop_x(dd))| is large enough to make an overlap possible. It could be that the un-offset version of
 dash |dln| falls in the gap between |dd| and its predecessor.
 
-At this point we already know that |start_x(dln)<=xoff+mp_take_scaled(hsf,stop_x(dd))|.The next major
-task is to update the bounding box information in an edge header~|h|. This is done via a procedure
-|adjust_bbox| that enlarges an edge header's bounding box to accommodate the box computed by
+At this point we already know that |start_x(dln) <= xoff + mp_take_scaled(hsf,stop_x(dd))|.The next 
+major task is to update the bounding box information in an edge header~|h|. This is done via a 
+procedure adjust_bbox| that enlarges an edge header's bounding box to accommodate the box computed by
 |path_bbox| or |pen_bbox|. (This is stored in global variables |minx|, |miny|, |maxx|, and |maxy|.)
 
 */
@@ -11848,7 +11848,7 @@ static mp_knot mp_make_envelope(MP mp, mp_knot c, mp_knot h, int linejoin, int l
                                 \stoptyping
 
                                 The reason for failure here is the addition of |r != q| in revision
-                                1757 in \quote {Advance |p| to node |q|, removing any ``dead} cubics'',
+                                1757 in \quote {Advance |p| to node |q|, removing any dead cubics},
                                 which itself was needed to fix a bug with disappearing knots in a
                                 path that was rotated exactly 45 degrees (luatex.org bug 530).
                              */
@@ -20940,14 +20940,66 @@ static void mp_set_up_to_string(MP mp, int c)
     if (cur_exp_type != mp_string_type) {
         mp_bad_unary(mp, c);
     } else {
-        int n; /* accumulator */
+        int n;
         mp_value new_expr;
         memset(&new_expr, 0, sizeof(mp_value));
         mp_new_number(new_expr.data.n);
-        if (cur_exp_str->len == 0) {
-           n = -1;
-        } else {
-           n = cur_exp_str->str[0];
+        if (c == mp_ASCII_operation) {
+            n = cur_exp_str->len == 0 ? -1 : cur_exp_str->str[0];
+        } else { 
+            int invalid = 0; /* did the string contain an invalid digit? */
+            int radix = c == mp_oct_operation ? 8 : 16;
+            n = 0;
+            for (int k = 0; k < cur_exp_str->len; k++) {
+            //unsigned char m = (unsigned char) (*(cur_exp_str->str + k));
+                unsigned char m = (unsigned char) cur_exp_str->str[k];
+                if ((m >= '0') && (m <= '9'))
+                    m = (unsigned char) (m - '0');
+                else if ((m >= 'A') && (m <= 'F'))
+                    m = (unsigned char) (m - 'A' + 10);
+                else if ((m >= 'a') && (m <= 'f'))
+                    m = (unsigned char) (m - 'a' + 10);
+                else {
+                    invalid = 1;
+                    m = 0;
+                }
+                if ((int) m >= radix) {
+                    invalid = 1;
+                    m = 0;
+                }
+                if (n < 32768 / radix) {
+                    n = n * radix + m;
+                } else {
+                    n = 32767;
+                }
+            }
+            /*tex 
+                Give error messages if |invalid| or |n >= 4096| (so this code is rather
+                scaled specific.
+            */
+            if (invalid) {
+                mp_display_error(mp, NULL);
+                mp_back_error(
+                    mp, 
+                    "String contains illegal digits", 
+                    c == mp_oct_operation ? 
+                        "I zeroed out characters that weren't in the range 0..7."
+                    : 
+                        "I zeroed out characters that weren't hex digits."
+                );
+                mp_get_x_next(mp);
+            }
+            if (n > 4095 && mp_number_positive(internal_value(mp_warning_check_internal))) {
+                char msg[256];
+                snprintf(msg, 256, "Number too large (%d)", (int) n);
+                mp_back_error(
+                    mp,
+                    msg,
+                    "I have trouble with numbers greater than 4095; watch out.\n"
+                    "Set warningcheck := 0 to suppress this message."
+                );
+                mp_get_x_next(mp);
+            }
         }
         mp_number_clone(new_expr.data.n, mp_unity_t);
         mp_number_multiply_int(new_expr.data.n, n);
@@ -21970,7 +22022,7 @@ static void mp_bad_binary(MP mp, mp_node p, int c)
         mp,
         msg,
         "I'm afraid I don't know how to apply that operation to that combination of types.\n"
-        "Continue, and I'll return the second argument (see above) as the result of the"
+        "Continue, and I'll return the second argument (see above) as the result of the\n"
         "operation."
     );
     mp_get_x_next(mp);
@@ -26411,7 +26463,7 @@ static int mp_bytemap_valid_data(MP mp, int index)
 
 static char *mp_bytemap_get_value(MP mp, int index, int *nx, int *ny, int *nz)
 {
-    if (index >= 0 && index <= 15 && mp->bytemaps[index].data) {
+    if (index >= 0 && index < mp->memory_pool[mp_bytemaps_pool].max && mp->bytemaps[index].data) {
         *nx = mp->bytemaps[index].nx;
         *ny = mp->bytemaps[index].ny;
         *nz = mp->bytemaps[index].nz;
@@ -27410,7 +27462,7 @@ static void mp_aux_reset_bytemap(MP mp, int index)
 
 static void mp_aux_reset_bytemaps(MP mp)
 {
-    for (int index = 0; index <= 15; index++) {
+    for (int index = 0; index < mp->memory_pool[mp_bytemaps_pool].max; index++) {
         if (mp_bytemap_valid_data(mp, index)) {
             mp_aux_reset_bytemap(mp, index);
         }

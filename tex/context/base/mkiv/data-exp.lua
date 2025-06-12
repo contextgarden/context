@@ -337,7 +337,7 @@ local addcasecraptoo = true -- experiment to let case matter a  bit (still fuzzy
 -- So, we assume either a lowercase name or a mixed case one but only one such case
 -- as having Foo fOo foo FoO FOo etc on the system is braindead in any sane project.
 
-local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
+local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant,reported)
     local full     = path == "" and spec or (spec .. path .. '/')
     local dirlist  = { }
     local nofdirs  = 0
@@ -379,8 +379,9 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
                         if not rl then
                             remap[lower] = name
                             r = r + 1
-                        elseif trace_globbing and rl ~= name then
+                        elseif trace_globbing and rl ~= name and not reported[name] then
                             report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+                            reported[name] = true
                         end
                         if addcasecraptoo then
                             local paths = files[name]
@@ -406,8 +407,9 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
                     if not rl then
                         remap[lower] = name
                         r = r + 1
-                    elseif trace_globbing and rl ~= name then
+                    elseif trace_globbing and rl ~= name and not reported[name] then
                         report_globbing("confusing filename, name: %a, lower: %a, already: %a",name,lower,rl)
+                        reported[name] = true
                     end
                 end
             end
@@ -416,7 +418,7 @@ local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant)
     if nofdirs > 0 then
         sort(dirlist)
         for i=1,nofdirs do
-            files, remap, n, m, r = scan(files,remap,spec,dirlist[i],n,m,r,onlyonce,tolerant)
+            files, remap, n, m, r = scan(files,remap,spec,dirlist[i],n,m,r,onlyonce,tolerant,reported)
         end
     end
     scancache[sub(full,1,-2)] = files
@@ -442,7 +444,7 @@ local function scanfiles(path,branch,usecache,onlyonce,tolerant)
     end
     local content
     if isdir(realpath) then
-        local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce,tolerant)
+        local files, remap, n, m, r = scan({ },{ },realpath .. '/',"",0,0,0,onlyonce,tolerant,{ })
         content = {
             metadata = {
                 path        = path, -- can be selfautoparent:texmf-whatever

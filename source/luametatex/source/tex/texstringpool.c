@@ -376,7 +376,7 @@ int tex_get_strings_started(void)
     in an |\input|, |\openin|, or |\openout| operation. These strings are normally lost because the
     reference to them are not saved after finishing the operation. |search_string| searches through
     the string pool for the given string and returns either 0 or the found string number. However,
-    in \LUAMETATEX\ filenames (and fontnames) are implemented more efficiently so that code is gone.
+    in \LUAMETATEX\ filenames (and font names) are implemented more efficiently so that code is gone.
 
 */
 
@@ -484,7 +484,7 @@ char *tex_makecstring(int s, int *allocated)
 
     We can save some 150 K on the format file size by using a signed char as length (after checking)
     because the max size of a string in \CONTEXT\ is around 70. A flag could indicate if we use 1 or
-    4 bytes for the length. But not yet (preroll needed). Dumping and undumping all strings in a
+    4 bytes for the length. But not yet (pre-roll needed). Dumping and undumping all strings in a
     block (where we need to zero terminate them) doesn't really work out any better. Okay, in the end
     it was done.
 

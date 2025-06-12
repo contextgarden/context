@@ -1252,6 +1252,46 @@ local function show_result(original,unicoded,texcoded)
     report_asciimath("texcoded > %s",texcoded)
 end
 
+local function auto_is_binom(t)
+    if #t ~= 5 then
+-- print("no binom, case 0")
+        return false
+    end
+    if t[1] ~= "\\left\\lparent" or t[3] ~= "," or t[5] ~= "\\right\\rparent" then
+-- print("no binom, case 1")
+        return false
+    end
+    local t2 = t[2]
+    local t4 = t[4]
+    if type(t2) ~= "table" or type(t4) ~= "table" then
+-- print("no binom, case 2")
+        return false
+    end
+    inspect(t2)
+    if t2[1] ~= "\\left\\lparent" or t2[#t2] ~= "\\right\\rparent" then
+-- print("no binom, case 3")
+        return false
+    end
+    if t4[1] ~= "\\left\\lparent" or t4[#t4] ~= "\\right\\rparent" then
+-- print("no binom, case 4")
+        return false
+    end
+    t[1]    = t[1] .. "\\asciimathstackrel"
+    t[3]    = ""
+    t2[1]   = ""
+    t2[#t2] = ""
+    t4[1]   = ""
+    t4[#t4] = ""
+    inspect(t)
+    return true
+end
+
+local is_binom = auto_is_binom
+
+directives.register("asciimath.autobinom",function(v)
+    is_binom = v and auto_is_binom or false
+end)
+
 local function collapse_matrices(t)
     local n = #t
     if n > 4 and t[3] == "," then
@@ -1280,6 +1320,10 @@ local function collapse_matrices(t)
                             valid = false
                             break
                         end
+                    end
+                    if is_binom and is_binom(t) then
+                        -- already processed
+                        valid = false
                     end
                     if valid then
                         local omit = l1 == s_left and r1 == s_right

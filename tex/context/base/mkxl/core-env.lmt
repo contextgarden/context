@@ -93,11 +93,11 @@ local integercode   <const> = commandcodes.integer
 
 do
 
-    local modes         = { }
-    local systemmodes   = { }
+    local modes       = { }
+    local systemmodes = { }
 
-    local texiscount    = tex.iscount
-    local texgetcount   = tex.getcount
+    local texiscount  = tex.iscount
+    local texgetcount = tex.getcount
 
     local boolean_value <const> = tokens.values.boolean
 
@@ -135,7 +135,7 @@ do
         return m()
     end)
 
-    local c_trialtypesetting <const> = tex.iscount("mode>*trialtypesetting")
+    local c_trialtypesetting <const> = texiscount("mode>*trialtypesetting")
 
     context.settrialtypesettingmethod(function()
      -- return texsystemmodes.trialtypesetting

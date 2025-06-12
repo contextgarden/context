@@ -164,12 +164,14 @@ end
 
 CONTEXTLMTXMODE = 1
 
--- we provide a qualified path
+-- we provide a qualified path and a not anonymous function name
 
-callback.register('find_format_file',function(name)
+local function find_format_file_callback(name)
     texconfig.formatname = name
     return name
-end)
+end
+
+callback.register("find_format_file",find_format_file_callback)
 
 -- done, from now on input and callbacks are internal
 ]]

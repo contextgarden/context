@@ -9,7 +9,7 @@
 
     We can probably ditch |volatile| so that the compiler can optimize access a bit better. We
     only need to make sure that we create nodes before we use their pointers. So, beware: a
-    newnode has to go via an intermediate variable because the |varmem| array can have been be
+    new node has to go via an intermediate variable because the |varmem| array can have been be
     reallocated. I need to (re)check all cases! In case of a copy we use a intermediate volatile
     variable.
 
@@ -210,46 +210,48 @@ extern void     tex_undump_specification_data   (dumpstream f);
 
 /*tex
 
-    Most fields are integers (halfwords) that get aliased to |vinfo| and |vlink| for traditional
-    reasons. The |vlink| name is actually representing a next pointer. Only the type and subtype
-    remain quarterwords, the rest are just halfwords which wastes space for directions,
+    Most fields are integers (halfwords) that get aliased to |memone| and |memtwo| for traditional
+    reasons. The |memtwo| name is actually representing a next pointer. Only the type and subtype
+    remain quarter words, the rest are just halfwords which wastes space for directions,
     orientation, glue orders and glue signs but so be it.
 
-    A memory word has two 32 bit integers so 8 bytes. A glueratio is a double which is 8 bytes so
+    A memory word has two 32 bit integers so 8 bytes. A glue ratio is a double which is 8 bytes so
     there we waste some space. There is actually no need now to pack (node) data in pairs so maybe
     some day I'll change that. When we make glue ration a float again we can go flat (and with most
     node fields now being fully qualified that is easier).
 
-    The first memoryword contains the |type| and |subtype| that are both 16 bit integers (unsigned)
-    as well as the |vlink| (next) pointer. After that comes the word that keeps the |attr| and
-    |alink| (prev) fields. Instead of the link names we use more meaningful ones. The |next|, |prev|
-    and |attr| fields all are halfwords representing a node index.
+    The first memory word contains the |type| and |subtype| that are both 16 bit integers (unsigned)
+    as well as the |memtwo| (next) pointer. After that comes the word that keeps the |attr| and
+    |prev| fields. Instead of the link names |vlink| (next) and |alink| (prev) we use more meaningful
+    ones. The |next|, |prev| and |attr| fields all are halfwords representing a node index.
 
     The |node_size| field is used in managing freed nodes (mostly as a check) and it overwrites the
     |type| and |subtype| fields. Actually we could just use the type or subtype but as the size is
     small but on the other hand using an int here makes sense.
 
-    half0 | quart0 quart1 | vinfo | size | type subtype
-    half1 |               | vlink
+    half0 | quart0 quart1 | memone | size | type subtype
+    half1 |               | memtwo
 
-    The |tlink| and |rlink| fields are used in disc nodes as tail and replace pointers (again
+    In \LUATEX\ we have |tlink| and |rlink| fields in disc nodes as tail and replace pointers (again
     halfwords). We no longer need |rlink| as it's equivalent to |alink| (the prev pointer). The
     |tlink| fields is used for links to the tail of a list. These indirect macros are somewhat
     complicating matters. Again these have been renamed.
 
-    We used to have |alink(a)| being |vlink(a,1)| but that has (after a few years) been replaced by
-    |node_prev| because is cleaner. Keep in mind that in \LUATEX\ we use double linked node lists. So,
-    we now only have some \quote {hard coded} pointers to the memory array in this file, not in the
-    files that use the node fields. However, for the next two paragraphs to be true, I need to find
-    a solution for the insert_ptr first because that is an index.
+    In the \LUATEX\ source you will find |alink(a)| aka |memtwo(a,1)| being used for a prev pointer,
+    but that has (after a few years) been replaced by |node_prev| because is cleaner. Keep in mind
+    that in \LUATEX\ we use double linked node lists. So, we now only have some \quote {hard coded}
+    pointers to the memory array in this file, not in the files that use the node fields. However,
+    for the next two paragraphs to be true, I need to find a solution for the insert_ptr first
+    because that is an index.
 
-    Now, a logical question is: should we stick to the link and info model for nodes? One reason
-    is that we share the model with tokens. A less relevant reason is that the glue is stored in 8
-    bytes but that can be reverted to 4 bytes if needed. So, indeed at some point we might see a 32
-    bit wide array show up here as we're now more or less prepared for that. It will bump the direct
-    node numbers but that should work out okay. So, in the end, after stepwise abstraction we now
-    have field definitions that use a base and offset e.g. |vlink(a,3)| instead of |vlink(a+3)|.
-    Also, we have many more fields and using meaningful names quickly started to make sense.
+    Now, a logical question is: should we stick to the |memone| (link) and |memtwo| (info) model
+    for nodes? One reason is that we share the model with tokens. A less relevant reason is that
+    the glue is stored in 8 bytes but that can be reverted to 4 bytes if needed. So, indeed at some
+    point we might see a 32 bit wide array show up here as we're now more or less prepared for that.
+    It will bump the direct node numbers but that should work out okay. So, in the end, after
+    stepwise abstraction we now  have field definitions that use a base and offset e.g. |memtwo(a,3)|
+    instead of |memtwo(a+3)|.  Also, we have many more fields and using meaningful names quickly
+    started to make sense.
 
     Once all is stable I will play with |var_mem| being an array of pointers and |malloc| the
     smaller memoryword arrays (per node). This might lead to (not always) smaller memory footprint:
@@ -271,36 +273,36 @@ extern void     tex_undump_specification_data   (dumpstream f);
 # define lvalue(a,b)  lmt_node_memory_state.nodes[a+b].L
 # define dvalue(a,b)  lmt_node_memory_state.nodes[a+b].D
 
-# define vinfo(a,b)   lmt_node_memory_state.nodes[a+b].half0
-# define vlink(a,b)   lmt_node_memory_state.nodes[a+b].half1
+# define memone(a,b)   lmt_node_memory_state.nodes[a+b].half0
+# define memtwo(a,b)   lmt_node_memory_state.nodes[a+b].half1
 
-# define vinfo0(a,b)  lmt_node_memory_state.nodes[a+b].quart00
-# define vinfo1(a,b)  lmt_node_memory_state.nodes[a+b].quart01
-# define vlink0(a,b)  lmt_node_memory_state.nodes[a+b].quart10
-# define vlink1(a,b)  lmt_node_memory_state.nodes[a+b].quart11
+# define memone0(a,b)  lmt_node_memory_state.nodes[a+b].quart00
+# define memone1(a,b)  lmt_node_memory_state.nodes[a+b].quart01
+# define memtwo0(a,b)  lmt_node_memory_state.nodes[a+b].quart10
+# define memtwo1(a,b)  lmt_node_memory_state.nodes[a+b].quart11
 
-# define vinfo0s(a,b)  lmt_node_memory_state.nodes[a+b].short00
-# define vinfo1s(a,b)  lmt_node_memory_state.nodes[a+b].short01
-# define vlink0s(a,b)  lmt_node_memory_state.nodes[a+b].short10
-# define vlink1s(a,b)  lmt_node_memory_state.nodes[a+b].short11
+# define memone0s(a,b)  lmt_node_memory_state.nodes[a+b].short00
+# define memone1s(a,b)  lmt_node_memory_state.nodes[a+b].short01
+# define memtwo0s(a,b)  lmt_node_memory_state.nodes[a+b].short10
+# define memtwo1s(a,b)  lmt_node_memory_state.nodes[a+b].short11
 
-# define vinfo00(a,b) lmt_node_memory_state.nodes[a+b].single00
-# define vinfo01(a,b) lmt_node_memory_state.nodes[a+b].single01
-# define vinfo02(a,b) lmt_node_memory_state.nodes[a+b].single02
-# define vinfo03(a,b) lmt_node_memory_state.nodes[a+b].single03
-# define vlink00(a,b) lmt_node_memory_state.nodes[a+b].single10
-# define vlink01(a,b) lmt_node_memory_state.nodes[a+b].single11
-# define vlink02(a,b) lmt_node_memory_state.nodes[a+b].single12
-# define vlink03(a,b) lmt_node_memory_state.nodes[a+b].single13
+# define memone00(a,b) lmt_node_memory_state.nodes[a+b].single00
+# define memone01(a,b) lmt_node_memory_state.nodes[a+b].single01
+# define memone02(a,b) lmt_node_memory_state.nodes[a+b].single02
+# define memone03(a,b) lmt_node_memory_state.nodes[a+b].single03
+# define memtwo00(a,b) lmt_node_memory_state.nodes[a+b].single10
+# define memtwo01(a,b) lmt_node_memory_state.nodes[a+b].single11
+# define memtwo02(a,b) lmt_node_memory_state.nodes[a+b].single12
+# define memtwo03(a,b) lmt_node_memory_state.nodes[a+b].single13
 
 /*tex
     We have some shared field names. Some day the subtypes will get meaningful names dependent on
     the node type, if only because some already have. We used to have
 
     \starttyping
-    # define type(a)         vinfo0(a,0)
-    # define subtype(a)      vinfo1(a,0)
-    # define node_size(a)    vinfo(a,0)
+    # define type(a)         memone0(a,0)
+    # define subtype(a)      memone1(a,0)
+    # define node_size(a)    memone(a,0)
     \stoptyping
 
     but we dropped the size mechanism and made most field shortcuts verbose in order to be able to
@@ -308,35 +310,35 @@ extern void     tex_undump_specification_data   (dumpstream f);
     gives less noise when we search in the whole source tree. More later.
 */
 
-# define node_type(a)    vinfo0(a,0)
-# define node_subtype(a) vinfo1(a,0)
+# define node_type(a)    memone0(a,0)
+# define node_subtype(a) memone1(a,0)
 
-# define node_next(a) vlink(a,0)
-# define node_prev(a) vlink(a,1)
-# define node_attr(a) vinfo(a,1)
+# define node_attr(a) memone(a,1)
+# define node_next(a) memtwo(a,0)
+# define node_prev(a) memtwo(a,1)
 
-# define node_head(a) vlink(a,0) /*tex the head |hlink(a)| aka |vlink(a)| of a disc sublist */
-# define node_tail(a) vinfo(a,1) /*tex the tail |tlink(a)| aka |vinfo(a)|, overlaps with |node_attr()| */
+# define node_head(a) memtwo(a,0) /*tex the head of a disc sublist */
+# define node_tail(a) memone(a,1) /*tex the tail of a disc node, overlaps with |node_attr()| */
 
 /*tex
 
     The dimension fields shared their locations which made for sometimes more compact code but
-    in the end the number of placxes where it really saved code were limited. Also, compilers will
+    in the end the number of places where it really saved code were limited. Also, compilers will
     do their job and deal with common code. So, these are now replaced by more meaningful names:
 
     \starttyping
-    # define width(a)  vlink(a,2)
-    # define depth(a)  vlink(a,3)
-    # define height(a) vlink(a,4)
+    # define width(a)  memtwo(a,2)
+    # define depth(a)  memtwo(a,3)
+    # define height(a) memtwo(a,4)
     \stoptyping
 
     Inserts use a trick. The insert pointers directly point into a node at the place where the list
-    starts which is why |list_ptr| has to overlap with |node_next|! I have looked into changign this
+    starts which is why |list_ptr| has to overlap with |node_next|! I have looked into changing this
     but it doesn't pay off and it's best to stay close to the original. A side effect is that some
     fields in insert nodes are sort of impossible (for now).
 
     \starttyping
-    # define box_list_ptr(a) vlink(a,5) // We need to use the same field as |node_next|.
+    # define box_list_ptr(a) memtwo(a,5) // We need to use the same field as |node_next|.
     # define insert_list(a) (a + 5) // This kind of makes a virtual node: start at list.
     \stoptyping
 
@@ -346,7 +348,7 @@ extern void     tex_undump_specification_data   (dumpstream f);
 
     In the original \TEX\ source (and also in \LUATEX) there are a couple of offsets used. Most
     noticeably is the |list_offset| but in 2.0618 the related trickery was replaced by using
-    |list_ptr| and using the fact that we have a doubel linked list. The four fields are in
+    |list_ptr| and using the fact that we have a double linked list. The four fields are in
     successive memory words and that means that we can use |node_next| in a field pointed to
     by |list_offset| (because actually we then have the list pointer!). This makes for simple
     loops in original \TEX. The dimension offsets are used to set fields in boxed but we already
@@ -375,7 +377,7 @@ extern void     tex_undump_specification_data   (dumpstream f);
     \PDFTEX\ and early \LUATEX\ times never resulted in fixing that (setting filenames, adding some
     additional synchronization points, etc). All that was supposed to happen deep down in the library
     and was not considered to be dealt with by a macro package. For instance multiple loading of the
-    same file (metapost runs or smaple files) was a problem as was the need to block access to files
+    same file (metapost runs or sample files) was a problem as was the need to block access to files
     in tds (like styles). We also needed binding to for instance elements in an \XML\ file where line
     numbers are sort of special and out of sync with inclusion. I guess we were ahead of the pack
     because after nearly two decades of \LUATEX\ there is some discussion about this.
@@ -421,11 +423,11 @@ extern void     tex_undump_specification_data   (dumpstream f);
 */
 
 # define attribute_node_size 2
-# define attribute_unset(a)  vinfo(a,1)
-# define attribute_index(a)  vinfo0(a,1)
-# define attribute_detail(a) vinfo1(a,1)
-# define attribute_count(a)  vlink(a,1)  /*tex the reference count */
-# define attribute_value(a)  vlink(a,1)
+# define attribute_unset(a)  memone(a,1)
+# define attribute_index(a)  memone0(a,1)
+# define attribute_detail(a) memone1(a,1)
+# define attribute_count(a)  memtwo(a,1)  /*tex the reference count */
+# define attribute_value(a)  memtwo(a,1)
 
 typedef enum attribute_subtypes {
     attribute_list_subtype,
@@ -440,12 +442,12 @@ typedef enum attribute_subtypes {
 */
 
 # define penalty_node_size     5
-# define penalty_amount(a)     vlink(a,2)
-# define penalty_options(a)    vinfo(a,2)
-# define penalty_tnuoma(a)     vlink(a,3)
-# define penalty_used(a)       vinfo(a,3) /* used internally */
-# define penalty_belongs_to(a) vlink(a,4) /* used internally */
-# define penalty_reserved(a)   vinfo(a,4) /* used internally */
+# define penalty_amount(a)     memtwo(a,2)
+# define penalty_options(a)    memone(a,2)
+# define penalty_tnuoma(a)     memtwo(a,3)
+# define penalty_used(a)       memone(a,3) /* used internally */
+# define penalty_belongs_to(a) memtwo(a,4) /* used internally */
+# define penalty_reserved(a)   memone(a,4) /* used internally */
 
 static inline void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
 static inline void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~r; }
@@ -552,18 +554,18 @@ typedef enum skip_glue_codes_alias {
 
 # define glue_node_size        8
 # define glue_spec_size        5
-# define glue_options(a)       vinfo(a,2)
-# define glue_amount(a)        vlink(a,2)
-# define glue_stretch(a)       vinfo(a,3)
-# define glue_shrink(a)        vlink(a,3)
-# define glue_stretch_order(a) vinfo(a,4)
-# define glue_shrink_order(a)  vlink(a,4)
-# define glue_font(a)          vinfo(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
-# define glue_data(a)          vlink(a,5) /* not in spec */
-# define glue_leader_ptr(a)    vinfo(a,6) /* not in spec */
-# define glue_callback(a)      vlink(a,6) /* not in spec */
-# define glue_belongs_to(a)    vinfo(a,7) /* not in spec */
-# define glue_reserved(a)      vlink(a,7) /* not in spec */
+# define glue_options(a)       memone(a,2)
+# define glue_amount(a)        memtwo(a,2)
+# define glue_stretch(a)       memone(a,3)
+# define glue_shrink(a)        memtwo(a,3)
+# define glue_stretch_order(a) memone(a,4)
+# define glue_shrink_order(a)  memtwo(a,4)
+# define glue_font(a)          memone(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
+# define glue_data(a)          memtwo(a,5) /* not in spec */
+# define glue_leader_ptr(a)    memone(a,6) /* not in spec */
+# define glue_callback(a)      memtwo(a,6) /* not in spec */
+# define glue_belongs_to(a)    memone(a,7) /* not in spec */
+# define glue_reserved(a)      memtwo(a,7) /* not in spec */
 
 typedef enum glue_option_codes {
     glue_option_normal            = 0x0000,
@@ -596,27 +598,31 @@ typedef enum math_subtypes {
 */
 
 # define math_node_size        7
-# define math_surround(a)      vinfo(a,2)
-# define math_amount(a)        vlink(a,2)
-# define math_stretch(a)       vinfo(a,3)
-# define math_shrink(a)        vlink(a,3)
-# define math_stretch_order(a) vinfo(a,4)
-# define math_shrink_order(a)  vlink(a,4)
-# define math_penalty(a)       vinfo(a,5)
-# define math_options(a)       vlink(a,5)
-# define math_tolerance(a)     vinfo(a,6)
-# define math_pre_tolerance(a) vlink(a,6)
+# define math_surround(a)      memone(a,2)
+# define math_amount(a)        memtwo(a,2)
+# define math_stretch(a)       memone(a,3)
+# define math_shrink(a)        memtwo(a,3)
+# define math_stretch_order(a) memone(a,4)
+# define math_shrink_order(a)  memtwo(a,4)
+# define math_penalty(a)       memone(a,5)
+# define math_options(a)       memtwo(a,5)
+# define math_tolerance(a)     memone(a,6)
+# define math_pre_tolerance(a) memtwo(a,6)
 
 static inline void tex_add_math_option    (halfword a, halfword r) { math_options(a) |= r; }
 static inline void tex_remove_math_option (halfword a, halfword r) { math_options(a) &= ~r; }
 static inline int  tex_has_math_option    (halfword a, halfword r) { return (math_options(a) & r) == r; }
 
 typedef enum math_option_codes {
-    math_option_normal   = 0x0000,
-    math_option_short    = 0x0001,
-    math_option_orphaned = 0x0002,
-    math_option_display  = 0x0004,
-    math_option_cramped  = 0x0008,
+    math_option_normal      = 0x0000,
+    /*tex These are private (for now, MS and HH need to discuss this first). */
+    math_option_short       = 0x0001,
+    math_option_orphaned    = 0x0002,
+    math_option_display     = 0x0004,
+    math_option_cramped     = 0x0008,
+    /*tex These are public: taken from |math_options_par|. */
+    math_option_snapping    = 0x0010,
+    math_option_no_snapping = 0x0020,
 } math_option_codes;
 
 /*tex Here are some (inline) helpers. We need specific ones for math glue. */
@@ -724,10 +730,10 @@ typedef enum kern_subtypes {
 # define font_related_kern(s) (s >= font_kern_subtype && s <= space_font_kern_subtype)
 
 # define kern_node_size     4
-# define kern_amount(a)     vlink(a,2) 
-# define kern_expansion(a)  vinfo(a,2) /*tex expansion factor (hz) */
-# define kern_options(a)    vlink(a,3)
-# define kern_belongs_to(a) vinfo(a,3)
+# define kern_amount(a)     memone(a,2)
+# define kern_expansion(a)  memtwo(a,2) /*tex expansion factor (hz) */
+# define kern_options(a)    memone(a,3)
+# define kern_belongs_to(a) memtwo(a,3)
 
 typedef enum kern_option_codes {
     kern_option_normal    = 0x0000,
@@ -741,9 +747,9 @@ typedef enum kern_option_codes {
 /*tex
 
     Disc nodes are complicated: they have three embedded nesting nodes to which the |pre_break|,
-    |post_break| and |no_break| fields point. In there we find a head pointer (|vlink| aka |hlink|)
-    and tail pointer (|tlink|). The |alink| pointer is used in the base mode font machinery and is
-    not really a prev pointer. We have to make sure it gets nilled when we communicate with \LUA.
+    |post_break| and |no_break| fields point. In there we find a head pointer (|memtwo| aka |hlink|)
+    and tail pointer (|tlink|). The |node_prev| pointer is used in the base mode font machinery and
+    is not really a prev pointer. We have to make sure it gets nilled when we communicate with \LUA.
 
     The no-, pre-, and postbreak fields point to nesting nodes that are part of the disc node (three
     times two memorywords). Sometimes these nodes are actually used, for instance when a temp node
@@ -762,7 +768,7 @@ typedef enum kern_option_codes {
     [ tlink        prev        ]
     \stoptyping
 
-    Another reason why we need the indirect apoproach is that we can set the fields to |null| which
+    Another reason why we need the indirect approach is that we can set the fields to |null| which
     is better than point to a nest node with no following up.
 
 */
@@ -822,16 +828,16 @@ typedef enum disc_option_codes {
 # define last_disc_option  disc_option_prefer_nobreak
 
 # define disc_node_size       13
-# define disc_no_break(a)     vlink(a,2) /* beware: vinfo is used for type/subtype */
-# define disc_pre_break(a)    vlink(a,3) /* beware: vinfo is used for type/subtype */
-# define disc_post_break(a)   vlink(a,4) /* beware: vinfo is used for type/subtype */
+# define disc_no_break(a)     memtwo(a,2) /* beware: memone is used for type/subtype */
+# define disc_pre_break(a)    memtwo(a,3) /* beware: memone is used for type/subtype */
+# define disc_post_break(a)   memtwo(a,4) /* beware: memone is used for type/subtype */
 /*       disc_no_break_node   5  6 */    /* this is a nesting node of size 2 */
 /*       disc_pre_break_node  7  8 */    /* this is a nesting node of size 2 */
 /*       disc_post_break_node 9 10 */    /* this is a nesting node of size 2 */
-# define disc_penalty(a)      vinfo(a,11)
-# define disc_options(a)      vlink(a,11)
-# define disc_class(a)        vinfo(a,12)
-# define disc_orphaned(a)     vlink(a,12)
+# define disc_penalty(a)      memone(a,11)
+# define disc_options(a)      memtwo(a,11)
+# define disc_class(a)        memone(a,12)
+# define disc_orphaned(a)     memtwo(a,12)
 
 # define set_disc_penalty(a,b) disc_penalty(a) = b
 # define set_disc_class(a,b)   disc_class(a) = b
@@ -977,48 +983,50 @@ typedef enum list_geometries {
     anchor_geometry      = 0x4,
 } list_geometries;
 
-typedef enum list_balance_states { 
-    balance_state_inserts  = 0x01,
-    balance_state_discards = 0x02,
-    balance_state_uinserts = 0x04,
+typedef enum list_balance_states {
+    balance_state_inserts  = 0x1,
+    balance_state_discards = 0x2,
+    balance_state_uinserts = 0x4,
 } list_balance_states;
 
+// todo: reorder memone and memtwo (but also check adjust then)
+
 # define box_node_size        17
-# define box_width(a)         vlink(a,2)
-# define box_w_offset(a)      vinfo(a,2)
-# define box_depth(a)         vlink(a,3)
-# define box_d_offset(a)      vinfo(a,3)
-# define box_height(a)        vlink(a,4)
-# define box_h_offset(a)      vinfo(a,4)
-# define box_list(a)          vlink(a,5)   /* 5 = list_offset */
-# define box_shift_amount(a)  vinfo(a,5)
-# define box_glue_order(a)    vlink(a,6)
-# define box_glue_sign(a)     vinfo01(a,6)
-# define box_balance_state(a) vinfo02(a,6)
-# define box_reserved_1(a)    vinfo03(a,6) /* can be used */
-# define box_reserved_2(a)    vinfo04(a,6) /* can be used */
+# define box_width(a)         memtwo(a,2)
+# define box_w_offset(a)      memone(a,2)
+# define box_depth(a)         memtwo(a,3)
+# define box_d_offset(a)      memone(a,3)
+# define box_height(a)        memtwo(a,4)
+# define box_h_offset(a)      memone(a,4)
+# define box_list(a)          memtwo(a,5)   /* 5 = list_offset */
+# define box_shift_amount(a)  memone(a,5)
+# define box_glue_order(a)    memtwo(a,6)
+# define box_glue_sign(a)     memone01(a,6)
+# define box_balance_state(a) memone02(a,6)
+# define box_content_state(a) memone03(a,6)
+# define box_reserved_2(a)    memone04(a,6) /* can be used */
 # define box_glue_set(a)      dvalue(a,7)  /* So we reserve a whole memory word! */
-# define box_dir(a)           vlink00(a,8) /* We could encode it as geometry but not now. */
-# define box_package_state(a) vlink01(a,8)
-# define box_options(a)       vlink02(a,8)
-# define box_geometry(a)      vlink03(a,8)
-# define box_orientation(a)   vinfo(a,8)   /* Also used for size in alignments. */
-# define box_x_offset(a)      vlink(a,9)
-# define box_y_offset(a)      vinfo(a,9)
-# define box_pre_migrated(a)  vlink(a,10)
-# define box_post_migrated(a) vinfo(a,10)
-# define box_pre_adjusted(a)  vlink(a,11)
-# define box_post_adjusted(a) vinfo(a,11)
-# define box_source_anchor(a) vlink(a,12)
-# define box_target_anchor(a) vinfo(a,12)
-# define box_anchor(a)        vlink(a,13)
-# define box_index(a)         vinfo(a,13)
-# define box_except(a)        vlink(a,14)
-# define box_exdepth(a)       vinfo(a,14)
-# define box_discardable(a)   vlink(a,15)  /* internal usage */
-# define box_reserved(a)      vinfo(a,15)  /* can be used */
-# define box_input_file(a)    vlink(a,16)  /* can be used */
-# define box_input_line(a)    vinfo(a,16)
+# define box_dir(a)           memtwo00(a,8) /* We could encode it as geometry but not now. */
+# define box_package_state(a) memtwo01(a,8)
+# define box_options(a)       memtwo02(a,8)
+# define box_geometry(a)      memtwo03(a,8)
+# define box_orientation(a)   memone(a,8)   /* Also used for size in alignments. */
+# define box_x_offset(a)      memtwo(a,9)
+# define box_y_offset(a)      memone(a,9)
+# define box_pre_migrated(a)  memtwo(a,10)
+# define box_post_migrated(a) memone(a,10)
+# define box_pre_adjusted(a)  memtwo(a,11)
+# define box_post_adjusted(a) memone(a,11)
+# define box_source_anchor(a) memtwo(a,12)
+# define box_target_anchor(a) memone(a,12)
+# define box_anchor(a)        memtwo(a,13)
+# define box_index(a)         memone(a,13)
+# define box_except(a)        memtwo(a,14)
+# define box_exdepth(a)       memone(a,14)
+# define box_discardable(a)   memtwo(a,15)  /* internal usage */
+# define box_reserved(a)      memone(a,15)  /* can be used */
+# define box_input_file(a)    memtwo(a,16)  /* can be used */
+# define box_input_line(a)    memone(a,16)
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */
 
@@ -1028,6 +1036,11 @@ static inline int  tex_has_geometry       (halfword g, halfword f) { return ((si
 static inline int  tex_has_box_geometry   (halfword b, halfword g) { return (box_geometry(b) & (singleword) g) == (singleword) g; }
 
 /*tex These are used in reporting states in Lua. */
+
+typedef enum box_content_states {
+    unknown_content_state = 0x0,
+    math_content_state    = 0x1,
+} box_content_states;
 
 typedef enum box_pre_post_states {
     has_pre_adjust    = 0x1,
@@ -1058,22 +1071,30 @@ typedef enum package_dimension_states {
     package_dimension_size_set = 0x10, /* used in in alignments */
 } package_dimension_states;
 
-typedef enum package_leader_states {
-    package_u_leader_not_set  = 0x00,
-    package_u_leader_set      = 0x20,
-    package_u_leader_delayed  = 0x40,
-    package_u_leader_found    = 0x80,
+typedef enum package_leader_states { /* we can use one of the reserved */
+    package_u_leader_not_set = 0x00,
+    package_u_leader_set     = 0x20,
+    package_u_leader_delayed = 0x40,
+    package_u_leader_found   = 0x80,
 } package_leader_states;
 
 # define set_box_package_state(p,s) box_package_state(p) |= s
 # define has_box_package_state(p,s) ((box_package_state(p) & s) == s)
 # define is_box_package_state(p,s)  ((p & s) == s)
 
-typedef enum box_option_flags { 
+# define set_box_content_state(p,s) box_content_state(p) |= s
+# define has_box_content_state(p,s) ((box_content_state(p) & s) == s)
+# define is_box_content_state(p,s)  ((p & s) == s)
+
+typedef enum box_option_flags {
     box_option_no_math_axis = 0x01,
     box_option_discardable  = 0x02,
     box_option_keep_spacing = 0x04,
- // box_option_synchronize  = 0x08,
+    box_option_snapping     = 0x08,
+    box_option_no_snapping  = 0x10,
+    box_option_no_profiling = 0x20,
+ // box_option_has_math     = 0x40,
+ // box_option_synchronize  = 0x80,
 } box_option_flags;
 
 static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |= r; }
@@ -1114,13 +1135,13 @@ static inline int  tex_has_box_option    (halfword a, halfword r) { return (box_
 */
 
 # define span_node_size 3
-# define span_span(a)   vinfo(a,1)
-# define span_unused(a) vlink(a,1)
-# define span_width(a)  vlink(a,2)  /* overlaps with |box_width(a)|. */
-# define span_ptr(a)    vinfo(a,2)  /* overlaps with |box_w_offset(a)| and align_record_span_ptr(a). */
+# define span_span(a)   memone(a,1)
+# define span_unused(a) memtwo(a,1)
+# define span_width(a)  memtwo(a,2)  /* overlaps with |box_width(a)|. */
+# define span_ptr(a)    memone(a,2)  /* overlaps with |box_w_offset(a)| and align_record_span_ptr(a). */
 
 /*tex
-    Here the subtypes and command codes partly overlay. We actually hav eonly avery few left because
+    Here the subtypes and command codes partly overlay. We actually have only a very few left because
     it's mostly a backend feature now.
 */
 
@@ -1155,7 +1176,9 @@ typedef enum rule_option_codes {
     rule_option_running       = 0x08,
     rule_option_discardable   = 0x10,
     rule_option_keep_spacing  = 0x20,
-    rule_option_valid         = 0x2F,
+    rule_option_snapping      = 0x40,
+    rule_option_no_snapping   = 0x80,
+    rule_option_valid         = 0x8F,
 } rule_option_codes;
 
 # define last_rule_subtype spacing_rule_subtype
@@ -1163,20 +1186,20 @@ typedef enum rule_option_codes {
 # define last_rule_code    strut_rule_code
 
 # define rule_node_size      9
-# define rule_width(a)       vlink(a,2)
-# define rule_x_offset(a)    vinfo(a,2)
-# define rule_depth(a)       vlink(a,3)
-# define rule_y_offset(a)    vinfo(a,3)
-# define rule_height(a)      vlink(a,4)
-# define rule_data(a)        vinfo(a,4)   /* used for linewidth */
-# define rule_options(a)     vlink(a,5)
-# define rule_thickness(a)   vinfo(a,5)   /* future see data */
-# define rule_left(a)        vinfo(a,6)   /* depends on subtype */
-# define rule_right(a)       vlink(a,6)   /* depends on subtype */
-# define rule_extra_1(a)     vinfo(a,7)   /* depends on subtype */
-# define rule_extra_2(a)     vlink(a,7)   /* depends on subtype */
-# define rule_discardable(a) vinfo(a,8)   /* internal usage */
-# define rule_reserved(a)    vlink(a,8) 
+# define rule_width(a)       memtwo(a,2)
+# define rule_x_offset(a)    memone(a,2)
+# define rule_depth(a)       memtwo(a,3)
+# define rule_y_offset(a)    memone(a,3)
+# define rule_height(a)      memtwo(a,4)
+# define rule_data(a)        memone(a,4)   /* used for linewidth */
+# define rule_options(a)     memtwo(a,5)
+# define rule_thickness(a)   memone(a,5)   /* future see data */
+# define rule_left(a)        memone(a,6)   /* depends on subtype */
+# define rule_right(a)       memtwo(a,6)   /* depends on subtype */
+# define rule_extra_1(a)     memone(a,7)   /* depends on subtype */
+# define rule_extra_2(a)     memtwo(a,7)   /* depends on subtype */
+# define rule_discardable(a) memone(a,8)   /* internal usage */
+# define rule_reserved(a)    memtwo(a,8)
 
 # define rule_line_on         rule_extra_1    /* for user rules */
 # define rule_line_off        rule_extra_2    /* for user rules */
@@ -1253,38 +1276,38 @@ static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rul
 */
 
 # define glyph_node_size     14
-# define glyph_character(a)  vinfo(a,2)
-# define glyph_font(a)       vlink(a,2)   /*tex can be quarterword */
-# define glyph_data(a)       vinfo(a,3)   /*tex handy in context */
-# define glyph_state(a)      vlink(a,3)   /*tex handy in context */
-# define glyph_language(a)   vinfo0(a,4)
-# define glyph_script(a)     vinfo1(a,4)
-# define glyph_control(a)    vlink0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
-//define glyph_disccode(a)   vlink1(a,4)  /*tex can be smaller */
-# define glyph_disccode(a)   vlink02(a,4) 
-# define glyph_processing(a) vlink03(a,4) 
-# define glyph_options(a)    vinfo(a,5)
-# define glyph_hyphenate(a)  vlink(a,5)
-# define glyph_protected(a)  vinfo00(a,6)
-# define glyph_lhmin(a)      vinfo01(a,6)
-# define glyph_rhmin(a)      vinfo02(a,6)
-# define glyph_discpart(a)   vinfo03(a,6) 
-# define glyph_expansion(a)  vlink(a,6)
-# define glyph_x_scale(a)    vinfo(a,7)
-# define glyph_y_scale(a)    vlink(a,7)
-# define glyph_scale(a)      vinfo(a,8)
-# define glyph_raise(a)      vlink(a,8)
-# define glyph_left(a)       vinfo(a,9)
-# define glyph_right(a)      vlink(a,9)
-# define glyph_x_offset(a)   vinfo(a,10)
-# define glyph_y_offset(a)   vlink(a,10)
-# define glyph_weight(a)     vinfo(a,11)
-# define glyph_slant(a)      vlink(a,11)
-# define glyph_properties(a) vinfo0(a,12)  /*tex for math */
-# define glyph_group(a)      vinfo1(a,12)  /*tex for math */
-# define glyph_index(a)      vlink(a,12)   /*tex for math */
-# define glyph_input_file(a) vinfo(a,13)
-# define glyph_input_line(a) vlink(a,13)
+# define glyph_character(a)  memone(a,2)
+# define glyph_font(a)       memtwo(a,2)   /*tex can be quarterword */
+# define glyph_data(a)       memone(a,3)   /*tex handy in context */
+# define glyph_state(a)      memtwo(a,3)   /*tex handy in context */
+# define glyph_language(a)   memone0(a,4)
+# define glyph_script(a)     memone1(a,4)
+# define glyph_control(a)    memtwo0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
+//define glyph_disccode(a)   memtwo1(a,4)  /*tex can be smaller */
+# define glyph_disccode(a)   memtwo02(a,4)
+# define glyph_processing(a) memtwo03(a,4)
+# define glyph_options(a)    memone(a,5)
+# define glyph_hyphenate(a)  memtwo(a,5)
+# define glyph_protected(a)  memone00(a,6)
+# define glyph_lhmin(a)      memone01(a,6)
+# define glyph_rhmin(a)      memone02(a,6)
+# define glyph_discpart(a)   memone03(a,6)
+# define glyph_expansion(a)  memtwo(a,6)
+# define glyph_x_scale(a)    memone(a,7)
+# define glyph_y_scale(a)    memtwo(a,7)
+# define glyph_scale(a)      memone(a,8)
+# define glyph_raise(a)      memtwo(a,8)
+# define glyph_left(a)       memone(a,9)
+# define glyph_right(a)      memtwo(a,9)
+# define glyph_x_offset(a)   memone(a,10)
+# define glyph_y_offset(a)   memtwo(a,10)
+# define glyph_weight(a)     memone(a,11)
+# define glyph_slant(a)      memtwo(a,11)
+# define glyph_properties(a) memone0(a,12)  /*tex for math */
+# define glyph_group(a)      memone1(a,12)  /*tex for math */
+# define glyph_index(a)      memtwo(a,12)   /*tex for math */
+# define glyph_input_file(a) memone(a,13)
+# define glyph_input_line(a) memtwo(a,13)
 
 # define get_glyph_data(a)       ((halfword) glyph_data(a))
 # define get_glyph_state(a)      ((halfword) glyph_state(a))
@@ -1442,6 +1465,49 @@ typedef enum glyph_option_codes {
                                            | glyph_option_user,
 } glyph_option_codes;
 
+// todo:
+//
+// typedef enum glyph_option_codes {
+//     /*tex These are part of the defaults (all): */
+//     glyph_option_normal_glyph              = 0x00000000,
+//     glyph_option_no_left_ligature          = 0x00000001,
+//     glyph_option_no_right_ligature         = 0x00000002,
+//     glyph_option_no_left_kern              = 0x00000004,
+//     glyph_option_no_right_kern             = 0x00000008,
+//     glyph_option_no_expansion              = 0x00000010,
+//     glyph_option_no_protrusion             = 0x00000020,
+//     glyph_option_no_italic_correction      = 0x00000040,
+//     glyph_option_no_zero_italic_correction = 0x00000080,
+//     /* */
+//     glyph_option_apply_x_offset            = 0x00000100,
+//     glyph_option_apply_y_offset            = 0x00000200,
+//     /* These are only meant for math characters: */
+//     glyph_option_math_discretionary        = 0x00000400,
+//     glyph_option_math_italics_too          = 0x00000800,
+//     glyph_option_math_artifact             = 0x00001000,
+//     /* */
+//     glyph_option_weight_less               = 0x00002000,
+//     glyph_option_space_factor_overload     = 0x00004000,
+//     /* */
+//     glyph_option_snapping                  = 0x00008000,
+//     /* */
+//     glyph_option_check_toddler             = 0x00010000,
+//     glyph_option_check_twin                = 0x00020000,
+//     glyph_option_is_toddler                = 0x00040000,
+//     /* */
+//     glyph_option_is_continuation           = 0x00080000,
+//     glyph_option_keep_spacing              = 0x00100000,
+//     /*tex We permit user options. */
+//     glyph_option_user_first                = 0x01000000,
+//     glyph_option_user_last                 = 0x40000000,
+//     /*tex These ranges can change! */
+//     glyph_option_system                    = 0x0002FFFF,
+//     glyph_option_user                      = 0x4F000000,
+//     /*tex Keep this in sync with the above! */
+//     glyph_option_valid                     = glyph_option_system
+//                                            | glyph_option_user,
+// } glyph_option_codes;
+
 typedef enum auto_discretionary_codes {
     auto_discretionary_normal = 0x0001, /* turn glyphs into discretionary with three similar components */
     auto_discretionary_italic = 0x0002, /* also include italic correction when present */
@@ -1473,8 +1539,8 @@ typedef enum glyph_protection_codes {
 */
 
 # define mark_node_size 3
-# define mark_ptr(a)    vlink(a,2)
-# define mark_index(a)  vinfo(a,2)
+# define mark_ptr(a)    memtwo(a,2)
+# define mark_index(a)  memone(a,2)
 
 typedef enum mark_codes {
     set_mark_value_code,
@@ -1508,12 +1574,12 @@ typedef enum adjust_options {
 # define last_adjust_subtype local_adjust_code
 
 # define adjust_node_size       5
-# define adjust_list(a)         vlink(a,2)
-# define adjust_options(a)      vinfo(a,2)
-# define adjust_index(a)        vlink(a,3)
-# define adjust_except(a)       vinfo(a,3)
-# define adjust_depth_before(a) vlink(a,4)
-# define adjust_depth_after(a)  vinfo(a,4)
+# define adjust_list(a)         memone(a,2)
+# define adjust_options(a)      memtwo(a,2)
+# define adjust_index(a)        memone(a,3)
+# define adjust_except(a)       memtwo(a,3)
+# define adjust_depth_before(a) memone(a,4)
+# define adjust_depth_after(a)  memtwo(a,4)
 
 # define has_adjust_option(p,o) ((adjust_options(p) & o) == o)
 
@@ -1530,30 +1596,30 @@ typedef enum insert_options {
 } insert_options;
 
 # define insert_node_size       9          /*tex Can become 1 smaller or we can have insert_index instead of subtype. */
-# define insert_index(a)        vinfo(a,2) /*tex The |width| is not used. */
-# define insert_float_cost(a)   vlink(a,2)
-# define insert_identifier(a)   vinfo(a,3) /*tex aka: |insert_data| but that macro messes up a field */
-# define insert_max_depth(a)    vlink(a,3)
-# define insert_options(a)      vinfo(a,4) /* */
-# define insert_total_height(a) vlink(a,4) /*tex The sum of height and depth, i.e. total. */
-# define insert_list(a)         vinfo(a,5) /*tex Is alias for |node_next|. */
-# define insert_split_top(a)    vlink(a,5)
-# define insert_line_height(a)  vinfo(a,6)
-# define insert_line_depth(a)   vlink(a,6)
-# define insert_stretch(a)      vinfo(a,7)
-# define insert_shrink(a)       vlink(a,7)
-# define insert_callback(a)     vinfo(a,8)
-# define insert_belongs_to(a)   vlink(a,8)
+# define insert_index(a)        memone(a,2) /*tex The |width| is not used. */
+# define insert_float_cost(a)   memtwo(a,2)
+# define insert_identifier(a)   memone(a,3) /*tex aka: |insert_data| but that macro messes up a field */
+# define insert_max_depth(a)    memtwo(a,3)
+# define insert_options(a)      memone(a,4) /* */
+# define insert_total_height(a) memtwo(a,4) /*tex The sum of height and depth, i.e. total. */
+# define insert_list(a)         memone(a,5) /*tex Is alias for |node_next|. */
+# define insert_split_top(a)    memtwo(a,5)
+# define insert_line_height(a)  memone(a,6)
+# define insert_line_depth(a)   memtwo(a,6)
+# define insert_stretch(a)      memone(a,7)
+# define insert_shrink(a)       memtwo(a,7)
+# define insert_callback(a)     memone(a,8)
+# define insert_belongs_to(a)   memtwo(a,8)
 
 # define insert_first_box(a)    (a + 5)    /*tex A fake node where box_list_ptr becomes a next field. */
 
 # define split_node_size        5
-# define split_insert_index(a)  vinfo(a,2) /*tex Same slot! */
-# define split_broken(a)        vlink(a,2) /*tex An insertion for this class will break here if anywhere. */
-# define split_broken_insert(a) vinfo(a,3) /*tex This insertion might break at |broken_ptr|. */
-# define split_last_insert(a)   vlink(a,3) /*tex The most recent insertion for this |subtype|. */
-# define split_best_insert(a)   vinfo(a,4) /*tex The optimum most recent insertion. */
-# define split_height(a)        vlink(a,4) /*tex Aka |height(a) = vlink(a,4)| */ /* todo */
+# define split_insert_index(a)  memone(a,2) /*tex Same slot! */
+# define split_broken(a)        memtwo(a,2) /*tex An insertion for this class will break here if anywhere. */
+# define split_broken_insert(a) memone(a,3) /*tex This insertion might break at |broken_ptr|. */
+# define split_last_insert(a)   memtwo(a,3) /*tex The most recent insertion for this |subtype|. */
+# define split_best_insert(a)   memone(a,4) /*tex The optimum most recent insertion. */
+# define split_height(a)        memtwo(a,4) /*tex Aka |height(a) = memtwo(a,4)| */ /* todo */
 
 typedef enum split_subtypes {
     normal_split_subtype,
@@ -1563,7 +1629,7 @@ typedef enum split_subtypes {
 # define last_split_subtype insert_split_subtype
 
 /*tex
-    It's now time for some Some handy shortcuts. These are used when determining proper break points
+    It's now time for some handy shortcuts. These are used when determining proper break points
     and|/|or the beginning or end of words.
 */
 
@@ -1585,6 +1651,22 @@ static inline int tex_nodetype_has_prev       (halfword t) { return t != glue_sp
 static inline int tex_nodetype_has_next       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
 static inline int tex_nodetype_is_valid       (halfword t) { return (t >= 0) && (t <= max_node_type); }
 static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && (t <= max_node_type) && lmt_interface.node_data[t].visible; }
+
+// static const uint64_t has_prev_map = 0xFFFFFFFFFFFFFFFF
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (glue_spec_node)) << 1))
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (math_spec_node)) << 1))
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (font_spec_node)) << 1))
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (attribute_node)) << 1))
+// ;
+//
+// static const uint64_t has_next_map = 0xFFFFFFFFFFFFFFFF
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (glue_spec_node)) << 1))
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (math_spec_node)) << 1))
+//     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (font_spec_node)) << 1))
+// ;
+//
+// static inline int tex_nodetype_has_prev (halfword t) { return has_prev_map & (uint64_t) (((uint64_t) 1 << (node_types) t) << 1); }
+// static inline int tex_nodetype_has_next (halfword t) { return has_next_map & (uint64_t) (((uint64_t) 1 << (node_types) t) << 1); }
 
 /*tex
     This is a bit weird place to define them but anyway. In the meantime in \LUAMETATEX\ we no
@@ -1609,43 +1691,43 @@ static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && 
 /*tex Traditional \ETEX\ expression: */
 
 # define expression_node_size     3
-# define expression_type(a)       vinfo00(a,1) /* overloads attr */ /*tex one of the value levels */
-# define expression_state(a)      vinfo01(a,1) /* overloads attr */
-# define expression_result(a)     vinfo02(a,1) /* overloads attr */
-# define expression_reserved(a)   vinfo03(a,1) /* overloads attr */ /*tex not used */
-# define expression_expression(a) vlink(a,1)   /* overloads prev */ /*tex saved expression so far */
-# define expression_term(a)       vlink(a,2)   /*tex saved term so far */
-# define expression_numerator(a)  vinfo(a,2)   /*tex saved numerator */
+# define expression_type(a)       memone00(a,1) /* overloads attr */ /*tex one of the value levels */
+# define expression_state(a)      memone01(a,1) /* overloads attr */
+# define expression_result(a)     memone02(a,1) /* overloads attr */
+# define expression_reserved(a)   memone03(a,1) /* overloads attr */ /*tex not used */
+# define expression_expression(a) memtwo(a,1)   /* overloads prev */ /*tex saved expression so far */
+# define expression_term(a)       memone(a,2)   /*tex saved term so far */
+# define expression_numerator(a)  memtwo(a,2)   /*tex saved numerator */
 
 /*tex Extended traditional expression: */
 
 # define lmtx_expression_node_size          6
-# define lmtx_expression_type(a)            vinfo00(a,1) /* overloads attr */ /*tex one of the value levels, not used */
-# define lmtx_expression_state(a)           vinfo01(a,1) /* overloads attr */
-# define lmtx_expression_result(a)          vinfo02(a,1) /* overloads attr */
-# define lmtx_expression_negate(a)          vinfo03(a,1) /* overloads attr */ /* bitset */
-# define lmtx_expression_type_expression(a) vlink(a,1)   /* overloads prev */
-# define lmtx_expression_type_term(a)       vinfo(a,2)
-# define lmtx_expression_type_numerator(a)  vlink(a,2)
-# define lmtx_expression_expression(a)      lvalue(a,3) 
-# define lmtx_expression_term(a)            lvalue(a,4) 
-# define lmtx_expression_numerator(a)       lvalue(a,5) 
+# define lmtx_expression_type(a)            memone00(a,1) /* overloads attr */ /*tex one of the value levels, not used */
+# define lmtx_expression_state(a)           memone01(a,1) /* overloads attr */
+# define lmtx_expression_result(a)          memone02(a,1) /* overloads attr */
+# define lmtx_expression_negate(a)          memone03(a,1) /* overloads attr */ /* bitset */
+# define lmtx_expression_type_expression(a) memtwo(a,1)   /* overloads prev */
+# define lmtx_expression_type_term(a)       memone(a,2)
+# define lmtx_expression_type_numerator(a)  memtwo(a,2)
+# define lmtx_expression_expression(a)      lvalue(a,3)
+# define lmtx_expression_term(a)            lvalue(a,4)
+# define lmtx_expression_numerator(a)       lvalue(a,5)
 
 /*tex RPN stacked expression: */
 
 # define rpn_expression_node_size 3
-# define rpn_expression_type(a)   vinfo00(a,1) /* overloads attr */ /*tex not used */
-# define rpn_expression_state(a)  vinfo01(a,1) /* overloads attr */ /*tex not used */
-# define rpn_expression_result(a) vinfo02(a,1) /* overloads attr */ /*tex not used */
-# define rpn_expression_negate(a) vinfo03(a,1) /* overloads attr */ /*tex bitset   */
-# define rpn_expression_entry(a)  lvalue(a,2) 
+# define rpn_expression_type(a)   memone00(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_state(a)  memone01(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_result(a) memone02(a,1) /* overloads attr */ /*tex not used */
+# define rpn_expression_negate(a) memone03(a,1) /* overloads attr */ /*tex bitset   */
+# define rpn_expression_entry(a)  lvalue(a,2)
 
 /*tex
     Why not.
 */
 
 # define loop_state_node_size 2
-# define loop_state_count(a)  vinfo(a,1) /* instead if node_attr */
+# define loop_state_count(a)  memone(a,1) /* instead if node_attr */
 
 /*tex
     This is a node that stores a font state. In principle we can do without but for tracing it
@@ -1664,13 +1746,13 @@ typedef enum fontspec_states {
 } font_spec_states;
 
 # define font_spec_node_size     5           /* we can be smaller: no attr and no prev */
-# define font_spec_state(a)      vinfo(a,1)  /* slot of node_attr */
-# define font_spec_identifier(a) vinfo(a,2)
-# define font_spec_scale(a)      vlink(a,2)
-# define font_spec_x_scale(a)    vinfo(a,3)
-# define font_spec_y_scale(a)    vlink(a,3)
-# define font_spec_slant(a)      vinfo(a,4)
-# define font_spec_weight(a)     vlink(a,4)
+# define font_spec_state(a)      memone(a,1)  /* slot of node_attr */
+# define font_spec_identifier(a) memone(a,2)
+# define font_spec_scale(a)      memtwo(a,2)
+# define font_spec_x_scale(a)    memone(a,3)
+# define font_spec_y_scale(a)    memtwo(a,3)
+# define font_spec_slant(a)      memone(a,4)
+# define font_spec_weight(a)     memtwo(a,4)
 
 # define font_spec_property_is_set(a,b) ((font_spec_state(a) & b) == b)
 
@@ -1695,12 +1777,12 @@ static inline int tex_same_fontspec(halfword a, halfword b)
 */
 
 # define math_spec_node_size     3
-# define math_spec_class(a)      vinfo00(a,1)  /* attr */
-# define math_spec_family(a)     vinfo01(a,1)
-# define math_spec_character(a)  vlink(a,1)    /* prev */
-# define math_spec_properties(a) vinfo0(a,2)
-# define math_spec_group(a)      vinfo1(a,2)
-# define math_spec_index(a)      vlink(a,2)
+# define math_spec_class(a)      memone00(a,1)  /* attr */
+# define math_spec_family(a)     memone01(a,1)
+# define math_spec_character(a)  memtwo(a,1)    /* prev */
+# define math_spec_properties(a) memone0(a,2)
+# define math_spec_group(a)      memone1(a,2)
+# define math_spec_index(a)      memtwo(a,2)
 
 # define math_spec_value(a)     (((math_spec_class(a) & 0x3F) << 12) + ((math_spec_family(a) & 0x3F) << 8) + (math_spec_character(a) & 0xFF))
 
@@ -1723,55 +1805,55 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 */
 
 # define align_stack_node_size                16
-# define align_stack_align_ptr(a)             vinfo(a,1)
-# define align_stack_cur_align(a)             vlink(a,1)
-# define align_stack_preamble(a)              vinfo(a,2)
-# define align_stack_cur_span(a)              vlink(a,2)
-# define align_stack_cur_loop(a)              vinfo(a,3)
-# define align_stack_wrap_source(a)           vlink(a,3)
-# define align_stack_align_state(a)           vinfo(a,4)
-# define align_stack_no_align_level(a)        vlink(a,4)
-# define align_stack_cur_post_adjust_head(a)  vinfo(a,5)
-# define align_stack_cur_post_adjust_tail(a)  vlink(a,5)
-# define align_stack_cur_pre_adjust_head(a)   vinfo(a,6)
-# define align_stack_cur_pre_adjust_tail(a)   vlink(a,6)
-# define align_stack_cur_post_migrate_head(a) vinfo(a,7)
-# define align_stack_cur_post_migrate_tail(a) vlink(a,7)
-# define align_stack_cur_pre_migrate_head(a)  vinfo(a,8)
-# define align_stack_cur_pre_migrate_tail(a)  vlink(a,8)
-# define align_stack_options(a)               vinfo(a,9)
-# define align_stack_attr_list(a)             vlink(a,9)
-# define align_stack_callback(a)              vinfo(a,10)
-# define align_stack_data(a)                  vlink(a,10) /* maybe */
+# define align_stack_align_ptr(a)             memone(a,1)
+# define align_stack_cur_align(a)             memtwo(a,1)
+# define align_stack_preamble(a)              memone(a,2)
+# define align_stack_cur_span(a)              memtwo(a,2)
+# define align_stack_cur_loop(a)              memone(a,3)
+# define align_stack_wrap_source(a)           memtwo(a,3)
+# define align_stack_align_state(a)           memone(a,4)
+# define align_stack_no_align_level(a)        memtwo(a,4)
+# define align_stack_cur_post_adjust_head(a)  memone(a,5)
+# define align_stack_cur_post_adjust_tail(a)  memtwo(a,5)
+# define align_stack_cur_pre_adjust_head(a)   memone(a,6)
+# define align_stack_cur_pre_adjust_tail(a)   memtwo(a,6)
+# define align_stack_cur_post_migrate_head(a) memone(a,7)
+# define align_stack_cur_post_migrate_tail(a) memtwo(a,7)
+# define align_stack_cur_pre_migrate_head(a)  memone(a,8)
+# define align_stack_cur_pre_migrate_tail(a)  memtwo(a,8)
+# define align_stack_options(a)               memone(a,9)
+# define align_stack_attr_list(a)             memtwo(a,9)
+# define align_stack_callback(a)              memone(a,10)
+# define align_stack_data(a)                  memtwo(a,10) /* maybe */
 
-# define align_stack_row_attrlist(a)          vinfo(a,11)
-# define align_stack_row_orientation(a)       vlink(a,11)
-# define align_stack_row_yoffset(a)           vinfo(a,12)
-# define align_stack_row_xoffset(a)           vlink(a,12)
-# define align_stack_row_ymove(a)             vinfo(a,13)
-# define align_stack_row_xmove(a)             vlink(a,13)
-# define align_stack_row_shift(a)             vinfo(a,14)
-# define align_stack_row_source(a)            vlink(a,14)
-# define align_stack_row_target(a)            vinfo(a,15)
-# define align_stack_row_anchor(a)            vlink(a,15)
+# define align_stack_row_attrlist(a)          memone(a,11)
+# define align_stack_row_orientation(a)       memtwo(a,11)
+# define align_stack_row_yoffset(a)           memone(a,12)
+# define align_stack_row_xoffset(a)           memtwo(a,12)
+# define align_stack_row_ymove(a)             memone(a,13)
+# define align_stack_row_xmove(a)             memtwo(a,13)
+# define align_stack_row_shift(a)             memone(a,14)
+# define align_stack_row_source(a)            memtwo(a,14)
+# define align_stack_row_target(a)            memone(a,15)
+# define align_stack_row_anchor(a)            memtwo(a,15)
 
 /*tex
     If nodes are for nesting conditionals. We have more state information that in (for instance)
     \LUATEX\ because we have more tracing and more test variants.
 */
 
-# define if_node_size           3             /*tex we can use prev now */
-# define if_limit_type(a)       vinfo0(a,1)   /*tex overlaps with node_attr */
-# define if_limit_subtype(a)    vinfo1(a,1)   /*tex overlaps with node_attr */
-# define if_limit_unless(a)     vinfo00(a,2)
-# define if_limit_step(a)       vinfo01(a,2)
-# define if_limit_stepunless(a) vinfo02(a,2)
-# define if_limit_unused(a)     vinfo03(a,2)
-# define if_limit_line(a)       vlink(a,2)
+# define if_node_size           3              /*tex we can use prev now */
+# define if_limit_type(a)       memone0(a,1)   /*tex overlaps with node_attr */
+# define if_limit_subtype(a)    memone1(a,1)   /*tex overlaps with node_attr */
+# define if_limit_unless(a)     memone00(a,2)
+# define if_limit_step(a)       memone01(a,2)
+# define if_limit_stepunless(a) memone02(a,2)
+# define if_limit_unused(a)     memone03(a,2)
+# define if_limit_line(a)       memtwo(a,2)
 
 /*tex
     Now come some rather special ones. For instance par shapes and file cq.\ line related nodes
-    were variable nodes. Thsi was dropped and replaced by a more generic specficiation node type.
+    were variable nodes. This was dropped and replaced by a more generic specification node type.
     In principle we can use that for more purposes.
 
     We use a bit of abstraction as preparation for different allocations. Dynamic allocation makes
@@ -1782,17 +1864,17 @@ static inline int tex_same_mathspec(halfword a, halfword b)
     be stored in the format file. Because there is a pointer field we have some extra accessors.
 
     Todo: we also need to catch the fact that we can run out of memory but in practice that will
-    not happen soon, for instance because we seldom use parshapes. And in the meantime the pseudo
+    not happen soon, for instance because we seldom use par shapes. And in the meantime the pseudo
     file related nodes are gone anyway because all file IO has been delegated to \LUA\ now.
 */
 
 # define specification_node_size     4
-# define specification_count(a)      vlink(a,0)      /* next */
-# define specification_options(a)    vinfo(a,1)
-# define specification_size(a)       vlink(a,1)      /* allocated size */
+# define specification_count(a)      memtwo(a,0)      /* next */
+# define specification_options(a)    memone(a,1)
+# define specification_size(a)       memtwo(a,1)      /* allocated size */
 # define specification_pointer(a)    (mvalue(a,2))
-# define specification_anything_1(a) vinfo(a,3)
-# define specification_anything_2(a) vlink(a,3)
+# define specification_anything_1(a) memone(a,3)
+# define specification_anything_2(a) memtwo(a,3)
 
 /*tex
     We now define some math related nodes (and noads) and start with style and choice nodes. Style
@@ -1813,17 +1895,17 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 
 # define style_node_size               3
 # define style_style                   node_subtype
-# define style_scale(a)                vinfo(a,2)
-# define style_reserved(a)             vlink(a,2)
+# define style_scale(a)                memone(a,2)
+# define style_reserved(a)             memtwo(a,2)
 
 # define choice_node_size              5
 //define choice_style                  node_subtype
-# define choice_display_mlist(a)       vinfo(a,2) /*tex mlist to be used in display style or pre_break */
-# define choice_text_mlist(a)          vlink(a,2) /*tex mlist to be used in text style or post_break */
-# define choice_script_mlist(a)        vinfo(a,3) /*tex mlist to be used in script style or no_break */
-# define choice_script_script_mlist(a) vlink(a,3) /*tex mlist to be used in scriptscript style */
-# define choice_class(a)               vinfo(a,4) /*tex we could abuse the script script field */
-# define choice_unused(a)              vlink(a,4)
+# define choice_display_mlist(a)       memone(a,2) /*tex mlist to be used in display style or pre_break */
+# define choice_text_mlist(a)          memtwo(a,2) /*tex mlist to be used in text style or post_break */
+# define choice_script_mlist(a)        memone(a,3) /*tex mlist to be used in script style or no_break */
+# define choice_script_script_mlist(a) memtwo(a,3) /*tex mlist to be used in scriptscript style */
+# define choice_class(a)               memone(a,4) /*tex we could abuse the script script field */
+# define choice_unused(a)              memtwo(a,4)
 
 # define choice_pre_break              choice_display_mlist
 # define choice_post_break             choice_text_mlist
@@ -1831,8 +1913,8 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 
 # define parameter_node_size           3
 # define parameter_style               node_subtype
-# define parameter_name(a)             vinfo(a,2)
-# define parameter_value(a)            vlink(a,2)
+# define parameter_name(a)             memone(a,2)
+# define parameter_value(a)            memtwo(a,2)
 
 typedef enum simple_choice_subtypes {
     normal_choice_subtype,
@@ -1856,36 +1938,36 @@ typedef enum simple_choice_subtypes {
     \FL
     \BC            \BC noad       \BC accent            \BC fraction         \BC radical          \NC fence           \NC \NR
     \ML
-    \NC vlink  2   \NC new_hlist  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  2   \NC new_hlist  \NC                   \NC                  \NC                  \NC                 \NC \NR
     \ML
-    \NC vinfo  2   \NC nucleus    \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink  3   \NC supscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  3   \NC subscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink  4   \NC supprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  4   \NC subprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  2   \NC nucleus    \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  3   \NC supscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  3   \NC subscr     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  4   \NC supprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  4   \NC subprescr  \NC                   \NC                  \NC                  \NC                 \NC \NR
     \ML
-    \NC vlink  5   \NC italic     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  5   \NC width      \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink  6   \NC height     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  6   \NC depth      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  5   \NC italic     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  5   \NC width      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  6   \NC height     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  6   \NC depth      \NC                   \NC                  \NC                  \NC                 \NC \NR
     \ML
-    \NC vlink  7   \NC options    \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  7   \NC style      \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink  8   \NC family     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  8   \NC class      \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink  9   \NC source     \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo  9   \NC prime      \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vlink 10   \NC leftslack  \NC                   \NC                  \NC                  \NC                 \NC \NR
-    \NC vinfo 10   \NC rightslack \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  7   \NC options    \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  7   \NC style      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  8   \NC family     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  8   \NC class      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo  9   \NC source     \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone  9   \NC prime      \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memtwo 10   \NC leftslack  \NC                   \NC                  \NC                  \NC                 \NC \NR
+    \NC memone 10   \NC rightslack \NC                   \NC                  \NC                  \NC                 \NC \NR
     \ML
-    \NC vlink 11   \NC extra_1    \NC top_character     \NC rule_thickness   \NC degree           \NC delimiter       \NC \NR
-    \NC vinfo 11   \NC extra_2    \NC bot_character     \NC left_delimiter   \NC left_delimiter   \NC source          \NC \NR
-    \NC vlink 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC topdelimiter    \NC \NR
-    \NC vinfo 12   \NC extra_4    \NC fraction          \NC middle_delimiter \NC size             \NC bottomdelimiter \NC \NR
-    \NC vlink 13   \NC extra_5    \NC topovershoot      \NC h_factor         \NC height           \NC topovershoot    \NC \NR
-    \NC vinfo 13   \NC extra_6    \NC botovershoot      \NC v_factor         \NC depth            \NC botovershoot    \NC \NR
-    \NC vlink 14   \NC extra_7    \NC                   \NC numerator        \NC top_delimiter    \NC delimitervariant\NC \NR
-    \NC vinfo 14   \NC extra_8    \NC                   \NC denominator      \NC bottom_delimiter \NC                 \NC \NR
+    \NC memtwo 11   \NC extra_1    \NC top_character     \NC rule_thickness   \NC degree           \NC delimiter       \NC \NR
+    \NC memone 11   \NC extra_2    \NC bot_character     \NC left_delimiter   \NC left_delimiter   \NC source          \NC \NR
+    \NC memtwo 12   \NC extra_3    \NC overlay_character \NC right_delimiter  \NC right_delimiter  \NC topdelimiter    \NC \NR
+    \NC memone 12   \NC extra_4    \NC fraction          \NC middle_delimiter \NC size             \NC bottomdelimiter \NC \NR
+    \NC memtwo 13   \NC extra_5    \NC topovershoot      \NC h_factor         \NC height           \NC topovershoot    \NC \NR
+    \NC memone 13   \NC extra_6    \NC botovershoot      \NC v_factor         \NC depth            \NC botovershoot    \NC \NR
+    \NC memtwo 14   \NC extra_7    \NC                   \NC numerator        \NC top_delimiter    \NC delimitervariant\NC \NR
+    \NC memone 14   \NC extra_8    \NC                   \NC denominator      \NC bottom_delimiter \NC                 \NC \NR
     \LL
     \stoptabulate
 
@@ -1898,63 +1980,57 @@ typedef enum simple_choice_subtypes {
 */
 
 //define noad_state_node_size      6
-//define noad_state_topright(a)    vlink(a,2)
-//define noad_state_bottomright(a) vinfo(a,2)
-//define noad_state_topleft(a)     vlink(a,3)
-//define noad_state_bottomleft(a)  vinfo(a,3)
-//define noad_state_height(a)      vlink(a,4)
-//define noad_state_depth(a)       vinfo(a,4)
-//define noad_state_toptotal(a)    vlink(a,5)
-//define noad_state_bottomtotal(a) vinfo(a,5)
+//define noad_state_topright(a)    memtwo(a,2)
+//define noad_state_bottomright(a) memone(a,2)
+//define noad_state_topleft(a)     memtwo(a,3)
+//define noad_state_bottomleft(a)  memone(a,3)
+//define noad_state_height(a)      memtwo(a,4)
+//define noad_state_depth(a)       memone(a,4)
+//define noad_state_toptotal(a)    memtwo(a,5)
+//define noad_state_bottomtotal(a) memone(a,5)
 
 # define noad_size            18
-# define noad_new_hlist(a)    vlink(a,2)    /*tex the translation of an mlist; a bit confusing name */
-# define noad_nucleus(a)      vinfo(a,2)
-# define noad_supscr(a)       vlink(a,3)
-# define noad_subscr(a)       vinfo(a,3)
-# define noad_supprescr(a)    vlink(a,4)
-# define noad_subprescr(a)    vinfo(a,4)
-# define noad_italic(a)       vlink(a,5)    /*tex Sometimes used, might become more. */
-# define noad_width(a)        vinfo(a,5)
-# define noad_height(a)       vlink(a,6)
-# define noad_depth(a)        vinfo(a,6)
-//define noad_options(a)      vlink(a,7)
-//define noad_style(a)        vinfo00(a,7)
-//define noad_family(a)       vinfo01(a,7)
-//define noad_script_state(a) vinfo02(a,7)
-//define noad_analyzed(a)     vinfo03(a,7)  /*tex used for experiments */
-//define noad_state(a)        vlink(a,8)    /*tex this might replace */
+# define noad_nucleus(a)      memone(a,2)
+# define noad_new_hlist(a)    memtwo(a,2)    /*tex the translation of an mlist; a bit confusing name */
+# define noad_subscr(a)       memone(a,3)
+# define noad_supscr(a)       memtwo(a,3)
+# define noad_subprescr(a)    memone(a,4)
+# define noad_supprescr(a)    memtwo(a,4)
+# define noad_width(a)        memone(a,5)
+# define noad_italic(a)       memtwo(a,5)    /*tex Sometimes used, might become more. */
+# define noad_depth(a)        memone(a,6)
+# define noad_height(a)       memtwo(a,6)
 # define noad_options(a)      lvalue(a,7)   /*tex 64 bit fullword */
-# define noad_style(a)        vlink00(a,8)
-# define noad_family(a)       vlink01(a,8)
-# define noad_script_state(a) vlink02(a,8)
-# define noad_analyzed(a)     vlink03(a,8)  /*tex used for experiments */
-# define noad_class_main(a)   vinfo00(a,8)
-# define noad_class_left(a)   vinfo01(a,8)
-# define noad_class_right(a)  vinfo02(a,8)
-# define noad_script_order(a) vinfo03(a,8)
-# define noad_source(a)       vlink(a,9)
-# define noad_prime(a)        vinfo(a,9)
-# define noad_left_slack(a)   vlink(a,10)
-# define noad_right_slack(a)  vinfo(a,10)
-# define noad_subshift(a)     vinfo(a,11) /* continuation */
-# define noad_supshift(a)     vlink(a,11) /* continuation */
-# define noad_primeshift(a)   vlink(a,12) /* continuation */
-# define noad_script_kern(a)  vinfo(a,12) /* continuation */
-# define noad_extra_attr(a)   vlink(a,13)
-# define noad_reserved(a)     vinfo(a,13)
-# define noad_extra_1(a)      vlink(a,14)
-# define noad_extra_2(a)      vinfo(a,14)
-# define noad_extra_3(a)      vlink(a,15)
-# define noad_extra_4(a)      vinfo(a,15)
-# define noad_extra_5(a)      vlink(a,16)
-# define noad_extra_6(a)      vinfo(a,16)
-# define noad_extra_7(a)      vlink(a,17)
-# define noad_extra_70(a)     vlink0(a,17)
-# define noad_extra_71(a)     vlink1(a,17)
-# define noad_extra_8(a)      vinfo(a,17)
-# define noad_extra_80(a)     vinfo0(a,17)
-# define noad_extra_81(a)     vinfo1(a,17)
+# define noad_class_main(a)   memone00(a,8)
+# define noad_class_left(a)   memone01(a,8)
+# define noad_class_right(a)  memone02(a,8)
+# define noad_script_order(a) memone03(a,8)
+# define noad_style(a)        memtwo00(a,8)
+# define noad_family(a)       memtwo01(a,8)
+# define noad_script_state(a) memtwo02(a,8)
+# define noad_analyzed(a)     memtwo03(a,8)  /*tex used for experiments */
+# define noad_source(a)       memtwo(a,9)
+# define noad_prime(a)        memone(a,9)
+# define noad_right_slack(a)  memone(a,10)
+# define noad_left_slack(a)   memtwo(a,10)
+# define noad_subshift(a)     memone(a,11) /* continuation */
+# define noad_supshift(a)     memtwo(a,11) /* continuation */
+# define noad_script_kern(a)  memone(a,12) /* continuation */
+# define noad_primeshift(a)   memtwo(a,12) /* continuation */
+# define noad_reserved(a)     memone(a,13)
+# define noad_extra_attr(a)   memtwo(a,13)
+# define noad_extra_2(a)      memone(a,14)
+# define noad_extra_1(a)      memtwo(a,14)
+# define noad_extra_4(a)      memone(a,15)
+# define noad_extra_3(a)      memtwo(a,15)
+# define noad_extra_6(a)      memone(a,16)
+# define noad_extra_5(a)      memtwo(a,16)
+# define noad_extra_8(a)      memone(a,17)
+# define noad_extra_7(a)      memtwo(a,17)
+# define noad_extra_70(a)     memtwo0(a,17)
+# define noad_extra_71(a)     memtwo1(a,17)
+# define noad_extra_80(a)     memone0(a,17)
+# define noad_extra_81(a)     memone1(a,17)
 
 # define noad_total(a) (noad_height(a) + noad_depth(a))
 
@@ -2050,7 +2126,7 @@ typedef enum noad_options {
     noad_option_no_sub_pre_script          = 0x00000400,
     noad_option_no_super_pre_script        = 0x00000800,
     noad_option_no_script                  = 0x00001000,
-    noad_option_no_overflow                = 0x00002000, /* keep (middle) extensible widthin target size */
+    noad_option_no_overflow                = 0x00002000, /* keep (middle) extensible width in target size */
     noad_option_void                       = 0x00004000, /* wipe and set width to zero */
     noad_option_phantom                    = 0x00008000, /* wipe */
     noad_option_openup_height              = 0x00010000,
@@ -2323,7 +2399,7 @@ typedef enum fence_subtypes {
     Fraction noads are generic in the sense that they are also used for non|-|fractions, not that
     it matters much. We keep them as they are in \TEX\ but have more fields.
 
-    We put the numerator and denomerator in script fields so there can be no such direct scripts
+    We put the numerator and denominator in script fields so there can be no such direct scripts
     attached. Because we have prescripts we can used these fields and limit this handicap a bit but
     if we ever overcome this (at the cost of more fields in these similar noads) we need to adapt
     the error message for double scripts in |tex_run_math_script|.
@@ -2404,20 +2480,20 @@ typedef enum math_kernel_options {
 } math_kernel_options;
 
 # define math_kernel_node_size     5
-# define kernel_math_family(a)     vinfo(a,2)   /* can be vinfo00 */
-# define kernel_math_character(a)  vlink(a,2)
-# define kernel_math_options(a)    vinfo(a,3)
-# define kernel_math_list(a)       vlink(a,3)
-# define kernel_math_properties(a) vinfo0(a,4)  /* for characters */
-# define kernel_math_group(a)      vinfo1(a,4)  /* for characters */
-# define kernel_math_index(a)      vlink(a,4)   /* for characters */
+# define kernel_math_family(a)     memone(a,2)   /* can be memone00 */
+# define kernel_math_character(a)  memtwo(a,2)
+# define kernel_math_options(a)    memone(a,3)
+# define kernel_math_list(a)       memtwo(a,3)
+# define kernel_math_properties(a) memone0(a,4)  /* for characters */
+# define kernel_math_group(a)      memone1(a,4)  /* for characters */
+# define kernel_math_index(a)      memtwo(a,4)   /* for characters */
 
 /* delimiters can be old and new as type */
 
-# define kernel_math_small_family     vinfo00(a,2)
-# define kernel_math_large_family     vinfo01(a,2)
-# define kernel_math_small_character  vlink(a,2)
-# define kernel_math_large_character  vinfo02(a,2)
+# define kernel_math_small_family     memone00(a,2)
+# define kernel_math_large_family     memone01(a,2)
+# define kernel_math_small_character  memtwo(a,2)
+# define kernel_math_large_character  memone02(a,2)
 
 # define math_kernel_node_has_option(a,b) ((kernel_math_options(a) & b) == b)
 # define math_kernel_node_set_option(a,b) kernel_math_options(a) = (kernel_math_options(a) | b)
@@ -2429,13 +2505,13 @@ typedef enum math_kernel_options {
 */
 
 # define math_delimiter_node_size     5
-# define delimiter_small_family(a)    vinfo(a,2)   /*tex |family| for small delimiter */
-# define delimiter_small_character(a) vlink(a,2)   /*tex |character| for small delimiter */
-# define delimiter_large_family(a)    vinfo(a,3)   /*tex |family| for large delimiter */
-# define delimiter_large_character(a) vlink(a,3)   /*tex |character| for large delimiter */
-# define delimiter_math_properties(a) vinfo0(a,4)  /* for characters */
-# define delimiter_math_group(a)      vinfo1(a,4)  /* for characters */
-# define delimiter_math_index(a)      vlink(a,4)   /* for characters */
+# define delimiter_small_family(a)    memone(a,2)   /*tex |family| for small delimiter */
+# define delimiter_small_character(a) memtwo(a,2)   /*tex |character| for small delimiter */
+# define delimiter_large_family(a)    memone(a,3)   /*tex |family| for large delimiter */
+# define delimiter_large_character(a) memtwo(a,3)   /*tex |character| for large delimiter */
+# define delimiter_math_properties(a) memone0(a,4)  /* for characters */
+# define delimiter_math_group(a)      memone1(a,4)  /* for characters */
+# define delimiter_math_index(a)      memtwo(a,4)   /* for characters */
 
 /*tex
     Before we come to the by now rather large local par node we define some small ones. The
@@ -2478,8 +2554,8 @@ typedef enum math_boundary_options {
 # define last_boundary_code    optional_boundary
 
 # define boundary_node_size   3
-# define boundary_data(a)     vinfo(a,2)
-# define boundary_reserved(a) vlink(a,2) // maybe level
+# define boundary_data(a)     memone(a,2)
+# define boundary_reserved(a) memtwo(a,2) // maybe level
 
 typedef enum dir_subtypes {
     normal_dir_subtype,
@@ -2489,8 +2565,8 @@ typedef enum dir_subtypes {
 # define last_dir_subtype cancel_dir_subtype
 
 # define dir_node_size    3
-# define dir_direction(a) vinfo(a,2)
-# define dir_level(a)     vlink(a,2)
+# define dir_direction(a) memone(a,2)
+# define dir_level(a)     memtwo(a,2)
 
 /*tex
     Local par nodes come from \OMEGA\ and store the direction as well as local boxes. In \LUATEX
@@ -2668,90 +2744,93 @@ static int par_category_to_codes[par_n_of_codes] = { /* explicit size is check *
     par_ex_hyphen_penalty_category,   // par_ex_hyphen_penalty_code
 };
 
-
-typedef enum par_options {      
+typedef enum par_options {
     par_option_synchronize = 0x01,
+    par_option_snapping    = 0x02,
 } par_options;
 
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */
 
-# define par_node_size                   35 // todo: less because we can pack some
+// todo: less because we can pack some
+// todo: reorder memone and memtwo 
 
-# define par_dir(a)                      vlink00(a, 2)
-# define par_options(a)                  vlink01(a, 2)
-# define par_box_left(a)                 vinfo(a, 2)
-# define par_box_left_width(a)           vlink(a, 3)
-# define par_box_right(a)                vinfo(a, 3)
-# define par_box_right_width(a)          vlink(a, 4)
-# define par_box_middle(a)               vinfo(a, 4)
-# define par_par_passes(a)               vlink(a, 5)
-# define par_line_break_checks(a)        vinfo(a, 5)
-# define par_state(a)                    vlink(a, 6)
-# define par_prev_graf(a)                vinfo(a, 6) /*tex A bit of a joke but maybe handy indeed. */
-# define par_hsize(a)                    vlink(a, 7)
-# define par_left_skip(a)                vinfo(a, 7)
-# define par_right_skip(a)               vlink(a, 8)
-# define par_hang_indent(a)              vinfo(a, 8)
-# define par_hang_after(a)               vlink(a, 9)
-# define par_par_indent(a)               vinfo(a, 9)
-# define par_par_fill_left_skip(a)       vlink(a,10)
-# define par_par_fill_right_skip(a)      vinfo(a,10)
-# define par_adjust_spacing(a)           vlink(a,11) /* can be single */
-# define par_protrude_chars(a)           vinfo(a,11) /* can be single */
-# define par_pre_tolerance(a)            vlink(a,12)
-# define par_tolerance(a)                vinfo(a,12)
-# define par_emergency_stretch(a)        vlink(a,13)
-# define par_looseness(a)                vinfo(a,13) /* can be less */
-# define par_last_line_fit(a)            vlink(a,14) /* can be less */
-# define par_line_penalty(a)             vinfo(a,14)
-# define par_inter_line_penalty(a)       vlink(a,15)
-# define par_club_penalty(a)             vinfo(a,15)
-# define par_widow_penalty(a)            vlink(a,16)
-# define par_display_widow_penalty(a)    vinfo(a,16)
-# define par_orphan_penalty(a)           vlink(a,17)
-# define par_toddler_penalties(a)        vinfo(a,17)
-# define par_broken_penalty(a)           vlink(a,18)
-# define par_adj_demerits(a)             vinfo(a,18)
-# define par_double_hyphen_demerits(a)   vlink(a,19)
-# define par_final_hyphen_demerits(a)    vinfo(a,19)
-# define par_par_shape(a)                vlink(a,20)
-# define par_inter_line_penalties(a)     vinfo(a,20)
-# define par_club_penalties(a)           vlink(a,21)
-# define par_widow_penalties(a)          vinfo(a,21)
-# define par_display_widow_penalties(a)  vlink(a,22)
-# define par_broken_penalties(a)         vinfo(a,22)
-# define par_orphan_penalties(a)         vlink(a,23)
-# define par_single_line_penalty(a)      vinfo(a,23)
-# define par_baseline_skip(a)            vlink(a,24)
-# define par_line_skip(a)                vinfo(a,24)
-# define par_line_skip_limit(a)          vlink(a,25)
-# define par_adjust_spacing_step(a)      vinfo(a,25)
-# define par_adjust_spacing_shrink(a)    vlink(a,26)
-# define par_adjust_spacing_stretch(a)   vinfo(a,26)
-# define par_end_par_tokens(a)           vlink(a,27)
-# define par_hyphenation_mode(a)         vinfo(a,27) /* can be single */
-# define par_shaping_penalties_mode(a)   vlink(a,28) /* can be single */
-# define par_shaping_penalty(a)          vinfo(a,28)
-# define par_par_init_left_skip(a)       vlink(a,29)
-# define par_par_init_right_skip(a)      vinfo(a,29)
-# define par_emergency_left_skip(a)      vlink(a,30)
-# define par_emergency_right_skip(a)     vinfo(a,30)
-# define par_emergency_extra_stretch(a)  vlink(a,31)
-# define par_fitness_classes(a)          vinfo(a,31)
-# define par_adjacent_demerits(a)        vlink(a,32)
-# define par_hyphen_penalty(a)           vinfo(a,32)
-# define par_ex_hyphen_penalty(a)        vlink(a,33)
-# define par_left_twin_demerits(a)       vinfo(a,33)
-# define par_right_twin_demerits(a)      vlink(a,34)
-# define par_orphan_line_factors(a)      vinfo(a,34)
+# define par_node_size                   35
+
+# define par_dir(a)                      memtwo00(a, 2)
+# define par_options(a)                  memtwo01(a, 2)
+# define par_box_left(a)                 memone(a, 2)
+# define par_box_left_width(a)           memtwo(a, 3)
+# define par_box_right(a)                memone(a, 3)
+# define par_box_right_width(a)          memtwo(a, 4)
+# define par_box_middle(a)               memone(a, 4)
+# define par_par_passes(a)               memtwo(a, 5)
+# define par_line_break_checks(a)        memone(a, 5)
+# define par_state(a)                    memtwo(a, 6)
+# define par_prev_graf(a)                memone(a, 6) /*tex A bit of a joke but maybe handy indeed. */
+# define par_hsize(a)                    memtwo(a, 7)
+# define par_left_skip(a)                memone(a, 7)
+# define par_right_skip(a)               memtwo(a, 8)
+# define par_hang_indent(a)              memone(a, 8)
+# define par_hang_after(a)               memtwo(a, 9)
+# define par_par_indent(a)               memone(a, 9)
+# define par_par_fill_left_skip(a)       memtwo(a,10)
+# define par_par_fill_right_skip(a)      memone(a,10)
+# define par_adjust_spacing(a)           memtwo(a,11) /* can be single */
+# define par_protrude_chars(a)           memone(a,11) /* can be single */
+# define par_pre_tolerance(a)            memtwo(a,12)
+# define par_tolerance(a)                memone(a,12)
+# define par_emergency_stretch(a)        memtwo(a,13)
+# define par_looseness(a)                memone(a,13) /* can be less */
+# define par_last_line_fit(a)            memtwo(a,14) /* can be less */
+# define par_line_penalty(a)             memone(a,14)
+# define par_inter_line_penalty(a)       memtwo(a,15)
+# define par_club_penalty(a)             memone(a,15)
+# define par_widow_penalty(a)            memtwo(a,16)
+# define par_display_widow_penalty(a)    memone(a,16)
+# define par_orphan_penalty(a)           memtwo(a,17)
+# define par_toddler_penalties(a)        memone(a,17)
+# define par_broken_penalty(a)           memtwo(a,18)
+# define par_adj_demerits(a)             memone(a,18)
+# define par_double_hyphen_demerits(a)   memtwo(a,19)
+# define par_final_hyphen_demerits(a)    memone(a,19)
+# define par_par_shape(a)                memtwo(a,20)
+# define par_inter_line_penalties(a)     memone(a,20)
+# define par_club_penalties(a)           memtwo(a,21)
+# define par_widow_penalties(a)          memone(a,21)
+# define par_display_widow_penalties(a)  memtwo(a,22)
+# define par_broken_penalties(a)         memone(a,22)
+# define par_orphan_penalties(a)         memtwo(a,23)
+# define par_single_line_penalty(a)      memone(a,23)
+# define par_baseline_skip(a)            memtwo(a,24)
+# define par_line_skip(a)                memone(a,24)
+# define par_line_skip_limit(a)          memtwo(a,25)
+# define par_adjust_spacing_step(a)      memone(a,25)
+# define par_adjust_spacing_shrink(a)    memtwo(a,26)
+# define par_adjust_spacing_stretch(a)   memone(a,26)
+# define par_end_par_tokens(a)           memtwo(a,27)
+# define par_hyphenation_mode(a)         memone(a,27) /* can be single */
+# define par_shaping_penalties_mode(a)   memtwo(a,28) /* can be single */
+# define par_shaping_penalty(a)          memone(a,28)
+# define par_par_init_left_skip(a)       memtwo(a,29)
+# define par_par_init_right_skip(a)      memone(a,29)
+# define par_emergency_left_skip(a)      memtwo(a,30)
+# define par_emergency_right_skip(a)     memone(a,30)
+# define par_emergency_extra_stretch(a)  memtwo(a,31)
+# define par_fitness_classes(a)          memone(a,31)
+# define par_adjacent_demerits(a)        memtwo(a,32)
+# define par_hyphen_penalty(a)           memone(a,32)
+# define par_ex_hyphen_penalty(a)        memtwo(a,33)
+# define par_left_twin_demerits(a)       memone(a,33)
+# define par_right_twin_demerits(a)      memtwo(a,34)
+# define par_orphan_line_factors(a)      memone(a,34)
 
 /*
     At some point we will have this (array with double values), depends on the outcome of an
     experiment but I want to reserve this. We then also patch |texlocalboxes.c| line 295+.
 */
 
-// define par_lousyness(a)               vinfo(a,34)
-// define par_reserved(a)                vlink(a,34)
+// define par_lousyness(a)               memone(a,34)
+// define par_reserved(a)                memtwo(a,34)
 
 typedef enum par_subtypes {
     vmode_par_par_subtype,
@@ -2803,10 +2882,10 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
     But that wasted 9 halfs for storing the 9 fields. So, next I played with this:
 
     \starttyping
-    # define delta_field_1(d) (delta_field(d,1)) // or: vinfo(d,1)
-    # define delta_field_2(d) (delta_field(d,2)) // or: vlink(d,1)
+    # define delta_field_1(d) (delta_field(d,1)) // or: memone(d,1)
+    # define delta_field_2(d) (delta_field(d,2)) // or: memtwo(d,1)
     ...
-    # define delta_field_9(d) (delta_field(d,9)) // or: vinfo(d,5)
+    # define delta_field_9(d) (delta_field(d,9)) // or: memone(d,5)
     \stoptyping
 
     But soon after that more meaningfull names were introduced, simply because in the code where they
@@ -2818,63 +2897,63 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 */
 
 /*tex
-    We can use vinfo(a,2) for fitness instead the subtype field.  But then we also need to set
+    We can use memone(a,2) for fitness instead the subtype field.  But then we also need to set
     it explicitly because now that happens in the allocator.
 
     The subtype uisage is somewhat confusing. Maybe we need less in the active node.
 */
 
-# define active_node_size                  6            /*tex |hyphenated_node| or |unhyphenated_node| */
-//define active_fitness                    node_subtype /*tex |very_loose_fit..tight_fit| on final line for this break */
-# define active_fitness(a)                 vinfo1(a,0)
-# define active_break_node(a)              vlink(a,1)   /*tex pointer to the corresponding passive node */
-# define active_line_number(a)             vinfo(a,1)   /*tex line that begins at this breakpoint */
-# define active_total_demerits(a)          vlink(a,2)   /*tex the quantity that \TEX\ minimizes */
-# define active_line_width(a)              vinfo(a,2)
-# define active_glue(a)                    vlink(a,3)   /*tex corresponding glue stretch or shrink */
-# define active_short(a)                   vinfo(a,3)   /*tex |shortfall| of this line */
-# define active_quality(a)                 vlink(a,4)   /* last line related, normally we can use the passive one */
-# define active_deficiency(a)              vinfo(a,4)   /* last line related, normally we can use the passive one */
-# define active_n_of_fitness_classes(a)    vlink(a,5)
-# define active_reserved(a)                vinfo(a,5)
+# define active_node_size                  6             /*tex |hyphenated_node| or |unhyphenated_node| */
+//define active_fitness                    node_subtype  /*tex |very_loose_fit..tight_fit| on final line for this break */
+# define active_fitness(a)                 memone1(a,0)
+# define active_line_number(a)             memone(a,1)   /*tex line that begins at this breakpoint */
+# define active_break_node(a)              memtwo(a,1)   /*tex pointer to the corresponding passive node */
+# define active_line_width(a)              memone(a,2)
+# define active_total_demerits(a)          memtwo(a,2)   /*tex the quantity that \TEX\ minimizes */
+# define active_short(a)                   memone(a,3)   /*tex |shortfall| of this line */
+# define active_glue(a)                    memtwo(a,3)   /*tex corresponding glue stretch or shrink */
+# define active_deficiency(a)              memone(a,4)   /* last line related, normally we can use the passive one */
+# define active_quality(a)                 memtwo(a,4)   /* last line related, normally we can use the passive one */
+# define active_n_of_fitness_classes(a)    memone(a,5)
+# define active_reserved(a)                memtwo(a,5)
 
-# define active_page_number(a)             vinfo(a,1)
-# define active_page_height(a)             vinfo(a,2)
+# define active_page_number(a)             memone(a,1)
+# define active_page_height(a)             memone(a,2)
 
 # define passive_node_size                 12
-# define passive_fitness(a)                vinfo1(a,0)
-# define passive_cur_break(a)              vlink(a,1)   /*tex in passive node, points to position of this breakpoint */
-# define passive_prev_break(a)             vinfo(a,1)   /*tex points to passive node that should precede this one */
-# define passive_interline_penalty(a)      vlink(a,2)
-# define passive_broken_penalty(a)         vinfo(a,2)
-# define passive_left_box(a)               vlink(a,3)
-# define passive_left_box_width(a)         vinfo(a,3)
-# define passive_last_left_box(a)          vlink(a,4)
-# define passive_last_left_box_width(a)    vinfo(a,4)
-# define passive_right_box(a)              vlink(a,5)
-# define passive_right_box_width(a)        vinfo(a,5)
-# define passive_serial(a)                 vlink(a,6)   /*tex serial number for symbolic identification (pass) */
-# define passive_middle_box(a)             vinfo(a,6)
-# define passive_quality(a)                vlink(a,7)
-# define passive_deficiency(a)             vinfo(a,7)
-# define passive_demerits(a)               vlink(a,8)
-# define passive_par_node(a)               vinfo(a,8)   /*tex experiment */
-# define passive_badness(a)                vlink(a,9)
-# define passive_n_of_fitness_classes(a)   vinfo(a,9)
-# define passive_ref_count(a)              vlink(a,10)
-# define passive_reserved(a)               vinfo(a,10)
+# define passive_fitness(a)                memone1(a,0)
+# define passive_prev_break(a)             memone(a,1)   /*tex points to passive node that should precede this one */
+# define passive_cur_break(a)              memtwo(a,1)   /*tex in passive node, points to position of this breakpoint */
+# define passive_broken_penalty(a)         memone(a,2)
+# define passive_interline_penalty(a)      memtwo(a,2)
+# define passive_left_box_width(a)         memone(a,3)
+# define passive_left_box(a)               memtwo(a,3)
+# define passive_last_left_box_width(a)    memone(a,4)
+# define passive_last_left_box(a)          memtwo(a,4)
+# define passive_right_box_width(a)        memone(a,5)
+# define passive_right_box(a)              memtwo(a,5)
+# define passive_middle_box(a)             memone(a,6)
+# define passive_serial(a)                 memtwo(a,6)   /*tex serial number for symbolic identification (pass) */
+# define passive_deficiency(a)             memone(a,7)
+# define passive_quality(a)                memtwo(a,7)
+# define passive_par_node(a)               memone(a,8)   /*tex experiment */
+# define passive_demerits(a)               memtwo(a,8)
+# define passive_n_of_fitness_classes(a)   memone(a,9)
+# define passive_badness(a)                memtwo(a,9)
+# define passive_reserved(a)               memone(a,10)
+# define passive_ref_count(a)              memtwo(a,10)
 # define passive_factor(a)                 dvalue(a,11)
 
 # define delta_node_size                   6
-# define delta_field_total_glue(d)         vinfo(d,1)
-# define delta_field_total_stretch(d)      vlink(d,2)
-# define delta_field_total_shrink(d)       vinfo(d,2)
-# define delta_field_total_fi_amount(d)    vlink(d,3)
-# define delta_field_total_fil_amount(d)   vinfo(d,3)
-# define delta_field_total_fill_amount(d)  vlink(d,4)
-# define delta_field_total_filll_amount(d) vinfo(d,4)
-# define delta_field_font_shrink(d)        vlink(d,5)
-# define delta_field_font_stretch(d)       vinfo(d,5)
+# define delta_field_total_glue(d)         memone(d,1)
+# define delta_field_total_shrink(d)       memone(d,2)
+# define delta_field_total_stretch(d)      memtwo(d,2)
+# define delta_field_total_fil_amount(d)   memone(d,3)
+# define delta_field_total_fi_amount(d)    memtwo(d,3)
+# define delta_field_total_filll_amount(d) memone(d,4)
+# define delta_field_total_fill_amount(d)  memtwo(d,4)
+# define delta_field_font_stretch(d)       memone(d,5)
+# define delta_field_font_shrink(d)        memtwo(d,5)
 
 /*tex
     Again we now have some helpers. We have a double linked list so here we go:
@@ -2914,8 +2993,15 @@ static inline halfword tex_head_of_node_list(halfword n)
 
 static inline halfword tex_tail_of_node_list(halfword n)
 {
-    while (node_next(n)) {
-        n = node_next(n);
+    if (n) {
+        while (1) {
+            halfword nxt = node_next(n);
+            if (nxt) {
+                n = nxt;
+            } else {
+                break;
+            }
+        }
     }
     return n;
 }
@@ -3142,7 +3228,7 @@ static inline halfword   tex_checked_glue_order (halfword order) { return ((orde
     Changing this to real nodes makes sense but is also tricky due to initializations ... some day
     (we need to store stuff in the states then and these are not saved!).
 
-    The first five could actualy be replaced by assignments because we don't share them as \TEX\
+    The first five could actually be replaced by assignments because we don't share them as \TEX\
     does which makes it easier the just change them (we don't need to save memory here). The other
     ones could be nodes that get initialized at startup and be put in the structs that need them,
     but for now we keep it as-it-is.
@@ -3155,20 +3241,20 @@ static inline halfword   tex_checked_glue_order (halfword order) { return ((orde
 # define fi_ss_glue        (fi_ll_glue        + glue_spec_size)
 # define fi_l_neg_glue     (fi_ss_glue        + glue_spec_size)
 
-# define page_insert_head  (fi_l_neg_glue     + glue_spec_size)
-# define contribute_head   (page_insert_head  + split_node_size) /*tex This was temp_node_size but we assign more. */
-# define page_head         (contribute_head   + temp_node_size)
-# define temp_head         (page_head         + glue_node_size)  /*tex It gets a glue type assigned. */
-# define hold_head         (temp_head         + temp_node_size)
-# define post_adjust_head  (hold_head         + temp_node_size)
-# define pre_adjust_head   (post_adjust_head  + temp_node_size)
-# define post_migrate_head (pre_adjust_head   + temp_node_size)
-# define pre_migrate_head  (post_migrate_head + temp_node_size)
-# define align_head        (pre_migrate_head  + temp_node_size)
-# define active_head       (align_head        + temp_node_size)
-# define end_span          (active_head       + active_node_size)
-# define begin_period      (end_span          + span_node_size)  /*tex Used to mark begin of word in hjn. */
-# define end_period        (begin_period      + glyph_node_size) /*tex Used to mark end of word in hjn. */
+# define page_insert_head  (fi_l_neg_glue     + glue_spec_size)   /* pagebuiding */ 
+# define contribute_head   (page_insert_head  + split_node_size)  /* pagebuiding */ 
+# define page_head         (contribute_head   + temp_node_size)   /* pagebuiding */
+# define temp_head         (page_head         + glue_node_size)   /* any         */ /*tex It gets a glue type assigned. */
+# define hold_head         (temp_head         + temp_node_size)   /* any         */
+# define post_adjust_head  (hold_head         + temp_node_size)   /* hpackaging  */ 
+# define pre_adjust_head   (post_adjust_head  + temp_node_size)   /* hpackaging  */ 
+# define post_migrate_head (pre_adjust_head   + temp_node_size)   /* hpackaging  */ 
+# define pre_migrate_head  (post_migrate_head + temp_node_size)   /* hpackaging  */ 
+# define align_head        (pre_migrate_head  + temp_node_size)   /* alignment   */ 
+# define active_head       (align_head        + temp_node_size)   /* alignment   */ 
+# define end_span          (active_head       + active_node_size) /* alignment   */ 
+# define begin_period      (end_span          + span_node_size)   /* hyphenation */ /*tex Used to mark begin of word in hjn. */
+# define end_period        (begin_period      + glyph_node_size)  /* hyphenation */ /*tex Used to mark end of word in hjn. */
 
 # define last_reserved     (end_period        + glyph_node_size - 1)
 

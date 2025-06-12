@@ -147,7 +147,7 @@
 
 % Finally some follow up on this experiment:
 
-\definesystemattribute[lineprofile]  [public]
+\definesystemattribute[lineprofile] [public]
 
 \installcorenamespace {lineprofile}
 

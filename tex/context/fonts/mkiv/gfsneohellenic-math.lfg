@@ -19,6 +19,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "GFSNeohellenicMath",
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 1.02",
                 },

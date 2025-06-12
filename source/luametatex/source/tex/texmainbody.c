@@ -10,7 +10,7 @@
     included \ETEX) and \ALEPH. As \TEX, \LUATEX\ is a document compiler intended to simplify high
     quality typesetting for many of the world's languages. It is an extension of D.E. Knuth's \TEX,
     which was designed essentially for the typesetting of languages using the Latin alphabet.
-    Although it is a direct decendant of \TEX, and therefore mostly compatible, there are some
+    Although it is a direct descendent of \TEX, and therefore mostly compatible, there are some
     subtle differences that relate to \UNICODE\ support and \OPENTYPE\ math.
 
     The \ALEPH\ subsystem loosens many of the restrictions imposed by~\TeX: register numbers are no
@@ -169,7 +169,7 @@
     so \quote {long} and \quote {slow] no longer really apply. Making a \PDFTEX\ format takes 6
     seconds because patterns are loaded in \UTF-8 format which demands interpretation, while
     \XETEX\ which has native \UTF-8\ support takes just over 3 seconds. Making \CONTEXT\ \LMTX\
-    format with \LUAMETATEX taked 2.54 seconds, and it involves loading hundreds of files with
+    format with \LUAMETATEX takes 2.54 seconds, and it involves loading hundreds of files with
     megabytes of code (much more than in \MKII). So it's not that bad. Loading a format file for
     a production run takes less than half a second (which includes quite some \LUA\ initialization).
     On a more modern machine these times are less of course.
@@ -188,7 +188,7 @@ main_state_info lmt_main_state = {
     context lines on terminal error messages in |error_line| and the width of first lines of
     contexts in terminal error messages in |half_error_line| which should be between 30 and
     |error_line - 15|. The width of longest text lines output, which should be at least 60,
-    is strored in |max_print_line| and the maximum number of strings, which must not exceed
+    is stored in |max_print_line| and the maximum number of strings, which must not exceed
     |max_halfword| is kept in |max_strings|.
 
     The number of strings available after format loaded is |strings_free|, the maximum number of

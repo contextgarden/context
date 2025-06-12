@@ -418,12 +418,50 @@ end
 
 local stopped
 
+local isdefined     = tokens.isdefined
+local logsreport    = logs.report
+local setjobcomment = false
+
+updaters.register("backends.injections.latebindings",function()
+    setjobcomment = backends.codeinjections.setjobcomment
+end)
+
+local interferences = {
+    { "ExplFileDate",    "latex expl",        "beware of side effects", true },
+    { "pgfplotsversion", "pgf/tikz graphics", "this impacts runtime",   true },
+}
+
+local function checkinterferences()
+    local done = false
+    for i=1,#interferences do
+        local f = interferences[i]
+        if f and isdefined(f[1]) then
+            if not done then
+                logsreport("warning")
+                done = true
+            end
+            logsreport("warning","%s code loaded, %s",f[2],f[3])
+            interferences[i] = false
+            if setjobcomment then
+               setjobcomment(
+                    "This file can be suboptimal due to non-ConTeXt packages being used."
+                )
+                setjobcomment = false
+            end
+        end
+    end
+    if done then
+        logsreport("warning")
+    end
+end
+
 local function starttext()
     if textlevel == 0 then
         if trace_jobfiles then
             report_jobfiles("starting text")
         end
         context.dostarttext()
+        checkinterferences()
     end
     textlevel = textlevel + 1
     texsetcount("global",c_textlevel,textlevel)
@@ -441,6 +479,7 @@ local function stoptext()
             if trace_jobfiles then
                 report_jobfiles("stopping text")
             end
+            checkinterferences()
             context.dostoptext()
             stopped = true
         end

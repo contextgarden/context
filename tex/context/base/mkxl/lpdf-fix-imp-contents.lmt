@@ -121,6 +121,10 @@ do
             local f = resources.Font
             if x or f then
                 local function strip(v)
+                    if not v.__raw__ then
+report_fixes("weird object")
+                        return
+                    end
                     if group_done     and v.__raw__.Group     then v.__raw__.Group     = nil group_done     = group_done     + 1 end
                     if extgstate_done and v.__raw__.ExtGState then v.__raw__.ExtGState = nil extgstate_done = extgstate_done + 1 end
                     if metadata_done  and v.__raw__.Metadata  then v.__raw__.Metadata  = nil metadata_done  = metadata_done  + 1 end

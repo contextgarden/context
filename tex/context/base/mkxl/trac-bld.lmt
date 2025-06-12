@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['trac-bld'] = {
 }
 
 local nuts          = nodes.nuts
-local tonut         = nodes.tonut
 
 local insertafter   = nuts.insertafter
 local hpack_string  = nuts.typesetters.tohpack
@@ -58,6 +57,8 @@ local detail     = false
 local enabled    = false
 local ejecting   = false
 
+local registercallback = callbacks.register
+
 -- use
 
 local function checkedforce(moveon,fireup,penalty)
@@ -91,7 +92,7 @@ local forceactions = {
     [buildcodes.check] = check,
 }
 
-local function handleforce(what,...)
+local function show_build_callback(what,...)
     local action = forceactions[what]
     if action then
         return action(...)
@@ -103,14 +104,14 @@ local function disableforce()
     forced  = { }
     ignored = { }
     if enabled and not trace then
-        callback.register("show_build")
+        registercallback { name = "show_build", action = false }
     end
     enabled = false
 end
 
 local function enableforce()
     if not enabled and not trace then
-        callback.register("show_build",handleforce)
+        registercallback { name = "show_build", action = show_build_callback }
     end
     enabled = true
 end
@@ -146,7 +147,6 @@ local function initialize()
 end
 
 local function step(current)
-    current = tonut(current)
     local id = getid(current)
     if id == hlist_code or id == vlist_code or id == rule_code then
         last = current
@@ -256,6 +256,13 @@ interfaces.implement {
     end
 }
 
+local function show_build_callback(what,...)
+    local action = showactions[what]
+    if action then
+        return action(...)
+    end
+end
+
 local function build_page_setup(v)
     if v == "all" or v == v_all then
         trace  = true
@@ -268,14 +275,9 @@ local function build_page_setup(v)
         detail = false
     end
     if trace then
-        callback.register("show_build", function(what,...)
-            local action = showactions[what]
-            if action then
-                return action(...)
-            end
-        end)
+        registercallback { name = "show_build", action = show_build_callback }
     elseif not enabled then
-        callback.register("show_build")
+        registercallback { name = "show_build", action = false }
     end
 end
 
@@ -285,4 +287,4 @@ interfaces.implement {
     actions   = build_page_setup,
 }
 
-trackers.register("builders.page.show", build_page_setup) -- for old times sake, will go
+trackers.register("builders.page.show",build_page_setup) -- for old times sake, will go

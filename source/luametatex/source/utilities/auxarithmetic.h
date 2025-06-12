@@ -11,7 +11,7 @@
 
 There has always be much attention on accuracy in \TEX, especially in the perspective of portability. 
 Keep in mind that \TEX\ was written when there was no IEEE floating point defined so all happens in 
-16.16, or actually in 14.16 precission. We could actually consider going 16.16 if we use long integers 
+16.16, or actually in 14.16 precision. We could actually consider going 16.16 if we use long integers 
 in some places but it needs some checking first. We could just accept wrapping around as that already
 happens in some places anyway (not all dimension calculation are checked).
 

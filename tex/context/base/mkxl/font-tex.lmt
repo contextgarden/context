@@ -24,6 +24,16 @@ local newprivateslot = fonts.helpers.newprivateslot
 
 local currentfont    = font.current
 
+local nuts           = nodes.nuts
+local tonode         = nuts.tonode
+
+local hpack          = nuts.hpack
+local setlink        = nuts.setlink
+local getwhd         = nuts.getwhd
+
+local new_glyph      = nuts.pool.glyph
+local new_kern       = nuts.pool.kern
+
 -- hm, seems to gobble the first \char
 -- the tounicode is a bit messy here
 
@@ -95,13 +105,14 @@ local function setboxdirectly(font,unicode,box,expose) -- hash based on wd/ht/dp
         local glyphboxes   = (tfmdata.glyphboxes or 0) + 1
         tfmdata.glyphboxes = glyphboxes
         local private      = newprivateslot(formatters["BG:%05X"](glyphboxes))
+        local width, height, depth = getwhd(box)
 -- box[a_exportstatus] = 0
         local newdata      = {
-            width   = box.width  or 0,
-            height  = box.height or 0,
-            depth   = box.depth  or 0,
+            width   = width,
+            height  = height,
+            depth   = depth,
             unicode = unicode,
-            objnum  = tex.boxresources.save(box,nil,nil,true),
+            objnum  = tex.boxresources.save(tonode(box),nil,nil,true),
             expose  = expose, -- permit color etc
         }
         local specification = {
@@ -197,7 +208,7 @@ fonts.callbacks     = fontcallbacks
 
 function fontcallbacks.devirtualize(chardata,f,c)
     if chardata.commands then
-        local h = node.hpack(nodes.pool.glyph(f,c))
+        local h = hpack(new_glyph(f,c))
         local p = setboxdirectly(f,c,h)
         chardata.oldcommands = chardata.commands
         chardata.commands = { { "char", p } }
@@ -205,7 +216,7 @@ function fontcallbacks.devirtualize(chardata,f,c)
     end
 end
 
-local function processcallback(f,c)
+local function process_character_callback(f,c)
     local characters = fontchars[f]
     local chardata   = characters[c]
     if chardata then
@@ -222,13 +233,6 @@ end
 do
 
     local unpack = unpack
-
-    local nuts      = nodes.nuts
-    local new_glyph = nuts.pool.glyph
-    local new_kern  = nuts.pool.kern
-    local tonode    = nuts.tonode
-    local hpack     = nuts.hpack
-    local setlink   = nuts.setlink
 
     function fontcallbacks.compile(chardata,fnt,chr,characters)
         -- no need for speed here
@@ -271,7 +275,7 @@ do
                     goto done
                 end
             end
-            local box = tonode(hpack(setlink(unpack(t))))
+            local box = hpack(setlink(unpack(t)))
             local prv = setboxdirectly(fnt,chr,box,true) -- expose
             chardata.commands = { { "char", prv } }
             characters[prv].unicode = chardata.unicode
@@ -282,6 +286,9 @@ do
 
 end
 
-callbacks.register("process_character",processcallback,"apply an action to a character in a font")
-
-fontcallbacks.callback = processcallback
+callbacks.register {
+    name    = "process_character",
+    action  = process_character_callback,
+    comment = "apply an action to a character in a font",
+    frozen  = true,
+}

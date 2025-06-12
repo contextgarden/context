@@ -73,7 +73,6 @@ local a_exportstatus     <const> = privateattribute("exportstatus")
 
 local nuts               = nodes.nuts
 local nodepool           = nuts.pool
-local tonut              = nuts.tonut
 local nutstring          = nuts.tostring
 
 local setfield           = nuts.setfield
@@ -173,8 +172,9 @@ local variables          = interfaces.variables
 local texsetattribute    = tex.setattribute
 local texgetattribute    = tex.getattribute
 local getfontoffamily    = tex.getfontoffamily
-local unsetvalue         <const> = attributes.unsetvalue
 local implement          = interfaces.implement
+
+local unsetvalue         <const> = attributes.unsetvalue
 
 local v_reset            <const> = variables.reset
 local v_small            <const> = variables.small
@@ -239,7 +239,22 @@ local fence_code         <const> = nodecodes.fence
 
 -- TODO : get rid of done
 
-local function process(start,what,n,parent)
+local function newprocesstable()
+    return { }
+ -- return lua.newindex(32,false) -- no gain over hash
+end
+
+
+experiments.register("optimize.math.indexed",function()
+    newprocesstable = function()
+        return lua.newindex(32,false)
+    end
+end)
+
+
+local process, processnested, processstep
+
+process = function(start,what,n,parent)
 
     if n then
         n = n + 1
@@ -287,12 +302,12 @@ local function process(start,what,n,parent)
             end
         elseif id == noad_code then
             -- single characters are like this
-            noad = getnucleus(start)        if noad then process(noad,what,n,start) end -- list
-            noad = getsup(start)            if noad then process(noad,what,n,start) end -- list
-            noad = getsub(start)            if noad then process(noad,what,n,start) end -- list
-            noad = getsuppre(start)         if noad then process(noad,what,n,start) end -- list
-            noad = getsubpre(start)         if noad then process(noad,what,n,start) end -- list
-            noad = getprime(start)          if noad then process(noad,what,n,start) end -- list
+            noad = getnucleus(start)         if noad then process(noad,what,n,start) end -- list
+            noad = getsup(start)             if noad then process(noad,what,n,start) end -- list
+            noad = getsub(start)             if noad then process(noad,what,n,start) end -- list
+            noad = getsuppre(start)          if noad then process(noad,what,n,start) end -- list
+            noad = getsubpre(start)          if noad then process(noad,what,n,start) end -- list
+            noad = getprime(start)           if noad then process(noad,what,n,start) end -- list
         elseif id == mathchar_code or id == mathtextchar_code or id == delimiter_code then
             break
         elseif id == subbox_code or id == submlist_code then
@@ -348,7 +363,7 @@ local function process(start,what,n,parent)
     end
 end
 
-local function processnested(current,what,n)
+processnested = function(current,what,n)
     local noad = nil
     local id   = getid(current)
     if id == noad_code then
@@ -400,7 +415,7 @@ local function processnested(current,what,n)
     end
 end
 
-local function processstep(current,process,n,id)
+processstep = function(current,process,n,id)
     local noad = nil
     local id   = id or getid(current)
     if id == noad_code then
@@ -467,6 +482,15 @@ noads.process       = processnoads
 noads.processnested = processnested
 noads.processouter  = process
 
+experiments.register("optimize.math.process",function()
+    if helper then
+        process       = helper.mathprocess or process
+        processnested = helper.mathnested  or processnested
+        processstep   = helper.mathstep    or processstep
+    end
+end)
+
+
 -- experiment (when not present fall back to fam 0) -- needs documentation
 
 local unknowns = setmetatableindex("table")
@@ -523,12 +547,13 @@ end
 
 do
 
-    local families     = { }
     local a_mathfamily <const> = privateattribute("mathfamily")
-    local boldmap      = mathematics.boldmap
 
     local trace_families  = false  registertracker("math.families", function(v) trace_families = v end)
     local report_families = logreporter("mathematics","families")
+
+    local families = newprocesstable()
+    local boldmap  = mathematics.boldmap
 
     local familymap = { [0] =
         "regular",
@@ -647,10 +672,10 @@ end
 
 do
 
-    local a_mathalphabet       <const> = privateattribute("mathalphabet")
-    local a_mathgreek          <const> = privateattribute("mathgreek")
+    local a_mathalphabet <const> = privateattribute("mathalphabet")
+    local a_mathgreek    <const> = privateattribute("mathgreek")
 
-    local relocate             = { }
+    local relocate = newprocesstable()
 
     local remapalphabets       = mathematics.remapalphabets
     local fallbackstyleattr    = mathematics.fallbackstyleattr
@@ -789,8 +814,7 @@ end
 
 do
 
-    local render     = { }
-
+    local render     = newprocesstable()
     local rendersets = mathematics.renderings.numbers or { } -- store
 
     render[mathchar_code] = function(pointer)
@@ -893,17 +917,18 @@ end
 
 do
 
-    local trace_fences     = false  registertracker("math.fences", function(v) trace_fences = v end)
-    local report_fences    = logreporter("mathematics","fences")
+    local a_autofence <const> = privateattribute("mathautofence")
 
-    local a_autofence      <const> = privateattribute("mathautofence")
-    local autofences       = { }
-    local dummyfencechar   = 0x2E
+    local trace_fences  = false  registertracker("math.fences", function(v) trace_fences = v end)
+    local report_fences = logreporter("mathematics","fences")
 
-    local fencecodes       = nodes.fencecodes
+    local autofences = newprocesstable()
+
+    local fencecodes               = nodes.fencecodes
     local leftfence_code   <const> = fencecodes.left
     local middlefence_code <const> = fencecodes.middle
     local rightfence_code  <const> = fencecodes.right
+    local dummyfencechar   <const> = 0x2E
 
     local function makefence(what,char,template)
         local d = new_delimiter()
@@ -1164,11 +1189,12 @@ end
 
 do
 
-    local unscript     = { }  noads.processors.unscript = unscript
     local superscripts = characters.superscripts
     local subscripts   = characters.subscripts
     local fractions    = characters.fractions
     local replaced     = { }
+
+    local unscript     = newprocesstable() noads.processors.unscript = unscript
 
     local function replace(pointer,what,n,parent)
         pointer = parent -- we're following the parent list (chars trigger this)
@@ -1259,12 +1285,13 @@ end
 
 do
 
-    local unstack   = { }    noads.processors.unstack = unstack
-    local enabled   = false
     local a_unstack <const> = privateattribute("mathunstack")
 
     local trace_unstacking  = false  registertracker("math.unstack", function(v) trace_unstacking  = v end)
     local report_unstacking = logreporter("mathematics","unstack")
+
+    local enabled = false
+    local unstack = newprocesstable() noads.processors.unstack = unstack
 
     local indexedsubscript_code   <const> = tex.noadoptioncodes.indexedsubscript
     local indexedsuperscript_code <const> = tex.noadoptioncodes.indexedsuperscript
@@ -1452,9 +1479,11 @@ do
     -- todo: not shared but copies ... one never knows
 
     local a_mathalternate <const> = privateattribute("mathalternate")
-    local alternate       = { } -- processors.alternate = alternate
-    local fontdata        = fonts.hashes.identifiers
-    local fontresources   = fonts.hashes.resources
+
+    local fontdata      = fonts.hashes.identifiers
+    local fontresources = fonts.hashes.resources
+
+    local alternate = newprocesstable()
 
     local function getalternate(fam,tag,current)
         -- fam is always zero, so we assume a very consistent setup
@@ -1619,10 +1648,11 @@ do
     -- }
 
     local a_kernpairs <const> = privateattribute("mathkernpairs")
-    local kernpairs   = { }
 
     local trace_kernpairs  = false  registertracker("math.kernpairs", function(v) trace_kernpairs = v end)
     local report_kernpairs = logreporter("mathematics","kernpairs")
+
+    local kernpairs = newprocesstable()
 
     local function enable()
         enableaction("math", "noads.handlers.kernpairs")
@@ -1693,9 +1723,9 @@ do
     local a_spacing <const> = privateattribute("mathspacing")
     local a_fencing <const> = privateattribute("mathfencing")
 
-    local numbers = { }
-    local spacing = { }
-    local fencing = { }
+    local numbers = newprocesstable()
+    local spacing = newprocesstable()
+    local fencing = newprocesstable()
 
     local separators = {
         [0x2E] = { 0x2E, 0x2C, 0x002E, 0x002C, 0x2008, 0x2008 }, -- . -- punctuationspace
@@ -1943,9 +1973,11 @@ do
     -- is validpair stil needed? why not always now?
 
     local a_mathcollapsing <const> = privateattribute("mathcollapsing")
-    local collapse         = { }
-    local mathlists        = characters.mathlists
-    local validpair        = {
+
+    local collapse  = newprocesstable()
+    local mathlists = characters.mathlists
+
+    local validpair = { -- todo: indexed instead of hash
         [ordinary_class]    = true,
         [operator_class]    = true,
         [binary_class]      = true, -- new
@@ -2097,12 +2129,12 @@ end
 
 do
 
-    local variants  = { }
-    ----- chardata  = characters.data
     local a_variant <const> = privateattribute("mathvariant")
 
     local trace_variants  = false  registertracker("math.variants", function(v) trace_variants = v end)
     local report_variants = logreporter("mathematics","variants")
+
+    local variants = newprocesstable()
 
     local function setvariant(pointer,selector,char)
         local tfmdata      = fontdata[getfont(pointer)]
@@ -2210,7 +2242,8 @@ do
     -- Given the amount of classes this no longer makes much sense or we need to
     -- extend it.
 
-    local classes = { }
+    local classes = newprocesstable()
+
     local colors  = {
         [relation_class]    = "trace:dr",
         [ordinary_class]    = "trace:db",
@@ -2312,8 +2345,11 @@ do
                 trace_color = false
             end
             local ht, dp, dd, hs, ds, hd
+            -- x + 1 = y : only struts glyphs glue and penalties ...
+-- node.direct.show(h)
             for n, s in traversehlist, h do
                 local step = getattr(n,a_mathsnap)
+-- print("!",a_mathsnap,step,node.direct.serialized(n))
                 if step then
                     local done = false
                     if not dd then
@@ -2411,7 +2447,7 @@ do
 
     function mathematics.setsnapping(s)
         if not enabled then
-            enableaction("math", "noads.handlers.snap")
+            enableaction("math","noads.handlers.snap")
             enabled = true
         end
         texsetattribute(a_mathsnap,valid[s] or unsetvalue)
@@ -2592,7 +2628,7 @@ end
 -- just for me
 
 function handlers.showtree(head,style,penalties)
-    inspect(nodes.totree(tonut(head)))
+    inspect(nodes.totree(head))
 end
 
 registertracker("math.showtree",function(v)
@@ -2633,11 +2669,13 @@ do
     local getchardict  = nuts.getchardict
     local setchardict  = nuts.setchardict
 
-    local dictionaries = { }  noads.processors.dictionaries = dictionaries
+    local dictionaries = newprocesstable()
     local groups       = mathematics.dictionaries.groups
     local sets         = mathematics.dictionaries.sets
     local variants     = mathematics.dictionaries.variants
     local defaults     = mathematics.dictionaries.defaults
+
+    noads.processors.dictionaries = dictionaries
 
     local function check(pointer,group,index)
         local v = variants[index]
@@ -2715,13 +2753,14 @@ do
     local trace_suspicious  = false  registertracker("math.suspicious", function(v) trace_suspicious = v end)
     local report_suspicious = logreporter("mathematics","suspicious")
 
-    local suspicious = { }  noads.processors.suspicious = suspicious
+    local suspicious = newprocesstable() noads.processors.suspicious = suspicious
 
     local candidates = {
         [classes.maybeordinary] = "maybeordinary",
         [classes.mayberelation] = "mayberelation",
         [classes.maybebinary  ] = "maybebinary",
     }
+
     local registered = setmetatableindex("table")
 
     suspicious[mathchar_code] = function(pointer,what,n,parent)
@@ -2746,12 +2785,12 @@ end
 
 do  -- we don't need to support nesting here unless we run over sublists
 
+    local a_intervals <const> = privateattribute("mathintervals")
+
     local trace_intervals  = false  registertracker("math.intervals", function(v) trace_intervals = v end)
     local report_intervals = logreporter("mathematics","intervals")
 
-    local a_mathintervals <const> = privateattribute("mathintervals")
-
-    local intervals = { }  noads.processors.intervals = intervals
+    local intervals = newprocesstable() noads.processors.intervals = intervals
 
     -- ] a,b [ | [ a,b ] | ] a, b ] | [ a, b [
 
@@ -2774,7 +2813,7 @@ do  -- we don't need to support nesting here unless we run over sublists
         if class == open_class or class == close_class then
             local c = getchar(pointer)
             if c == 0x5B or c == 0x5D then -- c = 0x27E6 or c = 0x27E7 double ones
-                local a = getattr(pointer,a_mathintervals)
+                local a = getattr(pointer,a_intervals)
                 if not a then
                     firstclass  = false
                     punctuation = false
@@ -2853,17 +2892,26 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
-function processors.mlisttohlist(head,style,penalties,beginclass,endclass,level,style)
-    starttiming(noads)
-    head = actions(head,style,penalties,beginclass,endclass,level,style)
-    stoptiming(noads)
-    return head
+-- local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style)
+--     starttiming(noads)
+--     head = actions(head,style,penalties,beginclass,endclass,level,style)
+--     stoptiming(noads)
+--     return head
+-- end
+
+local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style)
+    return actions(head,style,penalties,beginclass,endclass,level,style)
 end
 
-callbacks.register("mlist_to_hlist",processors.mlisttohlist,"convert a noad list into a node list")
+callbacks.register {
+    name    = "mlist_to_hlist",
+    action  = mlist_to_hlist_callback,
+    comment = "convert a noad list into a node list",
+    frozen  = true,
+}
 
 -- tracing
 
-statistics.register("math processing time", function()
-    return statistics.elapsedseconds(noads)
-end)
+-- statistics.register("math processing time", function()
+--     return statistics.elapsedseconds(noads)
+-- end)

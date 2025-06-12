@@ -77,7 +77,7 @@ local getheight            = nuts.getheight
 local getattr              = nuts.getattr
 local setattr              = nuts.setattr
 local setattrlist          = nuts.setattrlist
-local getidsubtype         = nuts.getidsubtype
+local getidsubtypenext     = nuts.getidsubtypenext
 local getwhd               = nuts.getwhd
 local getdirection         = nuts.getdirection
 local setshift             = nuts.setshift
@@ -258,7 +258,7 @@ local inject_areas do
 
     -- Setting these once and not passing them each nested call is faster and this injector is
     -- actually one of the more costly calls in a run (when we have lots of references to
-    -- check) and it's also a bti less code.
+    -- check) and it's also a bit less code.
 
     local attribute, make, stack, done
 
@@ -323,9 +323,15 @@ local inject_areas do
     local function inject(head,skip,parent,pardir,txtdir)
         local first, last, firstdir, reference
         local current = head
-        while current do -- todo: check with loop
-            local id, subtype = getidsubtype(current)
-            if id == hlist_code or id == vlist_code then
+        while current do
+            -- This loop is done many times, so we try to limit the number of calls, if only
+            -- not to polute profiling runs. The saving on runtime is (as usual) minimal.
+            local id, subtype, next = getidsubtypenext(current)
+            -- So we jump to NEXT or CONTINUE when possible. In most cases we have glyphs
+            -- which is why we test that first.
+            if id == glyph_code or id == penalty_code or id == kern_code then
+                -- This happens often, have to check later on, but then might continue.
+            elseif id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]
                 -- test \goto{\TeX}[page(2)] test \gotobox{\hbox {x} \hbox {x}}[page(2)]
@@ -365,20 +371,13 @@ local inject_areas do
                 if r then
                     done[r] = done[r] - 1
                 end
-                goto NEXT
-            elseif id == dir_code then
-                local direction, pop = getdirection(current)
-                txtdir = not pop and direction -- we might need a stack
-                goto NEXT
-            elseif id == par_code then
-                if startofpar(current) then
-                    pardir = getdirection(current)
-                end
+                -- We can have injected something, so current can be different.
                 goto NEXT
             elseif id == glue_code then
                 -- local skiptype = ... 0=regular 1=left 2=right
                 if subtype == leftskip_code or subtype == lefthang_code or subtype == parfillleftskip_code then
-                    goto NEXT
+                    current = next
+                    goto CONTINUE
                 elseif subtype == rightskip_code or subtype == righthang_code or subtype == parfillskip_code then
                     if reference and (done[reference] or 0) == 0 then
                         head, current = inject_range(head,first,last,reference,parent,pardir,firstdir)
@@ -386,8 +385,14 @@ local inject_areas do
                         first     = nil
                         last      = nil
                         firstdir  = nil
+                        -- We can have injected something, so current can be different.
+                        goto NEXT
+                    else
+                        current = next
+                        goto CONTINUE
                     end
-                    goto NEXT
+                else
+                    -- We need to test.
                 end
             elseif id == whatsit_code then
                 if subtype == startrotation_code then
@@ -395,11 +400,28 @@ local inject_areas do
                 elseif subtype == stoprotation_code then
                     rotationlevel = rotationlevel - 1
                 end
+                -- We need to test.
+            elseif id == par_code then
+                if startofpar(current) then
+                    pardir = getdirection(current)
+                end
+                current = next
+                goto CONTINUE
+            elseif id == dir_code then
+                local direction, pop = getdirection(current)
+                txtdir = not pop and direction -- we might need a stack
+                current = next
+                goto CONTINUE
+            else
+                -- We need to test.
             end
             do
                 local r = getattr(current,attribute)
                 if not r then
-                    -- just go on, can be kerns
+                    -- This happens a lot of course, no reference. But this avoid call might
+                    -- need more testing!
+                    current = next
+                    goto CONTINUE
                 elseif not reference then
                     reference = r
                     first     = current
@@ -426,6 +448,7 @@ local inject_areas do
             end
           ::NEXT::
             current = getnext(current)
+          ::CONTINUE::
         end
         if reference and (done[reference] or 0) == 0 then
             head = inject_range(head,first,last,reference,parent,pardir,firstdir)

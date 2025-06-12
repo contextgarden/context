@@ -252,6 +252,14 @@ do
                 target.protocol = arguments.protocol
                 update = true
             end
+            if type(arguments.baud) == "string" then
+                target.baud = tonumber(arguments.baud) or 115200
+                update = true
+            end
+            if type(arguments.port) == "string" then
+                target.port = port
+                update = true
+            end
             if update or not usage.server then
                 usage.server = server
             end
@@ -259,7 +267,6 @@ do
         servers[server] = target
         saveconfiguration(data)
     end
-
 
     function scripts.signal.usage()
         local data  = loadconfiguration(true)

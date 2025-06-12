@@ -1426,6 +1426,36 @@ function scripts.context.version()
     end
 end
 
+-- todo: also check size of format, should not be excessive
+
+function scripts.context.integrity()
+    local filename = "luametatex.h"
+    local fullname = resolvers.findfile(filename) or ""
+    local data     = fullname ~= "" and io.loaddata(fullname) or ""
+    local mismatch = false
+    report("reference source file : %s",filename)
+    local version, development_id = match(data,
+         [[# *define *luametatex_version_string *"([%d%.]+)"%s]]
+      .. [[# *define *luametatex_development_id *(%d+)%s]]
+    )
+    if tostring(version) ~= tostring(status.version) then
+        mismatch = true
+    elseif tostring(development_id) ~= tostring(status.development_id) then
+        mismatch = true
+    end
+    report()
+    report("binary version        : %s",status.version)
+    report("source version        : %s",version or "unknown")
+    report("binary development id : %s",status.development_id)
+    report("source development id : %s",development_id or "unknown")
+    report()
+    if data == "" then
+    report("problem encountered   : the source file is missing (incomplete installation)")
+    elseif mismatch then
+    report("problem encountered   : there is a mismatch between source and binary")
+    end
+end
+
 function scripts.context.purge_job(jobname,all,mkiitoo,fulljobname)
     if jobname and jobname ~= "" then
         jobname = filebasename(jobname)
@@ -1893,6 +1923,15 @@ do
             local start      = starttiming("parallel")
             local counts     = 0
             local totals     = 0
+            local problem    = false
+--             local squid      = environment.arguments.squid and require("util-sig-imp-segment.lua")
+local squid      = environment.arguments.squid and require("util-sig-imp-parallel.lua")
+-- if type(signal) == "string" then
+--     signalled = utilities.signals.initialize(signal)
+-- end
+-- if signalled then
+--     signalled("reset",0)
+-- end
             -- a hack
             local passthese = environment.arguments_after
             for i=1,#passthese do
@@ -1903,6 +1942,14 @@ do
             end
             passthese = table.unique(passthese)
             -- end of hack
+if squid then
+    squid.stepper("reset")
+--     squid.signal("reset")
+--     for i=1,runners do
+--         squid.stepper("busy",i)
+--     end
+end
+            --
             local arguments = environment.reconstructcommandline(passthese)
             for set=1,#lists do
                 local files   = lists[set]
@@ -1910,8 +1957,12 @@ do
                 local results = { }
                 local count   = 0
                 local total   = #files
+--                 local steps   = { }
                 totals = totals + total
                 allresults[set] = results
+--                 for i=1,runners do
+--                     steps[i] = 0
+--                 end
                 while true do
                     local done = false
                     for i=1,runners do
@@ -1948,6 +1999,17 @@ do
                                 end
                                 process[i] = false
                                 results[pi.count] = pi
+if squid and not problem and pi.result == "error"  then
+    problem = true
+    squid.stepper("error") -- ,i,steps[i],true)
+    for i=1,runners do
+        if process[i] then
+--             squid.stepper("busy",i,steps[i],true)
+--             squid.stepper("step",i,steps[i],true)
+            squid.stepper("step",i,0,true)
+        end
+    end
+end
                             end
                         end
                         count  = count + 1
@@ -1965,6 +2027,15 @@ do
                             local command  = whattodo == "command" and f_command(basename,arguments) or f_runner(arguments,basename)
                             resettiming(timer)
                             starttiming(timer)
+-- steps[i] = steps[i] + 1
+if squid then
+--     squid.stepper("step",i,steps[i],problem)
+-- print(timer)
+    squid.stepper("step",i,0,problem)
+-- if i == 8 then
+--     os.exit()
+-- end
+end
                             local result  = popen(command)
                             if dirname ~= "." then
                                 dir.pop()
@@ -1987,6 +2058,7 @@ do
                                     filename = filename,
                                     time     = 0,
                                 }
+                                problem = true
                                 stoptiming(timer)
                             end
                             results[count] = status
@@ -2027,6 +2099,9 @@ do
                     report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,filename,result,ri.time)
                 end
             end
+if squid then
+    squid.stepper((problem or #errors > 0) and "error" or "finished")
+end
             if #errors > 0 then
                 report()
                 report("errors in:")
@@ -2188,6 +2263,9 @@ elseif getargument("ctx") and not getargument("noctx") then
 elseif getargument("version") then
     application.identify()
     scripts.context.version()
+elseif getargument("integrity") then
+    application.identify()
+    scripts.context.integrity()
 elseif getargument("touch") then
     scripts.context.touch()
 elseif getargument("pages") then

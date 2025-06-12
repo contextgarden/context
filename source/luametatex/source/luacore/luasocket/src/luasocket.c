@@ -32,6 +32,11 @@ static int base_open(lua_State *L);
 /*-------------------------------------------------------------------------*\
 * Modules and functions
 \*-------------------------------------------------------------------------*/
+
+/* 
+    Remark HH: We limit visibility because we might go more minimal some day. 
+*/
+
 static const luaL_Reg mod[] = {
     {"auxiliar", auxiliar_open},
     {"except", except_open},
@@ -39,7 +44,7 @@ static const luaL_Reg mod[] = {
     {"buffer", buffer_open},
     {"inet", inet_open},
     {"tcp", tcp_open},
-    {"udp", udp_open},
+ // {"udp", udp_open},
     {"select", select_open},
     {NULL, NULL}
 };

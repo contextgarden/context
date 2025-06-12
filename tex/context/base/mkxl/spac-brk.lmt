@@ -27,7 +27,7 @@ checklist[-1] = function(what)
     report("callback %i : %s",what,breakcodes[what])
 end
 
-local function check(what,checks,...)
+local function break_checks_callback(what,checks,...)
     local check = checklist[checks]
     if check then
         return check(what,checks,...)
@@ -36,5 +36,12 @@ local function check(what,checks,...)
     end
 end
 
-callback.register("line_break",check)
-callback.register("balance",   check)
+callbacks.register {
+    name   = "linebreak_check",
+    action = break_checks_callback
+}
+
+callbacks.register {
+    name   = "balance_check",
+    action = break_checks_callback
+}

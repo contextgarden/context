@@ -1404,7 +1404,7 @@ static void tex_aux_set_cur_val_by_math_style_cmd(halfword code)
 
     OK, we're ready for |scan_something_internal| itself. A second parameter, |negative|, is set
     |true| if the value that is found should be negated. It is assumed that |cur_cmd| and |cur_chr|
-    represent the first token of the internal quantity to be scanned; an error will be signalled if
+    represent the first token of the internal quantity to be scanned; an error will be signaled if
     |cur_cmd < min_internal| or |cur_cmd > max_internal|.
 
 */
@@ -2349,7 +2349,7 @@ halfword   tex_scan_math_class_number(int optional_equal)
     |cur_val| cannot simply be replaced. For that reason we do return the value but also set
     |cur_val|, just in case. I might sort this out some day when other stuff has been reworked.
 
-    The routine has been optimnized a bit (equal scanning and such) and after a while I decided to
+    The routine has been optimized a bit (equal scanning and such) and after a while I decided to
     split the three cases. It makes for a bit nicer code.
 
     If we backport the checking code to \LUATEX, a pre May 24 2020 copy has to be taken, because
@@ -4405,9 +4405,9 @@ halfword tex_scan_general_text(halfword *tail)
     If the next character is a parameter number, make |cur_tok| a |match| token; but if it is a
     left brace, store |left_brace|, |end_match|, set |hash_brace|, and |goto done|.
 
-    For practical reasone, we have split the |scan_toks| function up in four smaller dedicated
+    For practical reasons, we have split the |scan_toks| function up in four smaller dedicated
     functions. When we add features it makes no sense to clutter the code even more. Keep in mind
-    that compared to the reference \TEX\ inplementation we have to support |\expanded| token lists
+    that compared to the reference \TEX\ implementation we have to support |\expanded| token lists
     but also |\protected| and friends. There is of course some overlap now but that's a small
     price to pay for readability.
 
@@ -4810,8 +4810,21 @@ case i_token_o:
     }
   DONE:
     if (h != *p) {
+// halfword c = token_link(h);
+// int simple = 1;
+// while (c) { 
+//     halfword t = token_info(c) - match_token;
+//     /* also - and 0 */
+//     if ((t >= '1' && t <= '9') || (t >= 'A' && t <= 'E')) {
+//         c = token_link(c);
+//     } else { 
+//         simple = 0;
+//         break;
+//     }
+// }
         *p = tex_store_new_token(*p, end_match_token);
         set_token_preamble(h, macro_with_preamble);
+// set_token_preamble(h, simple ? macro_with_simple : macro_with_preamble);
         set_token_parameters(h, *counter);
     }
     if (cur_cmd == right_brace_cmd) {
@@ -5123,7 +5136,7 @@ static inline void tex_aux_normalize_glue(halfword g)
 
     Parenthesized subexpressions can be inside expressions, and this nesting has a stack. Seven
     local variables represent the top of the expression stack: |p| points to pushed-down entries,
-    if any; |l| specifies the type of expression currently beeing evaluated; |e| is the expression
+    if any; |l| specifies the type of expression currently being evaluated; |e| is the expression
     so far and |r| is the state of its evaluation; |t| is the term so far and |s| is the state of
     its evaluation; finally |n| is the numerator for a combined multiplication and division, if any.
 
@@ -5233,7 +5246,7 @@ int tex_quotient(int n, int d, int round)
     |max_answer|. We can't use floating point arithmetic since the routine must produce identical
     results in all cases; and it would be too dangerous to multiply by~|n| and then divide by~|d|,
     in separate operations, since overflow might well occur. Hence this subroutine simulates double
-    precision arithmetic, somewhat analogous to Metafont's |make_fraction| and |take_fraction|
+    precision arithmetic, somewhat analogous to \METAFONT's |make_fraction| and |take_fraction|
     routines.
 
 */
@@ -5485,9 +5498,9 @@ static void tex_aux_scan_expr(halfword level, int braced)
         }
     }
     /*tex
-        In these expressions we use the integer scanner which itself accepts 
-        |{expressions}| so |-{...}| actally works here. Hoewver, as regular expr 
-        we don't handle a |-(...)| unless we add that to the integer scanner. 
+        In these expressions we use the integer scanner which itself accepts |{expressions}| so 
+        |-{...}| actually works here. However, as regular expression we don't handle a |-(...)| 
+        unless we add that to the integer scanner. 
 
     */
     switch (operation) {
@@ -6078,7 +6091,7 @@ static halfword tex_scan_bit_dimension(int *has_fraction, int *has_unit)
     helpers for it so it's best to avoid the extra overhead in other expressions.
 
     However, occasionally, when I check the manual I came back to this. I wondered about some more
-    that just extra bitwise operators. However, prcedence makes it a bit tricky. Also, we can't use
+    that just extra bitwise operators. However, precedence makes it a bit tricky. Also, we can't use
     some characters because they can be letter, other, active or have special meaning in math or
     alignments. Then I played with verbose operators: mod (instead of a percent sign), and
     |and|, |or|, |band|, |bor| and |bxor| (cf the \LUA\ bit32 library).

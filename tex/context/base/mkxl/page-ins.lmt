@@ -245,8 +245,6 @@ local tostring = tostring
 local abs = math.abs
 
 local nuts         = nodes.nuts
-local tonut        = nuts.tonut
-local tonode       = nuts.tonode
 local traverselist = nuts.traverselist
 local getlist      = nuts.getlist
 local setlist      = nuts.setlist
@@ -291,9 +289,8 @@ do
         return takebox("b_page_inserts_uinsert")
     end
 
-    callback.register("handle_uinsert", function(callback,index,order,packed,height,amount)
+    local function handle_uinsert_callback(callback,index,order,packed,height,amount)
         if (callback == 1 or callback == 2) and amount ~= 0 then
-            packed = tonut(packed)
             local p = locate(getlist(packed))
             if p then
                 local oldheight = getheight(p)
@@ -313,10 +310,17 @@ do
                 end
             end
             packlist = { }
-            return tonode(packed)
+            return packed
         else
             return packed
         end
-    end)
+    end
+
+    callbacks.register {
+        name    = "handle_uinsert",
+        action  = handle_uinsert_callback,
+        comment = "process user inserts in balancer",
+        frozen  = true,
+    }
 
 end

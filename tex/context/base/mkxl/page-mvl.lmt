@@ -36,8 +36,6 @@ local setmetatableindex = table.setmetatableindex
 local properties        = nodes.properties.data
 
 local nuts              = nodes.nuts
-local tonode            = nuts.tonode
-local tonut             = nuts.tonut
 
 local setlink           = nuts.setlink
 local setbox            = nuts.setbox
@@ -1078,8 +1076,12 @@ do
         local boxnumber  = t.box
         local box        = boxnumber and getbox(boxnumber)
         --
-local ntop    = t.ntop    or 0
-local nbottom = t.nbottom or 0
+        local nextsheet  = not dataset.doublesided and
+                           not dataset.byspread    and
+                           not odd(dataset.sheet)
+        --
+        local ntop       = t.ntop    or 0
+        local nbottom    = t.nbottom or 0
         --
         if boxwidth > 0 and boxheight > 0 then
             -- we're ok
@@ -1129,25 +1131,11 @@ local nbottom = t.nbottom or 0
         local rfound = false
         local lastcolumn = dataset.lastcolumn
 
---         if dataset.byspread then
-            lastcolumn = dataset.nofleft + dataset.nofright
---         elseif odd(dataset.count) then
---             c = 1
---             lastcolumn = dataset.nofleft
---         else
---             c = dataset.nofleft + 1
---             lastcolumn = dataset.nofleft + dataset.nofright
---         end
+        lastcolumn = dataset.nofleft + dataset.nofright
 
-if not dataset.doublesided then
-    if not dataset.byspread then
-        if not odd(dataset.sheet) then
-            if t.c <= dataset.nofleft then
-            t.c = t.c + dataset.nofleft
-            end
+        if nextsheet and t.c <= dataset.nofleft then
+            t.c = t.c + dataset.nofleft + 1
         end
-    end
-end
 
         if t.c and t.c >= 1 and t.c <= lastcolumn then
             c = t.c
@@ -1164,19 +1152,21 @@ end
          -- report("action %s, c %i, r %i, nr %i, width %p","here",c,r,nr,w)
             cfound, rfound, nc = here(c,r,nr,lastcolumn,nofrows,cells,w,spans)
         end
-if cfound then
-    if rfound == 1 then
-        ntop = 0
-    end
-    if rfound + nr - 1 == dataset.nofrows then
-        nbottom = 0
-    end
-    if (rfound - ntop) < 0 then
-        cfound = false
-    elseif (rfound + nr + nbottom - 1) > dataset.nofrows then
-        cfound = false
-    end
-end
+
+        if cfound then
+            if rfound == 1 then
+                ntop = 0
+            end
+            if rfound + nr - 1 == dataset.nofrows then
+                nbottom = 0
+            end
+            if (rfound - ntop) < 0 then
+                cfound = false
+            elseif (rfound + nr + nbottom - 1) > dataset.nofrows then
+                cfound = false
+            end
+        end
+
         if cfound then
             local ht = nr*(lineheight+linedepth)
             local wd = spans[cfound][nc]
@@ -2790,7 +2780,7 @@ do
     local trybreak_code  <const> = tex.balancecallbackcodes.trybreak
     local skipzeros_code <const> = tex.balancecallbackcodes.skipzeros
 
-    callback.register("balance_boundary", function(what,count,identifier,slot)
+    local function balance_boundary_callback(what,count,identifier,slot)
         local name    = nums[identifier]
         local action  = actions[what] or "unknown"
         local result  = skipzeros_code
@@ -2945,7 +2935,14 @@ do
             end
         end
         return result, penalty, extra
-    end)
+    end
+
+    callbacks.register {
+        name    = "balance_boundary",
+        action  = balance_boundary_callback,
+        comment = "process balance specific boundary",
+        frozen  = true,
+    }
 
  -- implement {
  --     name      = "columnsetidentifier",

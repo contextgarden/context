@@ -1,4 +1,5 @@
 %D \module
+%D \module
 %D   [       file=core-con,
 %D        version=1997.26.08,
 %D          title=\CONTEXT\ Core Macros,
@@ -467,9 +468,17 @@
 \permanent\tolerant\protected\def\date[#1]#,[#2]% sets the date !
   {\dontleavehmode
    \begingroup
-   \setdate[#1]% sets the date !
+   \ifhastok={#1}%
+     \setdate[#1]% sets the date !
+     \edef\m_syst_converters_date{#2}%
+   \orelse\ifhastok={#2}%
+     \setdate[#2]% sets the date !
+     \edef\m_syst_converters_date{#1}%
+   \else
+     \edef\m_syst_converters_date{#1}%
+   \fi
    \expand\everycurrentdate
-   \edef\m_syst_converters_date{#2}%
+%    \edef\m_syst_converters_date{#2}%
    \syst_converters_check_date_specification\m_syst_converters_date
    \syst_converters_check_date_specification\currentdatespecification
    \clf_currentdate
@@ -508,6 +517,83 @@
 
 \protected\def\syst_converters_current_time_nop
   {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
+
+\pushoverloadmode
+
+%D A (simple) time formatter:
+%D
+%D \starttyping
+%D time         : \the\time
+%D time current : \time[method=current] % hh:mm:ss
+%D time start   : \time[method=start]   % hh:mm:ss   startup time
+%D time here    : \time[method=here]    % hh:mm:ss   time since startup
+%D time m       : \time[m=100]          % hh:mm
+%D time s       : \time[s=3661]         % hh:mm:ss
+%D \stoptyping
+
+% We keep this as an example of \LMTX\ coding:
+%
+% \permanent\tolerant\protected\def\time[#1]%
+%   {\ifarguments
+%      \expandafter\normaltime
+%    \else
+%      \begingroup
+%      \setdummyparameter\c!separator{:}%
+%      \resetdummyparameter\c!method
+%      \resetdummyparameter\c!h
+%      \resetdummyparameter\c!m
+%      \resetdummyparameter\c!s
+%      \getdummyparameters[#1]%
+%      \ifcstok{\dummyparameter\c!method}\v!current
+%        \clf_time\zerocount\plusone
+%      \orelse\iflastnamedcs\v!start
+%        \clf_time\plusone\plusone
+%      \orelse\iflastnamedcs\v!here
+%        \clf_time\plustwo\plusone
+%      \orelse\ifcstok{\dummyparameter\c!h\dummyparameter\c!m\dummyparameter\c!s}\emptytoks
+%        \clf_time\zerocount\zerocount
+%      \else
+%        \scratchcounterone  \ifchknumexpr\directdummyparameter\c!h\or\lastchknumber\else\zerocount\fi
+%        \scratchcountertwo  \ifchknumexpr\directdummyparameter\c!m\or\lastchknumber\else\zerocount\fi
+%        \scratchcounterthree\ifchknumexpr\directdummyparameter\c!s\or\lastchknumber\else\minusone \fi
+%        % we could this in lua too
+%        \ifnum\scratchcounterthree>\zerocount
+%          \advanceby\scratchcountertwo{\scratchcounterthree/\plussixty}%
+%          \scratchcounterthree{\scratchcounterthree;\plussixty}%
+%        \fi
+%        \advanceby\scratchcounterone{\scratchcountertwo/\plussixty}%
+%        \scratchcountertwo{\scratchcountertwo;\plussixty}%
+%        \scratchcounterone{\scratchcounterone;\plustwentyfour}%
+%        \twodigits\scratchcounterone
+%        \dummyparameter\c!separator
+%        \twodigits\scratchcountertwo
+%        \ifnum\scratchcounterthree<\zerocount\else
+%          \dummyparameter\c!separator
+%          \twodigits\scratchcounterthree
+%        \fi
+%      \fi
+%      \endgroup
+%    \fi}
+
+\permanent\tolerant\protected\def\time[#1]% per request on the mailing list
+  {\ifarguments
+     \expandafter\normaltime
+   \else
+     \begingroup
+     \resetdummyparameter\c!method
+     \resetdummyparameter\c!h
+     \resetdummyparameter\c!m
+     \resetdummyparameter\c!s
+     \getdummyparameters[#1]%
+     \clf_timestring
+        {\directdummyparameter\c!method}%
+        {\directdummyparameter\c!h}%
+        {\directdummyparameter\c!m}%
+        {\directdummyparameter\c!s}%
+     \endgroup
+   \fi}
+
+\popoverloadmode
 
 %D Because we're dealing with dates, we also introduce a few day loops:
 %D

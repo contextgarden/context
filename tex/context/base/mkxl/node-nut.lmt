@@ -120,6 +120,7 @@ local nuts = {
     getheight               = direct.getheight,
     getid                   = d_getid,
     getidsubtype            = direct.getidsubtype,
+    getidsubtypenext        = direct.getidsubtypenext,
     getindex                = direct.getindex,
     getinputfields          = direct.getinputfields,
     getkern                 = direct.getkern,
@@ -184,6 +185,7 @@ local nuts = {
     hasgeometry             = direct.hasgeometry,
     hasglyph                = direct.hasglyph,
     hasglyphoption          = direct.hasglyphoption,
+    hasidsubtype            = direct.hasidsubtype,
     hpack                   = direct.hpack,
     hyphenating             = direct.hyphenating,
     ignoremathskip          = direct.ignoremathskip,
@@ -645,7 +647,7 @@ function nuts.setprop(n,k,v)
     end
 end
 
-function nuts.theprop(n)
+function nuts.theprop(n) -- obsolete
     local p = propertydata[n]
     if not p then
         p = { }

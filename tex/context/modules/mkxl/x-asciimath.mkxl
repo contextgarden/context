@@ -139,9 +139,14 @@
 
 \permanent\protected\def\asciimathoptext        #1{\ifmmode\mathoptext{#1}\else#1\fi}
 \permanent\protected\def\asciimathoptexttraced  #1{\ifmmode\mathoptext{\color[darkgreen]{#1}}\else\color[darkgreen]{#1}\fi}
-\permanent\protected\def\asciimathstackrel    #1#2{\mathematics{\mathop{\math_relax_limits\mover{#2}{#1}}}}
+%permanent\protected\def\asciimathstackrel    #1#2{\mathematics{\mathop{\math_relax_limits\mover{#2}{#1}}}}
 \permanent\protected\def\asciimathroot        #1#2{\sqrt[#1]{#2}}
 \permanent\protected\def\asciimathsqrt          #1{\sqrt{#1}}
+
+% \disabledirective[asciimath.autobinom]
+
+\permanent\protected\def\asciimathstackrel#1#2%
+  {\binom[\c!left=0,\c!right=0]{#1}{#2}}
 
 %D The core commands:
 

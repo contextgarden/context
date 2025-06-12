@@ -81,6 +81,8 @@ function sequencers.new(t) -- was reset
         s.templates    = t.templates
         s.returnvalues = t.returnvalues
         s.results      = t.results
+s.enable = t.enable
+s.disable = t.disable
         local name     = t.name
         if name and name ~= "" then
             s.name      = name
@@ -327,6 +329,10 @@ compile = function(t,compiler,...) -- already referred to in sequencers.new
     else
         runner = compiled and load(compiled)() -- we can use loadstripped here
     end
+
+local c = t.steps == 0 and t.disable or t.enable
+if c then c(t) end
+
     t.runner = runner
     return runner
 end

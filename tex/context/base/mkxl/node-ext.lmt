@@ -510,15 +510,17 @@ end
 
 do
 
-    local logwriter      = logs.writer
-    local openfile       = io.open
-    local flushio        = io.flush
-    local serialize      = token.serialize
+    local logwriter = logs.writer
+    local openfile  = io.open
+    local flushio   = io.flush
+    local serialize = token.serialize
 
-    local opennode       = registerwhatsitnode("open")
-    local writenode      = registerwhatsitnode("write")
-    local closenode      = registerwhatsitnode("close")
-    local channels       = { }
+    local opennode  = registerwhatsitnode("open")
+    local writenode = registerwhatsitnode("write")
+    local closenode = registerwhatsitnode("close")
+    local channels  = { }
+
+    local toconsole = logs.reporter("just a message")
 
     local immediate_code <const> = tex.flagcodes.immediate
 
@@ -534,6 +536,7 @@ do
         end
     end
 
+
     function backends.writeout(n)
         local p = nodeproperties[n]
         if p then
@@ -542,7 +545,8 @@ do
             if handle then
                 handle:write(content,"\n")
             else
-               logwriter(content,"\n")
+                logwriter(content,"\n")
+             -- toconsole(content)
             end
         end
     end
@@ -606,7 +610,8 @@ do
                 if handle then
                     handle:write(content,"\n")
                 else
-                    logwriter(content,"\n")
+                    toconsole(content)
+--                    logwriter(content,"\n")
                 end
             end
         end,

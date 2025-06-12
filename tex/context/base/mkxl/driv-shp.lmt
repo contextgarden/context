@@ -22,7 +22,6 @@ local round              = math.round
 local nuts               = nodes.nuts
 
 local tonut              = nodes.tonut
-local tonode             = nodes.tonode
 
 local getdirection       = nuts.getdirection
 local getlist            = nuts.getlist
@@ -869,6 +868,18 @@ local hlist_out, vlist_out  do
         end
     end
 
+    local hnextnode = nextnode
+    local vnextnode = nextnode
+
+experiments.register("optimize.backend.traverse",function()
+    if helper and helper.traversehorizontal then
+        local glyph = nuts.pool.glyph()
+        hnextnode = helper.traversehorizontal(glyph)
+        vnextnode = helper.traversevertical(glyph)
+        nuts.flushnode(glyph)
+    end
+end)
+
     hlist_out = function(this_box,current)
         local ref_h = pos_h
         local ref_v = pos_v
@@ -890,7 +901,8 @@ local boxh = pos_h
 
         -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much
-        for current, id, subtype in nextnode, current do
+
+        for current, id, subtype in hnextnode, current do
             if id == glyph_code then
                 local char, font = isglyph(current)
                 local x_offset, y_offset, left, right, raise = getoffsets(current)
@@ -1394,7 +1406,7 @@ local boxh = pos_h
 
      -- while current do
      --     local id = getid(current)
-        for current, id, subtype in nextnode, current do
+        for current, id, subtype in vnextnode, current do
             if id == glue_code then
                 local glueheight = effectiveglue(current,this_box,true)
                 if glueheight ~= 0 then
@@ -1837,7 +1849,7 @@ do
     local f_detail_2 = formatters["%i:%i: %s %s = %s"]
 
     local function showdetails(n,l,tlp,l1,l2)
-        local p = properties[tonut(n)]
+        local p = properties[n]
         if p then
             for k, v in sortedhash(p) do
                 local t = type(v)
@@ -1871,8 +1883,8 @@ do
         literal = showdetails,
     }
 
-    callbacks.register("show_whatsit",function(n,what,l,tlp,l1,l2)
-        local s = nodes.whatsitcodes[n.subtype]
+    local function show_whatsits_callback(n,what,l,tlp,l1,l2)
+        local s = nodes.whatsitcodes[getsubtype(n)]
         if what == 1 then
             return s or "unknown"
      -- elseif what == 2 then
@@ -1882,7 +1894,14 @@ do
                 w(n,l,tlp,l1,l2)
             end
         end
-    end,"provide whatsit details")
+    end
+
+    callbacks.register {
+        name    = "show_whatsit",
+        action  = show_whatsits_callback,
+        comment = "provide whatsit details",
+        frozen  = true,
+    }
 
     local names    = attributes.names  -- we show the name and number
     local taglist  = structures.tags.taglist
@@ -1892,7 +1911,7 @@ do
 
     trackers.register("attributes.tags",function(v) details = v end)
 
-    callbacks.register("get_attribute",function(k,v)
+    local function get_attribute_callback(k,v)
         local detail = nil
         if details and k == a_tagged then
             detail = taglist[v]
@@ -1904,6 +1923,13 @@ do
             end
         end
         return names[k], detail
-    end,"provide verbose attribute name")
+    end
+
+    callbacks.register {
+        name    = "get_attribute",
+        action  = get_attribute_callback,
+        comment = "provide verbose attribute name",
+        frozen  = true,
+    }
 
 end

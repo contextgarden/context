@@ -8,7 +8,8 @@
 # include "lapi.h"
 
 typedef enum callback_types {
-    find_log_file_callback = 1,
+    test_only_callback = 1,
+    find_log_file_callback,
     find_format_file_callback,
     open_data_file_callback,
     process_jobname_callback,
@@ -16,21 +17,21 @@ typedef enum callback_types {
     stop_run_callback,
     define_font_callback,
     quality_font_callback,
-    pre_output_filter_callback,
-    buildpage_filter_callback,
-    hpack_filter_callback,
-    vpack_filter_callback,
+    pre_output_callback,
+    buildpage_callback,
+    hpack_callback,
+    vpack_callback,
     hyphenate_callback,
     ligaturing_callback,
     kerning_callback,
     glyph_run_callback,
-    pre_linebreak_filter_callback,
-    linebreak_filter_callback,
-    post_linebreak_filter_callback,
-    append_to_vlist_filter_callback,
-    alignment_filter_callback,
-    local_box_filter_callback,
-    packed_vbox_filter_callback,
+    pre_linebreak_callback,
+    linebreak_callback,
+    post_linebreak_callback,
+    append_to_vlist_callback,
+    alignment_callback,
+    local_box_callback,
+    packed_vbox_callback,
     mlist_to_hlist_callback,
     pre_dump_callback,
     start_file_callback,
@@ -41,12 +42,15 @@ typedef enum callback_types {
     show_warning_message_callback,
     hpack_quality_callback,
     vpack_quality_callback,
-    line_break_callback,
-    balance_callback,
+    linebreak_check_callback,
+    balance_check_callback,
     show_vsplit_callback,
     show_build_callback,
     insert_par_callback,
-    append_line_filter_callback,
+    append_adjust_callback,
+    append_migrate_callback,
+    append_line_callback,
+ /* pre_line_callback, */
     insert_distance_callback,
  /* fire_up_output_callback, */
     wrapup_run_callback,
@@ -80,16 +84,31 @@ typedef enum callback_types {
 /* Todo: provide support for this: */
 
 typedef enum callback_states {
-    callback_set      = 0x01, /* can be used */
-    callback_disabled = 0x02, /* temporarily disabled */
-    callback_frozen   = 0x04, /* can never be set or changed again */
+    callback_state_set         = 0x01, /* can be used */
+    callback_state_disabled    = 0x02, /* temporarily disabled */
+    callback_state_frozen      = 0x04, /* can never be set or changed again */
+    callback_state_private     = 0x08, /* don't return the function */
+    callback_state_touched     = 0x10, /* set (or unset) by the user */
+    callback_state_tracing     = 0x20, /* only called when tracing */
+    callback_state_selective   = 0x40, /* only called when there is a need */
+    callback_state_fundamental = 0x80, /* need to be set and kick in on demand */
 } callback_states;
 
+typedef enum callback_options {
+    callback_option_direct = 0x01,
+    callback_option_trace  = 0x02,
+} callback_options;
+
+typedef struct callback_item_info {
+    int          value;
+    int          state;
+    const char*  name;
+} callback_item_info;
+
 typedef struct callback_state_info {
-    int      metatable_id;
-    int      padding;
-    int      values[total_callbacks];
- /* unsigned states[total_callbacks]; */ /* can be a singleword */
+    int                index;
+    int                options;
+    callback_item_info items[total_callbacks];
 } callback_state_info;
 
 extern callback_state_info lmt_callback_state;
@@ -127,14 +146,14 @@ extern void        lmt_push_callback_usage      (lua_State *L);
 
 /* The implementation: */
 
-static inline int  lmt_callback_defined(
+static inline int lmt_callback_defined(
     int i
 ) { 
-    return lmt_callback_state.values[i];
- // return (lmt_callback_state.states[i] & callback_disabled) ? 0 : lmt_callback_state.values[i]; 
+     /*tex There is no need to check |callback_state_disabled| because value can be used. */
+     return (lmt_callback_state.items[i].state & callback_state_disabled) ? 0 : lmt_callback_state.items[i].value; 
 }
 
-static inline int  lmt_callback_call(
+static inline int lmt_callback_call(
     lua_State *L, 
     int        i, 
     int        o, 
@@ -151,6 +170,4 @@ static inline void lmt_callback_wrapup(
     lua_settop(L, top); 
 }
 
-
 # endif
-

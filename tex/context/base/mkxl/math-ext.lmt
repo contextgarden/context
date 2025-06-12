@@ -42,15 +42,22 @@ function mathematics.getextensibledata(target)
     return property and property.extensible
 end
 
-callback.register("make_extensible",function(target,fnt,chr,size,width,height,depth,linewidth,axis,exheight,emwidth)
-    local found  = extensibles[chr]
+local function make_extensible_callback(target,fnt,chr,size,width,height,depth,linewidth,axis,exheight,emwidth)
+    local found = extensibles[chr]
     if found then
         local action = found.action
         if action then
             return action(target,fnt,chr,size,width,height,depth,linewidth,axis,exheight,emwidth)
         end
     end
-end)
+end
+
+callbacks.register {
+    name    = "make_extensible",
+    action  = make_extensible_callback,
+    comment = "construct an extensible glyph",
+    frozen  = true,
+}
 
 if not nodes.setattrlist then
 

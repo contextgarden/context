@@ -14,13 +14,13 @@ return {
         "zerocount", "minusone", "minustwo",
         "plusone", "plustwo", "plusthree", "plusfour", "plusfive", "plussix", "plusseven", "pluseight",
         "plusnine", "plusten", "pluseleven", "plustwelve", "plusthirteen", "plusfourteen", "plusfifteen", "plussixteen",
-        "plusfifty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
+        "plusfifty", "plussixty", "plushundred", "plusonehundred", "plustwohundred", "plusfivehundred",
         "plusonehundredtwentyfive", "plustwohundredfifty",
         "plusthousand", "plustenthousand", "plustwentythousand", "medcard", "maxcard", "maxcardminusone", "maxiterator",
         "plusonethousand", "plustwothousand", "plusthreethousand", "plusfourthousand", "plusfivethousand",
         "plussixthousand", "plusseventhousand", "pluseightthousand", "plusninethousand",
         "plusfifteenhundred", "plustwentyfivehundred", "plusfortyfivehundred", "plusseventyfivehundred",
-        "plusninetynine", "plusfourtytwo", "plustwentyfive",
+        "plusninetynine", "plusthirtytwo",  "plusfourtytwo", "plustwentyfour", "plustwentyfive",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint", "twopoints", "threepoints",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
@@ -268,9 +268,12 @@ return {
         "presetsspecificationoptioncode", "integerspecificationoptioncode", "finalspecificationoptioncode",
         "defaultspecificationoptioncode", "ignorespecificationoptioncode", "rotatespecificationoptioncode",
         --
-     -- "noitaliccorrectionmathoptioncode", "noleftpairkernmathoptioncode", "norightpairkernmathoptioncode",
-     -- "autodiscretionarymathoptioncode", "fulldiscretionarymathoptioncode",
-     -- "ignoredcharactermathoptioncode", "islargeoperatormathoptioncode", "hasitalicshapemathoptioncode",
+        "shortmathoptioncode", "orphanedmathoptioncode", "displaymathoptioncode", "crampedmathoptioncode",
+        "nosnappingmathoptioncode",
+        --
+     -- "noitaliccorrectionkerneloptioncode", "noleftpairkernkerneloptioncode", "norightpairkernkerneloptioncode",
+     -- "autodiscretionarykerneloptioncode", "fulldiscretionarykerneloptioncode",
+     -- "ignoredcharacterkerneloptioncode", "islargeoperatorkerneloptioncode", "hasitalicshapekerneloptioncode",
         --
         "nokerningcode", "noligaturingcode", "noitalicscode",
         --

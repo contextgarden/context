@@ -26,6 +26,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "XCharter-Math",
+                    abort    = true,
+                },
+                {
                     tweak   = "fixprimes",
                     factor  = 0.92,
                 },

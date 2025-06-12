@@ -35,7 +35,7 @@ static inline int tex_aux_the_cat_code(halfword b)
     used for allocation in this array.
 
     One can make an argument to switch to standard \CCODE\ allocation but the current approach is
-    very efficient in memory usage and performence so we stay with it. On the average memory
+    very efficient in memory usage and performance so we stay with it. On the average memory
     consumption of \TEX| is not that large, definitely not compared to other programs that deal
     with text.
 
@@ -98,7 +98,7 @@ token_state_info lmt_token_state = {
 
 /*tex Some properties are dumped in the format so these are aet already! */
 
-# define reserved_token_mem_slots 2 // play safe for slight overuns
+# define reserved_token_mem_slots 2 // play safe for slight overruns
 
 void tex_initialize_token_mem(void)
 {
@@ -303,7 +303,7 @@ halfword tex_store_new_token(halfword p, halfword t)
 
 /*tex
 
-    The procedure |flush_list (p)| frees an entire linked list of oneword nodes that starts at
+    The procedure |flush_list (p)| frees an entire linked list of one word nodes that starts at
     position |p|. It makes list of single word nodes available. The second variant in principle
     is faster but in practice this goes unnoticed. Of course there is a little price to pay for
     keeping track of memory usage.
@@ -584,7 +584,7 @@ void tex_print_meaning(halfword code)
     In \LUAMETATEX\ we have some more node types and token types so we also have additional tracing.
     Because there is some more granularity in for instance nodes (subtypes) more detail is reported.
 
-    It made sense to split the |tex_show_token_list| funciton in two, ine specialized for showing
+    It made sense to split the |tex_show_token_list| function in two, ine specialized for showing
     the context. That saves some testing and passing arguments.
 
 */
@@ -757,7 +757,7 @@ void tex_show_token_list_context(halfword p, halfword q)
                         break;
                     case parameter_cmd:
                         /*tex
-                            When we show a context we alwasy duplicate the hashes.
+                            When we show a context we always duplicate the hashes.
                         */
                         tex_print_tex_str(chr);
                         tex_print_tex_str(chr);
@@ -889,7 +889,7 @@ static inline next_line_retval tex_aux_next_line(void);
     In case you are getting bored, here is a slightly less trivial routine: Given a string of
     lowercase letters, like |pt| or |plus| or |width|, the |scan_keyword| routine checks to see
     whether the next tokens of input match this string. The match must be exact, except that
-    ppercase letters will match their lowercase counterparts; uppercase equivalents are determined
+    uppercase letters will match their lowercase counterparts; uppercase equivalents are determined
     by subtracting |"a" - "A"|, rather than using the |uc_code| table, since \TEX\ uses this
     routine only for its own limited set of keywords.
 
@@ -1118,7 +1118,7 @@ int tex_scan_keyword(const char *s)
         cur_cs = save_cur_cs;
         return 1;
     } else {
-        /*tex but not with newtokenlib zero keyword simply doesn't match  */
+        /*tex but not with |tokenlib| zero keyword simply doesn't match  */
         return 0 ;
     }
 }
@@ -1278,7 +1278,7 @@ halfword tex_active_to_cs(int c, int force)
     This gives as many prediction errors. So, we can indeed assume that the compiler does the right
     job, or that there is simply no other way.
 
-    When a line is finished a space is emited. When a character of type |spacer| gets through, its
+    When a line is finished a space is emitted. When a character of type |spacer| gets through, its
     character code is changed to |\ =040|. This means that the \ASCII\ codes for tab and space, and
     for the space inserted at the end of a line, will be treated alike when macro parameters are
     being matched. We do this since such characters are indistinguishable on most computer terminal
@@ -1300,7 +1300,7 @@ halfword tex_active_to_cs(int c, int force)
 /*tex
 
     This trick has been dropped when the wrapup mechanism had proven to be useful. The idea was
-    to backport this to \LUATEX\ but some other \PDFTEX\ compatible parstuff made it there and
+    to backport this to \LUATEX\ but some other \PDFTEX\ compatible par stuff made it there and
     backporting par related features becomes too messy.
 
     \starttyping
@@ -1404,7 +1404,7 @@ static int tex_aux_get_next_file(void)
                     goto RESWITCH;
                 } else {
                     /*tex
-                        We provide prescripts and shifted script in math mode and avoid fance |^|
+                        We provide prescripts and shifted script in math mode and avoid fence |^|
                         processing in text mode (which is what we do in \CONTEXT).
                     */
                 }
@@ -1660,10 +1660,10 @@ static int tex_aux_process_sup_mark(void)
                 int c1 = lmt_fileio_state.io_buffer[lmt_input_state.cur_input.loc + 1];
                 if (c1 < 0x80) {
                     lmt_input_state.cur_input.loc = lmt_input_state.cur_input.loc + 2;
-                 // if (is_hex(c1) && (iloc <= ilimit)) {
-                 //     int c2 = fileio_state.io_buffer[iloc];
+                 // if (is_hex(c1) && (lmt_input_state.cur_input.loc <= lmt_input_state.cur_input.limit)) {
+                 //     int c2 = fileio_state.io_buffer[lmt_input_state.cur_input.loc];
                  //     if (is_hex(c2)) {
-                 //         ++iloc;
+                 //         ++loc;
                  //         cur_chr = two_hex_to_cur_chr(c1, c2);
                  //         return 1;
                  //     }
@@ -1700,7 +1700,7 @@ static int tex_aux_process_comment(void)
 
     The program that scans a control sequence has been written carefully in order to avoid the
     blowups that might otherwise occur if a malicious user tried something like |\catcode'15 = 0|.
-    The algorithm might look at |buffer[ilimit + 1]|, but it never looks at |buffer[ilimit + 2]|.
+    The algorithm might look at |buffer[limit + 1]|, but it never looks at |buffer[limit + 2]|.
 
     If expanded characters like |^^A| or |^^df| appear in or just following a control sequence name,
     they are converted to single characters in the buffer and the process is repeated, slowly but
@@ -1711,7 +1711,7 @@ static int tex_aux_process_comment(void)
 /*tex
 
     Whenever we reach the following piece of code, we will have |cur_chr = buffer[k - 1]| and |k <=
-    ilimit + 1| and |cat = get_cat_code(cat_code_table, cur_chr)|. If an expanded code like |^^A| or
+    limit + 1| and |cat = get_cat_code(cat_code_table, cur_chr)|. If an expanded code like |^^A| or
     |^^df| appears in |buffer[(k - 1) .. (k + 1)]| or |buffer[(k - 1) .. (k + 2)]|, we will store
     the corresponding code in |buffer[k - 1]| and shift the rest of the buffer left two or three
     places.
@@ -2060,7 +2060,7 @@ static inline next_line_retval tex_aux_next_line(void)
              /* case io_file_input_code: */
                 default:
                     if (tex_lua_input_ln()) {
-                        /*tex Not end of file, set |ilimit|. */
+                        /*tex Not end of file, set |limit|. */
                         lmt_input_state.cur_input.limit = lmt_fileio_state.io_last;
                         lmt_input_state.cur_input.cattable = default_catcode_table_preset;
                         break;
@@ -2176,8 +2176,8 @@ static int tex_aux_get_next_tokenlist(void)
 
                 Get the next token, suppressing expansion. The present point in the program is
                 reached only when the |expand| routine has inserted a special marker into the
-                input. In this special case, |token_info(iloc)| is known to be a control sequence
-                token, and |token_link(iloc) = null|.
+                input. In this special case, |token_info(loc)| is known to be a control sequence
+                token, and |token_link(loc) = null|.
 
             */
             cur_cs = token_info(lmt_input_state.cur_input.loc) - cs_token_flag;
@@ -3530,11 +3530,11 @@ strnumber tex_tokens_to_string(halfword p)
     The actual token conversion in this function is now functionally equivalent to |show_token_list|,
     except that it always prints the whole token list. Often the result is not that large, for
     instance |\directlua| is seldom large. However, this converter is also used for patterns
-    and exceptions where size is mnore an issue. For that reason we used to have three variants,
+    and exceptions where size is more an issue. For that reason we used to have three variants,
     one of which (experimentally) used a buffer. At some point, in the manual we were talking of
     millions of allocations but times have changed.
 
-    Macros were used to inline the appending code (in the thre variants), but in the end I decided
+    Macros were used to inline the appending code (in the three variants), but in the end I decided
     to just merge all into one function, with a bit more overhead because we need to optionally
     skip a macro preamble.
 

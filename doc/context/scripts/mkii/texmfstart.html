@@ -42,6 +42,7 @@
         <tr><th>--script</th><td></td><td>run an mtx script (lua prefered method) (--noquotes), no script gives list</td></tr>
         <tr><th>--evaluate</th><td></td><td>run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)</td></tr>
         <tr><th>--execute</th><td></td><td>run a script or program (texmfstart method) (--noquotes)</td></tr>
+        <tr><th>--direct</th><td></td><td>run a program </td></tr>
         <tr><th>--resolve</th><td></td><td>resolve prefixed arguments</td></tr>
         <tr><th>--ctxlua</th><td></td><td>run internally (using preloaded libs)</td></tr>
         <tr><th>--internal</th><td></td><td>run script using built in libraries (same as --ctxlua)</td></tr>
@@ -62,10 +63,12 @@
         <tr><th>--verbose</th><td></td><td>give a bit more info</td></tr>
         <tr><th>--trackers</th><td>list</td><td>enable given trackers</td></tr>
         <tr><th>--progname</th><td>str</td><td>format or backend</td></tr>
+        <tr><th>--platform</th><td>str</td><td>show platform as seen by script</td></tr>
         <tr><th>--systeminfo</th><td>str</td><td>show current operating system, processor, etc</td></tr>
         <tr><th/><td/><td/></tr>
         <tr><th>--edit</th><td></td><td>launch editor with found file</td></tr>
         <tr><th>--launch</th><td></td><td>launch files like manuals, assumes os support (--all,--list)</td></tr>
+        <tr><th>--associate</th><td></td><td>launch files like manuals, assumes os support via suffix association</td></tr>
         <tr><th/><td/><td/></tr>
         <tr><th>--timedrun</th><td></td><td>run a script and time its run</td></tr>
         <tr><th>--autogenerate</th><td></td><td>regenerate databases if needed (handy when used to run context in an editor)</td></tr>
@@ -92,8 +95,18 @@
         <tr><th>--var-value</th><td></td><td>report value of variable</td></tr>
         <tr><th>--find-file</th><td></td><td>report file location</td></tr>
         <tr><th>--find-path</th><td></td><td>report path of file</td></tr>
+        <tr><th>--format-path</th><td></td><td>report path where format files end up</td></tr>
         <tr><th/><td/><td/></tr>
         <tr><th>--pattern</th><td>string</td><td>filter variables</td></tr>
+        <tr><th>--all</th><td>string</td><td>report all (when applicable)</td></tr>
+        <tr><th>--format</th><td>string</td><td>filter by file format (when applicable)</td></tr>
+        <tr><th/><td/><td/></tr>
+        <tr><th>--selfclean</th><td>string</td><td>remove libraries (maintainance)</td></tr>
+        <tr><th>--selfmerge</th><td>string</td><td>embed libraries (maintainance)</td></tr>
+        <tr><th>--selfupdate</th><td>string</td><td>move to bin path (maintainance)</td></tr>
+        <tr><th>--help</th><td>string</td><td>show help info</td></tr>
+        <tr><th>--help</th><td>string</td><td>show version info</td></tr>
+        <tr><th>--gethelp</th><td>string</td><td>launch the given help info (--url)</td></tr>
     </table>
 <br/>
             </div>

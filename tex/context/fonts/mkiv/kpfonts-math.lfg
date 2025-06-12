@@ -27,6 +27,14 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = {
+                      "KpMath-Regular",
+                      "KpMath-Bold",
+                    },
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 0.61",
                 },

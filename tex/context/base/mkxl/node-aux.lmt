@@ -428,22 +428,29 @@ do
 
     local actions = { }
 
-    callback.register("tail_append", function(n,data,detail)
+    local function tail_append_callback(n,data,detail)
         local action = actions[data]
         if action then
             return action(n,data,detail)
         else
             return n
         end
-    end)
+    end
+
+    callbacks.register {
+        name    = "tail_append",
+        action  = tail_append_callback,
+        comment = "process tail related action",
+        frozen  = true,
+    }
 
     -- We don't have that many properties (a few in math where we run into a
     -- processing order issue, otherwise we could use a node list parser).
 
     local properties   = { }
 
-    local setproperty  = nodes.setproperty
-    local luaboundary  = nodes.pool.luaboundary
+    local setproperty  = nuts.setproperty
+    local luaboundary  = nuts.pool.luaboundary
 
     local a_properties <const> = 1
 

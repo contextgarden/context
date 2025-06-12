@@ -7,88 +7,87 @@
 /*tex
 
     These are the supported callbacks (by name). This list must have the same size and order as the
-    array in |luatexcallbackids.h|! We could have kept the names private here and maybe they will
-    become that again. On the other hand we can now use them in reports.
+    array in |lmtcallbacklib.h|! The structure and capabilities evolved a bit over time. There are 
+    differences between \LUATEX\ and \LUAMETATEX\ in callbacks with the same name. 
 
 */
 
 callback_state_info lmt_callback_state = {
-    .metatable_id = 0,
-    .padding      = 0,
-    .values       = { 0 },
- /* .states       = { 0 }, */
-};
-
-/* todo: use lua keywords instead */
-
-static const char *callbacklib_names[total_callbacks] = {
-    "", /*tex empty on purpose */
-    "find_log_file",
-    "find_format_file",
-    "open_data_file",
-    "process_jobname",
-    "start_run",
-    "stop_run",
-    "define_font",
-    "quality_font",
-    "pre_output_filter",
-    "buildpage_filter",
-    "hpack_filter",
-    "vpack_filter",
-    "hyphenate",
-    "ligaturing",
-    "kerning",
-    "glyph_run",
-    "pre_linebreak_filter",
-    "linebreak_filter",
-    "post_linebreak_filter",
-    "append_to_vlist_filter",
-    "alignment_filter",
-    "local_box_filter",
-    "packed_vbox_filter",
-    "mlist_to_hlist",
-    "pre_dump",
-    "start_file",
-    "stop_file",
-    "intercept_tex_error",
-    "intercept_lua_error",
-    "show_error_message",
-    "show_warning_message",
-    "hpack_quality",
-    "vpack_quality",
-    "line_break",
-    "balance",
-    "show_vsplit",
-    "show_build",
-    "insert_par",
-    "append_line_filter",
-    "insert_distance",
- /* "fire_up_output", */
-    "wrapup_run",
-    "begin_paragraph",
-    "paragraph_context",
- /* "get_math_char", */
-    "math_rule",
-    "make_extensible",
-    "register_extensible",
-    "show_whatsit",
-    "get_attribute",
-    "get_noad_class",
-    "get_math_dictionary",
-    "show_lua_call",
-    "trace_memory",
-    "handle_overload",
-    "missing_character",
-    "process_character",
-    "linebreak_quality",
-    "paragraph_pass",
-    "handle_uleader",
-    "handle_uinsert",
-    "italic_correction",
-    "show_loners",
-    "tail_append",
-    "balance_boundary",
-    "balance_insert",
+    .index   = 0,
+    .options = 0,
+    .items   = {
+        { .value = 0, .state = 0,                          .name = ""                     }, /*tex empty on purpose */
+        { .value = 0, .state = 0,                          .name = "test_only"            },
+        { .value = 0, .state = callback_state_fundamental, .name = "find_log_file"        },
+        { .value = 0, .state = callback_state_fundamental, .name = "find_format_file"     },
+        { .value = 0, .state = callback_state_fundamental, .name = "open_data_file"       },
+        { .value = 0, .state = callback_state_fundamental, .name = "process_jobname"      },
+        { .value = 0, .state = callback_state_fundamental, .name = "start_run"            },
+        { .value = 0, .state = callback_state_fundamental, .name = "stop_run"             },
+        { .value = 0, .state = callback_state_fundamental, .name = "define_font"          },
+        { .value = 0, .state = callback_state_selective,   .name = "quality_font"         },
+        { .value = 0, .state = callback_state_selective,   .name = "pre_output"           },
+        { .value = 0, .state = 0,                          .name = "buildpage"            },
+        { .value = 0, .state = callback_state_selective,   .name = "hpack"                },
+        { .value = 0, .state = callback_state_selective,   .name = "vpack"                },
+        { .value = 0, .state = callback_state_selective,   .name = "hyphenate"            },
+        { .value = 0, .state = callback_state_selective,   .name = "ligaturing"           },
+        { .value = 0, .state = callback_state_selective,   .name = "kerning"              },
+        { .value = 0, .state = callback_state_selective,   .name = "glyph_run"            },
+        { .value = 0, .state = 0,                          .name = "pre_linebreak"        },
+        { .value = 0, .state = callback_state_selective,   .name = "linebreak"            },
+        { .value = 0, .state = 0,                          .name = "post_linebreak"       },
+        { .value = 0, .state = callback_state_selective,   .name = "append_to_vlist"      },
+        { .value = 0, .state = callback_state_selective,   .name = "alignment"            },
+        { .value = 0, .state = callback_state_selective,   .name = "local_box"            },
+        { .value = 0, .state = callback_state_selective,   .name = "packed_vbox"          },
+        { .value = 0, .state = callback_state_selective,   .name = "mlist_to_hlist"       },
+        { .value = 0, .state = callback_state_fundamental, .name = "pre_dump"             },
+        { .value = 0, .state = callback_state_fundamental, .name = "start_file"           },
+        { .value = 0, .state = callback_state_fundamental, .name = "stop_file"            },
+        { .value = 0, .state = callback_state_tracing,     .name = "intercept_tex_error"  },
+        { .value = 0, .state = callback_state_tracing,     .name = "intercept_lua_error"  },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_error_message"   },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_warning_message" },
+        { .value = 0, .state = callback_state_tracing,     .name = "hpack_quality"        },
+        { .value = 0, .state = callback_state_tracing,     .name = "vpack_quality"        },
+        { .value = 0, .state = callback_state_tracing,     .name = "linebreak_check"      },
+        { .value = 0, .state = callback_state_tracing,     .name = "balance_check"        },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_vsplit"          },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_build"           },
+        { .value = 0, .state = 0,                          .name = "insert_par"           },
+        { .value = 0, .state = callback_state_selective,   .name = "append_adjust"        },
+        { .value = 0, .state = callback_state_selective,   .name = "append_migrate"       },
+        { .value = 0, .state = callback_state_selective,   .name = "append_line"          },
+     /* { .value = 0, .state = callback_state_selective,   .name = "pre_line"             }, */
+        { .value = 0, .state = 0,                          .name = "insert_distance"      },
+     /* { .value = 0, .state = 0,                          .name = "fire_up_output"       }, */
+        { .value = 0, .state = callback_state_fundamental, .name = "wrapup_run"           },
+        { .value = 0, .state = 0,                          .name = "begin_paragraph"      },
+        { .value = 0, .state = 0,                          .name = "paragraph_context"    },
+     /* { .value = 0, .state = 0,                          .name = "get_math_char"        }, */
+        { .value = 0, .state = 0,                          .name = "math_rule"            },
+        { .value = 0, .state = 0,                          .name = "make_extensible"      },
+        { .value = 0, .state = 0,                          .name = "register_extensible"  },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_whatsit"         },
+        { .value = 0, .state = callback_state_tracing,     .name = "get_attribute"        },
+        { .value = 0, .state = callback_state_tracing,     .name = "get_noad_class"       },
+        { .value = 0, .state = callback_state_tracing,     .name = "get_math_dictionary"  },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_lua_call"        },
+        { .value = 0, .state = callback_state_tracing,     .name = "trace_memory"         },
+        { .value = 0, .state = callback_state_tracing,     .name = "handle_overload"      },
+        { .value = 0, .state = callback_state_tracing,     .name = "missing_character"    },
+        { .value = 0, .state = callback_state_selective,   .name = "process_character"    },
+        { .value = 0, .state = callback_state_tracing,     .name = "linebreak_quality"    },
+        { .value = 0, .state = callback_state_selective,   .name = "paragraph_pass"       },
+        { .value = 0, .state = callback_state_selective,   .name = "handle_uleader"       },
+        { .value = 0, .state = callback_state_selective,   .name = "handle_uinsert"       },
+        { .value = 0, .state = 0,                          .name = "italic_correction"    },
+        { .value = 0, .state = callback_state_tracing,     .name = "show_loners"          },
+        { .value = 0, .state = callback_state_selective,   .name = "tail_append"          },
+        { .value = 0, .state = 0,                          .name = "balance_boundary"     },
+        { .value = 0, .state = 0,                          .name = "balance_insert"       },
+    } 
 };
 
 /*tex
@@ -144,7 +143,8 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
                 break;
             case callback_node_key:
                 /*tex A \TEX\ node: */
-                lmt_push_node_fast(L, va_arg(vl, int));
+             // lmt_push_node_fast(L, va_arg(vl, int));
+                lmt_push_node_to_callback(L, va_arg(vl, int));
                 break;
             case callback_string_key:
                 /*tex A \CCODE\ string: */
@@ -293,7 +293,8 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
             case callback_node_key:
                 switch (t) {
                     case LUA_TUSERDATA:
-                        *va_arg(vl, int *) = lmt_check_isnode(L, nres);
+                     // *va_arg(vl, int *) = lmt_check_isnode(L, nres);
+                        *va_arg(vl, int *) = lmt_pop_node_from_callback(L, nres);
                         break;
                     default:
                         *va_arg(vl, int *) = null;
@@ -445,12 +446,18 @@ int lmt_run_saved_callback_line(lua_State *L, int r, int firstpos)
 
 */
 
+# define callbacks_trace 0
+
 int lmt_callback_okay(lua_State *L, int i, int *top)
 {
     *top = lua_gettop(L);
-    lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.index);
     lua_pushcfunction(L, lmt_traceback); /* goes before function */
     if (lua_rawgeti(L, -2, i) == LUA_TFUNCTION) {
+        if (lmt_callback_state.options & callback_option_trace) {
+            /*tex Just a raw print because we don't want interference */
+            printf("[callback %02i : %s]\n",i,lmt_callback_state.items[i].name);
+        }
         lmt_lua_state.saved_callback_count++;
         return 1;
     } else {
@@ -502,30 +509,44 @@ void lmt_destroy_saved_callback(lua_State *L, int i)
     luaL_unref(L, LUA_REGISTRYINDEX, i);
 }
 
-static int callbacklib_callback_found(const char *s)
+static int callbacklib_found(lua_State *L)
 {
-    if (s) {
-        for (int cb = 0; cb < total_callbacks; cb++) {
-            if (strcmp(callbacklib_names[cb], s) == 0) {
-                return cb;
+    switch (lua_type(L, 1)) { 
+        case LUA_TNUMBER: 
+            {
+                int cb = lua_tointeger(L, 1);
+                return (cb > 0 && cb < total_callbacks) ? cb :  -1;
             }
-        }
+        case LUA_TSTRING:   
+            {
+                const char *s = lua_tostring(L, 1);
+                if (s) {
+                    /* hm, why not start at 1 */
+                    for (int cb = 0; cb < total_callbacks; cb++) {
+                        if (strcmp(lmt_callback_state.items[cb].name, s) == 0) {
+                            return cb;
+                        }
+                    }
+                }
+                return -1;
+            } 
+        default:
+            return -1;
     }
-    return -1;
 }
 
-static int callbacklib_callback_register(lua_State *L)
+static int callbacklib_register(lua_State *L)
 {
-    const char *s = lua_tostring(L, 1);
-    int cb = callbacklib_callback_found(s);
-    if (cb >= 0) {
-     // if (lmt_callback_state.states[cb] & callback_frozen) {
-     //     /*tex Maybe issue a message. */
-     // } else {
+    int cb = callbacklib_found(L);
+    if (cb > 0) {
+        if (lmt_callback_state.items[cb].state & callback_state_frozen) {
+           /*tex Maybe issue a message. */
+        } else {
             switch (lua_type(L, 2)) {
                 case LUA_TFUNCTION:
-                    lmt_callback_state.values[cb] = cb;
-                 // lmt_callback_state.states[cb] = callback_set;
+                    lmt_callback_state.items[cb].value = cb;
+                    lmt_callback_state.items[cb].state |= callback_state_set;
+                    lmt_callback_state.items[cb].state |= callback_state_touched;
                     break;
                 case LUA_TBOOLEAN:
                     if (lua_toboolean(L, 2)) {
@@ -533,44 +554,82 @@ static int callbacklib_callback_register(lua_State *L)
                     }
                     // fall through
                 case LUA_TNIL:
-                    lmt_callback_state.values[cb] = -1;
-                 // lmt_callback_state.states[cb] = 0;
+                    lmt_callback_state.items[cb].value = -1;
+                    lmt_callback_state.items[cb].state &= ~ callback_state_set;
+                    lmt_callback_state.items[cb].state |= callback_state_touched;
                     break;
             }
-            lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
-            lua_pushvalue(L, 2); /*tex the function or nil */
+            /*tex Push the callback table on the stack. */ 
+            lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.index);
+            /*tex Push the function or |nil|. */
+            lua_pushvalue(L, 2);
+            /*tex Update the value. */
             lua_rawseti(L, -2, cb);
-            lua_rawseti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
+            lua_pop(L, 1); /* was: lua_rawseti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_index); */
+            /*tex Return the callback id, which is a fixed value. */
             lua_pushinteger(L, cb);
             return 1;
-     // } 
+        } 
     }
   BAD:
     lua_pushnil(L);
     return 1;
 }
 
-// static int callbacklib_callback_enable(lua_State *L)
-// {
-//     int cb = lmt_tointeger(L, 1);
-//     if (cb >= 0 && cb < total_callbacks) {
-//         if (lua_toboolean(L, 2)) {
-//             lmt_callback_state.states[cb] &= ~ callback_disabled;
-//         } else {
-//             lmt_callback_state.states[cb] |= callback_disabled;
-//         }
-//     }
-//     return 0;
-// }
-// 
-// static int callbacklib_callback_freeze(lua_State *L)
-// {
-//     int cb = lmt_tointeger(L, 1);
-//     if (cb >= 0 && cb < total_callbacks) {
-//         lmt_callback_state.states[cb] |= callback_frozen;
-//     }
-//     return 0;
-// }
+static int callbacklib_getstate(lua_State *L)
+{
+    int cb = callbacklib_found(L);
+    if (cb > 0) {
+        lua_pushinteger(L, lmt_callback_state.items[cb].state);
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int callbacklib_setstate(lua_State *L)
+{
+    int cb = callbacklib_found(L);
+    if (cb > 0) {
+        /*tex We can always enable and disable. */
+        if (lua_type(L, 2) == LUA_TNUMBER) {
+            lmt_callback_state.items[cb].state |= (lua_tointeger(L, 2) & 0xFFFF);
+        } else { 
+            lmt_callback_state.items[cb].state &= ~ callback_state_disabled;
+        }
+        lua_pushboolean(L, 1);
+    } else {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+static int callbacklib_setoptions(lua_State *L)
+{
+    int options = lua_tointeger(L, 1);
+    int set = lua_type(L, 2) == LUA_TBOOLEAN ? lua_toboolean(L, 2) : 1;
+    if (options & callback_option_direct) {
+        if (lmt_callback_state.options & callback_option_direct) {
+            tex_formatted_warning("callbacks", "direct node mode is enabled and can't be changed");
+        } else if (set) { 
+            lmt_callback_state.options |= callback_option_direct;
+        }
+    }
+    if (options & callback_option_trace) {
+        if (set) {
+            lmt_callback_state.options |= callback_option_trace; 
+        } else {
+            lmt_callback_state.options &= ~ callback_option_trace;
+        }
+    }
+    return 0;
+}
+
+static int callbacklib_getoptions(lua_State *L)
+{
+    lua_pushinteger(L, lmt_callback_state.options);
+    return 1;
+}
 
 void lmt_run_memory_callback(const char* what, int success)
 {
@@ -585,35 +644,52 @@ void lmt_run_memory_callback(const char* what, int success)
 
 */
 
-static int callbacklib_callback_find(lua_State *L)
+static int callbacklib_find(lua_State *L)
 {
-    const char *s = lua_tostring(L, 1);
-    if (s) {
-        int cb = callbacklib_callback_found(s);
-        if (cb >= 0) {
-            lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.metatable_id);
-            lua_rawgeti(L, -1, cb);
-            return 1;
-        }
+    int cb = callbacklib_found(L);
+    if (cb > 0 && ! (lmt_callback_state.items[cb].state & callback_state_private)) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_callback_state.index);
+        lua_rawgeti(L, -1, cb);
+    } else { 
+        lua_pushnil(L);
     }
-    lua_pushnil(L);
     return 1;
 }
 
-static int callbacklib_callback_known(lua_State *L)
+static int callbacklib_known(lua_State *L)
 {
-    const char *s = lua_tostring(L, 1);
-    lua_pushboolean(L, s && (callbacklib_callback_found(s) >= 0));
+    lua_pushboolean(L, callbacklib_found(L) > 0);
     return 1;
 }
 
-static int callbacklib_callback_list(lua_State *L)
+static int callbacklib_getindex(lua_State *L)
+{
+    int cb = callbacklib_found(L);
+    if (cb > 0) {
+        lua_pushinteger(L, cb);
+    } else { 
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int callbacklib_list(lua_State *L)
 {
     lua_createtable(L, 0, total_callbacks);
     for (int cb = 1; cb < total_callbacks; cb++) {
-        lua_pushstring(L, callbacklib_names[cb]);
+        lua_pushstring(L, lmt_callback_state.items[cb].name);
         lua_pushboolean(L, lmt_callback_defined(cb));
         lua_rawset(L, -3);
+    }
+    return 1;
+}
+
+static int callbacklib_names(lua_State *L)
+{
+    lua_createtable(L, total_callbacks, 0);
+    for (int cb = 1; cb < total_callbacks; cb++) {
+        lua_pushstring(L, lmt_callback_state.items[cb].name);
+        lua_rawseti(L, -2, cb);
     }
     return 1;
 }
@@ -643,28 +719,79 @@ void lmt_push_callback_usage(lua_State *L)
     );
 }
 
-static int callbacklib_callback_usage(lua_State *L)
+static int callbacklib_usage(lua_State *L)
 {
     lmt_push_callback_usage(L);
     return 1;
 }
 
+static int callbacklib_testonly(lua_State *L)
+{
+    int cb = lmt_callback_defined(test_only_callback);
+    if (cb > 0) {
+        int top = 0;
+        if (lmt_callback_okay(L, cb, &top)) {
+            int i; 
+            lua_pushinteger(L, lmt_callback_state.items[cb].state);
+            i = lmt_callback_call(L, 1, 0, top);
+            if (i) {
+                lmt_callback_error(L, top, i);
+            } else {
+                lmt_callback_wrapup(L, top);
+                lua_pushboolean(L, 1);
+                return 1;
+            }
+        }
+    }
+    lua_pushboolean(L, 0);
+    return 1;
+}
+
+static int callbacklib_getoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 0);
+    lua_set_string_by_index(L, callback_option_direct, "direct");
+    lua_set_string_by_index(L, callback_option_trace,  "trace");
+    return 1;
+}
+
+static int callbacklib_getstatevalues(lua_State *L)
+{
+    lua_createtable(L, 2, 6);
+    lua_set_string_by_index(L, callback_state_set,         "set");
+    lua_set_string_by_index(L, callback_state_disabled,    "disabled");
+    lua_set_string_by_index(L, callback_state_frozen,      "frozen");
+    lua_set_string_by_index(L, callback_state_private,     "private");
+    lua_set_string_by_index(L, callback_state_touched,     "touched");
+    lua_set_string_by_index(L, callback_state_tracing,     "tracing");
+    lua_set_string_by_index(L, callback_state_selective,   "selective");
+    lua_set_string_by_index(L, callback_state_fundamental, "fundamental");
+    return 1;
+}
+
 static const struct luaL_Reg callbacklib_function_list[] = {
-    { "find",     callbacklib_callback_find     },
-    { "known",    callbacklib_callback_known    },
-    { "register", callbacklib_callback_register },
- // { "enable",   callbacklib_callback_enable   },
- // { "freeze",   callbacklib_callback_freeze   },
-    { "list",     callbacklib_callback_list     },
-    { "usage",    callbacklib_callback_usage    },
-    { NULL,       NULL                          },
+    { "find",            callbacklib_find            },
+    { "known",           callbacklib_known           },
+    { "register",        callbacklib_register        },
+    { "list",            callbacklib_list            },
+    { "names",           callbacklib_names           },
+    { "usage",           callbacklib_usage           },
+    { "getindex",        callbacklib_getindex        },
+    { "setstate",        callbacklib_setstate        },
+    { "getstate",        callbacklib_getstate        },
+    { "setoptions",      callbacklib_setoptions      },
+    { "getoptions",      callbacklib_getoptions      },
+    { "testonly",        callbacklib_testonly        },
+    { "getoptionvalues", callbacklib_getoptionvalues },
+    { "getstatevalues",  callbacklib_getstatevalues  },
+    { NULL,              NULL                        },
 };
 
 int luaopen_callback(lua_State *L)
 {
     lua_newtable(L);
     luaL_setfuncs(L, callbacklib_function_list, 0);
-    lua_newtable(L);
-    lmt_callback_state.metatable_id = luaL_ref(L, LUA_REGISTRYINDEX);
+    lua_createtable(L, total_callbacks, 0);
+    lmt_callback_state.index = luaL_ref(L, LUA_REGISTRYINDEX);
     return 1;
 }

@@ -94,6 +94,7 @@ function builders.checkparcontext(where)
 end
 
 appendaction("paragraphcontext","system","builders.checkparcontext")
+disableaction("paragraphcontext","builders.checkparcontext")
 
 interfaces.implement {
     name      = "shiftparshape",

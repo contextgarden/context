@@ -70,10 +70,12 @@ local glyph_code           <const> = nodes.nodecodes.glyph
 local hpack_node           = nodes.hpack
 
 local nuts                 = nodes.nuts
-local tonut                = nuts.tonut
 
 local isglyph              = nuts.isglyph
 local setchar              = nuts.setchar
+local setfont              = nuts.setfont
+local getscale             = nuts.getscale
+local setscale             = nuts.setscale
 
 local nextglyph            = nuts.traversers.glyph
 
@@ -308,7 +310,7 @@ do
 
     local reported = true
 
-    callback.register("glyph_not_found",function(font,char)
+    local function glyph_not_found_callback(font,char)
         if font > 0 then
             if char > 0 then
                 onetimemessage(font,char,"missing")
@@ -319,7 +321,14 @@ do
             report("nullfont is used, maybe no bodyfont is defined")
             reported = true
         end
-    end)
+    end
+
+    callbacks.register {
+        name    = "glyph_not_found",
+        action  = glyph_not_found_callback,
+        comment = "report a missing character",
+        frozen  = true,
+    }
 
     local loaded = false
 
@@ -550,7 +559,7 @@ do
                 local cid = fontcharacters[id]
                 if cid[c] then
                     local fc = fontcharacters[f]
-                    local sc = (fc[reference].height / cid[reference].height) * (n.scale or 1000)
+                    local sc = (fc[reference].height / cid[reference].height) * (getscale(n) or 1000)
                     report("character %C in font %!font:name! (id: %i) is taken from fallback font %!font:name! (id: %i)",c,f,f,id,id)
                     return { id, sc }
                 end
@@ -565,7 +574,7 @@ do
     --
     -- where: textglyph mathglyph mathkernel
 
-    callbacks.register("missing_character", function(where,n,f,c)
+    local function missing_character_callback(where,n,f,c)
         local cached = cache[f]
         local found  = cached[c]
         if found == nil then
@@ -605,10 +614,17 @@ do
         end
       ::done::
         if found then
-            n.font  = found[1]
-            n.scale = found[2]
+            setfont(n,found[1])
+            setscale(n,found[2])
         end
-    end,"report details about a missing character")
+    end
+
+    callbacks.register {
+        name    = "missing_character",
+        action  = missing_character_callback,
+        comment = "report details about a missing character",
+        frozen  = true,
+    }
 
     function definers.registerfallbackfont(style,list)
         local l = fallbacks[style]

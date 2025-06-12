@@ -38,7 +38,6 @@ local xspaceskip_code     <const> = nodes.gluecodes.xspaceskip
 local enableaction        = nodes.tasks.enableaction
 
 local nuts                = nodes.nuts
-local tonut               = nodes.tonut
 local nodepool            = nuts.pool
 
 local getprev             = nuts.getprev
@@ -240,9 +239,8 @@ end
 -- The left and right correction kerns will be done in a second pass because we have
 -- to deal with the left side anyway due to lack of a next glyph at injection time.
 
--- callback.register("italic_correction", function(node,kern,subtype)
+-- local function italic_correction_callback(node,kern,subtype)
 --     if node and subtype == italic_kern_code then
---         node = tonut(node)
 --         local char, id = isglyph(node)
 --         if char then
 --             kern = getrightitalic(id,char,node)
@@ -251,13 +249,13 @@ end
 --         end
 --     end
 --     return kern
--- end)
+-- end
 
 -- This means that we need to make sure that we have the sub type set so that we
 -- handle it later. We keep the zero value because that way we ignore successive
 -- corrections.
 
-callback.register("italic_correction", function(node,kern,subtype)
+local function italic_correction_callback(node,kern,subtype)
     if not kernokay then
         enableaction("processors","typesetters.corrections.handler")
         kernokay = true
@@ -266,7 +264,14 @@ callback.register("italic_correction", function(node,kern,subtype)
         end
     end
     return kern
-end)
+end
+
+callbacks.register {
+    name    = "italic_correction",
+    action  = italic_correction_callback,
+    comment = "insert italic correction",
+    frozen  = true,
+}
 
 local function report_ignored(previous,current,why)
     report_italics("%s correction between %C and %C, %s","ignoring",getchar(previous),getchar(current),why)

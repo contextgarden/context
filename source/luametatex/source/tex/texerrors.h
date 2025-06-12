@@ -79,7 +79,7 @@ extern int  tex_normal_exit       (void);
 /*tex
 *
     We now have a template based error handler instead of more dan a dozen specific ones that took
-    an error type, a different set of variables, and the helptext. The template uses the (usual)
+    an error type, a different set of variables, and the help text. The template uses the (usual)
     percent driven directives:
 
     \starttabulate

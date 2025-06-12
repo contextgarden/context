@@ -54,7 +54,7 @@
     \TEX\ needs to do only a few arithmetic operations on scaled quantities, other than addition and
     subtraction, and the following subroutines do most of the work. A single computation might use
     several subroutine calls, and it is desirable to avoid producing multiple error messages in case
-    of arithmetic overflow; so the routines set the global variable |arith_error| to |true| instead
+    of arithmetic overflow; so the routines set the global variable |arithmic_error| to |true| instead
     of reporting errors directly to the user. Another global variable, |tex_remainder|, holds the
     remainder after a division.
 

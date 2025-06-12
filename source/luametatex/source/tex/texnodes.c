@@ -11,7 +11,7 @@
     This module started out using DEBUG to trigger checking invalid node usage, something that is
     needed because users can mess up nodes in \LUA. At some point that code was always enabled so
     it is now always on but still can be recognized as additional code. And as the performance hit
-    is close to zero so disabling makes no sense, not even to make it configureable. There is a
+    is close to zero so disabling makes no sense, not even to make it configurable. There is a
     little more memory used but that is neglectable compared to other memory usage. Only on
     massive freeing we can gain.
 
@@ -32,7 +32,7 @@ node_memory_state_info lmt_node_memory_state = {
         .ptr       = 0, // total size in use
         .initial   = 0,
         .offset    = 0,
-        .extra     = 0, 
+        .extra     = 0,
     },
     .reserved                   = 0,
     .padding                    = 0,
@@ -1265,8 +1265,8 @@ halfword tex_copy_node_only(halfword p)
     quarterword t = node_type(p);
     int s = get_node_size(t);
     halfword r = tex_get_node(s);
-    memcpy((void *) (lmt_node_memory_state.nodes + r), (void *) (lmt_node_memory_state.nodes + p), (sizeof(memoryword) ));
-    memset((void *) (lmt_node_memory_state.nodes + r + 1), 0, (sizeof(memoryword) * ((unsigned) s - 1)));
+    memcpy((void *) (lmt_node_memory_state.nodes + r), (void *) (lmt_node_memory_state.nodes + p), sizeof(memoryword));
+    memset((void *) (lmt_node_memory_state.nodes + r + 1), 0, sizeof(memoryword) * ((unsigned) s - 1));
     tex_aux_preset_node(r, t);
     return r;
 }
@@ -1299,7 +1299,7 @@ halfword tex_copy_node_only(halfword p)
 /*tex
     Checking for |null| does not happen here but in the calling routine because zero also means zero
     glue (so that we don't need to have many glue nodes hanging around). In traditional \TEX\ these
-    were static shared (ref counted) gluenodes.
+    were static shared (ref counted) glue nodes.
 */
 
 halfword tex_copy_node(halfword original)
@@ -2404,7 +2404,7 @@ void tex_set_attribute(halfword target, int index, int value)
         } else {
             /*tex If we have no list, we create one and quit. */
             halfword a = node_attr(target);
-            /* needs checking: can we get an empty one here indeed, the vlink test case ... */
+            /* needs checking: can we get an empty one here indeed, the |node_next| test case ... */
             if (a) {
                 halfword p = node_next(a);
                 while (p) {
@@ -2792,14 +2792,14 @@ const char *tex_aux_subtype_str(halfword n)
 /*tex
 
     We're not downward compatible here and it might even evolve a bit (and maybe I'll add a
-    compability mode too). We have way more information and plenty of log space so there is no
+    compatibility mode too). We have way more information and plenty of log space so there is no
     need to be compact. Consider it work in progress.
 
     I admit that there is some self interest here in adding more detail. At some point (around
     ctx 2019) I needed to see attribute values in the trace so I added that option which in turn
     made me reformat the output a bit. Of course it makes sense to have the whole show be a
     callback (and I might actually do that) but on the other hand it's so integral to \TEX\ that
-    it doesn't add much and in all the years that \LUATEX| is now arround I never really needed
+    it doesn't add much and in all the years that \LUATEX| is now around I never really needed
     it anyway.
 
     One option is to go completely |\node[key=value,key={value,value}]| here as that can be easily
@@ -2809,7 +2809,7 @@ const char *tex_aux_subtype_str(halfword n)
 
     Per version 2.09.22 we use the values from the node definitions which is more consistent and
     also makes the binary somewhat smaller. It's all in the details. It's a typical example of
-    a change doen when we're stabel for a while (as it influences tracing).
+    a change done when we're stable for a while (as it influences tracing).
 
 */
 
@@ -3154,8 +3154,8 @@ void tex_show_node_list(halfword p, int threshold, int max)
                             if (tex_par_state_is_set(p, par_widow_penalty_code)           ) { v = par_widow_penalty(p)           ; if (v)                     { tex_print_str(", widowpenalty ");            tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_display_widow_penalty_code)   ) { v = par_display_widow_penalty(p)   ; if (v)                     { tex_print_str(", displaywidowpenalty ");     tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_toddler_penalties_code)       ) { v = par_toddler_penalties(p)       ; if (v)                     { tex_print_str(", toddlerpenalties ");        } }
-                            if (tex_par_state_is_set(p, left_twin_demerits_code)          ) { v = par_left_twin_demerits(p)      ; if (v)                     { tex_print_str(", lefttwindemerits ");        tex_print_int      (v);          } }
-                            if (tex_par_state_is_set(p, right_twin_demerits_code)         ) { v = par_right_twin_demerits(p)     ; if (v)                     { tex_print_str(", righttwindemerits ");       tex_print_int      (v);          } }
+                            if (tex_par_state_is_set(p, par_left_twin_demerits_code)      ) { v = par_left_twin_demerits(p)      ; if (v)                     { tex_print_str(", lefttwindemerits ");        tex_print_int      (v);          } }
+                            if (tex_par_state_is_set(p, par_right_twin_demerits_code)     ) { v = par_right_twin_demerits(p)     ; if (v)                     { tex_print_str(", righttwindemerits ");       tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_single_line_penalty_code)     ) { v = par_single_line_penalty(p)     ; if (v)                     { tex_print_str(", singlelinepenalty ");       tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_hyphen_penalty_code)          ) { v = par_hyphen_penalty(p)          ; if (v)                     { tex_print_str(", hyphenlinepenalty ");       tex_print_int      (v);          } }
                             if (tex_par_state_is_set(p, par_broken_penalty_code)          ) { v = par_broken_penalty(p)          ; if (v)                     { tex_print_str(", brokenpenalty ");           tex_print_int      (v);          } }
@@ -3383,7 +3383,7 @@ static halfword tex_aux_get_actual_box_width(halfword r, halfword p, scaled init
                 }
                 goto FOUND;
             case math_node:
-                if (tex_math_glue_is_zero(p)) {
+                if (tex_math_glue_is_zero(p) || tex_ignore_math_skip(p)) {
                     d = math_surround(p);
                 } else {
                     d = math_amount(p);
@@ -3656,14 +3656,14 @@ halfword tex_new_char_node(quarterword subtype, halfword fnt, halfword chr, int 
     }
     if (tex_char_exists(fnt, chr)) {
         tex_char_process(fnt, chr);
-    } else { 
+    } else {
         tex_missing_character(p, fnt, chr, missing_character_text_glyph);
     }
     return p;
 }
 
 /*tex
-    This one is called in the lua node interface so we assume checking being done at that end. 
+    This one is called in the lua node interface so we assume checking being done at that end.
 */
 
 halfword tex_new_text_glyph(halfword fnt, halfword chr)
@@ -4537,7 +4537,7 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
 }
 
 /*
-    This is the reference but as it's called often we use an inlined variant with less redudant
+    This is the reference but as it's called often we use an inlined variant with less redundant
     testing and branching.
 */
 
@@ -4955,7 +4955,7 @@ static void *tex_aux_allocate_specification(halfword p, int n, size_t *size)
         case par_passes_code:
             n *= par_passes_size;
             break;
-        case balance_shape_code: 
+        case balance_shape_code:
             n *= balance_shape_size;
             break;
         case balance_passes_code:
@@ -4966,7 +4966,7 @@ static void *tex_aux_allocate_specification(halfword p, int n, size_t *size)
     }
     *size = n * sizeof(memoryword);
     lmt_node_memory_state.nodes_data.extra += (int) *size;
-    if (n) { 
+    if (n) {
         l = lmt_memory_calloc(n, sizeof(memoryword));
         if (! l) {
             tex_overflow_error("nodes", (int) *size);
@@ -5011,7 +5011,7 @@ halfword tex_new_specification_node(halfword n, quarterword s, halfword options)
 void tex_dispose_specification_list(halfword a)
 {
     if (specification_pointer(a)) {
-        switch (node_subtype(a)) { 
+        switch (node_subtype(a)) {
             case par_passes_code:
                 for (int i = 1; i <= specification_count(a); i++) {
                     halfword f = tex_get_passes_fitnessclasses(a, i);
@@ -5062,7 +5062,7 @@ void tex_copy_specification_list(halfword target, halfword source)
             specification_size(target) = specification_size(source);
             memcpy(specification_pointer(target), specification_pointer(source), size);
             /* */
-            switch (node_subtype(target)) { 
+            switch (node_subtype(target)) {
                 case par_passes_code:
                     for (int i = 1; i <= specification_count(source); i++) {
                         halfword f = tex_get_passes_fitnessclasses(source, i);
@@ -5399,7 +5399,7 @@ halfword tex_get_special_node_list(special_node_list_types list, halfword *tail)
             break;
         case page_list_type:
             h = node_next(page_head);
-            t = lmt_page_builder_state.page_tail;
+            t = lmt_page_builder_state.tail;
             break;
         case temp_list_type:
             h = node_next(temp_head);
@@ -5451,8 +5451,8 @@ int tex_is_special_node_list(halfword n, int *istail)
         return page_insert_list_type;
     } else if (n == node_next(contribute_head)) {
         return contribute_list_type;
-    } else if (n == node_next(page_head) || n == lmt_page_builder_state.page_tail) {
-        if (istail && n == lmt_page_builder_state.page_tail) {
+    } else if (n == node_next(page_head) || n == lmt_page_builder_state.tail) {
+        if (istail && n == lmt_page_builder_state.tail) {
             *istail = 0;
         }
         return page_list_type;
@@ -5511,7 +5511,7 @@ void tex_set_special_node_list(special_node_list_types list, halfword head)
             break;
         case page_list_type:
             node_next(page_head) = head;
-            lmt_page_builder_state.page_tail = head ? tex_tail_of_node_list(head) : page_head;
+            lmt_page_builder_state.tail = head ? tex_tail_of_node_list(head) : page_head;
             break;
         case temp_list_type:
             node_next(temp_head) = head;
@@ -5545,37 +5545,47 @@ void tex_set_special_node_list(special_node_list_types list, halfword head)
             lmt_packaging_state.split_discards_head = head;
             break;
     }
-};
+}
 
-scaled tex_effective_glue(halfword parent, halfword glue)
+static inline scaled tex_aux_effective_glue(halfword parent, scaled amount, scaled stretch, scaled shrink, halfword stretch_order, halfword shrink_order)
 {
-    if (parent && glue) {
-        switch (node_type(glue)) {
+    if (parent) {
+        singleword sign = box_glue_sign(parent);
+        if (sign != normal_glue_sign) {
+            switch (node_type(parent)) {
+                case hlist_node:
+                case vlist_node:
+                    {
+                        double w = (double) amount;
+                        switch (sign) {
+                            case stretching_glue_sign:
+                                if (stretch_order == box_glue_order(parent)) {
+                                    w += stretch * (double) box_glue_set(parent);
+                                }
+                                break;
+                            case shrinking_glue_sign:
+                                if (shrink_order == box_glue_order(parent)) {
+                                    w -= shrink * (double) box_glue_set(parent);
+                                }
+                                break;
+                        }
+                        amount = lmt_roundedfloat(w);
+                    }
+            }
+        }
+    }
+    return amount;
+}
+
+scaled tex_effective_glue(halfword parent, halfword n)
+{
+    if (parent && n) {
+        switch (node_type(n)) {
             case glue_node:
             case glue_spec_node:
-                switch (node_type(parent)) {
-                    case hlist_node:
-                    case vlist_node:
-                        {
-                            double w = (double) glue_amount(glue);
-                            switch (box_glue_sign(parent)) {
-                                case stretching_glue_sign:
-                                    if (glue_stretch_order(glue) == box_glue_order(parent)) {
-                                        w += glue_stretch(glue) * (double) box_glue_set(parent);
-                                    }
-                                    break;
-                                case shrinking_glue_sign:
-                                    if (glue_shrink_order(glue) == box_glue_order(parent)) {
-                                        w -= glue_shrink(glue) * (double) box_glue_set(parent);
-                                    }
-                                    break;
-                                default: 
-                                    return (scaled) lmt_roundedfloat(w);
-                            }
-                        }
-                    default:
-                        return glue_amount(glue);
-                }
+                return tex_aux_effective_glue(parent, glue_amount(n), glue_stretch(n), glue_shrink(n), glue_stretch_order(n), glue_shrink_order(n));
+            case math_node:
+                return tex_aux_effective_glue(parent, math_amount(n), math_stretch(n), math_shrink(n), math_stretch_order(n), math_shrink_order(n));
         }
     }
     return 0;

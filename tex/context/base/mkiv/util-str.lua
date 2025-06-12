@@ -683,7 +683,7 @@ string.texnewlines = lpeg.replacer(patterns.newline,"\r",true)
 local preamble = ""
 
 local environment = {
-    global          = global or _G,
+    ["global"]      = _G,
     lpeg            = lpeg,
     type            = type,
     tostring        = tostring,

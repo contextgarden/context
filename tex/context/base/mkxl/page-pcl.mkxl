@@ -218,7 +218,7 @@
    % \page_col_command_flush_floats
    \else
      \ifdim\d_page_col_top_width>\zeropoint
-       \ifdim{\d_page_col_top_width>\d_page_col_sofar}%
+       \ifdim\d_page_col_top_width>\d_page_col_sofar
          \begingroup
          \floatingpenalty\zerocount
          \insert\namedinsertionnumber\s!topfloat\bgroup

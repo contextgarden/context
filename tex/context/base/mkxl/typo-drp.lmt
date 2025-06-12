@@ -40,6 +40,8 @@ local getwhd            = nuts.getwhd
 local getprop           = nuts.getprop
 local setprop           = nuts.setprop
 
+local setfield          = nuts.setfield
+
 local setlink           = nuts.setlink
 local setprev           = nuts.setprev
 local setnext           = nuts.setnext
@@ -143,6 +145,8 @@ interfaces.implement {
 
 local function updateshapestate(head,pdata,hangafter,hangindent)
     local parshape = pdata.parshape
+setfield(head,"shapingpenalty",10000)
+setfield(head,"shapingpenaltiesmode",255)
     if parshape then
         local size = #parshape
         if size > 0 then
@@ -379,8 +383,6 @@ actions[v_default] = function(head,settings)
                         local hangafter  = -(lines - done)
                         local hangindent = state.hangindent
                         updateshapestate(head,pdata,hangafter,hangindent)
--- texset("hangafter",hangafter,true)
--- texset("hangindent",hangindent,true)
                         if state.parindent then
                             insertafter(first,first,new_kern(-state.parindent))
                         end

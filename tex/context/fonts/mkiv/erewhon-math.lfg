@@ -30,6 +30,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "Erewhon-Math",
+                    abort    = true,
+                },
+                {
                     tweak  = "fixprimes",
                     factor = 0.94  ,
                     fake   = 0.85, -- replace multiples with this width proportion

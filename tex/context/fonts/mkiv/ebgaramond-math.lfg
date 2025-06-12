@@ -32,6 +32,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "Garamond-Math",
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 2019-08-16",
                 },

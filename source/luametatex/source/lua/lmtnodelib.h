@@ -5,20 +5,25 @@
 # ifndef LNODELIB_H
 # define LNODELIB_H
 
-extern void     lmt_push_node             (lua_State *L);
-extern void     lmt_push_node_fast        (lua_State *L, halfword n);
-extern void     lmt_push_directornode     (lua_State *L, halfword n, int isdirect);
-extern void     lmt_node_list_to_lua      (lua_State *L, halfword n);
-extern halfword lmt_node_list_from_lua    (lua_State *L, int n);
-extern int      lmt_get_math_style        (lua_State *L, int n, int dflt);
-extern int      lmt_get_math_parameter    (lua_State *L, int n, int dflt);
-extern halfword lmt_optional_isnode       (lua_State *L, int i);
-extern halfword lmt_check_isnode          (lua_State *L, int i);
-extern halfword lmt_check_isdirect        (lua_State *L, int i);
-extern halfword lmt_check_isdirectornode  (lua_State *L, int i, int *isdirect);
-extern void     lmt_initialize_properties (int set_size);
+extern void     lmt_push_node              (lua_State *L);
+extern void     lmt_push_node_fast         (lua_State *L, halfword n);
+extern void     lmt_push_directornode      (lua_State *L, halfword n, int isdirect);
+extern int      lmt_get_math_style         (lua_State *L, int n, int dflt);
+extern int      lmt_get_math_parameter     (lua_State *L, int n, int dflt);
+extern halfword lmt_optional_isnode        (lua_State *L, int i);
+extern halfword lmt_check_isnode           (lua_State *L, int i);
+extern halfword lmt_check_isdirect         (lua_State *L, int i);
+extern halfword lmt_check_isdirectornode   (lua_State *L, int i, int *isdirect);
+extern void     lmt_initialize_properties  (int set_size);
 
-extern halfword lmt_hpack_filter_callback(
+extern void     lmt_node_list_to_lua       (lua_State *L, halfword n); /* only used in lmttexlib */
+extern halfword lmt_node_list_from_lua     (lua_State *L, int n);      /* only used in lmttexlib */
+
+extern void     lmt_push_head_to_callback  (lua_State *L, halfword n);
+extern void     lmt_push_node_to_callback  (lua_State *L, halfword n);
+extern halfword lmt_pop_node_from_callback (lua_State *L, int index);
+
+extern halfword lmt_hpack_callback(
     halfword head,
     scaled   size,
     int      packtype,
@@ -27,7 +32,7 @@ extern halfword lmt_hpack_filter_callback(
     halfword a
 );
 
-extern halfword lmt_vpack_filter_callback(
+extern halfword lmt_vpack_callback(
     halfword head,
     scaled   size,
     int      packtype,
@@ -37,13 +42,13 @@ extern halfword lmt_vpack_filter_callback(
     halfword a
 );
 
-extern halfword lmt_packed_vbox_filter_callback(
+extern halfword lmt_packed_vbox_callback(
     halfword box,
     int      extrainfo
 );
 
-extern void lmt_node_filter_callback(
-    int       filterid,
+extern void lmt_around_linebreak_callback(
+    int       callback,
     int       extrainfo,
     halfword  head,
     halfword *tail
@@ -103,14 +108,26 @@ extern void lmt_paragraph_context_callback(
 );
 
 
-extern void lmt_page_filter_callback(
+extern void lmt_buildpage_callback(
     int      context,
     halfword boundary
 );
 
-extern void lmt_append_line_filter_callback(
+extern void lmt_append_pre_line_callback(
+    void /* dummy function */
+);
+
+extern void lmt_append_line_callback(
+    void
+);
+
+extern void lmt_append_adjust_callback(
     halfword context,
     halfword index
+);
+
+extern void lmt_append_migrate_callback(
+    halfword context
 );
 
 extern int lmt_par_pass_callback(

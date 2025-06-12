@@ -6,8 +6,8 @@
 # define LMT_TEXTCODES_H
 
 /*tex
-    For practical reasons we handle the hmcodes here although they are used in 
-    math only. We could have used the hc codes as there will be no overlap. 
+    For practical reasons we handle the hmcodes here although they are used in math only. We could
+    have used the hc codes as there will be no overlap. 
 */
 
 extern void     tex_set_cat_code               (int h, int n, halfword v, int gl);

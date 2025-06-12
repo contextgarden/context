@@ -114,7 +114,7 @@
     right commmand code etc.\ bur for now we just use the ranges as traditional \TEX\ does.
 
     Most of the symbolic names and hard codes numbers are not enumerations. There is still room for
-    improvement and occasionally I enter a new round of doing that. However, it talkes a lot of time
+    improvement and occasionally I enter a new round of doing that. However, it takes a lot of time
     and checking (more than writing from scratch) as we need to make sure it all behaves like \TEX\
     does. Quite some code went through several stages of reaching this abstraction, just to make sure
     that it kept working. These intermediate versions ended up in the \CONTEXT\ distribution to that
@@ -132,7 +132,7 @@
 
 /*
     For practical reasons we have the regions a bit different. For instance, we also have attributes, local
-    boxes, no math characters here, etc. Maybe specification codes sould get their own region.
+    boxes, no math characters here, etc. Maybe specification codes could get their own region.
 
     HASH FROZEN
     [I|R]FONTS
@@ -590,7 +590,7 @@ typedef enum int_codes {
     output_penalty_code,                /*tex penalty found at current page break */
     max_dead_cycles_code,               /*tex bound on consecutive dead cycles of output */
     hang_after_code,                    /*tex hanging indentation changes after this many lines */
-    floating_penalty_code,              /*tex penalty for insertions heldover after a split */
+    floating_penalty_code,              /*tex penalty for insertions held over after a split */
     global_defs_code,                   /*tex override |\global| specifications */
     family_code,                        /*tex current family */
     escape_char_code,                   /*tex escape character for token output */
@@ -642,6 +642,7 @@ typedef enum int_codes {
     math_display_skip_mode_code,
     math_scripts_mode_code,
     math_limits_mode_code,
+    math_options_code,
  // math_nolimits_mode_code,
     math_rules_mode_code,
     math_rules_fam_code,
@@ -1537,6 +1538,7 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define math_inline_penalty_factor_par   integer_parameter(math_inline_penalty_factor_code)
 # define math_left_class_par              integer_parameter(math_left_class_code)
 # define math_limits_mode_par             integer_parameter(math_limits_mode_code)
+# define math_options_par                 integer_parameter(math_options_code)
 /*       math_nolimits_mode_par           integer_parameter(math_nolimits_mode_code) */
 # define math_penalties_mode_par          integer_parameter(math_penalties_mode_code)
 # define math_pre_display_gap_factor_par  integer_parameter(math_pre_display_gap_factor_code)

@@ -289,7 +289,7 @@
 %     \stopchapter
 % \stoptext
 
-% definec at the lua end:
+% defined at the lua end:
 
 %permanent\def\structurenumber               {\clf_structurenumber}
 %permanent\def\structuretitle                {\clf_structuretitle}

@@ -2,7 +2,7 @@ set(luasocket_sources
 
     source/luacore/luasocket/src/auxiliar.c
     source/luacore/luasocket/src/buffer.c
-    source/luacore/luasocket/src/compat.c
+  # source/luacore/luasocket/src/compat.c
     source/luacore/luasocket/src/except.c
     source/luacore/luasocket/src/inet.c
     source/luacore/luasocket/src/io.c
@@ -13,7 +13,7 @@ set(luasocket_sources
     source/luacore/luasocket/src/socket.c
     source/luacore/luasocket/src/tcp.c
     source/luacore/luasocket/src/timeout.c
-    source/luacore/luasocket/src/udp.c
+  # source/luacore/luasocket/src/udp.c
 
   # source/luacore/luasocket/src/serial.c
   # source/luacore/luasocket/src/usocket.c

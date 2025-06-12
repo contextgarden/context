@@ -3352,7 +3352,7 @@ local openfile, closefile  do
                     if name then
                         local data = io.loaddata(name)
                         if data then
-                f = io.open(abort,"wb")
+                            f = io.open(abort,"wb")
                             f:write(data)
                             f:close()
                             return

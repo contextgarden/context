@@ -159,16 +159,30 @@ void lmt_initialize_interface(void)
     set_page_context_value(alignment_page_context,       alignment);
     set_page_context_value(triggered_page_context,       triggered);
 
-    lmt_interface.append_line_context_values = lmt_aux_allocate_value_info(post_migrate_append_line_context);
+ // lmt_interface.append_line_context_values = lmt_aux_allocate_value_info(box_append_line_context);
+ //
+ // # define set_append_line_context_value(n,k) lmt_interface.append_line_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+ //
+ // set_append_line_context_value(pre_box_append_line_context, prebox);
+ // set_append_line_context_value(box_append_line_context,     box);
 
-    # define set_append_line_context_value(n,k) lmt_interface.append_line_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+    lmt_interface.append_adjust_context_values = lmt_aux_allocate_value_info(post_append_adjust_context);
 
-    set_append_line_context_value(box_append_line_context,          box);
-    set_append_line_context_value(pre_box_append_line_context,      prebox);
-    set_append_line_context_value(pre_adjust_append_line_context,   preadjust);
-    set_append_line_context_value(post_adjust_append_line_context,  postadjust);
-    set_append_line_context_value(pre_migrate_append_line_context,  premigrate);
-    set_append_line_context_value(post_migrate_append_line_context, postmigrate);
+    # define set_append_adjust_context_value(n,k) lmt_interface.append_adjust_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+
+    set_append_adjust_context_value(pre_append_adjust_context,  preadjust);
+    set_append_adjust_context_value(post_append_adjust_context, postadjust);
+
+    lmt_interface.append_migrate_context_values = lmt_aux_allocate_value_info(post_append_migrate_context);
+
+    # define set_append_migrate_context_value(n,k) lmt_interface.append_migrate_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
+
+    set_append_migrate_context_value(pre_append_migrate_context,  premigrate);
+    set_append_migrate_context_value(post_append_migrate_context, postmigrate);
+
+
+
+
 
     lmt_interface.alignment_context_values = lmt_aux_allocate_value_info(wrapup_pass_alignment_context);
 

@@ -8,6 +8,8 @@
     we adapt to versions. We can always decide to drop older ones when we get too many. The next
     variant is a mix of our attempts to deal with this issue.
 
+    Remark: we have qr code generation available in a dedicated module in the core (Project Nayuki). 
+
 */
 
 # include "luametatex.h"

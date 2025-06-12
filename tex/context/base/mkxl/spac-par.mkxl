@@ -66,6 +66,7 @@
   + \demeritsfrozenparcode
   + \orphanpenaltyfrozenparcode
   + \toddlerpenaltyfrozenparcode
+  + \shapingpenaltyfrozenparcode
   + \singlelinepenaltyfrozenparcode
   + \hyphenpenaltyfrozenparcode
   + \exhyphenpenaltyfrozenparcode
@@ -96,6 +97,7 @@
     \hangfrozenparcode
   + \skipfrozenparcode
   + \parfillfrozenparcode
+  + \shapingpenaltyfrozenparcode
   + \shapefrozenparcode
 \relax
 

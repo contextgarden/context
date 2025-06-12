@@ -86,7 +86,7 @@ function pages.save(prefixdata,numberdata,extradata)
             prefixdata   = prefixdata and helpers.simplify(prefixdata),
             numberdata   = numberdata and helpers.simplify(numberdata),
             marked       = pages.markedlist(realpage), -- not yet defined
-            label        = label and label ~= "" and label,
+            label        = label and label ~= "" and label or nil,
         }
         tobesaved[realpage] = data
         if not collected[realpage] then

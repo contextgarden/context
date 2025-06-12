@@ -223,7 +223,7 @@
 
 % \def\page_otr_fill_page_unchecked
 %   {\ifdim\pagetotal>\pagegoal \else
-%      \normalvfil
+%      \vfil
 %    \fi}
 
 \def\page_otr_fill_page_unchecked
@@ -234,12 +234,12 @@
      % we actualy want to be flexible
    \else
      % we have to make sure that we don't stretch
-     \normalvfil
+     \vfil
    \fi}
 
 \def\page_otr_fill_page_checked
   {\ifdim{\pagelastheight+\c_page_scale_lines\lineheight+\pageexcess}>\pagegoal\else
-     \normalvfil
+     \vfil
    \fi}
 
 \def\page_otr_eject_page

@@ -71,6 +71,7 @@ local formatters = string.formatters
 local isboolean = string.is_boolean
 local hextointeger, octtointeger = string.hextointeger,string.octtointeger
 
+local report_userdata   = logs.reporter("backend","userdata")
 local report_objects    = logs.reporter("backend","objects")
 local report_finalizing = logs.reporter("backend","finalizing")
 local report_blocked    = logs.reporter("backend","blocked")
@@ -108,7 +109,7 @@ local f_hex_2 = formatters["%02X"]
 
 local h_hex_4 = table.setmetatableindex(function(t,k) -- we already have this somewhere
     if k < 0 then
-     --report("fatal h_hex_4 error: %i",k)
+      --report("fatal h_hex_4 error: %i",k)
         return "0000"
     elseif k < 256 then -- maybe 512
         -- not sparse in this range
@@ -1038,9 +1039,6 @@ function lpdf.finalizedocument()
     end
 end
 
-callbacks.register("finish_pdfpage", lpdf.finalizepage)
-callbacks.register("finish_pdffile", lpdf.finalizedocument)
-
 do
 
     -- some minimal tracing, handy for checking the order
@@ -1103,26 +1101,43 @@ do
     end
 
     local userdata = nil
+    local comments = nil
 
-    function lpdf.setuserdata(key,value)
+    function codeinjections.setuserdata(key,value)
         if not userdata then
             userdata = pdfdictionary()
         end
-        userdata[key] = pdfunicode(tostring(value))
+        if userdata[key] then
+            report_userdata("entry %a is already set",key)
+        else
+            userdata[key] = pdfunicode(tostring(value))
+        end
+    end
+
+    function codeinjections.setjobcomment(value)
+        if not comments then
+            comments = pdfarray()
+        end
+        comments[#comments+1] = pdfunicode(tostring(value))
     end
 
     function lpdf.getcatalog()
         if checkcatalog() then
             catalog.Type = pdfconstant("Catalog")
-            -- A bit fuzzy and useless. Has to be a direct one (makes one wonder about what drives
-            -- these demands, like limitations in certain aplications).
-            catalog.Extensions = pdfdictionary {
-                Type = pdfconstant("Extensions"),
-                LMTX = pdfdictionary {
-                    BaseVersion    = pdfconstant("2.0"),
-                    ExtensionLevel = 1,
+            if lpdf.getformatoption("extensions") then
+                -- A bit fuzzy and useless. Has to be a direct one (makes one wonder about what drives
+                -- these demands, like limitations in certain applications).
+                catalog.Extensions = pdfdictionary {
+                    Type = pdfconstant("Extensions"),
+                    LMTX = pdfdictionary {
+                        BaseVersion    = pdfconstant("2.0"),
+                        ExtensionLevel = 1,
+                    }
                 }
-            }
+            else
+                -- We just assume that adding extension info is okay. After all we registered the
+                -- namespace and the ptex ones are also accepted.
+            end
             local statistics = pdfdictionary {
                 FontRegistries = lpdf.noffontregistries(),
             }
@@ -1131,6 +1146,16 @@ do
                 -- and can use the fast path
                 statistics.Type = pdfconstant("Statistics")
                 catalog.LMTX_Statistics = pdfreference(pdfimmediateobject(tostring(statistics)))
+            end
+            --
+            if userdata and next(userdata) then
+                userdata.Type = pdfconstant("Userdata")
+                catalog.LMTX_Userdata = pdfreference(pdfimmediateobject(tostring(userdata)))
+            end
+            --
+            if comments and next(comments) then
+                comments.Type = pdfconstant("Comments")
+                catalog.LMTX_Comments = pdfreference(pdfimmediateobject(tostring(comments)))
             end
             --
             local labels = structures.pages.getlabels()
@@ -1503,7 +1528,7 @@ if implement then
         arguments = "2 arguments",
         protected = true,
         public    = true,
-        actions   = lpdf.setuserdata
+        actions   = codeinjections.setuserdata
     }
 
 end

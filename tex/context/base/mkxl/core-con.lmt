@@ -2311,3 +2311,56 @@ implement {
     public  = true,
     actions = { os.uuid, context },
 }
+
+-- Kind of new:
+
+
+do
+
+    local osruntime      = os.runtime
+    local osgettimeofday = os.gettimeofday
+    local osstartuptime  = os.startuptime
+
+    local round          = math.round
+
+    -- We keep this as an example of \LMTX\ coding (see \MKXL\ file):
+    --
+    -- interfaces.implement {
+    --     name      = "time",
+    --     arguments = "2 integers",
+    --     actions   = function(n,m)
+    --         if n == 1 then
+    --           n = osstartuptime()
+    --         elseif n == 2 then
+    --           n = osruntime()
+    --         else
+    --           n = osgettimeofday()
+    --         end
+    --         context(osdate(m > 0 and "!%H:%M:%S" or "!%H:%M",round(n)))
+    --     end,
+    -- }
+
+    local v_start   = variables.start
+    local v_here    = variables.here
+    local v_current = variables.current
+
+    implement {
+        name      = "timestring",
+        arguments = "4 strings",
+        actions   = function(method,h,m,s)
+            local all = true
+            if method == v_start then
+              n = osstartuptime()
+            elseif method == v_here then
+              n = osruntime()
+            elseif method == v_current then
+              n = osgettimeofday()
+            else
+              all = false
+              n = (tonumber(h) or 0) * 3600 + (tonumber(m) or 0) * 60 + (tonumber(s) or 0)
+            end
+            context(osdate(all and "!%H:%M:%S" or "!%H:%M",round(n)))
+        end,
+    }
+
+end

@@ -3764,7 +3764,26 @@
   \else
     \currentlysetmathstyle
   \fi
-}
+  % % fails in alignment
+  % \ifcase\c_math_styles_state_style\or
+  %   \noexpand\localcontrol{\indisplaymath\conditionaltrue }\or
+  %   \noexpand\localcontrol{\indisplaymath\conditionaltrue }\else
+  %   \noexpand\localcontrol{\indisplaymath\conditionalfalse}%
+  % \fi}
+  % % okay in alignment (styles-001.tex)
+  % \noexpand\beginlocalcontrol
+  % \ifcase\c_math_styles_state_style\or
+  %   \indisplaymath\conditionaltrue \or
+  %   \indisplaymath\conditionaltrue \else
+  %   \indisplaymath\conditionalfalse
+  % \fi
+  % \noexpand\endlocalcontrol}
+  % % more efficient
+  \ifcase\c_math_styles_state_style\or
+    \noexpand\beginlocalcontrol\indisplaymath\conditionaltrue \noexpand\endlocalcontrol\or
+    \noexpand\beginlocalcontrol\indisplaymath\conditionaltrue \noexpand\endlocalcontrol\else
+    \noexpand\beginlocalcontrol\indisplaymath\conditionalfalse\noexpand\endlocalcontrol
+  \fi}
 
 \permanent\def\installmathstyle#1#2%
   {\ifcsname\??mathstylecommand#1\endcsname \else
@@ -3774,10 +3793,15 @@
 \def\math_style_collect#1%
   {\csname\??mathstylecommand#1\endcsname}
 
-\defcsname\??mathstylecommand\s!display     \endcsname{\indisplaymath\conditionaltrue \c_math_styles_state_style\plusone}
-\defcsname\??mathstylecommand\s!text        \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plustwo}
-\defcsname\??mathstylecommand\s!script      \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusthree}
-\defcsname\??mathstylecommand\s!scriptscript\endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusfour}
+% \defcsname\??mathstylecommand\s!display     \endcsname{\indisplaymath\conditionaltrue \c_math_styles_state_style\plusone}
+% \defcsname\??mathstylecommand\s!text        \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plustwo}
+% \defcsname\??mathstylecommand\s!script      \endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusthree}
+% \defcsname\??mathstylecommand\s!scriptscript\endcsname{\indisplaymath\conditionalfalse\c_math_styles_state_style\plusfour}
+
+\defcsname\??mathstylecommand\s!display     \endcsname{\c_math_styles_state_style\plusone}
+\defcsname\??mathstylecommand\s!text        \endcsname{\c_math_styles_state_style\plustwo}
+\defcsname\??mathstylecommand\s!script      \endcsname{\c_math_styles_state_style\plusthree}
+\defcsname\??mathstylecommand\s!scriptscript\endcsname{\c_math_styles_state_style\plusfour}
 
 \defcsname\??mathstylecommand\s!uncramped   \endcsname{\c_math_styles_state_cramped\plusone}
 \defcsname\??mathstylecommand\s!cramped     \endcsname{\c_math_styles_state_cramped\plustwo}
@@ -5188,6 +5212,42 @@
 \appendtoks
     \aliased\let\of\math_application_of
 \to \everymathematics
+
+%D For manuals and testing:
+%D
+%D \starttyping
+%D \m { \showmathstate      {CMPSrfnd} }
+%D \m { \showmathstate[-1ex]{CMPSrfnd} }
+%D \stoptyping
+
+\def\math_show_math_state    {\ifconditional\indisplaymath D\else T\fi\space}
+\def\math_show_math_style  #1{\the#1\space}
+\def\math_show_math_variant#1{\tohexa\pluseight#1\ifconditional\indisplaymath\displaystyle\else\textstyle\fi\space}
+
+\permanent\tolerant\protected\def\showmathstate[#1]#:#2%
+  {\mathghost \bgroup
+     \setbox\scratchbox\hpack to \zeropoint \bgroup
+       \hss
+       \smallinfofont
+       \ifhastok C{#2}C:\math_show_math_state\fi
+       \ifhastok M{#2}M:\math_show_math_style  \mathmainstyle  \fi
+       \ifhastok P{#2}P:\math_show_math_style  \mathparentstyle\fi
+       \ifhastok S{#2}S:\math_show_math_style  \mathstyle      \fi
+       \ifhastok r{#2}r:\math_show_math_variant\Umathradicalvariant    \fi
+       \ifhastok f{#2}f:\math_show_math_variant\Umathfractionvariant   \fi
+       \ifhastok n{#2}n:\math_show_math_variant\Umathnumeratorvariant  \fi
+       \ifhastok d{#2}d:\math_show_math_variant\Umathdenominatorvariant\fi
+       \removeunwantedspaces
+       \hss
+     \egroup
+     \ht\scratchbox\zeropoint
+     \dp\scratchbox\zeropoint
+     \ifchkdimension#1\or\lower\lastchkdimension\fi
+     \box\scratchbox
+   \egroup}
+
+\permanent\protected\def\showmathstyles
+  {(\the\mathmainstyle|\the\mathparentstyle|\the\mathstyle)}
 
 \protect \endinput
 

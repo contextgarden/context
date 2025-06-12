@@ -310,6 +310,8 @@ table.setmetatableindex(tokens.cache, function(t,k)
     return v
 end)
 
+tokens.isactivestring = token.isactivestring
+
 -- This will go, although ... we use some old names in styles. Check what we
 -- actually use.
 

@@ -1821,7 +1821,8 @@ executers.last     = pdfdictionary { S = pdf_named, N = pdfconstant("LastPage") 
 -- executers.backward    = pdfdictionary { S = pdf_named, N = pdfconstant("GoBack") }
 -- executers.forward     = pdfdictionary { S = pdf_named, N = pdfconstant("GoForward") }
 
--- Only acrobat, but not installed so no testing:
+-- Only acrobat, but not installed so no testing. We only keep a few for now, but we can
+-- keep more via directives.
 
 -- executers.importform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ImportFDF") }
 -- executers.exportform  = pdfdictionary { S = pdf_named, N = pdfconstant("AcroForm:ExportFDF") }

@@ -1,0 +1,777 @@
+% language=us runpath=texruns:manuals/tagging signal=squid
+% language=us runpath=texruns:manuals/tagging signal=segment
+% language=us runpath=texruns:manuals/tagging signal=quadrant
+
+\usemodule
+  [abbreviations-logos,scite,squid]
+
+\setupbodyfont
+  [pagella,12pt]
+
+\setuplayout
+  [header=0pt,
+   width=middle]
+
+\setupheadertexts
+  []
+
+\setupfootertexts
+  [pagenumber]
+
+\setupwhitespace
+  [big]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setupdocument
+  [before=\directsetup{document:titlepage}]
+
+\startuseMPgraphic{titlepage}
+
+    string colors[] ;
+
+    colors[6] := "yellow" ;
+    colors[5] := "green" ;
+    colors[4] := "gray" ;
+    colors[3] := "orange" ;
+  % colors[3] := "magenta" ;
+    colors[2] := "blue" ;
+    colors[1] := "red" ;
+
+    fill Page withcolor .2white ;
+
+    for i=1 upto 6 :
+        for j=1 upto 4 :
+            fill unitcircle
+                xyscaled (PaperWidth/4 - 5mm,PaperHeight/6 - 5mm)
+                shifted  ((j-1)*PaperWidth/4,(i-1)*PaperHeight/6)
+                shifted  (5mm/2,5mm/2)
+                withcolor colors[i];
+        endfor ;
+    endfor ;
+
+    draw textext.rt("\ttd \strut \documentvariable{title}")
+        xsized (PaperWidth+4cm)
+        shifted llcorner currentpicture
+        shifted (-20mm,PaperHeight/4.3)
+        withcolor white ;
+
+    setbounds currentpicture to Page ;
+
+\stopuseMPgraphic
+
+\startsetups document:titlepage
+    \startTEXpage
+        \useMPgraphic{titlepage}
+    \stopTEXpage
+\stopsetups
+
+\startdocument[title={SIGNALS}]
+
+\startsection[title=The rationale]
+
+On the average a \TEX\ run is pretty fast. On a 2018 laptop processing the 650
+page \LUAMETATEX\ manual takes some 15 seconds per run and a \LUAMETAFUN\ manual
+demands a similar amount of time once the ridiculous large contour graphics are
+cached and that manual is not representative anyway. Mikael can process a 300 plus
+page math book in under 10 seconds on his equally old chromebook, and his shiny
+new 2025 one needs some 7 seconds. When my colleague processes colorful
+educational math books from (many small) \XML\ files and fancy makeup with images
+all over the place, it makes little sense to get a coffee while waiting for the
+run to finish because even complex runs seldom need more than a minute; it
+depends on the number of runs needed.
+
+Processing the more than 2000 files in the test suite takes 750 seconds with the
+parallel runner option enabled. A hardware upgrade (or using a desktop machine)
+might speed that up but even then I'm not going to stare at the screen for
+minutes. Seeing a summary is good enough. So there one has to wait in order to
+identify potential issues. Normally that run happens in the background which
+brings the danger of forgetting to check the final error report. Ideally that
+suite should runs without issues before we update.
+
+Often, running a large job in the background can make sense so how then to keep
+track of potential issues and progress? While preparing a talk for Bacho\TEX\
+2025 we played with color lamps as part of a presentation where colors and
+turning lights on and off was determined by file on display: flagged \PDF. That
+made us wonder if we can also use such visual clues for the run state and
+therefore \CONTEXT\ signals saw the light!
+
+At Bacho\TEX\ it was decided to follow up on this at the \CONTEXT\ meeting, this
+time with a more practical approach than a \ZIGBEE\ setup: a dedicated device
+connected to the \USB\ port. Actually, in the end that one also was made to proxy
+to a \ZIGBEE\ hub so we got the best of two worlds.
+
+In the following sections we describe the various possibilities: the original
+approach of using \ZIGBEE\ devices, and the more practical follow up using a
+small device, nicknamed \SQUID.
+
+% Some squids communicate in colors and when I pondered IOT becoming COT it struck
+% me that Children Of Time (by Adrian T) also has these initials and squids play a
+% role in that one. So, who knows, we might come up with a spider too.
+
+\stopsection
+
+\startsection[title=The states]
+
+The idea is that we keep track of the state that \CONTEXT\ is in when processing
+a document. We distinguish (at least) these scenarios:
+
+\startitemize
+\startitem
+    Most users only encounter a normal \CONTEXT\ run. A newly created or heavily
+    redacted document often takes a few runs to get all cross references, lists
+    and various multi-pass data right. Small changes then need one or two runs.
+    If we need more than nine runs we have a problem, and when the run fails we
+    have an error.
+\stopitem
+\startitem
+    We ship a test suite that has thousands of files that also demonstrates some
+    features. Processing that suite takes some time and for that reason the \type
+    {mtx-testsuite} runner can run 8 jobs in parallel. At the end we get a report
+    file mentioning the problematic files.
+\stopitem
+\startitem
+    Creating a distribution involves collecting files, running some scripts that
+    generate manuals, zipping up files, creating installers, etc. In that
+    perspective it is nice to get some feedback if a step fails.
+\stopitem
+\startitem
+    When processing multiple files the \type {--parallel} option can be of help.
+    This is basically a collection of regular runs but some indication of
+    progress and results is nice.
+\stopitem
+
+\stopitemize
+
+When it comes to problems, these can get unnoticed, for instance unknown
+references, missing files, absent images, overfull boxes. Future versions of
+signals will deal with that too. An error is more dramatic because when a \PDF\
+file is written and an error occurs, we en dup with an invalid file. For that
+reason \CONTEXT\ produces an error document. But still, some additional feedback
+doesn't hurt.
+
+The \ZIGBEE\ approach, the one we started with, introduces a color feedback
+palette but the same colors are used in the \SQUID\ as well. Tracking the
+scenarios mentioned here are implemented using the same palette:
+
+\starttabulate[|l|l|l|p|]
+\NC \SignalBusy     \NC busy     \NC blue   \NC the file is being processed \NC \NR
+\NC \SignalDone     \NC done     \NC yellow \NC processing (of an intermediate run) has finished \NC \NR
+\NC \SignalFinished \NC finished \NC green  \NC everything is fine after the last run \NC \NR
+\NC \SignalProblem  \NC problem  \NC orange \NC something is wrong (like maxnofruns) \NC \NC \NR
+\NC \SignalError    \NC error    \NC red    \NC we ended with an error \NC \NR
+\stoptabulate
+
+The \type {reset} state turns off all the lamps. When we need more than four runs
+the last lamp is reused. When we do a normal \CONTEXT\ run we start out with lamp
+one being \SignalBusy. When finished without issues that lamps turns \SignalDone\
+and the next one goes \SignalBusy\ and so on. When we have an error the current
+lamp goes red and normally \CONTEXT\ has quit. When we need more than the maximum
+number of configured runs nine by default, the last lamp is \SignalProblem. When
+all are fine within this constraint we have \SignalFinished\ lamps. \footnote {In
+the experimental setup \SignalFinished\ and \SignalDone\ were swapped.} There are
+ways to configure a different color palette for those who are color blind but
+that is still evolving.
+
+\stopsection
+
+\startsection[title=A \ZIGBEE\ setup]
+
+It all started with a \ZIGBEE\ based setup, a low power mesh network with devices
+like lamps, switches, sensors and whatever. For signaling the state of a run I
+used four \HUE\ color lamps that came into my possession but for which I never
+had a purpose. However, any amount of lamps will do. Actually, I ended up with a
+single portable lamp so that I can keep track of the state of a run away from the
+machine it runs on.
+
+\startnarrower \small
+For the record, already for ages I use the warm white \HUE\ bulbs combined with
+motion detectors and switches in the office rooms and living spaces. For that we
+employ two hubs for communication but for performance reasons we always ran our
+own controller script, written in \LUA\ using \LUATEX\ as \LUA\ engine as it has
+socket support and can communicate \HTTP. That way we got around the limitations
+of that time: the hubs have a low performance and couldn't handle multiple
+sensors per room. In fact we could handle more devices than officially supported.
+\footnote {In a similar fashion we abuse \LUATEX\ plus script to control a 12
+zone \EVOHOME\ heating setup, again to get around limitations. So, here the long
+term stability of \LUATEX\ combined with a relative rich set of libraries that
+come with \CONTEXT\ pays off.}
+\stopnarrower
+
+Announced changes in the \HUE\ \API\ and accessibility of those hubs plus the
+fact that one has to be online when initializing a hub made me look at some
+fallback solution, just in case. Already for a while, I had a few \PHOSCOM\
+\CONBEE\ sticks in stock and I decided hat this was a good moment to play with
+them. Such a \USB\ stick plugs into the laptop that I use and thereby is
+independent on the \HUE\ hub which actually improves performance: a state switch
+takes some 25 milliseconds. Of course there is still some management software
+idling in the background which is sub-optimal. So, to summarize this last setup,
+we have a \USB\ communication hub, plugged into a computer that runs the related
+management software, which comes with a web interface for registering devices. We
+connect (in our case) four lights and in order to be able to turn lights off
+independently I registered two buttons.
+
+\startnarrower \small
+Although the \PHILIPS\ \HUE\ lamps don't come cheap, they are of good quality.
+After testing with the E27 lamps we decided to get a few (well built) Go Portable
+Lights and these also work well as state lights. The build quality is better than
+similar portable \ZIGBEE\ devices.
+\stopnarrower
+
+In the end a regular \HUE\ setup was more practical. For testing I used an old
+FritzBox \WIFI\ router to which I connected a \HUE\ hub. A disadvantage is that
+one needs to be on that network so eventually it's best to be on the usual \WIFI\
+router and use a \HUE\ hub on that instead. Later we will see how the \SQUID\ can
+avoid this dilemma.
+
+\startnarrower \small
+We tried to use cheap Ikea switches but they tend to disappear or drain batteries
+when a \CONBEE\ stick is not active. It should be possible to use their devices
+but the \HUE\ hardware bulbs and switches are of good quality so why bother. In
+the experimental setup the larger bulbs were hidden in opal white glass balls and
+were sitting next to the 65 inch monitor that I used (@ 3 meter distance); one
+quickly gets accustomed to this!
+\stopnarrower
+
+After using the the test setup at \BACHOTEX\ with a dedicated wireless network
+and \ZIGBEE\ hub(s) we decided to follow up with a dedicated device connected to
+the \USB\ port. This was in the end more reasonable than using \WIFI\ because
+client can be isolated from each other and thereby a \WIFI\ controlled approach
+is fragile. The device actually can be set up to respond to \WIFI\ signals but
+that is mostly an experiment. Less experimental is the ability to act as proxy to
+a \HUE\ hub in parallel to running in circles (\SQUID), which we will discuss in
+the next section. The main hurdles in a serial connection are figuring out what
+port to configure and making sure (on \LINUX) that the user can access the port.
+
+\stopsection
+
+\startsection[title=The \SQUID]
+
+We have now arrived at the alternative: a \USB\ connected device. We have a set
+of addressable leds, for instance a circle with 24 so called WS2812B leds or a
+rectangle with 10 times 16 leds (or more likely: 8 times 12). These are what we
+call device 1 and device 2 \SQUID. The reference is device 1, the one that was
+introduced at the \CONTEXT\ 2025 meeting. The device is driven by a
+\RASPBERRYPICO\ for which the distribution has software so you can assemble your
+own (the first tests used a large silicon led strip).
+
+Assuming a device 1, we have one (squid), four (quadrant) or eight (segment)
+visualizers where each represents a run. By default context limits the number of
+runs to nine so the last quadrant or segment is reused. In practice one never has
+that many runs, as it indicates some form of oscillation.
+
+\startlinecorrection
+    \getbuffer[squid-001]
+\stoplinecorrection
+
+We use \SignalBusy\ when we run and \SignalDone\ when a run ends. When we're done
+running we have \SignalFinished\ when all went right, \SignalError\ when there
+was an error and \SignalProblem\ when we ran out of runs.
+
+\startlinecorrection
+    \getbuffer[squid-002]
+\stoplinecorrection
+
+An error normally happens in the first run unless multi-pass data is involved but
+even then successive runs might often fail in the first run (segment).
+
+\startlinecorrection
+    \getbuffer[squid-003]
+\stoplinecorrection
+
+A problem normally shows after all segments are in use. However, in the future we
+might use the problem signal for more purposes.
+
+Segments are also used when we trace parallel runs. In that case each segment
+is bound to a process handler and within that the \SignalBusy\ signal cycles over the
+segment. When there are many runs all segments show \SignalDone\ with
+active handlers showing a \SignalBusy. When there is an error, the \SignalDone\
+becomes \SignalError\ and when all processes are finished we either have
+\SignalFinished\ or \SignalError.
+
+\startlinecorrection
+    \getbuffer[squid-004]
+\stoplinecorrection
+
+The segments shows above are combined into one as shown below. We use this
+feature when we process the test suite which has thousands of files but any
+\type {--parallel} driven run use this feature.
+
+\startlinecorrection
+    \getbuffer[squid-005]
+\stoplinecorrection
+
+We can also run in so called squid mode. Here we have one segment spanning the
+whole circle where the \SignalBusy\ is bound to the current page. We use this
+when we have documents with hundreds or even thousands of pages. In that case the
+signal will run around the circle. You might see a pause or slowdown depending on
+what happens on a page.
+
+\startlinecorrection
+    \getbuffer[squid-006]
+\stoplinecorrection
+
+Quadrants are larger segments and often nicer when the number of runs is limited.
+Again we use \SignalBusy\ and \SignalDone\ to show progress while the final
+result is reported with \SignalFinished\ when we succeed, \SignalProblem\ when we
+need more runs or \SignalError\ when something went wrong.
+
+\startlinecorrection
+    \getbuffer[squid-007]
+\stoplinecorrection
+
+Quadrants differ from segments in that they show more details about the current
+run: within a segment we trace pages as we do with squids. Of course the
+granularity is limited because a squid has 24 leds and a quadrant only 6. Anyway,
+detail comes at the price of a little more runtime.
+
+For the curious: a device 2 uses a rectangular setup and therefore can also show
+(single) characters in Knuths 36 font. This is more of a a playground.
+
+\stopsection
+
+\startsection[title=The software]
+
+So how is this controlled? Triggering signal events is done with either the \type
+{context} script or with \type {mtxrun}:
+
+\starttyping
+context --signal=runner ...
+mtxrun --script signal ...
+\stoptyping
+
+Of course the \type {runner} signal has to be enabled and later we will show how
+that is done. You can also add a directive at the top of your document:
+
+\starttyping[option=TEX]
+% signal=runner
+\stoptyping
+
+When you use a \SQUID\ the communication with the device goes via the serial (\USB)
+interface using simple command sequences to limit the overhead. We started out with
+the quadrants and later added segments (for more granularity) and squids (single
+but with page details) and in the end the (for the user) hidden interfaces became
+rather similar. In this case you can use these directives:
+
+\starttyping[option=TEX]
+% signal=squid
+% signal=segment
+% signal=quadrant
+\stoptyping
+
+When you use a \SQUID\ the \type {runner} directive is equivalent to the \type
+{segment} one. What actually happens also depends on the configuration file. Just
+in case one wonders about lights, sound is another option as are messages to ones
+phone but we avoid being too fancy.
+
+At \BACHOTEX\ we introduced a
+compromise: \QRCODE. There is no status information then but an error will
+create a \PDF\ file with a \QRCODE:
+
+\starttyping[option=TEX]
+% signal=qr
+\stoptyping
+
+The configuration file can look a bit intimidating but if you only use the
+\SQUID\ some entries can be omitted. Here is an example of such a file (it kind
+of evolves so it might change a bit at some point):
+
+\starttyping[option=LUA]
+return {
+    servers = {
+        squid = {
+            protocol = "serial",
+            port     = "COM6",
+            baud     = 115200,
+        },
+        -- optional, not needed when device is used
+        conbee = {
+            protocol = "deconz",
+            token    = "XXXXXXXXXX",
+            url      = "http://127.0.0.1",
+        },
+        -- optional, not needed when device is used
+        hue = {
+            protocol = "hue",
+            token    = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+            url      = "https://192.168.178.25",
+            lamps    = { 2 }, -- default
+        },
+    },
+    signals = {
+        runner = {
+            enabled = true,
+            lamps   = { 1 },
+        },
+        squid = {
+            enabled = true,
+            lamps   = { 1 },
+        },
+        quadrant = {
+            enabled = true,
+            lamps   = { 1, 2 },
+        },
+        segment = {
+            enabled = true,
+            lamps   = { 1, 2, 3, 4 },
+        },
+    },
+    usage = {
+        enabled = true,
+        server = "squid",
+    },
+    version = 1.001,
+    comment = "signal setup file",
+}
+\stoptyping
+
+This file has to be someplace where it can be found by \CONTEXT\ and its scripts,
+for instance in \typ {TEXMF-LOCAL/tex/context/user/mkxl}. You can make an empty
+one with:
+
+\starttyping
+mtxrun --script signal --create
+\stoptyping
+
+Successive runs will check for the presence of that file and use it when found.
+Otherwise the current directory is used to save the new configuration, so you'd
+best move it to where it belongs.
+
+Servers are configured with (for instance):
+
+\starttyping
+mtxrun --script signal --servers \
+    --protocol=serial --port=... squid
+mtxrun --script signal --servers \
+    --protocol=hue --url=... --token=... hue
+mtxrun --script signal --servers \
+    --protocol=deconz --url=... --token=... conbee
+\stoptyping
+
+and enabled with:
+
+\starttyping
+mtxrun --script signal --usage squid
+\stoptyping
+
+The various signals are set up with:
+
+\starttyping
+mtxrun --script signal --signals --lamps=1,2,3 runner
+mtxrun --script signal --signals --lamps=1     runner
+mtxrun --script signal --signals --lamps=-4    runner
+\stoptyping
+
+Positive values indicate (color) lights, negative values indicate plugs that only
+support on/off states. A specific signal has to be enabled:
+
+\starttyping
+mtxrun --script signal --enable runner
+\stoptyping
+
+\stopsection
+
+\startsection[title=The prerequisites]
+
+This section is only relevant iF you use \ZIGBEE\ without a \SQUID. The \SQUID\
+can be configured to also control \HUE\ lamps for which it has to be connected to
+the relevant \WIFI\ network.
+
+The signal \ZIGBEE\ handler assumes that curl is installed, the binary and/or
+library. We also need a \ZIGBEE\ gateway, like \HUE\ or \CONBEE\ (that last one
+needs the \PHOSCOM\ app \DECONZ\ has to be run). In the case of a \HUE\ system
+the hub should be on the same network. You need to configure lights and then
+register these as shown above. In order to access the \ZIGBEE\ interfaces you
+need to get a token. For instance in \DECONZ:
+
+\starttyping
+curl -X POST -i "http://127.0.0.1/api" \
+    --data "{ \"devicetype\" : \"password\" }"
+\stoptyping
+
+For \HUE\ you need something like this (first hit the button on the hub):
+
+\starttyping
+curl -X POST -k -i https://192.168.178.25/debug/clip.html \
+    --data "{\"devicetype\":\"service-name#username\"}"
+\stoptyping
+
+In the future I might add some more protocols, for instance FritzBox also
+supports \ZIGBEE\ now\ but I can't test that right now.
+
+\stopsection
+
+\startsection[title=The interface]
+
+There are a few interfaces that one can use to construct dedicated state
+reporting, as we do for the test suite and distribution. For running \CONTEXT\
+there are also various predefined setups. So, normally a user can just rely on
+what we provide out of the box. It is however good to realize that there are two
+fundamentally different usage patterns:
+
+\startitemize
+
+\startitem
+    The runner and segment signals are controlled by the \type {context} script. This
+    means that the overhead is minimal and that the run itself is not aware of
+    it being signaled.
+\stopitem
+
+\startitem
+    The squid and quadrant signals show progress per page and for that the run
+    itself needs to provide information. Here the \type {context} script
+    initializes the \SQUID\ and the \CONTEXT\ run then updates the state. This
+    brings a bit of extra overhead but it's probably worth it.
+\stopitem
+
+\stopitemize
+
+So, when you process a file in the usual way, the runner will act upon the return
+state of a \TEX\ run. Because the runner knows how often it has ran and when it's
+finished, either or not successful, it can manage the initial and final signals
+best and also knows when to proceed to a next segment or quadrant. Below we show some
+ways to control signaling but keep in mind that normally all happens automatically
+in the most efficient way possible.
+
+Here we just give a simple example so that you get an idea what happens behind
+the screens. The slow way is to call the runner, like:
+
+\starttyping[option=LUA]
+os.execute("mtxrun --script signal --state=reset runner")
+\stoptyping
+
+But you can also use this pattern, assuming that you run \CONTEXT\ or use a \LUA\
+file with \typ {mtxrun --script somename.lua}.
+
+\starttyping[option=LUA]
+local signal   = utilities.signals.initialize("runner")
+local enabled  = type(signal) == "function"
+
+if enabled then
+    signal("reset")
+end
+
+-- code that sets 'okay'
+
+if enabled then
+    if okay then
+        signal("done",1)
+    else
+        signal("error",1)
+    end
+end
+\stoptyping
+
+The second argument is the lamp number (or run) and the third argument indicates
+that we apply the state to all lamps. The \type {run} and \type {finished} states
+always apply to all lamps. In the \type {util-sig-imp-*} files you can see how
+the various signals are set up. The differences are subtle. It only makes sense to
+study this when you have workflows with special demands. In principle you can
+create a setup with multiple squids and create visual feedback as you wish.
+
+\stopsection
+
+\startsection[title=The \CURL\ library]
+
+If you use the \SQUID\ you can forget about this section but otherwise we assume
+that the \CURL\ library \type {libcurl.so} or \type {libcurl.dll} is present,
+preferable in the \TEX\ tree under \typ {bin/luametatex/lib/curl}. If that one
+can't be loaded the program will be used instead. We could fall back on the
+built-in socket library but we have to assume that servers use \type {https}.
+
+\stopsection
+
+\startsection[title=The runner]
+
+We have two scripts, the original runner related script (signal) and one for the
+device (squid, quadrant and segment). The runner script can be used to control
+lights. Here are a few examples. This will turn off the lights:
+
+\starttyping
+mtxrun --script signal --reset
+\stoptyping
+
+Here you get some information about the current setup:
+
+\starttyping
+mtxrun --script signal --info
+\stoptyping
+
+A state can be set with:
+
+\starttyping
+mtxrun --script signal --state=busy         runner
+mtxrun --script signal --state=busy --run=2 runner
+mtxrun --script signal --state=busy --all   runner
+\stoptyping
+
+Help information is available with:
+
+\starttyping
+mtxrun --script signal
+\stoptyping
+
+Remark: the \type {--prune} and \type {--wipe} options are only for testing as
+they mess with rules. Turning off a lamp can be done with \type {--reset} anyway.
+
+\stopsection
+
+\startsection[title=The \SQUID\ hardware]
+
+A \SQUID\ is basically a small controller like a \RASPBERRYPICO\ connected to a
+series of leds. The software is written in the \ARDUINO\ editor and uses related
+libraries. You can just compile it for any similar device in which case you need
+to configure the right \IO\ pins. It's a relatively simple setup. With (2025) led
+rings and controllers being cheap you can in principle make a \SQUID\ for less
+than 15 euro but you might want to spice it a bit with a switch. We run the leds
+at low brightness so there is no need for additional power.
+
+(todo: reference to design document and some photos)
+
+\stopsection
+
+\startsection[title=The serial interface]
+
+The serial interface uses simple command sequences: the first character tells
+what we want to do, the second character is a specifier within that category.
+Follow up characters are data, like a specific action (busy, done, etc.)
+optionally followed by a number (segment, quadrant, etc.), or some configuration
+number or string. In all cases ending with a return \type {\n} avoids getting out
+of sync due to look ahead confusion.
+
+We can set all leds with the \type {a} command. The other commands can do the
+same but here a step is equivalent to busy.
+
+\starttabulate [|T|p|]
+\FL
+\NC a [i r]       \NC reset (also initializes counter) \NC \NR
+\NC a s           \NC step (busy)                      \NC \NR
+\NC a [d f p e r] \NC set state                        \NC \NR
+\LL
+\stoptabulate
+
+Segments are controlled with:
+
+\starttabulate [|T|p|]
+\FL
+\NC s [i r]       [0 1..8] \NC reset (also initializes counter) \NC \NR
+\NC s s           [0 1..8] \NC step (increments)                \NC \NR
+\NC s [d f p e r] [0 1..8] \NC set state                        \NC \NR
+\LL
+\stoptabulate
+
+Quadrants are controlled with:
+
+\starttabulate [|T|p|]
+\FL
+\NC k [i r]       [0 1..4] \NC reset (also initializes counter) \NC \NR
+\NC k s           [0 1..4] \NC step (increments)                \NC \NR
+\NC k [d f p e r] [0 1..4] \NC set state                        \NC \NR
+\LL
+\stoptabulate
+
+Single led squids are controlled with:
+
+\starttabulate [|T|p|]
+\FL
+\NC q [i r]       \NC reset (also initializes counter) \NC \NR
+\NC q s           \NC step (increments) \NC \NR
+\NC q [d f p e r] \NC set state \NC \NR
+\LL
+\stoptabulate
+
+When configured, \HUE\ bulbs can be turned on and off by:
+
+\starttabulate [|T|p|]
+\FL
+\NC h [d f p e r] [0 1..4] \NC set hue color light \NC \NR
+\LL
+\stoptabulate
+
+It's possible to reset the lot:
+
+\starttabulate [|T|p|]
+\FL
+\NC r \NC reset \NC \NR
+\LL
+\stoptabulate
+
+We don't go into detail about this but there's also direct control of leds:
+
+\starttabulate [|T|p|]
+\FL
+\NC d <n> r g b \NC set led directly by four byte values \NC \NR
+\LL
+\stoptabulate
+
+Here is a variant of this (no comment as it's experimental too):
+
+\starttabulate [|T|p|]
+\FL
+\NC i <n> r g b \NC set individual led by four byte values \NC \NR
+\LL
+\stoptabulate
+
+The device is set up with the next set of commands. The configuration can be
+saved on the device itself. At some point we will add an option to configure
+using the configuration file.
+
+\starttabulate [|T|p|]
+\FL
+\NC c s         \NC save                    \NC \NR
+\NC c f         \NC format                  \NC \NR
+\SL
+\NC c w r       \NC wifi reset              \NC \NR
+\NC c w c       \NC wifi connect            \NC \NR
+\NC c w i str   \NC wifi ssid               \NC \NR
+\NC c w k str   \NC wifi psk                \NC \NR
+\SL
+\NC c h r       \NC hue reset               \NC \NR
+\NC c h t str   \NC hue token               \NC \NR
+\NC c h h str   \NC hue hub                 \NC \NR
+\NC c h l num   \NC hue lights (upto 4)     \NC \NR
+\SL
+\NC c c [0 1 2] \NC color                   \NC \NR
+\SL
+\NC c m s       \NC mode serial             \NC \NR
+\NC c m h       \NC mode serial + hue       \NC \NR
+\NC c m w       \NC mode serial + wifi      \NC \NR
+\NC c m b       \NC mode serial + bluetooth \NC \NR
+\LL
+\stoptabulate
+
+If you have a device 2, there's also a text option, where the character set is
+limited to the repertoire in Knuths 36 font. This is more for myself to play
+with. You can also send text (string) via the signal script.
+
+\starttabulate [|T|p|]
+\FL
+\NC t [d f p e r] character \NC show this character \NC \NR
+\LL
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Connecting]
+
+On \MSWINDOWS\ you can plug in a serial (usb) cable and the device gets a port
+assigned. Normally you get the same port. You can check the right name (something
+\type {COM:}) in the device manager, so for example \type {COM6:}.
+
+In \LINUX\ a \RASPBERRYPICO\ will normally be \type {/dev/ttyACM0} but there we
+also need to make sure that we get access. You need to be a member of the \type
+{dialout} group, which can be done with \typ {sudo usermod -a -G dialout
+yourname} (you need to re-login).
+
+When you connect the device visa for instance a \USB\ hub in a keyboard you
+should expect uncomfortable delays, at least that is what I encountered on the
+\LINUX\ box.
+
+The software on the device will be part of the \CONTEXT\ distribution and updates
+are to be expected.
+
+\stopsection
+
+\stopdocument

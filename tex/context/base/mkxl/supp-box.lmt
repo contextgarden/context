@@ -846,16 +846,6 @@ do
 
 end
 
--- implement {
---     name    = "lastlinewidth",
---     actions = function()
---     local getnest = tex.getnest
-        local head = tex.lists.pagehead
---         -- list dimensions returns 3 value but we take the first
---         context(head and getdimensions(getlist(findtail(tonut(head)))) or 0)
---     end
--- }
-
 implement {
     name      = "lastlinewidth",
     usage     = "value",

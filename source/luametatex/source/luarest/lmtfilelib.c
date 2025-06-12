@@ -28,9 +28,9 @@
     meantime the code looks quite different.
 
     Because \TEX| is multi-platform we try to provide a consistent interface. So, for instance
-    blocksize and inode number are not relevant for us, nor are user and group ids. The lock
+    block size and inode number are not relevant for us, nor are user and group ids. The lock
     functions have been removed as they serve no purpose in a \TEX\ system and devices make no
-    sense either. The iterator could be improved. I also fixed some anomalities. Permissions are
+    sense either. The iterator could be improved. I also fixed some abnormalities. Permissions are
     not useful either.
 
 */

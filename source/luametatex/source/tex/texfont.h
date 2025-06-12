@@ -9,14 +9,14 @@
 
 /*tex
 
-    In the \WEBC\ infrastructrure there is code that deals with endianness of the machine but in
+    In the \WEBC\ infrastructure there is code that deals with endianness of the machine but in
     \LUAMETATEX\ we don't need this. In \LUATEX\ sharing the format file was already dropped, simply
     because we can also store \LUA\ bytecode in the format. In the other engines font data can end
     up in the format file and that in turn then also can be endian dependent. But in \LUAMETATEX\
     we no longer stored font data, and that is yet another reason why there is no endian related
     code here.
 
-    The ligature and kern structures are for traditional \TEX\ fonts, thise that are handles by the
+    The ligature and kern structures are for traditional \TEX\ fonts, those that are handles by the
     built in reference handlers. Although \OPENTYPE\ is more versatile, we should not forget that
     for many (latin) scripts these so called base fonts are quite adequate and efficient. We could
     of course implement base support in \LUA\ but although \LUAMETATEX\ can delegate a lot, we also
@@ -43,20 +43,20 @@ typedef struct kerninfo {
     In \LUAMETATEX, at runtime, after a font is loaded via a callback, we only store the little
     information that is needed for basic ligature building and kerning, math rendering (like
     extensibles), and par building which includes protrusion and expansion. We don't need anything
-    related to the backend because outpout is delegated to \LUA.
+    related to the backend because output is delegated to \LUA.
 
     The most extensive data structures are those related to \OPENTYPE\ math. When passing a font we
     can save memory by using the |hasmath| directive. In \LUAMETATEX\ we can then have a different
     |struct| with 15 fields less than in \LUATEX\ which, combined with other savings, saves some 60
     bytes. The disadvantage is that accessors of those fields also need to act upon that flag, which
     involves more testing. However, because in practice math font access is not that prominent so
-    the gain outweights this potential performance hit. For an average \CJK\ font with 5000
+    the gain outweighs this potential performance hit. For an average \CJK\ font with 5000
     characters we saves 300000 bytes. Because a complete Latin font with various features also can
     have thousands of glyphs, it can save some memory there too. It's changes like this that give
     \LUAMETATEX\ a much smaller memory footprint than its predecessor.
 
     The next record relates to math extensibles. It is good to realize that traditional \TEX\ fonts
-    are handled differently in the math subengine than \OPENTYPE\ math fonts. However, we use the
+    are handled differently in the math sub engine than \OPENTYPE\ math fonts. However, we use the
     more extensive \OPENTYPE\ structure for both type of fonts.
 
 */
@@ -73,7 +73,7 @@ typedef struct extinfo {
 } extinfo;
 
 /*tex 
-    We have dedicated fields for hparts and vparts and their italics. Only avery few fonts actually
+    We have dedicated fields for hparts and vparts and their italics. Only a very few fonts actually
     set the italic on the extensible which is why the engine can use the regular italic, which in 
     that case is then the last in the variant list because that is where we put the recipe. Keep in
     mind that in an \OPENTYPE\ fonts we have a base glyph that has a variant list and part recipe 
@@ -94,7 +94,7 @@ typedef struct mathinfo {
     halfword  flat_accent; 
     halfword  next;
     /*tex 
-        The top anchor is provides by the font and is also known as topaccent while the bottom 
+        The top anchor is provides by the font and is also known as top accent while the bottom 
         anchor is one set by (in our case) \CONTEXT.  
     */
     scaled    top_anchor;              

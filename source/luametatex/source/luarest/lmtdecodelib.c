@@ -7,7 +7,7 @@
 /*tex
 
     Some png helpers, I could have introduced a userdata for blobs at some point but it's not that
-    useful as string sare also sequences of bytes and lua handles those well. These are interfaces
+    useful as strings are also sequences of bytes and lua handles those well. These are interfaces
     can change any time we like without notice till we like what we have.
 
 */

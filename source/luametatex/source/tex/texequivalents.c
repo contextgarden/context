@@ -53,7 +53,7 @@
     stack when it is handy to do so. These all have an explicit |save_type|, and they are:
 
     \starttabulate
-        \NC |saved_adjust|     \NC signifies an adjustment is beging scanned \NC\NR
+        \NC |saved_adjust|     \NC signifies an adjustment is being scanned \NC\NR
         \NC |saved_insert|     \NC an insertion is being scanned \NC\NR
         \NC |saved_disc|       \NC the |\discretionary| sublist we are working on right now \NC\NR
         \NC |saved_boxtype|    \NC whether a |\localbox| is |\left| or |\right| \NC\NR
@@ -101,7 +101,7 @@ save_state_info lmt_save_state = {
 /*tex
 
     The comments below are (of course) coming from \LUATEX's ancestor and are still valid! However,
-    in \LUATEX\ we use \UTF\ instead of \ASCII, have attributes, have more primites, etc. But the
+    in \LUATEX\ we use \UTF\ instead of \ASCII, have attributes, have more primitives, etc. But the
     principles remain the same. We are not 100\% compatible in output and will never be.
 
 */
@@ -136,7 +136,7 @@ static void tex_aux_diagnostic_trace(halfword p, const char *s)
     \stopitem
 
     \startitem
-        |eqtb[hash_base..(glue_base-1)]| holds the current equivalents of single- and multiletter
+        |eqtb[hash_base..(glue_base-1)]| holds the current equivalents of single- and multi-letter
         control sequences.
     \stopitem
 
@@ -317,7 +317,7 @@ static void tex_dump_equivalents_mem_extra(dumpstream f)
 static void tex_dump_equivalents_mem_specials(dumpstream f)
 {
     dump_int(f, lmt_token_state.par_loc);
- /* dump_int(f, lmt_token_state.line_par_loc); */ /*tex See note in textoken.c|. */
+ /* dump_int(f, lmt_token_state.line_par_loc); */ /*tex See note in |textoken.c|. */
     dump_int(f, lmt_token_state.empty);
 }
 
@@ -558,7 +558,7 @@ static void tex_aux_group_trace(int g)
 
     Per end 2023 the decision was made to use the two halfwords in the memory word that is used for
     saving eq values for other purposes too. It meant for instance that instead if every new group
-    needing 3 stack entries, it now needs just one. Actually there are not that meny mechanism that
+    needing 3 stack entries, it now needs just one. Actually there are not that many mechanism that
     need the stack. For instance alignments have their own stack, math needs it for multi argument
     mechanism and the most demanding one is box handling. In addition to the two extra |value_2| and
     |value_3| fields we also use |options| and |extra| as alias for |level| (these are quarterwords).
@@ -610,7 +610,7 @@ static void tex_aux_group_warning(void)
     We store the line number and attribute state in the memory word part for the save entry and
     then we need only one slot instead of three. Each slot is 16 bytes so we're also a bit nicer to
     caching memory (if it happens at all). Because in practice we don't group that much (400.000
-    times in the luametatex manual and a similar amount in the primitives manual) there is no real
+    times in the \LUAMETATEX\ manual and a similar amount in the primitives manual) there is no real
     significant (positive) impact on performance. It's all about abstraction.
 */
 
@@ -2011,7 +2011,7 @@ void tex_unsave(void)
     current magnification whenever it becomes necessary to \quote {freeze} it at a particular value.
 
     The |prepare_mag| subroutine is called whenever \TEX\ wants to use |mag| for magnification. If
-    nonzero, this magnification should be used henceforth. We might drop magnifaction at some point.
+    nonzero, this magnification should be used henceforth. We might drop magnification at some point.
 
     {\em NB: As we delegate the backend to \LUA\ we have no mag.}
 
@@ -2059,7 +2059,7 @@ void tex_unsave(void)
     translate these algorithms into low-level languages that do not support recursion.
 
     In general, |cur_cmd| is the current command as set by |get_next|, while |cur_chr| is the operand
-    of the current command. The control sequence found here is registsred in |cur_cs| and is zero if
+    of the current command. The control sequence found here is registered in |cur_cs| and is zero if
     none found. The |cur_tok| variable contains the packed representative of |cur_cmd| and |cur_chr|
     and like the other ones is global.
 

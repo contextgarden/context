@@ -75,6 +75,9 @@ end
 
 -- todo cache lastattr
 
+-- traverseattr
+-- traverseattrmethod
+
 function spacings.handler(head)
     local _, start = findattribute(head, a_spacings)
     if start then

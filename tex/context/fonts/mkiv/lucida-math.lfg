@@ -49,6 +49,11 @@ return {
          -- },
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "LucidaBrightMathOT",
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 1.901",
                 },

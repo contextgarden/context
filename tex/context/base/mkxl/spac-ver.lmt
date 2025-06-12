@@ -29,8 +29,7 @@ if not modules then modules = { } end modules ['spac-ver'] = {
 -- todo: strip baselineskip around display math
 
 local next, type, tonumber = next, type, tonumber
-local gmatch, concat = string.gmatch, table.concat
-local lpegmatch = lpeg.match
+local gmatch = string.gmatch
 local unpack = unpack or table.unpack
 local allocate = utilities.storage.allocate
 local todimen = string.todimen
@@ -103,6 +102,7 @@ local a_skippenalty  <const> = attributes.private('skippenalty')
 local a_skiporder    <const> = attributes.private('skiporder')
 local a_snapmethod   <const> = attributes.private('snapmethod')
 local a_snapvbox     <const> = attributes.private('snapvbox')
+local a_snaprange    <const> = attributes.private('snaprange')
 
 local d_bodyfontstrutheight       <const> = tex.isdimen("bodyfontstrutheight")
 local d_bodyfontstrutdepth        <const> = tex.isdimen("bodyfontstrutdepth")
@@ -135,7 +135,7 @@ local getglue             = nuts.getglue
 local setglue             = nuts.setglue
 local getkern             = nuts.getkern
 local getpenalty          = nuts.getpenalty
-local setshift            = nuts.setshift
+local setoffsets          = nuts.setoffsets
 local setwidth            = nuts.setwidth
 local getwidth            = nuts.getwidth
 local setheight           = nuts.setheight
@@ -145,6 +145,7 @@ local getdepth            = nuts.getdepth
 local setnext             = nuts.setnext
 local setprev             = nuts.setprev
 local setoptions          = nuts.setoptions
+local hasidsubtype        = nuts.hasidsubtype
 
 local find_node_tail      = nuts.tail
 local flushnode           = nuts.flushnode
@@ -182,7 +183,7 @@ local hlist_code          <const> = nodecodes.hlist
 local vlist_code          <const> = nodecodes.vlist
 local rule_code           <const> = nodecodes.rule
 local par_code            <const> = nodecodes.par
-local boundary_code       <const> = nodecodes.boundary
+----- boundary_code       <const> = nodecodes.boundary
 
 local userskip_code       <const> = gluecodes.userskip
 local lineskip_code       <const> = gluecodes.lineskip
@@ -210,6 +211,9 @@ storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vs
 
 do
 
+    local lpegmatch     = lpeg.match
+    local colonsplitter = lpeg.splitat(":")
+
     local default = {
         [v_maxheight] = true,
         [v_maxdepth]  = true,
@@ -229,8 +233,6 @@ do
     local values = {
         offset = "offset"
     }
-
-    local colonsplitter = lpeg.splitat(":")
 
     local function listtohash(str)
         local t = { }
@@ -353,6 +355,58 @@ end
 
 local snap_hlist  do
 
+    local rangesnap
+
+    do
+
+        local upper = string.upper
+        local remove = table.remove
+
+        local snapranges = { }
+        local snapremap  = {
+              ["Q"] = "-Q",  ["H"] = "-H",
+              ["L"] = "-L",  ["T"] = "-T",
+             ["-I"] =  "I", ["+I"] =  "I",
+             ["-Z"] =  "Z", ["+Z"] =  "Z",
+              ["0"] =  "Z", ["+0"] =  "Z", ["-0"] =  "Z",
+              ["1"] = "-L", ["+1"] = "+L", ["-1"] = "-L",
+              ["2"] = "-T", ["+2"] = "+T", ["-2"] = "-T",
+        }
+
+        interfaces.implement {
+            name      = "registersnaprange",
+            arguments = { "integer", "string" },
+            actions   = function(index,str)
+                local list = { }
+                for s in gmatch(upper(str),"[+-]?[QHLZIT012]") do
+                    list[#list+1] = snapremap[s] or s
+                end
+                snapranges[index] = list
+            end,
+        }
+
+        rangesnap = function(r,d,v)
+            local s = snapranges[r]
+            if s then
+                s = remove(s,1)
+                if not s then
+                elseif s == "-T" then return -d*2 -- minus  two     lines
+                elseif s == "-L" then return -d   -- minus  one     line
+                elseif s == "-H" then return -d/2 -- minus  half    line
+                elseif s == "-Q" then return -d/4 -- minus  quarter line
+                elseif s == "+T" then return  d*2 -- plus   two     lines
+                elseif s == "+L" then return  d   -- plus   one     line
+                elseif s == "+H" then return  d/2 -- plus   half    line
+                elseif s == "+Q" then return  d/4 -- plus   quarter line
+                elseif s ==  "Z" then return -v   -- zero   ht/dp
+                elseif s ==  "I" then return  0   -- ignore entry
+                end
+            end
+            return 0
+        end
+
+    end
+
     local v_noheight   <const> = variables.noheight
     local v_nodepth    <const> = variables.nodepth
     local v_line       <const> = variables.line
@@ -426,6 +480,22 @@ local snap_hlist  do
             end
         end
 
+local range = getattr(current,a_snaprange)
+if range then
+    local oldht   = getheight(current)
+    local olddp   = getdepth (current)
+    local extraht = rangesnap(range,snapht,oldht)
+    local extradp = rangesnap(range,snapdp,olddp)
+    local newht   = oldht + extraht
+    local newdp   = olddp + extradp
+    if newht < 0  or newdp < 0 then
+        report_snapper("ignoring snaprange %i: old (%p,%p) new (%p,%p)",range,oldht,olddp,newht,newdp)
+    else
+        setheight(current,newht)
+        setdepth (current,newdp)
+    end
+end
+
         local wd, ht, dp = getwhd(current)
 
         local h        = (method[v_noheight] and 0) or height or ht
@@ -447,7 +517,6 @@ local snap_hlist  do
             t[#t+1] = formatters["hlist: wd %p ht %p (used %p) dp %p (used %p)"](wd,ht,h,dp,d)
             t[#t+1] = formatters["fractions: hfraction %s dfraction %s bfraction %s tlines %s blines %s"](hr,dr,br,tlines,blines)
         end
-
         if method[v_box] then
             local br = 1 - br
             if br < 0 then
@@ -551,7 +620,7 @@ local snap_hlist  do
                     ch, cd = lh, delta + d
                     h, d = ch, cd
                     local shifted = hpack_node(getlist(current))
-                    setshift(shifted,delta)
+                    setoffsets(shifted,nil,delta)
                     setlist(current,shifted)
                     done = true
                     if t then
@@ -586,7 +655,7 @@ local snap_hlist  do
                     cd, ch = ld, delta + h
                     h, d = ch, cd
                     local shifted = hpack_node(getlist(current))
-                    setshift(shifted,delta)
+                    setoffsets(shifted,nil,delta)
                     setlist(current,shifted)
                     done = true
                     if t then
@@ -644,14 +713,14 @@ local snap_hlist  do
             end
         end
         local offset = method[v_offset]
-        if offset then
+        if offset and offset ~= 0 then
             -- we need to set the attr
             if t then
                 local wd, ht, dp = getwhd(current)
                 t[#t+1] = formatters["before offset: %p (width %p height %p depth %p)"](offset,wd,ht,dp)
             end
             local shifted = hpack_node(getlist(current))
-            setshift(shifted,offset)
+            setoffsets(shifted,nil,offset)
             setlist(current,shifted)
             if t then
                 local wd, ht, dp = getwhd(current)
@@ -676,7 +745,7 @@ local snap_hlist  do
         if t then
             local original = (h+d)/snaphtdp
             local whatever = (ch+cd)/(texgetdimen(d_globalbodyfontstrutheight) + texgetdimen(d_globalbodyfontstrutdepth))
-            t[#t+1] = formatters["final lines : %p -> %p (%p)"](original,lines,whatever)
+            t[#t+1] = formatters["final lines : %N -> %N (%N)"](original,lines,whatever)
             t[#t+1] = formatters["final height: %p -> %p"](h,ch)
             t[#t+1] = formatters["final depth : %p -> %p"](d,cd)
         end
@@ -693,6 +762,7 @@ local snap_hlist  do
             -- so extra will not be compensated at the top of a page
             extra = 0
         end
+
         return h, d, ch, cd, lines, extra
     end
 
@@ -870,6 +940,7 @@ end
 do
 
     local P, C, R, S, Cc, Cs = lpeg.P, lpeg.C, lpeg.R, lpeg.S, lpeg.Cc, lpeg.Cs
+    local lpegmatch = lpeg.match
 
     vspacing.fixed   = false
 
@@ -959,10 +1030,10 @@ do
         local n = new_glue(b_amount,b_stretch,b_shrink)
         setspecification(n,b_category,b_penalty,b_order or 1)
         setvisual(n)
-        write_node(n)
         if b_limit then
             setoptions(n,tex.glueoptioncodes.limit)
         end
+        write_node(n)
         -- todo: inject via value
     end
 
@@ -1174,6 +1245,8 @@ end
 -- We can register and copy the rule instead.
 
 do
+
+    local concat = table.concat
 
     local insertnodeafter  = nuts.insertafter
     local insertnodebefore = nuts.insertbefore
@@ -1387,7 +1460,7 @@ do
             end
             current = getprev(current)
         end
-        -- none found, so no reson to be special
+        -- none found, so no reason to be special
         if trace_specials then
             if pagetail then
                 report_specials("  context penalty, discarding, nothing special")
@@ -1761,9 +1834,11 @@ do
         if checkslide then
             checkslide(head,where,what)
         end
+
         while current do
             local id = getid(current)
             if id == hlist_code or id == vlist_code then
+-- don't snap due to attr
                 -- needs checking, why so many calls
                 if snap then
                     lastsnap = nil
@@ -1879,7 +1954,7 @@ do
                             -- not look back across head
                             -- todo: prev can be whatsit (latelua)
                             local previous = getprev(current)
-                            if previous and getid(previous) == glue_code and getsubtype(previous) == userskip_code then
+                            if previous and hasidsubtype(previous,glue_code,userskip_code) then
                                 local pwidth, pstretch, pshrink, pstretch_order, pshrink_order = getglue(previous)
                                 local cwidth, cstretch, cshrink, cstretch_order, cshrink_order = getglue(current)
                                 if pstretch_order == 0 and pshrink_order == 0 and cstretch_order == 0 and cshrink_order == 0 then
@@ -2799,7 +2874,7 @@ local head, tail = getmvllist()
  --     name    = "removelastline",
  --     actions = function()
  --         local h, t = getspeciallist("pagehead")
- --         if t and getid(t) == hlist_code and getsubtype(t) == line_code then
+ --         if t and hasidsubtype(t,hlist_code,line_code) then
  --             local total = gettotal(t)
  --             h = remove_node(h,t,true)
  --             setspeciallist(h)

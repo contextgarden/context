@@ -1,0 +1,73 @@
+if not modules then modules = { } end modules ['trac-sig'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to trac-sig.mkxl",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local dofile      = dofile
+local signals     = utilities.signals
+local implement   = interfaces.implement
+local expandmacro = token.expandmacro
+
+local squids = { squid = true, quadrant = true }
+
+implement {
+    name    = "squid_check",
+    actions = function()
+        local signal = environment.arguments.signal
+        if signal and squids[signal] then
+            local found = resolvers.findfile("util-sig-imp-"..signal..".lua") or ""
+            if found ~= "" then
+                local action = dofile(found)
+                if signals.squidinit then
+                    if true then
+                        -- Here the context runner handles the final states which is more reliable
+                        -- when we exit for some reason other than under context control.
+                        local function action(f)
+                            return function()
+                                f(tonumber(environment.arguments.currentrun))
+                            end
+                        end
+
+                        implement { name = "squid_init", actions = action(signals.squidinit) }
+                        implement { name = "squid_busy", actions = action(signals.squidbusy) }
+                        implement { name = "squid_step", actions = action(signals.squidstep) }
+                        implement { name = "squid_done", actions = action(signals.squiddone) }
+                        expandmacro("enablesquidmode")
+                    else
+                        -- Here context itself handles the final states which is a bit more fragile
+                        -- because we can quit for whatever reason. We always use the runner anyway.
+                        --
+                        -- If we use the trigger we can intercept duplicate finalizers but let's
+                        -- postpone that for now.
+                        --
+                        -- local trigger = action.trigger -- but then we should also
+                        --
+                     -- local function finalcheck()
+                            -- Maybe we need some hook into os.exit instead for an error.
+                     --     local state = status.geterrorstate()
+                     --     if state.error ~= "" or state.errorcontext ~= "" or state.luaerror ~= "" then
+                     --         signals.squiderror()
+                     --      -- trigger("error")
+                     --     elseif (tonumber(environment.arguments.currentrun) or 0) == (tonumber(environment.arguments.maxnofruns) or 0) then
+                     --         signals.squidproblem()
+                     --      -- trigger("problem")
+                     --     else
+                     --         signals.squiddone()
+                     --      -- trigger("done")
+                     --     end
+                     -- end
+                        --
+                     -- signals.squidinit()
+                     -- luatex.registerpageactions(signals.squidbusy)
+                     -- luatex.registerstopactions(finalcheck)
+                     -- luatex.cleanup            (finalcheck)
+                    end
+                end
+            end
+        end
+    end
+}

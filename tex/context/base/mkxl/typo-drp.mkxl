@@ -15,6 +15,20 @@
 
 %D This will change ... par specific attribute set and such.
 
+%D Remark: we need to make sure we have this set (can be at the document level as
+%D it is harmless).
+%D
+%D \starttyping
+%D \frozen\shapingpenalty 10000
+%D \shapingpenaltiesmode    255
+%D \stoptyping
+%D
+%D but the handler has to set it because we're nto yet in a par so we can't do an
+%D
+%D \starttyping
+%D \placeinitial {\shapingpenalty 10000 \updateparagraphpenalties}
+%D \stoptyping
+
 \unprotect
 
 \registerctxluafile{typo-drp}{autosuffix}

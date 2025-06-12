@@ -35,7 +35,7 @@ function kernel.kerning(head)
     return (kerning(head))
 end
 
-callbacks.register('collapse'  , false, "normal collapsing routine, called elsewhere")
-callbacks.register('hyphenate' , false, "normal hyphenation routine, called elsewhere")
-callbacks.register('ligaturing', false, "normal ligaturing routine, called elsewhere")
-callbacks.register('kerning'   , false, "normal kerning routine, called elsewhere")
+callbacks.register { name = "collapse"  , comment = "normal collapsing routine, called elsewhere",  frozen = true, disabled = true }
+callbacks.register { name = "hyphenate" , comment = "normal hyphenation routine, called elsewhere", frozen = true, disabled = true }
+callbacks.register { name = "ligaturing", comment = "normal ligaturing routine, called elsewhere",  frozen = true, disabled = true }
+callbacks.register { name = "kerning"   , comment = "normal kerning routine, called elsewhere",     frozen = true, disabled = true }

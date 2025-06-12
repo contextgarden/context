@@ -14,7 +14,6 @@ local setmetatableindex = table.setmetatableindex
 
 local nuts            = nodes.nuts
 local tonut           = nodes.tonut
-local tonode          = nodes.tonode
 local nodepool        = nuts.pool
 
 local vlist_code      <const> = nodes.nodecodes.vlist
@@ -29,6 +28,8 @@ local setattrlst      = nuts.setattributelist
 local setwhd          = nuts.setwhd
 local getwhd          = nuts.getwhd
 local getid           = nuts.getid
+local setlist         = nuts.setlist
+local flushlist       = nuts.flushlist
 
 local chardata        = fonts.hashes.characters
 local addcharacters   = font.addcharacters
@@ -63,7 +64,7 @@ local enabled = "both"  directives.register("math.extensibles", function(v) enab
 
 -- updaters.register("tagging.state.enable", function() enabled = "both" end) -- for now
 
-local function register_extensible(font,char,style,att,box)
+local function register_extensible_callback(font,char,style,att,box)
     if enabled and texconditionals["c_math_extensibles"] then
         -- We don't share (yet)!
         local fontdata = chardata[font]
@@ -74,16 +75,15 @@ local function register_extensible(font,char,style,att,box)
             else
                 return
             end
-            local bx = tonut(box)
             -- actually we don't want colors and such so if we do finalize we
             -- should be more selective:
-    --         updaters.apply("tagging.state.disable")
-    --         nodes.handlers.finalizelist(bx)
-    --         updaters.apply("tagging.state.enable")
--- updaters.apply("tagging.state.disable")
-            local id = getid(bx)
-            local al = tonut(att)
-            local wd, ht, dp = getwhd(bx)
+         -- updaters.apply("tagging.state.disable")
+         -- nodes.handlers.finalizelist(box)
+         -- updaters.apply("tagging.state.enable")
+         -- updaters.apply("tagging.state.disable")
+            local id = getid(box)
+            local al = att
+            local wd, ht, dp = getwhd(box)
             local unicode = oldchar.unicode or char
             -- we cannot have self referencing t3 fonts .. see devirtualize code
             local oldcommands = oldchar.oldcommands
@@ -95,19 +95,18 @@ local function register_extensible(font,char,style,att,box)
             local p  = fonts.hashes.parameters[font]
             local sx = round(1000/(p.extendfactor  or 1)) or 1000
             local sy = round(1000/(p.squeezefactor or 1)) or 1000
---             -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
---             if sx ~= 1000 then
---                 wd = wd * 7200/7227
---             end
---             if sy ~= 1000 then
---                 ht = ht * 7200/7227
---                 dp = dp * 7200/7227
---             end
-            --
-        --  local private = fonts.helpers.setboxdirectly(font,unicode,box) -- maybe cache in setboxdirectly
+         -- -- we saved a scaled glyph stream so we now use an unscaled one ... horrible hack:
+         -- if sx ~= 1000 then
+         --     wd = wd * 7200/7227
+         -- end
+         -- if sy ~= 1000 then
+         --     ht = ht * 7200/7227
+         --     dp = dp * 7200/7227
+         -- end
             local private = cache[wd][ht][dp][font][unicode]
             if private then
-nodes.flushlist(box)
+                flushlist(box)
+                setlist(box) -- added, needs checking
             else
                 private = fonts.helpers.setboxdirectly(font,unicode,box,true) -- expose=true so we get color
                 cache[wd][ht][dp][font][unicode] = private
@@ -156,9 +155,14 @@ nodes.flushlist(box)
                 setwhd(n,wd,ht,dp)
                 setattrlst(n,al)
             end
-            return tonode(n)
+            return n
         end
     end
 end
 
-callbacks.register("register_extensible",register_extensible,"register math extensible construct")
+callbacks.register {
+    name    = "register_extensible",
+    action  = register_extensible_callback,
+    comment = "register math extensible construct",
+    frozen  = true,
+}

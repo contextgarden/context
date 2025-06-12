@@ -388,7 +388,7 @@ static int languagelib_has_language(lua_State *L)
     return 1;
 }
 
-static const struct luaL_Reg langlib_metatable[] = {
+static const struct luaL_Reg languagelib_metatable[] = {
     { "clearpatterns",     languagelib_clear_patterns     },
     { "clearhyphenation",  languagelib_clear_hyphenation  },
     { "patterns",          languagelib_patterns           },
@@ -405,7 +405,7 @@ static const struct luaL_Reg langlib_metatable[] = {
     { NULL,                NULL                           },
 };
 
-static const struct luaL_Reg langlib_function_list[] = {
+static const struct luaL_Reg languagelib_function_list[] = {
     { "clearpatterns",     languagelib_clear_patterns     },
     { "clearhyphenation",  languagelib_clear_hyphenation  },
     { "patterns",          languagelib_patterns           },
@@ -432,8 +432,8 @@ int luaopen_language(lua_State *L)
     luaL_newmetatable(L, LANGUAGE_METATABLE);
     lua_pushvalue(L, -1);
     lua_setfield(L, -2, "__index");
-    luaL_setfuncs(L, langlib_metatable, 0);
+    luaL_setfuncs(L, languagelib_metatable, 0);
     lua_newtable(L);
-    luaL_setfuncs(L, langlib_function_list, 0);
+    luaL_setfuncs(L, languagelib_function_list, 0);
     return 1;
 }

@@ -20,6 +20,9 @@ run code passed on the commandline (between quotes) (=loop) (exit|quit aborts)
 .B --execute
 run a script or program (texmfstart method) (--noquotes)
 .TP
+.B --direct
+run a program 
+.TP
 .B --resolve
 resolve prefixed arguments
 .TP
@@ -71,6 +74,9 @@ enable given trackers
 .B --progname=str
 format or backend
 .TP
+.B --platform=str
+show platform as seen by script
+.TP
 .B --systeminfo=str
 show current operating system, processor, etc
 .TP
@@ -79,6 +85,9 @@ launch editor with found file
 .TP
 .B --launch
 launch files like manuals, assumes os support (--all,--list)
+.TP
+.B --associate
+launch files like manuals, assumes os support via suffix association
 .TP
 .B --timedrun
 run a script and time its run
@@ -137,8 +146,35 @@ report file location
 .B --find-path
 report path of file
 .TP
+.B --format-path
+report path where format files end up
+.TP
 .B --pattern=string
 filter variables
+.TP
+.B --all=string
+report all (when applicable)
+.TP
+.B --format=string
+filter by file format (when applicable)
+.TP
+.B --selfclean=string
+remove libraries (maintainance)
+.TP
+.B --selfmerge=string
+embed libraries (maintainance)
+.TP
+.B --selfupdate=string
+move to bin path (maintainance)
+.TP
+.B --help=string
+show help info
+.TP
+.B --help=string
+show version info
+.TP
+.B --gethelp=string
+launch the given help info (--url)
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

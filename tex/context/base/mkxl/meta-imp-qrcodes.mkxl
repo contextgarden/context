@@ -1,0 +1,302 @@
+%D \module
+%D   [       file=meta-imp-qrcodes,
+%D        version=2025.05.27,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=QR codes,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D In spring 2025 we played a bit with these codes in the pespective of \TEX\ error
+%D reporting, think:
+%D
+%D \starttyping
+%D % signal=qr
+%D \stoptyping
+%D
+%D At \BACHOTEX\ we demonstrates this and Willi Egger made us wooden eartags that
+%D had these codes so that those present could scan them. As a follow up on those
+%D experiments as well as adding some real time color lightning to a presentation
+%D (triggered by \PDF) this signal subsystem was extended with led based status
+%D reporting (see signal manual).
+%D
+%D Here we combine the codes with colors, some trickery that we used for the
+%D \CONTEXT\ 2025 meeting website. At that meeting more signals will be revealed.
+%D
+%D The variant below is different from the \type {\qrcode} command because if goes
+%D the \METAPOST\ route and randomizes. I saw no need to bring that into the
+%D official macro. After all, this is also a demo of interfacing.
+
+%D We only have one code per page here and use bytemap 0. The original usage was
+%D a poster with 30 codes so there we used 30 bytemaps and positioned them on a
+%D page.
+
+
+\startluacode
+local random = math.random
+local char   = string.char
+local gsub   = string.gsub
+
+local qrcodes    = document.qrcodes or { }
+document.qrcodes = qrcodes
+
+qrcodegen.bitmap = qrbitmap
+figures.qrcode   = qrbitmap
+
+qrcodes.colors = {
+    char(200,  0,  0),
+    char(  0,200,  0),
+    char(  0,  0,200),
+    char(  0,200,200),
+    char(200,  0,200),
+    char(200,200,  0),
+}
+
+qrcodes.white = char(230,230,230)
+
+function mp.coloredqrcode(bytemap,index)
+    local qrcode   = qrcodes.data and qrcodes.data[index] or tostring(index)
+    local qrwhite  = qrcodes.white
+    local qrblack  = char(0)
+    local qrcolors = qrcodes.colors
+    local count    = #qrcolors
+    local data, size = qrcodegen.generate(qrcode)
+    data = gsub(data,"(.)",function(c)
+        if c == qrblack then
+            return qrcolors[random(count)]
+        else
+            return qrwhite
+        end
+     end)
+     mp.newbytemap(bytemap,size,size,3,data)
+end
+\stopluacode
+
+\continueifinputfile{meta-imp-qrcodes.mkxl}
+
+\startluacode
+document.qrcodes.data = {
+[[
+Uh, oh. A little while ago one of the quantities that I was computing got too
+large, so I'm afraid your answers will be somewhat askew. You'll probably have to
+adopt different tactics next time. But I shall try to carry on anyway.
+]],
+
+[[
+The equation I just processed has given some variable a value outside of the
+safetyp range. Continue and I'll try to cope with that big value.
+]],
+
+
+[[
+A funny symbol that I can't read has just been input. Continue, and I'll forget
+that it ever happened.
+]],
+
+[[
+Recursive macro expansion cannot be unlimited because of runtime stack
+constraints. The limit is 10000 recursion levels in total.
+]],
+
+[[
+I'm not currently working on a for loop, so I had better not try to end anything.
+]],
+
+[[
+Sorry ... I've converted what follows to tokens, possibly garbaging the name you
+gave. Please delete the tokens and insert the name again.
+]],
+
+[[
+I didn't find a variable name at the left of the ':=', so I'm going to pretend
+that you said '=' instead.
+]],
+
+[[
+I'm not currently working on a 'begingroup', so I had better not try to end
+anything.
+]],
+
+[[
+Strange: this token has lost its former meaning! I'll read it as a right
+delimiter this time.
+]],
+
+[[
+Division by zero. I'll pretend that you meant to divide by 1.
+]],
+
+[[
+Continue and I'll round the value until it fits the current numberprecision.
+]],
+
+[[
+Since I don't take square roots of negative numbers, I'm zeroing this one.
+Proceed, with fingers crossed.
+]],
+
+[[
+Since I don't take logs of non-positive numbers, I'm zeroing this one. Proceed,
+with fingers crossed.
+]],
+
+[[
+The 'angle' between two identical points is undefined. I'm zeroing this one.
+Proceed, with fingers crossed.
+]],
+
+[[
+Tut tut: You're trying to \insert into a \box register that now contains an
+\hbox. Proceed, and I'll discard its present contents.
+]],
+
+[[
+The correction glue for page breaking with insertions must have finite
+shrinkability. But you may proceed, since the offensive shrinkability has been
+made finite.
+]],
+
+[[
+I've concluded that your \output is awry.
+]],
+
+[[
+You can't dump inside a group '{...\dump}' is a no-no.
+]],
+
+[[
+TeX capacity exceeded, sorry . If you really absolutely need more capacity, you
+can ask a wizard to enlarge me.
+]],
+
+[[
+This can't happen. I'm broken. Please show this to someone who can fix me.
+]],
+
+[[
+I can't go on meeting you like this. One of your faux pas seems to have wounded
+me deeply ... in fact, I'm barely conscious. Please fix it and try again.
+]],
+
+[[
+The paragraph just ended includes some glue that has infinite shrinkability,
+e.g., '\hskip 0pt minus 1fil'. Such glue doesn't belong there --- it allows a
+paragraph of any length to fit on one line. But it's safe to proceed, since the
+offensive shrinkability has been made finite.)
+]],
+
+-- [[
+-- You can't use '\hrule' here except with leaders. To put a horizontal rule in an
+-- hbox or an alignment, you should use \leaders or \hrulefill (see The TeXbook).
+-- ]],
+
+[[
+I can't carry out that multiplication or division, since the result is out of range.
+]],
+
+[[
+Please don't say '\def cs{...}', say '\def cs {...}'. I've inserted an
+inaccessible control sequence so that your definition will be completed without
+mixing me up too badly.
+]],
+
+[[
+Double prime script, I'll add a dummy nucleus.
+]],
+
+[[
+Display math should end with $$. The '$' that I just saw supposedly matches a
+previous '$$'. So I shall assume that you typed '$$' both times.
+]],
+
+[[
+Sorry, Pandora. (You sneaky devil.) I refuse to unbox an \hbox in vertical mode
+or vice versa. And I can't open any boxes in math mode.
+]],
+
+[[
+I can't work with sizes bigger than about 19 feet (45 Theodores as of 2023), 575
+centimeters, 2300 Toves, 230 Ediths or 16383 points. Continue and I'll use the
+largest value I can.
+]],
+
+[[
+A one-character control sequence belongs after a ` mark. So I'm essentially
+inserting 0 here.
+]],
+
+[[
+You already have 15 parameters, I'm going to ignore the # sign you just used, as
+well the token that followed it.
+]],
+
+[[
+You meant to type ## instead of #, right? Or maybe a { was forgotten somewhere
+earlier, and things are all screwed up? I'm going to assume that you meant ##.
+]],
+
+[[
+The control sequence at the end of the top line of your error message was never
+\def'ed. You can just continue as I'll forget about whatever was undefined.
+]],
+
+[[
+The control sequence at the end of the top line of your error message was never
+\def'ed. You can just continue as I'll forget about whatever was undefined.
+]],
+}
+\stopluacode
+
+\protected\def\stopcoloredqrcode
+  {\ctxlua{document.qrcodes.data = { buffers.getcontent("\currentdefinedbuffer") or "" }}%
+   \MPcode{lua.mp.coloredqrcode(0,1);draw unitsquare xsized 5cm withbytemap 0;}}
+
+\definebuffer[coloredqrcode]
+
+% \starttext
+%     \startTEXpage[offset=1ts]
+%         \startcoloredqrcode
+%             Many readers will skim over formulas on their first reading of your exposition.
+%             Therefore, your sentences should flow smoothly when all but the simplest formulas
+%             are replaced by "blah" or some other grunting noise. (Donald Knuth)
+%         \stopcoloredqrcode
+%     \stopTEXpage
+% \stoptext
+
+\starttext
+
+    \startTEXpage[offset=1ts]
+        \qrcode[text={Hi, this uses the regular interface!},color=darkred]
+    \stopTEXpage
+
+    \startTEXpage[offset=1ts]
+        \qrcode[text=Hej,color=darkblue]
+    \stopTEXpage
+
+    \startTEXpage[offset=1ts]
+        \startcoloredqrcode
+            This is just a test using the MetaFun interface!
+        \stopcoloredqrcode
+    \stopTEXpage
+
+    \startTEXpage[offset=1ts]
+        \startcoloredqrcode
+            Many readers will skim over formulas on their first reading of your exposition.
+            Therefore, your sentences should flow smoothly when all but the simplest formulas
+            are replaced by "blah" or some other grunting noise. (Donald Knuth)
+        \stopcoloredqrcode
+    \stopTEXpage
+
+    \dorecurse{31}{
+        \startMPpage
+            lua.mp.coloredqrcode(0, #1) ;
+            draw unitsquare xsized 5cm withbytemap 0 ;
+            setbounds currentpicture to boundingbox currentpicture enlarged 2mm;
+        \stopMPpage
+    }
+
+\stoptext

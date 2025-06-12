@@ -403,7 +403,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
         /*tex 
-            We have no named options here. Presets are automaticly set anyway. We might even drop 
+            We have no named options here. Presets are automatically set anyway. We might even drop 
             the option scanning here.
         */
         halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL, NULL) : 0;
@@ -888,7 +888,7 @@ static halfword tex_aux_scan_specification_balance_passes(void)
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
         /*tex 
-            We have no named options here. Presets are automaticly set anyway. We might even drop 
+            We have no named options here. Presets are automatically set anyway. We might even drop 
             the option scanning here.
         */
         halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL, NULL) : 0;
@@ -1102,7 +1102,7 @@ static halfword tex_aux_scan_specification_balance_shape(void)
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
         /*tex 
-            We have no named options here. Presets are automaticly set anyway. We might even drop 
+            We have no named options here. Presets are automatically set anyway. We might even drop 
             the option scanning here.
         */
         halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL, NULL) : 0;

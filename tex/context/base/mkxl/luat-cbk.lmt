@@ -16,139 +16,69 @@ local sortedhash, sortedkeys, tohash = table.sortedhash, table.sortedkeys, table
 -- into the TeX engine. Here we implement a few handy auxiliary functions. Watch
 -- out, there are diferences between LuateX and LuaMetaTeX.
 
-callbacks       = callbacks or { }
-local callbacks = callbacks
-
--- When you (temporarily) want to install a callback function, and after a while
--- wants to revert to the original one, you can use the following two functions.
--- This only works for non-frozen ones.
-
-local trace_callbacks   = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
-local trace_calls       = false  -- only used when analyzing performance and initializations
-local trace_checking    = false  trackers.register("memory.checking", function(v) trace_checking = v end)
-
-local report_system     = logs.reporter("system")
-local report_callbacks  = logs.reporter("system","callbacks")
-local report_memory     = logs.reporter("system","memory")
-
-local register_callback = callback.register
-local find_callback     = callback.find
-local list_callbacks    = callback.list
-local register_usercall = false
-local original_register = register_callback
-
-local frozen            = { }
-local stack             = { }
-local list              = callbacks.list
-local permit_overloads  = false
-local block_overloads   = false
-
 -- By now most callbacks are frozen and most provide a way to plug in your own code.
 -- For instance all node list handlers provide before/after namespaces and the file
 -- handling code can be extended by adding schemes and if needed I can add more
--- hooks. So there is no real need to overload a core callback function. It might be
--- ok for quick and dirty testing but anyway you're on your own if you permanently
--- overload callback functions.
+-- hooks. So there is no real need to overload a core callback function. The ability
+-- to overload by a user (push/pop etc) has been removed. You can find the oveload
+-- code in version before 2025-06-01.
 
--- This might become a configuration file only option when it gets abused too much.
+callbacks       = callbacks or { }
+local callbacks = callbacks
 
-directives.register("system.callbacks.permitoverloads", function(v)
-    if block_overloads or permit_overloads then
-        -- once bad news, always bad news
-    elseif v then
-        permit_overloads = { }
-        report_system()
-        report_system("The callback system has been brought in an unprotected state. As a result of directly")
-        report_system("setting of callbacks subsystems of ConTeXt can stop working. There is no support for")
-        report_system("bugs resulting from this state. It's better to use the official extension mechanisms.")
-        report_system()
-    end
+local trace_callbacks      = false  trackers.register("system.callbacks", function(v) trace_callbacks = v end)
+local trace_checking       = false  trackers.register("memory.checking", function(v) trace_checking = v end)
+
+local report_system        = logs.reporter("system")
+local report_callbacks     = logs.reporter("system","callbacks")
+local report_memory        = logs.reporter("system","memory")
+
+local register_callback    = callback.register
+local find_callback        = callback.find
+local list_callbacks       = callback.list
+local set_callback_state   = callback.setstate
+local get_callback_state   = callback.getstate
+local set_callback_options = callback.setoptions
+local get_callback_index   = callback.getindex
+
+local comments             = { }
+local list                 = callbacks.list
+
+local options = callback.getoptionvalues()
+local states  = callback.getstatevalues()
+
+options = table.swapped(options,options)
+states  = table.swapped(states,states)
+
+callbacks.optioncodes = options
+callbacks.statecodes  = states
+
+local disabled_code <const> = states.disabled
+local frozen_code   <const> = states.frozen
+
+local trace_code    <const> = options.trace
+
+callback.setoptions(options.direct)
+
+trackers.register("callbacks.calls",function(v)
+    set_callback_options(trace_code,v and true or false)
 end)
 
-sandbox.initializer {
-    category = "functions",
-    action   = function()
-        block_overloads = true
-    end
-}
-
-if not list then -- otherwise counters get reset
-
-    list = utilities.storage.allocate(list_callbacks())
-
-    local supported = { }
-
-    for k in next, list do
-        list[k]      = 0
-        supported[k] = true
-    end
-
-    callbacks.list      = list
-    callbacks.supported = supported
-
-end
-
-local delayed = tohash {
-    "buildpage_filter",
-}
-
-if trace_calls then
-
-    local functions = { }
-
-    register_callback = function(name,func)
-        if type(func) == "function" then
-            if functions[name] then
-                functions[name] = func
-                return find_callback(name)
-            else
-                functions[name] = func
-                local cnuf = function(...)
-                    list[name] = list[name] + 1
-                    return functions[name](...)
-                end
-                return original_register(name,cnuf)
-            end
-        else
-            return original_register(name,func)
+local delayed = false  do
+    if environment.initex then
+        delayed = {
+            "buildpage",
+        }
+        for i=1,#delayed do
+            set_callback_state(delayed[i],disabled_code & frozen_code)
         end
+        delayed = tohash(delayed)
     end
-
 end
 
--- temporary, not public:
+-- temporary, not public, needed in driv-ini and lua-run
 
 callbacks.functions = { }
-
--- till here
-
-local reported = { }
-
-local function register_usercall(what,name,func)
-    if list[name] then
-        if trace_callbacks or not reported[name] then
-            report_system()
-            report_system("disabling core code by %s user function into callback '%s' (reported only once)",what,name)
-            report_system()
-            reported[name] = true
-        end
-        permit_overloads[name] = true
-        return original_register(name,function(...)
-            if trace_callbacks then
-                report_callbacks("calling user function from '%s'",name)
-            end
-            return func(...)
-        end)
-    else
-        report_callbacks("not %s function into invalid callback '%s'",name)
-        return nil, format("unknown callback '%s'",name)
-    end
-end
-
-local function frozen_callback(name)
-    report_callbacks("not %s frozen %a","registering",name)
-    return nil, format("callback '%s' is frozen",name) -- no formatter yet
-end
 
 local function state(name)
     local f = find_callback(name)
@@ -168,118 +98,124 @@ end
 function callbacks.report()
     local usage = list_callbacks()
     for name, _ in sortedhash(list) do
-        local str = frozen[name]
+        local com = comments[name]
         local sta = state(name)
         local use = usage[name] and "+" or "-"
-        if str then
-            report_callbacks("%-9s : %s : %-22s -> %s",sta,use,name,str)
+        local fro = frozen[name] and " (frozen)" or ""
+        if com and com ~= "" and com ~= name then
+            report_callbacks("%-9s : %s : %-22s -> %s%s",sta,use,name,com,fro)
         else
-            report_callbacks("%-9s : %s : %-22s",      sta,use,name)
+            report_callbacks("%-9s : %s : %-22s%s",      sta,use,name,    fro)
         end
     end
 end
 
-function callbacks.freeze(name,freeze)
-    if not permit_overloads then
-        freeze = type(freeze) == "string" and freeze
-        if find(name,"*",1,true) then
-            local pattern = name
-            for name, _ in next, list do
-                if find(name,pattern) then
-                    frozen[name] = freeze or frozen[name] or "frozen"
-                end
+function callbacks.freeze(name)
+    if find(name,"*",1,true) then
+        local pattern = name
+        for name, _ in next, list do
+            if find(name,pattern) then
+                set_callback_state(name,frozen_code)
             end
-        else
-            frozen[name] = freeze or frozen[name] or "frozen"
         end
+    else
+        set_callback_state(name,frozen_code)
     end
 end
 
-function callbacks.register(name,func,freeze)
-    if frozen[name] then
-        if permit_overloads then
-            return register_usercall("registering",name,func)
-        else
-            return frozen_callback(name)
-        end
-    elseif freeze then
-        frozen[name] = type(freeze) == "string" and freeze or "registered"
+-- For now we also support the old interface.
+
+local function register(specification,action,freeze)
+    if type(specification) ~= "table" then
+        specification = {
+            name    = specification,
+            action  = action,
+            frozen  = freeze and true or false,
+            comment = type(freeze) == "string" and freeze or nil,
+        }
     end
-    if delayed[name] and environment.initex then
+    local name = specification.name
+    if type(name) ~= "string" or name == "" then
+        report_callbacks("bad callback registration")
+        return
+    end
+    if delayed and delayed[name] then
         return nil
     end
-    return register_callback(name,func)
+    local comment = specification.comment
+    if type(comment) ~= "string" then
+        comment = name
+    end
+    --
+    local index = register_callback(name,specification.action or false)
+    if index then
+        if specification.disable or specification.disabled then
+            set_callback_state(index,disabled_code)
+        end
+        if specification.freeze or specification.frozen then
+            set_callback_state(index,frozen_code)
+        end
+    end
+    return index
 end
 
-function callback.register(name,func) -- original
-    if not frozen[name] then
-        return register_callback(name,func)
-    elseif permit_overloads then
-        return register_usercall("registering",name,func)
-    else
-        return frozen_callback(name)
+callbacks.register = register
+
+function callback.register(name,action) -- original
+    return register { name = name, action = action }
+end
+
+function callbacks.optimizer(name)
+    local index = get_callback_index(name)
+    if index then
+        return
+            index,
+            function() set_callback_state(index) end,
+            function() set_callback_state(index,disabled_code) end
     end
 end
 
-function callbacks.push(name,func)
-    if not frozen[name] or permit_overloads then
-        local sn = stack[name]
-        if not sn then
-            sn = { }
-            stack[name] = sn
-        end
-        insert(sn,find_callback(name))
-        if permit_overloads then
-            register_usercall("pushing",name,func)
-        else
-            register_callback(name,func)
-        end
-    else
-        report_callbacks("not %s frozen %a","pushing",name)
-    end
-end
+-- For old times sake:
 
-function callbacks.pop(name)
-    if not frozen[name] or permit_overloads then
-        local sn = stack[name]
-        if not sn or #sn == 0 then
-            -- some error
-            register_callback(name,nil) -- ! really needed
-        else
-         -- this fails: register_callback(name, remove(stack[name]))
-            local func = remove(sn)
-            register_callback(name,func)
-        end
-    end
-end
+function callbacks.push() end
+function callbacks.pop () end
 
-if trace_calls then
-    statistics.register("callback details", function()
-        local t = { } -- todo: pass function to register and quit at nil
-        for name, n in sortedhash(list) do
-            if n > 0 then
-                t[#t+1] = format("%s -> %s",name,n)
+-- This will move to a module (but then i need to adapt a few manuals and
+-- modules.
+
+local getstates  do
+
+    local states, keys -- delayed
+
+    local function getstates(i)
+        if not states then
+            states = callback.getstatevalues()
+            keys   = table.sortedkeys(states)
+        end
+        local state  = get_callback_state(i)
+        local result = { }
+        if state and state ~= 0 then
+            for i=1,#keys do
+                local k = keys[i]
+                if (state & k) == k then
+                    result[#result+1] = states[i]
+                end
             end
         end
-        return concat(t," ")
-    end)
-end
-
-statistics.register("callbacks overloaded by user", function()
-    if permit_overloads then
-        return concat(sortedkeys(permit_overloads)," ")
+        return result
     end
-end)
 
--- this will move to a module
+end
 
 commands = commands or { }
 
 function commands.showcallbacks()
-    local NC, NR, verbatim = context.NC, context.NR, context.type
-    context.starttabulate { "|l|l|p|" }
-    for name, _ in sortedhash(list) do
-        NC() verbatim(name) NC() verbatim(state(name)) NC() context(frozen[name] or "") NC() NR()
-    end
+    local NC, NR = context.NC, context.NR
+    context.starttabulate { "|lT|lT|" }
+        for name, _ in sortedhash(list) do
+            NC() context(name)
+            NC() context("% t",getstates(name))
+            NC() NR()
+        end
     context.stoptabulate()
 end

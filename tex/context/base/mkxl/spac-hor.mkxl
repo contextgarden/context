@@ -190,7 +190,7 @@
 
 \aliased\let\checkindentation\relax
 
-\installmacrostack\checkindentation % used?
+\installmacrostack\checkindentation % used in typo-del
 
 %D Actually we can forget about indent and let everypar insert a kern or so,
 %D but on the other hand it's kind of consistent to keep it and make the

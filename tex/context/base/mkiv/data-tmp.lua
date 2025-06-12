@@ -397,15 +397,25 @@ function caches.loadcontent(cachename,dataname,filename)
         filename = joinfile(path,name)
     end
     local state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.luc))
+    if trace_cache and blob then
+        report_caches("getting %s lua content from path %a","regular",filename)
+    end
     if not blob then
         state, blob = pcall(loadfile,addsuffix(filename,luasuffixes.lua))
+        if trace_cache and blob then
+            report_caches("getting %s lua content from path %a","bytecode",filename)
+        end
     end
     if blob then
         local data = blob()
         if data and data.content then
             if data.type == dataname then
                 if data.version == resolvers.cacheversion then
-                    content_state[#content_state+1] = data.uuid
+                    local uuid = data.uuid
+                    content_state[#content_state+1] = uuid
+                    if trace_cache then
+                        report_caches("registering content uuid %a for %a",uuid,filename)
+                    end
                     if trace_locating then
                         report_resolvers("loading %a for %a from %a",dataname,cachename,filename)
                     end
@@ -443,6 +453,7 @@ function caches.savecontent(cachename,dataname,content,filename)
     if trace_locating then
         report_resolvers("preparing %a for %a",dataname,cachename)
     end
+    local uuid = osuuid()
     local data = {
         type    = dataname,
         root    = cachename,
@@ -450,9 +461,12 @@ function caches.savecontent(cachename,dataname,content,filename)
         date    = osdate("%Y-%m-%d"),
         time    = osdate("%H:%M:%S"),
         content = content,
-        uuid    = osuuid(),
+        uuid    = uuid,
     }
     local ok = savedata(luaname,serialize(data,true))
+    if trace_cache then
+        report_caches("saving %a with uuid %a",luaname,uuid)
+    end
     if ok then
         if trace_locating then
             report_resolvers("category %a, cachename %a saved in %a",dataname,cachename,luaname)

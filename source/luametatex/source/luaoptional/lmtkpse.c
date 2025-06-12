@@ -22,8 +22,8 @@
     functions in the \type {kpse} namespace but these don't really relate to locating files.
 
     We can actually omit the next two lists and pass numbers but then we need to store that list at
-    the \LUA\ end so we don't save much (but I might do it some day nevertheless). The nect code is
-    rather lightweight which is on purpose. Of course occationally we need to check the \API\ but
+    the \LUA\ end so we don't save much (but I might do it some day nevertheless). The next code is
+    rather lightweight which is on purpose. Of course occasionally we need to check the \API\ but
     \KPSE\ pretty stable and we don't need the extra stuff that it provides (keep in mind that it
     has to serve all kind of programs in the \TEX\ infrastructure so it's a complex beast).
 

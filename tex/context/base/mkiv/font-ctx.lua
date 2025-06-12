@@ -1232,7 +1232,7 @@ do  -- else too many locals
             "integer", "integer", "integer", "string", "string", "string", "string", "integer",
         },
         actions   = function (
-                        global,          -- \ifx\fontclass\empty\s!false\else\s!true\fi
+                        isglobal,        -- \ifx\fontclass\empty\s!false\else\s!true\fi
                         cs,              -- {#csname}%
                         str,             -- \somefontfile
                         size,            -- \d_font_scaled_font_size
@@ -1287,7 +1287,7 @@ do  -- else too many locals
             specification.textsize  = textsize
             specification.goodies   = goodies
             specification.cs        = cs
-            specification.global    = global
+            specification["global"] = isglobal
             specification.scalemode = scaledfontmode -- context specific
             if detail and detail ~= "" then
                 specification.method = method or "*"
@@ -1409,7 +1409,7 @@ do  -- else too many locals
                         csnames[id] = specification.cs
                         properties.id = id
                         definers.register(tfmdata,id) -- to be sure, normally already done
-                        texdefinefont(global,cs,id)
+                        texdefinefont(isglobal,cs,id)
                         constructors.cleanuptable(tfmdata)
                         constructors.finalize(tfmdata)
                         if trace_defining then
@@ -1447,7 +1447,7 @@ do  -- else too many locals
                     csnames[id] = specification.cs
                     properties.id = id
                     definers.register(tfmdata,id) -- to be sure, normally already done
-                    texdefinefont(global,cs,id)
+                    texdefinefont(isglobal,cs,id)
                     constructors.cleanuptable(tfmdata)
                     constructors.finalize(tfmdata)
                     if trace_defining then
@@ -1467,7 +1467,7 @@ do  -- else too many locals
                         name,tfmdata,nice_cs(cs),classfeatures,fontfeatures,classfallbacks,fontfallbacks,classgoodies,goodies,classdesignsize,fontdesignsize)
                 end
                 csnames[tfmdata] = specification.cs
-                texdefinefont(global,cs,tfmdata)
+                texdefinefont(isglobal,cs,tfmdata)
                 -- resolved (when designsize is used):
                 local size = round(fontdata[tfmdata].parameters.size or 0)
              -- ctx_setsomefontsize(size .. "sp")
@@ -1569,9 +1569,9 @@ do  -- else too many locals
             if cs == "" then
                 cs = nil
                 specification.cs = nil
-                specification.global = false
-            elseif specification.global == nil then
-                specification.global = false
+                specification["global"] = false
+            elseif specification["global"] == nil then
+                specification["global"] = false
             end
             --
             local tfmdata = definers.read(specification,specification.size)
@@ -1579,7 +1579,7 @@ do  -- else too many locals
                 return -1, nil
             elseif type(tfmdata) == "number" then
                 if cs then
-                    texdefinefont(specification.global,cs,tfmdata)
+                    texdefinefont(specification["global"],cs,tfmdata)
                     csnames[tfmdata] = cs
                 end
                 stoptiming(fonts)
@@ -1589,7 +1589,7 @@ do  -- else too many locals
                 tfmdata.properties.id = id
                 definers.register(tfmdata,id)
                 if cs then
-                    texdefinefont(specification.global,cs,id)
+                    texdefinefont(specification["global"],cs,id)
                     csnames[id] = cs
                 end
                 constructors.cleanuptable(tfmdata)

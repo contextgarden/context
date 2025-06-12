@@ -8,13 +8,16 @@
         if specification then
             local lasttexerror = specification.lasttexerror or ""
             local lasttexhelp  = specification.lasttexhelp  or ""
+            local contexterror = specification.contexterror or ""
             if lasttexerror ~= "" then
                 errortext = lasttexerror
-                if lasttexhelp  ~= "" then
+                if lasttexhelp ~= "" then
                     errortext = errortext .. ": " .. lasttexhelp
                 end
-            elseif lasttexhelp  ~= "" then
+            elseif lasttexhelp ~= "" then
                 errortext = lasttexhelp
+            elseif contexterror ~= "" then
+                errortext = contexterror
             end
         end
         context.dontleavehmode()

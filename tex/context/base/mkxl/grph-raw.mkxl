@@ -73,6 +73,7 @@
      \else
         \clf_qrcodebuffer{\dummyparameter\c!buffer}%
      \fi
+     {\dummyparameter\c!color}%
      \dummyparameter\c!width
      \relax
    \egroup}

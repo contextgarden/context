@@ -13,7 +13,7 @@
 
     url: https://mujs.com/index.html
 
-    Keep in mind: we don't have a \JAVASCRIPT\ interoreter embedded because this is just a small
+    Keep in mind: we don't have a \JAVASCRIPT\ interpreter embedded because this is just a small
     minimal interface to code that {\em can} be loaded at runtime, if present at all.
 
 */

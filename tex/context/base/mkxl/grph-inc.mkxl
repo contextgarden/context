@@ -276,6 +276,7 @@
 
 \def\grph_include_place[#1][#S#2][#S#3]% [label][file][settings] | [file][settings] | [file][parent][settings]
   {\bgroup
+   \setcatcodetable\ctxcatcodes % in case we use xml
    \advanceby\c_grph_include_nesting\plusone
    \cdef\currentexternalfigure{\the\c_grph_include_nesting}%
    \checkexternalfigureparent % each inherits from the root
@@ -869,12 +870,14 @@
 \permanent\tolerant\protected\def\includesvgfile[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
+   \setcatcodetable\ctxcatcodes % in case we use xml
    \clf_includesvgfile{#1}{\dummyparameter\c!offset}%
    \egroup}
 
 \permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
    \getdummyparameters[\c!offset=\zeropoint,#2]%
+   \setcatcodetable\ctxcatcodes % in case we use xml
    \clf_includesvgbuffer{#1}{\dummyparameter\c!offset}%
    \egroup}
 

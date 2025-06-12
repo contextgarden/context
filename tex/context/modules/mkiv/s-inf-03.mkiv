@@ -178,7 +178,7 @@ local skipkeys = table.tohash {
 }
 
 local sameglobal = {
-    ["global"]   = "_G",
+ -- ["global"]   = "_G", -- global has become a keyword in 5.5
  -- ["commands"] = "cs", -- already gone
 }
 
@@ -351,7 +351,7 @@ local function show(title,subtitle,alias,builtin,t,lib,libcolor,glo,glocolor,mar
     end
 end
 
-show("global","",sameglobal.global,false,_G,builtin,"darkgreen",globals,"darkblue",false,obsolete)
+show("global","",sameglobal["global"],false,_G,builtin,"darkgreen",globals,"darkblue",false,obsolete)
 
 -- inspect(table.sortedkeys(context))
 

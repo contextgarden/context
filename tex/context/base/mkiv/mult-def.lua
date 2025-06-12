@@ -9164,6 +9164,10 @@ return {
    ["pe"]="توری",
    ["ro"]="grid",
   },
+  ["gridcorrection"]={
+   ["en"]="gridcorrection",
+   ["nl"]="gridcorrectie",
+  },
   ["group"]={
    ["en"]="group",
    ["fr"]="groupe",

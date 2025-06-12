@@ -55,7 +55,9 @@ function tasks.new(specification) -- was: name,arguments,list
     local sequence  = specification.sequence
     if name and sequence then
         local tasklist = newsequencer {
-            name = name
+            name = name,
+enable  = specification.enable,
+disable = specification.disable,
             -- we can move more to the sequencer now .. todo
         }
         tasksdata[name] = {
@@ -278,6 +280,8 @@ function tasks.table(name) --maybe move this to task-deb.lua
     end
 end
 
+-- These will move to the place where they belong!
+
 -- -- shipouts -- --
 
 -- the shipout handlers acts on boxes so we don't need to return something
@@ -308,33 +312,33 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,ispage)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),ispage)))
+    head = tonut((%action%(tonode(head),ispage)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,ispage)
+    head = %action%(head,ispage)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),ispage)
+    %action%(tonode(head),ispage)
 ]],
 
 nonut = [[
-    %action%(nuthead,ispage)
+    %action%(head,ispage)
 ]],
 
     }
 }
 
 -- -- everypar -- --
+
+local id, enable, disable = callbacks.optimizer("insert_par")
 
 tasks.new {
     name      = "everypar",
@@ -344,6 +348,8 @@ tasks.new {
         "normalizers", -- system
         "after",       -- users
     },
+enable  = enable,
+disable = disable,
     templates = {
 
 default = [[
@@ -359,27 +365,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,mode)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),mode)))
+    head = tonut((%action%(tonode(head),mode)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,mode)
+    head = %action%(head,mode)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),mode)
+    %action%(tonode(head),mode)
 ]],
 
 nonut = [[
-    %action%(nuthead,mode)
+    %action%(head,mode)
 ]],
 
     }
@@ -409,28 +413,24 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,where,callback,attr,preamble)
-    local nuthead     = tonut(head)
-    local nutattr     = tonut(attr)
-    local nutpreamble = tonut(preamble)
-
 %actions%
 end
 ]],
 
 step = [[
-    %action%(head,where,callback,attr,preamble)
+    %action%(tonode(head),where,callback,tonode(attr),tonode(preamble))
 ]],
 
 nut  = [[
-    %action%(nuthead,where,callback,nutattr,nutpreamble)
-]],
-
-nohead = [[
     %action%(head,where,callback,attr,preamble)
 ]],
 
+nohead = [[
+    %action%(tonode(head),where,callback,tonode(attr),tonode(preamble))
+]],
+
 nonut = [[
-    %action%(nuthead,where,callback,nutattr,nutpreamble)
+    %action%(head,where,callback,attr,preamble)
 ]],
 
     }
@@ -463,27 +463,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+    head = tonut((%action%(tonode(head),groupcode)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode)
+    head = %action%(head,groupcode)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode)
+    %action%(tonode(head),groupcode)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode)
+    %action%(head,groupcode)
 ]],
 
     }
@@ -518,27 +516,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode,direction)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode,direction)))
+    head = tonut((%action%(tonode(head),groupcode,direction)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode,direction)
+    head = %action%(head,groupcode,direction)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode,direction)
+    %action%(tonode(head),groupcode,direction)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode,direction)
+    %action%(head,groupcode,direction)
 ]],
 
     }
@@ -569,27 +565,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+    head = tonut((%action%(tonode(head),groupcode)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode)
+    head = %action%(head,groupcode)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode)
+    %action%(tonode(head),groupcode)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode)
+    %action%(head,groupcode)
 ]],
 
     }
@@ -624,27 +618,25 @@ nonut = [[
 -- %localize%
 --
 -- return function(head,groupcode,size,packtype,direction,attributes)
---     local nuthead = tonut(head)
---
 -- %actions%
---     return tonode(nuthead)
+--     return head
 -- end
 -- ]],
 --
 -- step = [[
---     nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)))
+--     head = tonut((%action%(tonode(head),groupcode,size,packtype,direction,tonode(attributes))))
 -- ]],
 --
 -- nut  = [[
---     nuthead = %action%(nuthead,groupcode,size,packtype,direction,attributes)
+--     head = %action%(head,groupcode,size,packtype,direction,attributes)
 -- ]],
 --
 -- nohead = [[
---     %action%(tonode(nuthead),groupcode,size,packtype,direction,attributes)
+--     %action%(tonode(head),groupcode,size,packtype,direction,tonode(attributes))
 -- ]],
 --
 -- nonut = [[
---     %action%(nuthead,groupcode,size,packtype,direction,attributes)
+--     %action%(head,groupcode,size,packtype,direction,attributes)
 -- ]],
 --
 --     }
@@ -675,27 +667,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead))))
+    head = tonut((%action%(tonode(head))))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead)
+    head = %action%(head)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead))
+    %action%(tonode(head))
 ]],
 
 nonut = [[
-    %action%(nuthead)
+    %action%(head)
 ]],
 
     }
@@ -717,49 +707,32 @@ return function(head)
 end
 ]],
 
--- process = [[
--- local tonut  = nodes.tonut
--- local tonode = nodes.nuts.tonode
---
--- %localize%
---
--- return function(head,groupcode)
---     local nuthead = tonut(head)
---
--- return function(nuthead,groupcode)
---
--- %actions%
---     return tonode(nuthead)
--- end
--- ]],
-
 process = [[
 local tonut  = nodes.tonut
 local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(nuthead,groupcode)
-
+return function(head,pagecontext,pagehead,pagetail,boundary)
 %actions%
-    return nuthead
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+    head = tonut((%action%(tonode(head),pagecontext,tonode(pagehead),tonode(pagetail),tonode(boundary))))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode)
+    head = %action%(head,pagecontext,pagehead,pagetail,boundary)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode)
+    %action%(tonode(head),pagecontext,pagehead,pagetail,boundary)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode)
+    %action%(head,pagecontext,pagehead,pagetail,boundary)
 ]],
 
     }
@@ -789,27 +762,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode,size,packtype,maxdepth,direction)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)))
+    head = tonut((%action%(tonode(head),groupcode,size,packtype,maxdepth,direction)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+    head = %action%(head,groupcode,size,packtype,maxdepth,direction)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)
+    %action%(tonode(head),groupcode,size,packtype,maxdepth,direction)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+    %action%(head,groupcode,size,packtype,maxdepth,direction)
 ]],
 
     }
@@ -839,27 +810,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode)))
+    head = tonut((%action%(tonode(head),groupcode)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode)
+    head = %action%(head,groupcode)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode)
+    %action%(tonode(head),groupcode)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode)
+    %action%(head,groupcode)
 ]],
 
     }
@@ -868,14 +837,18 @@ nonut = [[
 
 -- these operate on the content on a line, so no injections
 
+local id, enable, disable = callbacks.optimizer("append_line")
+
 tasks.new {
-    name      = "contributers",
+    name      = "contributers", -- we keep the old name
     processor = nodeprocessor,
     sequence  = {
         "before",      -- for users
         "normalizers",
         "after",       -- for users
     },
+enable  = enable,
+disable = disable,
     templates = {
 
 default = [[
@@ -890,46 +863,45 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
--- we operate exclusively on nuts (no index yet)
-
-return function(head,where,tail)
-    local nuthead = tonut(head)
-    local nuttail = tonut(tail)
-
+return function(head,tail)
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),where,tonode(nuttail))))
+    head = tonut((%action%(tonode(head),tonode(tail))))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,where,nuttail)
+    head = %action%(head,tail)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),where,tonode(nuttail))
+    %action%(tonode(head),tonode(tail))
 ]],
 
 nonut = [[
-    %action%(nuthead,where,nuttail)
+    %action%(head,tail)
 ]],
 
     }
 
 }
 
-    tasks.new {
-        name      = "adjusters",
-        processor = nodeprocessor,
-        sequence  = {
-            "before",      -- for users
-            "normalizers",
-            "after",       -- for users
-        },
-        templates = {
+local id, enable, disable = callbacks.optimizer("append_adjust")
+
+tasks.new {
+    name      = "adjusters",
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    },
+enable  = enable,
+disable = disable,
+    templates = {
 
 default = [[
 return function(head)
@@ -944,35 +916,82 @@ local nodetail = nodes.nuts.tail
 
 %localize%
 
--- we operate exclusively on nuts
-
 return function(head,where,tail,index)
-    local nuthead = tonut(head)
-    local nuttail = tonut(tail)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),where,tonode(nuttail),index)))
-    nuttail = nodetail(nuthead)
+    head = tonut((%action%(tonode(head),tonode(tail),where,index)))
+    tail = nodetail(head)
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,where,nuttail,index)
-    nuttail = nodetail(nuthead)
+    head = %action%(head,tail,where,index)
+    tail = nodetail(head)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),where,tonode(nuttail),index)
-    nuttail = nodetail(nuthead)
+    %action%(tonode(head),tonode(tail),where,index)
+    tail = nodetail(head)
 ]],
 
 nonut = [[
-    %action%(nuthead,where,nuttail,index)
-    nuttail = nodetail(nuthead)
+    %action%(head,tail,where,index)
+    tail = nodetail(head)
+]],
+
+    }
+
+}
+
+local id, enable, disable = callbacks.optimizer("append_migrate")
+
+tasks.new {
+    name      = "migrators", -- same as contributers
+    processor = nodeprocessor,
+    sequence  = {
+        "before",      -- for users
+        "normalizers",
+        "after",       -- for users
+    },
+enable  = enable,
+disable = disable,
+    templates = {
+
+default = [[
+return function(head)
+    return head
+end
+]],
+
+process = [[
+local tonut  = nodes.tonut
+local tonode = nodes.nuts.tonode
+
+%localize%
+
+return function(head,tail,where)
+%actions%
+    return head
+end
+]],
+
+step = [[
+    head = tonut((%action%(tonode(head),tonode(tail),where)))
+]],
+
+nut  = [[
+    head = %action%(head,tail,where)
+]],
+
+nohead = [[
+    %action%(tonode(head),tonode(tail),where)
+]],
+
+nonut = [[
+    %action%(head,tail,where)
 ]],
 
     }
@@ -1006,27 +1025,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,style,penalties,beginclass,endclass,level,style)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),style,penalties,beginclass,endclass,level,style)))
+    head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,style)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,style,penalties,beginclass,endclass,level,style)
+    head = %action%(head,style,penalties,beginclass,endclass,level,style)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),style,penalties,beginclass,endclass,level,style)
+    %action%(tonode(head),style,penalties,beginclass,endclass,level,style)
 ]],
 
 nonut = [[
-    %action%(nuthead,style,penalties,beginclass,endclass,level,style)
+    %action%(head,style,penalties,beginclass,endclass,level,style)
 ]],
 
     }
@@ -1077,27 +1094,25 @@ local tonode = nodes.nuts.tonode
 %localize%
 
 return function(head,groupcode,size,packtype,maxdepth,direction)
-    local nuthead = tonut(head)
-
 %actions%
-    return tonode(nuthead)
+    return head
 end
 ]],
 
 step = [[
-    nuthead = tonut((%action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)))
+    head = tonut((%action%(tonode(head),groupcode,size,packtype,maxdepth,direction)))
 ]],
 
 nut  = [[
-    nuthead = %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+    head = %action%(head,groupcode,size,packtype,maxdepth,direction)
 ]],
 
 nohead = [[
-    %action%(tonode(nuthead),groupcode,size,packtype,maxdepth,direction)
+    %action%(tonode(head),groupcode,size,packtype,maxdepth,direction)
 ]],
 
 nonut = [[
-    %action%(nuthead,groupcode,size,packtype,maxdepth,direction)
+    %action%(head,groupcode,size,packtype,maxdepth,direction)
 ]],
 
     }
@@ -1172,6 +1187,10 @@ nonut = [[
 
 -- -- localboxes -- --
 
+-- line,leftbox,rightbox,middlebox,
+-- linenumber,leftskip,rightskip,lefthang,righthang,indent,
+-- parinitleftskip,parinitrightskip,parfillleftskip,parfillrightskip,overshoot
+
 tasks.new {
     name      = "localboxes",
     processor = nodeprocessor,
@@ -1183,7 +1202,7 @@ tasks.new {
     templates = {
 
 default = [[
-return function(head)
+return function()
 end
 ]],
 
@@ -1193,31 +1212,25 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
--- line,leftbox,rightbox,middlebox,linenumber,leftskip,rightskip,lefthang,righthang,indent,parinitleftskip,parinitrightskip,parfillleftskip,parfillrightskip,overshoot
-
 return function(line,leftbox,rightbox,middlebox,...)
-    nutline      = tonut(line)
-    nutleftbox   = leftbox  and tonut(leftbox)
-    nutrightbox  = rightbox and tonut(rightbox)
-    nutmiddlebox = middlebox and tonut(middlebox)
 %actions%
 end
 ]],
 
 step = [[
-    tonut((%action%(line,leftbox,rightbox,middlebox,...)))
+    tonut((%action%(tonode(line),tonode(leftbox),tonode(rightbox),tonode(middlebox),...)))
 ]],
 
 nut  = [[
-    %action%(nutline,nutleftbox,nutrightbox,nutmiddlebox,...)
-]],
-
-nohead = [[
     %action%(line,leftbox,rightbox,middlebox,...)
 ]],
 
+nohead = [[
+    %action%(tonode(line),tonode(leftbox),tonode(rightbox),tonode(middlebox),...)
+]],
+
 nonut = [[
-    %action%(nutline,nutleftbox,nutrightbox,nutmiddlebox,...)
+    %action%(line,leftbox,rightbox,middlebox,...)
 ]],
 
     }
@@ -1236,7 +1249,7 @@ tasks.new {
     templates = {
 
 default = [[
-return function(how,detail,nod,first,last,filename)
+return function(how,detail,nut,first,last,filename)
     -- nil
 end
 ]],
@@ -1247,18 +1260,15 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(how,detail,nod,first,last,filename)
-    local nut = tonut(nod)
+return function(how,detail,nut,first,last,filename)
     local rul = nil
-
 %actions%
-
-    return rul and tonode(rul)
+    return rul
 end
 ]],
 
 step = [[
-    rul = tonut((%action%(how,detail,nod,first,last,filename,rul and tonode(rul))))
+    rul = tonut((%action%(how,detail,tonode(nut),first,last,filename,rul and tonode(rul))))
 ]],
 
 nut  = [[
@@ -1266,7 +1276,7 @@ nut  = [[
 ]],
 
 nohead = [[
-    %action%(how,detail,nod,first,last,filename,rul and tonode(rul))
+    %action%(how,detail,tonode(nut),first,last,filename,rul and tonode(rul))
 ]],
 
 nonut = [[
@@ -1287,7 +1297,7 @@ tasks.new {
     templates = {
 
 default = [[
-return function(how,detail,nod,first,last,filename)
+return function(how,detail,nut,first,last,filename)
     -- nil
 end
 ]],
@@ -1298,17 +1308,15 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(how,detail,nod,first,last,filename)
-    local nut = tonut(nod)
+return function(how,detail,nut,first,last,filename)
     local rul = nil
-
 %actions%
-    return rul and tonode(rul)
+    return rul
 end
 ]],
 
 step = [[
-    rul = tonut((%action%(how,detail,nod,first,last,filename,tonode(rul))))
+    rul = tonut((%action%(how,detail,tonode(nut),first,last,filename,rul and tonode(rul))))
 ]],
 
 nut  = [[
@@ -1316,7 +1324,7 @@ nut  = [[
 ]],
 
 nohead = [[
-    %action%(how,detail,nod,first,last,filename,rul and tonode(rul))
+    %action%(how,detail,tonut(nut),first,last,filename,rul and tonode(rul))
 ]],
 
 nonut = [[

@@ -194,15 +194,16 @@ appendaction("hquality",     "system",      "builders.hpack.show",              
 appendaction("vquality",     "system",      "builders.vpack.report",                            nil, "nonut",  "enabled"   )
 ------------("vquality",     "system",      "builders.vpack.show",                              nil, "nut",    "enabled"   )
 
--- some protection
+-- some protection, just to be sure
 
-freezecallbacks("find_log_file",    "provide the log file name")
-freezecallbacks("find_format_file", "locate the format file")
-freezecallbacks("open_data_file",   "open the given file for reading")
-freezecallbacks("process_jobname",  "manipulate jobname")
-freezecallbacks("trace_memory",     "show memory usage details")
+freezecallbacks("find_log_file")
+freezecallbacks("find_format_file")
+freezecallbacks("open_data_file")
+freezecallbacks("process_jobname")
 
-freezecallbacks("hpack_filter",     "hlist processing (not used, replaced)") -- no need to add more overhead
+-- todo: redefine the callback as we do with files
+
+freezecallbacks("trace_memory","show memory usage details")
 
 -- experimental (needs to be updated):
 

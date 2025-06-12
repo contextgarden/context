@@ -408,11 +408,12 @@ static const luaL_Reg oslib_function_list[] = {
     { "getnamevalues",  oslib_getnamevalues  },
     { "gettypevalues",  oslib_gettypevalues  },
     { "getunamefields", oslib_getunamefields },
+    /* */
     { NULL,             NULL                 },
 };
 
 /*tex
-    The |environ| variable is depricated on windows so it made sense to just drop this old \LUATEX\
+    The |environ| variable is deprecated on windows so it made sense to just drop this old \LUATEX\
     feature.
 */
 

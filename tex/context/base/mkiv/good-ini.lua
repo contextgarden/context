@@ -11,6 +11,7 @@ if not modules then modules = { } end modules ['good-ini'] = {
 local type, next = type, next
 local gmatch, find, topattern = string.gmatch, string.find, string.topattern
 local sortedhash, insert, contains = table.sortedhash, table.insert, table.contains
+local loadtable = table.load
 local addsuffix = file.addsuffix
 
 local fonts              = fonts
@@ -79,7 +80,7 @@ local function loadgoodies(filename) -- maybe a merge is better
             data[filename] = false -- signal for not found
             resolvers.missinglibrary(addsuffix(filename,fontgoodies.suffixes[1]))
         else
-            goodies = dofile(fullname) or false
+            goodies = loadtable(fullname) or false
             if not goodies then
                 report_goodies("goodie file %a is invalid",fullname)
                 return nil

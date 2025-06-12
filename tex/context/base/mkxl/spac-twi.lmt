@@ -22,7 +22,6 @@ local concat, reverse = table.concat, table.reverse
 local utfchar = utf.char
 
 local nuts                = nodes.nuts
-local tonut               = nodes.tonut
 
 local getid               = nuts.getid
 local getprev             = nuts.getprev
@@ -357,7 +356,6 @@ local actions = {
     [breakcodes.report] = function(checks,pass,subpass,currentserial,previousserial,line,kind,class,classes,badness,demerits,breakpoint,short,glue,width)
         if breakpoint and texgetnest("ptr") == nestlevel then
             local s_before, s_after, f_before, f_after, n_before, n_after
-            breakpoint = tonut(breakpoint)
             local current = cached[breakpoint]
             -- we can be selective, no need for left or right when demerits are zero
             if current then

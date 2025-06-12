@@ -12,17 +12,20 @@ if not context then return end
 
 -- we can omit spaces and tweak the math parameters instead
 
--- callback.register("math_rule", function(kind,font,width,height,attr)
---     return nodes.tonode(nodes.nuts.pool.rule(width,5*height,5*height))
--- end)
+-- local function math_rule_callback(kind,font,width,height,attr)
+--     return nodes.nuts.pool.rule(width,5*height,5*height)
+-- end
+--
+-- callbacks.register {
+--     name   = "math_rule",
+--     action = math_rule_callback,
+-- }
 
 local braille = characters.braille -- so this one is nil
 
-local braille_math_rule  do
+local braille_math_rule_callback  do
 
     local nuts         = nodes.nuts
-    local tonut        = nodes.tonut
-    local tonode       = nodes.tonode
     local nodepool     = nuts.pool
     local setattrlist  = nuts.setattrlist
     local hpack        = nuts.hpack
@@ -34,15 +37,10 @@ local braille_math_rule  do
 
     local braillerule
 
- -- function(kind,font,width,height,attr)
- --     return nodes.tonode(nodes.nuts.pool.rule(width,5*height,5*height))
- -- end
-
-    braille_math_rule = function(kind,font,width,height,attr)
+    braille_math_rule_callback = function(kind,font,width,height,attlst)
         if not braillerule then
             braillerule = braille.special("rule")
         end
-        local attlst = tonut(attr)
         local glyph  = newmathglyph(font,braillerule,attlst)
         local box    = hpack(glyph)
         --
@@ -54,7 +52,7 @@ local braille_math_rule  do
         local leader = newleader(width,box)
         local result = hpack(leader,width,"exactly")
         setattrlist(leader,attlst)
-        return tonode(result)
+        return result
     end
 
 end
@@ -71,6 +69,8 @@ local cache = table.setmetatableindex(function(t,w)
     return v
 end)
 
+local registercallback = callbacks.register
+
 -- should be (test first)
 --
 -- local function initialize(tfmdata,feature,value)
@@ -82,7 +82,10 @@ local function initialize(tfmdata,key,value)
             require("char-brl.lmt")
             braille = characters.braille
         end
-        callback.register("math_rule", braille_math_rule)
+        registercallback{
+            name   = "math_rule",
+            action = braille_math_rule_callback,
+        }
         local characters = tfmdata.characters
         local numberdata = characters[braille.special("number")]
         if numberdata then

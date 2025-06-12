@@ -157,7 +157,7 @@ static void tex_aux_undump_preamble(dumpstream f)
     undump_int(f, lmt_hash_state.hash_data.ptr);
     undump_int(f, lmt_hash_state.hash_data.top);
     /*tex
-        We can consider moving all these allocaters to the start instead of this exception.
+        We can consider moving all these allocators to the start instead of this exception.
     */
     tex_initialize_hash_mem();
     return;

@@ -518,8 +518,6 @@ halfword lmt_token_code_from_lua(lua_State *L, int slot)
 
 /*tex two core helpers .. todo: combine active*/
 
-# define is_active_string(s) (strlen(s) > 3 && *s == 0xEF && *(s+1) == 0xBF && *(s+2) == 0xBF)
-
 static unsigned char *tokenlib_aux_get_cs_text(int cs, int *allocated)
 {
     if (cs == null_cs) {
@@ -2786,6 +2784,22 @@ static inline int tokenlib_getactive(lua_State *L)
     return 1;
 }
 
+# define is_active_string(s,l) (l > 3 && *s == 0xEF && *(s+1) == 0xBF && *(s+2) == 0xBF)
+
+static int tokenlib_isactivestring(lua_State *L)
+{
+    size_t l = 0;
+    const unsigned char *s = (const unsigned char *) lua_tolstring(L, 1, &l);
+    int isactive = is_active_string(s,l);
+    lua_pushboolean(L, isactive);
+    if (isactive) { 
+        lua_pushinteger(L, aux_str2uni(s + 3));
+        return 2;
+    } else {
+        return 1;
+    }
+}
+
 static inline int tokenlib_getexpandable(lua_State *L)
 {
     lua_token *n = tokenlib_aux_check_istoken(L, 1);
@@ -3894,6 +3908,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "getid",                 tokenlib_getid                 },
     { "gettok",                tokenlib_gettok                }, /* obsolete */
     { "getactive",             tokenlib_getactive             },
+    { "isactivestring",        tokenlib_isactivestring        },
    /* these are not really needs as we can check flags   */      /* maybe obsolete */
     { "getexpandable",         tokenlib_getexpandable         },
     { "getprotected",          tokenlib_getprotected          },

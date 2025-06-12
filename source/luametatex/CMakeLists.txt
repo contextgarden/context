@@ -43,6 +43,11 @@ set(LMT_STRIP 1)
 # the user. Keep in mind that we might have set a different bytecode (luac) version during the 
 # alpha/beta stages of a Lua development version. 
 
+if (EXISTS "${CMAKE_SOURCE_DIR}/source/lua/lmthelperlib.c") 
+    set(luametatex_use_helpers 1)
+    add_definitions(-DLUAMETATEX_USE_HELPERS=1)
+endif()
+
 # set(LMT_PERMIT_LUA_LIBRARIES 1)
 
 if (DEFINED LMT_PERMIT_LUA_LIBRARIES)

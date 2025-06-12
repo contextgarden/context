@@ -662,7 +662,7 @@ local function setupitaliccorrection(option) -- no grouping !
         variant = 2
     end
     -- maybe also keywords for threshold
-    if options[variables.global] then
+    if options[variables["global"]] then
         forcedvariant = variant
         texsetattribute(a_italics,unsetvalue)
     else

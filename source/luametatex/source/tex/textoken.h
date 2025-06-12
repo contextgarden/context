@@ -10,7 +10,7 @@
 /*tex
 
     These are constants that can be added to a chr value and then give a token with the right cmd
-    and chr combination, whichs is then equivalent to |token_val (cmd, chr)|. The cmd results from
+    and chr combination, which is then equivalent to |token_val (cmd, chr)|. The cmd results from
     shifting right 21 bits. The following tokens therefore should match the order of the (first
     bunch) of cmd codes!
 
@@ -89,7 +89,7 @@ typedef enum catcode_table_presets {
     functions now keep track of head and tail). This makes sense because in \LUAMETATEX\ we often
     go between \TEX\ and \LUA\ and this keeps it kind of simple. This also makes clear when we
     are scanning (the global head is used) and doing something simple with a list. The same is
-    true for |match_token_head| thatmoved to the expand state. The |backup_head| variable is gone
+    true for |match_token_head| that moved to the expand state. The |backup_head| variable is gone
     because we now use locals.
 
 */
@@ -130,7 +130,8 @@ extern token_state_info lmt_token_state;
 typedef enum macro_preamble_states { 
     macro_without_preamble = 0x0, 
     macro_with_preamble    = 0x1, 
-    macro_is_packed        = 0x2, /* not yet, maybe some day array instead of list */
+    macro_with_simple      = 0x2, /* just a thought, a faster path with less variables set */    
+    macro_is_packed        = 0x4, /* not yet, maybe some day array instead of list */
 } macro_preamble_states;
 
 # define max_match_count 15

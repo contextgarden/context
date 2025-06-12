@@ -14,8 +14,6 @@ local report_nodes = logs.reporter("nodes","processors")
 local nodes        = nodes
 local tasks        = nodes.tasks
 local nuts         = nodes.nuts
-local tonut        = nodes.tonut
-local tonode       = nodes.tonode
 
 nodes.processors   = nodes.processors or { }
 local processors   = nodes.processors
@@ -71,71 +69,114 @@ do
 
 end
 
-local glyph_run             = tasks.actions("processors")
-local pre_linebreak_filter  = tasks.actions("paragraphs")
-local post_linebreak_filter = tasks.actions("finalizers")
-
-processors.glyph_run             = glyph_run
-processors.pre_linebreak_filter  = pre_linebreak_filter
-processors.post_linebreak_filter = post_linebreak_filter
-
-callbacks.register("glyph_run",            glyph_run,            "glyph processing")
-callbacks.register("pre_linebreak_filter", pre_linebreak_filter, "horizontal manipulations (before par break)")
-callbacks.register("post_linebreak_filter",post_linebreak_filter,"horizontal manipulations (after par break)")
-
 do
-    local hpack = nodes.hpack
 
-    function nodes.fullhpack(head,...)
-        return hpack((glyph_run(head)),...)
-    end
+    local glyph_run_callback      = tasks.actions("processors")
+    local pre_linebreak_callback  = tasks.actions("paragraphs")
+    local post_linebreak_callback = tasks.actions("finalizers")
+
+    callbacks.register {
+        name    = "glyph_run",
+        action  = glyph_run_callback,
+        comment = "glyph processing",
+        frozen  = true,
+    }
+
+    callbacks.register {
+        name    = "pre_linebreak",
+        action  = pre_linebreak_callback,
+        comment = "horizontal manipulations (before par break)",
+        frozen  = true,
+    }
+
+    callbacks.register {
+        name    = "post_linebreak",
+        action  = post_linebreak_callback,
+        comment = "horizontal manipulations (after par break)",
+        frozen  = true,
+    }
 
     local hpack = nuts.hpack
 
     function nuts.fullhpack(head,...)
-        return hpack(tonut(glyph_run(tonode(head))),...)
+        return hpack(glyph_run_callback(head),...)
     end
+
+    local tonut  = nodes.tonut
+    local tonode = nodes.tonode
+
+    function nodes.fullhpack(head,...)
+        return tonode(hpack(glyph_run_callback(tonut(head)),...))
+    end
+
 end
 
 do
 
-    ----- texnest       = tex.nest
-    ----- getnest       = tex.getnest
+    -- This was the "contributers" callback but we changed the interface and now have
+    -- three dedicated ones.
 
-    local getlist       = nodes.getlist     -- still nodes !
-    local setlist       = nodes.setlist
-    local getsubtype    = nodes.getsubtype
+    local getlist    = nuts.getlist
+    local setlist    = nuts.setlist
+    local getsubtype = nuts.getsubtype
 
     local linelist_code <const> = nodes.listcodes.line
 
-    local lineactions   = tasks.actions("contributers")
-    local adjustactions = tasks.actions("adjusters")
+    local lineactions    = tasks.actions("contributers") -- we keep the old name
+ -- local adjustactions  = tasks.actions("adjusters")
+ -- local migrateactions = tasks.actions("migrators")
 
-    -- this was the "contributers" callback but we changed the interface
+    -- todo: pre_append_line or just get rid of it
 
-    -- historically we use a different order than the callback
-
-    function processors.append_line_filter(head,tail,where,index)
-        if tail then
-            if where == "box" then
-                -- here we don't return something, we operate on the line (content)
-                if getsubtype(tail) == linelist_code then -- always
-                    local list = getlist(tail)
-                    if list then
-                        local result = lineactions(list,where,tail,index) -- tail is parent of list
-                        if result and result ~= list then
-                            setlist(tail,result)
-                        end
-                    end
+    local function append_line_callback(head,tail)
+     -- if tail then
+            -- here we don't return something, we operate on the line (content)
+            local list = getlist(tail)
+            if list then
+                local result = lineactions(list,where,tail) -- tail is parent of list
+                if result and result ~= list then
+                    setlist(tail,result)
                 end
-            elseif where == "postadjust" or where == "preadjust" then
-                -- we use the same order as for lines
-                return adjustactions(head,where,tail,index)
             end
-        end
+     -- end
     end
 
-    callbacks.register("append_line_filter", processors.append_line_filter, "things done with lines")
+    callbacks.register {
+        name    = "append_line",
+        action  = append_line_callback,
+        comment = "things done with lines",
+        frozen  = true,
+    }
+
+ -- local function append_adjust_callback(head,tail,where,index)
+ --  -- if tail then
+ --         return adjustactions(head,where,tail,index)
+ --  -- end
+ -- end
+
+    local append_adjust_callback = tasks.actions("adjusters")
+
+    callbacks.register {
+        name    = "append_adjust",
+        action  = append_adjust_callback,
+        comment = "things done with vertical adjusts",
+        frozen  = true,
+    }
+
+ -- local function append_migrate_callback(head,tail,where)
+ --  -- if tail then
+ --         return migrateactions(head,where,tail)
+ --  -- end
+ -- end
+
+    local append_migrate_callback = tasks.actions("migrators")
+
+    callbacks.register {
+        name    = "append_migrate",
+        action  = append_migrate_callback,
+        comment = "things done with migrated meterial",
+        frozen  = true,
+    }
 
 end
 
@@ -143,17 +184,39 @@ do
 
     local actions = tasks.actions("alignments")
 
-    function processors.alignment_filter(head,where,callback,attr,preamble)
-        -- todo: add timing
+    local function alignment_callback(head,where,callback,attr,preamble)
         if callback then
             actions(head,where,callback,attr,preamble)
         end
     end
 
-    callbacks.register("alignment_filter", processors.alignment_filter, "things done with alignments")
+    callbacks.register {
+        name    = "alignment",
+        action  = alignment_callback,
+        comment = "things done with alignments",
+        frozen  = true,
+    }
 
 end
 
-statistics.register("h-node processing time", function()
-    return statistics.elapsedseconds(nodes,"including kernel") -- hm, ok here?
-end)
+do
+
+    -- dummy, not to be used, we have no need to add more overhead
+
+    callbacks.register {
+        name     = "hpack",
+        action   = false,
+        comment  = "hlist processing (not used, replaced)",
+        frozen   = true,
+        disabled = true,
+    }
+
+    callbacks.register {
+        name     = "append_to_vlist",
+        action   = false,
+        comment  = "vlist processing (not used, replaced)",
+        frozen   = true,
+        disabled = true,
+    }
+
+end

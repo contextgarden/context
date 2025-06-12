@@ -155,10 +155,33 @@ appendaction(wrapupactions,"system",synctex.wrapup)
 
 -- this can be done later
 
-callbacks.register("start_run",  start_run,        "actions performed at the beginning of a run")
-callbacks.register("stop_run",   stop_run,         "actions performed at the end of a run")
-callbacks.register("pre_dump",   pre_dump_actions, "lua related finalizers called before we dump the format") -- comes after \everydump
-callbacks.register("wrapup_run", wrapup_run,       "actions performed after closing files")
+callbacks.register {
+    name    = "start_run",
+    action  = start_run,
+    comment = "actions performed at the beginning of a run",
+    frozen  = true,
+}
+
+callbacks.register {
+    name    = "stop_run",
+    action  = stop_run,
+    comment = "actions performed at the end of a run",
+    frozen  = true,
+}
+
+callbacks.register { -- comes after \everydump
+    name    = "pre_dump",
+    action  = pre_dump_actions,
+    comment = "lua related finalizers called before we dump the format",
+    frozen  = true,
+}
+
+callbacks.register {
+    name    = "wrapup_run",
+    action  = wrapup_run,
+    comment = "actions performed after closing files",
+    frozen  = true,
+}
 
 -- an example:
 
@@ -257,8 +280,19 @@ local function report_stop()
     end
 end
 
-callbacks.register("start_file",report_start,"report opening of a file")
-callbacks.register("stop_file", report_stop, "report closing of a file")
+callbacks.register {
+    name    = "start_file",
+    action  = report_start,
+    comment = "report opening of a file",
+    frozen  = true,
+}
+
+callbacks.register {
+    name    = "stop_file",
+    action  = report_stop,
+    comment = "report closing of a file",
+    frozen  = true,
+}
 
 -- start_run doesn't work
 
@@ -268,24 +302,31 @@ callbacks.register("stop_file", report_stop, "report closing of a file")
 --     end
 -- end)
 
-local report   = logs.reporter("csname overload")
-local reported = { }
+local report     = logs.reporter("csname overload")
+local reported   = { }
+local formatters = string.formatters
 
-callbacks.register("handle_overload", function(fatal,overload,csname,flags)
+local function handle_overload_callback(fatal,overload,csname,flags)
     if not reported[csname] then
+        reported[csname] = true
         logs.newline()
         local readstate  = status.readstate
         local filename   = readstate.filename
         local linenumber = readstate.linenumber
         local flags      = tokens.flags and tokens.flags(csname) or { }
+        local active, n  = tokens.isactivestring(csname)
+        if active and n then
+           csname = formatters["active character 0x%X"](n)
+        else
+           csname = formatters["control sequence %a"](csname)
+        end
         if filename and linenumber then
-            report("%s, protection level %i, control sequence %a, properties '% t', file %a, line %i",
+            report("%s, protection level %i, %s, properties '% t', file %a, line %i",
                 fatal and "fatal error" or "warning",overload,csname,flags,filename,linenumber)
         else
-            report("%s, protection level %i, control sequence %a, properties '% t'",
+            report("%s, protection level %i, %s, properties '% t'",
                 fatal and "fatal error" or "warning",overload,csname,flags)
         end
-        reported[csname] = true
         logs.newline()
         if fatal then
             cleanup_run()
@@ -293,7 +334,14 @@ callbacks.register("handle_overload", function(fatal,overload,csname,flags)
             osexit(1)
         end
     end
-end,"handle primitive and macro overload protection")
+end
+
+callbacks.register {
+    name    = "handle_overload",
+    action  = handle_overload_callback,
+    comment = "handle primitive and macro overload protection",
+    frozen  = true,
+}
 
 -- bonus
 

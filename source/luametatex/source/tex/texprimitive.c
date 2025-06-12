@@ -21,7 +21,7 @@
     hash table is empty, we have |text(p)=0|; if position |p| is either empty or the end of a
     coalesced hash list, we have |next(p) = 0|. An auxiliary pointer variable called |hash_used| is
     maintained in such a way that all locations |p >= hash_used| are nonempty. The global variable
-    |cs_count| tells how many multiletter control sequences have been defined, if statistics are
+    |cs_count| tells how many multi-letter control sequences have been defined, if statistics are
     being kept.
 
     A boolean variable called |no_new_control_sequence| is set to |true| during the time that new
@@ -639,7 +639,7 @@ static void tex_aux_print_chr_cmd(const char *s, halfword cmd, halfword chr)
         tex_print_char(' ');
         /*
             By using the the unicode (ascii) names for some we can better support syntax
-            highlighting (which often involves parsing). The names are enclused in single
+            highlighting (which often involves parsing). The names are enclosed in single
             quotes. For the chr codes above 128 we assume \UNICODE\ support.
         */
         /*tex

@@ -936,9 +936,9 @@ local function enhance(data)
         if dr then
             local sy = dr.sy
             if sy and sy ~= 1 then
-                data.y = data.y * sy
-                data.h = data.h * sy
-                data.d = data.d * sy
+                data.y = (data.y or 0) * sy
+                data.h = (data.h or 0) * sy
+                data.d = (data.d or 0) * sy
             end
         end
     end

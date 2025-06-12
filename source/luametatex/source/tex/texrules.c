@@ -64,7 +64,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         }
     }
     while (1) {
-        switch (tex_scan_character("awhdkpxylrtbcfoAWHDPKXYLRTBCFO", 0, 1, 0)) {
+        switch (tex_scan_character("awhdkpxylrtbcfonsAWHDPKXYLRTBCFONS", 0, 1, 0)) {
             case 0:
                 goto DONE;
             case 'a': case 'A':
@@ -80,6 +80,16 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
             case 'h': case 'H':
                 if (tex_scan_mandate_keyword("height", 1)) {
                     rule_height(rule) = tex_scan_dimension(0, 0, 0, 0, NULL, NULL);
+                }
+                break;
+            case 'n': case 'N':
+                if (tex_scan_mandate_keyword("nosnapping", 1)) {
+                    rule_options(rule) |= rule_option_no_snapping;
+                }
+                break;
+            case 's': case 'S':
+                if (tex_scan_mandate_keyword("snapping", 1)) {
+                    rule_options(rule) |= rule_option_snapping;
                 }
                 break;
             case 'd': case 'D':

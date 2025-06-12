@@ -682,6 +682,7 @@
 %D So, yes has become text
 
 \newconditional\c_strc_math_split_mode
+\newconditional\c_strc_math_pack_mode
 
 \newconditional\c_strc_formulas_tight
 \newconditional\c_strc_formulas_packed
@@ -970,9 +971,17 @@
 
 \def\strc_math_set_split
   {\ifcstok{\formulaparameter\c!split}\v!line
+     % we produce a hbox
      \global\c_strc_math_split_mode\conditionalfalse
-   \else
+     \global\c_strc_math_pack_mode \conditionalfalse
+   \orelse\iflastnamedcs\v!no
+     % we produce a vbox
      \global\c_strc_math_split_mode\conditionaltrue
+     \global\c_strc_math_pack_mode \conditionaltrue
+   \else
+     % we produce a list (unvboxed)
+     \global\c_strc_math_split_mode\conditionaltrue
+     \global\c_strc_math_pack_mode \conditionalfalse
    \fi
    \mathpenaltiesmode\plusone
    \global\d_strc_math_indent\zeropoint}
@@ -1575,6 +1584,9 @@
    \iftrialtypesetting\else
      \global\advanceby\c_strc_formulas_n\plusone
    \fi
+   %
+   \global\d_strc_formulas_number\zeropoint % maybe we need more resets (order issue ?)
+   %
    \cdef\currentformula{#1}%
    \usesetupsparameter\formulaparameter % new
    \dostarttaggedchained\t!formula\currentformula\currentformula\??formula
@@ -1591,6 +1603,11 @@
    \else
      \let\strc_formulas_begstrut\relax
      \let\strc_formulas_endstrut\relax
+   \fi
+   \ifgridsnapping
+     \ifempty{\formulaparameter\c!gridcorrection}\else
+       \normalexpanded{\setgridcorrection[\lastnamedcs]}%
+     \fi
    \fi
    \noindentation
    \csname\e!start\formulaparameter\c!alternative\v!formula\endcsname}

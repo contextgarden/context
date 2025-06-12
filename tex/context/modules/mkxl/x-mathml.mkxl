@@ -2063,7 +2063,8 @@
     \edef\mmlfraclinethickness{\xmlatt{#1}{linethickness}}
     \ifempty\mmlfraclinethickness
         \doifelse{\xmlatt{#1}{bevelled}}{true} {
-            \left.\mmlfirst{#1}\middle/\mmlsecond{#1}\right.% \thinspace\middle/\thinspace
+          % \left.\mmlfirst{#1}\middle/\mmlsecond{#1}\right.% \thinspace\middle/\thinspace
+            \vfrac{\mmlfirst{#1}}{\mmlsecond{#1}}
         } {
             \mmlfrac{\mmlfirst{#1}}{\mmlsecond{#1}}
         }
@@ -2074,9 +2075,8 @@
             % probably not yet ok
             \setdimensionwithunit\scratchdimen\mmlfraclinethickness{pt}
         }
-%         {
-        \Uabove\scratchdimen{\mmlfirst{#1}}{\mmlsecond{#1}}
-%         }
+        % what if fraction has left and right attributes
+        \binom[\c!left=0,\c!right=0]{\mmlfirst{#1}}{\mmlsecond{#1}}
     \fi
     \endgroup
 \stopxmlsetups
@@ -2231,6 +2231,16 @@
     \xmlelement{#1}{3}
 \stoptexdefinition
 
+% todo: check if defined as mathfunction with method=limits key
+
+\permanent\protected\def\doifelsemathfunctionwithlimits#1%
+%   {\doifelse{#1}{lim}}
+  {\ifhasxtoks{lim}{#1}%
+    \expandafter\firstoftwoarguments
+   \else
+    \expandafter\secondoftwoarguments
+   \fi}
+
 % mover
 
 \starttexdefinition protected mmloverabove #1
@@ -2256,13 +2266,15 @@
 
 \startxmlsetups mml:mover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathlimop\mmlbasetoken
-      {\mmllimopover{#1}}
-      {\doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}}
+    \doifelsemathfunctionwithlimits\mmlbasetoken
+      {\mmllimopover\getvalue{#1}}
+      {\doifelseutfmathlimop\mmlbasetoken
+        {\mmllimopover\remapmathoperator{#1}}
+        {\doifelseutfmathfiller\mmlbasetoken \mmloverbasefiller \mmloveraccentchecker {#1}}}
 \stopxmlsetups
 
-\starttexdefinition mmllimopover #1
-    \remapmathoperator{\mmlbasetoken}\normalsuperscript{\mmlfencedsecond{#1}}
+\starttexdefinition mmllimopover #1#2
+    #1{\mmlbasetoken}\normalsuperscript{\mmlfencedsecond{#2}}
 \stoptexdefinition
 
 % munder
@@ -2290,13 +2302,15 @@
 
 \startxmlsetups mml:munder
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathlimop\mmlbasetoken
-      {\mmllimopunder{#1}}
-      {\doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}}
+    \doifelsemathfunctionwithlimits\mmlbasetoken
+      {\mmllimopunder\getvalue{#1}}
+      {\doifelseutfmathlimop\mmlbasetoken
+         {\mmllimopunder\remapmathoperator{#1}}
+         {\doifelseutfmathfiller\mmlbasetoken \mmlunderbasefiller \mmlunderaccentchecker {#1}}}
 \stopxmlsetups
 
-\starttexdefinition mmllimopunder #1
-    \remapmathoperator{\mmlbasetoken}\normalsubscript{\mmlfencedsecond{#1}}
+\starttexdefinition mmllimopunder #1#2
+    #1{\mmlbasetoken}\normalsubscript{\mmlfencedsecond{#2}}
 \stoptexdefinition
 
 % munderover
@@ -2360,13 +2374,15 @@
 
 \startxmlsetups mml:munderover
     \edef\mmlbasetoken{\mmlextensible{\xmlraw{#1}{/mml:*[1]}}}% /text()
-    \doifelseutfmathlimop\mmlbasetoken
-      {\mmllimopunderover{#1}}
-      {\doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}}
+    \doifelsemathfunctionwithlimits\mmlbasetoken
+      {\mmllimopunder\getvalue{#1}}
+      {\doifelseutfmathlimop\mmlbasetoken
+         {\mmllimopunderover\remapmathoperator{#1}}
+         {\doifelseutfmathfiller\mmlbasetoken \mmlunderoverbasefiller \mmlunderoveraccentchecker {#1}}}
 \stopxmlsetups
 
-\starttexdefinition mmllimopunderover #1
-    \remapmathoperator{\mmlbasetoken}\normalsuperscript{\mmlfencedthird{#1}}\normalsubscript{\mmlfencedsecond{#1}}
+\starttexdefinition mmllimopunderover #1#2
+    #1{\mmlbasetoken}\normalsuperscript{\mmlfencedthird{#2}}\normalsubscript{\mmlfencedsecond{#2}}
 \stoptexdefinition
 
 % tables (mml:mtable, mml:mtr, mml:mlabledtr, mml:mtd)

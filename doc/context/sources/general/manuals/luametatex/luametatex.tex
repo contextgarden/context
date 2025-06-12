@@ -1,4 +1,12 @@
-% language=us runpath=texruns:manuals/luametatex xxxsignal=signal
+% language=us runpath=texruns:manuals/luametatex xsignal=runner signal=squid
+
+% \enabletrackers[callbacks.calls]
+
+\enableexperiments[optimize.typesetting.char]
+\enableexperiments[optimize.spacing.profile]
+\enableexperiments[optimize.math.process]
+\enableexperiments[optimize.math.indexed]
+\enableexperiments[optimize.backend.traverse]
 
 % watch out : profiling on different path
 
@@ -7,7 +15,7 @@
 
 % \linebuffering
 
-\nologbuffering
+% \nologbuffering
 
 % \nopdfcompression
 

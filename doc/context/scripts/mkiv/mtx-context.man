@@ -155,6 +155,9 @@ do not descend to .. and ../..
 .B --version
 report installed context version
 .TP
+.B --integrity
+report mismatch between binary and expectations
+.TP
 .B --global
 assume given file present elsewhere
 .TP

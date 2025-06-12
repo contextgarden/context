@@ -686,7 +686,7 @@ registerafmfeature(specification)
 
 --
 
-local function addquality(id)
+local function quality_font_callback(id)
     local tfmdata = fonts.hashes.identifiers[id]
     if tfmdata then
         local expansion = tfmdata.parameters.expansion
@@ -799,4 +799,9 @@ local function addquality(id)
     end
 end
 
-callback.register("quality_font",addquality)
+callbacks.register {
+    name    = "quality_font",
+    action  = quality_font_callback,
+    comment = "initialize expansion and protrusion",
+    frozen  = true,
+}

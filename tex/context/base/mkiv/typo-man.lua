@@ -14,7 +14,7 @@ end
 
 local lpegmatch  = lpeg.match
 local P, R, C, Ct, Cs, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
-local global = global or _G
+----- global = global or _G -- global has become a keyword in 5.5
 
 local methods = {
     uppercase = characters.upper,

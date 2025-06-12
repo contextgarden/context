@@ -7,16 +7,14 @@ if not modules then modules = { } end modules ['lang-txt'] = {
     dataonly  = true,
 }
 
--- The content of this file is derived from the mkii lang-* files and
--- early 2011 the mkii labels are generated from this file. The
--- translations have been collected over years by users, using named
--- glyphs. This file uses utf exclusively.
+-- The content of this file is derived from the mkii lang-* files and early 2011
+-- the mkii labels are generated from this file. The translations have been collected
+-- over years by users, using named glyphs. This file uses utf exclusively.
 --
--- Many of the initial translations were done by Tobias Burnus but
--- completed by numerous users. The following list is incomplete so feel
--- free to send me corrections.
+-- Many of the initial translations were done by Tobias Burnus but completed by
+-- numerous users. The following list is incomplete so feel free to send corrections.
 --
--- In 2019+ Tomas Hala and his students (from Mendel University in Brno, CZ), added 
+-- In 2019+ Tomas Hala and his students (from Mendel University in Brno, CZ), added
 -- some more languages and did some extensive checking of the entries in this file.
 --
 -- af    Afrikaans      ...
@@ -4955,7 +4953,7 @@ data.labels={
     ["id"]="Proyek Sarjana",
     ["lt"]="Bakalauro projektas",
     ["ml"]="Projek Sarjana Muda",
-    ["pt"]="Projeto de Licenciatura", 
+    ["pt"]="Projeto de Licenciatura",
     ["ro"]="Proiect de licență",
     ["sl"]="Diplomski projekt",
     ["sk"]="Bakalársky projekt",

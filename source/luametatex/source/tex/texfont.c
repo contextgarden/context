@@ -11,7 +11,7 @@
         \startitem
             Knuth had a |null_character| that was used when a character could not be found by the
             |fetch()| routine, to signal an error. This has been deleted, but it may mean that the
-            output of luatex is incompatible with TeX after |fetch()| has detected an error
+            output of \LUATEX\ is incompatible with TeX after |fetch()| has detected an error
             condition.
         \stopitem
 
@@ -29,7 +29,7 @@
 /*tex 
     Finally the base mode ligaturing and kerning code has also been made more consistent with the 
     rest: abstraction, more tight equality testing, helpers, merged some experiments, etc. It will 
-    probably evolve a bit more; not that we use basemode frequently in \CONTEXT. Keep in mind that 
+    probably evolve a bit more; not that we use base mode frequently in \CONTEXT. Keep in mind that 
     it is not that hard to mess up the list when using \LUA\ but we do little checking here. 
 
     From now on base mode ligaturing and kerning will only be applied when |text_font_control| 
@@ -127,7 +127,7 @@ font_state_info lmt_font_state = {
 };
 
 /*tex
-    There can be holes in the font id range. And \unknown\ nullfont is special! Contrary
+    There can be holes in the font id range. And \unknown\ |nullfont| is special! Contrary
     to other places, here we don't reallocate an array of records but one of pointers.
 */
 
@@ -1157,7 +1157,7 @@ static void tex_aux_handle_ligature_pair(halfword target, int location)
 /*tex
 
     In \LUATEX\ we have a chained variant of discretionaries (init and select) but that never really
-    works out ok. It was there for basemode to be compatible with original \TEX\ but it was also means
+    works out ok. It was there for base mode to be compatible with original \TEX\ but it was also means
     for border cases that in practice never occur. A least no \CONTEXT\ user ever complained about
     ligatures and hyphenation of these border cases. Keep in mind that in node mode (which we normally
     use) the select discs never showed up anyway. Another reason for dropping these discretionaries is
@@ -1569,14 +1569,14 @@ static halfword tex_aux_run_lua_ligkern_callback(lua_State *L, halfword head, ha
     int top = 0;
     if (lmt_callback_okay(L, callback_id, &top)) {
         int i;
-        lmt_node_list_to_lua(L, head);
+        lmt_push_node_to_callback(L, head);
         lmt_push_group_code(L, group);
         lua_pushinteger(L, direction);
         i = lmt_callback_call(L, 3, 1, top);
         if (i) {
             lmt_callback_error(L, top, i);
         } else {
-            head = lmt_node_list_from_lua(L, -1);
+            head = lmt_pop_node_from_callback(L, -1);
             lmt_callback_wrapup(L, top);
         }
     }

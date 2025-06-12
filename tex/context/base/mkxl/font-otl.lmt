@@ -129,6 +129,9 @@ if not checkmemory then -- we need a generic plug (this code might move):
 
 end
 
+local fixers = { }
+otf.fixers   = fixers
+
 function otf.load(filename,sub,instance)
     local base = file.basename(file.removesuffix(filename))
     local name = file.removesuffix(base) -- already no suffix
@@ -167,6 +170,14 @@ function otf.load(filename,sub,instance)
             if cleanup == 0 then
                 checkmemory(used,threshold,tracememory)
             end
+local fixer = fixers[lower(file.basename(filename))]
+if type(fixer) ~= "table" then
+    fixer = false
+end
+if fixer and type(fixer.before) == "function" then
+    report_otf("fixing before %a",filename)
+    fixer.before(fixer,data) -- ,filename,sub or 1,instance)
+end
             if svgshapes then
                 resources.svgshapes = nil
                 if otf.svgenabled then
@@ -215,7 +226,10 @@ function otf.load(filename,sub,instance)
             otfreaders.rehash(data,"unicodes")
             otfreaders.addunicodetable(data)
             otfreaders.extend(data)
-            if cleanup == 0 then
+if fixer and type(fixer.after) == "function" then
+    report_otf("fixing after %a",filename)
+    fixer.after(fixer,data) -- ,filename,sub or 1,instance)
+end         if cleanup == 0 then
                 checkmemory(used,threshold,tracememory)
             end
             if context then

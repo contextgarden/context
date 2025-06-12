@@ -45,8 +45,8 @@
 %D
 %D These macros provides two or three digits always:
 
-\permanent\def\twodigits  #1{\ifnum             #1<10     0\fi\number#1}
-\permanent\def\threedigits#1{\ifnum#1<100 \ifnum#1<10 0\fi0\fi\number#1}
+\permanent\def\twodigits  #1{\ifnum                      #1<\plusten     0\fi\number#1}
+\permanent\def\threedigits#1{\ifnum#1<\plushundred \ifnum#1<\plusten 0\fi0\fi\number#1}
 
 %D \macros{modulonumber}
 %D

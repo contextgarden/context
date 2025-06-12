@@ -33,8 +33,8 @@ local fontmodes         = fonthashes.modes
 
 local otf               = fonts.handlers.otf
 
-local starttiming       = statistics.starttiming
-local stoptiming        = statistics.stoptiming
+----- starttiming       = statistics.starttiming
+----- stoptiming        = statistics.stoptiming
 
 local nodecodes         = nodes.nodecodes
 local boundarycodes     = nodes.boundarycodes
@@ -656,14 +656,14 @@ end
 
     function handlers.characters(head,groupcode,direction)
 
-    -- no gain:
+     -- no gain:
 
-    -- local h = hasglyph(head)
-    -- if not h then
-    --     return head
-    -- end
+     -- local h = hasglyph(head)
+     -- if not h then
+     --     return head
+     -- end
 
-        starttiming(nodes)
+     -- starttiming(nodes)
 
         usedfonts    = { }
         dynamicfonts = { }
@@ -923,7 +923,7 @@ end
 --             end
 --         end
 
-        stoptiming(nodes)
+     -- stoptiming(nodes)
 
         if trace_characters then
             nodes.report(head)
@@ -936,3 +936,7 @@ end
 
 handlers.protectglyphs   = protectglyphs
 handlers.unprotectglyphs = unprotectglyphs
+
+-- statistics.register("h-node processing time", function()
+--     return statistics.elapsedseconds(nodes,"including kernel") -- hm, ok here?
+-- end)

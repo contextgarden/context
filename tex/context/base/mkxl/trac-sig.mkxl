@@ -1,0 +1,33 @@
+%D \module
+%D   [       file=trac-sig,
+%D        version=2024.04.07,
+%D          title=\CONTEXT\ Tracing Macros,
+%D       subtitle=Squid mode,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Tracing Macros / Squid mode}
+
+\unprotect
+
+\registerctxluafile{trac-sig}{autosuffix}
+
+\permanent\protected\def\enablesquidmode
+  {\ifdefined\clf_squid_busy
+    %\toksapp\everyaftershipout{\clf_squid_busy}%
+     \toksapp\everyaftershipout{\clf_squid_step}%
+     \toksapp\everygoodbye     {\clf_squid_done}%
+     \clf_squid_init
+     \clf_squid_busy
+   \fi}
+
+\prependtoks
+    \clf_squid_check
+\to \everystarttext
+
+\protect \endinput

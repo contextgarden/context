@@ -89,6 +89,14 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = {
+                      "NewCMMath-Regular",
+                      "NewCMMath-Book",
+                    },
+                    abort    = true,
+                },
+                {
                     tweak    = "version",
                     expected = "Version 1.958",
                 },

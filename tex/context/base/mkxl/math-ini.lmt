@@ -200,7 +200,16 @@ classes["all"]   = specialclasses["all"]    classnames[specialclasses["all"]  ] 
 classes["begin"] = specialclasses["begin"]  classnames[specialclasses["begin"]] = "beg"
 classes["end"]   = specialclasses["end"]    classnames[specialclasses["end"]  ] = "end"
 
-callbacks.register("get_noad_class", function(n) return classnames[n] end,"provide math class name")
+local function get_noad_class_callback(n)
+    return classnames[n]
+end
+
+callbacks.register {
+    name    = "get_noad_class",
+    action  = get_noad_class_callback,
+    comment = "provide math class name",
+    frozen  = true,
+}
 
 -- inspect(classes) os.exit()
 
@@ -501,8 +510,8 @@ do
     local f_dictionary = false
     local whatdetail   = "all"
 
-    local function trace(n,properties,group,index,font,char)
-     -- local properties, group, index, font, char = nodes.nuts.getchardict(nodes.nuts.tonut(n))
+    local function get_math_dictionary_callback(n,properties,group,index,font,char)
+     -- local properties, group, index, font, char = nodes.nuts.getchardict(n)
         if whatdetail and (properties ~= 0 or group ~= 0 or index ~= 0) then
             local char = fontchardata[font][char]
             if char or whatdetail == "all" then
@@ -530,7 +539,12 @@ do
 
     trackers.register("math.dictionaries",function(v) whatdetail = v end)
 
-    callbacks.register("get_math_dictionary",trace,"provide math dictionary details")
+    callbacks.register {
+        name    = "get_math_dictionary",
+        action  = get_math_dictionary_callback,
+        comment = "provide math dictionary details",
+        frozen  = true,
+    }
 
     -- This is experimental and a prelude to the long pending "relate math rendering to
     -- some field" wish. In TeX characters and symbols are grouped by class but that is
@@ -1093,8 +1107,7 @@ do
             if b then
                 n = (n > #b and b[#b]) or b[n] or n
             end
-            return integer_value, n
-+ 1
+            return integer_value, n + 1
         end
     }
 

@@ -667,9 +667,12 @@
 \immutable\integerdef\plusfourteen              14
 \immutable\integerdef\plusfifteen               15
 \immutable\integerdef\plussixteen               16
+\immutable\integerdef\plustwentyfour            24
 \immutable\integerdef\plustwentyfive            25
+\immutable\integerdef\plusthirtytwo             32
 \immutable\integerdef\plusfourtytwo             42  % also fitness value
 \immutable\integerdef\plusfifty                 50
+\immutable\integerdef\plussixty                 60
 \immutable\integerdef\plusninetynine            99  % also fitness value
 \immutable\integerdef\plushundred              100
 \immutable\integerdef\plusonehundred           100
@@ -722,9 +725,9 @@
 \newbox\voidbox  % public
 
 \permanent\def\unvoidbox{\unhbox\voidbox}
-\permanent\def\emptybox {\box   \voidbox}  % used in initializations so no attributes
-\permanent\def\emptyvbox{\normalvpack{}}   % no copy as we need to set attributes
-\permanent\def\emptyhbox{\normalhpack{}}   % no copy as we need to set attributes
+\permanent\def\emptybox {\box   \voidbox} % used in initializations so no attributes
+\permanent\def\emptyvbox{\vpack{}}        % no copy as we need to set attributes
+\permanent\def\emptyhbox{\hpack{}}        % idem
 
 \aliased\let\dontleavehmode\quitvmode
 
@@ -1048,8 +1051,8 @@
 
 \permanent\protected\def\newfraction#1{\mutable\let#1\!!plusone}
 
-\def\!!zerocount{0} % later redefined
-\def\!!plusone  {1} % later redefined
+\def\!!zerocount{0} % later redefined .. kind of obsolete
+\def\!!plusone  {1} % later redefined .. kind of obsolete
 
 %D It would be handy to have a primitive \type {\unless\ifcase} because then we
 %D could use nicer values. Anyhow, this conditional code used to be in the \type

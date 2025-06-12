@@ -3,7 +3,7 @@
     See license.txt in the root of this project.
 
     In order to match the xmath library we also support complex error functions. For that we use
-    the libcerf funcitonality. That library itself is a follow up on other code (you can find
+    the libcerf functionality. That library itself is a follow up on other code (you can find
     articles on the web).
 
     One complication is that the library (at the time we started using it) is not suitable for the

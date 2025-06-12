@@ -63,7 +63,7 @@ extern int         tex_vmode_nest_index      (void);
 
 /*tex
     When we use a macro instead of a function we need to use an intermediate variable because |_p_|
-    can be a functioncall itself (something |new_*|). The gain is a little performance because this
+    can be a function call itself (something |new_*|). The gain is a little performance because this
     one is called a lot. The loss is a bit larger binary. There are some more macros sensitive for
     this, like the ones that couple nodes. Also, inlining a function can spoil this game!
 */

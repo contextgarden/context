@@ -15,7 +15,6 @@ local tonumber = tonumber
 local report_bitmap = logs.reporter("graphics","bitmaps")
 
 local context = context
-local texsp   = tex.sp
 
 local function bitmapimage(t)
     local data        = t.data
@@ -62,8 +61,24 @@ interfaces.implement {
     }
 }
 
-local function qrbitmap(str,width)
+--
+
+local gsub, char = string.gsub, string.char
+
+local rgbbytes = attributes.colors.rgbbytes
+
+local function qrbitmap(str,color,width)
     local data, size = qrcodegen.generate(str)
+    if color and color ~= "" then
+        color = rgbbytes(color)
+        if color ~= rgbbytes("black") then
+            local black = char(0)
+            local white = char(230,230,230)
+            data = gsub(data,"(.)",function(c)
+                return c == black and color or white
+            end)
+        end
+    end
     bitmapimage {
         xresolution = size,
         yresolution = size,
@@ -80,14 +95,14 @@ figures.qrcode   = qrbitmap
 
 interfaces.implement {
     name      = "qrcodestring",
-    arguments = { "string", "dimension" },
+    arguments = { "string", "string", "dimension" },
     actions   = qrbitmap
 }
 
 interfaces.implement {
     name      = "qrcodebuffer",
-    arguments = { "string", "dimension" },
-    actions   = function(str,width)
-        qrbitmap(buffers.getcontent(str),width)
+    arguments = { "string", "string", "dimension" },
+    actions   = function(str,color,width)
+        qrbitmap(buffers.getcontent(str),color,width)
     end
 }

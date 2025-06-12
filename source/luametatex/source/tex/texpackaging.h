@@ -225,7 +225,7 @@ typedef enum effective_empty_options {
     Originally the shift was encoded in the box context in case of a move. In fact even the local 
     and global register assignments were in that property but this is no longer the case. This
     actually makes implementing a |\boxspecdef| cleaner (a discarded experiment). The intermediate 
-    cleasned up flags can be found in the history. 
+    cleaned up flags can be found in the history. 
 
 */
 

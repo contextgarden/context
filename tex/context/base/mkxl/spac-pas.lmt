@@ -65,8 +65,6 @@ end
 builders.parpassidentifier = parpassidentifier
 
 local nuts            = nodes.nuts
-local tonut           = nuts.tonut
-local tonode          = nuts.tonode
 local insertafter     = nuts.insertafter
 
 local linebreakstates = tex.linebreakstatecodes
@@ -93,7 +91,6 @@ local nofsubpasses = 0
 local nofsubdone   = 0
 
 local function marker(par,pass,subpass,subpasses,state,identifier,name,collect)
-    par = tonut(par)
     if not visualizepasses then
         visualizepasses = nodes.visualizers.register("passes","trace:dr","trace:dr",-1.5)
         nodes.visualizers.definelayer("passes")
@@ -130,7 +127,7 @@ local function marker(par,pass,subpass,subpasses,state,identifier,name,collect)
     if type(name) == "string" or name > 0 then
         pass = name .. ":" .. pass
     end
-    return tonode(visualizepasses(pass))
+    return visualizepasses(pass)
 end
 
 local function linebreak_quality_console(par,id,pass,subpass,subpasses,state,overfull,underfull,verdict,classified,line)
@@ -194,7 +191,7 @@ statistics.register("linebreak quality",function()
     end
 end)
 
-local registercallback = callback.register
+local registercallback = callbacks.register
 
 trackers.register("paragraphs.passes", function(v)
     if not v then
@@ -206,23 +203,31 @@ trackers.register("paragraphs.passes", function(v)
     else
         tracing = linebreak_quality_simple
     end
-    registercallback("linebreak_quality",tracing)
+    registercallback {
+        name   = "linebreak_quality",
+        action = tracing,
+    }
 end)
 
 -- trackers.register("paragraphs.passes.console", function(v)
 --     tracing = v and linebreak_quality_console or nil
---     registercallback("linebreak_quality",tracing)
+--     registercallback {
+--         name   = "linebreak_quality",
+--         action = tracing,
+--     }
 -- end)
 
 -- trackers.register("paragraphs.passes.summary", function(v)
 --     tracing = v and linebreak_quality_summary or nil
---     registercallback("linebreak_quality",tracing)
+--     registercallback {
+--         name   = "linebreak_quality",
+--         action = tracing,
+--     }
 -- end)
 
 -- -- -- --
 
 local nuts    = nodes.nuts
-local tonut   = nodes.tonut
 local setprop = nuts.setprop
 local getprop = nuts.getprop
 
@@ -234,14 +239,13 @@ end)
 
 local actions = { }
 
-callback.register("paragraph_pass", function(
-        head,identifier,subpass,callback,
-        overfull,underfull,verdict,classified,
-        threshold,badness,classes
-    )
+local function paragraph_pass_callback(
+    head,identifier,subpass,callback,
+    overfull,underfull,verdict,classified,
+    threshold,badness,classes
+)
     local action = actions[callback]
     if action then
-        local head = tonut(head)
         local step = getprop(head,"par_pass_done") or 1
         setprop(head,"par_pass_done",step+1)
         local result, again = action(
@@ -263,7 +267,12 @@ callback.register("paragraph_pass", function(
         report("identifier %a, subpass %i, unknown callback %a",identifier,subpass,callback)
         return false
     end
-end)
+end
+
+registercallback {
+    name   = "paragraph_pass",
+    action = paragraph_pass_callback,
+}
 
 function builders.registerpaspasscallback(identifier,action)
     local index = parpassidentifier(identifier)

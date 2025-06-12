@@ -18,10 +18,9 @@ local nuts              = nodes.nuts
 local findtail          = nuts.tail
 local getprev           = nuts.getprev
 local setnext           = nuts.setnext
-local getid             = nuts.getid
 local getdata           = nuts.getdata
 local isglyph           = nuts.isglyph
-local getsubtype        = nuts.getsubtype
+local hasidsubtype      = nuts.hasidsubtype
 local getattr           = nuts.getattr
 local flushnodelist     = nuts.flushlist
 local traverse_boundary = nuts.traversers.boundary
@@ -49,7 +48,7 @@ local a_crlf <const> = attributes.private("crlf")
 
 local function remove_dangling_crlf(head,tail)
     if head and tail then
-        if getid(tail) == boundary_code and getsubtype(tail) == wordboundary_code then
+        if hasidsubtype(tail,boundary_code,wordboundary_code) then
             -- findnode could run backwards
             if getattr(tail,a_crlf) then
                 local t = tail
@@ -57,7 +56,7 @@ local function remove_dangling_crlf(head,tail)
                     t = getprev(t)
                     if not t then
                         break
-                    elseif getid(t) == boundary_code and getsubtype(t) == wordboundary_code then
+                    elseif hasidsubtype(t,boundary_code,wordboundary_code) then
                         if t ~= head then
                             if trace_wrappers then
                                 report("removing a probably unwanted end-of-par break in line %s (guess)",tex.inputlineno)

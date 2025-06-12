@@ -57,13 +57,8 @@ local insertnodebefore   = nodes.insertbefore
 local hpack_node         = nodes.hpack
 
 local nuts               = nodes.nuts
-local tonode             = nodes.tonode
-local tonut              = nodes.tonut
 local getattr            = nuts.getattr
 local flush              = nuts.flush
-
-local starttiming        = statistics.starttiming
-local stoptiming         = statistics.stoptiming
 
 local registercallback   = callbacks.register
 
@@ -72,11 +67,13 @@ storage.register("builders/paragraphs/constructors/numbers", numbers, "builders.
 
 local trace_page_builder = false  trackers.register("builders.page", function(v) trace_page_builder = v end)
 local trace_vbox_builder = false  trackers.register("builders.vbox", function(v) trace_vbox_builder = v end)
-local trace_post_builder = false  trackers.register("builders.post", function(v) trace_post_builder = v end)
+----- trace_par_builder  = false  trackers.register("builders.par",  function(v) trace_par_builder  = v end)
 
 local report_page_builder = logs.reporter("builders","page")
 local report_vbox_builder = logs.reporter("builders","vbox")
 local report_par_builder  = logs.reporter("builders","par")
+
+-- this will be redone ... we will never write a par builder in lua --
 
 local mainconstructor = nil -- not stored in format
 local nofconstructors = 0
@@ -180,26 +177,31 @@ end
 local actions = constructors.handler
 local enabled = false
 
-local function processor(head,followed_by_display)
+local function linebreak_callback(head,followed_by_display)
     -- todo: not again in otr so we need to flag
     if enabled then
-        starttiming(parbuilders)
-        head = tonode(actions(tonut(head),followed_by_display))
-        stoptiming(parbuilders)
-        return head
+        return actions(head,followed_by_display)
     else
-        return true -- let tex do the work
+        -- let tex do the work
     end
 end
 
-function constructors.enable () enabled = true  end
-function constructors.disable() enabled = false end
+local id, enable, disable = callbacks.optimizer("linebreak")
 
-registercallback("linebreak_filter", processor, "breaking paragraps into lines")
+function constructors.enable () enable()  enabled = true  end
+function constructors.disable() disable() enabled = false end
 
-statistics.register("linebreak processing time", function()
-    return statistics.elapsedseconds(parbuilders)
-end)
+registercallback {
+    name    = "linebreak",
+    action  = linebreak_callback,
+    comment = "breaking paragraps into lines",
+    frozen  = true,
+    disable = true,
+}
+
+-- disable()
+
+-- so far for the exprimental parbuilder hook
 
 -- todo: move from nodes.builders to builders
 
@@ -208,11 +210,9 @@ local builders = nodes.builders
 
 local vpackactions = nodes.tasks.actions("vboxbuilders")
 
-function builders.vpack_filter(head,groupcode,size,packtype,maxdepth,direction)
+local function vpack_callback(head,groupcode,size,packtype,maxdepth,direction)
     if head then
-        starttiming(builders)
         head = vpackactions(head,groupcode)
-        stoptiming(builders)
     end
     return head
 end
@@ -235,42 +235,100 @@ end
 -- but that needs to be intercepted when needed by groupcode and level. At some
 -- point this one might be split by group.
 
-function builders.buildpage_filter(pagecontext)
-    local head, tail = getspeciallist("contributehead")
-    if head then
-        if trace_page_builder then
-            report(pagecontext,head)
-        end
-        starttiming(builders)
-        head = pageactions(head,pagecontext) -- todo: tail
-        stoptiming(builders)
-        setspeciallist("contributehead", head)
-    else
-        if trace_page_builder then
-            report(pagecontext)
-        end
+-- Tricky: these pointers can change in the callback in which case the
+-- original lists can get messed up. This is the users responsibility!
+
+-- local function buildpage_callback(pagecontext,head,tail,pagehead,pagetail,boundary)
+--     local head, tail = getspeciallist("contributehead")
+--     if head then
+--         if trace_page_builder then
+--             report(pagecontext,head)
+--         end
+--         head = pageactions(head,pagecontext) -- todo: tail
+--         setspeciallist("contributehead", head)
+--     else
+--         if trace_page_builder then
+--             report(pagecontext)
+--         end
+--     end
+-- end
+
+-- In the case of vspacing we actually don't want to trigger the page builder so
+-- we need a way to signal that. This can also be a separate callback.
+
+--     local nextnode               = nuts.traversers.node
+--     local getattr                = nuts.getattr
+--     local glue_code              = nodes.nodecodes.glue
+--     local parskip_code           = nodes.gluecodes.parskip
+--     local baselineskip_code      = nodes.gluecodes.baselineskip
+--     local a_skipcategory <const> = attributes.private('skipcategory')
+--     local function checkglues(head)
+--         local found = false
+--         for n, id, subtype in nextnode, head do
+--             if id == glue_code and getattr(n,a_skipcategory) then
+--                 found = true
+--             elseif found then
+--                 if id == glue_code and subtype == parskip_code then
+--                 elseif id == glue_code and subtype == baselineskip_code then
+--                 else
+--                     -- rules and alignments and a few userskips
+--                     print("MIX MIX MIX MIX MIX",nuts.tonode(n))
+--                 end
+--             else
+--                 return false
+--             end
+--         end
+--         --         print("ONLY ONLY ONLY")
+--         return true
+--     end
+
+-- maybe hook the tracer into before
+
+local function buildpage_callback(pagecontext,head,pagehead,pagetail,boundary)
+    if trace_page_builder then
+        report(pagecontext,head)
     end
+    if head then
+-- checkglues(head)
+        -- One should leave pagehead and pagetail untouched!
+        head = pageactions(head,pagecontext,pagehead,pagetail,boundary)
+    end
+    return head -- can be a direct
 end
 
-registercallback("vpack_filter",     builders.vpack_filter,     "vertical spacing etc")
-registercallback("buildpage_filter", builders.buildpage_filter, "vertical spacing etc (mvl)")
+registercallback {
+    name    = "vpack",
+    action  = vpack_callback,
+    comment = "vertical spacing etc",
+    frozen  = true,
+}
+
+registercallback {
+    name    = "buildpage",
+    action  = buildpage_callback,
+    comment = "vertical spacing etc (mvl)",
+    frozen  = true,
+}
 
 local vboxactions = nodes.tasks.actions("vboxhandlers")
 
-function builders.vbox_filter(head,groupcode)
+local function vbox_callback(head,groupcode)
     if head then
-        starttiming(builders)
         head = vboxactions(head,groupcode)
-        stoptiming(builders)
     end
     return head
 end
 
-registercallback("packed_vbox_filter", builders.vbox_filter, "packed vbox treatments")
+registercallback {
+    name    = "packed_vbox",
+    action  = vbox_callback,
+    comment = "packed vbox treatments",
+    frozen  = true,
+}
 
-statistics.register("v-node processing time", function()
-    return statistics.elapsedseconds(builders)
-end)
+-- statistics.register("v-node processing time", function()
+--     return statistics.elapsedseconds(builders)
+-- end)
 
 local implement = interfaces.implement
 
@@ -284,7 +342,6 @@ implement { name = "disableparbuilder", actions = constructors.disable }
 -- Here are some tracers:
 
 local nuts         = nodes.nuts
-local tonut        = nodes.tonut
 local setcolor     = nodes.tracers.colors.set
 local listtoutf    = nodes.listtoutf
 local new_kern     = nuts.pool.kern
@@ -297,7 +354,6 @@ local getlist      = nuts.getlist
 local setwidth     = nuts.setwidth
 local setdirection = nuts.setdirection
 local setlink      = nuts.setlink
-local tonode       = nuts.tonode
 
 local list         = { }
 
@@ -407,21 +463,28 @@ local vqualityactions = nodes.tasks.actions("vquality")
 
 function hpackbuilders.qualityactions(how,detail,n,first,last,filename)
     local rul = nil
- -- starttiming(builders)
     rul = hqualityactions(how,detail,n,first,last,filename)
- -- stoptiming(builders)
     return rul
 end
 function vpackbuilders.qualityactions(how,detail,n,first,last,filename)
     local rul = nil
- -- starttiming(builders)
     rul = vqualityactions(how,detail,n,first,last,filename)
- -- stoptiming(builders)
     return rul
 end
 
-registercallback("hpack_quality", hpackbuilders.qualityactions, "report horizontal packing quality")
-registercallback("vpack_quality", vpackbuilders.qualityactions, "report vertical packing quality")
+registercallback {
+    name    = "hpack_quality",
+    action  = hpackbuilders.qualityactions,
+    comment = "report horizontal packing quality",
+    frozen  = true,
+}
+
+registercallback {
+    name    = "vpack_quality",
+    action  = vpackbuilders.qualityactions,
+    comment = "report vertical packing quality",
+    frozen  = true,
+}
 
 statistics.register("quality reports", function()
     local n = #list
@@ -465,12 +528,15 @@ do
 
     local texgetcount = tex.getcount
 
+    local function show_loners_callback(options,penalty)
+        loners[#loners+1] = { texgetcount("realpageno"), options, penalty }
+    end
+
     trackers.register("pages.loners",function(v)
-        callback.register("show_loners",
-            v and function(options,penalty)
-                loners[#loners+1] = { texgetcount("realpageno"), options, penalty }
-            end or nil
-        )
+        registercallback {
+            name   = "show_loners",
+            action = v and show_loners_callback or nil,
+        }
     end)
 
     logs.registerfinalactions(function()

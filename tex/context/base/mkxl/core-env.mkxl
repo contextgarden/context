@@ -15,7 +15,7 @@
 
 \installcorenamespace{setup} % is referenced in the lmt file:
 
-\registerctxluafile{core-env}{autosuffix}
+% \registerctxluafile{core-env}{autosuffix} % moved down
 
 \unprotect
 
@@ -62,6 +62,8 @@
 \permanent\protected\def\globalresetsystemmode#1{\global\expandafter\integerdef\csname\??mode\systemmodeprefix#1\endcsname\zerocount}
 
 \expandafter\integerdef\csname\??mode\systemmodeprefix trialtypesetting\endcsname\zerocount
+
+\registerctxluafile{core-env}{autosuffix} % uses the mode variable above
 
 \expandafter \appendtoks
     \csname\??mode\systemmodeprefix trialtypesetting\endcsname\plusone

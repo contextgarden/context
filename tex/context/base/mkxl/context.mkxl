@@ -11,18 +11,43 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% http://build.contextgarden.net/waterfall?tag=c/lua(meta)tex
-
-%D Welcome to context, pronounced as kontekst (rather dutch) and not as conτεχt. The
+%D If there is no \type {luametatex.h} and related sources files in your \CONTEXT\
+%D tree, you have an unofficial distribution and we can't guarantee that all works
+%D out well. At least we can't check where problems come from. You can run:
+%D
+%D \starttyping
+%D context --integrity
+%D \stoptyping
+%D
+%D in order to check the state. Future versions might do a more rigourous check on
+%D this. You can find binaries at:
+%D
+%D \starttyping
+%D http://build.contextgarden.net/waterfall?tag=c/lua(meta)tex
+%D \stoptyping
+%D
+%D but these are {\em development versions} that assume a matching version of the
+%D \TEX\ and \LUA\ files. That said:
+%D
+%D Welcome to \CONTEXT, pronounced as kontekst (rather dutch) and not as conτεχt. The
 %D (latin) \type{con} suggests that we mean \quote {with text} which is indeed what
 %D we had in mind.
+%D
+%D When \CONTEXT\ or \LUAMETATEX\ is updated, it likely will notice that and then
+%D regenerate the format and if needed the font database. Creating a format should
+%D be relatively fast; when all files are cached it takes (2025) between 1 and 2
+%D seconds (just try it twice). If not, something is wrong with the installation.
+%D
+%D When the format file is larger than 20MB you need to check what happens; mid
+%D 2025 the size is 19MB. As a comparison, the \MKIV\ format file is some 11.5MB
+%D compressed and 20MB uncompressed, so it's slightly larger.
 
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
 
 %D From the next string (which is set by the script that assembles the distribution)
 %D later on we will calculate a number that can be used by use modules to identify
 %D the feature level. Starting with version 2004.8.30 the low level interface is
-%D english. Watch out and adapt your styles an modules.
+%D english. Watch out and adapt your stylesd an modules.
 
 \everypar{\writestatus{!!!!}{some spurious input in line \the\inputlineno}\wait}
 
@@ -31,7 +56,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2025.04.28 14:22}
+\immutable\edef\contextversion{2025.06.12 14:18}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -630,6 +655,10 @@
 
 \loadmkxlfile{libs-ini}
 
+\doifelsefile{trac-sig.lmt} {
+    \loadmkxlfile{trac-sig}{}
+} { }
+
 \loadmkxlfile{cont-run} % the main runner (used in cont-yes.mkiv)
 
 \setupcurrentlanguage[\defaultlanguagetag]
@@ -657,6 +686,15 @@
 % \overloadmode\zerocount % for now
 
 % \ifcsname\endcsname\fi % make sure that we reset it
+
+\prependtoks
+    \overloadmode\plusthree
+\to \everyjob
+
+\appendtoks
+    \overloadmode\plusthree
+    \everyjob\emptytoks
+\to \everyjob
 
 \errorstopmode \dump \endinput
 
@@ -702,10 +740,8 @@
 % c:/data/develop/context/sources/cldf-stp.lua
 % c:/data/develop/context/sources/cldf-ver.lua
 
-% c:/data/develop/context/sources/colo-icc.lua
 % c:/data/develop/context/sources/colo-ini.lua
 
-% c:/data/develop/context/sources/core-con.lua
 % c:/data/develop/context/sources/core-ctx.lua
 
 % data...
@@ -726,22 +762,17 @@
 % c:/data/develop/context/sources/font-otc.lua
 % c:/data/develop/context/sources/font-oth.lua
 % c:/data/develop/context/sources/font-oti.lua
-% c:/data/develop/context/sources/font-oto.lua
 % c:/data/develop/context/sources/font-otr.lua
 % c:/data/develop/context/sources/font-ott.lua % just some tables
-% c:/data/develop/context/sources/font-oup.lua % packing and unpacking
 % c:/data/develop/context/sources/font-pat.lua
 % c:/data/develop/context/sources/font-prv.lua
 % c:/data/develop/context/sources/font-sel.lua
-% c:/data/develop/context/sources/font-shp.lua % shapes, for now shared
 % c:/data/develop/context/sources/font-sol.lua
 % c:/data/develop/context/sources/font-syn.lua % identification code
 % c:/data/develop/context/sources/font-trt.lua
 % c:/data/develop/context/sources/font-web.lua % proof of concept, never used
 
 % c:/data/develop/context/sources/font-imp-combining.lua  % shared
-% c:/data/develop/context/sources/font-imp-dimensions.lua % shared
-% c:/data/develop/context/sources/font-imp-italics.lua    % shared
 % c:/data/develop/context/sources/font-imp-notused.lua    % shared
 % c:/data/develop/context/sources/font-imp-properties.lua % shared
 % c:/data/develop/context/sources/font-imp-reorder.lua    % shared
@@ -759,7 +790,6 @@
 % c:/data/develop/context/sources/grph-fil.lua
 % c:/data/develop/context/sources/grph-img.lua
 % c:/data/develop/context/sources/grph-pat.lua
-% c:/data/develop/context/sources/grph-raw.lua
 % c:/data/develop/context/sources/grph-u3d.lua
 
 % c:/data/develop/context/sources/java-ini.lua
@@ -774,7 +804,6 @@
 % c:/data/develop/context/sources/luat-mac.lua % will become lmt
 
 % c:/data/develop/context/sources/lxml-aux.lua % the xml interface is rather stable
-% c:/data/develop/context/sources/lxml-css.lua % and is also provided/used in lua so
 % c:/data/develop/context/sources/lxml-dir.lua % might as well share these because they
 % c:/data/develop/context/sources/lxml-ent.lua % are unlikely to change
 % c:/data/develop/context/sources/lxml-ini.lua %
@@ -795,20 +824,16 @@
 % c:/data/develop/context/sources/mult-aux.lua % move some to s-system-*
 % c:/data/develop/context/sources/mult-fmt.lua
 
-% c:/data/develop/context/sources/page-cst.lua
 % c:/data/develop/context/sources/page-flt.lua
 % c:/data/develop/context/sources/page-inj.lua
-% c:/data/develop/context/sources/page-ins.lua
 % c:/data/develop/context/sources/page-mix.lua
 % c:/data/develop/context/sources/page-pst.lua
 
-%%c:/data/develop/context/sources/publ-aut.lua % These files are shared and it makes
 % c:/data/develop/context/sources/publ-dat.lua % no sense to make lmtx variants (yet),
 % c:/data/develop/context/sources/publ-fnd.lua %
 % c:/data/develop/context/sources/publ-inc.lua %
 % c:/data/develop/context/sources/publ-ini.lua %
 % c:/data/develop/context/sources/publ-jrn.lua %
-%%c:/data/develop/context/sources/publ-oth.lua %
 % c:/data/develop/context/sources/publ-reg.lua %
 % c:/data/develop/context/sources/publ-sor.lua %
 % c:/data/develop/context/sources/publ-tra.lua %
@@ -829,9 +854,7 @@
 % c:/data/develop/context/sources/strc-bkm.lua
 % c:/data/develop/context/sources/strc-blk.lua
 % c:/data/develop/context/sources/strc-con.lua
-% c:/data/develop/context/sources/strc-doc.lua
 % c:/data/develop/context/sources/strc-ini.lua
-% c:/data/develop/context/sources/strc-lev.lua
 % c:/data/develop/context/sources/strc-num.lua
 % c:/data/develop/context/sources/strc-pag.lua
 % c:/data/develop/context/sources/strc-usr.lua

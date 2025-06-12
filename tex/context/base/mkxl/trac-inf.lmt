@@ -1,6 +1,6 @@
 if not modules then modules = { } end modules ['trac-inf'] = {
     version   = 1.001,
-    comment   = "companion to trac-inf.mkiv",
+    comment   = "companion to trac-inf.mkxl",
     author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
     copyright = "PRAGMA ADE / ConTeXt Development Team",
     license   = "see context related readme files"
@@ -161,7 +161,7 @@ function statistics.register(tag,fnc)
     end
 end
 
-local report = logs.reporter("mkiv lua stats")
+local report = logs.reporter("mkxl run stats")
 
 function statistics.show()
     if statistics.enable then

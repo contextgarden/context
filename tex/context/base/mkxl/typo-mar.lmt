@@ -225,7 +225,8 @@ function margins.save(t)
         report_margindata("ignoring empty margin data %a",location or "unknown")
         return
     end
-    setprop(content,"specialcontent","margindata")
+ -- setprop(content,"specialcontent","margindata")
+ -- setoptions(content,noprofiling_code)
     local store
     if inline then
         store = inlinestore

@@ -378,6 +378,7 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command, "mathleftclass",                  internal_integer_cmd,   math_left_class_code,                     internal_integer_base);
         tex_primitive(luatex_command, "mathlimitsmode",                 internal_integer_cmd,   math_limits_mode_code,                    internal_integer_base);
      /* tex_primitive(luatex_command, "mathnolimitsmode",               internal_integer_cmd,   math_nolimits_mode_code,                  internal_integer_base); */
+        tex_primitive(luatex_command, "mathoptions",                    internal_integer_cmd,   math_options_code,                        internal_integer_base);
         tex_primitive(luatex_command, "mathpenaltiesmode",              internal_integer_cmd,   math_penalties_mode_code,                 internal_integer_base);
         tex_primitive(luatex_command, "mathpretolerance",               internal_integer_cmd,   math_pre_tolerance_code,                  internal_integer_base);
         tex_primitive(luatex_command, "mathrightclass",                 internal_integer_cmd,   math_right_class_code,                    internal_integer_base);

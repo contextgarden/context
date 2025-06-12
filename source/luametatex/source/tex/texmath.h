@@ -7,13 +7,13 @@
 
 /*tex
     This module also deals with math parameters. That code has been cleaned up a lot, and it
-    worked out well, but at some point Mikael Sundqvist and I entered \quutation {alternative
+    worked out well, but at some point Mikael Sundqvist and I entered \quotation {alternative
     spacing models mode} and a more generic model was implemented. As a consequence new code
     showed up and already cleaned up code (the many parameters) could be thrown out. That's how
-    it goed and it is in retrospect good that we had not yet released.
+    it goes and it is in retrospect good that we had not yet released.
 
     Actually the parameter stack easily gets bumped to 128 when we have a few levels of nesting 
-    with bodyfont switches. We can save some by not pushing unchanged values but even then on 
+    with body font switches. We can save some by not pushing unchanged values but even then on 
     mathincontext we nearly reach 1000. So we're generous with the initial stack space:  
 */
 

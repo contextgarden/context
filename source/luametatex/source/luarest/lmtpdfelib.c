@@ -988,7 +988,6 @@ static int pdfelib_new(lua_State *L)
             d = ppdoc_mem(memstream, streamsize);
             if (d) {
                 pdfe_document *p = (pdfe_document *) lua_newuserdatauv(L, sizeof(pdfe_document), 0);
-             // luaL_getmetatable(L, PDFE_METATABLE_INSTANCE);
                 lua_get_metatablelua(pdfe_instance);
                 lua_setmetatable(L, -2);
                 p->document = d;
@@ -1234,7 +1233,7 @@ static int pdfelib_getpages(lua_State *L)
 
 /*tex
 
-    The boundingbox (\type {MediaBox) and similar boxes can be available in a (page) doctionary but
+    The bounding box (\type {MediaBox) and similar boxes can be available in a (page) dictionary but
     also in a parent object. Therefore a helper is available that does the (backtracked) lookup.
 
     \starttyping

@@ -29,7 +29,7 @@ extern int  tex_lua_input_ln            (void);
 
     However, in \LUATEX\ in addition to files we also have pseudo files (something \ETEX) and input
     coming from \LUA, which makes for a much more complex system. In \LUAMETATEX\ the model has
-    been stepwise simplified: pseudo files are gone and use a mechanism simular to \LUA\ input, and
+    been stepwise simplified: pseudo files are gone and use a mechanism similar to \LUA\ input, and
     the terminal is left up to the (anyway kind of mandate) file related callbacks, with read file
     id zero still being the console. Output to the console is part of a model that intercepts output
     to the log file and/or the console and can delegate handling to callbacks as well.

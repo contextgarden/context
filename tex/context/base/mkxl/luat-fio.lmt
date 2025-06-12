@@ -18,7 +18,7 @@ if not resolvers.initialized() then
 
     resolvers.load()
 
-    if callback then
+    if callback then -- why not plural
 
         local findbinfile = resolvers.findbinfile
         local findtexfile = resolvers.findtexfile
@@ -80,10 +80,33 @@ if not resolvers.initialized() then
             return name
         end
 
-        register('find_log_file'   , find_any_file,  true) -- why do we have this callback if we just return the name
-        register('find_format_file', find_any_file,  true) -- why do we have this callback if we just return the name
-     -- register('find_data_file'  , find_data_file, true)
-        register('open_data_file'  , open_data_file, true)
+        register { -- why do we have this callback if we just return the name
+            name    = "find_log_file",
+            action  = find_any_file,
+            comment = "provide the log file name",
+            frozen  = true
+        }
+
+        register { -- why do we have this callback if we just return the name
+            name    = "find_format_file",
+            action  = find_any_file,
+            comment = "locate the format file",
+            frozen  = true
+        }
+
+        register {
+            name   = "open_data_file",
+            action = open_data_file,
+            comment = "open the given file for reading",
+            frozen = true,
+        }
+
+        register {
+            name    = "process_jobname",
+            action  = false,
+            comment = "manipulate jobname",
+            frozen  = true,
+        }
 
     end
 

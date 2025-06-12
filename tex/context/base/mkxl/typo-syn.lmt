@@ -32,6 +32,7 @@ local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getprop           = nuts.getprop
 local getsubtype        = nuts.getsubtype
+local hasidsubtype      = nuts.hasidsubtype
 local gettotal          = nuts.gettotal
 local getwhd            = nuts.getwhd
 local getwidth          = nuts.getwidth
@@ -455,7 +456,7 @@ local function setproperties(parent,data,result,level,ctotal)
         setdepth(parent,depth)
         props.depth = depth
         local n = getnext(parent)
-        if n and getid(n) == glue_code and getsubtype(n) == baselineskip_code then
+        if n and hasidsubtype(n,glue_code,baselineskip_code) then
             setwidth(n,getwidth(n) - delta)
         end
     end
@@ -479,7 +480,7 @@ local function flush(head,first,last,a,parent,nesting)
         if upto and getid(upto) == penalty_code then
             upto = getnext(upto)
         end
-        if upto and getid(upto) == glue_code and getsubtype(upto) == parfillskip_code then
+        if upto and hasidsubtype(upto,glue_code,parfillskip_code) then
             upto = getnext(upto)
         end
         local props = getproperties(parent)

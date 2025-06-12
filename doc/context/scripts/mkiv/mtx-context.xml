@@ -180,6 +180,9 @@
                 <flag name="version">
                     <short>report installed context version</short>
                 </flag>
+                <flag name="integrity">
+                    <short>report mismatch between binary and expectations</short>
+                </flag>
                 </subcategory>
                 <subcategory>
                 <flag name="global">

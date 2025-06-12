@@ -14,7 +14,6 @@ end
 
 local lpegmatch  = lpeg.match
 local P, R, C, Ct, Cs, Carg = lpeg.P, lpeg.R, lpeg.C, lpeg.Ct, lpeg.Cs, lpeg.Carg
-local global = global or _G
 
 local methods = {
     uppercase = characters.upper,
@@ -34,14 +33,14 @@ local splitter = lpeg.tsplitat(".")
 
 table.setmetatableindex(methods,function(t,k)
     local s = lpegmatch(splitter,k)
-    local v = global
+    local v = _G
     for i=1,#s do
         v = v[s[i]]
         if not v then
             break
         end
     end
-    if not v or v == global then
+    if not v or v == _G then
         v = nothing
     end
     t[k] = v

@@ -68,7 +68,7 @@ static environment_state_info lmt_environment_state = {
     .padding           = 0,
 };
 
-/*tex todo: make helpers in loslibext which has similar code */
+/*tex todo: make helpers in |lmtoslibext| which has similar code */
 
 static void enginelib_splitnames(void)
 {
@@ -153,12 +153,12 @@ static char *enginelib_normalize_quotes(const char* name, const char* mesg)
 
     We support a minimum set of options but more can be supported by supplying an (startup)
     initialization script and/or by setting values in the |texconfig| table. At some point we might
-    provide some default initiazation script but that's for later. In fact, a bug in \LUATEX\ <
+    provide some default initialization script but that's for later. In fact, a bug in \LUATEX\ <
     1.10 made some of the command line options get lost anyway due to setting their values before
     checking the config table (probably introduced at some time). As no one noticed that anyway,
-    removing these from the commandline is okay.
+    removing these from the command line is okay.
 
-    Part of the commandline handler is providing (minimal) help information and reporting credits
+    Part of the command line handler is providing (minimal) help information and reporting credits
     (more credits can be found in the source file). Here comes the basic help.
 
     At some point I will likely add a |--permitloadlib| flag and block loading of libraries when
@@ -167,7 +167,7 @@ static char *enginelib_normalize_quotes(const char* name, const char* mesg)
     but we can control that in the runners so it's no big deal because we will never depend on
     external code for the \CONTEXT\ core features.
 
-    Commandline options that block |os.execute|, |io.popen|, the debugger and socket libraries etc.
+    Command line options that block |os.execute|, |io.popen|, the debugger and socket libraries etc.
     will not make it into \LUAMETATEX. If security is a concern there are always ways around it
     (not that I'll be too public about unplugged holes in engines). One can deal with most issues 
     in \LUA\ anyway. 
@@ -250,7 +250,7 @@ static void enginelib_show_version_info(void)
 
 /*tex
 
-    We only mention the most relevelant credits here. The first part is there to indicate a bit of
+    We only mention the most relevant credits here. The first part is there to indicate a bit of
     history. A very large part of the code, of course, comes from Don Knuths original \TEX, and the
     same is true for most documentation!
 
@@ -649,7 +649,7 @@ void tex_engine_initialize(int ac, char **av)
         Some options must be initialized before options are parsed. We don't need that many as we
         can delegate to \LUA.
     */
-    /*tex Parse the commandline. */
+    /*tex Parse the command line. */
     enginelib_parse_options();
     /*tex Forget about locales. */
     enginelib_set_locale();
@@ -713,8 +713,8 @@ void tex_engine_initialize(int ac, char **av)
 
 /*tex
 
-    For practical and historical reasons some of the initalization and checking is split. The
-    mainbody routine call out to these functions. The timing is sort of tricky: we can use a start
+    For practical and historical reasons some of the initialization and checking is split. The
+    |mainbody| routine call out to these functions. The timing is sort of tricky: we can use a start
     up script, that sets some configuration parameters, and for sure some callbacks, and these, in
     turn, are then responsible for follow up actions like telling where to find the format file
     (when a dump is loaded) or startup file (when we're in virgin mode). When we are in neither of
@@ -1094,6 +1094,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "posit",     luaopen_posit     },
     { "potrace",   luaopen_potrace   },
     { "qrcodegen", luaopen_qrcodegen },
+    { "serial",    luaopen_serial    },
     { NULL,        NULL              },
 };
 
@@ -1115,6 +1116,9 @@ static const luaL_Reg lmt_libs_tex_function_list[] = {
     { "tex",      luaopen_tex      },
     { "token",    luaopen_token    },
     { "node",     luaopen_node     },
+# if defined(LUAMETATEX_USE_HELPERS)
+    { "helper",   luaopen_helper   },
+# endif 
     { "callback", luaopen_callback },
     { "font",     luaopen_font     },
     { "language", luaopen_language },
@@ -1136,7 +1140,7 @@ static const luaL_Reg lmt_libs_pdf_function_list[] = {
 /*tex
 
     So, we have different library initialization lists for the the two \TEX\ modes (ini and normal)
-    and \LUA\ mode (interpeter). It's not pretty yet but it might become better over time.
+    and \LUA\ mode (interpreter). It's not pretty yet but it might become better over time.
 
  */
 
@@ -1152,7 +1156,7 @@ static void enginelib_luaopen_liblist(lua_State *L, const luaL_Reg *lib)
 
     In order to overcome (expected) debates about security we disable loading libraries unless
     explicitly enabled (as in \LUATEX). An exception are the optional libraries, but as these
-    interfaces are rather bound to the cannonical \LUAMETATEX\ source code we can control these
+    interfaces are rather bound to the canonical \LUAMETATEX\ source code we can control these
     from \CONTEXT\ of needed because before users can run code, we can block support of these
     libraries. On the other hand, we have no reason to distrust the few that can (optionally) be
     used (they also cannot clash with different \LUA\ versions).

@@ -375,7 +375,7 @@ void tex_aux_finish_local_box(void)
                 p = tex_handle_glyphrun(p, local_box_group, text_direction_par);
             }
             if (p) {
-                p = lmt_hpack_filter_callback(p, 0, packing_additional, local_box_group, direction_unknown, null);
+                p = lmt_hpack_callback(p, 0, packing_additional, local_box_group, direction_unknown, null);
             }
             /*tex
                 We really need something packed so we play safe! This feature is inherited but could

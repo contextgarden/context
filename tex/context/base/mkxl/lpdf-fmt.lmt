@@ -125,6 +125,7 @@ local formats = utilities.storage.allocate {
         info         = true,
         acrobat      = true,
         attachments  = true,
+        extensions   = true,
         compression  = false, -- object compression
         tagging      = false,
         forms        = false,
@@ -260,6 +261,23 @@ local function profilename(filename)
     return lower(file.basename(filename))
 end
 
+local function urls(url)
+    if not url or url == "" then
+        return nil
+    else
+        local u = pdfarray()
+        for url in gmatch(url,"([^, ]+)") do
+            if find(url,"^http") then
+                u[#u+1] = pdfdictionary {
+                    FS = pdfconstant("URL"),
+                    F  = pdfstring(url),
+                }
+            end
+        end
+        return u
+    end
+end
+
 local function includeprofile(s)
     local filename   = s.filename   or ""
     local colorspace = s.colorspace or ""
@@ -311,23 +329,6 @@ end
 function codeinjections.defaultprofile(channel)
  -- print("get profile",channel,defaultprofiles[channel])
     return defaultprofiles[channel]
-end
-
-local function urls(url)
-    if not url or url == "" then
-        return nil
-    else
-        local u = pdfarray()
-        for url in gmatch(url,"([^, ]+)") do
-            if find(url,"^http") then
-                u[#u+1] = pdfdictionary {
-                    FS = pdfconstant("URL"),
-                    F  = pdfstring(url),
-                }
-            end
-        end
-        return u
-    end
 end
 
 local function processprofile(s,spec) -- specification
@@ -478,7 +479,7 @@ end
 lpdf.registerdocumentfinalizer(flushoutputintents,2,"output intents")
 
 function codeinjections.setformat(s)
-    local format   = s.format or ""
+    local format   = s.format  or ""
     local intent   = s.intent  or ""
     local profile  = s.profile or ""
     local option   = s.option  or ""
@@ -505,7 +506,10 @@ function codeinjections.setformat(s)
                     intent  = "CGATS001Compat-v2-micro.icc"
                     profile = "sRGB-v4.icc,CGATS001Compat-v2-micro.icc"
                 else
-                    goto SKIP
+                    -- safeguard, let's see how that works out
+                    profile = intent
+                 -- report_backend("no profile set, taking from intent")
+                 -- goto SKIP
                 end
                 report_backend("using color intent %a",intent)
                 report_backend("using icc profiles %a",profile)

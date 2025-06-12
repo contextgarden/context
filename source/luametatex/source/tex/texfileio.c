@@ -116,13 +116,13 @@ static int tex_aux_open_outfile(FILE **f, const char *name, const char *mode)
     cleaned up and abstracted but that is the price we pay for stepwise progress. That code is
     still in the git repository of course.
 
-    At some point I might do the same as we do in mplib: four callbacks for open, close, read
+    At some point I might do the same as we do in |mplib|: four callbacks for open, close, read
     and write (in which case the log goes via write). Part of the management is them moved to
     \LUA\ and we save a lookup.
 
     When I adapted the code in this module and the one dealing with errors, I decided to delegate
     all interaction to \LUA, also because the sometimes tight integration in the scanning and
-    expansion mechanisms. In the 2021 TeX tuneup there have been some patches in the interaction
+    expansion mechanisms. In the 2021 \TEX\ tune-up there have been some patches in the interaction
     code and some remarks ring a bell: especially the relation between offering feedback and
     waiting for input. However, because we delegate to \LUA, the engine is no longer responsible
     for what the macro package lets the user do in case of an error. For instance, in \CONTEXT\ we
@@ -279,7 +279,7 @@ int tex_lua_input_ln(void) /*tex |bypass_eoln| was not used */
     the input buffer and then exercise an |\input| which ensures proper housekeeping. There is a
     bit overkill in the next function but for now we keep it (as reference).
 
-    For a while copying the argument to th ebuffer lived in the engine lib but it made no sense
+    For a while copying the argument to the buffer lived in the engine lib but it made no sense
     to duplicate code, so now it's here. Anyway, the following does no longer apply:
 
     \startquotation
@@ -353,7 +353,7 @@ int tex_lua_input_ln(void) /*tex |bypass_eoln| was not used */
 /*tex
 
     Per June 22 2020 the terminal code is gone. See |texlegacy.c| for the old, already adapted
-    long ago, code. It was already shedulded for removal a while. We only keep the update.
+    long ago, code. It was already scheduled for removal a while. We only keep the update.
 
 */
 
@@ -736,7 +736,7 @@ void tex_start_input(char *fn, halfword at_end_of_file)
     tex_begin_file_reading();
     if (! tex_lua_a_open_in(fn)) {
         /*tex
-            Normally this is catched earler, as we have lookup callbacks but the first file, the
+            Normally this is catched earlier, as we have lookup callbacks but the first file, the
             one passed on the command line can fall though this checking.
         */
         tex_end_file_reading();

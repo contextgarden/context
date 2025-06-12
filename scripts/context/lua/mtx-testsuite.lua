@@ -155,7 +155,8 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
     if pattern then
         local cleanup = environment.argument("cleanup")
         local engine  = environment.argument("luatex") and "--luatex" or ""
-        local signal  = environment.argument("signal")
+--         local signal  = environment.argument("signal")
+        local squid   = environment.argument("squid")
         local results = { }
         local start   = statistics.starttiming(scripts.testsuite.process)
         local files   = dir.glob(pattern)
@@ -165,12 +166,45 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
         local runners = tonumber(environment.argument("parallel")) or 8
         local count   = 0
         local problem = false
-        local signalled = signal and function(state)
-            local c = format("mtxrun --script %s --state=%s --run=1 --all",signal,state)
-            os.resultof(c)
-        end or false
-        if signalled then
-            signalled("busy")
+--         local signalled = signal and function(state)
+--             local c = format("mtxrun --script %s --state=%s --run=1 --all",signal,state)
+--             os.resultof(c)
+--         end or false
+--         if signalled then
+--             signalled("busy")
+--         end
+        if squid then
+            squid = require("util-sig-imp-squid.lua")
+        end
+        if squid then
+--             signalled = false
+            squid.stepper("reset")
+        end
+        local steps = { }
+        for i=1,runners do
+            steps[i] = 0
+        end
+        --
+        if squid then
+            squid.signal("busy")
+        end
+        os.execute("mtxrun  --generate")
+        if squid then
+            squid.signal("busy")
+            os.sleep(2)
+            squid.signal("busy")
+        end
+        os.execute("context --make en")
+        if squid then
+            squid.signal("finished")
+            os.sleep(2)
+            squid.signal("busy")
+        end
+        os.execute("mtxrun  --script font  --reload --force")
+        if squid then
+            squid.signal("finished")
+            os.sleep(2)
+            squid.signal("reset")
         end
         while true do
             local done = false
@@ -190,9 +224,9 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
                             results[pi[2]] = { detail, n }
                         end
                         if bad then
-                            if signalled and not problem then
-                                signalled("problem")
-                            end
+--                             if signalled and not problem then
+--                                 signalled("problem")
+--                             end
                             problem = true
                         end
                         report("%02i : %04i : %s : %s : %0.3f ",i,pi[3],bad and "error" or "done ",pi[2],clock()-pi[4])
@@ -216,17 +250,24 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
                         os.remove(tucname)
                     end
                     if lfs.isfile(texname) then
+steps[i] = steps[i] + 1
+if squid then
+    squid.stepper("busy",i,steps[i],problem)
+end
                         local command = f_runner("context",engine,texname)
                         local result  = popen(command)
                         if result then
 -- result:setvbuf("full",64*1024)
                             process[i] = { result, filename, count, clock() }
                         else
-                            if signalled and not problem then
-                                signalled("problem")
-                                problem = true
-                            end
+--                             if signalled and not problem then
+--                                 signalled("problem")
+--                                 problem = true
+--                             end
                             results[filename] = "error"
+if squid then
+    squid.stepper("busy",i,steps[i],problem)
+end
                         end
                         report("%02i : %04i : %s : %s",i,count,result and "start" or "error",filename)
                     end
@@ -239,12 +280,15 @@ function scripts.testsuite.parallel() -- quite some overlap but ...
                 break
             end
         end
+        if squid then
+            squid.signal(problem and "error" or "finished")
+        end
         statistics.stoptiming(scripts.testsuite.process)
         results.runtime = statistics.elapsedtime(scripts.testsuite.process)
         io.savedata(luaname,table.serialize(results,true))
-        if signalled then
-            signalled(problem and "error" or "finished")
-        end
+--         if signalled then
+--             signalled(problem and "error" or "finished")
+--         end
         report()
         report("files: %i, runtime: %s, overview: %s",total,results.runtime,luaname)
         report()

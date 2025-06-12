@@ -30,7 +30,7 @@ typedef enum page_property_states {
 } page_property_states;
 
 typedef struct page_builder_state_info {
-    halfword page_tail;  /*tex The final node on the current page. */
+    halfword tail;       /*tex The final node on the current page. */
     int      contents;   /*tex What is on the current page so far? */
     scaled   max_depth;  /*tex The maximum box depth on page being built. */
     halfword best_break; /*tex Break here to get the best page known so far. */
@@ -98,6 +98,7 @@ extern void tex_resume_after_output  (void);
 extern void tex_additional_page_skip (void);
 
 # define contribute_tail        lmt_nest_state.nest[0].tail        /*tex The tail of the contribution list. */
+# define page_tail              lmt_page_builder_state.tail
 
 # define page_goal              lmt_page_builder_state.goal        /*tex The desired height of information on page being built. */
 # define page_vsize             lmt_page_builder_state.vsize

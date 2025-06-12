@@ -1,0 +1,113 @@
+%D \module
+%D   [       file=m-math-weird,
+%D        version=2025.05.31,
+%D          title=\CONTEXT\ Math Modules,
+%D       subtitle=Weird Symbols,
+%D         author=Mikael Sundqvist & Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Beware: If you patch a font this way you need to wipe it from the cache in order
+%D for it to be patched. This is needed after every change in the patching. There
+%D is no need for \typ {\enabledirectives[otf.keepnames]}.
+
+\startluacode
+
+    function fonts.handlers.otf.fixers.fix_math_weird_before(fixer,data)
+        local mapping = fixer.mapping
+        if mapping then
+            for index, glyph in next, data.glyphs do
+                local fix = mapping[glyph.name]
+                if fix then
+                    mapping[index] = fix
+                end
+            end
+        end
+    end
+
+    function fonts.handlers.otf.fixers.fix_math_weird_after(fixer,data)
+        local mapping = fixer.mapping
+        if mapping then
+            if not data.resources.unicodes then
+                data.resources.unicodes = { }
+            end
+            for unicode, description in next, data.descriptions do
+                local fix = mapping[description.index]
+                if fix then
+                    description.unicode = fix.unicode
+                    description.name = fix.name
+                    data.resources.unicodes[fix.name] = unicode
+                    local variants = description.math and description.math.variants
+                    if variants then
+                        for i=1,#variants do
+                            data.descriptions[variants[i]].unicode = fix.unicode
+                        end
+                    end
+                end
+            end
+        end
+    end
+\stopluacode
+
+\continueifinputfile{m-math-weird.mkxl}
+
+%D This example can only be run if one has the font which comes at a price and we
+%D can add more if someone buys us copies of minion.
+
+% \startluacode
+%     fonts.handlers.otf.fixers["minionmath-regular.otf"] = {
+%         before  = fonts.handlers.otf.fixers.fix_math_weird_before,
+%         after   = fonts.handlers.otf.fixers.fix_math_weird_after,
+%         mapping = {
+%             ["uF5825"] = {
+%                 name    = "weirdstar",
+%                 unicode = 0x2217,
+%             }
+%         }
+%     }
+% \stopluacode
+%
+% \setupbodyfont[minion]
+%
+% \definemathoperator
+%   [mystar]                           % name
+%   [summations]                       % group
+%  %[left=\tounicharnum{mn:uF5825}]    % weird star
+%   [left=\tounicharnum{mn:weirdstar}] % weird star
+%
+% \startTEXpage[offset=1ts]
+%     \m  {\mystar _ {i = 1} ^ N A _ {i}} \blank
+%     \dm {\mystar _ {i = 1} ^ N A _ {i}}
+% \stopTEXpage
+
+%D This example uses a standard Latin Modern Math font. Watch how we make sure that
+%D we have a decent \UNICODE\ sop that we can cut'n'paste.
+
+% \usemodule[math-weird]
+
+\startluacode
+    fonts.handlers.otf.fixers["latinmodern-math.otf"] = {
+        before  = fonts.handlers.otf.fixers.fix_math_weird_before,
+        after   = fonts.handlers.otf.fixers.fix_math_weird_after,
+        mapping = {
+            ["leaf"] = {
+                name    = "mathleaf",
+                unicode = 0x1F343, -- 🍃
+            },
+        }
+    }
+\stopluacode
+
+\definemathoperator
+  [mathleaf]                        % name
+  [summations]                      % group
+  [left=\tounicharnum{mn:mathleaf}] % weird leaf (not really windy)
+
+\startTEXpage[offset=1ts,align={lohi,middle}]
+    \m  {\mathleaf _ {i = 1} ^ N A _ {i}} \blank
+    \dm {\mathleaf _ {i = 1} ^ N A _ {i}}
+\stopTEXpage

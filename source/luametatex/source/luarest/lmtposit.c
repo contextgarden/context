@@ -3,13 +3,14 @@
 */
 
 /*tex 
-    This is an experiment using the posit (unum) implementation from https://gitlab.com/cerlane/SoftPosit#known, which is 
-    afaiks the standard. At some point it migh tbe interesting to have this as MetaPost number plugin too, but first I need 
-    to figure out some helpers (sin, cos, pow etc). 
+    This is an experiment using the posit implementation https://gitlab.com/cerlane/SoftPosit#known, 
+    which is afaiks the standard. The posit (unum) number system is also available in mplib so that 
+    we can play with it (no specific gains there). We need to figure out some helpers (sin, cos, 
+    pow etc). 
 
-    Watch out: this is just a playground for me and a few others. There are \CONTEXT\ interfaces but these are also quite 
-    experimental. For instance we might move to 64 bit posits. And how about quires.  It all depends on developments in 
-    this area. 
+    Watch out: this is just a playground for me and a few others. There are \CONTEXT\ interfaces but 
+    these are also quite experimental. For instance we might move to 64 bit posits. And how about 
+    quires.  It all depends on developments in this area. 
 
     The standard is at: 
 
@@ -19,8 +20,8 @@
 
         https://gitlab.com/cerlane/SoftPosit
 
-    However, the implementation lags behind the standard: no posit64 and no functions except from a few that add, subtract, 
-    multiply, divide etc. But I will keep an eye in it.  
+    However, the implementation lags behind the standard: no posit64 and no functions except from a 
+    few that add, subtract, multiply, divide etc. But I will keep an eye in it.  
 
     Todo: check if we used the right functions (also in auxposit).
 

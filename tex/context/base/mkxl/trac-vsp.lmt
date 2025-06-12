@@ -9,7 +9,6 @@ if not modules then modules = { } end modules ['trac-vsp'] = {
 
 -- This will likely change but for now we only have a simple tracer.
 
-local tonut       = nodes.tonut
 local nuts        = nodes.nuts
 local getid       = nuts.getid
 local insertafter = nuts.insertafter
@@ -32,7 +31,6 @@ local splitshow = {
         }
     end,
     [splitcodes.continue] = function(where,checks,current,height,depth,total,penalty)
-        current = tonut(current)
         collected[#collected+1] = {
             where    = splitcodes[where],
             current  = current,
@@ -44,7 +42,6 @@ local splitshow = {
         }
     end,
     [splitcodes.check] = function(where,checks,current,height,depth,total,penalty,badness,costs)
-        current = tonut(current)
         collected[#collected+1] = {
             where    = splitcodes[where],
             current  = current,
@@ -58,7 +55,6 @@ local splitshow = {
         }
     end,
     [splitcodes.quit] = function(where,checks,current,height,depth,total,penalty,badness,costs)
-        current = tonut(current)
         collected[#collected+1] = {
             where    = splitcodes[where],
             current  = current,
@@ -72,7 +68,6 @@ local splitshow = {
         }
     end,
     [splitcodes.wrapup] = function(where,checks,best,height,depth,stretch,shrink)
-        best = tonut(best)
 --        local wipe = false
 --        for i=1,#collected do
 --            local c = collected[i]
@@ -159,4 +154,12 @@ function splitpoints.typesetresult(options)
     end
 end
 
-callback.register("show_vsplit", function(where,...) splitshow[where](where,...) end)
+
+local function show_vsplit_callback(where,...)
+    splitshow[where](where,...)
+end
+
+callbacks.register {
+    name   = "show_vsplit",
+    action = show_vsplit_callback,
+}

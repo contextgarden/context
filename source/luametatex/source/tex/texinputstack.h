@@ -178,7 +178,7 @@ typedef enum io_codes {
     We could have |token_array_state| for a packed representation of really permanent macros if we 
     freeze permanent. If we don't freeze we need an extra bit to flag a macro as using the array 
     but we don't have a bit left. Packing could happen before we dump and would make the body half 
-    the size. Fetching from an array is a middleground between a token list and a file and could a 
+    the size. Fetching from an array is a middle ground between a token list and a file and could a 
     bit faster and definitely make for a smaller format file. In the end it might not really pay 
     off and it is also a bit un-TeX. 
 */

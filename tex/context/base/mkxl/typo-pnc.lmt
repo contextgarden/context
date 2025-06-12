@@ -25,7 +25,7 @@ local getboth         = nuts.getboth
 local getnext         = nuts.getnext
 local getattr         = nuts.getattr
 local getid           = nuts.getid
-local getsubtype      = nuts.getsubtype
+local hasidsubtype    = nuts.hasidsubtype
 local getwidth        = nuts.getwidth
 local setwidth        = nuts.setwidth
 local findattribute   = nuts.findattribute
@@ -99,7 +99,7 @@ function periodkerns.handler(head)
                                             end
                                         end
                                         local next3 = getnext(next2)
-                                        if next3 and getid(next3) == glue_code and getsubtype(next3) == spaceskip_code then
+                                        if next3 and getidsubtype(next3,glue_code,spaceskip_code) then
                                             local width = getwidth(next3)
                                             local space = fontspace or parameters[getfont(current)].space -- can be sped up
                                             if width > space then -- space + extraspace

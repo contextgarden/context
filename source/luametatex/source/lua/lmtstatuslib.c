@@ -442,6 +442,8 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "max_n_of_fitness_values",        max_n_of_fitness_values);
     lua_set_integer_by_key(L, "all_fitness_values",             all_fitness_values);
 
+    lua_set_string_by_key (L, "active_character_namespace",     active_character_namespace);
+
     return 1;
 }
 

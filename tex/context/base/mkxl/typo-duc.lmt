@@ -61,6 +61,7 @@ local getnext              = nuts.getnext
 local getprev              = nuts.getprev
 local getid                = nuts.getid
 local getsubtype           = nuts.getsubtype
+----- hasidsubtype         = nuts.hasidsubtype
 local getlist              = nuts.getlist
 ----- getchar              = nuts.getchar
 local getattr              = nuts.getattr
@@ -963,7 +964,7 @@ local function apply_to_list(list,size,head,pardir)
 --                 -- insert the last enddir before \parfillskip glue
 --                 local c = current
 --                 local p = getprev(c)
---                 if p and getid(p) == glue_code and getsubtype(p) == parfillleftskip_code then
+--                 if p and hasidsubtype(p,glue_code,parfillleftskip_code) then
 --                     c = p
 --                     p = getprev(c)
 --                 end

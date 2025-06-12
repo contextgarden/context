@@ -31,7 +31,11 @@
 % \overloaded\let\strutdp  \undefined \newdimen\strutdp
 % \overloaded\let\struthtdp\undefined \newdimen\struthtdp
 
-\registerctxluafile{spac-ver}{autosuffix}
+% \doifelsefileexists{spac-ver-new.lmt} {
+%     \registerctxluafile{spac-ver-new}{autosuffix}
+% } {
+    \registerctxluafile{spac-ver}{autosuffix}
+% }
 
 % todo: use usernodes ?
 
@@ -1668,13 +1672,14 @@
 
 %D Good old blank redone:
 
-%definesystemattribute[kernchars]    [public]
-\definesystemattribute[skipcategory] [public]
-\definesystemattribute[skippenalty]  [public]
-\definesystemattribute[skiporder]    [public]
-\definesystemattribute[snapmethod]   [public]
-\definesystemattribute[snapvbox]     [public]
-%definesystemattribute[snapcategory] [public]
+%definesystemattribute[kernchars]   [public]
+\definesystemattribute[skipcategory][public]
+\definesystemattribute[skippenalty] [public]
+\definesystemattribute[skiporder]   [public]
+\definesystemattribute[snapmethod]  [public]
+\definesystemattribute[snapvbox]    [public]
+\definesystemattribute[snaprange]   [public]
+%definesystemattribute[snapcategory][public]
 
 % TODO: NAMED SNAPPERS
 
@@ -1823,6 +1828,8 @@
 \definegridsnapping[\v!max]              [\v!max]
 
 \definegridsnapping[\v!middle]           [\v!maxheight,\v!maxdepth] % used in placement
+
+% maybe don't document these
 
 \definegridsnapping[\v!math]             [\v!maxdepth:1.05,\v!maxheight:1.05,\v!strut] % experimental, maybe 1.1
 \definegridsnapping[\v!math:\v!line]     [\v!math,\v!line,\v!split]
@@ -2350,7 +2357,7 @@
 \definevspacing[\v!preference][penalty:-500]  % goodbreak
 \definevspacing[\v!samepage]  [penalty:10000] % nobreak
 
-\definevspacing[\v!always]    [category:0] % hm, internally it's discard
+\definevspacing[\v!always]    [category:0] % hm, internally it's discard so is this used / okay
 \definevspacing[\v!max]       [category:1]
 \definevspacing[\v!force]     [category:2]
 \definevspacing[\v!disable]   [category:5]
@@ -2871,5 +2878,40 @@
 
 \permanent\protected\def\parbreak
   {\ifhmode\hfill\penalty-9999\relax\fi}
+
+%D New feature (for finetuning formulas in columnsets):
+%D
+%D \starttabulate[|Tr|l|]
+%D \NC [-]  T \NC minus  two     lines \NC \NR
+%D \NC [-]  L \NC minus  one     line  \NC \NR
+%D \NC [-]  H \NC minus  half    line  \NC \NR
+%D \NC [-]  Q \NC minus  quarter line  \NC \NR
+%D \NC +    T \NC plus   two     lines \NC \NR
+%D \NC +    L \NC plus   one     line  \NC \NR
+%D \NC +    H \NC plus   half    line  \NC \NR
+%D \NC +    Q \NC plus   quarter line  \NC \NR
+%D \NC [+-] Z \NC zero   ht/dp         \NC \NR
+%D \NC [+-] I \NC ignore entry         \NC \NR
+%D \stoptabulate
+
+\newinteger\c_spac_snap_range
+
+\permanent\tolerant\protected\def\setgridcorrection[#1]%
+  {\ifempty{#1}%
+     \attribute\snaprangeattribute\attributeunsetvalue
+   \orelse\ifcstok{#1}\v!reset
+     \attribute\snaprangeattribute\attributeunsetvalue
+   \else
+     \global\advanceby\c_spac_snap_range\plusone
+     \clf_registersnaprange\c_spac_snap_range{#1}%
+     \attribute\snaprangeattribute\c_spac_snap_range
+   \fi}
+
+\tolerant\permanent\protected\def\startgridcorrection
+  {\begingroup
+   \setgridcorrection}
+
+\permanent\protected\def\stopgridcorrection
+  {\endgroup}
 
 \protect \endinput

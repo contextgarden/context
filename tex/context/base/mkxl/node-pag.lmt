@@ -12,21 +12,18 @@ if not modules then modules = { } end modules ['node-pag'] = {
 
 pagebuilders = pagebuilders or { }
 
-local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
-
 local actions = nodes.tasks.actions("pagebuilders")
 
-local function processor(head,groupcode,size,packtype,maxdepth,direction)
+local function pre_output_callback(head,groupcode,size,packtype,maxdepth,direction)
     if head then
-        starttiming(pagebuilders)
         head = actions(head,groupcode,size,packtype,maxdepth,direction)
-        stoptiming(pagebuilders)
     end
     return head
 end
 
-callbacks.register("pre_output_filter",processor,"preparing output box")
-
-statistics.register("output preparation time", function()
-    return statistics.elapsedseconds(pagebuilders)
-end)
+callbacks.register {
+    name    = "pre_output",
+    action  = pre_output_callback,
+    comment = "preparing output box",
+    frozen  = true,
+}

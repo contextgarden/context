@@ -54,7 +54,7 @@ static void xdecimallib_initialize(void)
 
 /*tex
     Todo: Use metatable at the top. But we're not going to crunch numbers anyway so for now there
-    is no need for it. Anyway, the overhade of calculations is much larger than that of locating
+    is no need for it. Anyway, the overhead of calculations is much larger than that of locating
     a metatable.
 */
 

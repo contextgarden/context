@@ -1538,7 +1538,7 @@
    \math_left_of_eqalign
    \everycr\emptytoks
    \startimath
-   \math_matrix_set_style}
+   \usemathstyleparameter\mathmatrixparameter\c!mathstyle}
 
 \protected\def\math_matrix_stop_cell
   {\stopimath
@@ -2179,8 +2179,7 @@
 \permanent\protected\def\mathmatrixmaxleftwidth {\d_math_matrix_max_left }
 \permanent\protected\def\mathmatrixmaxrightwidth{\d_math_matrix_max_right}
 
-\let\math_matrix_strut    \strut
-\let\math_matrix_set_style\relax
+\let\math_matrix_strut\strut
 
 \def\math_matrix_check_settings
   {\edef\p_strut{\mathmatrixparameter\c!strut}%
@@ -2192,10 +2191,9 @@
        \spacing\p_strut
      \fi
    \fi
-   \d_math_eqalign_distance\mathmatrixparameter\c!distance\relax
+   \d_math_eqalign_distance\mathmatrixparameter\c!distance\relax}
  % \d_math_eqalign_rulethickness\mathmatrixparameter\c!rulethickness\relax
  % \edef\p_rulecolor{\mathmatrixparameter\c!rulecolor}
-   \edef\math_matrix_set_style{\mathmatrixparameter\c!mathstyle}}
 
 \newinteger\c_math_eqalign_column_saved
 \newinteger\c_math_eqalign_row_saved
@@ -3109,19 +3107,110 @@
 
 % wrap/flow mode
 
+\def\strc_math_grid_snapped_box#1%
+  {\scratchtotal\htdp\scratchbox
+   \getnoflines\scratchtotal
+   \ifnum\noflines>\plusone
+     \scratchwidth \wd\scratchbox
+    %\scratchheight\ht\scratchbox
+     \scratchdepth \dp\scratchbox
+     \scratchdimen\noflines\lineheight
+     \scratchdistance{\scratchdimen-\scratchtotal}%
+     \advanceby\scratchdimen-\strutdp
+     \setbox\scratchbox\tpack\bgroup
+       \novrule
+         \s!pair  \scratchdimen \strutdp
+         \s!width \zeropoint
+       \relax
+       \ifcase#1\or
+         \begingroup
+           \gray
+           \virtualvrule
+             \s!pair  \scratchdimen \strutdp
+             \s!width \scratchwidth
+         \endgroup
+       \fi
+       \boxyoffset\scratchbox{%
+           \scratchdepth
+          -\strutdp
+          +\scratchdistance/\plustwo
+         %+2pt % can be an optional parameter
+        }%
+       \box\scratchbox
+     \egroup
+     \ht\scratchbox\scratchdimen
+   \else
+     \ht\scratchbox\strutht
+   \fi
+   \dp\scratchbox\strutdp
+   \box\scratchbox}
+
+\def\strc_math_flush_result_normal_begin
+  {\ifconditional\c_strc_math_pack_mode
+     \ifgridsnapping\setbox\scratchbox\fi
+     \vpack\bgroup
+   \fi}
+
+\def\strc_math_flush_result_normal_end
+  {\ifconditional\c_strc_math_pack_mode
+     \egroup
+     \ifgridsnapping\strc_math_grid_snapped_box\zerocount\fi
+   \fi}
+
+\def\strc_math_flush_result_traced_begin
+  {\ifconditional\c_strc_math_pack_mode
+     \ifgridsnapping\setbox\scratchbox\fi
+     \ruledvpack\bgroup
+    %\ruledvpack\bgroup
+    %\ruleddpack\bgroup
+     \hpack\bgroup
+        \begingroup
+        \darkgray
+        \virtualvrule
+           \s!pair  \ht\b_strc_math_display \dp\b_strc_math_display
+           \c!width 2\onepoint
+        \virtualvrule
+           \s!pair  \onepoint \onepoint
+           \c!width 10\onepoint
+        \endgroup
+        \ruleddpack\bgroup
+   \fi}
+
+\def\strc_math_flush_result_traced_end
+  {\ifconditional\c_strc_math_pack_mode
+     \egroup
+     \egroup
+     \egroup
+     \ifgridsnapping\strc_math_grid_snapped_box\plusone\fi
+   \fi}
+
+\let\strc_math_flush_result_begin\strc_math_flush_result_normal_begin
+\let\strc_math_flush_result_end  \strc_math_flush_result_normal_end
+
+\installtextracker{math.nosplit}
+  {\let\strc_math_flush_result_begin\strc_math_flush_result_traced_begin
+   \let\strc_math_flush_result_end  \strc_math_flush_result_traced_end}
+  {\let\strc_math_flush_result_begin\strc_math_flush_result_normal_begin
+   \let\strc_math_flush_result_end  \strc_math_flush_result_normal_end}
+
+
 \def\strc_math_flush_v_box_bottom
   {\ifdone
      \global\c_strc_math_positioning42\relax
+\strc_math_flush_result_begin
      \handle_formula_image\unvbox\b_strc_math_display
      \strc_math_flush_number_box
+\strc_math_flush_result_end
    \else
      \global\c_strc_math_positioning43\relax
+\strc_math_flush_result_begin
      \handle_formula_image\unvbox\b_strc_math_display
      \nointerlineskip
      \ht\b_strc_formulas_number\zeropoint
      \dp\b_strc_formulas_number\zeropoint
      \boxyoffset\b_strc_formulas_number\d_strc_math_last_depth
      \strc_math_flush_number_box % right
+\strc_math_flush_result_end
      \prevdepth\d_strc_math_last_depth
    \fi}
 
@@ -3129,21 +3218,24 @@
   {\ifdone
      \global\c_strc_math_positioning45\relax
      \dontleavehmode
+\strc_math_flush_result_begin
      \strc_math_flush_number_box
      \handle_formula_image\unvbox\b_strc_math_display
+\strc_math_flush_result_end
    \else
      \scratchdepth\dp\b_strc_formulas_number
      \global\c_strc_math_positioning46\relax
      \ht\b_strc_formulas_number\strutht
      \dp\b_strc_formulas_number\strutdp
      \dontleavehmode
+\strc_math_flush_result_begin
      \vkern{\d_strc_math_first_height+\scratchdepth-\lineheight}%
 % or \ht\b_strc_formulas_number{\d_strc_math_first_height+\scratchdepth-\strutdp}%
      \nointerlineskip
      \strc_math_flush_number_box % left
      \vkern{-\d_strc_math_first_height-\scratchdepth}%
      \handle_formula_image\unvbox\b_strc_math_display
-   \fi}
+\strc_math_flush_result_end   \fi}
 
 \def\strc_math_flush_v_box_right
   {\ifconditional\c_strc_math_ignore_number
@@ -3152,7 +3244,9 @@
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
      \global\c_strc_math_positioning41\relax
+\strc_math_flush_result_begin
      \handle_formula_image\unvbox\b_strc_math_display
+\strc_math_flush_result_end
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or
@@ -3188,7 +3282,9 @@
    \strc_formulas_start_side_box
    \ifzeropt\d_strc_formulas_number
      \global\c_strc_math_positioning44\relax
+\strc_math_flush_result_begin
      \handle_formula_image\unvbox\b_strc_math_display
+\strc_math_flush_result_end
    \else
      % better verbose than compact so some overlap in code here
      \ifcase\c_strc_math_number_variant\or

@@ -70,6 +70,7 @@
   {\setlocalmathoperatorcurrent{#1}% \edef\currentmathoperator{#1}%
    \setupcurrentmathoperator[#2]%
    \scratchclass\mathcodechecked{\mathoperatorparameter\c!mathclass}\relax
+   \edef\p_left{\mathoperatorparameter\c!left}%
    \Uoperator
      \usedcolorparameterattributes{\mathoperatorparameter\c!symbolcolor}%
      \begincsname\??mathoperatormethod\mathoperatorparameter\c!method\endcsname
@@ -85,7 +86,12 @@
      \s!class \scratchclass
    % \s!attr \indexofregister \c_attr_mathsize \attributeunsetvalue
      % todo: find a way to pick up or pass sup/sub to here
-     \Umathchar \scratchclass \fam \mathoperatorparameter\c!left
+     \Umathchar \scratchclass \fam
+       \ifchknumber\p_left\or
+         \lastchknumber
+       \else
+         \expandafter`\p_left
+       \fi
      {\edef\m_operator_text{\mathoperatorparameter\c!top}%
       \ifempty\m_operator_text\else
          \mathstrut % todo: make option

@@ -63,8 +63,9 @@ local numbers          = attributes.numbers
 
 local implement        = interfaces.implement
 
-local starttiming      = statistics.starttiming
-local stoptiming       = statistics.stoptiming
+----- starttiming      = statistics.starttiming
+----- stoptiming       = statistics.stoptiming
+
 local loadstripped     = utilities.lua.loadstripped
 local unsetvalue       = attributes.unsetvalue
 

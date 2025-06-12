@@ -35,7 +35,7 @@ local tonut             = nodes.tonut
 local tonode            = nodes.tonode
 
 local getid             = nuts.getid
-local getsubtype        = nuts.getsubtype
+local hasidsubtype      = nuts.hasidsubtype
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getattr           = nuts.getattr
@@ -120,7 +120,7 @@ end
 -- if n and getid(n) == kern_code then -- also needed
 --     n = getnext(n)
 -- end
--- while n and getid(n) == hlist_code and getsubtype(n) == ghost_code do
+-- while n and hasidsubtype(n,hlist_code,ghost_code) do
 --     n = getnext(n)
 -- end
 -- while n and getid(n) == glue_code do
@@ -137,6 +137,32 @@ stages[1] = function(specification,stage)
     local distance = specification.distance
     local found    = { }
     local max      = 0
+
+-- local sh = tex.getdimen("strutht")
+-- local sd = tex.getdimen("strutdp")
+-- local ch = sh/6
+-- local cd = sd/3
+-- for s in nextlist, head do
+--     local wd, ht, dp = nuts.getwhd(s)
+--     local dh = ht - sh
+--     local dd = dp - sd
+--     local clipped = false
+--     if dh <= ch then
+--         ht = sh
+--         clipped = true
+--     end
+--     if dd <= cd then
+--         dp = sd
+--         clipped = true
+--     end
+--     if clipped then
+--         report("delta (%p,%p), clipped",dh,dd)
+--         nuts.setwhd(s,wd,ht,dp)
+--     else
+--         report("delta (%p,%p), kept",dh,dd)
+--     end
+-- end
+
     for s in nextboundary, head do
         local data = getdata(s)
         if data == b_mathalign then
@@ -200,7 +226,7 @@ local function handlepacked(parent,plist,position)
 -- nuts.show(current)
 -- print("")
         while current do
-            if getid(current) == hlist_code and getsubtype(current) == wrapped_code then
+            if hasidsubtype(current,hlist_code,wrapped_code) then
                 local packed = ((getattr(current,a_location) or 0) >> 8) & 0xF
 -- print(packed,a_location,getattr(current,a_location))
 -- packed = 1
@@ -210,7 +236,7 @@ local function handlepacked(parent,plist,position)
                  -- print("")
                     local linewidth, wrapwidth, leading, trailing
                     local wlist = getlist(current)
-                    if wlist and getid(wlist) == hlist_code and getsubtype(wlist) == fence_code then
+                    if wlist and hasidsubtype(wlist,hlist_code,fence_code) then
                         wlist = getlist(wlist) -- left=none demands this
                     end
                     for wrapped, id, subtype, list in nextlist, wlist do

@@ -13,7 +13,6 @@ local setmacro          = tokens.setters.macro
 local expandmacro       = token.expandmacro
 
 local nuts              = nodes.nuts
-local tonut             = nodes.tonut
 local getattr           = nuts.getattr
 local getdepth          = nuts.getdepth
 local getlistdimensions = nuts.getlistdimensions
@@ -100,29 +99,34 @@ local methods = {
 adaptive.methods = methods
 --------.set     = setadaptive
 
-local function handleuleader(n,grp,index,box,location)
-    local m = tonut(n)
-    local a = getattr(m,a_adaptive) or index -- index will become a selector
-    if a then
-        local settings = getvalue(a_adaptive,a) -- index triggers ...
-        if settings then
-            setstate(m,0) -- hm ...
-            local action = methods[settings.method or 1]
-            if action then
-                action(settings,m,tonut(box))
+local function handle_uleader_callback(n,grp,index,box,location)
+    if enabled then
+        local a = getattr(n,a_adaptive) or index -- index will become a selector
+        if a then
+            local settings = getvalue(a_adaptive,a) -- index triggers ...
+            if settings then
+                setstate(n,0) -- hm ...
+                local action = methods[settings.method or 1]
+                if action then
+                    action(settings,n,box)
+                end
             end
         end
     end
     return n
 end
 
--- callback.register("handle_uleader", handleuleader) -- will be frozen
+callbacks.register {
+    name    = "handle_uleader",
+    action  = handle_uleader_callback,
+    comment = "resolve user leaders",
+    frozen  = true,
+}
 
 function adaptive.set(settings)
     if not enabled then
      -- enableaction("vboxbuilders","nodes.adaptive.handlehorizontal")
      -- enableaction("vboxhandlers","nodes.adaptive.handlevertical")
-        callback.register("handle_uleader", handleuleader) -- will be frozen
         enabled = true
     end
     texsetattribute(a_adaptive,registervalue(a_adaptive,settings))

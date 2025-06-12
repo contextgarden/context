@@ -16,7 +16,7 @@ extern void     tex_finish_vadjust_group (void);
                                          
 extern int      tex_valid_adjust_index   (halfword n);
                                          
-extern void     tex_inject_adjust_list   (halfword list, int obeyoptions, halfword nextnode, const line_break_properties *properties);
+extern void     tex_inject_adjust_list   (halfword list, int context, int obeyoptions, halfword nextnode, const line_break_properties *properties);
                                          
 extern void     tex_adjust_passon        (halfword box, halfword adjust);
 extern void     tex_adjust_attach        (halfword box, halfword adjust);

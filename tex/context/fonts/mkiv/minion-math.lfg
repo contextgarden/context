@@ -38,6 +38,16 @@ return {
         },
         tweaks = {
             aftercopying = {
+                {
+                    tweak    = "fontname",
+                    expected = {
+                      "MinionMath-Regular",
+                      "MinionMath-Semibold",
+                      "MinionMath-Capt",
+                      "MinionMath-Tiny",
+                      },
+                    abort    = true,
+                },
              -- {
              --     tweak    = "version",
              --     expected = "unknown", -- todo

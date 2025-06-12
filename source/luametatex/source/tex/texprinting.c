@@ -29,7 +29,7 @@ print_state_info lmt_print_state = {
     was mostly kept (sometimes under paramameter control using a higher tracing value) but after reading
     the nth ridiculous comment about logging in \LUATEX\ related to \CONTEXT\ I decided that it no
     longer made sense to offer compatibility because it will never satisfy everyone and we want to move
-    on, so per spring 2022 we will see even further normalization and log compatility options get (are)
+    on, so per spring 2022 we will see even further normalization and log compatibility options get (are)
     dropped. If there are inconsistencies left, assume they will be dealt with. It's all about being able
     to recognize what gets logged. If someone longs for the old reporting, there are plenty alternative
     engines available.
@@ -94,8 +94,8 @@ print_state_info lmt_print_state = {
     a \TEX\ session: |log_file|, the target of a message: |selector|, the digits in a number being
     output |dig[23]|, the number of characters recently printed |tally|, the number of characters
     on the current terminal line |term_offset|, the number of characters on the current file line
-    |file_offset|, the circular buffer for pseudoprinting |trick_buf|, the threshold for
-    pseudoprinting (explained later) |trick_count|, another variable for pseudoprinting
+    |file_offset|, the circular buffer for pseudo printing |trick_buf|, the threshold for
+    pseudo printing (explained later) |trick_count|, another variable for pseudo printing
     |first_count|, a blocker for minor adjustments to |show_token_list| namely |inhibit_par_tokens|.
 
     To end a line of text output, we call |print_ln|:
@@ -837,7 +837,7 @@ void tex_print_glue(scaled d, int order, int unit)
 {
     tex_print_dimension(d, no_unit);
     if ((order < normal_glue_order) || (order > filll_glue_order)) {
-        /*tex For sure this will crash someplace becuase it is also used as index! */
+        /*tex For sure this will crash someplace because it is also used as index! */
         tex_print_str("foul");
     } else if (order > normal_glue_order) {
         tex_print_str("fi");
@@ -1001,7 +1001,7 @@ void tex_print_font(halfword f)
         tex_print_str(font_name(f));
      /* if (font_size(f) != font_design_size(f)) { */
             /*tex
-                Nowadays this check for designsize is rather meaningless so we could as well
+                Nowadays this check for design size is rather meaningless so we could as well
                 always enter this branch. We can even make this while blob a callback.
             */
             tex_print_format(" at %p", font_size(f));
@@ -1062,7 +1062,7 @@ void tex_print_rule_dimension(scaled d)
 
     A global variable called |depth_threshold| is used to record the maximum depth of nesting for
     which |show_node_list| will show information. If we have |depth_threshold = 0|, for example,
-    only the top level information will be given and no sublists will be traversed. Another global
+    only the top level information will be given and no sub-lists will be traversed. Another global
     variable, called |breadth_max|, tells the maximum number of items to show at each level;
     |breadth_max| had better be positive, or you won't see anything.
 

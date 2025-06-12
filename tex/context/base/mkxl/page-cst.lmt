@@ -70,8 +70,6 @@ local texsetbox         = tex.setbox
 local texsetcount       = tex.setcount
 local texsetdimen       = tex.setdimen
 
-local theprop           = nuts.theprop
-
 local nodepool          = nuts.pool
 
 local new_vlist         = nodepool.vlist

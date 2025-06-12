@@ -46,8 +46,8 @@
     All action is done via runners in the function table. Some runners are implemented here,
     others are spread over modules. In due time I will use more prefixes to indicate where they
     belong. Also, more runners will move to their respective modules, a stepwise process. This
-    split up is not always consistent which relates to the fact that \TEX\ is a monolothic program
-    which in turn means that we keep all the smaller (and more dependen) bits here. There are
+    split up is not always consistent which relates to the fact that \TEX\ is a monolithic program
+    which in turn means that we keep all the smaller (and more dependent) bits here. There are
     subsystems but they hook into each other, take inserts and adjusts that hook into the builders
     and packagers.
 
@@ -468,7 +468,7 @@ static void tex_aux_run_space(void)
             break;
         default:
             /*tex
-                The tradional treatment. A difference with other \TEX's is that we store the spacing
+                The traditional treatment. A difference with other \TEX's is that we store the spacing
                 in the node instead of using the (end of) paragraph bound value.
             */
             {
@@ -1702,7 +1702,7 @@ static void tex_aux_run_lua_function_call(void)
     dollar sign and rescan the current token, and it makes sense to have a macro for that as well.
 
     Here is |main_control| itself. It is quite short nowadays.  The initializer is at the end of
-    this file which saves a nunch of forward declarations.
+    this file which saves a bunch of forward declarations.
 
  */
 
@@ -2094,7 +2094,7 @@ void tex_end_local_control(void )
 
 /*tex
 
-    We need to go back to the main loop. This is rather nasty and dirty and counterintuive code and
+    We need to go back to the main loop. This is rather nasty and dirty and counter-intuive code and
     there might be a cleaner way. Basically we trigger the main control state from here.
 
     \starttyping
@@ -2235,7 +2235,7 @@ int tex_in_privileged_mode(void)
 static void tex_aux_run_end_job(void)
 {
     if (tex_in_privileged_mode()) {
-        if ((page_head == lmt_page_builder_state.page_tail)
+        if ((page_head == lmt_page_builder_state.tail)
          && (cur_list.head == cur_list.tail)
          && (lmt_page_builder_state.dead_cycles == 0)) {
             /*tex This is the only way out. */
@@ -2776,8 +2776,8 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                 |adjust_tail| will be non-null if and only if the current box might include adjustments
                 that should be appended to the current vertical list.
 
-                Having shift in the box context is kind of strange but as long as we stay below maxdimen
-                it works. We now pass the shift directly, so no boxcontext trick here.
+                Having shift in the box context is kind of strange but as long as we stay below |\maxdimen|
+                it works. We now pass the shift directly, so no |boxcontext| trick here.
 
             */
             if (boxnode) {
@@ -2788,7 +2788,7 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                     case vmode:
                         if (lmt_packaging_state.pre_adjust_tail) {
                             if (pre_adjust_head != lmt_packaging_state.pre_adjust_tail) {
-                                tex_inject_adjust_list(pre_adjust_head, 1, boxnode, NULL);
+                                tex_inject_adjust_list(pre_adjust_head, pre_append_adjust_context, 1, boxnode, NULL);
                             }
                             lmt_packaging_state.pre_adjust_tail = null;
                         }
@@ -2807,7 +2807,7 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
                         }
                         if (lmt_packaging_state.post_adjust_tail) {
                             if (post_adjust_head != lmt_packaging_state.post_adjust_tail) {
-                                tex_inject_adjust_list(post_adjust_head, 1, null, NULL);
+                                tex_inject_adjust_list(post_adjust_head, post_append_adjust_context, 1, null, NULL);
                             }
                             lmt_packaging_state.post_adjust_tail = null;
                         }
@@ -2887,11 +2887,12 @@ void tex_box_end(int boxcontext, halfword boxnode, scaled shift, halfword maincl
 
 /*tex
 
-    The canonical \TEX\ engine(s) inject an indentation box, so there is always something at the beginning that
-    also acts as a boundary. However, when snapshotting was introduced it made also sense to turn the parindent
-    related hlist into a glue. We might need to adapt the parbuilder but it looks liek that is not needed. Of
-    course, an |\unskip| will now also unskip the parindent but there are ways to prevent this. I'll test it for
-    a while, which is why we have a way to enable it. The glue is {\em always} injected, also when it's zero.
+    The canonical \TEX\ engine(s) inject an indentation box, so there is always something at the 
+    beginning that also acts as a boundary. However, when snapshotting was introduced it made also 
+    sense to turn the |\parindent| related hlist into a glue. We might need to adapt the parbuilder 
+    but it looks like hat is not needed. Of course, an |\unskip| will now also remove the
+    |\parindent| but there are ways to prevent this. I'll test it for a while, which is why we have 
+    a way to enable it. The glue is {\em always} injected, also when it's zero.
 
 */
 
@@ -3057,7 +3058,7 @@ static void tex_aux_run_mkern(void)
     not done right now, as it introduces pretty heavy memory leaks. This means the current code
     might be wrong in some way that relates to in-paragraph displays.
 
-    Instead of |tex_aux_only_dirs| we now uyse a configurable |tex_is_effectively_empty| so that we
+    Instead of |tex_aux_only_dirs| we now use a configurable |tex_is_effectively_empty| so that we
     can test cq .\ document this trickery. It also gives bit more control over hoe to deal with 
     indentation (old school \TEX). 
 
@@ -3175,7 +3176,7 @@ static void tex_aux_run_remove_item(void)
 //    } else if (node_type(tail) != glyph_node) {
 //        /*tex
 //            Officially we don't need to check what we remove because it can be only one of
-//            three, unless one creates one indendently (in \LUA). So, we just do check and
+//            three, unless one creates one incidentally (in \LUA). So, we just do check and
 //            silently ignore bad code.
 //        */
 //        halfword p;
@@ -3204,7 +3205,7 @@ static void tex_aux_run_remove_item(void)
 //  } else if (tail != head) {
         /*tex
             Officially we don't need to check what we remove because it can be only one of
-            three, unless one creates one indendently (in \LUA). So, we just do check and
+            three, unless one creates one incidentally (in \LUA). So, we just do check and
             silently ignore bad code.
         */
         switch (node_type(tail)) {
@@ -5450,7 +5451,9 @@ static void tex_aux_set_math_parameter(int a)
         int freeze = is_frozen(a) && cur_mode == mmode;
         if (! freeze && is_inherited(a)) {
             tex_aux_skip_optional_equal();
-            /* maybe also let inherit from another mathparam but that can become circular */
+            /*tex
+                Maybe also let inherit from another math parameter but that can become circular.
+            */
             switch (math_parameter_value_type(code)) {
                 case math_integer_parameter:
                     switch (cur_cmd) {
@@ -5564,7 +5567,8 @@ static void tex_aux_set_math_parameter(int a)
             parameter_value(n) = value;
             attach_current_attribute_list(n);
             tex_tail_append(n);
-        } else {
+     // } else {
+        } {
             switch (style) {
                 case all_display_styles:
                     tex_set_display_styles(code, value, global_or_local(a), indirect);
@@ -6234,7 +6238,7 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
         case local_pre_tolerance_code:
             if (cur_mode == hmode) {
                 /*tex 
-                    We can check if the last node is a paramrter par node and just patch that 
+                    We can check if the last node is a parameter par node and just patch that 
                     one but we have a callback on a new one so for now we just add redundant 
                     nodes. It's a bit inefficient when we have local boxes, so if I really start 
                     using this feature I might go for efficiency. 

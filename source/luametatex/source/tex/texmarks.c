@@ -15,9 +15,9 @@
     entries of these arrays by symbolic macros |top_mark|, etc. The value of |top_mark (x)|, etc.
     is either |null| or a pointer to the reference count of a token list.
 
-    The variable |biggest_used_mark| is an aid to try and keep the code somehwat efficient without
+    The variable |biggest_used_mark| is an aid to try and keep the code somewhat efficient without
     too much extra work: it registers the highest mark class ever instantiated by the user, so the
-    loops in |fire_up| and |vsplit| do not have to traverse the full range |0 .. biggest_mark|.
+    loops in |fire_up| and |\vsplit| do not have to traverse the full range |0 .. biggest_mark|.
 
     Watch out: zero is always valid and the good old single mark!
 
@@ -334,7 +334,7 @@ int tex_has_mark(halfword m)
 
     The |make_mark| procedure has been renamed, because if the current chr code is 1, then the
     actual command was |\clearmarks|, which did not generate a mark node but instead destroyed the
-    current mark related tokenlists. We now have proper reset nodes.
+    current mark related token lists. We now have proper reset nodes.
 
 */
 

@@ -21,6 +21,11 @@ return {
         tweaks = {
             aftercopying = {
                 {
+                    tweak    = "fontname",
+                    expected = "CambriaMath",
+                    abort    = true,
+                },
+                {
                     tweak = "addmirrors",
                 },
                 {

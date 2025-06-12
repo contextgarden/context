@@ -1582,16 +1582,31 @@
 \def\font_basics_define_body_font_environment_detail[#class][#style][#body][#settings]%
   {\font_basics_define_body_font_environment_class[#class:#style][#body][#settings][]}
 
+% \def\font_basics_define_body_font_environment_class[#class][#body][#settings][#dummy]%
+%   {\edef\m_font_body{#body}%
+%    \ifchkdim\m_font_body\or
+%      \normalizebodyfontsize\m_font_body_normalized\m_font_body
+%      \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
+%      \clf_registerbodyfontsize{\m_font_body_normalized}%
+%    \orelse\ifhastok={#settings}%
+%      \getparameters[\??fontenvironments#class#body][#settings]% old fashioned setter
+%    \else
+%      \setvalue{\??fontenvironments#class#body\s!parent}{#settings}% old fashioned setter
+%     %\getparameters[\??fontenvironments#class#body][\s!parent=#settings]% old fashioned setter
+%    \fi}
+%
+% Test this on the lecture nodes!
+
+% We will go \tosparsedimension all over the place in compact mode.
+
 \def\font_basics_define_body_font_environment_class[#class][#body][#settings][#dummy]%
-  {\edef\m_font_body{#body}%
-   \ifchkdim\m_font_body\or
-     \normalizebodyfontsize\m_font_body_normalized\m_font_body
-     \font_basics_define_body_font_environment_size[#class][\m_font_body_normalized][#settings]%
-     \clf_registerbodyfontsize{\m_font_body_normalized}%
+  {\ifchkdim#body\or
+     \font_basics_define_body_font_environment_size[#class][#body][#settings]%
+     \clf_registerbodyfontsize{#body}%
    \orelse\ifhastok={#settings}%
      \getparameters[\??fontenvironments#class#body][#settings]% old fashioned setter
    \else
-     \setvalue{\??fontenvironments#class#body\s!parent}{#settings}% old fashioned setter
+     \defcsname\??fontenvironments#class#body\s!parent\endcsname{#settings}%
     %\getparameters[\??fontenvironments#class#body][\s!parent=#settings]% old fashioned setter
    \fi}
 
@@ -2125,7 +2140,6 @@
      \fi
      \font_helpers_set_fontstyle_of_fontclass
    \fi}
-
 
 \def\font_helpers_set_fontstyle_of_fontclass % will be overloaded later
   {\let\fontstyle\s!rm}

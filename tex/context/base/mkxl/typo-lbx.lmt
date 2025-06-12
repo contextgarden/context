@@ -56,9 +56,6 @@ local localboxes        = typesetters.localboxes
 
 local a_localboxesmark  <const> = attributes.private("localboxesmark")
 
-local starttiming       = statistics.starttiming
-local stoptiming        = statistics.stoptiming
-
 do
     local lb_found            = nil
     local lb_index            = 0
@@ -240,12 +237,11 @@ do
 
 end
 
-local localboxactions = nodes.tasks.actions("localboxes")
+local local_box_callback = nodes.tasks.actions("localboxes")
 
-function builders.local_box_filter(...)
-    starttiming(builders)
-    localboxactions(...)
-    stoptiming(builders)
-end
-
-callbacks.register("local_box_filter", builders.local_box_filter, "process local boxes")
+callbacks.register {
+    name    = "local_box",
+    action  = local_box_callback,
+    comment = "process local boxes",
+    frozen  = true,
+}
