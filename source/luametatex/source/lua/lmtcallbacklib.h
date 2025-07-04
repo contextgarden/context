@@ -107,7 +107,7 @@ typedef struct callback_item_info {
 
 typedef struct callback_state_info {
     int                index;
-    int                options;
+    unsigned           options;
     callback_item_info items[total_callbacks];
 } callback_state_info;
 

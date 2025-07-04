@@ -147,7 +147,8 @@
    \orelse\ifchknum\page_breaks_current_option\or
       \page_otr_command_flush_all_floats
       \page_otr_command_next_page
-      \localcontrolledrepeating
+%       \localcontrolledrepeating
+      \localcontrolledendless
         {\ifnum\userpageno<\page_breaks_current_option\relax
            \page_otr_insert_dummy_page
          \else
@@ -241,7 +242,8 @@
   {\ifdoublesided
      \ifcase{\realpageno;\plusfour}\else
        \page_breaks_handle_direct\v!yes
-       \localcontrolledrepeating
+%        \localcontrolledrepeating
+       \localcontrolledendless
          {\ifcase{\realpageno;\plusfour}%
             \quitloop
           \else

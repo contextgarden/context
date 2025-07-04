@@ -33,7 +33,10 @@ def endfig =
     ; % safeguard
     if mfun_fig_nesting = 1 :
         scantokens extra_endfig ;
-        shipit ;
+        scantokens every_before_shipout ;
+        shipout currentpicture ; % shipit ;
+        resetbytemaps ;
+        scantokens every_after_shipout ;
         endgroup ;
     fi ;
     mfun_fig_nesting := mfun_fig_nesting - 1 ;

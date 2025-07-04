@@ -39,6 +39,7 @@ local setchar            = nuts.setchar
 local setattrlist        = nuts.setattrlist
 local getfont            = nuts.getfont
 local getxscale          = nuts.getxscale
+local setoptions         = nuts.setoptions
 local isglyph            = nuts.isglyph
 local hasidsubtype       = nuts.hasidsubtype
 
@@ -64,6 +65,8 @@ local gluecodes          = nodes.gluecodes
 local glyph_code         <const> = nodecodes.glyph
 local glue_code          <const> = nodecodes.glue
 local spaceskip_code     <const> = gluecodes.spaceskip
+
+local noautobreak_code   <const> = tex.glueoptioncodes.noautobreak
 
 local chardata           = characters.data
 local ispunctuation      = characters.is_punctuation
@@ -112,16 +115,23 @@ local function inject_char_space(unicode,head,current,parent)
     return insertnodeafter(head,current,glue)
 end
 
+local usepenalties = false
+
 local function inject_nobreak_space(unicode,head,current,space,spacestretch,spaceshrink)
     local scale   = getxscale(current)
     local glue    = new_glue(scale*space,scale*spacestretch,scale*spaceshrink)
-    local penalty = new_penalty(10000)
     setattrlist(glue,current)
-    setattrlist(penalty,current)
     setattrlist(current) -- why reset all
     setattr(glue,a_character,unicode) -- bombs
-    head, current = insertnodeafter(head,current,penalty)
+    if usepenalties then
+        local penalty = new_penalty(10000)
+        setattrlist(penalty,current)
+        head, current = insertnodeafter(head,current,penalty)
+    else
+        setoptions(glue,noautobreak_code)
+    end
     if trace_nbsp then
+        -- no penalties needed if not usepenalties
         local rule    = new_rule(space)
         local kern    = new_kern(-space)
         local penalty = new_penalty(10000)

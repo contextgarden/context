@@ -278,8 +278,9 @@ typedef struct mp_shape_object {
     unsigned char              padding_0; /* pen_type */
     unsigned char              curvature;
     unsigned char              padding_1;
-    unsigned char              padding_2;
-    unsigned char              padding_3;
+ // unsigned char              padding_2;
+ // unsigned char              padding_3;
+    short                      mesh;
     char                      *bytemap;
     int                        bytemapnx;
     int                        bytemapny;
@@ -855,6 +856,7 @@ typedef enum mp_with_codes {
     mp_with_linejoin_code,
     mp_with_miterlimit_code,
     mp_with_curvature_code,
+    mp_with_mesh_code,
     mp_with_bytemap_code,
     mp_with_nothing_code,    /* quits scanning of a with, avoids lookahead */
 } mp_with_codes;
@@ -1374,6 +1376,8 @@ typedef enum mp_linejoin_codes {
 typedef enum mp_curvature_codes {
     mp_default_curvature_code,
     mp_always_curvature_code,
+    mp_never_curvature_code,
+    mp_repeat_curvature_code,
     /* we see this value being used */
     mp_weird_curvature_code,
 } mp_curvature_codes;
@@ -1497,6 +1501,7 @@ typedef struct mp_shape_node_data {
     unsigned char              curvature;
     unsigned char              padding_1;
     short                      bytemap;
+    short                      mesh;
 } mp_shape_node_data;
 
 typedef struct mp_start_node_data {
@@ -1771,7 +1776,7 @@ typedef struct MP_instance {
     mp_knot             path_tail;              /* the node that links to the beginning of a path */
     /*  */
     int                 path_size;              /* maximum number of knots between breakpoints of a path */
-    int                 path_padding;           /* be nice */
+    int                 bbox_nesting;           /* be nice */
     mp_number          *delta_x;
     mp_number          *delta_y;
     mp_number          *delta;                  /* knot differences */
@@ -1980,6 +1985,7 @@ extern  void            mp_push_color_value           (MP mp, double r, double g
 extern  void            mp_push_cmykcolor_value       (MP mp, double c, double m, double y, double k);
 extern  void            mp_push_transform_value       (MP mp, double x, double y, double xx, double xy, double yx, double yy);
 extern  void            mp_push_path_value            (MP mp, mp_knot k);
+//      void            mp_push_tokens_value          (MP mp, const char *str, size_t length);
 
 extern  void            mp_new_randoms                (MP mp);
 

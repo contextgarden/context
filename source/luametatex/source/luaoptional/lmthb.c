@@ -628,9 +628,9 @@ static int hblib_shape_string(lua_State * L)
                 be more handy if we could pass an array of integers (maybe we can).
             */
             if (utfbits == 32) {
-                hblib_state.hb_buffer_add_utf32(buffer, text, (int) noftext, 0, hblib_utf32len(text, noftext));
+                hblib_state.hb_buffer_add_utf32(buffer, text, (int) noftext, 0, (int) hblib_utf32len(text, noftext));
             } else { /* 8 */
-                hblib_state.hb_buffer_add_utf8(buffer, text, (int) noftext, 0, hblib_utf8len(text, noftext));
+                hblib_state.hb_buffer_add_utf8(buffer, text, (int) noftext, 0, (int) hblib_utf8len(text, noftext));
             }
             hblib_state.hb_buffer_set_language(buffer, hblib_state.hb_language_from_string(language, (int) noflanguage));
             hblib_state.hb_buffer_set_script(buffer, hblib_state.hb_script_from_string(script, (int) nofscript));

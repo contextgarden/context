@@ -404,6 +404,8 @@ return {
         "scratchbox", "globalscratchbox", "privatescratchbox",
         "scratchmacro", "scratchmacroone", "scratchmacrotwo",
         --
+        "ignoredtoks",
+        --
         "scratchconditiontrue", "scratchconditionfalse", "ifscratchcondition",
         "scratchconditiononetrue", "scratchconditiononefalse", "ifscratchconditionone",
         "scratchconditiontwotrue", "scratchconditiontwofalse", "ifscratchconditiontwo",
@@ -795,5 +797,7 @@ return {
         "nohpenalties", "novpenalties",
         --
         "toddlerpenalty", "orphanpenalty",
+        --
+        "digitspace",
     }
 }

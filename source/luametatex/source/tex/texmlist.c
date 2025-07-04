@@ -858,7 +858,7 @@ static halfword tex_aux_make_list_phantom(halfword source, int nowidth, halfword
         rule_width(rule) = nowidth ? 0 : box_width(source);
         rule_height(rule) = box_height(source);
         rule_depth(rule) = box_depth(source);
-        box_dir(target) = dir_lefttoright ;
+        box_direction(target) = dir_lefttoright ;
         box_height(target) = rule_height(rule);
         box_depth(target) = rule_depth(rule);
         box_width(target) = rule_width(rule);
@@ -6464,7 +6464,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
         }
         lst = tex_new_node(hlist_node, 0);
         tex_attach_attribute_list_copy(lst, target);
-        box_dir(lst) = dir_lefttoright ;
+        box_direction(lst) = dir_lefttoright ;
         box_height(lst) = height;
         box_depth(lst) = depth;
         box_width(lst) = box_width(tmp);

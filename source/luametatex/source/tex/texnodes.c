@@ -1130,7 +1130,7 @@ static inline void tex_aux_preset_node(halfword n, quarterword type)
             break;
         case hlist_node:
         case vlist_node:
-            box_dir(n) = direction_unknown;
+            box_direction(n) = direction_unknown;
             break;
         case disc_node:
             tex_aux_preset_disc_node(n);
@@ -2580,7 +2580,7 @@ void tex_print_short_node_contents(halfword p)
                 break;
             case par_node:
                 if (collapsing) { tex_print_char(']'); collapsing = 0; }
-                tex_print_str(par_dir(p) ? "<r2l p>" : "<l2r p>");
+                tex_print_str(par_direction(p) ? "<r2l p>" : "<l2r p>");
                 break;
             default:
               DEFAULT:
@@ -3010,8 +3010,8 @@ void tex_show_node_list(halfword p, int threshold, int max)
                         if (box_shift_amount(p) != 0) {
                             tex_print_format(", shifted %p", box_shift_amount(p));
                         }
-                        if (valid_direction(box_dir(p))) {
-                            tex_print_format(", direction %2", box_dir(p));
+                        if (valid_direction(box_direction(p))) {
+                            tex_print_format(", direction %2", box_direction(p));
                         }
                         if (box_geometry(p)) {
                             tex_print_format(", geometry %x", box_geometry(p));
@@ -3122,7 +3122,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     {
                         halfword v;
                         /*tex We're already past processing so we only show the stored values. */
-                        tex_print_format(", direction %2", par_dir(p));
+                        tex_print_format(", direction %2", par_direction(p));
                         if (node_subtype(p) == vmode_par_par_subtype) {
                             if (tex_par_state_is_set(p, par_par_shape_code)               ) { v = par_par_shape(p)               ; if (v)                     { tex_print_str(", parshape * ");              } }
                             if (tex_par_state_is_set(p, par_inter_line_penalties_code)    ) { v = par_inter_line_penalties(p)    ; if (v)                     { tex_print_str(", interlinepenalties * ");    } }
@@ -3521,7 +3521,7 @@ halfword tex_new_null_box_node(quarterword t, quarterword s)
 {
  // halfword p = tex_new_node(hlist_node, min_quarterword);
     halfword p = tex_new_node(t, s);
-    box_dir(p) = (singleword) text_direction_par;
+    box_direction(p) = (singleword) text_direction_par;
     return p;
 }
 
@@ -4128,7 +4128,7 @@ halfword tex_new_par_node(quarterword subtype)
         tex_set_local_tolerance(par, local_tolerance_par);
         tex_set_local_pre_tolerance(par, local_pre_tolerance_par);
     }
-    par_dir(par) = (singleword) par_direction_par;
+    par_direction(par) = (singleword) par_direction_par;
     par_options(par) = (singleword) par_options_par;
     tex_add_local_boxes(par); /*tex Is this really always needed? */
     if (subtype != local_box_par_subtype) {
@@ -5289,9 +5289,9 @@ int tex_flatten_leaders(halfword box, int grp, int just_pack, int location, int 
                         }
                         /* maybe just get the dimensions instead of packing */
                         if (node_type(leader) == hlist_node) {
-                            packed = tex_hpack(box_list(leader), scaledround(width), packing_exactly, box_dir(leader), holding_none_option, box_limit_none);
+                            packed = tex_hpack(box_list(leader), scaledround(width), packing_exactly, box_direction(leader), holding_none_option, box_limit_none);
                         } else {
-                            packed = tex_vpack(box_list(leader), scaledround(width), packing_exactly, 0, box_dir(leader), holding_none_option, NULL);
+                            packed = tex_vpack(box_list(leader), scaledround(width), packing_exactly, 0, box_direction(leader), holding_none_option, NULL);
                         }
                         box_list(leader) = box_list(packed);
                         box_width(leader) = box_width(packed);
@@ -5569,7 +5569,7 @@ static inline scaled tex_aux_effective_glue(halfword parent, scaled amount, scal
                                 }
                                 break;
                         }
-                        amount = lmt_roundedfloat(w);
+                        amount = (scaled) lmt_roundedfloat(w);
                     }
             }
         }

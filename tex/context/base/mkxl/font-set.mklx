@@ -60,14 +60,20 @@
 
 \def\font_preloads_reset
   {\glet\font_preload_default_fonts   \relax
-  %\glet\font_preload_default_fonts_tt\relax
-  %\glet\font_preload_default_fonts_mm\relax
+   %glet\font_preload_default_fonts_tt\relax
+   %glet\font_preload_default_fonts_mm\relax
    \glet\font_preloads_zero_stage     \relax
    \glet\font_preloads_first_stage    \relax
    \glet\font_preloads_second_stage   \relax
-  %\glet\font_preloads_third_stage    \relax
+   %glet\font_preloads_third_stage    \relax
+   % good riddance:
    \global\everyhbox\emptytoks
    \global\everyvbox\emptytoks
+   % let's block further usage:
+   \enforced\glet\everyhbox\ignoredtoks
+   \enforced\glet\everyvbox\ignoredtoks
+   % as we can end up here twice:
+   \glettonothing\font_preloads_reset % maybe: \glet\font_preloads_reset\clf_resetnullfont
    % old: \font_preloads_reset_nullfont, new:
    \clf_resetnullfont}
 

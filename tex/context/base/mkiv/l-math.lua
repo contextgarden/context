@@ -157,3 +157,29 @@ if not math.ult then
     end
 
 end
+
+if setinspector and vector then
+
+    local inspect  = inspect
+
+    local isvector = vector.isvector
+    local totable  = vector.totable
+
+    setinspector("vector",function(v)
+        if isvector(v) then
+            inspect(totable(v))
+            return true
+        end
+    end)
+
+    local ismesh  = vector.mesh.ismesh
+    local totable = vector.mesh.totable
+
+    setinspector("mesh",function(v)
+        if ismesh(v) then
+            inspect(totable(v))
+            return true
+        end
+    end)
+
+end

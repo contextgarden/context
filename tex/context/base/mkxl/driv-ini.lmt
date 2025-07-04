@@ -41,6 +41,8 @@ local convert        = nil
 local wrapup         = nil
 local cleanup        = nil
 local outputfilename = nil
+local initialize     = nil
+local finalize       = nil
 
 drivers = drivers or {
     instances   = instances,
@@ -205,6 +207,18 @@ function drivers.install(specification)
     instances[name] = specification
 end
 
+function drivers.initialize(...)
+    starttiming(drivers)
+    initialize(...)
+    stoptiming(drivers)
+end
+
+function drivers.finalize(...)
+    starttiming(drivers)
+    finalize(...)
+    stoptiming(drivers)
+end
+
 function drivers.convert(boxnumber)
     if currentinstance then
         callbacks.functions.start_page_number()
@@ -257,6 +271,8 @@ function drivers.enable(name)
             cleanup        = actions.cleanup
             convert        = actions.convert
             outputfilename = actions.outputfilename
+            initialize     = actions.initialize
+            finalize       = actions.finalize
             --
             if prepare and not prepared[currentdriver] then
                 starttiming(drivers)

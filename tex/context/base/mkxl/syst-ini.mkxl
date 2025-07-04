@@ -537,6 +537,8 @@
 \mutable\let\scratchmacroone\relax
 \mutable\let\scratchmacrotwo\relax
 
+\newtoks\ignoredtoks
+
 %D \macros
 %D   {tempstring, scratchstring*}
 
@@ -1292,7 +1294,8 @@
 
 \newcount\synctex % \let\normalsynctex\synctex
 
-%D We get rid of the funny \TEX\ offset defaults of one inch by setting them to zero.
+%D We get rid of the funny \TEX\ offset defaults of one inch by setting them to
+%D zero. In fact, they're completely gone now.
 
 % \voffset\zeropoint \overloaded\let\voffset\relax \newdimen\voffset \let\normalvoffset\voffset
 % \hoffset\zeropoint \overloaded\let\hoffset\relax \newdimen\hoffset \let\normalhoffset\hoffset
@@ -1669,7 +1672,8 @@
 \permanent\protected\def\if_false{\iffalse}
 \permanent\protected\def\if_true {\iftrue}
 
-%D Pseudo primitives:
+%D Pseudo primitives. We now have endless loops so these are kind of obsolete
+%D and will be removed some day!
 
 \permanent\untraced\def\localcontrolledrepeating{\localcontrolledrepeat\maxcount}
 \permanent\untraced\def\expandedrepeating       {\expandedrepeat       \maxcount}

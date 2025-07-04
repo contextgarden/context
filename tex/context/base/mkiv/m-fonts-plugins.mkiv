@@ -348,7 +348,22 @@
     \stop
 \stoptexdefinition
 
+\startsubject[title=Remark]
+
+These tests are no longer representative because in mode node we have a lot of
+additional features (control options, tracing, dynamics, user features) kicking
+in that impact runtime because they need to be checked. The same is true for
+discretionaries. On the average the font processing time is not that much the
+bottleneck anyway, also given that typesetting with \TEX\ has always been about
+full control over matters. But we keep this module around. When run with \LMTX\
+\LUATEX\ is actually \LUAMETATEX .
+
+\stopsubject
+
+\page
+
 \startluacode
+
     local processlist = moduledata.plugins.processlist
 
     local data = {

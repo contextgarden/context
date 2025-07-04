@@ -796,7 +796,8 @@ int tex_appended_mvl(halfword context, halfword boundary)
         return 0;
     } else { 
 # if page_callback
-        if (! lmt_page_builder_state.output_active) {
+        if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
+     // if (! lmt_page_builder_state.output_active) {
             lmt_buildpage_callback(context, boundary);
         } 
 # endif 

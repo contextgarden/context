@@ -1,0 +1,415 @@
+if not modules then modules = { } end modules ['mlib-msh'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-msh.mkiv",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- The meshing code evolved stepwise. A first idea was to do more at the \METAPOST\
+-- end but in the end we settled for a regular \METAFUN\ plugin: we never manipulate
+-- these paths if only because the fills and draws demand synchronization so we have
+-- many small paths then. We used the (new) curvature trickery so performance was
+-- actually quite okay.
+--
+-- We also played with overlap detection and splitting triangles in smaller ones but
+-- this is error prone so in the end we just went for tracing, discarding and
+-- retaining features. As with everything \TEX\ and \METAPOST\ it is better to have
+-- full user control than to fight sub-optimal heuristics. So, code came and went.
+--
+-- Eventually also the granular mesh helpers in \METAPOST\ were ditched because we
+-- won't use them anyway.
+
+local type, next, tonumber = type, next, tonumber
+
+local concat, sortedkeys, sortedhash, sort = table.concat, table.sortedkeys, table.sortedhash, table.sort
+local format = string.format
+
+local starttiming           = statistics.starttiming
+local stoptiming            = statistics.stoptiming
+local elapsedtime           = statistics.elapsedtime
+
+local report                = logs.reporter("metapost","mesh")
+
+local formatters            = string.formatters
+
+local injectpath            = mp.inject.path
+local injectvectors         = mp.inject.vectors
+local scanstring            = mp.scan.string -- whatever
+local registerscript        = metapost.registerscript
+
+local vectornew             = vector.new
+local vectortruncate        = vector.truncate
+
+local contour               = vector.contour
+local contourgetmesh        = contour.getmesh
+local contourgetarea        = contour.getarea
+local contouraverage        = contour.average
+local contoursort           = contour.sort
+local contourtriangulate    = contour.triangulate
+local contourcollectoverlap = contour.collectoverlap
+
+local meshes  = { }
+local nofruns = 0
+
+-- vector.contour.overlapmap = {
+--     [0x01] = "nop_one",
+--     [0x02] = "nop_two",
+--     [0x03] = "nop_three",
+--     [0x04] = "nop_four",
+--     [0x05] = "nop_five" ,
+--     [0x0E] = "same points" ,
+--     [0x0F] = "same coordinates" ,
+--     [0x13] = "yes_three",
+--     [0x14] = "yes_four",
+--     [0x15] = "yes_five",
+-- }
+
+function mp.mesh_register(specification)
+    if type(specification) ~= "table" then
+        report("%s, registry %a, no %s specified","registering","unknown","properties")
+    else
+        local name = specification.name or "unknown"
+        if name == "unknown" then
+            report("%s, registry %a, no %s specified","registering",name,"name")
+        elseif not specification.points then
+            report("%s, registry %a, no %s specified","registering",name,"points")
+        elseif not specification.triangles then
+            report("%s, registry %a, no %s specified","registering",name,"triangles")
+        else
+            meshes[name] = specification
+        end
+    end
+end
+
+statistics.register("metapost meshing", function()
+    if nofruns > 0 then
+        return format("%i runs, %s seconds",nofruns,elapsedtime(meshes))
+    end
+end)
+
+-- extensions
+
+local function contouroverlapping(overlap)
+    local hash = { }
+    for i=1,#overlap do
+        local f  = overlap[i]
+        local f1 = f[1]
+        local f2 = f[2]
+        hash[f1] = (hash[f1] or 0) + 1
+        hash[f2] = (hash[f2] or 0) + 1
+    end
+    return next(hash) and hash or nil
+end
+
+local methods = {
+    "moller",
+    "guigue and devillers",
+}
+
+local averages = {
+    "mean",
+    "minimum",
+    "mean + minimum",
+}
+
+
+function vector.meshname(name,method,average)
+    return formatters
+        ["mesh-%s-%i-%i.lua"]
+        (name or "unknown",method or 1, average or 1)
+end
+
+local function contourshow(points,trianglelist,found,current)
+    local count    = found and #found or 0
+    local method   = current.method
+    local average  = current.average
+    local smethod  = methods[method] or methods[1]
+    local saverage = averages[average] or averages[1]
+    report("")
+    report("points    : %i",#points)
+    report("triangles : %i",#trianglelist)
+    report("overlaps  : %i",count)
+    report("method    : %i (%s)",method,smethod)
+    report("average   : %i (%s)",average,saverage)
+    if count > 0 then
+        report("")
+        local hash  = contouroverlapping(found)
+        local keys  = sortedkeys(hash)
+        local areas = { }
+        for k, v in sortedhash(hash) do
+            local a = contourgetarea(points,trianglelist,k)
+            areas[k] = a
+        --     print("hash",k,v,trianglelist[k],a)
+        end
+        sort(keys,function(a,b) return areas[a] < areas[b] end)
+        for i=1,#keys do
+            local k = keys[i]
+            report("% 5i  # %i  ∆ %0.9f",k,hash[k],areas[k])
+        end
+        report("")
+        if current.save then
+            local logname = vector.meshname(current.name,method,average)
+            local loglist = {
+                method    = { id = method,  name = smethod },
+                average   = { id = average, name = saverage } ,
+                points    = vector.totable(points),
+                triangles = vector.mesh.totable(trianglelist),
+                overlap   = found,
+                areas     = areas,
+                unique    = hash,
+                N         = current.N or 0,
+                M         = current.M or 0,
+                state     = current.state,
+            }
+            table.save(logname,loglist)
+        end
+    end
+end
+
+vector.contour.overlapping = contouroverlapping
+vector.contour.show        = contourshow
+
+---
+
+local function mesh_convert(current,kind)
+
+    local llx = current.state.minx
+    local lly = current.state.miny
+
+    local urx = current.state.maxx
+    local ury = current.state.maxy
+
+    local rx = 1 / (urx - llx)
+    local ry = 1 / (ury - lly)
+    local tx = -llx * rx
+    local ty = -lly * ry
+
+    local line    = current.linewidth or 0.01
+    local color   = current.color     or function(v) return v, v, v end
+    local points  = current.points
+    local list    = current.list
+    local overlap = current.overlap
+    local keep    = current.keep
+    local trace   = current.trace or 1
+    local first   = current.first or 1
+    local last    = current.last  or #list
+    local trace   = current.trace
+    local hash    = false
+    local vmin    = current.vmin
+    local vmax    = current.vmax
+    local vdelta  = current.vdelta
+
+    local t = { }
+    local n = 0
+
+    local k = { draw = "S", fill = "f", both = "B" }
+
+    local operator = k[kind] or k.both
+    local fill     = operator ~= "S"
+
+    if type(overlap) == "table" then
+        hash = contouroverlapping(overlap)
+        keep = keep and table.tohash(keep) or { }
+    else
+        overlap = false
+        keep    = false
+    end
+
+    local f_shape = formatters["%N %N m %N %N l %N %N l %N %N l h " .. operator]
+    local f_draw  = formatters["%.3N G"]
+    local f_fill  = formatters["%.3N %.3N %.3N rg"]
+    local f_tdraw = formatters["%.3N %.3N %.3N RG"]
+    local f_tfill = formatters["%.3N g"]
+    local f_line  = formatters["10 M 1 J 1 j %N w"]
+    local f_cm    = formatters["%N %N %N %N %N %N cm"]
+
+    n = n + 1 ; t[n] = "q"
+    n = n + 1 ; t[n] = f_draw(0) -- outlines
+    n = n + 1 ; t[n] = f_line(line)
+    n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
+
+    for i=first,last do
+        if not hash or not hash[i] or keep[i] then
+            local m, c = contourgetmesh(points,list,i)
+            if m then
+                local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                if vdelta ~= 0 then
+                    c = (c - vmin) / vdelta -- TODO
+                end
+                if fill then
+                    n = n + 1 ; t[n] = f_fill(color(c,i))
+                end
+                n = n + 1 ; t[n] = p
+            elseif m ~= false then
+                report("invalid mesh index %i, case %i",i,3)
+            end
+        end
+    end
+
+    if trace and overlap then
+        -- we fetch these meshes a few times but it's tracing so seldom used
+        f_shape = formatters["%N %N m %N %N l %N %N l %N %N l h S"]
+        local factor = tonumber(current.factor) or 5
+        -- first the ones with a single overlap
+        n = n + 1 ; t[n] = f_line(2*factor*line)
+        n = n + 1 ; t[n] = f_tdraw(0,.6,0)
+        for k, v in sortedhash(hash) do
+            if v == 1 then
+                local m, c = contourgetmesh(points,list,k)
+                if m then
+                    local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                    n = n + 1 ; t[n] = p
+                end
+            end
+        end
+        -- then the ones with multiple overlaps
+        n = n + 1 ; t[n] = f_line(factor*line)
+        n = n + 1 ; t[n] = f_tdraw(.6,0,0)
+        for k, v in sortedhash(hash) do
+            if v > 1 then
+                local m, c = contourgetmesh(points,list,k)
+                if m then
+                    local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                    n = n + 1 ; t[n] = p
+                end
+            end
+        end
+        -- finally we make sure lines are shown
+        n = n + 1 ; t[n] = f_line(line)
+        n = n + 1 ; t[n] = f_tdraw(1,1,1)
+        for k, v in sortedhash(hash) do
+            local m, c = contourgetmesh(points,list,k)
+            if m then
+                local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                n = n + 1 ; t[n] = p
+            end
+        end
+
+        contourshow(points,list,overlap,current)
+
+    end
+
+    n = n + 1 ; t[n] = "Q"
+    t = concat(t,"\n")
+
+    return t, llx, lly, urx, ury
+end
+
+function metapost.mesh(name,kind)
+
+    local current = meshes[name]
+
+    -- messages
+
+    if not current then
+        return
+    elseif not current.meshed then
+        return
+    end
+
+    starttiming(meshes)
+
+    if current then
+        current.count = count
+    end
+
+    report("%s, registry %a, %i points, %i triangles","embedding",name or "unknown",#current.points,#current.list)
+
+    local result = mesh_convert(current,kind or "both")
+
+    stoptiming(meshes)
+
+    return result
+end
+
+local function mesh_contour()
+    nofruns = nofruns + 1
+
+    local name    = scanstring()
+    local current = meshes[name]
+
+    if not current then
+
+        local origin = { 0, 0 }
+
+        injectpath { origin, origin, origin, origin, close = true }
+
+        return
+    end
+
+    starttiming(meshes)
+
+    if not current.meshed then
+
+        current.method  = tonumber(current.method ) or 1
+        current.average = tonumber(current.average) or 1
+
+        local t = current.triangles
+        local N = 0
+        local M = 0
+        if type(t) == "table" then
+            N = tonumber(t.N or t[1]) or 0
+            M = tonumber(t.M or t[2]) or N
+        elseif type(t) == "number" then
+            N = t
+            M = t
+        else
+        end
+        if N > 0 and M > 0 then
+            current.list = contourtriangulate(N,M)
+        end
+        current.N = N
+        current.M = M
+
+        vectortruncate(current.points)
+        local state = contouraverage(current.points,current.list,true,current.average) -- tolerant
+
+        current.state  = state
+        current.vmin   = state and state.minz or 0
+        current.vmax   = state and state.maxz or 0
+        current.vdelta = current.vmax - current.vmin
+
+        contoursort(current.list)
+
+        if current.overlap == true then
+            current.overlap = contourcollectoverlap(current.points,current.list,false,current.method)
+--             current.overlap = contourcollectoverlap(current.points,current.list,true)
+        end
+
+        current.meshed = true
+
+    end
+
+    report("%s, registry %a, %i points, %i triangles","processing",name or "unknown",#current.points,#current.list)
+
+    local state = current.state or { minx = 0, miny = 0, maxx = 0, maxy = 0 }
+
+    local bounds = {
+        { state.minx, state.miny },
+        { state.maxx, state.miny },
+        { state.maxx, state.maxy },
+        { state.minx, state.maxy },
+        close = true,
+    }
+
+    injectpath(bounds)
+
+    stoptiming(meshes)
+
+end
+
+registerscript("meshcontour",  mesh_contour)
+
+-- For now, as we have examples
+
+local contour         = vector.contour
+
+vector.checkoverlap   = contour.checkoverlap
+vector.collectoverlap = contour.collectoverlap
+vector.triangulate    = contour.triangulate
+vector.average        = contour.average
+vector.sort           = contour.sort
+vector.getmesh        = contour.getmesh
+
+-- Maybe this should be a runtime module.

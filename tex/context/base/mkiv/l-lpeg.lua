@@ -846,6 +846,8 @@ local upper = utf and utf.upper or string.upper
 function lpeg.setutfcasers(l,u)
     lower = l or lower
     upper = u or upper
+    utf.upper = upper
+    utf.lower = lower
 end
 
 local function make1(t,rest)

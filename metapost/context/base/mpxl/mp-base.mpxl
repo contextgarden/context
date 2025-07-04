@@ -1023,11 +1023,12 @@ def beginfig(expr c) = % redefined in mp-grph !
     scantokens extra_beginfig ;
 enddef ;
 
-def endfig =
+def endfig = % redefined in mp-grph !
     ; % added by HH
     scantokens extra_endfig ;
     scantokens every_before_shipout ;
     shipout currentpicture ; % shipit ;
+    resetbytemaps ;
     scantokens every_after_shipout ;
     endgroup
 enddef ;

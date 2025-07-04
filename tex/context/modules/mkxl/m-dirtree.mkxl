@@ -12,7 +12,7 @@
 %C details.
 
 %D This module is triggered by a question that Hraban posted to the mailing list. I
-%D played abit with \LUA, then foudn that the fonts were not up to it which is
+%D played abit with \LUA, then found that the fonts were not up to it which is
 %D mostly due to the fact that it needs to fit into a baseline (lineheight) model so
 %D then I made a \METAPOST\ font. Eventually a bit of interfacing was added.
 

@@ -28,12 +28,13 @@ typedef struct in_state_record {
 } in_state_record;
 
 typedef struct input_stack_record {
-    halfword  input_file_callback_id;
+    halfword  input_file_callback_id; /* lua reference */
     halfword  line;
-    halfword  end_of_file_seen;
-    halfword  group;
-    halfword  if_ptr;
-    halfword  at_end_of_file;
+    halfword  end_of_file_seen;       /* just a boolean (we could use a negative line number) */
+    halfword  group;                  /* stack boundary pointer */
+    halfword  if_ptr;                 
+    halfword  at_end_of_file;         /* token list to be flushed when we're done reading */
+ // halfword padding; 
     char     *full_source_filename;
 } input_stack_record;
 

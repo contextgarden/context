@@ -55,9 +55,9 @@ function tasks.new(specification) -- was: name,arguments,list
     local sequence  = specification.sequence
     if name and sequence then
         local tasklist = newsequencer {
-            name = name,
-enable  = specification.enable,
-disable = specification.disable,
+            name    = name,
+            enable  = specification.enable,
+            disable = specification.disable,
             -- we can move more to the sequencer now .. todo
         }
         tasksdata[name] = {
@@ -348,8 +348,8 @@ tasks.new {
         "normalizers", -- system
         "after",       -- users
     },
-enable  = enable,
-disable = disable,
+    enable    = enable,
+    disable   = disable,
     templates = {
 
 default = [[
@@ -489,6 +489,8 @@ nonut = [[
 
 -- -- processors -- --
 
+local id, enable, disable = callbacks.optimizer("glyph_run") -- always on anyway
+
 tasks.new {
     name      = "processors",
     processor = nodeprocessor,
@@ -501,6 +503,8 @@ tasks.new {
         "lists",
         "after",       -- for users
     },
+    enable    = enable,
+    disable   = disable,
     templates = {
 
 default = [[

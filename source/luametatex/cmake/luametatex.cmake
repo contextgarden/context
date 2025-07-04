@@ -26,6 +26,7 @@ target_link_libraries(luametatex
     softposit
     potrace
     qrcodegen
+    triangles
 )
 
 if (LUAMETATEX_NOLDL) 

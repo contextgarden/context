@@ -155,12 +155,16 @@ local function usemodule(name,hasscheme)
         if trace_modules then
             report("loading file %a",foundname)
         end
+-- token.expandmacro("pushrunstate")
+-- token.expandmacro("startreadingfile")
         context.pushrunstate()
         context.startreadingfile()
         resolvers.jobs.usefile(foundname,true) -- once, notext
      -- context.input(foundname)
         context.stopreadingfile()
         context.poprunstate()
+-- token.expandmacro("stopreadingfile")
+-- token.expandmacro("poprunstate")
         return true
     else
         return false

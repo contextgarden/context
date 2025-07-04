@@ -1111,6 +1111,7 @@ do
     --     t.c = tc
     -- end
         --
+
         local c = t.c or 0
         local r = t.r or 0
         if c == 0 then
@@ -1134,7 +1135,12 @@ do
         lastcolumn = dataset.nofleft + dataset.nofright
 
         if nextsheet and t.c <= dataset.nofleft then
-            t.c = t.c + dataset.nofleft + 1
+            local tc = t.c
+            if tc == 0 then
+                t.c = tc + dataset.nofleft + 1
+            else
+                t.c = tc + dataset.nofleft
+            end
         end
 
         if t.c and t.c >= 1 and t.c <= lastcolumn then

@@ -107,7 +107,7 @@
 \aliased\let\doifinsymbolsetelse\doifelseinsymbolset
 \aliased\let\doifsymbolsetelse  \doifelsesymbolset
 
-\letvalue\??symbolset\empty
+\letcsname\??symbolset\endcsname\empty
 
 %def\symbolset#1{\csname\??symbolset\ifcsname\??symbolset#1\endcsname#1\fi\endcsname} % no [#1], to be used in commalists etc
 

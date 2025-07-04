@@ -801,7 +801,7 @@ typedef struct line_break_properties {
     halfword tracing_toddlers;
     halfword tracing_orphans;
     halfword tracing_passes;
-    halfword paragraph_dir;
+    halfword paragraph_direction;
     halfword paragraph_options;
     halfword parfill_left_skip;
     halfword parfill_right_skip;

@@ -53,7 +53,9 @@ return {
         "withpen", "dashed", "withprescript", "withpostscript", "withstacking",
         "withnestedprescript", "withnestedpostscript",
         "withlinecap", "withlinejoin", "withmiterlimit", "withoutcolor",
-        "withgreyscale", "withcolor", "withrgbcolor", "withcmykcolor", "clip",
+        "withgreyscale", "withcolor", "withrgbcolor", "withcmykcolor",
+        "withcurvature", "withmesh",
+        "clip",
         "setgroup", "setbounds", "message", "errmessage", "errhelp",
         "lessdigits",
         --

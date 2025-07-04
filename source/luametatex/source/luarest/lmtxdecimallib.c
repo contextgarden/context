@@ -58,6 +58,8 @@ static void xdecimallib_initialize(void)
     a metatable.
 */
 
+/* todo: check p return values */
+
 static inline decimal xdecimallib_push(lua_State *L)
 {
     decimal p = lua_newuserdatauv(L, sizeof(decNumber), 0);

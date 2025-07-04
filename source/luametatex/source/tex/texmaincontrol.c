@@ -466,6 +466,33 @@ static void tex_aux_run_space(void)
             tex_aux_adjust_space_factor(cur_chr);
             tex_tail_append(tex_new_char_node(glyph_unset_subtype, cur_font_par, space_char_par, 1));
             break;
+        case 4: 
+            {
+                halfword p = tex_get_scaled_glue(cur_font_par);
+                glue_options(p) |= glue_option_no_auto_break;
+                glue_font(p) = cur_font_par;
+                tex_tail_append(p);
+            }
+            break;
+        case 5: 
+            {
+                halfword p = tex_get_scaled_glue(cur_font_par);
+                glue_options(p) |= glue_option_no_auto_break;
+                glue_font(p) = cur_font_par;
+                glue_stretch(p) = 0;
+                glue_shrink(p) = 0;
+                tex_tail_append(p);
+            }
+            break;
+        case 6: 
+            {
+                halfword p = tex_new_glue_node(zero_glue, space_skip_glue);
+                glue_amount(p) = tex_font_x_scaled(tex_char_width_from_font(cur_font_par, '0'));
+                glue_font(p) = cur_font_par;
+                glue_options(p) |= glue_option_no_auto_break;
+                tex_tail_append(p);
+            }
+            break;
         default:
             /*tex
                 The traditional treatment. A difference with other \TEX's is that we store the spacing
@@ -985,7 +1012,7 @@ static void tex_aux_insert_parindent(int indented)
         tex_tail_append(glue);
     } else if (indented) {
         halfword box = tex_new_null_box_node(hlist_node, indent_list);
-        box_dir(box) = (singleword) par_direction_par;
+        box_direction(box) = (singleword) par_direction_par;
         box_width(box) = par_indent_par;
         tex_tail_append(box);
     }
@@ -1800,7 +1827,7 @@ void tex_local_control(int obeymode)
     if (! obeymode) {
         cur_list.mode = old_mode;
     }
-    tex_unsave_full_scanner_status(saved_full_status);
+    tex_unsave_full_scanner_status(&saved_full_status);
 }
 
 static inline int tex_aux_is_iterator_value(halfword tokeninfo)
@@ -2002,7 +2029,7 @@ void tex_begin_local_control(void)
                                         goto EXPANDED;
                                     }
                                 }
-                                tex_unsave_full_scanner_status(saved_full_status);
+                                tex_unsave_full_scanner_status(&saved_full_status);
                                 tex_restore_cur_string(u);
                                 tex_flush_token_list(head);
                                 tex_begin_inserted_list(h);
@@ -3856,7 +3883,7 @@ static void tex_aux_arithmic_register(int a, int code)
                     halfword amount = tex_scan_integer(0, NULL, NULL);
                     halfword value = 0;
                     if (is_global(a) || amount != 1) {
-                        lmt_scanner_state.arithmic_error = 0;
+                        lmt_scanner_state.arithmetic_error = 0;
                         switch (level) {
                             case integer_val_level:
                             case attribute_val_level:
@@ -3882,7 +3909,7 @@ static void tex_aux_arithmic_register(int a, int code)
                                 /* error */
                                 break;
                         }
-                        if (lmt_scanner_state.arithmic_error) {
+                        if (lmt_scanner_state.arithmetic_error) {
                             tex_aux_arithmic_overflow_error(level, value);
                         } else if (simple) {
                             tex_define(a, index, (singleword) simple, value);
@@ -3905,7 +3932,7 @@ static void tex_aux_arithmic_register(int a, int code)
                     halfword amount = tex_scan_integer(0, NULL, NULL);
                     if (is_global(a) || amount != 1) {
                         bool rounded = code == r_divide_code || code == r_divide_by_code;
-                        lmt_scanner_state.arithmic_error = 0;
+                        lmt_scanner_state.arithmetic_error = 0;
                         switch (level) {
                             case dimension_val_level:
                                 if (rounded) {
@@ -3944,7 +3971,7 @@ static void tex_aux_arithmic_register(int a, int code)
                                 /* error */
                                 break;
                         }
-                        if (lmt_scanner_state.arithmic_error) {
+                        if (lmt_scanner_state.arithmetic_error) {
                             tex_aux_arithmic_overflow_error(level, value);
                         } else if (simple) {
                             tex_define(a, index, (singleword) simple, value);
@@ -4121,6 +4148,12 @@ static void tex_aux_set_page_property(void)
             {
                 int index = tex_scan_integer(0, NULL, NULL);
                 tex_set_insert_line_depth(index, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
+            }
+            break;
+        case insert_direction_code:
+            {
+                int index = tex_scan_integer(0, NULL, NULL);
+                tex_set_insert_direction(index, tex_scan_direction(0));
             }
             break;
         case insert_stretch_code:

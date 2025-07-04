@@ -27,7 +27,9 @@
 
 \unprotect
 
-\immutable\cdef\??empty{\tocharacter25}  \immutable\letvalue{\tocharacter25}\empty % hex 19
+\immutable\cdef\??empty{\tocharacter25}
+
+\immutable\letcsname\tocharacter25\endcsname\empty % hex 19
 
 % \edef\s!parent{\tocharacter29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
 
@@ -1089,7 +1091,7 @@
 
 \installcorenamespace{dummy}
 
-\letvalue\??dummy\empty
+\letcsname\??dummy\endcsname\empty
 
 \permanent          \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
 \permanent          \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}

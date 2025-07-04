@@ -835,7 +835,7 @@ local format_F = function(f) -- beware, no cast to number
     end
 end
 
--- if string.f9 then
+-- if string.f9 then-- f3 f4 f6 f9
 --     format_F = function(f) -- beware, no cast to number
 --         n = n + 1
 --         if not f or f == "" then
@@ -1333,42 +1333,6 @@ local function make(t,str)
     t[str] = f
     return f
 end
-
--- -- collect periodically
---
--- local threshold = 1000 -- max nof cached formats
---
--- local function make(t,str)
---     local f = rawget(t,str)
---     if f then
---         return f
---     end
---     local parent = t._t_
---     if parent._n_ > threshold then
---         local m = { _t_ = parent }
---         getmetatable(parent).__index = m
---         setmetatable(m, { __index = make })
---     else
---         parent._n_ = parent._n_ + 1
---     end
---     local f
---     local p = lpegmatch(direct,str)
---     if p then
---         f = loadstripped(p)()
---     else
---         n = 0
---         p = lpegmatch(builder,str,1,"..",parent._extensions_) -- after this we know n
---         if n > 0 then
---             p = format(template,preamble,parent._preamble_,arguments[n],p)
---          -- print("builder>",p)
---             f = loadstripped(p)()
---         else
---             f = function() return str end
---         end
---     end
---     t[str] = f
---     return f
--- end
 
 local function use(t,fmt,...)
     return t[fmt](...)

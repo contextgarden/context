@@ -75,7 +75,7 @@ static inline scaled tex_aux_m_and_a(int n, scaled x, scaled y, scaled max_answe
         if (((x <= (max_answer - y) / n) && (-x <= (max_answer + y) / n))) {
             return n * x + y;
         } else {
-            lmt_scanner_state.arithmic_error = 1;
+            lmt_scanner_state.arithmetic_error = 1;
             return 0;
         }
     }
@@ -130,7 +130,7 @@ scaled tex_x_over_n_r(scaled x, int n, int *remainder)
 {
     /*tex Should |tex_remainder| be negated? */
     if (n == 0) {
-        lmt_scanner_state.arithmic_error = 1;
+        lmt_scanner_state.arithmetic_error = 1;
         *remainder = x;
         return 0;
     } else {
@@ -162,7 +162,7 @@ scaled tex_x_over_n(scaled x, int n)
 scaled tex_x_over_n(scaled x, int n)
 {
      if (n == 0) {
-        lmt_scanner_state.arithmic_error = 1;
+        lmt_scanner_state.arithmetic_error = 1;
         return 0;
     } else {
         return x/n;

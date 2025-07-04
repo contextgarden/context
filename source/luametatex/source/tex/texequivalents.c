@@ -1147,11 +1147,11 @@ static int tex_aux_mutation_permitted(halfword cs)
 //     return eq_value_field(w) ? lmt_hash_state.destructors[eq_type_field(w)] : 0;
 // }
 
-static inline void tex_aux_eq_destroy(memoryword w)
+static inline void tex_aux_eq_destroy(memoryword *w)
 {
-    halfword p = eq_value_field(w);
+    halfword p = eq_value_field(*w);
     if (p) {
-        switch (lmt_hash_state.destructors[eq_type_field(w)]) {
+        switch (lmt_hash_state.destructors[eq_type_field(*w)]) {
             case eq_token_list:
                 tex_delete_token_reference(p);
                 break;
@@ -1346,7 +1346,7 @@ void tex_eq_define(halfword p, singleword cmd, halfword chr)
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         } else if (cur_level > level_one) {
             tex_aux_eq_save(p, eq_level(p));
         }
@@ -1404,7 +1404,7 @@ void tex_geq_define(halfword p, singleword cmd, halfword chr) /* not used */
     if (trace) {
         tex_aux_diagnostic_trace(p, "globally changing");
     }
-    tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+    tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
     set_eq_level(p, level_one);
     set_eq_type(p, cmd);
     set_eq_flag(p, 0);
@@ -1459,7 +1459,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
      // if (tex_aux_equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
      //     return; /* we can save some stack */
      // }
-        tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         tex_aux_set_eq_data(p, t, e, f, level_one);
     } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
         /* hm, we tweak the ref ! */
@@ -1472,7 +1472,7 @@ void tex_define(int g, halfword p, singleword t, halfword e) /* int g -> singlew
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         } else if (is_retained(g)) {
             /* nothing */
         } else if (cur_level > level_one) {
@@ -1500,7 +1500,7 @@ void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> s
          // if (tex_aux_equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
          //     return; /* we can save some stack */
          // }
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
             tex_aux_set_eq_data(p, t, e, f, level_one);
         } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
             /* hm, we tweak the ref ! */
@@ -1508,7 +1508,7 @@ void tex_define_again(int g, halfword p, singleword t, halfword e) /* int g -> s
         } else {
             tex_aux_diagnostic_trace(p, is_retained(g) ? "retained changing": "changing");
             if (eq_level(p) == cur_level) {
-                tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+                tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
             } else if (is_retained(g)) {
                 /* nothing */
             } else if (cur_level > level_one) {
@@ -1538,7 +1538,7 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
      // if (equal_eq(p, t, f, e) && (eq_level(p) == level_one)) {
      //    return; /* we can save some stack */
      // }
-        tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         tex_aux_set_eq_data(p, t, e, f, level_one);
     } else if (! is_constrained(g) && tex_aux_equal_eq(p, t, f, e)) {
         if (trace) {
@@ -1550,7 +1550,7 @@ void tex_define_inherit(int g, halfword p, singleword f, singleword t, halfword 
             tex_aux_diagnostic_trace(p, is_retained(g) ? "retained changing" : "changing");
         }
         if (eq_level(p) == cur_level) {
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         } else if (is_retained(g)) {
             /* nothing */
         } else if (cur_level > level_one) {
@@ -1575,13 +1575,13 @@ static void tex_aux_just_define(int g, halfword p, halfword e)
         if (trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
-        tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
     } else {
         if (trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         } else if (cur_level > level_one) {
             tex_aux_eq_save(p, eq_level(p));
         }
@@ -1707,14 +1707,14 @@ void tex_forced_define(int g, halfword p, singleword f, singleword t, halfword e
         if (trace) {
             tex_aux_diagnostic_trace(p, "globally changing");
         }
-        tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+        tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         set_eq_level(p, level_one);
     } else {
         if (trace) {
             tex_aux_diagnostic_trace(p, "changing");
         }
         if (eq_level(p) == cur_level) {
-            tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+            tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
         } else if (cur_level > level_one) {
             tex_aux_eq_save(p, eq_level(p));
         }
@@ -1908,12 +1908,12 @@ void tex_unsave(void)
                      // if (p < internal_integer_base || p > eqtb_size) {
                         if (p < internal_integer_base || p >= internal_specification_base) {
                             if (eq_level(p) == level_one) {
-                                tex_aux_eq_destroy(save_word(lmt_save_state.save_stack_data.ptr));
+                                tex_aux_eq_destroy(&(save_word(lmt_save_state.save_stack_data.ptr)));
                                 if (trace) {
                                     tex_aux_diagnostic_trace(p, "retaining");
                                 }
                             } else {
-                                tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+                                tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
                                 lmt_hash_state.eqtb[p] = save_word(lmt_save_state.save_stack_data.ptr);
                                 if (trace) {
                                     tex_aux_diagnostic_trace(p, "restoring");
@@ -1971,7 +1971,7 @@ void tex_unsave(void)
                             }
                         } else {
                             if (p < internal_integer_base || p > eqtb_size) {
-                                tex_aux_eq_destroy(lmt_hash_state.eqtb[p]);
+                                tex_aux_eq_destroy(&lmt_hash_state.eqtb[p]);
                             }
                             lmt_hash_state.eqtb[p] = lmt_hash_state.eqtb[undefined_control_sequence];
                             if (trace) {

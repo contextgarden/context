@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-06-12 14:18
+-- merge date  : 2025-07-04 21:21
 
 do -- begin closure to overcome local limits and interference
 
@@ -662,6 +662,8 @@ local upper=utf and utf.upper or string.upper
 function lpeg.setutfcasers(l,u)
  lower=l or lower
  upper=u or upper
+ utf.upper=upper
+ utf.lower=lower
 end
 local function make1(t,rest)
  local p=p_false
@@ -3208,6 +3210,25 @@ if not math.ult then
  function math.ult(m,n)
   return floor(m)<floor(n) 
  end
+end
+if setinspector and vector then
+ local inspect=inspect
+ local isvector=vector.isvector
+ local totable=vector.totable
+ setinspector("vector",function(v)
+  if isvector(v) then
+   inspect(totable(v))
+   return true
+  end
+ end)
+ local ismesh=vector.mesh.ismesh
+ local totable=vector.mesh.totable
+ setinspector("mesh",function(v)
+  if ismesh(v) then
+   inspect(totable(v))
+   return true
+  end
+ end)
 end
 
 end -- closure
@@ -18493,7 +18514,7 @@ do
   end
   return features
  end
- local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+ local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
   setposition(f,lookupoffset)
   local noflookups=readushort(f)
   local lookups=readcardinaltable(f,noflookups,ushort)
@@ -18509,13 +18530,14 @@ do
    for j=1,nofsubtables do
     subtables[j]=offset+readushort(f) 
    end
-   local markclass=band(flagbits,0x0010)~=0 
-   local markset=rshift(flagbits,8)
-   if markclass then
-    markclass=readushort(f) 
-   end
-   if markset>0 then
-    markclass=nofmarkclasses+markset
+   local markclass=rshift(flagbits,8)
+   if markclass==0 then
+    local markset=band(flagbits,0x0010)~=0 
+    if markset then
+     markclass=readushort(f)+1
+    else
+     markclass=false
+    end
    end
    lookups[lookupid]={
     type=lookuptype,
@@ -18859,10 +18881,7 @@ do
    if not lookupstoo then
     return
    end
-   local markclasses=fontdata.markclasses
-   local marksets=fontdata.marksets
-   local nofmarkclasses=(markclasses and #markclasses or 0)-(marksets and #marksets or 0)
-   local lookups=readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+   local lookups=readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
    if lookups then
     resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
    end
@@ -19404,14 +19423,13 @@ function readers.colr(f,fontdata,specification)
  local tableoffset=gotodatatable(f,fontdata,"colr",specification.glyphs)
  if tableoffset then
   local version=readushort(f)
-		if version==0 then
-			
-		elseif version==1 then
-			report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
-		else
-			report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
-			return
-		end
+  if version==0 then
+  elseif version==1 then
+   report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
+  else
+   report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
+   return
+  end
   if not fontdata.tables.cpal then
    report("color table %a in font %a has no mandate %a table","colr",fontdata.filename,"cpal")
    fontdata.colorpalettes={}
@@ -21468,7 +21486,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.144 
+otf.version=3.145 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)

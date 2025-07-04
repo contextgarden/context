@@ -257,5 +257,8 @@ return {
         "totalarea",
         --
         "penstroked", "nepstroke",
+        --
+    --  "meshstart", "meshstop", "meshreset", "meshcount", "meshindex","meshpath", "meshvalue", "meshrange",
+        "meshcontour",
     },
 }

@@ -514,19 +514,16 @@ end
 do
 
     local lefttoright_code <const> = tex.directioncodes.lefttoright
-    local righttoleft_code <const> = tex.directioncodes.righttoleft
+    ----- righttoleft_code <const> = tex.directioncodes.righttoleft
+
+    local getfirstdirectioninlist  = nuts.getfirstdirectioninlist
 
     local function firstdirinbox(n)
         local b = getbox(n)
         if b then
             local l = getlist(b)
             if l then
-                for d in nextdir, l do
-                    return getdirection(d)
-                end
-                for h in nexthlist, l do
-                    return getdirection(h)
-                end
+                return getfirstdirectioninlist(l)
             end
         end
         return lefttoright_code

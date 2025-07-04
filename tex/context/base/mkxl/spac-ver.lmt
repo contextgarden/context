@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['spac-ver'] = {
     license   = "see context related readme files"
 }
 
+-- todo: move locals to helpers subtable to get around 200 problem
+
 -- we also need to call the spacer for inserts!
 
 -- somehow lists still don't always have proper prev nodes so i need to
@@ -814,6 +816,8 @@ vspacingdata.skip = vspacingdata.skip or { } -- allocate ?
 storage.register("builders/vspacing/data/map",  vspacingdata.map,  "builders.vspacing.data.map")
 storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vspacing.data.skip")
 
+-- todo: also isspecification
+
 local setspecification, getspecification
 
 -- 1 statepool  : 2 : more overhead : a bit slower than properties
@@ -827,6 +831,7 @@ local method = 1 -- better tracing
 -- local method = 2
 -- local method = 3
 -- local method = 4
+-- local method = 5
 
 -- todo: not true but only visual a_visual,tex.getattribute(a_visual)
 
@@ -929,6 +934,93 @@ elseif method == 4 then
             if penalty == 0x7FFFF then
                 penalty = nil
             end
+            return category, penalty, order
+        else
+            return nil, nil, nil
+        end
+    end
+
+elseif method == 5 then
+
+    -- This a bit cleaner than storing all in data because we can have large penalties
+    -- now. Beware: this is very context specific usage of data, as with glyphs. We
+    -- could have a first byte indicating what kind of usage (here vertical spacing). Or
+    -- we could have an extra user subtype. But it will never be cross package anyway
+    -- so for now the category has to do.
+
+    local getdata = nuts.getdata
+    local setdata = nuts.setdata
+
+    -- maybe start with an identification token nibble or byte
+
+--     setspecification = function(n,category,penalty,order)
+--         if not category or category > 0x0F then
+--             category = 0x0F
+--         end
+--         local penaltyflag = penalty and 0xF0 or 0
+--         if not order or order > 0xFFFF then
+--             order = 0xFFFF00
+--         else
+--             order = order << 8
+--         end
+--         setdata(n, order + penaltyflag + category, penalty or nil)
+--     end
+
+--     getspecification = function(n)
+--         local data, penalty = getdata(n)
+--         if data and data ~= 0 then
+--             local category    =  data        & 0x0F
+--             local penaltyflag =  data        & 0xF0
+--             local order       = (data >>  8) & 0xFFFF
+--             if category == 0xF then
+--                 category = nil
+--             end
+--             if order == 0xFFFF then
+--                 order = nil
+--             end
+--             if penaltyflag ~= 0xF0 then
+--                 penalty = false
+--             end
+--             return category, penalty, order
+--         else
+--             return nil, nil, nil
+--         end
+--     end
+
+    local id <const> = 0x01
+
+    setspecification = function(n,category,penalty,order)
+-- print("set",category,penalty,order)
+        if not category or category > 0xF then
+            category = 0x0F00
+        else
+            category = category << 8
+        end
+        local penaltyflag = penalty and 0xF000 or 0
+        if not order or order > 0x0FFF then
+            order = 0x0FFF0000
+        else
+            order = order << 16
+        end
+        setdata(n, order + penaltyflag + category + id, penalty or nil)
+    end
+
+    getspecification = function(n)
+        local data, penalty = getdata(n)
+        if data and data ~ 0 and (data & id) == id then
+            local category    =  data >>  8  & 0xF
+            local penaltyflag = (data >> 12) & 0xF
+            local order       = (data >> 16) & 0x0FFF
+            if category == 0xF then
+                category = nil
+            end
+            if order == 0xFFFF then
+                order = nil
+            end
+            if penaltyflag ~= 0xF then
+                penalty = false
+            end
+-- print("get",category,penalty,order)
             return category, penalty, order
         else
             return nil, nil, nil
@@ -1250,6 +1342,8 @@ do
 
     local insertnodeafter  = nuts.insertafter
     local insertnodebefore = nuts.insertbefore
+
+    -- these four can to: we never have them
 
     local abovedisplayskip_code      <const> = gluecodes.abovedisplayskip
     local belowdisplayskip_code      <const> = gluecodes.belowdisplayskip

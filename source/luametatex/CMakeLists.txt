@@ -169,6 +169,11 @@ if (MSVC)
       # add_compile_options(-pg)
       # add_link_options(-pg)
 
+      # e.g. mp crashes when we have > 4K currentpicture clips in a row 
+
+    # set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=1000000")
+      set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-z,stack-size=2621440")
+
     endif()
 
     add_compile_options(
@@ -176,6 +181,12 @@ if (MSVC)
 
         -Wcast-align
         -Wcast-qual
+
+        # we need to check for zeros anyway as not all compiles have this 
+
+      # -fno-signed-zeros
+      # -fno-trapping-math
+      # -fno-math-errno
 
         -Wno-unknown-pragmas
         -Wno-unused-result
@@ -310,5 +321,6 @@ include(cmake/miniz.cmake)
 include(cmake/softposit.cmake)
 include(cmake/potrace.cmake)
 include(cmake/qrcodegen.cmake)
+include(cmake/triangles.cmake)
 
 include(cmake/luametatex.cmake)

@@ -4,7 +4,7 @@
 
 /*
 
-    This module deals with access to some if the internal quanities of \TEX, like registers,
+    This module deals with access to some if the internal quantities of \TEX, like registers,
     internal variables and all kind of lists. Because we provide access by name and/or number
     (index) there is quite a bit of code here, and sometimes if can look a bit confusing.
 
@@ -14,7 +14,7 @@
 
     A remark about some of the special node lists that one can query: because some start with
     a so called |temp| node, we have to set the |prev| link to |nil| because otherwise at the
-    \LUA\ end we expose that |temp| node and users are not suposed to touch them! In the setter
+    \LUA\ end we expose that |temp| node and users are not supposed to touch them! In the setter
     no |prev| link is set so we can presume that it's not used later on anyway; this is because
     original \TEX\ has no |prev| links.
 
@@ -126,8 +126,8 @@ static void texlib_aux_show_half_error(lua_State *L, int i)
     \stopttyping
 
     The spindle and rope terminology was introduced by Taco early in the development of \LUATEX,
-    but in the meantime the datastructures have been adapted to deal with tokens and nodes. There
-    are also quite some optimizations in performance and memort usage (e.g. for small strings and
+    but in the meantime the data structures have been adapted to deal with tokens and nodes. There
+    are also quite some optimizations in performance and memory usage (e.g. for small strings and
     single characters).
 
 */
@@ -137,9 +137,9 @@ typedef enum line_modes {
     partial_line_mode = 1,
 } line_modes;
 
-# define PACKED_SIZE       8
-# define INITIAL_SIZE     32
-# define MAX_ROPE_CACHE 5000
+# define PACKED_SIZE        8
+# define INITIAL_SIZE     100 // in practice 32 is already quite okay 
+# define MAX_ROPE_CACHE  5000 // the luametatex manual has a few 10K/30K situations
 
 typedef union spindle_data {
     unsigned char  c[PACKED_SIZE];
@@ -201,8 +201,9 @@ static inline void texlib_aux_reset_spindle(int i)
 
 /*
 
-    Each rope takes 48 bytes. So, caching some 100 K ropes is not really a problem. In practice we
-    seldom reach that number anyway.
+    Each rope takes 24 bytes. So, caching some 100 K ropes is not really a problem. In practice we
+    seldom reach that number anyway. The \LUAMETATEX\ manual has a few 10K and 30K situations. But 
+    timing larger values shows no real gain. 
 
 */
 
@@ -252,7 +253,8 @@ static void texlib_aux_initialize(void)
 }
 
 /*tex
-    We could convert strings into tokenlists here but conceptually the split is cleaner.
+    We could convert strings into token lists here but conceptually the split is cleaner. It also 
+    delays token memory consumption and as we go we might need less of that due to freeing. 
 */
 
 static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int append)
@@ -263,6 +265,7 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
     spindle_data data = { .h = 0 };
     switch (lua_type(L, i)) {
         case LUA_TNUMBER:
+            /* This sometimes happens. */
         case LUA_TSTRING:
             {
                 const char *sttemp = lua_tolstring(L, i, &tsize);
@@ -291,7 +294,7 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
                             size_t s = write_spindle.tail->tsize;
                             if (tsize + s <= PACKED_SIZE) {
                                 for (unsigned i = 0; i < tsize; i++) {
-                                      write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
+                                    write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
                                 }
                                 write_spindle.tail->tsize += (unsigned int) tsize;
                              /* lmt_token_state.luacstrings++; */ /* already set */
@@ -324,7 +327,7 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
                         size_t s = write_spindle.tail->tsize;
                         if (tsize + s <= PACKED_SIZE) {
                             for (unsigned i = 0; i < tsize; i++) {
-                                    write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
+                                write_spindle.tail->data.c[s++] = (unsigned char) sttemp[i];
                             }
                             write_spindle.tail->tsize += (unsigned int) tsize;
                             return 1;
@@ -347,7 +350,7 @@ static int texlib_aux_store(lua_State *L, int i, int partial, int cattable, int 
                         halfword token = (*((lua_token *) p)).token;
                         if (token_link(token)) {
                             /*tex
-                                We cannnot pass a list unless we copy it, alternatively we can bump the ref count
+                                We cannot pass a list unless we copy it, alternatively we can bump the ref count
                                 but a quick test didn't work out that well.
                             */
                             token = token_link(token);
@@ -994,7 +997,7 @@ static const char *texlib_aux_scan_dimension_part(lua_State * L, const char *ss,
     int result = 0;
     int radix = 0;
     int remainder = 0;
-    int saved_error = lmt_scanner_state.arithmic_error;
+    int saved_error = lmt_scanner_state.arithmetic_error;
     const char *str = NULL;
     if (ss && (*ss == '.' || *ss == ',')) {
         str = ss;
@@ -1039,7 +1042,7 @@ static const char *texlib_aux_scan_dimension_part(lua_State * L, const char *ss,
     }
     /*tex
         We dropped the |nd| and |nc| units as well as the |true| prefix. We could use a similar
-        switch as in the normal scsanner but this one is not really used, so ...
+        switch as in the normal scanner but this one is not really used, so ...
     */
     if (str[0] && str[1]) {
         int index = unit_parameter_index(str[0], str[1]);
@@ -1158,17 +1161,17 @@ static const char *texlib_aux_scan_dimension_part(lua_State * L, const char *ss,
     fraction = fraction % 0x10000;
   ATTACH_FRACTION:
     if (result >= 0x4000) {
-        lmt_scanner_state.arithmic_error = 1;
+        lmt_scanner_state.arithmetic_error = 1;
     } else {
         result = result * 0x10000 + fraction;
     }
   DONE:
-    if (lmt_scanner_state.arithmic_error || (abs(result) >= 0x40000000)) {
+    if (lmt_scanner_state.arithmetic_error || (abs(result) >= 0x40000000)) {
         result = max_dimension;
         luaL_error(L, "dimension too large");
     }
     *ret = negative ? - result : result;
-    lmt_scanner_state.arithmic_error = saved_error;
+    lmt_scanner_state.arithmetic_error = saved_error;
     /* only when we want to report junk */
     while ((char) *str == ' ') {
         str++;
@@ -3845,8 +3848,8 @@ static int texlib_scale(lua_State *L)
         case LUA_TTABLE:
             {
                 /*tex
-                    We could preallocate the table or maybe scale in-place. The
-                    new table is at index 3.
+                    We could preallocate the table or maybe scale in-place. The new table is at 
+                    index 3.
                 */
                 lua_newtable(L);
                 lua_pushnil(L);
@@ -4191,7 +4194,7 @@ static halfword texlib_tobalancepasses(lua_State *L, int i)
 
 /*tex
     The next function needs to be kept in sync with the regular linebreak handler, wrt the special
-    skips. This one can be called from within the callback so then we already have intialized.
+    skips. This one can be called from within the callback so then we already have initialized.
 */
 
 /* par leftinit rightinit leftindent ... leftfill rightfill */
@@ -4316,7 +4319,7 @@ static int texlib_linebreak(lua_State *L)
         properties.initial_par = par;
         properties.group_context = lua_group;
         properties.par_context = lua_par_context;
-        properties.paragraph_dir = par_dir(par);
+        properties.paragraph_direction = par_direction(par);
         properties.paragraph_options = par_options(par);
         properties.parfill_left_skip = null;
         properties.parfill_right_skip = null;
@@ -4415,7 +4418,7 @@ static int texlib_linebreak(lua_State *L)
         }
         lua_push_key(direction);
         if (lua_rawget(L, -2) == LUA_TNUMBER) {
-            properties.paragraph_dir = checked_direction_value(lmt_tointeger(L, -1));
+            properties.paragraph_direction = checked_direction_value(lmt_tointeger(L, -1));
         }
         lua_pop(L, 1);
         lua_push_key(options);
@@ -5136,7 +5139,7 @@ static int texlib_getboxdir(lua_State *L)
     int index = lmt_tointeger(L, 1);
     if (index >= 0 && index <= max_box_register_index) {
         if (box_register(index)) {
-            lua_pushinteger(L, box_dir(box_register(index)));
+            lua_pushinteger(L, box_direction(box_register(index)));
         } else {
             lua_pushnil(L);
         }
@@ -5351,7 +5354,7 @@ static int texlib_setfloatvalue(lua_State *L)
         lmt_check_for_flags(L, 3, &flags, 1, 0);
         if (tex_define_permitted(cs, flags)) {
             unsigned value = tex_double_to_posit(luaL_optnumber(L, 2, 0)).v;
-         /* if we check we need to do it on the double or look at somethign else */
+         /* if we check we need to do it on the double or look at something else */
          /* if ((value >= min_posit) && (value <= max_posit)) { */ /* always true */
                 tex_define(flags, cs, (quarterword) posit_cmd, value);
          /* } else { */
@@ -5372,7 +5375,7 @@ static int texlib_setcardinalvalue(lua_State *L)
         lmt_check_for_flags(L, 3, &flags, 1, 0);
         if (tex_define_permitted(cs, flags)) {
             unsigned value = lmt_opturoundnumber(L, 2, 0);
-         /* if we check we need to do it on the double or look at somethign else */
+         /* if we check we need to do it on the double or look at something else */
          /* if ((value >= min_cardinal) && (value <= max_cardinal)) { */ /* always true */
                 tex_define(flags, cs, (quarterword) integer_cmd, value);
          /* } else { */
@@ -5620,8 +5623,8 @@ static int texlib_getrunstate(lua_State *L)
 }
 
 /*tex
-    todo: Some of these keywords can be removed from the interface keys, saves bytes and never accessed
-    as key.
+    todo: Some of these keywords can be removed from the interface keys, saves bytes and never 
+    accessed as key.
 */
 
 static int texlib_gethyphenationvalues(lua_State *L)

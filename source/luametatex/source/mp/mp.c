@@ -929,6 +929,7 @@ code when we make then the same. Todo: use char for some.
 # define mp_set_linecap(A,B)  ((mp_shape_node) (A))->linecap = (unsigned char) (B)
 # define mp_set_linejoin(A,B) ((mp_shape_node) (A))->linejoin = (unsigned char) (B)
 # define mp_set_curvature(A,B)((mp_shape_node) (A))->curvature = (unsigned char) (B)
+# define mp_set_mesh(A,B)     ((mp_shape_node) (A))->mesh = (short) (B)
 # define mp_set_bytemap(A,B)  ((mp_shape_node) (A))->bytemap = (short) (B)
 # define mp_pre_script(A)     ((mp_shape_node) (A))->pre_script
 # define mp_post_script(A)    ((mp_shape_node) (A))->post_script
@@ -1750,6 +1751,7 @@ can do that, but we keep the number.
 # define graphic_bytemap_nz_val(A) (A)->bytemapnz
 # define graphic_miterlimit_val(A) (A)->miterlimit
 # define graphic_curvature_val(A)  (A)->curvature
+# define graphic_mesh_val(A)       (A)->mesh
 # define graphic_pre_script(A)     (A)->pre_script
 # define graphic_post_script(A)    (A)->post_script
 # define graphic_pre_length(A)     (A)->pre_length
@@ -2358,6 +2360,7 @@ static void mp_free_instance(MP mp)
         mp_free_number(mp->delta[k]);
         mp_free_number(mp->psi[k]);
     }
+    mp->bbox_nesting = 0;
     mp_memory_free(mp->delta_x);
     mp_memory_free(mp->delta_y);
     mp_memory_free(mp->delta);
@@ -9756,12 +9759,12 @@ everything up through the matching stop bounds or stop clip object.
 
 */
 
-static mp_node mp_skip_1component(MP mp, mp_node p)
+static mp_node mp_skip_one_component(MP mp, mp_node p)
 {
     int lev = 0; /* current nesting level */
     (void) mp;
     do {
-        if (mp_is_start_or_stop (p)) {
+        if (mp_is_start_or_stop(p)) {
             if (mp_is_stop(p)) {
                 --lev;
             } else {
@@ -9928,6 +9931,12 @@ void mp_print_edges(MP mp, mp_node h, const char *s, int nuline)
                         break;
                     case mp_always_curvature_code:
                         mp_print_string(mp, "always curvature");
+                        break;
+                    case mp_never_curvature_code:
+                        mp_print_string(mp, "never curvature");
+                        break;
+                    case mp_repeat_curvature_code:
+                        mp_print_string(mp, "repeat curvature");
                         break;
                     default:
                         mp_print_string(mp, "unknown curvature");
@@ -10528,7 +10537,11 @@ void mp_set_bbox(MP mp, mp_edge_header_node h, int top_level)
         Wipe out any existing bounding box information if |bbtype(h)| is incompatible with
         |internal[mp_true_corners]|
     */
-    switch (h->bbtype ) {
+    mp->bbox_nesting++;
+    if (mp->bbox_nesting > 4095) {
+        mp_fatal_error(mp, "Boundingbox calculation recurse depth exceeds 4095 ... too much clipping?");
+    }
+    switch (h->bbtype) {
         case mp_no_bounds_code:
             break;
         case mp_bounds_set_code:
@@ -10551,7 +10564,7 @@ void mp_set_bbox(MP mp, mp_edge_header_node h, int top_level)
                     mp_confusion(mp, "clip");
                     break;
                 } else {
-                    return;
+                    goto DONE;
                 }
             /*tex
                 Other cases for updating the bounding box based on the type of object |p|.
@@ -10586,7 +10599,7 @@ void mp_set_bbox(MP mp, mp_edge_header_node h, int top_level)
                 }
                 break;
             case mp_stop_bounds_node_type:
-                if (mp_number_nonpositive (internal_value(mp_true_corners_internal))) {
+                if (mp_number_nonpositive(internal_value(mp_true_corners_internal))) {
                     mp_confusion(mp, "bounds");
                 }
                 break;
@@ -10679,7 +10692,6 @@ void mp_set_bbox(MP mp, mp_edge_header_node h, int top_level)
                     mp_free_number(y1a);
                 }
                 break;
-
             default:
                 break;
         }
@@ -10687,6 +10699,8 @@ void mp_set_bbox(MP mp, mp_edge_header_node h, int top_level)
     if (! top_level) {
         mp_confusion(mp, "boundingbox");
     }
+  DONE:
+    --mp->bbox_nesting;
 }
 
 /*tex
@@ -14457,6 +14471,7 @@ const char *mp_cmd_mod_string(MP mp, int c, int m)
                 case mp_with_linejoin_code           : return "withlinejoin";
                 case mp_with_miterlimit_code         : return "withmiterlimit";
                 case mp_with_curvature_code          : return "withcurvature";
+                case mp_with_mesh_code               : return "withmesh";
                 case mp_with_bytemap_code            : return "withbytemap";
                 case mp_with_nothing_code            : return "withnothing";
             }
@@ -17498,7 +17513,7 @@ void mp_begin_iteration(MP mp)
                 s->type = cur_exp_node;
                 cur_exp_type = mp_vacuous_type;
                 q = mp_edge_list(cur_exp_node)->link;
-                if (q != NULL && mp_is_start_or_stop (q) && mp_skip_1component(mp, q) == NULL) {
+                if (q != NULL && mp_is_start_or_stop(q) && mp_skip_one_component(mp, q) == NULL) {
                     q = q->link;
                 }
                 s->list = q;
@@ -17694,7 +17709,7 @@ void mp_resume_iteration(MP mp)
         } else if (! mp_is_start_or_stop(q)) {
             q = q->link;
         } else if (! mp_is_stop(q)) {
-            q = mp_skip_1component(mp, q);
+            q = mp_skip_one_component(mp, q);
         } else {
             goto NOT_FOUND;
         }
@@ -20330,14 +20345,14 @@ static void mp_picture_length(MP mp, mp_number *n)
     mp_node p = mp_edge_list(cur_exp_node)->link;
     int l = 0;
     if (p != NULL) {
-        if (mp_is_start_or_stop(p) && mp_skip_1component(mp, p) == NULL) {
+        if (mp_is_start_or_stop(p) && mp_skip_one_component(mp, p) == NULL) {
             p = p->link;
         }
         while (p != NULL) {
             if (! mp_is_start_or_stop(p)) {
                 p = p->link;
             } else if (! mp_is_stop(p)) {
-                p = mp_skip_1component(mp, p);
+                p = mp_skip_one_component(mp, p);
             } else {
                 break;
             }
@@ -20697,7 +20712,7 @@ static void mp_do_read_or_close(MP mp, int c)
 static void mp_set_up_not(MP mp, int c)
 {
     if (cur_exp_type != mp_boolean_type) {
-        mp_bad_unary(mp, mp_not_operation);
+        mp_bad_unary(mp, c);
     } else {
         mp_set_cur_exp_value_boolean(mp, (cur_exp_value_boolean == mp_true_operation) ? mp_false_operation : mp_true_operation);
     }
@@ -20898,14 +20913,14 @@ static void mp_set_up_angle(MP mp, int c)
         mp_free_number(narg);
         mp_flush_cur_exp(mp, expr);
     } else {
-        mp_bad_unary(mp, mp_angle_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
 static void mp_set_up_char(MP mp, int c)
 {
     if (cur_exp_type != mp_known_type) {
-        mp_bad_unary(mp, mp_char_operation);
+        mp_bad_unary(mp, c);
     } else {
         int n = mp_round_unscaled(cur_exp_value_number) % 256;
         unsigned char s[2];
@@ -20950,7 +20965,7 @@ static void mp_set_up_to_string(MP mp, int c)
             int invalid = 0; /* did the string contain an invalid digit? */
             int radix = c == mp_oct_operation ? 8 : 16;
             n = 0;
-            for (int k = 0; k < cur_exp_str->len; k++) {
+            for (size_t k = 0; k < cur_exp_str->len; k++) {
             //unsigned char m = (unsigned char) (*(cur_exp_str->str + k));
                 unsigned char m = (unsigned char) cur_exp_str->str[k];
                 if ((m >= '0') && (m <= '9'))
@@ -21117,7 +21132,7 @@ static void mp_set_up_turning(MP mp, int c)
         mp_new_number(expr.data.n);
         mp_flush_cur_exp(mp, expr);
     } else if (cur_exp_type != mp_path_type) {
-        mp_bad_unary(mp, mp_turning_operation);
+        mp_bad_unary(mp, c);
     } else if (mp_left_type(cur_exp_knot) == mp_endpoint_knot) {
         mp_value expr;
         memset(&expr, 0, sizeof(mp_value));
@@ -21159,6 +21174,7 @@ static void mp_set_up_type_2(MP mp, int c)
 
 static void mp_set_up_type_3(MP mp, int c)
 {
+    (void) c;
     mp_value expr;
     memset(&expr, 0, sizeof(mp_value));
     mp_new_number(expr.data.n);
@@ -21203,7 +21219,7 @@ static void mp_set_up_arc_length(MP mp, int c)
         mp_pair_to_path(mp);
     }
     if (cur_exp_type != mp_path_type) {
-        mp_bad_unary(mp, mp_arc_length_operation);
+        mp_bad_unary(mp, c);
     } else {
         mp_value expr;
         memset(&expr, 0, sizeof(mp_value));
@@ -21216,6 +21232,7 @@ static void mp_set_up_arc_length(MP mp, int c)
 static void mp_set_up_group(MP mp, int c)
 {
     mp_value expr;
+    (void) c;
     memset(&expr, 0, sizeof(mp_value));
     mp_new_number(expr.data.n);
     if (cur_exp_type != mp_picture_type) {
@@ -21248,7 +21265,7 @@ static void mp_set_up_reverse(MP mp, int c)
             mp_pair_to_path(mp);
             break;
         default:
-            mp_bad_unary(mp, mp_reverse_operation);
+            mp_bad_unary(mp, c);
             break;
     }
 }
@@ -21264,7 +21281,7 @@ static void mp_set_up_uncycle(MP mp, int c)
             mp_pair_to_path(mp);
             break;
         default:
-            mp_bad_unary(mp, mp_uncycle_operation);
+            mp_bad_unary(mp, c);
             break;
     }
 }
@@ -21284,7 +21301,7 @@ static void mp_set_up_center_of(MP mp, int c)
         mp_number_add(y, mp_miny);
         mp_pair_value(mp, &x, &y);
     } else {
-        mp_bad_unary(mp, mp_center_of_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -21311,7 +21328,7 @@ static void mp_set_up_center_of_mass(MP mp, int c)
         mp_free_number(x);
         mp_free_number(y);
     } else {
-        mp_bad_unary(mp, mp_center_of_mass_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -21344,7 +21361,7 @@ static void mp_set_up_pen(MP mp, int c)
         mp_pair_to_path(mp);
     }
     if (cur_exp_type != mp_path_type) {
-        mp_bad_unary(mp, mp_make_pen_operation);
+        mp_bad_unary(mp, c);
     } else {
         cur_exp_type = mp_pen_type;
         mp_set_cur_exp_knot(mp, mp_make_pen(mp, cur_exp_knot, 1));
@@ -22997,7 +23014,7 @@ static void mp_set_up_direction_time(MP mp, mp_node p, int c)
 static void mp_set_up_envelope(MP mp, mp_node p, int c)
 {
     if ((p->type != mp_pen_type && p->type != mp_nep_type) || (cur_exp_type != mp_path_type)) {
-        mp_bad_binary(mp, p, mp_envelope_operation);
+        mp_bad_binary(mp, p, c);
     } else {
         mp_knot q = mp_copy_path(mp, cur_exp_knot); /* the original path */
         /* TODO: accept elliptical pens for straight paths */
@@ -23037,7 +23054,7 @@ static void mp_set_up_envelope(MP mp, mp_node p, int c)
 static void mp_set_up_boundingpath(MP mp, mp_node p, int c)
 {
     if ((p->type != mp_pen_type && p->type != mp_nep_type) || (cur_exp_type != mp_path_type)) {
-        mp_bad_binary(mp, p, mp_boundingpath_operation);
+        mp_bad_binary(mp, p, c);
     } else {
         int linejoin, linecap;
         mp_number miterlimit;
@@ -23084,7 +23101,7 @@ static void mp_set_up_boundingpath(MP mp, mp_node p, int c)
         mp_set_cur_exp_knot(mp, qq);
         cur_exp_type = mp_path_type;
         if (! mp_get_cur_bbox(mp)) {
-            mp_bad_binary(mp, p, mp_boundingpath_operation);
+            mp_bad_binary(mp, p, c);
             mp_set_cur_exp_knot(mp, q);
             cur_exp_type = mp_path_type;
         } else {
@@ -23098,6 +23115,7 @@ static void mp_find_point(MP mp, mp_number *v_orig, int c)
     mp_knot p;   /*tex the path */
     mp_number n; /*tex its length */
     mp_number v;
+    (void) c;
     mp_new_number(n);
     mp_new_number_clone(v, *v_orig);
     p = cur_exp_knot;
@@ -23511,7 +23529,7 @@ static void mp_set_up_and_or(MP mp, mp_node p, int c)
 static int mp_set_up_over(MP mp, mp_node p, int c, mp_node old_p, mp_node old_exp)
 {
     if ((cur_exp_type != mp_known_type) || (p->type < mp_color_type)) {
-        mp_bad_binary(mp, p, mp_over_operation);
+        mp_bad_binary(mp, p, c);
         return 0;
     } else {
         mp_number v_n;
@@ -23581,7 +23599,7 @@ static void mp_set_up_power(MP mp, mp_node p, int c)
         mp_set_cur_exp_value_number(mp, &r);
         mp_free_number(r);
     } else {
-        mp_bad_binary(mp, p, (int) c);
+        mp_bad_binary(mp, p, c);
     }
 }
 
@@ -23598,7 +23616,7 @@ static void mp_set_up_pythag(MP mp, mp_node p, int c)
         mp_set_cur_exp_value_number(mp, &r);
         mp_free_number(r);
     } else {
-        mp_bad_binary(mp, p, (int) c);
+        mp_bad_binary(mp, p, c);
     }
 }
 
@@ -23839,7 +23857,7 @@ static int mp_set_up_times(MP mp, mp_node p, int c, mp_node old_p, mp_node old_e
         mp_finish_binary(mp, old_p, old_exp);
         return 1;
     } else {
-        mp_bad_binary(mp, p, mp_times_operation);
+        mp_bad_binary(mp, p, c);
         return 0;
     }
 }
@@ -23893,7 +23911,7 @@ static void mp_set_up_subarc_length(MP mp, mp_node p, int c)
         mp_get_subarc_length(mp, &new_expr.data.n, cur_exp_knot, &(mp_get_value_number(mp_x_part(q))), &(mp_get_value_number(mp_y_part(q))));
         mp_flush_cur_exp(mp, new_expr);
     } else {
-        mp_bad_unary(mp, mp_subarc_length_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -24029,10 +24047,10 @@ static void mp_set_up_arc_point_list(MP mp, mp_node p, int c)
             cur_exp_type = mp_path_type;
             mp_set_cur_exp_knot(mp, list);
         } else {
-            mp_bad_unary(mp, mp_arc_point_list_operation);
+            mp_bad_unary(mp, c);
         }
     } else {
-        mp_bad_unary(mp, mp_arc_point_list_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -24081,10 +24099,10 @@ static void mp_set_up_arc_point(MP mp, mp_node p, int c)
                 mp_free_knot(mp, k);
             }
         } else {
-            mp_bad_unary(mp, mp_arc_point_operation);
+            mp_bad_unary(mp, c);
         }
     } else {
-        mp_bad_unary(mp, mp_arc_point_operation);
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -24107,7 +24125,7 @@ static void mp_set_up_arc_time(MP mp, mp_node p, int c)
         mp_get_arc_time(mp, &new_expr.data.n, cur_exp_knot, &(mp_get_value_number(p)), 0);
         mp_flush_cur_exp(mp, new_expr);
     } else {
-        mp_bad_binary(mp, p, (int) c);
+        mp_bad_binary(mp, p, c);
     }
 }
 
@@ -24155,7 +24173,7 @@ static int mp_set_up_transform(MP mp, mp_node p, int c, mp_node old_p, mp_node o
                 /* fall through */
             }
         default:
-            mp_bad_binary(mp, p, (int) c);
+            mp_bad_binary(mp, p, c);
             break;
     }
     return 0;
@@ -24183,7 +24201,7 @@ static void mp_set_up_substring(MP mp, mp_node p, int c)
         mp_delete_string_reference(mp, cur_exp_str) ;
         mp_set_cur_exp_str(mp, str);
     } else {
-        mp_bad_binary(mp, p, mp_substring_operation);
+        mp_bad_binary(mp, p, c);
     }
 }
 
@@ -24346,7 +24364,7 @@ static void mp_set_up_subpath(MP mp, mp_node p, int c)
         return;
     }
   BAD:
-    mp_bad_binary(mp, p, mp_subpath_operation);
+    mp_bad_binary(mp, p, c);
 }
 
 static void mp_set_up_segment(MP mp, mp_node p, int c)
@@ -26477,20 +26495,20 @@ static char *mp_bytemap_get_value(MP mp, int index, int *nx, int *ny, int *nz)
     return NULL;
 }
 
-static inline int mp_valid_byte(int value)
+static inline unsigned char mp_valid_byte(int value)
 {
     if (value < 0) {
         return 0;
     } else if (value > 255) {
         return 255;
     } else {
-        return value;
+        return (unsigned char) value;
     }
 }
 
 static inline int mp_aux_weighted(int r, int g, int b)
 {
-    return round(0.299 * r + 0.587 * b + 0.114 * r );
+    return round(0.299 * r + 0.587 * g + 0.114 * b);
 }
 
 static inline int mp_aux_bytemap_get_byte(MP mp, mp_bytemap *bytemap, mp_number *source)
@@ -26581,7 +26599,7 @@ static void mp_aux_set_bytemap_slice_gray(mp_bytemap *bytemap, int x, int y, int
                         dy = bytemap->ny - y;
                     }
                     o += bm_current_y(bytemap->ny,y) * w;
-                    memset(p + o, (unsigned char) mp_valid_byte(s), dx);
+                    memset(p + o, mp_valid_byte(s), dx);
                     for (int i = bm_first_y(bytemap->ny,y,dy); i <= bm_last_y(bytemap->ny,y,dy); i++) {
                         memcpy(p + x + i * w, p + o, dx);
                     }
@@ -26614,9 +26632,9 @@ static void mp_aux_set_bytemap_slice_rgb(mp_bytemap *bytemap, int x, int y, int 
                         dy = bytemap->ny - y;
                     }
                     o += bm_current_y(bytemap->ny,y) * w;
-                    bytemap->data[o+1] = (unsigned char) mp_valid_byte(g);
-                    bytemap->data[o+0] = (unsigned char) mp_valid_byte(r);
-                    bytemap->data[o+2] = (unsigned char) mp_valid_byte(b);
+                    bytemap->data[o+1] = mp_valid_byte(g);
+                    bytemap->data[o+0] = mp_valid_byte(r);
+                    bytemap->data[o+2] = mp_valid_byte(b);
                     for (int i = 1; i < dx; i++) {
                         memcpy(p + o + i * 3, p + o, 3);
                     }
@@ -26634,7 +26652,7 @@ static int mp_bytemap_get_byte(MP mp, int index, int x, int y, int z)
     if (mp_bytemap_valid_data(mp, index)) {
         int nx = mp->bytemaps[index].nx;
         int ny = mp->bytemaps[index].ny;
-        if (x >= 0 && y >= 0 && x <= nx && y <= ny) {
+        if (x >= 0 && y >= 0 && x < nx && y < ny) {
             int nz = mp->bytemaps[index].nz;
             switch (nz) {
                 case 1:
@@ -26642,8 +26660,8 @@ static int mp_bytemap_get_byte(MP mp, int index, int x, int y, int z)
                 case 3:
                     {
                         int p = bm_current_y(ny,y) * ny * nz + x;
-                        if (z >= 0 && z <= nz) {
-                            return mp->bytemaps[index].data[p];
+                        if (z >= 1 && z <= 3) { 
+                            return mp->bytemaps[index].data[p+z-1];
                         } else {
                             return mp_aux_weighted (
                                 mp->bytemaps[index].data[p+0],
@@ -26651,7 +26669,7 @@ static int mp_bytemap_get_byte(MP mp, int index, int x, int y, int z)
                                 mp->bytemaps[index].data[p+2]
                             );
                         }
-                }
+                    }
             }
         }
     }
@@ -26744,7 +26762,6 @@ static int mp_aux_bytemap_allocate(MP mp, int index, int nx, int ny, int nz, uns
         return 0;
     }
 }
-
 
 /* begin of public */
 
@@ -27169,6 +27186,7 @@ static void mp_bytemap_found(MP mp, mp_node p, int c)
 
 static void mp_bytemap_path(MP mp, mp_node p, int c)
 {
+    (void) c;
     switch (cur_exp_type) {
         case mp_numeric_type:  /* needed ? */
         case mp_known_type:
@@ -27321,6 +27339,8 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
 
 static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
 {
+    (void) c; 
+    (void) clip; /* todo */
     switch (cur_exp_type) {
         case mp_numeric_type:
         case mp_known_type:
@@ -27462,9 +27482,14 @@ static void mp_aux_reset_bytemap(MP mp, int index)
 
 static void mp_aux_reset_bytemaps(MP mp)
 {
-    for (int index = 0; index < mp->memory_pool[mp_bytemaps_pool].max; index++) {
-        if (mp_bytemap_valid_data(mp, index)) {
-            mp_aux_reset_bytemap(mp, index);
+    if (mp->memory_pool[mp_bytemaps_pool].used) {
+        for (int index = 0; index < mp->memory_pool[mp_bytemaps_pool].max; index++) {
+            if (mp_bytemap_valid_data(mp, index)) {
+                mp_aux_reset_bytemap(mp, index);
+                if (! mp->memory_pool[mp_bytemaps_pool].used) {
+                    break;
+                }
+            }
         }
     }
 }
@@ -27953,7 +27978,7 @@ void mp_do_show_whatever(MP mp)
     mp_color_model(n) = mp_uninitialized_model;
 } */
 
-static void complain_invalid_with_list (MP mp, mp_variable_type t)
+static void complain_invalid_with_list(MP mp, mp_with_codes t)
 {
     mp_value new_expr;
     const char *hlp = NULL;
@@ -28025,6 +28050,11 @@ static void complain_invalid_with_list (MP mp, mp_variable_type t)
         case mp_with_curvature_code:
             hlp =
                 "Next time say 'withcurvature <known numeric expression>'; I'll ignore the bad\n"
+                "'with' clause and look for another.";
+            break;
+        case mp_with_mesh_code:
+            hlp =
+                "Next time say 'withmesh <known numeric expression>'; I'll ignore the bad\n"
                 "'with' clause and look for another.";
             break;
         default:
@@ -28105,6 +28135,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
     int linecap = -1;
     int linejoin = -1;
     int curvature = -1;
+    int mesh = -1;
     int bytemap = -1;
     while (cur_cmd == mp_with_option_command) {
         /*tex
@@ -28499,6 +28530,21 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                         }
                 }
                 break;
+            case mp_with_mesh_code:
+                switch (cur_exp_type) {
+                    case mp_known_type:
+                        {
+                            mesh = mp_round_unscaled(cur_exp_value_number);
+                            cur_exp_type = mp_vacuous_type;
+                            break;
+                        }
+                    default:
+                        {
+                            complain_invalid_with_list(mp, t);
+                            goto CONTINUE;
+                        }
+                }
+                break;
             case mp_with_bytemap_code:
                 switch (cur_exp_type) {
                     case mp_known_type:
@@ -28656,6 +28702,20 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 case mp_fill_node_type:
                 case mp_stroked_node_type:
                     mp_set_curvature(q, curvature);
+                    break;
+                default:
+                    break;
+            }
+            q = q->link;
+        }
+    }
+    if (mesh >= 0 ) {
+        mp_node q = p;
+        while (q != NULL) {
+            switch (q->type) {
+                case mp_fill_node_type:
+                case mp_stroked_node_type:
+                    mp_set_mesh(q, mesh);
                     break;
                 default:
                     break;
@@ -28960,7 +29020,12 @@ void mp_do_add_to(MP mp)
             if (add_type == mp_add_double_path_code) {
                 if (mp_pen_ptr((mp_shape_node) p) == NULL) {
                     mp_pen_ptr((mp_shape_node) p) = mp_get_pen_circle(mp, &mp_zero_t);
+//printf("both\n");
+                } else { 
+//printf("fill\n");
                 }
+            } else {
+//printf("outline\n");
             }
         }
     }
@@ -29613,6 +29678,7 @@ static mp_edge_object_node mp_graphic_export(MP mp, mp_edge_header_node h)
                     mp_graphic_export_scripts(tf, p);
                     graphic_linejoin_val(tf) = p0->linejoin;
                     graphic_curvature_val(tf) = p0->curvature;
+                    graphic_mesh_val(tf) = p0->mesh;
                     graphic_stacking_val(tf) = p0->stacking;
                     graphic_bytemap_val(tf) = mp_bytemap_get_value(mp, p0->bytemap, &(graphic_bytemap_nx_val(tf)), &(graphic_bytemap_ny_val(tf)), &(graphic_bytemap_nz_val(tf)));
                     graphic_miterlimit_val(tf) = mp_number_to_double(p0->miterlimit);
@@ -29646,6 +29712,7 @@ static mp_edge_object_node mp_graphic_export(MP mp, mp_edge_header_node h)
                     graphic_linejoin_val(ts) = p0->linejoin;
                     graphic_miterlimit_val(ts) = mp_number_to_double(p0->miterlimit);
                     graphic_curvature_val(ts) = p0->curvature;
+                    graphic_mesh_val(ts) = p0->mesh;
                     graphic_linecap_val(ts) = p0->linecap;
                     graphic_stacking_val(ts) = p0->stacking;
                     graphic_bytemap_val(ts) = mp_bytemap_get_value(mp, p0->bytemap, &(graphic_bytemap_nx_val(ts)), &(graphic_bytemap_ny_val(ts)), &(graphic_bytemap_nz_val(ts)));
@@ -30188,6 +30255,35 @@ void mp_push_path_value(MP mp, mp_knot k)
     mp_set_cur_exp_knot(mp, k);
     mp_back_expr(mp);
 }
+
+// void mp_push_tokens_value(MP mp, const char *str, size_t length)
+// {
+//     /*tex 
+//         THIS IS NOT YET OKAY AND NOT TO BE USED.
+//     */
+//     if (str && length > 0) {
+//         printf("push tokens is not yet implemented\n");
+// 
+// //      mp_check_script_result(mp, (char *) str);
+// 
+// //        cur_exp_type = mp_string_type;
+// //        mp_set_cur_exp_str(mp, mp_rtsl(mp, (char *) str, length));
+// //        mp_back_expr(mp);
+// //
+// //        set_cur_cmd(mp_scan_tokens_command);
+// //        mp_back_input(mp);
+// 
+// //        mp_node p = mp_new_symbolic_node(mp);
+// //        mp_set_sym_sym(p, cur_sym);
+// //        mp_begin_token_list(mp, p, mp_backed_up_text);
+// //        /* */
+// //        set_cur_cmd(mp_scan_tokens_command);
+// //        set_cur_mod(0);
+// //        set_cur_sym(NULL);
+// //        mp_back_input(mp);
+// //        /* */
+//     }
+// }
 
 /*tex
 
@@ -32083,6 +32179,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "withrgbcolor",          mp_with_option_command,      mp_with_rgb_model_code);
     mp_primitive(mp, "withcmykcolor",         mp_with_option_command,      mp_with_cmyk_model_code);
     mp_primitive(mp, "withcurvature",         mp_with_option_command,      mp_with_curvature_code);
+    mp_primitive(mp, "withmesh",              mp_with_option_command,      mp_with_mesh_code);
     mp_primitive(mp, "withbytemap",           mp_with_option_command,      mp_with_bytemap_code);
     mp_primitive(mp, "withnothing",           mp_with_option_command,      mp_with_nothing_code);
 

@@ -88,13 +88,36 @@ function pdfflusher.tocomment(message)
     end
 end
 
+-- Here timing is tricky: this is a delayed command so we should register that
+-- in a nested context function call but ... we can actually expand the
+-- macro directly.
+
+-- function pdfflusher.startfigure(n,llx,lly,urx,ury,message,figure,plugmode)
+--     metapost.n = metapost.n + 1
+--     -- context(... start timing ...)
+--     context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury),plugmode and "1" or "0")
+-- end
+--
+-- function pdfflusher.stopfigure(message)
+--     context.stopMPLIBtoPDF()
+--     -- context(... stop timing ...)
+-- end
+
+local expandmacro = token.expandmacro
+
 function pdfflusher.startfigure(n,llx,lly,urx,ury,message,figure,plugmode)
     metapost.n = metapost.n + 1
-    context.startMPLIBtoPDF(f_f(llx),f_f(lly),f_f(urx),f_f(ury),plugmode and "1" or "0")
+    expandmacro("startMPLIBtoPDF",
+        true,f_f(llx),
+        true,f_f(lly),
+        true,f_f(urx),
+        true,f_f(ury),
+        true,plugmode and "1" or "0"
+    )
 end
 
 function pdfflusher.stopfigure(message)
-    context.stopMPLIBtoPDF()
+    expandmacro("stopMPLIBtoPDF")
 end
 
 function pdfflusher.flushfigure(pdfliterals) -- table
@@ -125,7 +148,37 @@ end
 local getbendtolerance = metapost.getbendtolerance
 local curved           = metapost.hascurvature
 
-local function flushnormalpath(path,t,open,tolerance)
+local function flushrectangularpath(path,t)
+    if not t then
+        t = { }
+    end
+    --
+    local p1 = path[1]
+    local p3 = path[3]
+    local p1x = p1.x_coord
+    local p1y = p1.y_coord
+    local p3x = p3.x_coord
+    local p3y = p3.y_coord
+    --
+    t[#t+1] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
+    return t
+end
+
+local function flushrectangularlist(path,t)
+    if not t then
+        t = { }
+    end
+    --
+    local p1x = p[1]
+    local p1y = p[2]
+    local p3x = p[5]
+    local p3y = p[6]
+    --
+    t[#t+1] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
+    return t
+end
+
+local function flushnormalpath(path,t,open,tolerance,reduce)
     local pth, ith, nt
     local length = #path
     if t then
@@ -134,7 +187,7 @@ local function flushnormalpath(path,t,open,tolerance)
         t = { }
         nt = 0
     end
-    if length == 4 and path.cycle then
+    if reduce and length == 4 and path.cycle then
         local p1 = path[1]
         local p2 = path[2]
         local p3 = path[3]
@@ -146,9 +199,9 @@ local function flushnormalpath(path,t,open,tolerance)
             local p3y = p3.y_coord
             if p1y == p2.y_coord and p1x == p4.x_coord and p2.x_coord == p3x and p3y == p4.y_coord then
                 nt = nt + 1
-                t[nt] = f_r(p1.x_coord,p1y,p3x-p1x,p3y-p1y)
+                t[nt] = f_r(p1x,p1y,p3x-p1x,p3y-p1y)
                 path.rectangle = true
-                return
+                return t
             end
         end
     end
@@ -186,6 +239,20 @@ local function flushnormalpath(path,t,open,tolerance)
         t[nt] = f_l(one.x_coord,one.y_coord)
     end
     return t
+end
+
+local function flushnormallist(path,length,t,open)
+    local n = #t
+    local x = path[1]
+    local y = path[2]
+    n = n + 1 ; t[n] = f_m(x,y)
+    for i=3,length,2 do
+        n = n + 1 ; t[n] = f_l(path[i],path[i+1])
+    end
+ -- if not open or length == 2 then -- also handles dot
+    if length == 2 then -- dot
+        n = n + 1 ; t[nt] = f_l(x,y)
+    end
 end
 
 local function flushconcatpath(path,t,open,tolerance,transform)
@@ -269,8 +336,8 @@ local function toboundingbox(path)
     end
 end
 
-function metapost.flushnormalpath(path, t, open, tolerance)
-    return flushnormalpath(path, t, open, tolerance or getbendtolerance())
+function metapost.flushnormalpath(path,t,open,tolerance)
+    return flushnormalpath(path,t,open,tolerance or getbendtolerance(),true)
 end
 
 -- The flusher is pdf based, if another backend is used, we need to overload the
@@ -389,7 +456,7 @@ function metapost.flush(specification,result)
         local figures   = result.fig
         if figures then
             flusher = flusher or pdfflusher
-local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
+            local plugmode           = not metapost.getbackendoption(specification.mpx,"noplugins")
             local resetplugins       = plugmode and metapost.resetplugins       or ignore -- before figure
             local processplugins     = plugmode and metapost.processplugins     or ignore -- each object
             local synchronizeplugins = plugmode and metapost.synchronizeplugins or ignore
@@ -405,7 +472,6 @@ local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
             end
             -- patterns: we always use image 1 and then can use patterns for 2..n (or one number)
             -- we can then do an intermediate flush
-
             for index=1,#figures do
                 local figure     = figures[index]
                 local properties = pushproperties(figure)
@@ -417,6 +483,8 @@ local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
                     local miterlimit = -1
                     local linecap    = -1
                     local linejoin   = -1
+local repeater = { }
+local repeated = 0
                     local dashed     = false
                     local linewidth  = false
                     local llx        = properties.llx
@@ -593,108 +661,170 @@ local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
                                                         end
                                                     end
                                                     local path        = object.path -- newpath
+                                                    local pen         = object.pen
                                                     local transformed = false
                                                     local penwidth    = 1
-                                                    local open        = path and path[1].left_type and path[#path].right_type -- at this moment only "end_point"
-                                                    local pen         = object.pen
-                                                    if pen then
-                                                       if pen.type == "elliptical" or outline then
+                                                    local length      = path and #path or 0
+                                                    local last        = path and path[length]
+                                                    --
+                                                    -- todo: also pass length to other constructors
+                                                    --
+                                                    if path and type(last) == "string" then
+                                                        --
+                                                        -- We have a curvature 2 driven table here with a last entry being
+                                                        -- the key to what is needed: { x1, y1, ... xN, yN, kind }.
+                                                        --
+                                                        local mesh = path[length - 1] -- To be used as a plugin or so.
+                                                        local open = last == "open"
+                                                        --
+                                                        if pen and pen.type == "elliptical" or outline then
                                                             transformed, penwidth = pen_characteristics(original) -- boolean, value
                                                             if penwidth ~= linewidth then
                                                                 result[#result+1] = f_w(penwidth)
                                                                 linewidth = penwidth
                                                             end
-                                                            if objecttype == "fill" then
-                                                                objecttype = "both"
-                                                            end
-                                                       else -- calculated by mplib itself
-                                                            objecttype = "fill"
-                                                       end
-                                                    end
-                                                    if transformed then
-                                                        result[#result+1] = "q"
-                                                    end
-                                                    if path then
-                                                        if savedpath then
-                                                            for i=1,#savedpath do
-                                                                local path = savedpath[i]
-                                                                local open = not path.cycle
-                                                                if transformed then
-                                                                    flushconcatpath(path,result,open,tolerance,i==1)
-                                                                else
-                                                                    flushnormalpath(path,result,open,tolerance)
-                                                                end
-                                                            end
-                                                            savedpath = nil
                                                         end
-                                                        if flush then
-                                                            -- ignore this path
-                                                        elseif transformed then
-                                                            flushconcatpath(path,result,open,tolerance,true)
+                                                        --
+                                                        if last == "repeat" then
+                                                            -- Here we have a curvature 3 path so we use stored curvature 2
+                                                            -- one.
+                                                            for i=1,repeated do
+                                                                result[#result+1] = repeater[i]
+                                                            end
                                                         else
-                                                            flushnormalpath(path,result,open,tolerance)
-                                                        end
-                                                        if path.rectangle then
-                                                            if outline or envelope then
-                                                                result[#result+1] = "S"
-                                                            elseif objecttype == "fill" then
-                                                                result[#result+1] = "f"
-                                                            elseif objecttype == "outline" then
-                                                                result[#result+1] = both and "B" or "S"
-                                                            elseif objecttype == "both" then
-                                                                result[#result+1] = "B"
-                                                            end
-                                                        elseif outline or envelope then
-                                                            result[#result+1] = open and "S" or "h S"
-                                                        elseif objecttype == "fill" then
-                                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                                        elseif objecttype == "outline" then
-                                                            if both then
-                                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
+                                                            local start = #result + 1
+                                                            if last == "rectangle" then
+                                                                flushrectangularlist(path,result)
                                                             else
-                                                                result[#result+1] = open and "S" or "h S"
+                                                                flushnormallist(path,length-2,result,open)
                                                             end
-                                                        elseif objecttype == "both" then
-                                                            result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                            repeated = 0
+                                                            for i=start,#result do
+                                                                repeated = repeated + 1
+                                                                repeater[repeated] = result[i]
+                                                            end
                                                         end
-                                                    end
-                                                    if transformed then
-                                                        result[#result+1] = "Q"
-                                                    end
-                                                    local path = object.htap
-                                                    if path then
+                                                        if objecttype == "fill" then
+                                                            result[#result+1] = open and "f" or "h f"
+                                                        elseif objecttype == "outline" then
+                                                            result[#result+1] = open and "S" or "h S"
+                                                        elseif objecttype == "both" then
+                                                            result[#result+1] = open and "B" or "h B"
+                                                        end
+                                                        savedpath = nil
+                                                        transformed = false
+                                                    else
+                                                        -- at this moment only "end_point"
+                                                        local open = path and path[1].left_type and path[length].right_type
+                                                        --
+                                                        if pen then
+                                                           if pen.type == "elliptical" or outline then
+                                                                transformed, penwidth = pen_characteristics(original) -- boolean, value
+                                                                if penwidth ~= linewidth then
+                                                                    result[#result+1] = f_w(penwidth)
+                                                                    linewidth = penwidth
+                                                                end
+                                                                if objecttype == "fill" then
+                                                                    objecttype = "both"
+                                                                end
+                                                           else -- calculated by mplib itself
+                                                                objecttype = "fill"
+                                                           end
+                                                        end
+                                                        --
                                                         if transformed then
                                                             result[#result+1] = "q"
                                                         end
-                                                        if savedhtap then
-                                                            for i=1,#savedhtap do
-                                                                local path = savedhtap[i]
-                                                                local open = not path.cycle
-                                                                if transformed then
-                                                                    flushconcatpath(path,result,open,tolerance,i==1)
-                                                                else
-                                                                    flushnormalpath(path,result,open,tolerance)
+                                                        if path then
+                                                            if savedpath then
+                                                                for i=1,#savedpath do
+                                                                    local path = savedpath[i]
+                                                                    local open = not path.cycle
+                                                                    if transformed then
+                                                                        flushconcatpath(path,result,open,tolerance,i==1)
+                                                                    elseif path.rectangle then
+                                                                        flushrectangularpath(path,result)
+                                                                    else
+                                                                        flushnormalpath(path,result,open,tolerance,false)
+                                                                    end
                                                                 end
+                                                                savedpath = nil
                                                             end
-                                                            savedhtap = nil
-                                                            evenodd   = true
-                                                        end
-                                                        if transformed then
-                                                            flushconcatpath(path,result,open,tolerance,true)
-                                                        else
-                                                            flushnormalpath(path,result,open,tolerance)
-                                                        end
-                                                        if outline or envelope then
-                                                            result[#result+1] = open and "S" or "h S"
-                                                        elseif objecttype == "fill" then
-                                                            result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
-                                                        elseif objecttype == "outline" then
-                                                            result[#result+1] = open and "S" or "h S"
-                                                        elseif objecttype == "both" then
-                                                            result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                            if flush then
+                                                                -- ignore this path
+                                                            elseif transformed then
+                                                                flushconcatpath(path,result,open,tolerance,true)
+                                                            elseif path.rectangle then
+                                                                flushrectangularpath(path,result)
+                                                            else
+                                                                flushnormalpath(path,result,open,tolerance,false)
+                                                            end
+                                                            if path.rectangle then
+                                                                if outline or envelope then
+                                                                    result[#result+1] = "S"
+                                                                elseif objecttype == "fill" then
+                                                                    result[#result+1] = "f"
+                                                                elseif objecttype == "outline" then
+                                                                    result[#result+1] = both and "B" or "S"
+                                                                elseif objecttype == "both" then
+                                                                    result[#result+1] = "B"
+                                                                end
+                                                            elseif outline or envelope then
+                                                                result[#result+1] = open and "S" or "h S"
+                                                            elseif objecttype == "fill" then
+                                                                result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                                            elseif objecttype == "outline" then
+                                                                if both then
+                                                                    result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo
+                                                                else
+                                                                    result[#result+1] = open and "S" or "h S"
+                                                                end
+                                                            elseif objecttype == "both" then
+                                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                            end
                                                         end
                                                         if transformed then
                                                             result[#result+1] = "Q"
+                                                        end
+                                                        local path = object.htap
+                                                        if path then
+                                                            if transformed then
+                                                                result[#result+1] = "q"
+                                                            end
+                                                            if savedhtap then
+                                                                for i=1,#savedhtap do
+                                                                    local path = savedhtap[i]
+                                                                    local open = not path.cycle
+                                                                    if transformed then
+                                                                        flushconcatpath(path,result,open,tolerance,i==1)
+                                                                    elseif path.rectangle then
+                                                                        flushrectangularpath(path,result)
+                                                                    else
+                                                                        flushnormalpath(path,result,open,tolerance,false)
+                                                                    end
+                                                                end
+                                                                savedhtap = nil
+                                                                evenodd   = true
+                                                            end
+                                                            if transformed then
+                                                                flushconcatpath(path,result,open,tolerance,true)
+                                                            elseif path.rectangle then
+                                                                flushrectangularpath(path,result)
+                                                            else
+                                                                flushnormalpath(path,result,open,tolerance,false)
+                                                            end
+                                                            if outline or envelope then
+                                                                result[#result+1] = open and "S" or "h S"
+                                                            elseif objecttype == "fill" then
+                                                                result[#result+1] = evenodd and "h f*" or "h f" -- f* = eo
+                                                            elseif objecttype == "outline" then
+                                                                result[#result+1] = open and "S" or "h S"
+                                                            elseif objecttype == "both" then
+                                                                result[#result+1] = evenodd and "h B*" or "h B" -- B* = eo -- b includes closepath
+                                                            end
+                                                            if transformed then
+                                                                result[#result+1] = "Q"
+                                                            end
                                                         end
                                                     end
                                                     if after then
@@ -709,7 +839,8 @@ local plugmode = not metapost.getbackendoption(specification.mpx,"noplugins")
                                              -- local evenodd = not object.istext and object.postscript == "evenodd"
                                                 local evenodd = object.postscript == "evenodd"
                                                 result[#result+1] = "q"
-                                                flushnormalpath(object.path,result,false,tolerance)
+-- maybe also rectangle check
+                                                flushnormalpath(object.path,result,false,tolerance,true)
                                                 result[#result+1] = evenodd and "W* n" or "W n"
                                             elseif objecttype == "stop_clip" then
                                                 result[#result+1] = "Q"

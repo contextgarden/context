@@ -13,7 +13,7 @@
 
 % \normalend % uncomment this to get the real base runtime
 
-\newcontextversion{2025.06.12 14:18}
+\newcontextversion{2025.07.04 21:21}
 
 %D This file is loaded at runtime, thereby providing an excellent place for hacks,
 %D patches, extensions and new features. There can be local overloads in cont-loc
@@ -27,17 +27,6 @@
 \unprotect
 
 \writestatus\m!system{beware: some patches loaded from cont-new.mkiv}
-
-%D I need to verify if this indeed will make it into \type {math-ini.mkiv}, that is:
-%D does Alan use it?
-
-\ifdefined\t \else \permanent\protected\def\t{\mathortext\text\mathtext} \fi
-\ifdefined\w \else \permanent\protected\def\w{\mathortext\word\mathword} \fi
-
-\appendtoks
-    \enforced\aliased\let\t\mathtext
-    \enforced\aliased\let\w\mathword
-\to \everymathematics
 
 % so we need to be able to load modules in ini mode
 

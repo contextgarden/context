@@ -635,7 +635,7 @@ void tex_expand_current_token(void)
                                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
                                 strnumber u = tex_save_cur_string();
                                 halfword s = tex_scan_toks_expand(0, NULL, 0, 0);
-                                tex_unsave_full_scanner_status(saved_full_status);
+                                tex_unsave_full_scanner_status(&saved_full_status);
                                 if (token_link(s)) {
                                      tex_begin_inserted_list(tex_wrapped_token_list(s));
                                      tex_tex_string_start(io_token_input_code, cattable);

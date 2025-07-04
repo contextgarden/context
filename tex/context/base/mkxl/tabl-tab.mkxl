@@ -58,7 +58,8 @@
      \tabl_table_restore_lineskips
      \normalbaselines
    % \enforced\let~\fixedspace
-     \enforced\letcharcode\tildeasciicode\fixedspace % why
+   % \enforced\letcharcode\tildeasciicode\fixedspace
+     \enforced\letcharcode\tildeasciicode\digitspace
      \inhibitblank % \blank[\v!disable]% % added
      \expand\everytableparbox}
 

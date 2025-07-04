@@ -3091,7 +3091,7 @@ void tex_run_convert_tokens(halfword code)
                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
                 strnumber u = tex_save_cur_string();
                 halfword s = tex_scan_toks_expand(0, NULL, 0, 1); // maybe expandconstant
-                tex_unsave_full_scanner_status(saved_full_status);
+                tex_unsave_full_scanner_status(&saved_full_status);
                 lmt_token_state.luacstrings = 0;
                 lmt_token_call(s);
                 tex_delete_token_reference(s); /* boils down to flush_list */
@@ -3108,7 +3108,7 @@ void tex_run_convert_tokens(halfword code)
                 full_scanner_status saved_full_status = tex_save_full_scanner_status();
                 strnumber u = tex_save_cur_string();
                 halfword s = tex_scan_toks_expand(0, NULL, code == semi_expanded_code, 0);
-                tex_unsave_full_scanner_status(saved_full_status);
+                tex_unsave_full_scanner_status(&saved_full_status);
                 if (token_link(s)) {
                     tex_begin_inserted_list(token_link(s));
                     token_link(s) = null;
@@ -3367,7 +3367,7 @@ void tex_run_convert_tokens(halfword code)
              /* lmt_token_state.in_lua_escape = saved_in_lua_escape; */
                 escape_char_par = saved_escape_char;
                 tex_delete_token_reference(result); /* boils down to flush_list */
-                tex_unsave_full_scanner_status(saved_full_status);
+                tex_unsave_full_scanner_status(&saved_full_status);
                 if (str.l) {
                     result = lmt_str_toks(str);
                     tex_begin_inserted_list(result);

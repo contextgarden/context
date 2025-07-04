@@ -52,6 +52,7 @@ set(tex_sources
     source/luarest/lmtpotrace.c
     source/luarest/lmtqrcodegen.c
     source/luarest/lmtserial.c
+    source/luarest/lmtvectorlib.c
 
     source/tex/texalign.c
     source/tex/texarithmetic.c
@@ -116,4 +117,5 @@ target_include_directories(tex PRIVATE
     source/libraries/softposit/source/include
     source/libraries/potrace/src
     source/libraries/qrcodegen
+    source/libraries/triangles
 )

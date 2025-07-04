@@ -82,8 +82,8 @@
 \installcorenamespace{linenotespreviousfrom}
 \installcorenamespace{linenotespreviousto}
 
-\letvalue\??linenotespreviousfrom\empty
-\letvalue\??linenotespreviousto  \empty
+\letcsname\??linenotespreviousfrom\endcsname\empty
+\letcsname\??linenotespreviousto  \endcsname\empty
 
 % maybe do this in lua
 

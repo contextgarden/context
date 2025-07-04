@@ -112,6 +112,7 @@ local nuts = {
     getexpansion            = direct.getexpansion,
     getfam                  = direct.getfam,
     getfield                = direct.getfield,
+    getfirstdirectioninlist = direct.getfirstdirectioninlist,
     getfont                 = direct.getfont,
     getgeometry             = direct.getgeometry,
     getglue                 = direct.getglue,

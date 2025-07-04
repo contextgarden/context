@@ -553,7 +553,8 @@
       \fi}%
    \forgetall
    \offinterlineskip
-   \localcontrolledrepeating
+%    \localcontrolledrepeating
+   \localcontrolledendless
      {\scratchdimen\d_page_sides_flush_criterium
       \ifdim\scratchdimen>\onepoint      % good enough, can become configurable
         \ifnum\currentloopiterator>\plushundred % safeguard, sort of deadcycles

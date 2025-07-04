@@ -812,13 +812,13 @@
 
 % the expandafter permits \left\tocharacter...
 
-\protected\def\lfence{\afterassignment\math_fenced_x_left  \expandafter\let\expandafter\math_fenced_x_p_left}
-\protected\def\rfence{\afterassignment\math_fenced_x_right \expandafter\let\expandafter\math_fenced_x_p_right}
-\protected\def\mfence{\afterassignment\math_fenced_x_middle\expandafter\let\expandafter\math_fenced_x_p_middle}
+\permanent\protected\def\lfence{\afterassignment\math_fenced_x_left  \expandafter\let\expandafter\math_fenced_x_p_left}
+\permanent\protected\def\rfence{\afterassignment\math_fenced_x_right \expandafter\let\expandafter\math_fenced_x_p_right}
+\permanent\protected\def\mfence{\afterassignment\math_fenced_x_middle\expandafter\let\expandafter\math_fenced_x_p_middle}
 
-\aliased\let\left  \lfence
-\aliased\let\right \rfence
-\aliased\let\middle\mfence
+\aliased\let\left  \lfence \aliased\let\normalleft  \lfence
+\aliased\let\right \rfence \aliased\let\normalright \rfence
+\aliased\let\middle\mfence \aliased\let\normalmiddle\mfence
 
 \popoverloadmode
 

@@ -332,6 +332,7 @@ static void enginelib_show_credits(void)
         "  softposit  : S. H. Leong (Cerlane)\n"
         "  potrace    : Peter Selinger\n"
         "  qrcodegen  : Project Nayuki\n"
+     // "  triangles  : Moller, Guigue and Devillers\n"
         "\n"
         "The code base contains more names and references. Some libraries are partially adapted or\n"
         "have been replaced. The MetaPost library has additional functionality, some of which is\n"
@@ -1092,6 +1093,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "xcomplex",  luaopen_xcomplex  },
     { "xdecimal",  luaopen_xdecimal  },
     { "posit",     luaopen_posit     },
+    { "vector",    luaopen_vector    },
     { "potrace",   luaopen_potrace   },
     { "qrcodegen", luaopen_qrcodegen },
     { "serial",    luaopen_serial    },

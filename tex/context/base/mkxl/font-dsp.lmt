@@ -1012,7 +1012,7 @@ local function unchainedcontext(f,fontdata,lookupid,lookupoffset,offset,glyphs,n
                                 }
                             end
                         else
-                            report(" ge")
+                            report("no coverage")
                         end
                     else
                         report("no coverage class")
@@ -2138,7 +2138,7 @@ do
         return features
     end
 
-    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
         setposition(f,lookupoffset)
         local noflookups = readushort(f)
         local lookups    = readcardinaltable(f,noflookups,ushort)
@@ -2154,14 +2154,14 @@ do
             for j=1,nofsubtables do
                 subtables[j] = offset + readushort(f) -- we can probably put lookupoffset here
             end
-            -- which one wins?
-            local markclass = (flagbits & 0x0010) ~= 0 -- usemarkfilteringset
-            local markset   = (flagbits >> 8) & 0xFFFFFFFF
-            if markclass then
-                markclass = nofmarkclasses + markset
-            end
-            if markset > 0 then
-                markclass = nofmarkclasses + markset
+            local markclass = (flagbits >> 8) & 0xFFFFFFFF
+            if markclass == 0 then
+                local markset = (flagbits & 0x0010) ~= 0 -- usemarkfilteringset
+                if markset then
+                    markclass = readushort(f) + 1
+                else
+                    markclass = false
+                end
             end
             lookups[lookupid] = {
                 type      = lookuptype,
@@ -2563,10 +2563,7 @@ do
                 return
             end
             --
-            local markclasses    = fontdata.markclasses
-            local marksets       = fontdata.marksets
-            local nofmarkclasses = (markclasses and #markclasses or 0) - (marksets and #marksets or 0)
-            local lookups        = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+            local lookups = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
             --
             if lookups then
                 resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
@@ -2606,8 +2603,7 @@ do
                 local length   = readushort(f)
                 local coverage = readushort(f)
                 -- bit 8-15 of coverage: format 0 or 2
-             -- local format   = rshift(coverage,8) -- is this ok
-                local format   = (coverage >> 8) & 0xFFFFFFFF -- is this ok
+                local format   = (coverage >> 8) & 0xFFFFFFFF
                 if format == 0 then
                     local nofpairs      = readushort(f)
                     local searchrange   = readushort(f)
@@ -3071,7 +3067,9 @@ local function readmathvariants(f,fontdata,offset)
                         if italic and italic ~= 0 then
                             math[kitalic] = italic
                         end
-                        math[korientation] = orientation
+                        if korientation and orientation then  -- was commented
+                            math[korientation] = orientation
+                        end                                   -- was commented
                     end
                 end
             end

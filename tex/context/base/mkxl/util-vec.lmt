@@ -1,0 +1,91 @@
+if not modules then modules = { } end modules ['util-vec'] = {
+    version   = 1.001,
+    comment   = "support for vectors",
+    author    = "Mikael Sundqvist & Hans Hagen",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local newvector = vector.new
+
+local sin, cos = math.sin, math.cos
+
+local function xrotation(theta)
+    return newvector {
+        { 1,           0,          0, 0 },
+        { 0,  cos(theta), sin(theta), 0 },
+        { 0, -sin(theta), cos(theta), 0 },
+        { 0,           0,          0, 1 },
+    }
+end
+
+local function yrotation(phi)
+    return newvector {
+        { cos(phi), 0, -sin(phi), 0 },
+        {        0, 1,         0, 0 },
+        { sin(phi), 0,  cos(phi), 0 },
+        {        0, 0,         0, 1 },
+    }
+end
+
+local function zrotation(eta)
+    return newvector {
+        {  cos(eta), sin(eta), 0, 0 },
+        { -sin(eta), cos(eta), 0, 0 },
+        {         0,        0, 1, 0 },
+        {         0,        0, 0, 1 },
+    }
+end
+
+local function xyzscale(sx,sy,sz)
+    return newvector {
+        { sx or 1,       0,       0, 0 },
+        {       0, sy or 1,       0, 0 },
+        {       0,       0, sz or 1, 0 },
+        {       0,       0,       0, 1 },
+    }
+end
+
+-- local projz = newvector {
+--     { 1, 0, 0, 0 },
+--     { 0, 1, 0, 0 },
+--     { 0, 0, 0, 0 },
+--     { 0, 0, 0, 1 },
+-- }
+
+local function transform(eta,phi,theta,sx,sy,sz)
+    if type(eta) == "table" then
+        sz    = eta.sz
+        sy    = eta.sy
+        sx    = eta.sx
+        theta = eta.theta
+        phi   = eta.phi
+        eta   = eta.eta
+    end
+    local v = xyzscale(sx,sy,sz)
+    if eta then
+        v = v * zrotation(eta)
+    end
+    if phi then
+        v = v * yrotation(phi)
+    end
+    if theta then
+        v = v * xrotation(theta)
+    end
+    return v -- * projz
+end
+
+local function points(M, N)
+    if M then
+        return newvector((M + 1) * ((N or M) + 1), 4)
+    end
+end
+
+vector.helpers = {
+    xrotation = xrotation,
+    yrotation = yrotation,
+    zrotation = zrotation,
+    xyzscale  = xyzscale,
+    transform = transform,
+    points    = points,
+}

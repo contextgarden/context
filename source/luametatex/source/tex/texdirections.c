@@ -238,6 +238,22 @@ void tex_set_line_dir(halfword d)
 void tex_set_box_dir(halfword b, singleword d)
 {
     if (valid_direction(d)) {
-        box_dir(box_register(b)) = (singleword) d;
+        box_direction(box_register(b)) = (singleword) d;
     }
+}
+
+halfword tex_get_direction_from_list(halfword l)
+{
+    while (l) {
+        switch (node_type(l)) {
+            case dir_node:
+                return dir_direction(l);
+            case hlist_node:
+            case vlist_node:
+                return box_direction(l);
+            default:
+                l = node_next(l);
+        }
+    }
+    return dir_lefttoright;
 }

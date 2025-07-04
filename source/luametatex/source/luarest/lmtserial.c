@@ -91,7 +91,7 @@
     static int seriallib_aux_send(serial_data *serial, const char *sequence, size_t length)
     {
         DWORD written = 0;
-        return WriteFile(serial->handle, sequence, length, &written, NULL) ? 1 : 0;
+        return (int) WriteFile(serial->handle, sequence, (DWORD) length, &written, NULL) ? 1 : 0;
     }
 
     /*tex For old times sake, no temporary user data. */
@@ -104,11 +104,11 @@
         };
         int success = seriallib_aux_open(L, &serial) && serial.handle;
         if (success) {
-            size_t      length   = 0;
+            size_t length = 0;
             const char *sequence = lua_tolstring(L, 3, &length);
             if (length) {
                 DWORD written  = 0;
-                success = WriteFile(serial.handle, sequence, length, &written, NULL) ? 1 : 0;
+                success = (int) WriteFile(serial.handle, sequence,(DWORD) length, &written,NULL) ? 1 : 0;
             }
             CloseHandle(serial.handle);
         }

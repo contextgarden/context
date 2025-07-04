@@ -5249,6 +5249,17 @@
 \permanent\protected\def\showmathstyles
   {(\the\mathmainstyle|\the\mathparentstyle|\the\mathstyle)}
 
+%D I need to verify if this indeed will make it into \type {math-ini.mkiv}, that is:
+%D does Alan use it?
+
+\ifdefined\t \else \permanent\protected\def\t{\mathortext\text\mathtext} \fi
+\ifdefined\w \else \permanent\protected\def\w{\mathortext\word\mathword} \fi
+
+\appendtoks
+    \enforced\aliased\let\t\mathtext
+    \enforced\aliased\let\w\mathword
+\to \everymathematics
+
 \protect \endinput
 
 % % not used (yet)

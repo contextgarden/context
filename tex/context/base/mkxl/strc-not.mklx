@@ -928,7 +928,11 @@
   {\begincsname\??noterule#alternative\endcsname}
 
 \def\strc_notes_set_rule_autodir
-  {\doifelserighttoleftinbox\currentnoteinsertionnumber\righttoleft\lefttoright}
+  {\ifcase\insertdirection\currentnoteinsertionnumber
+     \lefttoright
+   \else
+     \righttoleft
+   \fi}
 
 \defcsname\??noterule  \v!command\endcsname{\letcurrentnoterulecommand\currentnoterulecommandcommand}
 \defcsname\??noterule       \v!on\endcsname{\letcurrentnoterulecommand\currentnoterulecommandnormal}

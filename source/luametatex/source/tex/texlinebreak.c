@@ -263,7 +263,7 @@ void tex_line_break(int group_context, int par_context, int display_math)
         /*tex Hyphenate, driven by callback or fallback to normal \TEX. */
         if (tex_list_has_glyph(head)) {
             tex_handle_hyphenation(head, tail);
-            head = tex_handle_glyphrun(head, group_context, par_dir(head));
+            head = tex_handle_glyphrun(head, group_context, par_direction(head));
             tail = tex_tail_of_node_list(head);
             tex_try_couple_nodes(cur_list.head, head);
             cur_list.tail = tail;
@@ -340,7 +340,7 @@ void tex_line_break(int group_context, int par_context, int display_math)
                     .tracing_passes          = tracing_passes_par,
                     .tracing_toddlers        = tracing_toddlers_par,
                     .tracing_orphans         = tracing_orphans_par,
-                    .paragraph_dir           = par_dir(par),
+                    .paragraph_direction     = par_direction(par),
                     .paragraph_options       = par_options(par),
                     .parfill_left_skip       = parfill_left_skip_glue,
                     .parfill_right_skip      = parfill_right_skip_glue,
@@ -2554,12 +2554,12 @@ static scaled tex_aux_try_break(
                             /*tex No finite stretch and no shrink. */
                             goto NOT_FOUND;
                         }
-                        lmt_scanner_state.arithmic_error = 0;
+                        lmt_scanner_state.arithmetic_error = 0;
                         glue = tex_fract(glue, active_short(current), active_glue(current), max_dimension);
                         if (properties->last_line_fit < 1000) {
                             glue = tex_fract(glue, properties->last_line_fit, 1000, max_dimension);
                         }
-                        if (lmt_scanner_state.arithmic_error) {
+                        if (lmt_scanner_state.arithmetic_error) {
                             glue = (active_short(current) > 0) ? max_dimension : -max_dimension;
                         }
                         if (glue > 0) {
@@ -3495,20 +3495,24 @@ static void tex_aux_set_orphan_penalties(const line_break_properties *properties
                 while (current) {
                     switch (node_type(current)) {
                         case glue_node:
-                            switch (node_subtype(current)) {
-                                case space_skip_glue:
-                                case xspace_skip_glue:
-                                case zero_space_skip_glue:
-                                    if (skip) {
-                                        skip = 0;
-                                    } else {
-                                        current = tex_aux_inject_orphan_penalty(properties, current, tex_get_specification_penalty(properties->orphan_penalties, ++i), 0);
-                                    }
-                                    if (i == n) {
-                                        return;
-                                    } else {
-                                        break;
-                                    }
+                            if (tex_has_glue_option(current, glue_option_no_auto_break)) {
+                                skip = 0;
+                            } else {
+                                switch (node_subtype(current)) {
+                                    case space_skip_glue:
+                                    case xspace_skip_glue:
+                                    case zero_space_skip_glue:
+                                        if (skip) {
+                                            skip = 0;
+                                        } else {
+                                            current = tex_aux_inject_orphan_penalty(properties, current, tex_get_specification_penalty(properties->orphan_penalties, ++i), 0);
+                                        }
+                                        if (i == n) {
+                                            return;
+                                        } else {
+                                            break;
+                                        }
+                                }
                             }
                             break;
                         case math_node:
@@ -4334,7 +4338,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                 break;
             case dir_node:
                 /*tex Adjust the dir stack for the |line_break| routine. */
-                lmt_linebreak_state.line_break_dir = tex_update_dir_state(current, properties->paragraph_dir);
+                lmt_linebreak_state.line_break_dir = tex_update_dir_state(current, properties->paragraph_direction);
                 break;
             case par_node:
                 /*tex Advance past a |par| node. */
@@ -4761,7 +4765,7 @@ static void tex_aux_set_indentation(const line_break_properties *properties)
             }
             lmt_linebreak_state.second_indent = tex_get_specification_indent(properties->par_shape, n);
             lmt_linebreak_state.second_width = tex_get_specification_width(properties->par_shape, n);
-            lmt_linebreak_state.second_indent = swap_parshape_indent(properties->paragraph_dir, lmt_linebreak_state.second_indent, lmt_linebreak_state.second_width);
+            lmt_linebreak_state.second_indent = swap_parshape_indent(properties->paragraph_direction, lmt_linebreak_state.second_indent, lmt_linebreak_state.second_width);
         } else {
             lmt_linebreak_state.last_special_line = 0;
             lmt_linebreak_state.second_width = properties->hsize;
@@ -4772,7 +4776,7 @@ static void tex_aux_set_indentation(const line_break_properties *properties)
         lmt_linebreak_state.second_width = properties->hsize;
         lmt_linebreak_state.second_indent = 0;
     } else {
-        halfword used_hang_indent = swap_hang_indent(properties->paragraph_dir, properties->hang_indent);
+        halfword used_hang_indent = swap_hang_indent(properties->paragraph_direction, properties->hang_indent);
         /*tex
 
             Set line length parameters in preparation for hanging indentation. We compute the
@@ -5037,7 +5041,7 @@ void tex_do_line_break(line_break_properties *properties)
         lmt_linebreak_state.minimal_demerits[i] = awful_bad;
     }
 
-    lmt_linebreak_state.line_break_dir = properties->paragraph_dir;
+    lmt_linebreak_state.line_break_dir = properties->paragraph_direction;
     if (lmt_linebreak_state.dir_ptr) {
         tex_flush_node_list(lmt_linebreak_state.dir_ptr);
         lmt_linebreak_state.dir_ptr = null;
@@ -5745,7 +5749,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             /*tex |r| refers to the node after which the dir nodes should be closed */
         }
         /*tex Adjust the dir stack based on dir nodes in this line. */
-        line_break_dir = tex_sanitize_dir_state(node_next(temp_head), passive_cur_break(cur_p), properties->paragraph_dir);
+        line_break_dir = tex_sanitize_dir_state(node_next(temp_head), passive_cur_break(cur_p), properties->paragraph_direction);
         /*tex Insert dir nodes at the end of the current line. */
         r = tex_complement_dir_state(r);
         /*tex
@@ -5983,7 +5987,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             if (specification_count(properties->par_shape)) {
                 cur_indent = tex_get_specification_indent(properties->par_shape, cur_line);
                 cur_width = tex_get_specification_width(properties->par_shape, cur_line);
-                cur_indent = swap_parshape_indent(properties->paragraph_dir, cur_indent, cur_width);
+                cur_indent = swap_parshape_indent(properties->paragraph_direction, cur_indent, cur_width);
             } else {
                 cur_width = lmt_linebreak_state.first_width;
                 cur_indent = lmt_linebreak_state.first_indent;
@@ -6139,7 +6143,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 }
             }
             shaping = (lefthang || righthang);
-            lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option, box_limit_line);
+            lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
 // if (cur_line == 1 && (properties->paragraph_options & par_option_synchronize)) {
 //     tex_add_box_option(lmt_linebreak_state.just_box, box_option_synchronize);
@@ -6260,7 +6264,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */
-            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_dir, holding_none_option, box_limit_line);
+            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }

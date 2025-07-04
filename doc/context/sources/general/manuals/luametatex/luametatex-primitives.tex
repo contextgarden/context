@@ -1434,6 +1434,23 @@ When set this will make the balancer more tolerant. It's comparable to \prm
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {balancefinalpenalties}}]
+
+This is a penalty array which values will be applied to the end of the to be
+balanced list, starting at the end. Widow, club and other encountered penalties
+will be overloaded.
+
+\starttyping
+\balancefinalpenalties 4
+    10000 9000 8000 7000
+\relax
+\stoptyping
+
+The last one is not repetitive so here at most four penalties will be injected
+between lines (that is: hlists with the line subtype).
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {balancelineheight}}]
 
 {\em This is a reserved parameter.}
@@ -1458,23 +1475,6 @@ can be found in the \CONTEXT\ distribution (in due time).
 \startnewprimitive[title={\prm {balancepenalty}}]
 
 This is the penalty applied between slots, prety much like \prm {linepenalty}.
-
-\stopnewprimitive
-
-\startnewprimitive[title={\prm {balancefinalpenalties}}]
-
-This is a penalty array which values will be applied to the end of the to be
-balanced list, starting at the end. Widow, club and other encountered penalties
-will be overloaded.
-
-\starttyping
-\balancefinalpenalties 4
-    10000 9000 8000 7000
-\relax
-\stoptyping
-
-The last one is not repetitive so here at most four penalties will be injected
-between lines (that is: hlists with the line subtype).
 
 \stopnewprimitive
 
@@ -3090,6 +3090,9 @@ The properties are comparable to the ones described in the section \prm
 
 \stopnewprimitive
 
+% \startnewprimitive[title={\prm {dimexperimental}}]
+% \stopnewprimitive
+
 \startoldprimitive[title={\prm {dimexpr}}]
 
 This primitive is similar to of \prm {numexpr} but operates on dimensions
@@ -3415,6 +3418,9 @@ ragged right in case of a too bad result.
 When set the par builder will run a third pass in order to fit the set criteria.
 
 \stopoldprimitive
+
+% \startnewprimitive[title={\prm {emptyparagraphmode}}]
+% \stopnewprimitive
 
 \startoldprimitive[title={\prm {end}}]
 
@@ -3789,6 +3795,9 @@ in this expansion, like:
 \stoptyping
 
 \stopoldprimitive
+
+% \startnewprimitive[title={\prm {exapostrophechar}}]
+% \stopnewprimitive
 
 \startnewprimitive[title={\prm {exceptionpenalty}}]
 
@@ -7131,6 +7140,9 @@ comparable to the \prm {dp} in the traditional method.
 
 \stopnewprimitive
 
+% \startnewprimitive[title={\prm {insertdirection}}]
+% \stopnewprimitive
+
 \startnewprimitive[title={\prm {insertdistance}}]
 
 This is the space before the inserted material with the given index. This is
@@ -8247,12 +8259,6 @@ context (like an \prm {edef}).
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {luatexbanner}}]
-
-This gives: {\tttf \luatexbanner}.
-
-\stopnewprimitive
-
 \startnewprimitive[title={\prm {luametatexmajorversion}}]
 
 This is the numeric major version number, so it's an integer: \the
@@ -8284,6 +8290,12 @@ updates
 
 This is a numeric release number, so it's an integer: \the\luametatexrelease. It
 changes when we are developing functionality.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {luatexbanner}}]
+
+This gives: {\tttf \luatexbanner}.
 
 \stopnewprimitive
 
@@ -8897,29 +8909,6 @@ But we can also do this:
 
 \stopnewprimitive
 
-\startnewprimitive[title={\prm {mathnolimitsmode}}]
-
-This parameter influences the placement of scripts after an operator. The reason
-we have this lays in the fact that traditional \TEX\ uses italic correction and
-\OPENTYPE\ math does the same but fonts are not consistent in how they set this
-up. Actually, in \OPENTYPE\ math it's the only reason that there is italic
-correction. Say that we have a shift $\delta$ determined by the italic correction:
-
-\starttabulate[|c|c|c|]
-\BC mode  \BC top                \BC bottom                \NC \NR
-\NC $0$   \NC $0$                \NC $-\delta$             \NC \NR
-\NC $1$   \NC $\delta\times f_t$ \NC $\delta\times f_b$    \NC \NR
-\NC $2$   \NC $0$                \NC $0$                   \NC \NR
-\NC $3$   \NC $0$                \NC $-\delta/2$           \NC \NR
-\NC $4$   \NC $\delta/2$         \NC $-\delta/2$           \NC \NR
-\NC $>15$ \NC $0$                \NC $-n\times\delta/1000$ \NC \NR
-\stoptabulate
-
-Mode~1 uses two font parameters: $f_b$: \prm {Umathnolimitsubfactor} and $f_t$:
-\prm {Umathnolimitsupfactor}.
-
-\stopnewprimitive
-
 \startoldprimitive[title={\prm {mathop}}]
 
 This operation wraps following content in a atom with class \quote {operator}.
@@ -8931,6 +8920,9 @@ This operation wraps following content in a atom with class \quote {operator}.
 This operation wraps following content in a atom with class \quote {open}.
 
 \stopoldprimitive
+
+% \startnewprimitive[title={\prm {mathoptions}}]
+% \stopnewprimitive
 
 \startoldprimitive[title={\prm {mathord}}]
 
@@ -9705,7 +9697,8 @@ When \prm {nospaces} is set to~1 no spaces are inserted, when its value is~2 a
 zero space is inserted. The default value is~0 which means that spaces become
 glue with properties depending on the font, specific parameters and|/|or space
 factors determined preceding characters. A value of~3 will inject a glyph node
-with code \prm {spacechar}.
+with code \prm {spacechar}. The values~4, 5 and~6 insert a fixed space. With ~5
+there is no stretch and~6 sets the width to the width of a zero.
 
 \stopnewprimitive
 
@@ -9834,6 +9827,9 @@ The second number gets multiplied by the first fraction:
 \startlines \getbuffer \stoplines
 
 \stopnewprimitive
+
+% \startnewprimitive[title={\prm {numexperimental}}]
+% \stopnewprimitive
 
 \startoldprimitive[title={\prm {numexpr}}]
 
@@ -11501,7 +11497,7 @@ This primitive does not have the end|-|of|-|file side effects of its precursor
 
 \startoldprimitive[title={\prm {scantokens}}]
 
-Just forget about this \ETEX\ primitive, just take the one in the next section.
+Just forget about this \ETEX\ primitive, just take the one in the previous section.
 
 \stopoldprimitive
 
@@ -12708,6 +12704,9 @@ when there is no further match. These are just a few examples of this tolerant
 feature. More details can be found in the lowlevel manuals.
 
 \stopnewprimitive
+
+% \startnewprimitive[title={\prm {tolimitedfloat}}]
+% \stopnewprimitive
 
 \startnewprimitive[title={\prm {tomathstyle}}]
 

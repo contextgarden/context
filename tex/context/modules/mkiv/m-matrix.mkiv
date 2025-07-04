@@ -95,6 +95,9 @@ fences.bracket     = fences.brackets
 matrix.template    = "%0.3F"
 
 function matrix.typeset(m,options)
+    if vector and vector.isvector(m) then
+        m = vector.totable(m)
+    end
     if type(m) == "table" then
         local options  = settings_to_hash(options or "")
         local whatever = options.determinant == "yes" and fences.bars or fences.parentheses
@@ -133,6 +136,10 @@ function matrix.typeset(m,options)
     elseif m then
         context(m)
     end
+end
+
+if vector then
+    vector.typeset = matrix.typeset
 end
 
 function matrix.swaprows(t,i,j)
@@ -264,7 +271,7 @@ local function uppertri(m,sign)
     for i=1,#temp-1 do
         local pivot = temp[i][i]
         if pivot == 0 then
-            local pRow = i +1
+            local pRow = i + 1
             while temp[pRow][i] == 0 do
                 pRow = pRow + 1
                 if pRow > #temp then -- if there is no nonzero number
@@ -288,7 +295,7 @@ local function uppertri(m,sign)
     if sign then
         return temp, sign
     else
-        return temp
+        return temp -- hm error below if not a second arg
     end
 end
 
@@ -431,7 +438,7 @@ matrix.subMatrix = submatrix
 
 -- calculating determinant using Laplace Expansion
 
-local function laplace(t) -- not sure if this is the most effient but
+local function laplace(t)  -- not sure if this is the most effient but
     local factors = { 1 }  -- it's not used for number crunching anyway
     local data    = copy(t)
     local det     = 0
@@ -604,7 +611,7 @@ matrix.joinColumns = joincolumns
 
 \continueifinputfile{m-matrix.mkiv}
 
-\usemodule[m-matrix]
+% \usemodule[m-matrix]
 \usemodule[art-01]
 
 \starttext
@@ -634,6 +641,8 @@ document.DemoMatrixC = {
     {  2, 4,  0, -1 },
 }
 \stopluacode
+
+% \enabletrackers[context*]
 
 \startbuffer[demo]
 \typebuffer
@@ -945,7 +954,7 @@ context(moduledata.matrix.inner({ 1, 2, 3 }, { 3, 1, 2, 4 }))
 
 \stopsubject
 
-\startsubject[title={make matrices(zero, identiry, random}]
+\startsubject[title={make matrices(zero, identity, random}]
 
 \startbuffer
 \startluacode

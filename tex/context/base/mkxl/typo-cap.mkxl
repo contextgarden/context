@@ -197,7 +197,7 @@
    \setcharactercasing[\currentcapitals]%
    \usecapitalsstyleparameter\c!style}
 
-\def\typo_capitals_set_real#1#2%
+\def\typo_capitals_set_real#1%
   {\cdef\currentcapitals{#1}%
    \sc % \smallcaps
    \setcharactercasing[\currentcapitals]}

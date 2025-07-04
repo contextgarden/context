@@ -2011,8 +2011,8 @@ permanent withannotation ;
 
 % experimental
 
-every_after_shipout := every_after_shipout & " resetbytemaps ; " ;
-    % withmaskmap maybe too but then the number is a bytemap so we need to pass it too
+% every_after_shipout := every_after_shipout & " resetbytemaps ; " ;
+%     % withmaskmap maybe too but then the number is a bytemap so we need to pass it too
 
 def withbytemask expr n =
     withprescript "bytemask=" & decimal n
@@ -2029,3 +2029,50 @@ vardef loadbytemapfromfile(expr index, filename) =
 enddef ;
 
 permanent loadbytemapfromfile ;
+
+% kind of fundamental, therefore here
+
+newscriptindex mfid_meshcontour ; mfid_meshcontour  := scriptindex("meshcontour")  ;
+
+def meshcontour(expr name) = runscript mfid_meshcontour name ; enddef ; % just combine with the next one
+
+% the shorter one:
+%
+% draw meshexperiment("mikaelfun","draw") ;
+% draw meshexperiment("mikaelfun","fill") ;
+% draw meshexperiment("mikaelfun","both") ;
+
+vardef meshexperiment(expr name, kind) =
+    image (
+        save p ; path p ; p := meshcontour(name) ;
+        addto currentpicture doublepath p
+            withprescript "ms_name=" & name
+            withprescript "ms_kind=" & kind
+        ;
+    )
+enddef ;
+
+permanent mesh;
+
+% This was the original longer version, watch the withcurvature trickery but in the
+% end we decided not to go this route as we never really mess with these paths in
+% mp apart from placement and decorating.
+%
+% meshstart("mikaelfun") ;
+%     numeric n ; path p ; numeric c, cc ;
+%     pickup pencircle scaled .05 ;
+%     n := meshcount ;
+%     for i=1 upto n :
+%         c := meshvalue ;
+%         p := meshpath scaled 30 ;
+%         fill p
+%             withcolor (c,.3,.3)
+%             withcurvature  2 % simple list and also stores
+%         ;
+%         draw p
+%             withcurvature  3 % repeats last one
+%         ;
+%     endfor ;
+%     draw meshbounds scaled 30 withpen pencircle scaled 1 ;
+%   % meshreset ;
+% meshstop ;

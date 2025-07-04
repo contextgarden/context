@@ -144,7 +144,7 @@ function tracers.printerror(specification)
         local lastluaerror = specification.lastluaerror
         local lastcontext  = specification.lasterrorcontext
         local luaerrorline = specification.luaerrorline
-        local errortype    = specification.errortype
+        local errortype    = specification.errortype -- not set (lmtx)
         local offset       = specification.offset
         local endoffile    = specification.endoffile
         local report       = errorreporter(luaerrorline)
@@ -173,6 +173,9 @@ function tracers.printerror(specification)
             elseif lastmpserror then
                 report("mp error on line %s in file %s:\n\n%s",linenumber,filename,lastmpserror)
             else
+if quitonerror and lasttexerror and lasttexerror == "?" then
+    lasttexerror = "interrupt"
+end
                 report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
                 if lastcontext then
                     report_nl()
@@ -185,6 +188,7 @@ function tracers.printerror(specification)
                 if lastluaerror and not match(lastluaerror,"^%s*[%?]*%s*$") then
                     print("\nlua error:\n\n",lastluaerror,"\n")
                     quitonerror = true
+                else
                 end
             end
             report_nl()
@@ -229,9 +233,9 @@ directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
         register('show_error_message',  nop)
-        register('show_warning_message',function()         processwarning(v)   end)
-        register('show_error_hook',     function(eof)      processerror(v,eof) end)
-        register('show_lua_error_hook', function()         processerror(v)     end)
+        register('show_warning_message',function()    processwarning(v)   end)
+        register('show_error_hook',     function(eof) processerror(v,eof) end)
+        register('show_lua_error_hook', function()    processerror(v)     end)
     else
         register('show_error_message',  nil)
         register('show_error_hook',     nil)

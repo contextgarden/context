@@ -514,7 +514,7 @@ static int callbacklib_found(lua_State *L)
     switch (lua_type(L, 1)) { 
         case LUA_TNUMBER: 
             {
-                int cb = lua_tointeger(L, 1);
+                halfword cb = lmt_tohalfword(L, 1);
                 return (cb > 0 && cb < total_callbacks) ? cb :  -1;
             }
         case LUA_TSTRING:   
@@ -606,7 +606,7 @@ static int callbacklib_setstate(lua_State *L)
 
 static int callbacklib_setoptions(lua_State *L)
 {
-    int options = lua_tointeger(L, 1);
+    unsigned options = lmt_tounsigned(L, 1);
     int set = lua_type(L, 2) == LUA_TBOOLEAN ? lua_toboolean(L, 2) : 1;
     if (options & callback_option_direct) {
         if (lmt_callback_state.options & callback_option_direct) {

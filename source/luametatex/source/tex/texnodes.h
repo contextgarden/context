@@ -313,12 +313,12 @@ extern void     tex_undump_specification_data   (dumpstream f);
 # define node_type(a)    memone0(a,0)
 # define node_subtype(a) memone1(a,0)
 
-# define node_attr(a) memone(a,1)
-# define node_next(a) memtwo(a,0)
-# define node_prev(a) memtwo(a,1)
-
-# define node_head(a) memtwo(a,0) /*tex the head of a disc sublist */
-# define node_tail(a) memone(a,1) /*tex the tail of a disc node, overlaps with |node_attr()| */
+# define node_next(a)    memtwo(a,0)
+# define node_attr(a)    memone(a,1)
+# define node_prev(a)    memtwo(a,1)
+                         
+# define node_head(a)    memtwo(a,0) /*tex the head of a disc sublist */
+# define node_tail(a)    memone(a,1) /*tex the tail of a disc node, overlaps with |node_attr()| */
 
 /*tex
 
@@ -560,12 +560,12 @@ typedef enum skip_glue_codes_alias {
 # define glue_shrink(a)        memtwo(a,3)
 # define glue_stretch_order(a) memone(a,4)
 # define glue_shrink_order(a)  memtwo(a,4)
-# define glue_font(a)          memone(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
-# define glue_data(a)          memtwo(a,5) /* not in spec */
-# define glue_leader_ptr(a)    memone(a,6) /* not in spec */
-# define glue_callback(a)      memtwo(a,6) /* not in spec */
-# define glue_belongs_to(a)    memone(a,7) /* not in spec */
-# define glue_reserved(a)      memtwo(a,7) /* not in spec */
+# define glue_leader_ptr(a)    memone(a,5) /* not in spec */
+# define glue_font(a)          memtwo(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
+# define glue_data(a)          memone(a,6) /* not in spec */ /* user field */
+# define glue_reserved(a)      memtwo(a,6) /* not in spec */ /* user field */
+# define glue_callback(a)      memone(a,7) /* not in spec */ /* flatten leaders */
+# define glue_belongs_to(a)    memtwo(a,7) /* not in spec */ /* balancing */
 
 typedef enum glue_option_codes {
     glue_option_normal            = 0x0000,
@@ -1006,7 +1006,7 @@ typedef enum list_balance_states {
 # define box_content_state(a) memone03(a,6)
 # define box_reserved_2(a)    memone04(a,6) /* can be used */
 # define box_glue_set(a)      dvalue(a,7)  /* So we reserve a whole memory word! */
-# define box_dir(a)           memtwo00(a,8) /* We could encode it as geometry but not now. */
+# define box_direction(a)     memtwo00(a,8) /* We could encode it as geometry but not now. */
 # define box_package_state(a) memtwo01(a,8)
 # define box_options(a)       memtwo02(a,8)
 # define box_geometry(a)      memtwo03(a,8)
@@ -2756,7 +2756,7 @@ typedef enum par_options {
 
 # define par_node_size                   35
 
-# define par_dir(a)                      memtwo00(a, 2)
+# define par_direction(a)                memtwo00(a, 2)
 # define par_options(a)                  memtwo01(a, 2)
 # define par_box_left(a)                 memone(a, 2)
 # define par_box_left_width(a)           memtwo(a, 3)

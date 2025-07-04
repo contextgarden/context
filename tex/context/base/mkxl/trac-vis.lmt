@@ -1179,10 +1179,10 @@ local ruledglyph do
                 return head, current
             end
         end
-if continuation then
-    local options = getoptions(glyph)
-    continuation = (options & iscontinuation_code) == iscontinuation_code
-end
+        if continuation then
+            local options = getoptions(glyph)
+            continuation = (options & iscontinuation_code) == iscontinuation_code
+        end
         local wd, ht, dp = getglyphdimensions(glyph)
         if wd ~= 0 then
             local next = getnext(current)
@@ -1250,6 +1250,7 @@ local ruledglue, ruledmathglue do
 
     local effectiveglue         = nuts.effectiveglue
     local iszeroglue            = nuts.iszeroglue
+    local getoptions            = nuts.getoptions
 
     local gluecodes             = nodes.gluecodes
 
@@ -1271,6 +1272,8 @@ local ruledglue, ruledmathglue do
     local correctionskip_code   <const> = gluecodes.correctionskip
     local tabskip_code          <const> = gluecodes.tabskip
 
+    local noautobreak_code      <const> = tex.glueoptioncodes.noautobreak
+
     local g_cache_v  = caches["vglue"]
     local g_cache_h  = caches["hglue"]
 
@@ -1278,7 +1281,7 @@ local ruledglue, ruledmathglue do
     local g_cache_gz = caches["gluezero"]
     local g_cache_gf = caches["gluefixed"]
 
-    local tags = {
+    local tags = { -- todo: keep in order, indexed
      -- [userskip_code]                   = "US",
         [gluecodes.lineskip]              = "LI",
         [gluecodes.baselineskip]          = "BS",
@@ -1335,9 +1338,13 @@ local ruledglue, ruledmathglue do
 
     ruledglue = function(head,current,subtype,vertical,parent)
         local width   = effectiveglue(current,parent)
+        local nobreak = (getoptions(current) & noautobreak_code) ~= 0
         local stag    = stags[subtype]
-        local cache   = g_caches[subtype] or (vertical and g_cache_v) or g_cache_h
-        local amount  = f_amount(tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
+        local cache   = (nobreak and g_caches["NB"])
+                     or g_caches[subtype]
+                     or (vertical and g_cache_v)
+                     or g_cache_h
+        local amount  = f_amount(nobreak and "NB" or tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
         local info    = cache[amount]
         if subtype == intermathskip_code then
             head = ruledmathglue(head,current)

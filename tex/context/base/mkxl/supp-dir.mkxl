@@ -16,21 +16,21 @@
 \aliased\let\directionlefttoright\zerocount
 \aliased\let\directionrighttoleft\plusone
 
-\immutable\edef\??bdir{\ifdefined\bodydir bdir\else direction\fi}
+\ifdefined\s!direction \else \cdef\s!direction{direction} \fi
 
-\permanent\protected\edef\naturalhbox  {\hbox  \??bdir\directionlefttoright}
-\permanent\protected\edef\naturalvbox  {\vbox  \??bdir\directionlefttoright}
-\permanent\protected\edef\naturalvtop  {\vtop  \??bdir\directionlefttoright}
-\permanent\protected\edef\naturalhpack {\hpack \??bdir\directionlefttoright}
-\permanent\protected\edef\naturalvpack {\vpack \??bdir\directionlefttoright}
-\permanent\protected\edef\naturaltpack {\tpack \??bdir\directionlefttoright}
+\permanent\protected\edef\naturalhbox  {\hbox \s!direction\directionlefttoright}
+\permanent\protected\edef\naturalvbox  {\vbox \s!direction\directionlefttoright}
+\permanent\protected\edef\naturalvtop  {\vtop \s!direction\directionlefttoright}
+\permanent\protected\edef\naturalhpack {\hpack\s!direction\directionlefttoright}
+\permanent\protected\edef\naturalvpack {\vpack\s!direction\directionlefttoright}
+\permanent\protected\edef\naturaltpack {\tpack\s!direction\directionlefttoright}
 
-\permanent\protected\edef\reversehbox  {\hbox  \??bdir\directionrighttoleft}
-\permanent\protected\edef\reversevbox  {\vbox  \??bdir\directionrighttoleft}
-\permanent\protected\edef\reversevtop  {\vtop  \??bdir\directionrighttoleft}
-\permanent\protected\edef\reversehpack {\hpack \??bdir\directionrighttoleft}
-\permanent\protected\edef\reversevpack {\vpack \??bdir\directionrighttoleft}
-\permanent\protected\edef\reversetpack {\tpack \??bdir\directionrighttoleft}
+\permanent\protected\edef\reversehbox  {\hbox \s!direction\directionrighttoleft}
+\permanent\protected\edef\reversevbox  {\vbox \s!direction\directionrighttoleft}
+\permanent\protected\edef\reversevtop  {\vtop \s!direction\directionrighttoleft}
+\permanent\protected\edef\reversehpack {\hpack\s!direction\directionrighttoleft}
+\permanent\protected\edef\reversevpack {\vpack\s!direction\directionrighttoleft}
+\permanent\protected\edef\reversetpack {\tpack\s!direction\directionrighttoleft}
 
 \def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 

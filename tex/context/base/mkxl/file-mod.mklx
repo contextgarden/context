@@ -147,7 +147,7 @@
 \permanent\def\moduleparameter#name#parameter% should have been \namedmoduleparameter
   {\begincsname\??module#name:#parameter\endcsname}
 
-\letvalue\??module\empty % so we default to empty as with all parameters
+\letcsname\??module\endcsname\empty % so we default to empty as with all parameters
 
 \permanent\def\currentmoduleparameter{\moduleparameter\currentmodule} % no need for inlining
 

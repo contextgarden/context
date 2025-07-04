@@ -92,6 +92,7 @@ extern int  luaopen_xdecimal    (lua_State *L);
 extern int  luaopen_xmath       (lua_State *L);
 extern int  luaopen_xzip        (lua_State *L);
 extern int  luaopen_serial      (lua_State *L);
+extern int  luaopen_vector      (lua_State *L);
 
 extern int  luaextend_io        (lua_State *L);
 extern int  luaextend_os        (lua_State *L);
@@ -182,6 +183,10 @@ extern int  luaextend_xcomplex  (lua_State *L);
     lua_pushstring(L, s); \
     lua_rawseti(L, -2, i);
 
+# define lua_push_boolean_at_index(L,i,x) \
+    lua_pushboolean(L, (x)); \
+    lua_rawseti(L, -2, i);
+
 /* why not lua_push_key(k); lua_rawseti(L, -2, i); */
 
 # define lua_push_key_at_index(L,k,i) \
@@ -269,6 +274,14 @@ extern int  luaextend_xcomplex  (lua_State *L);
 /*tex Maybe used in |lmtstrlibext| */
 
 # define STRING_BUFFER_INSTANCE "stringbuffer.instance"
+
+/* Various */
+
+# define VECTOR_METATABLE_INSTANCE  "vector"
+# define MESH_METATABLE_INSTANCE    "mesh"
+# define DECIMAL_METATABLE_INSTANCE "decimal"
+# define COMPLEX_METATABLE_INSTANCE "complex"
+# define POSIT_METATABLE_INSTANCE   "posit"
 
 /*tex
     There are some more but for now we have no reason to alias them for performance reasons, so
@@ -1524,6 +1537,12 @@ make_lua_key_alias(L, pdfe_array_instance,      PDFE_METATABLE_ARRAY);\
 make_lua_key_alias(L, pdfe_stream_instance,     PDFE_METATABLE_STREAM);\
 make_lua_key_alias(L, pdfe_reference_instance,  PDFE_METATABLE_REFERENCE);\
 /* */ \
+make_lua_key_alias(L, vector_instance,          VECTOR_METATABLE_INSTANCE);\
+make_lua_key_alias(L, mesh_instance,            MESH_METATABLE_INSTANCE);\
+make_lua_key_alias(L, decimal_instance,         DECIMAL_METATABLE_INSTANCE);\
+make_lua_key_alias(L, complex_instance,         COMPLEX_METATABLE_INSTANCE);\
+make_lua_key_alias(L, posit_instance,           POSIT_METATABLE_INSTANCE);\
+/* */ \
 make_lua_key_alias(L, file_handle_instance,     LUA_FILEHANDLE);\
 /* */ \
 make_lua_key_alias(L, string_buffer_instance,   STRING_BUFFER_INSTANCE);\
@@ -1587,6 +1606,7 @@ make_lua_key(L, prescript);\
 make_lua_key(L, primary);\
 make_lua_key(L, print_line);\
 make_lua_key(L, random_seed);\
+make_lua_key(L, rectangle);\
 /*          (L, reader); */\
 make_lua_key(L, restore);\
 make_lua_key(L, right_curl);\
@@ -1633,6 +1653,9 @@ make_lua_key(L, warning);\
 make_lua_key(L, writer);\
 make_lua_key(L, x_coord);\
 make_lua_key(L, y_coord);\
+/* */\
+make_lua_key(L, vector);\
+make_lua_key(L, mesh);\
 /* */\
 make_lua_key_alias(L, mplib_instance, MP_METATABLE_INSTANCE);\
 make_lua_key_alias(L, mplib_figure,   MP_METATABLE_FIGURE);\

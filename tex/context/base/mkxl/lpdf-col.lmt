@@ -62,6 +62,7 @@ local c_transparency          = pdfconstant("Transparency")
 local f_gray   = formatters["%.3N g %.3N G"]
 local f_rgb    = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
 local f_cmyk   = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
+
 local f_spot   = formatters["/%s cs /%s CS %s SCN %s scn"]
 local f_tr     = formatters["Tr%s"]
 local f_cm     = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]

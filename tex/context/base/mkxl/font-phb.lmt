@@ -91,6 +91,8 @@ local setlink       = nuts.setlink
 local setoffsets    = nuts.setoffsets
 local getwidth      = nuts.getwidth
 local setwidth      = nuts.setwidth
+local getxyscales   = nuts.getxyscales
+local addxymargins  = nuts.addxymargins
 
 local copy_node     = nuts.copy
 local find_tail     = nuts.tail
@@ -294,6 +296,13 @@ local inandout  do
     end
 
 end
+
+local useadvance = false
+
+directives.register("fonts.injections.method", function(v)
+    -- experimental until i have time or motivation to test
+    useadvance = v == "advance"
+end)
 
 local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailing)
     local data = initialized[font]
@@ -504,19 +513,27 @@ local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailin
                 right = x_offset * factor
             end
         end
-        if copied or dx ~= 0 or dy ~= 0 then
-            setoffsets(current,dx,dy)
-        end
-        if left ~= 0 then
-            setlink(prev,new_kern(left),current) -- insertbefore
-            if current == head then
-                head = prev
+        local xscale, yscale = getxyscales(current)
+        if useadvance then
+            if left ~= 0 or right ~= 0 then
+                addxymargins(current,-left,-right,0) -- also scales
+            end
+        else
+            -- we stay within the concept and keep both kerns instead of
+            -- turning one into an offset setting
+            if left ~= 0 then
+                setlink(prev,new_kern(xscale*left),current) -- insertbefore
+                if current == head then
+                    head = prev
+                end
+            end
+            if right ~= 0 then
+                setlink(current,new_kern(xscale*right),next)
+                current = kern
             end
         end
-        if right ~= 0 then
-            local kern = new_kern(right)
-            setlink(current,kern,next)
-            current = kern
+        if copied or dx ~= 0 or dy ~= 0 then
+            setoffsets(current,xscale*dx,yscale*dy)
         end
         if trace_details then
             if dy ~= 0 or dx ~= 0 or left ~= 0 or right ~= 0 then
@@ -552,7 +569,7 @@ local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailin
                 local prev = getprev(start)
                 if getid(prev) == glue_code then
                     local dx = delta * factor
-                    setwidth(prev,getwidth(prev) + dx)
+                    setwidth(prev,getwidth(prev) + dx * xscale)
                     if trace_details then
                         report("compensating leading glue by %p due to codepoint %U",dx,unicode)
                     end
@@ -573,7 +590,7 @@ local function harfbuzz(head,font,dynamic,rlmode,start,stop,text,leading,trailin
                 local next = getnext(stop)
                 if getid(next) == glue_code then
                     local dx = delta * factor
-                    setwidth(next,getwidth(next) + dx)
+                    setwidth(next,getwidth(next) + dx * xscale)
                     if trace_details then
                         report("compensating trailing glue by %p due to codepoint %U",dx,unicode)
                     end

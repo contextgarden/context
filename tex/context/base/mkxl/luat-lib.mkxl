@@ -22,6 +22,7 @@
 \registerctxluafile{util-prs}{autosuffix}
 \registerctxluafile{util-fmt}{}
 \registerctxluafile{util-dim}{}
+\registerctxluafile{util-vec}{autosuffix}
 
 \registerctxluafile{trac-set}{autosuffix}
 \registerctxluafile{luat-log}{autosuffix}

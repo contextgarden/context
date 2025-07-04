@@ -92,6 +92,10 @@ mp.setbytemap     = function(...) return setbytemap    (currentmpx,...) end
 mp.fillbytemap    = function(...) return fillbytemap   (currentmpx,...) end
 mp.getbytemapdata = function(...) return getbytemapdata(currentmpx,...) end
 
+local getlastaddtype = mplib.getlastaddtype
+
+mp.getlastaddtype = function(...) return getlastaddtype(currentmpx,...) end
+
 local injectpath      = mplib.injectpath
 local injectnumeric   = mplib.injectnumeric
 local injectpair      = mplib.injectpair
@@ -102,6 +106,9 @@ local injectcolor     = mplib.injectcolor
 local injectcmykcolor = mplib.injectcmykcolor
 local injecttransform = mplib.injecttransform
 local injectwhatever  = mplib.injectwhatever
+local injectvector    = mplib.injectvector
+local injectvectors   = mplib.injectvectors
+----- injecttokens    = mplib.injecttokens
 
 ------.path      = function(t,cycle,curled)  if trace then reporti("path")      end return injectpath     (currentmpx,t,cycle,curled)  end
 inject.numeric   = function(n)               if trace then reporti("numeric")   end return injectnumeric  (currentmpx,n)               end
@@ -113,6 +120,9 @@ inject.color     = function(r,g,b)           if trace then reporti("color")     
 inject.cmykcolor = function(c,m,y,k)         if trace then reporti("cmykcolor") end return injectcmykcolor(currentmpx,c,m,y,k)         end
 inject.transform = function(x,y,xx,xy,yx,yy) if trace then reporti("transform") end return injecttransform(currentmpx,x,y,xx,xy,yx,yy) end
 inject.whatever  = function(...)             if trace then reporti("whatever")  end return injectwhatever (currentmpx,...)             end
+inject.vector    = function(v,s)             if trace then reporti("vector")    end return injectvector   (currentmpx,v,s)             end
+inject.vectors   = function(v,t,s)           if trace then reporti("vectors")   end return injectvectors  (currentmpx,v,t,s)           end
+------.tokens    = function(s)               if trace then reporti("tokens")    end return injecttokens   (currentmpx,s)               end
 
 inject.triplet    = inject.color
 inject.quadruplet = inject.cmykcolor
@@ -225,6 +235,8 @@ function mp.autoinject(m)
         injectstring(currentmpx,m)
     elseif t == "boolean" then
         injectboolean(currentmpx,m)
+    elseif t == "vector" then
+        injectvector(currentmpx,m)
     end
 end
 

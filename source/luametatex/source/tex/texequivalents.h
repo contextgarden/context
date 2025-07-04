@@ -442,6 +442,7 @@ typedef enum page_property_codes {
     insert_line_depth_code,
     insert_stretch_code,
     insert_shrink_code,
+    insert_direction_code,
     /*tex These can't be set: */
     page_stretch_code,
     page_fistretch_code,

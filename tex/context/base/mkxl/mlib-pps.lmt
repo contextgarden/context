@@ -44,9 +44,6 @@ local sortedhash           = table.sortedhash
 
 local new_hlist            = nodes.pool.hlist
 
-local starttiming          = statistics.starttiming
-local stoptiming           = statistics.stoptiming
-
 local trace_runs           = false  trackers.register("metapost.runs",     function(v) trace_runs     = v end)
 local trace_textexts       = false  trackers.register("metapost.textexts", function(v) trace_textexts = v end)
 local trace_scripts        = false  trackers.register("metapost.scripts",  function(v) trace_scripts  = v end)
@@ -105,17 +102,16 @@ function metapost.setoutercolor(mode,colormodel,colorattribute,transparencyattri
 end
 
 -- todo: get this from the lpdf module
+-- todo: we need 4 digits when we have 1/254 1/255
 
 local f_f     = formatters["%.6N"]
-local f_f3    = formatters["%.3N"]
+local f_ff    = formatters["%.3N"]
+local f_cm    = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
+local f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
 local f_gray  = formatters["%.3N g %.3N G"]
 local f_rgb   = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
 local f_cmyk  = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
-local f_cm    = formatters["%.6N %.6N %.6N %.6N %.6N %.6N cm"]
-local f_cm_b  = formatters["q %.6N %.6N %.6N %.6N %.6N %.6N cm"]
-
 local f_scn   = formatters["%.3N"]
-
 local f_shade = formatters["MpSh%s"]
 local f_spot  = formatters["/%s cs /%s CS %s SCN %s scn"]
 
@@ -1193,7 +1189,6 @@ end
 
 -- graphics (we use the given index because pictures can be reused)
 
-
 local gt_reset, gt_process do
 
     local graphics = { }
@@ -1476,10 +1471,51 @@ local function fg_process(object,prescript,before,after)
     end
 end
 
+-- meshes
+
+local function ms_process(object,prescript,before,after)
+    local ms_name = prescript.ms_name
+    if ms_name then
+        local sx, rx, ry, sy, tx, ty = cm(object)
+-- print(sx, rx, ry, sy, tx, ty)
+        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = function()
+            context.MPLIBmesh(
+                ms_name,
+                prescript.ms_kind or "both",
+                prescript.ms_llx  or "0",
+                prescript.ms_lly  or "0",
+                prescript.ms_urx  or "0",
+                prescript.ms_ury  or "0",
+f_f(sx), -- bah ... %s no longer checks
+f_f(rx), -- bah ... %s no longer checks
+f_f(ry), -- bah ... %s no longer checks
+f_f(sy), -- bah ... %s no longer checks
+f_f(tx), -- bah ... %s no longer checks
+f_f(ty)  -- bah ... %s no longer checks
+            )
+        end
+        before[#before+1] = s_cm_e
+        object.path = false
+        object.grouped = true
+    end
+end
+
+local function ms_process(object,prescript,before,after)
+    local ms_name = prescript.ms_name
+    if ms_name then
+        before[#before+1] = f_cm_b(cm(object)) -- beware: does not use the cm stack
+        before[#before+1] = metapost.mesh(ms_name,prescript.ms_kind)
+        before[#before+1] = s_cm_e
+        object.path    = false
+        object.grouped = true
+    end
+end
+
 -- color and transparency
 
 local value = Cs ( (
-    (Carg(1) * C((1-P(","))^1)) / function(a,b) return f_f3(a * tonumber(b)) end
+    (Carg(1) * C((1-P(","))^1)) / function(a,b) return f_ff(a * tonumber(b)) end
   + P(","))^1
 )
 
@@ -1847,6 +1883,7 @@ installplugin { name = "bitmap",        process = bm_process  }
 installplugin { name = "box",           process = bx_process  }
 installplugin { name = "position",      process = ps_process  }
 installplugin { name = "figure",        process = fg_process  }
+installplugin { name = "mesh",          process = ms_process  }
 installplugin { name = "layer",         process = la_process  }
 installplugin { name = "transparency",  process = tr_process  }
 installplugin { name = "graphicstates", process = gs_process  }

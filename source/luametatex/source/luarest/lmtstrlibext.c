@@ -555,7 +555,7 @@ static int strlib_format_f6(lua_State *L)
                 if (s[l - 1] == '.') {
                     break;
                 } else if (s[l] == '0') {
-                    s[l] = '\0'; /* redundant */
+                 // s[l] = '\0'; /* redundant */
                     --i;
                 } else {
                     break;

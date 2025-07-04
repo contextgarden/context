@@ -40,6 +40,12 @@
 
 */
 
+/* 
+    We don't do much overflow checking here, so we can wrap around. THis can actually be used in 
+    some cases to collect more than normally possible and split off an amount that is okay. 
+
+*/
+
 page_builder_state_info lmt_page_builder_state = {
     .tail             = null,
     .contents         = 0,
@@ -848,7 +854,8 @@ static inline halfword tex_aux_used_penalty(halfword p)
 
 static void tex_process_mvl(halfword context, halfword boundary)
 {
-    if (! lmt_page_builder_state.output_active) {
+    if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
+ // if (! lmt_page_builder_state.output_active) {
         lmt_buildpage_callback(context, boundary);
     }
     if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {

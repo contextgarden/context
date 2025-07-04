@@ -1723,8 +1723,10 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     local actions     = driver.actions
     local flushers    = driver.flushers
 
-    initialize        = actions.initialize
-    finalize          = actions.finalize
+    initialize        = actions.initialize -- called in convert so timed there
+    finalize          = actions.finalize   -- called in convert so timed there
+ -- initialize        = drivers.initialize
+ -- finalize          = drivers.finalize
 
     updatefontstate   = flushers.updatefontstate
 

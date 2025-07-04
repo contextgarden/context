@@ -2139,7 +2139,7 @@ do
         return features
     end
 
-    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
         setposition(f,lookupoffset)
         local noflookups = readushort(f)
         local lookups    = readcardinaltable(f,noflookups,ushort)
@@ -2156,13 +2156,14 @@ do
                 subtables[j] = offset + readushort(f) -- we can probably put lookupoffset here
             end
             -- which one wins?
-            local markclass = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset
-            local markset   = rshift(flagbits,8)
-            if markclass then
-                markclass = readushort(f) -- + 1
-            end
-            if markset > 0 then
-                markclass = nofmarkclasses + markset
+            local markclass = rshift(flagbits,8)
+            if markclass == 0 then
+                local markset = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset	--KE
+                if markset then
+                    markclass = readushort(f) + 1
+                else
+                    markclass = false
+                end
             end
             lookups[lookupid] = {
                 type      = lookuptype,
@@ -2564,10 +2565,7 @@ do
                 return
             end
             --
-            local markclasses    = fontdata.markclasses
-            local marksets       = fontdata.marksets
-            local nofmarkclasses = (markclasses and #markclasses or 0) - (marksets and #marksets or 0)
-            local lookups        = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
+            local lookups = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
             --
             if lookups then
                 resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
@@ -3157,14 +3155,14 @@ function readers.colr(f,fontdata,specification)
     local tableoffset = gotodatatable(f,fontdata,"colr",specification.glyphs)
     if tableoffset then
         local version = readushort(f)
-		if version == 0 then
-			-- we're okay
-		elseif version == 1 then
-			report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
-		else
-			report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
-			return
-		end
+        if version == 0 then
+         -- we're okay
+        elseif version == 1 then
+            report("table version %a of %a is %s supported for font %s",version,"colr","partially",fontdata.filename)
+        else
+            report("table version %a of %a is %s supported for font %s",version,"colr","not",fontdata.filename)
+            return
+        end
         if not fontdata.tables.cpal then
             report("color table %a in font %a has no mandate %a table","colr",fontdata.filename,"cpal")
             fontdata.colorpalettes = { }

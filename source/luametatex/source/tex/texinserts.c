@@ -225,6 +225,12 @@ scaled tex_get_insert_width(halfword i)
     return b ? box_width(b) : 0;
 }
 
+halfword tex_get_insert_direction(halfword i)
+{
+    halfword b = tex_aux_insert_box(i);
+    return tex_get_direction_from_list(b ? box_list(b) : null);
+}
+
 halfword tex_get_insert_content(halfword i)
 {
     return tex_aux_insert_box(i);
@@ -386,6 +392,15 @@ void tex_set_insert_shrink(halfword i, scaled v) {
     if (lmt_insert_state.mode == class_insert_mode && tex_valid_insert_id(i)) {
         lmt_insert_state.inserts[i].shrink = v;
     }
+}
+
+void tex_set_insert_direction(halfword i, scaled v) 
+{
+    (void) i;
+    (void) v;
+    /*tex 
+        This is a dummy, at least till I find a reason and logic for it. 
+    */
 }
 
 void tex_set_insert_storage(halfword i, halfword v)

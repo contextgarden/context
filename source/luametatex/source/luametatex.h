@@ -22,7 +22,7 @@
 
     After half a decade, where in the meantime Taco also had turned MetaPost into a library, we
     had a version that had proved itself well. The following years, with Taco having less time
-    available, I started loking at the code. Some more got added to the Lua interfaces. Math got
+    available, I started looking at the code. Some more got added to the Lua interfaces. Math got
     split code paths and some new primitives were introduced. Luigi started taking care of managing
     the code base so that I could cross compile for \MSWINDOWS. He also deals with the libraries
     that were used and integration in \TEXLIVE\ and maintains the (by now stable) \METAPOST\ code
@@ -54,9 +54,9 @@
     Over the 15 years that it took to go from the first version of \LUATEX\ in 2005 to the first
     release of \LUAMETATEX\ in 2020 (although intermediate versions have always been good enough
     to be used in production with \CONTEXT) I've written numerous articles in user group journals
-    as well as several presentations each year on progress and features. There are also wrapups
+    as well as several presentations each year on progress and features. There are also wrap-ups
     available in the \CONTEXT\ distribution that shed some light on how the developments
-    progress(ed). In the end it's all a work of many. There are no commercial interrests and
+    progress(ed). In the end it's all a work of many. There are no commercial interests and
     everything is done out of love for TeX and in free time, so take that into account when you
     bark about code or documentation.
 
@@ -69,7 +69,7 @@
     engine takes the 200 range. Revisions range from 00 upto 99 and the dates \unknown\ depend on
     the mood. The |2.05.00| version with the development id |20200229| was more or less the first
     official version, in the sense that most of the things on my initial todo list were done. It's
-    a kind of virtual date as it happens to be a leapyear. As with LuaTeX the .10 version will be
+    a kind of virtual date as it happens to be a leap year. As with LuaTeX the .10 version will be
     the first 'stable' one, released somewhere around the ConTeXt 2021 meeting.
 
     2.08.18 : around TeXLive 2021 code freeze (so a bit of a reference version)
@@ -80,14 +80,14 @@
     2.10.05 : late January 2023 
     2.10.07 : around TeXLive 2023
     2.10.08 : close to BachoTeX 2023 
-    2.10.09 : evolved in May/June 2023 (math & text linebreak experiments) 
+    2.10.09 : evolved in May/June 2023 (math & text line break experiments) 
     2.10.10 : around the ctx 2023 meeting 
     2.10.11 : first half of 2024
     2.10.12 : around the ctx 2024 meeting
     2.11.07 : just after texlive 2025 code freeze
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
-    is what comes with \CONTEXT\ and that long term support and stabilty is guaranteed and that no 
+    is what comes with \CONTEXT\ and that long term support and stability is guaranteed and that no 
     feature creep or messing up happens. We'll see. 
 
     Hans Hagen
@@ -109,7 +109,7 @@
 # define luametatex_release          07
 # define luametatex_version_string   "2.11.07"
 # define luametatex_version_number   211.7
-# define luametatex_development_id   20250609
+# define luametatex_development_id   20250701
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -354,6 +354,7 @@ extern version_state_info lmt_version_state;
 # include "lua/lmtluaclib.h"
 # include "lua/lmttexlib.h"
 # include "lua/lmtenginelib.h"
+# include "luarest/lmtvectorlib.h"
 
 /*tex
 

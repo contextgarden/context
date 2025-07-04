@@ -45,6 +45,7 @@
 \registerctxluafile{mlib-svg}{autosuffix}
 \registerctxluafile{mlib-fnt}{autosuffix} % outline fun
 \registerctxluafile{mlib-ptr}{autosuffix}
+\registerctxluafile{mlib-msh}{autosuffix}
 
 \unprotect
 

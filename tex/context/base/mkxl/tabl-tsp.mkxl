@@ -270,7 +270,8 @@
    \setbox\scratchbox\vbox{\expand\t_split_inbetween}%
    \d_split_inbetween_height\htdp\scratchbox
    \c_tabl_split_done\conditionalfalse
-   \localcontrolledrepeating
+%    \localcontrolledrepeating
+   \localcontrolledendless
      {\tabl_split_loop_body}%
    \global\usesamefloatnumber\conditionalfalse % new, prevent next increment
    \global\splitfloatfirstdone\conditionalfalse} % we can use this one for tests
@@ -328,7 +329,8 @@
      \global\tabl_split_forced_page\conditionalfalse
    \fi
    % we get a lot of splittopskips here .. todo: ignore when zero
-   \localcontrolledrepeating
+%    \localcontrolledrepeating
+   \localcontrolledendless
      {\setbox\scratchbox\vsplit\b_split_content to \onepoint % \lineheight
       \setbox\scratchbox\vbox % \vpack
         {\unvbox\scratchbox
@@ -421,7 +423,8 @@
    \testpagesync % new, sync, but still tricky
      [\the\c_split_minimum_free_lines]
      [\dimexpr\d_split_minimum_free_space+\extrasplitfloatlines\lineheight\relax]%
-   \localcontrolledrepeating
+%    \localcontrolledrepeating
+   \localcontrolledendless
      {\tabl_split_direct_loop_body}%
    \global\usesamefloatnumber\conditionalfalse   % new, prevent next increment
    \global\splitfloatfirstdone\conditionalfalse} % we can use this one for tests

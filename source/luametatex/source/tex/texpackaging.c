@@ -1127,10 +1127,10 @@ void tex_repack(halfword p, scaled w, int m)
         halfword tmp; 
         switch (node_type(p)) { 
             case hlist_node:
-                tmp = tex_hpack(box_list(p), w, m, box_dir(p), holding_none_option, box_limit_none);
+                tmp = tex_hpack(box_list(p), w, m, box_direction(p), holding_none_option, box_limit_none);
                 break;
             case vlist_node: 
-                tmp = tex_vpack(box_list(p), w, m > packing_additional ? packing_additional : m, max_dimension, box_dir(p), holding_none_option, NULL);
+                tmp = tex_vpack(box_list(p), w, m > packing_additional ? packing_additional : m, max_dimension, box_direction(p), holding_none_option, NULL);
                 break;
             default: 
                 return;
@@ -1542,7 +1542,7 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
     int has_limit = box_limit_mode_hlist ? 1 : (limit == box_limit_line && box_limit_mode_line ? 1 : -1);
     /*tex the box node that will be returned */
     halfword result = tex_new_node(hlist_node, unknown_list);
-    box_dir(result) = hpack_dir;
+    box_direction(result) = hpack_dir;
     lmt_packaging_state.last_badness = 0;
     lmt_packaging_state.last_overshoot = 0;
     switch(method) { 
@@ -2683,7 +2683,7 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
     halfword box = tex_new_node(vlist_node, unknown_list);
     int has_limit = box_limit_mode_vlist ? 1 : -1;
     (void) retain; /* todo */
-    box_dir(box) = pack_direction;
+    box_direction(box) = pack_direction;
     box_shift_amount(box) = 0;
     box_list(box) = p;
     lmt_packaging_state.last_badness = 0;
@@ -4017,7 +4017,7 @@ halfword tex_vsplit(halfword n, scaled h, int m)
         */
         halfword p = box_list(v);
         /*tex The direction of the box to be split, obsolete! */
-        int vdir = box_dir(v);
+        int vdir = box_direction(v);
         if (p == q) {
             box_list(v) = null;
         } else {

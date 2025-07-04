@@ -383,11 +383,28 @@ local roman = {
     { [0] = '', 'C', 'CC', 'CCC', 'CD', 'D', 'DC', 'DCC', 'DCCC', 'CM' },
 }
 
-local function toroman(n)
+-- local function toroman(n)
+--     if n >= 4000 then
+--         return toroman(floor(n/1000)) .. " " .. toroman(n%1000)
+--     else
+--         return rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] .. roman[2][floor((n%100)/10)] .. roman[1][floor((n%10)/1)]
+--     end
+-- end
+
+-- context(toroman(4002))      -- space separates thousands
+-- context(toroman(4002,true)) -- overstrikes thousands
+
+local function toroman(n,neat)
     if n >= 4000 then
-        return toroman(floor(n/1000)) .. " " .. toroman(n%1000)
+        return
+            (neat and ("M\\overbar{" .. toroman(n//1000) .. "}") or (toroman(n//1000) .. " "))
+         .. toroman(n%1000)
     else
-        return rep("M",floor(n/1000)) .. roman[3][floor((n%1000)/100)] .. roman[2][floor((n%100)/10)] .. roman[1][floor((n%10)/1)]
+        return
+            rep("M",  n      //1000)
+         .. roman[3][(n%1000)// 100]
+         .. roman[2][(n% 100)//  10]
+         .. roman[1][(n%  10)//   1]
     end
 end
 

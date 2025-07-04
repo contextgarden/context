@@ -75,7 +75,10 @@
 
 \pushoverloadmode
 
-\protected\def~{\nobreakspace}
+\permanent\protected\def\digitspace{{\nospaces\plussix\space}}
+
+\permanent\protected\def~{\nobreakspace}
+%permanent\letcharcode\tildeasciicode\nobreakspace
 
 \popoverloadmode
 

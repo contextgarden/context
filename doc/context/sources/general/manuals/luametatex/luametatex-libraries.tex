@@ -2483,6 +2483,651 @@ alien). Also see \typ {libs-imp-foreign.mkxl}.}
 
 \stopsubsection
 
+\usemodule[matrix]
+
+\startsubsection[title=Vector]
+
+% This chapter was written with Archive's Voleuses film music in the background. I
+% couldn't find the lyrics of \quote {A world that can exist} yet. And one day I
+% need to see that movie.
+
+This module has been added for the sake of \METAPOST\ graphics. Usually we talk
+in terms of matrices. The code evolved from a module in \CONTEXT. There are some
+helpers in the \METAPOST\ library that are \quote {vector aware}. We give some
+examples of usage and render the matrices involved.
+
+% use lua buffers
+
+\startbuffer
+\startluacode
+document.v44 = vector.new {
+    { 11, 12, 13, 14 },
+    { 21, 22, 23, 24 },
+    { 31, 32, 33, 34 },
+    { 41, 42, 43, 44 }
+}
+
+document.v14 = vector.new {
+    { 1, 2, 3, 4 }
+}
+
+document.v41 = vector.new {
+    { 1 }, { 2 }, { 3 }, { 4 }
+}
+
+document.v22 = vector.new {
+    { 1.1 , 2.2 },
+    { 8.8 , 9.9 }
+}
+
+document.v33 = vector.new {
+    { 1 , 2, 0.5 },
+    { 3 , 4, 1.0 },
+    { 5 , 6, 2.0 }
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+These matrices have different dimensions (rows and columns):
+
+\startlinecorrection
+\startcombination[nx=5,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v44)}} {\hbox{\tt 4 × 4}}
+    {\ctxlua{vector.typeset(document.v14)}} {\hbox{\tt 1 × 4}}
+    {\ctxlua{vector.typeset(document.v41)}} {\hbox{\tt 4 × 1}}
+    {\ctxlua{vector.typeset(document.v22)}} {\hbox{\tt 2 × 2}}
+    {\ctxlua{vector.typeset(document.v33)}} {\hbox{\tt 3 × 3}}
+\stopcombination
+\stoplinecorrection
+
+If performance is important, you can avoid the tables and specify the dimensions
+with (optionally) a series of values.
+
+\starttyping
+local a = vector.new(2,3, 1,2,3, 4,5,6)
+local b = vector.new(3,2, 1,2, 3,4, 5,6)
+local a = vector.new(2,2, 1,2 ,3,4)
+local b = vector.new(2,1, 5,6)
+\stoptyping
+
+A vector is a user data object that supports addition, subtraction,
+multiplication and division. Here we show multiplication:
+
+\startbuffer
+\startluacode
+document.vdemo1 = 4 * document.v41
+document.vdemo2 = document.v41 * 4
+document.vdemo3 = document.v44 * document.v41
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+When two matrices are multiplied, you get a matrix product, with numbers the
+elements are multiplied.
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v44   )}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\tt 4 ×}}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\tt × 4}}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\tt ×  }}
+\stopcombination
+\stoplinecorrection
+
+In addition to \type {+} (\type {add}), \type {-} (\type {sub}), \type {*} (\type
+{mul}) and \type {/} (\type {div}) you can use the unary minus \type {-} (\type
+{negate}) and test for equality with \type {=} (\type {equal}). The concat
+operator \type {..} (\type {concat}) is also supported.
+
+The functions applied to a vector return a new vector. In most cases they also
+accept a table and then convert that on the fly to a vector. The \type {copy}
+function can be used to make a copy but is not really needed.
+
+\startbuffer
+\startluacode
+document.v1 = vector.new { { 1, 2 }, { 3, 4 } }
+document.v2 = document.v1
+document.v3 = vector.copy(document.v1)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Here the two assignments to \type {v2} and \type {v3} are apparently
+equivalent but this is what we really have:
+
+\startlines
+\cldcontext{tostring(document.v1)}
+\cldcontext{tostring(document.v2)}
+\cldcontext{tostring(document.v3)}
+\stoplines
+
+\startbuffer
+\startluacode
+vector.set  (document.v1, 4, 100)
+vector.set  (document.v2, 4, 200)
+vector.set  (document.v3, 4, 300)
+vector.setrc(document.v1, 1, 1, 400)
+vector.setrc(document.v2, 1, 1, 500)
+vector.setrc(document.v3, 1, 1, 600)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+The copy actually is a copy while the assignment is an alias, as with tables. The
+only time that this shows is when we do in place assignments as here.
+
+\startlinecorrection
+\startcombination[nx=2,ny=3,distance=2em]
+  {\ctxlua{vector.typeset(document.v1)}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
+  {\ctxlua{vector.typeset(document.v2)}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
+  {\ctxlua{vector.typeset(document.v3)}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
+\stopcombination
+\stoplinecorrection
+
+There are also \type {get} and \type {getrc}. The reason why we have \type {set}
+and \type {get} is that they are equivalent to the direct accessors (using \type
+{[]}).
+
+\startbuffer
+\startluacode
+document.v1[3] = 2 * document.v1[3]
+document.v2[3] = 2 * document.v2[3]
+document.v3[3] = 2 * document.v3[3]
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Watch how we multiply the shared vector object twice:
+
+\startlinecorrection % idem as above
+\startcombination[nx=2,ny=3,distance=2em]
+  {\ctxlua{vector.typeset(document.v1)}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
+  {\ctxlua{vector.typeset(document.v2)}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
+  {\ctxlua{vector.typeset(document.v3)}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.round  (document.v22)
+document.vdemo2 = vector.floor  (document.v22)
+document.vdemo3 = vector.ceiling(document.v22)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+There are various operations on vectors and you get back a new one; we don't
+replace in the passed vectors.
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,distance=2em]
+  {\ctxlua{vector.typeset(document.v22   )}} {}
+  {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\type {round}}}
+  {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\type {floor}}}
+  {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\type {ceiling}}}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.identity(3)
+document.vdemo2 = vector.identity(4)
+document.vdemo3 = vector.identity(2)
+\stopluacode
+\stopbuffer
+
+The identity matrix can be created with:
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,distance=2em]
+  {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\type {3 × 3}}}
+  {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\type {4 × 4}}}
+  {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\type {2 × 2}}}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.transpose(document.v44)
+document.vdemo2 = vector.swap(document.v41)
+document.vdemo3 = vector.swap(document.v14)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Transposing has a simple companion that makes a vector with a single row into one
+with a single column and vise versa.
+
+\startlinecorrection
+\startcombination[nx=6,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v44   )}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\tt transpose}}
+    {\ctxlua{vector.typeset(document.v41   )}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\tt swap}}
+    {\ctxlua{vector.typeset(document.v14   )}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\tt swap}}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.inverse   (document.v33)
+document.vdemo2 = vector.rowechelon(document.v33,true)
+document.vdemo3 = vector.rowechelon(document.v33)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=5,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v33   )}}              {\hbox {v33}}
+    {\ctxlua{vector.typeset(document.vdemo1)}}              {\hbox {inverse}}
+    {\ctxlua{vector.typeset(document.vdemo1*document.v33)}} {\hbox {verified}}
+    {\ctxlua{vector.typeset(document.vdemo2)}}              {\hbox {row echelon}}
+    {\ctxlua{vector.typeset(document.vdemo3)}}              {\hbox {reduced echelon}}
+\stopcombination
+\stoplinecorrection
+
+The first one normalize each column vector in a matrix. The other one homogenize,
+dividing every entry in a row by the last element in the row, given that it is
+non-zero.
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.normalize (document.v33)
+document.vdemo2 = vector.homogenize(document.v33)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v33   )}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+\stopcombination
+\stoplinecorrection
+
+Internally we use a criterium for determining if we have a zero entry:
+\cldcontext {vector.getepsilon()} that can be queried by \type {getepsilon}. The
+\type {truncate} function will reduce numbers outside this interval to zero. The
+\type {iszero} function takes a number and returns \type {true} when its within
+these bounds.
+
+\startbuffer
+\startluacode
+document.vdemo0 = vector.new {
+    { 0.00000005, 0.001 },
+    { 0.001, 0.00000001 },
+}
+
+document.vdemo1 = vector.truncate(document.vdemo0)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=2,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo0, { template = 8 } )}} {}
+    {\ctxlua{vector.typeset(document.vdemo1, { template = 3 } )}} {}
+\stopcombination
+\stoplinecorrection
+
+The \type {determinant} function return a number so we don't show this here but
+we do mention the various products. These are optimized for the dimensions.
+
+We feed \typ {inner} with two vectors (row or column) and get the inner product
+of them in return.
+
+\startbuffer
+\startluacode
+document.num0 = vector.inner(document.v41,document.v41)
+document.num1 = vector.inner(document.v14,document.v14)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=2,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.num0)}} {}
+    {\ctxlua{vector.typeset(document.num1)}} {}
+\stopcombination
+\stoplinecorrection
+
+The \typ {crossproduct} needs two 3-vectors, and returns one 3-vector. They can
+either be row or column vectors, and we get the same type in return.
+
+\startbuffer
+\startluacode
+document.cvec0 = vector.crossproduct(vector.new {{1,2,3}},     vector.new {{4,5,6}})
+document.cvec1 = vector.crossproduct(vector.new {{1},{2},{3}}, vector.new {{4},{5},{6}})
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=2,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.cvec0)}} {}
+    {\ctxlua{vector.typeset(document.cvec1)}} {}
+\stopcombination
+\stoplinecorrection
+
+% \startlines \em
+% MS todo: inner
+% MS todo: product
+% MS todo: crossproduct
+% \stoplines
+
+\startbuffer
+\startluacode
+document.vdemo0 = vector.new {
+    { 11, 12, 13, 14 },
+    { 21, 22, 23, 24 },
+    { 31, 32, 33, 34 },
+    { 41, 42, 43, 44 },
+}
+
+document.vdemo1 = vector.slice(document.vdemo0,2,2,1,1)
+document.vdemo2 = vector.slice(document.vdemo0,2,2,2,2)
+document.vdemo3 = vector.slice(document.vdemo0,2,2,3,3)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo0)}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.delete(document.vdemo0,2,2)
+document.vdemo2 = vector.delete(document.vdemo0,2,1)
+document.vdemo3 = vector.delete(document.vdemo0,2,2,true)
+document.vdemo4 = vector.delete(document.vdemo0,2,1,true)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=7,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo0)}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.remove(document.vdemo0,2,2)
+document.vdemo2 = vector.remove(document.vdemo0,2,1)
+document.vdemo3 = vector.remove(document.vdemo0,2,2,true)
+document.vdemo4 = vector.remove(document.vdemo0,2,1,true)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=5,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo0)}} {}
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo0 = vector.new {
+    { 11, 12, 13, 14 },
+    { 21, 22, 23, 24 },
+    { 31, 32, 33, 34 },
+    { 41, 42, 43, 44 },
+}
+
+document.vdemo0r = vector.new {
+    { 101, 201, 301, 401 },
+    { 102, 202, 302, 402 },
+}
+
+document.vdemo0c = vector.new {
+    { 101, 201 },
+    { 102, 202 },
+    { 103, 203 },
+    { 104, 204 },
+}
+
+document.vdemo0rc = vector.new {
+    { 101, 201 },
+    { 102, 202 },
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo0)}}   {}
+    {\ctxlua{vector.typeset(document.vdemo0r)}}  {}
+    {\ctxlua{vector.typeset(document.vdemo0c)}}  {}
+    {\ctxlua{vector.typeset(document.vdemo0rc)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.insert(document.vdemo0,document.vdemo0c,0)
+document.vdemo2 = vector.insert(document.vdemo0,document.vdemo0c,1)
+document.vdemo3 = vector.insert(document.vdemo0,document.vdemo0c,2)
+document.vdemo4 = vector.insert(document.vdemo0,document.vdemo0c,3)
+document.vdemo5 = vector.insert(document.vdemo0,document.vdemo0c,4)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=5,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+    {\ctxlua{vector.typeset(document.vdemo5)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.insert(document.vdemo0,document.vdemo0r,0,true)
+document.vdemo2 = vector.insert(document.vdemo0,document.vdemo0r,1,true)
+document.vdemo3 = vector.insert(document.vdemo0,document.vdemo0r,2,true)
+document.vdemo4 = vector.insert(document.vdemo0,document.vdemo0r,3,true)
+document.vdemo5 = vector.insert(document.vdemo0,document.vdemo0r,4,true)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=5,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+    {\ctxlua{vector.typeset(document.vdemo5)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.replace(document.vdemo0,document.vdemo0rc,1,1)
+document.vdemo2 = vector.replace(document.vdemo0,document.vdemo0rc,2,2)
+document.vdemo3 = vector.replace(document.vdemo0,document.vdemo0rc,3,3)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+\stopcombination
+\stoplinecorrection
+
+\startbuffer
+\startluacode
+document.vdemo1 = vector.exchange(document.vdemo0,1,1)
+document.vdemo2 = vector.exchange(document.vdemo0,1,2,true)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=3,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.vdemo1)}} {}
+    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+\stopcombination
+\stoplinecorrection
+
+This leaves a couple of auxiliary function that we just mention:
+
+\starttabulate[|Tl|Tl|l|]
+\NC isvector      \NC (v)       \NC return \type{true} when the argument is a vector \NC \NR
+\NC onerow        \NC (n,...,m) \NC a fast way to create a single row vector \NC \NR
+\NC onecolumn     \NC (n,...,m) \NC a fast way to create a single column vector \NC \NR
+\NC type          \NC (v)       \NC return the string \type {vector} if we pass one \NC \NR
+\NC tostring      \NC (v)       \NC returns the dimensions and pointer value \NC \NR
+\NC totable       \NC (v)       \NC returns a regular table representation \NC \NR
+\NC determinant   \NC (v)       \NC returns the determinant \NC \NR
+\NC issingular    \NC (v,[n])   \NC returns true if the determinant is \m{< 0.001}\NC \NR
+%NC gettype       \NC (v)       \NC returns the type of the vector (experimental) \NC \NR
+\NC setstacking   \NC (v,n)     \NC set the stacking property (\METAPOST) \NC \NR
+\NC getstacking   \NC (v)       \NC get the stacking property (\METAPOST) \NC \NR
+\NC getdimensions \NC (v)       \NC returns the number of rows and columns \NC \NR
+\stoptabulate
+
+We already mentioned that often you can also provide a table instead
+of a vector:
+
+\startbuffer
+\startluacode
+document.t1 = {
+    { 1, 2, 3 },
+    { 1, 2, 3 },
+    { 1, 2, 3 },
+}
+
+document.t2 = {
+    { 11, 2, 3 },
+    { 1, 12, 3 },
+    { 1, 2, 13 },
+}
+
+document.v1 = vector.new(document.t1)
+document.v2 = vector.new(document.t2)
+
+document.v1t1 = vector.product(document.v1,document.t2)
+document.t1v1 = vector.product(document.t1,document.v1)
+document.v1v2 = vector.product(document.v1,document.v2)
+document.t1t2 = vector.product(document.t1,document.t2)
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+\startlinecorrection
+\startcombination[nx=4,ny=1,distance=2em]
+    {\ctxlua{vector.typeset(document.v1t1)}} {\type{v t}}
+    {\ctxlua{vector.typeset(document.t1v1)}} {\type{t v}}
+    {\ctxlua{vector.typeset(document.v1v2)}} {\type{v v}}
+    {\ctxlua{vector.typeset(document.t1t2)}} {\type{t t}}
+\stopcombination
+\stoplinecorrection
+
+When you define and fill a vector, you can use the setters mentioned before. Here
+we show a few ways, assuming that \type {ns} and \type {nt} are known and \type
+{calulate} does some useful magic.
+
+\starttyping[option=LUA]
+local t = { }  -- we could preallocate
+
+for s = 0, ns do
+    for t = 0, nt do
+        local x, y, z = calculate(s,t)
+        t[#t+1] = { x, y, z, 1 }
+   end
+end
+
+local v = newvector(t)
+\stoptyping
+
+We can avoid the fourth entry which is always~0 which gives smaller
+intermediate tables and just append these ones later using
+the \type {append} function.
+
+\starttyping[option=LUA]
+local t = { }  -- we could preallocate
+
+for s = 0, ns do
+    for t = 0, nt do
+        local x, y, z = calculate(s,t)
+        t[#t+1] = { x, y, z }
+   end
+end
+
+local v = newvector(t)
+v = vector.append(v,1)
+\stoptyping
+
+We can avoid the \LUA\\ table completely and just populate the
+vector as we go. The \type {setnext} does the trick:
+
+\starttyping[option=LUA]
+local setnext = vector.setnext
+
+local v = newvector((ns + 1) * (nt + 1), 4)
+for s = 0, ns do
+    for t = 0, nt do
+        local x, y, z = calculate(s,t)
+        setnext(v, x, y, z, 1)
+   end
+end
+\stoptyping
+
+That last variant is the most natural and also the most efficient approach but
+taste can differ.
+
+\stopsubsection
+
 \stopsection
 
 \stopdocument

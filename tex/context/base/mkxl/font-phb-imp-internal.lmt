@@ -108,7 +108,8 @@ local shapers = {
     fallback  = { "fallback" },
 }
 
-local mode = 8 -- now 32 bit crashes (random, needs checking, probably zero end of string issue)
+----- mode = 8  -- now 32 bit crashes (random, needs checking, probably zero end of string issue)
+local mode = 32 -- now 32 bit crashes (random, needs checking, probably zero end of string issue)
 
 function utilities.hb.methods.internal(font,data,rlmode,text,leading,trailing)
     if initialized == nil then

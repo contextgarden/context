@@ -20,8 +20,6 @@ local processors   = nodes.processors
 
 local tasks        = nodes.tasks
 
-local report_nodes = logs.reporter("nodes","processors")
-
 local countnodes   = nuts.countall
 
 do
