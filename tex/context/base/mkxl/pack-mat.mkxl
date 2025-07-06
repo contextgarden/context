@@ -272,15 +272,14 @@
    \scratchdistance\ifchkdimension\mathframedparameter\c!backgroundoffset\or\lastchkdimension\else\zeropoint\fi
    \ifmmode
      \ifempty{\mathframedparameter\c!mathstyle}%
-       \normalexpanded{\setmathframedparameter{\c!mathstyle}{\m_math_styles_current}}%
+       \normalexpanded{\setmathframedparameter{\c!mathstyle}{\currentverbosemathstyle}}%
      \fi
      \math_atom_by_parameter\mathframedparameter
      \bgroup
      \ifzeropt\scratchdistance\else\kern\scratchdistance\fi
    \fi
-   \edef\m_framed_location{\mathframedparameter\c!location}%
-   \dostarttaggednodetail\t!mrow
-   \ifx\m_framed_location\v!mathematics
+   \dostarttaggednodetail\t!mrow\relax
+   \ifcstok{\mathframedparameter\c!location}\v!mathematics
      \inheritedmathframedframed\bgroup
        \setbox\scratchbox\hbox\bgroup
          \Ustartmath

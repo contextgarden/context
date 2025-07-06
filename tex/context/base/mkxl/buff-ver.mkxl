@@ -72,6 +72,8 @@
 \protected\def\buff_verbatim_ignore_hyphens
   {\nohyphens}
 
+\lettonothing\p_buff_option
+
 \def\buff_verbatim_initialize_type_one
   {\enforced\let\obeylines\ignorelines
    \edef\p_buff_option{\typeparameter\c!option}%
@@ -612,6 +614,7 @@
 % [category] [settings] {name} % for historic reasons, all filenames are {}
 
 \mutable\lettonothing\currenttypingfile
+\mutable\lettonothing\currenttypingwrapper
 
 \appendtoks
     \frozen\protected\instance\edefcsname\e!type\currenttyping\v!file\endcsname{\typefile[\currenttyping]}%

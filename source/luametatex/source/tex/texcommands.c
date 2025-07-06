@@ -1627,6 +1627,7 @@ void tex_initialize_commands(void)
 
         tex_primitive(no_command,     "noexpandrelax",                  relax_cmd,              no_expand_relax_code,                            0);
         tex_primitive(luatex_command, "norelax",                        relax_cmd,              no_relax_code,                                   0);
+        tex_primitive(luatex_command, "noarguments",                    relax_cmd,              no_arguments_relax_code,                         0);
         tex_primitive(tex_command,    "relax",                          relax_cmd,              relax_code,                                      0);
 
         tex_primitive(tex_command,    "nullfont",                       set_font_cmd,           null_font,                                       0);

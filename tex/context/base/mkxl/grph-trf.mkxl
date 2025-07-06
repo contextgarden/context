@@ -218,7 +218,9 @@
    \ht\nextbox\d_grph_scale_ht
    \dp\nextbox\d_grph_scale_dp}
 
-\def\m_grph_scale_stamp_c{11}
+\lettonothing\m_grph_scale_stamp_a
+\lettonothing\m_grph_scale_stamp_b
+\def         \m_grph_scale_stamp_c{11}
 
 \def\grph_scale_calculate
   {\ifdim\d_grph_scale_ht>\zeropoint \ifdim\d_grph_scale_wd>\zeropoint

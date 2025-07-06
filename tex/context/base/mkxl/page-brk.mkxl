@@ -106,6 +106,8 @@
 
 \aliased\let\page\pagebreak
 
+\lettonothing\m_page_breaks_asked
+
 \permanent\protected\def\usepageparameter#1%
   {\edef\m_page_breaks_asked{#1\c!page}%
    \ifempty\m_page_breaks_asked\else

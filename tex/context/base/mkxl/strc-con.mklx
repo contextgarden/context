@@ -296,17 +296,19 @@
 \protected\defcsname\??constructioncommandhandler\v!construction\endcsname
   {\endgroup}
 
-\lettonothing\p_strc_constructions_sample
 \lettonothing\p_strc_constructions_align
-\lettonothing\p_strc_constructions_indenting
-\lettonothing\p_strc_constructions_width
 \lettonothing\p_strc_constructions_aligntitle
-\lettonothing\p_strc_constructions_renderingsetup
-\lettonothing\p_strc_constructions_headalign
-\lettonothing\p_strc_constructions_hang
-\lettonothing\p_strc_constructions_inbetween
 \lettonothing\p_strc_constructions_closesymbol
 \lettonothing\p_strc_constructions_distance
+\lettonothing\p_strc_constructions_hang
+\lettonothing\p_strc_constructions_headalign
+\lettonothing\p_strc_constructions_inbetween
+\lettonothing\p_strc_constructions_indenting
+\lettonothing\p_strc_constructions_number
+\lettonothing\p_strc_constructions_renderingsetup
+\lettonothing\p_strc_constructions_sample
+\lettonothing\p_strc_constructions_title
+\lettonothing\p_strc_constructions_width
 
 \newconditional\c_strc_constructions_distance_none
 

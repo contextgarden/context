@@ -603,6 +603,8 @@
 %D different key and as it makes sense to use setups instead of def's we use a new
 %D key \quote {renderingsetup} which is the name of a setup.
 
+\lettonothing\m_strc_list_dimen % bad name
+
 \def\strc_lists_assign_dimen#dimension#key#default%
   {\edef\m_strc_list_dimen{\listparameter#key}%
    #dimension\ifinset{\m_strc_list_dimen}{\v!fit,\v!broad}#default\else\m_strc_list_dimen\fi\relax}
@@ -1270,16 +1272,19 @@
     \endgroup
 \stopsetups
 
+\lettonothing\m_strc_lists_color % ugly hack
+
 \startsetups[\??listrenderings:e]
     \typo_injectors_check_list
     \noindent % otherwise annotations are mirrored up
     \typo_injectors_mark_list
     \hbox \strc_lists_get_reference_attribute\v!all \strc_lists_get_destination_attribute {
         \letlistparameter  \c!depth\zeropoint
-        \edef\m_lists_color{\listparameter\c!color}% otherwise we get no color when we have no interaction
-        \resetlistparameter\c!color
+        % color here is messy
+        \edef\m_strc_lists_color{\listparameter\c!color}% otherwise we get no color when we have no interaction
+        \resetlistparameter\c!color % pushcolor
         \inheritedlistframed {
-            \letlistparameter\c!color\m_lists_color
+            \letlistparameter\c!color\m_strc_lists_color % popcolor
             \letinteractionparameter\c!strut\v!no % still needed?
             \strc_lists_set_style_color\c!style\c!color\v!all
             \expand\t_lists_every_renderingtext
@@ -1468,39 +1473,8 @@
      \strc_lists_interaction_check_nop
    \fi}
 
-% \def\strc_lists_interaction_check_yes_yes
-%   {\edef\p_interaction_forward{\listparameter\c!interaction}%
-%    \ifcsname\??listinteractions\p_interaction_forward\endcsname
-%     %\expandafter\let\expandafter\p_interaction_forward\csname\??listinteractions\p_interaction_forward\endcsname
-%      \expandafter\let\expandafter\p_interaction_forward\lastnamedcs
-%      \strc_references_get_simple_reference{internal(\currentlistentrylocation)}%
-%      \a_strc_lists_reference\currentreferenceattribute
-%    \else
-%      \a_strc_lists_reference\attributeunsetvalue
-%    \fi
-%    \ifnum\a_strc_lists_reference=\attributeunsetvalue
-%      \let\strc_lists_get_reference_attribute\gobbleoneargument
-%      \let\strc_lists_set_reference_attribute\gobbleoneargument
-%      \let\strc_lists_set_style_color        \strc_lists_set_style_color_normal
-%    \else
-%      \let\strc_lists_get_reference_attribute\strc_lists_get_reference_attribute_indeed
-%      \let\strc_lists_set_reference_attribute\strc_lists_set_reference_attribute_indeed
-%      \let\strc_lists_set_style_color        \strc_lists_set_style_color_special
-%    \fi
-%    \edef\p_interaction_backward{\namedheadparameter\currentlist\c!interaction}% \namedheadparameter !
-%    \ifx\p_interaction_backward\v!list
-%      \strc_references_set_simple_reference{*\currentlistentrylocation}%
-%      \a_strc_lists_destination\currentdestinationattribute
-%    \else
-%      \a_strc_lists_destination\attributeunsetvalue
-%    \fi
-%    \ifnum\a_strc_lists_destination=\attributeunsetvalue
-%      \lettonothing\strc_lists_get_destination_attribute
-%      \lettonothing\strc_lists_set_destination_attribute
-%    \else
-%      \let\strc_lists_get_destination_attribute\strc_lists_get_destination_attribute_indeed
-%      \let\strc_lists_set_destination_attribute\strc_lists_set_destination_attribute_indeed
-%    \fi}
+\lettonothing\p_interaction_backward
+\lettonothing\p_interaction_forward
 
 \def\strc_lists_interaction_check_yes_yes
   {\edef\p_interaction_forward {\listparameter\c!interaction}%

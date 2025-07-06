@@ -19,6 +19,10 @@
 
 \unprotect
 
+\glettonothing\m_module_fonts_show_alternatives
+\glettonothing\m_module_fonts_show_styles
+\glettonothing\m_module_fonts_show_title
+
 \gdef\module_fonts_show_prepare#1%
   {\iftok{#1}\emptytoks
      \edef\m_module_fonts_show_title{\the\bodyfontsize}%

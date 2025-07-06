@@ -606,7 +606,7 @@
 \newdimension\d_scrn_rendering_width  \d_scrn_rendering_width  8cm
 \newdimension\d_scrn_rendering_height \d_scrn_rendering_height 6cm
 
-\let\m_scrn_rendering_page\!!zerocount
+%newinteger  \c_scrn_rendering_page % makes no sense otherwise
 
 %D \starttyping
 %D \definerenderingwindow[soundplace][width=0pt, height=0pt]
@@ -640,11 +640,11 @@
    \ifx\currentrenderingwindow\s!default
      \d_scrn_rendering_height\vsize
      \d_scrn_rendering_width \hsize
-     \let\m_scrn_rendering_page\realpageno
+    %\c_scrn_rendering_page\realpageno
    \else
      \d_scrn_rendering_height{\renderingwindowparameter\c!height}%
      \d_scrn_rendering_width {\renderingwindowparameter\c!width}%
-     \let\m_scrn_rendering_page\realpageno
+    %\c_scrn_rendering_page\realpageno
    \fi
    \letrenderingwindowparameter\c!offset\v!overlay
    \inheritedrenderingwindowframed
@@ -655,7 +655,8 @@
         width     \d_scrn_rendering_width
         height    \d_scrn_rendering_height
         option    {\renderingoption\currentrendering}%
-        page      \m_scrn_rendering_page
+      % page      \m_scrn_rendering_page
+        page      \realpageno
         openpage  {\renderingwindowparameter\c!openpageaction}%
         closepage {\renderingwindowparameter\c!closepageaction}%
       \relax

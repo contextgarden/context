@@ -1443,10 +1443,10 @@
 %D This is a special one, used in \METAPOST\ graphic support. It is english only because
 %D we have no multilingual interface in \METAFUN.
 
-\startinterface english
-    \let\mult_interfaces_install_native_auto_setup_handler\mult_interfaces_install_auto_setup_handler
-    \aliased\let\installbasicnativeautosetuphandler\installbasicsetuphandler
-\stopinterface
+% \startinterface english
+%     \let\mult_interfaces_install_native_auto_setup_handler\mult_interfaces_install_auto_setup_handler
+%     \aliased\let\installbasicnativeautosetuphandler\installbasicsetuphandler
+% \stopinterface
 
 \ifdefined\installnativebasicsetuphandler \else
 

@@ -31,7 +31,6 @@ implement {
                                 f(tonumber(environment.arguments.currentrun))
                             end
                         end
-
                         implement { name = "squid_init", actions = action(signals.squidinit) }
                         implement { name = "squid_busy", actions = action(signals.squidbusy) }
                         implement { name = "squid_step", actions = action(signals.squidstep) }

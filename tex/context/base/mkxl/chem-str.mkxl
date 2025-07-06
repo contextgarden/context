@@ -255,6 +255,10 @@
 % \to \everystructurechemical
 \to \everychemical
 
+\lettonothing\m_chem_top_text
+\lettonothing\m_chem_bot_text
+\lettonothing\m_chem_mid_text
+
 \permanent\protected\def\chemicaltoptext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_top_text{#1}\ignorespaces}
 \permanent\protected\def\chemicalbottext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_bot_text{#1}\ignorespaces}
 \permanent\protected\def\chemicalmidtext#1{\global\c_chem_some_text\conditionaltrue\gdef\m_chem_mid_text{#1}\ignorespaces}
@@ -862,6 +866,10 @@
 \newtoks \everydisplaychemistry
 
 \permanent\protected\def\chem_ch{\mathtriplet[\v!chemistry]}
+
+%D Maybe we should reserve it with \permanent:
+
+\ifdefined\ch \else \mutable\lettonothing\ch \fi
 
 \appendtoks
     \setmathignore\Umathxscale\plustwo

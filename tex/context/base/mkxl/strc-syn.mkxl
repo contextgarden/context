@@ -325,6 +325,9 @@
 %    \edef\currentsynonymsortkey{\synonymentryparameter\c!sortkey}%
 %    \strc_synonyms_define_entry{\synonymentryparameter\c!text}{\synonymentryparameter\c!meaning}}
 
+\lettonothing\m_synonyms_meaning
+\lettonothing\m_synonyms_text
+
 \def\strc_synonyms_define_entry#1#2%
   {\let\currentsimplelist\currentsynonym
    \ifempty\currentsynonymtag
@@ -686,6 +689,8 @@
 % before after
 %
 % maybe just 'commandset' and then combine
+
+\lettonothing\p_simplelist_command
 
 \permanent\tolerant\protected\def\placelistofsorts[#1]#*[#S#2]%
   {\begingroup

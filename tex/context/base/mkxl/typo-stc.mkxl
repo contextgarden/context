@@ -85,23 +85,25 @@
    #2%
    \endgroup}
 
-\protected\def\typo_start_stacking#1%
+\protected\def\typo_stacking_start#1%
   {\begingroup
    \cdef\currentstacking{#1}%
    \typo_stacking_set}
 
-\protected\def\typo_stop_stacking
+\protected\def\typo_stacking_stop
   {\endgroup}
 
 \permanent\protected\def\stacking     [#1]{\typo_stacking{#1}}
-\permanent\protected\def\startstacking[#1]{\typo_start_stacking{#1}}
-\permanent\protected\def\stopstacking     {\typo_stop_stacking}
+\permanent\protected\def\startstacking[#1]{\typo_stacking_start{#1}}
+\permanent\protected\def\stopstacking     {\typo_stacking_stop}
 
 \appendtoks
     \clf_setstacking{\namedstackingparameter\empty\c!criterium}%
 \to \everysetupstacking
 
 % \definestacking[stack][define=yes]
+
+\mutable\lettonothing\stackingsteplist
 
 \def\typo_stacking_step#1%
   {\setupstacking[\c!criterium={#1}]%

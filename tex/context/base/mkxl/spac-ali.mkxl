@@ -675,6 +675,9 @@
 \aliased\let\raggedcommand    \relax
 \aliased\let\updateraggedskips\relax
 
+\lettonothing\m_spac_align_asked
+%lettonothing\m_spac_align_named
+
 \def\spac_align_add_to_cache
   {\enforced\let\raggedbox\relax % why
    % we inherit hyphenation and tolerance

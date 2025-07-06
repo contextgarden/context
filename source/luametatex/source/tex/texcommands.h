@@ -765,9 +765,10 @@ typedef enum relax_codes {
     relax_code,
     no_relax_code,
     no_expand_relax_code,
+    no_arguments_relax_code,
 } relax_codes;
 
-# define last_relax_code no_relax_code
+# define last_relax_code no_arguments_relax_code
 
 typedef enum end_paragraph_codes {
     normal_end_paragraph_code,

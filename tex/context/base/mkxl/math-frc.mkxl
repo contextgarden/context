@@ -136,6 +136,9 @@
 
 \installcorenamespace{mathfractionstrut}
 
+\let\m_fractions_strut_top\relax
+\let\m_fractions_strut_bot\relax
+
 \def\math_frac_no_strut
   {\enforced\let\m_fractions_strut_top\relax
    \enforced\let\m_fractions_strut_bot\relax}
@@ -174,6 +177,9 @@
 
 \installlocalcurrenthandler\??mathfractions {mathfraction}
 
+\lettonothing\p_math_fraction_fences
+\lettonothing\p_math_fraction_strut
+
 \tolerant\protected\def\math_frac#1#*[#S#2]%%
   {\beginmathgroup
    %
@@ -196,8 +202,8 @@
       \let\math_fraction_margin_kern\math_fraction_margin_kern_indeed
    \fi
    %
-   \edef\p_math_fractions_strut{\mathfractionparameter\c!strut}%
-   \ifcsname\??mathfractionstrut\p_math_fractions_strut\endcsname
+   \edef\p_math_fraction_strut{\mathfractionparameter\c!strut}%
+   \ifcsname\??mathfractionstrut\p_math_fraction_strut\endcsname
      \lastnamedcs
    \else
      \math_frac_no_strut

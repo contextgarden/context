@@ -137,7 +137,7 @@ typedef enum line_modes {
     partial_line_mode = 1,
 } line_modes;
 
-# define PACKED_SIZE        8
+# define PACKED_SIZE        8 // testing shows we stay below or exceed by much 
 # define INITIAL_SIZE     100 // in practice 32 is already quite okay 
 # define MAX_ROPE_CACHE  5000 // the luametatex manual has a few 10K/30K situations
 
@@ -155,8 +155,8 @@ typedef struct spindle_rope {
         halfword     tail;
     };
     unsigned char  kind;
-    unsigned char  partial;
-    short          cattable;
+    unsigned char  partial;   /* this could be a bit in kind */
+    short          cattable;  /* we could limit to 255 */
     spindle_data   data;
     /* alignment, not needed when we have c[PACKED_SIZE] */
  /* int            padding; */

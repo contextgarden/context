@@ -1933,7 +1933,15 @@
 
 \let\strc_itemgroups_collected_store\relax
 
+\lettonothing\m_strc_itemgroups_after
 \lettonothing\m_strc_itemgroups_collected
+\lettonothing\m_strc_itemgroups_destination
+\lettonothing\m_strc_itemgroups_inbetween
+\lettonothing\m_strc_itemgroups_indenting
+\lettonothing\m_strc_itemgroups_repeat_start
+\lettonothing\m_strc_itemgroups_saved
+\lettonothing\m_strc_itemgroups_spacing
+\lettonothing\m_strc_itemgroups_text_distance
 
 \normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
   {\advanceby\c_strc_itemgroups_collected_stored\plusone
@@ -2115,9 +2123,6 @@
 \let\strc_itemgroups_table_pickup\relax
 
 \setupitemgroup[\c!columndistance=\emwidth]
-
-\lettonothing\m_strc_itemgroups_after
-\lettonothing\m_strc_itemgroups_inbetween
 
 \tolerant\permanent\protected\def\strc_itemgroups_start_table[#1]#*[#S#2]#*[#S#3]%
   {\ifcase\currentitemlevel\relax

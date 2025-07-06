@@ -267,7 +267,7 @@
 \installglobalmacrostack\m_tabl_ntb_saved_col
 
 \protected\def\tabl_ntb_table_push
-  {\ifnum\m_tabl_tbl_level>\plusone
+  {\ifnum\m_tabl_ntb_level>\plusone
      \tabl_ntb_parameters_reset
      % we need a proper count push/pop
      \xdef\m_tabl_ntb_saved_row{\the\c_tabl_ntb_row}\push_macro_m_tabl_ntb_saved_row
@@ -277,20 +277,22 @@
    \fi}
 
 \protected\def\tabl_ntb_table_pop
-  {\ifnum\m_tabl_tbl_level>\plusone
+  {\ifnum\m_tabl_ntb_level>\plusone
      \pop_macro_m_tabl_ntb_saved_row\global\c_tabl_ntb_row\m_tabl_ntb_saved_row
      \pop_macro_m_tabl_ntb_saved_col\global\c_tabl_ntb_col\m_tabl_ntb_saved_col
    \else
      \global\intablefalse
    \fi}
 
+\lettonothing\m_tabl_ntb_level
+
 \protected\def\tabl_ntb_next_level
   {\advanceby\c_tabl_level\plusone
-   \edef\m_tabl_tbl_level{\the\c_tabl_level}}
+   \cdef\m_tabl_ntb_level{\the\c_tabl_level}}
 
 \protected\def\tabl_ntb_prev_level
   {\advanceby\c_tabl_level\minusone
-   \edef\m_tabl_tbl_level{\the\c_tabl_level}}
+   \cdef\m_tabl_ntb_level{\the\c_tabl_level}}
 
 \tabl_ntb_next_level % go to level 1
 
@@ -335,116 +337,116 @@
 \letcsname\??naturaltablesqueeze\v!broad\endcsname\donetrue
 \letcsname\??naturaltablesqueeze\v!local\endcsname\donetrue
 
-\def\tabl_ntb_let_gal{\gletcsname\??naturaltablegal\m_tabl_tbl_level\endcsname}
-\def\tabl_ntb_get_gal{\csname    \??naturaltablegal\m_tabl_tbl_level\endcsname}
+\def\tabl_ntb_let_gal{\gletcsname\??naturaltablegal\m_tabl_ntb_level\endcsname}
+\def\tabl_ntb_get_gal{\csname    \??naturaltablegal\m_tabl_ntb_level\endcsname}
 
-\def\tabl_ntb_let_tal#1{\gletcsname\??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
-\def\tabl_ntb_get_tal#1{\csname    \??naturaltabletal\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_let_tal#1{\gletcsname\??naturaltabletal\m_tabl_ntb_level:\number#1\endcsname}
+\def\tabl_ntb_get_tal#1{\csname    \??naturaltabletal\m_tabl_ntb_level:\number#1\endcsname}
 
-\def\tabl_ntb_set_nob#1{\letcsname\??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone}
-\def\tabl_ntb_get_nob#1{\ifcsname \??naturaltablenob\m_tabl_tbl_level:\number#1\endcsname\plusone\else\zerocount\fi}
+\def\tabl_ntb_set_nob#1{\letcsname\??naturaltablenob\m_tabl_ntb_level:\number#1\endcsname\plusone}
+\def\tabl_ntb_get_nob#1{\ifcsname \??naturaltablenob\m_tabl_ntb_level:\number#1\endcsname\plusone\else\zerocount\fi}
 
-%def\tabl_ntb_set_tag#1#2{\expandafter\integerdef\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_col#1#2{\expandafter\integerdef\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_row#1#2{\expandafter\integerdef\csname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+%def\tabl_ntb_set_tag#1#2{\expandafter\integerdef\csname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_col#1#2{\expandafter\integerdef\csname\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_row#1#2{\expandafter\integerdef\csname\??naturaltablerow\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_let_tag#1#2{\letcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_let_col#1#2{\letcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_let_row#1#2{\letcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_tag#1#2{\letcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_col#1#2{\letcsname\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_row#1#2{\letcsname\??naturaltablerow\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
 %     \let\tabl_ntb_let_col\tabl_ntb_set_col
 %     \let\tabl_ntb_let_row\tabl_ntb_set_row
 
-%def\tabl_ntb_set_wd#1#2{\global\expandafter\dimensiondef\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
-\def\tabl_ntb_set_ht#1#2{\global\expandafter\dimensiondef\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+%def\tabl_ntb_set_wd#1#2{\global\expandafter\dimensiondef\csname\??naturaltablewd\m_tabl_ntb_level:\number#1:\number#2\endcsname} % global !
+\def\tabl_ntb_set_ht#1#2{\global\expandafter\dimensiondef\csname\??naturaltableht\m_tabl_ntb_level:\number#1:\number#2\endcsname} % global !
 
-%def\tabl_ntb_let_wd#1#2{\letcsname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
-\def\tabl_ntb_let_ht#1#2{\letcsname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname} % global !
+%def\tabl_ntb_let_wd#1#2{\letcsname\??naturaltablewd\m_tabl_ntb_level:\number#1:\number#2\endcsname} % global !
+\def\tabl_ntb_let_ht#1#2{\letcsname\??naturaltableht\m_tabl_ntb_level:\number#1:\number#2\endcsname} % global !
 
 %     \let\tabl_ntb_let_ht\tabl_ntb_set_ht
 
-\def\tabl_ntb_get_tag#1#2{\csname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_col#1#2{\csname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_row#1#2{\csname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_tag#1#2{\csname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_col#1#2{\csname\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_row#1#2{\csname\??naturaltablerow\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-%def\tabl_ntb_get_wd#1#2{\csname\??naturaltablewd\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_get_ht#1#2{\csname\??naturaltableht\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+%def\tabl_ntb_get_wd#1#2{\csname\??naturaltablewd\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_ht#1#2{\csname\??naturaltableht\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_set_wid#1{\global\expandafter\dimensiondef\csname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_hei#1{\global\expandafter\dimensiondef\csname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_dis#1{\global\expandafter\dimensiondef\csname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_set_aut#1{\global\expandafter\dimensiondef\csname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_wid#1{\global\expandafter\dimensiondef\csname\??naturaltablewid\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_hei#1{\global\expandafter\dimensiondef\csname\??naturaltablehei\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_dis#1{\global\expandafter\dimensiondef\csname\??naturaltabledis\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_set_aut#1{\global\expandafter\dimensiondef\csname\??naturaltableaut\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
 
-\def\tabl_ntb_let_wid#1{\gletcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_hei#1{\gletcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_dis#1{\gletcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
-\def\tabl_ntb_let_aut#1{\gletcsname\??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_wid#1{\gletcsname\??naturaltablewid\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_hei#1{\gletcsname\??naturaltablehei\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_dis#1{\gletcsname\??naturaltabledis\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
+\def\tabl_ntb_let_aut#1{\gletcsname\??naturaltableaut\m_tabl_ntb_level:\number#1\endcsname} % {#2} global !
 
 %     \let\tabl_ntb_let_wid\tabl_ntb_set_wid
 %     \let\tabl_ntb_let_hei\tabl_ntb_set_hei
 %     \let\tabl_ntb_let_dis\tabl_ntb_set_dis
 %     \let\tabl_ntb_let_aut\tabl_ntb_set_aut
 
-\def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
-\def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
-\def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_tbl_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
-\def\tabl_ntb_get_aut#1{\csname  \??naturaltableaut\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_get_wid#1{\ifcsname\??naturaltablewid\m_tabl_ntb_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\tabl_ntb_get_hei#1{\ifcsname\??naturaltablehei\m_tabl_ntb_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\tabl_ntb_get_dis#1{\ifcsname\??naturaltabledis\m_tabl_ntb_level:\number#1\endcsname\lastnamedcs\else\zeropoint\fi}
+\def\tabl_ntb_get_aut#1{\csname  \??naturaltableaut\m_tabl_ntb_level:\number#1\endcsname}
 
-\def\tabl_ntb_let_bck#1#2{\global\expandafter\integerdef\csname\??naturaltablebck\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_bck#1#2{\global\expandafter\integerdef\csname\??naturaltablebck\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_get_bck#1#2{\csname\??naturaltablebck\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_get_bck#1#2{\csname\??naturaltablebck\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-\def\tabl_ntb_tag_pattern#1#2{\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2}
-\def\tabl_ntb_row_pattern#1#2{\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2}
-\def\tabl_ntb_col_pattern#1#2{\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2}
+\def\tabl_ntb_tag_pattern#1#2{\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2}
+\def\tabl_ntb_row_pattern#1#2{\??naturaltablerow\m_tabl_ntb_level:\number#1:\number#2}
+\def\tabl_ntb_col_pattern#1#2{\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2}
 
-\def\tabl_ntb_tag_doif    #1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\def\tabl_ntb_tag_doifnot #1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
-\def\tabl_ntb_tag_doifelse#1#2{\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
-\def\tabl_ntb_row_doif    #1#2{\ifcsname\??naturaltablerow\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\def\tabl_ntb_col_doif    #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
-\def\tabl_ntb_col_doifnot #1#2{\ifcsname\??naturaltablecol\m_tabl_tbl_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
+\def\tabl_ntb_tag_doif    #1#2{\ifcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\def\tabl_ntb_tag_doifnot #1#2{\ifcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
+\def\tabl_ntb_tag_doifelse#1#2{\ifcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\def\tabl_ntb_row_doif    #1#2{\ifcsname\??naturaltablerow\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\def\tabl_ntb_col_doif    #1#2{\ifcsname\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\firstofoneargument \else\expandafter\gobbleoneargument   \fi}
+\def\tabl_ntb_col_doifnot #1#2{\ifcsname\??naturaltablecol\m_tabl_ntb_level:\number#1:\number#2\endcsname\expandafter\gobbleoneargument  \else\expandafter\firstofoneargument  \fi}
 
 %D If we ever run into memory issues we can do:
 %
 % \def\tabl_ntb_let_tag#1#2#3%
 %   {\ifx#3\c_tabl_ntb_none\else
-%      \letcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname#3%
+%      \letcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname#3%
 %    \fi}
 %
 % \def\tabl_ntb_get_tag#1#2%
-%   {\ifcsname\??naturaltabletag\m_tabl_tbl_level:\number#1:\number#2\endcsname
+%   {\ifcsname\??naturaltabletag\m_tabl_ntb_level:\number#1:\number#2\endcsname
 %      \lastnamedcs
 %    \else
 %      \c_tabl_ntb_none
 %    \fi}
 
-\def\tabl_ntb_let_ref   #1#2{\gletcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-\def\tabl_ntb_set_ref   #1#2{\xdefcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
-%def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname\fi}
-\def\tabl_ntb_get_ref   #1#2{\begincsname\??naturaltableref\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_let_ref   #1#2{\gletcsname\??naturaltableref\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+\def\tabl_ntb_set_ref   #1#2{\xdefcsname\??naturaltableref\m_tabl_ntb_level:\number#1:\number#2\endcsname}
+%def\tabl_ntb_get_ref   #1#2{\ifcsname\??naturaltableref\m_tabl_ntb_level:\number#1:\number#2\endcsname\csname\??naturaltableref\m_tabl_ntb_level:\number#1:\number#2\endcsname\fi}
+\def\tabl_ntb_get_ref   #1#2{\begincsname\??naturaltableref\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
-% \def\tabl_ntb_set_spn     #1{\letcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname \!!plusone}
-% \def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\relax % could be inlined
+% \def\tabl_ntb_set_spn     #1{\letcsname\??naturaltablespn\m_tabl_ntb_level:\number#1\endcsname \!!plusone}
+% \def\tabl_ntb_spn_doifelse#1{\ifcase0\csname\??naturaltablespn\m_tabl_ntb_level:\number#1\endcsname\relax % could be inlined
 %                                \expandafter\secondoftwoarguments % unset
 %                              \else
 %                                \expandafter\firstoftwoarguments  % a span
 %                              \fi}
 
-\def\tabl_ntb_set_spn      #1{\letcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname\plusone}
-%def\tabl_ntb_spn_doifelse #1{\ifcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname
+\def\tabl_ntb_set_spn      #1{\letcsname\??naturaltablespn\m_tabl_ntb_level:\number#1\endcsname\plusone}
+%def\tabl_ntb_spn_doifelse #1{\ifcsname\??naturaltablespn\m_tabl_ntb_level:\number#1\endcsname
 %                               \expandafter\firstoftwoarguments  % a span
 %                             \else
 %                               \expandafter\secondoftwoarguments % unset
 %                             \fi}
-\def\tabl_ntb_spn_condition#1{\ifcsname\??naturaltablespn\m_tabl_tbl_level:\number#1\endcsname}
+\def\tabl_ntb_spn_condition#1{\ifcsname\??naturaltablespn\m_tabl_ntb_level:\number#1\endcsname}
 
 \protected\def\tabl_ntb_set_txt_process#1#2#3#4#5#6%
-  {\defcsname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname
+  {\defcsname\??naturaltabletxt\m_tabl_ntb_level:\number#1:\number#2\endcsname
      {\tabl_ntb_cell_process{#3}{#4}[#5]{\tabl_ntb_next_level#6\tabl_ntb_prev_level}}}
 
 \def\tabl_ntb_get_txt#1#2%
-  {\csname\??naturaltabletxt\m_tabl_tbl_level:\number#1:\number#2\endcsname}
+  {\csname\??naturaltabletxt\m_tabl_ntb_level:\number#1:\number#2\endcsname}
 
 % to be changed:
 
@@ -547,16 +549,16 @@
 
 \def\tabl_ntb_parameters_set#1#2%
   {\ifappendTBLsetups
-     \ifcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
+     \ifcsname\??naturaltableset\m_tabl_ntb_level:#1\endcsname
        \enforced\def\tabl_ntb_parameters_get[##S##1]%
-         {\defcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname{\tabl_ntb_parameters_get[##1,#2]}}%
-       \csname\??naturaltableset\m_tabl_tbl_level:#1\endcsname
+         {\defcsname\??naturaltableset\m_tabl_ntb_level:#1\endcsname{\tabl_ntb_parameters_get[##1,#2]}}%
+       \csname\??naturaltableset\m_tabl_ntb_level:#1\endcsname
        \enforced\let\tabl_ntb_parameters_get\setupcurrentnaturaltablelocal
      \else
-       \defcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname{\tabl_ntb_parameters_get[#2]}%
+       \defcsname\??naturaltableset\m_tabl_ntb_level:#1\endcsname{\tabl_ntb_parameters_get[#2]}%
      \fi
    \else
-     \defcsname\??naturaltableset\m_tabl_tbl_level:#1\endcsname{\tabl_ntb_parameters_get[#2]}%
+     \defcsname\??naturaltableset\m_tabl_ntb_level:#1\endcsname{\tabl_ntb_parameters_get[#2]}%
    \fi}
 
 % % \setupTABLE [y]    [first][background=color,backgroundcolor=blue,frame=off,bottomframe=on,topframe=on,framecolor=white]
@@ -621,6 +623,13 @@
 
 \let\tabl_ntb_setup_section\relax
 
+\lettonothing\m_tabl_ntb_negative_col
+\lettonothing\m_tabl_ntb_negative_row
+\lettonothing\m_tabl_ntb_positive_col
+\lettonothing\m_tabl_ntb_positive_row
+
+\lettonothing\m_tabl_ntb_prefix
+
 \protected\def\tabl_ntb_setup_cell#1#2% cell over col over row
   {\tabl_ntb_setup_section % already forgotten
    \edef\m_tabl_ntb_positive_row{\tointeger#1}%
@@ -628,7 +637,7 @@
    \edef\m_tabl_ntb_negative_row{\tointeger{-\c_tabl_ntb_maximum_row+#1+\minusone}}%
    \edef\m_tabl_ntb_negative_col{\tointeger{-\c_tabl_ntb_maximum_col+#2+\minusone}}%
    % saves tokens (no speed gain)
-   \edef\m_tabl_ntb_prefix{\??naturaltableset\m_tabl_tbl_level:}% can move to \tabl_ntb_next_level etc
+   \edef\m_tabl_ntb_prefix{\??naturaltableset\m_tabl_ntb_level:}% can move to \tabl_ntb_next_level etc
    % each each
    \begincsname\m_tabl_ntb_prefix\c!x\v!each\c!y\v!each\endcsname
    \begincsname\m_tabl_ntb_prefix\c!y\v!each\endcsname
@@ -755,7 +764,7 @@
    \fi{#1}}
 
 \protected\def\tabl_ntb_tr_yes#1%
-  {\defcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_maximum_row\endcsname{\setupcurrentnaturaltablelocal[#1]}}
+  {\defcsname\??naturaltableset\m_tabl_ntb_level:\c!y++\the\c_tabl_ntb_maximum_row\endcsname{\setupcurrentnaturaltablelocal[#1]}}
 
 \def\m_tabl_ntb_default_nr{\naturaltableparameter\c!nr}
 \def\m_tabl_ntb_default_nc{\naturaltableparameter\c!nc}
@@ -767,6 +776,9 @@
    \else
      \expandafter\tabl_ntb_td_nop
    \fi{#1}}
+
+\lettonothing\m_tabl_ntb_m
+\lettonothing\m_tabl_ntb_n
 
 \protected\def\tabl_ntb_td_yes#1#2\eTD
   {\letnaturaltableparameter  \c!ny\m_tabl_ntb_default_nr
@@ -1010,9 +1022,9 @@
    \let\tabl_ntb_setup_section\relax}
 
 \def\tabl_ntb_preset_parameters% each odd|even level / can be sped up but only once per table
-  {\begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!each\endcsname
-   \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\v!oddeven\m_tabl_tbl_level\endcsname
-   \begincsname\??naturaltableset\m_tabl_tbl_level:\v!start\m_tabl_tbl_level\endcsname}
+  {\begincsname\??naturaltableset\m_tabl_ntb_level:\v!start\v!each\endcsname
+   \begincsname\??naturaltableset\m_tabl_ntb_level:\v!start\v!oddeven\m_tabl_ntb_level\endcsname
+   \begincsname\??naturaltableset\m_tabl_ntb_level:\v!start\m_tabl_ntb_level\endcsname}
 
 \permanent\tolerant\protected\def\bTABLE[#S#1]%
   {\tabl_ntb_table_push
@@ -1168,7 +1180,7 @@
        \tabl_ntb_table_stop
      \stopTBLprocessing
      % wrong ! ! ! better to have an auto-offset-overlay
-     % \ifnum\m_tabl_tbl_level>1
+     % \ifnum\m_tabl_ntb_level>1
      %   \vskip-\strutdp
      % \fi
    \fi
@@ -1299,7 +1311,7 @@
       \tabl_ntb_row_align_stop}}
 
 \def\tabl_ntb_row_stop_split
-  {\ifcsname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+  {\ifcsname\??naturaltableset\m_tabl_ntb_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
      \tabl_ntb_row_stop_split_yes
    \else
      \tabl_ntb_row_stop_split_nop
@@ -1314,7 +1326,7 @@
 
 \def\tabl_ntb_row_stop_split_yes
   {\begingroup
-   \csname\??naturaltableset\m_tabl_tbl_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
+   \csname\??naturaltableset\m_tabl_ntb_level:\c!y++\the\c_tabl_ntb_current_row\endcsname
    \xdef\m_tabl_ntb_before_split{\naturaltablelocalparameter\c!before}% to be checked
    \xdef\m_tabl_ntb_after_split {\naturaltablelocalparameter\c!after}% to be checked
    \xdef\m_tabl_ntb_same_page   {\naturaltablelocalparameter\c!samepage}%
@@ -1760,7 +1772,7 @@
    \c_tabl_tbl_pass\plusthree
    \let\tabl_ntb_pass\tabl_ntb_pass_three
    \expand\t_tabl_ntb_initializers_second\relax
-   \ifnum\m_tabl_tbl_level>\plusone
+   \ifnum\m_tabl_ntb_level>\plusone
      \tabl_ntb_split_nop
    \orelse\ifenableTBLbreak
      \tabl_ntb_split_yes
@@ -2303,7 +2315,7 @@
 \newconditional\resetTABLEmode \resetTABLEmode\conditionaltrue
 
 \def\tabl_ntb_parameters_reset % we can use setters instead
-  {\ifnum\m_tabl_tbl_level>\plusone % in ieder geval
+  {\ifnum\m_tabl_ntb_level>\plusone % in ieder geval
      \ifconditional\resetTABLEmode
         \expand\everyresetTABLEyes
      \else

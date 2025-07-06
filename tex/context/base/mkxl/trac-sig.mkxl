@@ -17,8 +17,20 @@
 
 \registerctxluafile{trac-sig}{autosuffix}
 
+\ifdefined\clf_squid_init
+    % not delayed
+\else
+    % looks nicer in m-system-macros overview:
+    \let\clf_squid_init\relax
+    \let\clf_squid_busy\relax
+    \let\clf_squid_step\relax
+    \let\clf_squid_done\relax
+\fi
+
 \permanent\protected\def\enablesquidmode
-  {\ifdefined\clf_squid_busy
+  {\ifrelax\clf_squid_init
+     % no signal device used
+   \else
     %\toksapp\everyaftershipout{\clf_squid_busy}%
      \toksapp\everyaftershipout{\clf_squid_step}%
      \toksapp\everygoodbye     {\clf_squid_done}%

@@ -95,6 +95,8 @@
 
 \defineexternalfigure[typesetting] % so one can set a frame and such
 
+\lettonothing\m_typesetting_name
+
 \def\grph_typesetting_process_indeed#1#2#3#4% options settings-a filename settings-b
   {\begingroup
    \edef\m_typesetting_name{\clf_runcontextjob{#3}{#1}}%

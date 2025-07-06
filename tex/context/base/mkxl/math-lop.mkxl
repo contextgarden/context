@@ -66,6 +66,8 @@
 
 \installlocalcurrenthandler\??mathoperators {mathoperator}
 
+\lettonothing\m_operator_text
+
 \protected\def\math_operator_common#1#2%
   {\setlocalmathoperatorcurrent{#1}% \edef\currentmathoperator{#1}%
    \setupcurrentmathoperator[#2]%

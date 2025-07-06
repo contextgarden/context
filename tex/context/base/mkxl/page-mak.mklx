@@ -104,6 +104,9 @@
 % \definelayout[whatever][height=2cm]
 % \setuplayout[whatever]
 
+\lettonothing\m_page_makeup_parent
+\lettonothing\m_page_makeup_name
+
 \def\page_makeup_start_indeed[#name][#S#settings]%
   {% the next grouping hack is somewhat messy:
    \begingroup
@@ -111,7 +114,7 @@
    \global\cdef\m_page_makeup_name{#name}%
    \let\currentmakeup\m_page_makeup_name
    \let\currentlayout\m_page_makeup_name
-   \xdef\m_page_makeup_layout_parent{\layoutparameter\s!parent}%
+   \xdef\m_page_makeup_parent{\layoutparameter\s!parent}%
    \setupcurrentmakeup[#settings]%
    \edef\p_page {\makeupparameter\c!page}%
    \ifempty\p_page
@@ -130,7 +133,7 @@
    %  - inherit from the current layout otherwise
    \ifx\m_page_makeup_name\currentlayout
       % we already use the layout
-   \orelse\ifx\m_page_makeup_layout_parent\??layout
+   \orelse\ifx\m_page_makeup_parent\??layout
      % we inherit from the current layout
      \normalexpanded{\setuplayout[#name][\s!parent=\??layout\currentlayout]}% is remembered but checked later anyway
  % \else
@@ -187,7 +190,7 @@
    \egroup
    \stoplayout % includes \page
    \ifx\m_page_makeup_name\currentlayout
-   \orelse\ifx\m_page_makeup_layout_parent\??layout
+   \orelse\ifx\m_page_makeup_parent\??layout
 %      \normalexpanded{\setuplayout[\m_page_makeup_name][\s!parent=\??layout]}% is remembered but checked later anyway
      \normalexpanded{\setuplayout[\m_page_makeup_name][\s!parent=\??layout\currentlayout]}% is remembered but checked later anyway
    \fi}

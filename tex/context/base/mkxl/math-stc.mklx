@@ -178,6 +178,9 @@
 
 \def\math_stackers_unicode{\ifcase\scratchunicode\else\the\scratchunicode\fi}
 
+\mutable\lettonothing\math_stackers_unicode_two
+\mutable\lettonothing\math_stackers_unicode_one
+
 \def\math_stackers_reset_variables
   {\scratchunicode\zerocount
    \edef\p_offset     {\mathstackersparameter\c!offset}%

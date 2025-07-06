@@ -23,7 +23,7 @@
 
 \permanent\protected\def\newcontextversion#1%
   {\ifcstok{#1}\contextversion
-     \aliased\let\newcontextversion\gobbleoneargument
+     \enforced\let\newcontextversion\gobbleoneargument
    \else
      \writeline
      \writestatus{Fatal    Error}{Your format does not match the base files!}%
@@ -159,12 +159,15 @@
 %D not used in all systems, since it makes most sense. But anyway, in \MKIV\ we
 %D avoid most of the complications anyway as we deal with much at the \LUA\ end.
 
+\lettonothing\m_syst_start_stop
+
 \permanent\tolerant\protected\def\start[#1]%
   {\bgroup
    \ifparameters
+     \lettonothing\m_syst_start_stop
      \expandafter\syst_start_nop
    \else
-     \edef\m_syst_start_stop{#1}%
+     \cdef\m_syst_start_stop{#1}%
      \expandafter\syst_start_yes
    \fi}
 

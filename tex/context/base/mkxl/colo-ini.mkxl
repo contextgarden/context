@@ -484,8 +484,8 @@
 \installcorenamespace{paletlist}
 \installcorenamespace{paletsize}
 
-\let\m_colo_palet\relax
-\let\c_colo_palet\relax
+\lettonothing\m_colo_palet
+\lettonothing\c_colo_palet
 
 \def\colo_palet_allocate#1%
   {\letcsname\??paletlist#1\endcsname\empty

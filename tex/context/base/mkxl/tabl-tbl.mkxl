@@ -460,6 +460,8 @@
    \lettonothing\tabl_tabulate_tag_stop_row
    \lettonothing\tabl_tabulate_tag_stop_cell}
 
+\lettonothing\m_tabl_tabulate_alignment
+
 \def\tabl_tabulate_set_preamble_step#1#2% only makes sense for many tabulates
   {\etoksapp\t_tabl_tabulate_preamble{%
         % begin of between/initial part
@@ -1510,7 +1512,7 @@
 \setuptabulate
   [\c!n=\zerocount]
 
-\let\tabl_tabulate_outside_stoprows \relax
+\let\tabl_tabulate_outside_stoprows\relax
 
 \protected\def\tabl_tabulate_outside_after_yes
   {\stoprows} % before/after handled in rows
@@ -1545,7 +1547,7 @@
    \fi}
 
 \def\tabl_tabulate_outside_after_indeed
-  {\tabl_tabulate_outside_stoprows_nop
+  {\tabl_tabulate_outside_stoprows % was an undefined, needs checking
    \tabulationparameter\c!after}
 
 % till here
@@ -1637,6 +1639,8 @@
   {\endgroup
    \def\tabl_tabulate_insert_body{#1}%
    \tabl_tabulate_process}
+
+\lettonothing\tabl_tabulate_pickup
 
 \protected\def\tabl_tabulate_pickup_indeed#1#2%
   {\protected\def\tabl_tabulate_pickup##L#1##R#2##1% indirect needed because otherwise ##L and ##R expand

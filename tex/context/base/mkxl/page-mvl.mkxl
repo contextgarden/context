@@ -992,6 +992,8 @@
 % sheets
 
 \mutable\lettonothing\askedsheet
+\mutable\lettonothing\askedsheetoption
+\mutable\lettonothing\askedspreadsheets
 
 \permanent\protected\defcsname\e!start\v!columnsetsheet\endcsname
   {\begingroup
@@ -1764,12 +1766,12 @@
      \page_floats_save\s!text % check this
    \else
      \begingroup
-     \edef\m_spacebefore{\floatparameter\c!spacebefore}%
-     \edef\m_spaceafter {\floatparameter\c!spaceafter}%
-     \ifx\m_spacebefore\v!halfline
+     \edef\p_spacebefore{\floatparameter\c!spacebefore}%
+     \edef\p_spaceafter {\floatparameter\c!spaceafter}%
+     \ifx\p_spacebefore\v!halfline
        \blank[\v!keep,\v!halfline]% \direct...
      \else
-       \blank[\m_spacebefore]%
+       \blank[\p_spacebefore]%
      \fi
     %\snaptogrid\ruledvpack\bgroup
      \ruledvpack\bgroup
@@ -1780,10 +1782,10 @@
        \dp\floatbox\zeropoint
        \box\floatbox
      \egroup
-     \ifx\m_spacebefore\v!halfline
+     \ifx\p_spacebefore\v!halfline % we check before here
        \blank[\v!halfline]%
      \else
-       \blank[\m_spaceafter]%
+       \blank[\p_spaceafter]%
      \fi
      \endgroup
    \fi}

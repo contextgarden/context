@@ -1527,6 +1527,48 @@ characters with a similar syntax but that has become optional when eight bit mod
 was added to the engines, it is configurable in \LUATEX\ and has been dropped in
 \LUAMETATEX: we operate in a \UTF\ universum.
 
+Of course we also have more obscure features. Take this definition:
+
+\startbuffer
+\tolerant\def\foo[#1]{}
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+One problem with optional arguments is that they can interfere with what follows,
+for instance what if we actually want to typeset something between square
+brackets? It's a reason why in math we seldom use optional parameters inside a
+formula: they get gobbled. One way to prevent look-ahead is to add \type {\relax}
+and it's tempting to see what \type {\norelax} does here because that one doesn't
+pushes back a \type {\relax}.
+
+\startbuffer
+% full expansion:
+
+\edef\oof{\foo\relax      [oeps]} \meaning\oof
+\edef\oof{\foo\norelax    [oeps]} \meaning\oof
+\edef\oof{\foo\noarguments[oeps]} \meaning\oof
+
+% one level expansion:
+
+\expandafter\def\expandafter\oof\expandafter{\foo\relax      [oeps]}
+    \meaning\oof
+\expandafter\def\expandafter\oof\expandafter{\foo\norelax    [oeps]}
+    \meaning\oof
+\expandafter\def\expandafter\oof\expandafter{\foo\noarguments[oeps]}
+    \meaning\oof
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In the output you can see that \type {\noarguments} does the job: it doesn't push
+back a non-match. For practical reasons we reserved the \type {\norelax} for
+scanning ahead in assignments.
+
+\startlines \tttf
+\getbuffer
+\stoplines
+
 \stopsectionlevel
 
 \stopdocument

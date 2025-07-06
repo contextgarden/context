@@ -15,6 +15,10 @@
 
 \registerctxluafile{java-ini}{}
 
+%D At some point this module will become a runtime loaded one, if only because time
+%D has learned that a decent stable subset of javascript never materialized. One of
+%D the disappointments of long term \PDF.
+
 \unprotect
 
 %D \macros

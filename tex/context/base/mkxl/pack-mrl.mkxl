@@ -431,6 +431,8 @@
    \thinrule
    \endgraf}
 
+\lettonothing\m_pack_thinrules_interlinespace
+
 \permanent\tolerant\protected\def\thinrules[#S#1]%
   {\bgroup
    \setupcurrentthinrules[#1]%

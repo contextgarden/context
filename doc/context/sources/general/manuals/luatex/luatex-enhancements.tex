@@ -1162,6 +1162,14 @@ The \prm {vsplit} primitive has to be followed by a specification of the require
 height. As alternative for the \type {to} keyword you can use \type {upto} to get
 a split of the given size but result has the natural dimensions then.
 
+When \prm {ignoreprimitiveerror} is set to~1, the error \quotation {Infinite glue
+shrinkage found in box being split} that occurs when splitting a box containing
+infinite negative glue is turned into a warning.
+
+% This is a kind of bad implementation: it could have been a bitset. The name
+% primitive error has no relation to splitting. The source puts this primitive
+% into the \ETEX\ category so it's a compatibility hack.
+
 \stopsubsection
 
 \startsubsection[title={Images and reused box objects},reference=sec:imagedandforms]

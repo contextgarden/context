@@ -108,6 +108,9 @@
 
 \newinteger\c_meta_nodes_n
 
+\lettonothing\p_meta_alternative
+\lettonothing\p_meta_option
+
 \permanent\protected\lettonothing\stopnodes
 
 \permanent\tolerant\protected\def\startnodes[#1]#:#2\stopnodes

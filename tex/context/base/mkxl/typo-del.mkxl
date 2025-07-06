@@ -20,6 +20,14 @@
 \ifdefined\dotagsetdelimitedsymbol   \else \aliased\let\dotagsetdelimitedsymbol  \gobbleoneargument \fi
 \ifdefined\dotagsetsubsentencesymbol \else \aliased\let\dotagsetsubsentencesymbol\gobbleoneargument \fi
 
+\lettonothing\p_delimited_left
+\lettonothing\p_delimited_location
+\lettonothing\p_delimited_margin
+\lettonothing\p_delimited_nextleft
+\lettonothing\p_delimited_nextright
+\lettonothing\p_delimited_repeat
+\lettonothing\p_delimited_right
+
 % Kind of special ...
 
 \installcorenamespace{hyphenmarksign} % let's not waste a setuphandler (yet)
@@ -345,6 +353,8 @@
 
 \installglobalmacrostack\currentdelimitedlanguage
 
+\lettonothing\m_delimited_argument
+
 \def\typo_delimited_set_language_nop
   {\setusedlanguage{\delimitedtextparameter\c!language}}
 
@@ -509,11 +519,6 @@
    \typo_delimited_show_language\hss<%
    \endgroup
    \dostoptagged}
-
-\lettonothing\p_delimited_left
-\lettonothing\p_delimited_right
-\lettonothing\p_delimited_nextleft
-\lettonothing\p_delimited_nextright
 
 \tolerant\def\typo_delimited_start_par[#1]%
   {\let\typo_delimited_stop\typo_delimited_stop_par
@@ -823,6 +828,8 @@
       \removelastskip % hm
       \dostoptagged
       \typo_delimited_pop}}
+
+\lettonothing\p_left_right
 
 \protected\def\typo_delimited_txt
   {\edef\p_left_right{\delimitedtextparameter\c!left\delimitedtextparameter\c!right}%

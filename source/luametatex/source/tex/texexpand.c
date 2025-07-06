@@ -1404,7 +1404,9 @@ static void tex_aux_macro_call(halfword cs, halfword cmd, halfword chr)
                         } else if (tolerant) {
                             last = false;
                             nofarguments = nofscanned;
-                            tex_back_input(cur_tok);
+                            if (! (cur_cmd == relax_cmd && cur_chr == no_arguments_relax_code)) {
+                                tex_back_input(cur_tok);
+                            }
                             goto QUITTING;
                         } else {
                             last = false;
@@ -1671,7 +1673,9 @@ case integer_match_token:
               BAD:
                 if (tolerant) {
                     quitting = nofscanned ? 1 : count ? 2 : 3;
-                    tex_back_input(cur_tok);
+                    if (! (cur_cmd == relax_cmd && cur_chr == no_arguments_relax_code)) {
+                        tex_back_input(cur_tok);
+                    }
                  // last = false;
                     goto FOUND;
                 } else if (s) {

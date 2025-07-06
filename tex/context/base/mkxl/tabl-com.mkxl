@@ -74,6 +74,7 @@
 \permanent\protected\lettonothing\FB
 \permanent\protected\lettonothing\FL
 \permanent\protected\lettonothing\FR
+\permanent\protected\lettonothing\GL
 \permanent\protected\lettonothing\HC
 \permanent\protected\lettonothing\HL
 \permanent\protected\lettonothing\HQ
@@ -112,6 +113,8 @@
 \permanent\protected\lettonothing\TR
 \permanent\protected\lettonothing\TT
 \permanent\protected\lettonothing\VL
+\permanent\protected\lettonothing\VLT % math
+\permanent\protected\lettonothing\VLB % math
 \permanent\protected\lettonothing\VLVL
 \permanent\protected\lettonothing\VC
 \permanent\protected\lettonothing\VD

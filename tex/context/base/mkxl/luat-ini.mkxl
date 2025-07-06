@@ -64,7 +64,7 @@
 
     \permanent\protected\def\superexplicitdiscretionary
       {\begingroup
-       \hyphenationmode\explicithyphenationmodecode\explicitdiscretionary
+       \hyphenationmode\explicithyphenationcode\explicitdiscretionary
        \endgroup}
 
     % Conceptually the best:
@@ -292,6 +292,8 @@
 % \startctxfunctiondefinition foo commands.foo() \stopctxfunctiondefinition
 %
 % \installctxfunction\foo{commands.foo}
+
+\lettonothing\m_syst_name
 
 \permanent\protected\def\installctxfunction#1#2% expandable
   {\edef\m_syst_name{\csstring#1}%

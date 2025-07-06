@@ -172,14 +172,20 @@ if setinspector and vector then
         end
     end)
 
-    local ismesh  = vector.mesh.ismesh
-    local totable = vector.mesh.totable
+    local mesh = vector.mesh
 
-    setinspector("mesh",function(v)
-        if ismesh(v) then
-            inspect(totable(v))
-            return true
-        end
-    end)
+    if mesh then
+
+        local ismesh  = mesh.ismesh
+        local totable = mesh.totable
+
+        setinspector("mesh",function(v)
+            if ismesh(v) then
+                inspect(totable(v))
+                return true
+            end
+        end)
+
+    end
 
 end

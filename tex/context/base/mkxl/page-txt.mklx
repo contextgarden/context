@@ -859,6 +859,9 @@
       \v!marginedge=>\let\m_page_layouts_page_number_location_h\v!text
                      \let\m_page_layouts_page_number_location_x\c!marginedgetext]}
 
+\lettonothing\p_strc_pagenumbers_page
+\lettonothing\p_strc_pagenumbers_location
+
 \protected\def\strc_pagenumbers_set_location
   {\edef\p_strc_pagenumbers_location{\directpagenumberingparameter\c!location}%
    \ifx\p_strc_pagenumbers_location\m_page_layouts_page_number_location

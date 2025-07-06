@@ -48,6 +48,23 @@
 \mutable\def\tablekernfactor             {1}
 \mutable\def\tablelinethicknessfactor    {4}
 
+% These will show up red when we check so:
+
+\lettonothing\!tfRowOfWidths
+\lettonothing\!tfWidthText
+\lettonothing\!tgCode
+\lettonothing\!tgReturn
+\lettonothing\!tgValue
+\lettonothing\!thIterate
+\lettonothing\!thSign
+\lettonothing\!thSpaceToken
+\lettonothing\!thx
+\lettonothing\!tkImproperUse
+\lettonothing\!tnStyle
+\lettonothing\!tnext
+\lettonothing\!tqStyle
+\lettonothing\!ttAlternateVrule
+
 \newtoks\everytable
 \newtoks\everytableparbox
 
@@ -1379,7 +1396,7 @@
 \permanent\let\stoptable\relax
 
 \permanent\def\table_table_stop
-  {\tabl_tables_chuck_auto_row % before the tail, else noalign problem
+  {\tabl_table_chuck_auto_row % before the tail, else noalign problem
    \tabl_table_insert_tail
    \noalign\bgroup
      \glettonothing\tabl_table_head
@@ -1554,13 +1571,13 @@
    \forgetall % added
    \edef\currenttableformat{#1}%
    \ifempty\currenttableformat\else
-     \tabl_tables_get_nofcolumns\currenttableformat
+     \tabl_table_get_nofcolumns\currenttableformat
      % more modern is to use catcode tables
      \expandafter\tabl_table_begin_format\currenttableformat\doendtableformat
    \fi}
 
 \def\tabl_table_finish
-  {\tabl_tables_chuck_auto_row
+  {\tabl_table_chuck_auto_row
    \unskip\crcr
    \tabl_table_normal_end
    \global\intablefalse
@@ -1608,7 +1625,7 @@
 \aliased\let\stoptables\relax % needed for \noalign
 
 \def\table_table_stop_s % not \protected as we need the lookahead (brrr)
-  {\tabl_tables_chuck_auto_row % AM: before the tail, else noalign problem
+  {\tabl_table_chuck_auto_row % AM: before the tail, else noalign problem
    \ifconditional\c_tabl_table_repeat_tail\else\tabl_table_insert_tail\fi
    \tabl_table_finish
    \egroup
@@ -1711,8 +1728,8 @@
    \noalign\bgroup
      \nobreak
      \tabl_table_set_action\tableunknownstate
-     \glettonothing\tabl_tables_check_auto_row
-     \glettonothing\tabl_tables_chuck_auto_row
+     \glettonothing\tabl_table_check_auto_row
+     \glettonothing\tabl_table_chuck_auto_row
      \global\currenttablecolumn\zerocount
    \egroup}
 
@@ -1809,19 +1826,19 @@
    \ifcase#1\relax
      % unknown
    \or
-     \tabl_tables_end_line\SR\SR\tablerowfactor\tablerowfactor
+     \tabl_table_end_line\SR\SR\tablerowfactor\tablerowfactor
    \or
-     \tabl_tables_end_line\FR\FR\tablerowfactor\tablerowzero
+     \tabl_table_end_line\FR\FR\tablerowfactor\tablerowzero
    \or
      \ifnum\tableforcestate=\tableforcelastrowstate
-       \tabl_tables_end_line\MR\LR\tablerowzero\tablerowfactor
+       \tabl_table_end_line\MR\LR\tablerowzero\tablerowfactor
      \orelse\ifnum\tableforcestate=\tableforcefirstrowstate
-       \tabl_tables_end_line\MR\FR\tablerowfactor\tablerowzero
+       \tabl_table_end_line\MR\FR\tablerowfactor\tablerowzero
      \else
-       \tabl_tables_end_line\MR\MR\tablerowzero\tablerowzero
+       \tabl_table_end_line\MR\MR\tablerowzero\tablerowzero
      \fi
    \or
-     \tabl_tables_end_line\LR\LR\tablerowzero\tablerowfactor
+     \tabl_table_end_line\LR\LR\tablerowzero\tablerowfactor
    \fi
    \noalign\bgroup
      \tabl_table_set_force\tableunknownstate
@@ -1838,21 +1855,21 @@
 %D the last row.
 
 \protected\def\tabl_table_AR
-  {\glet\tabl_tables_check_auto_row\tabl_tables_check_auto_row_indeed
-   \glet\tabl_tables_chuck_auto_row\tabl_tables_chuck_auto_row_indeed}
+  {\glet\tabl_table_check_auto_row\tabl_table_check_auto_row_indeed
+   \glet\tabl_table_chuck_auto_row\tabl_table_chuck_auto_row_indeed}
 
-\lettonothing\tabl_tables_check_auto_row
-\lettonothing\tabl_tables_chuck_auto_row
+\lettonothing\tabl_table_check_auto_row
+\lettonothing\tabl_table_chuck_auto_row
 
-\def\tabl_tables_check_auto_row_indeed
-  {\glettonothing\tabl_tables_check_auto_row
+\def\tabl_table_check_auto_row_indeed
+  {\glettonothing\tabl_table_check_auto_row
    \ifnum\tableactionstate=\tablerulestate   \FR\orelse
    \ifnum\tableactionstate=\tableunknownstate\FR\else
                                              \MR\fi}
 
-\def\tabl_tables_chuck_auto_row_indeed
-  {\glettonothing\tabl_tables_check_auto_row
-   \glettonothing\tabl_tables_chuck_auto_row
+\def\tabl_table_chuck_auto_row_indeed
+  {\glettonothing\tabl_table_check_auto_row
+   \glettonothing\tabl_table_chuck_auto_row
    \ifnum\tableactionstate=\tablerulestate   \SR\orelse
    \ifnum\tableactionstate=\tableunknownstate\SR\else
                                              \LR\fi}
@@ -1861,7 +1878,7 @@
 %D head. If a gets split indeed, the spacing before and after a horizontal rule is
 %D corrected according to what we expect.
 
-\def\tabl_tables_end_line#1#2#3#4%
+\def\tabl_table_end_line#1#2#3#4%
   {\ifx#1#2\else
      \writestatus\m!TABLE{\string#1\space changed into \string#2}%
    \fi
@@ -1889,7 +1906,7 @@
 
 \bgroup \catcode\barasciicode\othercatcode
 
-\gdef\tabl_tables_get_nofcolumns#1% todo: also divert this to lua as with tabulate
+\gdef\tabl_table_get_nofcolumns#1% todo: also divert this to lua as with tabulate
   {\bgroup
    \cleanupfeatures % needed !
    \tabl_table_use_bar % doesn't do anything as we don't treat #1
@@ -1907,9 +1924,6 @@
 \newinteger\c_tabl_table_vrule_thickness_factor
 \newinteger\c_tabl_table_hrule_thickness_factor
 \newinteger\c_tabl_table_drule_span
-
-\lettonothing\m_tabl_table_vrule_color
-\lettonothing\m_tabl_table_hrule_color
 
 \appendtoks
     \enforced\let\VL\tabl_table_VL
@@ -1932,7 +1946,7 @@
      {\xdef\m_tabl_table_vrule_color{#1}}}
 
 \permanent\tolerant\protected\def\tabl_table_VL[#1]%
-  {\tabl_tables_check_auto_row
+  {\tabl_table_check_auto_row
    \global\advanceby\currenttablecolumn\plusone
    \glettonothing\m_tabl_table_vrule_color
    \global\c_tabl_table_vrule_thickness_factor\m_tabl_table_VLwidth\relax
@@ -1963,7 +1977,7 @@
      {\xdef\m_tabl_table_hrule_color{#1}}}
 
 \permanent\tolerant\protected\def\tabl_table_HL[#1]%
-  {\tabl_tables_chuck_auto_row
+  {\tabl_table_chuck_auto_row
    \tabl_table_finish_row
    \noalign\bgroup
    \nobreak
@@ -2024,7 +2038,7 @@
 \to \localtabledefinitions
 
 \permanent\tolerant\protected\def\tabl_table_TB[#1]%
-  {\tabl_tables_chuck_auto_row
+  {\tabl_table_chuck_auto_row
    \tabl_table_finish_row
    \noalign\bgroup
    \blank[\ifempty{#1}\directtablesparameter\c!NL\else#1\fi]%
@@ -2042,7 +2056,7 @@
    \egroup}
 
 \protected\def\tabl_table_NC
-  {\tabl_tables_check_auto_row
+  {\tabl_table_check_auto_row
    \global\advanceby\currenttablecolumn \plusone
    \tabl_table_normal_no_bar}
 
@@ -2065,7 +2079,7 @@
 
 \def\tabl_table_check_division
   {\ifconditional\c_tabl_table_is_division\else
-     \tabl_tables_chuck_auto_row
+     \tabl_table_chuck_auto_row
      \global\currenttablecolumn\zerocount
      \global\c_tabl_table_is_division\conditionaltrue
    \fi}
@@ -2120,7 +2134,7 @@
 
 \permanent\protected\def\tabl_table_DCV#1%
   {\tabl_table_check_division
-   \tabl_tables_check_auto_row
+   \tabl_table_check_auto_row
    \global\advanceby\currenttablecolumn \plusone
    #1}
 
@@ -2195,6 +2209,12 @@
    \assignalfadimension{\directtablesparameter\c!VL}\m_tabl_table_VLwidth 246%
    \assignalfadimension{\directtablesparameter\c!HL}\m_tabl_table_HLheight246%
 \to \everysetuptables
+
+\lettonothing\p_tabl_table_height
+\lettonothing\p_tabl_table_depth
+\lettonothing\p_tabl_table_frame
+\lettonothing\p_tabl_table_split
+\lettonothing\p_tabl_table_textwidth
 
 \def\tabl_table_local_setups
   {\directtablesparameter\c!commands\relax

@@ -533,11 +533,13 @@
      \kern\hsize
    \egroup}}
 
+\let\m_page_sides_strut\relax
+
 \def\page_sides_flush_floats_normal
   {\ifdim\scratchdimen>\struthtdp
      \strut
    \else
-     \m_pages_strut
+     \m_page_sides_strut
    \fi}
 
 \def\page_sides_flush_floats_progress
@@ -545,7 +547,7 @@
    \page_sides_force_depth
    \parskip\zeroskip
    \let\page_sides_flush_floats\relax
-   \edef\m_pages_strut
+   \edef\m_page_sides_strut
      {\ifcsname\??sidefloatsteps\rootfloatparameter\c!step\endcsname
         \lastnamedcs
       \else

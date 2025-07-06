@@ -43,9 +43,6 @@
 
 % maybe: systemmode "block:<name>"
 
-\lettonothing\m_block
-\lettonothing\m_subblock
-
 \protected\def\strc_blocks_begin#1%
   {\edef\m_block{#1}%
    \lettonothing\m_subblock

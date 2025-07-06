@@ -120,11 +120,12 @@
    \else
      \edef\currentmathradicaldegree{#settings}%
    \fi
-   \ifempty\currentmathradicaldegree
-     \let\currentmathradicaldegree\m_math_no_degree
-   \fi
+ % \ifempty\currentmathradicaldegree
+ %   \let\currentmathradicaldegree\m_math_no_degree
+ % \fi
    \ifcase\mathradicalparameter\c!right\else
-     \let\currentmathradicaldegree\m_math_no_degree
+   % \let\currentmathradicaldegree\m_math_no_degree
+     \lettonothing\currentmathradicaldegree
    \fi
    \edef\p_mp{\mathradicalparameter\c!mp}%
    \ifcstok{\mathradicalparameter\c!plugin}\v!mp
@@ -196,7 +197,7 @@
     \fi}%
    \endgroup}
 
-\def\m_math_no_degree{{}}
+% \def\m_math_no_degree{{}}
 
 % for every font
 %

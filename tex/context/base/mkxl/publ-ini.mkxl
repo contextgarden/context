@@ -822,6 +822,8 @@
 \aliased\let\btxdoifcombiinlistelse          \btxdoifelsecombiinlist
 \aliased\let\btxdoifcitedoneelse             \btxdoifelsecitedone
 
+\lettonothing\p_specification
+
 \tolerant\def\publ_place_list_indeed#1#2#*[#3]#*[#4]%
   {\begingroup
    \ifparameters\or\or
@@ -1934,7 +1936,7 @@
 %     \btxusecommand[btx:apa:list:article:title]{foo}
 % \btxstopstyle
 
-\mutable\lettonothing\m_btx_saved_current
+\lettonothing\m_btx_saved_current
 
 \permanent\protected\def\btxstartstyle[#1]%
   {\begingroup

@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-07-04 21:21
+-- merge date  : 2025-07-06 17:38
 
 do -- begin closure to overcome local limits and interference
 
@@ -3221,14 +3221,17 @@ if setinspector and vector then
    return true
   end
  end)
- local ismesh=vector.mesh.ismesh
- local totable=vector.mesh.totable
- setinspector("mesh",function(v)
-  if ismesh(v) then
-   inspect(totable(v))
-   return true
-  end
- end)
+ local mesh=vector.mesh
+ if mesh then
+  local ismesh=mesh.ismesh
+  local totable=mesh.totable
+  setinspector("mesh",function(v)
+   if ismesh(v) then
+    inspect(totable(v))
+    return true
+   end
+  end)
+ end
 end
 
 end -- closure

@@ -138,6 +138,8 @@
 
 \permanent\protected\def\dosetdirectpagereference#1{\strc_references_set_named_reference\s!page{#1}{}{}} % low level, maybe use _
 
+\lettonothing\m_strc_references_asked
+
 \permanent\protected\def\usereferenceparameter#1% faster local variant
   {\edef\m_strc_references_asked{#1\c!reference}%
    \ifempty\m_strc_references_asked\else
@@ -322,6 +324,9 @@
      \setbox\b_strc_destination_nodes\emptyhbox
      \lastdestinationattribute\attributeunsetvalue
    \fi}
+
+\lettonothing\m_strc_references_text
+\lettonothing\m_strc_references_user
 
 \protected\def\strc_references_direct_full_user#user#labels#text%
   {\ifreferencing

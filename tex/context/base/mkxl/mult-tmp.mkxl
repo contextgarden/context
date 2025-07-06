@@ -1,0 +1,239 @@
+%D \module
+%D   [       file=mult-tmp,
+%D        version=2025.07.05,
+%D          title=\CONTEXT\ Multilingual Macros,
+%D       subtitle=Temporary variables,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D This is more a convenience module because we don't want false positive undefined
+%D entries in \type {s-syst-macros.mkxl}. We could predefine these (commented code
+%D in mult-fmt) but that gives some 500 not needed hash entries and
+%D a larger overview file.
+
+\writestatus{loading}{ConTeXt Multilingual Macros / Initialization}
+
+\unprotect
+
+\lettonothing\p_after
+\lettonothing\p_align
+\lettonothing\p_aligntitle
+\lettonothing\p_alternative
+\lettonothing\p_ampersand
+\lettonothing\p_anchor
+\lettonothing\p_anchoring
+\lettonothing\p_askedlanguage
+\lettonothing\p_autonumbers
+\lettonothing\p_background
+\lettonothing\p_before
+\lettonothing\p_bidi
+\lettonothing\p_blank
+\lettonothing\p_bodyfont
+\lettonothing\p_bottomoffset
+\lettonothing\p_category
+\lettonothing\p_collapsing
+\lettonothing\p_color
+\lettonothing\p_command
+\lettonothing\p_compress
+\lettonothing\p_compressseparator
+\lettonothing\p_compressstopper
+\lettonothing\p_contrastcolor
+\lettonothing\p_counter
+\lettonothing\p_coupling
+\lettonothing\p_cropoffset
+\lettonothing\p_crossreference
+\lettonothing\p_dash
+\lettonothing\p_dashstep
+\lettonothing\p_depth
+\lettonothing\p_depthcorrection
+\lettonothing\p_designsize
+\lettonothing\p_distance
+\lettonothing\p_domain
+\lettonothing\p_empty
+\lettonothing\p_equalheight
+\lettonothing\p_equalwidth
+\lettonothing\p_extensions
+\lettonothing\p_factor
+%lettonothing\p_fallbacks
+%lettonothing\p_features
+\lettonothing\p_fence
+\lettonothing\p_file
+\lettonothing\p_filler
+\lettonothing\p_font
+\lettonothing\p_footer
+\lettonothing\p_foregroundcolor
+\lettonothing\p_frame
+\lettonothing\p_freeregion
+\lettonothing\p_functioncolor
+\lettonothing\p_functionstyle
+%lettonothing\p_goodies
+\lettonothing\p_grid
+\lettonothing\p_hang
+\lettonothing\p_hascaption
+\lettonothing\p_haslevel
+\lettonothing\p_hasnumber
+\lettonothing\p_hastitle
+\lettonothing\p_header
+\lettonothing\p_headnumber
+\lettonothing\p_height
+\lettonothing\p_hfactor
+\lettonothing\p_hoffset
+\lettonothing\p_hyphen
+\lettonothing\p_inbetween
+\lettonothing\p_indenting
+\lettonothing\p_indentnext
+\lettonothing\p_initializations
+\lettonothing\p_interaction
+\lettonothing\p_kernpairs
+\lettonothing\p_key
+\lettonothing\p_label
+\lettonothing\p_lcgreek
+\lettonothing\p_left
+\lettonothing\p_leftedge
+\lettonothing\p_leftoffset
+\lettonothing\p_level
+\lettonothing\p_levels
+\lettonothing\p_limits
+\lettonothing\p_limitstretch
+\lettonothing\p_line
+\lettonothing\p_linecorrection
+\lettonothing\p_linedirection
+\lettonothing\p_lines
+\lettonothing\p_location
+\lettonothing\p_margin
+\lettonothing\p_mathclass
+\lettonothing\p_mathematics
+\lettonothing\p_mathmeaning
+\lettonothing\p_maxheight
+\lettonothing\p_maxwidth
+\lettonothing\p_method
+\lettonothing\p_middle
+\lettonothing\p_minwidth
+\lettonothing\p_mode
+\lettonothing\p_monthconversion % in mkiv publications imp file
+\lettonothing\p_mp
+\lettonothing\p_n
+\lettonothing\p_name
+\lettonothing\p_next
+\lettonothing\p_number
+\lettonothing\p_numbering
+\lettonothing\p_off
+\lettonothing\p_offset
+\lettonothing\p_on
+\lettonothing\p_option
+\lettonothing\p_order
+\lettonothing\p_orientation
+\lettonothing\p_overflow
+\lettonothing\p_page
+\lettonothing\p_pagecolormodel
+\lettonothing\p_pagenumber
+\lettonothing\p_prefix
+\lettonothing\p_prefixsegments
+\lettonothing\p_profile
+\lettonothing\p_random
+\lettonothing\p_reference
+\lettonothing\p_region
+\lettonothing\p_renderingsetup
+\lettonothing\p_repeat
+\lettonothing\p_reset
+\lettonothing\p_right
+\lettonothing\p_rightedge
+\lettonothing\p_rightoffset
+\lettonothing\p_rotation
+\lettonothing\p_rule
+\lettonothing\p_rulecolor
+\lettonothing\p_rulethickness
+\lettonothing\p_scale
+\lettonothing\p_selection
+\lettonothing\p_separator
+\lettonothing\p_setups
+\lettonothing\p_shrink
+\lettonothing\p_sidethreshold
+\lettonothing\p_simplecommand
+\lettonothing\p_size
+\lettonothing\p_spaceafter
+\lettonothing\p_spacebefore
+\lettonothing\p_spaceinbetween
+\lettonothing\p_specification
+\lettonothing\p_start
+\lettonothing\p_state
+\lettonothing\p_stretch
+\lettonothing\p_strut
+\lettonothing\p_stylealternative
+\lettonothing\p_sx
+\lettonothing\p_sy
+\lettonothing\p_sygreek
+\lettonothing\p_symbol
+\lettonothing\p_synchronize
+\lettonothing\p_text
+\lettonothing\p_textseparator
+\lettonothing\p_textwidth
+\lettonothing\p_thickness
+\lettonothing\p_threshold
+\lettonothing\p_tolerance
+\lettonothing\p_topoffset
+\lettonothing\p_type
+\lettonothing\p_ucgreek
+\lettonothing\p_voffset
+\lettonothing\p_wfactor
+\lettonothing\p_width
+\lettonothing\p_xanchor
+\lettonothing\p_xoffset
+\lettonothing\p_xscale
+\lettonothing\p_yanchor
+\lettonothing\p_yoffset
+\lettonothing\p_yscale
+
+% these actually are
+
+\let\p_features  \undefined
+\let\p_fallbacks \undefined
+\let\p_goodies   \undefined
+\let\p_designsize\undefined
+
+% when no parameter
+
+\lettonothing\m_active
+\lettonothing\m_align
+\lettonothing\m_alignscripts
+\lettonothing\m_argument
+\lettonothing\m_block
+\lettonothing\m_bodyfont
+\lettonothing\m_first
+\lettonothing\m_fixed
+\lettonothing\m_lines
+\lettonothing\m_list
+%lettonothing\m_overlaycolor
+%lettonothing\m_overlaylinecolor
+\lettonothing\m_space
+%lettonothing\m_spaceafter
+\lettonothing\m_spacebefore
+\lettonothing\m_strut
+\lettonothing\m_subblock
+\lettonothing\m_temp
+
+\protect
+
+% mtxrun --script grep p_ *.mk*x > temp.log
+%
+% local data = io.loaddata("t:/sources/temp.log")
+%
+% local h1 = { }
+% local h2 = { }
+%
+% for s in string.gmatch(data,"\\p_([a-z_]+)") do
+%     if string.find(s,"_") then
+%         h2[s] = true
+%     else
+%         h1[s] = true
+%     end
+% end
+%
+% for k, v in table.sortedhash(h1) do
+%     print("\\lettonothing\\p_"..k)
+% end

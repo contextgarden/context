@@ -220,6 +220,8 @@
   {\begingroup
    \futureexpandis[\syst_boxes_smash_yes\syst_boxes_smash_nop}
 
+\lettonothing\m_boxes_smash_options
+
 \def\syst_boxes_smash_nop
   {\edef\m_boxes_smash_options{hd}%
    \futurelet\nexttoken\syst_boxes_smash_indeed}
@@ -1120,6 +1122,8 @@
 \mutable\let\after  \relax % for now mutable
 \mutable\let\white  \relax % for now mutable
 
+\lettonothing\m_syst_boxes_before
+
 \permanent\protected\def\processtokens#1#2#3#4#5%
   {\begingroup
    \enforced\permanent\def\space{ }%
@@ -1456,10 +1460,24 @@
 \permanent\protected\def\topskippedbox
   {\hpack\bgroup\dowithnextboxcs\syst_boxes_topskippedbox_finish\hbox}
 
+% \def\syst_boxes_topskippedbox_finish
+%   {\edef\m_boxes_tmp{\ifdim\strutdepth=\dp\nextbox\dp\nextbox\the\dp\nextbox\fi}%
+%    \lower\topskip\hpack{\raise\strutheight\box\nextbox}%
+%    \m_boxes_tmp
+%    \egroup}
+
 \def\syst_boxes_topskippedbox_finish
-  {\edef\m_boxes_tmp{\ifdim\strutdepth=\dp\nextbox\dp\nextbox\the\dp\nextbox\fi}%
-   \lower\topskip\hpack{\raise\strutheight\box\nextbox}%
-   \m_boxes_tmp
+  {\ifdim\dp\nextbox=\strutdp
+     \donetrue
+   \else
+     \donefalse
+   \fi
+   \lower\topskip\hpack\bgroup
+     \raise\strutht\box\nextbox
+   \egroup
+   \ifdone
+     \dp\nextbox\strutdp
+   \fi
    \egroup}
 
 %D \macros

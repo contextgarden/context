@@ -230,13 +230,13 @@
      \edef\p_overflow {\mathfenceparameter\c!overflow}%
      \edef\p_size     {\mathfenceparameter\c!size}%
      \edef\p_mathclass{\mathfenceparameter\c!mathclass}%
-     \edef\p_inline_factor{\ifconditional\indisplaymath\mathfenceparameter\c!displayfactor\else\mathfenceparameter\c!inlinefactor\fi}%
+     \edef\p_factor   {\ifconditional\indisplaymath\mathfenceparameter\c!displayfactor\else\mathfenceparameter\c!inlinefactor\fi}%
      \scratchcounter\math_tags_mfunctionlabattribute\plusthree{\currentglobalmathfence}{\mathfenceparameter\c!mathmeaning}\relax
-     \ifempty\p_inline_factor
+     \ifempty\p_factor
        % nothing
      \orelse\ifx#1\Uleft
        \push_macro_c_math_factor_fenced
-       \integerdef\c_math_factor_fenced\p_inline_factor\relax
+       \integerdef\c_math_factor_fenced\p_factor\relax
      \orelse\ifx#1\Uright
        \pop_macro_c_math_factor_fenced
      \fi
@@ -370,6 +370,10 @@
 \protected\def\math_fenced_middle_colon{\mfence :\relax}
 \protected\def\math_fenced_middle_comma{\mathatom \s!leftclass \mathpunctuationcode \s!rightclass \mathmiddlecode {,}}
 
+\ifdefined\suchthat \else \aliased\let\suchthat\relax \fi
+\ifdefined\where    \else \aliased\let\where   \relax \fi
+\ifdefined\and      \else \aliased\let\and     \relax \fi
+
 \startsetups math:fence:set:bar
     \aliased\let\suchthat\math_fenced_middle_bar
     \aliased\let\where   \math_fenced_middle_comma
@@ -453,9 +457,9 @@
      \setmathsmalltextbox\scratchboxone\hbox{\usemathfencestyleandcolor\c!leftstyle \c!leftcolor #3}%
      \setmathsmalltextbox\scratchboxtwo\hbox{\usemathfencestyleandcolor\c!rightstyle\c!rightcolor#4}%
      \let\math_fenced_common\math_fenced_horizontal_common
-     \edef\p_fenced_middle{\mathfenceparameter\c!middle}%
-     \ifempty\p_fenced_middle\else
-       \letmathfenceparameter\c!left \p_fenced_middle
+     \edef\p_middle{\mathfenceparameter\c!middle}%
+     \ifempty\p_middle\else
+       \letmathfenceparameter\c!left \p_middle
        \letmathfenceparameter\c!right\zerocount
      \fi
      \scratchdistance{\mathfenceparameter\c!distance}%
@@ -548,6 +552,8 @@
 \permanent\protected\def\stopmathfenced
   {\math_fenced_fenced_stop\currentmathfence
    \endgroup}
+
+\lettonothing\m_math_fenced_wrap
 
 \protected\def\math_fenced_start_wrap#1%
   {\begingroup

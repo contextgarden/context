@@ -761,6 +761,14 @@
 
 \aliased\let\doifcommonelse\doifelsecommon
 
+%D Here no commalistelement is set:
+
+\permanent\def\expdoifelsecommon#1#2{\ifcommon{#1}{#2}\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+\permanent\def\expdoifelseinset #1#2{\ifinset {#1}{#2}\expandafter\firstoftwoarguments\else\expandafter\secondoftwoarguments\fi}
+
+\aliased\let\expdoifcommonelse\expdoifelsecommon
+\aliased\let\expdoifinsetelse \expdoifelseinset
+
 %D \macros
 %D   {processcommalist,processcommacommand,quitcommalist,
 %D    processcommalistwithparameters}
@@ -1009,9 +1017,6 @@
 %D have better ways now.
 
 \mutable\lettonothing\commalistelement
-
-\lettonothing\m_syst_string_one
-\lettonothing\m_syst_string_two
 
 \let\syst_helpers_do_compare_process_action\relax
 
@@ -1400,6 +1405,8 @@
 % \def\rawdoifelseinset#1#2{\doifinstringelse{,#1,}{,#2,}}
 % \def\rawdoifinset    #1#2{\doifinstring    {,#1,}{,#2,}}
 
+\lettonothing\m_syst_sub_string
+
 \def\syst_helpers_do_if_else_in_set#1%
   {\ifhasxtoks{,\m_syst_sub_string,}{,#1,}%
      \expandafter\firstoftwoarguments
@@ -1424,6 +1431,8 @@
      \expandafter\gobbleoneargument
    \fi}
 
+\permanent\def\m_syst_two_commas{,,} % should be a s! or so
+
 \permanent\protected\def\rawdoifinset#1% or just alias this one
   {\edef\m_syst_sub_string{#1}% expand #1 here
    \ifx\m_syst_sub_string\m_syst_two_commas
@@ -1435,6 +1444,9 @@
 %D Some more raw material:
 
 % probably never used
+%
+% \lettonothing\m_syst_helpers_process_action
+% \lettonothing\m_syst_helpers_process_action_unknown
 %
 % \def\syst_helpers_raw_process_action#1=>#2,%
 %   {\ifarguments
@@ -1655,6 +1667,10 @@
 %
 % so we do this instead (and also silently recover).
 
+\lettonothing\m_syst_parameter
+\lettonothing\m_syst_parameter_n
+\lettonothing\m_syst_parameter_s
+
 \tolerant\def\syst_get_parameters_n#*#1=#S#2,#M,%
   {\unless\ifparameter#1\or\expandafter\gobbleoneargument
    \orelse\ifparameter#2\or\defcsname\m_syst_parameter#1\endcsname{#2}%
@@ -1698,8 +1714,8 @@
 %D \getemptyparameters [label] [...=...,...=...]
 %D \stoptyping
 
-% \let\syst_helpers_get_empty_parameters\gobbleoneargument
-%
+\let\syst_helpers_get_empty_parameters\gobbleoneargument
+
 % \permanent\protected\def\getemptyparameters[#1]#*[#2]%
 %   {\def\syst_helpers_get_empty_parameters##1{\doassignempty[#1][##1]}%
 %    \processcommalist[#2]\syst_helpers_get_empty_parameters}
@@ -4224,6 +4240,16 @@
 \let\m_syst_helpers_handle_group_after \relax
 \let\m_syst_helpers_handle_group_before\relax
 
+% weird names \m_syst_helpers_handle_group_normal_before
+% weird names \m_syst_helpers_handle_group_normal_before_x
+% weird names \m_syst_helpers_handle_group_pickup_before
+% weird names \m_syst_helpers_handle_group_simple_after
+% weird names \m_syst_helpers_handle_group_simple_before
+
+\lettonothing\m_syst_helpers_handle_group_a
+\lettonothing\m_syst_helpers_handle_group_b
+\lettonothing\m_syst_helpers_handle_group_p
+
 \protected\def\syst_helpers_handle_group_nop
   {\ifnum\currentgrouptype=\semisimplegroupcode
      \expandafter\syst_helpers_handle_group_nop_a
@@ -6693,7 +6719,9 @@
 \integerdef\c_helpers_range_abs_min\zerocount
 \integerdef\c_helpers_range_abs_max\zerocount
 
-\lettonothing\m_helpers_range_action
+\lettonothing\m_syst_helpers_range_action
+\lettonothing\m_syst_helpers_range_from
+\lettonothing\m_syst_helpers_range_to
 
 \def\syst_helpers_with_range#1%
   {\splitstring#1\at:\to\m_syst_helpers_range_from\and\m_syst_helpers_range_to
@@ -6706,22 +6734,22 @@
    \ifempty\m_syst_helpers_range_to
      \let\m_syst_helpers_range_to\m_syst_helpers_range_from
    \fi
-   \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_helpers_range_action{##1}}}%
+   \dostepwiserecurse\m_syst_helpers_range_from\m_syst_helpers_range_to\plusone{\m_syst_helpers_range_action{##1}}}%
 
 \permanent\protected\def\processranges[#1]#2% #1= n:m,p,q:r
-  {\def\m_helpers_range_action{#2}%
+  {\def\m_syst_helpers_range_action{#2}%
    \integerdef\c_helpers_range_min\zerocount
    \integerdef\c_helpers_range_max\zerocount
    \processcommacommand[#1]\syst_helpers_with_range}
 
 \permanent\protected\def\dowithrange#1#2% set action
-  {\def\m_helpers_range_action{#2}%
+  {\def\m_syst_helpers_range_action{#2}%
    \integerdef\c_helpers_range_min\zerocount
    \integerdef\c_helpers_range_max\zerocount
    \processcommacommand[#1]\syst_helpers_with_range}
 
 \permanent\protected\def\dowithminmaxrange#1#2#3#4% min max set action
-  {\def\m_helpers_range_action{#4}%
+  {\def\m_syst_helpers_range_action{#4}%
    \integerdef\c_helpers_range_min#1\relax
    \integerdef\c_helpers_range_max#2\relax
    \processcommacommand[#3]\syst_helpers_with_range}
@@ -6745,18 +6773,18 @@
        \m_syst_helpers_range_to
        {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}%
        {%(\the\numexpr\c_helpers_range_abs_max+##1+\plusone\relax)
-        \m_helpers_range_action{\tointeger{\c_helpers_range_abs_max+##1+\plusone}}}%
+        \m_syst_helpers_range_action{\tointeger{\c_helpers_range_abs_max+##1+\plusone}}}%
    \else
      \dostepwiserecurse
        \m_syst_helpers_range_from
        \m_syst_helpers_range_to
        {\ifnum\m_syst_helpers_range_from>\m_syst_helpers_range_to\minusone\else\plusone\fi}
        {%(\the\numexpr\c_helpers_range_abs_min+##1-\plusone\relax)
-        \m_helpers_range_action{\tointeger{\c_helpers_range_abs_min+##1-\plusone}}}%
+        \m_syst_helpers_range_action{\tointeger{\c_helpers_range_abs_min+##1-\plusone}}}%
    \fi}
 
 \permanent\protected\def\dowithminmaxrangeslice#1#2#3#4#5#6% absmin absmax min max set action
-  {\def\m_helpers_range_action{#6}%
+  {\def\m_syst_helpers_range_action{#6}%
    \integerdef\c_helpers_range_abs_min#1\relax
    \integerdef\c_helpers_range_abs_max#2\relax
    \integerdef\c_helpers_range_min    #3\relax
@@ -7145,5 +7173,11 @@
 %D This saves one sec on luametatex manual in console. And in the case of an error
 %D no buffering will make sure what is cached gets flushed too. We define these two
 %D at the LUA end: \typ {\nologbuffering} and \typ {\linebuffering}.
+
+% maybe:
+%
+% \tolerant\def\foo[#1]{}  \avoidarguments\foo[test]
+%
+% \permanent\protected\untraced\def\avoidarguments#1{#1\noarguments}
 
 \protect \endinput

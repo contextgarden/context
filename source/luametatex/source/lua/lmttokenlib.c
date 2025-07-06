@@ -2921,7 +2921,7 @@ static inline int tokenlib_getparameters(lua_State *L)
         }
     }
     lua_pushnil(L);
-    return 0;
+    return 1;
 }
 
 static inline int tokenlib_getconstant(lua_State *L)
@@ -2929,6 +2929,26 @@ static inline int tokenlib_getconstant(lua_State *L)
     lua_token *n = tokenlib_aux_check_istoken(L, 1);
     halfword tok = token_info(n->token);
     lua_pushboolean(L, tok >= cs_token_flag && (eq_type(tok - cs_token_flag) == constant_call_cmd));
+    return 1;
+}
+
+static inline int tokenlib_getsize(lua_State *L)
+{
+    lua_token *n = tokenlib_aux_check_istoken(L, 1);
+    halfword tok = token_info(n->token);
+    if (tok >= cs_token_flag && is_call_cmd(eq_type(tok - cs_token_flag))) {
+        halfword v = eq_value(tok - cs_token_flag);
+        int size = 0;
+        while (v) { 
+            v = token_link(v);
+            if (v) { 
+                ++size;
+            }
+        }
+        lua_pushinteger(L, size);
+    } else { 
+        lua_pushnil(L);
+    }
     return 1;
 }
 
@@ -2979,6 +2999,8 @@ static int tokenlib_getfield(lua_State *L)
         return tokenlib_getparameters(L);
     } else if (lua_key_eq(s, constant)) {
         return tokenlib_getconstant(L);
+    } else if (lua_key_eq(s, size)) {
+        return tokenlib_getsize(L);
     } else {
         lua_pushnil(L);
     }
@@ -3242,7 +3264,7 @@ static int tokenlib_getmeaning(lua_State *L)
         halfword cs = tex_string_locate_only(name, lname);
         halfword cmd = eq_type(cs);
         if (is_call_cmd(cmd)) {
-            int chr = eq_value(cs);
+            halfword chr = eq_value(cs);
             if (lua_toboolean(L, 2)) {
                 if (lua_toboolean(L, 3)) {
                     lmt_token_list_to_lua(L, token_link(chr)); /* makes table sub tables */
@@ -3257,6 +3279,46 @@ static int tokenlib_getmeaning(lua_State *L)
                 char *str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 0, 0); /* double hashes */
                 lua_pushstring(L, str ? str : "");
             }
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int tokenlib_getlength(lua_State *L)
+{
+    if (lua_type(L, 1) == LUA_TSTRING) {
+        size_t lname = 0;
+        const char *name = lua_tolstring(L, 1, &lname);
+        halfword cs = tex_string_locate_only(name, lname);
+        halfword cmd = eq_type(cs);
+        if (is_call_cmd(cmd)) {
+            halfword chr = eq_value(cs);
+            int preamble = 0;
+            int body = 0;
+            while (chr) { 
+                chr = token_link(chr);
+                if (! chr) { 
+                    break;
+                } else if (get_token_preamble(chr)) {
+                    ++preamble;
+                } else { 
+                    ++body;
+                }
+            }
+            lua_pushinteger(L, preamble);
+            lua_pushinteger(L, body);
+            return 2;
+        } else if (cmd == internal_toks_cmd || cmd == register_toks_cmd) {
+            halfword chr = eq_value(cs);
+            int list = 0;
+            while (chr) { 
+                chr = token_link(chr);
+                if (chr) { 
+                    ++list;
+                }
+            }
+            lua_pushinteger(L, list);
             return 1;
         }
     }
@@ -3495,15 +3557,36 @@ static int tokenlib_locatemacro(lua_State *L)
     return 1;
 }
 
-static int tokenlib_undefinemacro(lua_State *L) /* todo: protected */
+static int tokenlib_aux_macro_okay(lua_State *L, halfword *cs, halfword *flags)
 {
     size_t lname = 0;
     const char *name = lua_tolstring(L, 1, &lname);
     if (name) {
-        halfword cs = tex_string_locate(name, lname, 1);
-        int flags = 0;
-        lmt_check_for_flags(L, 2, &flags, 1, 1);
+        *cs = tex_string_locate(name, lname, 1);
+        *flags = 0;
+        lmt_check_for_flags(L, 2, flags, 1, 1);
+        if (tex_define_permitted(*cs, *flags)) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+static int tokenlib_undefinemacro(lua_State *L) /* todo: protected */
+{
+    halfword cs, flags;
+    if (tokenlib_aux_macro_okay(L, &cs, &flags)) {
         tex_define(flags, cs, undefined_cs_cmd, null);
+    }
+    return 0;
+}
+
+static int tokenlib_setmacrotonothing(lua_State *L)
+{
+    halfword cs, flags;
+    if (tokenlib_aux_macro_okay(L, &cs, &flags)) {
+        halfword empty = lmt_token_state.empty;
+        tex_define(flags, cs, tex_flags_to_cmd(flags), empty);
     }
     return 0;
 }
@@ -3740,7 +3823,9 @@ static int tokenlib_set_constant_value(lua_State *L, singleword cmd, halfword mi
                 if (top > 2) {
                     lmt_check_for_flags(L, 3, &flags, 1, 0);
                 }
-                tex_define(flags, cs, cmd, value);
+                if (tex_define_permitted(cs, flags)) {
+                    tex_define(flags, cs, cmd, value);
+                }
             }
         }
     }
@@ -3928,11 +4013,13 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "getcmdchrcs",           tokenlib_getcmdchrcs           },
     { "getcstoken",            tokenlib_getcstoken            },
     { "getfields",             tokenlib_getfields             },
+    { "getlength",             tokenlib_getlength             },
     /* */
     { "locatemacro",           tokenlib_locatemacro           },
     { "setmacro",              tokenlib_setmacro              },
     { "setmacrofrommark",      tokenlib_setmacrofrommark      },
     { "undefinemacro",         tokenlib_undefinemacro         },
+    { "setmacrotonothing",     tokenlib_setmacrotonothing     },
     { "expandmacro",           tokenlib_expandmacro           },
  // { "setchar",               tokenlib_setchar               },
     { "setlua",                tokenlib_setlua                },

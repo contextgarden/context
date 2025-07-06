@@ -680,9 +680,9 @@
 \newtoks\t_font_size_commands
 \newtoks\t_font_alternative_commands
 
-\setnewmacro\m_font_style_command      \gobbleoneargument
-\setnewmacro\m_font_size_command       \gobbleoneargument
-\setnewmacro\m_font_alternative_command\gobbleoneargument
+\let\m_font_style_command      \gobbleoneargument
+\let\m_font_size_command       \gobbleoneargument
+\let\m_font_alternative_command\gobbleoneargument
 
 \def\font_helpers_process_style_list      #command{\def\m_font_style_command      {#command}\expand\t_font_style_commands}
 \def\font_helpers_process_size_list       #command{\def\m_font_size_command       {#command}\expand\t_font_size_commands}
@@ -738,7 +738,7 @@
 %D The \type {\normal..} variants are available as extras for cases where the \type
 %D {..} is overloaded.
 
-\newmacro\m_font_mm
+\lettonothing\m_font_mm
 
 \def\font_basics_check_fontname_combination#style% alternative size
   {\edef\m_font_mm{#style}%
@@ -847,15 +847,17 @@
 
 \immutable\dimensiondef\d_font_default_size 10pt
 
-%lettonothing\m_font_class_direction   % no longer used
+%lettonothing\m_font_class_direction
 \lettonothing\m_font_class_features
 \lettonothing\m_font_class_fallbacks
 \lettonothing\m_font_class_goodies
+\lettonothing\m_font_class_designsize
 
-\lettonothing\m_font_direction
+%lettonothing\m_font_direction
 \lettonothing\m_font_features
 \lettonothing\m_font_fallbacks
 \lettonothing\m_font_goodies
+\lettonothing\m_font_designsize
 
 \protected\def\font_helpers_low_level_define#specification#csname% normal mode
   {\font_ignore_compact_font_mode
@@ -1551,8 +1553,8 @@
 \def\font_helpers_register_environment#class#body%
   {\letcsname\??fontenvironmentknown#class#body\endcsname\empty}
 
-\newmacro\m_font_body
-\newmacro\m_font_body_normalized
+\lettonothing\m_font_body
+\lettonothing\m_font_body_normalized
 
 \permanent\tolerant\protected\def\definebodyfontenvironment[#1]#*[#2]#*[#3]#*[#4]%
   {\ifarguments
@@ -1746,6 +1748,9 @@
 % [class] [10pt,11pt]         [settings]   == [name]      [rm] [settings]
 % [class] [10pt,11pt]         [name]       == [10pt,11pt] [rm] [name]
 
+\lettonothing\m_font_asked_body
+\lettonothing\m_font_asked_style
+
 \permanent\tolerant\protected\def\definebodyfont[#1]#*[#2]#*[#3]#*[#4]%
   {\ifarguments
    \or
@@ -1898,7 +1903,7 @@
     }%
 \to \everycompactfontmode
 
-% \writestatus{fonts}{define \m_asked_style\space yes: {\expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}
+% \writestatus{fonts}{define \m_font_asked_style\space yes: {\expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}
 
 %D Here the rest concerns rl or lr so in this case it is not a size specifier but
 %D a directional one.
@@ -1914,7 +1919,7 @@
      {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\normalunexpanded{#value}}}%
   }
 
-% \writestatus{fonts}{define \m_asked_style\space nop: \expandafter\meaning\csname\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
+% \writestatus{fonts}{define \m_font_asked_style\space nop: \expandafter\meaning\csname\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
 
 \protected\def\font_basics_define_body_font_yes_mm[#one#two#rest=#value]% global
   {%\ifcsname\s!mm\endcsname\else\font_basics_check_fontname_combination\s!mm{#one#two}{#rest}\fi
@@ -1938,7 +1943,7 @@
     }%
 \to \everycompactfontmode
 
-% \writestatus{fonts}{define \m_asked_style\space yes: \expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
+% \writestatus{fonts}{define \m_font_asked_style\space yes: \expandafter\meaning\csname\fontclass\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
 
 \protected\def\font_basics_define_body_font_body_identifier[#bodylist][#stylelist][#name]%
   {\processcommalist[#bodylist]{\font_basics_define_body_font_body_identifier_a{#stylelist}{#name}}}
@@ -2080,6 +2085,8 @@
 
 \ifdefined\font_preloads_at_definition \else \let\font_preloads_at_definition\relax \fi
 
+\lettonothing\m_font_specification
+
 \def\font_helpers_set_font#method#specification%
   {\edef\m_font_specification{#specification}%
    \ifempty\m_font_specification \else
@@ -2117,7 +2124,7 @@
      \expandafter\font_helpers_set_font_set_font_option_keyword
    \fi{#method}{#option}{#option}}
 
-\newmacro\m_font_keyword
+\lettonothing\m_font_keyword
 
 \protected\def\font_helpers_set_font_set_font_option_keyword#method#keyword#message%
   {\edef\m_font_keyword{#keyword}%
@@ -2828,6 +2835,8 @@
    \font_pop_x_size % experiment
    }
 
+\lettonothing\m_font_bodyfont_asked % or just use \m_font_asked_body
+
 \permanent\protected\def\usebodyfontparameter#1%
   {\edef\m_font_bodyfont_asked{#1\c!bodyfont}%
    \ifempty\m_font_bodyfont_asked\else
@@ -2973,7 +2982,7 @@
 %D {\switchtobodyfont[small]}. The three alternatives can be activated by the next
 %D three system calls and are defined by the bodyfontenvironment.
 
-\newmacro\m_font_step
+\lettonothing\m_font_step
 
 \def\font_helpers_set_bodyfont_step#step%
   {\edef\m_font_step{\font_bodyfontvariable{#step}}% not always \cs

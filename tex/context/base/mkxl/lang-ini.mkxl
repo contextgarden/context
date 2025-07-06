@@ -602,6 +602,8 @@
 % \setuplanguage[\s!default][\c!font=\v!auto]
 % \setuplanguage[nl][\c!font=\v!auto]
 
+\lettonothing\p_language_font
+
 \appendtoks
     \edef\p_language_font{\languageparameter\c!font}%
     \ifempty\p_language_font

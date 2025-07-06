@@ -35,11 +35,12 @@
 \lettonothing\p_page_injections_n
 \lettonothing\p_page_injections_page
 \lettonothing\p_page_injections_state
+\lettonothing\p_page_injections_setup
 
 \def\page_injections_flush_indeed
   {\begingroup
    \setbox\scratchbox\hpack
-     {\inheritedpageinjectionframed{\texsetup\p_page_injectionalternative_rederingsetup}}%
+     {\inheritedpageinjectionframed{\texsetup\p_page_injections_setup}}%
    \printpaperwidth \wd\scratchbox
    \printpaperheight\ht\scratchbox
    \scrn_canvas_synchronize_only
@@ -51,8 +52,8 @@
   {\begingroup
    \cdef\currentpageinjection{#name}%
    \getdummyparameters[#parameters]%
-   \edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
-   \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
+   \edef\currentpageinjectionalternative{\pageinjectionparameter           \c!alternative   }%
+   \edef\p_page_injections_setup        {\pageinjectionalternativeparameter\c!renderingsetup}%
    \page_injections_nextpage
    \page_injections_flush_indeed
    \endgroup}
@@ -122,8 +123,8 @@
    \endgroup}
 
 \def\page_injections_place
-  {\edef\currentpageinjectionalternative          {\pageinjectionparameter           \c!alternative   }%
-   \edef\p_page_injectionalternative_rederingsetup{\pageinjectionalternativeparameter\c!renderingsetup}%
+  {\edef\currentpageinjectionalternative{\pageinjectionparameter           \c!alternative   }%
+   \edef\p_page_injections_setup        {\pageinjectionalternativeparameter\c!renderingsetup}%
    \page_injections_nextpage
    \ifx\currentpageinjectionalternative\v!none \else % increment counter but don’t generate output
      \forgetparindent

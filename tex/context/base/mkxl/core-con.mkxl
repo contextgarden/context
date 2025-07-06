@@ -441,6 +441,8 @@
 
 \newtoks\everycurrentdate
 
+\lettonothing\m_syst_converters_date
+
 \permanent\tolerant\protected\def\currentdate[#1]%
   {\dontleavehmode
    \begingroup

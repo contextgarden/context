@@ -70,11 +70,11 @@
 \protected\def\strc_linenotes_stop[#1]%
   {\stopline[#1]}
 
-\let\m_page_lines_previous_to  \relax
-\let\m_page_lines_previous_from\relax
+\lettonothing\m_page_lines_previous_to
+\lettonothing\m_page_lines_previous_from
 
-\let\m_page_lines_current_to   \relax
-\let\m_page_lines_current_from \relax
+\lettonothing\m_page_lines_current_to
+\lettonothing\m_page_lines_current_from
 
 \newconditional\c_page_lines_current_to
 \newconditional\c_page_lines_current_from
@@ -194,6 +194,8 @@
 
 \defcsname\??linenotescompressmethod\v!space\endcsname
   {\hskip\glueexpr\noteparameter\c!compressdistance\relax}
+
+\lettonothing\p_linenotes_compressmethod
 
 \def\strc_linenotes_check_compression
   {\edef\p_linenotes_compressmethod{\noteparameter\c!compressmethod}%

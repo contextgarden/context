@@ -1,7 +1,7 @@
 % language=us runpath=texruns:manuals/luametatex
 
 % run locally!
-% \enablemode[checktodo]
+\enablemode[checktodo]
 
 \environment luametatex-style
 
@@ -9507,6 +9507,17 @@ has to look ahead for a \prm {noalign}. This interferes with for instance
 protected macros, but using this prefix we get around that. Among the reasons to
 use protected macros inside an alignment is that they behave better inside for
 instance \prm {expanded}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {noarguments}}]
+
+Sometimes picking up arguments can interfere with intentions, for instance when
+an optional argument uses square brackets but the ones following the command are
+to be typeset. The \prm {noarguments} command is a variant on \prm {relax} (and
+\prm {norelax}) but doesn't push back that command when seen. This permits for
+instance usage in an \prm {edef} comparable context where one doesn't want to end
+up with such artifacts.
 
 \stopnewprimitive
 

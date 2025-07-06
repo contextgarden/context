@@ -52,6 +52,8 @@
     \let\resetallstructuremarks\relax
 \fi
 
+\lettonothing\p_strc_sectionblock_page
+
 \def\strc_sectionblock_handle_page
   {\edef\p_strc_sectionblock_page{\sectionblockparameter\c!page}%
    \ifempty\p_strc_sectionblock_page \else

@@ -537,15 +537,18 @@
 \def\strc_floats_make_complete_caption_before
   {\doifelseframed\floatcaptionparameter\strc_floats_make_complete_caption_before_indeed\relax}
 
+\lettonothing\m_strc_floats_align
+\lettonothing\m_strc_floats_strut
+
 \def\strc_floats_make_complete_caption_before_indeed
-  {\edef\m_strc_align{\floatcaptionparameter\c!align}%
-   \edef\m_strc_strut{\floatcaptionparameter\c!strut}%
+  {\edef\m_strc_floats_align{\floatcaptionparameter\c!align}%
+   \edef\m_strc_floats_strut{\floatcaptionparameter\c!strut}%
    \letfloatcaptionparameter\c!align\v!normal
    \letfloatcaptionparameter\c!strut\v!no
    \inheritedfloatcaptionframed
    \bgroup
-   \letfloatcaptionparameter\c!align\m_strc_align
-   \letfloatcaptionparameter\c!strut\m_strc_strut
+   \letfloatcaptionparameter\c!align\m_strc_floats_align
+   \letfloatcaptionparameter\c!strut\m_strc_floats_strut
    \let\strc_floats_make_complete_caption_after\egroup}
 
 % \definefloat  [figure-1] [figure]
@@ -883,6 +886,8 @@
    \fi
    \bgroup
    \ignorespaces}
+
+\lettonothing\strc_floats_stop_place
 
 \def\strc_floats_stop_place_yes
   {\removeunwantedspaces
@@ -2019,6 +2024,10 @@
         \let\strc_floats_align_content\relax
       \fi\fi
       \strc_floats_align_content{\copy\b_strc_floats_content}}}
+
+\lettonothing\p_strc_floats_caption_width
+\lettonothing\p_strc_floats_caption_minwidth
+\lettonothing\p_strc_floats_caption_align
 
 \def\strc_floats_prepare_page_caption
   {\edef\p_strc_floats_caption_width   {\floatcaptionparameter\c!width}%

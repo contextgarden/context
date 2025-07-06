@@ -99,8 +99,8 @@
    \fi
    \scratchdistance{\sidebarparameter\c!distance}%
    \scratchdimen{\sidebarparameter\c!leftmargindistance}%
-   \edef\m_level{\sidebarparameter\c!level}%
-   \ifempty\m_level
+   \edef\p_level{\sidebarparameter\c!level}%
+   \ifempty\p_level
      \ifnum\c_anch_sidebars_level=\plusone
        \ifzeropt\scratchdimen
          \advanceby\d_anch_sidebars_distance\scratchdistance\relax
@@ -110,15 +110,15 @@
      \else
        \advanceby\d_anch_sidebars_distance\scratchdistance\relax
      \fi
-   \orelse\ifnum\m_level=\plusone
+   \orelse\ifnum\p_level=\plusone
      \ifzeropt\scratchdimen
        \advanceby\d_anch_sidebars_distance\scratchdistance\relax
      \else
        \d_anch_sidebars_distance\scratchdimen
      \fi
    \else
-     % test: {\scratchdimen+(\m_level-\plusone)*\scratchdistance}
-     \d_anch_sidebars_distance{\scratchdimen+\numexpr\m_level-\plusone\relax\dimexpr\scratchdistance\relax}%
+     % test: {\scratchdimen+(\p_level-\plusone)*\scratchdistance}
+     \d_anch_sidebars_distance{\scratchdimen+\numexpr\p_level-\plusone\relax\dimexpr\scratchdistance\relax}%
    \fi
    \startpositionoverlay{\v!text-1}%
      \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
@@ -198,8 +198,10 @@
 \aliased\let\setupmarginrules\setupmarginrule
 
 \permanent\tolerant\protected\def\startmarginrule[#S#1]% pretty inefficient checking
-  {\edef\m_anch_marginrules_kind{#1}%
-   \ifempty\m_anch_marginrules_kind
+ %{\edef\m_anch_marginrules_kind{#1}%
+ % \ifempty\m_anch_marginrules_kind
+ % {\unless\ifparameter#1\or
+  {\ifempty{#1}%
      \startsidebar[\v!margin][]%
    \orelse\ifhastok={#1}%
      \startsidebar[\v!margin][#1]%

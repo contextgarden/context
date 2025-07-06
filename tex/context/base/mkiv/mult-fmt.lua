@@ -17,6 +17,7 @@ local implement          = interfaces.implement
 
 local setmacro           = token.setmacro  or token.set_macro
 local definedmacro       = token.isdefined or token.is_defined
+local setmacrotonothing  = token.setmacrotonothing
 
 local report             = logs.reporter("interface")
 local report_interface   = logs.reporter("interface","initialization")
@@ -221,7 +222,13 @@ function interfaces.setuserinterface(interface,response)
                 if reversetoo then
                  -- can be a let
                     setmacro("k!" .. constant,given,"immutable","constant")
---                     setmacro("k!" .. constant,given,"constant")
+                 -- setmacro("k!" .. constant,given,"constant")
+                end
+                if setmacrotonothing then --lmtx
+                    -- some 750 but most only a dozen used so no real need
+                 -- setmacrotonothing("p_" .. constant)
+                else
+                 -- setmacro("p_" .. constant,"")
                 end
                 report_constant("%-40s: %s",given,constant)
             end

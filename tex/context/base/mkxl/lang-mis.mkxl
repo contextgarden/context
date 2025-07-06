@@ -237,6 +237,8 @@
    \def\next{\lang_discretionaries_handle{#1}}%
    \futurelet\nexttoken\next}%
 
+\lettonothing\lang_discretionaries_token
+
 \permanent\protected\def\lang_discretionaries_handle#1%
   {\edef\lang_discretionaries_token{\detokenize{#1}}%
    \lang_discretionaries_check_after

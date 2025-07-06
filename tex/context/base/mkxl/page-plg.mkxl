@@ -200,6 +200,8 @@
      \expandafter\page_area_three
    \fi[#1][#2][#3]}
 
+\lettonothing\m_page_area_three
+
 \def\page_area_three[#1][#2][#3]%
   {\edef\m_page_area_three{#3}%
    \ifx\m_page_area_three\v!left

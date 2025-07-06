@@ -80,10 +80,7 @@
 \newdimension\d_rule_offset
 \newdimension\d_rule_factor
 
-\mutable\lettonothing\m_rule_direction
-%mutable\lettonothing\m_rule_factor
-\mutable\lettonothing\m_rule_option
-\mutable\lettonothing\m_rule_color
+\lettonothing\m_rule_color
 
 \registerctxluafile{node-rul}{autosuffix}
 
@@ -92,9 +89,10 @@
 
 \installcommandhandler \??bar {bar} \??bar
 
-\mutable\lettonothing\p_node_color  % of just \p_*
-\mutable\lettonothing\p_node_text
-\mutable\lettonothing\p_node_offset
+\lettonothing\p_node_color
+\lettonothing\p_node_continue
+\lettonothing\p_node_offset
+\lettonothing\p_node_text
 
 \aliased\let\setupbars\setupbar
 
@@ -696,7 +694,7 @@
 \defcsname\??graphiclines o\endcsname{\d_grph_line_offset \zeropoint}
 \defcsname\??graphiclines e\endcsname{\c_grph_line_action \plusone}  % end
 \defcsname\??graphiclines c\endcsname{\c_grph_line_action \plustwo}  % close + end
-\defcsname\??graphiclines r\endcsname{\c_grph_line_action \plustree} % reset
+\defcsname\??graphiclines r\endcsname{\c_grph_line_action \plusthree}% reset
 \defcsname\??graphiclines t\endcsname{\d_grph_line_offset \strutht}
 \defcsname\??graphiclines b\endcsname{\d_grph_line_offset-\strutdp\c_grph_line_action\plusone}
 \defcsname\??graphiclines T\endcsname{\d_grph_line_offset .75\strutht}
@@ -711,7 +709,7 @@
    \orelse\ifchkdim#1pt\or
       \d_grph_line_width#1\d_grph_line_width % \dimexpr\mathmatrixparameter\c!rulethickness\relax
    \else
-     \edef\m_rulecolor{#1}%
+     \edef\m_rule_color{#1}%
    \fi}
 
 % \setupmathmatrix[rulethickness=3pt]
@@ -726,14 +724,14 @@
 
 \def\grph_line_inject_yes[#1]#*[#2]%
   {\begingroup
-   \edef\m_rulecolor{\mathmatrixparameter\c!rulecolor}%
+   \edef\m_rule_color{\mathmatrixparameter\c!rulecolor}%
    \d_grph_line_width{\mathmatrixparameter\c!rulethickness}%
    \d_grph_line_offset\zeropoint
    \c_grph_line_action\zerocount
    \processcommacommand[#2]\grph_line_inject_step % use fast one
    \ifcase\c_grph_line_action
      \ifcstok{\begincsname\??graphiccolor#1\endcsname}\empty
-        \gletcsname\??graphiccolor#1\endcsname\m_rulecolor
+        \gletcsname\??graphiccolor#1\endcsname\m_rule_color
      \fi
    \orelse\ifempty{#1}%
      % ignore

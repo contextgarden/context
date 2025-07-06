@@ -232,15 +232,17 @@ end
 directives.register("system.errorcontext", function(v)
     local register = callback.register
     if v then
-        register('show_error_message',  nop)
-        register('show_warning_message',function()    processwarning(v)   end)
-        register('show_error_hook',     function(eof) processerror(v,eof) end)
-        register('show_lua_error_hook', function()    processerror(v)     end)
+        register('show_error_message',         nop)
+        register('show_warning_message',       function()    processwarning(v)   end)
+        register('show_error_hook',            function(eof) processerror(v,eof) end)
+        register('show_lua_error_hook',        function()    processerror(v)     end)
+        register('show_ignored_error_message', function()    processerror(v)     end)
     else
-        register('show_error_message',  nil)
-        register('show_error_hook',     nil)
-        register('show_warning_message',nil)
-        register('show_lua_error_hook', nil)
+        register('show_error_message',         nil)
+        register('show_error_hook',            nil)
+        register('show_warning_message',       nil)
+        register('show_lua_error_hook',        nil)
+        register('show_ignored_error_message', nil) -- whatever
     end
 end)
 

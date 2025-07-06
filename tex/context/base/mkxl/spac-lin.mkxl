@@ -63,8 +63,6 @@
    \frozen\instance\letcsname           \e!stop \currentlines\endcsname \spac_lines_stop
 \to \everydefinelines
 
-% \lettonothing\p_lines_option
-
 \let\spac_lines_break            \relax
 \let\spac_after_first_obeyed_line\relax
 \let\spac_lines_indent           \relax
@@ -83,6 +81,8 @@
 \newinteger  \c_spac_lines_indent_cnt
 \newinteger  \c_spac_lines_indent_max
 \newdimension\d_spac_lines_indent
+
+\lettonothing\m_spac_lines_indentlist
 
 \def\spac_lines_indent_indeed
   {\ifnum\c_spac_lines_indent_cnt=\c_spac_lines_indent_max
@@ -122,12 +122,11 @@
    \obeylines
    \spac_lines_start_indeed}
 
+
 \tolerant\def\spac_lines_start_indeed[#S#1]% new: optional second argument (WS)
   {\ifarguments\or
      \setupcurrentlines[#1]%
    \fi
-%    \edef\p_lines_option{\linesparameter\c!option}%
-%    \ifx\p_lines_option\v!packed
    \ifcstok{\linesparameter\c!option}\v!packed
      \let\spac_lines_break\nobreak
      \c_spac_lines_as_paragraph\conditionalfalse

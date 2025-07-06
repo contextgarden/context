@@ -38,8 +38,8 @@
 
 \aliased\let\usedadaptivebox\b_adaptive_box
 
-\mutable\lettonothing\m_adaptive_color
-\mutable\lettonothing\m_adaptive_alternative
+\lettonothing\m_adaptive_color
+\lettonothing\m_adaptive_alternative
 
 \permanent\def\usedadaptivecolor      {\m_adaptive_color}
 \permanent\def\usedadaptivealternative{\m_adaptive_alternative}
@@ -276,6 +276,8 @@
      \hpack{\box\nextbox}%
      \hskip\zeropoint
    \endgroup}
+
+\mutable\lettonothing\currentexceptlocation
 
 \permanent\tolerant\protected\def\setexcept[#1]%
    {\dontleavehmode

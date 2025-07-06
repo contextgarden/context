@@ -180,6 +180,10 @@
     \c_strc_constructions_define_commands\conditionaltrue
 \to \everydefinecombination
 
+\let\m_pack_combinations_leftfiller \relax
+\let\m_pack_combinations_rightfiller\relax
+\let\m_pack_combinations_valigner   \relax
+
 \defcsname\??combinationlocation\v!left  \endcsname{\let\m_pack_combinations_leftfiller \relax}
 \defcsname\??combinationlocation\v!right \endcsname{\let\m_pack_combinations_rightfiller\relax}
 \defcsname\??combinationlocation\v!top   \endcsname{\let\m_pack_combinations_valigner   \depthonlybox}
@@ -369,6 +373,8 @@
 %D I've first considered using a constructor directly but it's more overhead and
 %D some settings conflict with already used combination settings so instead we plug
 %D in labels. This also permits extensions later on.
+
+\lettonothing\p_pack_combinations_alternative
 
 \appendtoks
     \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%

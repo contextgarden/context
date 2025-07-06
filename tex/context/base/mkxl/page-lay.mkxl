@@ -450,6 +450,12 @@
      \page_paper_setup_size_change_size[#1][#2]%
    \fi}
 
+\lettonothing\m_layouttarget_paper
+\lettonothing\m_layouttarget_print
+
+\lettonothing\m_layouttarget_paper_saved
+\lettonothing\m_layouttarget_print_saved
+
 \protected\def\page_paper_setup_size_settings[#S#1]% sometimes used to set paper/print size
   {\lettonothing\currentlayouttarget
    \edef\m_layouttarget_paper_saved{\page_paper_the_paper_size{\layouttargetparameter\c!page }}%
@@ -586,6 +592,9 @@
 
 \newdimension\d_page_minimum_paper_size \d_page_minimum_paper_size\luaexpr{math.pi}\onebasepoint
 
+\lettonothing\m_page_asked_paper
+\lettonothing\m_page_asked_print
+
 \protected\def\page_paper_set_current_indeed[#1][#2]%
   {\edef\m_page_asked_paper{#1}% can be the restores
    \edef\m_page_asked_print{#2}%
@@ -691,8 +700,11 @@
 %D    backspace=60pt,margin=30pt,margindistance=15pt,width=fit]
 %D \stoptyping
 
-\lettonothing\p_page_layouts_width
 \lettonothing\p_page_layouts_height
+\lettonothing\p_page_layouts_scale
+\lettonothing\p_page_layouts_sx
+\lettonothing\p_page_layouts_sy
+\lettonothing\p_page_layouts_width
 
 \def\page_layouts_synchronize_width_fit
   {\ifzeropt\cutspace
@@ -967,16 +979,30 @@
      \__unknown__
    \fi}
 
-\let\v_page_layouts_pre_check\relax
+\let\v_page_layouts_pre_check\relax % we could use push / pop
+
+\lettonothing\m_page_check
+
+% \def\page_layouts_check_default_indeed#1%
+%   {\edef\m_page_check{#1}
+%    \edef\p_state{\namedlayoutparameter\m_page_check\c!state}%
+%    \ifx\p_state\v!start
+%      \glet\v_page_layouts_pre_check\currentlayout
+%      \glet\currentlayout\m_page_check
+%      \page_layouts_synchronize
+%    \orelse\ifx\p_state\v!repeat
+%      \glet\v_page_layouts_pre_check\relax
+%      \glet\currentlayout\m_page_layouts_check
+%      \page_layouts_synchronize
+%    \fi}
 
 \def\page_layouts_check_default_indeed#1%
   {\edef\m_page_check{#1}
-   \edef\m_page_state{\namedlayoutparameter\m_page_check\c!state}%
-   \ifx\m_page_state\v!start
+   \ifcstok{\namedlayoutparameter\m_page_check\c!state}\v!start
      \glet\v_page_layouts_pre_check\currentlayout
      \glet\currentlayout\m_page_check
      \page_layouts_synchronize
-   \orelse\ifx\m_page_state\v!repeat
+   \orelse\iflastnamedcs\v!repeat
      \glet\v_page_layouts_pre_check\relax
      \glet\currentlayout\m_page_check
      \page_layouts_synchronize
@@ -986,23 +1012,6 @@
   {\glet\currentlayout\v_page_layouts_pre_check
    \glet\v_page_layouts_pre_check\relax
    \page_layouts_synchronize}
-
-% \def\page_layouts_check_default
-%   {\ifcsname\namedlayouthash\v_real_page_normal\c!state\endcsname
-%      \page_layouts_check_default_indeed\v_real_page_normal
-%    \orelse\ifcsname\namedlayouthash\v_real_page_reverse\c!state\endcsname
-%      \page_layouts_check_default_indeed\v_real_page_reverse
-%    \orelse\ifcsname\namedlayouthash\v_real_page_named\c!state\endcsname
-%      \page_layouts_check_default_indeed\v_real_page_named
-%    \orelse\ifcsname\namedlayouthash\v_real_page_current\c!state\endcsname
-%      \page_layouts_check_default_indeed\v_real_page_current
-%    \orelse\ifcsname\namedlayouthash\v_real_page_odd_or_even\c!state\endcsname
-%      \page_layouts_check_default_indeed\v_real_page_odd_or_even
-%    \orelse\ifrelax\v_page_layouts_pre_check
-%      % okay
-%    \else
-%      \page_layouts_check_revert
-%    \fi}
 
 % \showframe
 %

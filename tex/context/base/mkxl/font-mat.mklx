@@ -130,6 +130,8 @@
 
 \newinteger\c_math_last_family_used
 
+\lettonothing\font_math_last_font
+
 \def\font_helpers_set_math_family_indeed_normal#mrtag#family% \fontface etc are also used later on
   {\let\savedfontbody\fontbody
    \let\savedfontstyle\fontstyle

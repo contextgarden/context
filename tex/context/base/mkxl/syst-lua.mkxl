@@ -31,11 +31,13 @@
 % \testfeatureonce{100000}{\doifelse{hello world}{here i am}{}}           % 0.3
 % \testfeatureonce{100000}{\expandabledoifelse{hello world}{here i am}{}} % 1.5
 
-\permanent\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
-\permanent\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
-
-\aliased\let\expdoifcommonelse\expdoifelsecommon
-\aliased\let\expdoifinsetelse \expdoifelseinset
+%D These are moved to syst-aux.mkxl and use proper conditions instead:
+%
+% \permanent\def\expdoifelsecommon#1#2{\clf_doifelsecommon{#1}{#2}}
+% \permanent\def\expdoifelseinset #1#2{\clf_doifelseinset {#1}{#2}}
+%
+% \aliased\let\expdoifcommonelse\expdoifelsecommon
+% \aliased\let\expdoifinsetelse \expdoifelseinset
 
 %D We define these here, just in case. This permits \typefile {self} otherwise
 %D nested b|/|e sep problems.

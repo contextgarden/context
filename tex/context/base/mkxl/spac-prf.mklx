@@ -102,6 +102,8 @@
 \permanent\protected\def\resetprofile
   {\c_attr_profilemethod\attributeunsetvalue}
 
+\lettonothing\m_spac_profile_asked
+
 \permanent\protected\def\useprofileparameter#getparameter%
   {\edef\m_spac_profile_asked{#getparameter\c!profile}%
    \ifempty\m_spac_profile_asked
@@ -109,6 +111,16 @@
    \else
      \setprofile[\m_spac_profile_asked]%
    \fi}
+
+% This can become (when being tested):
+%
+% \permanent\protected\def\useprofileparameter#getparameter%
+%   {\edef\m_spac_profile_asked
+%    \ifempty{#getparameter\c!profile}%
+%      \resetprofile
+%    \else
+%      \normalexpanded{\setprofile[\lastnamedcs]}%
+%    \fi}
 
 \permanent\tolerant\protected\def\profiledbox[#S#profile]#spacer[#S#settings]%
   {\vbox\bgroup

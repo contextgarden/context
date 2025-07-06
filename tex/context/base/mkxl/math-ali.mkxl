@@ -219,8 +219,11 @@
 % musical timestamp, listening to Anna Von Hausswolff on pipe organ (ctx 2024 after
 % party with Mikael S)
 
-\lettonothing\p_math_alignment_HL_color
 \newdimension\d_math_alignment_HL_width
+
+\lettonothing\p_math_alignment_HL_color
+
+\lettonothing\p_math_alignment_number
 
 \protected\def\math_alignment_HL_rule
   {\leaders
@@ -608,6 +611,8 @@
 
 \setnewconstant\c_strc_formulas_align_alignment\zerocount % 1=left 2=right
 \setnewconstant\c_strc_formulas_align_packed   \zerocount
+
+\let\math_alignment_location_box\hpack
 
 \defcsname\??mathalignlocation\v!top   \endcsname{\let\math_alignment_location_box\tpack}
 \defcsname\??mathalignlocation\v!bottom\endcsname{\let\math_alignment_location_box\vpack}
@@ -3978,6 +3983,8 @@
 \newtoks\everymathsimplealign
 \newtoks\everymathsimplealigndone
 
+\lettonothing\m_simplealign_distance
+
 \def\math_simplealign_preamble
   {\global\c_math_eqalign_column\zerocount
    \global\advanceby\c_math_eqalign_row\zerocount
@@ -4180,6 +4187,8 @@
 
 \newskip \math_old_hideskip   \math_old_hideskip  = -1000pt plus 1fill
 \newskip \math_old_centering  \math_old_centering =     0pt plus 1000pt minus 1000pt
+
+\ifdefined\hidewidth \else \aliased\let\hidewidth\relax \fi
 
 \permanent\protected\def\eqalign#1% rather plain, is this used at all ...
   {\dontleavehmode

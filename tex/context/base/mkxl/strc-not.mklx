@@ -597,7 +597,7 @@
 
 % inline
 
-\let\m_strc_notes_internal\relax
+\lettonothing\m_strc_notes_internal
 
 \def\strc_notes_prepare_inline_references_nop
   {\lettonothing\strc_notes_get_reference_attribute_symbol
@@ -1740,6 +1740,7 @@
    \inlocalnotes\conditionalfalse}
 
 \lettonothing\p_strc_notes_continue
+\lettonothing\p_strc_notes_location
 
 \def\strc_notes_local_start_step#tag%
   {\p_strc_notes_continue{\noteparameter\c!continue}%

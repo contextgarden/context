@@ -2375,6 +2375,8 @@
      \clf_registerverbosemathlabel{\s!default}{\s!en}{#1}{#2}%
    \fi}
 
+\permanent\lettonothing\math_tags_apply
+
 \appendtoks
     \enforced\let\mo   \math_tags_mo
     \enforced\let\mi   \math_tags_mi
@@ -3813,10 +3815,10 @@
 
 % \def\math_styles_check_style_parameter#1#2%
 %    {\ifempty{#1\c!mathstyle}%
-%       \normalexpanded{#2{\c!mathstyle}{\m_math_styles_current}}%
+%       \normalexpanded{#2{\c!mathstyle}{\currentverbosemathstyle}}%
 %     \fi}
 
-\immutable\def\m_math_styles_current
+\immutable\def\currentverbosemathstyle
   {\ifmathstyle \s!display
    \or          \s!text
    \or          \s!text,\s!cramped
@@ -3858,6 +3860,8 @@
 \letcsname\??mathstyle      \endcsname\empty
 %letcsname\??mathstylecachem\endcsname\empty
 %letcsname\??mathstylecachet\endcsname\empty
+
+\lettonothing\m_math_style_asked
 
 %D test case:
 %D
@@ -5087,28 +5091,28 @@
    +\ignoreemptyprimescriptsmodecode
 \relax
 
-\letempty\m_math_alignscripts
+\lettonothing\m_math_alignscripts
 
-\def\m_math_update_alignscripts
-   {\ifx\m_alignscripts\v!yes
-      \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
-      \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
-    \orelse\ifx\m_alignscripts\v!always
-      \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
-      \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
-    \orelse\ifx\m_alignscripts\v!empty
-      \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
-      \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
-    \else
-      \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
-      \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
-    \fi
-    \let\m_math_alignscripts\m_alignscripts}
+\def\math_update_alignscripts
+  {\ifx\m_alignscripts\v!yes
+     \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
+     \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
+   \orelse\ifx\m_alignscripts\v!always
+     \bitwiseflip\mathdoublescriptmode \c_math_alignscripts_bits  % align
+     \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
+   \orelse\ifx\m_alignscripts\v!empty
+     \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
+     \bitwiseflip\mathscriptsmode      \c_math_obeyempty_bits     % ignore empty
+   \else
+     \bitwiseflip\mathdoublescriptmode-\c_math_alignscripts_bits  % don't align
+     \bitwiseflip\mathscriptsmode     -\c_math_obeyempty_bits     % obey empty
+   \fi
+   \let\m_math_alignscripts\m_alignscripts}
 
 \appendtoks
     \cdef\m_alignscripts{\mathematicsparameter\c!alignscripts}%
     \ifx\m_math_alignscripts\m_alignscripts\else
-        \m_math_update_alignscripts
+        \math_update_alignscripts
     \fi
 % \to \everysetupmathematics
 \to \everyswitchmathematics
@@ -5171,6 +5175,8 @@
 
 \permanent\protected\def\startmathmeaning
   {\gobbleuntil\stopmathmeaning}
+
+\permanent\lettonothing\stopmathmeaning
 
 \protected\def\math_bump_blob_state
   {\ifnum\currentmathblobnesting<\zerocount\else

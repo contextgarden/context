@@ -120,7 +120,8 @@
     \pretolerance 100
     \tolerance    200
     \parpasses    1
-        classes              \ifnum\fitnessdemerits=\plusnine\almostdecentparpassclasses\else\indecentparpassclasses\fi
+      % classes              \ifnum\fitnessdemerits=\plusnine\almostdecentparpassclasses\else\indecentparpassclasses\fi
+        classes              \indecentparpassclasses
         tolerance            300
         adjustspacing          3
         adjustspacingstep      1

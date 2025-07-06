@@ -96,6 +96,8 @@
   \lettonothing\bodyfontinterlinespace
 \fi
 
+\lettonothing\m_spac_normallineheight
+
 \permanent\protected\def\presetnormallineheight % each bodyfont
   {\edef\normallineheight{\interlinespaceparameter\c!line}%
    \iflocalinterlinespace \else
@@ -165,6 +167,8 @@
      \spacing\currentrelativeinterlinespace
    \fi}
 
+\lettonothing\m_spac_interlinespace
+
 \protected\def\spac_linespacing_setup_use
   {\ifcsname\namedinterlinespacehash\m_spac_interlinespace\s!parent\endcsname
      \let\currentinterlinespace\m_spac_interlinespace
@@ -215,6 +219,8 @@
    \updateraggedskips % funny one here
    \expandtoks\everysetuplocalinterlinespace
    \localinterlinespacefalse}
+
+\lettonothing\p_spac_checked_interlinespace
 
 \permanent\protected\def\dosetupcheckedinterlinespace#1% often a chain
   {\edef\p_spac_checked_interlinespace{#1}%
@@ -1698,6 +1704,8 @@
 \permanent\def\snappedvboxattribute{\ifgridsnapping attr\snapvboxattribute\c_attr_snapmethod\fi}
 \permanent\def\setlocalgridsnapping{\ifgridsnapping \c_attr_snapvbox \c_attr_snapmethod\fi}
 
+\lettonothing\m_spac_snapper
+
 \def\spac_grids_set_local_snapping#1%
   {\ifgridsnapping
      \ifempty{#1}\else
@@ -1710,6 +1718,8 @@
   {\edef\m_spac_snapper
      {\ifempty\m_spac_snapper\else\m_spac_snapper,\fi
       \ifcsname\??gridsnappersets#1\endcsname\lastnamedcs\else#1\fi}}
+
+\lettonothing\p_spac_snapper
 
 \permanent\protected\def\installsnapvalues#1#2%
   {\lettonothing\m_spac_snapper
@@ -1726,6 +1736,8 @@
 
 \permanent\def\theexpandedsnapperset#1{\begincsname\??gridsnappersets#1\endcsname} % only for manuals
 
+\lettonothing\m_spac_grid_asked
+
 \permanent\protected\def\usegridparameter#1% no checking here
   {\edef\m_spac_grid_asked{#1\c!grid}%
    \ifempty\m_spac_grid_asked
@@ -1735,14 +1747,24 @@
      \c_attr_snapvbox\c_attr_snapmethod
    \fi}
 
+% This could become (after being tested):
+%
+% \permanent\protected\def\usegridparameter#1% no checking here
+%   {\ifempty{#1\c!grid}%
+%      \c_attr_snapvbox\attributeunsetvalue
+%    \else
+%      \normalexpanded{\spac_grids_snap_value_set{\lastnamedcs}}%
+%      \c_attr_snapvbox\c_attr_snapmethod
+%    \fi}
+
 \permanent\tolerant\protected\def\definegridsnapping[#1]#*[#2]%
   {\installsnapvalues{#1}{#2}}
 
-\edef\spac_grids_snap_value_reset
+\protected\edef\spac_grids_snap_value_reset
   {%\gridsnappingfalse
    \c_attr_snapmethod\attributeunsetvalue}
 
-\def\spac_grids_snap_value_set#1%
+\protected\def\spac_grids_snap_value_set#1%
   {%\gridsnappingtrue
    \begincsname\??gridsnappers#1\endcsname}
 
@@ -2268,11 +2290,20 @@
      \expandafter\gobbleoneargument
    \fi}
 
+\lettonothing\m_spac_blank_asked
+
 \permanent\protected\def\useblankparameter#1% faster local variant
   {\edef\m_spac_blank_asked{#1\c!blank}%
    \ifempty\m_spac_blank_asked\else
      \directvspacing\m_spac_blank_asked
    \fi}
+
+% This could be (needs to be tested):
+%
+% \permanent\protected\def\useblankparameter#1% faster local variant
+%   {\ifempty{#1\c!blank}\else
+%      \normalexpanded{\directvspacing{\lastnamedcs}}%
+%    \fi}
 
 %D Handy (and faster):
 

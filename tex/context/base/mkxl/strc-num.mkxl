@@ -251,6 +251,8 @@
 % The bypage check needs a multipass reference and therefore we only check for it when we increment
 % and know that some content will be placed. We could also check for spreads.
 
+\lettonothing\m_strc_counters_way
+
 \protected\def\strc_counters_increment_sub#1#2%
   {% this will be combined into one lua call
    \edef\m_strc_counters_way{\strc_counters_way{#1}}%

@@ -35,6 +35,8 @@
 \appendtoks\synctexpause \to\everybeforeoutput
 \appendtoks\synctexresume\to\everyafteroutput
 
+\lettonothing \p_state
+
 \permanent\protected\def\setupsynctex[#1]%
   {\begingroup
    \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,#1]%

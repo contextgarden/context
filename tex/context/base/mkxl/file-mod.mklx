@@ -213,6 +213,9 @@
 
 %D Relatively new (no need for a speedup here). Can't this now be done nicer?
 
+\lettonothing\m_module_command_command
+\lettonothing\m_module_command_function
+
 \permanent\protected\def\syst_modules_direct_lua#1#2%
   {\edef\m_module_command_command {#1}%
    \edef\m_module_command_function{#2}%

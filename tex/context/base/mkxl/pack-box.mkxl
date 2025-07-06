@@ -228,6 +228,10 @@
 
 \installcorenamespace{collectorcorners}
 
+\lettonothing\p_collector_corner
+\lettonothing\p_collector_rotation
+\lettonothing\p_collector_state
+
 \defcsname\??collectorcorners\v!middle\endcsname
   {\ifdim\d_pack_layers_x_size>\zeropoint
       \advanceby\d_pack_layers_x_position.5\d_pack_layers_x_size

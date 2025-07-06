@@ -15,7 +15,8 @@ static void tex_aux_scan_dimension_expression (int braced);
 
 static inline void tex_push_back(halfword tok, halfword cmd, halfword chr)
 {
-    if (cmd != spacer_cmd && tok != deep_frozen_relax_token && ! (cmd == relax_cmd && chr == no_relax_code)) {
+    if (cmd != spacer_cmd && tok != deep_frozen_relax_token && 
+     ! (cmd == relax_cmd && (chr == no_relax_code || chr == no_arguments_relax_code))) {
         tex_back_input(tok);
     }
 }
@@ -4964,11 +4965,13 @@ halfword tex_scan_macro_expand(void)
                         goto PICKUP;
                     }
                 case relax_cmd:
-                    if (cur_chr == no_relax_code) {
-                        /*tex Think of |\ifdim\dimen0=\dimen2\norelax| inside an |\edef|. */
-                        goto PICKUP;
-                    } else {
-                        goto DONEEXPANDING;
+                    switch (cur_chr) { 
+                        case no_relax_code:
+                        case no_arguments_relax_code:
+                            /*tex Think of |\ifdim\dimen0=\dimen2\norelax| inside an |\edef|. */
+                            goto PICKUP;
+                        default:
+                            goto DONEEXPANDING;
                     }
                 case prefix_cmd:
                     if (cur_chr == enforced_code && (! overload_mode_par || lmt_main_state.run_state != production_state)) {

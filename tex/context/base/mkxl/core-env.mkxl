@@ -119,6 +119,8 @@
 %D second argument \type {keep} will prevent changing the already set mode but defines
 %D it when undefined.
 
+\lettonothing\m_modes_asked
+
 \permanent\protected\def\definemode
   {\unprotect
    \syst_modes_define}
@@ -162,6 +164,8 @@
 \newconditional\c_checked_mode
 
 % one
+
+\let\syst_modes_check_step\gobbleoneargument
 
 \def\syst_modes_check_indeed#1%
   {\ifcsname\??mode#1\endcsname
@@ -356,11 +360,13 @@
 
 \permanent\protected\lettonothing\stopmodeset
 
+\lettonothing\m_modes_case  % we could probably use \m_modes_asked
+
 \tolerant\def\syst_modes_set_start#.[#1]% skip spaces and pars
-  {\edef\m_mode_case{#1}%
-   \ifempty\m_mode_case
+  {\edef\m_modes_case{#1}%
+   \ifempty\m_modes_case
      \expandafter\syst_modes_set_quit
-   \orunless\ifx\m_mode_case\s!default
+   \orunless\ifx\m_modes_case\s!default
      \expandafter\syst_modes_set_check
    \orelse\ifconditional\c_syst_modes_set_done
      \expandafter\syst_modes_set_quit
@@ -369,7 +375,7 @@
    \fi}
 
 \def\syst_modes_set_check
-  {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_mode_case}
+  {\syst_modes_check_lr\syst_modes_set_yes\syst_modes_set_nop\m_modes_case}
 
 \tolerant\def\syst_modes_set_yes#1%
   {\c_syst_modes_set_done\conditionaltrue

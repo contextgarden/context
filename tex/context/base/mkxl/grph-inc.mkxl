@@ -227,6 +227,14 @@
 
 % todo: chain them
 
+\lettonothing\p_grph_include_label
+\lettonothing\p_grph_include_name
+\lettonothing\p_grph_include_parent
+
+%lettonothing\m_grph_include_label
+\lettonothing\m_grph_include_name
+\lettonothing\m_grph_include_parent
+
 \def\grph_include_setup#1#2#3% name parent settings
   {\cdef\m_grph_include_name  {#1}%
    \cdef\m_grph_include_parent{#2}%

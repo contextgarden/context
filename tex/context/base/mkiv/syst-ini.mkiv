@@ -1145,6 +1145,7 @@
 \ifdefined\suppressmathparerror     \suppressmathparerror     \plusone  \fi
 \ifdefined\suppressifcsnameerror    \suppressifcsnameerror    \plusone  \fi
 \ifdefined\suppressfontnotfounderror\suppressfontnotfounderror\zerocount\fi
+\ifdefined\ignoreprimitiveerror     \ignoreprimitiveerror     \zerocount\fi
 
 \let     \suppresslongerror        \relax
 \newcount\suppresslongerror                           \let\normalsuppresslongerror        \suppresslongerror
@@ -1152,6 +1153,7 @@
 \let     \suppressmathparerror     \suppresslongerror \let\normalsuppressmathparerror     \suppresslongerror
 \let     \suppressifcsnameerror    \suppresslongerror \let\normalsuppressifcsnameerror    \suppresslongerror
 \let     \suppressfontnotfounderror\suppresslongerror \let\normalsuppressfontnotfounderror\suppresslongerror
+\let     \ignoreprimitiveerror     \suppresslongerror \let\normalignoreprimitiveerror     \suppresslongerror
 
 \matheqnogapstep\zerocount % for now
 

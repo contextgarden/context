@@ -189,12 +189,18 @@
 
 \mutable\lettonothing\lastpredefinedsymbol % some day we can do more at the lua end
 
+% maybe \s!SYM
+
+%D This is the only place wehere we still test and access objects so we might as
+%D well move more to \LUA.
+
 \permanent\protected\def\predefinesymbol[#1]%
   {\begingroup
    \xdef\lastpredefinedsymbol{#1}%
-   \settightobject{SYM}{#1}\hbox{\symbol[#1]}% to be checked ... maybe only fitting
-   \getobjectreference{SYM}{#1}\m_back_object_reference
-   \clf_registerbackendsymbol{#1}\m_back_object_reference\relax
+   \settightobject{SYM}\lastpredefinedsymbol\hbox{\symbol[#1]}% to be checked ... maybe only fitting
+   \clf_registerbackendsymbol
+     \lastpredefinedsymbol
+     {\objectreference{SYM}\lastpredefinedsymbol}\relax
    \endgroup}
 
 \protect \endinput

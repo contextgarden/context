@@ -93,6 +93,8 @@
 %D Anyway, the whole multiple engine mechanism is to keep her gnuplot from
 %D interfering.
 
+\lettonothing\m_meta_saved_instance
+
 \permanent\tolerant\protected\def\startMPdefinitions#=#:#2\stopMPdefinitions
   {\let\m_meta_saved_instance\currentMPinstance
    \cdef\currentMPinstance{#1}%
@@ -938,6 +940,8 @@
   {\begingroup
    \catcode\endoflineasciicode\ignorecatcode
    \meta_start_environment}
+
+\lettonothing\m_meta_option
 
 \tolerant\def\meta_start_environment[#1]#:#2\stopMPenvironment
   {\endgroup

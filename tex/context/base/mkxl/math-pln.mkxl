@@ -82,6 +82,8 @@
   {\enforced\global\let\math_border_NC\math_border_NC_indeed
    \cr}
 
+\lettonothing\m_math_border_matrix
+
 \protected\def\math_border_matrix#1#2#3% adapted plain
   {\begingroup
    %

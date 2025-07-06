@@ -303,6 +303,8 @@ return {
         "defaultgriddisplaywidowpenalty", "defaultgridwidowpenalty", "defaultgridclubpenalty", "defaultgridbrokenpenalty",
         --
         "luametatexverboseversion", "luametatexfunctionality",
+        --
+        "currentverbosemathstyle",
     },
     ["helpers"] = {
         --

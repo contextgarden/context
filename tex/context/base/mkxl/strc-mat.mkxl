@@ -768,7 +768,7 @@
      \forcestrutdepth
      \strc_formulas_display_space_after_common
    \else
-     \strc_formulas_display_space_after_depth_normal
+     \strc_formulas_display_space_after_normal % was an undefined
    \fi}
 
 \def\strc_formulas_display_space_before
@@ -1790,7 +1790,7 @@
 \tolerant\protected\def\strc_formulas_nested_formula_start[#S#1]%
   {\begingroup
    \ifparameter#1\or
-      \setupformula[\c!width=\d_strc_formulas_ _width,#1]%
+      \setupformula[\c!width=\d_strc_formulas_display_width,#1]%
       \d_strc_formulas_display_width{\formulaparameter\c!width}%
    \fi
    \vcenter\bgroup

@@ -50,6 +50,8 @@ end
 
 job.register('job.objects.collected', tobesaved, initializer, nil)
 
+local c_realpageno <const> = tex.iscount("realpageno")
+
 local function saveobject(tag,number,page)
     local data = { number, page }
     tobesaved[tag] = data
@@ -86,7 +88,6 @@ jobobjects.set    = setobject
 jobobjects.get    = getobject
 jobobjects.number = getobjectnumber
 jobobjects.page   = getobjectpage
-
 
 local data = table.setmetatableindex("table")
 
@@ -146,7 +147,7 @@ function objects.restore(ns,id) -- why not just pass a box number here too (ok, 
                 action = saveobjectspec,
                 tag    = ns .. "::" .. id,
                 number = index,
-                page   = getcount("realpageno"),
+                page   = getcount(c_realpageno),
             }
             -- list is a rule
             setlink(list,page)
@@ -171,7 +172,7 @@ function objects.dimensions(index)
     end
 end
 
-function objects.reference(ns,id)
+local function objectsreference(ns,id)
     local d = data[ns][id]
     if d then
         return d[1]
@@ -180,13 +181,16 @@ function objects.reference(ns,id)
     end
 end
 
-function objects.page(ns,id)
-    return getobjectpage(ns .."::" .. id,getcount("realpageno"))
+local function objectspage(ns,id)
+    return getobjectpage(ns .."::" .. id,getcount(c_realpageno))
 end
 
 function objects.found(ns,id)
     return data[ns][id]
 end
+
+objects.reference = objectsreference
+objects.page      = objectspage
 
 implement {
     name      = "registerreferencedobject",
@@ -206,14 +210,19 @@ implement {
     actions   = objects.restore,
 }
 
-implement {
+
+-- We don't really need these any more. In pack-obj there is a little
+-- usage but when I'm in the mood it can as well be replaced
+-- and then the lot here can go.
+
+implement { -- maybe just a proper if .. not used much
     name      = "doifelseobjectfound",
     arguments = "2 arguments",
     public    = true,
     protected = true,
     actions   = function(ns,id)
         ctx_doifelse(data[ns][id])
-     -- ctx_doifelse(objects.reference(ns,id))
+     -- ctx_doifelse(objectsreference(ns,id))
     end,
 }
 
@@ -224,7 +233,7 @@ implement {
     protected = true,
     actions   = function(ns,id)
      -- ctx_doifelse(data[ns][id])
-        ctx_doifelse(objects.reference(ns,id))
+        ctx_doifelse(objectsreference(ns,id))
     end,
 }
 
@@ -234,7 +243,7 @@ implement {
     public    = true,
     protected = true,
     actions   = function(ns,id,target)
-        setmacro(target,objects.reference(ns,id),"global")
+        setmacro(target,objectsreference(ns,id),"global")
     end
 }
 
@@ -244,7 +253,25 @@ implement {
     public    = true,
     protected = true,
     actions   = function(ns,id,target)
-        setmacro(target,objects.page(ns,id),"global")
+        setmacro(target,objectspage(ns,id),"global")
+    end
+}
+
+implement {
+    name      = "objectreference",
+    arguments = { "argument", "argument"},
+    public    = true,
+    actions   = function(ns,id)
+        context(objectsreference(ns,id) or "")
+    end
+}
+
+implement {
+    name      = "objectreferencepage",
+    arguments = { "argument", "argument" },
+    public    = true,
+    actions   = function(ns,id)
+        context(objectspage(ns,id) or "0")
     end
 }
 

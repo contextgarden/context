@@ -949,6 +949,8 @@
 \letcsname\??mixedcolumnsbefore\s!box\endcsname\donothing
 \letcsname\??mixedcolumnsafter \s!box\endcsname\donothing
 
+\lettonothing\p_page_mix_strut
+
 \defcsname\??mixedcolumnsstart\s!box\endcsname
   {\edef\p_page_mix_strut{\mixedcolumnsparameter\c!strut}%
    \setbox\b_page_mix_collected\vbox \bgroup

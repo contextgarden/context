@@ -160,6 +160,10 @@
 \let\anch_backgrounds_text_start_indeed\relax
 \let\anch_backgrounds_text_stop_indeed \relax
 
+\lettonothing\p_anch_backgrounds_text_frame
+\lettonothing\p_anch_backgrounds_text_corner
+\lettonothing\p_anch_backgrounds_text_background
+
 \defcsname\??textbackgroundlevel\v!text\endcsname
   {\let\anch_backgrounds_text_start_indeed\anch_backgrounds_text_start_txt
    \let\anch_backgrounds_text_stop_indeed \anch_backgrounds_text_stop_txt}

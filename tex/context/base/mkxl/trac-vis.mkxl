@@ -135,6 +135,8 @@
 
 % lmmonoltcond10regular 4pt
 
+\mutable\lettonothing\visualizerfont
+
 \permanent\tolerant\protected\def\setvisualizerfont[#1]% somename at 4pt
   {\begingroup
    \ifempty{#1}%

@@ -70,6 +70,15 @@
 \newbox      \b_typo_items_symbols
 \newbox      \b_typo_items_texts
 
+\lettonothing\p_typo_items_align
+\lettonothing\p_typo_items_alternative
+\lettonothing\p_typo_items_n
+\lettonothing\p_typo_items_symbol
+\lettonothing\p_typo_items_textalign
+
+\lettonothing\m_typo_items_align
+\lettonothing\m_typo_items_symbol
+
 \permanent\tolerant\protected\def\items[#S#1]#:#2%
   {\bgroup
    \setupitems[#1]%

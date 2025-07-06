@@ -54,6 +54,12 @@
 
 \mutable\lettonothing\currentotrbackground
 
+\lettonothing\p_page_backgrounds_command
+\lettonothing\p_page_backgrounds_depth
+\lettonothing\p_page_backgrounds_offset
+\lettonothing\p_page_backgrounds_setups
+\lettonothing\p_page_backgrounds_state
+
 %D This is the only spot where we have a low level dependency on the way
 %D parent chains are defined but we want the speed.
 
