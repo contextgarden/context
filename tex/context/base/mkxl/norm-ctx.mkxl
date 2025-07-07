@@ -13,7 +13,9 @@
 
 \unprotect
 
-%D A few more might end up here (like the weird ones in syst-ini).
+%D A few more might end up here (like the weird ones in syst-ini). In the
+%D end all these normals will go away as part of the overload protection
+%D becoming more restricted.
 
 \let\normalreqno     \normaleqno
 %let\mathtopaccent   \normaloverline

@@ -286,6 +286,7 @@ void tex_dump_primitives(dumpstream f)
         dump_int(f, lmt_primitive_state.prim_data[p].subids);
         for (int q = 0; q < lmt_primitive_state.prim_data[p].subids; q++) {
             dump_int(f, lmt_primitive_state.prim_data[p].names[q]);
+            dump_uchar(f, lmt_primitive_state.prim_data[p].permissions[q]);
         }
     }
 }
@@ -299,14 +300,17 @@ void tex_undump_primitives(dumpstream f)
         undump_int(f, lmt_primitive_state.prim_data[p].subids);
         if (lmt_primitive_state.prim_data[p].subids > 0) {
             int size = lmt_primitive_state.prim_data[p].subids;
-            strnumber *names = aux_allocate_clear_array(sizeof(strnumber *), size, 1);
-            if (names) {
+            strnumber *names = aux_allocate_clear_array(sizeof(strnumber), size, 1);
+            prmpermissions *permissions = aux_allocate_clear_array(sizeof(prmpermissions), size, 1);
+            if (names && permissions) {
                 lmt_primitive_state.prim_data[p].names = names;
+                lmt_primitive_state.prim_data[p].permissions = permissions;
                 for (int q = 0; q < lmt_primitive_state.prim_data[p].subids; q++) {
                     undump_int(f, names[q]);
+                    undump_uchar(f, permissions[q]);
                 }
             } else {
-                tex_overflow_error("primitives", size * sizeof(strnumber *));
+                tex_overflow_error("primitives", size * sizeof(strnumber));
             }
         }
     }
@@ -404,20 +408,32 @@ void tex_primitive_def(const char *str, size_t length, singleword cmd, halfword 
 
 */
 
+/* 
+    Todo: allocate all subids at the same time. Not that important because this only happens when 
+    making the format file. 
+*/
+
 static void tex_aux_store_primitive_name(strnumber s, singleword cmd, halfword chr, halfword offset)
 {
     lmt_primitive_state.prim_data[cmd].offset = offset;
     if (lmt_primitive_state.prim_data[cmd].subids < (chr + 1)) {
         /*tex Not that efficient as each primitive triggers this now but only at ini time so ... */
-        strnumber *newstr = aux_allocate_clear_array(sizeof(strnumber *), chr + 1, 1);
+        strnumber *names = aux_allocate_clear_array(sizeof(strnumber), chr + 1, 1);
+        prmpermissions *permissions = aux_allocate_clear_array(sizeof(prmpermissions), chr + 1, 1);
         if (lmt_primitive_state.prim_data[cmd].names) {
-            memcpy(newstr, lmt_primitive_state.prim_data[cmd].names, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(strnumber));
+            memcpy(names, lmt_primitive_state.prim_data[cmd].names, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(strnumber));
             aux_deallocate_array(lmt_primitive_state.prim_data[cmd].names);
         }
-        lmt_primitive_state.prim_data[cmd].names = newstr;
+        if (lmt_primitive_state.prim_data[cmd].permissions) {
+            memcpy(permissions, lmt_primitive_state.prim_data[cmd].permissions, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(prmpermissions));
+            aux_deallocate_array(lmt_primitive_state.prim_data[cmd].permissions);
+        }
+        lmt_primitive_state.prim_data[cmd].names = names;
+        lmt_primitive_state.prim_data[cmd].permissions = permissions;
         lmt_primitive_state.prim_data[cmd].subids = chr + 1;
     }
     lmt_primitive_state.prim_data[cmd].names[chr] = s;
+    lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_permitted;
 }
 
 /*tex

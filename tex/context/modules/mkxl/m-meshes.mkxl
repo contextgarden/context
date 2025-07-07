@@ -46,6 +46,7 @@ function moduledata.meshes.show(name,method,average)
                     some("found"    , t.overlap and table.count(t.overlap) or 0)
                     some("areas"    , t.areas and table.count(t.areas) or 0)
                     some("unique"   , t.unique and table.count(t.unique) or 0)
+                    some("epsilon"  , t.epsilon or vector.getepsilon(true))
                 context.stoptabulate()
             context.stopcolumns()
             --

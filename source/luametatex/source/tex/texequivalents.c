@@ -1062,8 +1062,6 @@ static int tex_aux_report_overload(halfword cs, int overload)
     return error_type == warning_error_type;
 }
 
-# define overload_error_type(overload) (overload & 1 ? warning_error_type : normal_error_type)
-
 int tex_define_permitted(halfword cs, halfword prefixes)
 {
     halfword overload = overload_mode_par;
@@ -1682,7 +1680,6 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
                             "\\swapcsvalues not (yet) implemented for commands (%C, %C)",
                             t1, v1, t2, v2, NULL
                         );
-
                     }
                     return;
             }

@@ -77,23 +77,38 @@
     the caller because otherwise we get too many false positives here. (HH)
 */
 
+// # if 0
+// 
+//     # define EPSILON    0.000001
+//     # define ISZERO(d)  (d > -EPSILON && d < EPSILON)
+//     # define USEZERO(d) (d > -EPSILON && d < EPSILON)
+// 
+// # else
+// 
+//     # define EPSILON    0.000001
+//  // # define EPSILON    1.0e-16
+//     # define ISZERO(d)  (d == 0.0)
+//     # define USEZERO(d) (fabs(d) < EPSILON)
+// 
+// # endif
+
+/*tex
+    We started out with the Swedish EPSILON being \im {0.000001{$} but then the French one was
+    \im {1.0e-16} which made us, also observing random false positives (which also relates to 
+    the numbers involved), decide to make it a parameter. 
+*/
+
 # if 0
 
-    # define EPSILON    0.000001
-    # define ISZERO(d)  (d > -EPSILON && d < EPSILON)
-    # define USEZERO(d) (d > -EPSILON && d < EPSILON)
+    # define ISZERO(d)  (d > -epsilon && d < epsilon)
+    # define USEZERO(d) (d > -epsilon && d < epsilon)
 
 # else
 
- // # define EPSILON    0.000001
-    # define EPSILON    1.0e-16
     # define ISZERO(d)  (d == 0.0)
-    # define USEZERO(d) (fabs(d) < EPSILON)
+    # define USEZERO(d) (fabs(d) < epsilon)
 
 # endif
-
-# define CRITERIUM 0.000005
-# define XCRITERIUM 0.000001
 
 /* Here macros are faster than inline functions so we keep them. (HH) */
 
@@ -155,10 +170,7 @@
     Cy = V0[i1] - U0[i1]; \
     f = Ay * Bx - Ax * By; \
     d = By * Cx - Bx * Cy; \
-/* if (USEZERO(d)) d = 0.0; */ \
-/* if (USEZERO(f)) f = 0.0; */ \
     if ((f > 0.0 && d >= 0.0 && d <= f) || (f < 0.0 && d <= 0.0 && d >= f)) { \
-/* if (USEZERO(e)) e = 0.0; */ \
         e = Ax * Cy - Ay * Cx; \
         if (f > 0.0) { \
             if (e >= 0.0 && e <= f) { \
@@ -299,7 +311,8 @@ int triangles_intersect( /* We use the no_div variant! */
     triangles_three V2,
     triangles_three U0,
     triangles_three U1,
-    triangles_three U2
+    triangles_three U2,
+    double          epsilon
 )
 {
     triangles_three N1, N2;
@@ -518,14 +531,15 @@ static inline int compute_intervals_coplanar(
 */
 
 int triangles_intersect_with_line(
-    triangles_three  V0,
-    triangles_three  V1,
-    triangles_three  V2,
-    triangles_three  U0,
-    triangles_three  U1,
-    triangles_three  U2,
-    triangles_three  isectpt1,
-    triangles_three  isectpt2
+    triangles_three V0,
+    triangles_three V1,
+    triangles_three V2,
+    triangles_three U0,
+    triangles_three U1,
+    triangles_three U2,
+    triangles_three isectpt1,
+    triangles_three isectpt2,
+    double          epsilon
 )
 {
     triangles_three N1, N2;
@@ -802,7 +816,8 @@ static int triangles_are_coplanar_gd(
     triangles_three p2,
     triangles_three q2,
     triangles_three r2,
-    triangles_three normal_1
+    triangles_three normal_1,
+    double          epsilon
 )
 {
 
@@ -829,8 +844,7 @@ static int triangles_are_coplanar_gd(
         P2[0] = p2[0]; P2[1] = p2[1]; Q2[0] = q2[0]; Q2[1] = q2[1]; R2[0] = r2[0]; R2[1] = r2[1];
     }
 
-    return triangles_intersect_two_gd(P1,Q1,R1,P2,Q2,R2);
-
+    return triangles_intersect_two_gd(P1,Q1,R1,P2,Q2,R2,epsilon);
 };
 
 /* Permutation in a canonical form of T2's vertices */
@@ -869,7 +883,7 @@ static int triangles_are_coplanar_gd(
     } else if (dr2 < 0.0) { \
         CHECK_MIN_MAX(p1,r1,q1,r2,p2,q2) \
     } else { \
-        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1) \
+        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1,epsilon) \
            ? triangles_intersection_yes_coplanar \
            : triangles_intersection_nop_coplanar; \
     } \
@@ -883,7 +897,8 @@ int triangles_intersect_gd(
     triangles_three r1,
     triangles_three p2,
     triangles_three q2,
-    triangles_three r2
+    triangles_three r2,
+    double          epsilon
 )
 {
     double dp1, dq1, dr1, dp2, dq2, dr2;
@@ -963,7 +978,7 @@ int triangles_intersect_gd(
     } else if (dr1 < 0.0) {
         TRI_TRI_3D(r1,p1,q1,p2,r2,q2,dp2,dr2,dq2)
     } else {
-        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1)
+        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1,epsilon)
             ? triangles_intersection_nop_coplanar 
             : triangles_intersection_yes_coplanar;
     }
@@ -1082,7 +1097,7 @@ int triangles_intersect_gd(
     } else if (dr2 < 0.0) { \
         CONSTRUCT_INTERSECTION(p1,r1,q1,r2,p2,q2) \
     } else { \
-        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1) \
+        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1,epsilon) \
            ? triangles_intersection_nop_coplanar \
            : triangles_intersection_yes_coplanar; \
     } \
@@ -1095,14 +1110,15 @@ int triangles_intersect_gd(
 */
 
 int triangles_intersect_with_line_gd(
-    triangles_three  p1,
-    triangles_three  q1,
-    triangles_three  r1,
-    triangles_three  p2,
-    triangles_three  q2,
-    triangles_three  r2,
-    triangles_three  source,
-    triangles_three  target
+    triangles_three p1,
+    triangles_three q1,
+    triangles_three r1,
+    triangles_three p2,
+    triangles_three q2,
+    triangles_three r2,
+    triangles_three source,
+    triangles_three target,
+    double          epsilon
 )
 {
     double dp1, dq1, dr1, dp2, dq2, dr2;
@@ -1182,7 +1198,7 @@ int triangles_intersect_with_line_gd(
     } else if (dr1 < 0.0) {
         TRI_TRI_INTER_3D(r1,p1,q1,p2,r2,q2,dp2,dr2,dq2)
     } else {
-        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1) \
+        return triangles_are_coplanar_gd(p1,q1,r1,p2,q2,r2,N1,epsilon) \
             ? triangles_intersection_nop_coplanar \
             : triangles_intersection_yes_coplanar; \
     }
@@ -1284,7 +1300,8 @@ static int triangles_intersection_2d(
     triangles_two r1,
     triangles_two p2,
     triangles_two q2,
-    triangles_two r2
+    triangles_two r2,
+    double        epsilon
 ) {
     if (ORIENT_2D(p2,q2,p1) >= 0.0) {
         if (ORIENT_2D(q2,r2,p1) >= 0.0) {
@@ -1319,15 +1336,16 @@ int triangles_intersect_two_gd(
     triangles_two r1,
     triangles_two p2,
     triangles_two q2,
-    triangles_two r2
+    triangles_two r2,
+    double        epsilon
 ) {
     if (ORIENT_2D(p1,q1,r1) < 0.0) {
         return ORIENT_2D(p2,q2,r2) < 0.0
-            ? triangles_intersection_2d(p1,r1,q1,p2,r2,q2)
-            : triangles_intersection_2d(p1,r1,q1,p2,q2,r2);
+            ? triangles_intersection_2d(p1,r1,q1,p2,r2,q2,epsilon)
+            : triangles_intersection_2d(p1,r1,q1,p2,q2,r2,epsilon);
     } else {
         return ORIENT_2D(p2,q2,r2) < 0.0
-            ? triangles_intersection_2d(p1,q1,r1,p2,r2,q2)
-            : triangles_intersection_2d(p1,q1,r1,p2,q2,r2);
+            ? triangles_intersection_2d(p1,q1,r1,p2,r2,q2,epsilon)
+            : triangles_intersection_2d(p1,q1,r1,p2,q2,r2,epsilon);
     }
 }

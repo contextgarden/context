@@ -40,8 +40,12 @@ local registerscript        = metapost.registerscript
 
 local vectornew             = vector.new
 local vectortruncate        = vector.truncate
+local vectorgetepsilon      = vector.getepsilon
+local vectortotable         = vector.totable
 
 local contour               = vector.contour
+local mesh                  = vector.mesh
+
 local contourgetmesh        = contour.getmesh
 local contourgetarea        = contour.getarea
 local contouraverage        = contour.average
@@ -49,20 +53,26 @@ local contoursort           = contour.sort
 local contourtriangulate    = contour.triangulate
 local contourcollectoverlap = contour.collectoverlap
 
+local meshtotable           = mesh.totable
+
 local meshes  = { }
 local nofruns = 0
 
--- vector.contour.overlapmap = {
---     [0x01] = "nop_one",
---     [0x02] = "nop_two",
---     [0x03] = "nop_three",
---     [0x04] = "nop_four",
---     [0x05] = "nop_five" ,
---     [0x0E] = "same points" ,
---     [0x0F] = "same coordinates" ,
---     [0x13] = "yes_three",
---     [0x14] = "yes_four",
---     [0x15] = "yes_five",
+-- contour.overlapmap = {
+--     -- not intersecting:
+--     [0x00] = "nop_bound",
+--     [0x01] = "nop_plane_one",
+--     [0x02] = "nop_plane_two",
+--     [0x03] = "nop_coplanar",
+--     [0x04] = "nop_final",
+--     [0x0E] = "nop_same_points", -- user values
+--     [0x0F] = "nop_same_values", -- user values
+--     -- intersecting:
+--     [0x10] = "yes_bound",
+--     [0x11] = "yes_unused_1",
+--     [0x12] = "yes_unused_2",
+--     [0x13] = "yes_coplanar",
+--     [0x14] = "yes_final",
 -- }
 
 function mp.mesh_register(specification)
@@ -114,16 +124,19 @@ local averages = {
 }
 
 
-function vector.meshname(name,method,average)
+local function vectormeshname(name,method,average)
     return formatters
         ["mesh-%s-%i-%i.lua"]
         (name or "unknown",method or 1, average or 1)
 end
 
+vector.meshname = vectormeshname
+
 local function contourshow(points,trianglelist,found,current)
     local count    = found and #found or 0
     local method   = current.method
     local average  = current.average
+    local epsilon  = current.epsilon or vectorgetepsilon(true)
     local smethod  = methods[method] or methods[1]
     local saverage = averages[average] or averages[1]
     report("")
@@ -132,6 +145,7 @@ local function contourshow(points,trianglelist,found,current)
     report("overlaps  : %i",count)
     report("method    : %i (%s)",method,smethod)
     report("average   : %i (%s)",average,saverage)
+    report("epsilon   : %f",epsilon)
     if count > 0 then
         report("")
         local hash  = contouroverlapping(found)
@@ -149,26 +163,27 @@ local function contourshow(points,trianglelist,found,current)
         end
         report("")
         if current.save then
-            local logname = vector.meshname(current.name,method,average)
+            local logname = vectormeshname(current.name,method,average)
             local loglist = {
                 method    = { id = method,  name = smethod },
                 average   = { id = average, name = saverage } ,
-                points    = vector.totable(points),
-                triangles = vector.mesh.totable(trianglelist),
+                points    = vectortotable(points),
+                triangles = meshtotable(trianglelist),
                 overlap   = found,
                 areas     = areas,
                 unique    = hash,
                 N         = current.N or 0,
                 M         = current.M or 0,
                 state     = current.state,
+                epsilon   = epsilon,
             }
             table.save(logname,loglist)
         end
     end
 end
 
-vector.contour.overlapping = contouroverlapping
-vector.contour.show        = contourshow
+contour.overlapping = contouroverlapping
+contour.show        = contourshow
 
 ---
 
@@ -362,7 +377,7 @@ local function mesh_contour()
         current.N = N
         current.M = M
 
-        vectortruncate(current.points)
+        vectortruncate(current.points,current.epsilon)
         local state = contouraverage(current.points,current.list,true,current.average) -- tolerant
 
         current.state  = state
@@ -373,8 +388,7 @@ local function mesh_contour()
         contoursort(current.list)
 
         if current.overlap == true then
-            current.overlap = contourcollectoverlap(current.points,current.list,false,current.method)
---             current.overlap = contourcollectoverlap(current.points,current.list,true)
+            current.overlap = contourcollectoverlap(current.points,current.list,false,current.method,current.epsilon)
         end
 
         current.meshed = true
@@ -402,8 +416,6 @@ end
 registerscript("meshcontour",  mesh_contour)
 
 -- For now, as we have examples
-
-local contour         = vector.contour
 
 vector.checkoverlap   = contour.checkoverlap
 vector.collectoverlap = contour.collectoverlap

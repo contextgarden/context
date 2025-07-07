@@ -29,32 +29,66 @@
 */
 
 /*tex 
+
     We need to be way above EPSILON in triangles.c because otherwise we get too many 
     false positives at that end! 
+
+    For practical reason we now use a configurable epsilon because we need to interplay 
+    nicely with the overlap detection. Alas.  
+
+    \starttyping
+    const double p_epsilon =  0.000001;
+    const double m_epsilon = -0.000001;
+
+    static inline int iszero(double d) { 
+        return d > m_epsilon && d < p_epsilon; 
+    }
+    \stoptyping
+
+    So we now do this: 
+
 */
 
-const double p_epsilon =  0.000001;
-const double m_epsilon = -0.000001;
+# define vector_epsilon_default 1.0e-06
 
-static inline int iszero(double d) { 
-    /* todo: do we need the same in triangles, currently a macro there */
-    return d > m_epsilon && d < p_epsilon; 
+static double vector_epsilon = vector_epsilon_default;
+
+# define ISZERO(d) (fabs(d) < epsilon)
+
+static int vectorlib_setepsilon(lua_State *L)
+{
+    vector_epsilon = lmt_optdouble(L, 1, vector_epsilon_default);
+    return 1;
 }
 
-static inline int vectorlib_aux_zero_in_column(const vector a, int c)
+static int vectorlib_getepsilon(lua_State *L)
+{
+    lua_pushnumber(L, lua_toboolean(L, 1) ? vector_epsilon_default : vector_epsilon);
+    return 1;
+}
+
+static int vectorlib_iszero(lua_State *L)
+{
+    double epsilon = lmt_optdouble(L, 2, vector_epsilon);
+    lua_pushboolean(L, ISZERO(lua_tonumber(L, 1)));
+    return 1;
+}
+
+
+static inline int vectorlib_aux_zero_in_column(const vector a, int c, double epsilon)
 {
     for (int r = 0; r < a->rows; r++) {
-        if (iszero(a->data[r * a->columns + c])) {
+        if (ISZERO(a->data[r * a->columns + c])) {
             return 1;
         }
     }
     return 0;
 }
 
-static inline int vectorlib_aux_zero_in_row(const vector a, int r)
+static inline int vectorlib_aux_zero_in_row(const vector a, int r, double epsilon)
 {
     for (int c = 0; c < a->columns; c++) {
-        if (iszero(a->data[r * a->columns + c])) {
+        if (ISZERO(a->data[r * a->columns + c])) {
             return 1;
         }
     }
@@ -821,16 +855,18 @@ static int vectorlib_truncate(lua_State *L)
     vector a = vectorlib_aux_get(L, 1);
     if (a) {
         if (lua_toboolean(L, 2)) {
+            double epsilon = lmt_optdouble(L, 3, vector_epsilon);
             /* in place */
             for (int i = 0; i < a->rows * a->columns; i++) {
-                if (iszero(a->data[i])) { 
+                if (ISZERO(a->data[i])) { 
                     a->data[i] = 0.0;
                 }
             }
         } else {
             vector v = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
+            double epsilon = lmt_optdouble(L, 3, vector_epsilon);
             for (int i = 0; i < a->rows * a->columns; i++) {
-                v->data[i] = iszero(a->data[i]) ? 0.0 : a->data[i];
+                v->data[i] = ISZERO(a->data[i]) ? 0.0 : a->data[i];
             }
         }
     } else {
@@ -839,14 +875,14 @@ static int vectorlib_truncate(lua_State *L)
     return 1;
 }
 
-static int vectorlib_aux_uppertriangle(vector v, int sign)
+static int vectorlib_aux_uppertriangle(vector v, int sign, double epsilon)
 {
     for (int i = 0; i < v->rows - 1; i++) {
         double pivot = v->data[i * v->columns + i];
-        if (iszero(pivot)) {
+        if (ISZERO(pivot)) {
             int p = i + 1;
          // while (! (v->data[p * v->columns + i])) {
-            while (iszero(v->data[p * v->columns + i])) {
+            while (ISZERO(v->data[p * v->columns + i])) {
                 p++;
                 if (p > v->rows) {
                     return sign;
@@ -871,7 +907,7 @@ static int vectorlib_aux_uppertriangle(vector v, int sign)
         for (int k = i + 1; k < v->rows; k++) {
             double factor = - v->data[k * v->columns + i] / v->data[i * v->columns + i];
             long target = k * v->columns;
-            if (iszero(factor)) {
+            if (ISZERO(factor)) {
                 for (int l = i; l < v->columns; l++) {
                     v->data[target++] += 0.0;
                 }
@@ -886,7 +922,7 @@ static int vectorlib_aux_uppertriangle(vector v, int sign)
     return sign;
 }
 
-static int vectorlib_aux_determinant(lua_State *L, int singular, double *d)
+static int vectorlib_aux_determinant(lua_State *L, int singular, double *d, double epsilon)
 {
     vector a = vectorlib_aux_get(L, 1);
     (void) singular;
@@ -925,11 +961,12 @@ static int vectorlib_aux_determinant(lua_State *L, int singular, double *d)
                     vectorlib_aux_copy(L, 1);
                     {
                         vector a = vectorlib_aux_get(L, -1);
-                        int sign = vectorlib_aux_uppertriangle(a, 1);
+                        double epsilon = lmt_optdouble(L, 2, vector_epsilon);
+                        int sign = vectorlib_aux_uppertriangle(a, 1, epsilon);
                         *d = 1.0;
                         for (int i = 0; i < a->rows; i++) {
                             double dd = a->data[i * a->columns + i];
-                            if (iszero(dd)) {
+                            if (ISZERO(dd)) {
                                 /*tex
                                     This is also an attempt to avoid the -0.0 case. But even this
                                     doesn't catches all it seems.
@@ -953,7 +990,7 @@ static int vectorlib_aux_determinant(lua_State *L, int singular, double *d)
          //     d = 0.0;
          // }
           DONE:
-            if (iszero(*d)) {
+            if (ISZERO(*d)) {
                 *d = 0.0;
             }
             return 1;
@@ -965,12 +1002,13 @@ static int vectorlib_aux_determinant(lua_State *L, int singular, double *d)
 
 static int vectorlib_determinant(lua_State *L)
 {
-    double d = 0.0;
-    if (vectorlib_aux_determinant(L, 0, &d)) {
-        if (iszero(d)) {
+    double determinant = 0.0;
+    double epsilon = lmt_optdouble(L, 2, vector_epsilon);
+    if (vectorlib_aux_determinant(L, 0, &determinant, epsilon)) {
+        if (ISZERO(determinant)) {
             lua_pushinteger(L, 0);
         } else {
-            lua_pushnumber(L, d);
+            lua_pushnumber(L, determinant);
         }
     } else {
         lua_pushnil(L);
@@ -981,7 +1019,8 @@ static int vectorlib_determinant(lua_State *L)
 static int vectorlib_issingular(lua_State *L)
 {
     double d = 0.0;
-    if (vectorlib_aux_determinant(L, 0, &d)) {
+    double epsilon = lmt_optdouble(L, 2, vector_epsilon);
+    if (vectorlib_aux_determinant(L, 0, &d, epsilon)) {
         double e = lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : 0.001;
         lua_pushboolean(L, d <= e || d >= -e);
     } else {
@@ -990,7 +1029,7 @@ static int vectorlib_issingular(lua_State *L)
     return 1;
 }
 
-static int vectorlib_aux_rowechelon(vector v, int reduce, int augmented)
+static int vectorlib_aux_rowechelon(vector v, int reduce, int augmented, double epsilon)
 {
     int pRow = 0;
     int pCol = 0;
@@ -998,10 +1037,10 @@ static int vectorlib_aux_rowechelon(vector v, int reduce, int augmented)
     int nCol = v->columns;
     while (pRow < nRow) {
         double pivot = v->data[pRow * nCol + pCol];
-        if (iszero(pivot)) {
+        if (ISZERO(pivot)) {
             int i = pRow;
             int n = nRow;
-            while (iszero(v->data[i * nCol + pCol])) {
+            while (ISZERO(v->data[i * nCol + pCol])) {
                 i++;
                 if (i > n) {
                     pCol = pCol + 1;
@@ -1059,11 +1098,12 @@ static int vectorlib_inverse(lua_State *L)
                 break;
             default:
                 if (a->rows == a->columns) {
+                   double epsilon = lmt_optdouble(L, 2, vector_epsilon);
                     switch (a->rows) {
                         case 1:
                             {
                                 vector w = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
-                                if (iszero(a->data[0])) {
+                                if (ISZERO(a->data[0])) {
                                     goto BAD;
                                 } else {
                                     w->data[0] = 1.0 / a->data[0];
@@ -1073,8 +1113,8 @@ static int vectorlib_inverse(lua_State *L)
                         case 2:
                             {
                                 double d = 0.0;
-                                if (vectorlib_aux_determinant(L, 0, &d)) {
-                                    if (iszero(d)) {
+                                if (vectorlib_aux_determinant(L, 0, &d, epsilon)) {
+                                    if (ISZERO(d)) {
                                         goto BAD;
                                     } else {
                                         vector w = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
@@ -1089,8 +1129,8 @@ static int vectorlib_inverse(lua_State *L)
                         case 3:
                             {
                                 double d = 0.0;
-                                if (vectorlib_aux_determinant(L, 0, &d)) {
-                                    if (iszero(d)) {
+                                if (vectorlib_aux_determinant(L, 0, &d, epsilon)) {
+                                    if (ISZERO(d)) {
                                         goto BAD;
                                     } else {
                                         vector w = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
@@ -1123,9 +1163,9 @@ static int vectorlib_inverse(lua_State *L)
                                  // v->data[r * v->columns + a->columns + r] = 1.0;
                                     v->data[target + r] = 1.0;
                                 }
-                                vectorlib_aux_rowechelon(v, 1, 1);
+                                vectorlib_aux_rowechelon(v, 1, 1, epsilon);
                                 for (int r = 0; r < a->rows; r++) {
-                                    if (iszero(v->data[r * v->columns + r])) {
+                                    if (ISZERO(v->data[r * v->columns + r])) {
                                         goto BAD;
                                     }
                                 }
@@ -1158,8 +1198,12 @@ static int vectorlib_rowechelon(lua_State *L)
             case identity_type:
                 break;
             default:
-                a = vectorlib_aux_get(L, -1);
-                vectorlib_aux_rowechelon(a, reduce, 0);
+                { 
+                    double epsilon = lmt_optdouble(L, 3, vector_epsilon);
+                    a = vectorlib_aux_get(L, -1);
+                    vectorlib_aux_rowechelon(a, reduce, 0, epsilon);
+                    break;
+                }
         }
     } else {
         lua_pushnil(L);
@@ -1241,18 +1285,21 @@ static int vectorlib_normalize(lua_State *L)
 static int vectorlib_homogenize(lua_State *L)
 {
     vector a = vectorlib_aux_get(L, 1);
-    if (a && a->columns > 1 && ! vectorlib_aux_zero_in_column(a, a->columns - 1)) {
-        vector v = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
-        for (int r = 0; r < a->rows; r++) {
-            double d = a->data[r * a->columns + a->columns - 1];
-            long target = r * a->columns;
-            long source = r * a->columns;
-            for (int c = 0; c < a->columns - 1; c++) {
-                v->data[target++] = a->data[source++] / d;
+    if (a && a->columns > 1) { 
+        double epsilon = lmt_optdouble(L, 2, vector_epsilon);
+        if (! vectorlib_aux_zero_in_column(a, a->columns - 1, epsilon)) {
+            vector v = vectorlib_aux_push(L, a->rows, a->columns, a->stacking);
+            for (int r = 0; r < a->rows; r++) {
+                double d = a->data[r * a->columns + a->columns - 1];
+                long target = r * a->columns;
+                long source = r * a->columns;
+                for (int c = 0; c < a->columns - 1; c++) {
+                    v->data[target++] = a->data[source++] / d;
+                }
+                v->data[target] = 1.0;
             }
-            v->data[target] = 1.0;
+            return 1;
         }
-        return 1;
     }
     lua_pushnil(L);
     return 1;
@@ -1615,18 +1662,6 @@ static int vectorlib_getdimensions(lua_State *L)
     } else {
         return 0;
     }
-}
-
-static int vectorlib_getepsilon(lua_State *L)
-{
-    lua_pushnumber(L, p_epsilon);
-    return 1;
-}
-
-static int vectorlib_iszero(lua_State *L)
-{
-    lua_pushboolean(L, lua_tonumber(L, 1));
-    return 1;
 }
 
 static int vectorlib_setstacking(lua_State *L)
@@ -2066,7 +2101,7 @@ static int vectorlib_contour_getarea(lua_State *L) /* see mplib */
 
 /* see below, todo: optimize */
 
-static int vectorlib_contour_aux_checkoverlap(vector v, mesh l, int U, int V, int method)
+static int vectorlib_contour_aux_checkoverlap(vector v, mesh l, int U, int V, int method, double epsilon)
 {
     int u0 = l->data[U].points[0] - 1;
     int u1 = l->data[U].points[1] - 1;
@@ -2095,21 +2130,21 @@ static int vectorlib_contour_aux_checkoverlap(vector v, mesh l, int U, int V, in
             double *V2 = &(v->data[v2 * v->columns]);
             if (
                 /* we can't memcmp due to small differences (epsilon) */
-                (iszero(fabs(U0[0] - V0[0])) && iszero(fabs(U0[1] - V0[1])) && iszero(fabs(U0[2] - V0[2]))) || 
-                (iszero(fabs(U1[0] - V0[0])) && iszero(fabs(U1[1] - V0[1])) && iszero(fabs(U1[2] - V0[2]))) || 
-                (iszero(fabs(U2[0] - V0[0])) && iszero(fabs(U2[1] - V0[1])) && iszero(fabs(U2[2] - V0[2]))) || 
-                (iszero(fabs(U0[0] - V1[0])) && iszero(fabs(U0[1] - V1[1])) && iszero(fabs(U0[2] - V1[2]))) || 
-                (iszero(fabs(U1[0] - V1[0])) && iszero(fabs(U1[1] - V1[1])) && iszero(fabs(U1[2] - V1[2]))) || 
-                (iszero(fabs(U2[0] - V1[0])) && iszero(fabs(U2[1] - V1[1])) && iszero(fabs(U2[2] - V1[2]))) || 
-                (iszero(fabs(U0[0] - V2[0])) && iszero(fabs(U0[1] - V2[1])) && iszero(fabs(U0[2] - V2[2]))) || 
-                (iszero(fabs(U1[0] - V2[0])) && iszero(fabs(U1[1] - V2[1])) && iszero(fabs(U1[2] - V2[2]))) || 
-                (iszero(fabs(U2[0] - V2[0])) && iszero(fabs(U2[1] - V2[1])) && iszero(fabs(U2[2] - V2[2])))
+                (ISZERO(U0[0] - V0[0]) && ISZERO(U0[1] - V0[1]) && ISZERO(U0[2] - V0[2])) || 
+                (ISZERO(U1[0] - V0[0]) && ISZERO(U1[1] - V0[1]) && ISZERO(U1[2] - V0[2])) || 
+                (ISZERO(U2[0] - V0[0]) && ISZERO(U2[1] - V0[1]) && ISZERO(U2[2] - V0[2])) || 
+                (ISZERO(U0[0] - V1[0]) && ISZERO(U0[1] - V1[1]) && ISZERO(U0[2] - V1[2])) || 
+                (ISZERO(U1[0] - V1[0]) && ISZERO(U1[1] - V1[1]) && ISZERO(U1[2] - V1[2])) || 
+                (ISZERO(U2[0] - V1[0]) && ISZERO(U2[1] - V1[1]) && ISZERO(U2[2] - V1[2])) || 
+                (ISZERO(U0[0] - V2[0]) && ISZERO(U0[1] - V2[1]) && ISZERO(U0[2] - V2[2])) || 
+                (ISZERO(U1[0] - V2[0]) && ISZERO(U1[1] - V2[1]) && ISZERO(U1[2] - V2[2])) || 
+                (ISZERO(U2[0] - V2[0]) && ISZERO(U2[1] - V2[1]) && ISZERO(U2[2] - V2[2]))
             ) {
                 return triangles_intersection_nop_same_values;
             } else if (method == 2) { 
-                return triangles_intersect_gd(U0, U1, U2, V0, V1, V2);
+                return triangles_intersect_gd(U0, U1, U2, V0, V1, V2, epsilon);
             } else { 
-                return triangles_intersect(U0, U1, U2, V0, V1, V2);
+                return triangles_intersect(U0, U1, U2, V0, V1, V2, epsilon);
             }
         }
     }
@@ -2125,7 +2160,8 @@ static int vectorlib_contour_checkoverlap(lua_State *L) /* see mplib */
         int V = lmt_tointeger(L, 4) - 1;
         if (U >= 0 && U < l->rows && V >= 0 && V < l->rows) {
             int method = lmt_optinteger(L, 5, 1);
-            int overlapping = vectorlib_contour_aux_checkoverlap(v, l, U, V, method);
+            double epsilon = lmt_optdouble(L, 6, vector_epsilon);
+            int overlapping = vectorlib_contour_aux_checkoverlap(v, l, U, V, method, epsilon);
             if (overlapping >= 0) {
                 lua_pushinteger(L, overlapping);
                 return 1;
@@ -2142,6 +2178,7 @@ static int vectorlib_contour_collectoverlap(lua_State *L) /* see mplib */
     if (vectorlib_contour_aux_is_valid(L, &v, &l, "collectoverlap")) {
         int details = lua_toboolean(L, 3);
         int method = lmt_optinteger(L, 4, 1);
+        double epsilon = lmt_optdouble(L, 5, vector_epsilon);
         int vr = v->rows; 
         int vc = v->columns; 
         int lr = l->rows; 
@@ -2190,34 +2227,33 @@ static int vectorlib_contour_collectoverlap(lua_State *L) /* see mplib */
                 } 
                 double *V0 = &(v->data[v0 * vc]); 
                 if ( 
-                    // test with fabs(a-b) < EPSILON
-                    (iszero(fabs(U0[0] - V0[0])) && iszero(fabs(U0[1] - V0[1])) && iszero(fabs(U0[2] - V0[2]))) || 
-                    (iszero(fabs(U1[0] - V0[0])) && iszero(fabs(U1[1] - V0[1])) && iszero(fabs(U1[2] - V0[2]))) || 
-                    (iszero(fabs(U2[0] - V0[0])) && iszero(fabs(U2[1] - V0[1])) && iszero(fabs(U2[2] - V0[2])))
+                    (ISZERO(U0[0] - V0[0]) && ISZERO(U0[1] - V0[1]) && ISZERO(U0[2] - V0[2])) || 
+                    (ISZERO(U1[0] - V0[0]) && ISZERO(U1[1] - V0[1]) && ISZERO(U1[2] - V0[2])) || 
+                    (ISZERO(U2[0] - V0[0]) && ISZERO(U2[1] - V0[1]) && ISZERO(U2[2] - V0[2]))
                 ) { 
                     continue; /* triangles_intersection_nop_same_values */
                 } 
                 double *V1 = &(v->data[v1 * vc]); 
                 if ( 
-                    (iszero(fabs(U0[0] - V1[0])) && iszero(fabs(U0[1] - V1[1])) && iszero(fabs(U0[2] - V1[2]))) || 
-                    (iszero(fabs(U1[0] - V1[0])) && iszero(fabs(U1[1] - V1[1])) && iszero(fabs(U1[2] - V1[2]))) || 
-                    (iszero(fabs(U2[0] - V1[0])) && iszero(fabs(U2[1] - V1[1])) && iszero(fabs(U2[2] - V1[2]))) 
+                    (ISZERO(U0[0] - V1[0]) && ISZERO(U0[1] - V1[1]) && ISZERO(U0[2] - V1[2])) || 
+                    (ISZERO(U1[0] - V1[0]) && ISZERO(U1[1] - V1[1]) && ISZERO(U1[2] - V1[2])) || 
+                    (ISZERO(U2[0] - V1[0]) && ISZERO(U2[1] - V1[1]) && ISZERO(U2[2] - V1[2])) 
                 ) { 
                     continue; /* triangles_intersection_nop_same_values */
                 } 
                 double *V2 = &(v->data[v2 * vc]);
                 if ( 
-                    (iszero(fabs(U0[0] - V2[0])) && iszero(fabs(U0[1] - V2[1])) && iszero(fabs(U0[2] - V2[2]))) || 
-                    (iszero(fabs(U1[0] - V2[0])) && iszero(fabs(U1[1] - V2[1])) && iszero(fabs(U1[2] - V2[2]))) || 
-                    (iszero(fabs(U2[0] - V2[0])) && iszero(fabs(U2[1] - V2[1])) && iszero(fabs(U2[2] - V2[2])))
+                    (ISZERO(U0[0] - V2[0]) && ISZERO(U0[1] - V2[1]) && ISZERO(U0[2] - V2[2])) || 
+                    (ISZERO(U1[0] - V2[0]) && ISZERO(U1[1] - V2[1]) && ISZERO(U1[2] - V2[2])) || 
+                    (ISZERO(U2[0] - V2[0]) && ISZERO(U2[1] - V2[1]) && ISZERO(U2[2] - V2[2]))
                 ) { 
                     continue; /* triangles_intersection_nop_same_values */
                 } 
                 if (details) { 
                     triangles_three Utimes, Vtimes; 
                     int state = method == 2
-                        ? triangles_intersect_with_line_gd(U0, U1, U2, V0, V1, V2, Utimes, Vtimes)
-                        : triangles_intersect_with_line   (U0, U1, U2, V0, V1, V2, Utimes, Vtimes);
+                        ? triangles_intersect_with_line_gd(U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon)
+                        : triangles_intersect_with_line   (U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon);
                     if (state > triangles_intersection_yes_bound) { 
                         long index = 1; 
                         if (! m) {
@@ -2243,8 +2279,8 @@ static int vectorlib_contour_collectoverlap(lua_State *L) /* see mplib */
                     }
                 } else {
                     int state = method == 2
-                        ? triangles_intersect_gd(U0, U1, U2, V0, V1, V2)
-                        : triangles_intersect   (U0, U1, U2, V0, V1, V2);
+                        ? triangles_intersect_gd(U0, U1, U2, V0, V1, V2, epsilon)
+                        : triangles_intersect   (U0, U1, U2, V0, V1, V2, epsilon);
                     if (state > triangles_intersection_yes_bound) { 
                         if (! m) {
                             lua_createtable(L, 8, 0);
@@ -2475,6 +2511,7 @@ static const luaL_Reg vectorlib_vector_function_list[] =
     { "setstacking",    vectorlib_setstacking    },
     { "getstacking",    vectorlib_getstacking    },
     { "getdimensions",  vectorlib_getdimensions  },
+    { "setepsilon",     vectorlib_setepsilon     },
     { "getepsilon",     vectorlib_getepsilon     },
     { "iszero",         vectorlib_iszero         },
  /* { "isidentity",     vectorlib_isidentity     }, */ /* todo */

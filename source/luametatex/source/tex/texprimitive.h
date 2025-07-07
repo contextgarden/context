@@ -50,10 +50,19 @@ extern hash_state_info lmt_hash_state;
 # define prim_size           2100 /*tex maximum number of primitives (quite a bit more than needed) */
 # define prim_prime          1777 /*tex about 85 percent of |primitive_size| */
 
+typedef enum primitive_permissions {
+    primitive_permitted = 0x00,
+    primitive_inhibited = 0x01,
+    primitive_warned    = 0x02,
+} primitive_permissions;
+
+typedef unsigned char prmpermissions;
+
 typedef struct primitive_info {
-    halfword   subids; /*tex number of name entries */
-    halfword   offset; /*tex offset to be used for |chr_code|s */
-    strnumber *names;  /*tex array of names */
+    halfword        subids;      /*tex number of name entries */
+    halfword        offset;      /*tex offset to be used for |chr_code|s */
+    strnumber      *names;       /*tex array of names */
+    prmpermissions *permissions; /*tex array of bitsets */
 } prim_info;
 
 typedef struct primitive_state_info {
@@ -69,7 +78,10 @@ extern primitive_state_info lmt_primitive_state;
 
 # define prim_next(a)        lmt_primitive_state.prim[(a)].half0         /*tex Link for coalesced lists. */
 # define prim_text(a)        lmt_primitive_state.prim[(a)].half1         /*tex String number for control sequence name. */
-# define prim_origin(a)      lmt_primitive_state.prim_eqtb[(a)].quart01  /*tex Level of definition. */
+# define prim_origin(a)      lmt_primitive_state.prim_eqtb[(a)].quart01 
+//define prim_origin(a)      lmt_primitive_state.prim_eqtb[(a)].single03
+//define prim_class(a)       lmt_primitive_state.prim_eqtb[(a)].single04
+
 # define prim_eq_type(a)     lmt_primitive_state.prim_eqtb[(a)].quart00  /*tex Command code for equivalent. */
 # define prim_equiv(a)       lmt_primitive_state.prim_eqtb[(a)].half1    /*tex Equivalent value. */
 

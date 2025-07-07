@@ -41,8 +41,14 @@
     so that we can report on them later on. We also need more info in order to play with this. So 
     the interfaces are different than the original. 
 
+    We found that the right setting of |EPSILON| played a huge rule in false positives so we 
+    decided to make that a parameter. 
+
     MS & HH 
 */
+
+# define triangles_epsilon    1.0e-06 // 0.000001
+# define triangles_epsilon_gd 1.0e-16
 
 typedef double triangles_two  [2] ;
 typedef double triangles_three[3] ;
@@ -73,7 +79,8 @@ extern int triangles_intersect (
     triangles_three V2,
     triangles_three U0,
     triangles_three U1,
-    triangles_three U2
+    triangles_three U2,
+    double          epsilon
 );
 
 extern int triangles_intersect_with_line (
@@ -84,7 +91,8 @@ extern int triangles_intersect_with_line (
     triangles_three U1,
     triangles_three U2,
 	triangles_three isectpt1,
-    triangles_three isectpt2
+    triangles_three isectpt2,
+    double          epsilon
 );
 
 /* Guigue & Devillers */
@@ -95,7 +103,8 @@ extern int triangles_intersect_gd (
     triangles_three V2,
     triangles_three U0,
     triangles_three U1,
-    triangles_three U2
+    triangles_three U2,
+    double          epsilon
 );
 
 extern int triangles_intersect_with_line_gd (
@@ -106,7 +115,8 @@ extern int triangles_intersect_with_line_gd (
     triangles_three U1,
     triangles_three U2,
     triangles_three source,
-    triangles_three target
+    triangles_three target,
+    double          epsilon
 );
 
 extern int triangles_intersect_two_gd ( /* todo: return values */
@@ -115,7 +125,8 @@ extern int triangles_intersect_two_gd ( /* todo: return values */
     triangles_two V2,
     triangles_two U0,
     triangles_two U1,
-    triangles_two U2
+    triangles_two U2,
+    double        epsilon
 );
 
 # endif

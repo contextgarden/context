@@ -1225,6 +1225,8 @@ extern void tex_save_stack_catch_up    (void);
 
 */
 
+# define overload_error_type(overload) (overload & 1 ? warning_error_type : normal_error_type)
+
 typedef enum flag_bit {
     /* properties and prefixes */
     frozen_flag_bit        = 0x000001,

@@ -524,7 +524,7 @@
   [\c!before={\showmessage\m!system{14}{\currentlist/\currentlistindex}\page}]
 
 \permanent\protected\def\installstructurelistprocessor#tag#meaning%
-  {\expandafter\normaldef\csname\??structurelistprocessor#tag\endcsname{#meaning}}
+  {\expandafter\def\csname\??structurelistprocessor#tag\endcsname{#meaning}}
 
 \permanent\def\usestructurelistprocessor#tag%
   {\begincsname\??structurelistprocessor#tag\endcsname}

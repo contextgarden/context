@@ -1710,6 +1710,9 @@ extern lmt_keys_info lmt_keys;
 # define lmt_checklong(L,i)        (long)         luaL_checkinteger(L,i)
 # define lmt_optlong(L,i,j)        (long)         luaL_optinteger(L,i,j)
 
+# define lmt_todouble(L,i,d)       (double)       lua_tonumber(L,i)
+# define lmt_optdouble(L,i,d)      (double)       luaL_optnumber(L,i,d)
+
 # define lmt_tointeger(L,i)        (int)          lua_tointeger(L,i)
 # define lmt_checkinteger(L,i)     (int)          luaL_checkinteger(L,i)
 # define lmt_optinteger(L,i,j)     (int)          luaL_optinteger(L,i,j)

@@ -320,7 +320,7 @@ dimension_reference_cmd,
     internal_glue_reference_cmd,      /*tex the equivalent points to internal glue specification */
     register_glue_reference_cmd,      /*tex the equivalent points to register glue specification */
     internal_muglue_reference_cmd,    /*tex the equivalent points to internal muglue specification */
-    register_muglue_reference_cmd,    /*tex the equivalent points to egister muglue specification */
+    register_muglue_reference_cmd,    /*tex the equivalent points to register muglue specification */
     internal_box_reference_cmd,       /*tex the equivalent points to internal box node, or is |null| */
     register_box_reference_cmd,       /*tex the equivalent points to register box node, or is |null| */
     internal_toks_reference_cmd,      /*tex the equivalent points to internal token list */

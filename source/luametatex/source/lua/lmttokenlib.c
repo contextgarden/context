@@ -331,7 +331,19 @@ static inline int tokenlib_aux_valid_cs(int cs)
     return (cs >= 0 && cs <= lmt_token_memory_state.tokens_data.allocated) ? cs : -1;
 }
 
-// not ok
+
+static void tokenlib_aux_warn_inhibited(int cmd, int chr)
+{
+    if (overload_error_type(overload_mode_par) == normal_error_type) { 
+        tex_handle_error(
+            normal_error_type,
+            "token (%i,%i) is inhibited by \\overloadmode", cmd, chr
+        );
+    } else if (lmt_primitive_state.prim_data[cmd].permissions[chr] < primitive_warned) {
+        tex_formatted_warning("tokens", "token (%i,%i) is inhibited", cmd, chr);
+        lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_warned; 
+    }
+}
 
 static inline int tokenlib_aux_valid_token(int cmd, int chr, int cs)
 {
@@ -343,7 +355,16 @@ static inline int tokenlib_aux_valid_token(int cmd, int chr, int cs)
     } if (cmd >= first_cmd && cmd <= last_cmd) {
         chr = tokenlib_aux_valid_chr(cmd, chr);
         if (chr >= 0) {
-            return token_val(cmd, chr);
+            if (overload_mode_par && 
+                lmt_primitive_state.prim_data[cmd].names && /* only primitives with names */
+                chr <= lmt_primitive_state.prim_data[cmd].subids && /* sanity check */
+                lmt_primitive_state.prim_data[cmd].permissions[chr] > primitive_permitted /* real check */
+            ) {
+                tokenlib_aux_warn_inhibited(cmd, chr);
+                return -1; 
+            } else { 
+                return token_val(cmd, chr);
+            }
         }
     }
     return -1;
@@ -2446,6 +2467,48 @@ static int tokenlib_isdefined(lua_State *L)
     return 1;
 }
 
+/*tex 
+    We need a way to protect token abuse because it can interfere badly when used without some 
+    kind of control by the macro package. An example in \CONTEXT\ is |\left| along with other 
+    old math primitives. We want to be sure that they alias persistently so that we don't need 
+    to intercept them. Other examples are some internal dimensions that we definitely don't want 
+    to check in callbacks and such. Of course the likelyhood that users will actually create
+    tokens themselves is low. 
+
+*/
+
+static int tokenlib_inhibit(lua_State *L)
+{
+    halfword cmd = undefined_cs_cmd;
+    halfword chr = 0;
+    switch (lua_type(L, 1)) {
+        case LUA_TNUMBER:
+            {
+                cmd = lmt_tohalfword(L, 1);
+                chr = lmt_tohalfword(L, 2);
+                break;
+            }
+        case LUA_TSTRING: 
+            {
+                size_t lname = 0;
+                const char *name = lua_tolstring(L, 1, &lname);
+                if (lname) { 
+                    halfword cs = tex_string_locate_only(name, lname);
+                    if (cs != undefined_control_sequence) {
+                        cmd = eq_type(cs);
+                        chr = eq_value(cs);
+                    }
+                }
+        }
+    }
+    if (cmd >= first_cmd && cmd <= last_cmd && cmd != undefined_cs_cmd) {
+        if (chr >= 0 && chr <= lmt_primitive_state.prim_data[cmd].subids) {
+            lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_inhibited;
+        } 
+    }
+    return 0;
+}
+
 /*tex
     The next two will be redone so that they check if valid tokens are created. For that I need to
     clean up the \TEX\ end a bit more so that we can do proper cmd checking.
@@ -3907,12 +3970,40 @@ static int tokenlib_serialize(lua_State *L)
 
 static int tokenlib_getcommandvalues(lua_State *L)
 {
-    lua_createtable(L, number_tex_commands, 1);
-    for (int i = 0; i < number_tex_commands; i++) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.command_names[i].lua);
-        lua_rawseti(L, -2, lmt_interface.command_names[i].id);
+    int cmd = -1;
+    switch (lua_type(L, 1)) { 
+        case LUA_TSTRING:
+            cmd = (int) tokenlib_aux_get_command_id(lua_tostring(L, 1));
+            break;
+        case LUA_TNUMBER:
+            cmd = lua_tointeger(L, 1);
+            break;
+        default:
+            lua_createtable(L, number_tex_commands, 1);
+            for (int i = 0; i < number_tex_commands; i++) {
+                lua_rawgeti(L, LUA_REGISTRYINDEX, lmt_interface.command_names[i].lua);
+                lua_rawseti(L, -2, lmt_interface.command_names[i].id);
+            }
+            return 1;
     }
-    return 1;
+    if (cmd >= first_cmd && cmd <= last_cmd) {
+        if (lmt_primitive_state.prim_data[cmd].subids > 0) {
+            lua_createtable(L, lmt_primitive_state.prim_data[cmd].subids - 1, 1);
+            for (int idx = 0; idx < lmt_primitive_state.prim_data[cmd].subids; idx++) {
+                if (lmt_primitive_state.prim_data[cmd].names[idx]) {
+                    strnumber s = lmt_primitive_state.prim_data[cmd].names[idx];
+                    if (s) {
+                        lua_pushlstring(L, (const char *) str_string(s), (size_t) str_length(s));
+                        lua_rawseti(L, -2, idx);
+                    }
+                } else { 
+                    /* sort of an error */
+                }
+            }
+            return 1;
+        }
+    }
+    return 0;
 }
 
 static int tokenlib_getfunctionvalues(lua_State *L)
@@ -3924,6 +4015,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "type",                  tokenlib_type                  },
     { "create",                tokenlib_create                },
     { "new",                   tokenlib_new                   },
+    { "inhibit",               tokenlib_inhibit               }, /* experiment */
     /* */
     { "istoken",               tokenlib_istoken               },
     { "isdefined",             tokenlib_isdefined             },

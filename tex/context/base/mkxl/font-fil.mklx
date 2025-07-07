@@ -244,9 +244,9 @@
 
 \permanent\def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname
-     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
+     \expandafter\def\expandafter#command\expandafter{\lastnamedcs}%
    \orelse\ifcsname\??fontfile\defaultfontclass#2\endcsname
-     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
+     \expandafter\def\expandafter#command\expandafter{\lastnamedcs}%
    \fi}
 
 \permanent\def\doifelsefontsynonym#name%
