@@ -90,26 +90,29 @@ extern primitive_state_info lmt_primitive_state;
 # define get_prim_text(p)    prim_text(p)
 # define get_prim_origin(p)  prim_origin(p)
 
-extern void     tex_initialize_primitives (void);
-extern void     tex_initialize_hash_mem   (void);
-/*     int      tex_room_in_hash          (void); */
-extern halfword tex_prim_lookup           (strnumber s);
-/*     int      tex_cs_is_primitive       (strnumber csname); */
-extern void     tex_primitive             (int cmd_origin, const char *ss, singleword cmd, halfword chr, halfword offset);
-extern void     tex_primitive_def         (const char *str, size_t length, singleword cmd, halfword chr);
-extern void     tex_print_cmd_chr         (singleword cmd, halfword chr);
-extern void     tex_dump_primitives       (dumpstream f);
-extern void     tex_undump_primitives     (dumpstream f);
-extern void     tex_dump_hashtable        (dumpstream f);
-extern void     tex_undump_hashtable      (dumpstream f);
-/*     halfword tex_string_lookup         (const char *s, size_t l); */
-extern halfword tex_string_locate         (const char *s, size_t l, int create);
-extern halfword tex_string_locate_only    (const char *s, size_t l);
-extern halfword tex_located_string        (const char *s);
-/*     halfword tex_id_lookup             (int j, int l); */
-extern halfword tex_id_locate             (int j, int l, int create);
-extern halfword tex_id_locate_only        (int j, int l);
-extern int      tex_id_locate_steps       (const char *s);
-extern void     tex_print_cmd_flags       (halfword cs, halfword cmd, int flags, int escape);
+extern void      tex_initialize_primitives (void);
+extern void      tex_initialize_hash_mem   (void);
+/*     int       tex_room_in_hash          (void); */
+extern halfword  tex_primitive_lookup      (strnumber s);
+/*     int       tex_cs_is_primitive       (strnumber csname); */
+extern void      tex_primitive             (int cmd_origin, const char *ss, singleword cmd, halfword chr, halfword offset);
+extern void      tex_primitive_def         (const char *str, size_t length, singleword cmd, halfword chr);
+extern void      tex_print_cmd_chr         (singleword cmd, halfword chr);
+extern void      tex_dump_primitives       (dumpstream f);
+extern void      tex_undump_primitives     (dumpstream f);
+extern void      tex_dump_hashtable        (dumpstream f);
+extern void      tex_undump_hashtable      (dumpstream f);
+/*     halfword  tex_string_lookup         (const char *s, size_t l); */
+extern halfword  tex_string_locate         (const char *s, size_t l, int create);
+extern halfword  tex_string_locate_only    (const char *s, size_t l);
+extern halfword  tex_located_string        (const char *s);
+/*     halfword  tex_id_lookup             (int j, int l); */
+extern halfword  tex_id_locate             (int j, int l, int create);
+extern halfword  tex_id_locate_only        (int j, int l);
+extern int       tex_id_locate_steps       (const char *s);
+extern void      tex_print_cmd_flags       (halfword cs, halfword cmd, int flags, int escape);
+extern int       tex_primitive_found       (const char *name, halfword *cmd, halfword *chr);
+extern int       tex_inhibit_primitive     (halfword cmd, halfword chr);
+extern strnumber tex_primitive_name        (halfword cmd, halfword ch);
 
 # endif

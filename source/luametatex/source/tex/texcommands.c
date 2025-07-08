@@ -195,9 +195,14 @@ const unsigned char some_convert_classification[] = {
     [font_identifier_code]     = classification_integer,
 };
 
-static void tex_aux_copy_deep_frozen_from_primitive(halfword code, const char *s)
+static void tex_aux_copy_deep_frozen_from_primitive(halfword code, const char *name)
 {
-    halfword p = tex_prim_lookup(tex_located_string(s));
+    /* Is this okay? */
+    halfword p = tex_primitive_lookup(tex_located_string(name));
+    /* As lookup neds a string! */
+// strnumber s = tex_maketexstring(name);
+// halfword p = tex_primitive_lookup(s); /* todo: no need for tex string */
+// tex_flush_str(s);
     cs_text(code) = cs_text(p);
     copy_eqtb_entry(code, p);
 }
@@ -1659,7 +1664,7 @@ void tex_initialize_commands(void)
         tex_aux_copy_deep_frozen_from_primitive(deep_frozen_cs_null_font_code, "nullfont");
         tex_aux_copy_deep_frozen_from_primitive(deep_frozen_cs_cr_code,        "cr");
 
-        lmt_token_state.par_loc   = tex_prim_lookup(tex_located_string("par"));
+        lmt_token_state.par_loc   = tex_primitive_lookup(tex_located_string("par"));
         lmt_token_state.par_token = cs_token_flag + lmt_token_state.par_loc;
 
      /* lmt_token_state.line_par_loc   = tex_prim_lookup(tex_located_string("linepar")); */

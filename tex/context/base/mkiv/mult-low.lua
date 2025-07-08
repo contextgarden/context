@@ -801,5 +801,7 @@ return {
         "toddlerpenalty", "orphanpenalty",
         --
         "digitspace",
+        --
+        "inhibitprimitive"
     }
 }

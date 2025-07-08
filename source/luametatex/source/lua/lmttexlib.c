@@ -4015,7 +4015,7 @@ static int texlib_extraprimitives(lua_State *L)
 static void texlib_aux_enableprimitive(const char *pre, size_t prel, const char *prm)
 {
     strnumber s = tex_maketexstring(prm);
-    halfword prm_val = tex_prim_lookup(s); /* todo: no need for tex string */
+    halfword prm_val = tex_primitive_lookup(s); /* todo: no need for tex string */
     tex_flush_str(s);
     if (prm_val != undefined_primitive && get_prim_origin(prm_val) != no_command) {
         char *newprm;

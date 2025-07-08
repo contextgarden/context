@@ -3042,3 +3042,50 @@ vardef lmt_do_parametricplot =
 
     lua.mp.lmt_parametricplot_flush()
 enddef ;
+
+% meshes
+
+% newscriptindex mfid_meshcontour ; mfid_meshcontour  := scriptindex("meshcontour")  ;
+%
+% def meshcontour(expr name) = runscript mfid_meshcontour name ; enddef ; % just combine with the next one
+%
+% vardef meshexperiment(expr name, kind) =
+%     image (
+%         save p ; path p ; p := meshcontour(name) ;
+%         addto currentpicture doublepath p
+%             withprescript "ms_name=" & name
+%             withprescript "ms_kind=" & kind
+%         ;
+%     )
+% enddef ;
+
+presetparameters "vectorplot" [
+    preamble  = "",
+    kind      = "both",
+    name      = "",
+  % xcode     = "t",
+  % ycode     = "t",
+  % tmin      = -1,
+  % tmax      =  1,
+  % tolerance =  0.0001,
+] ;
+
+def lmt_vectorplot = applyparameters "vectorplot" "lmt_do_vectorplot" enddef ;
+
+vardef lmt_do_vectorplot =
+  % lmt_load_mlib_msh ;
+
+    image (
+
+        pushparameters "vectorplot" ;
+
+        save p ; path p ; p := meshcontour(getparameter "name") ;
+        addto currentpicture doublepath p
+            withprescript "ms_name=" & (getparameter "name")
+            withprescript "ms_kind=" & (getparameter "kind")
+        ;
+
+        popparameters ;
+    )
+
+enddef ;

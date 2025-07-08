@@ -1303,6 +1303,7 @@ static int triangles_intersection_2d(
     triangles_two r2,
     double        epsilon
 ) {
+    (void) epsilon;
     if (ORIENT_2D(p2,q2,p1) >= 0.0) {
         if (ORIENT_2D(q2,r2,p1) >= 0.0) {
             if (ORIENT_2D(r2,p2,p1) >= 0.0) {

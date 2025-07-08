@@ -171,6 +171,15 @@ do
 
 end
 
+interfaces.implement {
+    name      = "inhibitprimitive",
+    public    = true,
+    protected = true,
+    untraced  = true,
+    arguments = "csname",
+    actions   = token.inhibit,
+}
+
 -- For the moment here, will move to initex only (also see node-ini.lua); we need
 -- to actually store these.
 

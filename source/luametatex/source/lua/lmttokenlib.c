@@ -331,16 +331,27 @@ static inline int tokenlib_aux_valid_cs(int cs)
     return (cs >= 0 && cs <= lmt_token_memory_state.tokens_data.allocated) ? cs : -1;
 }
 
-
 static void tokenlib_aux_warn_inhibited(int cmd, int chr)
 {
     if (overload_error_type(overload_mode_par) == normal_error_type) { 
         tex_handle_error(
             normal_error_type,
-            "token (%i,%i) is inhibited by \\overloadmode", cmd, chr
+            "token (%i,%i) (%T) is inhibited by \\overloadmode", 
+            cmd, chr, tex_primitive_name(cmd, chr),
+            "This primitive is inhibited so we play safe and quit."
         );
     } else if (lmt_primitive_state.prim_data[cmd].permissions[chr] < primitive_warned) {
-        tex_formatted_warning("tokens", "token (%i,%i) is inhibited", cmd, chr);
+     // tex_handle_error(
+     //     warning_error_type,
+     //     "token (%i,%i) (%T) is inhibited by \\overloadmode", 
+     //     cmd, chr, tex_primitive_name(cmd, chr), 
+     //     "This primitive is inhibited so we ignore it."
+     // );
+        tex_formatted_warning(
+            "tokens", 
+            "token (%i,%i) (%s) is inhibited",
+            cmd, chr, str_string(tex_primitive_name(cmd, chr))
+        );
         lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_warned; 
     }
 }
@@ -2477,34 +2488,48 @@ static int tokenlib_isdefined(lua_State *L)
 
 */
 
-static int tokenlib_inhibit(lua_State *L)
+// static void tokenlib_aux_inhibit(lua_State *L, int index)
+// {
+//     size_t lname = 0;
+//     const char *name = lua_tolstring(L, index, &lname);
+//     if (lname) { 
+//         halfword cs = tex_string_locate_only(name, lname);
+//         if (cs != undefined_control_sequence) {
+//             tex_inhibit_primitive(eq_type(cs), eq_value(cs));
+//         }
+//     }
+// }
+
+static void tokenlib_aux_inhibit(lua_State *L, int index)
 {
-    halfword cmd = undefined_cs_cmd;
-    halfword chr = 0;
-    switch (lua_type(L, 1)) {
-        case LUA_TNUMBER:
-            {
-                cmd = lmt_tohalfword(L, 1);
-                chr = lmt_tohalfword(L, 2);
-                break;
-            }
-        case LUA_TSTRING: 
-            {
-                size_t lname = 0;
-                const char *name = lua_tolstring(L, 1, &lname);
-                if (lname) { 
-                    halfword cs = tex_string_locate_only(name, lname);
-                    if (cs != undefined_control_sequence) {
-                        cmd = eq_type(cs);
-                        chr = eq_value(cs);
-                    }
-                }
+    const char *name = lua_tostring(L, index);
+    if (name) { 
+        halfword cmd, chr;
+        if (tex_primitive_found(name, &cmd, &chr)) {
+            tex_inhibit_primitive(cmd, chr);
         }
     }
-    if (cmd >= first_cmd && cmd <= last_cmd && cmd != undefined_cs_cmd) {
-        if (chr >= 0 && chr <= lmt_primitive_state.prim_data[cmd].subids) {
-            lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_inhibited;
-        } 
+}
+
+static int tokenlib_inhibit(lua_State *L)
+{
+    switch (lua_type(L, 1)) {
+        case LUA_TNUMBER:
+            tex_inhibit_primitive(lmt_tohalfword(L, 1), lmt_tohalfword(L, 2));
+            break;
+        case LUA_TSTRING: 
+            for (int i = 1; i <= (int) lua_gettop(L); i++) { 
+                tokenlib_aux_inhibit(L, i);
+            }
+            break;
+        case LUA_TTABLE: 
+            for (int i = 1; i <= lua_rawlen(L, 1); i++) { 
+                if (lua_rawgeti(L, -1, i) == LUA_TSTRING) { 
+                    tokenlib_aux_inhibit(L, -1);
+                }
+                lua_pop(L, 1);
+            }
+            break;
     }
     return 0;
 }
@@ -3976,7 +4001,7 @@ static int tokenlib_getcommandvalues(lua_State *L)
             cmd = (int) tokenlib_aux_get_command_id(lua_tostring(L, 1));
             break;
         case LUA_TNUMBER:
-            cmd = lua_tointeger(L, 1);
+            cmd = lmt_tointeger(L, 1);
             break;
         default:
             lua_createtable(L, number_tex_commands, 1);

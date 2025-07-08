@@ -20,20 +20,24 @@
 moduledata.meshes = moduledata.meshes or { }
 
 local context = context
+
 local NC = context.NC
+local BC = context.BC
 local NR = context.NR
 
-function moduledata.meshes.show(name,method,average)
+function moduledata.meshes.show(name,method,average,addtitle)
     local n = vector.meshname(name,method,average)
     local t = table.load(n)
     if t then
         local title = name .. " : " .. t.method.name .. " @ " .. t.average.name
         local state = t.state or { }
         --
-        context.starttitle { title = title }
+        if addtitle ~= false then
+            context.starttitle { title = title }
+        end
             --
             local function some(key,value)
-                NC() context(key) NC() context(value) NC() NR()
+                BC() context(key) NC() context(value) NC() NR()
             end
             context.startcolumns { n = 3 }
                 context.starttabulate { "|l|r|" }
@@ -51,7 +55,7 @@ function moduledata.meshes.show(name,method,average)
             context.stopcolumns()
             --
             local function some(key,value)
-                NC() context(key) NC() context("%0.9f",value) NC() NR()
+                BC() context(key) NC() context("%0.9f",value) NC() NR()
             end
             context.startcolumns { n = 3 }
                 context.starttabulate { "|l|r|" }
@@ -64,10 +68,10 @@ function moduledata.meshes.show(name,method,average)
                 context.stoptabulate()
             context.stopcolumns()
             --
-            context.startcolumns { n = 4 }
+            context.startcolumns { n = 3 }
                 context.starttabulate { "|r|r|l|" }
                 for k, v in table.sortedhash(t.areas) do
-                    NC() context(k)
+                    BC() context(k)
                     NC() context(t.unique[k])
                     NC() context("%0.9f",v)
                     NC() NR()
@@ -75,10 +79,10 @@ function moduledata.meshes.show(name,method,average)
                 context.stoptabulate()
             context.stopcolumns()
             --
-            context.startcolumns { n = 5 }
+            context.startcolumns { n = 4 }
                 context.starttabulate { "|r|r|l|" }
                 for k, v in table.sortedhash(t.overlap) do
-                    NC() context(k)
+                    BC() context(k)
                     NC() context(v[1])
                     NC() context(v[2])
                     NC() NR()
@@ -86,7 +90,9 @@ function moduledata.meshes.show(name,method,average)
                 context.stoptabulate()
             context.stopcolumns()
             --
-        context.stoptitle()
+        if addtitle ~= false then
+            context.stoptitle()
+        end
     end
 
 

@@ -161,7 +161,7 @@ local function processerror(errortype)
         lastluaerror   = lastluaerror, -- can be the same as lasttexerror
         luaerrorline   = luaerrorline,
         lastcontext    = lastcontext,
-        lasttexhelp    = tex.gethelptext and tex.gethelptext() or nil,
+        lasttexhelp    = tex.gethelptext(),
         errortype      = errortype,
     }
     job.errorstate = specification
@@ -257,6 +257,7 @@ function tracers.printerror(specification)
             end
             local help = specification.lasttexhelp
             if help and #help > 0 then
+                -- If we get rubish a NULL is forgotten in engine error trigger!
                 report_nl()
                 report_str(help)
                 report_nl()

@@ -5,6 +5,10 @@ if not modules then modules = { } end modules ['toks-ini'] = {
     license   = "see context related readme files"
 }
 
+-- inspect(token.getcommandvalues())
+-- inspect(token.getcommandvalues("relax"))
+-- inspect(token.getcommandvalues(16))
+
 tokens = tokens or { }
 
 local tokens     = tokens

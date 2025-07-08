@@ -195,7 +195,7 @@ static inline halfword tex_aux_compute_hash(const char *j, unsigned l)
     return h;
 }
 
-static inline halfword tex_aux_compute_prim(const char *j, unsigned l)
+static inline halfword tex_aux_compute_primitive(const char *j, unsigned l)
 {
     halfword h = (unsigned const char) j[0];
     for (unsigned k = 1; k < l; k++) {
@@ -204,14 +204,14 @@ static inline halfword tex_aux_compute_prim(const char *j, unsigned l)
     return h;
 }
 
-halfword tex_prim_lookup(strnumber s)
+halfword tex_primitive_lookup(strnumber s)
 {
     /*tex The index in the |hash| array: */
     if (s >= cs_offset_value) {
         unsigned char *j = str_string(s);
      // unsigned l = (unsigned) str_length(s);
         halfword l = (halfword) str_length(s);
-        halfword h = tex_aux_compute_prim((char *) j, l);
+        halfword h = tex_aux_compute_primitive((char *) j, l);
         /*tex We start searching here; note that |0 <= h < hash_prime|. */
         halfword p = h + 1;
         while (1) {
@@ -459,7 +459,7 @@ void tex_primitive(int cmd_origin, const char *str, singleword cmd, halfword chr
     } else {
         ss = tex_maketexstring(str);
     }
-    prim_val = tex_prim_lookup(ss);
+    prim_val = tex_primitive_lookup(ss);
     prim_origin(prim_val) = (quarterword) cmd_origin;
     prim_eq_type(prim_val) = cmd;
     prim_equiv(prim_val) = offset + chr;
@@ -1024,4 +1024,41 @@ case dimension_reference_cmd:
             tex_aux_prim_cmd_chr(cmd, chr, 1);
             break;
     }
+}
+
+int tex_primitive_found(const char *name, halfword *cmd, halfword *chr) 
+{
+    if (name) { 
+        strnumber str = tex_maketexstring(name);
+        halfword prm = tex_primitive_lookup(str);
+        tex_flush_str(str);
+        if (prm != undefined_primitive && get_prim_origin(prm) != no_command) {
+            *cmd = get_prim_eq_type(prm);
+            *chr = get_prim_equiv(prm);
+            if (*cmd != undefined_cs_cmd) { 
+                return 1;
+            }
+        }
+    }
+    *cmd = 0;
+    *chr = 0;
+    return 0;
+}
+
+int tex_inhibit_primitive(halfword cmd, halfword chr)
+{
+    if (cmd >= first_cmd && cmd <= last_cmd && cmd != undefined_cs_cmd) {
+        if (chr >= 0 && chr <= lmt_primitive_state.prim_data[cmd].subids) {
+            lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_inhibited;
+            return 1;
+        } 
+    }
+    return 0;
+}
+
+strnumber tex_primitive_name(halfword cmd, halfword chr)
+{
+    return chr < lmt_primitive_state.prim_data[cmd].subids 
+        ? lmt_primitive_state.prim_data[cmd].names[chr]
+        : null_cs;
 }

@@ -1189,6 +1189,7 @@ const char *tex_print_format_args(const char *format, va_list args)
         int chr = *format++;
         switch (chr) {
             case '\0':
+                /* So we also need a NULL last! */
                 return va_arg(args, char *);
             case '%':
                 {

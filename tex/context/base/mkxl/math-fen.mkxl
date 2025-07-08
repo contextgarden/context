@@ -822,9 +822,9 @@
 \permanent\protected\def\rfence{\afterassignment\math_fenced_x_right \expandafter\let\expandafter\math_fenced_x_p_right}
 \permanent\protected\def\mfence{\afterassignment\math_fenced_x_middle\expandafter\let\expandafter\math_fenced_x_p_middle}
 
-\aliased\let\left  \lfence \aliased\let\normalleft  \lfence
-\aliased\let\right \rfence \aliased\let\normalright \rfence
-\aliased\let\middle\mfence \aliased\let\normalmiddle\mfence
+\inhibitprimitive\left   \aliased\let\left  \lfence \aliased\let\normalleft  \lfence
+\inhibitprimitive\right  \aliased\let\right \rfence \aliased\let\normalright \rfence
+\inhibitprimitive\middle \aliased\let\middle\mfence \aliased\let\normalmiddle\mfence
 
 \popoverloadmode
 

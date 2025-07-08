@@ -2036,12 +2036,6 @@ newscriptindex mfid_meshcontour ; mfid_meshcontour  := scriptindex("meshcontour"
 
 def meshcontour(expr name) = runscript mfid_meshcontour name ; enddef ; % just combine with the next one
 
-% the shorter one:
-%
-% draw meshexperiment("mikaelfun","draw") ;
-% draw meshexperiment("mikaelfun","fill") ;
-% draw meshexperiment("mikaelfun","both") ;
-
 vardef meshexperiment(expr name, kind) =
     image (
         save p ; path p ; p := meshcontour(name) ;

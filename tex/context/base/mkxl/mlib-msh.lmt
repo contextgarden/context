@@ -313,6 +313,7 @@ end
 
 function metapost.mesh(name,kind)
 
+
     local current = meshes[name]
 
     -- messages
@@ -377,7 +378,7 @@ local function mesh_contour()
         current.N = N
         current.M = M
 
-        vectortruncate(current.points,current.epsilon)
+        vectortruncate(current.points,true,current.epsilon)
         local state = contouraverage(current.points,current.list,true,current.average) -- tolerant
 
         current.state  = state

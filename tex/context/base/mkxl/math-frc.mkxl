@@ -17,6 +17,15 @@
 
 \unprotect
 
+% todo:
+
+% \inhibitprimitive\over
+% \inhibitprimitive\overwithdelims
+% \inhibitprimitive\above
+% \inhibitprimitive\abovewithdelims
+% \inhibitprimitive\atop
+% \inhibitprimitive\atopwithdelims
+
 %D This module is reimplemented in \MKIV\ style.
 
 \registerctxluafile{math-frc}{autosuffix}

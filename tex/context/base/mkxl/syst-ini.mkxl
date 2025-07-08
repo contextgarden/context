@@ -220,9 +220,16 @@
 %D available; it cannot limit itself to being \TEX\ or \ETEX. It could not do that
 %D anyway because there are differences (no backend, to mention one).
 
+%D We need to keep \normaldef fro the mkiv parser
+
 \directlua {
     tex.enableprimitives("normal",true) % we default to everything
     function tex.enableprimitives() end % so we kind of protect what's there
+  % token.inhibit(                      % for now we do this later
+  %     "left","right","middle",
+  %     "over","above","atop"
+  %     "overwithdelims","abovewithdelims","atopwithdelims"
+  % )
 }
 
 \untraced\permanent\let\undefined\undefined

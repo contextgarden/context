@@ -242,11 +242,13 @@
 
 % ok when the last lookup is not stripped .. we need to be able to define synonyms for symbols
 
+% \normaldef is needed for the mkvi parser
+
 \permanent\def\expandfontsynonym#command#name% one level expansion
   {\ifcsname\??fontfile\fontclass#name\endcsname
-     \expandafter\def\expandafter#command\expandafter{\lastnamedcs}%
+     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \orelse\ifcsname\??fontfile\defaultfontclass#2\endcsname
-     \expandafter\def\expandafter#command\expandafter{\lastnamedcs}%
+     \expandafter\normaldef\expandafter#command\expandafter{\lastnamedcs}%
    \fi}
 
 \permanent\def\doifelsefontsynonym#name%
