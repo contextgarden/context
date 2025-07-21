@@ -366,20 +366,50 @@ end
 \stoptyping
 
 The next set of numbers reflect for the current state of the \type {metafun:1}
-instance that is active for this specific run.
+instance that is active for this specific run. Numeric entries are:
 
 \startthreerows
 \startluacode
 local t = mplib.getstatistics(metapost.getinstancebyname("metafun:1"))
 context.starttabulate { "|l|r|" }
     for k, v in table.sortedhash(t) do
-        context.NC() context(k)
-        context.NC() context(v)
-        context.NC() context.NR()
+        if type(v) ~= "table" then
+            context.BC() context(k)
+            context.NC() context(v)
+            context.NC() context.NR()
+        end
     end
 context.stoptabulate()
 \stopluacode
 \stopthreerows
+
+Memory usage is more detailed and comes in sub-tables:
+
+\startluacode
+local t = mplib.getstatistics(metapost.getinstancebyname("metafun:1"))
+context.starttabulate { "|l|l|r|r|r|r|r|" }
+    context.BC()
+    context.BC() context("state")
+    context.BC() context("kept")
+    context.BC() context("max")
+    context.BC() context("pool")
+    context.BC() context("size")
+    context.BC() context("used")
+    context.NC() context.NR()
+    for k, v in table.sortedhash(t) do
+        if type(v) == "table" then
+            context.BC() context(k)
+            context.NC() context(v.state)
+            context.NC() context(v.kept)
+            context.NC() context(v.max)
+            context.NC() context(v.pool)
+            context.NC() context(v.size)
+            context.NC() context(v.used)
+            context.NC() context.NR()
+        end
+    end
+context.stoptabulate()
+\stopluacode
 
 In this version of \MPLIB\ this is informational only. The objects are all
 allocated dynamically, so there is no chance of running out of space unless the

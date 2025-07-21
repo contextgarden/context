@@ -65,7 +65,7 @@
   {\strc_blocks_begin_indeed{}}
 
 \protected\def\strc_blocks_begin_indeed#1%
-  {\normalexpanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
+  {\expanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
      {}%
      {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
      \plusone}
@@ -82,7 +82,7 @@
 %    \fi{#2}{#3}}% #4}
 %
 % \protected\def\strc_blocks_begin_a#1#2% settings dummy
-%   {\normalexpanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
+%   {\expanded{\buff_pickup{\??block}{\e!begin\m_block}{\e!end\m_block}}%
 %      {}%
 %      {\clf_savestructureblock{\m_block}{\m_subblock}{#1}{\??block}}%
 %      \plusone}

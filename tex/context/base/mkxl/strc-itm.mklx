@@ -269,7 +269,7 @@
 
 \def\strc_itemgroups_insert_extra_reference
   {\iftrialtypesetting \orelse \ifempty\currentitemreference \else
-     \normalexpanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
+     \expanded{\textreference[\currentitemreference]{\strc_itemgroups_extra_symbol}}%
    \fi}
 
 \def\strc_itemgroups_insert_reference_indeed % maybe we need a 'frozen counter' numberdata blob / quick hack .. .mive this to strc-ref
@@ -421,7 +421,7 @@
 % \installcommalistprocessorcommand \strc_itemgroups_process_option_list \strc_itemgroups_process_option
 %
 % \protected\def\strc_itemgroups_process_options#options%
-%   {\normalexpanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
+%   {\expanded{\strc_itemgroups_process_option_list[#options]}} % expansion of options is handy for xml
 
 \mutable\lettonothing\itemgroupfirst
 \mutable\lettonothing\itemgroupsecond
@@ -642,7 +642,7 @@
 % \installcommalistprocessorcommand \strc_itemgroups_preset_stage_one_list \strc_itemgroups_preset_stage_one_indeed
 %
 % \def\strc_itemgroups_preset_stage_one#options%
-%   {\normalexpanded{\strc_itemgroups_preset_stage_one_list[#options]}}
+%   {\expanded{\strc_itemgroups_preset_stage_one_list[#options]}}
 
 \def\strc_itemgroups_preset_stage_one_indeed#option%
   {\ifcsname\??itemgroupfirst#option\endcsname
@@ -816,8 +816,8 @@
       \c!numberconversionset=\v_strc_itemgroups_counter,
       \c!numbersegments=\currentitemgroupsegments]%
    % there will be a fixedconversion key
-   \normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
-  %\normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+   \expanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+  %\expanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
    %
    \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
    \strc_itemgroups_insert_reference
@@ -846,8 +846,8 @@
 % \def\strc_itemgroups_insert_item_counter_indeed % quite slow ... every time this setup .. but it
 %   {\begingroup                                  % can be optimized ... best move some to strc-num
 %    % there will be a fixedconversion key
-%   %\normalexpanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
-%    \normalexpanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%   %\expanded{\defineconversionset[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
+%    \expanded{\strc_sets_define_conversion_set[\v_strc_itemgroups_counter][\currentitemgroupconversionset][\currentitemgroupsymbol]}%
 %    %
 %    \convertedcounter[\v_strc_itemgroups_counter]% [\number\currentitemlevel]%
 %    \strc_itemgroups_insert_reference
@@ -924,7 +924,7 @@
    \let\currentparentitemgroup\currentitemgroup
    \global\advanceby\c_strc_itemgroups_nesting\plusone
    \def\currentitemlevel{\the\c_strc_itemgroups_nesting}%
-   \normalexpanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
+   \expanded{\chaintocurrentitemgroup{\currentparentitemgroup:\currentitemlevel}}%
    \cdef\currentitemgroup{\currentparentitemgroup:\currentitemlevel}%
    %
    \edef\p_itemgroups_options{\itemgroupparameter\c!option}%
@@ -955,7 +955,7 @@
    \fi
    \begingroup % (2)
    \the\itemgroupcommands
-   \setconditional\c_strc_itemgroups_text_saved\c_strc_itemgroups_text
+   \c_strc_itemgroups_text_saved\c_strc_itemgroups_text
    \strc_itemgroups_initialize_local
    \strc_itemgroups_preset_stage_one\p_itemgroups_options
    \iftrialtypesetting
@@ -1667,7 +1667,7 @@
 
 \def\strc_itemgroups_make_fitting_box
   {\ifdim\wd\b_strc_itemgroups>{\itemgroupparameter\c!maxwidth}%
-     \normalexpanded{\global\setitemgroupparameter{\c!maxwidth}{\the\wd\b_strc_itemgroups}}%
+     \expanded{\global\setitemgroupparameter{\c!maxwidth}{\the\wd\b_strc_itemgroups}}%
    \fi
    \ifdim\d_strc_itemgroups_max_width>\zeropoint
      \setbox\b_strc_itemgroups\simplealignedbox
@@ -1693,7 +1693,7 @@
   {\c_strc_itemgroups_indented_first\conditionalfalse
    \ifempty\m_strc_itemgroups_indenting \else
      % we'd like to use \useindentingparameter\itemgroupparameter but ...
-     \normalexpanded{\setupindenting[\v!reset,\v!yes,\m_strc_itemgroups_indenting]}%
+     \expanded{\setupindenting[\v!reset,\v!yes,\m_strc_itemgroups_indenting]}%
      \ifconditional\c_spac_indentation_indent_first % better is to have a mode
        \ifcstok{\itemgroupparameter\c!alignsymbol}\v!yes\else
          \c_strc_itemgroups_indented_first\conditionaltrue
@@ -1943,7 +1943,7 @@
 \lettonothing\m_strc_itemgroups_spacing
 \lettonothing\m_strc_itemgroups_text_distance
 
-\normalexpanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
+\expanded{\def\strc_itemgroups_collected_store#1\csname\e!stop\v!item\endcsname}%
   {\advanceby\c_strc_itemgroups_collected_stored\plusone
    \defcsname\??itemgroupstack\the\c_strc_itemgroups_collected_stored\endcsname
      {\startitemgroupitem#1\stopitemgroupitem}}
@@ -2056,7 +2056,7 @@
 %    \begingroup
 %    \setbox\scratchbox\hbox{\settrialtypesetting#text}%
 %    \setbox\scratchbox\hbox\ifdim\wd\scratchbox<1em to 1.5\else spread 1\fi em{#text\hfil}%
-%    \normalexpanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
+%    \expanded{\box\scratchbox\endgroup\hangindent\the\wd\scratchbox}%
 %    \ignorepars} % \ignorespaces
 
 %D End of plugin.
@@ -2165,7 +2165,7 @@
    %
    \c_strc_itemgroups_optimize\zerocount % otherwise we inject vertical breaks between struts
    % inlining confusses the verbose name parser
-   \normalexpanded{\strc_itemgroups_table_bootstrap
+   \expanded{\strc_itemgroups_table_bootstrap
      \csname\e!start#1\v!table\endcsname
      \csname\e!stop #1\v!table\endcsname % watch the 'l' specification below, maybe a format key
      {\expandedrepeat \c_strc_itemgroups_columns {|p(\the\d_strc_itemgroups_column_width)l}|}}}
@@ -2176,7 +2176,7 @@
       \starttabulate[#3][\c!before=,\c!after=,\c!split=\v!no,\c!unit=\the\d_strc_itemgroups_column_distance]%
         ##1\relax\strc_itemgroups_table_wrapup
       \stoptabulate
-      \normalexpanded{\stopitemgroup\m_strc_itemgroups_after}}%
+      \expanded{\stopitemgroup\m_strc_itemgroups_after}}%
    \strc_itemgroups_table_pickup}
 
 \appendtoks

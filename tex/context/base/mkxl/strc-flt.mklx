@@ -1021,7 +1021,7 @@
 \ifdefined\page_margin_strc_floats_before    \else \let\page_margin_strc_floats_before   \relax \fi
 \ifdefined\page_margin_strc_floats_set_hsize \else \let\page_margin_strc_floats_set_hsize\relax \fi
 
-\immutable\def\flushfloatslist
+\permanent\def\flushfloatslist
   {\v!left,\v!right,\v!inner,\v!outer,%
    \v!backspace,\v!cutspace,%
    \v!inleft,\v!inright,\v!inmargin,%
@@ -1599,7 +1599,7 @@
      \begingroup
      \scratchconditiononefalse
      \scratchconditiontwofalse
-     \normalexpanded{\dorepeatwithcommand[#settings]}\strc_floats_move_down
+     \expanded{\dorepeatwithcommand[#settings]}\strc_floats_move_down
      \endgroup
    \fi}
 
@@ -3080,7 +3080,7 @@
    \resetlocalfloats}
 
 % \protected\def\getlocalfloat#1%
-%   {\normalexpanded{\foundbox{\??localfloatstack}{\number#1}}}% \vbox{\restorebox...}
+%   {\expanded{\foundbox{\??localfloatstack}{\number#1}}}% \vbox{\restorebox...}
 
 \permanent\protected\def\getlocalfloat#1%
   {\foundbox\??localfloatstack{\number#1}} % \vbox{\restorebox...}

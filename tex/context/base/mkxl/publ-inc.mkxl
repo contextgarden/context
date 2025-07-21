@@ -110,7 +110,7 @@
           \egroup
         \egroup
       \egroup
-      \normalexpanded{\btxentrytostring{publicationnote}{note}{\currentbtxreference}}%
+      \expanded{\btxentrytostring{publicationnote}{note}{\currentbtxreference}}%
       \hss
    \egroup}
 

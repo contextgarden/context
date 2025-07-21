@@ -104,7 +104,7 @@
         tex    = table.sorted( table.merged( missing.tex   , tex.extraprimitives("core","tex") ) ),
         etex   = table.sorted( table.merged( missing.etex  , tex.extraprimitives("etex") ) ),
         pdftex = table.sorted( table.merged( missing.pdftex, { } ) ),
-        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives("luatex") ) ),
+        luatex = table.sorted( table.merged( missing.luatex, tex.extraprimitives("luatex","luametatex") ) ),
         aleph  = table.sorted( table.merged( missing.aleph , { } ) ),
         omega  = table.sorted( table.merged( missing.omega , { } ) ),
         xetex  = table.sorted( table.merged( missing.xetex , { } ) ),

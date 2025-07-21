@@ -22,8 +22,8 @@
 
 %D Just in case someone does a hard input ...
 
-\ifdefined\pgfdefined    \endinput \fi
-\ifdefined\pgfcoredefined\endinput \fi
+\ifdefined\pgfdefined     \endinput \fi
+\ifdefined\pgfcoredefined \endinput \fi
 
 %D ... but normally we end up here:
 
@@ -38,6 +38,11 @@
     \unprotect
       % \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
       % \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
+      % \frozen\overloaded\protected\def\pdflastxpos{\numexpr\clf_lastxpos\relax}
+      % \frozen\overloaded\protected\def\pdflastypos{\numexpr\clf_lastypos\relax}
+        \untraced\permanent\protected\pdflastxpos{\numexpr\clf_lastxpos\relax}
+        \untraced\permanent\protected\pdflastypos{\numexpr\clf_lastypos\relax}
+        \frozen\overloaded\let\pdfsavepos \savepos
         \frozen\overloaded\let\pdfsavepos \savepos
         \frozen\overloaded\let\pdflastxpos\lastxpos
         \frozen\overloaded\let\pdflastypos\lastypos

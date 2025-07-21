@@ -151,7 +151,7 @@
    \settrialtypesetting}
 
 \protected\def\stopframedrow_one
-  {\normalexpanded{\egroup\d_tabl_framed_h\the\d_tabl_framed_h\relax}}
+  {\expanded{\egroup\d_tabl_framed_h\the\d_tabl_framed_h\relax}}
 
 \def\startframedrow_two
   {\bgroup

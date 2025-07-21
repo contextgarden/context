@@ -93,6 +93,7 @@ extern halfword    tex_scan_general_text              (halfword *tail);
 /*     halfword    tex_scan_toks                      (int macrodef, int xpand, int left_brace_found); */
 extern halfword    tex_scan_toks_normal               (int left_brace_found, halfword *tail);
 extern halfword    tex_scan_toks_expand               (int left_brace_found, halfword *tail, int expandconstant, int keepparameters);
+extern void        tex_scan_toks_dropped              (int left_brace_found);
 extern halfword    tex_scan_macro_normal              (void); // (int tolerant);
 extern halfword    tex_scan_macro_expand              (void); // (int tolerant);
 extern halfword    tex_scan_font_identifier           (halfword *spec);
@@ -149,8 +150,8 @@ extern strnumber   tex_the_scanned_result             (void);
 
 extern void        tex_set_font_dimension             (void);
 extern halfword    tex_get_font_dimension             (void);
-extern void        tex_set_scaled_font_dimension      (void);
-extern halfword    tex_get_scaled_font_dimension      (void);
+extern void        tex_set_scaled_font_dimension      (int n);
+extern halfword    tex_get_scaled_font_dimension      (int n);
 
 extern int         tex_get_unit_class                 (halfword index);
 

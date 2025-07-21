@@ -199,8 +199,6 @@
     \s!language=\currentmainlanguage,
 ]
 
-\newconditional\c_strc_constructions_define_commands
-
 \appendtoks
     \c_strc_constructions_define_commands\conditionalfalse
     \ifempty\currentsimplelistparent
@@ -419,7 +417,7 @@
    \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
      {\let\currentsimplelistalternative\v!normal}%
    \fastsetup{\??simplelistrenderings:\v!synonym:\currentsimplelistalternative}%
-   \normalexpanded{\endgroup\simplelistparameter\c!next}}
+   \expanded{\endgroup\simplelistparameter\c!next}}
 
 % \setupsimplelistalternative
 %   [\c!command=\directsimplelistparameter\c!command]
@@ -493,7 +491,7 @@
       \setupcurrentsimplelist[#2]%
       \enforced\let\synonymentry\strc_synonym_normal
       % so we can hook tabulate into before and after
-      \normalexpanded{%
+      \expanded{%
         \simplelistparameter\c!before
         \clf_processsynonyms
            {#1}%
@@ -512,7 +510,7 @@
   {\begingroup
    \cdef\currentsimplelist{#1}%
    \doifelsecommandhandler\??simplelist\currentsimplelist
-     {\normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+     {\expanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
         \placelistofsynonyms[#1][#2]%
         \page
       \stopnamedsection}%
@@ -657,7 +655,7 @@
    \doifnotcommandhandler\??simplelistalternative\currentsimplelistalternative
      {\let\currentsimplelistalternative\v!normal}%
    \fastsetup{\??simplelistrenderings:\v!sorting:\currentsimplelistalternative}%
-   \normalexpanded{\endgroup\simplelistparameter\c!next}}
+   \expanded{\endgroup\simplelistparameter\c!next}}
 
 % or:
 %
@@ -704,7 +702,7 @@
      \enforced\let\synonymentry\strc_sorting_command
    \fi
    % so we can hook tabulate into before and after
-   \normalexpanded{%
+   \expanded{%
      \simplelistparameter\c!before
      \clf_processsynonyms
         {#1}%
@@ -721,7 +719,7 @@
 \permanent\tolerant\protected\def\completelistofsorts[#1]#*[#S#2]%
   {\begingroup
    \cdef\currentsimplelist{#1}%
-   \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
+   \expanded{\startnamedsection[\v!chapter][\c!title={\headtext{\simplelistparameter\s!multi}},\c!reference=#1]}%
    \placelistofsorts[#1][#2]%
    \page
    \stopnamedsection

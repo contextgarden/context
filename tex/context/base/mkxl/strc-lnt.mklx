@@ -58,7 +58,7 @@
   {\global\advanceby\c_strc_linenotes\plusone
    \strc_linenotes_indeed{#1}{\the\c_strc_linenotes}{#2}%
    \strc_linenotes_traced\empty
-   \normalexpanded{\someline[\the\c_strc_linenotes]}}
+   \expanded{\someline[\the\c_strc_linenotes]}}
 
 \protected\def\strc_linenotes_start#1[#2]#3%
   {\global\advanceby\c_strc_linenotes\plusone

@@ -142,7 +142,7 @@
    \or
      \ifcstok{#2}\v!each
        \localcontrolledrepeat \namedparagraphsparameter{#1}\c!n
-         {\normalexpanded{\typo_paragraphs_setup_saved[#1:\the\currentloopiterator]}[#3]}%
+         {\expanded{\typo_paragraphs_setup_saved[#1:\the\currentloopiterator]}[#3]}%
      \else
        \def\typo_paragraphs_setup_step##1{\typo_paragraphs_setup_saved[#1:##1][#3]}%
        \processcommalist[#2]\typo_paragraphs_setup_step
@@ -155,7 +155,7 @@
     \frozen\instance\protected\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
     \frozen\instance\letcsname\e!stop\currentparagraphs\endcsname\stopparagraphs
     \localcontrolledrepeat \paragraphsparameter\c!n
-      {\normalexpanded
+      {\expanded
          {\typo_paragraphs_setup_saved
             [\currentparagraphs:\the\currentloopiterator]%
             [\c!width=,\s!parent=\??paragraphs\currentparagraphs]}}%

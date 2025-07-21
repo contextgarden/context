@@ -306,7 +306,7 @@ local report     = logs.reporter("csname overload")
 local reported   = { }
 local formatters = string.formatters
 
-local function handle_overload_callback(fatal,overload,csname,flags)
+local function handle_overload_callback(fatal,overload,csname,flags,index)
     if not reported[csname] then
         reported[csname] = true
         logs.newline()
@@ -317,6 +317,8 @@ local function handle_overload_callback(fatal,overload,csname,flags)
         local active, n  = tokens.isactivestring(csname)
         if active and n then
            csname = formatters["active character 0x%X"](n)
+        elseif index then
+           csname = formatters["%s register %i"](csname,index)
         else
            csname = formatters["control sequence %a"](csname)
         end

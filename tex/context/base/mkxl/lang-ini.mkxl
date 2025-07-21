@@ -616,25 +616,43 @@
 
 %D Fast switcher
 
+\permanent\protected\def\uselanguageparameter#1%
+  {\cdef\currentlanguageparameter{#1\c!language}%
+   \ifempty\currentlanguageparameter\else\dousecurrentlanguageparameter\fi}
+
+\permanent\protected\def\douselanguageparameter#1% fast setter
+  {\cdef\currentlanguageparameter{#1}%
+   \ifempty\currentlanguageparameter\else\dousecurrentlanguageparameter\fi}
+
+\permanent\protected\def\dousecurrentlanguageparameter% fast setter
+  {\ifcsname\??languagelinked\currentlanguageparameter\endcsname
+     \edef\currentlanguageparameter{\lastnamedcs}%
+     \ifx\currentlanguage\currentlanguageparameter \else
+       \setcurrentlanguage\currentmainlanguage\currentlanguageparameter
+       \lang_basics_synchronize
+     \fi
+   \fi}
+
+\def\lang_basics_one_time_warning
+  {\ifconditional\c_strc_tags_enabled
+     \writestatus\m!languages{}% todo: move to mult-mes.lua
+     \writestatus\m!languages{use a language parameter or define an environment}%
+     \writestatus\m!languages{}%
+   \fi
+   \glettonothing\lang_basics_one_time_warning}
+
 \def\lang_basics_switch_asked
   {\ifcsname\??languagelinked\askedlanguage\endcsname
-     \edef\askedlanguage{\lastnamedcs}%
+     \cdef\askedlanguage{\lastnamedcs}%
      \ifx\currentlanguage\askedlanguage \else
+       \lang_basics_one_time_warning
        \setcurrentlanguage\currentmainlanguage\askedlanguage
        \lang_basics_synchronize
      \fi
    \fi}
 
-\permanent\protected\def\uselanguageparameter#1%
-  {\edef\askedlanguage{#1\c!language}%
-   \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
-
-\permanent\protected\def\douselanguageparameter#1% fast setter
-  {\edef\askedlanguage{#1}%
-   \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
-
 \protected\def\lang_basics_set_current[#1]%
-  {\edef\askedlanguage{#1}%
+  {\cdef\askedlanguage{#1}%
    \ifempty\askedlanguage\else\lang_basics_switch_asked\fi}
 
 \pushoverloadmode
@@ -659,11 +677,11 @@
 \permanent\let\stoplanguage\endgroup
 
 \permanent\protected\def\mainlanguage[#1]%
-  {\edef\askedlanguage{#1}%
+  {\cdef\askedlanguage{#1}%
    \ifempty\askedlanguage
    \orelse\ifcsname\??languagelinked\askedlanguage\endcsname
     %\edef\askedlanguage{\csname\??languagelinked\askedlanguage\endcsname}%
-     \edef\askedlanguage{\lastnamedcs}%
+     \cdef\askedlanguage{\lastnamedcs}%
      \ifx\currentlanguage\askedlanguage
        \ifx\currentmainlanguage\askedlanguage \else
          \setcurrentlanguage\askedlanguage\askedlanguage
@@ -819,7 +837,7 @@
 
 \tolerant\permanent\protected\def\startexceptions[#1]#:#2\stopexceptions
   {\begingroup
-   \edef\askedlanguage{\reallanguagetag{#1}}%
+   \cdef\askedlanguage{\reallanguagetag{#1}}%
    \ifempty\askedlanguage
      \let\askedlanguage\currentlanguage
    \fi
@@ -830,7 +848,7 @@
 
 \tolerant\permanent\protected\def\startpatterns[#1]#:#2\stoppatterns
   {\begingroup
-   \edef\askedlanguage{\reallanguagetag{#1}}%
+   \cdef\askedlanguage{\reallanguagetag{#1}}%
    \ifempty\askedlanguage
      \let\askedlanguage\currentlanguage
    \fi
@@ -881,9 +899,9 @@
 %D {ef{\norightligaturing f}icient ff fi}\par
 %D \stoptyping
 
-\immutable\integerdef\nokerningcode   \numexpr\noleftkernglyphoptioncode        +\norightkernglyphoptioncode           \relax
-\immutable\integerdef\noligaturingcode\numexpr\noleftligatureglyphoptioncode    +\norightligatureglyphoptioncode       \relax
-\immutable\integerdef\noitalicscode   \numexpr\noitaliccorrectionglyphoptioncode+\nozeroitaliccorrectionglyphoptioncode\relax
+\permanent\immutable\integerdef\nokerningcode   \numexpr\noleftkernglyphoptioncode        +\norightkernglyphoptioncode           \relax
+\permanent\immutable\integerdef\noligaturingcode\numexpr\noleftligatureglyphoptioncode    +\norightligatureglyphoptioncode       \relax
+\permanent\immutable\integerdef\noitalicscode   \numexpr\noitaliccorrectionglyphoptioncode+\nozeroitaliccorrectionglyphoptioncode\relax
 
 \permanent\protected\def\nokerning         {\bitwiseflip\glyphoptions\nokerningcode}
 \permanent\protected\def\noligaturing      {\bitwiseflip\glyphoptions\noligaturingcode}
@@ -910,7 +928,7 @@
    \lang_startlanguageoptions}
 
 \tolerant\def\lang_startlanguageoptions[#1]#:#2\stoplanguageoptions
-  {\edef\askedlanguage{\reallanguagetag{#1}}%
+  {\cdef\askedlanguage{\reallanguagetag{#1}}%
    \ifempty\askedlanguage
      \let\askedlanguage\currentlanguage
    \fi

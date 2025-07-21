@@ -568,6 +568,7 @@ static void tex_aux_get_preamble_token(void)
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
+        case lua_call_cmd:
             if (has_eq_flag_bits(cur_cs, noaligned_flag_bit)) {
                 tex_expand_current_token();
                 goto RESTART;
@@ -895,6 +896,7 @@ static void tex_aux_align_peek(void)
         case tolerant_call_cmd:
         case tolerant_protected_call_cmd:
         case tolerant_semi_protected_call_cmd:
+        case lua_call_cmd:
             if (has_eq_flag_bits(cur_cs, noaligned_flag_bit)) {
                 tex_expand_current_token();
                 goto RESTART;

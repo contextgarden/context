@@ -171,8 +171,8 @@
 %D \doifobjectreferencefoundelse{class}{object}{do then}{do else}
 %D \stoptyping
 
-\immutable\def\defaultobjectreference{0}
-\immutable\def\defaultobjectpage     {\realfolio}
+\permanent\def\defaultobjectreference{0}
+\permanent\def\defaultobjectpage     {\realfolio}
 
 % \getobjectreference           {#1}{#2\csname % define at the lua end
 % \getobjectreferencepage       {#1}{#2\csname % define at the lua end

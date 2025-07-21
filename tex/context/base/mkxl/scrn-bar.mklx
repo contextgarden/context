@@ -193,25 +193,25 @@
       {\hskip2\emwidth
        \setbox\scratchbox\hpack{\blackrule[\c!color=\interactionbarparameter\c!backgroundcolor]}%
        \dorecurse\scratchcounter
-         {\hss\normalexpanded{\directgotodumbbox{\copy\scratchbox}[page(\tointeger{\recurselevel*\lastpage/\scratchcounter})]}}%
+         {\hss\expanded{\directgotodumbbox{\copy\scratchbox}[page(\tointeger{\recurselevel*\lastpage/\scratchcounter})]}}%
        \hss
        \hskip2\emwidth}%
     \wd\scratchbox\zeropoint
     \box \scratchbox
     \setupblackrules[\c!width=\emwidth]%
-    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
+    \expanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!firstpage]}%
     \hskip\emwidth
     \ifnum\realpageno>\plusone
       \hskip\zeropoint\s!plus\numexpr\realpageno-\plustwo\relax\s!sp\relax % cm gives overflow
-      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
+      \expanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!previouspage)]}%
     \fi
-    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\the\realpageno)]}% todo: \v!currentpage
+    \expanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[page(\the\realpageno)]}% todo: \v!currentpage
     \ifnum\realpageno<\lastpage\relax
-      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
+      \expanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!nextpage]}%
       \hskip\zeropoint\s!plus\numexpr\lastpage-\realpageno-\plusone\relax\s!sp\relax % cm gives overflow
     \fi
     \hskip\emwidth
-    \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%
+    \expanded{\directgotospecbox\noexpand\interactionbarparameter{\blackrule}[\v!lastpage]}%
    \egroup}
 
 \def\scrn_bar_alternative_b
@@ -271,7 +271,7 @@
         \ifnum\scratchcounter<\realpageno \zerocount \else
         \ifnum\scratchcounter=\realpageno \plusone   \else
                                           \plustwo   \fi\fi
-      \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[page(\the\scratchcounter)]}%
+      \expanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[page(\the\scratchcounter)]}%
       #command}%
    \unskip}
 
@@ -372,7 +372,7 @@
                 \fi
               \fi
             \ifnum\c_scrn_bar_mode<\zerocount\else
-              \normalexpanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
+              \expanded{\directgotospecbox\noexpand\interactionbarparameter{\scrn_bar_goto_indeed\c_scrn_bar_mode}[realpage(\the\scratchcountersix)]}%
               \hss
               \scratchcounterfive\zerocount
             \fi}%

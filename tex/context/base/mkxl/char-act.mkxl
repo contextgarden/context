@@ -37,7 +37,7 @@
 %D First we define \type {\obeyspaces}. When we want visible spaces (control spaces)
 %D we only have to adapt the definition of \type {\obeyedspace} to:
 
-\immutable\chardef\asciispacechar\spaceasciicode % a real space character
+\permanent\chardef\asciispacechar\spaceasciicode % a real space character
 
 \permanent\protected\def\naturalspace{\asciispacechar}
 \permanent\protected\def\controlspace{\hbox{\asciispacechar}} % rather tex, we need the unicode value

@@ -72,7 +72,7 @@
      #3%
      \mathboundary\plusone   % prevents binary becoming ord
      \stopimath
-     \normalexpanded{\aftergrouped{%
+     \expanded{\aftergrouped{%
        \integerdef\c_framed_math_last_left \the\lastleftclass \relax
        \integerdef\c_framed_math_last_right\the\lastrightclass\relax
      }}%
@@ -272,7 +272,7 @@
    \scratchdistance\ifchkdimension\mathframedparameter\c!backgroundoffset\or\lastchkdimension\else\zeropoint\fi
    \ifmmode
      \ifempty{\mathframedparameter\c!mathstyle}%
-       \normalexpanded{\setmathframedparameter{\c!mathstyle}{\currentverbosemathstyle}}%
+       \expanded{\setmathframedparameter{\c!mathstyle}{\currentverbosemathstyle}}%
      \fi
      \math_atom_by_parameter\mathframedparameter
      \bgroup

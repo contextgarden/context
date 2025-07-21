@@ -113,6 +113,7 @@ local concat, setmetatableindex, sortedhash = table.concat, table.setmetatablein
 local gmatch, gsub, find, match = string.gmatch, string.gsub, string.find, string.match
 local formatters, fullstrip = string.formatters, string.fullstrip
 local utfsplit, utfbyte = utf.split, utf.byte
+local isfile, isdir, mkdir, modification = lfs.isfile, lfs.isdir, lfs.mkdir, lfs.modification
 
 local xmlconvert, xmlcollected, xmlcount, xmlfirst, xmlroot, xmlall = xml.convert, xml.collected, xml.count, xml.first, xml.root, xml.all
 local xmltext, xmltextonly = xml.text, xml.textonly
@@ -1633,7 +1634,7 @@ do
             local fragment = ref.fragment
             if filename and filename ~= "" then
                 local fullname = resolvers.findbinfile(filename)
-                if lfs.isfile(fullname) then
+                if isfile(fullname) then
                     report("loading use file: %s",fullname)
                     local root = xml.load(fullname)
                     res = xmlfirst(root,"**[@id='"..fragment.."']")
@@ -3531,6 +3532,8 @@ end
     -- For huge inefficient files there can be lots of garbage to collect so
     -- maybe we should run the collector when a file is larger than say 50K.
 
+    metapost.svgcachefile = false
+
     function metapost.svgtomp(specification,pattern,notransform,normalize)
         local mps = ""
         local svg = specification.data
@@ -3578,6 +3581,10 @@ end
                     report("graphic %a uses colors: %s",specification.id or "unknown",table.sequenced(usedcolors))
                 end
                 mps         = concat(result," ")
+                if metapost.svgcachefile then
+                    io.savedata(metapost.svgcachefile,mps)
+                    metapost.svgcachefile = false
+                end
                 root        = false
                 result      = false
                 r           = false
@@ -3604,16 +3611,52 @@ do
 
     local bpfactor <const> = number.dimenfactors.bp
 
-    function metapost.includesvgfile(filename,offset) -- offset in sp
+    -- We could share with graphic inclusion but svg is kind of out of scope and
+    -- we also use this without externalfigure.
+
+    local validdir = setmetatableindex(function(t,k)
+        local v = isdir(k) or mkdir(k)
+        t[k] = v
+        return v
+    end)
+
+    function metapost.includesvgfile(filename,offset,cache) -- offset in sp
         local fullname = resolvers.findbinfile(filename)
-        if lfs.isfile(fullname) then
+        if isfile(fullname) then
+            -- Caching, for Wolfgang.
+            local cachename = false
+            local reuse     = false
+            if cache and cache ~= "" then
+                cachename = resolvers.cleanpath(file.nameonly(fullname)) .. "-svg.mps"
+                cache = resolvers.cleanpath(cache)
+                if cache ~= "" and cache ~= interfaces.variables.yes and validdir[cache] then
+                    cachename = file.join(cache,cachename)
+                else
+                    cachename = "m_k_i_v_" .. cachename
+                end
+                local old = modification(cachename)
+                local new = modification(filename)
+                reuse = old and new and new < old
+            end
             context.startMPcode("doublefun")
+            if reuse then
+                if trace then
+                    report("reusing already converted %a",filename)
+                end
+                context('input "%s" ;',cachename)
+             -- context(io.loaddata(cachename))
+            else
+                metapost.svgcachefile = cachename
                 context('draw lmt_svg [ filename = "%s", offset = %N ] ;',filename,(offset or 0)*bpfactor)
+                if cachename and trace then
+                    report("caching converted %a",filename)
+                end
+            end
             context.stopMPcode()
         end
     end
 
-    function metapost.includesvgbuffer(name,offset) -- offset in sp
+    function metapost.includesvgbuffer(name,offset,cache) -- offset in sp
         context.startMPcode("doublefun")
             context('draw lmt_svg [ buffer = "%s", offset = %N ] ;',name or "",(offset or 0)*bpfactor)
         context.stopMPcode()
@@ -3622,13 +3665,13 @@ do
     interfaces.implement {
         name      = "includesvgfile",
         actions   = metapost.includesvgfile,
-        arguments = { "string", "dimension" },
+        arguments = { "string", "dimension", "string" },
     }
 
     interfaces.implement {
         name      = "includesvgbuffer",
         actions   = metapost.includesvgbuffer,
-        arguments = { "string", "dimension" },
+        arguments = { "string", "dimension", "string" },
     }
 
     function metapost.showsvgpage(data)

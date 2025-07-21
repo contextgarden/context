@@ -119,7 +119,7 @@
 %    \ifempty{#getparameter\c!profile}%
 %      \resetprofile
 %    \else
-%      \normalexpanded{\setprofile[\lastnamedcs]}%
+%      \expanded{\setprofile[\lastnamedcs]}%
 %    \fi}
 
 \permanent\tolerant\protected\def\profiledbox[#S#profile]#spacer[#S#settings]%

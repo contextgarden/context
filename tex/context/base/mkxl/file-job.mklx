@@ -290,7 +290,7 @@
   {\directsetup{\doifelsesetups{\currentdocument:\v!start}\currentdocument\s!document:\v!start}}
 
 \appendtoks
-    \normalexpanded {%
+    \expanded {%
         \startsetups[\currentdocument:\v!start]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!start}\stopsetups
         \startsetups[\currentdocument:\v!stop ]\noexpand\directsetup{\ifempty\currentdocumentparent\s!document\else\currentdocumentparent\fi:\v!stop }\stopsetups
         \permanent\defcsname\e!start\currentdocument\endcsname{\startdocument[\currentdocument]}%

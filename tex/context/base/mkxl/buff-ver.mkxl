@@ -193,9 +193,9 @@
     \frozen\protected\instance\edefcsname\e!start\currenttyping\endcsname{\buff_verbatim_typing_start{\currenttyping}{\currenttyping}}%
     \frozen\protected\instance\edefcsname\e!stop \currenttyping\endcsname{\buff_verbatim_typing_stop}%
     \ifempty\currenttypingparent
-      \normalexpanded{\definelinenumbering[\currenttyping]}%
+      \expanded{\definelinenumbering[\currenttyping]}%
     \else
-      \normalexpanded{\definelinenumbering[\currenttyping][\currenttypingparent]}%
+      \expanded{\definelinenumbering[\currenttyping][\currenttypingparent]}%
     \fi
 \to \everydefinetyping
 
@@ -419,14 +419,14 @@
 %D decided not to use that slow and sometimes troublesome solution. Instead we stick
 %D to some 'old' \CONTEXT\ macros for typesetting typical \TEX\ characters.
 
-\immutable\def\lesscharacter    {<} % obsolete
-\immutable\def\morecharacter    {>} % obsolete
+\permanent\cdef\lesscharacter    {<} % obsolete
+\permanent\cdef\morecharacter    {>} % obsolete
 
-\immutable\let\texescape        \textbackslash
-\immutable\let\leftargument     \textbraceleft
-\immutable\let\rightargument    \textbraceright
-\immutable\let\inlinemathmarker \textdollar
-\immutable\def\displaymathmarker{\textdollar\textdollar}
+\aliased  \let\texescape        \textbackslash
+\aliased  \let\leftargument     \textbraceleft
+\aliased  \let\rightargument    \textbraceright
+\aliased  \let\inlinemathmarker \textdollar
+\permanent\def\displaymathmarker{\textdollar\textdollar}
 
 \def\buff_verbatim_special_type#1#2#% # gobbles spaces
   {\dontleavehmode\bgroup
@@ -486,7 +486,7 @@
    \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
-   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
+   \expanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop\currenttypingwrapper}}}
 
 \def\buff_verbatim_typing_start_nop
   {\endgroup
@@ -495,7 +495,7 @@
    \buff_verbatim_setup_keep_together
    \buff_verbatim_setup_line_numbering
    \buff_verbatim_initialize_typing_one
-   \normalexpanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
+   \expanded{\buff_verbatim_type_block{\e!start\currenttypingwrapper}{\e!stop \currenttypingwrapper}}}
 
 %D \start \showmakeup[vpenalty]
 %D \starttyping[keeptogether=paragraph]
@@ -520,7 +520,7 @@
    \fi}
 
 \protected\def\buff_verbatim_type_block#1#2%
-  {\normalexpanded{\buff_pickup
+  {\expanded{\buff_pickup
      {_typing_}%
      {#1}%
      {#2}%

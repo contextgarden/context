@@ -102,11 +102,11 @@
 
 \protected\def\font_basics_define_font_synonym_nop_expanded#ignore[#spec]%
   {\letcsname\??fontfile\m_font_name\endcsname\m_font_file
-   \normalexpanded{\font_basics_define_font_synonym_nop_opt[#spec]}}
+   \expanded{\font_basics_define_font_synonym_nop_opt[#spec]}}
 
 \protected\def\font_basics_define_font_synonym_yes_expanded#ignore[#spec]%
   {\letcsname\??fontfile\fontclass\m_font_name\endcsname\m_font_file
-   \normalexpanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
+   \expanded{\font_basics_define_font_synonym_yes_opt[#spec]}}
 
 \let\p_features  \undefined
 \let\p_fallbacks \undefined

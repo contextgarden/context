@@ -390,7 +390,7 @@ local function closest_bound(b,get)
 end
 
 function kerns.handler(head)
-    local _, start = findattribute(head, a_kerns)
+    local _, start = findattribute(head,a_kerns)
     if start then
         local lastfont     = nil
         local keepligature = kerns.keepligature

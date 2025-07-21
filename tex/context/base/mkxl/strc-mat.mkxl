@@ -141,7 +141,7 @@
   [\c!numberconversionset=\v!formula] % why forgotten
 
 \appendtoks
-    \normalexpanded{\definelist[\currentformula]}% is expansion needed?
+    \expanded{\definelist[\currentformula]}% is expansion needed?
     \frozen\instance\protected\edefcsname\e!start\currentformula\v!formula\endcsname{\strc_formulas_start_formula{\currentformula}}%
     \frozen\instance\protected\edefcsname\e!stop \currentformula\v!formula\endcsname{\strc_formulas_stop_formula}%
 \to \everydefineformula
@@ -615,27 +615,27 @@
 
 \newif\ifinformula
 
-%D We need a hook into the plain math alignment macros
-%D
-%D \starttyping
-%D \displaylines
-%D \stoptyping
-%D
-%D Otherwise we get a missing \type {$$} error reported.
-
-\pushoverloadmode
-
-    \permanent\protected\def\normaleqno#1{\writestatus\m!system{no native (l/r)eqno equation number support}}
-
-    \aliased\let\normalleqno\normaleqno
-    \aliased\let\normalreqno\normaleqno
-    \aliased\let\normaleqno \normaleqno
-
-    \aliased\let\leqno      \normaleqno
-    \aliased\let\reqno      \normaleqno
-    \aliased\let\eqno       \normaleqno
-
-\popoverloadmode
+% %D We need a hook into the plain math alignment macros
+% %D
+% %D \starttyping
+% %D \displaylines
+% %D \stoptyping
+% %D
+% %D Otherwise we get a missing \type {$$} error reported.
+%
+% \pushoverloadmode
+%
+%     \permanent\protected\def\normaleqno#1{\writestatus\m!system{no native (l/r)eqno equation number support}}
+%
+%     \aliased\let\normalleqno\normaleqno
+%     \aliased\let\normalreqno\normaleqno
+%     \aliased\let\normaleqno \normaleqno
+%
+%     \aliased\let\leqno      \normaleqno
+%     \aliased\let\reqno      \normaleqno
+%     \aliased\let\eqno       \normaleqno
+%
+% \popoverloadmode
 
 %D Tricky stuff:
 
@@ -830,7 +830,7 @@
      \global\csname\??constructionclosesymbol\currentconstruction\endcsname\conditionalfalse
      \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
      \ifempty\p_strc_constructions_closesymbol \else
-       \normalexpanded
+       \expanded
          {\texthere[\ifparameter#1\or#1\else\v!right\fi]}%
          {\p_strc_constructions_closesymbol}%
      \fi
@@ -1606,7 +1606,7 @@
    \fi
    \ifgridsnapping
      \ifempty{\formulaparameter\c!gridcorrection}\else
-       \normalexpanded{\setgridcorrection[\lastnamedcs]}%
+       \expanded{\setgridcorrection[\lastnamedcs]}%
      \fi
    \fi
    \noindentation
@@ -1691,6 +1691,7 @@
    \informulatrue
    \beforedisplayspace
    \startinnermath
+   \math_display_mode_signal % has to be in front
    \ifrelax\strc_formulas_begstrut\else
      \strc_formulas_begstrut
      \boundary\c_math_begin_boundary
@@ -1806,7 +1807,7 @@
    \hss
    \endgroup}
 
-\normalexpanded{\tolerant\def\noexpand\strc_formulas_start_formulas[#1]#:#2\csname\e!stop\v!formulas\endcsname}%
+\expanded{\tolerant\def\noexpand\strc_formulas_start_formulas[#1]#:#2\csname\e!stop\v!formulas\endcsname}%
   {\startformula
    \dostarttaggednodetail\t!formulaset
    \global\c_strc_formulas_inside_formulas\conditionaltrue
@@ -1941,7 +1942,7 @@
    \edef\currentplaceformulalist     {\dummyparameter\c!list}%
    \edef\currentplaceformulasuffix   {\dummyparameter\c!suffix}%
    \ifempty\currentplaceformulatitle\else
-     \normalexpanded{\setformulalistentry{\currentplaceformulatitle}}%
+     \expanded{\setformulalistentry{\currentplaceformulatitle}}%
    \fi}
 
 \permanent\protected\def\stopplaceformula

@@ -103,64 +103,64 @@
 % ^ : keep leading spaces
 % _ : braces are mandate and kept
 
-\immutable\integerdef\escapecatcode             0
-\immutable\integerdef\begingroupcatcode         1
-\immutable\integerdef\endgroupcatcode           2
-\immutable\integerdef\mathshiftcatcode          3
-\immutable\integerdef\alignmentcatcode          4
-\immutable\integerdef\endoflinecatcode          5
-\immutable\integerdef\parametercatcode          6
-\immutable\integerdef\superscriptcatcode        7
-\immutable\integerdef\subscriptcatcode          8
-\immutable\integerdef\ignorecatcode             9
-\immutable\integerdef\spacecatcode             10
-\immutable\integerdef\lettercatcode            11
-\immutable\integerdef\othercatcode             12  % finally obsolete: \let\other \othercatcode
-\immutable\integerdef\activecatcode            13  % finally obsolete: \let\active\activecatcode
-\immutable\integerdef\commentcatcode           14
-\immutable\integerdef\invalidcatcode           15
+\permanent\immutable\integerdef\escapecatcode             0
+\permanent\immutable\integerdef\begingroupcatcode         1
+\permanent\immutable\integerdef\endgroupcatcode           2
+\permanent\immutable\integerdef\mathshiftcatcode          3
+\permanent\immutable\integerdef\alignmentcatcode          4
+\permanent\immutable\integerdef\endoflinecatcode          5
+\permanent\immutable\integerdef\parametercatcode          6
+\permanent\immutable\integerdef\superscriptcatcode        7
+\permanent\immutable\integerdef\subscriptcatcode          8
+\permanent\immutable\integerdef\ignorecatcode             9
+\permanent\immutable\integerdef\spacecatcode             10
+\permanent\immutable\integerdef\lettercatcode            11
+\permanent\immutable\integerdef\othercatcode             12  % finally obsolete: \let\other \othercatcode
+\permanent\immutable\integerdef\activecatcode            13  % finally obsolete: \let\active\activecatcode
+\permanent\immutable\integerdef\commentcatcode           14
+\permanent\immutable\integerdef\invalidcatcode           15
 
-%immutable\integerdef\zeroasciicode             0
-\immutable\integerdef\tabasciicode              9
-\immutable\integerdef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
-\immutable\integerdef\formfeedasciicode        12
-\immutable\integerdef\endoflineasciicode       13  % somewhat messy but this can be the active \par
-\immutable\integerdef\endoffileasciicode       26
-\immutable\integerdef\spaceasciicode           32
-\immutable\integerdef\exclamationmarkasciicode 33 % ! used in namespace protection
-\immutable\integerdef\doublequoteasciicode     34 % "
-\immutable\integerdef\hashasciicode            35
-\immutable\integerdef\dollarasciicode          36
-\immutable\integerdef\commentasciicode         37
-\immutable\integerdef\ampersandasciicode       38
-\immutable\integerdef\singlequoteasciicode     39 % '
-\immutable\integerdef\primeasciicode           39 % '
-\immutable\integerdef\leftparentasciicode      40
-\immutable\integerdef\rightparentasciicode     41
-\immutable\integerdef\commaasciicode           44
-\immutable\integerdef\hyphenasciicode          45
-\immutable\integerdef\periodasciicode          46
-\immutable\integerdef\forwardslashasciicode    47 % /
-\immutable\integerdef\zeroasciicode            48
-\immutable\integerdef\nineasciicode            57
-\immutable\integerdef\colonasciicode           58
-\immutable\integerdef\semicolonasciicode       59
-\immutable\integerdef\lessthanasciicode        60 % < used as alternative verbatim {
-\immutable\integerdef\morethanasciicode        62 % > used as alternative verbatim }
-\immutable\integerdef\questionmarkasciicode    63 % ? used in namespace protection
-\immutable\integerdef\atsignasciicode          64 % @ used in namespace protection
-\immutable\integerdef\leftbracketasciicode     91
-\immutable\integerdef\backslashasciicode       92 % `\\
-\immutable\integerdef\rightbracketasciicode    93
-\immutable\integerdef\circumflexasciicode      94
-\immutable\integerdef\underscoreasciicode      95
-\immutable\integerdef\alowercaseasciicode      97
-\immutable\integerdef\zlowercaseasciicode     122
-\immutable\integerdef\leftbraceasciicode      123 % `\{
-\immutable\integerdef\barasciicode            124 % `\|
-\immutable\integerdef\rightbraceasciicode     125 % `\}
-\immutable\integerdef\tildeasciicode          126 % `\~
-\immutable\integerdef\delasciicode            127
+%permanent\immutable\integerdef\zeroasciicode             0
+\permanent\immutable\integerdef\tabasciicode              9
+\permanent\immutable\integerdef\newlineasciicode         10  % don't confuse this one with \endoflineasciicode
+\permanent\immutable\integerdef\formfeedasciicode        12
+\permanent\immutable\integerdef\endoflineasciicode       13  % somewhat messy but this can be the active \par
+\permanent\immutable\integerdef\endoffileasciicode       26
+\permanent\immutable\integerdef\spaceasciicode           32
+\permanent\immutable\integerdef\exclamationmarkasciicode 33 % ! used in namespace protection
+\permanent\immutable\integerdef\doublequoteasciicode     34 % "
+\permanent\immutable\integerdef\hashasciicode            35
+\permanent\immutable\integerdef\dollarasciicode          36
+\permanent\immutable\integerdef\commentasciicode         37
+\permanent\immutable\integerdef\ampersandasciicode       38
+\permanent\immutable\integerdef\singlequoteasciicode     39 % '
+\permanent\immutable\integerdef\primeasciicode           39 % '
+\permanent\immutable\integerdef\leftparentasciicode      40
+\permanent\immutable\integerdef\rightparentasciicode     41
+\permanent\immutable\integerdef\commaasciicode           44
+\permanent\immutable\integerdef\hyphenasciicode          45
+\permanent\immutable\integerdef\periodasciicode          46
+\permanent\immutable\integerdef\forwardslashasciicode    47 % /
+\permanent\immutable\integerdef\zeroasciicode            48
+\permanent\immutable\integerdef\nineasciicode            57
+\permanent\immutable\integerdef\colonasciicode           58
+\permanent\immutable\integerdef\semicolonasciicode       59
+\permanent\immutable\integerdef\lessthanasciicode        60 % < used as alternative verbatim {
+\permanent\immutable\integerdef\morethanasciicode        62 % > used as alternative verbatim }
+\permanent\immutable\integerdef\questionmarkasciicode    63 % ? used in namespace protection
+\permanent\immutable\integerdef\atsignasciicode          64 % @ used in namespace protection
+\permanent\immutable\integerdef\leftbracketasciicode     91
+\permanent\immutable\integerdef\backslashasciicode       92 % `\\
+\permanent\immutable\integerdef\rightbracketasciicode    93
+\permanent\immutable\integerdef\circumflexasciicode      94
+\permanent\immutable\integerdef\underscoreasciicode      95
+\permanent\immutable\integerdef\alowercaseasciicode      97
+\permanent\immutable\integerdef\zlowercaseasciicode     122
+\permanent\immutable\integerdef\leftbraceasciicode      123 % `\{
+\permanent\immutable\integerdef\barasciicode            124 % `\|
+\permanent\immutable\integerdef\rightbraceasciicode     125 % `\}
+\permanent\immutable\integerdef\tildeasciicode          126 % `\~
+\permanent\immutable\integerdef\delasciicode            127
 
 \aliased\let\percentasciicode\commentasciicode
 
@@ -205,8 +205,8 @@
 %D
 %D \starttyping
 %D \normalexpanded
-%D \normalprotected
-%D \normalunexpanded
+%D \normalprotected  % no longer needed, we adapted over time
+%D \normalunexpanded % idem, use \notexpanded so that we get syntax highlighting too
 %D \stoptyping
 %D
 %D In the end not using different names in \LUATEX\ for these kind of backfires. It
@@ -225,26 +225,21 @@
 \directlua {
     tex.enableprimitives("normal",true) % we default to everything
     function tex.enableprimitives() end % so we kind of protect what's there
-  % token.inhibit(                      % for now we do this later
-  %     "left","right","middle",
-  %     "over","above","atop"
-  %     "overwithdelims","abovewithdelims","atopwithdelims"
-  % )
 }
 
 \untraced\permanent\let\undefined\undefined
 
-\immutable\def\space{ }
-\immutable\def\empty{}
-\mutable  \def\temp {}
+\permanent\cdef\space{ }
+\permanent \def\empty{}
+\mutable   \def\temp {}
 
-\immutable\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
-\immutable\letcharcode \tildeasciicode    \       %                 tilde
-\immutable\letcharcode \spaceasciicode    \space  %                 space
+\permanent\letcharcode \formfeedasciicode \par    % \def ^^L{\par}  formfeed
+\permanent\letcharcode \tildeasciicode    \       %                 tilde
+\permanent\letcharcode \spaceasciicode    \space  %                 space
 
-\immutable\defcsname\tocharacter\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
-\immutable\defcsname\tocharacter\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
-\immutable\defcsname\tocharacter\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
+\permanent\defcsname\tocharacter\tabasciicode      \endcsname {\ }   % \def\^^I{\ }    tab
+\permanent\defcsname\tocharacter\formfeedasciicode \endcsname {\par} % \def\^^L{\par}  formfeed
+\permanent\defcsname\tocharacter\endoflineasciicode\endcsname {\ }   % \def\^^M{\ }    return
 
 %D For now:
 
@@ -271,8 +266,8 @@
 
 %D Some pretty important definitions:
 
-\immutable\let\bgroup={
-\immutable\let\egroup=}
+\permanent\let\bgroup={
+\permanent\let\egroup=}
 
 %D \macros
 %D   {normalbgroup,normalgroup}
@@ -314,16 +309,16 @@
 
 \directlua {tex.magicconstants = status.getconstants()} % this will be reset later on
 
-\permanent\countdef\c_syst_min_allocated_register  = 201 \c_syst_min_allocated_register  =   256 % can change
+\permanent\countdef\c_syst_min_allocated_register  = 201 \immutable\c_syst_min_allocated_register  =   256 % can change
 
-\permanent\countdef\c_syst_min_allocated_iohandle  = 203 \c_syst_min_allocated_iohandle  =     0
-\permanent\countdef\c_syst_max_allocated_iohandle  = 204 \c_syst_max_allocated_iohandle  =  1023
+\permanent\countdef\c_syst_min_allocated_iohandle  = 203 \immutable\c_syst_min_allocated_iohandle  =     0
+\permanent\countdef\c_syst_max_allocated_iohandle  = 204 \immutable\c_syst_max_allocated_iohandle  =  1023
 
-\permanent\countdef\c_syst_min_allocated_mark      = 205 \c_syst_min_allocated_mark      =    16 % a few scratch ones
-\permanent\countdef\c_syst_max_allocated_mark      = 206 \c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
+\permanent\countdef\c_syst_min_allocated_mark      = 205 \immutable\c_syst_min_allocated_mark      =    16 % a few scratch ones
+\permanent\countdef\c_syst_max_allocated_mark      = 206 \immutable\c_syst_max_allocated_mark      =  1024 % max 10K in luametatex anyway
 
-\permanent\countdef\c_syst_min_allocated_attribute = 207 \c_syst_min_allocated_attribute =  1024 % 0-1023 : private
-\permanent\countdef\c_syst_max_allocated_attribute = 208 \c_syst_max_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)}
+\permanent\countdef\c_syst_min_allocated_attribute = 207 \immutable\c_syst_min_allocated_attribute =  1024 % 0-1023 : private
+\permanent\countdef\c_syst_max_allocated_attribute = 208 \immutable\c_syst_max_allocated_attribute = \directlua{tex.write(tex.magicconstants.max_attribute_register_index)}
 
 \permanent\countdef\c_syst_max_allocated_count     = 211 \c_syst_max_allocated_count     = \directlua{tex.write(tex.magicconstants.max_integer_register_index)}
 \permanent\countdef\c_syst_max_allocated_dimen     = 212 \c_syst_max_allocated_dimen     = \directlua{tex.write(tex.magicconstants.max_dimension_register_index)}
@@ -353,18 +348,17 @@
 \permanent\countdef\c_syst_min_counter_value       = 253 \c_syst_min_counter_value       = -"7FFFFFFF
 \permanent\countdef\c_syst_max_counter_value       = 254 \c_syst_max_counter_value       =  "7FFFFFFF
 
-\immutable\integerdef\zerocount       0
-\immutable\integerdef\plusone         1
-\immutable\integerdef\minusone       -1
+\permanent\immutable\integerdef  \zerocount 0
+\permanent\immutable\dimensiondef\zeropoint 0pt
+\permanent\immutable\positdef    \zerofloat 0
 
-\immutable\integerdef\normalpagebox  255
-\immutable\integerdef\delayedpagebox 254
+\permanent\immutable\integerdef  \plusone   1
+\permanent\immutable\integerdef  \minusone -1
 
-\immutable\integerdef\statuswrite \minusone
+\permanent\immutable\integerdef  \normalpagebox  255
+\permanent\immutable\integerdef  \delayedpagebox 254
 
-\immutable\dimensiondef\zeropoint 0pt
-
-\immutable\positdef\zerofloat 0
+\permanent\immutable\integerdef  \statuswrite \minusone
 
 %D These alternatives avoid the indirect references. Don't use these for generic
 %D code because one never knows what happens elsewhere.
@@ -422,7 +416,7 @@
 \permanent\protected\def\newconstant#1%
   {\ifrelax#1%
     %\writestatus{!!!!!!!!!!}{\string #1 => RELAX}%
-     \unletfrozen#1%
+%      \unletfrozen#1%
    % \newcount#1%
      \newinteger#1%
    \orelse\ifdefined#1%
@@ -493,7 +487,7 @@
 %D is reserved for special purposes (this might change). Attributes in the range
 %D 128-1023 are private and should not be touched.
 
-\immutable\integerdef\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
+\permanent\immutable\integerdef\attributeunsetvalue\c_syst_min_counter_value % used to be \minusone
 
 % \permanent\protected\def\newattribute{\syst_basics_allocate\c_syst_last_allocated_attribute\attribute\attributedef\c_syst_max_allocated_attribute}
 
@@ -621,32 +615,32 @@
 % \newdimen \scaledpoint   \immutable\scaledpoint   1sp
 % \newdimen \thousandpoint \immutable\thousandpoint 1000pt
 
-\immutable\integerdef    \maxcount 2147483647
+\permanent\immutable\integerdef    \maxcount 2147483647
 
-%immutable\dimensiondef  \zeropoint     0pt
-\immutable\dimensiondef  \onepoint      1pt
-\immutable\dimensiondef  \twopoints     2pt
-\immutable\dimensiondef  \threepoints   3pt
-\immutable\dimensiondef  \halfapoint    0.5pt
-\immutable\dimensiondef  \maxdimen      16383.99999pt % 1073741823sp
-\immutable\dimensiondef  \onebasepoint  1bp
-\immutable\dimensiondef  \scaledpoint   1sp
-\immutable\dimensiondef  \thousandpoint 1000pt
+%permanent\immutable\dimensiondef  \zeropoint     0pt
+\permanent\immutable\dimensiondef  \onepoint      1pt
+\permanent\immutable\dimensiondef  \twopoints     2pt
+\permanent\immutable\dimensiondef  \threepoints   3pt
+\permanent\immutable\dimensiondef  \halfapoint    0.5pt
+\permanent\immutable\dimensiondef  \maxdimen      16383.99999pt % 1073741823sp
+\permanent\immutable\dimensiondef  \onebasepoint  1bp
+\permanent\immutable\dimensiondef  \scaledpoint   1sp
+\permanent\immutable\dimensiondef  \thousandpoint 1000pt
 
-\immutable\gluespecdef   \zeroskip            \zeropoint plus \zeropoint     minus \zeropoint
-\immutable\gluespecdef   \centeringskip       \zeropoint plus \thousandpoint minus \thousandpoint
-\immutable\gluespecdef   \stretchingskip      \zeropoint plus \thousandpoint
-\immutable\gluespecdef   \shrinkingskip       \zeropoint                     minus \thousandpoint
-\immutable\gluespecdef   \centeringfillskip   \zeropoint plus 1fill          minus 1fill
-\immutable\gluespecdef   \stretchingfillskip  \zeropoint plus 1fill
-\immutable\gluespecdef   \shrinkingfillskip   \zeropoint                     minus 1fill
-\immutable\gluespecdef   \centeringfilllskip  \zeropoint plus 1filll         minus 1filll
-\immutable\gluespecdef   \stretchingfilllskip \zeropoint plus 1filll
-\immutable\gluespecdef   \shrinkingfilllskip  \zeropoint                     minus 1filll
+\permanent\immutable\gluespecdef   \zeroskip            \zeropoint plus \zeropoint     minus \zeropoint
+\permanent\immutable\gluespecdef   \centeringskip       \zeropoint plus \thousandpoint minus \thousandpoint
+\permanent\immutable\gluespecdef   \stretchingskip      \zeropoint plus \thousandpoint
+\permanent\immutable\gluespecdef   \shrinkingskip       \zeropoint                     minus \thousandpoint
+\permanent\immutable\gluespecdef   \centeringfillskip   \zeropoint plus 1fill          minus 1fill
+\permanent\immutable\gluespecdef   \stretchingfillskip  \zeropoint plus 1fill
+\permanent\immutable\gluespecdef   \shrinkingfillskip   \zeropoint                     minus 1fill
+\permanent\immutable\gluespecdef   \centeringfilllskip  \zeropoint plus 1filll         minus 1filll
+\permanent\immutable\gluespecdef   \stretchingfilllskip \zeropoint plus 1filll
+\permanent\immutable\gluespecdef   \shrinkingfilllskip  \zeropoint                     minus 1filll
 
-\immutable\mugluespecdef \zeromuskip 0mu
-\immutable\mugluespecdef \onemuskip  1mu
-\immutable\mugluespecdef \muquad     18mu
+\permanent\immutable\mugluespecdef \zeromuskip 0mu
+\permanent\immutable\mugluespecdef \onemuskip  1mu
+\permanent\immutable\mugluespecdef \muquad     18mu
 
 \aliased\let\points   \onepoint
 \aliased\let\halfpoint\halfapoint
@@ -657,67 +651,70 @@
 %D but can use chardefs for positive ones. Actually, because we have plenty of counters we
 %D can also use counts for those.
 
-%immutable\integerdef\minusone                  -1
-\immutable\integerdef\minustwo                  -2
-%immutable\integerdef\zerocount                  0
-%immutable\integerdef\plusone                    1
-\immutable\integerdef\plustwo                    2  % also fitness value
-\immutable\integerdef\plusthree                  3
-\immutable\integerdef\plusfour                   4
-\immutable\integerdef\plusfive                   5
-\immutable\integerdef\plussix                    6
-\immutable\integerdef\plusseven                  7
-\immutable\integerdef\pluseight                  8
-\immutable\integerdef\plusnine                   9
-\immutable\integerdef\plusten                   10
-\immutable\integerdef\pluseleven                11
-\immutable\integerdef\plustwelve                12  % also fitness value
-\immutable\integerdef\plusthirteen              13
-\immutable\integerdef\plusfourteen              14
-\immutable\integerdef\plusfifteen               15
-\immutable\integerdef\plussixteen               16
-\immutable\integerdef\plustwentyfour            24
-\immutable\integerdef\plustwentyfive            25
-\immutable\integerdef\plusthirtytwo             32
-\immutable\integerdef\plusfourtytwo             42  % also fitness value
-\immutable\integerdef\plusfifty                 50
-\immutable\integerdef\plussixty                 60
-\immutable\integerdef\plusninetynine            99  % also fitness value
-\immutable\integerdef\plushundred              100
-\immutable\integerdef\plusonehundred           100
-\immutable\integerdef\plusonehundredtwentyfive 125
-\immutable\integerdef\plustwohundred           200
-\immutable\integerdef\plustwohundredfifty      250
-\immutable\integerdef\plusfivehundred          500
-\immutable\integerdef\pluscxxvii               127
-\immutable\integerdef\pluscxxviii              128
-\immutable\integerdef\pluscclv                 255
-\immutable\integerdef\pluscclvi                256
-\immutable\integerdef\plusthousand            1000
-\immutable\integerdef\plusonethousand         1000
-\immutable\integerdef\plustwothousand         2000
-\immutable\integerdef\plusthreethousand       3000
-\immutable\integerdef\plusfourthousand        4000
-\immutable\integerdef\plusfivethousand        5000
-\immutable\integerdef\plussixthousand         6000
-\immutable\integerdef\plusseventhousand       7000
-\immutable\integerdef\pluseightthousand       8000
-\immutable\integerdef\plusninethousand        9000
-\immutable\integerdef\plustenthousand        10000
-\immutable\integerdef\plustwentythousand     20000
-\immutable\integerdef\plusfifteenhundred      1500
-\immutable\integerdef\plustwentyfivehundred   2500
-\immutable\integerdef\plusfortyfivehundred    4500
-\immutable\integerdef\plusseventyfivehundred  7500
+%permanent\immutable\integerdef\minusone                  -1
+\permanent\immutable\integerdef\minustwo                  -2
+%permanent\immutable\integerdef\zerocount                  0
+%permanent\immutable\integerdef\plusone                    1
+\permanent\immutable\integerdef\plustwo                    2  % also fitness value
+\permanent\immutable\integerdef\plusthree                  3
+\permanent\immutable\integerdef\plusfour                   4
+\permanent\immutable\integerdef\plusfive                   5
+\permanent\immutable\integerdef\plussix                    6
+\permanent\immutable\integerdef\plusseven                  7
+\permanent\immutable\integerdef\pluseight                  8
+\permanent\immutable\integerdef\plusnine                   9
+\permanent\immutable\integerdef\plusten                   10
+\permanent\immutable\integerdef\pluseleven                11
+\permanent\immutable\integerdef\plustwelve                12  % also fitness value
+\permanent\immutable\integerdef\plusthirteen              13
+\permanent\immutable\integerdef\plusfourteen              14
+\permanent\immutable\integerdef\plusfifteen               15
+\permanent\immutable\integerdef\plussixteen               16
+\permanent\immutable\integerdef\plustwentyfour            24
+\permanent\immutable\integerdef\plustwentyfive            25
+\permanent\immutable\integerdef\plusthirtytwo             32
+\permanent\immutable\integerdef\plusfourtytwo             42  % also fitness value
+\permanent\immutable\integerdef\plusfifty                 50
+\permanent\immutable\integerdef\plussixty                 60
+\permanent\immutable\integerdef\plusninetynine            99  % also fitness value
+\permanent\immutable\integerdef\plushundred              100
+\permanent\immutable\integerdef\plusonehundred           100
+\permanent\immutable\integerdef\plusonehundredtwentyfive 125
+\permanent\immutable\integerdef\plustwohundred           200
+\permanent\immutable\integerdef\plustwohundredfifty      250
+\permanent\immutable\integerdef\plusfivehundred          500
+\permanent\immutable\integerdef\pluscxxvii               127
+\permanent\immutable\integerdef\pluscxxviii              128
+\permanent\immutable\integerdef\pluscclv                 255
+\permanent\immutable\integerdef\pluscclvi                256
+\permanent\immutable\integerdef\plusthousand            1000
+\permanent\immutable\integerdef\plusonethousand         1000
+\permanent\immutable\integerdef\plustwothousand         2000
+\permanent\immutable\integerdef\plusthreethousand       3000
+\permanent\immutable\integerdef\plusfourthousand        4000
+\permanent\immutable\integerdef\plusfivethousand        5000
+\permanent\immutable\integerdef\plussixthousand         6000
+\permanent\immutable\integerdef\plusseventhousand       7000
+\permanent\immutable\integerdef\pluseightthousand       8000
+\permanent\immutable\integerdef\plusninethousand        9000
+\permanent\immutable\integerdef\plustenthousand        10000
+\permanent\immutable\integerdef\plustwentythousand     20000
 
-\immutable\integerdef\medcard          32768
-\immutable\integerdef\maxcard          65536 % pdftex has less mathchars
-\immutable\integerdef\maxcardminusone  65535
-\immutable\integerdef\maxiterator     "FFFFF
+\permanent\immutable\integerdef\plusthousandfifty       1050 % kind of special defaults
+\permanent\immutable\integerdef\plustwelvehundredfifty  1250
+\permanent\immutable\integerdef\plusfifteenhundred      1500
+\permanent\immutable\integerdef\plustwentyfivehundred   2500
+\permanent\immutable\integerdef\plusfortyfivehundred    4500
+\permanent\immutable\integerdef\plusseventyfivehundred  7500
 
-\immutable\integerdef\binaryshiftedten          1024
-\immutable\integerdef\binaryshiftedtwenty    1048576
-\immutable\integerdef\binaryshiftedthirty 1073741824
+\permanent\immutable\integerdef\medcard          32768
+\permanent\immutable\integerdef\maxcard          65536 % pdftex has less mathchars
+\permanent\immutable\integerdef\maxcardminusone  65535
+\permanent\immutable\integerdef\maxiterator     "FFFFF
+
+\permanent\immutable\integerdef\binaryshiftedten          1024
+\permanent\immutable\integerdef\binaryshiftedtwenty    1048576
+\permanent\immutable\integerdef\binaryshiftedthirty 1073741824
 
 %D \macros
 %D   {doubleexpandafter,tripleexpandafter,expanded,startexpanded}
@@ -731,7 +728,16 @@
 %D We prefer the more readable variant than in plain \TEX. User should only
 %D use \type {\emptybox}:
 
-\newbox\voidbox  % public
+%D This one is public, so best not mess with it (only a built in can be safe, as
+%D with \type {\undefined}).
+
+% tricky: integerdefs are not really immutable, their definition is
+% but counters can be .. maybe i need to split that: immutable for
+% content; a chardef could also work
+
+\newbox\voidbox % see end of file:
+
+\immutable\setbox\voidbox\box\voidbox % prevent setting the box
 
 \permanent\def\unvoidbox{\unhbox\voidbox}
 \permanent\def\emptybox {\box   \voidbox} % used in initializations so no attributes
@@ -740,7 +746,11 @@
 
 \aliased\let\dontleavehmode\quitvmode
 
-\aliased\let\leavevmode\unvoidbox % we prefer to use \dontleavehmode and never use this one
+% Here's one plain/latex loves a lot and it's the advertized solution
+% there but we prefer to use \dontleavehmode instead and never use the
+% next one. We put it here a reminder.
+
+\aliased\let\leavevmode\unvoidbox
 
 %D \macros
 %D   {dontcomplain,lessboxtracing}
@@ -770,22 +780,6 @@
 \permanent\protected\def\moreboxtracing
   {\showboxbreadth\maxcount
    \showboxdepth  \maxcount}
-
-%D Some expected plain variants follow. We don't reuse registers because we don't
-%D want clashes. These will go away and packages that need them have to define them.
-
-\aliased\let\p@     \onepoint
-\aliased\let\m@ne   \minusone
-\aliased\let\z@     \zeropoint
-\aliased\let\@ne    \plusone
-\aliased\let\tw@    \plustwo
-\aliased\let\thr@@  \plusthree
-\aliased\let\sixt@@n\plussixteen
-\aliased\let\@cclv  \pluscclv
-\aliased\let\@cclvi \pluscclvi
-\aliased\let\voidb@x\voidbox
-
-\newtoks    \toks@  %scratchtoks
 
 %D We define \type {\newif} a la plain \TEX, but will redefine it later. As Knuth
 %D says:
@@ -836,7 +830,7 @@
    \permanent\protected\gdefcsname\expandafter\new_if_check\csstring#2false\endcsname{\enforced#1#2\iffalse}%
    \csname\expandafter\new_if_check\csstring#2false\endcsname}
 
-\normalexpanded{\gdef\noexpand\new_if_check\string i\string f{}}
+\expanded{\gdef\noexpand\new_if_check\string i\string f{}}
 
 \permanent\protected\def\newif      {\new_if_define\let }
 \permanent\protected\def\globalnewif{\new_if_define\glet}
@@ -869,10 +863,10 @@
 
 %D Constants to be used with \type {\interactionmode}.
 
-% \immutable\integerdef\batchmodecode     \zerocount
-% \immutable\integerdef\nonstopmodecode   \plusone
-% \immutable\integerdef\scrollmodecode    \plustwo
-% \immutable\integerdef\errorstopmodecode \plusthree
+% \permanent\immutable\integerdef\batchmodecode     \zerocount
+% \permanent\immutable\integerdef\nonstopmodecode   \plusone
+% \permanent\immutable\integerdef\scrollmodecode    \plustwo
+% \permanent\immutable\integerdef\errorstopmodecode \plusthree
 
 %D Of course we want even bigger log files, so we copied this from the \ETEX\
 %D source files.
@@ -967,11 +961,10 @@
   {\the\everydump
    \global\everydump\emptytoks
    \pushoverloadmode
-   \enforced\glet\dump\relax
+   \glet\everydump\undefined      % catches bad usage
+   \enforced\glet\dump\relax      % silently ignored
+ % \enforced\glet\dump\normaldump % quits with an error
    \popoverloadmode
-   %let\pushoverloadmode\relax
-   %let\popoverloadmode\relax
- % \tracingall
    \normaldump}
 
 \permanent\protected\def\input
@@ -986,54 +979,22 @@
 %D
 %D \TEX's lacks boolean variables, although the \PLAIN\ format implements \type
 %D {\newif}. The main disadvantage of this scheme is that it takes three hash table
-%D entries. A more memory saving alternative is presented here. A conditional is
-%D defined by:
-%D
-%D \starttyping
-%D \newconditional\doublesided
-%D \setfalse
-%D \stoptyping
-%D Setting a conditional is done by \type{\settrue} and
-%D \type{\setfalse}:
-%D
-%D \starttyping
-%D \doublesided\conditionaltrue
-%D \setfalse
-%D \stoptyping
-%D while testing is accomplished by:
-%D
-%D \starttyping
-%D \ifconditional\doublesided  ... \else ... \fi
-%D \setfalse
-%D \stoptyping
-%D We cannot use the simple scheme:
-%D
-%D \starttyping
-%D \def\settrue #1{\let#1=\iftrue}
-%D \def\setfalse#1{\let#1=\iffalse}
-%D \stoptyping
-%D
-%D Such an implementation gives problems with nested conditionals. The next
-%D implementation is about as fast and just as straightforward:
+%D entries. A more memory saving alternative is using a variable. In \MKXL\ we do it
+%D a bit different than in \MKIV\ where we use aliases and thereby one macro per
+%D conditional. Here we also need one but we are more strict and demand a proper
+%D definition. This permits us to apply permanent as well as immutable properties.
 
-\aliased\let\conditionalfalse\plusone    % maybe we will have a dedicated count/chardef
-\aliased\let\conditionaltrue \zerocount  % maybe we will have a dedicated count/chardef
+\aliased\let\conditionalfalse\plusone
+\aliased\let\conditionaltrue \zerocount
 
-% \permanent\protected\def\settrue #1{\integerdef#1\conditionaltrue }
-% \permanent\protected\def\setfalse#1{\integerdef#1\conditionalfalse}
-%
-% \permanent\protected\def\settruevalue #1{\expandafter\integerdef\csname#1\endcsname\conditionaltrue }
-% \permanent\protected\def\setfalsevalue#1{\expandafter\integerdef\csname#1\endcsname\conditionalfalse}
+%permanent\protected\def\setconditional#1{#1}
+\permanent\protected\def\settrue       #1{#1\conditionaltrue }
+\permanent\protected\def\setfalse      #1{#1\conditionalfalse}
+\permanent\protected\def\settruevalue  #1{\csname#1\endcsname\conditionaltrue }
+\permanent\protected\def\setfalsevalue #1{\csname#1\endcsname\conditionalfalse}
 
-\permanent\protected\def\settrue       #1{\enforced\let#1\conditionaltrue }
-\permanent\protected\def\setfalse      #1{\enforced\let#1\conditionalfalse}
-\permanent\protected\def\setconditional#1{\enforced\let#1}
+\permanent\protected\def\newconditional#1{\permanent\integerdef#1\conditionalfalse}
 
-\permanent\protected\def\settruevalue #1{\enforced\letcsname#1\endcsname\conditionaltrue }
-\permanent\protected\def\setfalsevalue#1{\enforced\letcsname#1\endcsname\conditionalfalse}
-
-
-\aliased\let\newconditional\setfalse
 %aliased\let\ifconditional \ifcase
 \aliased\let\ifconditional \ifzeronum   % permits \unless\ifconditional
 
@@ -1098,8 +1059,8 @@
 \permanent\protected\def\globalappendtotoks #1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_append_g \t_syst_toks_temp=}
 \permanent\protected\def\globalprependtotoks#1{\let\m_syst_toks_temp#1\afterassignment\syst_toks_prepend_g\t_syst_toks_temp=}
 
-\def\syst_toks_append_l {\normalexpanded{\m_syst_toks_temp{\the\m_syst_toks_temp\the\t_syst_toks_temp}}}
-\def\syst_toks_prepend_l{\normalexpanded{\m_syst_toks_temp{\the\t_syst_toks_temp\the\m_syst_toks_temp}}}
+\def\syst_toks_append_l {\expanded{\m_syst_toks_temp{\the\m_syst_toks_temp\the\t_syst_toks_temp}}}
+\def\syst_toks_prepend_l{\expanded{\m_syst_toks_temp{\the\t_syst_toks_temp\the\m_syst_toks_temp}}}
 
 \def\syst_toks_append_g {\global\syst_toks_append_l }
 \def\syst_toks_prepend_g{\global\syst_toks_prepend_l}
@@ -1232,19 +1193,19 @@
 \lineskip      =  1pt
 \lineskiplimit =  0pt
 
-%D Sometimes kerns make more sense than glue but we need to be in the right mode:
+% %D Sometimes kerns make more sense than glue but we need to be in the right mode:
 
-\ifdefined\vkern    \else \permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}    \fi
-\ifdefined\hkern    \else \permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}    \fi
-
-\ifdefined\vpenalty \else \permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty} \fi
-\ifdefined\hpenalty \else \permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty} \fi
+% \ifdefined\vkern    \else \permanent\protected\def\vkern   {\ifhmode\par           \fi\kern}    \fi
+% \ifdefined\hkern    \else \permanent\protected\def\hkern   {\ifvmode\dontleavehmode\fi\kern}    \fi
+%
+% \ifdefined\vpenalty \else \permanent\protected\def\vpenalty{\ifhmode\par           \fi\penalty} \fi
+% \ifdefined\hpenalty \else \permanent\protected\def\hpenalty{\ifvmode\dontleavehmode\fi\penalty} \fi
 
 %D Again a few kind-of-extensions the core. These come from plain \TEX\ but are
 %D probably not used in \CONTEXT.
 
-\newgluespec \hideskip   \hideskip  = -1000pt plus 1fill           % obsolete
-\newgluespec \centering  \centering = 0pt plus 1000pt minus 1000pt % obsolete
+\newgluespec \hideskip   \immutable\hideskip  -1000pt plus 1fill           % obsolete
+\newgluespec \centering  \immutable\centering 0pt plus 1000pt minus 1000pt % obsolete
 
 % \permanent\def\hidewidth % for alignment entries that can stick out
 %   {\hskip\hideskip}
@@ -1277,8 +1238,8 @@
 
 %D For those who expect this \unknown
 
-\ifdefined\fmtname    \else \immutable\def\fmtname   {ConTeXt Initial TeX} \fi
-\ifdefined\fmtversion \else \immutable\def\fmtversion{3.1415926}           \fi
+\ifdefined\fmtname    \else \permanent\def\fmtname   {ConTeXt Initial TeX} \fi
+\ifdefined\fmtversion \else \permanent\def\fmtversion{3.1415926}           \fi
 
 %D A few bonus macros:
 
@@ -1288,9 +1249,9 @@
 
 %D These could be set at the \LUA\ end instead:
 
-\immutable\edef\texenginename         {\directlua{tex.print(LUATEXENGINE)}}
-\immutable\edef\texengineversion      {\directlua{tex.print(LUATEXVERSION)}}
-\immutable\edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
+\permanent\edef\texenginename         {\directlua{tex.print(LUATEXENGINE)}}
+\permanent\edef\texengineversion      {\directlua{tex.print(LUATEXVERSION)}}
+\permanent\edef\texenginefunctionality{\directlua{tex.print(LUATEXFUNCTIONALITY)}}
 
 %D We have no reason not to enable this:
 
@@ -1322,7 +1283,7 @@
      \immediate\write\statuswrite{fatal error: duplicate system namespace '#1'}%
    \else
      \global\advanceby\c_syst_helpers_n_of_namespaces\plusone
-     \immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
+     \permanent\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template_system}%
    \fi}
 
 %D It makes more sense to have these here:
@@ -1419,12 +1380,12 @@
 
 %D Also better here:
 
-\immutable\def\wildcardsymbol{*}
+\permanent\cdef\wildcardsymbol{*}
 
 %D For a while we will keep these useless numbers as for instance tikz checks for them:
 
-\immutable\integerdef\eTeXversion    2
-\immutable\def       \eTeXrevision {.2} % there is a funny period here
+\permanent\immutable\integerdef\eTeXversion    2
+\permanent          \cdef      \eTeXrevision {.2} % there is a funny period here
 
 % %D Just in case users use this (or some styles still have it):
 
@@ -1453,7 +1414,8 @@
 \mutable\lettonothing\nop % used often
 \mutable\lettonothing\yes % used often
 
-%D Another experiment:
+%D Another experiment. This one will go away as we dropped the aliases
+%D in \type {syst-obs.mkxl}).
 
 \def\syst_suggested_alias#1#2% expandable
   {\beginlocalcontrol
@@ -1465,18 +1427,6 @@
 \permanent\protected\def\suggestedalias#1#2% old new
   {\ifflags#2\permanent\permanent\fi % the rest is taken with the copy
    \def#1{\syst_suggested_alias#1#2}}
-
-% A few traditional allocations (these might go too):
-
-% \countdef \count@   255 % hm, used in \newif .. todo: replace it there
-% \dimendef \dimen@     0
-% \dimendef \dimen@i    1 % global only
-% \dimendef \dimen@ii   2
-
-\suggestedalias \count@   \scratchcounter
-\suggestedalias \dimen@   \scratchdimen
-\suggestedalias \dimen@i  \scratchdimenone
-\suggestedalias \dimen@ii \scratchdimentwo
 
 %D The next feature is experimental and could go into another system module, but it
 %D feels more natural to have it here.
@@ -1515,15 +1465,17 @@
 \permanent\countdef\c_syst_local_toks   = 236 \c_syst_local_toks   = \c_syst_max_allocated_toks
 \permanent\countdef\c_syst_local_read   = 237 \c_syst_local_read   = \c_syst_max_allocated_read
 \permanent\countdef\c_syst_local_write  = 238 \c_syst_local_write  = \c_syst_max_allocated_write
+\permanent\countdef\c_syst_local_float  = 239 \c_syst_local_float  = \c_syst_max_allocated_float
 
-\c_syst_max_allocated_count    \numexpr\c_syst_max_allocated_count   :2\relax % floor
-\c_syst_max_allocated_dimen    \numexpr\c_syst_max_allocated_dimen   :2\relax % floor
-\c_syst_max_allocated_skip     \numexpr\c_syst_max_allocated_skip    :2\relax % floor
-\c_syst_max_allocated_muskip   \numexpr\c_syst_max_allocated_muskip  :2\relax % floor
-\c_syst_max_allocated_toks     \numexpr\c_syst_max_allocated_toks    :2\relax % floor
-\c_syst_max_allocated_box      \numexpr\c_syst_max_allocated_box     :2\relax % floor
-\c_syst_max_allocated_read     \numexpr\c_syst_max_allocated_read    :2\relax % floor
-\c_syst_max_allocated_write    \numexpr\c_syst_max_allocated_write   :2\relax % floor
+\immutable\c_syst_max_allocated_count  \numexpr\c_syst_max_allocated_count   :2\relax % floor
+\immutable\c_syst_max_allocated_dimen  \numexpr\c_syst_max_allocated_dimen   :2\relax % floor
+\immutable\c_syst_max_allocated_skip   \numexpr\c_syst_max_allocated_skip    :2\relax % floor
+\immutable\c_syst_max_allocated_muskip \numexpr\c_syst_max_allocated_muskip  :2\relax % floor
+\immutable\c_syst_max_allocated_toks   \numexpr\c_syst_max_allocated_toks    :2\relax % floor
+\immutable\c_syst_max_allocated_box    \numexpr\c_syst_max_allocated_box     :2\relax % floor
+\immutable\c_syst_max_allocated_read   \numexpr\c_syst_max_allocated_read    :2\relax % floor
+\immutable\c_syst_max_allocated_write  \numexpr\c_syst_max_allocated_write   :2\relax % floor
+\immutable\c_syst_max_allocated_float  \numexpr\c_syst_max_allocated_float   :2\relax % floor
 
 \permanent\protected\def\syst_local_overflow#1#2{\writestatus\m!system{no room for local #1 \string#2}\wait}
 
@@ -1596,6 +1548,14 @@
      \syst_local_overflow_write#1%
    \fi}
 
+\permanent\protected\def\newlocalfloat#1% so no set
+  {\ifnum\c_syst_local_float>\c_syst_max_allocated_float
+     \advanceby\c_syst_local_float\minusone
+     \overloaded\frozen\integerdef#1\c_syst_local_float
+   \else
+     \syst_local_overflow_float#1%
+   \fi}
+
 %D The error handlers:
 
 \permanent\protected\def\syst_local_overflow_count {\syst_local_overflow {count}}
@@ -1606,6 +1566,7 @@
 \permanent\protected\def\syst_local_overflow_box   {\syst_local_overflow   {box}}
 \permanent\protected\def\syst_local_overflow_read  {\syst_local_overflow  {read}}
 \permanent\protected\def\syst_local_overflow_write {\syst_local_overflow {write}}
+\permanent\protected\def\syst_local_overflow_float {\syst_local_overflow {float}}
 
 %D We sacrifice a little performance but save some tokens by not defining these
 %D completely:
@@ -1734,12 +1695,12 @@
 %     12          \plusone
 %     99          \plusone
 
-
 \pushoverloadmode
 
 %D We now group these penalties in specification sets. For practical purposes we no longer
 %D use the built in single penalties but map them onto the plurals. We also redefine the
-%D display math penalties but we never use these.
+%D display math penalties but we never use these. We keep the \type {\normal..} ones! These
+%D might move to \type {toks-prm.mkxl}.
 
 \permanent\protected\untraced\def\widowpenalty       {\widowpenalties       \minusone} % once
 \permanent\protected\untraced\def\clubpenalty        {\clubpenalties        \minusone} % once
@@ -1758,13 +1719,26 @@
 \ifdefined\relaxedspace
   % could be a primitive
 \else
-    \normalexpanded{\permanent\let\noexpand\relaxedspace=\space\space}
+    \expanded{\permanent\let\noexpand\relaxedspace=\space\space}
 \fi
 
 %D Only when testing non \CONTEXT\ usage:
 
 % \let\saved_reqno \eqno
 % \let\saved_leqno \leqno
+
+%D This is a way to protect the \type {\voidbox} reference:
+
+% \meaningfull\voidbox \par % global permanent constant integer
+% \voidbox <number>
+% \meaningfull\voidbox \par % global constant integer (we loose permanent)
+
+% \pushoverloadmode
+%     \scratchcounter\voidbox           % to be used box register number
+%     \let\voidbox\undefined            % so that we can redefine as counter
+%     \newcount\voidbox                 % now it's a counter as reference
+%     \immutable\voidbox\scratchcounter % fixed index of the used register
+% \popoverloadmode
 
 \protect \endinput
 

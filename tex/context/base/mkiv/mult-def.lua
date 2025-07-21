@@ -7480,6 +7480,9 @@ return {
    ["pe"]="جایگزین",
    ["ro"]="alternativ",
   },
+  ["alternativetext"]={
+   ["en"]="alternativetext",
+  },
   ["anchor"]={
    ["en"]="anchor",
    ["fr"]="ancre",
@@ -8516,6 +8519,9 @@ return {
    ["nl"]="dieptecorrectie",
    ["pe"]="تصحیح‌عمق",
    ["ro"]="corectieadancime",
+  },
+  ["descriptiontext"]={
+   ["en"]="descriptiontext",
   },
   ["direction"]={
    ["cs"]="smer",

@@ -832,7 +832,7 @@
 
 \newinteger    \c_font_scaled_glyph_scale
 
-\immutable\dimensiondef\d_font_scaled_default 10pt
+\permanent\immutable\dimensiondef\d_font_scaled_default 10pt
 
 % todo: move all to lua: use localcall for resolving filename
 
@@ -845,7 +845,7 @@
 \mutable\let\lastrawfontcall      \relax
 \mutable\let\lastglobalrawfontcall\relax
 
-\immutable\dimensiondef\d_font_default_size 10pt
+\permanent\immutable\dimensiondef\d_font_default_size 10pt
 
 %lettonothing\m_font_class_direction
 \lettonothing\m_font_class_features
@@ -866,7 +866,7 @@
    \lettonothing\somefontsize
    \lettonothing\somefontsizex
    \lettonothing\somefontsizey
-   \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
+   \clf_definefont_one{\detokenize\expandafter{\expanded{#specification}}}% the escapestring catches at \somedimen
    % sets \scaledfontmode and \somefontname and \somefontsize
    \ifcase\fontface\relax
      % this was commented but we need it in order to be compatible to compact mode
@@ -968,7 +968,7 @@
    \lettonothing\somefontsize
    \lettonothing\somefontsizex
    \lettonothing\somefontsizey
-   \clf_definefont_one{\detokenize\expandafter{\normalexpanded{#specification}}}% the escapestring catches at \somedimen
+   \clf_definefont_one{\detokenize\expandafter{\expanded{#specification}}}% the escapestring catches at \somedimen
    %
    \ifcase\scaledfontmode\relax
      \d_font_scaled_font_size\d_font_default_size
@@ -1543,7 +1543,7 @@
 \newconstant\currentxfontsize
 
 \permanent\def\wildcardfontsize {\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}
-\permanent\def\wildcardfontscale{\normalexpanded{\noexpand\bodyfontvariable{\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}}}
+\permanent\def\wildcardfontscale{\expanded{\noexpand\bodyfontvariable{\ifcase\currentxfontsize\fontsize\or\s!x\else\s!xx\fi}}}
 
 \permanent\def\bodyfontinterlinespace{\bodyfontvariable     \c!interlinespace} % used elsewhere
 %permanent\def\bodyfontinterlinespace{\font_bodyfontvariable\c!interlinespace} % used elsewhere
@@ -1865,26 +1865,26 @@
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
    \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname\undefined
    \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\notexpanded{#value}}}%
    \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname\undefined
    \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\notexpanded{#value}}}%
    \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname\undefined
    \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\notexpanded{#value}}}%
   }
 
 \protected\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
   {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
    \gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-1\endcsname\undefined
    \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-0\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-0}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-0}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
    \gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-2\endcsname\undefined
    \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-4\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-4}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-4}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
    \gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-3\endcsname\undefined
    \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest-5\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-5}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest-5}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
   }
 
 \appendtoks
@@ -1893,13 +1893,13 @@
       {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
        \letcsname\??fontinstanceclass\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
        \protected\edefcsname\??fontinstanceready\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
-         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\noexpand\font_rscale_xx{\m_font_asked_style}}{\m_font_asked_body}{\notexpanded{#value}}}%
     }%
     \protected\def\font_basics_define_body_font_yes_xx[#one#two#rest=#value]% global
       {\ifcsname\m_font_asked_style#one#two#rest\endcsname\else\font_basics_check_fontname_combination\m_font_asked_style{#one#two}{#rest}\fi
        \gletcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname\undefined
        \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\m_font_asked_style-#one#two-#rest\endcsname
-         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+         {\font_helpers_trigger{\m_font_asked_body-\m_font_asked_style-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
     }%
 \to \everycompactfontmode
 
@@ -1916,7 +1916,7 @@
  % \letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
  % \letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
    \protected\xdefcsname\??fontinstanceready\m_font_asked_body-\s!mm-#one#two#rest\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\notexpanded{#value}}}%
   }
 
 % \writestatus{fonts}{define \m_font_asked_style\space nop: \expandafter\meaning\csname\m_font_asked_body\m_font_asked_style#one#two#rest\endcsname}%
@@ -1927,19 +1927,19 @@
  % \gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-2\endcsname\undefined
  % \gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest-3\endcsname\undefined
    \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
-     {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+     {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
   }
 
 \appendtoks
     \protected\def\font_basics_define_body_font_nop_mm[#one#two#rest=#value]% local
       {\letcsname\??fontinstanceclass\m_font_asked_body-\s!mm-#one#two#rest\endcsname\undefined
        \protected\xdefcsname\??fontinstanceready\m_font_asked_body-\s!mm-#one#two#rest\endcsname
-         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\noexpand\font_rscale_mm}{\m_font_asked_body}{\notexpanded{#value}}}%
     }%
     \protected\def\font_basics_define_body_font_yes_mm[#one#two#rest=#value]% global
       {\gletcsname\??fontinstanceclass\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname\undefined
        \protected\xdefcsname\??fontinstanceready\fontclass-\m_font_asked_body-\s!mm-#one#two#rest\endcsname
-         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\normalunexpanded{#value}}}%
+         {\font_helpers_trigger{\m_font_asked_body-\s!mm-#one#two#rest}{\number\p_font_rscale}{\m_font_asked_body}{\notexpanded{#value}}}%
     }%
 \to \everycompactfontmode
 
@@ -2031,7 +2031,7 @@
 \protected\def\font_basics_define_body_font_default#assignments%
   {\font_helpers_check_relative_font_size\m_font_asked_style % still needed here?
    \ifcsname\m_font_asked_style\endcsname\else
-     \normalexpanded{\definefontstyle[\m_font_asked_style][\m_font_asked_style]}%
+     \expanded{\definefontstyle[\m_font_asked_style][\m_font_asked_style]}%
    \fi
    \processcommalist[#assignments]\font_basics_define_body_font_defs
    \let\p_font_rscale\v_font_rscale_default}
@@ -2130,7 +2130,7 @@
   {\edef\m_font_keyword{#keyword}%
    \ifcsname\??fontenvironments\normalizedbodyfontsize\m_font_keyword\endcsname
      \edef\m_font_step{\font_bodyfontvariable\m_font_keyword}%
-     \normalexpanded{\font_helpers_set_font_set_font_option_body{#method}{\m_font_step}{#message}}%
+     \expanded{\font_helpers_set_font_set_font_option_body{#method}{\m_font_step}{#message}}%
    \orelse\ifx\m_font_keyword\v!reset
      \lettonothing\fontstyle % new 31/7/2006
      \lettonothing\fontsize
@@ -3227,7 +3227,7 @@
     \else
       \lower{\strutdp-\scratchdimen-1.5\exheight}%
     \fi
-    \hpack to \zeropoint \bgroup\normalexpanded{%
+    \hpack to \zeropoint \bgroup\expanded{%
       \tinyinfofont
       \hpack to \zeropoint\bgroup
         \hss

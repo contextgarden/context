@@ -1098,7 +1098,7 @@
        \iflocation \ifempty\currentconstructionbookmark
          \begingroup
          \simplifycommands
-         \xdef\currentconstructionbookmark{\detokenize\expandafter{\normalexpanded{\constructionparameter\c!title}}}%
+         \xdef\currentconstructionbookmark{\detokenize\expandafter{\expanded{\constructionparameter\c!title}}}%
          \endgroup
        \fi \fi
      \fi
@@ -1179,7 +1179,7 @@
        internal  \locationcount
        view      {\interactionparameter\c!focus}%
      \relax
-     \normalexpanded {%
+     \expanded {%
        \endgroup
        \edef\noexpand\currentconstructionlistentry  {\the\scratchcounter}%
        \edef\noexpand\currentconstructionattribute  {\the\lastdestinationattribute}%

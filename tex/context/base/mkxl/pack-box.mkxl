@@ -368,7 +368,7 @@
          \getdummyparameters[#2]%
          \dousestyleparameter{\directdummyparameter\c!style}%
          \setupinterlinespace
-         \normalexpanded{\framed[\c!foregroundcolor=\directdummyparameter\c!color,\c!foregroundstyle=\directdummyparameter\c!style},\c!frame=\v!overlay,#2]{#3}}%
+         \expanded{\framed[\c!foregroundcolor=\directdummyparameter\c!color,\c!foregroundstyle=\directdummyparameter\c!style},\c!frame=\v!overlay,#2]{#3}}%
       \composedcollector{caption}%
       \egroup}%
      \hbox}
@@ -506,12 +506,12 @@
      \letdummyparameter\c!define\v!yes
      \getdummyparameters[#2]%
      \ifcstok{\directdummyparameter\c!alternative}\v!a
-       \normalexpanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\collectedtext[#2][#3]%
+       \expanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\collectedtext[#2][#3]%
      \else
-       \normalexpanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\layeredtext[#2][#3]%
+       \expanded{\endgroup\pack_box_define_ornament_yes{#1}{\dummyparameter\c!define}}\layeredtext[#2][#3]%
      \fi
    \else
-     \normalexpanded{\endgroup\pack_box_define_ornament_nop{#1}{\dummyparameter\c!define}{#2}}[#3]%
+     \expanded{\endgroup\pack_box_define_ornament_nop{#1}{\dummyparameter\c!define}{#2}}[#3]%
    \fi}
 
 \protected\def\pack_box_define_ornament_yes#1#2#3[#4][#5]%
@@ -1148,11 +1148,11 @@
    \fi
    \ifdim\wd\nextbox>\scratchwidth
      \setbox\nextbox\hpack to \scratchwidth{\hss\box\nextbox\hss}%
-     \setbox\nextbox\hpack{\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+     \setbox\nextbox\hpack{\expanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
    \fi
    \ifdim\ht\nextbox>\scratchheight
      \setbox\nextbox\vpack to \scratchheight{\vss\box\nextbox\vss}%
-     \setbox\nextbox\hpack{\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
+     \setbox\nextbox\hpack{\expanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
    \fi
    \box\nextbox
    \egroup}
@@ -1186,7 +1186,7 @@
           \hss\box\nextbox\hss
         \fi}%
      \setbox\nextbox\hpack
-       {\normalexpanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
+       {\expanded{\clip[\c!width=\the\scratchwidth,\c!height=\the\ht\nextbox]{\box\nextbox}}}%
    \fi
    \ifdim\ht\nextbox>\scratchheight
      \setbox\nextbox\vpack to \scratchheight
@@ -1200,7 +1200,7 @@
           \vss\box\nextbox\vss
         \fi}%
      \setbox\nextbox\hpack
-       {\normalexpanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
+       {\expanded{\clip[\c!width=\the\wd\nextbox,\c!height=\the\scratchheight]{\box\nextbox}}}%
    \fi
    \box\nextbox
    \egroup}
@@ -1385,10 +1385,10 @@
    \fi}
 
 % \permanent\def\namedboxanchor#1%
-%   {\normalexpanded{\ifcsname\??boxanchors#1\endcsname\lastnamedcs\orelse\ifchknum#1\or#1\else\zerocount\fi}}
+%   {\expanded{\ifcsname\??boxanchors#1\endcsname\lastnamedcs\orelse\ifchknum#1\or#1\else\zerocount\fi}}
 
 \permanent\def\namedboxanchor#1%
-  {\normalexpanded{%
+  {\expanded{%
      \ifcsname\??boxanchors\boxanchoringclass:#1\endcsname
        \lastnamedcs
      \orelse\ifcsname\??boxanchors#1\endcsname

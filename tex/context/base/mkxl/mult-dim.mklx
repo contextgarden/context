@@ -37,15 +37,15 @@
 
 \def\assign_dimension_direct#value#dimension#small#medium#big{#dimension=#value\relax}
 
-\immutable\setvalue{\??dimensionnormal \v!none  }#value#dimension#small#medium#big{#dimension\zeropoint}
-\immutable\setvalue{\??dimensionnormal \empty   }#value#dimension#small#medium#big{#dimension\zeropoint}
-\immutable\setvalue{\??dimensionnormal \v!small }#value#dimension#small#medium#big{#dimension=#small\relax}
-\immutable\setvalue{\??dimensionnormal \v!medium}#value#dimension#small#medium#big{#dimension=#medium\relax}
-\immutable\setvalue{\??dimensionnormal \v!big   }#value#dimension#small#medium#big{#dimension=#big\relax}
-\immutable\setvalue{\??dimensionnormal-\v!small }#value#dimension#small#medium#big{#dimension=-#small\relax}
-\immutable\setvalue{\??dimensionnormal-\v!medium}#value#dimension#small#medium#big{#dimension=-#medium\relax}
-\immutable\setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
-\immutable\letvalue{\??dimensionnormal\s!unknown}\assign_dimension_direct
+\permanent\setvalue{\??dimensionnormal \v!none  }#value#dimension#small#medium#big{#dimension\zeropoint}
+\permanent\setvalue{\??dimensionnormal \empty   }#value#dimension#small#medium#big{#dimension\zeropoint}
+\permanent\setvalue{\??dimensionnormal \v!small }#value#dimension#small#medium#big{#dimension=#small\relax}
+\permanent\setvalue{\??dimensionnormal \v!medium}#value#dimension#small#medium#big{#dimension=#medium\relax}
+\permanent\setvalue{\??dimensionnormal \v!big   }#value#dimension#small#medium#big{#dimension=#big\relax}
+\permanent\setvalue{\??dimensionnormal-\v!small }#value#dimension#small#medium#big{#dimension=-#small\relax}
+\permanent\setvalue{\??dimensionnormal-\v!medium}#value#dimension#small#medium#big{#dimension=-#medium\relax}
+\permanent\setvalue{\??dimensionnormal-\v!big   }#value#dimension#small#medium#big{#dimension=-#big\relax}
+\permanent\letvalue{\??dimensionnormal\s!unknown}\assign_dimension_direct
 
 \permanent\protected\def\assigndimension#value%
   {\ifcsname\??dimensionnormal#value\endcsname
@@ -71,11 +71,11 @@
 
 \def\assign_alpha_dimension_direct#value#macro#small#medium#big{\edef#macro{#value}}
 
-\immutable\setvalue{\??dimensionalfa\v!none   }#value#macro#small#medium#big{\let #macro\!!zerocount}
-\immutable\setvalue{\??dimensionalfa\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
-\immutable\setvalue{\??dimensionalfa\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
-\immutable\setvalue{\??dimensionalfa\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
-\immutable\letvalue{\??dimensionalfa\s!unknown}\assign_alpha_dimension_direct
+\permanent\setvalue{\??dimensionalfa\v!none   }#value#macro#small#medium#big{\let #macro\!!zerocount}
+\permanent\setvalue{\??dimensionalfa\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
+\permanent\setvalue{\??dimensionalfa\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
+\permanent\setvalue{\??dimensionalfa\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
+\permanent\letvalue{\??dimensionalfa\s!unknown}\assign_alpha_dimension_direct
 
 \permanent\protected\def\assignalfadimension#value%
   {\ifcsname\??dimensionalfa#value\endcsname
@@ -103,10 +103,10 @@
 
 \def\assign_value_direct#value#macro#small#medium#big{\edef#macro{#value}}
 
-\immutable\setvalue{\??dimensionvalue\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
-\immutable\setvalue{\??dimensionvalue\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
-\immutable\setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
-\immutable\letvalue{\??dimensionvalue\s!unknown}\assign_value_direct
+\permanent\setvalue{\??dimensionvalue\v!small  }#value#macro#small#medium#big{\edef#macro{#small}}
+\permanent\setvalue{\??dimensionvalue\v!medium }#value#macro#small#medium#big{\edef#macro{#medium}}
+\permanent\setvalue{\??dimensionvalue\v!big    }#value#macro#small#medium#big{\edef#macro{#big}}
+\permanent\letvalue{\??dimensionvalue\s!unknown}\assign_value_direct
 
 \permanent\protected\def\assignvalue#value%
   {\ifcsname\??dimensionvalue#value\endcsname
@@ -136,15 +136,15 @@
 
 % line is like fit but can be used later as signal for ...
 
-\immutable\setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+\permanent\setvalue{\??dimensionwidth          }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                                \setbox\b_assign_width\emptybox}
-\immutable\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+\permanent\setvalue{\??dimensionwidth\v!fit    }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                                \setbox\b_assign_width\emptybox}
-\immutable\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension{\wd\b_assign_width+#extra}%
+\permanent\setvalue{\??dimensionwidth\v!broad  }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension{\wd\b_assign_width+#extra}%
                                                                                \setbox\b_assign_width\emptybox}
-\immutable\setvalue{\??dimensionwidth\v!line   }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
+\permanent\setvalue{\??dimensionwidth\v!line   }#value#dimension#content#extra{\setbox\b_assign_width\hbox{#content}#dimension\wd\b_assign_width
                                                                                \setbox\b_assign_width\emptybox}
-\immutable\letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
+\permanent\letvalue{\??dimensionwidth\s!unknown}\assign_width_direct
 
 \permanent\protected\def\assignwidth#value%
   {\ifcsname\??dimensionwidth#value\endcsname

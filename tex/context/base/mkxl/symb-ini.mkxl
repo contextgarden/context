@@ -95,7 +95,7 @@
 
 \permanent\tolerant\protected\def\symb_register#1#2%
   {\ifcsname\??symbolset#1\endcsname
-     \normalexpanded{\addtocommalist{#2}\expandafter\noexpand\lastnamedcs}%
+     \expanded{\addtocommalist{#2}\expandafter\noexpand\lastnamedcs}%
    \else
      \edefcsname\??symbolset#1\endcsname{#2}%
    \fi}
@@ -329,14 +329,14 @@
    \fi}
 
 \def\symb_setup_symbol_set
-  {\normalexpanded{\t_symb_setups{\symb_fetch{\currentsymbolset}\expand\t_symb_setups}}%
+  {\expanded{\t_symb_setups{\symb_fetch{\currentsymbolset}\expand\t_symb_setups}}%
    \letcsname\??symbolsets\currentsymbolset\endcsname\empty} % speedup
 
 \permanent\protected\def\resetsymbolset
   {\t_symb_setups\emptytoks}
 
 \permanent\protected\def\forcesymbolset[#1]% still needed? why not just usesymbolset
-  {\normalexpanded{\t_symb_setups{\symb_fetch{#1}}}}
+  {\expanded{\t_symb_setups{\symb_fetch{#1}}}}
 
 %D \macros
 %D   {showsymbolset}

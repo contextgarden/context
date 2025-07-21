@@ -1338,8 +1338,8 @@ static void tex_aux_hyphenate_show(halfword beg, halfword end)
 static inline int is_traditional_hyphen(halfword n)
 {
     return (
-        (glyph_character(n) == ex_hyphen_char_par)                             /*tex parameter */
-     && (has_font_text_control(glyph_font(n),text_control_collapse_hyphens))   /*tex font driven */
+        (glyph_character(n) == ex_hyphen_char_par)                            /*tex parameter */
+     && (has_font_text_control(glyph_font(n),text_control_collapse_hyphens))  /*tex font driven */
      && (hyphenation_permitted(glyph_hyphenate(n),collapse_hyphenation_mode)) /*tex language driven */
     );
 }
@@ -1347,11 +1347,12 @@ static inline int is_traditional_hyphen(halfword n)
 static inline int is_apostrophe(halfword n)
 {
     return (
-        (glyph_character(n) == ex_apostrophe_char_par)                                   /*tex parameter */
-     && (has_font_text_control(glyph_font(n),text_control_replace_apostrophe))           /*tex font driven */
+        (glyph_character(n) == ex_apostrophe_char_par)                                  /*tex parameter */
+     && (has_font_text_control(glyph_font(n),text_control_replace_apostrophe))          /*tex font driven */
      && (hyphenation_permitted(glyph_hyphenate(n),replace_apostrophe_hyphenation_mode)) /*tex language driven */
     );
 }
+
 int tex_collapse_list(halfword head, halfword c1, halfword c2, halfword c3, halfword c4) /* ex_hyphen_char_par 0x2013 0x2014 0x2019 */
 {
     /*tex Let's play safe: */

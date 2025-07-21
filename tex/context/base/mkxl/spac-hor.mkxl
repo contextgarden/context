@@ -387,22 +387,28 @@
 
 \installcorenamespace{spacecodemethod}
 
-\sfcode`\)=\zerocount
-\sfcode`\'=\zerocount
-\sfcode`\]=\zerocount
+\sfcode\rightparentasciicode \zerocount % hm
+\sfcode\rightbracketasciicode\zerocount % hm hm
+\sfcode\singlequoteasciicode \zerocount % hm hm hm
 
 \def\spac_spacecodes_set_fixed#1%
-  {\sfcode`\.#1\relax \sfcode`\,#1\relax
-   \sfcode`\?#1\relax \sfcode`\!#1\relax
-   \sfcode`\:#1\relax \sfcode`\;#1\relax}
+  {\sfcode\periodasciicode         #1%
+   \sfcode\commaasciicode          #1%
+   \sfcode\questionmarkasciicode   #1%
+   \sfcode\exclamationmarkasciicode#1%
+   \sfcode\colonasciicode          #1%
+   \sfcode\semicolonasciicode      #1}
 
 \def\spac_spacecodes_set_stretch
-  {\sfcode`\.3000 \sfcode`\,1250
-   \sfcode`\?3000 \sfcode`\!3000
-   \sfcode`\:2000 \sfcode`\;1500 }
+  {\sfcode\periodasciicode         \plusthreethousand
+   \sfcode\commaasciicode          \plustwelvehundredfifty
+   \sfcode\questionmarkasciicode   \plusthreethousand
+   \sfcode\exclamationmarkasciicode\plusthreethousand
+   \sfcode\colonasciicode          \plustwothousand
+   \sfcode\semicolonasciicode      \plusfifteenhundred }
 
 \permanent\protected\def\frenchspacing   {\spac_spacecodes_set_fixed\plusthousand}
-\permanent\protected\def\newfrenchspacing{\spac_spacecodes_set_fixed{1050}}
+\permanent\protected\def\newfrenchspacing{\spac_spacecodes_set_fixed\plusthousandfifty}
 \permanent\protected\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
 
 \permanent\protected\def\installspacingmethod#1#2{\defcsname\??spacecodemethod#1\endcsname{#2}}
@@ -865,7 +871,7 @@
        \s_spac_narrower_last_swap\conditionaltrue
      \fi
    \else
-     \normalexpanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
+     \expanded{\processcommalistwithparameters[\scratchstringone]}\spac_narrower_initialize
      \frozen\advanceby\leftskip {\s_spac_narrower_left +\s_spac_narrower_middle}%
      \frozen\advanceby\rightskip{\s_spac_narrower_right+\s_spac_narrower_middle}%
    \fi
@@ -875,7 +881,7 @@
 \permanent\protected\def\spac_narrower_stop
   {\dostoptagged
    \narrowerparameter\c!after
-   \normalexpanded{%
+   \expanded{%
       \endgroup
       \s_spac_narrower_left_last \the\leftskip \relax
       \s_spac_narrower_right_last\the\rightskip\relax
@@ -971,8 +977,8 @@
 \permanent\protected\def\dosetleftskipadaption #1{\leftskipadaption \glueexpr\ifcsname\??skipadaptionleft #1\endcsname\lastnamedcs\else#1\fi\relax}
 \permanent\protected\def\dosetrightskipadaption#1{\rightskipadaption\glueexpr\ifcsname\??skipadaptionright#1\endcsname\lastnamedcs\else#1\fi\relax}
 
-\permanent\protected\def\doadaptleftskip #1{\normalexpanded{\dosetleftskipadaption {#1}}\frozen\advanceby\leftskip \leftskipadaption }
-\permanent\protected\def\doadaptrightskip#1{\normalexpanded{\dosetrightskipadaption{#1}}\frozen\advanceby\rightskip\rightskipadaption}
+\permanent\protected\def\doadaptleftskip #1{\expanded{\dosetleftskipadaption {#1}}\frozen\advanceby\leftskip \leftskipadaption }
+\permanent\protected\def\doadaptrightskip#1{\expanded{\dosetrightskipadaption{#1}}\frozen\advanceby\rightskip\rightskipadaption}
 
 \permanent\protected\def\forgetbothskips
   {\leftskip \zeroskip

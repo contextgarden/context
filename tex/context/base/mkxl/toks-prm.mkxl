@@ -1,0 +1,155 @@
+%D \module
+%D   [       file=toks-aux,
+%D        version=2025.07.07,
+%D          title=\CONTEXT\ Token Support,
+%D       subtitle=Security,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Token Support / Security}
+
+%D We used to haev these definitions spread over files but now collect them here. We
+%D have to make sure that there is no interference between more modern features,
+%D \CONTEXT\ macros etc.\ and primitives that somehow get triggered or used. We have
+%D to make sure we wipe the primitive and its alias (from the \TEX\ end) and access
+%D to low level tokens (from the \LUA\ end).
+%D
+%D We limit ourselves to the ones that can have side effects and also show the idea
+%D behind this. In due time we might have more here. It is actually not hard to just
+%D redefine, but we need to make sure the aliases are also gone then. Using token
+%D creators at the \LUA\ is more dangerous because it's hard to imagine usage. Of
+%D course can can create tokens that represent the new definitions, it's the numeric
+%D cmd/chr vulnerability that we catch.
+%D
+%D There are some overloads already in syst-ini.mkxl but having others all over the
+%D (math) files is kind of fuzzy.
+
+\unprotect \pushoverloadmode
+
+\permanent\protected\def\syst_toks_unavailable#1%
+  {\writestatus\m!system{the primitive \string#1 is not available}}
+
+\def\wipeprimitive#1%
+  {\untraced\permanent\protected\def#1{\syst_toks_unavailable#1}%
+   \aliased\letcsname normal\csstring#1\endcsname#1%
+   \inhibitprimitive#1}
+
+% \def\replaceprimitive#1#2%
+%   {\let#2\undefined
+%    #1#2%
+%    \aliased\letcsname normal\csstring#2\endcsname#2%
+%    \inhibitprimitive#2}
+
+%D These will be aliased to equivalent fence variants:
+
+\wipeprimitive\left
+\wipeprimitive\right
+\wipeprimitive\middle
+
+%D A few are defined a macro or have a reserved name:
+
+\wipeprimitive\over
+\wipeprimitive\above
+\wipeprimitive\atop
+
+%D but these definitely go:
+
+\wipeprimitive\overwithdelims
+\wipeprimitive\abovewithdelims
+\wipeprimitive\atopwithdelims
+
+%D Well ...
+
+\wipeprimitive\eqno
+\wipeprimitive\leqno
+\wipeprimitive\reqno % just to be sure
+
+%D Never used anyway:
+
+\wipeprimitive\accent
+
+%D Redefined later on (we might remove them from the engine because we
+%D have more granularity and one can just define them):
+
+\wipeprimitive\binoppenalty
+\wipeprimitive\prebinoppenalty
+\wipeprimitive\relpenalty
+\wipeprimitive\prerelpenalty
+
+%D Here we have a problem: we want to get rid of it but we also want to show the
+%D effect in an article. So for now we keep it. Of course we can wipe and have a
+%D \type {\normal_null_delimiter_space} for that purpose but not now.
+
+% \replaceprimitive\newdimen\nulldelimiterspace
+
+%D We can keep them as counters and dimensions because who knows how they are
+%D used. But we add some protection against them being set.
+
+\immutable\abovedisplayshortskip\zeropoint
+\immutable\abovedisplayskip     \zeropoint
+\immutable\belowdisplayshortskip\zeropoint
+\immutable\belowdisplayskip     \zeropoint
+
+\immutable\postdisplaypenalty   \zerocount
+\immutable\predisplaydirection  \zerocount
+\immutable\predisplaygapfactor  \zerocount
+\immutable\predisplaypenalty    \zerocount
+
+\immutable\displayindent        \zeropoint
+\immutable\displaywidth         \zeropoint
+
+%D Candidates that wlll be dealt with as soon as we notice some potential
+%D abuse:
+
+% Indeed, todo:
+%
+% overline underline
+
+% Maybe overload these:
+%
+% errhelp errmessage
+
+% Kind of dangerous:
+%
+% everycr
+% everyeof
+% everytab
+% everyhbox
+% everyvbox
+% everymathatom
+% everydisplay
+% everymath
+% everyjob
+% everypar
+
+% Well ...
+%
+% globaldefs
+
+% A no-op, therefore harmless:
+%
+% mag
+
+% Maybe:
+%
+% delimiter mathaccent radical
+
+% Sort of useless but likely harmless:
+%
+% mark botmark firstmark splitbotmark topmark splittopmark
+
+% maybe overload these:
+%
+% mathbin mathclose mathinner mathop mathopen mathord mathpunct mathrel
+
+%D Done
+
+\aliased\let\wipeprimitive   \undefined
+%aliased\let\replaceprimitive\undefined
+
+\popoverloadmode \protect

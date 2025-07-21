@@ -131,10 +131,10 @@
 
 \protected\def\strc_define_commands_enumeration#tag#level#parent%
   {\ifempty{#parent}%
-     \normalexpanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
+     \expanded{\defineconstruction[#tag][\s!handler=\v!enumeration,\c!level=#level]}%
      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration}%
    \else
-     \normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
+     \expanded{\defineconstruction[#tag][#parent][\s!handler=\v!enumeration,\c!level=#level]}%
      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration#parent}%
    \fi
    \ifcstok{\enumerationparameter\c!define}\v!yes

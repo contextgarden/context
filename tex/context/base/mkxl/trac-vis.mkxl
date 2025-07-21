@@ -182,7 +182,7 @@
   {\hbox attr \visualattribute \clf_getvisual{strut} }
 
 \appendtoks
-    \normalexpanded{\protected\xdef\spac_struts_vide_hbox\expandafter{\spac_struts_vide_hbox}}%
+    \expanded{\protected\xdef\spac_struts_vide_hbox\expandafter{\spac_struts_vide_hbox}}%
 \to \t_syst_visualizers_optimize
 
 %D For manuals:

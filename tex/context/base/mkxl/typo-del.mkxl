@@ -75,7 +75,7 @@
 \definesymbol[\c!rightcompoundhyphen] [\languageparameter\c!rightcompoundhyphen]
 \definesymbol[\c!compoundhyphen]      [\languageparameter\c!compoundhyphen]
 
-\immutable\integerdef\compoundhyphencode\privatecharactercode{compoundhyphen}
+\permanent\immutable\integerdef\compoundhyphencode\privatecharactercode{compoundhyphen}
 
 \pushoverloadmode
 
@@ -398,7 +398,7 @@
    \let\currentparentdelimitedtext\currentdelimitedtext
    \global\advanceby\c_typo_delimited_nesting\plusone
    \edef\delimitedtextlevel{\the\c_typo_delimited_nesting}%
-   \normalexpanded{\chaintocurrentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}%
+   \expanded{\chaintocurrentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}%
    \cdef\currentdelimitedtext{\currentparentdelimitedtext:\delimitedtextlevel}}
 
 \def\typo_delimited_pop

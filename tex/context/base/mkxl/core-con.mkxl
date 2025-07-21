@@ -461,7 +461,7 @@
    \letdummyparameter\c!m\normalmonth
    \letdummyparameter\c!y\normalyear
    \getdummyparameters[#1]%
-   \normalexpanded
+   \expanded
      {\endgroup
       \ifchknumber\directdummyparameter\c!d\or\normalday  \the\lastchknumber\relax\fi
       \ifchknumber\directdummyparameter\c!m\or\normalmonth\the\lastchknumber\relax\fi
@@ -518,7 +518,7 @@
    \processallactionsinset[#1][h=>\currenthour,m=>\currentminute,\s!unknown=>\commalistelement]}
 
 \protected\def\syst_converters_current_time_nop
-  {\normalexpanded{\syst_converters_current_time_yes[\currenttimespecification]}}
+  {\expanded{\syst_converters_current_time_yes[\currenttimespecification]}}
 
 \pushoverloadmode
 

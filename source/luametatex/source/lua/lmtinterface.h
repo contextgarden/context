@@ -955,6 +955,7 @@ make_lua_key(L, lua_local_call);\
 make_lua_key(L, lua_protected_call);\
 make_lua_key(L, lua_semiprotected_call);\
 make_lua_key(L, lua_value);\
+make_lua_key(L, luametatex);\
 make_lua_key(L, luatex);\
 make_lua_key(L, macro);\
 make_lua_key(L, mainclass);\
@@ -989,7 +990,7 @@ make_lua_key(L, mathinline);\
 make_lua_key(L, mathkern);\
 make_lua_key(L, mathkerns);\
 make_lua_key(L, MathLeading);\
-make_lua_key(L, mathnumber);\
+make_lua_key(L, mathequationnumber);\
 make_lua_key(L, mathoperator);\
 make_lua_key(L, mathpack);\
 make_lua_key(L, mathpenaltyfactor);\

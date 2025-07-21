@@ -924,40 +924,40 @@ typedef enum sparse_identifiers {
 */
 
 typedef enum tex_group_codes {
-    bottom_level_group,  /*tex group code for the outside world */
-    simple_group,        /*tex group code for local structure only */
-    hbox_group,          /*tex code for |\hbox| */
-    adjusted_hbox_group, /*tex code for |\hbox| in vertical mode */
-    vbox_group,          /*tex code for |\vbox| */
-    vtop_group,          /*tex code for |\vtop| */
-    dbox_group,          /*tex code for |\dbox| */
-    align_group,         /*tex code for |\halign|, |\valign| */
-    no_align_group,      /*tex code for |\noalign| */
-    output_group,        /*tex code for output routine */
-    math_group,          /*tex code for, e.g., |\char'136| */
+    bottom_level_group,         /*tex group code for the outside world */
+    simple_group,               /*tex group code for local structure only */
+    hbox_group,                 /*tex code for |\hbox| */
+    adjusted_hbox_group,        /*tex code for |\hbox| in vertical mode */
+    vbox_group,                 /*tex code for |\vbox| */
+    vtop_group,                 /*tex code for |\vtop| */
+    dbox_group,                 /*tex code for |\dbox| */
+    align_group,                /*tex code for |\halign|, |\valign| */
+    no_align_group,             /*tex code for |\noalign| */
+    output_group,               /*tex code for output routine */
+    math_group,                 /*tex code for, e.g., |\char'136| */
     math_stack_group,
     math_component_group,
-    discretionary_group, /*tex code for |\discretionary|' */
-    insert_group,        /*tex code for |\insert| */
-    vadjust_group,       /*tex code for |\vadjust| */
-    vcenter_group,       /*tex code for |\vcenter| */
-    math_fraction_group, /*tex code for |\over| and friends */
+    discretionary_group,        /*tex code for |\discretionary|' */
+    insert_group,               /*tex code for |\insert| */
+    vadjust_group,              /*tex code for |\vadjust| */
+    vcenter_group,              /*tex code for |\vcenter| */
+    math_fraction_group,        /*tex code for |\over| and friends */
     math_operator_group,
     math_radical_group,
-    math_choice_group,   /*tex code for |\mathchoice| */
-    also_simple_group,   /*tex code for |\begingroup|\unknown|\egroup| */
-    semi_simple_group,   /*tex code for |\begingroup|\unknown|\endgroup| */
-    math_simple_group,   /*tex code for |\beginmathgroup|\unknown|\endmathgroup| */
-    math_fence_group,    /*tex code for fences |\left|\unknown|\right| */
+    math_choice_group,          /*tex code for |\mathchoice| */
+    also_simple_group,          /*tex code for |\begingroup|\unknown|\egroup| */
+    semi_simple_group,          /*tex code for |\begingroup|\unknown|\endgroup| */
+    math_simple_group,          /*tex code for |\beginmathgroup|\unknown|\endmathgroup| */
+    math_fence_group,           /*tex code for fences |\left|\unknown|\right| */
     math_inline_group,   
     math_display_group,  
-    math_number_group,     
-    local_box_group,     /*tex code for |\localleftbox|\unknown|localrightbox| */
-    split_off_group,     /*tex box code for the top part of a |\vsplit| */
-    split_keep_group,    /*tex box code for the bottom part of a |\vsplit| */
-    preamble_group,      /*tex box code for the preamble processing  in an alignment */
-    align_set_group,     /*tex box code for the final item pass in an alignment */
-    finish_row_group,    /*tex box code for a provisory line in an alignment */
+    math_equation_number_group, /*tex renamed because we have a numbergroup class in context */    
+    local_box_group,            /*tex code for |\localleftbox|\unknown|localrightbox| */
+    split_off_group,            /*tex box code for the top part of a |\vsplit| */
+    split_keep_group,           /*tex box code for the bottom part of a |\vsplit| */
+    preamble_group,             /*tex box code for the preamble processing  in an alignment */
+    align_set_group,            /*tex box code for the final item pass in an alignment */
+    finish_row_group,           /*tex box code for a provisory line in an alignment */
     lua_group,
 } tex_group_codes;
 

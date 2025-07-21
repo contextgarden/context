@@ -308,27 +308,29 @@ checkers.getmissing = getmissing
 
 do
 
-    local reported = true
-
-    local function glyph_not_found_callback(font,char)
-        if font > 0 then
-            if char > 0 then
-                onetimemessage(font,char,"missing")
-            else
-                -- we have a special case
-            end
-        elseif not reported then
-            report("nullfont is used, maybe no bodyfont is defined")
-            reported = true
-        end
-    end
-
-    callbacks.register {
-        name    = "glyph_not_found",
-        action  = glyph_not_found_callback,
-        comment = "report a missing character",
-        frozen  = true,
-    }
+ -- -- This callback is gone:
+ --
+ -- local reported = true
+ --
+ -- local function glyph_not_found_callback(font,char)
+ --     if font > 0 then
+ --         if char > 0 then
+ --             onetimemessage(font,char,"missing")
+ --         else
+ --             -- we have a special case
+ --         end
+ --     elseif not reported then
+ --         report("nullfont is used, maybe no bodyfont is defined")
+ --         reported = true
+ --     end
+ -- end
+ --
+ -- callbacks.register {
+ --     name    = "glyph_not_found",
+ --     action  = glyph_not_found_callback,
+ --     comment = "report a missing character",
+ --     frozen  = true,
+ -- }
 
     local loaded = false
 

@@ -36,7 +36,7 @@
      \scratchcounter`#1%
      \let\scratchmacro#1%
    \fi
-   \normalexpanded{\startextendcatcodetable\ctxcatcodes\catcode\the\scratchcounter\activecatcode\stopextendcatcodetable}%
+   \expanded{\startextendcatcodetable\ctxcatcodes\catcode\the\scratchcounter\activecatcode\stopextendcatcodetable}%
    \letcatcodecommand \ctxcatcodes \scratchcounter \scratchmacro
    \ifnum\currentcatcodetable=\ctxcatcodes \setcatcodetable\ctxcatcodes \fi}
 
@@ -47,7 +47,7 @@
   {\catcode`#1\activecatcode}
 
 \permanent\protected\def\installanddefineactivecharacter #1 #2%
-  {\normalexpanded{\installactivecharacter \utfchar{#1} }%
+  {\expanded{\installactivecharacter \utfchar{#1} }%
    \defineactivecharacter #1 #2}
 
 \protect \endinput

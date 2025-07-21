@@ -239,7 +239,7 @@
      \fi
      \pop_macro_currentinterlinespace
    \else
-     \normalexpanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
+     \expanded{\noexpand\doifelseassignment{\p_spac_checked_interlinespace}%
        \setupspecifiedinterlinespace\setuprelativeinterlinespace[\p_spac_checked_interlinespace]}%
      \iflocalinterlinespace
        \expandtoks\everysetuplocalinterlinespace
@@ -1413,15 +1413,15 @@
 %D Here now only deal with penalties that relate to vertical breaking; the
 %D horizontal ones have been moved to spac-pas.
 
-\immutable\integerdef\defaultdisplaywidowpenalty       50
-\immutable\integerdef\defaultwidowpenalty            2000 % was: 1000
-\immutable\integerdef\defaultclubpenalty             2000 % was:  800
-\immutable\integerdef\defaultbrokenpenalty            100
+\permanent\immutable\integerdef\defaultdisplaywidowpenalty       50
+\permanent\immutable\integerdef\defaultwidowpenalty            2000 % was: 1000
+\permanent\immutable\integerdef\defaultclubpenalty             2000 % was:  800
+\permanent\immutable\integerdef\defaultbrokenpenalty            100
 
-\immutable\integerdef\defaultgriddisplaywidowpenalty \zerocount
-\immutable\integerdef\defaultgridwidowpenalty        \zerocount
-\immutable\integerdef\defaultgridclubpenalty         \zerocount
-\immutable\integerdef\defaultgridbrokenpenalty       \zerocount
+\permanent\immutable\integerdef\defaultgriddisplaywidowpenalty \zerocount
+\permanent\immutable\integerdef\defaultgridwidowpenalty        \zerocount
+\permanent\immutable\integerdef\defaultgridclubpenalty         \zerocount
+\permanent\immutable\integerdef\defaultgridbrokenpenalty       \zerocount
 
 \permanent\protected\def\nopenalties
   {\frozen\widowpenalty \zerocount
@@ -1753,7 +1753,7 @@
 %   {\ifempty{#1\c!grid}%
 %      \c_attr_snapvbox\attributeunsetvalue
 %    \else
-%      \normalexpanded{\spac_grids_snap_value_set{\lastnamedcs}}%
+%      \expanded{\spac_grids_snap_value_set{\lastnamedcs}}%
 %      \c_attr_snapvbox\c_attr_snapmethod
 %    \fi}
 
@@ -2302,7 +2302,7 @@
 %
 % \permanent\protected\def\useblankparameter#1% faster local variant
 %   {\ifempty{#1\c!blank}\else
-%      \normalexpanded{\directvspacing{\lastnamedcs}}%
+%      \expanded{\directvspacing{\lastnamedcs}}%
 %    \fi}
 
 %D Handy (and faster):
@@ -2417,7 +2417,7 @@
    \scratchcounterone{\plusthree*#1+#2}%
    \scratchcountertwo{\c_spac_vspacing_special_base+\c_spac_vspacing_special_step*\scratchcounterone}%
   %\writestatus{defined}{\v!samepage-\number#1-\number#2\space=>\space penalty:\the\scratchcountertwo}%
-   \normalexpanded{\definevspacing[\v!samepage-\number#1-\number#2][penalty:\the\scratchcountertwo]}%
+   \expanded{\definevspacing[\v!samepage-\number#1-\number#2][penalty:\the\scratchcountertwo]}%
    \endgroup}
 
 % \protected\def\spac_vspacing_define_same_page#1%

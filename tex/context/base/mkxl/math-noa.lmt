@@ -490,6 +490,49 @@ experiments.register("optimize.math.process",function()
     end
 end)
 
+-- This is used in tagging and export. It's also a test for three methods
+-- of detecting. See \TEX\ source for comments on that. We could, in the
+-- case of boundaries, look at a few nodes.
+
+do
+
+    local getdata     = nuts.getdata
+    local texgetcount = tex.getcount
+
+    local boundary_code           <const> = nodecodes.boundary
+    local user_boundary_code      <const> = nodes.boundarycodes.user
+    local attribute_boundary_code <const> = nodes.boundarycodes.attribute or -1
+
+    local a_mathmode              <const> = attributes.private('mathmode')
+    local c_mathmode              <const> = tex.getcount("c_math_display_mode_boundary")
+
+    local trace_mathmode  = false  registertracker("math.mode", function(v) trace_mathmode = v end)
+
+    function noads.getmathmode(head)
+        local mode = "inline"
+        if getid(head) == boundary_code and getsubtype(head) == user_boundary_code then
+            -- easy
+            if getdata(head) == c_mathmode then
+                mode = "display"
+            end
+        elseif getid(head) == boundary_code and getsubtype(head) == attribute_boundary_code then
+            -- test case for this kind of boundary (more granular)
+            local k, v = getdata(head)
+            if k == c_mathmode and v == 1 then
+                mode = "display"
+            end
+        elseif (getattr(head,a_mathmode) or 0) == 1 then
+            -- old method, attribute all over the place
+            mode = "display"
+        end
+        if trace_mathmode then
+            -- this is mostly for development
+            report_processing("%s math environment",mode)
+        end
+        return mode
+    end
+
+end
 
 -- experiment (when not present fall back to fam 0) -- needs documentation
 
@@ -662,7 +705,7 @@ do
 
     families[mathtextchar_code] = families[mathchar_code]
 
-    function handlers.families(head,style,penalties)
+    function handlers.families(head)
         processnoads(head,families,"families")
     end
 
@@ -804,7 +847,7 @@ do
         end
     end
 
-    function handlers.relocate(head,style,penalties)
+    function handlers.relocate(head)
         processnoads(head,relocate,"relocate")
     end
 
@@ -835,7 +878,7 @@ do
         end
     end
 
-    function handlers.render(head,style,penalties)
+    function handlers.render(head)
         processnoads(head,render,"render")
     end
 
@@ -907,7 +950,7 @@ end
 --      -- end
 --     end
 --
---     function handlers.resize(head,style,penalties)
+--     function handlers.resize(head)
 --         processnoads(head,resize,"resize")
 --     end
 --
@@ -1175,7 +1218,7 @@ do
         end
     }
 
-    function handlers.autofences(head,style,penalties)
+    function handlers.autofences(head)
         if enabled then -- tex.modes.c_math_fences_auto
          -- inspect(nodes.totree(head))
             processfences(head,1)
@@ -1277,7 +1320,7 @@ do
 
     unscript[mathchar_code] = replace -- not noads as we need to recurse
 
-    function handlers.unscript(head,style,penalties)
+    function handlers.unscript(head)
         processnoads(head,unscript,"unscript")
     end
 
@@ -1317,10 +1360,9 @@ do
         end
     end
 
-    function handlers.unstack(head,style,penalties)
+    function handlers.unstack(head)
         if enabled then
             processnoads(head,unstack,"unstack")
-
         end
     end
 
@@ -1607,7 +1649,7 @@ do
 
     alternate[delimiter_code] = alternate[mathchar_code]
 
-    function handlers.alternates(head,style,penalties)
+    function handlers.alternates(head)
         processnoads(head,alternate,"alternate")
     end
 
@@ -1709,7 +1751,7 @@ do
         end
     end
 
-    function handlers.kernpairs(head,style,penalties)
+    function handlers.kernpairs(head)
         if use_math_goodies then
             processnoads(head,kernpairs,"kernpairs")
         end
@@ -1906,7 +1948,7 @@ setclass(parent,class)
 
     -- numbers
 
-    function handlers.numbers(head,style,penalties)
+    function handlers.numbers(head)
         processnoads(head,numbers,"numbers")
     end
 
@@ -1926,7 +1968,7 @@ setclass(parent,class)
 
     -- spacing
 
-    function handlers.spacing(head,style,penalties)
+    function handlers.spacing(head)
         processnoads(head,spacing,"spacing")
     end
 
@@ -1946,7 +1988,7 @@ setclass(parent,class)
 
     -- fences
 
-    function handlers.fencing(head,style,penalties)
+    function handlers.fencing(head)
         processnoads(head,fencing,"fencing")
     end
 
@@ -2107,7 +2149,7 @@ setchardict(pointer,properties,group,found)
         end
     end
 
-    function noads.handlers.collapse(head,style,penalties)
+    function noads.handlers.collapse(head)
         processnoads(head,collapse,"collapse")
     end
 
@@ -2210,7 +2252,7 @@ do
         return false
     end
 
-    function handlers.variants(head,style,penalties)
+    function handlers.variants(head)
         processnoads(head,variants,"unicode variant")
     end
 
@@ -2266,7 +2308,7 @@ do
         end
     end
 
-    function handlers.classes(head,style,penalties)
+    function handlers.classes(head)
         processnoads(head,classes,"classes")
     end
 
@@ -2332,6 +2374,8 @@ do
 
     local trace_snapping  = false  registertracker("math.snapping", function(v) trace_snapping = v end)
     local report_snapping = logreporter("mathematics","snapping")
+
+    -- head,style,penalties,beginclass,endclass,level,mainstyle
 
     function handlers.snap(h,_,_,_,_,level)
      -- if not level or level == 0 then
@@ -2619,7 +2663,7 @@ end
 --         end
 --     end
 --
---     function handlers.domains(head,style,penalties)
+--     function handlers.domains(head)
 --         processnoads(head,domains,"domains")
 --     end
 --
@@ -2627,7 +2671,7 @@ end
 
 -- just for me
 
-function handlers.showtree(head,style,penalties)
+function handlers.showtree(head)
     inspect(nodes.totree(head))
 end
 
@@ -2742,7 +2786,7 @@ do
         end
     end
 
-    function handlers.dictionaries(head,style,penalties)
+    function handlers.dictionaries(head)
         processnoads(head,dictionaries,"dictionaries")
     end
 
@@ -2775,7 +2819,7 @@ do
         end
     end
 
-    function handlers.suspicious(head,style,penalties)
+    function handlers.suspicious(head)
         if trace_suspicious then
             processnoads(head,suspicious,"suspicious")
         end
@@ -2860,7 +2904,7 @@ do  -- we don't need to support nesting here unless we run over sublists
         end
     end
 
-    function handlers.intervals(head,style,penalties)
+    function handlers.intervals(head)
         processnoads(head,intervals,"intervals")
     end
 

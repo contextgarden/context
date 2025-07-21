@@ -67,7 +67,7 @@
      {\startcontent
       \strc_formulas_nested_formula_start[\c!width=\combinationwidth,##1]}%
    \enforced\protected\def\stopformula
-     {\normalexpanded
+     {\expanded
         {\strc_formulas_nested_formula_stop
          \stopcontent
          \startcaption

@@ -151,10 +151,11 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glue, g_leaders,                     gleaders)
     set_value_entry_key(subtypes_glue, u_leaders,                     uleaders)
 
-    subtypes_boundary = lmt_aux_allocate_value_info(balance_boundary);
+    subtypes_boundary = lmt_aux_allocate_value_info(adjust_boundary);
 
     set_value_entry_key(subtypes_boundary, cancel_boundary,     cancel)
     set_value_entry_key(subtypes_boundary, user_boundary,       user)
+    set_value_entry_key(subtypes_boundary, attribute_boundary,  attribute)
     set_value_entry_key(subtypes_boundary, protrusion_boundary, protrusion)
     set_value_entry_key(subtypes_boundary, word_boundary,       word)
     set_value_entry_key(subtypes_boundary, page_boundary,       page)
@@ -162,8 +163,8 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_boundary, optional_boundary,   optional)
     set_value_entry_key(subtypes_boundary, lua_boundary,        lua)
     set_value_entry_key(subtypes_boundary, par_boundary,        par)
-    set_value_entry_key(subtypes_boundary, adjust_boundary,     adjust)
     set_value_entry_key(subtypes_boundary, balance_boundary,    balance)
+    set_value_entry_key(subtypes_boundary, adjust_boundary,     adjust)
 
     subtypes_penalty = lmt_aux_allocate_value_info(equation_number_penalty_subtype);
 

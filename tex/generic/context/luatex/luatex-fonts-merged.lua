@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-07-08 17:44
+-- merge date  : 2025-07-21 11:45
 
 do -- begin closure to overcome local limits and interference
 
@@ -3940,6 +3940,9 @@ local format_z=function(f)
  n=n+(tonumber(f) or 1)
  return "''" 
 end
+local format_Z=function(f)
+ return format("a%s",tonumber(f) or 1)
+end
 local format_rest=function(s)
  return format("%q",s) 
 end
@@ -3995,8 +3998,8 @@ local builder=Cs { "start",
 +V("a") 
 +V("A") 
 +V("j")+V("J") 
-+V("m")+V("M") 
-+V("z")
++V("m")+V("M")
++V("z")+V("Z")
 +V(">") 
 +V("<")
    )+V("*")
@@ -4043,6 +4046,7 @@ local builder=Cs { "start",
  ["m"]=(prefix_any*P("m"))/format_m,
  ["M"]=(prefix_any*P("M"))/format_M,
  ["z"]=(prefix_any*P("z"))/format_z,
+ ["Z"]=(prefix_any*P("Z"))/format_Z,
  ["a"]=(prefix_any*P("a"))/format_a,
  ["A"]=(prefix_any*P("A"))/format_A,
  ["<"]=(prefix_any*P("<"))/format_left,

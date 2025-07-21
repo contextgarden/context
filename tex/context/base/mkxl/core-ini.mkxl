@@ -132,12 +132,12 @@
 
 \newtoks \everybeforedisplayformula
 \newtoks \everymathematics
+\newtoks \everyinsidemathematics
 
-% \prependtoks \expand\everymathematics \to \everymath
-% \prependtoks \expand\everymathematics \to \everydisplay
-
-\tokspre\everymath   {\expand\everymathematics}
-\tokspre\everydisplay{\expand\everymathematics}
+% See math-ini.mkxl (we actually disaple displaymode there):
+%
+% \tokspre\everymath   {\expand\everymathematics}
+% \tokspre\everydisplay{\expand\everymathematics}
 
 %D Tables:
 

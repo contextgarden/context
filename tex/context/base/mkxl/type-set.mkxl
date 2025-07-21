@@ -150,6 +150,8 @@
 
 %D These \type {*-nt} variants come in handy when we want top compare with non-tweaked math.
 
+% todo: just strip -nt when not found
+
 \definefilesynonym [type-imp-bonum-nt.mkiv]               [type-imp-texgyre.mkiv]
 \definefilesynonym [type-imp-schola-nt.mkiv]              [type-imp-texgyre.mkiv]
 \definefilesynonym [type-imp-pagella-nt.mkiv]             [type-imp-texgyre.mkiv]
@@ -169,6 +171,7 @@
 \definefilesynonym [type-imp-concrete-nt.mkiv]            [type-imp-concrete.mkiv]
 \definefilesynonym [type-imp-xcharter-nt.mkiv]            [type-imp-xcharter.mkiv]
 \definefilesynonym [type-imp-gfsneohellenic-nt.mkiv]      [type-imp-gfsneohellenic.mkiv]
+\definefilesynonym [type-imp-plex-nt.mkiv]                [type-imp-plex.mkiv]
 
 \definefilesynonym [type-imp-antykwa-poltawskiego.mkiv]   [type-imp-antykwapoltawskiego.mkiv]
 

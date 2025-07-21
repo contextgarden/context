@@ -127,7 +127,7 @@
      % so no: \dontleavehmode
      \the\csname\??markingsyncs#1\endcsname
      \ifcstok{\namedmarkingparameter{#1}\c!expansion}\v!yes
-       \normalexpanded{%
+       \expanded{%
           \ifvmode\expandafter\flushatnextpar\else\expandafter\firstofoneargument\fi
             {\marks\csname\??markingclass#1\endcsname{#2}}%
        }%

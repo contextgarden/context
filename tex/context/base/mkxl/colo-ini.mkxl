@@ -241,7 +241,7 @@
 \permanent\protected\def\getcolorattributevalue#1#2% obsolete, use \thecolorattribute instead ...
   {\begingroup
    \colo_helpers_activate{#1}%
-   \normalexpanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\the\c_attr_color\fi}}}
+   \expanded{\endgroup\edef\noexpand#2{\ifnum\c_attr_color=\attributeunsetvalue\else\the\c_attr_color\fi}}}
 
 % \aliased\let\grey\graycolor % these macros are only used in tracing
 
@@ -391,7 +391,7 @@
 % \permanent\def\usedcolorparameterattributes#1%
 %   {\beginlocalcontrol\begingroup
 %    \dousecolorparameter{#1}%
-%    \normalexpanded{\endgroup\noexpand\endlocalcontrol
+%    \expanded{\endgroup\noexpand\endlocalcontrol
 %        \noexpand\s!attr \colorattribute        \the\c_attr_color
 %        \noexpand\s!attr \colormodelattribute   \the\c_attr_colormodel
 %        \noexpand\s!attr \transparencyattribute \the\c_attr_transparency}}
@@ -399,7 +399,7 @@
 \permanent\def\usedcolorparameterattributes#1%
   {\beginlocalcontrol\begingroup
    \dousecolorparameter{#1}%
-   \normalexpanded{\endgroup\noexpand\endlocalcontrol
+   \expanded{\endgroup\noexpand\endlocalcontrol
        % differs a lot
        \noexpand\s!attr \colorattribute        \the\c_attr_color
        % one token
@@ -414,7 +414,7 @@
 %    \else
      \dousecolorparameter{#1}%
 %    \fi
-   \normalexpanded{\endgroup\noexpand\endlocalcontrol
+   \expanded{\endgroup\noexpand\endlocalcontrol
        % differs a lot
        \noexpand\s!symbolattr \colorattribute        \the\c_attr_color
        % one token
@@ -547,7 +547,7 @@
      \edefcsname\??colorpaletspecification#1\endcsname{#2}%
      \processcommalist[#2]{\colo_palets_define_one{#1}}%
    \orelse\ifcsname\??colorpaletspecification#2\endcsname
-     \normalexpanded{\colo_palets_define_b{#1}{\lastnamedcs}\empty}%
+     \expanded{\colo_palets_define_b{#1}{\lastnamedcs}\empty}%
    \fi}
 
 \protected\def\colo_palets_define_b#1#2#3%
@@ -567,7 +567,7 @@
 %        \edefcsname\??colorpaletspecification#1\endcsname{#2}%
 %        \processcommalist[#2]{\colo_palets_define_one{#1}}%
 %      \orelse\ifcsname\??colorpaletspecification#2\endcsname
-%        \normalexpanded{\colo_palets_define_b{#1}{\lastnamedcs}{}}%
+%        \expanded{\colo_palets_define_b{#1}{\lastnamedcs}{}}%
 %      \fi
 %    \or
 %      \colo_palet_prepare{#1}%

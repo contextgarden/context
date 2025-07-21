@@ -35,30 +35,40 @@ local report_memory        = logs.reporter("system","memory")
 
 local register_callback    = callback.register
 local find_callback        = callback.find
-local list_callbacks       = callback.list
+local name_callbacks       = callback.names
 local set_callback_state   = callback.setstate
 local get_callback_state   = callback.getstate
 local set_callback_options = callback.setoptions
 local get_callback_index   = callback.getindex
 
-local comments             = { }
-local list                 = callbacks.list
+local comments   = { }
+local names      = callback.names()
+local list       = table.swapped(names)
 
-local options = callback.getoptionvalues()
-local states  = callback.getstatevalues()
+callbacks.names  = names -- index -> name
+callbacks.list   = list  -- name  -> index
 
-options = table.swapped(options,options)
-states  = table.swapped(states,states)
+local optionbits = callback.getoptionvalues()
+local statebits  = callback.getstatevalues()
+
+local options    = table.swapped(optionbits,optionbits)
+local states     = table.swapped(statebits,statebits)
 
 callbacks.optioncodes = options
 callbacks.statecodes  = states
+callbacks.optionbits  = optionbits
+callbacks.statebits   = statebits
 
 local disabled_code <const> = states.disabled
 local frozen_code   <const> = states.frozen
 
 local trace_code    <const> = options.trace
 
-callback.setoptions(options.direct)
+callback.setoptions(options.direct) -- might become permanent
+
+-- temporary, not public, needed in driv-ini and lua-run:
+
+callbacks.functions = { }
 
 trackers.register("callbacks.calls",function(v)
     set_callback_options(trace_code,v and true or false)
@@ -76,46 +86,17 @@ local delayed = false  do
     end
 end
 
--- temporary, not public, needed in driv-ini and lua-run
-
-callbacks.functions = { }
-
-local function state(name)
-    local f = find_callback(name)
-    if f == false then
-        return "disabled"
-    elseif f then
-        return "enabled"
-    else
-        return "undefined"
-    end
-end
-
 function callbacks.known(name)
-    return list[name]
-end
-
-function callbacks.report()
-    local usage = list_callbacks()
-    for name, _ in sortedhash(list) do
-        local com = comments[name]
-        local sta = state(name)
-        local use = usage[name] and "+" or "-"
-        local fro = frozen[name] and " (frozen)" or ""
-        if com and com ~= "" and com ~= name then
-            report_callbacks("%-9s : %s : %-22s -> %s%s",sta,use,name,com,fro)
-        else
-            report_callbacks("%-9s : %s : %-22s%s",      sta,use,name,    fro)
-        end
-    end
+    return find_callback(name)
 end
 
 function callbacks.freeze(name)
     if find(name,"*",1,true) then
         local pattern = name
-        for name, _ in next, list do
+        for name, index in next, list do
             if find(name,pattern) then
-                set_callback_state(name,frozen_code)
+             -- set_callback_state(name,frozen_code)
+                set_callback_state(index,frozen_code)
             end
         end
     else
@@ -125,44 +106,55 @@ end
 
 -- For now we also support the old interface.
 
-local function register(specification,action,freeze)
-    if type(specification) ~= "table" then
-        specification = {
-            name    = specification,
-            action  = action,
-            frozen  = freeze and true or false,
-            comment = type(freeze) == "string" and freeze or nil,
-        }
-    end
-    local name = specification.name
-    if type(name) ~= "string" or name == "" then
-        report_callbacks("bad callback registration")
-        return
-    end
-    if delayed and delayed[name] then
-        return nil
-    end
-    local comment = specification.comment
-    if type(comment) ~= "string" then
-        comment = name
-    end
-    --
-    local index = register_callback(name,specification.action or false)
-    if index then
-        if specification.disable or specification.disabled then
-            set_callback_state(index,disabled_code)
-        end
-        if specification.freeze or specification.frozen then
-            set_callback_state(index,frozen_code)
-        end
-    end
-    return index
-end
+do
 
-callbacks.register = register
+    local function register(specification,action,freeze)
+        if type(specification) ~= "table" then
+            specification = {
+                name    = specification,
+                action  = action,
+                frozen  = freeze and true or false,
+                comment = type(freeze) == "string" and freeze or nil,
+            }
+        end
+        local name = specification.name
+        if type(name) ~= "string" or name == "" then
+            report_callbacks("bad callback registration %a","invalid name")
+            return
+        end
+        if delayed and delayed[name] then
+            return nil
+        end
+        local comment = specification.comment
+        if type(comment) ~= "string" then
+            comment = name
+        end
+        --
+        local index = register_callback(name,specification.action or false)
+        if index then
+            if specification.disable or specification.disabled then
+                set_callback_state(index,disabled_code)
+            end
+            if specification.freeze or specification.frozen then
+                set_callback_state(index,frozen_code)
+            end
+        else
+            report_callbacks("bad callback registration %a",name)
+            os.exit()
+        end
+        --
+        comments[index] = comment
+        comments[name]  = comment
+        --
+        return index
+    end
 
-function callback.register(name,action) -- original
-    return register { name = name, action = action }
+    callbacks.register = register
+
+    function callback.register(name,action) -- original
+        return register { name = name, action = action }
+    end
+
 end
 
 function callbacks.optimizer(name)
@@ -175,22 +167,20 @@ function callbacks.optimizer(name)
     end
 end
 
--- For old times sake:
 
-function callbacks.push() end
-function callbacks.pop () end
+function callbacks.push() end -- obsolete
+function callbacks.pop () end -- obsolete
 
 -- This will move to a module (but then i need to adapt a few manuals and
 -- modules.
 
-local getstates  do
+do
 
-    local states, keys -- delayed
+    local keys = false
 
     local function getstates(i)
-        if not states then
-            states = callback.getstatevalues()
-            keys   = table.sortedkeys(states)
+        if not keys then
+            keys = sortedkeys(statebits)
         end
         local state  = get_callback_state(i)
         local result = { }
@@ -198,24 +188,24 @@ local getstates  do
             for i=1,#keys do
                 local k = keys[i]
                 if (state & k) == k then
-                    result[#result+1] = states[i]
+                    result[#result+1] = statebits[k]
                 end
             end
         end
         return result
     end
 
-end
+    local function getcomment(name)
+        return comments[name] or ""
+    end
 
-commands = commands or { }
+    callbacks.getstates  = getstates
+    callbacks.getcomment = getcomment
 
-function commands.showcallbacks()
-    local NC, NR = context.NC, context.NR
-    context.starttabulate { "|lT|lT|" }
-        for name, _ in sortedhash(list) do
-            NC() context(name)
-            NC() context("% t",getstates(name))
-            NC() NR()
+    function callbacks.report()
+        for name, index in sortedhash(list) do
+            report_callbacks("%2i %-20s : [% t] %s",index,name,getstates(index),getcomment(com))
         end
-    context.stoptabulate()
+    end
+
 end

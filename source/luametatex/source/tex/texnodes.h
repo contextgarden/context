@@ -2523,6 +2523,7 @@ typedef enum math_kernel_options {
 typedef enum boundary_subtypes {
     cancel_boundary,
     user_boundary,
+    attribute_boundary,
     protrusion_boundary, /* 1=left, 2=right, 3=both */
     word_boundary,
     page_boundary,
@@ -2530,8 +2531,9 @@ typedef enum boundary_subtypes {
     optional_boundary,
     lua_boundary,
     par_boundary,
-    adjust_boundary,
     balance_boundary,
+    /* No related commands, system generated: */
+    adjust_boundary,
 } boundary_subtypes;
 
 typedef enum protrusion_boundary_options {
@@ -2550,8 +2552,8 @@ typedef enum math_boundary_options {
     end_math_explicit_boundary,
 } math_boundary_options;
 
-# define last_boundary_subtype word_boundary
-# define last_boundary_code    optional_boundary
+# define last_boundary_subtype adjust_boundary
+# define last_boundary_code    balance_boundary
 
 # define boundary_node_size   3
 # define boundary_data(a)     memone(a,2)

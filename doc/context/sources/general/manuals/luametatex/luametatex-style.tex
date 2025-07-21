@@ -277,10 +277,26 @@
   [newprimitive]
   [color=maincolor]
 
+\def\legacycolor
+  {\beginlocalcontrol
+   \begingroup
+   \let\prm\firstofoneargument
+   \expanded
+     {\noexpand\endgroup
+      \noexpand\endlocalcontrol
+      \ifempty{\legacystate{\structurevariable{title}}}%
+        nonecolor%
+      \else
+        darkred%
+      \fi}}
+
 \setuphead
   [oldprimitive]
   [%color=nonecolor,
-   color=\ifcstok{\structureuservariable{obsolete}}{yes}darkred\else nonecolor\fi]
+%    color=\ifcstok{\structureuservariable{obsolete}}{yes}darkred\else nonecolor\fi]
+   textcolor=,
+   numbercolor=,
+   color=\legacycolor] % called quite often
 
 \setuplist
   [newprimitive]

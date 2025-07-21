@@ -160,7 +160,7 @@
    \relax
    \c_attr_initial\plusone
    \initialparameter\c!text
-   \normalexpanded{\endgroup\c_initial_lines\the\scratchcounter}%
+   \expanded{\endgroup\c_initial_lines\the\scratchcounter}%
    \enforced\glettonothing\typo_initial_handle
    \ifconditional\c_initial_synchronize
      \appendtoks \forgetinitial \to \everybeforepar

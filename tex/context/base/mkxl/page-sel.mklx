@@ -174,7 +174,7 @@
         \getfiguredimensions[#filename]%
         \scratchcounter{\noffigurepages-\scratchcounter+\plusone}%
      \fi
-     \normalexpanded{\externalfigure[#filename][\c!page=\the\scratchcounter]}%
+     \expanded{\externalfigure[#filename][\c!page=\the\scratchcounter]}%
    \stopTEXpage}
 
 \letcsname\??filterpagesalternative\v!default\expandafter\endcsname\csname\??filterpagesalternative\v!a\endcsname
@@ -348,7 +348,7 @@
           {\dorecurse\scratchnx
              {\global\advanceby\combinedpagescounter\plusone
               \ifnum\combinedpagescounter>\c_page_selectors_n \else
-                 \normalexpanded{\externalfigure
+                 \expanded{\externalfigure
                    [\directwithpagesparameter\c!name]
                    [\c!page=\number\combinedpagescounter,
                     \c!width=\the\scratchwidth,

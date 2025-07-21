@@ -1,0 +1,10 @@
+return {
+    name     = "ancient greek",
+    version  = "1.00",
+    comment  = "Some old greek stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "grc",
+        export = "grc",
+    }
+}

@@ -88,7 +88,7 @@ rounding.round = function(num,dec,mode)
         mode = dec
         dec  = 1
     end
-    return (mode and methods[mode] or defaultmethods)(num,dec)
+    return (mode and methods[mode] or defaultmethod)(num,dec)
 end
 
 number.rounding = rounding

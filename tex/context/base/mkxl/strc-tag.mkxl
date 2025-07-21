@@ -354,7 +354,7 @@
 
 \lettonothing\dotaggedplaceholder
 
-\immutable\chardef\strc_tags_placeholder_char\zerocount % "FFFC
+\permanent\chardef\strc_tags_placeholder_char\zerocount % "FFFC
 
 \protected\def\strc_tags_enable_indeed
   {\enforced\let\dotaggedplaceholder  \strc_tags_placeholder_char
@@ -677,5 +677,100 @@
    \ignorespaces}
 
 \permanent\protected\def\subparagraph{\stopsubparagraph\startsubparagraph}
+
+%D New:
+
+\newinteger\tagparcounter
+
+\installglobalmacrostack\tagparcounter
+
+% we don't want a zero one as it is also a trigger
+
+\permanent\protected\lettonothing\dotagsetparcounter
+\permanent\protected\lettonothing\doresetparcounter
+
+% Fuzzy:
+
+% \appendtoks
+%     \doresetparcounter
+% \to \everyflushatnextpar
+
+% \prependtoks
+%     \dotagsetparcounter
+% \to \everypar
+
+% \prependtoks
+%     \dotagsetparcounter
+% \to \neverypar
+
+% \appendtoks
+%     \dotagsetparcounter
+% \to \everytabulatepar % tricky, maybe this should be neverypar
+
+% \permanent\protected\def\strc_tags_parcounter_set
+%   {\advanceby\tagparcounter\plusone
+%    \c_attr_taggedpar\tagparcounter}
+
+% \permanent\protected\def\strc_tags_parcounter_reset
+%   {\c_attr_taggedpar\attributeunsetvalue}
+
+% \appendtoks
+%     \strc_tags_parcounter_check
+%     \enforced\let\dotagsetparcounter\strc_tags_parcounter_set
+%     \enforced\let\doresetparcounter \strc_tags_parcounter_reset
+% \to \everyenableelements
+
+% \permanent\protected\def\strc_tags_parcounter_push
+%   {\push_macro_tagparcounter
+%    \global\advanceby\tagparcounter\plusone
+%   %\parattribute\c_attr_taggedpar\tagparcounter
+%    \global\c_attr_taggedpar\tagparcounter}
+%
+% \permanent\protected\def\strc_tags_parcounter_pop
+%   {\pop_macro_tagparcounter
+%    \global\c_attr_taggedpar\tagparcounter}
+
+% safeguard
+
+% \permanent\protected\def\strc_tags_parcounter_check
+%   {\ifcase\tagparcounter
+%      \global\tagparcounter\plusone
+%      \c_attr_taggedpar\plusone
+%    \fi}
+
+% We need to fool the scanner as well as be transparent for grouping
+% kind of a mess ... check with combinations:
+
+% \noaligned\permanent\protected\def\strc_tags_parcounter_check
+%   {\beginlocalcontrol
+%    \clf_strc_tags_parcounter_check
+%    \endlocalcontrol}
+
+\noaligned\permanent\protected\def\strc_tags_parcounter_push
+  {\beginlocalcontrol
+   \clf_strc_tags_parcounter_push
+   \endlocalcontrol}
+
+\noaligned\permanent\protected\def\strc_tags_parcounter_pop
+  {\beginlocalcontrol
+   \clf_strc_tags_parcounter_pop
+   \endlocalcontrol}
+
+
+\permanent\protected\def\strc_tags_parcounter_reset
+  {\c_attr_taggedpar\attributeunsetvalue}
+
+\immutable\everyparbegin\emptytoks
+\immutable\everyparend  \emptytoks
+
+% \appendtoks
+%     \enforced\everyparbegin\emptytoks
+%     \enforced\everyparend  \emptytoks
+% \to \everyforgetall
+
+\appendtoks
+    \enforced\everyparbegin{\strc_tags_parcounter_push}%
+    \enforced\everyparend  {\strc_tags_parcounter_pop }%
+\to \everyenableelements
 
 \protect

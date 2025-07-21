@@ -213,7 +213,7 @@
    \stoppositionoverlay}
 
 \def\anch_backgrounds_text_meta_graphic
-  {\normalexpanded
+  {\expanded
      {\setMPpositiongraphicrange % needs to be optimized
         {\v_anch_backgrounds_anchor_current_b}%
         {\v_anch_backgrounds_anchor_current_e}%

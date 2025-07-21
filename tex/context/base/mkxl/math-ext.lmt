@@ -13,9 +13,8 @@ if not modules then modules = { } end modules ['math-ext'] = {
 -- controlled situations anyway.
 
 ----- texnest     = tex.nest
-
------ setproperty = nodes.setproperty
-local getproperty = nodes.getproperty
+----- setproperty = nodes.nuts.setprop
+local getproperty = nodes.nuts.getprop
 
 local extensibles = { }
 

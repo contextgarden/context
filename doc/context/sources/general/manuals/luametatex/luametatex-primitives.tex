@@ -3974,15 +3974,23 @@ content of the two arguments is compared.
 This primitive complements the two expansion related primitives mentioned in the
 previous two sections. This time the content will be expanded and then pushed
 back into the input. Protected macros will not be expanded, so you can use this
-primitive to expand the arguments in a call. In \CONTEXT\ you need to use \type
-{\normalexpanded} because we already had a macro with that name. We give some
-examples:
+primitive to expand the arguments in a call.
+
+% In \CONTEXT\ you need to use \type {\normalexpanded} because we already had a
+% macro with that name. We give some examples:
+
+% \startbuffer
+% \def\A{!}
+%           \def\B#1{\string#1}                          \B{\A}
+%           \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}}
+% \protected\def\B#1{\string#1}                          \B{\A}
+% \stopbuffer
 
 \startbuffer
 \def\A{!}
-          \def\B#1{\string#1}                          \B{\A}
-          \def\B#1{\string#1} \normalexpanded{\noexpand\B{\A}}
-\protected\def\B#1{\string#1}                          \B{\A}
+          \def\B#1{\string#1}                    \B{\A}
+          \def\B#1{\string#1} \expanded{\noexpand\B{\A}}
+\protected\def\B#1{\string#1}                    \B{\A}
 \stopbuffer
 
 \typebuffer \startlines\getbuffer\stoplines
@@ -4026,8 +4034,12 @@ This is a companion to \prm {detokenize} that expands its argument:
 
 This is a bit more convenient than
 
+% \starttyping
+% \detokenize \expandafter {\normalexpanded {\foo}}
+% \stoptyping
+
 \starttyping
-\detokenize \expandafter {\normalexpanded {\foo}}
+\detokenize \expandafter {\expanded {\foo}}
 \stoptyping
 
 kind of solutions. We get:
@@ -4575,11 +4587,18 @@ it possible to fine tune behavior in this mixed traditional and not perfect
 called) goodie files. For instance we ignore font kerns in Libertinus, Antykwa
 and some more.
 
+% \starttabulate[|l|rT|]
+% \NC modern     \NC \bgroup\switchtobodyfont    [modern]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+% \NC pagella    \NC \bgroup\switchtobodyfont   [pagella]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+% \NC antykwa    \NC \bgroup\switchtobodyfont   [antykwa]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+% \NC libertinus \NC \bgroup\switchtobodyfont[libertinus]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+% \stoptabulate
+
 \starttabulate[|l|rT|]
-\NC modern     \NC \bgroup\switchtobodyfont    [modern]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
-\NC pagella    \NC \bgroup\switchtobodyfont   [pagella]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
-\NC antykwa    \NC \bgroup\switchtobodyfont   [antykwa]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
-\NC libertinus \NC \bgroup\switchtobodyfont[libertinus]\normalexpanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC modern     \NC \bgroup\switchtobodyfont    [modern]\expanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC pagella    \NC \bgroup\switchtobodyfont   [pagella]\expanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC antykwa    \NC \bgroup\switchtobodyfont   [antykwa]\expanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
+\NC libertinus \NC \bgroup\switchtobodyfont[libertinus]\expanded{\egroup 0x\tohexadecimal\fontmathcontrol\textfont\fam} \NC \NR
 \stoptabulate
 
 \stopnewprimitive
@@ -7052,8 +7071,12 @@ some reasons needs to know the register index you can query that:
 
 \typebuffer
 
+% We lie a little here because in \CONTEXT\ the box index \tex {scratchbox} is
+% actually defined as: \normalexpanded {\typ {\meaningasis \scratchbox}} but it
+% still is a number so it fits in.
+
 We lie a little here because in \CONTEXT\ the box index \tex {scratchbox} is
-actually defined as: \normalexpanded {\typ {\meaningasis \scratchbox}} but it
+actually defined as: \expanded {\typ {\meaningasis \scratchbox}} but it
 still is a number so it fits in.
 
 \getbuffer
@@ -9262,7 +9285,7 @@ parsing.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaning\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \glet\foo\relax
 
 \stopoldprimitive
 
@@ -9275,7 +9298,7 @@ being lost this primitive tries to return an equivalent definition.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningasis\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \glet\foo\relax
 
 \stopnewprimitive
 
@@ -9287,7 +9310,7 @@ This one reports a bit less than \prm {meaningful}.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningful\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \let\gfoo\relax
 
 \stopnewprimitive
 
@@ -9299,7 +9322,7 @@ This one reports a bit more than \prm {meaning}.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningfull\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \let\gfoo\relax
 
 \stopnewprimitive
 
@@ -9311,7 +9334,7 @@ This one reports a bit less than \prm {meaningless}.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningles\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \let\gfoo\relax
 
 \stopnewprimitive
 
@@ -9323,7 +9346,7 @@ This one reports a bit less than \prm {meaning}.
 \tolerant\permanent\protected\gdef\foo[#1]#*[#2]{(#1)(#2)} \meaningless\foo
 \stopbuffer
 
-\typebuffer \getbuffer
+\typebuffer \getbuffer \let\gfoo\relax
 
 \stopnewprimitive
 
@@ -11591,6 +11614,19 @@ by with \prm {semprotected}. See that primitive there for an example.
 
 \startnewprimitive[title={\prm {semiprotected}}]
 
+% \startbuffer
+%               \def\TestA{A}
+% \semiprotected\def\TestB{B}
+%     \protected\def\TestC{C}
+%
+% \edef\TestD{\TestA           \TestB           \TestC}
+% \edef\TestE{\TestA\semiexpand\TestB\semiexpand\TestC}
+% \edef\TestF{\TestA\expand    \TestB\expand    \TestC}
+%
+% \edef\TestG{\normalexpanded    {\TestA\TestB\TestC}}
+% \edef\TestH{\normalsemiexpanded{\TestA\TestB\TestC}}
+% \stopbuffer
+
 \startbuffer
               \def\TestA{A}
 \semiprotected\def\TestB{B}
@@ -11600,8 +11636,8 @@ by with \prm {semprotected}. See that primitive there for an example.
 \edef\TestE{\TestA\semiexpand\TestB\semiexpand\TestC}
 \edef\TestF{\TestA\expand    \TestB\expand    \TestC}
 
-\edef\TestG{\normalexpanded    {\TestA\TestB\TestC}}
-\edef\TestH{\normalsemiexpanded{\TestA\TestB\TestC}}
+\edef\TestG{\expanded    {\TestA\TestB\TestC}}
+\edef\TestH{\semiexpanded{\TestA\TestB\TestC}}
 \stopbuffer
 
 The working of this prefix can best be explained with an example. We define a few
@@ -12594,8 +12630,12 @@ Just as \prm {expanded} has a counterpart \prm {unexpanded}, it makes sense to g
 
 This primitive is similar to:
 
+% \starttyping
+% \def\tokenized#1{\scantextokens\expandafter{\normalexpanded{#1}}}
+% \stoptyping
+
 \starttyping
-\def\tokenized#1{\scantextokens\expandafter{\normalexpanded{#1}}}
+\def\tokenized#1{\scantextokens\expandafter{\expanded{#1}}}
 \stoptyping
 
 and should be more efficient, not that it matters much as we don't use it that
@@ -13841,6 +13881,8 @@ This internal number starts out with the year that the job started.
 
 \stopsection
 
+\glet\foo\relax
+
 \page
 
 \startsection[title=Syntax]
@@ -13859,6 +13901,9 @@ This internal number starts out with the year that the job started.
     local match = string.match
     local find  = string.match
 
+    local luatex_code     <const> = 4 -- use symbolic instead
+    local luametatex_code <const> = 8 -- use symbolic instead
+
     function document.CheckCompleteness()
         local primitives = token.getprimitives()
         local luametatex = { }
@@ -13868,9 +13913,10 @@ This internal number starts out with the year that the job started.
         for i=1,#primitives do
             local prim = primitives[i]
             local name = prim[3]
+            local what = prim[4]
             if not name then
                 print("no name, case 1")
-            elseif prim[4] == 4 then
+            elseif what == luatex_code or what == luametatex_code then
                 if find(name,"U") or find(name,"math") then
                     -- ignore
                     luametatex[name] = nil
@@ -13973,7 +14019,8 @@ This internal number starts out with the year that the job started.
         for k, v in table.sortedhash(indexed) do
             context.dontleavehmode()
             if luametatex[k] == true then
-                context("\\color[darkgreen]{\\tttf %s}",k)
+             -- context("\\color[darkgreen]{\\tttf %s}",k)
+                context("\\color[darkblue]{\\tttf %s}",k)
             elseif luametatex[k] == false then
                 context("\\color[darkred]{\\tttf %s}",k)
             else

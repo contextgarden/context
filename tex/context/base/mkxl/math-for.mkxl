@@ -34,7 +34,7 @@
 \aliased\let\setupsubformulas\setupsubformula
 
 \appendtoks
-    \normalexpanded{\defineformulaframed[\currentformula][\currentformulaparent]}%
+    \expanded{\defineformulaframed[\currentformula][\currentformulaparent]}%
 \to \everydefineformula
 
 %D Old stuff:

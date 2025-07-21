@@ -42,8 +42,11 @@ typedef vectordata *vector;
 # define max_mesh 0xFFFF
 
 typedef enum mesh_classification {
-    triangle_mesh_type,     
-    quad_mesh_type,     
+    no_mesh_type       = 0x00,
+    dot_mesh_type      = 0x01,
+    line_mesh_type     = 0x02,
+    triangle_mesh_type = 0x03,
+    quad_mesh_type     = 0x04,
 } mesh_classification;
 
 typedef struct meshentry {

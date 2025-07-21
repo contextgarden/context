@@ -175,7 +175,7 @@
   {\mathematics
     [#1]%
     {\expand\everyasciimath
-     \clf_texasciimath{\detokenize\expandafter{\normalexpanded{#2}}}}}
+     \clf_texasciimath{\detokenize\expandafter{\expanded{#2}}}}}
 
 \permanent\tolerant\protected\def\xmlasciimath[#1]#:#2%
   {\mathematics

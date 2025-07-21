@@ -234,7 +234,7 @@
         \dododocommand\zerocount
       \orelse\ifcstok{#4}\v!all
         \dostepwiserecurse\zerocount{255}\plusone
-          {\normalexpanded{\dododocommand{\recurselevel}}}%
+          {\expanded{\dododocommand{\recurselevel}}}%
       \else
         \processcommalist[#4]{\dododocommand}%
       \fi
@@ -305,7 +305,7 @@
 
 \protected\gdef\module_fonts_show_minimal_baseline#1% to be used in a 10 column tabulate
   {\setbox\scratchbox\ruledhbox{#1}%
-   \normalexpanded {
+   \expanded {
      \NC \ruledhbox{#1}%
      \NC ->
      \NC \the\htdp\scratchbox

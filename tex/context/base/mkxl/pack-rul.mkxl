@@ -77,7 +77,7 @@
 %D Inheritance:
 
 \permanent\protected\def\installinheritedframed#1%
-  {\normalexpanded{\mult_interfaces_install_inherited_framed
+  {\expanded{\mult_interfaces_install_inherited_framed
      \expandafter\noexpand\csname current#1\endcsname
      \expandafter\noexpand\csname #1parameter\endcsname
      \expandafter\noexpand\csname #1parameterhash\endcsname

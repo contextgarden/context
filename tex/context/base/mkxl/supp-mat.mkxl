@@ -65,10 +65,27 @@
 \aliased\let\startdmath\Ustartdisplaymath  % \Ucheckedstartdisplaymath
 \aliased\let\stopdmath \Ustopdisplaymath   % \Ucheckedstopdisplaymath
 
-\permanent\protected\def\mathematics#1{\relax         \ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
 %permanent\protected\def\displaymath#1{\noindent      \ifmmode#1\else\normalstartdmath#1\normalstopdmath\fi}
 %permanent\protected\def\inlinemath #1{\dontleavehmode\ifmmode#1\else\normalstartimath#1\normalstopimath\fi}
-\permanent\protected\def\textmath   #1{\dontleavehmode\ifmmode#1\else\begingroup\everymath\emptytoks\normalstartimath#1\normalstopimath\endgroup\fi} % \mathsurround\zeropoint
+
+\permanent\protected\def\mathematics#1%
+  {\relax
+   \ifmmode
+     #1
+   \else
+     \normalstartimath#1\normalstopimath
+   \fi}
+
+\permanent\protected\def\textmath#1%
+  {\dontleavehmode
+   \ifmmode
+     #1%
+   \else
+     \begingroup
+     \everymathematics\emptytoks         % so \not \everymath
+     \normalstartimath#1\normalstopimath % \mathsurround\zeropoint
+     \endgroup
+   \fi}
 
 \aliased\let\stopmathmode\relax
 

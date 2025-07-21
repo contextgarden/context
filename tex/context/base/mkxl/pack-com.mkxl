@@ -172,7 +172,7 @@
 
 \appendtoks
     \c_strc_constructions_define_commands\conditionalfalse
-    \normalexpanded
+    \expanded
       {\definelabel
          [\v!combination:\currentcombination]%
          [\v!combination\ifempty\currentcombinationparent\else:\currentcombinationparent\fi]}%
@@ -327,10 +327,10 @@
      \lastnamedcs\else\vbox
    \fi\ifx\p_height\v!fit\else to {\p_height} \fi \bgroup
    \enforced\lettonothing\combination % permits \combination{}{} handy for cld
-   \normalexpanded{\pack_combinations_start_indeed[\p_nx_ny]}}
+   \expanded{\pack_combinations_start_indeed[\p_nx_ny]}}
 
 \permanent\protected\def\stopcombination
-  {\bgroup\normalexpanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
+  {\bgroup\expanded{\egroup{}\ntimes{{}{}}\c_pack_combinations_y}% brr
    \dostoptagged
    \egroup
    \begincsname\??combinationmethod\combinationparameter\c!method:\v!stop\endcsname
@@ -418,7 +418,7 @@
      \usealignparameter\combinationparameter
      \usecombinationstyleandcolor\c!style\c!color
      \begstrut
-       \normalexpanded{\strc_labels_command[\v!combination\ifempty\currentcombination\else:\currentcombination\fi]}%
+       \expanded{\strc_labels_command[\v!combination\ifempty\currentcombination\else:\currentcombination\fi]}%
      \endstrut
    \egroup}
 
@@ -426,7 +426,7 @@
     \edef\p_pack_combinations_alternative{\combinationparameter\c!alternative}%
     \ifx\p_pack_combinations_alternative\v!label
       \ifcstok{\combinationparameter\c!continue}\v!yes\else
-        \normalexpanded{\strc_labels_reset{\v!combination\ifempty\currentcombination\else:\currentcombination\fi}{1}}%
+        \expanded{\strc_labels_reset{\v!combination\ifempty\currentcombination\else:\currentcombination\fi}{1}}%
      \fi
     \fi
 \to \everycombination
@@ -610,8 +610,8 @@
         {\pack_combinations_float_hack_b{\recurselevel}}%
       \to\scratchtoks}% brrr
    \let\pack_combinations_check_x_y\pack_combinations_float_check_x_y
- % \normalexpanded{\startcombination[#1]\the\scratchtoks}\stopcombination
-   \normalexpanded{\startcombination[\v!float][#1]\the\scratchtoks}\stopcombination
+ % \expanded{\startcombination[#1]\the\scratchtoks}\stopcombination
+   \expanded{\startcombination[\v!float][#1]\the\scratchtoks}\stopcombination
    \resetlocalfloats
    \egroup}
 

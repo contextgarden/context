@@ -415,6 +415,7 @@ local function documentspecification()
  -- end
  -- addtoinfo   ("Trapped", pdfconstant("False")) -- '/Trapped' in /Info, 'Trapped' in XMP
     addtocatalog("Version", pdfconstant(format("%s.%s",pdfmajorversion(),pdfminorversion())))
+ -- local language = languages.names[texgetcount("mainlanguagenumber")]
     addtocatalog("Lang",    pdfstring(tokens.getters.macro("currentmainlanguage")))
 end
 

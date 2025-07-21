@@ -55,8 +55,8 @@
 %D dependencies are more consistent. Beware, the version number has to match \type
 %D {YYYY.MM.DD HH:MM} format.
 
-\immutable\edef\contextformat {\jobname}
-\immutable\edef\contextversion{2025.07.08 17:44}
+\permanent\edef\contextformat {\jobname}
+\permanent\edef\contextversion{2025.07.21 11:45}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -65,7 +65,7 @@
 
 %D Kind of special:
 
-\immutable\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
+\permanent\chardef\contextlmtxmode\directlua{tex.print(CONTEXTLMTXMODE or 0)}\relax
 
 \directlua{io.output():setvbuf("line",512)}
 
@@ -76,8 +76,8 @@
 
 %D Loading:
 
-\immutable\edef\mksuffix   {mkiv}
-\immutable\edef\contextmark{LMTX}
+\permanent\cdef\mksuffix   {mkiv}
+\permanent\cdef\contextmark{LMTX}
 
 \ifdefined\normalinput \else \aliased\let\normalinput\input \fi
 
@@ -91,12 +91,13 @@
 %D We start with setting up some basic \TEX\ machinery.
 
 \loadmkxlfile{syst-ini}
+\loadmkxlfile{syst-obs} % stuff that will go away
 
 %D Some checking (more primitives are now defined):
 
-\ifdefined\defaultinterface   \else \immutable\def\defaultinterface  {english}         \fi
-%ifdefined\messageinterface   \else \immutable\let\messageinterface  \defaultinterface \fi
-\ifdefined\defaultlanguagetag \else \immutable\def\defaultlanguagetag{en}              \fi
+\ifdefined\defaultinterface   \else \permanent\cdef\defaultinterface  {english}         \fi
+%ifdefined\messageinterface   \else \aliased  \let \messageinterface  \defaultinterface \fi
+\ifdefined\defaultlanguagetag \else \permanent\cdef\defaultlanguagetag{en}              \fi
 
 %D There is only this way to pass the version info to \LUA\ (currently). Hm, we could
 %D now put it into the environment.
@@ -174,6 +175,7 @@
 \loadmkxlfile{trac-ctx} % maybe move up
 
 \loadmkxlfile{toks-aux}
+\loadmkxlfile{toks-prm}
 
 \loadmkxlfile{attr-ini}
 \loadmkxlfile{bndr-ini}
@@ -695,7 +697,16 @@
 \appendtoks
     \ifnum\overloadmode<\plusthree\overloadmode\plusthree\fi
     \everyjob\emptytoks
+    %
+  % \newtoks\everyjob
+  % \enforced\let\normaleveryjob\everyjob
+  % \inhibitprimitive\everyjob
+    %
 \to \everyjob
+
+% begin of test section
+
+% end of test section
 
 \errorstopmode \dump \endinput
 

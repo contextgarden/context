@@ -36,7 +36,7 @@
    \luat_start_lua_indeed}
 
 \def\luat_start_lua_indeed#1\stoplua
-  {\normalexpanded{\endgroup\noexpand\directlua{#1}}}
+  {\expanded{\endgroup\noexpand\directlua{#1}}}
 
 \permanent\protected\def\startluacode % \stopluacode
   {\begingroup
@@ -44,7 +44,7 @@
    \luat_start_lua_code_indeed}
 
 \def\luat_start_lua_code_indeed#1\stopluacode
- %{\normalexpanded{\endgroup\noexpand\directlua{#1}}}
+ %{\expanded{\endgroup\noexpand\directlua{#1}}}
   {\directlua{#1\beginlocalcontrol\endgroup\endlocalcontrol}}
 
 %D Some delayed definitions:
@@ -102,20 +102,20 @@
 \ifdefined\7 \else \mutable\def\7{7} \fi \ifdefined\8 \else \mutable\def\8{8} \fi
 \ifdefined\9 \else \mutable\def\9{9} \fi \ifdefined\0 \else \mutable\def\0{0} \fi
 
-\immutable\edef\lua_letter_backslash{\string\\}
-\immutable\edef\lua_letter_bar      {\string\|} \immutable\edef\lua_letter_dash     {\string\-}
-\immutable\edef\lua_letter_lparent  {\string\(} \immutable\edef\lua_letter_rparent  {\string\)}
-\immutable\edef\lua_letter_lbrace   {\string\{} \immutable\edef\lua_letter_rbrace   {\string\}}
-\immutable\edef\lua_letter_squote   {\string\'} \immutable\edef\lua_letter_dquote   {\string\"}
-\immutable\edef\lua_letter_n        {\string\n} \immutable\edef\lua_letter_r        {\string\r}
-\immutable\edef\lua_letter_f        {\string\f} \immutable\edef\lua_letter_t        {\string\t}
-\immutable\edef\lua_letter_a        {\string\a} \immutable\edef\lua_letter_b        {\string\b}
-\immutable\edef\lua_letter_v        {\string\v} \immutable\edef\lua_letter_s        {\string\s}
-\immutable\edef\lua_letter_one      {\string\1} \immutable\edef\lua_letter_two      {\string\2}
-\immutable\edef\lua_letter_three    {\string\3} \immutable\edef\lua_letter_four     {\string\4}
-\immutable\edef\lua_letter_five     {\string\5} \immutable\edef\lua_letter_six      {\string\6}
-\immutable\edef\lua_letter_seven    {\string\7} \immutable\edef\lua_letter_eight    {\string\8}
-\immutable\edef\lua_letter_nine     {\string\9} \immutable\edef\lua_letter_zero     {\string\0}
+\permanent\cdef\lua_letter_backslash{\string\\}
+\permanent\cdef\lua_letter_bar      {\string\|} \permanent\cdef\lua_letter_dash     {\string\-}
+\permanent\cdef\lua_letter_lparent  {\string\(} \permanent\cdef\lua_letter_rparent  {\string\)}
+\permanent\cdef\lua_letter_lbrace   {\string\{} \permanent\cdef\lua_letter_rbrace   {\string\}}
+\permanent\cdef\lua_letter_squote   {\string\'} \permanent\cdef\lua_letter_dquote   {\string\"}
+\permanent\cdef\lua_letter_n        {\string\n} \permanent\cdef\lua_letter_r        {\string\r}
+\permanent\cdef\lua_letter_f        {\string\f} \permanent\cdef\lua_letter_t        {\string\t}
+\permanent\cdef\lua_letter_a        {\string\a} \permanent\cdef\lua_letter_b        {\string\b}
+\permanent\cdef\lua_letter_v        {\string\v} \permanent\cdef\lua_letter_s        {\string\s}
+\permanent\cdef\lua_letter_one      {\string\1} \permanent\cdef\lua_letter_two      {\string\2}
+\permanent\cdef\lua_letter_three    {\string\3} \permanent\cdef\lua_letter_four     {\string\4}
+\permanent\cdef\lua_letter_five     {\string\5} \permanent\cdef\lua_letter_six      {\string\6}
+\permanent\cdef\lua_letter_seven    {\string\7} \permanent\cdef\lua_letter_eight    {\string\8}
+\permanent\cdef\lua_letter_nine     {\string\9} \permanent\cdef\lua_letter_zero     {\string\0}
 
 \everyluacode {% \appendtoks
    \enforced\let\\\lua_letter_backslash
@@ -138,8 +138,8 @@
   {\setcatcodetable\luacatcodes
    \expand\everyluacode}
 
-\immutable\edef\luamajorversion{\ctxwrite{LUAMINORVERSION}}
-\immutable\edef\luaminorversion{\ctxwrite{LUAMAJORVERSION}}
+\permanent\cdef\luamajorversion{\ctxwrite{LUAMINORVERSION}}
+\permanent\cdef\luaminorversion{\ctxwrite{LUAMAJORVERSION}}
 
 %D We need a way to pass strings safely to \LUA\ without the need for tricky
 %D escaping. Compare:
@@ -181,7 +181,7 @@
 
 %D A handy helper:
 
-\permanent\def\luaexpanded#1{\luaescapestring\expandafter{\normalexpanded{#1}}}
+\permanent\def\luaexpanded#1{\luaescapestring\expandafter{\expanded{#1}}}
 
 %D Experimental:
 
@@ -235,7 +235,7 @@
 % use \setcatcodetable\luacatcodes instead of \obeyluatokens now.
 
 \def\luat_lua_code
-  {\normalexpanded{\endgroup\noexpand\directlua\expandafter{\the\scratchtoks}}} % \zerocount is default
+  {\expanded{\endgroup\noexpand\directlua\expandafter{\the\scratchtoks}}} % \zerocount is default
 
 % \startctxfunction MyFunctionA
 %     context(" A1 ")

@@ -484,38 +484,38 @@
 % \def\dosetMPcircularshade{\dosetMPsomePDFshade3}% #1
 %
 % \defineMPspecial{30}
-%   {\normalexpanded{\noexpand\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPrgbcolor{\gMPs{9}}{\gMPs{10}}{\gMPs{11}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPrgbcolor{\gMPs{9}}{\gMPs{10}}{\gMPs{11}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs7 \gMPs8 \gMPs{12} \gMPs{13}}%
 %    \dosetMPlinearshade{\gMPs{14}}}
 %
 % \defineMPspecial{31}
-%   {\normalexpanded{\noexpand\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPrgbcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPrgbcolor{\gMPs4}{\gMPs5}{\gMPs6}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPrgbcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs7 \gMPs8 \gMPs9 \gMPs{13} \gMPs{14} \gMPs{15}}%
 %    \dosetMPcircularshade{\gMPs{16}}}
 %
 % \defineMPspecial{32}
-%   {\normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPcmykcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
 %    \dosetMPlinearshade{\gMPs{16}}}
 %
 % \defineMPspecial{33}
-%   {\normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}{\gMPs{14}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPcmykcolor{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}{\gMPs{14}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{10} \gMPs{15} \gMPs{16} \gMPs{17}}%
 %    \dosetMPcircularshade{\gMPs{18}}}
 %
 % \defineMPspecial{34}
-%   {\normalexpanded{\noexpand\resolveMPspotcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPspotcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPspotcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPspotcolor{\gMPs{10}}{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{14} \gMPs{15}}%
 %    \dosetMPlinearshade{\gMPs{16}}}
 %
 % \defineMPspecial{35}
-%   {\normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
-%    \normalexpanded{\noexpand\resolveMPcmykcolor{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}{\gMPs{14}}}\to\MPshadeB
+%   {\expanded{\noexpand\resolveMPcmykcolor{\gMPs4}{\gMPs5}{\gMPs6}{\gMPs7}}\to\MPshadeA
+%    \expanded{\noexpand\resolveMPcmykcolor{\gMPs{11}}{\gMPs{12}}{\gMPs{13}}{\gMPs{14}}}\to\MPshadeB
 %    \edef\MPshadeC{\gMPs8 \gMPs9 \gMPs{10} \gMPs{15} \gMPs{16} \gMPs{17}}%
 %    \dosetMPcircularshade{\gMPs{18}}}
 %

@@ -117,7 +117,9 @@
    \c!metadata       =\v!page, % page | document | yes | no
    \c!cmyk           =,
    \c!crop           =\v!yes,
-  ]
+   \c!descriptiontext={\externalfigureparameter\c!alternativetext},
+   \c!alternativetext=,
+]
 
 %D Defining figures.
 
@@ -351,6 +353,8 @@
     \ifchkdimexpr\externalfigureparameter\c!height\or
         height \lastchkdimension
     \fi
+        descriptiontext {\externalfigureparameter\c!descriptiontext}
+        alternativetext {\externalfigureparameter\c!alternativetext}
    }%\relax
    \clf_figure_identify
    \relax
@@ -510,42 +514,44 @@
 \newbox \foundexternalfigure
 \newtoks\externalfigurepostprocessors
 
-\permanent\untraced\def\figurestatus        {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
-\permanent\untraced\def\figurewidth         {\clf_figurestatus{width}{0}sp}
-\permanent\untraced\def\figureheight        {\clf_figurestatus{height}{0}sp}
-\permanent\untraced\def\figuredepth         {\clf_figurestatus{depth}{0}sp}
-\permanent\untraced\def\figurexscale        {\clf_figurestatus{xscale}{1}}
-\permanent\untraced\def\figureyscale        {\clf_figurestatus{yscale}{1}}
-\permanent\untraced\def\figurereference     {\clf_figurestatus{reference}{}}
+\permanent\untraced\def\figurestatus         {\numexpr\clf_figurestatus{status}{0}\relax} % number: 0 = not found
+\permanent\untraced\def\figurewidth          {\clf_figurestatus{width}{0}sp}
+\permanent\untraced\def\figureheight         {\clf_figurestatus{height}{0}sp}
+\permanent\untraced\def\figuredepth          {\clf_figurestatus{depth}{0}sp}
+\permanent\untraced\def\figurexscale         {\clf_figurestatus{xscale}{1}}
+\permanent\untraced\def\figureyscale         {\clf_figurestatus{yscale}{1}}
+\permanent\untraced\def\figurereference      {\clf_figurestatus{reference}{}}
 
-\permanent\untraced\def\figuresize          {\clf_figurerequest{size}{}}
-\permanent\untraced\def\figurelabel         {\clf_figurerequest{label}{}}
-\permanent\untraced\def\figurefileoriginal  {\clf_figurerequest{name}{}}
-\permanent\untraced\def\figurefilepage      {\clf_figurerequest{page}{1}}
-\permanent\untraced\def\figurefileoptions   {\clf_figurerequest{options}{}}
-\permanent\untraced\def\figurefileconversion{\clf_figurerequest{conversion}{}}
-\permanent\untraced\def\figurefileresolution{\clf_figurerequest{resolution}{}}
-\permanent\untraced\def\figurefilecolor     {\clf_figurerequest{color}{}}
-\permanent\untraced\def\figurefilearguments {\clf_figurerequest{arguments}{}}
-\permanent\untraced\def\figurefilecache     {\clf_figurerequest{cache}{}}
-\permanent\untraced\def\figurefileprefix    {\clf_figurerequest{prefix}{}}
+\permanent\untraced\def\figuresize           {\clf_figurerequest{size}{}}
+\permanent\untraced\def\figurelabel          {\clf_figurerequest{label}{}}
+\permanent\untraced\def\figurefileoriginal   {\clf_figurerequest{name}{}}
+\permanent\untraced\def\figurefilepage       {\clf_figurerequest{page}{1}}
+\permanent\untraced\def\figurefileoptions    {\clf_figurerequest{options}{}}
+\permanent\untraced\def\figurefileconversion {\clf_figurerequest{conversion}{}}
+\permanent\untraced\def\figurefileresolution {\clf_figurerequest{resolution}{}}
+\permanent\untraced\def\figurefilecolor      {\clf_figurerequest{color}{}}
+\permanent\untraced\def\figurefilearguments  {\clf_figurerequest{arguments}{}}
+\permanent\untraced\def\figurefilecache      {\clf_figurerequest{cache}{}}
+\permanent\untraced\def\figurefileprefix     {\clf_figurerequest{prefix}{}}
+\permanent\untraced\def\figuredescriptiontext{\clf_figurerequest{descriptiontext}{}}
+\permanent\untraced\def\figurealternativetext{\clf_figurerequest{alternativetext}{}}
 
-\permanent\untraced\def\figurenaturalwidth  {\clf_figureused{width}{\number\dimexpr\externalfigureparameter\c!defaultwidth\relax}sp}
-\permanent\untraced\def\figurenaturalheight {\clf_figureused{height}{\number\dimexpr\externalfigureparameter\c!defaultheight\relax}sp}
-\permanent\untraced\def\figurexresolution   {\clf_figureused{xresolution}{0}}
-\permanent\untraced\def\figureyresolution   {\clf_figureused{yresolution}{0}}
-\permanent\untraced\def\figureorientation   {\clf_figureused{orientation}{1}}
-\permanent\untraced\def\figurerotation      {\clf_figureused{rotation}{0}}
-\permanent\untraced\def\figurexsize         {\clf_figureused{xsize}{0}}
-\permanent\untraced\def\figureysize         {\clf_figureused{ysize}{0}}
-\permanent\untraced\def\figurecolordepth    {\clf_figureused{colordepth}{0}}
+\permanent\untraced\def\figurenaturalwidth   {\clf_figureused{width}{\number\dimexpr\externalfigureparameter\c!defaultwidth\relax}sp}
+\permanent\untraced\def\figurenaturalheight  {\clf_figureused{height}{\number\dimexpr\externalfigureparameter\c!defaultheight\relax}sp}
+\permanent\untraced\def\figurexresolution    {\clf_figureused{xresolution}{0}}
+\permanent\untraced\def\figureyresolution    {\clf_figureused{yresolution}{0}}
+\permanent\untraced\def\figureorientation    {\clf_figureused{orientation}{1}}
+\permanent\untraced\def\figurerotation       {\clf_figureused{rotation}{0}}
+\permanent\untraced\def\figurexsize          {\clf_figureused{xsize}{0}}
+\permanent\untraced\def\figureysize          {\clf_figureused{ysize}{0}}
+\permanent\untraced\def\figurecolordepth     {\clf_figureused{colordepth}{0}}
 
-\permanent\untraced\def\figurefullname      {\clf_figureused{fullname}{}}
-\permanent\untraced\def\noffigurepages      {\clf_figureused{pages}{0}}
+\permanent\untraced\def\figurefullname       {\clf_figureused{fullname}{}}
+\permanent\untraced\def\noffigurepages       {\clf_figureused{pages}{0}}
 
-% \permanent\untraced\def\figurefilepath      {\clf_figurefilepath} % public in lua
-% \permanent\untraced\def\figurefilename      {\clf_figurefilename} % public in lua
-% \permanent\untraced\def\figurefiletype      {\clf_figurefiletype} % public in lua
+% \permanent\untraced\def\figurefilepath     {\clf_figurefilepath} % public in lua
+% \permanent\untraced\def\figurefilename     {\clf_figurefilename} % public in lua
+% \permanent\untraced\def\figurefiletype     {\clf_figurefiletype} % public in lua
 
 \permanent\let\naturalfigurewidth  \figurenaturalwidth
 \permanent\let\naturalfigureheight \figurenaturalheight
@@ -789,8 +795,8 @@
    \setexternalfigureparameter\c!align{\v!middle,\v!lohi}% we default to \v!none
    \inheritedexternalfigureframed
      {\ttxx \nohyphens
-%       name: \detokenize\expandafter{\normalexpanded{#1}}\crlf
-%       file: \detokenize\expandafter{\normalexpanded{#2}}\crlf
+%       name: \detokenize\expandafter{\expanded{#1}}\crlf
+%       file: \detokenize\expandafter{\expanded{#2}}\crlf
       name: \expandeddetokenize{#1}\crlf
       file: \expandeddetokenize{#2}\crlf
       state: #3
@@ -877,16 +883,20 @@
 
 \permanent\tolerant\protected\def\includesvgfile[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
-   \getdummyparameters[\c!offset=\zeropoint,#2]%
+   \letdummyparameter\c!offset\zeropoint
+   \resetdummyparameter\c!cache
+   \getdummyparameters[#2]%
    \setcatcodetable\ctxcatcodes % in case we use xml
-   \clf_includesvgfile{#1}{\dummyparameter\c!offset}%
+   \clf_includesvgfile{#1}{\dummyparameter\c!offset}{\dummyparameter\c!cache}%
    \egroup}
 
 \permanent\tolerant\protected\def\includesvgbuffer[#1]#*[#S#2]%
   {\hbox\bgroup % no \dontleavehmode
-   \getdummyparameters[\c!offset=\zeropoint,#2]%
+   \letdummyparameter\c!offset\zeropoint
+   \resetdummyparameter\c!cache
+   \getdummyparameters[#2]%
    \setcatcodetable\ctxcatcodes % in case we use xml
-   \clf_includesvgbuffer{#1}{\dummyparameter\c!offset}%
+   \clf_includesvgbuffer{#1}{\dummyparameter\c!offset}{\dummyparameter\c!cache}%
    \egroup}
 
 % Bonus:

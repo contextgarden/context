@@ -70,8 +70,6 @@
      \grph_exported_flush
    \to \everystoptext}
 
-\aliased\let\dotagexported\relax
-
 \appendtoks
    \enforced\let\dotagexported\grph_exported_tag
 \to \everyenableelements
@@ -103,7 +101,8 @@
 \permanent\protected\def\grph_start_image_tagged
   {\begingroup
    \global\advanceby\nofexportedboxes\plusone
-   \dostarttagged\t!image{\the\nofexportedboxes}%
+   \edef\figureexported{\the\nofexportedboxes}%
+   \dostarttaggednodetail\t!image
    \setbox\b_grph_image\hpack\bgroup
    \ignorepars
    \ignorespaces}

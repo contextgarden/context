@@ -152,7 +152,7 @@
          \box\nextbox
          \hss}
       \vss}%
-   \normalexpanded
+   \expanded
      {\egroup
       \d_pack_positioning_x_position\the\d_pack_positioning_x_position
       \d_pack_positioning_y_position\the\d_pack_positioning_y_position

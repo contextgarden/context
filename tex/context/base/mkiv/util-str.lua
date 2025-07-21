@@ -1118,6 +1118,11 @@ local format_z = function(f)
     return "''" -- okay, not that efficient to append '' but a special case anyway
 end
 
+local format_Z = function(f)
+ -- return "a" .. (tonumber(f) or 1)
+    return format("a%s",tonumber(f) or 1)
+end
+
 --
 
 -- local strip
@@ -1222,7 +1227,8 @@ local builder = Cs { "start",
               + V("A") -- new
               + V("j") + V("J") -- stripped e E
               + V("m") + V("M") -- new (formatted number)
-              + V("z") -- new
+           -- + V("z") -- new
+              + V("z") + V("Z")
               --
               + V(">") -- left padding
               + V("<") -- right padding
@@ -1282,6 +1288,7 @@ local builder = Cs { "start",
     --
     ["z"] = (prefix_any * P("z")) / format_z, -- %z => skip n arguments
  -- ["Z"] = (prefix_any * P("Z")) / format_Z, -- %Z => optionally strip zeros
+    ["Z"] = (prefix_any * P("Z")) / format_Z, -- %Z => access argument N
     --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
     ["A"] = (prefix_any * P("A")) / format_A, -- %A => "..." (forces tostring)

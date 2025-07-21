@@ -1119,7 +1119,7 @@
    %
    \setbox#1\vpack\bgroup
      \hpack\bgroup
-       \normalexpanded{\scale
+       \expanded{\scale
         %[\c!xscale=\plusthousand,\c!yscale=\scratchcounter]
          [\c!sx=1,\c!sy=\the\scratchfloat]%
          {\box#1}}%

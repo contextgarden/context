@@ -105,6 +105,7 @@ local getlist             = nuts.getlist
 local getchar             = nuts.getchar
 local getwhd              = nuts.getwhd
 local getleader           = nuts.getleader
+local getlanguage         = nuts.getlanguage
 local getruledimensions   = nuts.getruledimensions
 
 local tailoflist          = nuts.tail
@@ -269,8 +270,7 @@ local namespaces = {
 }
 
 local missingua = table.setmetatableindex(function(t,k)
- -- local v = version == 1 and "Div" or "NonStruct"
-    local v = "NonStruct"
+    local v = "Div"
     t[k] = v
     return v
 end)
@@ -394,10 +394,15 @@ local function finishstructure()
                             ua = namespaces.ua2
                             ua.force = true
                         end
-                        if pdf ~= k then
+                        --
+                        -- Another piece of mid 2025 crap that we now always need to add but we keep
+                        -- the test commented as reference. The more bloat the better I guess.
+                        --
+                     -- if pdf ~= k then
                             ua = pdfarray { pdfconstant(pdf), ua.ref }
                             n.map[k] = ua
-                        end
+                     -- end
+                        --
                         if not usednamespaces then
                             usednamespaces = pdfarray()
                         end
@@ -587,7 +592,11 @@ local function finishstructure()
         pdfflushobject(structure_ref,structuretree)
         addtocatalog("StructTreeRoot",pdfreference(structure_ref))
         --
-        if version == 1 then
+        -- So out of a sudden (sometime 2025) this is now mandate when a document is tagged. Documents
+        -- that validated before didn't after updating the validator. Well ... but how about those older
+        -- documents that were found okay before?
+        --
+     -- if version == 1 then -- always was optional anyway
             local markinfo = pdfdictionary {
                 Marked         = pdfboolean(true) or nil,
              -- UserProperties = pdfboolean(true), -- maybe some day
@@ -595,8 +604,7 @@ local function finishstructure()
              -- AF             = #embeddedfilelist > 0 and pdfreference(pdfflushobject(embeddedfilelist)) or nil,
             }
             addtocatalog("MarkInfo",pdfreference(pdfflushobject(markinfo)))
-        end
-        --
+     -- end
     end
 
     if trace_tree then
@@ -1131,15 +1139,21 @@ local function makecontent(start,parent,id,specification,range)
     local last = index
     index = index + 1
     if id == "image" then
+        -- when we are in \startTEXpage .... \stopTEXpage we have not really
+        -- an element in the end of th elist as all is unstructured
         local list  = specification.taglist
         local data  = usewithcare.images[list[#list]]
-        local label = data and data.label or ""
         local d = pdfdictionary {
             Type = pdf_mcr,
             Pg   = pageref,
             MCID = last,
         }
-        parent.dict.Alt  = pdfunicode(label ~= "" and label or "image")
+        if data then
+            local alt = data.alternativetext or ""
+            parent.dict.Alt = pdfunicode(alt ~= "" and alt or "image")
+        else
+            -- not really tagged as image
+        end
         kids[#kids+1] = d
     elseif pagenum == parent.pnum then
         kids[#kids+1] = last
@@ -1209,6 +1223,9 @@ function nodeinjections.addtags(head,ispage)
 --     if not enabled then
 --         return
 --     end
+
+    local pdflanguage = languages.pdflanguage
+    local listtoutf   = nodes.listtoutf
 
     if not EMCliteral then
         EMCliteral = register(setstate("EMC"))
@@ -1296,6 +1313,7 @@ function nodeinjections.addtags(head,ispage)
                     if not blob then
                         mblob = false
                         if last ~= at then
+-- print("A",lastpar,ap,getattr(n,a_taggedpar),last,at,utf.char(nuts.getchar(n)))
                             range = { at, "glyph", n, n, parent } -- attr id start stop list
                             nofranges = nofranges + 1
                             ranges[nofranges] = range
@@ -1303,8 +1321,9 @@ function nodeinjections.addtags(head,ispage)
                             lastparat = at
                             lastpar = ap
                         elseif range then
+-- print("B",lastpar,ap,getattr(n,a_taggedpar),at,lastparat,utf.char(nuts.getchar(n)))
                             if lastpar ~= ap and at and lastparat == at then
-                            -- local specification = taglist[at]
+                             -- local specification = taglist[at]
                                 pushtag(at < tag_document_level and tag_document_level or at)
                                 local ac = starttag("break")
                                 stoptag()
@@ -1320,9 +1339,11 @@ function nodeinjections.addtags(head,ispage)
                                 last = at
                                 lastparat = at
                             else
+-- print("C",lastpar,ap,at,lastparat,utf.char(nuts.getchar(n)))
                                 range[4] = n -- stop
                             end
                         end
+-- inspect(ranges)
                  -- elseif blob == mblob and at == last then
                     elseif blob == mblob and (last and last > 0) then
                         if range then
@@ -1528,7 +1549,7 @@ function nodeinjections.addtags(head,ispage)
                 elseif id == "navigationpage" then
                     report_tags("P %5i %s : %i%s",attr,s,pagenum or 0,pdf)
                 else
-                    report_tags("T %5i %s : %s%s",attr,s,nodes.listtoutf(start,false,true,stop),pdf)
+                    report_tags("T %5i %s : %s%s",attr,s,listtoutf(start,false,true,stop),pdf)
                 end
             else
                 report_tags("-------")
@@ -1591,6 +1612,8 @@ function nodeinjections.addtags(head,ispage)
 
 -- inspect(ranges)
 
+    local language = texgetcount("mainlanguagenumber")
+
     for i=1,nofranges do
 
         local range = ranges[i]
@@ -1603,9 +1626,6 @@ function nodeinjections.addtags(head,ispage)
         local list  = range[5]
      -- local blob = range[6]
 --         local par   = range[8]
-
---         print(id,start,stop)
-
         if attr == 0 then -- should be false then
             local literal = setstate(makeignore(false,range))
             inject(start,stop,list,literal)
@@ -1652,7 +1672,8 @@ function nodeinjections.addtags(head,ispage)
             else
                 for j=common+1,noftags do
                     local tag = currentlist[j]
-                    local prv = elements[tag] or makeelement(tag,prev)
+                    local etg = elements[tag]
+                    local prv = etg or makeelement(tag,prev)
                     if prv == false then
                         -- ignore this one
                         prev   = false
@@ -1667,11 +1688,30 @@ function nodeinjections.addtags(head,ispage)
             end
 
             if prev then
+
+                if id == "glyph" then
+                    -- It makes little sense to check if we change a language as that can happen
+                    -- mixed in a running text as well as in nested elements. One should just use
+                    -- proper environments. So, we don't even bother to warn here for the few
+                    -- cases where we can detect it. We delegate that to the \TEX\ end.
+                    local lan = getlanguage(start)
+                    if lan and lan > 0 and lan ~= language then
+                     -- if lan == getlanguage(stop) then
+                            local dict = prev.dict
+                            if dict then
+                                dict.Lang = pdflanguage(lan)
+                            end
+                     -- else -- unreliable
+                     --     report_tags("confusing language %a range: %s",languagenumbers[lan],listtoutf(start,false,true,stop))
+                     -- end
+                    end
+                end
+
                 literal = setstate(makecontent(start,prev,id,specification,range))
             elseif ignore then
                 literal = setstate(makeignore(specification,range))
             else
-                -- maybe also ignore or maybe better: comment or so
+                -- maybe ignore too
             end
 
             if literal then
@@ -1777,4 +1817,87 @@ function codeinjections.discardpages(state)
         state = true
     end
     lpdf.setpagestate(state)
+end
+
+-- We now delegate as w need to push and pop anyway:
+
+do
+
+    local stack = { }
+    local level = 0
+    local count = 0
+
+ -- local a_taggedpar <const> = attributes.private("taggedpar")
+    local unsetvalue  <const> = attributes.unsetvalue
+
+    local report = logs.reporter("structure","paragraphs")
+    local trace  = false
+
+    trackers.register("structure.paragraphs", function(v) trace = v end)
+
+    local texsetattribute = tex.setattribute
+    local texgetattribute = tex.getattribute
+
+ -- interfaces.implement {
+ --     name      = "strc_tags_parcounter_check",
+ --  -- public    = true,
+ --     protected = true,
+ --     noaligned = true,
+ --     actions   = function()
+ --         if level == 0 then
+ --             count = 1
+ --             level = 1
+ --             stack[level] = count
+ --             texsetattribute(a_taggedpar,count,"global")
+ --             if trace then
+ --                 report("%wforcing, new %s",level,count)
+ --             end
+ --         end
+ --     end
+ -- }
+
+    interfaces.implement {
+        name      = "strc_tags_parcounter_push",
+     -- public    = true,
+        protected = true,
+     -- noaligned = true,
+        actions   = function()
+            local old = texgetattribute(a_taggedpar)
+            local new = count + 1
+            level = level + 1
+            stack[level] = old
+            texsetattribute(a_taggedpar,new,"global")
+            if trace then
+                report("%wpushing, old %s, new %s",level,
+                    old == unsetvalue and "*" or old,
+                    new == unsetvalue and "*" or new
+                )
+            end
+            count = new
+        end
+    }
+
+    interfaces.implement {
+        name      = "strc_tags_parcounter_pop",
+     -- public    = true,
+        protected = true,
+     -- noaligned = true,
+        actions   = function()
+            local old = texgetattribute(a_taggedpar)
+            local new = stack[level] or 0
+            if trace then
+                report("%wpopping, old %s, new %s",level,
+                    old == unsetvalue and "*" or old,
+                    new == unsetvalue and "*" or new
+                )
+            end
+            if level > 0 then
+                level = level - 1
+            else
+                -- error
+            end
+            texsetattribute(a_taggedpar,new,"global")
+        end
+    }
+
 end

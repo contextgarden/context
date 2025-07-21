@@ -92,6 +92,8 @@
 
 \newconditional \c_math_extensibles \c_math_extensibles\conditionaltrue
 
+\newboundary    \c_math_display_mode_boundary % experiment, saves attributes
+
 \registerctxluafile{math-ini}{autosuffix}
 \registerctxluafile{math-dim}{autosuffix}
 %registerctxluafile{math-act}{autosuffix}
@@ -188,25 +190,25 @@
 % These are frozen values because otherwise we need to sync them when the predefined
 % muskip (internal) registers are changed.
 
-\immutable\mugluespecdef\defaultthickermuskip    7mu plus 5mu
-\immutable\mugluespecdef\defaultthickmuskip      5mu plus 3mu minus 1mu
-\immutable\mugluespecdef\defaultmedmuskip        4mu plus 2mu minus 2mu
-\immutable\mugluespecdef\defaultthinmuskip       3mu
-\immutable\mugluespecdef\defaulttinymuskip       2mu minus 1mu
-\immutable\mugluespecdef\defaultpettymuskip      1mu minus 0.5mu
+\permanent\immutable\mugluespecdef\defaultthickermuskip    7mu plus 5mu
+\permanent\immutable\mugluespecdef\defaultthickmuskip      5mu plus 3mu minus 1mu
+\permanent\immutable\mugluespecdef\defaultmedmuskip        4mu plus 2mu minus 2mu
+\permanent\immutable\mugluespecdef\defaultthinmuskip       3mu
+\permanent\immutable\mugluespecdef\defaulttinymuskip       2mu minus 1mu
+\permanent\immutable\mugluespecdef\defaultpettymuskip      1mu minus 0.5mu
 
-\immutable\mugluespecdef\halfthickmuskip         2.5mu plus 1.5mu minus 0.5mu
-\immutable\mugluespecdef\halfmedmuskip           2mu plus 1mu minus 1mu
-\immutable\mugluespecdef\halfthinmuskip          1.5mu
-\immutable\mugluespecdef\halftinymuskip          1mu minus 0.5mu
-\immutable\mugluespecdef\halfpettymuskip         0.5mu minus 0.25mu
+\permanent\immutable\mugluespecdef\halfthickmuskip         2.5mu plus 1.5mu minus 0.5mu
+\permanent\immutable\mugluespecdef\halfmedmuskip           2mu plus 1mu minus 1mu
+\permanent\immutable\mugluespecdef\halfthinmuskip          1.5mu
+\permanent\immutable\mugluespecdef\halftinymuskip          1mu minus 0.5mu
+\permanent\immutable\mugluespecdef\halfpettymuskip         0.5mu minus 0.25mu
 
-\immutable\mugluespecdef\hairmuskip                .15mu
+\permanent\immutable\mugluespecdef\hairmuskip                .15mu
 
-\immutable\integerdef   \defaultrelpenalty       500
-\immutable\integerdef   \defaultbinoppenalty     700
-\immutable\integerdef   \defaultprerelpenalty   -100
-\immutable\integerdef   \defaultprebinoppenalty -100
+\permanent\immutable\integerdef   \defaultrelpenalty       500
+\permanent\immutable\integerdef   \defaultbinoppenalty     700
+\permanent\immutable\integerdef   \defaultprerelpenalty   -100
+\permanent\immutable\integerdef   \defaultprebinoppenalty -100
 
 \newmuskip\thickermuskip      \thickermuskip      \defaultthickermuskip
 \newmuskip\fencemuskip        \fencemuskip        \defaultpettymuskip
@@ -266,6 +268,10 @@
 \setnewconstant\mathfakecode            \mathclassvalue fake
 \setnewconstant\mathnumbergroupcode     \mathclassvalue numbergroup
 \setnewconstant\mathcontinuationcode    \mathclassvalue continuation
+
+%D Here we had a curious overload: mathnumbergroupcode was also defined in
+%D toks-ini/aux so it was an engine thing that I then decide to rename to
+%D equationnumbergroup to make life easier.
 
 %D \starttyping
 %D \enabletrackers[math.suspicious]
@@ -468,7 +474,7 @@
 % \preinlinepenalty       23 \postinlinepenalty      56 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
 % \preshortinlinepenalty 123 \postshortinlinepenalty456 x$xx$x\par x$x$x\par x$x^2$x\par x$!$x\par
 
-% \immutable\integerdef\defaultpreshortinlinepenalty  150
+% \permanent\immutable\integerdef\defaultpreshortinlinepenalty  150
 
 % when we want \preshortinlinepenalty to kick in here we need to have a bit more shrink
 % maybe advance it by \shortinlinemaththreshold/100
@@ -865,33 +871,72 @@
     \let\ordlimits\Umathlimits % downward compatible
 \fi
 
-\appendtoks
-    \c_attr_mathmode\plusone % actually we don't use display math
-\to \everydisplay
-
-\appendtoks
-    \c_attr_mathmode\plusone
-\to \everybeforedisplayformula
-
-% defined at lua end \permanent\protected\def\resetmathattributes{\resetmathattributes}
-
-% handy
-
-\newconditional\indisplaymath
-
-\appendtoks
-    \indisplaymath\conditionalfalse
-\to \everymath
-
-\appendtoks
-    \indisplaymath\conditionaltrue % actually we don't use display math
-\to \everydisplay
+%D Defined at the \LUA end:
+%D
+%D \starttyping
+%D \permanent\protected\def\resetmathattributes{\resetmathattributes}
+%D \stoptyping
 
 % \appendtoks
 %     \linebreakpasses\zerocount
 % \to \everymathematics
 
-\permanent\def\inlineordisplaymath{\ifconditional\indisplaymath\expandafter\secondoftwoarguments\else\expandafter\firstoftwoarguments\fi}
+%D We used to do this with an attribute but that oen then gets assigned to every
+%D node in the formula which is a waste.
+
+% \appendtoks
+%     \c_attr_mathmode\plusone
+% \to \everybeforedisplayformula
+
+%D So instead we went for a boundary node but then one really has to make sure that
+%D it comes first (unless we look ahead a few nodes). That said, this is the robust
+%D approach:
+
+\def\math_display_mode_signal{\c_attr_mathmode\plusone}
+
+%D This one is cheaper but it needs checking when we change leading stuff:
+
+% \def\math_display_mode_signal{\boundary\c_math_display_mode_boundary}
+
+%D Here we do the same but more granular (like more modes in the future):
+
+% \def\math_display_mode_signal{\attributeboundary\c_math_display_mode_boundary\inlineordisplaymath\zerocount\plusone}% mnore granular
+
+%D Double dollars now are just inline (the mode is set later in this
+%D file). So in \CONTEXT\ these double dollars just bring us into
+%D displaystyle!
+
+% \appendtoks
+%     \c_attr_mathmode\plusone % actually we don't use display math
+% \to \everydisplay
+
+\newconditional\indisplaymath
+
+\permanent\def\inlineordisplaymath
+  {\ifconditional\indisplaymath
+     \expandafter\secondoftwoarguments
+   \else
+     \expandafter\firstoftwoarguments
+   \fi}
+
+%D This is the only place where we assign these two registers and changing will make
+%D math mostly work out bad! We might eventually protect them. That would mean that
+%D we also need some special way to reset math, see for instance in \type
+%D {supp-mat.mkxl}, where we reset \typ {\everymathematics} in \typ {\textmath}.
+
+%D Watch out: \type {\everyinsidemathematics} is done explicitly at the moment that
+%D it makes sense!
+
+\immutable \everymath {%
+    \expand\everymathematics
+    \indisplaymath\conditionalfalse
+}
+
+\immutable \everydisplay {%
+    \expand\everymathematics
+    \indisplaymath\conditionaltrue
+    \displaystyle
+}
 
 \permanent\protected\def\forcedisplaymath
   {\ifmmode
@@ -1054,12 +1099,12 @@
 
 \def\math_trace_blobs_indeed_yes
   {\markblobindexdone{\currentlanguage}\scratchcounter
-   \normalexpanded{\csname\v!mathnote\endcsname
+   \expanded{\csname\v!mathnote\endcsname
      [\v!mathnote:\currentlanguage:\the\scratchcounter]%
      {\definedfont[\s!MathRoman]\getmathtextblob{\currentlanguage}\the\currentmathblob}}}
 
 \def\math_trace_blobs_indeed_nop
-  {\normalexpanded{\note[\v!mathnote:\currentlanguage:\the\scratchcounter]}}
+  {\expanded{\note[\v!mathnote:\currentlanguage:\the\scratchcounter]}}
 
 \protected\def\math_trace_blobs_indeed
   {\dontleavehmode
@@ -1908,6 +1953,7 @@
 \ifdefined\mathbin   \else \aliased\let\mathbin  \normalmathbinary      \aliased\let\normalmathbin  \normalmathbinary      \fi
 \ifdefined\mathrel   \else \aliased\let\mathrel  \normalmathrelation    \aliased\let\normalmathrel  \normalmathrelation    \fi
 \ifdefined\mathpunct \else \aliased\let\mathpunct\normalmathpunctuation \aliased\let\normalmathpunct\normalmathpunctuation \fi
+
 \ifdefined\underline \else \aliased\let\underline\normalmathunderline   \aliased\let\normalunderline\normalmathunderline   \fi
 \ifdefined\overline  \else \aliased\let\overline \normalmathoverline    \aliased\let\normaloverline \normalmathoverline    \fi
 
@@ -1933,8 +1979,8 @@
 \permanent\protected\def\mathcodeallcommand#1#2%
   {\mathatom \s!class \mathcodechecked{#1} \s!all \mathcodechecked{#2}}
 
-\def\math_class_by_parameter    #1#2{\normalexpanded{\noexpand\mathcodechecked{#1#2}}}
-\def\math_atom_by_parameter       #1{\normalexpanded{\noexpand\math_atom_by_parameter_indeed{#1\c!mathclass}}}
+\def\math_class_by_parameter    #1#2{\expanded{\noexpand\mathcodechecked{#1#2}}}
+\def\math_atom_by_parameter       #1{\expanded{\noexpand\math_atom_by_parameter_indeed{#1\c!mathclass}}}
 \def\math_atom_by_parameter_indeed#1{\mathatom \s!class \mathcodechecked{#1}}
 
 % \startlines
@@ -1995,7 +2041,7 @@
 %definemathcommand [joinrel]                 {\mathrel{\mkern-3mu}}
 %definemathcommand [joinrel]   [\s!relation] {\mkern-3mu}
 
-\immutable\chardef\c_math_strut"28
+\permanent\chardef\c_math_strut"28
 
 %D For the evolution of these struts see the git repositories and older code in
 %D \MKIV\ and \MKI\ (commented code removed end April 2022).
@@ -2116,11 +2162,23 @@
    \dostoptagged
    \endgroup}
 
-\protected\permanent\def\textmathematics#1%
+% \protected\permanent\def\textmathematics#1%
+%   {\begingroup
+%    \currentmathblobnesting\minusone
+%    \mathematics{#1}%
+%    \endgroup}
+
+\protected\permanent\def\math_text_indeed#1%
   {\begingroup
-   \currentmathblobnesting\minusone
-   \mathematics{#1}%
+   \currentmathblobnesting\minusone#1%
    \endgroup}
+
+\protected\permanent\def\textmathematics
+  {\ifmmode
+     \expandafter\firstofoneargument
+   \else
+     \expandafter\math_text_indeed
+   \fi}
 
 %D The next hack is needed needed for sine, cosine etc.
 
@@ -2278,7 +2336,7 @@
    \ifempty\p_command
      \endgroup\math_function_handle_normal#1{#2}{#3}%
    \else
-     \normalexpanded{\endgroup\p_command\expandafter}%
+     \expanded{\endgroup\p_command\expandafter}%
    \fi}
 
 \def\math_function_handle_language#1#2%
@@ -3407,7 +3465,7 @@
 %    \fi}
 
 \permanent\protected\def\verbosemathstyle#1% #1 is number (\normalmathstyle)
-  {{\normalexpanded{\relax\darkgray\ttxx[\number#1:\ifcase\numexpr#1\relax
+  {{\expanded{\relax\darkgray\ttxx[\number#1:\ifcase\numexpr#1\relax
                 display\or   % 0
          crampeddisplay\or   % 1
                    text\or   % 2
@@ -3481,13 +3539,13 @@
   {\math_style_hbox{#1}}
 
 \protected\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
-  {\normalexpanded{\hbox#1\bgroup
+  {\expanded{\hbox#1\bgroup
      \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#2\stopimath\egroup}
 
 % adaptive variant:
 %
 % \protected\def\math_style_hbox#1#2% sensitive for: a \over b => {a\over b} or \frac{a}{b}
-%   {\normalexpanded{\setbox\scratchbox\hbox#1\bgroup
+%   {\expanded{\setbox\scratchbox\hbox#1\bgroup
 %   \mathbeginclass\lastrightclass
 %   \startimath\givenmathstyle\the\mathstyle\relax}%
 %      \mathsurround\zeropoint#2\stopimath\egroup
@@ -3495,19 +3553,19 @@
 %   \mathrightclass\lastrightclass   }
 
 \permanent\protected\def\mathstylevbox#1%
-  {\normalexpanded{\vbox\bgroup
+  {\expanded{\vbox\bgroup
      \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \permanent\protected\def\mathstylevcenter#1%
-  {\normalexpanded{\vcenter\bgroup
+  {\expanded{\vcenter\bgroup
      \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup}
 
 \permanent\protected\def\mathstylevcenteredhbox#1%
-  {\normalexpanded{\vcenter\bgroup\hbox\bgroup
+  {\expanded{\vcenter\bgroup\hbox\bgroup
      \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \permanent\protected\def\mathstylevcenteredvbox#1%
-  {\normalexpanded{\vcenter\bgroup\vbox\bgroup
+  {\expanded{\vcenter\bgroup\vbox\bgroup
      \startimath\triggeredmathstyle\normalmathstyle}\mathsurround\zeropoint#1\stopimath\egroup\egroup}
 
 \permanent\protected\def\setmathsmalltextbox#1#2#%
@@ -3815,10 +3873,10 @@
 
 % \def\math_styles_check_style_parameter#1#2%
 %    {\ifempty{#1\c!mathstyle}%
-%       \normalexpanded{#2{\c!mathstyle}{\currentverbosemathstyle}}%
+%       \expanded{#2{\c!mathstyle}{\currentverbosemathstyle}}%
 %     \fi}
 
-\immutable\def\currentverbosemathstyle
+\permanent\def\currentverbosemathstyle
   {\ifmathstyle \s!display
    \or          \s!text
    \or          \s!text,\s!cramped
@@ -3935,7 +3993,7 @@
    \c_math_styles_state_cramped\zerocount
    \c_math_styles_state_size   \zerocount
    \rawprocesscommacommand[\m_math_style_asked]\math_style_collect
-   \gletcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\normalexpanded
+   \gletcsname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\expanded
      {\endcsname\math_style_add_to_cache_choice}%
    \endlocalcontrol
    \csname\ifmmode\??mathstylecachem\the\mathstyle:\else\??mathstylecachet\fi\m_math_style_asked\endcsname
@@ -4237,8 +4295,6 @@
 % \setupmathematics
 %   [setups=math:morespacing]
 
-\newtoks\everyinsidemathematics
-
 \appendtoks
     \edef\p_setups{\mathematicsparameter\c!setups}%
     \ifempty\p_setups\else
@@ -4250,7 +4306,7 @@
 % new:
 
 \permanent\protected\def\smallmathsymbol#1%
-  {\mathematics{\mathbin{\normalexpanded{\raise.15\exheight\hbox{\normalstartimath
+  {\mathematics{\mathbin{\expanded{\raise.15\exheight\hbox{\normalstartimath
      \triggeredmathstyle{\the\numexpr\normalmathstyle+2\relax}#1%
    \normalstopimath}}}}}
 
@@ -4733,18 +4789,20 @@
 %D \startpacked {\mathdisplaymode\zerocount \getbuffer} \stoppacked
 %D \startpacked {\mathdisplaymode\plusone   \getbuffer} \stoppacked
 %D
-%D So we do:
+%D So we do the next. At some point this primitive will be blocked
+%D after being set do don't assume it's there.
 
-\mathdisplaymode\plusone
+\mathdisplaymode\plusone % expands \everydisplay
+%mathdisplaymode\plustwo % expands \everymath
 
 %D Just to be sure:
 
-\immutable\integerdef\c_math_glyph_options_default\numexpr
+\permanent\immutable\integerdef\c_math_glyph_options_default\numexpr
     \noexpansionglyphoptioncode
    +\noprotrusionglyphoptioncode
 \relax
 
-\immutable\integerdef\c_math_glyph_options_hz\numexpr
+\permanent\immutable\integerdef\c_math_glyph_options_hz\numexpr
     \noprotrusionglyphoptioncode
 \relax
 
@@ -5081,11 +5139,11 @@
    \tohexadecimal\mathcontinuationcode % 2 bytes
    \tohexadecimal\mathcontinuationcode % 2 bytes
 
-\immutable\integerdef\c_math_alignscripts_bits\numexpr
+\permanent\immutable\integerdef\c_math_alignscripts_bits\numexpr
     "1000000 * \realignscriptsdoublescriptmodecode
 \relax
 
-\immutable\integerdef\c_math_obeyempty_bits\numexpr
+\permanent\immutable\integerdef\c_math_obeyempty_bits\numexpr
     \ignoreemptysuperscriptsmodecode
    +\ignoreemptysubscriptsmodecode
    +\ignoreemptyprimescriptsmodecode

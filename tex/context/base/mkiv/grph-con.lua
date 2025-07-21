@@ -469,9 +469,10 @@ if CONTEXTLMTXMODE > 0 then
     local function remap(specification)
         local fullname = specification.fullname
         if fullname then
-            local only = file.nameonly(fullname)
-            local name = formatters["svg-%s-inclusion"](only)
-            local code = formatters["\\includesvgfile[%s]\\resetbuffer[%s]"](fullname,name)
+            local only  = file.nameonly(fullname)
+            local cache = specification.cache or ""
+            local name  = formatters["svg-%s-inclusion"](only)
+            local code  = formatters["\\includesvgfile[%s][cache=%s]\\resetbuffer[%s]"](fullname,cache,name)
             buffers.assign(name,code)
             specification.format   = "buffer"
             specification.fullname = name

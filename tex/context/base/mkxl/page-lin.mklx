@@ -138,7 +138,7 @@
    #3% todo: #3{#1} as there is no need to pass #1 as part of #3
    % for the moment we use a simple system i.e. no prefixes etc .. todo: store as number
    \c_strc_references_bind_state\zerocount % we don't want the prewordbreak and manage it here
-   \normalexpanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberingparameter\c!conversion}{\the\c_page_lines_reference}}% kind labels userdata text
+   \expanded{\strc_references_set_named_reference{line}{#2}{conversion=\linenumberingparameter\c!conversion}{\the\c_page_lines_reference}}% kind labels userdata text
    \endgroup}
 
 % \def\page_lines_reference_start#1{\page_lines_some_reference{#1}{lr:b:#1}{}} % reimplemented later

@@ -1650,12 +1650,12 @@
    \tabl_tabulate_pickup}
 
 \protected\def\tabl_tabulate_pickup_interfaced
-  {\normalexpanded{\tabl_tabulate_pickup_indeed
+  {\expanded{\tabl_tabulate_pickup_indeed
       \expandafter\noexpand\csname\e!start\v!tabulate\endcsname
       \expandafter\noexpand\csname\e!stop \v!tabulate\endcsname}}
 
 \protected\def\tabl_tabulate_pickup_specific
-  {\normalexpanded{\tabl_tabulate_pickup_indeed
+  {\expanded{\tabl_tabulate_pickup_indeed
       \expandafter\noexpand\csname\e!start\currenttabulationparent\endcsname
       \expandafter\noexpand\csname\e!stop \currenttabulationparent\endcsname}}
 

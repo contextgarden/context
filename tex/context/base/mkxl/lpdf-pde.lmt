@@ -623,14 +623,33 @@ function lpdf_epdf.load(filename,userpassword,ownerpassword,fromstring)
                     __copied__ = { },
                     __data__   = __data__,
                 }
-                document.Catalog     = some_dictionary(getcatalog(__data__),document)
-                document.Info        = some_dictionary(getinfo(__data__),document)
-                document.Trailer     = some_dictionary(gettrailer(__data__),document)
-                document.catalog     = document.Catalog
-                document.info        = document.Info
-                document.trailer     = document.Trailer
+                local catalog = getcatalog(__data__)
+                local info    = getinfo(__data__)
+                local trailer = gettrailer(__data__)
+                if catalog then
+                    catalog = some_dictionary(catalog,document)
+                else
+                    report_epdf("the document is damaged or empty")
+                    return
+                end
+                if info then
+                    info = some_dictionary(info,document)
+                else
+                    info = { } -- optional or even forbidden in some formats
+                end
+                if trailer then
+                    trailer = some_dictionary(trailer,document)
+                else
+                    trailer = { } -- can we recover from this
+                end
+                document.Catalog = catalog
+                document.Info    = info
+                document.Trailer = trailer
+                document.catalog = catalog
+                document.info    = info
+                document.trailer = trailer
                 --
-                document.encrypted   = document.Trailer.Encrypt and true or false
+                document.encrypted   = trailer.Encrypt and true or false
                 local permissions    = getpermissions(__data__)
                 document.permissions = permissions and permissions >= 0 and lpdf.topermissions(permissions) or nil
                 --
@@ -977,28 +996,33 @@ function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
          -- inspect(list)
             for i=1,#list do
                 local li = list[i]
---                 if type(li) == "table" then
+                if type(li) == "table" then
                     local kind = li[1]
+                    local what = li[2]
                     if kind == "hex" then
-                        list[i] = lpegmatch(p_hex_to_utf,li[2])
+                        list[i] = lpegmatch(p_hex_to_utf,what)
                     elseif kind == "string" then
-                        list[i] = lpegmatch(p_dec_to_utf,li[2])
+                        list[i] = lpegmatch(p_dec_to_utf,what)
                     else
-                        list[i] = li[2] -- kern
+                        -- kern
+                        list[i] = ""
+--                         list[i] = what -- kern
                     end
---                 else
---                     -- kern
---                 end
+                else
+                    -- kern
+                    list[i] = ""
+                end
             end
         elseif operator == "Tj" or operator == "'" or operator == '"' then
             -- { string,  Tj } { string, ' } { n, m, string, " }
             local data = entry[size-1]
             local list = data[2]
             local kind = list[1]
+            local what = list[2]
             if kind == "hex" then
-                list[2] = lpegmatch(p_hex_to_utf,li[2])
+                list[2] = lpegmatch(p_hex_to_utf,what) -- was li[2]
             elseif kind == "string" then
-                list[2] = lpegmatch(p_dec_to_utf,li[2])
+                list[2] = lpegmatch(p_dec_to_utf,what) -- was li[2]
             end
         end
     end

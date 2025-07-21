@@ -42,6 +42,7 @@ local vectornew             = vector.new
 local vectortruncate        = vector.truncate
 local vectorgetepsilon      = vector.getepsilon
 local vectortotable         = vector.totable
+local vectorgetrow          = vector.getrow
 
 local contour               = vector.contour
 local mesh                  = vector.mesh
@@ -50,8 +51,9 @@ local contourgetmesh        = contour.getmesh
 local contourgetarea        = contour.getarea
 local contouraverage        = contour.average
 local contoursort           = contour.sort
-local contourtriangulate    = contour.triangulate
+local contourmakemesh       = contour.makemesh
 local contourcollectoverlap = contour.collectoverlap
+local contourbounds         = contour.bounds
 
 local meshtotable           = mesh.totable
 
@@ -75,17 +77,29 @@ local nofruns = 0
 --     [0x14] = "yes_final",
 -- }
 
+local granularities = {
+    triangle = 3, triangles = 3,
+    quad     = 4, quads     = 4,
+    line     = 2, lines     = 2,
+    dot      = 1, dots      = 1,
+}
+
 function mp.mesh_register(specification)
     if type(specification) ~= "table" then
         report("%s, registry %a, no %s specified","registering","unknown","properties")
     else
-        local name = specification.name or "unknown"
+        local parent = specification.parent
+        local name   = specification.name or "unknown"
+        if not specification.meshes then
+            specification.meshes = specification.triangles or specification.quads
+        end
+        specification.granularity = tonumber(granularities[specification.granularity or "triangle"]) or 3
         if name == "unknown" then
             report("%s, registry %a, no %s specified","registering",name,"name")
         elseif not specification.points then
             report("%s, registry %a, no %s specified","registering",name,"points")
-        elseif not specification.triangles then
-            report("%s, registry %a, no %s specified","registering",name,"triangles")
+        elseif not specification.meshes then
+            report("%s, registry %a, no %s specified","registering",name,"meshes")
         else
             meshes[name] = specification
         end
@@ -101,15 +115,17 @@ end)
 -- extensions
 
 local function contouroverlapping(overlap)
-    local hash = { }
-    for i=1,#overlap do
-        local f  = overlap[i]
-        local f1 = f[1]
-        local f2 = f[2]
-        hash[f1] = (hash[f1] or 0) + 1
-        hash[f2] = (hash[f2] or 0) + 1
+    if type(overlap) == "table" then
+        local hash = { }
+        for i=1,#overlap do
+            local f  = overlap[i]
+            local f1 = f[1]
+            local f2 = f[2]
+            hash[f1] = (hash[f1] or 0) + 1
+            hash[f2] = (hash[f2] or 0) + 1
+        end
+        return next(hash) and hash or nil
     end
-    return next(hash) and hash or nil
 end
 
 local methods = {
@@ -132,7 +148,10 @@ end
 
 vector.meshname = vectormeshname
 
-local function contourshow(points,trianglelist,found,current)
+local function contourshow(points,meshlist,found,current)
+    if current.quad then
+        return
+    end
     local count    = found and #found or 0
     local method   = current.method
     local average  = current.average
@@ -141,7 +160,7 @@ local function contourshow(points,trianglelist,found,current)
     local saverage = averages[average] or averages[1]
     report("")
     report("points    : %i",#points)
-    report("triangles : %i",#trianglelist)
+    report("meshes    : %i",#meshlist)
     report("overlaps  : %i",count)
     report("method    : %i (%s)",method,smethod)
     report("average   : %i (%s)",average,saverage)
@@ -152,9 +171,9 @@ local function contourshow(points,trianglelist,found,current)
         local keys  = sortedkeys(hash)
         local areas = { }
         for k, v in sortedhash(hash) do
-            local a = contourgetarea(points,trianglelist,k)
+            local a = contourgetarea(points,meshlist,k)
             areas[k] = a
-        --     print("hash",k,v,trianglelist[k],a)
+        --     print("hash",k,v,meshlist[k],a)
         end
         sort(keys,function(a,b) return areas[a] < areas[b] end)
         for i=1,#keys do
@@ -168,7 +187,7 @@ local function contourshow(points,trianglelist,found,current)
                 method    = { id = method,  name = smethod },
                 average   = { id = average, name = saverage } ,
                 points    = vectortotable(points),
-                triangles = meshtotable(trianglelist),
+                meshes    = meshtotable(meshlist),
                 overlap   = found,
                 areas     = areas,
                 unique    = hash,
@@ -189,41 +208,48 @@ contour.show        = contourshow
 
 local function mesh_convert(current,kind)
 
-    local llx = current.state.minx
-    local lly = current.state.miny
+local state = current.substate or current.state
 
-    local urx = current.state.maxx
-    local ury = current.state.maxy
+    local llx = state.minx
+    local lly = state.miny
+    local urx = state.maxx
+    local ury = state.maxy
 
     local rx = 1 / (urx - llx)
     local ry = 1 / (ury - lly)
     local tx = -llx * rx
     local ty = -lly * ry
 
-    local line    = current.linewidth or 0.01
-    local color   = current.color     or function(v) return v, v, v end
-    local points  = current.points
-    local list    = current.list
-    local overlap = current.overlap
-    local keep    = current.keep
-    local trace   = current.trace or 1
-    local first   = current.first or 1
-    local last    = current.last  or #list
-    local trace   = current.trace
-    local hash    = false
-    local vmin    = current.vmin
-    local vmax    = current.vmax
-    local vdelta  = current.vdelta
+    local line        = current.linewidth or 0.01
+    local color       = current.color     or function(v) return v, v, v end
+    local points      = current.points
+    local list        = current.list
+    local granularity = current.granularity or 3
+    local overlap     = current.overlap
+    local keep        = current.keep
+    local trace       = current.trace or 1
+    local first       = current.first or 1
+    local last        = current.last  or #list
+    local trace       = current.trace
+    local hash        = false
+    local vmin        = current.vmin
+    local vmax        = current.vmax
+    local vdelta      = current.vdelta
 
     local t = { }
     local n = 0
 
     local k = { draw = "S", fill = "f", both = "B" }
 
-    local operator = k[kind] or k.both
-    local fill     = operator ~= "S"
+    local fill     = false
+    local operator = "S"
 
-    if type(overlap) == "table" then
+    if granularity == 3 or granularity == 4 then
+        operator = k[kind] or k.both
+        fill     = operator ~= "S"
+    end
+
+    if granularity == 3 and type(overlap) == "table" then
         hash = contouroverlapping(overlap)
         keep = keep and table.tohash(keep) or { }
     else
@@ -231,40 +257,110 @@ local function mesh_convert(current,kind)
         keep    = false
     end
 
-    local f_shape = formatters["%N %N m %N %N l %N %N l %N %N l h " .. operator]
-    local f_draw  = formatters["%.3N G"]
-    local f_fill  = formatters["%.3N %.3N %.3N rg"]
-    local f_tdraw = formatters["%.3N %.3N %.3N RG"]
-    local f_tfill = formatters["%.3N g"]
-    local f_line  = formatters["10 M 1 J 1 j %N w"]
-    local f_cm    = formatters["%N %N %N %N %N %N cm"]
+    -- todo: we need to use the same pattern for %Z
+
+    local f_shape_3 = formatters["%N %N m %N %N l %N %N l %N %N l h " .. operator]
+    ----- f_shape_3 = formatters["%N %N m %N %N l %N %N l %1Z %2Z l h " .. operator]
+    local f_shape_4 = formatters["%N %N m %N %N l %N %N l %N %N l %N %N l h " .. operator]
+    ----- f_shape_4 = formatters["%N %N m %N %N l %N %N l %N %N l %1Z %2Z l h " .. operator]
+    local f_shape_2 = formatters["%N %N m %N %N l " .. operator]
+    local f_shape_1 = formatters["%N %N m %N %N l " .. operator]
+    ----- f_shape_1 = formatters["%N %N m %1Z %2Z l " .. operator]
+    local f_draw    = formatters["%.3N G"]
+    local f_fill    = formatters["%.3N %.3N %.3N rg"]
+    local f_tdraw   = formatters["%.3N %.3N %.3N RG"]
+    local f_tfill   = formatters["%.3N g"]
+    local f_line    = formatters["10 M 1 J 1 j %N w"]
+    local f_width   = formatters["%N w"]
+    local f_cm      = formatters["%N %N %N %N %N %N cm"]
 
     n = n + 1 ; t[n] = "q"
     n = n + 1 ; t[n] = f_draw(0) -- outlines
     n = n + 1 ; t[n] = f_line(line)
     n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
 
-    for i=first,last do
-        if not hash or not hash[i] or keep[i] then
-            local m, c = contourgetmesh(points,list,i)
-            if m then
-                local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+    if granularity == 1 then
+
+        local lastw = false
+        for i=1,#points do
+         -- if not hash or not hash[i] or keep[i] then
+                local x, y, c, w = vectorgetrow(points,i)
                 if vdelta ~= 0 then
                     c = (c - vmin) / vdelta -- TODO
                 end
-                if fill then
-                    n = n + 1 ; t[n] = f_fill(color(c,i))
+                n = n + 1 ; t[n] = f_tdraw(color(c,i))
+                if w ~= lastw then
+                    n = n + 1 ; t[n] = f_width(w)
+                    lastw = w
                 end
-                n = n + 1 ; t[n] = p
-            elseif m ~= false then
-                report("invalid mesh index %i, case %i",i,3)
+                n = n + 1 ; t[n] = f_shape_1(x,y,x,y)
+             -- n = n + 1 ; t[n] = f_shape_1(x,y)
+         -- end
+        end
+
+    elseif granularity == 2 then
+
+        for i=first,last do
+         -- if not hash or not hash[i] or keep[i] then
+                local m, c = contourgetmesh(points,list,i)
+                if m then
+                    if vdelta ~= 0 then
+                        c = (c - vmin) / vdelta -- TODO
+                    end
+                    n = n + 1 ; t[n] = f_tdraw(color(c,i))
+                    n = n + 1 ; t[n] = f_shape_2(m[1],m[2],m[3],m[4])
+                elseif m ~= false then
+                    report("invalid mesh index %i, case %i",i,3)
+                end
+         -- end
+        end
+
+    elseif granularity == 3 then
+
+        for i=first,last do
+            if not hash or not hash[i] or keep[i] then
+                local m, c = contourgetmesh(points,list,i)
+                if m then
+                    if vdelta ~= 0 then
+                        c = (c - vmin) / vdelta -- TODO
+                    end
+                    if fill then
+                        n = n + 1 ; t[n] = f_fill(color(c,i))
+                    end
+                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
+                elseif m ~= false then
+                    report("invalid mesh index %i, case %i",i,3)
+                end
             end
         end
+
+    elseif granularity == 4 then
+
+        for i=first,last do
+         -- if not hash or not hash[i] or keep[i] then
+                local m, c = contourgetmesh(points,list,i)
+                if m then
+                    if vdelta ~= 0 then
+                        c = (c - vmin) / vdelta -- TODO
+                    end
+                    if fill then
+                        n = n + 1 ; t[n] = f_fill(color(c,i))
+                    end
+                    n = n + 1 ; t[n] = f_shape_4(m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8],m[1],m[2])
+                 -- n = n + 1 ; t[n] = f_shape_4(m[1],m[2],m[3],m[4],m[5],m[6],m[7],m[8])
+                elseif m ~= false then
+                    report("invalid mesh index %i, case %i",i,3)
+                end
+         -- end
+        end
+
     end
 
     if trace and overlap then
         -- we fetch these meshes a few times but it's tracing so seldom used
-        f_shape = formatters["%N %N m %N %N l %N %N l %N %N l h S"]
+        f_shape_3 = formatters["%N %N m %N %N l %N %N l %N %N l h S"]
+     -- f_shape_3 = formatters["%N %N m %N %N l %N %N l %1Z %2Z l h S"]
         local factor = tonumber(current.factor) or 5
         -- first the ones with a single overlap
         n = n + 1 ; t[n] = f_line(2*factor*line)
@@ -273,8 +369,8 @@ local function mesh_convert(current,kind)
             if v == 1 then
                 local m, c = contourgetmesh(points,list,k)
                 if m then
-                    local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                    n = n + 1 ; t[n] = p
+                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
                 end
             end
         end
@@ -285,8 +381,8 @@ local function mesh_convert(current,kind)
             if v > 1 then
                 local m, c = contourgetmesh(points,list,k)
                 if m then
-                    local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                    n = n + 1 ; t[n] = p
+                    n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+                 -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
                 end
             end
         end
@@ -296,8 +392,8 @@ local function mesh_convert(current,kind)
         for k, v in sortedhash(hash) do
             local m, c = contourgetmesh(points,list,k)
             if m then
-                local p = f_shape(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
-                n = n + 1 ; t[n] = p
+                n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6],m[1],m[2])
+             -- n = n + 1 ; t[n] = f_shape_3(m[1],m[2],m[3],m[4],m[5],m[6])
             end
         end
 
@@ -330,7 +426,7 @@ function metapost.mesh(name,kind)
         current.count = count
     end
 
-    report("%s, registry %a, %i points, %i triangles","embedding",name or "unknown",#current.points,#current.list)
+    report("%s, registry %a, %i points, %i meshes","embedding",name or "unknown",#current.points,#current.list)
 
     local result = mesh_convert(current,kind or "both")
 
@@ -356,12 +452,12 @@ local function mesh_contour()
 
     starttiming(meshes)
 
-    if not current.meshed then
+    if current.meshed == nil then
 
         current.method  = tonumber(current.method ) or 1
         current.average = tonumber(current.average) or 1
 
-        local t = current.triangles
+        local t = current.meshes
         local N = 0
         local M = 0
         if type(t) == "table" then
@@ -373,12 +469,15 @@ local function mesh_contour()
         else
         end
         if N > 0 and M > 0 then
-            current.list = contourtriangulate(N,M)
+            current.list = contourmakemesh(N,M,current.granularity or 3)
         end
         current.N = N
         current.M = M
 
+        -- todo: only when current.truncate == true
+
         vectortruncate(current.points,true,current.epsilon)
+
         local state = contouraverage(current.points,current.list,true,current.average) -- tolerant
 
         current.state  = state
@@ -396,9 +495,14 @@ local function mesh_contour()
 
     end
 
-    report("%s, registry %a, %i points, %i triangles","processing",name or "unknown",#current.points,#current.list)
+    report("%s, registry %a, %i points, %i meshes","processing",name or "unknown",#current.points,#current.list)
 
     local state = current.state or { minx = 0, miny = 0, maxx = 0, maxy = 0 }
+
+    if current.first and current.last then
+        state = contourbounds(current.points,current.list,current.first,current.last)
+        current.substate = state
+    end
 
     local bounds = {
         { state.minx, state.miny },
@@ -420,7 +524,7 @@ registerscript("meshcontour",  mesh_contour)
 
 vector.checkoverlap   = contour.checkoverlap
 vector.collectoverlap = contour.collectoverlap
-vector.triangulate    = contour.triangulate
+vector.triangulate    = contour.makemesh
 vector.average        = contour.average
 vector.sort           = contour.sort
 vector.getmesh        = contour.getmesh

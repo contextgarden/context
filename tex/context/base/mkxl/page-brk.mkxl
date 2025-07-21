@@ -471,9 +471,9 @@
 
 % the \relax prevents premature expansion in case of lookahead
 
-\permanent\tolerant\protected\def\testpage    [#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} %
-\permanent\tolerant\protected\def\testpageonly[#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % no penalties added to the mvl
-\permanent\tolerant\protected\def\testpagesync[#1]#*[#2]{\relax\normalexpanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % force sync
+\permanent\tolerant\protected\def\testpage    [#1]#*[#2]{\relax\expanded{\checkpage[\s!unknown:1][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} %
+\permanent\tolerant\protected\def\testpageonly[#1]#*[#2]{\relax\expanded{\checkpage[\s!unknown:2][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % no penalties added to the mvl
+\permanent\tolerant\protected\def\testpagesync[#1]#*[#2]{\relax\expanded{\checkpage[\s!unknown:3][\c!lines=#1,\c!offset=\ifparameter#2\or#2\else\zeropoint\fi]}} % force sync
 
 %D Test column breaks.
 

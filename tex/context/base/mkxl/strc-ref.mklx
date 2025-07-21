@@ -153,7 +153,7 @@
 % sett top : \newinteger\lastdestinationattribute
 
 \def\strc_references_finish#prefix#reference#internal% gets expanded anyway
-  {\normalexpanded{\clf_deferredenhancereference{#prefix}{#reference}}}
+  {\expanded{\clf_deferredenhancereference{#prefix}{#reference}}}
 
 \permanent\let\dofinishreference\strc_references_finish % used at lua end
 
@@ -219,7 +219,7 @@
   {\setbox\b_strc_destination_nodes\hbox\bgroup}       % also sets lastdestinationattribute
 
 \protected\def\strc_references_stop_destination_nodes
-  {\normalexpanded{\egroup\lastdestinationattribute\the\lastdestinationattribute\relax}}
+  {\expanded{\egroup\lastdestinationattribute\the\lastdestinationattribute\relax}}
 
 \protected\def\strc_references_set_named_reference_indeed#kind#labels#userdata#text% labels userdata text -> todo: userdata
   {\ifreferencing
@@ -354,7 +354,7 @@
             }%
         \fi
         \ifempty\m_strc_references_user \else
-            userdata {\m_strc_references_user}% \detokenize\expandafter{\normalexpanded{...}}
+            userdata {\m_strc_references_user}% \detokenize\expandafter{\expanded{...}}
         \fi
         }%
      \relax
@@ -989,8 +989,7 @@
 \appendtoks
     % likely math
     \ifdefined\in    \aliased\let\normalmathin   \in    \permanent\protected\def\in   {\mathortext\normalmathin   \strc_references_in   } \else \aliased\let\in   \strc_references_in    \fi
-    \ifdefined\over  \aliased\let\normalmathover \over  \permanent\protected\def\over {\mathortext\normalmathover \strc_references_about} \else \aliased\let\over \strc_references_about \fi
-    %
+  % \ifdefined\over  \aliased\let\normalmathover \over  \permanent\protected\def\over {\mathortext\normalmathover \strc_references_about} \else \aliased\let\over \strc_references_about \fi
   % \ifdefined\at    \aliased\let\normalmathat   \at    \permanent\protected\def\at   {\mathortext\normalmathat   \strc_references_at   } \else \aliased\let\at   \strc_references_at    \fi
   % \ifdefined\about \aliased\let\normalmathabout\about \permanent\protected\def\about{\mathortext\normalmathabout\strc_references_about} \else \aliased\let\about\strc_references_about \fi
   % \ifdefined\from  \aliased\let\normalmathfrom \from  \permanent\protected\def\from {\mathortext\normalmathfrom \strc_references_from } \else \aliased\let\from \strc_references_from  \fi
@@ -2200,7 +2199,7 @@
    \fi}
 
 \permanent\def\currentreferencedefault % for some reason we need to explicitly expand
-  {\normalexpanded{\noexpand\clf_filterdefaultreference
+  {\expanded{\noexpand\clf_filterdefaultreference
      {\s!default}%
      \noexpand\getreferencestructureprefix\clf_getcurrentprefixspec{\s!default}% returns #kind#name#category
    \relax}}

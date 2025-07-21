@@ -644,10 +644,40 @@ local expand ; do
             exceptions    = { },
             substitutions = { },
             experiments   = { },
+            metadata      = { },
         }
         t[k] = v
         return v
     end)
+
+    local function addmetadata(tag,list,filename)
+        local data     = goodiesdata[tag]
+        local metadata = data.metadata
+        -- can be shared
+        if filename then
+            if not data.goodies then
+                data.goodies = { }
+            end
+            insert(data.goodies,filename)
+        end
+        --
+     -- inspect(tables.merged(metadata,list))
+        for k, v in next, list do
+            metadata[k] = v
+        end
+    end
+
+    -- Metadata is only avbailable when a language has been used so for testring one needs
+    -- to enable (choose) a language first.
+
+    local function getmetadata(tag,key,default)
+        return goodiesdata[tag].metadata[key] or default
+    end
+
+    languages.getmetadata = getmetadata
+
+    function languages.pdflanguage   (id) local tag = numbers[id] or "en" return getmetadata(tag,"pdftag",tag) end
+    function languages.exportlanguage(id) local tag = numbers[id] or "en" return getmetadata(tag,"export",tag) end
 
     -- can be a helper
 
@@ -772,6 +802,10 @@ local expand ; do
         return v
     end)
 
+    local function checkmetadata(options)
+        -- no checking done here
+    end
+
     local function checkglyphproperties(options)
         -- we sort, just to be sure
         for word, list in sortedhash(options) do
@@ -858,12 +892,20 @@ local expand ; do
             local characters    = data.characters
             local exceptions    = data.exceptions
             local experiments   = data.experiments
+            local metadata      = data.metadata
             local replacer      = nil
             local substituter   = nil
             local d, instance   = resolve(tag)
             local done          = false
             -- check if something at all
-            if type(characters) == "table" and characters and next(characters) then
+            if type(metadata) == "table" and next(metadata) then
+                checkmetadata(metadata)
+                if trace_goodies then
+                    report_goodies("registering %a metadata for %a",goodies,tag)
+                end
+                done = true
+            end
+            if type(characters) == "table" and next(characters) then
                 addhjcodestoinstance(instance,characters)
                 if trace_goodies then
                     report_goodies("registering %a characters for %a",goodies,tag)
@@ -1415,13 +1457,19 @@ local expand ; do
             if not list then
                 report_goodies("file %a is invalid",fullname)
             else
-                list = list.options
-                if not list then
-                    report_goodies("file %a has no options",fullname)
+                local metadata = list.metadata
+                local options  = list.options
+                if options or metadata then
+                    if metadata then
+                        addmetadata(tag,metadata,filename)
+                    end
+                    if options then
+                        local ok = addgoodies(tag,options,filename)
+                        report_goodies("tag %a, file %a loaded, %i lists, %i via patterns, %i direct, %i words",
+                            tag,fullname,ok.nl,ok.np,ok.nd,ok.nw)
+                    end
                 else
-                    local ok = addgoodies(tag,list,filename)
-                    report_goodies("tag %a, file %a loaded, %i lists, %i via patterns, %i direct, %i words",
-                        tag,fullname,ok.nl,ok.np,ok.nd,ok.nw)
+                    report_goodies("file %a has no options or metadata",fullname)
                 end
             end
         end

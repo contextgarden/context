@@ -223,7 +223,7 @@
    \tabl_x_check_textwidth
   %\forgetall % else whitespace mess
    \edef\tabl_x_current_buffer{\tabl_x_default_buffer}%
-   \normalexpanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process\zerocount}}
+   \expanded{\buff_pickup{\tabl_x_current_buffer}{\e!start\currentxtable}{\e!stop\currentxtable}\relax\tabl_x_process\zerocount}}
 
 \protected\def\tabl_x_stop_named
   {}
@@ -815,7 +815,7 @@
 
 % % \ifcsname\namedxtablehash{#tag}\s!parent\endcsname
 % % \ifcsname\??xtablecheck#tag\endcsname
-%   \ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname % two times slower on keywords
+%   \ifcsname\??xtablecheck\detokenize\expandafter{\expanded{#tag}}\endcsname % two times slower on keywords
 %     \expandafter\whatever                                                         % but more tolerant for tricky key=value
 %   \else
 %     \expandafter\whatever
@@ -831,7 +831,7 @@
   {\endgroup}
 
 \protected\def\tabl_x_start_group_delayed_one[#tag]%
-  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\expanded{#tag}}\endcsname
      \expandafter\tabl_x_start_group_delayed_two
    \else
      \expandafter\setupcurrentxtable
@@ -856,7 +856,7 @@
    \doifelsenextoptionalcs\tabl_x_start_cell_delayed_one\tabl_x_start_cell_nop}
 
 \protected\def\tabl_x_start_cell_delayed_one[#tag]%
-  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\expanded{#tag}}\endcsname
      \expandafter\tabl_x_start_cell_delayed_two
    \else
      \expandafter\tabl_x_start_cell_yes
@@ -880,7 +880,7 @@
    \doifelsenextoptionalcs\tabl_x_start_row_delayed_one\tabl_x_start_row_nop}
 
 \protected\def\tabl_x_start_row_delayed_one[#tag]%
-  {\ifcsname\??xtablecheck\detokenize\expandafter{\normalexpanded{#tag}}\endcsname
+  {\ifcsname\??xtablecheck\detokenize\expandafter{\expanded{#tag}}\endcsname
      \expandafter\tabl_x_start_row_delayed_two
    \else
      \expandafter\tabl_x_start_row_yes

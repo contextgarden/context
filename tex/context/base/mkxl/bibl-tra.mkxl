@@ -446,10 +446,10 @@
 \processcommacommand[\bibcommandlist]\simplebibdef
 
 \protected\def\bibinsertdoi#1#2#3% let's see how this fails
-  {\bibdoifelse{\@@pb@doi}{#1\normalexpanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}}
+  {\bibdoifelse{\@@pb@doi}{#1\expanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}}
 
 \protected\def\bibinsertbiburl#1#2#3% let's see how this fails
-  {\bibdoifelse{\@@pb@biburl}{#1\normalexpanded{\bibgotoURL{\@@pb@thekey}{\@@pb@biburl}}#2}{#3}}
+  {\bibdoifelse{\@@pb@biburl}{#1\expanded{\bibgotoURL{\@@pb@thekey}{\@@pb@biburl}}#2}{#3}}
 
 \protected\def\bibinsertmonth#1#2#3%
   {\bibdoifelse\@@pb@month
@@ -704,7 +704,7 @@
      \@@pbt\noexpand\or
      \@@pbo\noexpand\or
      \@@pbu\noexpand\or
-     \normalunexpanded{#1}\noexpand\fi}%
+     \notexpanded{#1}\noexpand\fi}%
    \endgroup
    \ignorespaces}
 
@@ -790,7 +790,7 @@
            \setbox\scratchbox\hbox{\@@pbnumbercommand{\structurelistsize}}}%
       \fi
       \edef\publistnumberbox{\hbox to \the\wd\scratchbox}%
-      \normalexpanded{\setuplist[pubs][\c!width=\the\wd\scratchbox,\c!distance=\zeropoint]}%
+      \expanded{\setuplist[pubs][\c!width=\the\wd\scratchbox,\c!distance=\zeropoint]}%
       \ifx\@@pbnumbering\v!short
         \def\@@pblimitednumber##1{\publistnumberbox{\@@pbnumbercommand{\bibgetvars\currentpublicationkey}}}%
       \orelse\ifx\@@pbnumbering\v!bib
@@ -826,9 +826,9 @@
    \setuplist[pubs][#1]%
    \edef\currentbibtexsessiontitle{\publicationlistparameter\c!title}%
    \ifempty\currentbibtexsessiontitle
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\headtext{pubs}}]}%
+     \expanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\headtext{pubs}}]}%
    \else
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\currentbibtexsessiontitle}]}%
+     \expanded{\startnamedsection[\v!chapter][\c!reference=pubs,\c!title={\currentbibtexsessiontitle}]}%
    \fi
    \dodoplacepublications
    \stopnamedsection
@@ -889,7 +889,7 @@
      {}} % invalid
 
 \protected\def\bibtexpubtext
-  {\normalexpanded{\reference[\bibrefprefix\currentpublicationkey]{\number\bibtexcounter}}%
+  {\expanded{\reference[\bibrefprefix\currentpublicationkey]{\number\bibtexcounter}}%
    \strut\dotypesetapublication\currentpublicationkey\strut}
 
 \protected\def\dotypesetapublication#1%
@@ -972,7 +972,7 @@
         \else
           \edef\LOextras{{\LOextras\LOright}}%
         \fi
-        \normalexpanded{\setupcite[\@@currentalternative][#1,\c!right=\LOextras]}%
+        \expanded{\setupcite[\@@currentalternative][#1,\c!right=\LOextras]}%
       \fi}%
      {\def\@@currentalternative{#1}}%
    \doifelsevalue{@@pv\@@currentalternative\c!compress}\v!no\bibcitecompressfalse\bibcitecompresstrue
@@ -1021,7 +1021,7 @@
 
 \protected\def\docitation#1%
   {\iftrialtypesetting \else
-     \normalexpanded{\writedatatolist[pubs][bibref=#1]}%
+     \expanded{\writedatatolist[pubs][bibref=#1]}%
    \fi}
 
 \let\addthisref\gobbleoneargument % keep this for compatibility
@@ -1109,7 +1109,7 @@
    \or
      \def\currentbibauthor{#1}%
    \or
-     \normalexpanded{\docurrentbibauthor#1}%
+     \expanded{\docurrentbibauthor#1}%
    \else
      \handlemultiplebibauthors{\commalistsize}{#1}%
    \fi}
@@ -1256,7 +1256,7 @@
 
 \protected\def\gotobiblink#1[#2]{\doifelsereferencefound{\bibrefprefix#2}{\goto{#1}[\bibrefprefix#2]}{#1}}
 \protected\def\atbiblink    [#1]{\doifelsereferencefound{\bibrefprefix#1}{\at[\bibrefprefix#1]}{#1}}
-\protected\def\inbiblink    [#1]{\doifelsereferencefound{\bibrefprefix#1}{\normalexpanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
+\protected\def\inbiblink    [#1]{\doifelsereferencefound{\bibrefprefix#1}{\expanded{\goto{\currentreferencetext}}[\bibrefprefix#1]}{#1}}
 
 %D \macros{bibauthoryearref,bibauthoryearsref,bibauthorref,bibyearref}
 %D
@@ -1382,7 +1382,7 @@
 \protected\def\dobibdoiref#1%
   {\bibinsertrefsep
    \doifelsebibreferencefound{#1}
-     {\normalexpanded{\bibgotoDOI{#1}{\bibgetvaro{#1}}}}
+     {\expanded{\bibgotoDOI{#1}{\bibgetvaro{#1}}}}
      {}}
 
 \protected\def\biburlref[#1]%
@@ -1398,7 +1398,7 @@
 \protected\def\dobiburlref#1%
   {\bibinsertrefsep
    \doifelsebibreferencefound{#1}
-     {\normalexpanded{\bibgotoURL{#1}{\bibgetvaru{#1}}}}
+     {\expanded{\bibgotoURL{#1}{\bibgetvaru{#1}}}}
      {}}
 
 \protected\def\bibtyperef[#1]%

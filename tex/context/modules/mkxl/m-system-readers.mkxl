@@ -29,7 +29,7 @@
 % \protected\def\firstmarkedline#1%
 %   {\numexpr
 %      \ifcsname\??markedlines#1\endcsname
-%        \normalexpanded{\noexpand\firstoftwoarguments\lastnamedcs}%
+%        \expanded{\noexpand\firstoftwoarguments\lastnamedcs}%
 %      \else
 %        \zerocount
 %     \fi
@@ -38,7 +38,7 @@
 % \protected\def\lastmarkedline#1%
 %   {\numexpr
 %      \ifcsname\??markedlines#1\endcsname
-%        \normalexpanded{\noexpand\secondoftwoarguments\lastnamedcs}%
+%        \expanded{\noexpand\secondoftwoarguments\lastnamedcs}%
 %      \else
 %        \zerocount
 %     \fi

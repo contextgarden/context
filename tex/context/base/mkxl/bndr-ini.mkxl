@@ -20,7 +20,7 @@
 % \defineboundary[foobar][public]\meaning\foobar\par
 % \defineboundary[barfoo][public]\meaning\barfoo\par
 
-\immutable\def\??boundaryprefix{c_bndr_}
+\permanent\cdef\??boundaryprefix{c_bndr_}
 
 \permanent\tolerant\protected\def\defineboundary[#1]#*[#2]% nicer for users
   {\ifinset\s!public{#2}%
@@ -35,7 +35,7 @@
 
 \permanent\protected\def\newboundary#1% nicer for lowlevel
   {\ifdefined#1\else
-     \global\immutable\integerdef#1\clf_defineboundary{\csstring#1}\relax
+     \global\permanent\immutable\integerdef#1\clf_defineboundary{\csstring#1}\relax
    \fi}
 
 \protect

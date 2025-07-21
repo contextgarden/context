@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['mtx-pdf'] = {
 local tonumber = tonumber
 local format, gmatch, gsub, match, find = string.format, string.gmatch, string.gsub, string.match, string.find
 local utfchar = utf.char
+local formatters = string.formatters
 local concat, insert, swapped = table.concat, table.insert, table.swapped
 local setmetatableindex, sortedhash, sortedkeys = table.setmetatableindex, table.sortedhash, table.sortedkeys
 
@@ -36,6 +37,7 @@ local helpinfo = [[
     <flag name="verify"><short>verify document</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
     <flag name="userdata"><short>print userdata to the console</short></flag>
+    <flag name="structure"><short>show the structure of the content</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -58,17 +60,20 @@ local application = logs.application {
     helpinfo = helpinfo,
 }
 
-local report = application.report
+local report   = application.report
+local findfile = resolvers.findfile
 
 if not pdfe then
-    dofile(resolvers.findfile("lpdf-epd.lua","tex"))
+    dofile(findfile("lpdf-epd.lua","tex"))
 elseif CONTEXTLMTXMODE then
-    dofile(resolvers.findfile("util-dim.lua","tex"))
-    dofile(resolvers.findfile("lpdf-ini.lmt","tex"))
-    dofile(resolvers.findfile("lpdf-pde.lmt","tex"))
-    dofile(resolvers.findfile("lpdf-sig.lmt","tex"))
+    local fullname
+    dofile(findfile("util-dim.lua","tex"))
+    dofile(findfile("lpdf-ini.lmt","tex"))
+    dofile(findfile("lpdf-pde.lmt","tex"))
+    dofile(findfile("lpdf-sig.lmt","tex"))
+    fullname = findfile("lpdf-crp.lmt","tex") if fullname and fullname ~= "" then dofile(fullname) end
 else
-    dofile(resolvers.findfile("lpdf-pde.lua","tex"))
+    dofile(findfile("lpdf-pde.lua","tex"))
 end
 
 scripts     = scripts     or { }
@@ -592,7 +597,7 @@ function scripts.pdf.fonts(filename)
     if pdffile then
         local usedfonts = getfonts(pdffile)
         local found     = { }
-        local common    = table.setmetatableindex("table")
+        local common    = setmetatableindex("table")
         for k, v in sortedhash(usedfonts) do
             local basefont = v.BaseFont
             local encoding = v.Encoding
@@ -938,21 +943,65 @@ function scripts.pdf.outlines(filename)
 
 end
 
+-- When I'm really bored, have a stack of new cd's or it's depressing whether I
+-- might be willing to waste time on this. Actually I have to find back and use the
+-- code MS and I used when checking out tagging but it might have gotton lost (note
+-- for myself: check 2023 archive as there must be code somewhere that actually
+-- printed the tree.).
+
 function scripts.pdf.structure(filename)
-    local pdffile = loadpdffile(filename)
-    if pdffile then
-
-        local pages    = pdffile.pages
-        local nofpages = pdffile.nofpages
-
-        -- When I'm really bored, have a stack of new cd's or it's depressing
-        -- weather I might be willing to waste time on this.
-
---         local tree = pdffile.Catalog.StructTreeRoot
---         if tree then
---             local kids = tree.K
---         end
-
+    if lpdf.collectcontent then
+        local pdffile = loadpdffile(filename)
+        if pdffile then
+            local arguments = environment.arguments
+            local options   = {
+                attachments = true,
+                comments    = true,
+                nobreaks    = false,
+                details     = false,
+                save        = arguments.save or false,
+            }
+            if arguments.attachments ~= nil then options.attachments = arguments.attachments end
+            if arguments.comments    ~= nil then options.comments    = arguments.comments    end
+            if arguments.nobreaks    ~= nil then options.nobreaks    = arguments.nobreaks    end
+            if arguments.details     ~= nil then options.details     = arguments.details     end
+            if arguments.detail      ~= nil then options.detail      = arguments.detail      end
+            local result, statistics = lpdf.collectcontent(pdffile,options)
+            if result and #result > 0 then
+                if options.save then
+                    local filename = file.nameonly(filename) .. "-crap.xml"
+                    statistics["saved file"] = filename
+                    io.savedata(filename,result)
+                else
+                    print("")
+                    print(result)
+                    print("")
+                end
+                report()
+                report("options:")
+                report()
+                for k, v in sortedhash(options) do
+                    report("%-12s : %S",k,v)
+                end
+                report()
+                report("statistics:")
+                report()
+                for k, v in sortedhash(statistics) do
+                    report("%-12s : %S",k,v)
+                end
+                report()
+                report("disclaimer:")
+                report()
+                report("This mostly is a simple check utility and we will complete this when we")
+                report("feel the need or when a user has a test file and needs some checker. So,")
+                report("feel free to ask on the mailing list. The output is yet sub-optimal and")
+                report("complete (but it's not that hard to do).")
+                report()
+                report("This is not an official export, just a way to check how a text can be")
+                report("seen and/or read.")
+                report()
+            end
+        end
     end
 end
 
@@ -1073,10 +1122,11 @@ elseif environment.argument("links") then
     scripts.pdf.links(filename,tonumber(environment.argument("page")))
 elseif environment.argument("outlines") then
     scripts.pdf.outlines(filename)
-elseif environment.argument("structure") then
-    scripts.pdf.structure(filename)
 elseif environment.argument("highlights") then
     scripts.pdf.highlights(filename,tonumber(environment.argument("page")))
+------ structure before attachments and comments (are options there)
+elseif environment.argument("structure") then
+    scripts.pdf.structure(filename)
 elseif environment.argument("comments") then
     scripts.pdf.comments(filename,tonumber(environment.argument("page")))
 elseif environment.argument("signature") then

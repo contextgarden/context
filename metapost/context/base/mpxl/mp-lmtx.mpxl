@@ -3072,6 +3072,13 @@ presetparameters "vectorplot" [
 
 def lmt_vectorplot = applyparameters "vectorplot" "lmt_do_vectorplot" enddef ;
 
+% We can use functione before we load so this is a no-go:
+%
+% def lmt_load_mlib_msh =
+%     runscript("lua.registercode('mlib-msh')");
+%     let lmt_load_mlib_msh = relax ;
+% enddef ;
+
 vardef lmt_do_vectorplot =
   % lmt_load_mlib_msh ;
 

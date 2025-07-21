@@ -88,6 +88,7 @@
 \lettonothing\p_indenting
 \lettonothing\p_indentnext
 \lettonothing\p_initializations
+\lettonothing\p_inlinefactor
 \lettonothing\p_interaction
 \lettonothing\p_kernpairs
 \lettonothing\p_key

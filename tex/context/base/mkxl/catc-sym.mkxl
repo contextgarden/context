@@ -18,32 +18,32 @@
 %D that permits a more direct definition (that also looks nice with the
 %D \CONTEXT\ syntax highlighting):
 
-\immutable\edef\letterleftbrace        {\expandtoken \othercatcode \leftbraceasciicode}
-\immutable\edef\letterrightbrace       {\expandtoken \othercatcode \rightbraceasciicode}
-\immutable\edef\letterampersand        {\expandtoken \othercatcode \ampersandasciicode}
-\immutable\edef\letterless             {\expandtoken \othercatcode \lessthanasciicode}
-\immutable\edef\lettermore             {\expandtoken \othercatcode \morethanasciicode}
-\immutable\edef\letterhash             {\expandtoken \othercatcode \hashasciicode}
-\immutable\edef\letterdoublequote      {\expandtoken \othercatcode \doublequoteasciicode}
-\immutable\edef\lettersinglequote      {\expandtoken \othercatcode \singlequoteasciicode}
-\immutable\edef\letterdollar           {\expandtoken \othercatcode \dollarasciicode}
-\immutable\edef\letterpercent          {\expandtoken \othercatcode \percentasciicode}
-\immutable\edef\letterhat              {\expandtoken \othercatcode \circumflexasciicode}
-\immutable\edef\letterunderscore       {\expandtoken \othercatcode \underscoreasciicode}
-\immutable\edef\letterbar              {\expandtoken \othercatcode \barasciicode}
-\immutable\edef\lettertilde            {\expandtoken \othercatcode \tildeasciicode}
-\immutable\edef\letterbackslash        {\expandtoken \othercatcode \backslashasciicode}
-\immutable\edef\letterslash            {\expandtoken \othercatcode \forwardslashasciicode}
-\immutable\edef\letterquestionmark     {\expandtoken \othercatcode \questionmarkasciicode}
-\immutable\edef\letterexclamationmark  {\expandtoken \othercatcode \exclamationmarkasciicode}
-\immutable\edef\letterat               {\expandtoken \othercatcode \atsignasciicode}
-\immutable\edef\lettercolon            {\expandtoken \othercatcode \colonasciicode}
-\immutable\edef\letterhyphen           {\expandtoken \othercatcode \hyphenasciicode}
+\permanent\cdef\letterleftbrace        {\expandtoken \othercatcode \leftbraceasciicode}
+\permanent\cdef\letterrightbrace       {\expandtoken \othercatcode \rightbraceasciicode}
+\permanent\cdef\letterampersand        {\expandtoken \othercatcode \ampersandasciicode}
+\permanent\cdef\letterless             {\expandtoken \othercatcode \lessthanasciicode}
+\permanent\cdef\lettermore             {\expandtoken \othercatcode \morethanasciicode}
+\permanent\cdef\letterhash             {\expandtoken \othercatcode \hashasciicode}
+\permanent\cdef\letterdoublequote      {\expandtoken \othercatcode \doublequoteasciicode}
+\permanent\cdef\lettersinglequote      {\expandtoken \othercatcode \singlequoteasciicode}
+\permanent\cdef\letterdollar           {\expandtoken \othercatcode \dollarasciicode}
+\permanent\cdef\letterpercent          {\expandtoken \othercatcode \percentasciicode}
+\permanent\cdef\letterhat              {\expandtoken \othercatcode \circumflexasciicode}
+\permanent\cdef\letterunderscore       {\expandtoken \othercatcode \underscoreasciicode}
+\permanent\cdef\letterbar              {\expandtoken \othercatcode \barasciicode}
+\permanent\cdef\lettertilde            {\expandtoken \othercatcode \tildeasciicode}
+\permanent\cdef\letterbackslash        {\expandtoken \othercatcode \backslashasciicode}
+\permanent\cdef\letterslash            {\expandtoken \othercatcode \forwardslashasciicode}
+\permanent\cdef\letterquestionmark     {\expandtoken \othercatcode \questionmarkasciicode}
+\permanent\cdef\letterexclamationmark  {\expandtoken \othercatcode \exclamationmarkasciicode}
+\permanent\cdef\letterat               {\expandtoken \othercatcode \atsignasciicode}
+\permanent\cdef\lettercolon            {\expandtoken \othercatcode \colonasciicode}
+\permanent\cdef\letterhyphen           {\expandtoken \othercatcode \hyphenasciicode}
 
-\immutable\edef\letterleftparenthesis  {\expandtoken \othercatcode \leftparentasciicode}
-\immutable\edef\letterrightparenthesis {\expandtoken \othercatcode \rightparentasciicode}
-\immutable\edef\letterleftbracket      {\expandtoken \othercatcode \leftbracketasciicode}
-\immutable\edef\letterrightbracket     {\expandtoken \othercatcode \rightbracketasciicode}
+\permanent\cdef\letterleftparenthesis  {\expandtoken \othercatcode \leftparentasciicode}
+\permanent\cdef\letterrightparenthesis {\expandtoken \othercatcode \rightparentasciicode}
+\permanent\cdef\letterleftbracket      {\expandtoken \othercatcode \leftbracketasciicode}
+\permanent\cdef\letterrightbracket     {\expandtoken \othercatcode \rightbracketasciicode}
 
 \aliased\let\letterescape    \letterbackslash
 \aliased\let\letterbgroup    \letterleftbrace
@@ -53,13 +53,13 @@
 
 \unprotect
 
-%immutable\edef\s!n_u_l_token{\expandtoken \othercatcode \zerocount} % nul(l)
-%immutable\edef\s!s_o_h_token{\expandtoken \othercatcode \plusone  } % start of header       ^^^^0001
-%immutable\edef\s!s_t_x_token{\expandtoken \othercatcode \plustwo  } % start of text         ^^^^0002
-%immutable\edef\s!e_t_x_token{\expandtoken \othercatcode \plusthree} % end of text           ^^^^0003
-\immutable\edef\s!e_o_t_token{\expandtoken \othercatcode \plusfour } % end of transmission   ^^^^0004
-%immutable\edef\s!e_n_q_token{\expandtoken \othercatcode \plusfive } % enquiry
-%immutable\edef\s!a_c_k_token{\expandtoken \othercatcode \plussix  } % aknowledgement
+%permanent\cdef\s!n_u_l_token{\expandtoken \othercatcode \zerocount} % nul(l)
+%permanent\cdef\s!s_o_h_token{\expandtoken \othercatcode \plusone  } % start of header       ^^^^0001
+%permanent\cdef\s!s_t_x_token{\expandtoken \othercatcode \plustwo  } % start of text         ^^^^0002
+%permanent\cdef\s!e_t_x_token{\expandtoken \othercatcode \plusthree} % end of text           ^^^^0003
+\permanent\cdef\s!e_o_t_token{\expandtoken \othercatcode \plusfour } % end of transmission   ^^^^0004
+%permanent\cdef\s!e_n_q_token{\expandtoken \othercatcode \plusfive } % enquiry
+%permanent\cdef\s!a_c_k_token{\expandtoken \othercatcode \plussix  } % aknowledgement
 
 \protect
 

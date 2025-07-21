@@ -40,7 +40,7 @@
   {\buff_start_indeed{}{#1}{\e!start\v!buffer}{\e!stop\v!buffer}}
 
 \def\buff_start_indeed#1#2#3#4%
-  {\normalexpanded{\buff_pickup
+  {\expanded{\buff_pickup
      {#2}%
      {#3}%
      {#4}%

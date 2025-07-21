@@ -316,11 +316,11 @@
      \starttextproperties
      \checkmarginblocks
      \expand\beforeeverypage
-     \normalexpanded{\global\beforepage\emptytoks\expand\beforepage}%
+     \expanded{\global\beforepage\emptytoks\expand\beforepage}%
      \inpagebodytrue
      \pagebodymode\plusone % todo: \plustwo when spread
      \page_boxes_constructed_page_body#1#2%
-     \normalexpanded{\global\afterpage \emptytoks\expand\afterpage }%
+     \expanded{\global\afterpage \emptytoks\expand\afterpage }%
      \expand\aftereverypage
      \resetpagebreak
      \resetlayouttextlines % will go to \aftereverypage

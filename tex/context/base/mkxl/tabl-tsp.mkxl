@@ -192,7 +192,7 @@
       \getnoflines{\ht\scratchbox}%
       \resetlocalfloats
       \advanceby\noflines\minusone % compensate dummy line
-      \normalexpanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
+      \expanded{\egroup\noexpand\edef\noexpand\extrasplitfloatlines{\the\noflines}}%
       \global\usesamefloatnumber\conditionaltrue
    \orelse\ifchknum\extrasplitfloatlines\else
      \def\extrasplitfloatlines{1}

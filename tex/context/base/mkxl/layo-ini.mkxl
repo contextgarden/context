@@ -20,10 +20,11 @@
 
 %D We need to check this in case a smaller format is loaded.
 
-\ifdefined\layoutisdoublesided \else \newconditional\layoutisdoublesided \fi
-\ifdefined\layoutissinglesided \else \newconditional\layoutissinglesided \fi
-\ifdefined\pagenoshift         \else \newinteger    \pagenoshift         \fi
-\ifdefined\realpageno          \else \newinteger    \realpageno          \fi
+\newconditional\layoutisdoublesided
+\newconditional\layoutissinglesided
+
+\ifdefined\pagenoshift\else \newinteger\pagenoshift \fi
+\ifdefined\realpageno \else \newinteger\realpageno  \fi
 
 \registerctxluafile{layo-ini}{autosuffix}
 

@@ -40,14 +40,7 @@
 \newtoks \t_attr_list_pickup
 \newtoks \t_attr_list_nomath
 
-\ifdefined \s!global    \else \immutable\def\s!global   {global}    \fi % for metatex % or hard check later
-\ifdefined \s!public    \else \immutable\def\s!public   {public}    \fi % for metatex % or hard check later
-\ifdefined \s!private   \else \immutable\def\s!private  {private}   \fi % for metatex % or hard check later
-\ifdefined \s!attribute \else \immutable\def\s!attribute{attribute} \fi % for metatex % or hard check later
-\ifdefined \s!pickup    \else \immutable\def\s!pickup   {pickup}    \fi % for metatex % or hard check later
-\ifdefined \s!forget    \else \immutable\def\s!forget   {forget}    \fi % for metatex % or hard check later
-
-\immutable\def\??attributeprefix{c_attr_}
+\permanent\cdef\??attributeprefix{c_attr_}
 
 \permanent\protected\def\defineattribute      {\attr_basics_define_indeed[\s!public ]}
 \permanent\protected\def\definesystemattribute{\attr_basics_define_indeed[\s!private]}

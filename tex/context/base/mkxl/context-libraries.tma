@@ -125,6 +125,7 @@ return {
   ["kpfonts-text.lfg"]=true,
   ["kurier-math.lfg"]=true,
   ["l-macro-imp-optimize.lua"]=true,
+  ["lang-agr.llg"]=true,
   ["lang-de.llg"]=true,
   ["lang-en.llg"]=true,
   ["lang-imp-indic.lua"]=true,

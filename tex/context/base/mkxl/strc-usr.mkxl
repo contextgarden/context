@@ -155,8 +155,8 @@
 
 % kind of nested, when we need it:
 %
-% \permanent\tolerant\protected\def\getuserdata      [#1]{\normalexpanded{\getbufferdata[\s!userdata:\ifparameter#1\or#1\else\currentuserdata\fi]}}
-% \permanent\tolerant\protected\def\getinlineuserdata[#1]{\normalexpanded{\inlinebuffer [\s!userdata:\ifparameter#1\or#1\else\currentuserdata\fi]}}
+% \permanent\tolerant\protected\def\getuserdata      [#1]{\expanded{\getbufferdata[\s!userdata:\ifparameter#1\or#1\else\currentuserdata\fi]}}
+% \permanent\tolerant\protected\def\getinlineuserdata[#1]{\expanded{\inlinebuffer [\s!userdata:\ifparameter#1\or#1\else\currentuserdata\fi]}}
 
 % unnested, as before:
 

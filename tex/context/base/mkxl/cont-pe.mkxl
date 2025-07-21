@@ -13,8 +13,8 @@
 
 \catcode`\{=1 \catcode`\}=2
 
-\immutable\def\defaultinterface  {persian}
-\immutable\def\defaultlanguagetag{pe}
+\permanent\cdef\defaultinterface  {persian}
+\permanent\cdef\defaultlanguagetag{pe}
 
 \input context.mkxl
 

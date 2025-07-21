@@ -156,7 +156,7 @@
         \pack_layers_preset_box{\v!right\currentlayer}%
     \fi
     \pack_layers_preset_box\currentlayer
-    \normalexpanded{\defineoverlay[\currentlayer][\composedlayer{\currentlayer}]}%
+    \expanded{\defineoverlay[\currentlayer][\composedlayer{\currentlayer}]}%
 \to \everydefinelayer
 
 \def\pack_layers_preset_box#1%

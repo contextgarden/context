@@ -45502,11 +45502,6 @@
   </cd:command>
  </cd:interface>
  <cd:interface file="i-system.xml">
-  <cd:command category="system" file="syst-aux.mkxl" level="system" name="expanded">
-   <cd:arguments>
-    <cd:content/>
-   </cd:arguments>
-  </cd:command>
   <cd:command category="system" file="syst-aux.mkxl" level="system" name="expanded" type="environment"/>
   <cd:command category="system" file="syst-aux.mkxl" level="system" name="gobbleoneargument">
    <cd:arguments>

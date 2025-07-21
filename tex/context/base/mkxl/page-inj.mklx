@@ -108,7 +108,7 @@
   {\clf_savepageinjections
          name {\currentpageinjection}%
         state {\p_page_injections_state}%
-     userdata {\normalunexpanded{#parameters}}%
+     userdata {\notexpanded{#parameters}}%
    \relax
    \endgroup}
 

@@ -1053,7 +1053,7 @@
      \ifcsname\??mathalignmentvariant#2\endcsname\lastnamedcs\else\zerocount\fi\relax}
 
 \def\math_eqalign_set_column#1%
-  {\normalexpanded{\math_eqalign_set_column_indeed[#1::]}}
+  {\expanded{\math_eqalign_set_column_indeed[#1::]}}
 
 \def\math_eqalign_set_columns_step
   {\advanceby\c_math_eqalign_column\plusone
@@ -1606,7 +1606,7 @@
      {\ifchknumber#1\or\lastchknumber\else(\c_math_matrix_columns+\minusone)\fi*\plustwo}%
      \plusone
    {\omit\span}%
-   \normalexpanded{\filler[%
+   \expanded{\filler[%
      \ifcsname\??filleralternative matrix:#1\endcsname matrix:#1\orelse
      \ifcsname\??filleralternative matrix:#2\endcsname matrix:#2\orelse
      \ifcsname\??filleralternative        #1\endcsname        #1\orelse
@@ -2831,10 +2831,10 @@
   {\noalign{\math_intertext{#1}}}
 
 \protected\def\math_intertext#1%
-  {\penalty\postdisplaypenalty
+  {\penalty\postdisplaypenalty % this will go .. replaced
    \afterdisplayspace
    \vbox{\forgetall\noindent#1\par}%
-   \penalty\predisplaypenalty
+   \penalty\predisplaypenalty  % this will do .. replaced
    \beforedisplayspace}
 
 %D \macros
@@ -3002,9 +3002,10 @@
 
 \permanent\protected\def\grph_handle_formula_image_tagged#1#2%
   {\begingroup
-   \def\figurecategory{formula}%
    \global\advanceby\nofexportedboxes\plusone
-   \dostarttagged\t!image{\the\nofexportedboxes}%
+   \edef\figureexported{\the\nofexportedboxes}%
+   \def\figurecategory{formula}%
+   \dostarttagged\t!image
    \setbox\b_grph_image\vpack\bgroup
      \vkern\zeropoint
      \hpack\bgroup
@@ -3032,6 +3033,10 @@
 \appendtoks % this might move
     \enforced\let\handle_formula_image\grph_handle_formula_image_tagged
 \to \everyenableelements
+
+\appendtoks % this might move
+    \enforced\let\handle_formula_image\grph_handle_formula_image_normal
+\to \everydisableelements
 
 % ... till here.
 

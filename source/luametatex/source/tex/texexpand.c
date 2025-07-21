@@ -617,6 +617,9 @@ void tex_expand_current_token(void)
                         case token_input_code:
                             tex_tex_string_start(io_token_eof_input_code, cat_code_table_par);
                             break;
+                        case ignore_input_code:
+                            tex_scan_toks_dropped(0);
+                            break;
                         case tex_token_input_code:
                             tex_tex_string_start(io_token_input_code, cat_code_table_par);
                             break;
@@ -1954,6 +1957,16 @@ case integer_match_token:
             We don't really start a list, it's more housekeeping. The starting point is the body and
             the later set |loc| reflects that.
         */
+    # if (0) 
+        /*tex 
+            There is very little gain on documents, so I need a good example first. A simple gobble 
+            two arguments goes down from 0.275 to 0.200 for 5 million calls  but then, maybe a more
+            dedicated gobbles might be even better (but of course it's less general wrt delimiters). 
+        */
+        if (! matchpointer && ! tracing) {
+            goto EXIT;
+        }
+    # endif 
         tex_begin_macro_list(chr);
         /*tex
             Beware: here the |name| is used for symbolic locations but also for macro indices but these

@@ -278,12 +278,12 @@
 \stopxmlsetups
 
 \startxmlsetups bibtex:format:doi
-  % \bibdoifelse{\@@pb@doi}{#1\normalexpanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}
+  % \bibdoifelse{\@@pb@doi}{#1\expanded{\bibgotoDOI{\@@pb@thekey}{\@@pb@doi}}#2}{#3}
     *doi*
 \stopxmlsetups
 
 \startxmlsetups bibtex:format:doi
-%   \bibdoifelse{\@@pb@biburl}{#1\normalexpanded{\bibgotoURL{\@@pb@thekey}{\@@pb@biburl}}#2}{#3}
+%   \bibdoifelse{\@@pb@biburl}{#1\expanded{\bibgotoURL{\@@pb@thekey}{\@@pb@biburl}}#2}{#3}
     *url*
 \stopxmlsetups
 
@@ -530,9 +530,9 @@
    \setuplist[\currentbibtexsession][\c!criterium=\v!previous,#2]
    \edef\currentbibtexsessiontitle{\namedlistparameter\currentbibtexsession\c!title}%
    \ifempty\currentbibtexsessiontitle
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\headtext{\currentbibtexsession}}]}%
+     \expanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\headtext{\currentbibtexsession}}]}%
    \else
-     \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\currentbibtexsessiontitle}]}%
+     \expanded{\startnamedsection[\v!chapter][\c!reference=\currentbibtexsession,\c!title={\currentbibtexsessiontitle}]}%
    \fi
    \dodoplacebibtexpublications
    \stopnamedsection
@@ -663,7 +663,7 @@
 
 \def\thebibtexpublicationlistelement
    {\strut
-    \normalexpanded{\reference[\bibtexrefprefix\currentbibtexsessiontag]{\number\bibtexcounter}}%
+    \expanded{\reference[\bibtexrefprefix\currentbibtexsessiontag]{\number\bibtexcounter}}%
     \dotypesetabibtexpublication\currentbibtexsessiontag
     \strut}
 
@@ -715,7 +715,7 @@
         \setupcite[\currentbibtexvariant][#1]%
       \else
         \edef\@@pb@@pbextras{{\@@pb@@pbextras\ifdefined\@@pb@@pbright\@@pb@@pbright\else\bibtexpublicationparameter\c!right\fi}}%
-        \normalexpanded{\setupcite[\currentbibtexvariant][#1,\c!right=\@@pb@@pbextras]}%
+        \expanded{\setupcite[\currentbibtexvariant][#1,\c!right=\@@pb@@pbextras]}%
       \fi}%
      {\def\currentbibtexvariant{#1}}%
    \getvalue{bibtex\currentbibtexvariant ref}[#2]}
@@ -728,7 +728,7 @@
 
 \def\dobibtexcitationindeed#1%
   {\iftrialtypesetting \else
-     \normalexpanded{\writedatatolist[\currentbibtexsession][bibref=#1]}%
+     \expanded{\writedatatolist[\currentbibtexsession][bibref=#1]}%
    \fi}
 
 \def\nobibtexcitation[#1]%
@@ -857,7 +857,7 @@
     {!#1!}}
 
 \def\dobibtexurllink#1#2%
-  {\normalexpanded{\useURL[bibtex:url:#1][#2]}%
+  {\expanded{\useURL[bibtex:url:#1][#2]}%
    \doifelsebibtexinteraction
      {\goto{\url[bibtex:url:#1]}[url(bibtex:url:#1)]}
      {\url[bibtex:url:#1]}}

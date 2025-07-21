@@ -188,9 +188,8 @@ do
         if r then
             setattribute(di,"n",r.n)
             if tonumber(r.image) ~= 0 then
-             -- setattribute(di,"data-lmtx-image","image-"..r.image)
---                 setattribute(di,"image","image-"..r.image)
-                setattribute(di,"image",tex.jobname .. "-" .. "image-"..r.image)
+                -- image is the export index
+                setattribute(di,"image",tex.jobname .. "-image-export-" .. r.image)
             end
         end
     end
@@ -422,30 +421,43 @@ end
 
 do
 
-    local f_id       = formatters["%s-%s"]
     local image      = { }
+    local nofimages  = 0
     usedimages.image = image
 
     structurestags.usewithcare.images = image
 
-    local function setfigure(name,used,page,width,height,depth,label,category)
+    local function setfigure(
+        name,used,page,
+        width,height,depth,label,
+        category,exported,
+        descriptiontext,alternativetext
+    )
         local fulltag = locatedtag("image")
         local spec    = specifications[fulltag]
         if spec then
+            local id
+            if tonumber(exported) then
+                id = tex.jobname .. "-image-exported-" .. exported
+            else
+                nofimages = nofimages + 1
+                id = tex.jobname .. "-image-" .. nofimages
+            end
             local page = tonumber(page)
-            local id = f_id(spec.tagname,spec.tagindex)
             image[fulltag] = {
-                id       = id,
-  -- ["data-lmtx-image"] = id,
-                image    = id,
-                name     = name,
-                used     = used,
-                page     = page and page > 1 and page or nil,
-                width    = todimen(width,"pt","%0.3F%s"),
-                height   = todimen(height+depth,"pt","%0.3F%s"),
-                drop     = depth ~= 0 and todimen(depth,"pt","%0.3F%s") or nil,
-                label    = label,
-                category = category,
+                exported        = exported,
+                id              = id,
+                image           = id,
+                name            = name,
+                used            = used,
+                page            = page and page > 1 and page or nil,
+                width           = todimen(width,"pt","%0.3F%s"),
+                height          = todimen(height+depth,"pt","%0.3F%s"),
+                drop            = depth ~= 0 and todimen(depth,"pt","%0.3F%s") or nil,
+                label           = label,
+                category        = category,
+                descriptiontext = descriptiontext,
+                alternativetext = alternativetext,
             }
         else
             -- we ignore images in layers in the background / pagebody
@@ -455,18 +467,19 @@ do
     function extras.image(di,element,n,fulltag)
         local data = image[fulltag]
         if data then
---             local id = data.id
-            local id = tex.jobname .. "-" .. data.id
+            local id = data.id
             -- can be less
             setattribute(di,"name",data.name)
             setattribute(di,"page",data.page)
+            setattribute(di,"exported",data.exported) -- can be nil
             setattribute(di,"id",id)
-         -- setattribute(di,"data-lmtx-image",id)
             setattribute(di,"image",id)
             setattribute(di,"width",data.width)
             setattribute(di,"height",data.height)
             setattribute(di,"drop",data.drop)
             setattribute(di,"label",data.label)
+            setattribute(di,"descriptiontext",data.descriptiontext)
+            setattribute(di,"alternativetext",data.alternativetext)
             setattribute(di,"category",data.category)
         end
     end
@@ -474,7 +487,19 @@ do
     implement {
         name      = "settagfigure",
         actions   = setfigure,
-        arguments = { "string", "string", "string", "dimension", "dimension", "dimension", "string", "string" }
+        arguments = {
+            "string",    -- name
+            "string",    -- used
+            "string",    -- page
+            "dimension", -- width
+            "dimension", -- height
+            "dimension", -- depth
+            "string",    -- label
+            "string",    -- category
+            "string",    -- exported
+            "string",    -- descriptiontext
+            "string",    -- alternativetext
+        }
     }
 
     structurestags.setfigure = setfigure

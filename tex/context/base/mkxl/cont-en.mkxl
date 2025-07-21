@@ -13,9 +13,9 @@
 
 \catcode`\{=1 \catcode`\}=2
 
-\immutable\def\defaultinterface  {english}
-\immutable\def\messageinterface  {english}
-\immutable\def\defaultlanguagetag{en}
+\permanent\cdef\defaultinterface  {english}
+\permanent\cdef\messageinterface  {english}
+\permanent\cdef\defaultlanguagetag{en}
 
 \input context.mkxl
 

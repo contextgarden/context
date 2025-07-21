@@ -434,7 +434,7 @@
         \else
           \let\currentheadparent\currentheaddefault
         \fi
-        \normalexpanded {%
+        \expanded {%
             \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currenthead}%
             \setheadparameter{\s!parent}{\??head\currentheadparent}%
@@ -447,14 +447,14 @@
           {\definelist[\currenthead][\c!prefix=\v!no]}%
         % we can't do this now for backward compatibility reasons
       % \doifelselist\currenthead\donothing
-      %   {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
+      %   {\expanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \else
-        \normalexpanded {%
+        \expanded {%
             \setheadparameter{\c!label}{\currenthead}%
             \setheadparameter{\c!coupling}{\currentheadparent}%
         }%
         \ifcstok{\headparameter\c!marking}\v!new % WS: so its own class
-          \normalexpanded {%
+          \expanded {%
               \definemarking[\currenthead]
               \definemarking[\currenthead\v!number]
               \setupmarking [\currenthead]         [\c!filtercommand=\noexpand\sectionheadmarkingtitle {\currenthead}]%
@@ -462,13 +462,13 @@
           }%
           \letheadparameter\c!marking\empty
         \else
-          \normalexpanded {%
+          \expanded {%
               \definemarking[\currenthead]         [\currentheadparent]%
               \definemarking[\currenthead\v!number][\currentheadparent\c!number]%
           }%
         \fi
         \doifelselist\currenthead\donothing
-          {\normalexpanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
+          {\expanded{\definelist[\currenthead][\currentheadparent][\c!prefix=\v!no]}}%
     \fi
     \presetlabeltext[\currenthead=]%
     \expand\everysetuphead
@@ -592,12 +592,12 @@
      \global\advanceby\maxstructuredepth\plusone
      \edefcsname\??headlevel#1\endcsname{\the\maxstructuredepth}%
      \setstructurelevel{#1}{\sectionlevel{#1}}%
-     \normalexpanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
+     \expanded{\setheadparameter{\s!parent}{\??head\lastsectionname}}% TO BE CHECKED, WE HAVE A HELPER
      \expand\everydefinesection
      % so far for these default inheritances
      \definemarking[#1]%
      \ifnum\maxstructuredepth>\plusone
-       \normalexpanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
+       \expanded{\relatemarking[#1][\lastsectionname]}% so, the parent will reset the child
      \fi
      \enforced\permanent\xdef\lastsectionname{#1}%
      \ifempty\firstsectionname
@@ -711,7 +711,7 @@
 \aliased\let\startnamedsection\strc_sectioning_start
 
 \permanent\protected\def\stopnamedsection
-  {\normalexpanded{\strc_sectioning_stop[\currentnamedsection]}}
+  {\expanded{\strc_sectioning_stop[\currentnamedsection]}}
 
 % \newconditional\structurereversesectionnumbers  % todo: key/val
 
@@ -830,7 +830,7 @@
 
 \permanent\protected\def\setheadmarking % li:: so that we can use \marking[section]{Taco needed this}
   {\strc_sectioning_delayed_flush
-   \normalexpanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
+   \expanded{\setmarking[\currenthead]{li::\currentstructurelistnumber}}}
 
 \mutable\let\deepstructurenumbercommand\relax
 \mutable\let\deepstructuretitlecommand \relax
@@ -843,7 +843,7 @@
      {\ifrelax\deepstructurenumbercommand
         \structurenumber
       \else
-        \normalexpanded{\noexpand\deepstructurenumbercommand{\structurenumber}}%
+        \expanded{\noexpand\deepstructurenumbercommand{\structurenumber}}%
       \fi}%
    \dostoptagged}
 
@@ -852,7 +852,7 @@
    \ifrelax\deepstructuretitlecommand
      \structuretitle
    \else
-     \normalexpanded{\noexpand\deepstructuretitlecommand{\structuretitle}}%
+     \expanded{\noexpand\deepstructuretitlecommand{\structuretitle}}%
    \fi
    \dostoptagged}
 
@@ -1175,15 +1175,15 @@
    \expandnamespaceparameter\??headmarkyes\headparameter\c!marking\s!unknown
    \edef\p_header{\headparameter\c!header}%
    \ifempty\p_header \else
-     \doifelselayouttextline\v!header{\normalexpanded{\setuplayouttext[\v!header][\c!state=\p_header]}}\donothing
+     \doifelselayouttextline\v!header{\expanded{\setuplayouttext[\v!header][\c!state=\p_header]}}\donothing
    \fi
    \edef\p_text{\headparameter\c!text}%
    \ifempty\p_text \else
-     \doifelselayouttextline\v!text  {\normalexpanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}\donothing
+     \doifelselayouttextline\v!text  {\expanded{\setuplayouttext[\v!text  ][\c!state=\p_text  ]}}\donothing
    \fi
    \edef\p_footer{\headparameter\c!footer}%
    \ifempty\p_footer \else
-     \doifelselayouttextline\v!footer{\normalexpanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
+     \doifelselayouttextline\v!footer{\expanded{\setuplayouttext[\v!footer][\c!state=\p_footer]}}\donothing
    \fi}
 
 \newinteger    \c_strc_sectioning_preceding_level     \c_strc_sectioning_preceding_level\plusone

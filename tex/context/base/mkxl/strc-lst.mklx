@@ -165,7 +165,7 @@
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
         }
-        userdata {\detokenize\expandafter{\normalexpanded{#userdata}}}
+        userdata {\detokenize\expandafter{\expanded{#userdata}}}
    \relax
    \edef\currentlistnumber{\the\scratchcounter}%
    \xdefcsname\??listlocations\currentlist\endcsname{\the\locationcount}%
@@ -321,17 +321,17 @@
 \ifdefined\headtext          \else \let\headtext         \relax \fi
 
 \permanent\tolerant\protected\def\completelist[#tag]#spacer[#S#settings]%
-  {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#tag},\c!reference=#tag]}% {} around ref ?
+  {\expanded{\startnamedsection[\v!title][\c!title=\headtext{#tag},\c!reference=#tag]}% {} around ref ?
    \strc_lists_place[#tag][#settings]%
    \stopnamedsection}
 
 \permanent\tolerant\protected\def\strc_lists_complete[#singular]#spacer[#plural]#spacer[#S#settings]% used in strc-flt
-  {\normalexpanded{\startnamedsection[\v!title][\c!title=\headtext{#plural},\c!reference=#singular]}% {} around ref ?
+  {\expanded{\startnamedsection[\v!title][\c!title=\headtext{#plural},\c!reference=#singular]}% {} around ref ?
    \strc_lists_place[#singular][#settings]%
    \stopnamedsection}
 
 \permanent\tolerant\def\strc_lists_combined_complete[#tag]#spacer[#S#settings]%
-  {\normalexpanded{\startnamedsection[\v!title][\c!title={\headtext{#tag}},\c!reference=#tag]}%
+  {\expanded{\startnamedsection[\v!title][\c!title={\headtext{#tag}},\c!reference=#tag]}%
    \placecombinedlist[#tag][#settings]%
    \stopnamedsection}
 
@@ -850,7 +850,7 @@
    \ifempty\p_method
      \let\p_method\v!command
    \fi
-   \normalexpanded{\definelistalternative[#tag][\p_method]}[\c!command=\strc_lists_placement_command]%
+   \expanded{\definelistalternative[#tag][\p_method]}[\c!command=\strc_lists_placement_command]%
    \doifelsenextbgroup
      {\strc_lists_define_placement_yes{#tag}}
      {\strc_lists_define_placement_nop{#tag}}}
@@ -1615,7 +1615,7 @@
    \else
      \setupcurrentlist[#settings]%
      \strc_lists_analyze{#list}{\listparameter\c!criterium}{\listparameter\c!reference}%
-     \normalexpanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
+     \expanded{\endgroup\noexpand\edef\noexpand\listlength{\structurelistsize}}%
    \fi
    \strc_lists_set_mode}
 

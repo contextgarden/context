@@ -28,6 +28,16 @@
     -- userdata lua upvalue for whatever extras
 */
 
+static const char *mesh_names[5] = { 
+    [no_mesh_type]       = "no", 
+    [dot_mesh_type]      = "dot", 
+    [line_mesh_type]     = "line", 
+    [triangle_mesh_type] = "triangle", 
+    [quad_mesh_type]     = "quad"
+};
+
+# define valid_mesh(n) (n >= dot_mesh_type && n <= quad_mesh_type ? n : triangle_mesh_type)
+
 /*tex 
 
     We need to be way above EPSILON in triangles.c because otherwise we get too many 
@@ -1193,13 +1203,13 @@ static int vectorlib_rowechelon(lua_State *L)
     vector a = vectorlib_aux_get(L, 1);
     int reduce = ! lua_toboolean(L, 2);
     if (a && a->rows == a->columns) {
+        double epsilon = lmt_optdouble(L, 3, vector_epsilon); /* now, as we push */ 
         vectorlib_aux_copy(L, 1);
         switch (a->type) {
             case identity_type:
                 break;
             default:
                 { 
-                    double epsilon = lmt_optdouble(L, 3, vector_epsilon);
                     a = vectorlib_aux_get(L, -1);
                     vectorlib_aux_rowechelon(a, reduce, 0, epsilon);
                     break;
@@ -1847,7 +1857,7 @@ static int vectorlib_mesh_tostring(lua_State *L)
 {
     mesh v = vectorlib_mesh_aux_get(L, 1);
     if (v) {
-        lua_pushfstring(L, "<mesh %d %s : %p>", v->rows, v->type == quad_mesh_type ? "quads" : "triangles", v);
+        lua_pushfstring(L, "<mesh %d %s : %p>", v->rows, mesh_names[valid_mesh(v->type)], v);
         return 1;
     } else {
         return 0;
@@ -2010,14 +2020,14 @@ static int vectorlib_contour_aux_is_valid(lua_State *L, vector *v, mesh *l, cons
     *v = vectorlib_get(L, 1);
     if (vectorlib_contour_aux_okay(*v && (*v)->rows > 1 && (*v)->columns > 2, what, "point list expected (x,y,z,...)")) {
         *l = vectorlib_get_mesh(L, 2);
-        if (vectorlib_contour_aux_okay(*l && (*l)->type == triangle_mesh_type, what, "triangle list expected ((p1,p2,p3),average)")) { 
+        if (vectorlib_contour_aux_okay(*l && valid_mesh((*l)->type), what, "mesh list expected ((p1 .. pN),average)")) { 
             return 1;
         }
     }
     return 0;
 }
 
-static int vectorlib_contour_getmesh(lua_State *L) /* see mplib */
+static int vectorlib_contour_getmesh(lua_State *L)
 {
     vector v = NULL;
     mesh l = NULL;
@@ -2026,7 +2036,7 @@ static int vectorlib_contour_getmesh(lua_State *L) /* see mplib */
         if (i >= 0 && i < l->rows) {
             int done = 0;
             int okay = 0;
-            int size = l->type == quad_mesh_type ? 4 : 3;
+            int size = valid_mesh(l->type);
             meshentry *triangle = &(l->data[i]);
             for (int j = 0; j < size; j++) {
                 int r = triangle->points[j] - 1;
@@ -2057,7 +2067,7 @@ static int vectorlib_contour_getmesh(lua_State *L) /* see mplib */
     return 0;
 }
 
-static int vectorlib_contour_getarea(lua_State *L) /* see mplib */
+static int vectorlib_contour_getarea(lua_State *L)
 {
     vector v = NULL;
     mesh l = NULL;
@@ -2066,7 +2076,25 @@ static int vectorlib_contour_getarea(lua_State *L) /* see mplib */
         if (i >= 0 && i < l->rows) {
             meshentry *entry = &(l->data[i]);
             switch (l->type) { 
-                case triangle_mesh_type:
+                case line_mesh_type:
+                    lua_pushnumber(L, 0.0);
+                    return 1;
+                case quad_mesh_type:
+                    {
+                        int p1 = entry->points[0] - 1;
+                        int p3 = entry->points[2] - 1;
+                        if (p1 >= 0 && p1 < v->rows && p3 >= 0 && p3 < v->rows) { 
+                            double x1 = v->data[p1 * v->columns];
+                            double y1 = v->data[p1 * v->columns + 1];
+                            double x3 = v->data[p3 * v->columns];
+                            double y3 = v->data[p3 * v->columns + 1];
+                            lua_pushnumber(L, fabs(x3 - x1) * fabs(y3 - y1));
+                            return 1;
+                        } else {
+                            break;
+                        }
+                    }
+                case triangle_mesh_type: /* from wikipedia */
                     {
                         int p1 = entry->points[0] - 1;
                         int p2 = entry->points[1] - 1;
@@ -2078,9 +2106,9 @@ static int vectorlib_contour_getarea(lua_State *L) /* see mplib */
                             double y2 = v->data[p2 * v->columns + 1];
                             double x3 = v->data[p3 * v->columns];
                             double y3 = v->data[p3 * v->columns + 1];
-                            double ab = sqrt(pow(x1-x2,2) + pow(y1-y2,2));
-                            double bc = sqrt(pow(x2-x3,2) + pow(y2-y3,2));
-                            double ca = sqrt(pow(x3-x1,2) + pow(y3-y1,2));
+                            double ab = sqrt(pow(x1 - x2, 2) + pow(y1 - y2, 2));
+                            double bc = sqrt(pow(x2 - x3, 2) + pow(y2 - y3, 2));
+                            double ca = sqrt(pow(x3 - x1, 2) + pow(y3 - y1, 2));
                             lua_pushnumber(L, sqrt (
                                 (  ab + bc + ca) *
                                 (- ab + bc + ca) *
@@ -2088,11 +2116,10 @@ static int vectorlib_contour_getarea(lua_State *L) /* see mplib */
                                 (  ab + bc - ca)
                             ) / 4);
                             return 1;
+                        } else {
+                            break;
                         }
-                        break;
                     }
-                case quad_mesh_type:
-                    break;
             }
         }
     }
@@ -2151,157 +2178,165 @@ static int vectorlib_contour_aux_checkoverlap(vector v, mesh l, int U, int V, in
     return -1;
 }
 
-static int vectorlib_contour_checkoverlap(lua_State *L) /* see mplib */
+static int vectorlib_contour_checkoverlap(lua_State *L)
 {
     vector v = NULL;
     mesh l = NULL;
     if (vectorlib_contour_aux_is_valid(L, &v, &l, "checkoverlap")) {
-        int U = lmt_tointeger(L, 3) - 1;
-        int V = lmt_tointeger(L, 4) - 1;
-        if (U >= 0 && U < l->rows && V >= 0 && V < l->rows) {
-            int method = lmt_optinteger(L, 5, 1);
-            double epsilon = lmt_optdouble(L, 6, vector_epsilon);
-            int overlapping = vectorlib_contour_aux_checkoverlap(v, l, U, V, method, epsilon);
-            if (overlapping >= 0) {
-                lua_pushinteger(L, overlapping);
-                return 1;
+        if (l->type == triangle_mesh_type) { 
+            int U = lmt_tointeger(L, 3) - 1;
+            int V = lmt_tointeger(L, 4) - 1;
+            if (U >= 0 && U < l->rows && V >= 0 && V < l->rows) {
+                int method = lmt_optinteger(L, 5, 1);
+                double epsilon = lmt_optdouble(L, 6, vector_epsilon);
+                int overlapping = vectorlib_contour_aux_checkoverlap(v, l, U, V, method, epsilon);
+                if (overlapping >= 0) {
+                    lua_pushinteger(L, overlapping);
+                    return 1;
+                }
             }
+        } else {
+            /* we only check triangles */
         }
     }
     return 0;
 }
 
-static int vectorlib_contour_collectoverlap(lua_State *L) /* see mplib */
+static int vectorlib_contour_collectoverlap(lua_State *L)
 {
     vector v = NULL;
     mesh l = NULL;
     if (vectorlib_contour_aux_is_valid(L, &v, &l, "collectoverlap")) {
-        int details = lua_toboolean(L, 3);
-        int method = lmt_optinteger(L, 4, 1);
-        double epsilon = lmt_optdouble(L, 5, vector_epsilon);
-        int vr = v->rows; 
-        int vc = v->columns; 
-        int lr = l->rows; 
-        int m = 0;
-        for (int i = 0; i < lr; i++) {
-            meshentry *triangle = &(l->data[i]);
-            int u0 = triangle->points[0];
-            int u1 = triangle->points[1];
-            int u2 = triangle->points[2];
-            if (
-                u0 >= 1  && u1 >= 1  && u2 >= 1  &&
-                u0 <= vr && u1 <= vr && u2 <= vr
-            ) {
-            } else { 
-                vectorlib_contour_aux_okay(0, "collectoverlap", "triangle list entries has invalid point references");
-                return 0;
+        if (l->type == triangle_mesh_type) { 
+            int details = lua_toboolean(L, 3);
+            int method = lmt_optinteger(L, 4, 1);
+            double epsilon = lmt_optdouble(L, 5, vector_epsilon);
+            int vr = v->rows; 
+            int vc = v->columns; 
+            int lr = l->rows; 
+            int m = 0;
+            for (int i = 0; i < lr; i++) {
+                meshentry *triangle = &(l->data[i]);
+                int u0 = triangle->points[0];
+                int u1 = triangle->points[1];
+                int u2 = triangle->points[2];
+                if (
+                    u0 >= 1  && u1 >= 1  && u2 >= 1  &&
+                    u0 <= vr && u1 <= vr && u2 <= vr
+                ) {
+                } else { 
+                    vectorlib_contour_aux_okay(0, "collectoverlap", "triangle list entries has invalid point references");
+                    return 0;
+                }
             }
-        }
-        for (int i = 0; i < lr - 1; i++) {
-            meshentry *triangle = &(l->data[i]);
-            int u0 = triangle->points[0] - 1;
-            int u1 = triangle->points[1] - 1;
-            int u2 = triangle->points[2] - 1;
-            double *U0 = &(v->data[u0 * vc]); 
-            double *U1 = &(v->data[u1 * vc]); 
-            double *U2 = &(v->data[u2 * vc]); 
-            for (int j = i + 1; j < lr; j++) {
-                meshentry *triangle = &(l->data[j]);
-                int v0 = triangle->points[0] - 1;
-                if (
-                    u0 == v0 || u1 == v0 || u2 == v0 
-                ) { 
-                    continue; /* triangles_intersection_nop_same_points */
-                }
-                int v1 = triangle->points[1] - 1;
-                if (
-                    u0 == v1 || u1 == v1 || u2 == v1
-                ) { 
-                    continue; /* triangles_intersection_nop_same_points */
-                }
-                int v2 = triangle->points[2] - 1;
-                if (
-                    u0 == v2 || u1 == v2 || u2 == v2
-                ) { 
-                    continue; /* triangles_intersection_nop_same_points */
-                } 
-                double *V0 = &(v->data[v0 * vc]); 
-                if ( 
-                    (ISZERO(U0[0] - V0[0]) && ISZERO(U0[1] - V0[1]) && ISZERO(U0[2] - V0[2])) || 
-                    (ISZERO(U1[0] - V0[0]) && ISZERO(U1[1] - V0[1]) && ISZERO(U1[2] - V0[2])) || 
-                    (ISZERO(U2[0] - V0[0]) && ISZERO(U2[1] - V0[1]) && ISZERO(U2[2] - V0[2]))
-                ) { 
-                    continue; /* triangles_intersection_nop_same_values */
-                } 
-                double *V1 = &(v->data[v1 * vc]); 
-                if ( 
-                    (ISZERO(U0[0] - V1[0]) && ISZERO(U0[1] - V1[1]) && ISZERO(U0[2] - V1[2])) || 
-                    (ISZERO(U1[0] - V1[0]) && ISZERO(U1[1] - V1[1]) && ISZERO(U1[2] - V1[2])) || 
-                    (ISZERO(U2[0] - V1[0]) && ISZERO(U2[1] - V1[1]) && ISZERO(U2[2] - V1[2])) 
-                ) { 
-                    continue; /* triangles_intersection_nop_same_values */
-                } 
-                double *V2 = &(v->data[v2 * vc]);
-                if ( 
-                    (ISZERO(U0[0] - V2[0]) && ISZERO(U0[1] - V2[1]) && ISZERO(U0[2] - V2[2])) || 
-                    (ISZERO(U1[0] - V2[0]) && ISZERO(U1[1] - V2[1]) && ISZERO(U1[2] - V2[2])) || 
-                    (ISZERO(U2[0] - V2[0]) && ISZERO(U2[1] - V2[1]) && ISZERO(U2[2] - V2[2]))
-                ) { 
-                    continue; /* triangles_intersection_nop_same_values */
-                } 
-                if (details) { 
-                    triangles_three Utimes, Vtimes; 
-                    int state = method == 2
-                        ? triangles_intersect_with_line_gd(U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon)
-                        : triangles_intersect_with_line   (U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon);
-                    if (state > triangles_intersection_yes_bound) { 
-                        long index = 1; 
-                        if (! m) {
-                            lua_createtable(L, 8, 0); /* main table, how many makes sense */
-                        }
-                        lua_createtable(L, 8, 0);
-                     // lua_createtable(L, 9, 0);
-                        lua_pushinteger(L, i + 1);
-                        lua_rawseti(L, -2, index++);
-                        lua_pushinteger(L, j + 1);
-                        lua_rawseti(L, -2, index++);
-                        for (int k = 0; k < 3; k++) { 
-                            lua_pushnumber(L, Utimes[k]);
-                            lua_rawseti(L, -2, index++);
-                        }
-                        for (int k = 0; k < 3; k++) { 
-                            lua_pushnumber(L, Vtimes[k]);
-                            lua_rawseti(L, -2, index++);
-                        }
-                     // lua_pushinteger(L, state);
-                     // lua_rawseti(L, -2, index++);
-                        lua_rawseti(L, -2, ++m);
+            for (int i = 0; i < lr - 1; i++) {
+                meshentry *triangle = &(l->data[i]);
+                int u0 = triangle->points[0] - 1;
+                int u1 = triangle->points[1] - 1;
+                int u2 = triangle->points[2] - 1;
+                double *U0 = &(v->data[u0 * vc]); 
+                double *U1 = &(v->data[u1 * vc]); 
+                double *U2 = &(v->data[u2 * vc]); 
+                for (int j = i + 1; j < lr; j++) {
+                    meshentry *triangle = &(l->data[j]);
+                    int v0 = triangle->points[0] - 1;
+                    if (
+                        u0 == v0 || u1 == v0 || u2 == v0 
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_points */
                     }
-                } else {
-                    int state = method == 2
-                        ? triangles_intersect_gd(U0, U1, U2, V0, V1, V2, epsilon)
-                        : triangles_intersect   (U0, U1, U2, V0, V1, V2, epsilon);
-                    if (state > triangles_intersection_yes_bound) { 
-                        if (! m) {
+                    int v1 = triangle->points[1] - 1;
+                    if (
+                        u0 == v1 || u1 == v1 || u2 == v1
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_points */
+                    }
+                    int v2 = triangle->points[2] - 1;
+                    if (
+                        u0 == v2 || u1 == v2 || u2 == v2
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_points */
+                    } 
+                    double *V0 = &(v->data[v0 * vc]); 
+                    if ( 
+                        (ISZERO(U0[0] - V0[0]) && ISZERO(U0[1] - V0[1]) && ISZERO(U0[2] - V0[2])) || 
+                        (ISZERO(U1[0] - V0[0]) && ISZERO(U1[1] - V0[1]) && ISZERO(U1[2] - V0[2])) || 
+                        (ISZERO(U2[0] - V0[0]) && ISZERO(U2[1] - V0[1]) && ISZERO(U2[2] - V0[2]))
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_values */
+                    } 
+                    double *V1 = &(v->data[v1 * vc]); 
+                    if ( 
+                        (ISZERO(U0[0] - V1[0]) && ISZERO(U0[1] - V1[1]) && ISZERO(U0[2] - V1[2])) || 
+                        (ISZERO(U1[0] - V1[0]) && ISZERO(U1[1] - V1[1]) && ISZERO(U1[2] - V1[2])) || 
+                        (ISZERO(U2[0] - V1[0]) && ISZERO(U2[1] - V1[1]) && ISZERO(U2[2] - V1[2])) 
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_values */
+                    } 
+                    double *V2 = &(v->data[v2 * vc]);
+                    if ( 
+                        (ISZERO(U0[0] - V2[0]) && ISZERO(U0[1] - V2[1]) && ISZERO(U0[2] - V2[2])) || 
+                        (ISZERO(U1[0] - V2[0]) && ISZERO(U1[1] - V2[1]) && ISZERO(U1[2] - V2[2])) || 
+                        (ISZERO(U2[0] - V2[0]) && ISZERO(U2[1] - V2[1]) && ISZERO(U2[2] - V2[2]))
+                    ) { 
+                        continue; /* triangles_intersection_nop_same_values */
+                    } 
+                    if (details) { 
+                        triangles_three Utimes, Vtimes; 
+                        int state = method == 2
+                            ? triangles_intersect_with_line_gd(U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon)
+                            : triangles_intersect_with_line   (U0, U1, U2, V0, V1, V2, Utimes, Vtimes, epsilon);
+                        if (state > triangles_intersection_yes_bound) { 
+                            long index = 1; 
+                            if (! m) {
+                                lua_createtable(L, 8, 0); /* main table, how many makes sense */
+                            }
                             lua_createtable(L, 8, 0);
+                         // lua_createtable(L, 9, 0);
+                            lua_pushinteger(L, i + 1);
+                            lua_rawseti(L, -2, index++);
+                            lua_pushinteger(L, j + 1);
+                            lua_rawseti(L, -2, index++);
+                            for (int k = 0; k < 3; k++) { 
+                                lua_pushnumber(L, Utimes[k]);
+                                lua_rawseti(L, -2, index++);
+                            }
+                            for (int k = 0; k < 3; k++) { 
+                                lua_pushnumber(L, Vtimes[k]);
+                                lua_rawseti(L, -2, index++);
+                            }
+                         // lua_pushinteger(L, state);
+                         // lua_rawseti(L, -2, index++);
+                            lua_rawseti(L, -2, ++m);
                         }
-                        lua_createtable(L, 2, 0);
-                        lua_pushinteger(L, i + 1);
-                        lua_rawseti(L, -2, 1);
-                        lua_pushinteger(L, j + 1);
-                        lua_rawseti(L, -2, 2);
-                        lua_rawseti(L, -2, ++m);
-                        /* maybe also store state */
+                    } else {
+                        int state = method == 2
+                            ? triangles_intersect_gd(U0, U1, U2, V0, V1, V2, epsilon)
+                            : triangles_intersect   (U0, U1, U2, V0, V1, V2, epsilon);
+                        if (state > triangles_intersection_yes_bound) { 
+                            if (! m) {
+                                lua_createtable(L, 8, 0);
+                            }
+                            lua_createtable(L, 2, 0);
+                            lua_pushinteger(L, i + 1);
+                            lua_rawseti(L, -2, 1);
+                            lua_pushinteger(L, j + 1);
+                            lua_rawseti(L, -2, 2);
+                            lua_rawseti(L, -2, ++m);
+                            /* maybe also store state */
+                        }
                     }
                 }
             }
+            return m ? 1 : 0;
+        } else {
+            /* we only check triangles */
         }
-        return m ? 1 : 0;
     }
     return 0;
 }
 
-static int vectorlib_contour_average(lua_State *L) /* see mplib */
+static int vectorlib_contour_average(lua_State *L)
 {
     vector v = NULL;
     mesh l = NULL;
@@ -2312,11 +2347,26 @@ static int vectorlib_contour_average(lua_State *L) /* see mplib */
         double maxy = 0.0;
         double minz = 0.0;
         double maxz = 0.0;
-        int tolerant = lua_toboolean(L, 3);
-        int method = lmt_optinteger(L, 4, 1);
-        int size = l->type == quad_mesh_type ? 4 : 3;
         int okay = 0;
         int done = 0;
+        int size = valid_mesh(l->type);
+        int tolerant = lua_toboolean(L, 3);
+        int method = lmt_optinteger(L, 4, 1);
+     // int first = lmt_optinteger(L, 5, 1);
+     // int last = lmt_optinteger(L, 6, l->rows);
+     // if (first <= 0) {
+     //     first = 0;
+     // } else { 
+     //     --first;
+     // }
+     // if (last == 0) { 
+     //     last = l->rows;
+     // } else if (last > l->rows) { 
+     //     last = l->rows;
+     // } else { 
+     //     --last;
+     // }
+     // for (int i = first; i < last; i++) {
         for (int i = 0; i < l->rows; i++) {
             meshentry *entry = &(l->data[i]);
             double average = 0.0;
@@ -2380,50 +2430,60 @@ static int vectorlib_contour_average(lua_State *L) /* see mplib */
     }
 }
 
-// static int vectorlib_contour_bounds(lua_State *L) /* see mplib */
-// {
-//     vector v = NULL;
-//     mesh l = NULL;
-//     if (vectorlib_contour_aux_is_valid(L, &v, &l, "bounds")) {
-//         double minx = 0.0;
-//         double maxx = 0.0;
-//         double miny = 0.0;
-//         double maxy = 0.0;
-//         int okay = 0;
-//         for (int i = 0; i < l->rows; i++) {
-//             int a = 0;
-//             double average = 0.0;
-//             meshentry *triangle = &(l->data[i]);
-//             int size = l->type == quad_mesh_type ? 4 : 3;
-//             for (int j = 0; j < size; j++) {
-//                 int r = triangle->points[j];
-//                 if (r > 0 && r <= v->rows) { 
-//                     int k = (r - 1) * v->columns;
-//                     double x = v->data[k];
-//                     double y = v->data[k + 1];
-//                     if (okay) {
-//                         if (x < minx) { minx = x; } else if (x > maxx) { maxx = x; }
-//                         if (y < miny) { miny = y; } else if (y > maxy) { maxy = y; }
-//                     } else { 
-//                         minx = x; miny = y;
-//                         maxx = x; maxy = y;
-//                     }
-//                 } else { 
-//                     break;
-//                 }
-//             }
-//             okay++;
-//         }
-//         lua_createtable(L, 0, 5);
-//         lua_set_integer_by_key(L, "okay", okay);
-//         lua_set_number_by_key (L, "minx", minx);
-//         lua_set_number_by_key (L, "miny", miny);
-//         lua_set_number_by_key (L, "maxx", maxx);
-//         lua_set_number_by_key (L, "maxy", maxy);
-//         return 1;
-//     }
-//     return 0;
-// }
+static int vectorlib_contour_bounds(lua_State *L)
+{
+    vector v = NULL;
+    mesh l = NULL;
+    if (vectorlib_contour_aux_is_valid(L, &v, &l, "bounds")) {
+        double minx = 0.0;
+        double maxx = 0.0;
+        double miny = 0.0;
+        double maxy = 0.0;
+        int okay = 0;
+        int size = valid_mesh(l->type);
+        int first = lmt_optinteger(L, 3, 1);
+        int last = lmt_optinteger(L, 4, l->rows);
+        if (first <= 0) {
+            first = 0;
+        } else { 
+            --first;
+        }
+        if (last == 0) { 
+            last = l->rows;
+        } else if (last > l->rows) { 
+            last = l->rows;
+        } else { 
+            --last;
+        }
+        for (int i = first; i < last; i++) {
+            meshentry *entry = &(l->data[i]);
+            for (int j = 0; j < size; j++) {
+                int r = entry->points[j];
+                if (r > 0 && r <= v->rows) { 
+                    int k = (r - 1) * v->columns;
+                    double x = v->data[k++];
+                    double y = v->data[k];
+                    if (okay) {
+                        if (x < minx) { minx = x; } else if (x > maxx) { maxx = x; }
+                        if (y < miny) { miny = y; } else if (y > maxy) { maxy = y; }
+                    } else { 
+                        minx = x; miny = y;
+                        maxx = x; maxy = y;
+                    }
+                    okay++;
+                }
+            }
+        }
+        lua_createtable(L, 0, 5);
+        lua_set_integer_by_key(L, "okay", okay);
+        lua_set_number_by_key (L, "minx", minx);
+        lua_set_number_by_key (L, "miny", miny);
+        lua_set_number_by_key (L, "maxx", maxx);
+        lua_set_number_by_key (L, "maxy", maxy);
+        return 1;
+    }
+    return 0;
+}
 
 int vectorlib_contour_compare_mesh_average(const void *entry_1, const void *entry_2) 
 {
@@ -2438,7 +2498,7 @@ int vectorlib_contour_compare_mesh_average(const void *entry_1, const void *entr
     }
 }
 
-static int vectorlib_contour_sort(lua_State *L) /* see mplib */
+static int vectorlib_contour_sort(lua_State *L)
 {
     mesh m = vectorlib_get_mesh(L, 1);
     if (m && m->rows > 1) {
@@ -2447,35 +2507,75 @@ static int vectorlib_contour_sort(lua_State *L) /* see mplib */
     return 0;
 }
 
-static int vectorlib_contour_triangulate(lua_State *L) /* see mplib */
+/* we can combine these two */
+
+static int vectorlib_contour_makemesh(lua_State *L) 
 {
     int columns = lmt_tointeger(L, 1);
     int rows = lmt_tointeger(L, 2);
-    if (rows > 0 && columns > 0 && columns * rows <= max_mesh) {
-        mesh m = vectorlib_mesh_aux_push(L, rows * columns * 2);
-        int index = 0; 
-        int offset = columns + 1;
-        for (int r = 1; r <= rows; r++) {
-            for (int c = 1; c <= columns; c++) {
-                int p1 = (r - 1) * offset + c; // left point of current row
-                int p2 =  r      * offset + c; // left point of next row
-                int p11 = p1 + 1;
-                int p21 = p2 + 1;
-                if (p11 > max_mesh || p21 > max_mesh) {
-                    /* we clip */
-                } else {
-                    /* first */
-                    m->data[index  ].points[0] = (unsigned short) p1;
-                    m->data[index  ].points[1] = (unsigned short) p11;
-                    m->data[index  ].points[2] = (unsigned short) p21;
-                    m->data[index  ].points[3] = 0;
-                    m->data[index++].average   = 0.0;
-                    /* second */
-                    m->data[index  ].points[0] = (unsigned short) p1;
-                    m->data[index  ].points[1] = (unsigned short) p21;
-                    m->data[index  ].points[2] = (unsigned short) p2;
-                    m->data[index  ].points[3] = 0;
-                    m->data[index++].average   = 0.0;
+    int size = columns * rows;
+    int type = valid_mesh(lmt_optinteger(L, 3, triangle_mesh_type));
+    if (size > 0 && size <= max_mesh) {
+        switch (type) { 
+            case triangle_mesh_type:
+                size *= 2;
+                break;
+            case quad_mesh_type:
+                break;
+            case line_mesh_type:
+                break;
+            default: 
+                /*tex We silently recover. */
+                type = triangle_mesh_type;
+                size *= 2;
+                break;
+        }
+        /*tex When we arrived here we're okay. */
+        {
+            mesh m = vectorlib_mesh_aux_push(L, size);
+            int index = 0; 
+            int offset = columns + 1;
+            m->type = type;
+            for (int r = 1; r <= rows; r++) {
+                for (int c = 1; c <= columns; c++) {
+                    int p1 = (r - 1) * offset + c; // left point of current row
+                    int p2 =  r      * offset + c; // left point of next row
+                    int p11 = p1 + 1;
+                    int p21 = p2 + 1;
+                    if (p11 > max_mesh || p21 > max_mesh) {
+                        /* we clip */
+                    } else {
+                        switch (type) { 
+                            case triangle_mesh_type:
+                                /* first */
+                                m->data[index  ].points[0] = (unsigned short) p1;
+                                m->data[index  ].points[1] = (unsigned short) p11;
+                                m->data[index  ].points[2] = (unsigned short) p21;
+                                m->data[index  ].points[3] = 0;
+                                m->data[index++].average   = 0.0;
+                                /* second */
+                                m->data[index  ].points[0] = (unsigned short) p1;
+                                m->data[index  ].points[1] = (unsigned short) p21;
+                                m->data[index  ].points[2] = (unsigned short) p2;
+                                m->data[index  ].points[3] = 0;
+                                m->data[index++].average   = 0.0;
+                                break;
+                            case quad_mesh_type: 
+                                m->data[index  ].points[0] = (unsigned short) p1;
+                                m->data[index  ].points[1] = (unsigned short) p11;
+                                m->data[index  ].points[2] = (unsigned short) p21;
+                                m->data[index  ].points[3] = (unsigned short) p2;
+                                m->data[index++].average   = 0.0;
+                                break;
+                            case line_mesh_type: 
+                                m->data[index  ].points[0] = (unsigned short) p1;
+                                m->data[index  ].points[1] = (unsigned short) p2;
+                                m->data[index  ].points[2] = 0;
+                                m->data[index  ].points[3] = 0;
+                                m->data[index++].average   = 0.0;
+                                break;
+                        }
+                    }
                 }
             }
         }
@@ -2570,8 +2670,8 @@ static const luaL_Reg vectorlib_contour_function_list[] =
 {
     /* for experiments with mp */
     { "average",        vectorlib_contour_average        },
- // { "bounds",         vectorlib_contour_bounds         },
-    { "triangulate",    vectorlib_contour_triangulate    },
+    { "bounds",         vectorlib_contour_bounds         },
+    { "makemesh",       vectorlib_contour_makemesh       },
     { "sort",           vectorlib_contour_sort           },
     { "getmesh",        vectorlib_contour_getmesh        },
     { "getarea",        vectorlib_contour_getarea        },
@@ -2580,7 +2680,6 @@ static const luaL_Reg vectorlib_contour_function_list[] =
     /* nothing more */                                            
     { NULL,            NULL                              },
 };
-
 
 static const luaL_Reg vectorlib_vector_metatable[] =
 {

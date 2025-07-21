@@ -122,7 +122,7 @@
 
 % invisible =
 
-\def\strc_pagenumbers_page_state_save % \normalexpanded?
+\def\strc_pagenumbers_page_state_save % \expanded?
   {\clf_savepagedata
      {
         prefix        {\namedcounterparameter\s!userpage\c!prefix}
@@ -151,7 +151,7 @@
 \installcorenamespace{pagestatestack} % no level yet
 
 \protected\def\strc_pagenumbers_page_state_push{\xdefcsname\??pagestatestack\c!state\endcsname{\namedcounterparameter\s!userpage\c!state}}
-\protected\def\strc_pagenumbers_page_state_pop {\normalexpanded{\setuppagenumber[\c!state=\csname\??pagestatestack\c!state\endcsname]}}
+\protected\def\strc_pagenumbers_page_state_pop {\expanded{\setuppagenumber[\c!state=\csname\??pagestatestack\c!state\endcsname]}}
 
 \setuppagenumber
   [\c!way=\v!by\v!text,
@@ -281,8 +281,8 @@
 
 % States:
 
-\newconditional\layoutisdoublesided % already defined: \newif\ifdoublesided
-\newconditional\layoutissinglesided % already defined: \newif\ifsinglesided
+% \newconditional\layoutisdoublesided % already defined, also \newif\ifdoublesided
+% \newconditional\layoutissinglesided % already defined, also \newif\ifsinglesided
 
 % Realpage and subpage numbers:
 
@@ -497,7 +497,7 @@
 \appendtoks
     \edef\scratchstringone{\namedcounterparameter\s!userpage\c!number}%
     \ifempty\scratchstringone \else
-      \normalexpanded{\setuppagenumber[\c!start=\scratchstringone,\c!number=]}%
+      \expanded{\setuppagenumber[\c!start=\scratchstringone,\c!number=]}%
       \userpageno\strc_counters_raw\s!userpage
     \fi
 \to \everysetupuserpagenumber % todo: set state: none, start, stop, reset
@@ -505,7 +505,7 @@
 \appendtoks
     \edef\scratchstringone{\namedcounterparameter\s!subpage\c!number}%
     \ifempty\scratchstringone \else
-      \normalexpanded{\setupsubpagenumber[\c!start=\scratchstringone,\c!number=]}%
+      \expanded{\setupsubpagenumber[\c!start=\scratchstringone,\c!number=]}%
       \subpageno\strc_counters_raw\s!subpage\relax
     \fi
 \to \everysetupsubpagenumber % todo: set state: none, start, stop, reset

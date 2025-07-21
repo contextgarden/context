@@ -183,7 +183,7 @@
 
 \newconditional \c_spac_lines_as_paragraph
 
-\def\spac_lines_obeyed_line
+\def\spac_lines_obeyed_line % we get a dummy first
   {\ifdone\linesparameter\c!right\fi
    \dostoptagged % can be a dummy one as we don't look ahead
    \ifconditional\c_spac_lines_as_paragraph

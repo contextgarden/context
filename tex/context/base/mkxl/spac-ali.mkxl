@@ -64,8 +64,8 @@
 \installcorenamespace{alignmentraggedcacheodd}
 \installcorenamespace{alignmentraggedcacheeven}
 
-\immutable\def\??alignmentnormalcache{\ifodd\realpageno\??alignmentnormalcacheodd\else\??alignmentnormalcacheeven\fi}
-\immutable\def\??alignmentraggedcache{\ifodd\realpageno\??alignmentraggedcacheodd\else\??alignmentraggedcacheeven\fi}
+\permanent\def\??alignmentnormalcache{\ifodd\realpageno\??alignmentnormalcacheodd\else\??alignmentnormalcacheeven\fi}
+\permanent\def\??alignmentraggedcache{\ifodd\realpageno\??alignmentraggedcacheodd\else\??alignmentraggedcacheeven\fi}
 
 \newtoks\everyresetalign % todo
 
@@ -1002,15 +1002,15 @@
    \lastlinefit\ifcase\c_spac_align_state_fit\zerocount\else\plusthousand\fi
 \to \t_spac_align_applied
 
-\immutable\integerdef\defaultdoublehyphendemerits\plustenthousand
-\immutable\integerdef\defaultfinalhyphendemerits \plusfivethousand
-\immutable\integerdef\defaultadjdemerits         \plustenthousand
-\immutable\integerdef\defaultorphanpenalty       \plusfifty
-\immutable\integerdef\defaulttoddlerpenalty      \plusfifty
-\immutable\integerdef\defaultlefttwindemerits    \plusseventyfivehundred
-\immutable\integerdef\defaultrighttwindemerits   \plusseventyfivehundred
+\permanent\immutable\integerdef\defaultdoublehyphendemerits\plustenthousand
+\permanent\immutable\integerdef\defaultfinalhyphendemerits \plusfivethousand
+\permanent\immutable\integerdef\defaultadjdemerits         \plustenthousand
+\permanent\immutable\integerdef\defaultorphanpenalty       \plusfifty
+\permanent\immutable\integerdef\defaulttoddlerpenalty      \plusfifty
+\permanent\immutable\integerdef\defaultlefttwindemerits    \plusseventyfivehundred
+\permanent\immutable\integerdef\defaultrighttwindemerits   \plusseventyfivehundred
 
-\immutable\integerdef\granularadjdemerits        \plusfivethousand % see accumulation in granular
+\permanent\immutable\integerdef\granularadjdemerits        \plusfivethousand % see accumulation in granular
 
 \frozen\doublehyphendemerits \defaultdoublehyphendemerits
 \frozen\finalhyphendemerits  \defaultfinalhyphendemerits
@@ -1031,14 +1031,14 @@
 \permanent\protected\def\keeptwins   {\lefttwindemerits \zerocount
                                       \righttwindemerits\zerocount}
 
-% for now, not interfaced as these are experiments:
+% for now, not interfaced (maybe never):
 
-    \immutable\def\s!noorphans   {noorphans}
-    \immutable\def\s!keeporphans {keeporphans}
-    \immutable\def\s!notwins     {notwins}
-    \immutable\def\s!keeptwins   {keeptwins}
-    \immutable\def\s!notoddlers  {notoddlers}
-    \immutable\def\s!keeptoddlers{keeptoddlers}
+\permanent\def\s!noorphans   {noorphans}
+\permanent\def\s!keeporphans {keeporphans}
+\permanent\def\s!notwins     {notwins}
+\permanent\def\s!keeptwins   {keeptwins}
+\permanent\def\s!notoddlers  {notoddlers}
+\permanent\def\s!keeptoddlers{keeptoddlers}
 
 \defcsname\??aligncommand\s!noorphans   \endcsname{\toksapp\t_spac_align_collected{\noorphans}}
 \defcsname\??aligncommand\s!keeporphans \endcsname{\toksapp\t_spac_align_collected{\keeporphans}}
@@ -1250,7 +1250,7 @@
    \fi}
 
 \permanent\protected\def\showpardata
-  {\normalexpanded{\dontleavehmode\inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{%
+  {\expanded{\dontleavehmode\inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{%
      \hbox{font: \fontname\font}\endgraf
      \spac_show_par_data
        \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
@@ -1431,7 +1431,7 @@
 
 \permanent\tolerant\protected\def\wordright[#1]%
   {\dowithnextbox
-     {\normalexpanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
+     {\expanded{\spac_word_right_indeed{#1}{\hpack{\thebox\nextbox}}}}
      \hbox}
 
 \protected\def\spac_word_right_indeed#1#2%

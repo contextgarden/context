@@ -98,7 +98,7 @@
 \appendtoks
     % if parent
     \advanceby\c_comparetext\plusone
-    \immutable\expandafter\integerdef\csname\??comparingchannel\currentcomparingtext\endcsname\c_comparetext
+    \permanent\immutable\expandafter\integerdef\csname\??comparingchannel\currentcomparingtext\endcsname\c_comparetext
     \clf_setupcomparingtext
        {\currentcomparingtext}%
        \c_comparetext

@@ -1004,6 +1004,8 @@ nonut = [[
 
 -- -- math -- --
 
+-- the last style parameter is the main style
+
 tasks.new {
     name      = "math",
     processor = nodeprocessor,
@@ -1028,26 +1030,26 @@ local tonode = nodes.nuts.tonode
 
 %localize%
 
-return function(head,style,penalties,beginclass,endclass,level,style)
+return function(head,style,penalties,beginclass,endclass,level,mainstyle)
 %actions%
     return head
 end
 ]],
 
 step = [[
-    head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,style)))
+    head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)))
 ]],
 
 nut  = [[
-    head = %action%(head,style,penalties,beginclass,endclass,level,style)
+    head = %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
 ]],
 
 nohead = [[
-    %action%(tonode(head),style,penalties,beginclass,endclass,level,style)
+    %action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)
 ]],
 
 nonut = [[
-    %action%(head,style,penalties,beginclass,endclass,level,style)
+    %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
 ]],
 
     }

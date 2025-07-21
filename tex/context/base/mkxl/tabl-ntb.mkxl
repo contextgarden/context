@@ -833,7 +833,7 @@
    % the action key will change!
    \tabl_ntb_set_ref\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\naturaltableparameter\c!action}%
    % save text
-   \normalexpanded
+   \expanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
      {#1}{#2}%
    \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
@@ -856,7 +856,7 @@
    \tabl_ntb_set_col\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col\c_tabl_ntb_nx
    \tabl_ntb_set_row\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col\c_tabl_ntb_ny
    \tabl_ntb_let_ref\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col\empty
-   \normalexpanded
+   \expanded
      {\tabl_ntb_set_txt_process\c_tabl_ntb_maximum_row\c_tabl_ntb_running_col{\the\c_tabl_ntb_maximum_row}{\the\c_tabl_ntb_running_col}}%
      {#1}{#2}%
    \ifnum\c_tabl_ntb_encountered_col>\c_tabl_ntb_encountered_max
@@ -866,10 +866,10 @@
 \protected\def\tabl_ntb_td_pass_n#1%
   {\scratchcounter{\m_tabl_ntb_n-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn}%
    \ifnum\scratchcounter>\zerocount
-     \normalexpanded{\tabl_ntb_td[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no]}\eTD
+     \expanded{\tabl_ntb_td[\c!nx=\the\scratchcounter,\c!n=,\c!m=,*sq=\v!no]}\eTD
      % could be a faster inline
      % \advanceby\c_tabl_ntb_encountered_col\plusone
-     % \normalexpanded{\tabl_ntb_td_yes[\c!nx=\the\scratchcounter},\c!n=,\c!m=,*sq=\v!no]\eTD
+     % \expanded{\tabl_ntb_td_yes[\c!nx=\the\scratchcounter},\c!n=,\c!m=,*sq=\v!no]\eTD
    \fi
    \letnaturaltableparameter\c!ny\m_tabl_ntb_default_nr
    \letnaturaltableparameter\c!nx\m_tabl_ntb_default_nc
@@ -884,7 +884,7 @@
      \plusone
      {\m_tabl_ntb_m-\c_tabl_ntb_running_col+\minusone-\c_tabl_ntb_spn}%
      \plusone
-     {\normalexpanded{\tabl_ntb_td[\c!n=,\c!m=]}\eTD}%
+     {\expanded{\tabl_ntb_td[\c!n=,\c!m=]}\eTD}%
    % can be sped up
    \letnaturaltableparameter\c!ny\m_tabl_ntb_default_nr
    \letnaturaltableparameter\c!nx\m_tabl_ntb_default_nc
@@ -1174,7 +1174,7 @@
                 \localcontrolledloop\plusone\c_tabl_ntb_maximum_col\plusone
               \fi
                 {\c_tabl_ntb_current_col\currentloopiterator\relax
-                 \normalexpanded{\tabl_ntb_cell{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}}%
+                 \expanded{\tabl_ntb_cell{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}}%
             \tabl_ntb_row_stop}%
          \removeunwantedspaces % only if hmode
        \tabl_ntb_table_stop
@@ -1254,7 +1254,7 @@
    \tabl_ntb_set_col\c_tabl_ntb_current_row\c_tabl_ntb_current_col\c_tabl_ntb_current_col_two
    \tabl_ntb_set_row\c_tabl_ntb_current_row\c_tabl_ntb_current_col\c_tabl_ntb_current_row_two%
    \ifautoTBLemptycell
-      \normalexpanded
+      \expanded
          {\tabl_ntb_set_txt_process\c_tabl_ntb_current_row\c_tabl_ntb_current_col{\the\c_tabl_ntb_current_row}{\the\c_tabl_ntb_current_col}}%
          {\c!option=\v!tight}{\strut\kern\scaledpoint}% the kern forces the tight
    \fi}
@@ -1290,7 +1290,7 @@
 \newinteger\c_tabl_prelocated_rows % \prelocateTBLrows{1000} may speed up large tables
 
 % \def\tabl_ntb_row_start{\t_tabl_ntb_row\emptytoks}
-% \def\tabl_ntb_row_stop {\normalexpanded{\t_tabl_ntb{\expand\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\expand\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
+% \def\tabl_ntb_row_stop {\expanded{\t_tabl_ntb{\expand\t_tabl_ntb\noexpand\tabl_ntb_row_align_start\expand\t_tabl_ntb_row\tabl_ntb_row_align_stop}}}
 
 \def\tabl_ntb_row_start
   {\t_tabl_ntb_row\emptytoks}
@@ -1639,7 +1639,7 @@
    \ifempty\scratchmacro
      \box\scratchbox
    \else
-     \normalexpanded{\directgotobox{\box\scratchbox}[\scratchmacro]}% to be checked
+     \expanded{\directgotobox{\box\scratchbox}[\scratchmacro]}% to be checked
    \fi
    \dostoptagged} % right spot
 
@@ -2173,7 +2173,7 @@
         \fi
       \fi
     \fi
-    \normalexpanded{\tabl_ntb_cell_process_b_c{\ifdim\scratchdimen>\zeropoint \c!width=\the\scratchdimen\fi}}%
+    \expanded{\tabl_ntb_cell_process_b_c{\ifdim\scratchdimen>\zeropoint \c!width=\the\scratchdimen\fi}}%
       {#1}{#2}[#3]{\tabl_ntb_char_align{#1}{#2}#4}}
 
 \protected\def\tabl_ntb_cell_process_c
@@ -2342,10 +2342,10 @@
 \permanent\let\eTRs\relax
 
 \permanent\protected\def\bTDs[#1]#2\eTDs
-  {\normalexpanded{\bTD[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTD}
+  {\expanded{\bTD[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTD}
 
 \permanent\protected\def\bTRs[#1]#2\eTRs
-  {\normalexpanded{\bTR[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTR}
+  {\expanded{\bTR[\begincsname\??naturaltablesetup#1\endcsname]}#2\eTR}
 
 %D This is new (for Ramkumar, Kb)
 %D

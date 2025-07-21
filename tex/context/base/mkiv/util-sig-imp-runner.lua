@@ -75,11 +75,9 @@ if protocol == "serial" and serialwrite then
         if command then
             local count = #lamps
             for i=first,last do
-                if count == 8 then
-                    serialwrite(port,baud,"s" .. command .. i)
-                else
-                    serialwrite(port,baud,"q" .. command .. i)
-                end
+                -- q=squid k=quadrant s=segment a=all
+                local cmd = (count == 8 and "s" or "k") .. command .. i
+                serialwrite(port,baud,cmd)
             end
         end
     end

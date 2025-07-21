@@ -52,22 +52,10 @@
     \spac_paragraph_freeze
 \to \everypar
 
-\appendtoks
-    \flushnotes
-\to \everydisplay
-
-% \appendtoks
-%     \adjustsidefloatdisplaylines
-% \to \everydisplay
-
-% \appendtoks
-%     \flushpostponednodedata
-% \to \neverypar
-
 % \appendtoks
 %     \flushsyncpositions
 % \to \everyheadstart
-
+%
 % \appendtoks
 %     \flushsyncresets
 % \to \everyendoftextbody

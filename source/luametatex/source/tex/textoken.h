@@ -572,7 +572,7 @@ extern void       tex_get_x_or_protected          (void);
 extern halfword   tex_str_toks                    (lstring s, halfword *tail); /* returns head */
 extern halfword   tex_cur_str_toks                (halfword *tail);            /* returns head */
 extern halfword   tex_str_scan_toks               (int c, lstring b);          /* returns head */
-extern void       tex_run_combine_the_toks        (void);
+extern void       tex_run_combine_the_toks        (int force);
 extern void       tex_run_convert_tokens          (halfword code);
 extern strnumber  tex_the_convert_string          (halfword c, int i);
 extern strnumber  tex_tokens_to_string            (halfword p);
@@ -587,16 +587,16 @@ extern halfword   tex_get_tex_attribute_register  (int j, int internal);
 extern halfword   tex_get_tex_box_register        (int j, int internal);
 extern halfword   tex_get_tex_toks_register       (int j, int internal);
 
-extern void       tex_set_tex_dimension_register  (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_skip_register       (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_muskip_register     (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_count_register      (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_posit_register      (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_attribute_register  (int j, halfword v, int flags, int internal);
-extern void       tex_set_tex_box_register        (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_dimension_register  (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_skip_register       (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_muskip_register     (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_count_register      (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_posit_register      (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_attribute_register  (int j, halfword v, int flags, int internal);
+extern int        tex_set_tex_box_register        (int j, halfword v, int flags, int internal);
 
-extern void       tex_set_tex_toks_register       (int j,        lstring s, int flags, int internal);
-extern void       tex_scan_tex_toks_register      (int j, int c, lstring s, int flags, int internal);
+extern int        tex_set_tex_toks_register       (int j,        lstring s, int flags, int internal);
+extern int        tex_scan_tex_toks_register      (int j, int c, lstring s, int flags, int internal);
 
 extern halfword   tex_copy_token_list             (halfword h, halfword *t);
 

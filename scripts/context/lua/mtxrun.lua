@@ -6690,7 +6690,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 46002, stripped down to: 24524
+-- original size: 46220, stripped down to: 24637
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -7394,6 +7394,9 @@ local format_z=function(f)
  n=n+(tonumber(f) or 1)
  return "''" 
 end
+local format_Z=function(f)
+ return format("a%s",tonumber(f) or 1)
+end
 local format_rest=function(s)
  return format("%q",s) 
 end
@@ -7449,8 +7452,8 @@ local builder=Cs { "start",
 +V("a") 
 +V("A") 
 +V("j")+V("J") 
-+V("m")+V("M") 
-+V("z")
++V("m")+V("M")
++V("z")+V("Z")
 +V(">") 
 +V("<")
    )+V("*")
@@ -7497,6 +7500,7 @@ local builder=Cs { "start",
  ["m"]=(prefix_any*P("m"))/format_m,
  ["M"]=(prefix_any*P("M"))/format_M,
  ["z"]=(prefix_any*P("z"))/format_z,
+ ["Z"]=(prefix_any*P("Z"))/format_Z,
  ["a"]=(prefix_any*P("a"))/format_a,
  ["A"]=(prefix_any*P("A"))/format_A,
  ["<"]=(prefix_any*P("<"))/format_left,
@@ -14793,7 +14797,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tpl"] = package.loaded["util-tpl"] or true
 
--- original size: 7722, stripped down to: 4212
+-- original size: 7708, stripped down to: 4212
 
 if not modules then modules={} end modules ['util-tpl']={
  version=1.001,
@@ -26955,8 +26959,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1077039
--- stripped bytes    : 429030
+-- original bytes    : 1077243
+-- stripped bytes    : 429121
 
 -- end library merge
 

@@ -294,7 +294,7 @@
 %   {\begingroup
 %      \ctxlua{document.showtree(dir.glob("#1"))}
 %      \setbox\scratchbox\hbox{\tttf │}
-%      \normalexpanded{
+%      \expanded{
 %           \setupinterlinespace
 %            [line=\the\dimexpr\htdp\scratchbox\relax]
 %      }

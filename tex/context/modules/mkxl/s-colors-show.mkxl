@@ -115,7 +115,7 @@
 
 \gdef\colo_palets_process[#1]%
   {\getpaletlist[#1]%
-   \normalexpanded{\globalprocesscommalist[\paletlist]}}
+   \expanded{\globalprocesscommalist[\paletlist]}}
 
 \permanent\protected\tolerant\gdef\comparepalet[#1]%
   {\doifelsecolorpalet{#1}%

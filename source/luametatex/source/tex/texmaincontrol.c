@@ -1139,6 +1139,7 @@ static void tex_aux_run_begin_paragraph_hmode(void)
             }
         case wrapup_par_code:
             {
+                /* maybe also a prepend */
                 halfword par = tex_find_par_par(cur_list.head);
                 if (par) {
                     halfword h = par_end_par_tokens(par);
@@ -1315,6 +1316,7 @@ static void tex_aux_run_text_boundary(void)
             boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
             break;
         case lua_boundary:
+        case attribute_boundary:
             boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
             boundary_reserved(boundary) = tex_scan_integer(0, NULL, NULL);
             break;
@@ -1343,6 +1345,7 @@ static void tex_aux_run_math_boundary(void)
                 break;
             }
         case lua_boundary:
+        case attribute_boundary:
             {
                 halfword boundary = tex_new_node(boundary_node, (quarterword) cur_chr);
                 boundary_data(boundary) = tex_scan_integer(0, NULL, NULL);
@@ -1404,12 +1407,17 @@ int tex_wrapped_up_paragraph(int context, int final)
             halfword eop = par_end_par_tokens(par);
             par_end_par_tokens(par) = null;
             tex_back_input(cur_tok);
-            /*tex We  inject the tokens, which increments the ref count; this one has tracing. */
+            /*tex We inject the tokens, which increments the ref count; this one has tracing. */
             tex_begin_token_list(eop, end_paragraph_text);
             /*tex So we need to decrement the token ref here. */
             tex_delete_token_reference(eop);
             done = 1;
         }
+        /*tex Like |\everypar| this one is not reset, so less housekeeping that wrapping up. */
+        if (every_par_end_par) {
+            tex_begin_token_list(every_par_end_par, every_par_end_text);
+        }
+        /*tex This kicks in when packaging a box: */
         if (final && end_of_group_par) {
             if (! done) {
                 tex_back_input(cur_tok);
@@ -2403,7 +2411,7 @@ void tex_off_save(void)
                 }
             case math_inline_group:
             case math_display_group:
-            case math_number_group:
+            case math_equation_number_group:
                 {
                     set_token_info(h, math_shift_token + '$');
                     tex_handle_error(
@@ -2489,7 +2497,7 @@ static void tex_aux_extra_right_brace_error(void)
             break;
         case math_inline_group:
         case math_display_group:
-        case math_number_group:
+        case math_equation_number_group:
             tex_handle_error(
                 normal_error_type,
                 "Extra }, or forgotten $",
@@ -2638,7 +2646,7 @@ static void tex_aux_run_right_brace(void)
         case semi_simple_group:
         case math_inline_group:
         case math_display_group:
-        case math_number_group:
+        case math_equation_number_group:
         case math_fence_group: /*tex See above, let's see when we are supposed to end up here. */
             tex_aux_extra_right_brace_error();
             break;
@@ -2969,6 +2977,9 @@ void tex_begin_paragraph(int doindent, int context)
         tex_end_diagnostic();
     }
     /*tex The |\everypar| tokens are injected after all these nodes have been added. */
+    if (every_par_begin_par) {
+        tex_begin_token_list(every_par_begin_par, every_par_begin_text);
+    }
     if (every_par_par) {
         tex_begin_token_list(every_par_par, every_par_text);
     }
@@ -3559,7 +3570,6 @@ static void tex_aux_show_frozen_error(halfword cs)
             "You can't redefine a frozen macro.",
             NULL
         );
-
     }
 }
 
@@ -3572,44 +3582,30 @@ static void tex_aux_show_frozen_error(halfword cs)
 
 */
 
-static inline halfword tex_aux_get_register_index(int level)
+static inline halfword tex_aux_get_register_index(int level, halfword *index)
 {
     switch (level) {
         case integer_val_level:
-            {
-                halfword index = tex_scan_integer_register_number();
-                return register_integer_location(index);
-            }
+            *index = tex_scan_integer_register_number();
+            return register_integer_location(*index);
         case dimension_val_level:
-            {
-                halfword index = tex_scan_dimension_register_number();
-                return register_dimension_location(index);
-            }
+            *index = tex_scan_dimension_register_number();
+            return register_dimension_location(*index);
         case attribute_val_level:
-            {
-                halfword index = tex_scan_attribute_register_number();
-                return register_attribute_location(index);
-            }
+            *index = tex_scan_attribute_register_number();
+            return register_attribute_location(*index);
         case posit_val_level:
-            {
-                halfword index = tex_scan_posit_register_number();
-                return register_posit_location(index);
-            }
+            *index = tex_scan_posit_register_number();
+            return register_posit_location(*index);
         case glue_val_level:
-            {
-                halfword index = tex_scan_glue_register_number();
-                return register_glue_location(index);
-            }
+            *index = tex_scan_glue_register_number();
+            return register_glue_location(*index);
         case muglue_val_level:
-            {
-                halfword index = tex_scan_muglue_register_number();
-                return register_muglue_location(index);
-            }
+            *index = tex_scan_muglue_register_number();
+            return register_muglue_location(*index);
         case token_val_level:
-            {
-                halfword index = tex_scan_toks_register_number();
-                return register_toks_location(index);
-            }
+            *index = tex_scan_toks_register_number();
+            return register_toks_location(*index);
         default:
             return 0;
     }
@@ -3630,7 +3626,7 @@ static inline halfword tex_aux_get_register_value(int level, int optionalequal)
     }
 }
 
-static int tex_aux_valid_arithmic(int cmd, int *index, int *level, int *varcmd, int *simple, int *original)
+static int tex_aux_valid_arithmic(int cmd, int *index, int *level, int *varcmd, int *simple, int *original, halfword *slot)
 {
     /*tex So: |\multiply|, |\divide| or |\advance|. */
     tex_get_x_token();
@@ -3675,9 +3671,9 @@ static int tex_aux_valid_arithmic(int cmd, int *index, int *level, int *varcmd, 
             return 1;
         case register_cmd:
             *level = cur_chr;
-            *index = tex_aux_get_register_index(cur_chr);
+            *index = tex_aux_get_register_index(cur_chr, slot);
             *original = eq_value(*index);
-            return 1;
+            return 2;
         case integer_cmd:
             *index = cur_cs;
             *level = integer_val_level;
@@ -3786,7 +3782,8 @@ static inline void tex_aux_set_register(int a)
 {
     halfword level = cur_chr;
     halfword varcmd = cur_cmd;
-    halfword index = tex_aux_get_register_index(level);
+    halfword slot = 0;
+    halfword index = tex_aux_get_register_index(level, &slot);
     halfword value = tex_aux_get_register_value(level, 1);
     tex_aux_update_register(a, level, index, value, varcmd);
 }
@@ -3808,199 +3805,203 @@ static void tex_aux_arithmic_register(int a, int code)
     halfword varcmd = 0;
     halfword simple = 0;
     halfword original = 0;
-    if (tex_aux_valid_arithmic(cmd, &index, &level, &varcmd, &simple, &original)) {
-        halfword value = null;
-     // lmt_scanner_state.arithmic_error = 0;
-        switch (code) {
-            case advance_code:
-                tex_scan_optional_keyword("by");
-            case advance_by_code:
-                {
-                    halfword amount = tex_aux_get_register_value(level, 0);
-                    switch (level) {
-                        case integer_val_level:
-                        case attribute_val_level:
-                        case dimension_val_level:
-                            if (is_global(a) || amount) {
-                                value = original + amount;
-                                break;
-                            } else { 
-                                /* likely a dimension */
-                                return;
-                            }
-                        case posit_val_level:
-                            if (is_global(a) || tex_posit_ne_zero(amount)) {
-                                value = tex_posit_add(original, amount); 
-                                break;
-                            } else { 
-                                return;
-                            }
-                        case glue_val_level:
-                        case muglue_val_level:
-                            if (is_global(a) || ! tex_glue_is_zero(amount)) {
-                                /* Compute the sum of two glue specs */
-                                glue_amount(amount) += glue_amount(original);
-                                if (glue_stretch(amount) == 0) {
-                                    glue_stretch_order(amount) = normal_glue_order;
-                                }
-                                if (glue_stretch_order(amount) == glue_stretch_order(original)) {
-                                    glue_stretch(amount) += glue_stretch(original);
-                                } else if ((glue_stretch_order(amount) < glue_stretch_order(original)) && (glue_stretch(original))) {
-                                    glue_stretch(amount) = glue_stretch(original);
-                                    glue_stretch_order(amount) = glue_stretch_order(original);
-                                }
-                                if (glue_shrink(amount) == 0) {
-                                    glue_shrink_order(amount) = normal_glue_order;
-                                }
-                                if (glue_shrink_order(amount) == glue_shrink_order(original)) {
-                                    glue_shrink(amount) += glue_shrink(original);
-                                } else if ((glue_shrink_order(amount) < glue_shrink_order(original)) && (glue_shrink(original))) {
-                                    glue_shrink(amount) = glue_shrink(original);
-                                    glue_shrink_order(amount) = glue_shrink_order(original);
-                                }
-                                value = amount;
-                                break;
-                            } else {
-                                tex_flush_node(amount);
-                                return;
-                            }
-                        default:
-                            /* error */
-                            break;
-                    }
-                    /*tex There is no overflow detection for addition, just wraparound. */
-                    if (simple) {
-                        tex_define(a, index, (singleword) simple, value);
-                    } else {
-                        tex_aux_update_register(a, level, index, value, varcmd);
-                    }
-                    break;
-                }
-            case multiply_code:
-                tex_scan_optional_keyword("by");
-            case multiply_by_code:
-                {
-                    halfword amount = tex_scan_integer(0, NULL, NULL);
-                    halfword value = 0;
-                    if (is_global(a) || amount != 1) {
-                        lmt_scanner_state.arithmetic_error = 0;
+    halfword slot = 0;
+    int okay = tex_aux_valid_arithmic(cmd, &index, &level, &varcmd, &simple, &original, &slot);
+    if (okay) {
+        if ((okay == 1 && tex_mutation_permitted(index)) || tex_register_permitted(index, slot, cmd)) {
+            halfword value = null;
+         // lmt_scanner_state.arithmic_error = 0;
+            switch (code) {
+                case advance_code:
+                    tex_scan_optional_keyword("by");
+                case advance_by_code:
+                    {
+                        halfword amount = tex_aux_get_register_value(level, 0);
                         switch (level) {
                             case integer_val_level:
                             case attribute_val_level:
-                                value = tex_multiply_integers(original, amount);
-                                break;
-                            case posit_val_level:
-                                value = tex_posit_mul_by(original, amount);
-                                break;
                             case dimension_val_level:
-                                value = tex_nx_plus_y(original, amount, 0);
-                                break;
-                            case glue_val_level:
-                            case muglue_val_level:
-                                {
-                                    halfword newvalue = tex_new_glue_spec_node(original);
-                                    glue_amount(newvalue) = tex_nx_plus_y(glue_amount(original), amount, 0);
-                                    glue_stretch(newvalue) = tex_nx_plus_y(glue_stretch(original), amount, 0);
-                                    glue_shrink(newvalue) = tex_nx_plus_y(glue_shrink(original), amount, 0);
-                                    value = newvalue;
+                                if (is_global(a) || amount) {
+                                    value = original + amount;
                                     break;
-                                }
-                            default:
-                                /* error */
-                                break;
-                        }
-                        if (lmt_scanner_state.arithmetic_error) {
-                            tex_aux_arithmic_overflow_error(level, value);
-                        } else if (simple) {
-                            tex_define(a, index, (singleword) simple, value);
-                        } else {
-                            tex_aux_update_register(a, level, index, value, varcmd);
-                        }
-                        break;
-                    } else { 
-                        return;
-                    }
-                }
-            case divide_code:
-            case r_divide_code:
-            case e_divide_code:
-                tex_scan_optional_keyword("by");
-            case divide_by_code:
-            case r_divide_by_code:
-            case e_divide_by_code:
-                {
-                    halfword amount = tex_scan_integer(0, NULL, NULL);
-                    if (is_global(a) || amount != 1) {
-                        bool rounded = code == r_divide_code || code == r_divide_by_code;
-                        lmt_scanner_state.arithmetic_error = 0;
-                        switch (level) {
-                            case dimension_val_level:
-                                if (rounded) {
-                                    value = tex_quotient(original >> 16, amount, 1) << 16;
-                                    break;
-                                }
-                            case integer_val_level:
-                            case attribute_val_level:
-                                {
-                                    bool asexpr = code == e_divide_code || code == e_divide_by_code;
-                                    value = tex_quotient(original, amount, asexpr || rounded);
-                                    break;
+                                } else { 
+                                    /* likely a dimension */
+                                    return;
                                 }
                             case posit_val_level:
-                                value = tex_posit_div_by(original, amount); /* always rounded */
-                                break;
+                                if (is_global(a) || tex_posit_ne_zero(amount)) {
+                                    value = tex_posit_add(original, amount); 
+                                    break;
+                                } else { 
+                                    return;
+                                }
                             case glue_val_level:
                             case muglue_val_level:
-                                {
-                                    halfword newvalue = tex_new_glue_spec_node(original);
-                                    /* we could shift over 0 when not rounded but .. why bother */
-                                    if (rounded) {
-                                        glue_amount(newvalue) = tex_quotient(glue_amount(original) >> 16, amount, 1) << 16;
-                                        glue_stretch(newvalue) = tex_quotient(glue_stretch(original) >> 16, amount, 1) << 16;
-                                        glue_shrink(newvalue) = tex_quotient(glue_shrink(original) >> 16, amount, 1) << 16;
-                                    } else {
-                                        bool asexpr = code == e_divide_code || code == e_divide_by_code;
-                                        glue_amount(newvalue) = tex_quotient(glue_amount(original), amount, asexpr);
-                                        glue_stretch(newvalue) = tex_quotient(glue_stretch(original), amount, asexpr);
-                                        glue_shrink(newvalue) = tex_quotient(glue_shrink(original), amount, asexpr);
+                                if (is_global(a) || ! tex_glue_is_zero(amount)) {
+                                    /* Compute the sum of two glue specs */
+                                    glue_amount(amount) += glue_amount(original);
+                                    if (glue_stretch(amount) == 0) {
+                                        glue_stretch_order(amount) = normal_glue_order;
                                     }
-                                    value = newvalue;
+                                    if (glue_stretch_order(amount) == glue_stretch_order(original)) {
+                                        glue_stretch(amount) += glue_stretch(original);
+                                    } else if ((glue_stretch_order(amount) < glue_stretch_order(original)) && (glue_stretch(original))) {
+                                        glue_stretch(amount) = glue_stretch(original);
+                                        glue_stretch_order(amount) = glue_stretch_order(original);
+                                    }
+                                    if (glue_shrink(amount) == 0) {
+                                        glue_shrink_order(amount) = normal_glue_order;
+                                    }
+                                    if (glue_shrink_order(amount) == glue_shrink_order(original)) {
+                                        glue_shrink(amount) += glue_shrink(original);
+                                    } else if ((glue_shrink_order(amount) < glue_shrink_order(original)) && (glue_shrink(original))) {
+                                        glue_shrink(amount) = glue_shrink(original);
+                                        glue_shrink_order(amount) = glue_shrink_order(original);
+                                    }
+                                    value = amount;
                                     break;
+                                } else {
+                                    tex_flush_node(amount);
+                                    return;
                                 }
                             default:
                                 /* error */
                                 break;
                         }
-                        if (lmt_scanner_state.arithmetic_error) {
-                            tex_aux_arithmic_overflow_error(level, value);
-                        } else if (simple) {
+                        /*tex There is no overflow detection for addition, just wraparound. */
+                        if (simple) {
                             tex_define(a, index, (singleword) simple, value);
                         } else {
                             tex_aux_update_register(a, level, index, value, varcmd);
                         }
                         break;
-                    } else { 
-                        return;
                     }
-                }
-            /*
-            case advance_by_plus_one_code:
-            case advance_by_minus_one_code:
-                {
-                    switch (level) {
-                        case integer_val_level:
-                        case attribute_val_level:
-                            original += code == advance_by_plus_one_code ? 1 : -1;
-                            if (simple) {
-                                tex_define(a, index, simple, original);
+                case multiply_code:
+                    tex_scan_optional_keyword("by");
+                case multiply_by_code:
+                    {
+                        halfword amount = tex_scan_integer(0, NULL, NULL);
+                        halfword value = 0;
+                        if (is_global(a) || amount != 1) {
+                            lmt_scanner_state.arithmetic_error = 0;
+                            switch (level) {
+                                case integer_val_level:
+                                case attribute_val_level:
+                                    value = tex_multiply_integers(original, amount);
+                                    break;
+                                case posit_val_level:
+                                    value = tex_posit_mul_by(original, amount);
+                                    break;
+                                case dimension_val_level:
+                                    value = tex_nx_plus_y(original, amount, 0);
+                                    break;
+                                case glue_val_level:
+                                case muglue_val_level:
+                                    {
+                                        halfword newvalue = tex_new_glue_spec_node(original);
+                                        glue_amount(newvalue) = tex_nx_plus_y(glue_amount(original), amount, 0);
+                                        glue_stretch(newvalue) = tex_nx_plus_y(glue_stretch(original), amount, 0);
+                                        glue_shrink(newvalue) = tex_nx_plus_y(glue_shrink(original), amount, 0);
+                                        value = newvalue;
+                                        break;
+                                    }
+                                default:
+                                    /* error */
+                                    break;
+                            }
+                            if (lmt_scanner_state.arithmetic_error) {
+                                tex_aux_arithmic_overflow_error(level, value);
+                            } else if (simple) {
+                                tex_define(a, index, (singleword) simple, value);
                             } else {
-                                tex_aux_update_register(a, level, index, original, varcmd);
+                                tex_aux_update_register(a, level, index, value, varcmd);
                             }
                             break;
+                        } else { 
+                            return;
+                        }
                     }
-                    break;
-                }
-            */
+                case divide_code:
+                case r_divide_code:
+                case e_divide_code:
+                    tex_scan_optional_keyword("by");
+                case divide_by_code:
+                case r_divide_by_code:
+                case e_divide_by_code:
+                    {
+                        halfword amount = tex_scan_integer(0, NULL, NULL);
+                        if (is_global(a) || amount != 1) {
+                            bool rounded = code == r_divide_code || code == r_divide_by_code;
+                            lmt_scanner_state.arithmetic_error = 0;
+                            switch (level) {
+                                case dimension_val_level:
+                                    if (rounded) {
+                                        value = tex_quotient(original >> 16, amount, 1) << 16;
+                                        break;
+                                    }
+                                case integer_val_level:
+                                case attribute_val_level:
+                                    {
+                                        bool asexpr = code == e_divide_code || code == e_divide_by_code;
+                                        value = tex_quotient(original, amount, asexpr || rounded);
+                                        break;
+                                    }
+                                case posit_val_level:
+                                    value = tex_posit_div_by(original, amount); /* always rounded */
+                                    break;
+                                case glue_val_level:
+                                case muglue_val_level:
+                                    {
+                                        halfword newvalue = tex_new_glue_spec_node(original);
+                                        /* we could shift over 0 when not rounded but .. why bother */
+                                        if (rounded) {
+                                            glue_amount(newvalue) = tex_quotient(glue_amount(original) >> 16, amount, 1) << 16;
+                                            glue_stretch(newvalue) = tex_quotient(glue_stretch(original) >> 16, amount, 1) << 16;
+                                            glue_shrink(newvalue) = tex_quotient(glue_shrink(original) >> 16, amount, 1) << 16;
+                                        } else {
+                                            bool asexpr = code == e_divide_code || code == e_divide_by_code;
+                                            glue_amount(newvalue) = tex_quotient(glue_amount(original), amount, asexpr);
+                                            glue_stretch(newvalue) = tex_quotient(glue_stretch(original), amount, asexpr);
+                                            glue_shrink(newvalue) = tex_quotient(glue_shrink(original), amount, asexpr);
+                                        }
+                                        value = newvalue;
+                                        break;
+                                    }
+                                default:
+                                    /* error */
+                                    break;
+                            }
+                            if (lmt_scanner_state.arithmetic_error) {
+                                tex_aux_arithmic_overflow_error(level, value);
+                            } else if (simple) {
+                                tex_define(a, index, (singleword) simple, value);
+                            } else {
+                                tex_aux_update_register(a, level, index, value, varcmd);
+                            }
+                            break;
+                        } else { 
+                            return;
+                        }
+                    }
+                /*
+                case advance_by_plus_one_code:
+                case advance_by_minus_one_code:
+                    {
+                        switch (level) {
+                            case integer_val_level:
+                            case attribute_val_level:
+                                original += code == advance_by_plus_one_code ? 1 : -1;
+                                if (simple) {
+                                    tex_define(a, index, simple, original);
+                                } else {
+                                    tex_aux_update_register(a, level, index, original, varcmd);
+                                }
+                                break;
+                        }
+                        break;
+                    }
+                */
+            }
         }
     }
 }
@@ -4476,7 +4477,12 @@ static void tex_aux_set_box(int a)
 {
     halfword slot = tex_scan_box_register_number();
     if (lmt_error_state.set_box_allowed) {
-        tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot, 0, 0);
+        if (tex_define_permitted(register_box_location(slot), a)) {
+            tex_aux_scan_box(is_global(a) ? global_box_flag : box_flag, 1, null_flag, slot, 0, 0);
+            if (is_immutable(a)) { 
+                eq_flag(register_box_location(slot)) |= immutable_flag_bit;
+            }
+        }
     } else {
         tex_handle_error(
             normal_error_type,
@@ -4792,8 +4798,15 @@ static void tex_aux_set_font_property(void)
                 break;
             }
         case scaled_font_dimension_code:
+        case scaled_font_slant_per_point_code:
+        case scaled_font_interword_space_code:
+        case scaled_font_interword_stretch_code:
+        case scaled_font_interword_shrink_code:
+        case scaled_font_ex_height_code:
+        case scaled_font_em_width_code:
+        case scaled_font_extra_space_code:
             {
-                tex_set_scaled_font_dimension();
+                tex_set_scaled_font_dimension(code - scaled_font_dimension_code);
                 break;
             }
         default:
@@ -5138,30 +5151,24 @@ static void tex_aux_set_let(int flags, int force)
     list.)
 */
 
-static void tex_aux_set_assign_toks(int a) // better just pass cmd and chr
+static void tex_aux_set_assign_toks(int a, halfword cmd, halfword cs, halfword loc) // better just pass cmd and chr
 {
-    halfword cs = cur_cs;
-    halfword cmd = cur_cmd;
     halfword chr;
     halfword tail;
-    /*tex We either access by number or we have an internal |every_par_loc|, |output_routine_loc|, \dots */
-    halfword loc = cmd == register_cmd ? register_toks_location(tex_scan_toks_register_number()) : cur_chr;
     /*tex
         Skip an optional equal sign and get the next non-blank non-relax non-call token.
     */
-    {
-        int n = 1 ;
-        while (1) {
-            tex_get_x_token();
-            if (cur_cmd == spacer_cmd) {
-                /*tex Go on! */
-            } else if (cur_cmd == relax_cmd) {
-                n = 0;
-            } else if (n && cur_tok == equal_token) {
-                n = 0;
-            } else {
-                break;
-            }
+    int n = 1 ;
+    while (1) {
+        tex_get_x_token();
+        if (cur_cmd == spacer_cmd) {
+            /*tex Go on! */
+        } else if (cur_cmd == relax_cmd) {
+            n = 0;
+        } else if (n && cur_tok == equal_token) {
+            n = 0;
+        } else {
+            break;
         }
     }
     if (cur_cmd != left_brace_cmd) {
@@ -5203,6 +5210,23 @@ static void tex_aux_set_assign_toks(int a) // better just pass cmd and chr
     }
   DEFINE:
     tex_define(a, loc, cmd == internal_toks_cmd ? internal_toks_reference_cmd : register_toks_reference_cmd, chr);
+}
+
+static void tex_aux_set_register_toks(int a, int force) // better just pass cmd and chr
+{
+    halfword cs = cur_cs;
+    halfword index = tex_scan_toks_register_number();
+    halfword p = register_toks_location(index);
+    if (force || tex_register_permitted(p, index, register_toks_cmd)) {
+        tex_aux_set_assign_toks(a, register_toks_cmd, cs, p);
+    }
+}
+
+static void tex_aux_set_internal_toks(int a, int force) // better just pass cmd and chr
+{
+    if (force || tex_mutation_permitted(cur_cs)) {
+        tex_aux_set_assign_toks(a, cur_cmd, cur_cs, cur_chr);
+    }
 }
 
 /*tex Let |n| be the largest legal code value, based on |cur_chr| */
@@ -5656,97 +5680,121 @@ static void tex_aux_set_define_family(int a)
 
 /*tex Similar routines are used to assign values to the numeric parameters. */
 
-static void tex_aux_set_internal_integer(int a)
+static void tex_aux_set_internal_integer(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL, NULL);
-    tex_assign_internal_integer_value(a, p, v);
-}
-
-static void tex_aux_set_register_integer(int a)
-{
-    halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL, NULL);
-    tex_word_define(a, p, v);
-}
-
-static void tex_aux_set_internal_posit(int a)
-{
-    halfword p = cur_chr;
-    scaled v = tex_scan_posit(1);
-    tex_assign_internal_integer_value(a, p, v);
-}
-
-static void tex_aux_set_register_posit(int a)
-{
-    halfword p = cur_chr;
-    scaled v = tex_scan_posit(1);
-    tex_word_define(a, p, v);
-}
-
-static void tex_aux_set_internal_attribute(int a)
-{
-    halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL, NULL);
-    if (internal_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
-        lmt_node_memory_state.max_used_attribute = internal_attribute_number(p);
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_integer(1, NULL, NULL);
+        tex_assign_internal_integer_value(a, p, v);
     }
-    tex_change_attribute_register(a, p, v);
-    tex_word_define(a, p, v);
 }
 
-static void tex_aux_set_register_attribute(int a)
+static void tex_aux_set_register_integer(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_integer(1, NULL, NULL);
-    if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
-        lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_integer(1, NULL, NULL);
+        tex_word_define(a, p, v);
     }
-    tex_change_attribute_register(a, p, v);
-    tex_word_define(a, p, v);
 }
 
-static void tex_aux_set_internal_dimension(int a)
+static void tex_aux_set_internal_posit(int a, int force)
 {
     halfword p = cur_chr;
-    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
-    tex_assign_internal_dimension_value(a, p, v);
+    if (force || tex_mutation_permitted(p)) {
+        scaled v = tex_scan_posit(1);
+        tex_assign_internal_posit_value(a, p, v);
+    }
 }
 
-static void tex_aux_set_register_dimension(int a)
+static void tex_aux_set_register_posit(int a, int force)
 {
     halfword p = cur_chr;
-    scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
-    tex_word_define(a, p, v);
+    if (force || tex_mutation_permitted(p)) {
+        scaled v = tex_scan_posit(1);
+        tex_word_define(a, p, v);
+    }
 }
 
-static void tex_aux_set_internal_glue(int a)
+static void tex_aux_set_internal_attribute(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_glue(glue_val_level, 1, 0);
- // define(a, p, internal_glue_ref_cmd, v);
-    tex_assign_internal_skip_value(a, p, v);
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_integer(1, NULL, NULL);
+        if (internal_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
+            lmt_node_memory_state.max_used_attribute = internal_attribute_number(p);
+        }
+        tex_change_attribute_register(a, p, v);
+        tex_word_define(a, p, v);
+    }
 }
 
-static void tex_aux_set_register_glue(int a)
+static void tex_aux_set_register_attribute(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_glue(glue_val_level, 1, 1);
-    tex_define(a, p, register_glue_reference_cmd, v);
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_integer(1, NULL, NULL);
+        if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
+            lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
+        }
+        tex_change_attribute_register(a, p, v);
+        tex_word_define(a, p, v);
+    }
 }
 
-static void tex_aux_set_internal_muglue(int a)
+static void tex_aux_set_internal_dimension(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_glue(muglue_val_level, 1, 0);
-    tex_define(a, p, internal_muglue_reference_cmd, v);
+    if (force || tex_mutation_permitted(p)) {
+        scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+        tex_assign_internal_dimension_value(a, p, v);
+    }
 }
 
-static void tex_aux_set_register_muglue(int a)
+static void tex_aux_set_register_dimension(int a, int force)
 {
     halfword p = cur_chr;
-    halfword v = tex_scan_glue(muglue_val_level, 1, 0);
-    tex_define(a, p, register_muglue_reference_cmd, v);
+    if (force || tex_mutation_permitted(p)) {
+        scaled v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+        tex_word_define(a, p, v);
+    }
+}
+
+static void tex_aux_set_internal_glue(int a, int force)
+{
+    halfword p = cur_chr;
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_glue(glue_val_level, 1, 0);
+     // define(a, p, internal_glue_ref_cmd, v);
+        tex_assign_internal_skip_value(a, p, v);
+    }
+}
+
+static void tex_aux_set_register_glue(int a, int force)
+{
+    halfword p = cur_chr;
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_glue(glue_val_level, 1, 1);
+        tex_define(a, p, register_glue_reference_cmd, v);
+    }
+}
+
+static void tex_aux_set_internal_muglue(int a, int force)
+{
+    halfword p = cur_chr;
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_glue(muglue_val_level, 1, 0);
+        tex_define(a, p, internal_muglue_reference_cmd, v);
+    }
+}
+
+static void tex_aux_set_register_muglue(int a, int force)
+{
+    halfword p = cur_chr;
+    if (force || tex_mutation_permitted(p)) {
+        halfword v = tex_scan_glue(muglue_val_level, 1, 0);
+        tex_define(a, p, register_muglue_reference_cmd, v);
+    }
 }
 
 /*tex
@@ -5757,7 +5805,7 @@ static void tex_aux_set_register_muglue(int a)
 
 */
 
-static void tex_aux_set_combine_toks(halfword a)
+static void tex_aux_set_combine_toks(halfword a, int force)
 {
     if (is_global(a)) {
         switch (cur_chr) {
@@ -5768,7 +5816,7 @@ static void tex_aux_set_combine_toks(halfword a)
             case prepend_expanded_toks_code: cur_chr = global_prepend_expanded_toks_code; break;
         }
     }
-    tex_run_combine_the_toks();
+    tex_run_combine_the_toks(force);
 }
 
 static int tex_aux_set_some_item(void)
@@ -5809,27 +5857,29 @@ static int tex_aux_set_some_item(void)
     }
 }
 
-static void tex_aux_set_constant_register(halfword cmd, halfword cs, halfword flags)
+static void tex_aux_set_constant_register(halfword cmd, halfword cs, halfword flags, int force)
 {
-    halfword v = null;
-    switch(cmd) {
-        case integer_cmd:
-            v = tex_scan_integer(1, NULL, NULL);
-            break;
-        case dimension_cmd:
-            v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
-            break;
-        case posit_cmd:
-            v = tex_scan_posit(1);
-            break;
-        case gluespec_cmd:
-            v = tex_scan_glue(glue_val_level, 1, 1);
-            break;
-        case mugluespec_cmd:
-            v = tex_scan_glue(muglue_val_level, 1, 0);
-            break;
+    if (force || tex_mutation_permitted(cs)) {
+        halfword v = null;
+        switch(cmd) {
+            case integer_cmd:
+                v = tex_scan_integer(1, NULL, NULL);
+                break;
+            case dimension_cmd:
+                v = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+                break;
+            case posit_cmd:
+                v = tex_scan_posit(1);
+                break;
+            case gluespec_cmd:
+                v = tex_scan_glue(glue_val_level, 1, 1);
+                break;
+            case mugluespec_cmd:
+                v = tex_scan_glue(muglue_val_level, 1, 0);
+                break;
+        }
+        tex_define(flags, cs, (singleword) cmd, v);
     }
-    tex_define(flags, cs, (singleword) cmd, v);
 }
 
 static void tex_run_prefixed_command(void)
@@ -5897,43 +5947,43 @@ static void tex_run_prefixed_command(void)
             break;
         case internal_toks_cmd:
         case register_toks_cmd:
-            tex_aux_set_assign_toks(flags);
+            tex_aux_set_internal_toks(flags, force);
             break;
         case internal_integer_cmd:
-            tex_aux_set_internal_integer(flags);
+            tex_aux_set_internal_integer(flags, force);
             break;
         case register_integer_cmd:
-            tex_aux_set_register_integer(flags);
+            tex_aux_set_register_integer(flags, force);
             break;
         case internal_attribute_cmd:
-            tex_aux_set_internal_attribute(flags);
+            tex_aux_set_internal_attribute(flags, force);
             break;
         case register_attribute_cmd:
-            tex_aux_set_register_attribute(flags);
+            tex_aux_set_register_attribute(flags, force);
             break;
         case internal_posit_cmd:
-            tex_aux_set_internal_posit(flags);
+            tex_aux_set_internal_posit(flags, force);
             break;
         case register_posit_cmd:
-            tex_aux_set_register_posit(flags);
+            tex_aux_set_register_posit(flags, force);
             break;
         case internal_dimension_cmd:
-            tex_aux_set_internal_dimension(flags);
+            tex_aux_set_internal_dimension(flags, force);
             break;
         case register_dimension_cmd:
-            tex_aux_set_register_dimension(flags);
+            tex_aux_set_register_dimension(flags, force);
             break;
         case internal_glue_cmd:
-            tex_aux_set_internal_glue(flags);
+            tex_aux_set_internal_glue(flags, force);
             break;
         case register_glue_cmd:
-            tex_aux_set_register_glue(flags);
+            tex_aux_set_register_glue(flags, force);
             break;
         case internal_muglue_cmd:
-            tex_aux_set_internal_muglue(flags);
+            tex_aux_set_internal_muglue(flags, force);
             break;
         case register_muglue_cmd:
-            tex_aux_set_register_muglue(flags);
+            tex_aux_set_register_muglue(flags, force);
             break;
         case lua_value_cmd:
             tex_aux_set_lua_value(flags);
@@ -5976,7 +6026,7 @@ static void tex_run_prefixed_command(void)
         case dimension_cmd:
         case gluespec_cmd:
         case mugluespec_cmd:
-            tex_aux_set_constant_register(cur_cmd, cur_cs, flags);
+            tex_aux_set_constant_register(cur_cmd, cur_cs, flags, force);
             break;
         case index_cmd: 
             /*tex  
@@ -5993,13 +6043,13 @@ static void tex_run_prefixed_command(void)
             break;
         case register_cmd:
             if (cur_chr == token_val_level) {
-                tex_aux_set_assign_toks(flags);
+                tex_aux_set_register_toks(flags, force);
             } else {
                 tex_aux_set_register(flags);
             }
             break;
         case combine_toks_cmd:
-            tex_aux_set_combine_toks(flags);
+            tex_aux_set_combine_toks(flags, force);
             break;
         case arithmic_cmd:
             tex_aux_arithmic_register(flags, cur_chr);
@@ -6203,20 +6253,18 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
                     "The value for \\newlinechar has to be no higher than " LMT_TOSTRING(max_newline_character) ".\n"
                     "Your invalid assignment will be ignored."
                 );
-            }
-            else {
+            } else {
                 tex_word_define(a, p, val);
             }
             break;
         case end_line_char_code:
-           if (val > max_endline_character) {
+            if (val > max_endline_character) {
                tex_handle_error(
                    normal_error_type,
                    "Invalid \\endlinechar",
                    "The value for \\endlinechar has to be no higher than " LMT_TOSTRING(max_endline_character) "."
                );
-           }
-           else {
+            } else {
                 tex_word_define(a, p, val);
             }
             break;
@@ -6227,8 +6275,7 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             }
             if (tex_is_valid_language(val)) {
                 update_tex_language(a, val);
-            }
-            else {
+            } else {
                 tex_handle_error(
                     normal_error_type,
                     "Invalid \\language",
@@ -6242,8 +6289,7 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             }
             if (tex_is_valid_font(val)) {
                 tex_set_cur_font(a, val);
-            }
-            else {
+            } else {
                 tex_handle_error(
                     normal_error_type,
                     "Invalid \\fontid",
@@ -6359,6 +6405,7 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             if (is_frozen(a) && cur_mode == hmode) {
                 tex_update_par_par(internal_integer_cmd, internal_integer_number(p));
             }
+            break;
     }
 }
 

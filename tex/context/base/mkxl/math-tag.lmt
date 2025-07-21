@@ -1037,14 +1037,27 @@ local standalone  = false
 
 directives.register("structures.tags.math.standalone", function(v) standalone = v end)
 
-function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,style)
+function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,mainstyle)
+    --
+    -- The style state is sort of tricky because we have to set that at the \TEX\ end
+    -- when we start the (in our case always) inlien mode. But it looks ok.
+    --
+    -- The mode is a different matter, for that we have to use an attribute because we
+    -- have no anchor. Alternatively we can insert some special boundary node (either
+    -- a registered user boundary (single code) or an attribute one (a key and value).
+    -- In the end we moved that check to a helper.
+    --
+    -- local mode = ((getattr(head,a_mathmode) or 0) == 1) and "display" or "inline"
+
+    local mode = noads.getmathmode(head)
+
     if not context.trialtypesetting() then
         local a = tex.getattribute(a_mathfamily) -- brrr
         start_tagged("math", {
-            mode       = (getattr(head,a_mathmode) == 1) and "display" or "inline",
+            mode       = mode,
             standalone = standalone,
             family     = mathematics.familyname(a),
-            style      = style,
+            style      = mainstyle,
             input      = mathematics.lastinput,
             blob       = getintegervalue(c_mathblob),
             language   = getmacro("currentlanguage"),
@@ -1052,11 +1065,11 @@ function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,styl
         })
         setattr(head,a_tagged,start_tagged("mrow"))
         if trace then
-            report_tags("start math sweep at level %i",level)
+            report_tags("start math sweep at level %i, %s mode",level,mode)
         end
         process(head)
         if trace then
-            report_tags("stop math sweep at level %i",level)
+            report_tags("stop math sweep at level %i, %s mode",level,mode)
         end
         stop_tagged()
         stop_tagged()

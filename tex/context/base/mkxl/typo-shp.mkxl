@@ -82,7 +82,7 @@
 %    \edef\p_mp    {\shapedparagraphparameter\c!mp}%
 %    \edef\p_repeat{\shapedparagraphparameter\c!repeat}%
 %    \setlocalhsize
-%    \normalexpanded
+%    \expanded
 %      {\endgroup
 %       \ifempty\p_mp
 %         \setparagraphshape[\shapedparagraphparameter\c!list]%
@@ -96,7 +96,7 @@
 \def\spac_shapes_list
   {\edef\p_mp    {\shapedparagraphparameter\c!mp}%
    \edef\p_repeat{\shapedparagraphparameter\c!repeat}%
-   \normalexpanded
+   \expanded
      {\endgroup
       \ifempty\p_mp
         \setparagraphshape[\shapedparagraphparameter\c!list]%
@@ -107,7 +107,7 @@
 
 \def\spac_shapes_text
   {\getnoflines{\dimexpr\htdp\b_spac_shapes+(\shapedparagraphparameter\c!voffset)}%
-   \normalexpanded
+   \expanded
      {\endgroup
       \clf_setparagraphshape
           left  \todimension{% expanded
@@ -141,7 +141,7 @@
           \box\b_spac_shapes}}}
 
 \def\spac_shapes_lines
-  {\normalexpanded
+  {\expanded
      {\endgroup
       \clf_setparagraphshape
           left  \todimension{\shapedparagraphparameter\c!width}% expanded

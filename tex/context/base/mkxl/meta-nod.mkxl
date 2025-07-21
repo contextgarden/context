@@ -148,7 +148,7 @@
    \ifempty\p_reference\else
       \clf_grph_nodes_register{\p_reference}\c_meta_nodes_n\relax
    \fi
-   \normalexpanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
+   \expanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
      mfun_node_make(\number#1,\number#2%
        \ifempty\p_label
          ,""%
@@ -192,7 +192,7 @@
    \edef\p_label        {\metanodesparameter\c!label}%
    \edef\p_rulethickness{\metanodesparameter\c!rulethickness}%
    \edef\p_command      {\metanodesparameter\c!command}% better get an error early
-   \normalexpanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
+   \expanded{\endgroup\noexpand\etoksapp\t_meta_nodes{%
      \ifcsname\??metanodesalternative\metanodesparameter\c!alternative\endcsname
        \lastnamedcs
      \else

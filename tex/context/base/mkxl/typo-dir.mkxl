@@ -31,8 +31,8 @@
 
 \installsimplecommandhandler \??directions {directions} \??directions % no \define... yet
 
-\immutable\edef\lefttorightmark{\tocharacter"200E} \aliased\let\lrm\lefttorightmark % expandable
-\immutable\edef\righttoleftmark{\tocharacter"200F} \aliased\let\rlm\righttoleftmark % expandable
+\permanent\cdef\lefttorightmark{\tocharacter"200E} \aliased\let\lrm\lefttorightmark % expandable
+\permanent\cdef\righttoleftmark{\tocharacter"200F} \aliased\let\rlm\righttoleftmark % expandable
 
 \permanent\protected\def\setdirection[#1]% todo: symbolic names
   {\clf_setdirection#1\relax}

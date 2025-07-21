@@ -428,19 +428,21 @@ typedef enum token_types {
 
     /*tex These are referenced in the begin call and dereferenced at the end. */
 
-    output_text,           /*tex output routines   */
-    every_par_text,        /*tex |\everypar|       */
-    every_math_text,       /*tex |\everymath|      */
-    every_display_text,    /*tex |\everydisplay|   */
-    every_hbox_text,       /*tex |\everyhbox|      */
-    every_vbox_text,       /*tex |\everyvbox|      */
-    every_math_atom_text,  /*tex |\everymathatom|  */
-    every_job_text,        /*tex |\everyjob|       */
-    every_cr_text,         /*tex |\everycr|        */
-    every_tab_text,        /*tex |\everytab|       */
-    error_help_text,       /*tex |\errhelp|        */
-    every_before_par_text, /*tex |\everybeforeeof| */
-    every_eof_text,        /*tex |\everyeof|       */
+    output_text,
+    every_par_text,
+    every_par_begin_text,
+    every_par_end_text,
+    every_math_text,
+    every_display_text,
+    every_hbox_text,
+    every_vbox_text,
+    every_math_atom_text,
+    every_job_text,
+    every_cr_text,
+    every_tab_text,
+    error_help_text,
+    every_before_par_text,
+    every_eof_text,
 
     /*tex These could be unreferenced and always flush (different begin call). */  
 
@@ -453,7 +455,8 @@ typedef enum token_types {
     write_text,            /*tex |\write|          */ 
     local_text,            /*tex                   */ 
     local_loop_text,       /*tex                   */ 
-
+    /* */
+    n_of_token_types,
 } token_types;
 
 extern void        tex_initialize_input_state  (void);

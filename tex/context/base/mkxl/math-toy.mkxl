@@ -33,13 +33,13 @@
    \fi}
 
 \protected\def\math_toy_define_symbol_traced#1#2%
-  {\normalexpanded{\discretionary class #1 %
+  {\expanded{\discretionary class #1 %
      {$\givenmathstyle\the\mathstyle \darkred   #2$}%
      {$\givenmathstyle\the\mathstyle \darkblue  #2$}%
      {$\givenmathstyle\the\mathstyle \darkgreen #2$}}}
 
 \protected\def\math_toy_define_symbol_normal#1#2%
-  {\normalexpanded{\discretionary class #1 %
+  {\expanded{\discretionary class #1 %
      {$\givenmathstyle\the\mathstyle #2$}%
      {$\givenmathstyle\the\mathstyle #2$}%
      {$\givenmathstyle\the\mathstyle #2$}}}

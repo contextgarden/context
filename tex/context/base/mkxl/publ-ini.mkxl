@@ -859,9 +859,9 @@
    \ifconditional#1\relax
      \edef\currentbtxrenderingtitle{\btxrenderingparameter\c!title}%
      \ifempty\currentbtxrenderingtitle
-       \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\headtext{\currentbtxrendering}}]}%
+       \expanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\headtext{\currentbtxrendering}}]}%
      \else
-       \normalexpanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\currentbtxrenderingtitle}]}%
+       \expanded{\startnamedsection[\v!chapter][\c!reference=\currentbtxrendering,\c!title={\currentbtxrenderingtitle}]}%
      \fi
    \fi
    \ifempty\currentbtxrendering
@@ -1880,7 +1880,7 @@
 \to \everysetupbtxregister
 
 \appendtoks
-    \normalexpanded{%
+    \expanded{%
       \defineprocessor
         [\s!btx:r:\currentbtxregister]%
         [\c!style=\noexpand\namedbtxregisterparameter{\currentbtxregister}\noexpand\c!style,

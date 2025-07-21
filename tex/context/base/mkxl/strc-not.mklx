@@ -135,10 +135,10 @@
 
 \protected\def\strc_define_commands_notation#tag#level#parent%
   {\ifempty{#parent}%
-     \normalexpanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
+     \expanded{\defineconstruction[#tag][\s!handler=\v!notation,\c!level=#level]}%
      \edefcsname\??notation#tag:\s!parent\endcsname{\??notation}%
    \else
-     \normalexpanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
+     \expanded{\defineconstruction[#tag][#parent][\s!handler=\v!notation,\c!level=#level]}%
      \edefcsname\??note    #tag:\s!parent\endcsname{\??note#parent}% see later for \s!note
      \edefcsname\??notation#tag:\s!parent\endcsname{\??notation#parent}%
    \fi
@@ -244,7 +244,7 @@
    \fi}
 
 \def\strc_notations_finalize_previous
-  {\normalexpanded{\endgroup\noteparameter\c!next}}
+  {\expanded{\endgroup\noteparameter\c!next}}
 
 \def\strc_notations_finalize_next
   {\endgroup\ignorespaces}
@@ -312,7 +312,7 @@
 \let\strc_notations_pickup_yes\relax
 
 \protected\def\strc_notations_start_setups#1[#S#2]%
-  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_setups_indeed[#2]{##1}}}%
+  {\expanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_setups_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_setups_indeed[#S#1]#*#2%
@@ -320,7 +320,7 @@
    \strc_notations_wrapup}
 
 \protected\def\strc_notations_start_reference#1[#S#2]%
-  {\normalexpanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_reference_indeed[#2]{##1}}}%
+  {\expanded{\def\noexpand\strc_notations_pickup_yes##/#1{\strc_notations_start_reference_indeed[#2]{##1}}}%
    \strc_notations_pickup_yes}
 
 \protected\def\strc_notations_start_reference_indeed[#1]#*#2%
@@ -513,7 +513,7 @@
    \fi
    %
    \ifcstok{\noteparameter\c!range}\v!yes
-     \normalexpanded{\marks\c_strc_notes_insert_mark{\the\c_strc_notes_n}}%
+     \expanded{\marks\c_strc_notes_insert_mark{\the\c_strc_notes_n}}%
    \fi
    %
    \ifconditional\c_strc_notes_skip
@@ -1064,7 +1064,7 @@
    \endcsname}
 
 \protected\def\strc_notes_set_variants
-  {\normalexpanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
+  {\expanded{\rawprocesscommalist[\noteparameter\c!location]\strc_notes_set_location_step}}
 
 \protected\def\strc_notes_set_location_step#alternative% the insert related one
   {\begincsname\??notelocation#alternative\endcsname}
@@ -1121,7 +1121,7 @@
    \fi
 %    \expandafter\endgroup\expandafter
 %    \s_strc_notes_distance\the\scratchdimen\relax%
-   \normalexpanded{%
+   \expanded{%
      \endgroup
      \s_strc_notes_distance\the\scratchdimen\relax
      % this will / has to / might become a plug
@@ -1961,16 +1961,16 @@
 
     \permanent\def\docalculatetotalnoteheight
       {\ifcase\c_strc_notes_page_location % tricky here ! ! ! to be sorted out ! ! !
-         \advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+         \advanceby\totalnoteheight\expanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
        \fi}
 
     \permanent\def\docalculatetotalclevernoteheight
       {\ifcase\c_strc_notes_page_location \else % tricky here ! ! ! to be sorted out ! ! !
-         \advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
+         \advanceby\totalnoteheight\expanded{\additionaltotalnoteheight\currentnoteinsertionnumber}%
        \fi}
 
     \permanent\def\docalculatetotalpagenoteheight
-      {\advanceby\totalnoteheight\normalexpanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
+      {\advanceby\totalnoteheight\expanded{\additionaltotalnoteheight\currentnoteinsertionnumber}}
 
     \permanent\def\calculatetotalnoteheight      {\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalnoteheight}
     \permanent\def\calculatetotalclevernoteheight{\totalnoteheight\zeropoint\strc_notes_process\docalculatetotalclevernoteheight}

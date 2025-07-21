@@ -21,6 +21,7 @@ return {
         "plussixthousand", "plusseventhousand", "pluseightthousand", "plusninethousand",
         "plusfifteenhundred", "plustwentyfivehundred", "plusfortyfivehundred", "plusseventyfivehundred",
         "plusninetynine", "plusthirtytwo",  "plusfourtytwo", "plustwentyfour", "plustwentyfive",
+        "plusthousandfifty", "plustwelvehundredfifty",
         "zeropoint", "onepoint", "halfapoint", "onebasepoint", "maxcount", "maxdimen", "scaledpoint", "thousandpoint",
         "points", "halfpoint", "twopoints", "threepoints",
         "zeroskip", "centeringskip", "stretchingskip", "shrinkingskip",
@@ -177,8 +178,12 @@ return {
         "startmodule", "stopmodule", "usemodule", "usetexmodule", "useluamodule","setupmodule","currentmoduleparameter","moduleparameter",
         "everystarttext", "everystoptext", "everyforgetall", "luaenvironment",
         --
+        -- -- maybe do all the important every's
+        --
+     -- "everymathematics", "everyinsidemathematics",
+        --
         "startTEXpage", "stopTEXpage",
-    --  "startMPpage", "stopMPpage", -- already catched by nested lexer
+     -- "startMPpage", "stopMPpage", -- already catched by nested lexer
         --
         "enablemode", "disablemode", "preventmode", "definemode",
         "globalenablemode", "globaldisablemode", "globalpreventmode",
@@ -528,12 +533,14 @@ return {
         --
         "getdummyparameters", "dummyparameter", "directdummyparameter", "setdummyparameter", "letdummyparameter",
         "setexpandeddummyparameter", "resetdummyparameter",
-        "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter",
+        "usedummystyleandcolor", "usedummystyleparameter", "usedummycolorparameter", "usedummylanguageparameter",
         --
         "processcommalist", "processcommacommand", "quitcommalist", "quitprevcommalist",
         "processaction", "processallactions", "processfirstactioninset", "processallactionsinset",
         --
-        "unexpanded", "expanded", "startexpanded", "stopexpanded", "protect", "unprotect",
+        "unexpanded",
+     -- "expanded",
+        "startexpanded", "stopexpanded", "protect", "unprotect",
         --
         "firstofoneargument",
         "firstoftwoarguments", "secondoftwoarguments",
@@ -753,7 +760,7 @@ return {
         "parcontextcodestring",
         --
         "newlocalcount", "newlocaldimen", "newlocalskip", "newlocalmuskip", "newlocaltoks", "newlocalbox",
-        "newlocalwrite", "newlocalread",
+        "newlocalwrite", "newlocalread", "newlocalfloat",
         "setnewlocalcount", "setnewlocaldimen", "setnewlocalskip", "setnewlocalmuskip", "setnewlocaltoks", "setnewlocalbox",
         --
         "ifexpression",

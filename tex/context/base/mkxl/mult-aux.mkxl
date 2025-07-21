@@ -27,9 +27,9 @@
 
 \unprotect
 
-\immutable\cdef\??empty{\tocharacter25}
+\permanent\cdef\??empty{\tocharacter25}
 
-\immutable\letcsname\tocharacter25\endcsname\empty % hex 19
+\permanent\letcsname\tocharacter25\endcsname\empty % hex 19
 
 % \edef\s!parent{\tocharacter29} % inlining  is ugly, a tiny bit faster, but neglectable on a run
 
@@ -432,7 +432,7 @@
 
 \permanent\protected\def\installparameterhandler#1#2%
   {\mutable\constant\letcsname current#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_parameter_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -450,7 +450,7 @@
    \frozen\def#3##1{\begincsname#1:##1\endcsname}}
 
 \permanent\protected\def\installrootparameterhandler#1#2%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_root_parameter_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname detokenizedroot#2parameter\endcsname
@@ -469,8 +469,8 @@
 
 \permanent\protected\def\installparameterhashhandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \immutable\letcsname#2namespace\endcsname#1%
-   \normalexpanded
+   \permanent\letcsname#2namespace\endcsname#1%
+   \expanded
      {\mult_interfaces_install_parameter_hash_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -496,7 +496,7 @@
 
 \permanent\protected\def\installparametersethandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_parameter_set_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname current#2\endcsname
@@ -505,13 +505,25 @@
         \expandafter\noexpand\csname let#2parameter\endcsname
         \expandafter\noexpand\csname reset#2parameter\endcsname}}
 
-\mutable\let\dousecurrentstyleparameter\relax
-\mutable\let\dousecurrentcolorparameter\relax
+\mutable\let\dousecurrentstyleparameter   \relax
+\mutable\let\dousecurrentcolorparameter   \relax
+\mutable\let\dousecurrentlanguageparameter\relax
 
 \mutable\lettonothing\currentstyleparameter
 \mutable\lettonothing\currentcolorparameter
+\mutable\lettonothing\currentlanguageparameter
 
-% maybe we should have \names ones too
+%D We can extend the next one to also handle language but we migh tend up
+%D with a dedicated one. There is no gain if we also want to pass the key:
+%D chickens and eggs. At some poitn we might decide to have additional
+%D language keys (\foregroundlanguage) btu so far no one asked for it. And
+%D it only serves tagging.
+%D
+%D This actually might make sense because language could determine style:
+%D
+%D \use...languagestyleandcolor\c!language\c!style\c!color
+%D
+%D and then we can sacrifice the singluar ones.
 
 \protected\def\mult_interfaces_install_style_and_color_handler#1#2#3#4%
   {\frozen\protected\def#2##1##2% style color
@@ -527,12 +539,37 @@
       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}}
 
 \permanent\protected\def\installstyleandcolorhandler#1#2%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_style_and_color_handler
         \expandafter\noexpand\csname #2parameter\endcsname
         \expandafter\noexpand\csname use#2styleandcolor\endcsname % maybe an alias use#2styleandcolorparameters
         \expandafter\noexpand\csname use#2styleparameter\endcsname
         \expandafter\noexpand\csname use#2colorparameter\endcsname}}
+
+% \protected\def\mult_interfaces_install_style_and_color_handler#1#2#3#4#5%
+%   {\frozen\protected\def#2##1##2% style color
+%      {\cdef\currentstyleparameter{#1{##1}}% this name is public (can also set color e.g. in underline)
+%       \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi
+%       \cdef\currentcolorparameter{#1{##2}}% this name is public (so we do this after the style switch)
+%       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}%
+%    \frozen\protected\def#3##1% style
+%      {\cdef\currentstyleparameter{#1{##1}}% this name is public
+%       \ifempty\currentstyleparameter\else\dousecurrentstyleparameter\fi}%
+%    \frozen\protected\def#4##1% color
+%      {\cdef\currentcolorparameter{#1{##1}}% this name is public
+%       \ifempty\currentcolorparameter\else\dousecurrentcolorparameter\fi}%
+%    \frozen\protected\def#5##1% (no argument)
+%      {\cdef\currentlanguageparameter{#1{##1}}% this name is public
+%       \ifempty\currentlanguageparameter\else\dousecurrentlanguageparameter\fi}}
+%
+% \permanent\protected\def\installstyleandcolorhandler#1#2%
+%   {\expanded
+%      {\mult_interfaces_install_style_and_color_handler
+%         \expandafter\noexpand\csname #2parameter\endcsname
+%         \expandafter\noexpand\csname use#2styleandcolor\endcsname % maybe an alias use#2styleandcolorparameters
+%         \expandafter\noexpand\csname use#2styleparameter\endcsname
+%         \expandafter\noexpand\csname use#2colorparameter\endcsname
+%         \expandafter\noexpand\csname use#2language\endcsname}}
 
 \def\mult_check_for_parent#1#2#3#4%
   {\ifcsname#1#4:\s!parent\endcsname\orelse\ifx#4\empty\else
@@ -601,7 +638,7 @@
 \permanent\protected\def\installdefinehandler#1#2#3%
   {\mutable\letcsname current#2\endcsname\empty
    \mutable\letcsname current#2parent\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_define_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname define#2\endcsname
@@ -634,7 +671,7 @@
 
 \permanent\protected\def\installsetuphandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
@@ -710,7 +747,7 @@
 % \permanent\protected\def\installswitchsetuphandler#1#2%
 %   {\mutable\letcsname current#2\endcsname\empty
 %    \mutable\letcsname previous#2\endcsname\empty
-%    \normalexpanded
+%    \expanded
 %      {\mult_interfaces_install_switch_setup_handler_a
 %         {\noexpand#1}% \??aa
 %         \expandafter\noexpand\csname current#2\endcsname
@@ -784,7 +821,7 @@
 \permanent\protected\def\installswitchsetuphandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
    \mutable\letcsname previous#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_switch_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname #2setupmode\endcsname
@@ -829,7 +866,7 @@
 
 \permanent\protected\def\installautosetuphandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_auto_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
@@ -897,7 +934,7 @@
 
 \permanent\protected\def\installdirectparameterhandler#1#2%
   {\mutable\letcsname current#2\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_direct_parameter_handler
         {\noexpand#1}%
         \expandafter\noexpand\csname current#2\endcsname
@@ -911,7 +948,7 @@
    \frozen\protected\def#3{\mult_interfaces_get_parameters#1}}
 
 \permanent\protected\def\installdirectsetuphandler#1#2%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_direct_setup_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname setup#2\endcsname
@@ -927,7 +964,7 @@
 % \stopinterface
 
 \permanent\protected\def\installdirectparametersethandler#1#2%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_direct_parameter_set_handler
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname set#2parameter\endcsname
@@ -972,7 +1009,8 @@
 % yes:\twoparameter{beta}\par
 
 \permanent\protected\def\relateparameterhandlers#1#2#3#4% {from} {instance} {to} {instance}
-  {\immutable\edefcsname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
+  {% can this be a cdef ... is faster in tests
+   \permanent\edefcsname\csname#1namespace\endcsname#2:\s!parent\endcsname{\csname#3namespace\endcsname#4}}
 
 \permanent\protected\def\relateparameterhandlersbyns#1#2#3#4% {from} {instance} {to} {instance}
   {\cdefcsname#1#2:\s!parent\endcsname{#3#4}}
@@ -1007,7 +1045,7 @@
 
 \permanent\protected\def\installactionhandler#1%
   {\mutable\letcsname current#1\endcsname\empty
-   \normalexpanded
+   \expanded
      {\mult_interfaces_install_action_handler
         {#1}%
         \expandafter\noexpand\csname current#1\endcsname
@@ -1047,7 +1085,7 @@
      \writestatus\m!system{duplicate user namespace '#1'}\wait
    \else
      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
-     \global\immutable\cdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
+     \global\permanent\cdefcsname ????#1\endcsname{\v_interfaces_prefix_template}%
    \fi}
 
 \permanent\protected\def\installcorenamespace#1%
@@ -1055,7 +1093,7 @@
      \writestatus\m!system{duplicate core namespace '#1'}\wait
    \else
      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
-     \global\immutable\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
+     \global\permanent\cdefcsname ??#1\endcsname{\v_interfaces_prefix_template}%
      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
    \fi}
 
@@ -1064,7 +1102,7 @@
 %      \writestatus\m!system{duplicate user namespace '#1'}\wait
 %    \else
 %      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
-%      \global\immutable\expandafter\stringdef\csname ????#1\endcsname\c_mult_interfaces_n_of_namespaces
+%      \global\permanent\expandafter\stringdef\csname ????#1\endcsname\c_mult_interfaces_n_of_namespaces
 %      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
 %    \fi}
 
@@ -1073,7 +1111,7 @@
 %      \writestatus\m!system{duplicate core namespace '#1'}\wait
 %    \else
 %      \global\advanceby\c_mult_interfaces_n_of_namespaces\plusone
-%      \global\immutable\expandafter\stringdef\csname ??#1\endcsname\c_mult_interfaces_n_of_namespaces
+%      \global\permanent\expandafter\stringdef\csname ??#1\endcsname\c_mult_interfaces_n_of_namespaces
 %      \clf_registernamespace\c_mult_interfaces_n_of_namespaces{#1}%
 %    \fi}
 
@@ -1095,12 +1133,12 @@
 
 \permanent          \def\dummyparameter           #1{\begincsname\??dummy#1\endcsname}
 \permanent          \def\directdummyparameter     #1{\begincsname\??dummy#1\endcsname}
-\permanent\protected\def\setdummyparameter        #1{\defcsname\??dummy#1\endcsname}
-\permanent\protected\def\setexpandeddummyparameter#1{\edefcsname\??dummy#1\endcsname}
-\permanent\protected\def\letdummyparameter        #1{\letcsname\??dummy#1\endcsname}
-\permanent\protected\def\resetdummyparameter      #1{\letcsname\??dummy#1\endcsname\empty}
+\permanent\protected\def\setdummyparameter        #1{\defcsname  \??dummy#1\endcsname}
+\permanent\protected\def\setexpandeddummyparameter#1{\edefcsname \??dummy#1\endcsname}
+\permanent\protected\def\letdummyparameter        #1{\letcsname  \??dummy#1\endcsname}
+\permanent\protected\def\resetdummyparameter      #1{\letcsname  \??dummy#1\endcsname\empty}
 
-\edef\mult_interfaces_dummy{\??dummy} % nor immutable
+\cdef\mult_interfaces_dummy{\??dummy} % not immutable
 
 % \permanent\protected\def\getdummyparameters[#S#1%
 %   {\if\noexpand#1]%
@@ -1118,11 +1156,14 @@
   {\let\m_mult_interfaces_namespace\mult_interfaces_dummy
    \mult_interfaces_get_parameters_item#1\ignorearguments\ignorearguments}
 
+\let\usedummylanguageparameter\donothing
+
 \mult_interfaces_install_style_and_color_handler
   \directdummyparameter
   \usedummystyleandcolor
   \usedummystyleparameter
   \usedummycolorparameter
+  \usedummylanguageparameter
 
 % Maybe a \definecorenamespace[name][directparameter,directsetup][parent] but we
 % don't gain much. Actually we might just inline all definitions.
@@ -1226,7 +1267,7 @@
   {\csname#1\ifcsname#1#2\endcsname#2\else#3\fi\endcsname}
 
 \permanent\def\expandnamespacevalue#1#2% \??xx {...} \c!yy == optimized \expandcheckedcsname
-  {\csname#1\ifcsname#1\normalexpanded{\noexpand\syst_helpers_expand_checked_value{#2}}}
+  {\csname#1\ifcsname#1\expanded{\noexpand\syst_helpers_expand_checked_value{#2}}}
 
 \def\syst_helpers_expand_checked_value#1#2%
   {#1\endcsname#1\else#2\fi\endcsname}
@@ -1277,7 +1318,7 @@
       \the\c_mult_set\relax}}
 
 \permanent\protected\def\installdefinitionset#1#2%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_definition_set
         {\noexpand#1}% \??aa
         \expandafter\noexpand\csname set_#2_toks\endcsname
@@ -1299,7 +1340,7 @@
       \fi}}
 
 \permanent\protected\def\installdefinitionsetmember#1#2#3#4%
-  {\normalexpanded
+  {\expanded
      {\mult_interfaces_install_definition_set_member
         {\noexpand#3}% \??aa
         \expandafter\noexpand\csname setup#4\endcsname
@@ -1319,7 +1360,7 @@
       \fi}}
 
 \permanent\protected\def\installparentinjector#1#2%
-  {\normalexpanded{\mult_interfaces_install_parent_injector
+  {\expanded{\mult_interfaces_install_parent_injector
      {\noexpand#1}%
      \expandafter\noexpand\csname current#2\endcsname
      \expandafter\noexpand\csname current#2parent\endcsname
@@ -1337,7 +1378,7 @@
 
 \permanent\protected\def\installlocalcurrenthandler#1#2% \??XXX {XXX}
   {\expandafter\newinteger\csname#1:\s!counter\endcsname
-   \normalexpanded{\mult_interfaces_install_local_current_injector
+   \expanded{\mult_interfaces_install_local_current_injector
      {\noexpand#1}%
      \expandafter\noexpand\csname #1:\s!counter\endcsname
      \expandafter\noexpand\csname current#2\endcsname
@@ -1490,7 +1531,7 @@
 
     \permanent\protected\def\installnativeautosetuphandler#1#2%
       {\mutable\letcsname current#2\endcsname\empty
-       \normalexpanded
+       \expanded
          {\mult_interfaces_install_native_auto_setup_handler
             {\noexpand#1}% \??aa
             \expandafter\noexpand\csname setup#2\endcsname

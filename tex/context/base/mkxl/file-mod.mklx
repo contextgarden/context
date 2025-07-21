@@ -82,7 +82,7 @@
 \def\strc_modules_use#category#name%
   {\ifempty\currentmoduleparameters\else
      \scratchtoks\expandafter{\currentmoduleparameters}%
-     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}%
+     \expanded{\getparameters[\??module#name:][\the\scratchtoks]}%
    \fi
    \clf_usemodules{#category}{#name}}
 
@@ -129,17 +129,17 @@
 \tolerant\def\syst_modules_setup_yes[#S#name]#spacer[#S#parameters]%
   {\scratchtoks\expandafter{\currentmoduleparameters}%
    \ifparameters
-     \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
+     \expanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}%
    \or
      \ifhastok={#name}%
        \getparameters[\??module\currentmodule:][#name]% internal (defaults)
-       \normalexpanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}% loadtime (user)
+       \expanded{\getparameters[\??module\currentmodule:][\the\scratchtoks]}% loadtime (user)
      \else
-       \normalexpanded{\getparameters[\??module#1:][\the\scratchtoks]}% loadtime (user)
+       \expanded{\getparameters[\??module#1:][\the\scratchtoks]}% loadtime (user)
      \fi
    \or
      \getparameters[\??module#name:][#parameters]% internal (defaults)
-     \normalexpanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
+     \expanded{\getparameters[\??module#name:][\the\scratchtoks]}% loadtime (user)
    \fi
    \lettonothing\currentmoduleparameters
    \expand\everysetupmodule}
@@ -243,9 +243,9 @@
    \ctxlua{\m_module_command_function(\!!bs#1\!!es,\!!bs#2\!!es)}%
    \directsetup{module:\m_module_command_command:stop}}
 
-\permanent\protected\def\installmodulecommandlua      #1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_direct_lua{\csstring#1}{#2}}}}
-\permanent\protected\def\installmodulecommandluasingle#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_single_lua{\csstring#1}{#2}}}}
-\permanent\protected\def\installmodulecommandluadouble#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_double_lua{\csstring#1}{#2}}}}
+\permanent\protected\def\installmodulecommandlua      #1#2{\enforced\permanent\protected\def#1{\expanded{\syst_modules_direct_lua{\csstring#1}{#2}}}}
+\permanent\protected\def\installmodulecommandluasingle#1#2{\enforced\permanent\protected\def#1{\expanded{\syst_modules_single_lua{\csstring#1}{#2}}}}
+\permanent\protected\def\installmodulecommandluadouble#1#2{\enforced\permanent\protected\def#1{\expanded{\syst_modules_double_lua{\csstring#1}{#2}}}}
 
 \protected\def\syst_modules_one_lua#1#2#3%
   {\directsetup{module:#1:start}%
@@ -257,8 +257,8 @@
    \ctxlua{#2(\!!bs#3\!!es,\!!bs#4\!!es)}%
    \directsetup{module:#1:stop}}
 
-\permanent\protected\def\installmodulecommandluaone#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_one_lua{\csstring#1}{#2}}}}
-\permanent\protected\def\installmodulecommandluatwo#1#2{\enforced\permanent\protected\def#1{\normalexpanded{\syst_modules_two_lua{\csstring#1}{#2}}}}
+\permanent\protected\def\installmodulecommandluaone#1#2{\enforced\permanent\protected\def#1{\expanded{\syst_modules_one_lua{\csstring#1}{#2}}}}
+\permanent\protected\def\installmodulecommandluatwo#1#2{\enforced\permanent\protected\def#1{\expanded{\syst_modules_two_lua{\csstring#1}{#2}}}}
 
 %D This replaces \type {\fetchruntimecommand}:
 %D

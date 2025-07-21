@@ -529,6 +529,7 @@ typedef enum input_codes {
     eof_input_code,
     end_of_input_code,
     token_input_code,
+    ignore_input_code,
     tex_token_input_code,
     tokenized_code,
     retokenized_code,
@@ -682,9 +683,16 @@ typedef enum font_property_codes {
     font_cf_code,
     font_dimension_code,
     scaled_font_dimension_code,
+    scaled_font_slant_per_point_code,
+    scaled_font_interword_space_code,
+    scaled_font_interword_stretch_code,
+    scaled_font_interword_shrink_code,
+    scaled_font_ex_height_code,
+    scaled_font_em_width_code,
+    scaled_font_extra_space_code,
 } font_property_codes;
 
-# define last_font_property_code scaled_font_dimension_code
+# define last_font_property_code scaled_font_extra_space_code
 
 typedef enum box_property_codes {
     box_width_code,

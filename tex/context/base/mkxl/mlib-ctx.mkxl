@@ -45,7 +45,8 @@
 \registerctxluafile{mlib-svg}{autosuffix}
 \registerctxluafile{mlib-fnt}{autosuffix} % outline fun
 \registerctxluafile{mlib-ptr}{autosuffix}
-\registerctxluafile{mlib-msh}{autosuffix}
+%registerctxluafile{mlib-fnc}{autosuffix} % delayed
+\registerctxluafile{mlib-msh}{autosuffix} % can't be delayed as it has helpers
 
 \unprotect
 

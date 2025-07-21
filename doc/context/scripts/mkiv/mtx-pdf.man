@@ -49,6 +49,9 @@ print detail to the console
 .TP
 .B --userdata
 print userdata to the console
+.TP
+.B --structure
+show the structure of the content
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

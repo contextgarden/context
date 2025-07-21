@@ -178,7 +178,7 @@
       \c_strc_registers_defining\conditionaltrue
       \definemixedcolumns[\currentregister][\v!register]% first as otherwise it overloads start/stop
       \clf_defineregister{\currentregister}{\registerparameter\c!referencemethod}%
-      \normalexpanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
+      \expanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
       \frozen\instance\protected\edefcsname\currentregister\endcsname{\strc_registers_insert_entry[\currentregister]}%
       \frozen\instance\protected\edefcsname\e!see\currentregister\endcsname{\strc_registers_insert_see[\currentregister]}%
       %frozen\instance\protected\edefcsname\e!coupled\currentregister\endcsname{\dolinkedregister{\currentregister}}%
@@ -187,7 +187,7 @@
       \frozen\instance\protected\edefcsname\e!complete\currentregister\endcsname{\completeregister[\currentregister]}%
       \frozen\instance\protected\edefcsname\e!setup\currentregister\e!endsetup\endcsname{\setupregister[\currentregister]}%
       \dorecurse\c_strc_registers_maxlevel{% weird, expanded should not be needed
-        \normalexpanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
+        \expanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
        %\defineregister[\currentregister:\recurselevel][\currentregister]%
         \resetregisterparameter{\c!entries:\recurselevel}% needed as we use detokenize (ok, we can
         \resetregisterparameter{\c!keys   :\recurselevel}% avoid it, but it's faster too)
@@ -360,7 +360,7 @@
                 processor {\currentregisterprocessors}%
             \fi
         }%
-        userdata {\detokenize\expandafter{\normalexpanded{#3}}}
+        userdata {\detokenize\expandafter{\expanded{#3}}}
    }%
    \clf_setinternalreference
       internal \locationcount
@@ -471,7 +471,7 @@
    \fi}
 
 \permanent\tolerant\protected\def\stopregister[#1]#*[#2]%
-% {\normalexpanded{\ctxlatecommand{extendregister("#1","#2")}}}
+% {\expanded{\ctxlatecommand{extendregister("#1","#2")}}}
   {\clf_extendregisterlate{#1}{#2}}
 
 % a synonym, so that we can nest with overlap without syntax check problems
@@ -542,7 +542,7 @@
                 processor {\currentregisterprocessors}%
             \fi
         }%
-        userdata {\detokenize\expandafter{\normalexpanded{#3}}}
+        userdata {\detokenize\expandafter{\expanded{#3}}}
     }%
    \relax
    \endgroup}
@@ -572,7 +572,7 @@
   {\doflushatpar{\strc_registers_register_page_entry{#1}{\c!label=#2,#3}{#4}}}
 
 \permanent\tolerant\protected\def\stopstructurepageregister[#1]#*[#2]%
-  {\normalexpanded{\ctxlatecommand{structures.registers.extend("#1","#2")}}}
+  {\expanded{\ctxlatecommand{structures.registers.extend("#1","#2")}}}
 
 \aliased\let\openstructurepageregisterrange \startstructurepageregister
 \aliased\let\closestructurepageregisterrange\stopstructurepageregister
@@ -643,7 +643,7 @@
   {\begingroup
    \setupregister[#1][#2]%
    \cdef\currentregister{\firstinset{#1}}%
-   \normalexpanded{\endgroup\noexpand\xdef\noexpand\listlength{\clf_analyzeregister
+   \expanded{\endgroup\noexpand\xdef\noexpand\listlength{\clf_analyzeregister
      {\currentregister}%
      {%
         language    {\registerparameter\s!language}%
@@ -747,7 +747,7 @@
   {\ifarguments\or
      \begingroup
      \cdef\currentregister{\firstinset{#1}}%
-     \normalexpanded{\startnamedsection[\v!chapter][\c!title={\headtext{\currentregister}},reference=\currentregister]}%
+     \expanded{\startnamedsection[\v!chapter][\c!title={\headtext{\currentregister}},reference=\currentregister]}%
      \placeregister[#1][#2]%
      \page[\v!yes]%
      \stopnamedsection
@@ -1641,7 +1641,7 @@
 %                 processor {\currentregisterprocessors}%
 %             \fi
 %         }%
-%         userdata {\detokenize\expandafter{\normalexpanded{#3}}}
+%         userdata {\detokenize\expandafter{\expanded{#3}}}
 %    }%
 %    \clf_setinternalreference
 %       internal \locationcount

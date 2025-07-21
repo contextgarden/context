@@ -74,7 +74,7 @@
   {\begingroup
    \simplifycommands
    \ifnum\thenamedheadlevel{#1}>\zerocount
-     \clf_overloadbookmark{#1}{\detokenize\expandafter{\normalexpanded{#2}}}%
+     \clf_overloadbookmark{#1}{\detokenize\expandafter{\expanded{#2}}}%
    \else
      \writetolist[#1]{#2}{}% todo: a dedicated bookmark writer
    \fi

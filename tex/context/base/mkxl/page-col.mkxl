@@ -73,15 +73,15 @@
       \fi}%
    \global\allocatednofcolumns\nofcolumns}
 
-\mutable\def\currentcolumn{1}
+\mutable  \def\currentcolumn      {1}
 
-\immutable\def\firstcolumnbox  {\columntextbox\plusone}
-\immutable\def\currentcolumnbox{\columntextbox\mofcolumns}
-\immutable\def\lastcolumnbox   {\columntextbox\nofcolumns}
+\permanent\def\firstcolumnbox     {\columntextbox\plusone}
+\permanent\def\currentcolumnbox   {\columntextbox\mofcolumns}
+\permanent\def\lastcolumnbox      {\columntextbox\nofcolumns}
 
-\immutable\def\firsttopcolumnbox  {\columntopbox \plusone}
-\immutable\def\currenttopcolumnbox{\columntopbox \mofcolumns}
-\immutable\def\lasttopcolumnbox   {\columntopbox \nofcolumns}
+\permanent\def\firsttopcolumnbox  {\columntopbox \plusone}
+\permanent\def\currenttopcolumnbox{\columntopbox \mofcolumns}
+\permanent\def\lasttopcolumnbox   {\columntopbox \nofcolumns}
 
 \permanent\def\columntextbox#1{\csname\??columntext  \number#1\endcsname}
 \permanent\def\columnfootbox#1{\csname\??columnfooter\number#1\endcsname}

@@ -102,7 +102,7 @@
         \fi
       }%
       \putboxincache{\v!page:\number#1}{+}\nextbox
-      \normalexpanded{\adaptlayout[\number#1][\c!top=\the\scratchdimen]}%
+      \expanded{\adaptlayout[\number#1][\c!top=\the\scratchdimen]}%
       \global\advanceby\c_page_adapts_pushed\plusone
       \endgroup}}
 
@@ -162,7 +162,7 @@
 \appendtoks
   \advanceby\c_defining_facing_float\plusone
   \ifcase\c_defining_facing_float\or
-      \normalexpanded{
+      \expanded{
         \definefacingfloat[\currentfacingfloat:\v!left ][\currentfacingfloat]%
         \definefacingfloat[\currentfacingfloat:\v!right][\currentfacingfloat]%
       }%

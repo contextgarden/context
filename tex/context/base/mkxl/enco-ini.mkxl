@@ -37,7 +37,7 @@
 
 %D This one is obsolete but maybe sometimes still used in styles:
 
-\immutable\let\defaultencoding\s!default
+\aliased\let\defaultencoding\s!default
 
 %D \macros
 %D   {defineaccent, definecharacter, definecommand}
@@ -71,7 +71,7 @@
      \fi
    \endcsname}
 
-\immutable\letcsname\??accents\endcsname\empty
+\aliased\letcsname\??accents\endcsname\empty
 
 %D Because now have this (\type {\chr} issues a one|-|time warning):
 %D
@@ -258,26 +258,26 @@
 % \aliased\let\P\paragraphmark \aliased\let\textP\paragraphmark % obsolete (surfaced in bibliographic files)
 % \aliased\let\S\sectionmark   \aliased\let\textS\sectionmark   % obsolete (surfaced in bibliographic files)
 
-\immutable\def\eszett  {ß} \immutable\def\Eszett  {SS} \permanent\def\Ssharp{SS}
-\immutable\def\lslash  {ł} \immutable\def\Lslash  {Ł}
-\immutable\def\dslash  {đ} \immutable\def\Dslash  {Đ}
-%immutable\def\oslash  {ø} %immutable\def\Oslash  {Ø} % clashes with math: use \Ostroke
-\immutable\def\dcroat  {đ} \immutable\def\Dcroat  {Đ}
-\immutable\def\kcedilla{ķ} \immutable\def\Kcedilla{Ķ}
-\immutable\def\lcedilla{ļ} \immutable\def\Lcedilla{Ļ}
-\immutable\def\ncedilla{ņ} \immutable\def\Ncedilla{Ņ}
-\immutable\def\rcedilla{ŗ} \immutable\def\Rcedilla{Ŗ}
-\immutable\def\aumlaut {ä} \immutable\def\Aumlaut {Ä}
-\immutable\def\eumlaut {ë} \immutable\def\Eumlaut {Ë}
-\immutable\def\iumlaut {ï} \immutable\def\Iumlaut {Ï}
-\immutable\def\oumlaut {ö} \immutable\def\Oumlaut {Ö}
-\immutable\def\uumlaut {ü} \immutable\def\Uumlaut {Ü}
+\permanent\cdef\eszett  {ß} \permanent\cdef\Eszett  {SS} \aliased\let\Ssharp\Eszett
+\permanent\cdef\lslash  {ł} \permanent\cdef\Lslash  {Ł}
+\permanent\cdef\dslash  {đ} \permanent\cdef\Dslash  {Đ}
+%permanent\cdef\oslash  {ø} %permanent\cdef\Oslash  {Ø} % clashes with math: use \Ostroke
+\permanent\cdef\dcroat  {đ} \permanent\cdef\Dcroat  {Đ}
+\permanent\cdef\kcedilla{ķ} \permanent\cdef\Kcedilla{Ķ}
+\permanent\cdef\lcedilla{ļ} \permanent\cdef\Lcedilla{Ļ}
+\permanent\cdef\ncedilla{ņ} \permanent\cdef\Ncedilla{Ņ}
+\permanent\cdef\rcedilla{ŗ} \permanent\cdef\Rcedilla{Ŗ}
+\permanent\cdef\aumlaut {ä} \permanent\cdef\Aumlaut {Ä}
+\permanent\cdef\eumlaut {ë} \permanent\cdef\Eumlaut {Ë}
+\permanent\cdef\iumlaut {ï} \permanent\cdef\Iumlaut {Ï}
+\permanent\cdef\oumlaut {ö} \permanent\cdef\Oumlaut {Ö}
+\permanent\cdef\uumlaut {ü} \permanent\cdef\Uumlaut {Ü}
 
 %D For old times sake we keep these (obsolete):
 
-\immutable\def\textflorin{ƒ} \immutable\def\florin  {ƒ}
-\immutable\def\pound     {£} \immutable\def\sterling{£}
-\immutable\def\promille  {‰} \immutable\def\permille{‰}
+\permanent\cdef\textflorin{ƒ} \permanent\cdef\florin  {ƒ}
+\permanent\cdef\pound     {£} \permanent\cdef\sterling{£}
+\permanent\cdef\promille  {‰} \permanent\cdef\permille{‰}
 
 %D These are kind of \TEX\ specific
 
@@ -285,10 +285,10 @@
 
 \permanent\protected\def\ampersand{\mathortext\mathampersand\textampersand}
 
-\immutable\let\percent\textpercent
-\immutable\let\procent\textpercent
-\immutable\let\dollar \textdollar
-\immutable\let\hash   \texthash
+\aliased\let\percent\textpercent
+\aliased\let\procent\textpercent
+\aliased\let\dollar \textdollar
+\aliased\let\hash   \texthash
 
 \popoverloadmode
 

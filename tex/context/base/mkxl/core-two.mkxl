@@ -80,11 +80,11 @@
 % %D The next code can be simplified (read: defined at the \LUA\ end) but we never use this
 % %D mechanism which has been replaced by datasets so it's not worth the effort.
 %
-% \permanent\def\immediatesavetwopassdata   #1#2#3{\normalexpanded{\noexpand\clf_savetwopassdata{#1}{#3}}}
-% \permanent\def     \lazysavetwopassdata   #1#2#3{\normalexpanded{\noexpand\ctxlatecommand{savetwopassdata("#1","#3")}}}
+% \permanent\def\immediatesavetwopassdata   #1#2#3{\expanded{\noexpand\clf_savetwopassdata{#1}{#3}}}
+% \permanent\def     \lazysavetwopassdata   #1#2#3{\expanded{\noexpand\ctxlatecommand{savetwopassdata("#1","#3")}}}
 % \permanent\let         \savetwopassdata          \lazysavetwopassdata
-% \permanent\def    \savetaggedtwopassdata#1#2#3#4{\normalexpanded{\noexpand\clf_savetaggedtwopassdata{#1}{#3}{#4}}}
-% \permanent\def\lazysavetaggedtwopassdata#1#2#3#4{\normalexpanded{\noexpand\ctxlatecommand{savetaggedtwopassdata("#1","#3","#4")}}}
+% \permanent\def    \savetaggedtwopassdata#1#2#3#4{\expanded{\noexpand\clf_savetaggedtwopassdata{#1}{#3}{#4}}}
+% \permanent\def\lazysavetaggedtwopassdata#1#2#3#4{\expanded{\noexpand\ctxlatecommand{savetaggedtwopassdata("#1","#3","#4")}}}
 %
 % % temp hack: needs a proper \starteverytimeluacode
 %

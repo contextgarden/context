@@ -216,6 +216,8 @@
    % this is the new method:
    \usesetupsparameter\startstopparameter\relax % only in the display version
    \dostarttagged\t!construct\currentstartstop
+   \uselanguageparameter\startstopparameter
+  %\usestartstoplanguage\c!language
    \usestartstopstyleandcolor\c!style\c!color
    \dotagconstruct}
 
@@ -234,6 +236,8 @@
       \ifparameter#2\or\setupcurrentstartstop[#2]\fi
       \startstopparameter\c!commands\relax % better: setups so that will show op soon
       \dostarttagged\t!construct\currentstartstop
+      \uselanguageparameter\startstopparameter
+     %\usestartstoplanguage\c!language
       \usestartstopstyleandcolor\c!style\c!color
       \dostarttaggednodetail\t!constructleft
       \startstopparameter\c!left\relax
@@ -311,9 +315,10 @@
   {\dontleavehmode\groupedcommand % otherwise wrong par number in tags
      {\cdef\currenthighlight{#1}%
       \dostarttagged\t!highlight\currenthighlight
+      \uselanguageparameter\highlightparameter
+     %\usehighlightlanguage\c!language
       \usehighlightstyleandcolor\c!style\c!color
-    % \usehighlightstyleandcolor\c!style\c!color
-    % \highlightparameter\c!command
+    % \highlightparameter\c!command % better after tagged then
       \dotaghighlight}
      {\dostoptagged}}
 
@@ -324,8 +329,9 @@
   {\begingroup
    \cdef\currenthighlight{#1}%
    \dostarttagged\t!highlight\currenthighlight
+   \uselanguageparameter\highlightparameter
+  %\usehighlightlanguage\c!language
    \usehighlightstyleandcolor\c!style\c!color
- % \usehighlightstyleandcolor\c!style\c!color
  % \highlightparameter\c!command
    \dotaghighlight}
 

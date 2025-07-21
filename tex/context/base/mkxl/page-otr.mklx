@@ -38,7 +38,7 @@
 \protected\def\page_otr_commands_define#name%
   {\ifcsname#name\endcsname \else
      \letcsname#name\endcsname\relax
-     \normalexpanded{\t_page_otr_commands{\the\t_page_otr_commands\noexpand\page_otr_commands_process{#name}}}%
+     \expanded{\t_page_otr_commands{\the\t_page_otr_commands\noexpand\page_otr_commands_process{#name}}}%
    \fi}
 
 \let\page_otr_commands_process\gobbleoneargument

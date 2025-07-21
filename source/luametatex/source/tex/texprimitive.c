@@ -301,7 +301,7 @@ void tex_undump_primitives(dumpstream f)
         if (lmt_primitive_state.prim_data[p].subids > 0) {
             int size = lmt_primitive_state.prim_data[p].subids;
             strnumber *names = aux_allocate_clear_array(sizeof(strnumber), size, 1);
-            prmpermissions *permissions = aux_allocate_clear_array(sizeof(prmpermissions), size, 1);
+            unsigned char *permissions = aux_allocate_clear_array(sizeof(unsigned char), size, 1);
             if (names && permissions) {
                 lmt_primitive_state.prim_data[p].names = names;
                 lmt_primitive_state.prim_data[p].permissions = permissions;
@@ -419,13 +419,13 @@ static void tex_aux_store_primitive_name(strnumber s, singleword cmd, halfword c
     if (lmt_primitive_state.prim_data[cmd].subids < (chr + 1)) {
         /*tex Not that efficient as each primitive triggers this now but only at ini time so ... */
         strnumber *names = aux_allocate_clear_array(sizeof(strnumber), chr + 1, 1);
-        prmpermissions *permissions = aux_allocate_clear_array(sizeof(prmpermissions), chr + 1, 1);
+        unsigned char *permissions = aux_allocate_clear_array(sizeof(unsigned char), chr + 1, 1);
         if (lmt_primitive_state.prim_data[cmd].names) {
             memcpy(names, lmt_primitive_state.prim_data[cmd].names, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(strnumber));
             aux_deallocate_array(lmt_primitive_state.prim_data[cmd].names);
         }
         if (lmt_primitive_state.prim_data[cmd].permissions) {
-            memcpy(permissions, lmt_primitive_state.prim_data[cmd].permissions, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(prmpermissions));
+            memcpy(permissions, lmt_primitive_state.prim_data[cmd].permissions, (unsigned) (lmt_primitive_state.prim_data[cmd].subids) * sizeof(unsigned char));
             aux_deallocate_array(lmt_primitive_state.prim_data[cmd].permissions);
         }
         lmt_primitive_state.prim_data[cmd].names = names;
@@ -448,11 +448,11 @@ static void tex_aux_store_primitive_name(strnumber s, singleword cmd, halfword c
 
 */
 
-void tex_primitive(int cmd_origin, const char *str, singleword cmd, halfword chr, halfword offset)
+void tex_primitive(int origin, int legacy, const char *str, singleword cmd, halfword chr, halfword offset)
 {
     int prim_val;
     strnumber ss;
-    if (cmd_origin != no_command) {
+    if (origin != no_command) {
         tex_primitive_def(str, strlen(str), cmd, offset + chr);
         /*tex Indeed, |cur_val| has the latest primitive. */
         ss = cs_text(cur_val);
@@ -460,7 +460,9 @@ void tex_primitive(int cmd_origin, const char *str, singleword cmd, halfword chr
         ss = tex_maketexstring(str);
     }
     prim_val = tex_primitive_lookup(ss);
-    prim_origin(prim_val) = (quarterword) cmd_origin;
+ // prim_origin(prim_val) = (quarterword) cmd_origin;
+    prim_origin(prim_val) = (singleword) origin;
+    prim_legacy(prim_val) = (singleword) legacy;
     prim_eq_type(prim_val) = cmd;
     prim_equiv(prim_val) = offset + chr;
     tex_aux_store_primitive_name(ss, cmd, chr, offset);
@@ -1045,11 +1047,14 @@ int tex_primitive_found(const char *name, halfword *cmd, halfword *chr)
     return 0;
 }
 
-int tex_inhibit_primitive(halfword cmd, halfword chr)
+int tex_inhibit_primitive(halfword cmd, halfword chr, int permanent)
 {
     if (cmd >= first_cmd && cmd <= last_cmd && cmd != undefined_cs_cmd) {
         if (chr >= 0 && chr <= lmt_primitive_state.prim_data[cmd].subids) {
-            lmt_primitive_state.prim_data[cmd].permissions[chr] = primitive_inhibited;
+            lmt_primitive_state.prim_data[cmd].permissions[chr] = (unsigned char)
+                permanent 
+              ? (primitive_inhibited | primitive_permanent)
+              :  primitive_inhibited;
             return 1;
         } 
     }

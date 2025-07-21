@@ -176,7 +176,7 @@ interfaces.implement {
     public    = true,
     protected = true,
     untraced  = true,
-    arguments = "csname",
+    arguments = { "csname", true },
     actions   = token.inhibit,
 }
 

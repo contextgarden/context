@@ -101,7 +101,7 @@
   {\begingroup
    \edef\m_typesetting_name{\clf_runcontextjob{#3}{#1}}%
    \ifempty\m_typesetting_name \else
-     \normalexpanded{\externalfigure[\m_typesetting_name][typesetting]}[#2,#4]%
+     \expanded{\externalfigure[\m_typesetting_name][typesetting]}[#2,#4]%
    \fi
    \endgroup}
 

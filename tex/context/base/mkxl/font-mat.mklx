@@ -93,9 +93,9 @@
 
 \newconditional\c_font_complete_bold_mathstrategy  \c_font_complete_bold_mathstrategy\conditionaltrue
 
-\immutable\def\mathtextsuffix        {-text}
-\immutable\def\mathscriptsuffix      {-script}
-\immutable\def\mathscriptscriptsuffix{-scriptscript}
+\permanent\cdef\mathtextsuffix        {-text}
+\permanent\cdef\mathscriptsuffix      {-script}
+\permanent\cdef\mathscriptscriptsuffix{-scriptscript}
 
 %D Beware: truefontname also does a fallback on defaultfontclass so there can be
 %D some interference here, which is why we use a different method for bold.

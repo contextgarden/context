@@ -85,7 +85,7 @@
 \permanent\def\tbPOSprefix{\??positiontables\number\noftabpositions:}
 
 \permanent\protected\def\tablepos
-  {\normalexpanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
+  {\expanded{\global\posXCtoks\emptytoks\the\posXCtoks}}
 
 \permanent\protected\def\tbXC {\anch_table_checked\anch_tables_indeed_XC }
 \permanent\protected\def\tbGSC{\anch_table_checked\anch_tables_indeed_GSC}

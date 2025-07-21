@@ -363,21 +363,22 @@ typedef enum muglue_codes {
 # define last_muglue_code   thick_muskip_code
 
 typedef enum tok_codes {
-    output_routine_code,          /*tex points to token list for |\output| */
-    every_par_code,               /*tex points to token list for |\everypar| */
-    every_math_code,              /*tex points to token list for |\everymath| */
-    every_display_code,           /*tex points to token list for |\everydisplay| */
-    every_hbox_code,              /*tex points to token list for |\everyhbox| */
-    every_vbox_code,              /*tex points to token list for |\everyvbox| */
-    every_math_atom_code,         /*tex points to token list for |\everymathatom| */
-    every_job_code,               /*tex points to token list for |\everyjob|*/
-    every_cr_code,                /*tex points to token list for |\everycr| */
-    every_tab_code,               /*tex points to token list for |\everytab| */
-    error_help_code,              /*tex points to token list for |\errhelp|*/
-    every_before_par_code,        /*tex points to token list for |\everybeforepar| */
-    every_eof_code,               /*tex points to token list for |\everyeof| */
-    end_of_group_code,            /*tex collects end-of-group tokens, internal register */
- // end_of_par_code,
+    output_routine_code,          /*tex aka |\output| */
+    every_par_code,               /*tex aka |\everypar| */
+    every_par_begin_code,         /*tex aka |\everyparbegin| */
+    every_par_end_code,           /*tex aka |\everyparend| */
+    every_math_code,              /*tex aka |\everymath| */
+    every_display_code,           /*tex aka |\everydisplay| */
+    every_hbox_code,              /*tex aka |\everyhbox| */
+    every_vbox_code,              /*tex aka |\everyvbox| */
+    every_math_atom_code,         /*tex aka |\everymathatom| */
+    every_job_code,               /*tex aka |\everyjob|*/
+    every_cr_code,                /*tex aka |\everycr| */
+    every_tab_code,               /*tex aka |\everytab| */
+    error_help_code,              /*tex aka |\errhelp|*/
+    every_before_par_code,        /*tex aka |\everybeforepar| */
+    every_eof_code,               /*tex aka |\everyeof| */
+    end_of_group_code,            /*tex aka |\endgroup| internal register */
     /*tex total number of token parameters */
     number_tok_pars,
 } tok_codes;
@@ -1361,7 +1362,10 @@ static inline singleword tex_flags_to_cmd(int flags)
 */
 
 extern int  tex_define_permitted   (halfword cs, halfword prefixes);
+extern int  tex_mutation_permitted (halfword cs);
+extern int  tex_register_permitted (halfword cs, halfword index, halfword cmd);
 extern void tex_define             (int g, halfword p, singleword cmd, halfword chr);
+extern void tex_define_mutated     (int g, halfword p, singleword cmd, halfword chr);
 extern void tex_define_again       (int g, halfword p, singleword cmd, halfword chr);
 extern void tex_define_inherit     (int g, halfword p, singleword flag, singleword cmd, halfword chr);
 extern void tex_define_swapped     (int g, halfword p1, halfword p2, int force);
@@ -1659,6 +1663,8 @@ extern void tex_word_define        (int g, halfword p, halfword w);
 # define every_math_atom_par              toks_parameter(every_math_atom_code)
 # define every_math_par                   toks_parameter(every_math_code)
 # define every_par_par                    toks_parameter(every_par_code)
+# define every_par_begin_par              toks_parameter(every_par_begin_code)
+# define every_par_end_par                toks_parameter(every_par_end_code)
 # define every_tab_par                    toks_parameter(every_tab_code)
 # define every_vbox_par                   toks_parameter(every_vbox_code)
 # define output_routine_par               toks_parameter(output_routine_code)
@@ -2006,5 +2012,8 @@ typedef enum badness_modes {
     badness_mode_overfull  = 0x08,
     badness_mode_all       = 0x0F,
 } badness_modes;
+
+extern int tex_report_overload          (halfword cs, int overload);
+extern int tex_report_overload_register (halfword cs, int overload, halfword index, const char *str);
 
 # endif

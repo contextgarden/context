@@ -86,7 +86,6 @@ local implement         = interfaces.implement
 local tasks             = nodes.tasks
 local fontchar          = fonts.hashes.characters
 local fontquads         = fonts.hashes.quads
-local languagenames     = languages.numbers
 
 local texgetcount       = tex.getcount
 
@@ -171,6 +170,8 @@ local f_tagid           = formatters["%s-%04i"]
 --     flushleft  = "left",
 -- }
 
+local exportlanguage = languages.exportlanguage
+
 local defaultnature = "mixed" -- "inline"
 
 setmetatableindex(used, function(t,k)
@@ -233,6 +234,9 @@ local function attribute(key,value)
         return ""
     end
 end
+
+-- todo: split class and real attributes so that we don't need this
+-- privates hackery (and forget one)
 
 local function setattribute(di,key,value,escaped)
     if value and value ~= "" then
@@ -519,8 +523,7 @@ local imagetemplate_2 <const> = [[
                 local drop  = data.drop
                 local spec = {
                     element   = element,
---                     id        = data.id,
-id        = filename .. "-" .. data.id,
+                    id        = data.id,
                     name      = name,
                     page      = page,
                     url       = usedname(name,page),
@@ -627,7 +630,7 @@ do
     end
 
     function extras.document(di,element,n,fulltag)
-        local language = languagenames[texgetcount("mainlanguagenumber")]
+        local language = exportlanguage(texgetcount("mainlanguagenumber"))
         setattribute(di,"language",language)
         setattribute(di,"xml:lang",language)
         if not less_state then
@@ -1901,13 +1904,14 @@ local collectresults  do -- too many locals otherwise
                 local ai = getattr(n,a_image)
                 if ai then
                     local at = getattr(n,a_tagged) or pat
+-- print(ai,at)
                     if nofcurrentcontent > 0 then
                         pushcontent()
                         pushentry(currentnesting) -- ??
                     end
                     pushentry(taglist[at]) -- has an index, todo: flag empty element
                     if trace_export then
-                        report_export("%w<!-- processing image tagged %a",currentdepth,last)
+                        report_export("%w<!-- processing image tagged %a -->",currentdepth,last)
                     end
                     last = nil
                     currentparagraph = nil
@@ -2341,28 +2345,35 @@ end
     -- maybe the reverse: be explicit about what is permitted
 
     local private = {
-        destination = true,
-        prefix      = true,
-        reference   = true,
+        destination     = true,
+        prefix          = true,
+        reference       = true,
         --
-        id          = true,
-        href        = true,
+        id              = true,
+        href            = true,
         --
-        implicit    = true,
-        explicit    = true,
+        implicit        = true,
+        explicit        = true,
         --
-        url         = true,
-        file        = true,
-        internal    = true,
-        location    = true,
+        url             = true,
+        file            = true,
+        internal        = true,
+        location        = true,
         --
-        name        = true, -- image name
-        used        = true, -- image name
-        page        = true, -- image name
-        width       = true,
-        height      = true,
+        name            = true, -- image name
+        used            = true, -- image name
+        page            = true, -- image name
+        width           = true,
+        height          = true,
         --
-        image       = true,
+        image           = true,
+        exported        = true,
+        alt             = true, -- or what
+        --
+        descriptiontext = true,
+        alternativetext = true,
+        --
+        n               = true, -- formula number
     }
 
     local addclicks   = true
@@ -2478,7 +2489,7 @@ end
                     end
                     local class = nil
                     local label = nil
-local image = at.image
+                    local image = at.image
                     if tg == "document" then
                         at.href   = nil
                         at.detail = nil
@@ -2523,9 +2534,11 @@ local image = at.image
                             }
                         end
                     end
-if image then
-    attr.image = image
-end
+                    if image then
+                        local alt = at and at.descriptiontext or ""
+                        attr.image = image
+                        attr.alt   = alt ~= "" and alt or nil
+                    end
                     c.at = attr
                     if label then
                         attr.label = label
@@ -2987,7 +3000,7 @@ end
                 htmlfiles  = { htmlfilebase },
                 styles     = cssfiles,
                 htmlroot   = htmlfilebase,
-                language   = languagenames[texgetcount("mainlanguagenumber")],
+                language   = exportlanguage(texgetcount("mainlanguagenumber")),
                 title      = validstring(finetuning.title) or validstring(identity.title),
                 subtitle   = validstring(finetuning.subtitle) or validstring(identity.subtitle),
                 author     = validstring(finetuning.author) or validstring(identity.author),
@@ -3020,14 +3033,14 @@ end
                 end
             end
 
-            local language = languagenames[texgetcount("mainlanguagenumber")]
+            local language = exportlanguage(texgetcount("mainlanguagenumber"))
 
             local variables = {
                 style    = h_styles,
                 body     = xml.tostring(xml.first(xmltree,"/div")),
                 preamble = wholepreamble(false),
                 title    = title,
-                language = languagenames[texgetcount("mainlanguagenumber")] or "en",
+                language = exportlanguage(texgetcount("mainlanguagenumber")) or "en",
             }
 
             io.savedata(htmlfilename,replacetemplate(htmltemplate,variables,"xml"))

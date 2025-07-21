@@ -15,8 +15,6 @@
 
 \writestatus{loading}{ConTeXt Backend Macros / XML export}
 
-\newinteger\tagparcounter
-
 \registerctxluafile{back-exp}        {autosuffix}
 \registerctxluafile{back-exp-imp-tag}{autosuffix}
 \registerctxluafile{back-exp-imp-mth}{autosuffix}
@@ -51,35 +49,6 @@
    \else
      \expandafter\ctxcommand
    \fi}
-
-\permanent\protected\lettonothing\dotagsetparcounter
-\permanent\protected\lettonothing\doresetparcounter
-
-% Fuzzy:
-
-\appendtoks
-    \doresetparcounter
-\to \everyflushatnextpar
-
-% \appendtoks
-%     \dotagsetparcounter
-% \to \everypar
-
-\prependtoks
-    \dotagsetparcounter
-\to \everypar
-
-% \appendtoks
-%     \dotagsetparcounter
-% \to \neverypar
-
-\prependtoks
-    \dotagsetparcounter
-\to \neverypar
-
-\appendtoks
-    \dotagsetparcounter
-\to \everytabulatepar % tricky, maybe this should be neverypar
 
 \appendtoks
     \enforced\permanent\protected\def\dotagTABLEcell
@@ -135,6 +104,7 @@
 \to \everyenableelements
 
 \mutable\lettonothing\figurecategory
+\mutable\lettonothing\figureexported
 
 \appendtoks % we can have differently scaled images
     \enforced\permanent\protected\def\dotagfigure
@@ -148,6 +118,9 @@
            {\figuredepth}%\relax
            {\figurelabel}%
            {\figurecategory}%
+           {\figureexported}%
+           {\figuredescriptiontext}%
+           {\figurealternativetext}%
        \fi}%
 \to \everyenableelements
 
@@ -162,19 +135,6 @@
       {\iftrialtypesetting\else
          \clf_settagcombinationpair{#1}{#2}%
        \fi}%
-\to \everyenableelements
-
-\appendtoks
-    % we don't want a zero one
-    \ifcase\tagparcounter
-      \global\tagparcounter\plusone
-      \c_attr_taggedpar\plusone
-    \fi
-    % as it is also a trigger
-    \enforced\permanent\protected\def\dotagsetparcounter
-      {\global\advanceby\tagparcounter\plusone\c_attr_taggedpar\tagparcounter}%
-    \enforced\permanent\protected\def\doresetparcounter
-      {\c_attr_taggedpar\attributeunsetvalue}%
 \to \everyenableelements
 
 \appendtoks

@@ -121,7 +121,7 @@
      \d_anch_sidebars_distance{\scratchdimen+\numexpr\p_level-\plusone\relax\dimexpr\scratchdistance\relax}%
    \fi
    \startpositionoverlay{\v!text-1}%
-     \normalexpanded{\setMPpositiongraphicrange % maybe expand in definition
+     \expanded{\setMPpositiongraphicrange % maybe expand in definition
        {b:sidebar:\tointeger\c_anch_sidebars_n}%
        {e:sidebar:\tointeger\c_anch_sidebars_n}%
        {mpos:sidebar}%

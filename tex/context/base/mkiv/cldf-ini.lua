@@ -404,7 +404,8 @@ local registerscanner if CONTEXTLMTXMODE > 0 then
 
     local function toflags(specification)
         local protected = (specification.protected and "protected") or (specification.semiprotected and "semiprotected")
-        local untraced  = specification.untraced  and "untraced"
+        local untraced  = specification.untraced and "untraced"
+        local noaligned = specification.noaligned and "noaligned"
         local usage     = specification.usage
         if usage == "value" then
             return "global", "value", "permanent", "untraced", protected
@@ -413,9 +414,9 @@ local registerscanner if CONTEXTLMTXMODE > 0 then
         elseif specification.frozen then
             return "global", "frozen", untraced, protected
         elseif specification.permanent == false or specification.onlyonce then -- for now onlyonce here
-            return "global", untraced, protected, semiprotected
+            return "global", untraced, protected, semiprotected, noaligned
         else
-            return "global", "permanent", untraced, protected
+            return "global", "permanent", untraced, protected, noaligned
         end
     end
 

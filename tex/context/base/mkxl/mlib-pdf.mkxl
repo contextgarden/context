@@ -100,7 +100,7 @@
 
 \permanent\protected\def\startMPLIBtoPDF#1#2#3#4#5% llx lly urx ury plugmode
   {\meta_process_graphic_figure_start
-   \dostarttaggednodetail\t!mpgraphic
+  %\dostarttaggednodetail\t!mpgraphic % moved, not worth the trouble havign mixed content
    \naturalhpack attr \imageattribute \plusone \bgroup
    \ifnum#5=\plusone
      % We're in plugmode so we can have anythign (like color) in the
@@ -116,7 +116,7 @@
    \finalizeMPbox
    \box\MPbox
    \egroup
-   \dostoptagged
+  %\dostoptagged % moved
    \meta_process_graphic_figure_stop}
 
 %D Kind of special:
@@ -151,7 +151,7 @@
    \meta_start_current_graphic
      \forgetall
      \edef\p_extensions{\MPinstanceparameter\s!extensions}%
-     \normalexpanded{\noexpand\clf_mpgraphic
+     \expanded{\noexpand\clf_mpgraphic
          instance        {\currentMPinstance}%
          format          {\currentMPformat}%
          data            {#2;}%

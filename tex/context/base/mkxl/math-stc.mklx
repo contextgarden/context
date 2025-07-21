@@ -296,7 +296,7 @@
 % so far
 
 \defcsname\??mathstackersalternative\v!mp\endcsname
-  {\normalexpanded{\math_stackers_mp_box
+  {\expanded{\math_stackers_mp_box
      {\todimension{\mathstackersparameter\c!mpheight}}%
      {\todimension{\mathstackersparameter\c!mpdepth}}%
      {\todimension{\mathstackersparameter\c!mpoffset}}%
@@ -1102,8 +1102,8 @@
 % \setupbodyfont[xits]    \getbuffer
 % \setupbodyfont[cambria] \getbuffer
 
-\immutable\protected\def\normaldoublebrace {\Umathaccent \s!both \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
-\immutable\protected\def\normaldoubleparent{\Umathaccent \s!both \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
+\permanent\protected\def\normaldoublebrace {\Umathaccent \s!both \zerocount \zerocount "23DE \zerocount \zerocount "23DF }
+\permanent\protected\def\normaldoubleparent{\Umathaccent \s!both \zerocount \zerocount "23DC \zerocount \zerocount "23DD }
 
 % let's keep this .. some are not defined so there's nothing normal
 
@@ -1307,29 +1307,29 @@
 %       \fi
 %       \endgroup}}
 %
-% \immutable\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar               \relbar              \rightarrow}
-% \immutable\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow            \relbar              \relbar}
-% \immutable\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \relax                \crightoverleftarrow \relax}
-% \immutable\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \relax                \cleftoverrightarrow \relax}
-% \immutable\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar               \Relbar              \Relbar}
-% \immutable\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar               \Relbar              \Rightarrow}
-% \immutable\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Relbar}
-% \immutable\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Rightarrow}
-% \immutable\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow            \relbar              \rightarrow}
-% \immutable\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}   \relbar              \rightarrow}
-% \immutable\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar               \relbar              \twoheadrightarrow}
-% \immutable\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow     \relbar              \relbar}
-% \immutable\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoondown}
-% \immutable\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoonup}
-% \immutable\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown      \relbar              \relbar}
-% \immutable\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup        \relbar              \relbar}
-% \immutable\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow            \relbar             {\relbar\joinrel\rhook}}
-% \immutable\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}\relbar              \rightarrow}
-% \immutable\protected\def\relfill               {\math_stackers_hacked_fill \relbar               \relbar              \relbar}
-% \immutable\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                \equiv               \equiv}
+% \permanent\protected\def\rightarrowfill        {\math_stackers_hacked_fill \relbar               \relbar              \rightarrow}
+% \permanent\protected\def\leftarrowfill         {\math_stackers_hacked_fill \leftarrow            \relbar              \relbar}
+% \permanent\protected\def\rightoverleftarrowfill{\math_stackers_hacked_fill \relax                \crightoverleftarrow \relax}
+% \permanent\protected\def\leftoverrightarrowfill{\math_stackers_hacked_fill \relax                \cleftoverrightarrow \relax}
+% \permanent\protected\def\equalfill             {\math_stackers_hacked_fill \Relbar               \Relbar              \Relbar}
+% \permanent\protected\def\Rightarrowfill        {\math_stackers_hacked_fill \Relbar               \Relbar              \Rightarrow}
+% \permanent\protected\def\Leftarrowfill         {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Relbar}
+% \permanent\protected\def\Leftrightarrowfill    {\math_stackers_hacked_fill \Leftarrow            \Relbar              \Rightarrow}
+% \permanent\protected\def\leftrightarrowfill    {\math_stackers_hacked_fill \leftarrow            \relbar              \rightarrow}
+% \permanent\protected\def\mapstofill            {\math_stackers_hacked_fill{\mapstochar\relbar}   \relbar              \rightarrow}
+% \permanent\protected\def\twoheadrightarrowfill {\math_stackers_hacked_fill \relbar               \relbar              \twoheadrightarrow}
+% \permanent\protected\def\twoheadleftarrowfill  {\math_stackers_hacked_fill \twoheadleftarrow     \relbar              \relbar}
+% \permanent\protected\def\rightharpoondownfill  {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoondown}
+% \permanent\protected\def\rightharpoonupfill    {\math_stackers_hacked_fill \relbar               \relbar              \rightharpoonup}
+% \permanent\protected\def\leftharpoondownfill   {\math_stackers_hacked_fill \leftharpoondown      \relbar              \relbar}
+% \permanent\protected\def\leftharpoonupfill     {\math_stackers_hacked_fill \leftharpoonup        \relbar              \relbar}
+% \permanent\protected\def\hookleftfill          {\math_stackers_hacked_fill \leftarrow            \relbar             {\relbar\joinrel\rhook}}
+% \permanent\protected\def\hookrightfill         {\math_stackers_hacked_fill{\lhook\joinrel\relbar}\relbar              \rightarrow}
+% \permanent\protected\def\relfill               {\math_stackers_hacked_fill \relbar               \relbar              \relbar}
+% \permanent\protected\def\triplerelfill         {\math_stackers_hacked_fill \equiv                \equiv               \equiv}
 %
 % \permanent\tolerant\protected\def\defineextensiblefiller[#1]#*[#2]%
-%   {\immutable\letcsname\??mathextensiblefallbacks\number#2\expandafter\endcsname\csname#1\endcsname}
+%   {\permanent\letcsname\??mathextensiblefallbacks\number#2\expandafter\endcsname\csname#1\endcsname}
 
 \installcorenamespace {mathadaptiveextensible}
 

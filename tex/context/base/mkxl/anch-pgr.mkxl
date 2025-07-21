@@ -103,7 +103,7 @@
 \permanent\protected\def\handlepositionaction#1\with#2\on#3% ugly, will change
   {\begingroup
    \cdef\currentpositionanchor{\ifempty\currentpositionoverlay#3\else\currentpositionoverlay::\MPanchoridentifier\fi}%
-   \normalexpanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\csname\??positioncleanup\currentpositionanchor\endcsname}}%
+   \expanded{\anch_positions_set_action{\currentpositionanchor}{\noexpand\csname\??positioncleanup\currentpositionanchor\endcsname}}%
    \let#1\relax
    \ifcsname\??positioncleanup\currentpositionanchor\endcsname
      \xdefcsname\??positioncleanup\currentpositionanchor\endcsname{\csname\??positioncleanup\currentpositionanchor\endcsname#1#2}%
@@ -204,7 +204,7 @@
 %D
 %D \typebuffer[graphic]
 
-\immutable\def         \MPanchoridentifier{mpa}  % {mp-anchor}
+\permanent\def         \MPanchoridentifier{mpa}  % {mp-anchor}
 \mutable  \def         \MPanchornumber    {\the\realpageno}
 \mutable  \lettonothing\MPanchorid
 
@@ -214,7 +214,7 @@
 
 %D Position actions are automatically executed when a position is set.
 
-\immutable\def\textbackgroundoverlay#1{\v!text#1}
+\permanent\def\textbackgroundoverlay#1{\v!text#1}
 
 \permanent\protected\def\positionoverlay % the test prevents too many redundant positions
   {\ifpositioning               % in (not used) text* position layers

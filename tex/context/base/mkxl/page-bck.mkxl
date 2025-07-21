@@ -677,7 +677,7 @@
 \permanent\protected\def\disablehiddenbackground
   {\global\c_page_backgrounds_hidden_enabled\conditionalfalse}
 
-\immutable\def\hiddenbackgroundlist
+\permanent\def\hiddenbackgroundlist
   {\v!text-2,\v!text-1,\v!foreground,\v!text+1,\v!text+2}
 
 \permanent\protected\def\prependhiddenbackground#1{\enforced\edef\hiddenbackgroundlist{#1,\hiddenbackgroundlist}}

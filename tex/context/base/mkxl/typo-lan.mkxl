@@ -45,9 +45,9 @@
 %
 % \startbuffer
 %
-% \mainlanguage[en] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
-% \mainlanguage[de] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
-% \mainlanguage[nl] \hsize65\averagecharwidth \normalexpanded{\inleft{\the\hsize}} \input ward \par
+% \mainlanguage[en] \hsize65\averagecharwidth \expanded{\inleft{\the\hsize}} \input ward \par
+% \mainlanguage[de] \hsize65\averagecharwidth \expanded{\inleft{\the\hsize}} \input ward \par
+% \mainlanguage[nl] \hsize65\averagecharwidth \expanded{\inleft{\the\hsize}} \input ward \par
 %
 % \languagecharwidth{de}=\languagecharwidth{en}
 %

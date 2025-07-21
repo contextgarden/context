@@ -33,14 +33,20 @@
 % fontsize        % a b c d ...
 % fontface        % 0=normal 1=text 2=script 3=scriptscript 4=x 5=xx (math are temporary)
 
-\mutable\def\normalizedbodyfontsize{12pt}
+\mutable  \def\normalizedbodyfontsize{12pt}
+\permanent\def\defaultfontbody       {\normalizedbodyfontsize}
+\aliased  \let\defaultfontstyle      \s!rm
+\aliased  \let\defaultfontalternative\s!tf
+\aliased  \let\defaultfontface       \!!zerocount
 
-\immutable\def\defaultfontbody      {\normalizedbodyfontsize}
-\immutable\let\defaultfontstyle      \s!rm
-\immutable\let\defaultfontalternative\s!tf
-\immutable\let\defaultfontface       \!!zerocount
+% This one is never set so can't this go? It's used in a hash but then we
+% we get two -- in row:
 
-\immutable\lettonothing\defaultfontsize
+\permanent\lettonothing\defaultfontsize
+
+% So maybe we can just remove it there or define it as:
+%
+% \permanent\cdef\defaultfontsize{*}
 
 \mutable\let\fontbody       \defaultfontbody
 \mutable\let\fontstyle      \defaultfontstyle

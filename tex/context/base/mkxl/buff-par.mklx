@@ -81,7 +81,7 @@
   {\the\csname\??parallelhandler\currentparallel\endcsname}
 
 \def\buff_parallel_define_instance#name#instance%
-  {\normalexpanded{\buff_parallel_define_saved[#instance][#name]}%
+  {\expanded{\buff_parallel_define_saved[#instance][#name]}%
    \definebuffer[#instance]%
    \toksapp
      \csname\??parallelhandler#name\endcsname

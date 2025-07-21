@@ -206,7 +206,7 @@ function bibtex.toxml(session,options)
     r = r + 1 ; result[r] = "<?xml version='1.0' standalone='yes'?>"
     r = r + 1 ; result[r] = "<bibtex>"
     for id, categories in next, session.data do
-        id = lower(gsub(id,"^@",""))
+        local id = lower(gsub(id,"^@",""))
         for name, entry in next, categories do
             if not entries or entries[name] then
                 r = r + 1 ; result[r] = formatters["<entry tag='%s' category='%s'>"](lower(name),id)

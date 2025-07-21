@@ -42,10 +42,10 @@
 %D We define these here, just in case. This permits \typefile {self} otherwise
 %D nested b|/|e sep problems.
 
-\immutable\def\luastringsep{===}
+\permanent\cdef\luastringsep{===}
 
-\immutable\edef\!!bs{[\luastringsep[}
-\immutable\edef\!!es{]\luastringsep]}
+\permanent\cdef\!!bs{[\luastringsep[}
+\permanent\cdef\!!es{]\luastringsep]}
 
 \pushoverloadmode
 

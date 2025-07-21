@@ -1,0 +1,197 @@
+% language=us runpath=texruns:manuals/luametatex
+
+\environment luametatex-style
+
+\startdocument[title=security]
+
+\startsection[title=Introduction]
+
+This is a relatively short chapter where we pay some attention to possible side
+effects that can come from running a program like \TEX\ and especially
+\LUAMETATEX. A \TEX\ program is normally pretty robust but the fact that we use
+an opened up engine and also need to keep performance in mind, also means that
+there are ways to have a less nice experience. However, given the nature of the
+program we also expect users to know what they are doing. If you run \TEX\ as
+service there are ways to keep problems local (using a virtual machine) or using
+constrained input like \XML. In \CONTEXT\ you can also limit some functionality
+by using sandbox features but those are seldom used.
+
+The engine starts out with everything available but you can selectively disable
+features and thereby add some protection. When you use \CONTEXT\ this means that
+there might be features that you cannot use or that are restricted in use. When
+an open \TEX\ engine like \LUATEX\ or \LUAMETATEX\ is used we assume that you (or
+those who developed the macros that you use) know what they are doing. As a side
+note: \LUAMETATEX\ is likely a bit more hardened than \LUATEX.
+
+\stopsection
+
+\startsection[title=Primitives]
+
+Internally \TEX\ has grouped the user interface in commands. Most commands have
+variants. So, for instance there is are \prm {hrule} and \prm {vrule} than are
+triggering \type {hrule_cmd} and \type {vrule_cmd} with a sub command, here in
+both cases zero (or \typ {normal_rule_code}. The \prm {nohrule} and \type
+{novrule} primitives trigger these rule commands with sub command \typ
+{empty_rule_code}.
+
+Primitive initialization boils down to relating control sequences (normally
+starting with a backslash) to a combination of such commands and subcommands and
+there are hundreds of such combinations.
+
+You can decide to selectively initialize these primitives but also to just
+redefine the control sequence. so:
+
+\starttyping[option=TEX]
+\let\left\MyLeftCommand
+\stoptyping
+
+will replace the primitive by whatever \tex {MyLeftCommand} does. Unless you save
+the original meaning the primitive is lost; well not entirely as we will see
+later. Overload protection can be set up to prevent primitives being redefined.
+
+We are aware of the fact that overload protection and the related prefixes that
+drive the properties (like \prm {permanent}, \prm {frozen}, \prm {immutable},
+\prm {tolerant} and more) are very much inspired by how \CONTEXT\ developers see
+things so it is unlikely that other macro packages will use these features. But
+that is probably true for most of the features that make \LUAMETATEX\ differ from
+\LUATEX. The same can be said for the embedded \METAPOST\ library which is also
+an enhanced follow up and \LUA\ helpers of any kind.
+
+
+\stopsection
+
+\startsection[title=Macros]
+
+Macros are user defined commands (when using \prm {def} and friends) or aliases
+(when using \prm {let} and co).
+
+\starttyping[option=TEX]
+\def\foo{fooled}
+\stoptyping
+
+When \prm {overloadmode} is active the next one:
+
+\starttyping[option=TEX]
+\permanent\def\foo{fooled}
+\stoptyping
+
+will make sure that a user doesn't redefine this macro. One can argue that the
+strength of \TEX\ is that you have complete control which is what you have unless
+a macro package decides that being a bit more strict makes sense. Primitives are
+permanent by default.
+
+\stopsection
+
+\startsection[title=Tokens]
+
+Tokens are the storage concept of commands, and keep in mind that even a letter
+is just that, for instance a \type {letter_cmd} with a sub code being a \UNICODE
+? In \LUA\ you can create tokens so that is actually a loophole: you can redefine
+a primitive but that doesn't remove the command and its subcommand: these stay
+around.
+
+The \typ {tex.inhibitprimitive} function can block such a combination either
+via its primitive name or by the two codes.
+
+\starttyping
+\ctxlua{tex.inhibitprimitive("primitive")}
+\stoptyping
+
+That way there is no change that this old school primitive will kick in. This
+might be good to know for a macro package because then it doesn't need to take
+that possibility into account.
+
+\stopsection
+
+\startsection[title=Nodes]
+
+Robust node usage is bit more complex. Where tokens are collected, consumed,
+deallocated or kept with a reference count and thereby managed, nodes are the
+result of building and manipulating (content) lists and at the \LUA\ end one can
+create bad links (like loops) or forget to make copies when flushing nodes
+multiple times.
+
+In \LUAMETATEX\ at least there is protection against assigning the wrong fields,
+accessing freed nodes etc. But it will never be completely safe. So, what can
+happen is that nodes are already freed (often a warning), list linking is bad
+(endless loops or crashes), internal mechanisms get confused (quit with error or
+just crash).
+
+So here you mainly have to trust the writers of the macro package and they will
+not on purpose trigger problems. The good news is that it being an relatively
+long standing community, the \TEX\ world has some leverage and protection against
+malice built in.
+
+\stopsection
+
+\startsection[title=\LUA]
+
+Here is the real possibility to mess with your run. There is little we can do
+about it. The good news is that \LUA\ is relatively well designed wrt memory
+management so it's your own doing if something goes bad. It is good to keep in
+mind that even well intended code can behave bad and create crashes. Normally a
+crash is harmless and just a crash.
+
+\stopsection
+
+\startsection[title=Files]
+
+Whenever a program can mess with files there is the danger of corruption. This is
+however also true for the other \TEX\ engines. It therefore makes no sense to
+give examples here as it might give away ideas. Again there is the possibility to
+use sandboxing in \CONTEXT\ but you are anyways dependent on what your macro
+package provides.
+
+In this perspective we should also mention that you can produce a bad \PDF\ file
+(assuming that this is your output format) and that might only show up after
+years.
+
+\stopsection
+
+\startsection[title=Callbacks]
+
+These extend the engine and some are actually mandate, like those reading from files
+and loading fonts. Most intrusive are those that intercept the node lists
+in various states and it's important that things happen in the right order. Give back
+the wrong result and you might get into problems. Normally the engine intercept
+the unexpected but who knows.
+
+The macro package is responsible for managing this. It can put restrictions on
+using callbacks, prohibit changes to them etc. For instance in \CONTEXT\ the
+current callback properties are:
+
+\start \small \startluacode
+    moduledata.context.callbacks()
+ -- callbacks.report()
+\stopluacode \stop
+
+There are probably ways around all this protection because after all the files
+that make a format are on the system. But the fact that one then to deliberately
+has to do that also indicates (or at least makes one aware) that one is \quote
+{on its own}. The \TEX\ ecosystem and the programs and macros used are open
+source so anything can be done with it, good and bad. So all boils down to trust.
+
+\stopsection
+
+\startsection[title=Libraries]
+
+There is plenty built in so \LUAMETATEX\ can do without libraries. However, there
+are some so called optional library interfaces available. These are dynamic in the
+sense that they assume a stable API and bind functions when the library is
+loaded. Again controlling this is a macro package specific feature. Often one can
+just as well call a program (that uses such a library) which might be a better
+options, for instance when converting an image. We kept the interfaces minimal
+and assume some \LUA\ wrapping. It helps to keep the dependencies to a minimum.
+
+\stopsection
+
+\startsection[title=Execution]
+
+Then there is program execution (aka \type {\write18} in other engines than
+\LUATEX\ and \LUAMETATEX). The engine is not responsible for how \typ
+{os.execute} and \typ {io.popen} are used and macro packages can decide to
+disable it.
+
+\stopsection
+
+\stopdocument

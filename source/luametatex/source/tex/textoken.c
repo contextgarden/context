@@ -2727,12 +2727,13 @@ typedef enum combine_operations {
     combine_prepend,
 } combine_operations;
 
-void tex_run_combine_the_toks(void)
+void tex_run_combine_the_toks(int force)
 {
     halfword source = null;
     halfword target = null;
     halfword append, expand, global;
     halfword nt, ns;
+    halfword slot; 
     singleword cmd;
     /* */
     switch (cur_chr) {
@@ -2751,169 +2752,175 @@ void tex_run_combine_the_toks(void)
     /*tex The target. */
     tex_get_x_token();
     if (cur_cmd == register_toks_cmd || cur_cmd == internal_toks_cmd) {
+        slot = 0;
         nt = eq_value(cur_cs);
         cmd = (singleword) cur_cmd;
     } else {
         /*tex Maybe a number. */
         tex_back_input(cur_tok);
-        nt = register_toks_location(tex_scan_toks_register_number());
+        slot = tex_scan_toks_register_number();
+        nt = register_toks_location(slot);
         cmd = register_toks_cmd;
     }
     target = eq_value(nt);
-    /*tex The source. */
-    do {
-        tex_get_x_token();
-    } while (cur_cmd == spacer_cmd);
-    if (cur_cmd == left_brace_cmd) {
-        source = expand ? tex_scan_toks_expand(1, NULL, 0, 0) : tex_scan_toks_normal(1, NULL);
-        /*tex The action. */
-        if (source) {
-            if (target) {
-                halfword s = token_link(source);
-                if (s) {
-                    halfword t = token_link(target);
-                    if (! t) {
-                        /*tex Can this happen? */
-                        set_token_link(target, s);
-                        token_link(source) = null;
-                    } else {
+    if (force || ((cmd == register_toks_cmd && tex_register_permitted(nt, slot, register_toks_cmd)) || tex_mutation_permitted(nt))) {
+        /*tex The source. */
+        do {
+            tex_get_x_token();
+        } while (cur_cmd == spacer_cmd);
+        if (cur_cmd == left_brace_cmd) {
+            source = expand ? tex_scan_toks_expand(1, NULL, 0, 0) : tex_scan_toks_normal(1, NULL);
+            /*tex The action. */
+            if (source) {
+                if (target) {
+                    halfword s = token_link(source);
+                    if (s) {
+                        halfword t = token_link(target);
+                        if (! t) {
+                            /*tex Can this happen? */
+                            set_token_link(target, s);
+                            token_link(source) = null;
+                        } else {
+                            switch (append) {
+                                case combine_assign:
+                                    goto ASSIGN_1;
+                                case 1:
+                                    /*append */
+                                    if (immediate_permitted(nt,target)) {
+                                     // halfword p = tex_tail_of_node_list(t);
+                                        halfword p = t; 
+                                        while (token_link(p)) {
+                                            p = token_link(p);
+                                        }
+                                        token_link(p) = s;
+                                        token_link(source) = null;
+                                    } else {
+                                        tex_aux_append_copied_toks_list(nt, cmd, global, t, s, NULL);
+                                    }
+                                    break;
+                                case 2:
+                                    /* prepend */
+                                    if (immediate_permitted(nt,target)) {
+                                     // halfword p = tex_tail_of_node_list(s);
+                                        halfword p = s;
+                                        while (token_link(p)) {
+                                            p = token_link(p);
+                                        }
+                                        token_link(source) = null;
+                                        set_token_link(p, t);
+                                        set_token_link(target, s);
+                                    } else {
+                                        tex_aux_append_copied_toks_list(nt, cmd, global, s, t, NULL);
+                                    }
+                                    break;
+                            }
+                        }
+                    }
+                } else {
+                    ASSIGN_1:
+                    tex_aux_set_toks_register(nt, cmd, token_link(source), global);
+                    token_link(source) = null;
+                }
+                tex_flush_token_list(source);
+            }
+        } else {
+            /* cf luatex we don't handle expand here */
+            if (cur_cmd == register_toks_cmd) {
+                ns = register_toks_number(eq_value(cur_cs));
+            } else if (cur_cmd == internal_toks_cmd) {
+                ns = internal_toks_number(eq_value(cur_cs));
+            } else {
+                ns = tex_scan_toks_register_number();
+            }
+            /*tex The action. */
+            source = toks_register(ns);
+            if (source) {
+                if (target) {
+                    if (expand) {
+                        halfword defref = lmt_input_state.def_ref;
+                        tex_back_input(right_brace_token + '}');
+                        tex_begin_token_list(source, token_text);
+                        source = tex_scan_toks_expand(1, NULL, 0, 1);
+                        lmt_input_state.def_ref = defref;
                         switch (append) {
                             case combine_assign:
-                                goto ASSIGN_1;
-                            case 1:
-                                /*append */
-                                if (immediate_permitted(nt,target)) {
-                                    halfword p = t;
-                                    while (token_link(p)) {
-                                        p = token_link(p);
+                                eq_value(nt) = source;
+                                break;
+                            case combine_append:
+                                if (immediate_permitted(nt, target)) {
+                                    halfword p = tex_tail_of_token_list(token_link(target));
+                                    token_link(p) = token_link(source);
+                                } else {
+                                    halfword tail;
+                                    tex_aux_append_copied_toks_list(nt, cmd, global, target, null, &tail);
+                                    token_link(tail) = token_link(source);
+                                }
+                                tex_put_available_token(source);
+                                break;
+                            case combine_prepend:
+                                if (immediate_permitted(nt, target)) {
+                                    halfword p = tex_tail_of_token_list(token_link(source));
+                                    token_link(p) = token_link(target);
+                                    token_link(target) = token_link(source);
+                                } else {
+                                    halfword head = tex_aux_append_copied_toks_list(nt, cmd, global, target, null, NULL);
+                                    halfword tail = tex_tail_of_token_list(token_link(source));
+                                    token_link(tail) = token_link(head);
+                                    token_link(head) = token_link(source);
+                                }
+                                tex_put_available_token(source);
+                                break;
+                        }
+                    } else {
+                        halfword t = token_link(target);
+                        halfword s = token_link(source);
+                        switch (append) {
+                            case combine_assign:
+                                tex_add_token_reference(source);
+                                eq_value(nt) = source;
+                                break;
+                            case combine_append:
+                                if (immediate_permitted(nt, target)) {
+                                    halfword p = tex_tail_of_token_list(t);
+                                    while (s) {
+                                        p = tex_store_new_token(p, token_info(s));
+                                        s = token_link(s);
                                     }
-                                    token_link(p) = s;
-                                    token_link(source) = null;
                                 } else {
                                     tex_aux_append_copied_toks_list(nt, cmd, global, t, s, NULL);
                                 }
                                 break;
-                            case 2:
-                                /* prepend */
-                                if (immediate_permitted(nt,target)) {
-                                    halfword p = s;
-                                    while (token_link(p)) {
-                                        p = token_link(p);
+                            case combine_prepend:
+                                if (immediate_permitted(nt, target)) {
+                                    halfword h = null;
+                                    halfword p = null;
+                                    while (s) {
+                                        p = tex_store_new_token(p, token_info(s));
+                                        if (! h) {
+                                            h = p;
+                                        }
+                                        s = token_link(s);
                                     }
-                                    token_link(source) = null;
                                     set_token_link(p, t);
-                                    set_token_link(target, s);
+                                    set_token_link(target, h);
                                 } else {
                                     tex_aux_append_copied_toks_list(nt, cmd, global, s, t, NULL);
                                 }
                                 break;
                         }
                     }
-                }
-            } else {
-                ASSIGN_1:
-                tex_aux_set_toks_register(nt, cmd, token_link(source), global);
-                token_link(source) = null;
-            }
-            tex_flush_token_list(source);
-        }
-    } else {
-        /* cf luatex we don't handle expand here */
-        if (cur_cmd == register_toks_cmd) {
-            ns = register_toks_number(eq_value(cur_cs));
-        } else if (cur_cmd == internal_toks_cmd) {
-            ns = internal_toks_number(eq_value(cur_cs));
-        } else {
-            ns = tex_scan_toks_register_number();
-        }
-        /*tex The action. */
-        source = toks_register(ns);
-        if (source) {
-            if (target) {
-                if (expand) {
+                } else if (expand) {
                     halfword defref = lmt_input_state.def_ref;
                     tex_back_input(right_brace_token + '}');
                     tex_begin_token_list(source, token_text);
                     source = tex_scan_toks_expand(1, NULL, 0, 1);
+                    eq_value(nt) = source;
                     lmt_input_state.def_ref = defref;
-                    switch (append) {
-                        case combine_assign:
-                            eq_value(nt) = source;
-                            break;
-                        case combine_append:
-                            if (immediate_permitted(nt, target)) {
-                                halfword p = tex_tail_of_token_list(token_link(target));
-                                token_link(p) = token_link(source);
-                            } else {
-                                halfword tail;
-                                tex_aux_append_copied_toks_list(nt, cmd, global, target, null, &tail);
-                                token_link(tail) = token_link(source);
-                            }
-                            tex_put_available_token(source);
-                            break;
-                        case combine_prepend:
-                            if (immediate_permitted(nt, target)) {
-                                halfword p = tex_tail_of_token_list(token_link(source));
-                                token_link(p) = token_link(target);
-                                token_link(target) = token_link(source);
-                            } else {
-                                halfword head = tex_aux_append_copied_toks_list(nt, cmd, global, target, null, NULL);
-                                halfword tail = tex_tail_of_token_list(token_link(source));
-                                token_link(tail) = token_link(head);
-                                token_link(head) = token_link(source);
-                            }
-                            tex_put_available_token(source);
-                            break;
-                    }
                 } else {
-                    halfword t = token_link(target);
-                    halfword s = token_link(source);
-                    switch (append) {
-                        case combine_assign:
-                            tex_add_token_reference(source);
-                            eq_value(nt) = source;
-                            break;
-                        case combine_append:
-                            if (immediate_permitted(nt, target)) {
-                                halfword p = tex_tail_of_token_list(t);
-                                while (s) {
-                                    p = tex_store_new_token(p, token_info(s));
-                                    s = token_link(s);
-                                }
-                            } else {
-                                tex_aux_append_copied_toks_list(nt, cmd, global, t, s, NULL);
-                            }
-                            break;
-                        case combine_prepend:
-                            if (immediate_permitted(nt, target)) {
-                                halfword h = null;
-                                halfword p = null;
-                                while (s) {
-                                    p = tex_store_new_token(p, token_info(s));
-                                    if (! h) {
-                                        h = p;
-                                    }
-                                    s = token_link(s);
-                                }
-                                set_token_link(p, t);
-                                set_token_link(target, h);
-                            } else {
-                                tex_aux_append_copied_toks_list(nt, cmd, global, s, t, NULL);
-                            }
-                            break;
-                    }
+                    // set_toks_register(nt, source, global);
+                    tex_add_token_reference(source);
+                    eq_value(nt) = source;
                 }
-            } else if (expand) {
-                halfword defref = lmt_input_state.def_ref;
-                tex_back_input(right_brace_token + '}');
-                tex_begin_token_list(source, token_text);
-                source = tex_scan_toks_expand(1, NULL, 0, 1);
-                eq_value(nt) = source;
-                lmt_input_state.def_ref = defref;
-            } else {
-                // set_toks_register(nt, source, global);
-                tex_add_token_reference(source);
-                eq_value(nt) = source;
             }
         }
     }
@@ -3846,113 +3853,132 @@ halfword tex_get_tex_posit_register     (int j, int internal) { return internal 
 halfword tex_get_tex_attribute_register (int j, int internal) { return internal ? attribute_parameter(j) : attribute_register(j) ; }
 halfword tex_get_tex_box_register       (int j, int internal) { return internal ? box_parameter(j) : box_register(j) ; }
 
-void tex_set_tex_dimension_register(int j, halfword v, int flags, int internal)
-{
  // if (global_defs_par) {
  //     flags = add_global_flag(flags);
  // }
-    if (internal) {
-        tex_assign_internal_dimension_value(flags, internal_dimension_location(j), v);
+
+int tex_set_tex_dimension_register(int j, halfword v, int flags, int internal)
+{
+    halfword p = internal ? internal_dimension_location(j) : register_dimension_location(j);
+    if (tex_mutation_permitted(p)) {
+        if (internal) {
+            tex_assign_internal_dimension_value(flags, p, v);
+        } else {
+            tex_word_define(flags, p, v);
+        }
+        return 1;
     } else {
-        tex_word_define(flags, register_dimension_location(j), v);
+        return 0;
     }
 }
 
-void tex_set_tex_skip_register(int j, halfword v, int flags, int internal)
+int tex_set_tex_skip_register(int j, halfword v, int flags, int internal)
 {
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_assign_internal_skip_value(flags, internal_glue_location(j), v);
+    halfword p = internal ? internal_glue_location(j) : register_glue_location(j);
+    if (tex_mutation_permitted(p)) {
+        if (internal) {
+            tex_assign_internal_skip_value(flags, p, v);
+        } else {
+            tex_word_define(flags, p, v);
+        }
+        return 1;
     } else {
-        tex_word_define(flags, register_glue_location(j), v);
+        return 0;
     }
 }
 
-void tex_set_tex_muskip_register(int j, halfword v, int flags, int internal)
+int tex_set_tex_muskip_register(int j, halfword v, int flags, int internal)
 {
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    tex_word_define(flags, internal ? internal_muglue_location(j) : register_muglue_location(j), v);
-}
-
-void tex_set_tex_count_register(int j, halfword v, int flags, int internal)
-{
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_assign_internal_integer_value(flags, internal_integer_location(j), v);
+    halfword p = internal ? internal_muglue_location(j) : register_muglue_location(j);
+    if (tex_mutation_permitted(p)) {
+        tex_word_define(flags, p, v);
+        return 1;
     } else {
-        tex_word_define(flags, register_integer_location(j), v);
-    }
-}
-void tex_set_tex_posit_register(int j, halfword v, int flags, int internal)
-{
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_assign_internal_posit_value(flags, internal_posit_location(j), v);
-    } else {
-        tex_word_define(flags, register_posit_location(j), v);
+        return 0;
     }
 }
 
-
-void tex_set_tex_attribute_register(int j, halfword v, int flags, int internal)
+int tex_set_tex_count_register(int j, halfword v, int flags, int internal)
 {
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (j > lmt_node_memory_state.max_used_attribute) {
-        lmt_node_memory_state.max_used_attribute = j;
-    }
-    tex_change_attribute_register(flags, register_attribute_location(j), v);
-    tex_word_define(flags, internal ? internal_attribute_location(j) : register_attribute_location(j), v);
-}
-
-void tex_set_tex_box_register(int j, halfword v, int flags, int internal)
-{
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_define(flags, internal_box_location(j), internal_box_reference_cmd, v);
+    halfword p = internal ? internal_integer_location(j) : register_integer_location(j);
+    if (tex_mutation_permitted(p)) {
+        if (internal) {
+            tex_assign_internal_integer_value(flags, p, v);
+        } else {
+            tex_word_define(flags, p, v);
+        }
+        return 1;
     } else {
-        tex_define(flags, register_box_location(j), register_box_reference_cmd, v);
+        return 0;
     }
 }
 
-void tex_set_tex_toks_register(int j, lstring s, int flags, int internal)
+int tex_set_tex_posit_register(int j, halfword v, int flags, int internal)
 {
-    halfword ref = get_reference_token();
-    halfword head = tex_str_toks(s, NULL);
-    set_token_link(ref, head);
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_define(flags, internal_toks_location(j), internal_toks_reference_cmd, ref);
+    halfword p = internal ? internal_posit_location(j) : register_posit_location(j);
+    if (tex_mutation_permitted(p)) {
+        if (internal) {
+            tex_assign_internal_posit_value(flags, p, v);
+        } else {
+            tex_word_define(flags, p, v);
+        }
+        return 1;
     } else {
-        tex_define(flags, register_toks_location(j), register_toks_reference_cmd, ref);
+        return 0;
     }
 }
 
-void tex_scan_tex_toks_register(int j, int c, lstring s, int flags, int internal)
+int tex_set_tex_attribute_register(int j, halfword v, int flags, int internal)
 {
-    halfword ref = get_reference_token();
-    halfword head = tex_str_scan_toks(c, s);
-    set_token_link(ref, head);
- // if (global_defs_par) {
- //     flags = add_global_flag(flags);
- // }
-    if (internal) {
-        tex_define(flags, internal_toks_location(j), internal_toks_reference_cmd, ref);
+    halfword p = internal ? internal_attribute_location(j) : register_attribute_location(j);
+    if (tex_mutation_permitted(p)) {
+        if (j > lmt_node_memory_state.max_used_attribute) {
+            lmt_node_memory_state.max_used_attribute = j;
+        }
+        tex_change_attribute_register(flags, p, v);
+        tex_word_define(flags, p, v);
+        return 1;
     } else {
-        tex_define(flags, register_toks_location(j), register_toks_reference_cmd, ref);
+        return 0;
+    }
+}
+
+int tex_set_tex_box_register(int j, halfword v, int flags, int internal)
+{
+    halfword p = internal ? internal_box_location(j) : register_box_location(j);
+    if (tex_mutation_permitted(p)) {
+        tex_define(flags, p, internal ? internal_box_reference_cmd : register_box_reference_cmd, v);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int tex_set_tex_toks_register(int j, lstring s, int flags, int internal)
+{
+    halfword p = internal ? internal_toks_location(j) : register_toks_location(j);
+    if (tex_mutation_permitted(p)) {
+        halfword ref = get_reference_token();
+        halfword head = tex_str_toks(s, NULL);
+        set_token_link(ref, head);
+        tex_define(flags, p, internal ? internal_toks_reference_cmd : register_toks_reference_cmd, ref);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+int tex_scan_tex_toks_register(int j, int c, lstring s, int flags, int internal)
+{
+    halfword p = internal ? internal_toks_location(j) : register_toks_location(j);
+    if (tex_mutation_permitted(p)) {
+        halfword ref = get_reference_token();
+        halfword head = tex_str_scan_toks(c, s);
+        set_token_link(ref, head);
+        tex_define(flags, p, internal ? internal_toks_reference_cmd : register_toks_reference_cmd, ref);
+        return 1;
+    } else {
+        return 0;
     }
 }
 

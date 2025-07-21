@@ -47,7 +47,7 @@
 
 % TODO: make them mutable, also at the lua end
 
-\immutable\def\??mode{mode>} % special namespace, also used at lua end
+\permanent\cdef\??mode{mode>} % special namespace, also used at lua end
 
 \permanent\protected\def\newmode              #1{\ifcsname                            \??mode#1\endcsname\else\resetmode{#1}\fi}
 \permanent\protected\def\setmode              #1{\expandafter       \integerdef\csname\??mode#1\endcsname\plusone}

@@ -276,7 +276,7 @@
    \openlineheight\d_strc_rendering_local_lineheight
    \d_strc_rendering_hang_height\htdp\b_strc_rendering_head
    \getnoflines\d_strc_rendering_hang_height
-   \normalexpanded{\endgroup\n_strc_rendering_hang_lines\tointeger{\noflines-\plusone}\relax}% brrr
+   \expanded{\endgroup\n_strc_rendering_hang_lines\tointeger{\noflines-\plusone}\relax}% brrr
    \setbox\b_strc_rendering_head\hpack{\lower\n_strc_rendering_hang_lines\d_strc_rendering_hang_height\box\b_strc_rendering_head}%
    \d_strc_rendering_hang_height{\htdp\b_strc_rendering_head-\d_strc_rendering_local_height+\strutdp}%
    \ht\b_strc_rendering_head\strutht

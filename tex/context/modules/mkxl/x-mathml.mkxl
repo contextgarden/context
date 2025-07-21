@@ -1711,11 +1711,11 @@
         \xmlflushcontext{#1}
     } {
         \xmldoifelse {#1} {.[oneof(@encoding,'calcmath','cm')]} {
-            \normalexpanded{\calcmath{\xmlflush{#1}}}
+            \expanded{\calcmath{\xmlflush{#1}}}
         } {
             \xmldoifelse {#1} {.[oneof(@encoding,'asciimath','am')]} {
                 \ifdefined\asciimath
-                    \normalexpanded{\asciimath{\xmlflushpure{#1}}}
+                    \expanded{\asciimath{\xmlflushpure{#1}}}
                 \else
                     \hbox{\tt no am loaded}
                 \fi
@@ -2027,16 +2027,16 @@
                             [frame=off,strut=no,background={\mmlmenclosenotation}] % offset is kind of undefined
                             {
                              \startpickupmath
-                                \normalexpanded{\doifelseinset {mml:enclose:longdiv} {\mmlmenclosenotation}} {
+                                \expanded{\doifelseinset {mml:enclose:longdiv} {\mmlmenclosenotation}} {
                                     \overline{\left)\strut\xmlflush{#1}\right.}
                                 } {
-                                    \normalexpanded{\doifelseinset {mml:enclose:actuarial} {\mmlmenclosenotation}} {
+                                    \expanded{\doifelseinset {mml:enclose:actuarial} {\mmlmenclosenotation}} {
                                         \overline{\left.\strut\xmlflush{#1}\right\vert}
                                     } {
-                                        \normalexpanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
+                                        \expanded{\doifelseinset {mml:enclose:radical} {\mmlmenclosenotation}} {
                                             \sqrt{\xmlflush{#1}}
                                         } {
-                                            \normalexpanded{\doifelseinset {mml:enclose:rule} {\mmlmenclosenotation}} {
+                                            \expanded{\doifelseinset {mml:enclose:rule} {\mmlmenclosenotation}} {
                                                 \overline{\strut\xmlflush{#1}}
                                             } {
                                                 \xmlflush{#1}

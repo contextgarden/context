@@ -172,7 +172,7 @@ do
     callbacks.register {
         name    = "append_migrate",
         action  = append_migrate_callback,
-        comment = "things done with migrated meterial",
+        comment = "things done with migrated material",
         frozen  = true,
     }
 

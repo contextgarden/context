@@ -67,7 +67,7 @@
 
 
 \permanent\tolerant\protected\def\definelabelclass[#1]#*[#2]%
-  {\normalexpanded
+  {\expanded
      {\lang_labels_define_class_indeed
         {#1}%
         {\ifchknumber#2\or#2\else\zerocount\fi}% not \lastchknumber as we need expansion
@@ -366,8 +366,8 @@
   {\clf_concatcommalist
      text       {#1}%
      separators {#2}%
-     separator  {\detokenize\expandafter{\normalexpanded{\labeltext{and-1}}}}%
-     last       {\detokenize\expandafter{\normalexpanded{\labeltext{and-2}}}}%
+     separator  {\detokenize\expandafter{\expanded{\labeltext{and-1}}}}%
+     last       {\detokenize\expandafter{\expanded{\labeltext{and-2}}}}%
    \relax}
 
 \setuplabeltext [\s!nl] [and-1={{, }},and-2={{ en }}]   % 1, 2 en 3

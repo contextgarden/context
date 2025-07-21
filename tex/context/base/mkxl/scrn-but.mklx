@@ -363,7 +363,7 @@
      \expandafter\newtoks       \csname\??menutoks #category\endcsname
      \expandafter\newconditional\csname\??menustate#category\endcsname
    \fi
- % \normalexpanded{\csname\??menutoks#category\endcsname{\the\csname\??menutoks#category\endcsname\scrn_menu_action{#tag}}}}
+ % \expanded{\csname\??menutoks#category\endcsname{\the\csname\??menutoks#category\endcsname\scrn_menu_action{#tag}}}}
    \toksapp\csname\??menutoks#category\endcsname{\scrn_menu_action{#tag}}} % needs testing
 
 \def\scrn_menu_actions#category%
@@ -373,7 +373,7 @@
 
 \aliased\letcsname\e!stop\v!interactionmenu\endcsname\relax
 
-\normalexpanded{\permanent\expandafter\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\csname\e!stop\v!interactionmenu\endcsname}%
+\expanded{\permanent\expandafter\def\expandafter\noexpand\csname\e!start\v!interactionmenu\endcsname[#tag]#content\csname\e!stop\v!interactionmenu\endcsname}%
   {\cdef\currentinteractionmenu{#tag}%
   %\ifcsname\??menustate\interactionmenuparameter\c!category\endcsname\else
   %  \expandafter\newconditional\csname\??menustate\interactionmenuparameter\c!category\endcsname

@@ -100,151 +100,155 @@ tagpatterns.splitter = p_splitter
 -- Some NonStruct might become Part, Sect or Sub in which case titles and tage become Lbl
 -- but only when validators don't bark on it and the main structure is kept.
 
+-- Well, so now NonStruct is also no longer an option and we needed to adapt. What a waste
+-- of time. For now we go Span and Div but maybe all will become Div or Part or ... whatever
+-- passes the test.
+
 local properties     = allocate { -- todo: more "record = true" to improve formatting
 
-    document           = { namespace = "context", nature = "display", pdf = "Document"  },
+    document           = { namespace = "context", nature = "display", pdf = "Document"         },
     documentpart       = { namespace = "context", nature = "display", pdf = "DocumentFragment" },
 
-    division           = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    paragraph          = { namespace = "context", nature = "mixed",   pdf = "P"         },
-    subparagraph       = { namespace = "context", nature = "mixed",   pdf = "P"         },
-    p                  = { namespace = "context", nature = "mixed",   pdf = "P"         },
-    highlight          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    ornament           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    textdisplay        = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    placeholder        = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    ["break"]          = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    division           = { namespace = "context", nature = "display", pdf = "Part" },
+    paragraph          = { namespace = "context", nature = "mixed",   pdf = "P"    },
+    subparagraph       = { namespace = "context", nature = "mixed",   pdf = "P"    },
+    p                  = { namespace = "context", nature = "mixed",   pdf = "P"    },
+    highlight          = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    ornament           = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    textdisplay        = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
+    placeholder        = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    ["break"]          = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
 
-    construct          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    constructleft      = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    constructright     = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    constructcontent   = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    construct          = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    constructleft      = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    constructright     = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
+    constructcontent   = { namespace = "context", nature = "inline",  pdf = "Span" }, -- was NonStruct
 
-    sectionblock       = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    sectionblock       = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
 
-    section            = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    sectioncaption     = { namespace = "context", nature = "display", pdf = "NonStruct" , record = true },
-    sectiontitle       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    sectionnumber      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    sectioncontent     = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    section            = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
+    sectioncaption     = { namespace = "context", nature = "display", pdf = "Div", record = true },
+    sectiontitle       = { namespace = "context", nature = "mixed",   pdf = "Div"  }, -- was NonStruct
+    sectionnumber      = { namespace = "context", nature = "mixed",   pdf = "Div"  }, -- was NonStruct
+    sectioncontent     = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
 
-    itemgroup          = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    item               = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    itemtag            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    itemcontent        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    itemhead           = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    itembody           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    itemgroup          = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
+    item               = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
+    itemtag            = { namespace = "context", nature = "mixed",   pdf = "Div"  }, -- was NonStruct
+    itemcontent        = { namespace = "context", nature = "mixed",   pdf = "Div"  }, -- was NonStruct
+    itemhead           = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
+    itembody           = { namespace = "context", nature = "display", pdf = "Div"  }, -- was NonStruct
 
-    items              = { namespace = "context", nature = "display", pdf = "Table"     },
-    itemsymbols        = { namespace = "context", nature = "mixed",   pdf = "TR"        },
-    itemsymbol         = { namespace = "context", nature = "inline",  pdf = "TD"        },
-    itemtexts          = { namespace = "context", nature = "mixed",   pdf = "TR"        },
-    itemtext           = { namespace = "context", nature = "inline",  pdf = "TD"        },
+    items              = { namespace = "context", nature = "display", pdf = "Table" },
+    itemsymbols        = { namespace = "context", nature = "mixed",   pdf = "TR"    },
+    itemsymbol         = { namespace = "context", nature = "inline",  pdf = "TD"    },
+    itemtexts          = { namespace = "context", nature = "mixed",   pdf = "TR"    },
+    itemtext           = { namespace = "context", nature = "inline",  pdf = "TD"    },
 
-    description        = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    descriptiontag     = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    descriptioncontent = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    descriptionsymbol  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    description        = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    descriptiontag     = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    descriptioncontent = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    descriptionsymbol  = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    verbatimblock      = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    verbatimlines      = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    verbatimline       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    verbatim           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    verbatimblock      = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    verbatimlines      = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    verbatimline       = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    verbatim           = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    lines              = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    line               = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    linenumber         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    lines              = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    line               = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    linenumber         = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    synonym            = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    sorting            = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    synonym            = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    sorting            = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    register           = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    registerlocation   = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    registersection    = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    registertag        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    registerentries    = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    registerentry      = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    registercontent    = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    registersee        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    registerpages      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    registerpage       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    registerseparator  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    registerpagerange  = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    register           = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    registerlocation   = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    registersection    = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    registertag        = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    registerentries    = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    registerentry      = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    registercontent    = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    registersee        = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    registerpages      = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    registerpage       = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    registerseparator  = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    registerpagerange  = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
 
-    table              = { namespace = "context", nature = "display", pdf = "Table",    },
-    tablerow           = { namespace = "context", nature = "display", pdf = "TR",       },
-    tablecell          = { namespace = "context", nature = "mixed",   pdf = "TD",       },
-    tableheadcell      = { namespace = "context", nature = "mixed",   pdf = "TH",       },
-    tablehead          = { namespace = "context", nature = "display", pdf = "THEAD",    },
-    tablebody          = { namespace = "context", nature = "display", pdf = "TBODY",    },
-    tablefoot          = { namespace = "context", nature = "display", pdf = "TFOOT",    },
+    table              = { namespace = "context", nature = "display", pdf = "Table" },
+    tablerow           = { namespace = "context", nature = "display", pdf = "TR"    },
+    tablecell          = { namespace = "context", nature = "mixed",   pdf = "TD"    },
+    tableheadcell      = { namespace = "context", nature = "mixed",   pdf = "TH"    },
+    tablehead          = { namespace = "context", nature = "display", pdf = "THEAD" },
+    tablebody          = { namespace = "context", nature = "display", pdf = "TBODY" },
+    tablefoot          = { namespace = "context", nature = "display", pdf = "TFOOT" },
 
-    tabulate           = { namespace = "context", nature = "display", pdf = "Table",    },
-    tabulaterow        = { namespace = "context", nature = "display", pdf = "TR",       },
-    tabulatecell       = { namespace = "context", nature = "mixed",   pdf = "TD",       },
-    tabulateheadcell   = { namespace = "context", nature = "mixed",   pdf = "TH",       },
-    tabulatehead       = { namespace = "context", nature = "display", pdf = "THEAD",    },
-    tabulatebody       = { namespace = "context", nature = "display", pdf = "TBODY",    },
-    tabulatefoot       = { namespace = "context", nature = "display", pdf = "TFOOT",    },
+    tabulate           = { namespace = "context", nature = "display", pdf = "Table" },
+    tabulaterow        = { namespace = "context", nature = "display", pdf = "TR"    },
+    tabulatecell       = { namespace = "context", nature = "mixed",   pdf = "TD"    },
+    tabulateheadcell   = { namespace = "context", nature = "mixed",   pdf = "TH"    },
+    tabulatehead       = { namespace = "context", nature = "display", pdf = "THEAD" },
+    tabulatebody       = { namespace = "context", nature = "display", pdf = "TBODY" },
+    tabulatefoot       = { namespace = "context", nature = "display", pdf = "TFOOT" },
 
-    list               = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    listitem           = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    listtag            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    listcontent        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    listdata           = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    listpage           = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    listtext           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    list               = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    listitem           = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    listtag            = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    listcontent        = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    listdata           = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    listpage           = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    listtext           = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    delimitedblock     = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    delimited          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    delimitedcontent   = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    delimitedsymbol    = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    delimitedblock     = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    delimited          = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    delimitedcontent   = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    delimitedsymbol    = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    subsentence        = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    subsentencecontent = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    subsentencesymbol  = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    subsentence        = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    subsentencecontent = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    subsentencesymbol  = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
 
-    label              = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    number             = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    label              = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    number             = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
 
-    float              = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    floatcaption       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    floatlabel         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    floatnumber        = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    floattext          = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    floatcontent       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    float              = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    floatcaption       = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    floatlabel         = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    floatnumber        = { namespace = "context", nature = "inline",  pdf = "Span"  }, -- was NonStruct
+    floattext          = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    floatcontent       = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
 
-    image              = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    mpgraphic          = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    image              = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    mpgraphic          = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
 
-    formulaset         = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    formula            = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    formulacaption     = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    formulalabel       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    formulanumber      = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    formulacontent     = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    subformula         = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    formulaset         = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    formula            = { namespace = "context", nature = "display", pdf = "Div"   }, -- was NonStruct
+    formulacaption     = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    formulalabel       = { namespace = "context", nature = "mixed",   pdf = "Div"   }, -- was NonStruct
+    formulanumber      = { namespace = "context", nature = "mixed",   pdf = "Div"   },
+    formulacontent     = { namespace = "context", nature = "display", pdf = "Div"   },
+    subformula         = { namespace = "context", nature = "display", pdf = "Div"   },
 
-    link               = { namespace = "context", nature = "inline",  pdf = "Link"      },
-    reference          = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    link               = { namespace = "context", nature = "inline",  pdf = "Link"  },
+    reference          = { namespace = "context", nature = "inline",  pdf = "Span"  },
 
-    navigation         = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    navigationbutton   = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    navigationmenu     = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    navigationmenuitem = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    navigationaction   = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    navigationpage     = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    navigation         = { namespace = "context", nature = "mixed",   pdf = "Div"   },
+    navigationbutton   = { namespace = "context", nature = "mixed",   pdf = "Div"   },
+    navigationmenu     = { namespace = "context", nature = "display", pdf = "Div"   },
+    navigationmenuitem = { namespace = "context", nature = "display", pdf = "Div"   },
+    navigationaction   = { namespace = "context", nature = "display", pdf = "Div"   },
+    navigationpage     = { namespace = "context", nature = "inline",  pdf = "Span"  },
 
-    margintextblock    = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    margintext         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    marginanchor       = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    margintextblock    = { namespace = "context", nature = "inline",  pdf = "Span"  },
+    margintext         = { namespace = "context", nature = "inline",  pdf = "Span"  },
+    marginanchor       = { namespace = "context", nature = "inline",  pdf = "Span"  },
 
-    linetext           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    linetext           = { namespace = "context", nature = "inline",  pdf = "Span"  },
 
- -- math               = { namespace = "mathml",  nature = "inline",  pdf = "math"      },
-    math               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    inlinemath         = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    displaymath        = { namespace = "context", nature = "display", pdf = "NonStruct" },
+ -- math               = { namespace = "mathml",  nature = "inline",  pdf = "math"  },
+    math               = { namespace = "context", nature = "inline",  pdf = "Span"  },
+    inlinemath         = { namespace = "context", nature = "inline",  pdf = "Span"  },
+    displaymath        = { namespace = "context", nature = "display", pdf = "Div"   },
 
     -- these are wrapped in math and only used in detailed math mode
 
@@ -269,86 +273,88 @@ local properties     = allocate { -- todo: more "record = true" to improve forma
  -- mmultiscripts      = { namespace = "mathml",  nature = "display", pua = "mathml", pdf = "mmultiscripts" },
  -- mprescripts        = { namespace = "mathml",  nature = "mixed",   pua = "mathml", pdf = "mprescripts"   },
 
-    mn                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    mi                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    mo                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    ms                 = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    mrow               = { namespace = "context",  nature = "display", pdf = "Span"      },
-    msubsup            = { namespace = "context",  nature = "display", pdf = "Span"      },
-    msub               = { namespace = "context",  nature = "display", pdf = "Span"      },
-    msup               = { namespace = "context",  nature = "display", pdf = "Span"      },
-    merror             = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    munderover         = { namespace = "context",  nature = "display", pdf = "Span"      },
-    munder             = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mover              = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mtext              = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
-    mfrac              = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mroot              = { namespace = "context",  nature = "display", pdf = "Span"      },
-    msqrt              = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mfenced            = { namespace = "context",  nature = "display", pdf = "Span"      },
-    maction            = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mmultiscripts      = { namespace = "context",  nature = "display", pdf = "Span"      },
-    mprescripts        = { namespace = "context",  nature = "mixed",   pdf = "Span"      },
+    mn                 = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mi                 = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mo                 = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    ms                 = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mrow               = { namespace = "context", nature = "display", pdf = "Span" },
+    msubsup            = { namespace = "context", nature = "display", pdf = "Span" },
+    msub               = { namespace = "context", nature = "display", pdf = "Span" },
+    msup               = { namespace = "context", nature = "display", pdf = "Span" },
+    merror             = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    munderover         = { namespace = "context", nature = "display", pdf = "Span" },
+    munder             = { namespace = "context", nature = "display", pdf = "Span" },
+    mover              = { namespace = "context", nature = "display", pdf = "Span" },
+    mtext              = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mfrac              = { namespace = "context", nature = "display", pdf = "Span" },
+    mroot              = { namespace = "context", nature = "display", pdf = "Span" },
+    msqrt              = { namespace = "context", nature = "display", pdf = "Span" },
+    mfenced            = { namespace = "context", nature = "display", pdf = "Span" },
+    maction            = { namespace = "context", nature = "display", pdf = "Span" },
+    mmultiscripts      = { namespace = "context", nature = "display", pdf = "Span" },
+    mprescripts        = { namespace = "context", nature = "mixed",   pdf = "Span" },
 
     -- these are internal ones
 
-    mstack             = { namespace = "context", nature = "display", pdf = "Span"      },
-    mstacker           = { namespace = "context", nature = "display", pdf = "Span"      },
-    mstackertop        = { namespace = "context", nature = "display", pdf = "Span"      },
-    mstackerbot        = { namespace = "context", nature = "display", pdf = "Span"      },
-    mstackermid        = { namespace = "context", nature = "display", pdf = "Span"      },
-    mextensible        = { namespace = "context", nature = "display", pdf = "Span"      },
-    mdelimited         = { namespace = "context", nature = "display", pdf = "Span"      },
-    mdelimitedstack    = { namespace = "context", nature = "display", pdf = "Span"      },
-    mfunction          = { namespace = "context", nature = "mixed",   pdf = "Span"      },
-    mfunctionstack     = { namespace = "context", nature = "display", pdf = "Span"      },
-    mfraction          = { namespace = "context", nature = "display", pdf = "Span"      },
-    mfractionstack     = { namespace = "context", nature = "display", pdf = "Span"      },
-    munit              = { namespace = "context", nature = "mixed",   pdf = "Span"      },
-    mdigits            = { namespace = "context", nature = "mixed",   pdf = "Span"      },
-    mc                 = { namespace = "context", nature = "mixed",   pdf = "Span"      },
+    mstack             = { namespace = "context", nature = "display", pdf = "Span" },
+    mstacker           = { namespace = "context", nature = "display", pdf = "Span" },
+    mstackertop        = { namespace = "context", nature = "display", pdf = "Span" },
+    mstackerbot        = { namespace = "context", nature = "display", pdf = "Span" },
+    mstackermid        = { namespace = "context", nature = "display", pdf = "Span" },
+    mextensible        = { namespace = "context", nature = "display", pdf = "Span" },
+    mdelimited         = { namespace = "context", nature = "display", pdf = "Span" },
+    mdelimitedstack    = { namespace = "context", nature = "display", pdf = "Span" },
+    mfunction          = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mfunctionstack     = { namespace = "context", nature = "display", pdf = "Span" },
+    mfraction          = { namespace = "context", nature = "display", pdf = "Span" },
+    mfractionstack     = { namespace = "context", nature = "display", pdf = "Span" },
+    munit              = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mdigits            = { namespace = "context", nature = "mixed",   pdf = "Span" },
+    mc                 = { namespace = "context", nature = "mixed",   pdf = "Span" },
 
     -- these are also wrapped
 
-    mtable             = { namespace = "mathml",  nature = "display", pdf = "mtable",   },
-    mtr                = { namespace = "mathml",  nature = "display", pdf = "mtr",      },
-    mtd                = { namespace = "mathml",  nature = "display", pdf = "mtd",      },
+    mtable             = { namespace = "mathml",  nature = "display", pdf = "mtable" },
+    mtr                = { namespace = "mathml",  nature = "display", pdf = "mtr"    },
+    mtd                = { namespace = "mathml",  nature = "display", pdf = "mtd"    },
 
-    ignore             = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    private            = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    metadata           = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    metavariable       = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    -- some more
 
-    mid                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    sub                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    sup                = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    subsup             = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    ignore             = { namespace = "context", nature = "mixed",   pdf = "Div"  },
+    private            = { namespace = "context", nature = "mixed",   pdf = "Div"  },
+    metadata           = { namespace = "context", nature = "display", pdf = "Div"  },
+    metavariable       = { namespace = "context", nature = "mixed",   pdf = "Div"  },
 
-    combination        = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    combinationpair    = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    combinationcontent = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    combinationcaption = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
+    mid                = { namespace = "context", nature = "inline",  pdf = "Span" },
+    sub                = { namespace = "context", nature = "inline",  pdf = "Span" },
+    sup                = { namespace = "context", nature = "inline",  pdf = "Span" },
+    subsup             = { namespace = "context", nature = "inline",  pdf = "Span" },
 
-    publications       = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    publication        = { namespace = "context", nature = "mixed",   pdf = "NonStruct" },
-    pubfld             = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    combination        = { namespace = "context", nature = "display", pdf = "Div"  },
+    combinationpair    = { namespace = "context", nature = "display", pdf = "Div"  },
+    combinationcontent = { namespace = "context", nature = "mixed",   pdf = "Div"  },
+    combinationcaption = { namespace = "context", nature = "mixed",   pdf = "Div"  },
 
-    citation           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    cite               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    publications       = { namespace = "context", nature = "display", pdf = "Div"  },
+    publication        = { namespace = "context", nature = "mixed",   pdf = "Div"  },
+    pubfld             = { namespace = "context", nature = "inline",  pdf = "Span" },
 
-    narrower           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    citation           = { namespace = "context", nature = "inline",  pdf = "Span" },
+    cite               = { namespace = "context", nature = "inline",  pdf = "Span" },
 
-    block              = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    narrower           = { namespace = "context", nature = "display", pdf = "Div"  },
 
-    userdata           = { namespace = "context", nature = "display", pdf = "NonStruct" },
+    block              = { namespace = "context", nature = "display", pdf = "Div"  },
 
-    quantity           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    unit               = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    userdata           = { namespace = "context", nature = "display", pdf = "Div"  },
 
-    verse              = { namespace = "context", nature = "display", pdf = "NonStruct" },
-    versetag           = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    verseseparator     = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
-    versecontent       = { namespace = "context", nature = "inline",  pdf = "NonStruct" },
+    quantity           = { namespace = "context", nature = "inline",  pdf = "Span" },
+    unit               = { namespace = "context", nature = "inline",  pdf = "Span" },
+
+    verse              = { namespace = "context", nature = "display", pdf = "Div"  },
+    versetag           = { namespace = "context", nature = "inline",  pdf = "Span" },
+    verseseparator     = { namespace = "context", nature = "inline",  pdf = "Span" },
+    versecontent       = { namespace = "context", nature = "inline",  pdf = "Span" },
 
 }
 

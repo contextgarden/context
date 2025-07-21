@@ -67,11 +67,11 @@
      %
      \aliased\gletcsname\s!stop#1\s!code\endcsname\relax
      %
-     \normalexpanded{\xdefcsname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
+     \expanded{\xdefcsname\??luacode#1\endcsname##1\csname\s!stop#1\s!code\endcsname}%
        {\noexpand\expandafter\endgroup
           \noexpand\expandafter
           \expandafter\noexpand\csname clf_\m_syst_name\endcsname
-          \noexpand\expandafter{\noexpand\normalexpanded{##1}}}%
+          \noexpand\expandafter{\noexpand\expanded{##1}}}%
      \frozen\instance\gletcsname#1\s!code\expandafter\endcsname\csname clf_\m_syst_name\endcsname
      \egroup
    \fi}

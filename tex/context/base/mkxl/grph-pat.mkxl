@@ -41,7 +41,7 @@
    \fi
    \dowithnextboxcs\syst_boxes_registerpattern_indeed\hbox}
 
-\immutable\edef\v!auto_m{-\v!auto}
+\permanent\cdef\v!auto_m{-\v!auto}
 
 \def\syst_boxes_registerpattern_indeed
   {%\finalizeobjectbox\nextbox

@@ -174,7 +174,7 @@
      \letfieldbodyparameter\s!parent\??fieldcategory
     %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\empty}% to WS: not hash !
    \else
-     \normalexpanded{\setfieldbodyparameter{\s!parent}{\??fieldcategory\currentfieldbodycategory}}%
+     \expanded{\setfieldbodyparameter{\s!parent}{\??fieldcategory\currentfieldbodycategory}}%
     %\setevalue{\currentfieldbodyhash\s!parent}{\namedfieldcategoryhash\currentfieldbodycategory}% to WS: not hash !
    \fi}
 
@@ -361,7 +361,7 @@
   {\iflocation
      \begingroup
        \setbox\b_scrn_field_fit_symbol\hbox\bgroup
-         \normalexpanded{\symbol[\clf_getdefaultfieldvalue{#tag}]}%
+         \expanded{\symbol[\clf_getdefaultfieldvalue{#tag}]}%
        \egroup
        \fitfieldframed
          {\fieldbody[#tag]
@@ -604,7 +604,7 @@
    \fieldframeshown\conditionalfalse
    \fieldishorizontal\conditionalfalse
    \fieldisvertical\conditionalfalse
-   \normalexpanded{\processallactionsinset[\fieldtotalframedparameter\c!alternative]}
+   \expanded{\processallactionsinset[\fieldtotalframedparameter\c!alternative]}
      [      \v!reset=>\fieldlabelshown\conditionalfalse
                       \fieldframeshown\conditionalfalse
                       \fieldishorizontal\conditionalfalse
@@ -753,7 +753,7 @@
      % already done
    \else
      %xdefcsname\??fieldstack#tag\endcsname{\scrn_fieldstack_construct[#tag][#symbols][#settings]}%
-     \xdefcsname\??fieldstack#tag\endcsname{\scrn_fieldstack_construct[#tag][#symbols][\normalunexpanded{#settings}]}%
+     \xdefcsname\??fieldstack#tag\endcsname{\scrn_fieldstack_construct[#tag][#symbols][\notexpanded{#settings}]}%
    \fi}
 
 \permanent\tolerant\protected\def\fieldstack[#tag]#spacer[#symbols]#spacer[#S#settings]%

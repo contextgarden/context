@@ -20,7 +20,7 @@
 \unprotect
 
 %D This file is mostly the same as the \MKII\ variant but we keep extending
-%D \MKIV, so it was bout time to have a dedicated variant.
+%D \MKIV, so it was about time to have a dedicated variant.
 %D
 %D The constants are grouped in such a way that there is a minimal change of
 %D conflicts.
@@ -356,6 +356,8 @@
 \definesystemconstant {plural}
 \definesystemconstant {plus}
 \definesystemconstant {posit}
+\definesystemconstant {private}
+\definesystemconstant {public}
 %definesystemconstant {pt}
 \definesystemconstant {realpage}
 \definesystemconstant {reflected}
@@ -482,6 +484,15 @@
 \definesystemconstant {imaginaryj}
 \definesystemconstant {constantpi}
 
+% in spac-ali ... not yet interfaced .. maybe never
+
+% definesystemconstant {noorphans}
+% definesystemconstant {keeporphans}
+% definesystemconstant {notwins}
+% definesystemconstant {keeptwins}
+% definesystemconstant {notoddlers}
+% definesystemconstant {keeptoddlers}
+
 %D As the name of their define command states, the next set of constants is used in
 %D the message macro's.
 
@@ -514,36 +525,36 @@
 \definemessageconstant {verbatims}
 \definemessageconstant {versions}
 
+\definemessageconstant {TABLE}
+
 %D When we use numbers and dimensions the same applies as with the keywords like
 %D \type {width} and \type {plus} mentioned earlier.
 
-\immutable\def\!!ten                   {10}
-\immutable\def\!!twelve                {12}
-\immutable\def\!!hundred              {100}
-\immutable\def\!!thousand            {1000}
-\immutable\def\!!tenthousand        {10000}
-\immutable\def\!!maxcard            {65536}
-\immutable\def\!!medcard            {32768}
+\permanent\cdef\!!ten                   {10}
+\permanent\cdef\!!twelve                {12}
+\permanent\cdef\!!hundred              {100}
+\permanent\cdef\!!thousand            {1000}
+\permanent\cdef\!!tenthousand        {10000}
+\permanent\cdef\!!maxcard            {65536}
+\permanent\cdef\!!medcard            {32768}
 
-\immutable\def\!!zeropoint            {0pt}
-\immutable\def\!!onepoint             {1pt}
-\immutable\def\!!twopoint             {2pt}
-\immutable\def\!!threepoint           {3pt}
-\immutable\def\!!fourpoint            {4pt}
-\immutable\def\!!fivepoint            {5pt}
-\immutable\def\!!sixpoint             {6pt}
-\immutable\def\!!sevenpoint           {7pt}
-\immutable\def\!!eightpoint           {8pt}
-\immutable\def\!!ninepoint            {9pt}
-\immutable\def\!!tenpoint            {10pt}
-\immutable\def\!!elevenpoint         {11pt}
-\immutable\def\!!twelvepoint         {12pt}
-\immutable\def\!!fourteenpointfour {14.4pt}
+\permanent\cdef\!!zeropoint            {0pt}
+\permanent\cdef\!!onepoint             {1pt}
+\permanent\cdef\!!twopoint             {2pt}
+\permanent\cdef\!!threepoint           {3pt}
+\permanent\cdef\!!fourpoint            {4pt}
+\permanent\cdef\!!fivepoint            {5pt}
+\permanent\cdef\!!sixpoint             {6pt}
+\permanent\cdef\!!sevenpoint           {7pt}
+\permanent\cdef\!!eightpoint           {8pt}
+\permanent\cdef\!!ninepoint            {9pt}
+\permanent\cdef\!!tenpoint            {10pt}
+\permanent\cdef\!!elevenpoint         {11pt}
+\permanent\cdef\!!twelvepoint         {12pt}
+\permanent\cdef\!!fourteenpointfour {14.4pt}
 
-\immutable\def\!!plustoken              {+}   % todo: \??plustoken
-\immutable\def\!!minustoken             {-}   % todo: \??minustoken
-
-\immutable\def\__unknown__    {\string\\//} % unlikely value
+\permanent\cdef\!!plustoken  {+} % todo: \??plustoken
+\permanent\cdef\!!minustoken {-} % todo: \??minustoken
 
 %D Variables are composed of a command specific tag and a user supplied variable
 %D (system constant). The tag \type {du} for instance is available as \type {\??du}
@@ -625,7 +636,7 @@
 
 %D Special purpose variables:
 
-\immutable\def\v!oddeven#1{\ifodd#1\v!odd\else\v!even\fi}
+\permanent\def\v!oddeven#1{\ifodd#1\v!odd\else\v!even\fi}
 
 %D The names of files and their extensions are fixed. \CONTEXT\ uses as less
 %D files as possible. Utility files can be recognized by the first two

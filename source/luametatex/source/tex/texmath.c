@@ -1788,13 +1788,22 @@ static int tex_aux_pre_math_par_direction(void)
 static void tex_aux_enter_display_math(halfword cmd, int where)
 {
     (void) where;
-    if (math_display_mode_par) {
+    if (math_display_mode_par > 0) {
         tex_aux_push_math(math_inline_group, display_style, display_style);
         cur_list.math_mode = cmd;
         cur_list.mode = inline_mmode; /* new */
         update_tex_family(0, unused_math_family);
-        if (every_display_par) {
-            tex_begin_token_list(every_display_par, every_display_text);
+        switch (math_display_mode_par) {
+            case 1: 
+                if (every_display_par) {
+                    tex_begin_token_list(every_display_par, every_display_text);
+                }
+                break;
+            case 2: 
+                if (every_math_par) {
+                    tex_begin_token_list(every_display_par, every_math_text);
+                }
+                break;
         }
     } else {
         /*tex new or partial |pre_display_size| */
@@ -4955,7 +4964,7 @@ void tex_run_math_fence(void)
                     break;
                 case math_inline_group:
                 case math_display_group:
-                case math_number_group:
+                case math_equation_number_group:
                     tex_aux_scan_delimiter(null, no_mathcode, unset_noad_class);
                     if (st == middle_fence_side) {
                         tex_handle_error(
@@ -5565,7 +5574,7 @@ void tex_run_math_shift(void)
     switch (cur_group) {
         case math_inline_group:
         case math_display_group:
-        case math_number_group:
+        case math_equation_number_group:
             {
                 /*tex box containing equation number */
                 halfword eqnumber = null;

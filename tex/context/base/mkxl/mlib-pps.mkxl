@@ -260,7 +260,7 @@
 %D selsom used.
 
 \permanent\protected\def\MPLIBstartsetpattern#1#2#3#4#5#6%
-  {\normalexpanded{\registerpattern[mp-pattern-#1]\ifnum#6=\zerocount[hoffset=\MPx{mp-pattern-#1},voffset=\MPy{mp-pattern-#1}]\fi}%
+  {\expanded{\registerpattern[mp-pattern-#1]\ifnum#6=\zerocount[hoffset=\MPx{mp-pattern-#1},voffset=\MPy{mp-pattern-#1}]\fi}%
      \bgroup
         \dowithnextbox{%
           \boxxoffset\nextbox-#2\onebasepoint
@@ -287,7 +287,7 @@
    \ht\nextbox\zeropoint
    \wd\nextbox\zeropoint
    \dp\nextbox\zeropoint
-   \normalexpanded{\ifnum#6=\zerocount\hpos{mp-pattern-#1}\fi}{\box\nextbox}}
+   \expanded{\ifnum#6=\zerocount\hpos{mp-pattern-#1}\fi}{\box\nextbox}}
 
 \permanent\protected\lettonothing\MPLIBstopgetpattern
 

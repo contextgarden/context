@@ -356,7 +356,7 @@
 
     } {
 
-        \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+        \expanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
         \showmathfonttweaks
         \showmathaccenttweaks
         \showmathfencetweaks

@@ -1830,8 +1830,15 @@ static void tex_aux_set_cur_val_by_font_property_cmd(halfword chr)
                 break;
             }
         case scaled_font_dimension_code:
+        case scaled_font_slant_per_point_code:
+        case scaled_font_interword_space_code:
+        case scaled_font_interword_stretch_code:
+        case scaled_font_interword_shrink_code:
+        case scaled_font_ex_height_code:
+        case scaled_font_em_width_code:
+        case scaled_font_extra_space_code:
             {
-                cur_val = tex_get_scaled_font_dimension();
+                cur_val = tex_get_scaled_font_dimension(chr - scaled_font_dimension_code);
                 cur_val_level = dimension_val_level;
                 break;
             }
@@ -4152,7 +4159,9 @@ strnumber tex_the_scanned_result(void)
 
 static halfword tex_aux_scan_font_id_and_parameter(halfword *fnt, halfword *n)
 {
-    *n = tex_scan_integer(0, NULL, NULL);
+    if (! *n) {
+        *n = tex_scan_integer(0, NULL, NULL);   
+    }
     *fnt = tex_scan_font_identifier(NULL);
     if (*n <= 0 || *n > max_integer) {
         tex_handle_error(
@@ -4169,7 +4178,8 @@ static halfword tex_aux_scan_font_id_and_parameter(halfword *fnt, halfword *n)
 
 void tex_set_font_dimension(void)
 {
-    halfword fnt, n;
+    halfword fnt = null;
+    int n = 0;
     if (tex_aux_scan_font_id_and_parameter(&fnt, &n)) {
         tex_set_font_parameter(fnt, n, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
     }
@@ -4177,22 +4187,23 @@ void tex_set_font_dimension(void)
 
 halfword tex_get_font_dimension(void)
 {
-    halfword fnt, n;
+    halfword fnt = null;
+    int n = 0;
     return tex_aux_scan_font_id_and_parameter(&fnt, &n) ? tex_get_font_parameter(fnt, n) : null;
 }
 
-void tex_set_scaled_font_dimension(void)
+void tex_set_scaled_font_dimension(int n)
 {
-    halfword fnt, n;
+    halfword fnt = null;
     if (tex_aux_scan_font_id_and_parameter(&fnt, &n)) {
         tex_set_scaled_parameter(fnt, n, tex_scan_dimension(0, 0, 0, 1, NULL, NULL));
     }
 }
 
-halfword tex_get_scaled_font_dimension(void)
+halfword tex_get_scaled_font_dimension(int n)
 {
-    halfword fnt, n;
-    return tex_aux_scan_font_id_and_parameter(&fnt, &n) ? tex_get_scaled_parameter(fnt, n) : null;
+    halfword fnt = null;
+    return (tex_aux_scan_font_id_and_parameter(&fnt, &n)) ? tex_get_scaled_parameter(fnt, n) : null;
 }
 
 /*tex Declare procedures that scan font-related stuff. */
@@ -4595,6 +4606,38 @@ halfword tex_scan_toks_expand(int left_brace_found, halfword *tail, int expandco
     }
     return result;
 }
+
+void tex_scan_toks_dropped(int left_brace_found)
+{
+    halfword unbalance = 0;
+    lmt_input_state.scanner_status = scanner_is_absorbing;
+    lmt_input_state.warning_index = cur_cs;
+    if (! left_brace_found) {
+        tex_scan_left_brace();
+    }
+    while (1) {
+        tex_get_token();
+        switch (cur_cmd) {
+            case left_brace_cmd:
+                if (! cur_cs) {
+                    ++unbalance;
+                }
+                break;
+            case right_brace_cmd:
+                if (! cur_cs) {
+                    if (unbalance) {
+                        --unbalance;
+                    } else {
+                        goto DONE;
+                    }
+                }
+                break;
+        }
+    }
+  DONE:
+    lmt_input_state.scanner_status = scanner_is_normal;
+}
+
 
 static void tex_aux_too_many_parameters_error(void)
 {

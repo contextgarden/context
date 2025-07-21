@@ -201,10 +201,10 @@
    \divideby\scratchskip\plustwo
    \ifzero\!taColumnNumber
     %\!thToksEdef\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}%
-     \normalexpanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}}%
+     \expanded{\!taRuleColumnTemplate{\the\!taRuleColumnTemplate\tabskip\the\scratchskip}}%
    \else
     %\!thToksEdef\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\scratchskip}%
-     \normalexpanded{\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\scratchskip}}%
+     \expanded{\!taDataColumnTemplate{\the\!taDataColumnTemplate\tabskip\the\scratchskip}}%
    \fi
    \if!taOnceOnlyTabskip\else
      \!taLastRegularTabskip\scratchskip % Remember this Tabskip, for possible
@@ -300,7 +300,7 @@
    \!taRightGlue\emptytoks
    \begingroup
    \tabl_table_use_bar
-   \normalexpanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \tabl_table_reformat cmd; this is here as a safeguard.
+   \expanded{\endgroup\noexpand\doreadtableformatkeys#1]}}% appear in a \tabl_table_reformat cmd; this is here as a safeguard.
 
 \aliased\let\ReFormat\relax
 
@@ -372,7 +372,7 @@
 \def\!tgGetNumberA{\edef\!tgValue{\the\scratchcounter}\!tgReturn}
 
 \def\!tgSetUpParBox
-  {\normalexpanded
+  {\expanded
      {\noexpand \doreadtableformatkeys
         b{\tabl_table_begin_par_box
             {\ifnum\!tgCode=\plusone
@@ -817,6 +817,18 @@
 
 % BEGIN TABLE
 
+%D The \type {\vcenter} branch was as follows, however in \LUAMETATEX\
+%D we can use it in text mode.
+%D
+%D \starttyping
+%D \def\tabl_table_standard_end{\egroup\normalstopimath\egroup}%
+%D \scratchtoks\everymath
+%D \everymath\emptytoks
+%D \normalstartimath
+%D \everymath\scratchtoks
+%D \vcenter
+%D \stoptyping
+
 \let\tabl_table_standard_end\relax
 
 \def\tabl_table_standard_begin[#1]% \!ttBeginTable (always argument)
@@ -835,11 +847,6 @@
      \orelse\if#1b%
        \vbox
      \else
-       \def\tabl_table_standard_end{\egroup\normalstopimath\egroup}%
-       \scratchtoks\everymath
-       \everymath\emptytoks
-       \normalstartimath
-       \everymath\scratchtoks
        \vcenter
      \fi
      \bgroup % for the \vtop, \vbox, or \vcenter
@@ -1255,8 +1262,6 @@
 
 \installcorenamespace{tabletemplate}
 
-\immutable\def\m!TABLE{TABLE}
-
 %D We already saw that the table macros report errors and provide automatic spacing.
 %D These features can only be implemented by keeping track of the state, often the
 %D last command on a row.
@@ -1494,7 +1499,7 @@
    \noalign{\global\preventtablebreak\conditionalfalse}}
 
 % \def\doverysimpletableHL % todo
-%   {\noalign{\normalexpanded{\noexpand\tabl_table_normal_full_rule\m_tabl_table_HLheight}}
+%   {\noalign{\expanded{\noexpand\tabl_table_normal_full_rule\m_tabl_table_HLheight}}
 
 \let\tabl_table_restart\relax
 
@@ -1519,7 +1524,7 @@
 %    \global\tableactionstatepermitted\conditionalfalse
 %    \global\hassometablehead\conditionalfalse
 %    \global\hassometabletail\conditionalfalse
-%    \normalexpanded{\doifelseinstring{|}{#1}}
+%    \expanded{\doifelseinstring{|}{#1}}
 %      {\xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}}
 %      {\ifcsname\??tabletemplate#1\endcsname
 %         \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
@@ -1537,7 +1542,7 @@
    \global\tableactionstatepermitted\conditionalfalse
    \global\hassometablehead\conditionalfalse
    \global\hassometabletail\conditionalfalse
-   \normalexpanded{\noexpand\ifhastoks{|}{#1}}%
+   \expanded{\noexpand\ifhastoks{|}{#1}}%
      \xdef\tabl_table_restart{\noexpand\tabl_table_restart_indeed{\noexpand\tabl_table_third_stage{#1}}}%
    \orelse\ifcsname\??tabletemplate#1\endcsname
      \gdef\tabl_table_restart{\csname\??tabletemplate#1\endcsname}%
@@ -1706,12 +1711,12 @@
   {\gdef\tabl_table_tail{\begincsname\??tabletail#1\endcsname}% new
    \defcsname\??tabletail#1\endcsname{\noalign{\global\hassometabletail\conditionaltrue}#3}}
 
-\normalexpanded {
+\expanded {
     \aliased\letcsname\e!stop\v!tablehead\endcsname\relax
     \aliased\letcsname\e!stop\v!tabletail\endcsname\relax
 }
 
-\normalexpanded {
+\expanded {
     \permanent\protected\def\csname\e!start\v!tablehead\endcsname#1\csname\e!stop\v!tablehead\endcsname{\settablehead#1\noexpand\end}
     \permanent\protected\def\csname\e!start\v!tabletail\endcsname#1\csname\e!stop\v!tabletail\endcsname{\settabletail#1\noexpand\end}
 }

@@ -35,7 +35,7 @@
 \def\syst_direction_string#1{\ifcase#1=\plusone r2l\else l2r\fi}
 
 \permanent\protected\def\showdirsinmargin
-  {\normalexpanded{\inleft{\naturalhbox
+  {\expanded{\inleft{\naturalhbox
      {\ttxx[\syst_direction_string\pardirection,\syst_direction_string\textdirection]}}}}
 
 \protect \endinput
