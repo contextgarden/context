@@ -1,3 +1,5 @@
+% signal=squid
+
 %D \module
 %D   [       file=s-squid.mkxl,
 %D        version2025.05.20,
@@ -45,6 +47,10 @@ vardef signal_led(expr n) =
     (0,100) rotated - ((n - 1) * (360/24))
 enddef ;
 
+vardef signal_inner_led(expr n) =
+    (0,75) rotated - ((n - 1) * (360/8))
+enddef ;
+
 vardef signal_segment(expr n) =
     for i = (n - 1) * 3 + 1 upto n * 3 :
         signal_led(i) &&
@@ -75,6 +81,13 @@ vardef signal_leds =
     endfor nocycle
 enddef ;
 
+vardef signal_inner_leds =
+    for i = 1 upto 8 :
+        signal_inner_led(i) &&
+    endfor nocycle
+enddef ;
+
+
 vardef signal_range(expr n) =
     for i = 1 upto n :
         signal_led(i) &&
@@ -84,6 +97,11 @@ enddef ;
 def signal_all_leds =
     drawdot signal_leds withpen pencircle scaled 20 withcolor .5white ;
 enddef ;
+
+def signal_all_inner_leds =
+    drawdot signal_inner_leds withpen pencircle scaled 20 withcolor .5white ;
+enddef ;
+
 
 def signal_more_leds(expr n, c) =
     drawdot signal_range(n) withpen pencircle scaled 20 withcolor c ;
@@ -586,6 +604,93 @@ enddef ;
 \stopcombination
 \stopbuffer
 
+\startbuffer[squid-008]
+\startcombination [nx=1,ny=1]
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        leds
+    \stopcaption
+\stopcombination
+\stopbuffer
+
+\startMPdefinitions
+    def signal_text(expr s) =
+        signal_all_leds;
+%         signal_all_inner_leds;
+        for i=1 upto 24 :
+            if (substring(i-1,i) of s) == "+" :
+                signal_one_led(i,"squid:busy");
+            elseif (substring(i-1,i) of s) == "!" :
+                signal_one_led(i,"squid:problem");
+            fi ;
+        endfor ;
+    enddef ;
+
+    string characters[];
+
+    characters[ASCII "A"] := "+++++!!+++-----+++!!++++" ;
+    characters[ASCII "B"] := "------------------------" ;
+    characters[ASCII "C"] := "+++------+++++++++++++++" ;
+    characters[ASCII "D"] := "------------------------" ;
+    characters[ASCII "E"] := "++---!!!---++++++!!!++++" ;
+    characters[ASCII "F"] := "------------------------" ;
+    characters[ASCII "G"] := "------------------------" ;
+    characters[ASCII "H"] := "------------------------" ;
+    characters[ASCII "I"] := "+++++++++++++-----------" ;
+    characters[ASCII "J"] := "++++++++++++++++--------" ;
+    characters[ASCII "K"] := "------------------------" ;
+    characters[ASCII "L"] := "+--------+++++++++++++++" ;
+    characters[ASCII "M"] := "!!++++++++-!!!-++++++++!" ;
+    characters[ASCII "N"] := "++++++++++-----+++++++++" ;
+    characters[ASCII "O"] := "++++++++++++++++++++++++" ;
+    characters[ASCII "P"] := "------------------------" ;
+    characters[ASCII "Q"] := "------------------------" ;
+    characters[ASCII "R"] := "------------------------" ;
+    characters[ASCII "S"] := "------------------------" ;
+    characters[ASCII "T"] := "!!+++------!!!------+++!" ;
+    characters[ASCII "U"] := "------------------------" ;
+    characters[ASCII "V"] := "------------------------" ;
+    characters[ASCII "W"] := "------------------------" ;
+    characters[ASCII "X"] := "-+++-----+++--+++----+++" ;
+    characters[ASCII "Y"] := "------------------------" ;
+    characters[ASCII "Z"] := "------------------------" ;
+
+    vardef signal_character(expr c) =
+        image ( signal_text(characters[if string c : ASCII c else : c fi]) )
+    enddef ;
+
+\stopMPdefinitions
+
+\startbuffer[squid-009]
+    \startMPcode
+        numeric n ; n := 0;
+        for i = (ASCII "A") upto (ASCII "Z") :
+            pair a ; a := ((n mod 6) * 25mm, -(n div 6) * 25mm) ;
+            n := n + 1 ;
+            draw signal_character(i) ysized 20mm shifted a ;
+            draw textext (char i) shifted a ;
+        endfor ;
+    \stopMPcode
+\stopbuffer
+
+\startbuffer[squid-010]
+    \startMPcode
+        draw signal_character("C") xsized 15mm shifted (0 * 17.5mm,0) ;
+        draw signal_character("O") xsized 15mm shifted (1 * 17.5mm,0) ;
+        draw signal_character("N") xsized 15mm shifted (2 * 17.5mm,0) ;
+        draw signal_character("T") xsized 15mm shifted (3 * 17.5mm,0) ;
+        draw signal_character("E") xsized 15mm shifted (4 * 17.5mm,0) ;
+        draw signal_character("X") xsized 15mm shifted (5 * 17.5mm,0) ;
+        draw signal_character("T") xsized 15mm shifted (6 * 17.5mm,0) ;
+    \stopMPcode
+\stopbuffer
+
 \continueifinputfile{s-squid.mkxl}
 
 \starttext
@@ -596,6 +701,9 @@ enddef ;
     \startTEXpage\getbuffer[squid-005]\stopTEXpage
     \startTEXpage\getbuffer[squid-006]\stopTEXpage
     \startTEXpage\getbuffer[squid-007]\stopTEXpage
+    \startTEXpage\getbuffer[squid-008]\stopTEXpage
+    \startTEXpage\getbuffer[squid-009]\stopTEXpage
+    \startTEXpage\getbuffer[squid-010]\stopTEXpage
 \stoptext
 
 \stopmodule

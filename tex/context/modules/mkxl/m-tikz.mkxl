@@ -67,6 +67,10 @@
 
 \fi
 
+% \startluacode
+%     statistics.feedback.setstate("module",true)
+% \stopluacode
+
 \newcatcodetable \tikzcatcodes
 
 \startcatcodetable \tikzcatcodes

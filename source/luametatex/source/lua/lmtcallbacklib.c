@@ -293,6 +293,7 @@ static int callbacklib_aux_run(lua_State *L, int id, int special, const char *va
             case callback_node_key:
                 switch (t) {
                     case LUA_TUSERDATA:
+                    case LUA_TNUMBER:
                      // *va_arg(vl, int *) = lmt_check_isnode(L, nres);
                         *va_arg(vl, int *) = lmt_pop_node_from_callback(L, nres);
                         break;

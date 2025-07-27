@@ -306,6 +306,8 @@ end
 
 checkers.getmissing = getmissing
 
+statistics.feedback.register { name = "missing characters", index = 10, category = "problem" }
+
 do
 
  -- -- This callback is gone:
@@ -355,6 +357,7 @@ do
     logs.registerfinalactions(function()
         local collected, details = getmissing()
         if next(collected) then
+            statistics.feedback.setstate("missing characters",true)
             for filename, list in sortedhash(details) do
                 logs.startfilelogging(report,"missing characters",filename)
                 for u, v in sortedhash(list) do
@@ -619,6 +622,7 @@ do
             setfont(n,found[1])
             setscale(n,found[2])
         end
+        statistics.feedback.setstate("missing characters",true)
     end
 
     callbacks.register {

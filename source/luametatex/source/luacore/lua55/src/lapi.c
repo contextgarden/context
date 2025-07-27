@@ -593,12 +593,8 @@ LUA_API const char *lua_pushfstring (lua_State *L, const char *fmt, ...) {
   const char *ret;
   va_list argp;
   lua_lock(L);
-  va_start(argp, fmt);
-  ret = luaO_pushvfstring(L, fmt, argp);
-  va_end(argp);
+  pushvfstring(L, argp, fmt, ret);
   luaC_checkGC(L);
-  if (ret == NULL)  /* error? */
-    luaD_throw(L, LUA_ERRMEM);
   lua_unlock(L);
   return ret;
 }
@@ -683,7 +679,7 @@ static int auxgetstr (lua_State *L, const TValue *t, const char *k) {
 
 /*
 ** The following function assumes that the registry cannot be a weak
-** table, so that en mergency collection while using the global table
+** table; so, an emergency collection while using the global table
 ** cannot collect it.
 */
 static void getGlobalTable (lua_State *L, TValue *gt) {

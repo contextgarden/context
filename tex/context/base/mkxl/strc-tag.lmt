@@ -525,6 +525,8 @@ end
 
 local ignored = { } tags.ignored = ignored
 
+    statistics.feedback.register { name = "tagging", index = 2, category = "performance" }
+
 local function enabletags()
     if not enabled then
         if tex.systemmodes.export then
@@ -532,6 +534,7 @@ local function enabletags()
         else
             codeinjections.enabletags()
         end
+        statistics.feedback.setstate("tagging", true)
         enabled = true
     end
 end

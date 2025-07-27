@@ -5953,7 +5953,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         /*tex
             Fix a possible mess up.
         */
-        if (node_type(q) == par_node ) {
+        if (node_type(q) == par_node) {
             if (! tex_is_start_of_par_node(q)) {
                 node_subtype(q) = hmode_par_par_subtype;
             }

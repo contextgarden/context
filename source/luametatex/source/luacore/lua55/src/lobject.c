@@ -382,10 +382,10 @@ size_t luaO_str2num (const char *s, TValue *o) {
 }
 
 
-int luaO_utf8esc (char *buff, unsigned long x) {
+int luaO_utf8esc (char *buff, l_uint32 x) {
   int n = 1;  /* number of bytes put in buffer (backwards) */
   lua_assert(x <= 0x7FFFFFFFu);
-  if (x < 0x80)  /* ascii? */
+  if (x < 0x80)  /* ASCII? */
     buff[UTF8BUFFSZ - 1] = cast_char(x);
   else {  /* need continuation bytes */
     unsigned int mfb = 0x3f;  /* maximum that fits in first byte */
@@ -618,7 +618,7 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
       }
       case 'I': {  /* a 'lua_Integer' */
         TValue num;
-        setivalue(&num, cast(lua_Integer, va_arg(argp, l_uacInt)));
+        setivalue(&num, cast_Integer(va_arg(argp, l_uacInt)));
         addnum2buff(&buff, &num);
         break;
       }
@@ -637,7 +637,8 @@ const char *luaO_pushvfstring (lua_State *L, const char *fmt, va_list argp) {
       }
       case 'U': {  /* an 'unsigned long' as a UTF-8 sequence */
         char bf[UTF8BUFFSZ];
-        int len = luaO_utf8esc(bf, va_arg(argp, unsigned long));
+        unsigned long arg = va_arg(argp, unsigned long);
+        int len = luaO_utf8esc(bf, cast(l_uint32, arg));
         addstr2buff(&buff, bf + UTF8BUFFSZ - len, cast_uint(len));
         break;
       }

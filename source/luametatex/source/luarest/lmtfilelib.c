@@ -500,7 +500,7 @@ static int filelib_rmdir(lua_State *L)
     {
         const char *path = luaL_checkstring(L, 1);
         int detail = lua_type(L, 2) == LUA_TBOOLEAN ? lua_toboolean(L, 2) : 1;
-        dir_data *d ;
+        dir_data *d;
         lua_pushcfunction(L, filelib_aux_dir_iterator);
         d = (dir_data *) lua_newuserdatauv(L, sizeof(dir_data), 1);
         lua_pushboolean(L, detail);
@@ -516,6 +516,106 @@ static int filelib_rmdir(lua_State *L)
         }
         return 2;
     }
+
+ // static int filelib_collect(lua_State *L)
+ // {
+ //     const char *path = lua_tostring(L, 1);
+ //     if (path) { 
+ //         if (strlen(path) > MY_MAXPATHLEN-2) {
+ //             luaL_error(L, "path too long: %s", path);
+ //         } else {
+ //             LPWSTR s;
+ //             intptr_t handle;
+ //             struct _wfinddata_t file_data;
+ //             char pattern[MY_MAXPATHLEN+1];
+ //             sprintf(pattern, "%s/*", path ? path : "."); /* brrr */
+ //             s = aux_utf8_to_wide(pattern);
+ //             handle = _wfindfirst(s, &file_data);
+ //             if (handle != -1L) {
+ //                 int noffiles = 0;
+ //                 int nofdirectories = 0;
+ //                 lua_createtable(L, 4, 0); /* files */
+ //                 lua_createtable(L, 0, 0); /* dirs  */
+ //                 do {
+ //                     char *s = aux_utf8_from_wide(file_data.name);
+ //                     if (S_ISSUB(file_data.attrib)) {
+ //                         if (strcmp(s, "..") != 0 && strcmp(s, ".") != 0) {
+ //                             lua_pushstring(L, s);
+ //                             lua_rawseti(L, -2, ++nofdirectories);
+ //                         }
+ //                     } else {
+ //                         lua_pushstring(L, s);
+ //                         lua_rawseti(L, -3, ++noffiles);
+ //                     }
+ //                     lmt_memory_free(s);
+ //                 } while (_wfindnext(handle, &file_data) != -1L); 
+ //                 _findclose(handle);
+ //                 return 2;
+ //             } else { 
+ //                 _findclose(handle);
+ //             }
+ //         }
+ //     }
+ //     lua_pushnil(L);
+ //     lua_pushnil(L);
+ //     return 2;
+ // }
+
+ // static int filelib_aux_collect(lua_State *L, const char *path, int noffiles)
+ // {
+ //     if (path) { 
+ //         if (strlen(path) > MY_MAXPATHLEN-2) {
+ //             luaL_error(L, "path too long: %s", path);
+ //         } else {
+ //             LPWSTR s;
+ //             intptr_t handle;
+ //             struct _wfinddata_t file_data;
+ //             char pattern[MY_MAXPATHLEN+1];
+ //             sprintf(pattern, "%s/*", path ? path : "."); /* brrr */
+ //             s = aux_utf8_to_wide(pattern);
+ //             handle = _wfindfirst(s, &file_data);
+ //             if (handle != -1L) {
+ //                 do {
+ //                     char *s = aux_utf8_from_wide(file_data.name);
+ //                     if (S_ISSUB(file_data.attrib)) {
+ //                         if (strcmp(s, "..") != 0 && strcmp(s, ".") != 0) {
+ //                             char complete[5*MY_MAXPATHLEN+1]; /* utf filename */
+ //                             if (path) { 
+ //                                 sprintf(complete, "%s/%s", path, s); /* brrr */
+ //                                 noffiles = filelib_aux_collect(L, complete, noffiles);
+ //                             } else {
+ //                                 noffiles = filelib_aux_collect(L, s, noffiles);
+ //                             }
+ //                         }
+ //                     } else {
+ //                         char complete[5*MY_MAXPATHLEN+1]; /* utf filename */
+ //                         if (path) { 
+ //                             sprintf(complete, "%s/%s", path, s); /* brrr */
+ //                             lua_pushstring(L, complete);
+ //                         } else { 
+ //                             lua_pushstring(L, s);
+ //                         }
+ //                         lua_rawseti(L, -2, ++noffiles);
+ //                     }
+ //                     lmt_memory_free(s);
+ //                 } while (_wfindnext(handle, &file_data) != -1L); 
+ //                 _findclose(handle);
+ //             }
+ //             _findclose(handle);
+ //         }
+ //     }
+ //     return noffiles;
+ // }
+ //
+ // static int filelib_collect(lua_State *L)
+ // {
+ //     const char *path = lua_tostring(L, 1);
+ //     lua_createtable(L, 0, 0);
+ //     if (path) { 
+ //         filelib_aux_collect(L, path, 0);
+ //     }
+ //     return 1;
+ // }
 
 # else
 
@@ -834,6 +934,8 @@ static const struct luaL_Reg filelib_function_list[] = {
     { "mkdir",             filelib_mkdir             },
     { "rmdir",             filelib_rmdir             },
     { "touch",             filelib_touch             },
+    /* */
+ // { "collect",           filelib_collect           },
     /* */
     { "link",              filelib_link              },
     { "symlink",           filelib_symlink           },

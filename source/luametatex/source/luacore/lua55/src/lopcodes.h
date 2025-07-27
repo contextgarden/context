@@ -126,14 +126,14 @@ enum OpMode {iABC, ivABC, iABx, iAsBx, iAx, isJ};
 
 #define GET_OPCODE(i)	(cast(OpCode, ((i)>>POS_OP) & MASK1(SIZE_OP,0)))
 #define SET_OPCODE(i,o)	((i) = (((i)&MASK0(SIZE_OP,POS_OP)) | \
-		((cast(Instruction, o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
+		((cast_Inst(o)<<POS_OP)&MASK1(SIZE_OP,POS_OP))))
 
 #define checkopm(i,m)	(getOpMode(GET_OPCODE(i)) == m)
 
 
 #define getarg(i,pos,size)	(cast_int(((i)>>(pos)) & MASK1(size,0)))
 #define setarg(i,v,pos,size)	((i) = (((i)&MASK0(size,pos)) | \
-                ((cast(Instruction, v)<<pos)&MASK1(size,pos))))
+                ((cast_Inst(v)<<pos)&MASK1(size,pos))))
 
 #define GETARG_A(i)	getarg(i, POS_A, SIZE_A)
 #define SETARG_A(i,v)	setarg(i, v, POS_A, SIZE_A)
@@ -174,28 +174,28 @@ enum OpMode {iABC, ivABC, iABx, iAsBx, iAx, isJ};
 	setarg(i, cast_uint((j)+OFFSET_sJ), POS_sJ, SIZE_sJ)
 
 
-#define CREATE_ABCk(o,a,b,c,k)	((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_A) \
-			| (cast(Instruction, b)<<POS_B) \
-			| (cast(Instruction, c)<<POS_C) \
-			| (cast(Instruction, k)<<POS_k))
+#define CREATE_ABCk(o,a,b,c,k)	((cast_Inst(o)<<POS_OP) \
+			| (cast_Inst(a)<<POS_A) \
+			| (cast_Inst(b)<<POS_B) \
+			| (cast_Inst(c)<<POS_C) \
+			| (cast_Inst(k)<<POS_k))
 
-#define CREATE_vABCk(o,a,b,c,k)	((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_A) \
-			| (cast(Instruction, b)<<POS_vB) \
-			| (cast(Instruction, c)<<POS_vC) \
-			| (cast(Instruction, k)<<POS_k))
+#define CREATE_vABCk(o,a,b,c,k)	((cast_Inst(o)<<POS_OP) \
+			| (cast_Inst(a)<<POS_A) \
+			| (cast_Inst(b)<<POS_vB) \
+			| (cast_Inst(c)<<POS_vC) \
+			| (cast_Inst(k)<<POS_k))
 
-#define CREATE_ABx(o,a,bc)	((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_A) \
-			| (cast(Instruction, bc)<<POS_Bx))
+#define CREATE_ABx(o,a,bc)	((cast_Inst(o)<<POS_OP) \
+			| (cast_Inst(a)<<POS_A) \
+			| (cast_Inst(bc)<<POS_Bx))
 
-#define CREATE_Ax(o,a)		((cast(Instruction, o)<<POS_OP) \
-			| (cast(Instruction, a)<<POS_Ax))
+#define CREATE_Ax(o,a)		((cast_Inst(o)<<POS_OP) \
+			| (cast_Inst(a)<<POS_Ax))
 
-#define CREATE_sJ(o,j,k)	((cast(Instruction, o) << POS_OP) \
-			| (cast(Instruction, j) << POS_sJ) \
-			| (cast(Instruction, k) << POS_k))
+#define CREATE_sJ(o,j,k)	((cast_Inst(o) << POS_OP) \
+			| (cast_Inst(j) << POS_sJ) \
+			| (cast_Inst(k) << POS_k))
 
 
 #if !defined(MAXINDEXRK)  /* (for debugging only) */
@@ -254,7 +254,7 @@ OP_SETTABLE,/*	A B C	R[A][R[B]] := RK(C)				*/
 OP_SETI,/*	A B C	R[A][B] := RK(C)				*/
 OP_SETFIELD,/*	A B C	R[A][K[B]:shortstring] := RK(C)			*/
 
-OP_NEWTABLE,/*	A B C k	R[A] := {}					*/
+OP_NEWTABLE,/*	A vB vC k	R[A] := {}				*/
 
 OP_SELF,/*	A B C	R[A+1] := R[B]; R[A] := R[B][K[C]:shortstring]	*/
 
@@ -378,9 +378,9 @@ OP_EXTRAARG/*	Ax	extra (larger) argument for previous opcode	*/
   real C = EXTRAARG _ C (the bits of EXTRAARG concatenated with the
   bits of C).
 
-  (*) In OP_NEWTABLE, B is log2 of the hash size (which is always a
+  (*) In OP_NEWTABLE, vB is log2 of the hash size (which is always a
   power of 2) plus 1, or zero for size zero. If not k, the array size
-  is C. Otherwise, the array size is EXTRAARG _ C.
+  is vC. Otherwise, the array size is EXTRAARG _ vC.
 
   (*) For comparisons, k specifies what condition the test should accept
   (true or false).

@@ -359,6 +359,9 @@ local list         = { }
 
 local report_quality = logs.reporter("pack quality")
 
+statistics.feedback.register { name = "vpack quality", index = 12, category = "problem" }
+statistics.feedback.register { name = "hpack quality", index = 11, category = "problem" }
+
 -- overflow|badness w h d dir
 
 local report  = true   trackers.register("builders.vpack.quality", function(v) report  = v end)
@@ -368,16 +371,29 @@ local collect = false  trackers.register("builders.vpack.collect", function(v) c
 function vpackbuilders.report(how,detail,n,first,last,filename) -- no return value
     if report then
         if last <= 0 then
-            report_quality("%s vbox",how)
+            if how == "overfull" then
+                report_quality("%s vbox (%p)",how,detail)
+            else
+                report_quality("%s vbox",how)
+            end
         elseif first > 0 and first < last then
-            report_quality("%s vbox at line %i - %i in file %a",how,first,last,filename or "?")
+            if how == "overfull" then
+                report_quality("%s vbox at line %i - %i in file %a (%p)",how,first,last,filename or "?",detail)
+            else
+                report_quality("%s vbox at line %i - %i in file %a",how,first,last,filename or "?")
+            end
         else
-            report_quality("%s vbox at line %i in file %a",how,last,filename or "?")
+            if how == "overfull" then
+                report_quality("%s vbox at line %i in file %a (%p)",how,last,filename or "?",detail)
+            else
+                report_quality("%s vbox at line %i in file %a",how,last,filename or "?")
+            end
         end
     end
     if collect then
-        list[#list+1] = { "hbox", how, filename, first, last, how, detail }
+        list[#list+1] = { "vbox", how, filename, first, last, how, detail }
     end
+    statistics.feedback.setstate("vpack quality",true)
 end
 
 -- function builders.vpack.show(how,detail,n,first,last,filename) -- return value
@@ -413,6 +429,7 @@ function hpackbuilders.report(how,detail,n,first,last,filename) -- no return val
     if collect then
         list[#list+1] = { "hbox", how, filename, first, last, str, detail }
     end
+    statistics.feedback.setstate("hpack quality",true)
 end
 
 function hpackbuilders.show(how,detail,n,first,last,filename,rule) -- return value
@@ -466,6 +483,7 @@ function hpackbuilders.qualityactions(how,detail,n,first,last,filename)
     rul = hqualityactions(how,detail,n,first,last,filename)
     return rul
 end
+
 function vpackbuilders.qualityactions(how,detail,n,first,last,filename)
     local rul = nil
     rul = vqualityactions(how,detail,n,first,last,filename)

@@ -56,7 +56,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \permanent\edef\contextformat {\jobname}
-\permanent\edef\contextversion{2025.07.21 11:45}
+\permanent\edef\contextversion{2025.07.27 21:40}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -721,158 +721,169 @@
 %
 % % luat-bas.mkxl l-macro-imp-optimize % this is no longer used
 
-% c:/data/develop/context/sources/buff-par.lua % parallel
+% buff-par.lua % parallel
 %
-% c:/data/develop/context/sources/buff-imp-default.lua    % shared
-% c:/data/develop/context/sources/buff-imp-escaped.lua    % shared
-% c:/data/develop/context/sources/buff-imp-lua.lua        % shared
-% c:/data/develop/context/sources/buff-imp-mp.lua         % shared
-% c:/data/develop/context/sources/buff-imp-nested.lua     % shared
-% c:/data/develop/context/sources/buff-imp-parsed-xml.lua % shared
-% c:/data/develop/context/sources/buff-imp-tex.lua        % shared
-% c:/data/develop/context/sources/buff-imp-xml.lua        % shared
+% buff-imp-default.lua    % shared
+% buff-imp-escaped.lua    % shared
+% buff-imp-lua.lua        % shared
+% buff-imp-mp.lua         % shared
+% buff-imp-nested.lua     % shared
+% buff-imp-parsed-xml.lua % shared
+% buff-imp-tex.lua        % shared
+% buff-imp-xml.lua        % shared
 
-% c:/data/develop/context/sources/char-cjk.lua
-% c:/data/develop/context/sources/char-def.lua % shared data file, a real big one
-% c:/data/develop/context/sources/char-enc.lua
-% c:/data/develop/context/sources/char-ent.lua
-% c:/data/develop/context/sources/char-fio.lua
-% c:/data/develop/context/sources/char-ini.lua
-% c:/data/develop/context/sources/char-map.lua
-% c:/data/develop/context/sources/char-scr.lua
-% c:/data/develop/context/sources/char-utf.lua
+% char-cjk.lua
+% char-def.lua % shared data file, a real big one
+% char-enc.lua
+% char-ent.lua
+% char-fio.lua
+% char-ini.lua
+% char-map.lua
+% char-scr.lua
+% char-utf.lua
 
-% c:/data/develop/context/sources/chem-ini.lua
-% c:/data/develop/context/sources/chem-str.lua
+% chem-ini.lua
+% chem-str.lua
 
-% c:/data/develop/context/sources/cldf-com.lua
-% c:/data/develop/context/sources/cldf-ini.lua
-% c:/data/develop/context/sources/cldf-prs.lua % used in chemistry
-% c:/data/develop/context/sources/cldf-scn.lua
-% c:/data/develop/context/sources/cldf-stp.lua
-% c:/data/develop/context/sources/cldf-ver.lua
+% cldf-com.lua
+% cldf-ini.lua
+% cldf-prs.lua % used in chemistry
+% cldf-scn.lua
+% cldf-stp.lua
+% cldf-ver.lua
 
-% c:/data/develop/context/sources/colo-ini.lua
+% colo-ini.lua
 
-% c:/data/develop/context/sources/core-ctx.lua
+% core-ctx.lua
 
 % data...
 
-% c:/data/develop/context/sources/file-ini.lua
-% c:/data/develop/context/sources/file-lib.lua
-% c:/data/develop/context/sources/file-res.lua
+% file-ini.lua
+% file-lib.lua
+% file-res.lua
 
-% c:/data/develop/context/sources/font-afk.lua
-% c:/data/develop/context/sources/font-agl.lua % shared data file
-% c:/data/develop/context/sources/font-aux.lua
-% c:/data/develop/context/sources/font-cid.lua
-% c:/data/develop/context/sources/font-enc.lua
-% c:/data/develop/context/sources/font-log.lua
-% c:/data/develop/context/sources/font-lua.lua % not realy used, more a demo
-% c:/data/develop/context/sources/font-nod.lua % some trace helpers
-% c:/data/develop/context/sources/font-osd.lua
-% c:/data/develop/context/sources/font-otc.lua
-% c:/data/develop/context/sources/font-oth.lua
-% c:/data/develop/context/sources/font-oti.lua
-% c:/data/develop/context/sources/font-otr.lua
-% c:/data/develop/context/sources/font-ott.lua % just some tables
-% c:/data/develop/context/sources/font-pat.lua
-% c:/data/develop/context/sources/font-prv.lua
-% c:/data/develop/context/sources/font-sel.lua
-% c:/data/develop/context/sources/font-sol.lua
-% c:/data/develop/context/sources/font-syn.lua % identification code
-% c:/data/develop/context/sources/font-trt.lua
-% c:/data/develop/context/sources/font-web.lua % proof of concept, never used
+% font-afk.lua
+% font-agl.lua % shared data file
+% font-aux.lua
+% font-cid.lua
+% font-enc.lua
+% font-log.lua
+% font-lua.lua % not realy used, more a demo
+% font-nod.lua % some trace helpers
+% font-osd.lua
+% font-otc.lua
+% font-oth.lua
+% font-oti.lua
+% font-otr.lua
+% font-ott.lua % just some tables
+% font-pat.lua
+% font-prv.lua
+% font-sel.lua
+% font-sol.lua
+% font-syn.lua % identification code
+% font-trt.lua
+% font-web.lua % proof of concept, never used
 
-% c:/data/develop/context/sources/font-imp-combining.lua  % shared
-% c:/data/develop/context/sources/font-imp-notused.lua    % shared
-% c:/data/develop/context/sources/font-imp-properties.lua % shared
-% c:/data/develop/context/sources/font-imp-reorder.lua    % shared
-% c:/data/develop/context/sources/font-imp-spacekerns.lua % shared
-% c:/data/develop/context/sources/font-imp-tex.lua        % shared
-% c:/data/develop/context/sources/font-imp-tweaks.lua     % shared
-% c:/data/develop/context/sources/font-imp-unicode.lua    % shared
+% font-imp-combining.lua  % shared
+% font-imp-notused.lua    % shared
+% font-imp-properties.lua % shared
+% font-imp-reorder.lua    % shared
+% font-imp-spacekerns.lua % shared
+% font-imp-tex.lua        % shared
+% font-imp-tweaks.lua     % shared
+% font-imp-unicode.lua    % shared
 
-% c:/data/develop/context/sources/good-ctx.lua
-% c:/data/develop/context/sources/good-ini.lua
+% good-ctx.lua
+% good-ini.lua
 
-% c:/data/develop/context/sources/grph-bmp.lua
-% c:/data/develop/context/sources/grph-chk.lua
-% c:/data/develop/context/sources/grph-con.lua
-% c:/data/develop/context/sources/grph-fil.lua
-% c:/data/develop/context/sources/grph-img.lua
-% c:/data/develop/context/sources/grph-pat.lua
-% c:/data/develop/context/sources/grph-u3d.lua
+% grph-bmp.lua
+% grph-chk.lua
+% grph-con.lua
+% grph-fil.lua
+% grph-img.lua
+% grph-pat.lua
+% grph-u3d.lua
 
-% c:/data/develop/context/sources/java-ini.lua
+% java-ini.lua
 
-% c:/data/develop/context/sources/lang-cnt.lua % shared data file
-% c:/data/develop/context/sources/lang-def.lua % shared data file
-% c:/data/develop/context/sources/lang-txt.lua % shared data file
-% c:/data/develop/context/sources/lang-wrd.lua
+% lang-cnt.lua % shared data file
+% lang-def.lua % shared data file
+% lang-txt.lua % shared data file
+% lang-wrd.lua
 
-% c:/data/develop/context/sources/luat-exe.lua
-% c:/data/develop/context/sources/luat-iop.lua
-% c:/data/develop/context/sources/luat-mac.lua % will become lmt
+% luat-exe.lua
+% luat-iop.lua
+% luat-mac.lua % will become lmt
 
-% c:/data/develop/context/sources/lxml-aux.lua % the xml interface is rather stable
-% c:/data/develop/context/sources/lxml-dir.lua % might as well share these because they
-% c:/data/develop/context/sources/lxml-ent.lua % are unlikely to change
-% c:/data/develop/context/sources/lxml-ini.lua %
-% c:/data/develop/context/sources/lxml-lpt.lua %
-% c:/data/develop/context/sources/lxml-mis.lua %
-% c:/data/develop/context/sources/lxml-sor.lua %
-% c:/data/develop/context/sources/lxml-tab.lua %
-% c:/data/develop/context/sources/lxml-tex.lua %
-% c:/data/develop/context/sources/lxml-xml.lua %
+% lxml-aux.lua % the xml interface is rather stable
+% lxml-dir.lua % might as well share these because they
+% lxml-ent.lua % are unlikely to change
+% lxml-ini.lua %
+% lxml-lpt.lua %
+% lxml-mis.lua %
+% lxml-sor.lua %
+% lxml-tab.lua %
+% lxml-tex.lua %
+% lxml-xml.lua %
 
-% c:/data/develop/context/sources/meta-blb.lua
-% c:/data/develop/context/sources/meta-fun.lua
-% c:/data/develop/context/sources/meta-lua.lua
-% c:/data/develop/context/sources/meta-nod.lua
-% c:/data/develop/context/sources/meta-pdf.lua
-% c:/data/develop/context/sources/meta-tex.lua
+% meta-blb.lua
+% meta-fun.lua
+% meta-lua.lua
+% meta-nod.lua
+% meta-pdf.lua
+% meta-tex.lua
 
-% c:/data/develop/context/sources/mult-aux.lua % move some to s-system-*
-% c:/data/develop/context/sources/mult-fmt.lua
+% mult-aux.lua % move some to s-system-*
+% mult-fmt.lua
 
-% c:/data/develop/context/sources/page-flt.lua
-% c:/data/develop/context/sources/page-inj.lua
-% c:/data/develop/context/sources/page-mix.lua
-% c:/data/develop/context/sources/page-pst.lua
+% page-flt.lua
+% page-inj.lua
+% page-mix.lua
+% page-pst.lua
 
-% c:/data/develop/context/sources/publ-dat.lua % no sense to make lmtx variants (yet),
-% c:/data/develop/context/sources/publ-fnd.lua %
-% c:/data/develop/context/sources/publ-inc.lua %
-% c:/data/develop/context/sources/publ-ini.lua %
-% c:/data/develop/context/sources/publ-jrn.lua %
-% c:/data/develop/context/sources/publ-reg.lua %
-% c:/data/develop/context/sources/publ-sor.lua %
-% c:/data/develop/context/sources/publ-tra.lua %
-% c:/data/develop/context/sources/publ-usr.lua %
+% publ-dat.lua % no sense to make lmtx variants (yet),
+% publ-fnd.lua %
+% publ-inc.lua %
+% publ-ini.lua %
+% publ-jrn.lua %
+% publ-reg.lua %
+% publ-sor.lua %
+% publ-tra.lua %
+% publ-usr.lua %
 
-% c:/data/develop/context/sources/scrn-but.lua
-% c:/data/develop/context/sources/scrn-fld.lua
-% c:/data/develop/context/sources/scrn-hlp.lua
+% scrn-but.lua
+% scrn-fld.lua
+% scrn-hlp.lua
 
-% c:/data/develop/context/sources/scrp-cjk.lua
-% c:/data/develop/context/sources/scrp-eth.lua
-% c:/data/develop/context/sources/scrp-tha.lua
-% c:/data/develop/context/sources/scrp-tib.lua
+% scrp-cjk.lua
+% scrp-eth.lua
+% scrp-tha.lua
+% scrp-tib.lua
 
-% c:/data/develop/context/sources/sort-ini.lua
-% c:/data/develop/context/sources/sort-lan.lua
+% sort-ini.lua
+% sort-lan.lua
 
-% c:/data/develop/context/sources/strc-bkm.lua
-% c:/data/develop/context/sources/strc-blk.lua
-% c:/data/develop/context/sources/strc-con.lua
-% c:/data/develop/context/sources/strc-ini.lua
-% c:/data/develop/context/sources/strc-num.lua
-% c:/data/develop/context/sources/strc-pag.lua
-% c:/data/develop/context/sources/strc-usr.lua
+% strc-bkm.lua
+% strc-blk.lua
+% strc-con.lua
+% strc-ini.lua
+% strc-num.lua
+% strc-pag.lua
+% strc-usr.lua
 
-% c:/data/develop/context/sources/syst-cmp.lua -- nothing
+% syst-cmp.lua -- nothing
 
-% c:/data/develop/context/sources/trac-ctx.lua
-% c:/data/develop/context/sources/trac-lmx.lua
-% c:/data/develop/context/sources/trac-par.lua
+% trac-ctx.lua
+% trac-lmx.lua
+% trac-par.lua
+
+% m-asymptote.lua
+% m-chart.lua
+% m-database.lua
+% m-escrito.lua
+% m-markdown-new.lua
+% m-nodechart.lua
+% m-pstricks.lua
+% m-spreadsheet.lua
+% m-steps.lua
+% m-virtual.lua

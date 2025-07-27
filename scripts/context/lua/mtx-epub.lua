@@ -941,7 +941,8 @@ do
                 elseif type(path) == "string" and path ~= "" and not lfs.isdir(path) then
                     report("no export root %a",path)
                 else
-                    local imagepath = file.join(path,target,"images")
+--                     local imagepath = file.join(path,target,"images")
+                    local imagepath = flat and file.join(path,"images") or file.join(path,target,"images")
                     dir.makedirs(imagepath)
                     if lfs.isdir(imagepath) then
                         jobs[#jobs+1] = {

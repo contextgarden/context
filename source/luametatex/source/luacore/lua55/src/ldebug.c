@@ -817,16 +817,15 @@ l_noret luaG_ordererror (lua_State *L, const TValue *p1, const TValue *p2) {
 /* add src:line information to 'msg' */
 const char *luaG_addinfo (lua_State *L, const char *msg, TString *src,
                                         int line) {
-  char buff[LUA_IDSIZE];
-  if (src) {
+  if (src == NULL)  /* no debug information? */
+    return luaO_pushfstring(L, "?:?: %s", msg);
+  else {
+    char buff[LUA_IDSIZE];
     size_t idlen;
     const char *id = getlstr(src, idlen);
     luaO_chunkid(buff, id, idlen);
+    return luaO_pushfstring(L, "%s:%d: %s", buff, line, msg);
   }
-  else {  /* no source available; use "?" instead */
-    buff[0] = '?'; buff[1] = '\0';
-  }
-  return luaO_pushfstring(L, "%s:%d: %s", buff, line, msg);
 }
 
 
@@ -852,12 +851,8 @@ l_noret luaG_runerror (lua_State *L, const char *fmt, ...) {
   const char *msg;
   va_list argp;
   luaC_checkGC(L);  /* error message uses memory */
-  va_start(argp, fmt);
-  msg = luaO_pushvfstring(L, fmt, argp);  /* format message */
-  va_end(argp);
-  if (msg == NULL)  /* no memory to format message? */
-    luaD_throw(L, LUA_ERRMEM);
-  else if (isLua(ci)) {  /* Lua function? */
+  pushvfstring(L, argp, fmt, msg);
+  if (isLua(ci)) {  /* Lua function? */
     /* add source:line information */
     luaG_addinfo(L, msg, ci_func(ci)->p->source, getcurrentline(ci));
     setobjs2s(L, L->top.p - 2, L->top.p - 1);  /* remove 'msg' */

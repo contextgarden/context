@@ -189,7 +189,7 @@ do
             setattribute(di,"n",r.n)
             if tonumber(r.image) ~= 0 then
                 -- image is the export index
-                setattribute(di,"image",tex.jobname .. "-image-export-" .. r.image)
+                setattribute(di,"image",tex.jobname .. "-image-exported-" .. r.image)
             end
         end
     end

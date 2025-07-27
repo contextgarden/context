@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['mtx-squid'] = {
 -- mtxrun --script squid  --configure --format
 
 -- mtxrun --script squid  --configure --color 0|1|2
--- mtxrun --script squid  --configure --mode  serial|wifi|bluetooth
+-- mtxrun --script squid  --configure --mode  serial|wifi|bluetooth|hue
 -- mtxrun --script squid  --configure --leds  1|12|16|24|30|40|60|144
 
 -- mtxrun --script squid  --signal [--test] --[reset|busy|done|finished|problem|error|on|off] N
@@ -154,7 +154,7 @@ end
 if verbose then
     report("port  : %s",port)
     report("speed : %s baud",baud)
-    report("delay : %s seconds",arguments.sleep or (arguments.text and 0.2 or 2))
+    report("delay : %s seconds",arguments.delay or (arguments.text and 0.2 or 2))
     report("")
 end
 
@@ -239,7 +239,7 @@ function scripts.squid.configure()
             send(format("cws%s\r",ssid))
         end
         if type(psk) == "string" then
-            send("cwp%s\r",psk)
+            send(format("cwp%s\r",psk))
         end
         if arguments.connect then
             send("cwc")
@@ -280,7 +280,7 @@ function scripts.squid.signal()
                 end
                 for j=1,15 do
                     send(h.."s"..i)
-                    ossleep(.1)
+                    ossleep(.2)
                 end
             end
         else
@@ -289,7 +289,7 @@ function scripts.squid.signal()
                     send(h.."d"..(i-1))
                 end
                 send(h.."b"..i)
-                ossleep(.2)
+                ossleep(.5)
             end
         end
         if arguments.error then

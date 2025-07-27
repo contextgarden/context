@@ -337,6 +337,10 @@ local addcasecraptoo = true -- experiment to let case matter a  bit (still fuzzy
 -- So, we assume either a lowercase name or a mixed case one but only one such case
 -- as having Foo fOo foo FoO FOo etc on the system is braindead in any sane project.
 
+-- A more direct scan (getting a files and dir table back) doesn't save time at all
+-- because these iterations are fast. The main advantage would be that we can scan
+-- nested, but we need to split off paths then again.
+
 local function scan(files,remap,spec,path,n,m,r,onlyone,tolerant,reported)
     local full     = path == "" and spec or (spec .. path .. '/')
     local dirlist  = { }

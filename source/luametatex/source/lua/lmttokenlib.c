@@ -933,6 +933,7 @@ static int tokenlib_scancsname(lua_State *L)
         int allocated = 0;
         unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag, &allocated);
         if (s) {
+            /*tex We stay below the threshold for long string so no gain in external. */
             if (tex_is_active_cs(cs_text(t - cs_token_flag))) {
                 lua_pushstring(L, (char *) (s + 3));
             } else {
@@ -2043,6 +2044,104 @@ static int tokenlib_grab_until(lua_State *L)
     return 1;
 }
 
+ /*tex 
+    This one is just an experiment and not yet official. It avoids building the token list so in 
+    principle it should be more efficient (although we now have a \LUA\ buffer that also adds a 
+    little overhead).
+*/
+
+static const char *token_cmd_to_string[15] = {
+    "\\", /*  0 escape_cmd        */
+    "{",  /*  1 left_brace_cmd    */
+    "}",  /*  2 right_brace_cmd   */
+    "$",  /*  3 math_shift_cmd    */
+    "&",  /*  4 alignment_tab_cmd */
+    "\n", /*  5 end_line_cmd      */
+    "#",  /*  6 parameter_cmd     */
+    "^",  /*  7 superscript_cmd   */
+    "_",  /*  8 subscript_cmd     */
+    "",   /*  9 ignore_cmd        */
+    " ",  /* 10 spacer_cmd        */
+    "",   /* 11 letter_cmd        */
+    "",   /* 12 other_char_cmd    */
+    "",   /* 13 active_char_cmd   */
+    "%"   /* 14 comment_cmd       */
+};
+
+static int tokenlib_grab_string_until(lua_State *L)
+{
+    lua_token *left = tokenlib_aux_check_istoken(L, 1);
+    lua_token *right = tokenlib_aux_check_istoken(L, 2);
+    int l = token_info(left->token);
+    int r = token_info(right->token);
+    int lstr = 0;
+    int rstr = 0;
+    if (l >= cs_token_flag) {
+        lstr = cs_text(l - cs_token_flag);
+    }
+    if (r >= cs_token_flag) {
+        rstr = cs_text(r - cs_token_flag);
+    }
+    if (lstr && rstr) {
+        saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
+        halfword defref = lmt_input_state.def_ref;
+        int level = 1;
+        luaL_Buffer b;
+        luaL_buffinit(L, &b);
+        while (1) {
+            tex_get_token();
+            switch (cur_cmd) {
+                case escape_cmd:
+                case left_brace_cmd:
+                case right_brace_cmd:
+                case math_shift_cmd:
+                case alignment_tab_cmd:
+                case end_line_cmd:
+                case parameter_cmd:
+                case superscript_cmd:
+                case subscript_cmd:
+                case ignore_cmd:
+                case spacer_cmd:
+                case comment_cmd:
+                    luaL_addlstring(&b, token_cmd_to_string[cur_cmd], 1);
+                    break;
+                case letter_cmd:
+                case other_char_cmd:
+                case active_char_cmd:
+                    tokenlib_aux_add_utf_char_to_buffer(&b, cur_chr);
+                    break;
+                default:
+                    if (cur_tok >= cs_token_flag) {
+                        int str = cs_text(cur_tok - cs_token_flag);
+                        if (str == lstr) {
+                            ++level;
+                        } else if (str == rstr) {
+                            --level;
+                            if (level == 0) {
+                                goto DONE;
+                            }
+                        }
+                        if (tex_is_active_cs(str)) {
+                            luaL_addlstring(&b, ((char *) str_string(str)) + 3, str_length(str) - 3);
+                        } else { 
+                            luaL_addchar(&b, '\\');
+                            luaL_addlstring(&b, (char *) str_string(str), str_length(str));
+                        }
+                    } else { 
+                        /* */
+                    }
+            }
+        }
+      DONE:
+        tokenlib_aux_unsave_tex_scanner(texstate);
+        lmt_input_state.def_ref = defref;
+        luaL_pushresult(&b);
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
 static int tokenlib_scanword(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
@@ -2115,24 +2214,6 @@ static int tokenlib_scanchar(lua_State *L)
     return 1;
 }
 
-static const char *token_cmd_to_string[15] = {
-    "\\", /*  0 escape_cmd        */
-    "{",  /*  1 left_brace_cmd    */
-    "}",  /*  2 right_brace_cmd   */
-    "$",  /*  3 math_shift_cmd    */
-    "&",  /*  4 alignment_tab_cmd */
-    "\n", /*  5 end_line_cmd      */
-    "#",  /*  6 parameter_cmd     */
-    "^",  /*  7 superscript_cmd   */
-    "_",  /*  8 subscript_cmd     */
-    "",   /*  9 ignore_cmd        */
-    " ",  /* 10 spacer_cmd        */
-    "",   /* 11 letter_cmd        */
-    "",   /* 12 other_char_cmd    */
-    "",   /* 13 active_char_cmd   */
-    "%"   /* 14 comment_cmd       */
-};
-
 static int tokenlib_scannextchar(lua_State *L)
 {
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
@@ -2156,6 +2237,7 @@ static int tokenlib_scannextchar(lua_State *L)
         case other_char_cmd:
         case active_char_cmd: /* needs testing */
             {
+                /* see elsewhere, we can make a shared helper */
                 char buffer[6];
                 char *uindex = aux_uni2string((char *) buffer, (unsigned int) cur_chr);
                 *uindex = '\0';
@@ -2344,6 +2426,7 @@ static int tokenlib_scanvalue(lua_State *L)
                                     int allocated = 0;
                                     unsigned char *s = tokenlib_aux_get_cs_text(t - cs_token_flag, &allocated);
                                     if (s) {
+                                        /* we can add a string to the buffer */
                                         if (tex_is_active_cs(cs_text(t - cs_token_flag))) {
                                             lua_pushstring(L, (char *) (s + 3));
                                             luaL_addvalue(&b);
@@ -4158,6 +4241,7 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "gobbledimension",       tokenlib_gobbledimension       },
     { "gobble",                tokenlib_gobble_until          },
     { "grab",                  tokenlib_grab_until            },
+    { "grabstring",            tokenlib_grab_string_until     },
     /* */
     { "futureexpand",          tokenlib_future_expand         },
     { "pushmacro",             tokenlib_pushmacro             },

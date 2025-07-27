@@ -3923,12 +3923,14 @@ static int texlib_hashtokens(lua_State *L)
                     int mt = 0;
                     lua_createtable(L, 2, 0);
                     lua_pushstring(L, tex_to_cstring(s));
+                 // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
                     ++nt;
                     lua_rawseti(L, -2, ++mt);
                     while (n) {
                         s = cs_text(n);
                         if (s) {
                             lua_pushstring(L, tex_to_cstring(s));
+                         // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
                             lua_rawseti(L, -2, ++mt);
                             ++nt;
                             ++nx;
@@ -3937,6 +3939,7 @@ static int texlib_hashtokens(lua_State *L)
                     }
                 } else {
                     lua_pushstring(L, tex_to_cstring(s));
+                 // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
                     ++nt;
                 }
             } else {
@@ -3951,11 +3954,13 @@ static int texlib_hashtokens(lua_State *L)
             if (s > 0) {
                 halfword n = cs_next(cs);
                 lua_pushstring(L, tex_to_cstring(s));
+             // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
                 lua_rawseti(L, -2, ++nt);
                 while (n) {
                     s = cs_text(n);
                     if (s) {
                         lua_pushstring(L, tex_to_cstring(s));
+                     // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
                         lua_rawseti(L, -2, ++nt);
                         ++nx;
                     }
@@ -3980,6 +3985,7 @@ static int texlib_primitives(lua_State *L)
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
             lua_pushstring(L, tex_to_cstring(s));
+         // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
             lua_rawseti(L, -2, ++nt);
         }
         cs++;
@@ -4016,6 +4022,7 @@ static int texlib_extraprimitives(lua_State *L)
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) & mask)) {
             lua_pushstring(L, tex_to_cstring(s));
+         // lua_pushexternalstring(L, (const char *) str_string(s), str_length(s), NULL, NULL);
             lua_rawseti(L, -2, ++nt);
         }
         cs++;

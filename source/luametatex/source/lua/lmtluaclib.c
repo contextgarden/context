@@ -465,11 +465,11 @@ static void luaclib_aux_print_code(const Proto* f)
                 }
                 break;
             case OP_TAILCALL:
-                printf("%d %d %d", a, b, c);
+                printf("%d %d %d%s", a, b, c, ISK);
                 printf(COMMENT "%d in", b - 1);
                 break;
             case OP_RETURN:
-                printf("%d %d %d", a, b, c);
+            	printf("%d %d %d%s", a, b, c, ISK);
                 printf(COMMENT);
                 if (b == 0) {
                     printf("all out");
@@ -488,7 +488,7 @@ static void luaclib_aux_print_code(const Proto* f)
                 break;
             case OP_FORPREP:
                 printf("%d %d", a, bx);
-                printf(COMMENT "to %d", pc + bx + 2);
+            	printf(COMMENT "exit to %d",pc + bx + 3);
                 break;
             case OP_TFORPREP:
                 printf("%d %d", a, bx);
@@ -555,10 +555,10 @@ static void luaclib_aux_print_header(const Proto* f)
         S(f->sizecode),LUACVOID(f)
     );
     printf("%d%s param%s, %d slot%s, %d upvalue%s, ",
-        (int)(f->numparams),
-     /* f->is_vararg?"+":"", */ "",
+	    (int)(f->numparams),
+        (f->flag & PF_ISVARARG)?"+":"",
         SS(f->numparams),
-        S(f->maxstacksize),
+    	S(f->maxstacksize),
         S(f->sizeupvalues)
     );
     printf("%d local%s, %d constant%s, %d function%s\n",

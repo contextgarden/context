@@ -2099,9 +2099,9 @@ end
                     report("index %02i, %s %a, status %a, runtime %0.3f ",ri.count,whattodo,filename,result,ri.time)
                 end
             end
-if squid then
-    squid.stepper((problem or #errors > 0) and "error" or "finished")
-end
+            if squid then
+                squid.stepper((problem or #errors > 0) and "error" or "finished")
+            end
             if #errors > 0 then
                 report()
                 report("errors in:")

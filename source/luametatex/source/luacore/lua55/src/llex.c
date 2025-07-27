@@ -44,7 +44,7 @@
 /* ORDER RESERVED */
 static const char *const luaX_tokens [] = {
     "and", "break", "do", "else", "elseif",
-    "end", "false", "for", "function", "goto", "if",
+    "end", "false", "for", "function", "global", "goto", "if",
     "in", "local", "nil", "not", "or", "repeat",
     "return", "then", "true", "until", "while",
     "//", "..", "...", "==", ">=", "<=", "~=",
@@ -184,7 +184,15 @@ void luaX_setinput (lua_State *L, LexState *ls, ZIO *z, TString *source,
   ls->linenumber = 1;
   ls->lastline = 1;
   ls->source = source;
-  ls->envn = luaS_newliteral(L, LUA_ENV);  /* get env name */
+  /* all three strings here ("_ENV", "break", "global") were fixed,
+     so they cannot be collected */
+  ls->envn = luaS_newliteral(L, LUA_ENV);  /* get env string */
+  ls->brkn = luaS_newliteral(L, "break");  /* get "break" string */
+#if defined(LUA_COMPAT_GLOBAL)
+  /* compatibility mode: "global" is not a reserved word */
+  ls->glbn = luaS_newliteral(L, "global");  /* get "global" string */
+  ls->glbn->extra = 0;  /* mark it as not reserved */
+#endif
   luaZ_resizebuffer(ls->L, ls->buff, LUA_MINBUFFER);  /* initialize buffer */
 }
 
@@ -354,12 +362,12 @@ static int readhexaesc (LexState *ls) {
 ** for error reporting in case of errors; 'i' counts the number of
 ** saved characters, so that they can be removed if case of success.
 */
-static unsigned long readutf8esc (LexState *ls) {
-  unsigned long r;
+static l_uint32 readutf8esc (LexState *ls) {
+  l_uint32 r;
   int i = 4;  /* number of chars to be removed: start with #"\u{X" */
   save_and_next(ls);  /* skip 'u' */
   esccheck(ls, ls->current == '{', "missing '{'");
-  r = cast_ulong(gethexa(ls));  /* must have at least one digit */
+  r = cast_uint(gethexa(ls));  /* must have at least one digit */
   while (cast_void(save_and_next(ls)), lisxdigit(ls->current)) {
     i++;
     esccheck(ls, r <= (0x7FFFFFFFu >> 4), "UTF-8 value too large");

@@ -664,6 +664,8 @@ function synctex.registerdisabler(f)
     disablers[#disablers+1] = f
 end
 
+statistics.feedback.register { name = "synctex", index = 3, category = "performance" }
+
 function synctex.enable(use_rule)
     if tex.getinteraction() ~= tex.interactioncodes.errorstop then
         report_system("synctex functionality is only enabled in error stop mode")
@@ -681,6 +683,7 @@ function synctex.enable(use_rule)
         end
         -- we have a different trigger moment in lmtx
         flushpreamble()
+        statistics.feedback.setstate("synctex",true)
     end
 end
 
@@ -718,6 +721,10 @@ function synctex.resume()
         setinputstatemode(3)
     end
     paused = paused - 1
+end
+
+function synctex.isenabled()
+    return enabled
 end
 
 -- not the best place

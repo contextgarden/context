@@ -368,3 +368,5 @@ implement {
 }
 
 texconfig.firstline = "\\processjob " -- experiment, yet undocumented
+
+luatex.registerstopactions(statistics.feedback.reportstates)

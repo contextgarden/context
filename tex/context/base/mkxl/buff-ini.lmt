@@ -535,6 +535,30 @@ implement {
     end
 }
 
+-- do
+--
+--     local getcatcode  = tex.getcatcode
+--     local setcatcode  = tex.setcatcode
+--     local createtoken = token.create
+--     local grabstring  = token.grabstring
+
+--     function grabbetween(start,stop)
+--         local starttok = createtoken(start,true)
+--         local stoptok  = createtoken(stop,true)
+--         local c32 = getcatcode(32)
+--         local c13 = getcatcode(13)
+--         setcatcode(32,12)
+--         setcatcode(13,12)
+--         local data = grabstring(starttok,stoptok)
+--         setcatcode(32,c32)
+--         setcatcode(13,c13)
+--         return data
+--     end
+--
+-- end
+--
+-- grabtokens = token.grabstring
+
 implement {
     name    = "grabbuffer",
     actions = function()

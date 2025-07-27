@@ -260,7 +260,9 @@ end
 
 -- now here
 
-status.iocodes = setmetatableindex(tex.getiovalues(), function() return "unknown" end)
+if tex then
+    status.iocodes = setmetatableindex(tex.getiovalues(), function() return "unknown" end)
+end
 
 local report = logs.reporter("system")
 
@@ -412,7 +414,7 @@ function statistics.showusage(when)
     do
         if p.calls > 0 then
             report("")
-            for k, v in table.sortedhash(p) do
+            for k, v in sortedhash(p) do
                 if v ~= 0 then
                     report("  balance state         : %-14s  %7i",k,v)
                 end
@@ -422,7 +424,7 @@ function statistics.showusage(when)
     do
      -- if h.checked > 0 then
             report("")
-            for k, v in table.sortedhash(h) do
+            for k, v in sortedhash(h) do
                 if v ~= 0 then
                     report("  hyphenation state     : %-10s  %7i",k,v)
                     done = true
@@ -469,3 +471,82 @@ end)
 --         logs.pop()
 --     end
 -- end)
+
+do
+
+    local feedback      = { }
+    statistics.feedback = feedback
+    local states        = { }
+    local indices       = { }
+    local used          = false
+    local enabled       = false
+
+    directives.register("system.feedback",function(v) enabled = v end)
+
+    -- We want a predictable index so we explicitly set one for the squid.
+
+    function feedback.register(specification)
+        if type(specification) ~= "table" then
+            report("bad feedback specification")
+        else
+            local index = specification.index or 0
+            local name  = specification.name  or "unknown"
+            if indices[index] then
+                report("duplicate feedback index %i for name %a",index or 0,name)
+            else
+                states[name]  = {
+                    index    = index,
+                    name     = name,
+                    state    = false,
+                    category = specification.category or "problem"
+                }
+                indices[index] = name
+            end
+        end
+    end
+
+    feedback.register { name = "module",  index = 6, category = "performance"  }
+    feedback.register { name = "badnews", index = 7, category = "interference" }
+
+    function feedback.setstate(name,state)
+        local f = states[name]
+        if f then
+            f.state = state or false
+            if state then
+                used = true
+            end
+        end
+    end
+
+ -- function feedback.getindex(name)
+ --     local f = states[name]
+ --     return f and f.index or 0
+ -- end
+
+    function feedback.processstates(action)
+        if used and enabled and action then
+            for k, v in sortedhash(indices) do
+                local f = states[v]
+                if f and f.state then
+                    action(f)
+                end
+            end
+        end
+    end
+
+    local report = logs.reporter("feedback")
+
+    function feedback.reportstates()
+        if used and enabled then
+            report()
+            for k, v in sortedhash(indices) do
+                local f = states[v]
+                if f and f.state then
+                    report("%2i : %s (%s)",f.index,f.name,f.category)
+                end
+            end
+            report()
+        end
+    end
+
+end

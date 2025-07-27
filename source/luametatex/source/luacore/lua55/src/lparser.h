@@ -37,21 +37,27 @@ typedef enum {
                  info = result register */
   VLOCAL,  /* local variable; var.ridx = register index;
               var.vidx = relative index in 'actvar.arr'  */
+  VGLOBAL,  /* global variable;
+               info = relative index in 'actvar.arr' (or -1 for
+                      implicit declaration) */
   VUPVAL,  /* upvalue variable; info = index of upvalue in 'upvalues' */
   VCONST,  /* compile-time <const> variable;
               info = absolute index in 'actvar.arr'  */
   VINDEXED,  /* indexed variable;
                 ind.t = table register;
-                ind.idx = key's R index */
+                ind.idx = key's R index;
+                ind.ro = true if it represents a read-only global;
+                ind.keystr = if key is a string, index in 'k' of that string;
+                             -1 if key is not a string */
   VINDEXUP,  /* indexed upvalue;
-                ind.t = table upvalue;
-                ind.idx = key's K index */
+                ind.idx = key's K index;
+                ind.* as in VINDEXED */
   VINDEXI, /* indexed variable with constant integer;
                 ind.t = table register;
                 ind.idx = key's value */
   VINDEXSTR, /* indexed variable with literal string;
-                ind.t = table register;
-                ind.idx = key's K index */
+                ind.idx = key's K index;
+                ind.* as in VINDEXED */
   VJMP,  /* expression is a test/comparison;
             info = pc of corresponding jump instruction */
   VRELOC,  /* expression can put result in any register;
@@ -75,10 +81,12 @@ typedef struct expdesc {
     struct {  /* for indexed variables */
       short idx;  /* index (R or "long" K) */
       lu_byte t;  /* table (register or upvalue) */
+      lu_byte ro;  /* true if variable is read-only */
+      int keystr;  /* index in 'k' of string key, or -1 if not a string */
     } ind;
     struct {  /* for local variables */
       lu_byte ridx;  /* register holding the variable */
-      unsigned short vidx;  /* compiler index (in 'actvar.arr')  */
+      short vidx;  /* index in 'actvar.arr' */
     } var;
   } u;
   int t;  /* patch list of 'exit when true' */
@@ -87,12 +95,21 @@ typedef struct expdesc {
 
 
 /* kinds of variables */
-#define VDKREG		0   /* regular */
-#define RDKCONST	1   /* constant */
+#define VDKREG		0   /* regular local */
+#define RDKCONST	1   /* local constant */
 #define RDKTOCLOSE	2   /* to-be-closed */
-#define RDKCTC		3   /* compile-time constant */
+#define RDKCTC		3   /* local compile-time constant */
+#define GDKREG		4   /* regular global */
+#define GDKCONST	5   /* global constant */
 
-/* description of an active local variable */
+/* variables that live in registers */
+#define varinreg(v)	((v)->vd.kind <= RDKTOCLOSE)
+
+/* test for global variables */
+#define varglobal(v)	((v)->vd.kind >= GDKREG)
+
+
+/* description of an active variable */
 typedef union Vardesc {
   struct {
     TValuefields;  /* constant value (if it is a compile-time constant) */
@@ -111,7 +128,7 @@ typedef struct Labeldesc {
   TString *name;  /* label identifier */
   int pc;  /* position in code */
   int line;  /* line where it appeared */
-  lu_byte nactvar;  /* number of active variables in that position */
+  short nactvar;  /* number of active variables in that position */
   lu_byte close;  /* true for goto that escapes upvalues */
 } Labeldesc;
 
@@ -156,7 +173,7 @@ typedef struct FuncState {
   int firstlocal;  /* index of first local var (in Dyndata array) */
   int firstlabel;  /* index of first label (in 'dyd->label->arr') */
   short ndebugvars;  /* number of elements in 'f->locvars' */
-  lu_byte nactvar;  /* number of active local variables */
+  short nactvar;  /* number of active variable declarations */
   lu_byte nups;  /* number of upvalues */
   lu_byte freereg;  /* first free register */
   lu_byte iwthabs;  /* instructions issued since last absolute line info */

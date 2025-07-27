@@ -1595,11 +1595,15 @@ local collectresults  do -- too many locals otherwise
     local getkern          = nuts.getkern
     local getwidth         = nuts.getwidth
     local getclass         = nuts.getclass
+    local getdiscpart      = nuts.getdiscpart
 
     local startofpar       = nuts.startofpar
 
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
+
+    local automatic_code   <const> = tex.glyphdisccodes.automatic
+    local syllable_code    <const> = tex.glyphdisccodes.syllable
 
     local function addtomaybe(maybewrong,c,paragraph,ap,case)
         if trace_export then
@@ -1638,6 +1642,7 @@ local collectresults  do -- too many locals otherwise
         local paragraph
         local maybewrong
         local pid
+        local isdisc = false
         for n, id, subtype in nextnode, head do
             if trace_details then
                 showdetail(n,id,subtype)
@@ -1730,37 +1735,52 @@ local collectresults  do -- too many locals otherwise
                         else
                             currentcontent[nofcurrentcontent] = " "
                         end
+                        isdisc = false
                     else
                         local fc = fontchar[f]
                         if fc then
                             fc = fc and fc[c]
                             if fc then
+                                local dcode, dafter, dtype = getdiscpart(n)
                                 local u = fc.unicode
                                 if u == 0 or u == 0xFFFD then
                                     -- ignore (can make disappear)
-                                elseif not u then
+                                    isdisc = false
+                                elseif u == 0x2D then
                                     nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = utfchar(c)
-                                elseif type(u) == "table" then
-                                    for i=1,#u do
-                                        nofcurrentcontent = nofcurrentcontent + 1
-                                        currentcontent[nofcurrentcontent] = utfchar(u[i])
-                                    end
+                                    currentcontent[nofcurrentcontent] = "-"
+                                    isdisc = dtype == automatic_code
                                 else
-                                    nofcurrentcontent = nofcurrentcontent + 1
-                                    currentcontent[nofcurrentcontent] = utfchar(u)
+                                    if keephyphens and dafter == syllable_code then
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = hyphen
+                                    end
+                                    if type(u) == "table" then
+                                        for i=1,#u do
+                                            nofcurrentcontent = nofcurrentcontent + 1
+                                            currentcontent[nofcurrentcontent] = utfchar(u[i])
+                                        end
+                                    else
+                                        nofcurrentcontent = nofcurrentcontent + 1
+                                        currentcontent[nofcurrentcontent] = utfchar(u or c)
+                                    end
+                                    isdisc = false
                                 end
                             elseif c > 0 then
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = utfchar(c)
+                                isdisc = false
                             else
                                 -- we can have -1 as side effect of an explicit hyphen (unless we expand)
+                             -- isdisc = false
                             end
                         elseif c > 0 then
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = utfchar(c)
+                            isdisc = false
                         else
                             -- we can have -1 as side effect of an explicit hyphen (unless we expand)
+                         -- isdisc = false
                         end
                     end
                 end
@@ -1807,6 +1827,7 @@ local collectresults  do -- too many locals otherwise
                         -- end
                         nofcurrentcontent = nofcurrentcontent + 1
                         currentcontent[nofcurrentcontent] = c
+                        isdisc = false
                     end
                 elseif subtype == userskip_code then
                     if getwidth(n) > threshold then
@@ -1818,6 +1839,7 @@ local collectresults  do -- too many locals otherwise
                                 end
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+                                isdisc = false
                             elseif a then
                                 -- e.g LOGO<space>LOGO
                                 if trace_export then
@@ -1830,6 +1852,7 @@ local collectresults  do -- too many locals otherwise
                                 last = a
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+                                isdisc = false
                                 currentnesting = taglist[last]
                                 pushentry(currentnesting)
                                 currentattribute = last
@@ -1845,6 +1868,7 @@ local collectresults  do -- too many locals otherwise
                             end
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
+                            isdisc = false
                         else
                             if trace_export then
                                 report_export("%w<!-- injecting spacing 7 (end of element) -->",currentdepth)
@@ -1853,6 +1877,7 @@ local collectresults  do -- too many locals otherwise
                             pushcontent()
                             nofcurrentcontent = nofcurrentcontent + 1
                             currentcontent[nofcurrentcontent] = " "
+                            isdisc = false
                             currentnesting = taglist[last]
                             pushentry(currentnesting)
                             currentattribute = last
@@ -1867,7 +1892,10 @@ local collectresults  do -- too many locals otherwise
                         if r == hyphen then
                             if not keephyphens then
                                 nofcurrentcontent = nofcurrentcontent - 1
+                                isdisc = false
                             end
+                        elseif isdisc then
+                            -- nasty
                         elseif pid == disc_code then
                             -- go on .. tricky: we should mark the glyhs as coming from a disc
                         elseif not somespace[r] then
@@ -1886,6 +1914,7 @@ local collectresults  do -- too many locals otherwise
                                 pushcontent()
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+                                isdisc = false
                                 currentnesting = taglist[last]
                                 pushentry(currentnesting)
                                 currentattribute = last
@@ -1948,6 +1977,7 @@ local collectresults  do -- too many locals otherwise
                                             end
                                             nofcurrentcontent = nofcurrentcontent + 1
                                             currentcontent[nofcurrentcontent] = " "
+                                            isdisc = false
                                         end
                                     elseif a then
                                         -- e.g LOGO<space>LOGO
@@ -1961,6 +1991,7 @@ local collectresults  do -- too many locals otherwise
                                         end
                                         nofcurrentcontent = nofcurrentcontent + 1
                                         currentcontent[nofcurrentcontent] = " "
+                                        isdisc = false
                                      -- currentnesting = taglist[last]
                                         currentnesting = t
                                         pushentry(currentnesting)
@@ -1998,6 +2029,7 @@ local collectresults  do -- too many locals otherwise
                     if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
                         nofcurrentcontent = nofcurrentcontent + 1
                         currentcontent[nofcurrentcontent] = hyphen
+                        isdisc = false
                     end
                 end
                 if replace then
@@ -2815,6 +2847,7 @@ end
             imagefilebase,
             fontfilebase,
             stylefilebase,
+            templatefilename,
         }
 
         local cssextra = cssfile and table.unique(settings_to_array(cssfile)) or { }
@@ -3058,6 +3091,8 @@ end
 
     local enableaction = nodes.tasks.enableaction
 
+    statistics.feedback.register { name = "export", index = 1, category = "performance" }
+
     function structurestags.initializeexport()
         if not exporting then
             report_export("enabling export to xml")
@@ -3067,8 +3102,10 @@ end
             enableaction("everypar","nodes.handlers.checkparcounter")
             luatex.registerstopactions(structurestags.finishexport)
             exporting = true
+            statistics.feedback.setstate("export", true)
         end
     end
+
 
     function structurestags.setupexport(t)
         merge(finetuning,t)

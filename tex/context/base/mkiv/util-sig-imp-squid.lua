@@ -51,13 +51,31 @@ if protocol == "serial" then
     local function squidproblem() squidsome("qp") end
     local function squiderror  () squidsome("qe") end
 
-local function squidstep()
-    signals.serialfast(port,baud,"qs")
-end
-local function squiddone()
-    signals.serialfast(port,baud,"qf")
-    signals.serialclose(port)
-end
+    local function squidstep()
+        signals.serialfast(port,baud,"qs")
+    end
+
+    local function squiddone(currentrun,details)
+        signals.serialfast(port,baud,"qf")
+        if details and statistics and statistics.feedback then
+            statistics.feedback.processstates(function(s)
+                local index    = s.index
+                local category = s.category
+                local command  = false
+                if category == "performance" then
+                    command = "fb"
+                elseif category == "problem" then
+                    command = "fp"
+                elseif category == "interference" then
+                    command = "fe"
+                end
+                if command then
+                    signals.serialfast(port,baud,command .. index .. "\n")
+                end
+            end)
+        end
+        signals.serialclose(port)
+    end
 
     signals.squidinit     = squidreset
     signals.squidreset    = squidreset
@@ -71,7 +89,7 @@ end
     return {
         name    = "squid",
         report  = report,
-        trigger = function(state)
+        trigger = function(state,currentrun)
             -- We can let context handle it if we plug into the closer. We can also
             -- intercept redundant error/problem/done handling if needed.
          -- if state == "busy" then
@@ -83,8 +101,10 @@ end
                 squidproblem()
             elseif state == "error" then
                 squiderror()
-         -- elseif state == "done" or state == "finished" then
+         -- elseif state == "done" then
          --     squiddone()
+         -- elseif state == "finished" then
+         --     squidfinished() -- already set
             end
         end,
         stepper = function(action,process,step,issue)
@@ -105,7 +125,7 @@ end
             end
             squidsome(cmd)
         end,
-        signal = function(action)
+        signal = function(action,currentrun)
             local cmd = "ar"
             if action == "busy" or action == "step" then
                 cmd = "ab"

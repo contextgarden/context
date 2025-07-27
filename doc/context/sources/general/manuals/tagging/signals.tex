@@ -253,14 +253,22 @@ We have now arrived at the alternative: a \USB\ connected device. We have a set
 of addressable leds, for instance a circle with 24 so called WS2812B leds or a
 rectangle with 10 times 16 leds (or more likely: 8 times 12). These are what we
 call device 1 and device 2 \SQUID. The reference is device 1, the one that was
-introduced at the \CONTEXT\ 2025 meeting. The device is driven by a
-\RASPBERRYPICO\ for which the distribution has software so you can assemble your
-own (the first tests used a large silicon led strip).
+introduced at the \CONTEXT\ 2025 meeting. The original idea was to use a
+\RASPBERRYPICO, where we experimented with a regular (large) led strip, and we
+still support that, but after experimenting and deciding what to produce as
+gadget we settled for an ESP32S3. In the end we will support both platforms but
+testing now moved to the ESP. The distribution will have the relevant files.
+Where we first used the Arduino IDE we now use the vscode platformio system.
+Actually the IDE works a bit better but because we wanted to be able to use both
+the files were split up and then the io variant is a bit more convenient, also
+because it compiles more efficient (faster).
 
-Assuming a device 1, we have one (squid), four (quadrant) or eight (segment)
-visualizers where each represents a run. By default context limits the number of
-runs to nine so the last quadrant or segment is reused. In practice one never has
-that many runs, as it indicates some form of oscillation.
+Assuming a device 1 (the gadget with 24 leds in a ring), we have one (squid),
+four (quadrant) or eight (segment) visualizers where each represents a run.
+Future versions will also explore two (duplex) and six (sexy) modes. By default
+context limits the number of runs to nine so the last quadrant or segment is
+reused. In practice one never has that many runs, as it indicates some form of
+oscillation.
 
 \startlinecorrection
     \getbuffer[squid-001]
@@ -754,14 +762,49 @@ with. You can also send text (string) via the signal script.
 
 \stopsection
 
+\startsection[title=Configuration]
+
+The device itself has a simple way to set up some properties. Here the two
+buttons come into play. The left button by default will turn off the leds. The
+state is remembered so hitting that button again will show the last remembered
+state.
+
+The right button initiates configuration mode. That right button is that used to
+jump from option to option. The last option is colored red which indicates that
+we reached the exit option, and hitting the left button gets us out of
+configuration mode. In fact, the left button is confirmation for the other
+options as well.
+
+\starttabulate[|||]
+\NC palette  \NC choose a different color palette (color blind related) \NC \NR
+\NC preroll  \NC show the startup led test sequence \NC \NR
+\NC dimming  \NC dim the leds, start bright when out of levels \NC \NR
+\NC defaults \NC set the default configuration \NC \NR
+\NC logo     \NC show a couple of \quote {characters} \NC \NR
+\NC restart  \NC restart the device \NC \NR
+\NC save     \NC save the settings in flash memory \NC \NR
+\NC exit     \NC exit the configuration \NC \NR
+\stoptabulate
+
+So, when you hit the right button, the top led will be green and represent the
+\type {palette} option, when the button is hit again, the third led lights up and
+represents the \type {preroll}; we use the odd numbered leds. The text option is
+a gimmick and shows in sequence:
+
+\startlinecorrection
+    \getbuffer[squid-010]
+\stoplinecorrection
+
+\stopsection
+
 \startsection[title=Connecting]
 
 On \MSWINDOWS\ you can plug in a serial (usb) cable and the device gets a port
 assigned. Normally you get the same port. You can check the right name (something
 \type {COM:}) in the device manager, so for example \type {COM6:}.
 
-In \LINUX\ a \RASPBERRYPICO\ will normally be \type {/dev/ttyACM0} but there we
-also need to make sure that we get access. You need to be a member of the \type
+In \LINUX\ the device will normally be \type {/dev/ttyACM0} but there we also
+need to make sure that we get access. You need to be a member of the \type
 {dialout} group, which can be done with \typ {sudo usermod -a -G dialout
 yourname} (you need to re-login).
 

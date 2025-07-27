@@ -26,15 +26,27 @@ implement {
                     if true then
                         -- Here the context runner handles the final states which is more reliable
                         -- when we exit for some reason other than under context control.
-                        local function action(f)
+                        local function action(f,details)
                             return function()
-                                f(tonumber(environment.arguments.currentrun))
+                                f(tonumber(environment.arguments.currentrun),details)
                             end
                         end
-                        implement { name = "squid_init", actions = action(signals.squidinit) }
-                        implement { name = "squid_busy", actions = action(signals.squidbusy) }
-                        implement { name = "squid_step", actions = action(signals.squidstep) }
-                        implement { name = "squid_done", actions = action(signals.squiddone) }
+                        implement {
+                            name    = "squid_init",
+                            actions = action(signals.squidinit)
+                        }
+                        implement {
+                            name    = "squid_busy",
+                            actions = action(signals.squidbusy)
+                        }
+                        implement {
+                            name    = "squid_step",
+                            actions = action(signals.squidstep)
+                        }
+                        implement {
+                            name    = "squid_done",
+                            actions = action(signals.squiddone,true)
+                        }
                         expandmacro("enablesquidmode")
                     else
                         -- Here context itself handles the final states which is a bit more fragile

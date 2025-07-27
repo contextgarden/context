@@ -116,26 +116,35 @@
      {\box\b_page_one_contents}%
    \egroup}
 
+\def\page_col_fix_depth
+  {\scratchdepth{\openstrutdepth-\d_page_one_natural_depth}%
+   \ifdim{\d_page_one_natural_total+\scratchdepth}>\textheight
+     % forget about it, prevents an overfull warning
+   \else
+     \vskip\scratchdepth
+     \prevdepth\openstrutdepth
+   \fi}
+
 \protected\def\page_col_command_package_contents_one#1#2% \box<n> \unvbox<n> % this one will be redone (checked)
   {\bgroup
      \forgetall
      % see one for comments as it is similar
      \strc_notes_check_if_bottom_present
+    %\d_page_one_natural_height\ht#2\relax
      \d_page_one_natural_depth\dp#2\relax
-%      \page_layouts_check_stretch#2%
+     \d_page_one_natural_total\boxrepack#2\relax
+   % \page_layouts_check_stretch#2%
      \setbox\b_page_one_contents\vbox to \textheight
        {\page_col_command_flush_top_insertions
         \page_one_registered_text_area_a#1#2%
         \hsize\d_page_col_column_width
         \ifgridsnapping
-          \vskip{\openstrutdepth-\d_page_one_natural_depth}%
-          \prevdepth\openstrutdepth
+          \page_col_fix_depth
           \page_col_command_flush_bottom_insertions
           \vfil
         \orelse\ifcase\bottomraggednessmode
           % ragged (default)
-          \vskip{\openstrutdepth-\d_page_one_natural_depth}%
-          \prevdepth\openstrutdepth
+          \page_col_fix_depth
           \page_col_command_flush_bottom_insertions
           \vfil
         \or

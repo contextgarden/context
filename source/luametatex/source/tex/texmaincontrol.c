@@ -5224,7 +5224,7 @@ static void tex_aux_set_register_toks(int a, int force) // better just pass cmd 
 
 static void tex_aux_set_internal_toks(int a, int force) // better just pass cmd and chr
 {
-    if (force || tex_mutation_permitted(cur_cs)) {
+    if (force || tex_mutation_permitted(cur_chr)) {
         tex_aux_set_assign_toks(a, cur_cmd, cur_cs, cur_chr);
     }
 }

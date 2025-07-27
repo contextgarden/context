@@ -139,6 +139,16 @@ l_noret luaD_throw (lua_State *L, TStatus errcode) {
 }
 
 
+l_noret luaD_throwbaselevel (lua_State *L, TStatus errcode) {
+  if (L->errorJmp) {
+    /* unroll error entries up to the first level */
+    while (L->errorJmp->previous != NULL)
+      L->errorJmp = L->errorJmp->previous;
+  }
+  luaD_throw(L, errcode);
+}
+
+
 TStatus luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
   l_uint32 oldnCcalls = L->nCcalls;
   struct lua_longjmp lj;
@@ -162,6 +172,20 @@ TStatus luaD_rawrunprotected (lua_State *L, Pfunc f, void *ud) {
 
 /* some stack space for error handling */
 #define STACKERRSPACE	200
+
+
+/*
+** LUAI_MAXSTACK limits the size of the Lua stack.
+** It must fit into INT_MAX/2.
+*/
+
+#if !defined(LUAI_MAXSTACK)
+#if 1000000 < (INT_MAX / 2)
+#define LUAI_MAXSTACK           1000000
+#else
+#define LUAI_MAXSTACK           (INT_MAX / 2u)
+#endif
+#endif
 
 
 /* maximum stack size that respects size_t */
@@ -513,7 +537,7 @@ l_sinline void genmoveresults (lua_State *L, StkId res, int nres,
 ** to 'res'.  Handle most typical cases (zero results for commands,
 ** one result for expressions, multiple results for tail calls/single
 ** parameters) separated. The flag CIST_TBC in 'fwanted', if set,
-** forces the swicth to go to the default case.
+** forces the switch to go to the default case.
 */
 l_sinline void moveresults (lua_State *L, StkId res, int nres,
                                           l_uint32 fwanted) {

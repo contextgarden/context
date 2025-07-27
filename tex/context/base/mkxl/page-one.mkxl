@@ -141,6 +141,9 @@
    \fi}
 
 \newdimension\d_page_one_natural_depth
+\newdimension\d_page_one_natural_height
+\newdimension\d_page_one_natural_total
+
 \newbox      \b_page_one_bottom_notes
 \newbox      \b_page_one_contents
 

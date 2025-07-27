@@ -1,0 +1,136 @@
+%D \module
+%D   [       file=x-markdown,
+%D        version=2011.07.19, % 2025.07.19
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=Processing MarkDown,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Modules / MarkDown Renderer}
+
+% This module deals with markdown which is a document encoding that some \CONTEXT\
+% users seem to like. It reminds me of the kind of minimal coding we used before we
+% ran into \TEX\ and were using a somewhat simple rendering (pagination, etc) of
+% documents. As I'm no user myself, it is up to others to provide documentation and
+% examples.
+%
+% [2025] At some point this module was removed from the distribution but still
+% around in my development tree. So I had to decide: either keep this oldie around
+% for historic reasons, or remove it. It probably will not be used anyway so it's
+% harmless to keep around in a less perfect state. For the record: I was never much
+% onto markdown but somehow got involved in the parser which I cleaned up and gave
+% a performance boost. Then it went back to where it came from and I lost track of
+% it. So, what we have here is likely not all okay and in sync with the latest
+% specifications but one can argue that when one really needs all these extensions
+% (like html) then one can as well code in \TEX. In fact, all these \quotation
+% {start as simple input to make life easier} projects in the end arrive at a
+% certain complexity level that make \TEX\ input looks simple. So, we only need to
+% support the intended \quote {simple input} its here. If you need more, just shop
+% around a bit (there is for instance a \CONTEXT\ backend for Pandoc.)
+%
+% I'll fix issues when user come up with demands as I have no examples myself,
+% but within the constraints of simplicity. Using Pandoc with Aditya's filter
+% module is a valid alternative.
+%
+% There have been discussions for asciidoc and also presentations at the meetings
+% so I need to spend soem time on that.
+
+\registerctxluafile{m-markdown.lmt}{}
+
+\unprotect
+
+% We just provide a basic interface:
+
+\definebuffer
+  [markdown]
+
+\permanent\protected\def\stopmarkdown
+  {\ctxlua{moduledata.markdown.typesetbuffer("\thedefinedbuffer{markdown}")}}
+
+\permanent\protected\def\processmarkdownfile#1% maybe [] or both
+  {\ctxlua{moduledata.markdown.typesetfile("#1")}}
+
+\permanent\protected\def\markdown#1% maybe [] or both
+  {\ctxlua{moduledata.markdown.typesetstring(\!!bs#1\!!es)}}
+
+% commands
+
+\defineitemgroup
+  [markdownitemize]
+
+\definetyping
+  [markdowntyping]
+
+\definetype
+  [markdowntype]
+
+\definetype
+  [markdowninlinehtml]
+
+\definetyping
+  [markdowndisplayhtml]
+
+\definedelimitedtext
+  [markdownblockquote]
+  [quotation]
+
+\definehighlight
+  [markdownemphasis]
+  [style=\em]
+
+\definehighlight
+  [markdownstrong]
+  [style=\bf]
+
+\definestructurelevels
+  [markdown]
+  [\v!chapter,
+   \v!section,
+   \v!subsection,
+   \v!subsubsection,
+   \v!subsubsubsection,
+   \v!subsubsubsubsection]
+
+\permanent\protected\def\markdownrule
+  {\hairline\par}
+
+\protect
+
+\continueifinputfile{m-markdown.mkxl}
+
+\starttext
+
+\startmarkdown
+Test
+====
+* Test
+    * Test
+* Test
+    * Test
+* Test
+
+Test
+====
+
+> test
+> test
+> test
+
+test
+
+Test
+====
+
+> test
+> test
+> test
+
+test
+\stopmarkdown
+
+\stoptext

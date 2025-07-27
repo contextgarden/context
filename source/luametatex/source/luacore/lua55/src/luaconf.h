@@ -59,7 +59,7 @@
 
 
 /*
-** When Posix DLL ('LUA_USE_DLOPEN') is enabled, the Lua stand-alone
+** When POSIX DLL ('LUA_USE_DLOPEN') is enabled, the Lua stand-alone
 ** application will try to dynamically link a 'readline' facility
 ** for its REPL.  In that case, LUA_READLINELIB is the name of the
 ** library it will look for those facilities.  If lua.c cannot open
@@ -76,7 +76,7 @@
 
 #if defined(LUA_USE_MACOSX)
 #define LUA_USE_POSIX
-#define LUA_USE_DLOPEN		/* MacOS does not need -ldl */
+#define LUA_USE_DLOPEN		/* macOS does not need -ldl */
 #define LUA_READLINELIB		"libedit.dylib"
 #endif
 
@@ -88,7 +88,7 @@
 
 
 #if defined(LUA_USE_C89) && defined(LUA_USE_POSIX)
-#error "Posix is not compatible with C89"
+#error "POSIX is not compatible with C89"
 #endif
 
 
@@ -354,6 +354,12 @@
 ** Compatibility with previous versions
 ** ===================================================================
 */
+
+/*
+@@ LUA_COMPAT_GLOBAL avoids 'global' being a reserved word
+*/
+#define LUA_COMPAT_GLOBAL
+
 
 /*
 @@ LUA_COMPAT_5_3 controls other macros for compatibility with Lua 5.3.
@@ -756,20 +762,6 @@
 ** Lua).
 ** =====================================================================
 */
-
-/*
-@@ LUAI_MAXSTACK limits the size of the Lua stack.
-** CHANGE it if you need a different limit. This limit is arbitrary;
-** its only purpose is to stop Lua from consuming unlimited stack
-** space and to reserve some numbers for pseudo-indices.
-** (It must fit into max(int)/2.)
-*/
-#if 1000000 < (INT_MAX / 2)
-#define LUAI_MAXSTACK		1000000
-#else
-#define LUAI_MAXSTACK		(INT_MAX / 2u)
-#endif
-
 
 /*
 @@ LUA_EXTRASPACE defines the size of a raw memory area associated with
