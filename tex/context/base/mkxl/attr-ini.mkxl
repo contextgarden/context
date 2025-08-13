@@ -64,6 +64,7 @@
        \aliased\gletcsname#2\s!attribute\expandafter\endcsname\csname\??attributeid#2\endcsname% \attribute\fooattribute
      \fi
      % used to sync in the page builder .. used for directions and scripts ... i start forgetting these details .. (seldom used)
+     % also resync tagging in margin texts
      \ifinset\s!pickup{#3}%
        \global\expandafter\integerdef\csname\??attributepickup#2\endcsname\attributeunsetvalue
        \xtoksapp\t_attr_list_pickup{\csname\??attributeprefix#2\endcsname\csname\??attributepickup#2\endcsname}%

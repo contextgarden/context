@@ -808,6 +808,10 @@ need to make sure that we get access. You need to be a member of the \type
 {dialout} group, which can be done with \typ {sudo usermod -a -G dialout
 yourname} (you need to re-login).
 
+On \OSX\ I could only test on an old intel mac and there it just worked
+with \type {/dev/tty.usbmodem14101}. Using \typ {ls -la /dev/tty.usbserial*}
+can be your friend here.
+
 When you connect the device visa for instance a \USB\ hub in a keyboard you
 should expect uncomfortable delays, at least that is what I encountered on the
 \LINUX\ box.

@@ -97,7 +97,7 @@
 \aliased\let\setupbars\setupbar
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentbar\endcsname{\node_rules_direct{\currentbar}}%
+    \protected\frozen\instance\edefcsname\currentbar\endcsname{\node_rules_direct{\currentbar}}%
 \to \everydefinebar
 
 % \protected\def\node_rules_direct#1%
@@ -432,7 +432,7 @@
 \let\setupshifts\setupshift
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentshift\endcsname{\node_shifts_direct{\currentshift}}%
+    \protected\frozen\instance\edefcsname\currentshift\endcsname{\node_shifts_direct{\currentshift}}%
 \to \everydefineshift
 
 \protected\def\node_shifts_set#1% todo: check parent ! todo: move attr etc to lua
@@ -619,7 +619,7 @@
 \let\setupshadows\setupshadow
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentshadow\endcsname{\node_shadows_direct{\currentshadow}}%
+    \protected\frozen\instance\edefcsname\currentshadow\endcsname{\node_shadows_direct{\currentshadow}}%
 \to \everydefineshadow
 
 \protected\def\node_shadows_set#1% todo: check parent ! todo: move attr etc to lua

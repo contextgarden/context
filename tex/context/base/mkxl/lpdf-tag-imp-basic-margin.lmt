@@ -1,0 +1,16 @@
+return {
+
+    name      = "basic pdf specific tagging : margin",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+     -- margintextblock = { pdf = "NonStruct" },
+        margintext      = { pdf = "Aside" },
+     -- marginanchor    = { pdf = "NonStruct" },
+
+    },
+
+}

@@ -1391,7 +1391,7 @@
 \installcommandhandler \??referenceformat {referenceformat} \??referenceformat
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\currentreferenceformat\endcsname{\strc_references_apply_format{\currentreferenceformat}}%
+    \protected\frozen\instance\edefcsname\currentreferenceformat\endcsname{\strc_references_apply_format{\currentreferenceformat}}%
 \to \everydefinereferenceformat
 
 \setupreferenceformat

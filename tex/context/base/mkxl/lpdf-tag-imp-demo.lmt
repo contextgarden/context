@@ -1,0 +1,93 @@
+local level   = structures.tags.getoption("level")
+local current = 0
+local used    = 0
+
+local function HN(bump)
+    if bump then
+        current = current + 1
+        if current >= level then
+            used = used + 1
+        end
+    end
+    if used > 0 and used < 10 then
+        return "H" .. used
+    else
+        return "NonStruct"
+    end
+end
+
+return {
+    name      = "pdf specific tagging : demo",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    validated = {
+        {
+            name    = "verapdf",
+            version = "1.29.90",
+            date    = "20250801",
+        },
+    },
+
+    includes  = {
+        "basic-combination",
+        "basic-delimited",
+        "basic-description",
+        "basic-float",
+        "basic-formula",
+        "basic-itemgroup",
+        "basic-list",
+        "basic-margin",
+--         "basic-section",
+        "basic-verbatim",
+    },
+
+    endpoints = {
+        Part = "p",
+        Div  = "p",
+        Sect = "p",
+    },
+
+    mapping = {
+
+        p = { pdf = "P",        warning = true },
+        t = { pdf = "Span",     warning = true },
+        m = { pdf = "Artifact", warning = true },
+
+-- dummy     = { pdf = "P"  },
+-- navigationpage     = { pdf = "Reference"  },
+-- reference     = { pdf = "Link"  },
+
+    },
+
+    remapping = {
+
+        { element = "sectioncaption", parent = "chapter",                         pdf = HN(true ) },
+        { element = "sectioncaption", parent = "title",                           pdf = HN(false) },
+        { element = "sectioncaption", parent = "section",                         pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subject",                         pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsection",                      pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubject",                   pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsection",                   pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubject",                pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsection",                pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubject",             pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsection",             pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubject",          pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsection",          pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubject",       pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubsection",    pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubsubsubject", pdf = HN(false) },
+
+        { element = "sectionblock",   pdf = "NonStruct" },
+
+        { element = "section",        pdf = "Sect" },
+        { element = "sectioncaption", pdf = "Div"  },
+        { element = "sectiontitle",   pdf = "Lbl"  },
+        { element = "sectionnumber",  pdf = "Lbl"  },
+        { element = "sectioncontent", pdf = "Div"  },
+
+    }
+
+}

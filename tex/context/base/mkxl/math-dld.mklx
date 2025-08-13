@@ -48,7 +48,7 @@
 
 \appendtoks
     \ifcstok{\mathdelimitedparameter\c!define}\v!yes
-      \frozen\protected\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
+      \protected\frozen\instance\edefcsname\currentmathdelimited\endcsname{\math_delimited_handle{\currentmathdelimited}}
     \fi
 \to \everydefinemathdelimited
 

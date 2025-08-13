@@ -504,8 +504,8 @@
 \to \everyredefinehead
 
 \appendtoks
-   \frozen\instance\protected\edefcsname\e!start\currenthead\endcsname{\strc_sectioning_start[\currenthead]}%
-   \frozen\instance\protected\edefcsname\e!stop \currenthead\endcsname{\strc_sectioning_stop [\currenthead]}%
+   \protected\frozen\instance\edefcsname\e!start\currenthead\endcsname{\strc_sectioning_start[\currenthead]}%
+   \protected\frozen\instance\edefcsname\e!stop \currenthead\endcsname{\strc_sectioning_stop [\currenthead]}%
 \to \everydefinehead
 
 % so \subject as well as \section will need two commands when ownnumber
@@ -516,9 +516,9 @@
     \ifempty\currenthead
       % top level
     \orelse\ifcstok{\headparameter\c!ownnumber}\v!yes
-      \instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_own[\currenthead]}
+      \protected\instance\edefcsname\currenthead\endcsname{\strc_sectioning_handle_own[\currenthead]}
     \else
-      \instance\protected\edefcsname\currenthead\endcsname{\strc_sectioning_handle_nop[\currenthead]}%
+      \protected\instance\edefcsname\currenthead\endcsname{\strc_sectioning_handle_nop[\currenthead]}%
     \fi
 \to \everysetuphead
 

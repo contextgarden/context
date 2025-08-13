@@ -90,7 +90,7 @@
    \c!rightmargin=\zeropoint]
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
+    \protected\frozen\instance\edefcsname\currentmathradical\endcsname{\math_radical_handle{\currentmathradical}}
 \to \everydefinemathradical
 
 \mutable\lettonothing\currentmathradical
@@ -260,7 +260,7 @@
    \c!mpoffset=.25\exheight]
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentmathornament\endcsname
+    \protected\frozen\instance\edefcsname\currentmathornament\endcsname
       {\math_ornament_handle{\currentmathornament}}%
 \to \everydefinemathornament
 

@@ -1,0 +1,10 @@
+return {
+    name     = "Korean",
+    version  = "1.00",
+    comment  = "Some Korean stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "ko",
+        export = "ko",
+    }
+}

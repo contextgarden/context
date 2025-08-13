@@ -107,8 +107,8 @@
 
 \appendtoks % could become an option
     \ifcstok{\mixedcolumnsparameter\c!define}\v!yes
-      \frozen\instance\protected\edefcsname\e!start\currentmixedcolumns\endcsname{\startmixedcolumns[\currentmixedcolumns]}%
-      \frozen\instance\protected\edefcsname\e!stop \currentmixedcolumns\endcsname{\stopmixedcolumns}%
+      \protected\frozen\instance\edefcsname\e!start\currentmixedcolumns\endcsname{\startmixedcolumns[\currentmixedcolumns]}%
+      \protected\frozen\instance\edefcsname\e!stop \currentmixedcolumns\endcsname{\stopmixedcolumns}%
     \fi
 \to \everydefinemixedcolumns
 

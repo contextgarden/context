@@ -64,8 +64,8 @@
    \c!maxwidth=\makeupwidth]
 
 \appendtoks % could become an option
-    \frozen\instance\protected\edefcsname\e!start\currentpagegrid\endcsname{\startpagegrid[\currentpagegrid]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentpagegrid\endcsname{\stoppagegrid}%
+    \protected\frozen\instance\edefcsname\e!start\currentpagegrid\endcsname{\startpagegrid[\currentpagegrid]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentpagegrid\endcsname{\stoppagegrid}%
     \clf_definecolumnset {
         name {\currentpagegrid}%
     }%

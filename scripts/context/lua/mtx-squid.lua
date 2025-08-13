@@ -59,7 +59,7 @@ local helpinfo = [[
   <category name="basic">
    <subcategory>
     <flag name="configure"><short>create configuration</short></flag>
-    <flag name="signal"><short>set segmets state</short></flag>
+    <flag name="signal"><short>set segments state</short></flag>
     <flag name="squid"><short>set page state</short></flag>
    </subcategory>
   </category>
@@ -94,6 +94,8 @@ local state   = signals.loadstate()
 local server  = state and state.servers.squid or state.servers.gadget
 local baud    = arguments.baud or (server and server.baud) or 115200
 local port    = arguments.port or (server and server.port)
+
+local prefix  = signals.serialprefix
 
 if not osserialwrite then
     report("no support for serial communication")
@@ -159,6 +161,7 @@ if verbose then
 end
 
 local function send(str)
+    str = prefix .. str
     local r = osserialwrite(port,baud,str)
     if verbose then
         report("%s : %s",r and "sent" or "fail",str)
@@ -326,6 +329,20 @@ function scripts.squid.text()
         send("tf"..c)
         ossleep(tonumber(arguments.delay) or .2)
     end
+    ossleep(1)
+    send("ar")
+end
+
+function scripts.squid.number()
+    local str = string.upper(environment.files[1] or "1:25")
+    send("ar")
+    utilities.parsers.stepper(str,99,function(i)
+        if i >= 0 and i <= 99 then
+            send("nf"..i)
+            ossleep(tonumber(arguments.delay) or 1)
+        end
+    end)
+    ossleep(1)
     send("ar")
 end
 
@@ -391,6 +408,8 @@ elseif arguments.squid then
     scripts.squid.squid()
 elseif arguments.text then
     scripts.squid.text()
+elseif arguments.number then
+    scripts.squid.number()
 elseif arguments.info then
     scripts.squid.info()
 elseif arguments.show then

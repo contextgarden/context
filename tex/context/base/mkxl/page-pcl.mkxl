@@ -699,8 +699,8 @@
    \c!direction=\v!normal]
 
 \appendtoks % could become an option
-    \frozen\instance\protected\edefcsname\e!start\currentpagecolumns\endcsname{\startpagecolumns[\currentpagecolumns]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentpagecolumns\endcsname{\stoppagecolumns}%
+    \protected\frozen\instance\edefcsname\e!start\currentpagecolumns\endcsname{\startpagecolumns[\currentpagecolumns]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentpagecolumns\endcsname{\stoppagecolumns}%
 \to \everydefinepagecolumns
 
 \def\page_col_pickup_preceding

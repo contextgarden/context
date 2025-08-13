@@ -120,9 +120,9 @@
    \fi}
 
 \appendtoks
-    \frozen\instance\protected\edefcsname        \currentattachment\endcsname{\scrn_attachment_direct[\currentattachment]}%
-    \frozen\instance\protected\edefcsname\e!start\currentattachment\endcsname{\scrn_attachment_start [\currentattachment]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentattachment\endcsname{\scrn_attachment_stop                      }%
+    \protected\frozen\instance\edefcsname        \currentattachment\endcsname{\scrn_attachment_direct[\currentattachment]}%
+    \protected\frozen\instance\edefcsname\e!start\currentattachment\endcsname{\scrn_attachment_start [\currentattachment]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentattachment\endcsname{\scrn_attachment_stop                      }%
 \to \everydefineattachment
 
 \permanent\tolerant\protected\def\scrn_attachment_direct[#tag]#spacer[#registered]#spacer[#S#settings]%
@@ -411,9 +411,9 @@
 \mutable\lettonothing\currentcommentwidth
 
 \appendtoks
-    \frozen\protected\instance\edefcsname        \currentcomment\endcsname{\scrn_comment_argument[\currentcomment]}%
-    \frozen\protected\instance\edefcsname\e!start\currentcomment\endcsname{\scrn_comment_start   [\currentcomment]}%
-    \frozen\protected\instance\edefcsname\e!stop \currentcomment\endcsname{\scrn_comment_stop                     }%
+    \protected\frozen\instance\edefcsname        \currentcomment\endcsname{\scrn_comment_argument[\currentcomment]}%
+    \protected\frozen\instance\edefcsname\e!start\currentcomment\endcsname{\scrn_comment_start   [\currentcomment]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentcomment\endcsname{\scrn_comment_stop                     }%
 \to \everydefinecomment
 
 \tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#S#settings]#:#text%%

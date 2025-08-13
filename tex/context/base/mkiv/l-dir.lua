@@ -135,7 +135,7 @@ local function glob_pattern_function(path,patt,recurse,action)
     end
 end
 
-local function glob_pattern_table(path,patt,recurse,result)
+local function glob_pattern_table(path,patt,recurse,result,dirresult)
     if not result then
         result = { }
     end
@@ -175,13 +175,17 @@ local function glob_pattern_table(path,patt,recurse,result)
     end
     if dirs then
         for i=1,nofdirs do
-            glob_pattern_table(dirs[i],patt,recurse,result)
+            local dir = dirs[i]
+            glob_pattern_table(dir,patt,recurse,result,dirresult)
+            if dirresult then
+                dirresult[#dirresult+1] = dir
+            end
         end
     end
-    return result
+    return result, dirresult
 end
 
-local function globpattern(path,patt,recurse,method)
+local function globpattern(path,patt,recurse,method,dirmethod)
     local kind = type(method)
     if patt and sub(patt,1,-3) == path then
         patt = false
@@ -191,8 +195,11 @@ local function globpattern(path,patt,recurse,method)
         return okay and glob_pattern_function(path,patt,recurse,method) or { }
     elseif kind == "table" then
         return okay and glob_pattern_table(path,patt,recurse,method) or method
+    elseif okay then
+        local files, dirs = glob_pattern_table(path,patt,recurse,{ },{ })
+        return files or { }, dirs or { }
     else
-        return okay and glob_pattern_table(path,patt,recurse,{ }) or { }
+        return { }, dirmethod and { } or nil
     end
 end
 
@@ -271,7 +278,7 @@ local filter = Cs ( (
     P(1)
 )^0 )
 
-local function glob(str,t)
+local function glob(str,t,dirstoo)
     if type(t) == "function" then
         if type(str) == "table" then
             for s=1,#str do
@@ -288,30 +295,28 @@ local function glob(str,t)
                 globpattern(start,result,recurse,t)
             end
         end
-    else
-        if type(str) == "table" then
-            local t = t or { }
-            for s=1,#str do
-                glob(str[s],t)
-            end
+    elseif type(str) == "table" then
+        local t = t or { }
+        for s=1,#str do
+            glob(str[s],t)
+        end
+        return t
+    elseif isfile(str) then
+        if t then
+            t[#t+1] = str
             return t
-        elseif isfile(str) then
-            if t then
-                t[#t+1] = str
-                return t
-            else
-                return { str }
-            end
         else
-            local root, path, base = lpegmatch(pattern,str) -- we could use the file splitter
-            if root and path and base then
-                local recurse = find(base,"**",1,true) -- find(base,"%*%*")
-                local start   = root .. path
-                local result  = lpegmatch(filter,start .. base)
-                return globpattern(start,result,recurse,t)
-            else
-                return { }
-            end
+            return { str }
+        end
+    else
+        local root, path, base = lpegmatch(pattern,str) -- we could use the file splitter
+        if root and path and base then
+            local recurse = find(base,"**",1,true) -- find(base,"%*%*")
+            local start   = root .. path
+            local result  = lpegmatch(filter,start .. base)
+            return globpattern(start,result,recurse,t,dirstoo)
+        else
+            return { }, dirstoo and { } or nil
         end
     end
 end
@@ -394,7 +399,8 @@ end
 
 dir.globdirs = globdirs
 
--- inspect(globdirs("e:/tmp"))
+-- inspect(globfiles("t:/sources"))
+-- inspect(globdirs("t:/sources"))
 
 -- t = dir.glob("c:/data/develop/context/sources/**/????-*.tex")
 -- t = dir.glob("c:/data/develop/tex/texmf/**/*.tex")

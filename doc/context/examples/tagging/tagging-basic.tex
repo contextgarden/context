@@ -1,0 +1,853 @@
+% language=en
+
+\setupbodyfont
+  [dejavu]
+
+\setupinteraction
+  [state=start,
+   focus=standard,
+   color=,
+   contrastcolor=,
+   style=]
+
+% \setupinteractionscreen
+%   [option=bookmark]
+%
+% \placebookmarks
+%   [section,subsection]
+%   [force=yes]
+
+% \enabledirectives[backend.usetags=basic]
+% \enabletrackers[backend.tags]
+% \enabletrackers[structures.tags.endpoints]
+% \enabletrackers[structures.tags.analyze]
+% \enabletrackers[structures.tags.rolemap]
+
+% We only do this as test; it is not needed in UA2 and actually it
+% also doesn't mix well with a granular mapping
+
+% \enabletrackers[structures.tags.objects]
+
+% Input file 19.750 bytes:
+
+% no tagging   : 155,428
+% just tagging : 179,421
+% ua2 tagging  : 198,652  uncompressed 688,203
+
+\setupbackend
+  [format=pdf/ua-2]
+
+% \setupbackend
+%   [level=0]
+
+\setuptagging
+  [state=start,
+   preset=basic,
+   option=interaction,
+   level=2,
+   comment={A document explaining a basic tagging setup}]
+
+\setuplayout
+  [backspace=.75es,
+   leftmargin=0es,
+   rightmargin=1es,
+   width=fit,
+   header=0es,
+   footer=.5es,
+   height=fit]
+
+\setupwhitespace
+  [medium]
+
+\setupheadertexts
+  []
+
+\setupfootertexts
+  []
+  [pagenumber]
+
+\setupheads
+  [section,subsection]
+  [color=darkred]
+
+\setuphead
+  [section]
+  [style=\bfb]
+
+\setuphead
+  [subsection]
+  [style=\bfa]
+
+\setupexternalfigures
+  [location={local,global,default}]
+
+\setupcombinedlist
+  [content]
+  [list={section,subsection},
+   alternative=a]
+
+\setuplist
+  [section,subsection]
+  [numberstyle=bold,
+   numbercolor=darkred]
+
+\setuplist
+  [subsection]
+  [margin=1em]
+
+\setupmargindata
+  [right]
+  [style=small]
+
+\startbuffer[bib]
+
+@techreport{iso32000,
+    author      = {{ISO}},
+    title       = {Document management — Portable document format — Part 2: PDF 2.0},
+    institution = {International Organization for Standardization},
+    address     = {Geneva, Switzerland},
+    year        = {2020},
+    type        = {International Standard},
+    number      = {ISO 32000-2:2020}
+}
+
+@techreport{iso32005,
+    author      = {{ISO}},
+    title       = {Document management — Portable Document Format — PDF 1.7 and 2.0 structure namespace inclusion in ISO 32000-2},
+    institution = {International Organization for Standardization},
+    address     = {Geneva, Switzerland},
+    year        = {2023},
+    type        = {Technical Specification},
+    number      = {ISO/TS 32005:2023}
+}
+
+@techreport{iso14289,
+    author      = {{ISO}},
+    title       = {Document management applications — Electronic document file format enhancement for accessibility — Part 2: Use of ISO 32000-2 (PDF/UA-2)},
+    institution = {International Organization for Standardization},
+    address     = {Geneva, Switzerland},
+    year        = {2024},
+    type        = {International Standard},
+    number      = {ISO 14289-2:2024}
+}
+\stopbuffer
+
+\usebtxdataset
+  [bib.buffer]
+
+\usebtxdefinitions
+  [aps]
+
+\setupbtxrendering
+  [aps]
+  [sorttype=dataset,
+   numbering=short,
+   before={\blank[big]}]
+
+\setupbtxlist
+  [aps]
+  [width=fit,
+   align=flushleft,
+   alternative=paragraph,
+   distance=0.5em,
+   interaction=start,
+   style=small]
+
+\setupbtx
+  [aps:cite]
+  [alternative=short]
+
+\usemodule[abbreviations-logos]
+
+\startdocument
+  [title=Basic tagging]
+
+\startpagemakeup
+  [pagestate=start]
+
+\startimage[alternativetext=Frontpage with some tags]
+\startluacode
+  local metafun  = context.metafun
+  local pdftags  = table.load(resolvers.findfile("lpdf-tag-imp-uac.lmt"))
+  local tagtable = pdftags.quack
+
+  -- inspect(pdftags)
+
+  metafun.start()
+
+  for k, v in table.sortedhash(tagtable) do
+
+        metafun([[
+            numeric ry ;
+              ry := uniformdeviate(1)*uniformdeviate(1) ;
+              label("\bold %s",(0,0))
+              rotated (-15 + uniformdeviate(30))
+              scaled (2 + uniformdeviate(4))
+              shifted (uniformdeviate(PaperWidth), (0.7 - 0.2*ry)*PaperHeight)
+              withcolor (ry)[darkgray,white]
+              withstacking -1 ;
+        ]],k)
+
+        for i = 1, #v do
+
+            metafun([[
+                numeric ry ;
+                ry := uniformdeviate(1)*uniformdeviate(1) ;
+                label("\bold %s",(0,0))
+                rotated (-45 + uniformdeviate(90))
+                scaled (1 + uniformdeviate(3))
+                shifted (uniformdeviate(PaperWidth), (0.3 + 0.2*ry)*PaperHeight)
+                withcolor (ry)[darkgray,white]
+                withstacking -2 ;
+            ]],v[i])
+
+        end
+
+    end
+
+    metafun("fill unitsquare xyscaled(PaperWidth,0.3PaperHeight) withcolor darkred ;")
+    metafun("fill unitsquare xyscaled(PaperWidth,0.3PaperHeight) yshifted 0.7 PaperHeight withcolor darkred ;")
+
+    metafun([[
+        label("\bold (basic)",origin)
+        xsized 0.9PaperWidth
+        shifted (0.5*PaperWidth,0.85*PaperHeight)
+        withcolor white ;
+    ]])
+
+    metafun([[
+        label("\bold tagging",origin)
+                xsized 0.9PaperWidth
+                shifted (0.5*PaperWidth,0.15*PaperHeight)
+                withcolor white ;
+    ]])
+
+    metafun("clip currentpicture to unitsquare xyscaled(PaperWidth,PaperHeight) ;")
+
+    metafun.stop()
+\stopluacode
+\stopimage
+
+\stoppagemakeup
+
+\startsubject
+  [title={Contents}]
+
+\startcolumns
+  [distance=3em]
+
+\placecombinedlist[content]
+
+\stopcolumns
+
+\stopsubject
+
+\startsection
+  [title=Introduction]
+
+In this document we describe one possible way to tag basic \PDF\ files. With
+basic we mean simple, rather flat structure documents, like articles. This
+document is itself one such example. Our hope is that this simplified approach to
+tagging can be useful for the \CONTEXT\ community, but we do not pretend that the
+tagging setup we suggest here will fit the more advanced structures often present
+in \CONTEXT\ documents. On the other hand, you will hopefully see that you can
+set up your own mapping as you wish, so this document is at the same time a show
+case for a possible way to do that.
+
+If you do not change the mappings in your file, most content will get mapped to
+\typ {NonStruct}. The reason is that it is a somewhat safe tag, and even though
+it might not be the most informative tag to use, it will (very likely) lead to a
+document that validates. To use the mappings discussed in this document you need
+to enable tagging, for example by adding
+
+\starttyping
+\setupbackend[format=pdf/ua-2]
+\stoptyping
+
+and then add
+
+\starttyping
+\setuptagging[state=start,preset=basic]
+\stoptyping
+
+to get the specific setup.
+
+Reading the various \ISO\ standards \cite[iso32000,iso32005,iso14289] (we
+mainly include the references here to be able to test a basic bibliography setup
+in this document) is not always so easy, and sometimes wonder how the reasoning
+behind them were going. Their table(s) on permitted nesting of tags feels very
+arbitrary and not always logical. Some of them are claimed to be explained
+elsewhere than in the table (in another standard!), but even when reading the
+rules are not clear to us. Some of the possible tags do even seem less useful
+or extra complicated to handle, and we simply do not map to them.
+
+Below we provide, section by section, examples and comments on the various types
+of content and tag we do have in mind for the so-called basic tagging. This
+serves the purpose of showing the reader on examples that we think work good
+enough. There is, however, no guarantee. If you start to nest these things or use
+some low-level hacking or so, you are on your own.
+
+The rules we discuss here are defined in various files, depending on the type of
+mechanism. They are then collected (or linked to) in the file \typ
+{lpdf-tag-imp-basic.lmt} This way, you as a user, can create your own file(s) and
+make your own mappings with your favorite tagging setup, in particular by using
+parts of the setups we provide here.
+
+We will soon turn to the details, but let us mention that a few more details on
+reasoning and comments are available in \in {Section} [sec:moredetails].
+By the way, this version was validated by verapdf 1.29.90.
+\stopsection
+
+\startsection
+  [title=Some basics]
+
+The good news when it comes to tagging is that \CONTEXT\ was built with structure
+in mind. It has for a very long time been possible to export to structured XML.
+Thus, for example, when one adds a section (using \tex {startsection} and \tex
+{stopsection}) one gets
+
+\starttyping
+<section>
+  <sectioncaption>
+    <sectionnumber>
+      2
+    </sectionnumber>
+    <sectiontitle>
+      Some basics
+    </sectiontitle>
+  </sectioncaption>
+  <sectioncontent>
+    ...
+  </sectioncontent>
+</section>
+\stoptyping
+
+So, our problem has been to map each of these onto something that is safe and
+useful for the \PDF\ accessibility standards. All our documents start with a \typ
+{<document>} structure that is mapped to a \typ {Document} structure type, and
+then at the next level sits \typ {<documentpart>}, which we map to \typ {Part}.
+These two has category \typ {Document} and \typ {Grouping}, respectively. Neither
+of them can contain content directly, so extra level(s) are needed. We only
+mention here that if those extra levels are not naturally present, we enforce
+(almost always) a \typ {P} tag, that indeed can have content.
+
+We can easily get an overview over this document by invoking
+
+\starttyping
+mtxrun --script pdf --check tagging-basic.pdf
+\stoptyping
+
+That creates a file \typ {tagging-basic-tagview.xml} with lots of data. If
+you have verapdf installed, it also runs a validation check on the file.
+
+\stopsection
+
+\startsection
+  [title=Headings]
+
+When we add a section we will get \typ {<section>} mapped onto \typ {Sect} and
+\typ {<sectioncontent>} mapped onto \typ {Div}. These are also in the \typ
+{Grouping} category, and therefore do not directly contain content. We also get
+\typ {<sectioncaption>} mapped onto some \typ {Hn} and \typ {<sectionnumber>} and
+\typ {<sectiontitle>} mapped onto \typ {Lbl}. Since we map \typ
+{<sectioncontent>} to \typ {Div}, we need some structure type below that can
+contain content. If we just type text, we get \typ {P}. Thus, a single section
+can give rise to (here we indicate content in parentheses)
+
+\starttyping
+Document
+  Part
+    Sect
+      H1
+        Lbl (3)
+        Lbl (Headings)
+      Div
+        P   (When we add...)
+\stoptyping
+
+So far so good. When we start to nest sections and subsections and so on, we need
+to use tags that nest well. The \typ {Div} can have \typ {Sect}, so nesting sections
+should work.
+
+We support a few levels of headings, and one is supposed to map them onto \typ
+{H1}, \typ {H2} and so on upto \typ {H5}, see \in {Table} [table:headings].
+
+\startbuffer[headingtable]
+\startplacetable
+  [title=Different heading mappings.,
+   reference=table:headings]
+  \starttabulatehead
+    \FL
+    \NC {\bf Heading} \NC {\bf Tag} \NC \NR
+    \ML
+  \stoptabulatehead
+  \starttabulate[|T|T|]
+    \NC part                         \NC H1 \NC \NR
+    \NC chapter, title               \NC H2 \NC \NR
+    \NC section, subject             \NC H3 \NC \NR
+    \NC subsection, subsubject       \NC H4 \NC \NR
+    \NC subsubsection, subsubsubject \NC H5 \NC \NR
+    \LL
+  \stoptabulate
+\stopplacetable
+\stopbuffer
+
+\getbuffer[headingtable]
+
+If you, as in this document, start at another level than \typ {part}, it might be
+good to map your highest level to \typ {H1}. In this document, where section is
+the highest level, we have done
+
+\starttyping
+\setuptagging[level=3]
+\stoptyping
+
+which means that we map the third level onto \typ {H1}. The interested reader can
+peek into \typ {lpdf-tag-imp-basic-section.lmt}, to see how that was implemented.
+
+\stopsection
+
+\startsection
+  [title=Itemgroups]
+
+There are several types of lists available and they are all using the \typ
+{itemgroup} mechanism. We add a bullet list with the code
+
+\startbuffer
+\startitemize
+  \startitem First item.  \stopitem
+  \startitem Second item. \stopitem
+\stopitemize
+\stopbuffer
+
+\typebuffer
+
+and the typeset output is shown below.
+
+\getbuffer
+
+This gets mapped into
+
+\starttyping
+L
+  LI
+    Lbl (•)
+    LBody (First item.)
+  LI
+    Lbl (•)
+    LBody (Second item.)
+\stoptyping
+
+We can indeed use simple lists, bulleted or with numbers or characters. It is
+assumed that items are added with \tex {startitem} and \tex {stopitem}, not
+just \tex {item}. It also works to nest lists.
+
+\startitemize[n]
+  \startitem
+    Here is some text in the numbered list. This item
+    also contains a second list.
+    \startitemize
+      \startitem First item in the nested list.  \stopitem
+      \startitem Second item in the nested list. \stopitem
+      \startitem Third item in the nested list.  \stopitem
+    \stopitemize
+  \stopitem
+  \startitem
+    Here is some more text in the second item of the numbered list.
+  \stopitem
+\stopitemize
+
+\stopsection
+
+\startsection
+  [title=Floats]
+
+We mention the two most common type of float elements, tables and figures,
+but in principle other floats will work in the same way.
+
+\startsubsection
+  [title=Tables]
+
+We have already used a table in this document, see \in {Table} [table:headings].
+That table was entered with
+
+\typebuffer[headingtable]
+
+We do not show all details here, but we typically get
+
+\starttyping
+Aside
+  Div
+    Table
+      TR
+        TD (Heading)
+        TD (Tag)
+      ...
+  Div
+    Lbl (Table)
+    Lbl (1)
+    P   (Different heading mappings.)
+\stoptyping
+
+and so on. The \typ {Aside} and the two \typ {Div} come from the floating mechanism
+while the \typ {Table}, \typ {TD} and \typ {TR} come from the tabulate.
+
+\stopsubsection
+
+\startsubsection
+  [title=Graphics]
+
+\startbuffer
+\startplacefigure
+  [title={This is the caption of the figure.},
+   reference=figure:cow]
+  \externalfigure
+    [cow]
+    [width=5cm,
+     alternativetext=A Dutch cow!]
+\stopplacefigure
+\stopbuffer
+
+With the code
+
+\typebuffer
+
+we get a floating element as in \in {Figure} [figure:cow].
+
+\getbuffer
+
+The \typ {alternativetext} adds a \typ {Alt} tag on the graphic (that is tagged
+as a \typ {Figure}). This alternative text will be taken verbatim, so no math or
+other stuff should go there. The structure in the \PDF\ file is similar to the one
+for the table, but \typ {Table} is instead \typ {Figure}, so we leave it out.
+
+MetaPost content is also working. It uses its own tags, but we can again add
+an alternative text, this time with \typ {alternativetext}.
+
+\startbuffer
+\startplacefigure
+  [title=A MP figure]
+  \startMPcode
+    [alternativetext=A circle]
+    draw fullcircle
+      scaled 3cm
+      withpen pencircle scaled 3
+      withcolor darkred ;
+  \stopMPcode
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\stopsection
+
+\startsection
+  [title=Descriptions]
+
+Mathematical theorems and similar environments use the description mechanism.
+
+\startbuffer
+\defineenumeration
+  [theorem]
+  [text=Theorem,
+   alternative=serried,
+   title=yes,
+   width=fit]
+\stopbuffer
+
+We define an instance by
+
+\typebuffer
+\getbuffer
+
+\startbuffer
+\starttheorem
+  [title=Pythagoras]
+  In a right triangle, the square of the hypotenuse
+  is equal to the sum of the squares of the legs.
+\stoptheorem
+\stopbuffer
+
+\typebuffer
+\getbuffer
+
+The structure we get is
+
+\starttyping
+Sect
+  Lbl (Theorem 1 (Pythagoras))
+  Div
+    P (In a right ...)
+\stoptyping
+
+As we have explained earlier, inside the \typ {Div} we need a tag that have
+content, and in this case the \typ {P} is enforced. This happens automatically
+when \typ {Div} is the endpoint. When we generate the structure XML file, these
+enforced paragraphs are seen as \typ {<p>}.
+
+\stopsection
+
+\startsection
+  [title=Notes]
+
+There are several types of notes possible, footnotes\footnote{Like this one.} is
+a probably the most common one. They do in fact also use the description
+structure. In \typ {lpdf-tag-imp-basic-description.lmt} we give an example on how
+to remap to \typ {FENote}. If you have any problems with footnotes, it might be
+a good idea to use endnotes instead, since then they are not done as inserts, and
+probably less fragile.
+
+\stopsection
+
+\startsection
+  [title=Code]
+
+We have already shown code several times. For inline code \typ {like this}, done
+with \tex {typ}, \tex {type}, or similar, we use a \typ {Code} tag.
+
+When typesetting a block of code with \tex {starttyping} and \tex {stoptyping},
+like
+
+\starttyping
+Here is some code
+Here is more code
+\stoptyping
+
+we do get
+
+\starttyping
+Div
+  Code
+    Sub (Here is some code)
+    Sub (Here is more code)
+\stoptyping
+
+% Blarg
+%
+% \definetyping[MyCode]
+%
+% \setuptyping
+%   [MyCode]
+%   [numbering=line]
+%
+% \startMyCode
+% Code line one
+% Code line two
+% Code line three
+% \stopMyCode
+
+\stopsection
+
+\startsection
+  [title=Quotations]
+
+We can use \tex {quotation} which results in \quotation {quotation}, or \tex
+{quote} which results in \quote {quote}. We get here \typ {NonStruct}. That is
+perhaps not optimal, but the reason is that the \typ {Quote} tag that is probably
+meant for this is quite limited.
+
+\startbuffer
+\startquotation
+  This quote contains two paragraphs.
+
+  You just read the first one, this is the second one.
+\stopquotation
+\stopbuffer
+
+Similarly, for block quotes, we can type
+
+\typebuffer
+
+which typesets as
+
+\getbuffer
+
+Here we use \typ {BlockQuote}, that seems to work better than \typ {Quote}. The
+NVDA screen reader did not read the quotes, neither for the inline nor the
+displayed versions. It did not matter if we tagged them as \typ {Artifact} or
+\typ {Lbl}.
+
+\stopsection
+
+\startsection
+  [title=Contents]
+
+We felt that the \typ {TOC} and \typ {TOCI} tags are difficult to handle. Some
+bogus reference type element are needed and it quickly gets messy. We therefore
+ended up mapping the table of contents onto an ordinary list. Thus, the structure
+we get is
+
+\starttyping
+L
+  LI
+    Lbl   (1)
+    LBody (Introduction)
+    Lbl   (2)
+\stoptyping
+
+\stopsection
+
+\startsection
+  [title=Languages]
+
+Language switches are in principle handled. On the todo is to add a
+\typ {language=...} for more mechanisms in \CONTEXT.
+
+\stopsection
+
+\startsection
+  [title=Mathematics]
+
+We tag inline formulas such as \m {1 + 2 = 3} (this was typed \typ {\m {1 + 2 =
+3}}). In the \PDF\ file we find back this:
+
+\starttyping
+<!-- 1 plus 2 equals 3 -->
+<math>
+  <mrow>
+    <mn>1</mn>
+    <mo>+</mo>
+    <mn>2</mn>
+    <mo>=</mo>
+    <mn>3</mn>
+  </mrow>
+</math>
+\stoptyping
+
+The comment just shows what goes into the \typ {Alt} tag and the \typ {<math>} is
+put into a \typ {Formula} tag.
+
+For displayed formulas, we type as usual
+
+\startbuffer
+\startformula
+  a^2 + b^2 = c^2
+  \numberhere[equation:Pythagoras]
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to get the typeset results
+
+\getbuffer
+
+In the \PDF\ file, this gets the structure
+
+\starttyping
+Div
+  Formula
+  Artifact (()
+    Lbl (1)
+  Artifact ())
+\stoptyping
+
+To Hans: Can we disable the Alt for formulas and just rely on the XML somehow? If so,
+it should be mentioned here.
+
+\stopsection
+
+\startsection
+  [title=Margin material]
+
+We can put simple stuff in the margin, as can be seen in the example.
+
+\inright {%
+  This is just a small margin note.\par
+
+  We add some math \m {\abs {a} = \sqrt {a ^ 2}} in a new paragraph.\par}
+
+In the \PDF\ file, this gets the \typ {Aside} structure, which can contain content,
+so it seems we are fine.
+
+\stopsection
+
+\startsection
+  [title=User elements]
+
+It is possible for the user to define their own tagging elements. This can better
+be done in one of the \typ {lmt} files. We have given one example in the \typ
+{lpdf-tag-imp-basic-whatever.lmt} file, where we point \typ {whatever} onto the
+\typ {P} structure element. Thus, with
+
+\startbuffer
+\startelement[whatever]
+  This is a test using the whatever element.
+\stopelement
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+and this is indeed mapped to \typ {P}.
+\stopsection
+
+\startsection
+  [title=Bibliography]
+
+We place the bibliography in this document with \tex {placelistofpublications}.
+There is some kind of tagging support for bibliography, but we consider it just
+as a list, as we do for the table of contents. The bibliography list items are
+put into the \typ {LI} tag, and hence mapped to \typ {Lbl}. The rest of the
+publication fields are put into the \typ {LBody} tag. They go under the \CONTEXT\
+types \typ {publication} and \typ {pubfld} tags, both mapped to \typ {NonStruct},
+so they inherit the \typ {LBody} properties. Enough talking. Here comes the
+bibliography itself:
+
+\placelistofpublications
+
+\stopsection
+
+\startsection
+  [title=Some final words,
+   reference=sec:moredetails]
+
+If you decide (or are forced) to use tagging, then you should also be aware that
+it adds overhead. For a book we tested on, runtime doubled, and the size of the
+file was also much larger. This will quickly interrupt the work flow. One way to
+avoid this overhead while working is to add the tagging setups in a mode. So,
+perhaps do something like
+
+\starttyping
+\startmode[tagging]
+\setupbackend
+  [format=pdf/ua-2]
+
+\setuptagging
+  [state=start,
+   preset=basic]
+\stopmode
+\stoptyping
+
+Then tagging is by default off, and you need to do
+
+\starttyping
+context --mode=tagging file.tex
+\stoptyping
+
+if you want it enabled.
+
+If you have interaction enabled in your document, as we have in this one, you
+will by default get validation errors. The reason is that the standard requires a
+few \typ {Link} and \typ {Reference} tags added here and there, always pointing
+to \quotation {real content}. If you want those elements added add
+
+\starttyping
+\setuptagging
+  [option=interaction]
+\stoptyping
+
+Remember, however, that if that breaks validation, you are on your own, and the
+best choice is probably to disable interaction. Or to live with those validation
+errors specific for the links. In one of our test documents the table of contents
+was added inside a MetaPost graphic. There the solution was to move it into an
+overlay.
+
+\stopsection
+
+\stopdocument

@@ -5221,7 +5221,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 19139, stripped down to: 11345
+-- original size: 19379, stripped down to: 11553
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5323,7 +5323,7 @@ local function glob_pattern_function(path,patt,recurse,action)
   end
  end
 end
-local function glob_pattern_table(path,patt,recurse,result)
+local function glob_pattern_table(path,patt,recurse,result,dirresult)
  if not result then
   result={}
  end
@@ -5363,12 +5363,16 @@ local function glob_pattern_table(path,patt,recurse,result)
  end
  if dirs then
   for i=1,nofdirs do
-   glob_pattern_table(dirs[i],patt,recurse,result)
+   local dir=dirs[i]
+   glob_pattern_table(dir,patt,recurse,result,dirresult)
+   if dirresult then
+    dirresult[#dirresult+1]=dir
+   end
   end
  end
- return result
+ return result,dirresult
 end
-local function globpattern(path,patt,recurse,method)
+local function globpattern(path,patt,recurse,method,dirmethod)
  local kind=type(method)
  if patt and sub(patt,1,-3)==path then
   patt=false
@@ -5378,8 +5382,11 @@ local function globpattern(path,patt,recurse,method)
   return okay and glob_pattern_function(path,patt,recurse,method) or {}
  elseif kind=="table" then
   return okay and glob_pattern_table(path,patt,recurse,method) or method
+ elseif okay then
+  local files,dirs=glob_pattern_table(path,patt,recurse,{},{})
+  return files or {},dirs or {}
  else
-  return okay and glob_pattern_table(path,patt,recurse,{}) or {}
+  return {},dirmethod and {} or nil
  end
 end
 dir.globpattern=globpattern
@@ -5434,7 +5441,7 @@ end
 local filter=Cs ((
  P("**")/".*"+P("*")/"[^/]*"+P("?")/"[^/]"+P(".")/"%%."+P("+")/"%%+"+P("-")/"%%-"+P(1)
 )^0 )
-local function glob(str,t)
+local function glob(str,t,dirstoo)
  if type(t)=="function" then
   if type(str)=="table" then
    for s=1,#str do
@@ -5451,30 +5458,28 @@ local function glob(str,t)
     globpattern(start,result,recurse,t)
    end
   end
- else
-  if type(str)=="table" then
-   local t=t or {}
-   for s=1,#str do
-    glob(str[s],t)
-   end
+ elseif type(str)=="table" then
+  local t=t or {}
+  for s=1,#str do
+   glob(str[s],t)
+  end
+  return t
+ elseif isfile(str) then
+  if t then
+   t[#t+1]=str
    return t
-  elseif isfile(str) then
-   if t then
-    t[#t+1]=str
-    return t
-   else
-    return { str }
-   end
   else
-   local root,path,base=lpegmatch(pattern,str) 
-   if root and path and base then
-    local recurse=find(base,"**",1,true) 
-    local start=root..path
-    local result=lpegmatch(filter,start..base)
-    return globpattern(start,result,recurse,t)
-   else
-    return {}
-   end
+   return { str }
+  end
+ else
+  local root,path,base=lpegmatch(pattern,str) 
+  if root and path and base then
+   local recurse=find(base,"**",1,true) 
+   local start=root..path
+   local result=lpegmatch(filter,start..base)
+   return globpattern(start,result,recurse,t,dirstoo)
+  else
+   return {},dirstoo and {} or nil
   end
  end
 end
@@ -16668,7 +16673,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sig"] = package.loaded["util-sig"] or true
 
--- original size: 5924, stripped down to: 3207
+-- original size: 5963, stripped down to: 3240
 
 if not modules then modules={} end modules ['util-sig']={
  version=1.001,
@@ -16686,6 +16691,7 @@ local signals=utilities.signals
 local serialwrite=serial and serial.write
 if serialwrite then
  signals.serialwrite=serialwrite
+ signals.serialprefix=":lmtx:1:"
  local ports={}
  local function clean(port)
   return "serial_port_"..string.gsub(port,"[^a-zA-Z0-9]","")..""
@@ -26959,8 +26965,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1077465
--- stripped bytes    : 429343
+-- original bytes    : 1077744
+-- stripped bytes    : 429381
 
 -- end library merge
 

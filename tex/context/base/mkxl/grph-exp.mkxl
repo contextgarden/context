@@ -57,6 +57,7 @@
 \newinteger\nofexportedboxes
 
 \newconditional\c_grph_exported
+\newconditional\c_grph_in_image
 
 \definesystemconstant{exported}
 
@@ -98,12 +99,22 @@
 
 \newbox\b_grph_image
 
-\permanent\protected\def\grph_start_image_tagged
+% todo : simple handler as with mp
+
+\permanent\tolerant\protected\def\grph_start_image_tagged[#1]%
   {\begingroup
+   \c_grph_in_image\conditionaltrue
+   %
+   \resetdummyparameter\c!descriptiontext
+   \resetdummyparameter\c!alternativetext
+   \getdummyparameters[#1]%
+   \enforced\edef\figuredescriptiontext{\dummyparameter\c!descriptiontext}%
+   \enforced\edef\figurealternativetext{\dummyparameter\c!alternativetext}%
+   %
    \global\advanceby\nofexportedboxes\plusone
    \edef\figureexported{\the\nofexportedboxes}%
    \dostarttaggednodetail\t!image
-   \setbox\b_grph_image\hpack\bgroup
+   \setbox\b_grph_image\hpack attr \imageattribute \plustwo\bgroup
    \ignorepars
    \ignorespaces}
 
@@ -121,8 +132,9 @@
 
 %D We want to get compatible packaging (beware of spaces)
 
-\permanent\protected\def\grph_start_image_normal
+\permanent\tolerant\protected\def\grph_start_image_normal[#1]%
   {\hpack\bgroup
+   \c_grph_in_image\conditionaltrue
    \ignorepars
    \ignorespaces}
 
@@ -160,9 +172,9 @@
 
 %D So we go for explicit wrapping plus an extra MP command:
 
-\permanent\protected\def\startMPimage#1\stopMPimage
-  {\startimage
-   \startMPcode#1\stopMPcode
+\permanent\tolerant\protected\def\startMPimage[#1]#2\stopMPimage
+  {\startimage[#1]%
+   \startMPcode#2\stopMPcode
    \stopimage}
 
 \permanent\protected\lettonothing\stopMPimage
@@ -175,9 +187,10 @@
 \newdimension\justimageleftoffset
 \newdimension\justimagerightoffset
 
-\permanent\protected\def\grph_start_image_only
+\permanent\tolerant\protected\def\grph_start_image_only[#1]%
   {\begingroup
    \setbox\b_grph_image\hpack\bgroup
+   \c_grph_in_image\conditionaltrue
    \ignorepars
    \ignorespaces}
 

@@ -1,0 +1,22 @@
+return {
+
+    name      = "basic pdf specific tagging : formula",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        formulaset     = { pdf = "Div"       },
+        formula        = { pdf = "Div"       },
+        formulacaption = { pdf = "Artifact"  }, -- Lbl
+        formulalabel   = { pdf = "NonStruct" },
+        formulanumber  = { pdf = "Lbl"       }, -- Span
+        formulacontent = { pdf = "Formula"   },
+     -- subformula     = { pdf = "NonStruct" },
+
+        math           = { pdf = "Formula"   },
+
+    },
+
+}

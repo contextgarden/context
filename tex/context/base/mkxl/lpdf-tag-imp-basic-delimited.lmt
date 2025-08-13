@@ -1,0 +1,19 @@
+return {
+
+    name      = "basic pdf specific tagging : delimited",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        delimitedblock   = { pdf = "BlockQuote" },
+        delimited        = { pdf = "Artifact"   },
+     -- delimited        = { pdf = "Quote"      }, -- Quote is not read differently
+        delimitedcontent = { pdf = "NonStruct"  },
+        delimitedsymbol  = { pdf = "NonStruct"  },
+     -- delimitedsymbol  = { pdf = "Lbl"        }, -- Lbl is not distinguished here in reading
+
+    },
+
+}

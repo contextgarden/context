@@ -432,7 +432,7 @@
 \to \everyunits
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentunit\endcsname{\phys_units_direct{\currentunit}}
+    \protected\frozen\instance\edefcsname\currentunit\endcsname{\phys_units_direct{\currentunit}}
 \to \everydefineunit
 
 \protected\def\phys_units_direct#1%

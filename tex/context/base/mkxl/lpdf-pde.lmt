@@ -96,7 +96,7 @@ local report_epdf       = logs.reporter("epdf")
 
 local allocate          = utilities.storage.allocate
 
-local bpfactor          <const> = number.dimenfactors.bp
+local bpfactor  <const> = number.dimenfactors.bp
 
 local objectcodes = { [0] =
     "none",
@@ -907,7 +907,8 @@ local function analyzefonts(document,resources) -- unfinished, see mtx-pdf for b
                         tounicode = lpegmatch(fromunicode,tounicode,1,{})
                     end
                     fonts[id] = {
-                        tounicode = type(tounicode) == "table" and tounicode or { }
+                        tounicode = type(tounicode) == "table" and tounicode or { },
+                        wide      = data.Subtype ~= "Type3" and data.Subtype ~= "Type1",
                     }
                     setmetatableindex(fonts[id],"self")
                 end
@@ -922,7 +923,7 @@ lpdf_epdf.analyzefonts = analyzefonts
 local more = 0
 local unic = nil -- cheaper than passing each time as Carg(1)
 
-local p_hex_to_utf = C(4) / function(s) -- needs checking !
+local p_hex_to_utf_4 = C(4) / function(s) -- needs checking !
     local now = hextointeger(s)
     if more > 0 then
         now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000 -- the 0x10000 smells wrong
@@ -936,13 +937,19 @@ local p_hex_to_utf = C(4) / function(s) -- needs checking !
     end
 end
 
+local p_hex_to_utf_2 = C(2) / function(s) -- needs checking !
+    local now = hextointeger(s)
+    return unic[now] or utfchar(now)
+end
+
 local p_dec_to_utf = C(1) / function(s) -- needs checking ! not needed now that we always go hex
     local now = byte(s)
     return unic[now] or utfchar(now)
 end
 
-local p_hex_to_utf = P(true) / function() more = 0 end * Cs(p_hex_to_utf^1)
-local p_dec_to_utf = P(true) / function() more = 0 end * Cs(p_dec_to_utf^1)
+local p_hex_to_utf_4 = P(true) / function() more = 0 end * Cs(p_hex_to_utf_4^1)
+local p_hex_to_utf_2 = P(true) / function() more = 0 end * Cs(p_hex_to_utf_2^1)
+local p_dec_to_utf   = P(true) / function() more = 0 end * Cs(p_dec_to_utf  ^1)
 
 -- also xform?
 
@@ -973,9 +980,12 @@ function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
     end
 
     local content = allcontent(page.Contents or "")
+
     local list    = lpegmatch(fast and fastparser or parser,content)
 
-    if asis then
+    if not list then
+        return
+    elseif asis then
         return list -- , fonts
     end
 
@@ -990,6 +1000,7 @@ function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
         if operator == "Tf" then
             font = fonts[entry[1][2]]
             unic = font and font.tounicode or { }
+            wide = font and font.wide or false
         elseif operator == "TJ" then
             local data = entry[1] -- { "array", { ... } }
             local list = data[2]  -- { { ... }, { ... } }
@@ -1000,7 +1011,7 @@ function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
                     local kind = li[1]
                     local what = li[2]
                     if kind == "hex" then
-                        list[i] = lpegmatch(p_hex_to_utf,what)
+                        list[i] = lpegmatch(wide and p_hex_to_utf_4 or p_hex_to_utf_2,what)
                     elseif kind == "string" then
                         list[i] = lpegmatch(p_dec_to_utf,what)
                     else
@@ -1020,7 +1031,7 @@ function lpdf_epdf.getpagecontent(document,pagenumber,asis,fast)
             local kind = list[1]
             local what = list[2]
             if kind == "hex" then
-                list[2] = lpegmatch(p_hex_to_utf,what) -- was li[2]
+                list[2] = lpegmatch(wide and p_hex_to_utf_4 or p_hex_to_utf_2,what) -- was li[2]
             elseif kind == "string" then
                 list[2] = lpegmatch(p_dec_to_utf,what) -- was li[2]
             end

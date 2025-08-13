@@ -471,11 +471,8 @@ do
         if not s or s == "" then
             return ""
         elseif flags & utf16flags ~= 0 then
--- print("original",s)
--- print("utf8    ",utf16toutf8(s))
             return utf16toutf8(s)
         else
--- print("original",s)
             return s
         end
     end
@@ -761,6 +758,55 @@ local mt_f = { __index = { __lpdftype__ = "false"      }, __tostring = tostring_
 local mt_r = { __index = { __lpdftype__ = "reference"  }, __tostring = tostring_r, __call = value_r }
 local mt_v = { __index = { __lpdftype__ = "verbose"    }, __tostring = tostring_v, __call = value_v }
 local mt_l = { __index = { __lpdftype__ = "literal"    }, __tostring = tostring_l, __call = value_l }
+
+do
+
+    -- these can become helpers
+
+    local find = string.find
+
+    local tostring_u1 = function(t)
+        local s = t[1]
+        if #s == 0 then
+            return "()"
+        elseif find(s,"[\x00-\x1F\x27-\x28\x80-\xBF]") then
+            -- nop: control codes         : 0x00 .. 0x1F
+            -- yes: before left parent    : we don't like escaping
+            -- nop: left and right parent : 0x27 .. 0x28
+            -- yes: after right parent    : we don't like escaping
+            -- nop: after tilde           : 0x80 .. 0xBF
+            print(s)
+            return tosixteen(s)
+        else
+            return "(" .. s .. ")"
+        end
+    end
+
+    local tostring_u2 = function(t)
+        local s = t[1]
+        if #s == 0 then
+            return "()"
+        elseif find(s,"[\x80-\xBF]") then
+         -- return "(\xEF\xBB\xBF" .. s .. ")"
+            return "(\239\187\191" .. s .. ")"
+        else
+            return "(" .. s .. ")"
+        end
+    end
+
+    local function setutfstringmode(mode)
+        tostring_u = mode and tostring_u2 or tostring_u1
+        mt_u.__tostring = tostring_u
+    end
+
+    lpdf.setutfstringmode = setutfstringmode
+
+    directives.register("backend.pdf.utf", setutfstringmode)
+
+    setutfstringmode(false)
+
+end
+
 
 local function pdfstream(t) -- we need to add attributes
     if t then
@@ -1160,7 +1206,7 @@ do
             --
             local labels = structures.pages.getlabels()
             if labels and next(labels) then
-                for k, v in next, labels do
+                for k, v in sortedhash(labels) do
                     if type(v) == "table" then
                         labels[k] = pdfarray(v)
                     end
@@ -1172,6 +1218,17 @@ do
                 catalog.LMTX_Pages = pdfreference(pdfimmediateobject(tostring(labels)))
             end
             --
+            local tagging = lpdf.gettaggingstatus()
+
+            if tagging and next(tagging) then
+                tagging = pdfdictionary {
+                    Type     = pdfconstant("Tagging"),
+                    Version  = "1.00",
+                    Profiles = tagging.profiles,
+                    Comment  = tagging.comment,
+                }
+                catalog.LMTX_Tagging = pdfreference(pdfimmediateobject(tostring(tagging)))
+            end
             return pdfreference(pdfimmediateobject(tostring(catalog)))
         end
     end

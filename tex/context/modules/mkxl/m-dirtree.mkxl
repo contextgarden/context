@@ -108,6 +108,8 @@
 
 \startluacode
     local gmatch     = string.gmatch
+    local find       = string.find
+    local gsub       = string.gsub
     local concat     = table.concat
     local insert     = table.insert
     local remove     = table.remove
@@ -172,18 +174,34 @@
     local nameonly, suffix = file.nameonly, file.suffix
 
     dirtree.entries = {
-        default = function(str)
+        default = function(kind,str)
             return str
         end,
-        split = function(str)
-            return "\\dirtreeentry{" .. nameonly(str) .. "}{" .. suffix(str) .. "}"
+        split = function(kind,str)
+            local n = nameonly(str)
+            local s = suffix(str)
+            if n == "" and s == "" then
+                kind = 0
+            end
+            return "\\dirtreeentry{" .. kind .. "}{" .. n .. "}{" .. s .. "}"
         end,
     }
 
-    function dirtree.show(tree,symbolset,direntry)
+    function dirtree.show(tree,symbolset,direntry,dirstoo)
+
+        local dirs
 
         if type(tree) == "string" then
-            tree = dir.glob(tree)
+            tree, dirs = dir.glob(tree,nil,dirstoo)
+
+            if dirstoo then
+             -- table.merge(tree,dirs)
+                for i=1,#dirs do
+                    tree[#tree+1] = dirs[i] .. "*"
+                end
+                table.sort(tree)
+            end
+
         end
 
         if type(tree) ~= "table" then
@@ -215,14 +233,15 @@
 
         if #tree > 0 then
             for i=1,#tree do
-                local d = false
+                local d = false -- catches "./"
                 local r = result
-                for s in gmatch(tree[i],"[^/]+") do
+                local t = tree[i]
+                for s in gmatch(t,"[^/]+") do
                     if d then
                         local rs = r[s]
                         if not rs then
                             rs = { }
-                            r[s] = { }
+                            r[s] = rs --  { }
                         end
                         r = rs
                     else
@@ -233,32 +252,46 @@
         else
             -- assume a hash
         end
-
-        local level  = 0
-        local con    = { }
+        local level = 0
+        local con   = { }
 
         local function show(result,level)
             local list = sortedkeys(result)
             local size = #list
             for i=1,size do
-                local l = list[i]
-                local r = result[l]
-                local sub = next(r)
+                local l    = list[i]
+                local r    = result[l]
+                local sub  = next(r)
+                local kind = 0
                 if level == 1 then
                     -- nothing special to do
+                    kind = 1
                 elseif size == 1 then
                     insert(con,sub and yes_one or nop_one)
+                    kind = 2
                 elseif i == 1 then
                     insert(con,sub and yes_first or nop_first)
+                    kind = 3
                 elseif i == size then
                     insert(con,sub and yes_last or nop_last)
+                    kind = 4
                 else
                     insert(con,sub and yes_else or nop_else)
+                    kind = 5
                 end
+                if find(l,"%*$") then
+                    l = gsub(l,"%*$","")
+                    if kind == 1 then
+                        kind = 6
+                    else
+                        kind = 7
+                    end
+                end
+                local entry = direntry(kind,l)
                 if level == 1 then
-                    output[#output+1] = direntry(l)
+                    output[#output+1] = entry
                 else
-                    output[#output+1] = concat(con) .. (sub and yes_space or nop_space) .. direntry(l)
+                    output[#output+1] = concat(con) .. (sub and yes_space or nop_space) .. entry
                 end
                 if sub then
                     if size == 1 then
@@ -302,11 +335,16 @@
 %      \typebuffer[dirtree]
 %    \endgroup}
 
-\let\dirtreeentry\firstofoneargument
+\let\dirtreeentry\gobblethreearguments % can change
 
-\permanent\protected\def\showdirtree[#1]%
+\permanent\tolerant\protected\def\showdirtree[#1]#*[#2]%
   {\begingroup
-     \ctxlua{utilities.dirtree.show("#1","private","split")}
+     % maybe handle options in show
+     \iftok{#2}{empty}%
+       \ctxlua{utilities.dirtree.show("#1","private","split",true)}
+     \else
+       \ctxlua{utilities.dirtree.show("#1","private","split",false)}
+     \fi
      \startlines
      \getbuffer[dirtree]
      \stoplines
@@ -328,24 +366,43 @@
   % \protected\def\dirtreeentry#1#2%
   %   {\doifelsesomething{#2}{\color[dirtree:#2]{#1.#2}}{#1}}
 
-    \protected\def\dirtreeentry#1#2%
-      {\ifparameter#2\or
-         \color[dirtree:#2]{#1.#2}%
+    \definefontsynonym[dirtreefont][file:seguiemj.ttf*default,colored]
+
+    \definesymbol[dirtree:open] [\getglyph{dirtreefont}{📂}]
+    \definesymbol[dirtree:close][\getglyph{dirtreefont}{📁}]
+    \definesymbol[dirtree:text] [\getglyph{dirtreefont}{📄}]
+
+    \protected\def\dirtreeentry#1#2#3%
+      {\ifparameter#3\or
+         \color[dirtree:#3]{#2.#3}%
        \else
-         #1%
+         #2%
+       \fi}
+
+%     \startcolumns
+%        % \showdirtree[t:/texmf/tex/context/base/**]
+%        \showdirtree[./**]
+%     \stopcolumns
+
+    \protected\def\dirtreeentry#1#2#3%
+      {\ifparameter#3\or
+         \symbol[dirtree:text]\color[dirtree:#3]{#2.#3}%
+       \orelse\ifnum#1>\plusfive
+         \symbol[dirtree:close]#2%
+       \else
+         \symbol[dirtree:open]#2%
        \fi}
 
     \startcolumns
        % \showdirtree[t:/texmf/tex/context/base/**]
-         \showdirtree[./**]
+       \showdirtree[./**][empty]
     \stopcolumns
 
-    \startluacode
-     -- local list   = dir.glob("t:/texmf/tex/context/base/**")
-        local list   = dir.glob("./**")
-        local output = utilities.dirtree.show(list,"unicode","default")
-
-        inspect(output)
-    \stopluacode
+%     \startluacode
+%      -- local list   = dir.glob("t:/texmf/tex/context/base/**")
+%         local list   = dir.glob("./**")
+%         local output = utilities.dirtree.show(list,"unicode","default")
+%         inspect(output)
+%     \stopluacode
 
 \stoptext

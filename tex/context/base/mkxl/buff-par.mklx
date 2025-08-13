@@ -72,8 +72,8 @@
    \clf_defineparallel{#name}{#instances}%
    \expandafter\newtoks\csname\??parallelhandler#name\endcsname
    \processcommacommand[#instances]{\buff_parallel_define_instance{#name}}%
-   \frozen\instance\protected\edefcsname\e!start#name\endcsname{\buff_parallel_start{#name}}%
-   \frozen\instance\protected\edefcsname\e!stop #name\endcsname{\buff_parallel_stop}}
+   \protected\frozen\instance\edefcsname\e!start#name\endcsname{\buff_parallel_start{#name}}%
+   \protected\frozen\instance\edefcsname\e!stop #name\endcsname{\buff_parallel_stop}}
 
 \popoverloadmode
 

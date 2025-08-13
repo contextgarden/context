@@ -1,3 +1,6 @@
+
+
+
 % signal=squid
 
 %D \module
@@ -620,9 +623,7 @@ enddef ;
 \stopbuffer
 
 \startMPdefinitions
-    def signal_text(expr s) =
-        signal_all_leds;
-%         signal_all_inner_leds;
+    def signal_just_text(expr s) =
         for i=1 upto 24 :
             if (substring(i-1,i) of s) == "+" :
                 signal_one_led(i,"squid:busy");
@@ -632,37 +633,89 @@ enddef ;
         endfor ;
     enddef ;
 
-    string characters[];
+    def signal_text(expr s) =
+        signal_all_leds ;
+        signal_just_text(s) ;
+    enddef ;
 
-    characters[ASCII "A"] := "+++++!!+++-----+++!!++++" ;
-    characters[ASCII "B"] := "------------------------" ;
-    characters[ASCII "C"] := "+++------+++++++++++++++" ;
-    characters[ASCII "D"] := "------------------------" ;
-    characters[ASCII "E"] := "++---!!!---++++++!!!++++" ;
-    characters[ASCII "F"] := "------------------------" ;
-    characters[ASCII "G"] := "------------------------" ;
-    characters[ASCII "H"] := "------------------------" ;
-    characters[ASCII "I"] := "+++++++++++++-----------" ;
-    characters[ASCII "J"] := "++++++++++++++++--------" ;
-    characters[ASCII "K"] := "------------------------" ;
-    characters[ASCII "L"] := "+--------+++++++++++++++" ;
-    characters[ASCII "M"] := "!!++++++++-!!!-++++++++!" ;
-    characters[ASCII "N"] := "++++++++++-----+++++++++" ;
-    characters[ASCII "O"] := "++++++++++++++++++++++++" ;
-    characters[ASCII "P"] := "------------------------" ;
-    characters[ASCII "Q"] := "------------------------" ;
-    characters[ASCII "R"] := "------------------------" ;
-    characters[ASCII "S"] := "------------------------" ;
-    characters[ASCII "T"] := "!!+++------!!!------+++!" ;
-    characters[ASCII "U"] := "------------------------" ;
-    characters[ASCII "V"] := "------------------------" ;
-    characters[ASCII "W"] := "------------------------" ;
-    characters[ASCII "X"] := "-+++-----+++--+++----+++" ;
-    characters[ASCII "Y"] := "------------------------" ;
-    characters[ASCII "Z"] := "------------------------" ;
+    string signal_characters[];
+
+    signal_characters[ASCII "A"] := "+++++!!+++-----+++!!++++" ;
+    signal_characters[ASCII "B"] := "------------------------" ;
+    signal_characters[ASCII "C"] := "+++------+++++++++++++++" ;
+    signal_characters[ASCII "D"] := "------------------------" ;
+    signal_characters[ASCII "E"] := "++---!!!---++++++!!!++++" ;
+    signal_characters[ASCII "F"] := "------------------------" ;
+    signal_characters[ASCII "G"] := "------------------------" ;
+    signal_characters[ASCII "H"] := "------------------------" ;
+    signal_characters[ASCII "I"] := "+++++++++++++-----------" ;
+    signal_characters[ASCII "J"] := "++++++++++++++++--------" ;
+    signal_characters[ASCII "K"] := "------------------------" ;
+    signal_characters[ASCII "L"] := "+--------+++++++++++++++" ;
+    signal_characters[ASCII "M"] := "!!++++++++-!!!-++++++++!" ;
+    signal_characters[ASCII "N"] := "++++++++++-----+++++++++" ;
+    signal_characters[ASCII "O"] := "++++++++++++++++++++++++" ;
+    signal_characters[ASCII "P"] := "------------------------" ;
+    signal_characters[ASCII "Q"] := "------------------------" ;
+    signal_characters[ASCII "R"] := "------------------------" ;
+    signal_characters[ASCII "S"] := "------------------------" ;
+    signal_characters[ASCII "T"] := "!!+++------!!!------+++!" ;
+    signal_characters[ASCII "U"] := "------------------------" ;
+    signal_characters[ASCII "V"] := "------------------------" ;
+    signal_characters[ASCII "W"] := "------------------------" ;
+    signal_characters[ASCII "X"] := "-+++-----+++--+++----+++" ;
+    signal_characters[ASCII "Y"] := "------------------------" ;
+    signal_characters[ASCII "Z"] := "------------------------" ;
+
+    signal_characters[ASCII "0"] := "------------------------" ;
+    signal_characters[ASCII "1"] := "+-----------+-----------" ;
+    signal_characters[ASCII "2"] := "-+---------+-+---------+" ;
+    signal_characters[ASCII "3"] := "++---------+++---------+" ;
+    signal_characters[ASCII "4"] := "-++-------++-++-------++" ;
+    signal_characters[ASCII "5"] := "+++-------+++++-------++" ;
+    signal_characters[ASCII "6"] := "-+++-----+++-+++-----+++" ;
+    signal_characters[ASCII "7"] := "++++-----+++++++-----+++" ;
+    signal_characters[ASCII "8"] := "-++++---++++-++++---++++" ;
+    signal_characters[ASCII "9"] := "+++++---+++++++++---++++" ;
 
     vardef signal_character(expr c) =
-        image ( signal_text(characters[if string c : ASCII c else : c fi]) )
+        image ( signal_text(signal_characters[if string c : ASCII c else : c fi]) )
+    enddef ;
+
+    string signal_digits_one[];
+    string signal_digits_two[];
+
+    signal_digits_one[0] := "------------------------" ;
+    signal_digits_one[1] := "+-----------------------" ;
+    signal_digits_one[2] := "-+---------------------+" ;
+    signal_digits_one[3] := "++---------------------+" ;
+    signal_digits_one[4] := "-++-------------------++" ;
+    signal_digits_one[5] := "+++-------------------++" ;
+    signal_digits_one[6] := "-+++-----------------+++" ;
+    signal_digits_one[7] := "++++-----------------+++" ;
+    signal_digits_one[8] := "-++++---------------++++" ;
+    signal_digits_one[9] := "+++++---------------++++" ;
+
+    signal_digits_two[0] := "------------------------" ;
+    signal_digits_two[1] := "------------+-----------" ;
+    signal_digits_two[2] := "-----------+-+----------" ;
+    signal_digits_two[3] := "-----------+++----------" ;
+    signal_digits_two[4] := "----------++-++---------" ;
+    signal_digits_two[5] := "----------+++++---------" ;
+    signal_digits_two[6] := "---------+++-+++--------" ;
+    signal_digits_two[7] := "---------+++++++--------" ;
+    signal_digits_two[8] := "--------++++-++++-------" ;
+    signal_digits_two[9] := "--------+++++++++-------" ;
+
+    vardef signal_counter(expr n) =
+        image (
+            if (n >= 0) and (n <= 99) :
+            message(n mod 10) ;
+                signal_all_leds ;
+                signal_just_text(signal_digits_one[n mod 10]) ;
+                signal_just_text(signal_digits_two[n div 10]) ;
+            fi
+        )
     enddef ;
 
 \stopMPdefinitions
@@ -670,12 +723,17 @@ enddef ;
 \startbuffer[squid-009]
     \startMPcode
         numeric n ; n := 0;
-        for i = (ASCII "A") upto (ASCII "Z") :
-            pair a ; a := ((n mod 6) * 25mm, -(n div 6) * 25mm) ;
-            n := n + 1 ;
-            draw signal_character(i) ysized 20mm shifted a ;
-            draw textext (char i) shifted a ;
-        endfor ;
+        def TempLoop(expr f, t) =
+            pair a ;
+            for i = (ASCII f) upto (ASCII t) :
+                a := ((n mod 6) * 25mm, -(n div 6) * 25mm) ;
+                n := n + 1 ;
+                draw signal_character(i) ysized 20mm shifted a ;
+                draw textext (char i) shifted a ;
+            endfor ;
+        enddef ;
+        TempLoop("A","Z");
+        TempLoop("0","9");
     \stopMPcode
 \stopbuffer
 
@@ -691,19 +749,51 @@ enddef ;
     \stopMPcode
 \stopbuffer
 
+\startbuffer[squid-011]
+    \startMPcode
+        numeric n ; n := 0 ;
+        pair a ;
+        for i=0 upto 9 :
+            for j=0 upto 9 :
+                a := (j*17.5mm,-i*17.5mm) ;
+                draw signal_counter(n) ysized 15mm shifted a ;
+                draw textext (decimal n) shifted a ;
+                n := n + 1 ;
+            endfor ;
+        endfor ;
+    \stopMPcode
+\stopbuffer
+
+\startbuffer[squid-012]
+    \startMPcode
+        numeric n ; n := 0 ;
+        pair a ;
+        for i=0 upto 5 :
+            for j=0 upto 8 :
+                a := (j*17.5mm,-i*17.5mm) ;
+                draw signal_counter(round(0 randomized 99)) ysized 15mm shifted a ;
+                n := n + 1 ;
+            endfor ;
+        endfor ;
+    \stopMPcode
+\stopbuffer
+
+
 \continueifinputfile{s-squid.mkxl}
 
 \starttext
-    \startTEXpage\getbuffer[squid-001]\stopTEXpage
-    \startTEXpage\getbuffer[squid-002]\stopTEXpage
-    \startTEXpage\getbuffer[squid-003]\stopTEXpage
-    \startTEXpage\getbuffer[squid-004]\stopTEXpage
-    \startTEXpage\getbuffer[squid-005]\stopTEXpage
-    \startTEXpage\getbuffer[squid-006]\stopTEXpage
-    \startTEXpage\getbuffer[squid-007]\stopTEXpage
-    \startTEXpage\getbuffer[squid-008]\stopTEXpage
-    \startTEXpage\getbuffer[squid-009]\stopTEXpage
-    \startTEXpage\getbuffer[squid-010]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-001]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-002]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-003]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-004]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-005]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-006]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-007]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-008]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-009]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-010]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-011]\stopTEXpage
+    \startTEXpage\getbuffer[squid-012]\stopTEXpage
 \stoptext
 
 \stopmodule

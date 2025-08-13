@@ -152,7 +152,7 @@
 \appendtoks
     \frozen\instance\letcsname\e!next\currentparagraphs\endcsname\nextparagraphs
     \frozen\instance\letcsname\currentparagraphs\endcsname\nextparagraphs
-    \frozen\instance\protected\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
+    \protected\frozen\instance\edefcsname\e!start\currentparagraphs\endcsname{\startparagraphs[\currentparagraphs]}%
     \frozen\instance\letcsname\e!stop\currentparagraphs\endcsname\stopparagraphs
     \localcontrolledrepeat \paragraphsparameter\c!n
       {\expanded

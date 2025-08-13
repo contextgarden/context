@@ -766,10 +766,10 @@
 \newdimension\d_pack_pairedboxes_size
 
 \appendtoks
-   \frozen\protected\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%
-   \frozen\protected\instance\edefcsname\e!place\currentpairedbox           \endcsname{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
-   \frozen\protected\instance\edefcsname\e!start\e!place\currentpairedbox   \endcsname{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
-   \frozen\protected\instance\edefcsname\e!stop\e!place \currentpairedbox   \endcsname{\stopplacepairedbox                    }%
+   \protected\frozen\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%
+   \protected\frozen\instance\edefcsname\e!place\currentpairedbox           \endcsname{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
+   \protected\frozen\instance\edefcsname\e!start\e!place\currentpairedbox   \endcsname{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
+   \protected\frozen\instance\edefcsname\e!stop\e!place \currentpairedbox   \endcsname{\stopplacepairedbox                    }%
 \to \everydefinepairedbox
 
 \permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#S#2]%

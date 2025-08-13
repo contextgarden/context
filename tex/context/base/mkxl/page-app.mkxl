@@ -45,8 +45,8 @@
    \c!location=\v!middle]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!start\currentfittingpage\endcsname{\startfittingpage[\currentfittingpage]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentfittingpage\endcsname{\stopfittingpage}%
+    \protected\frozen\instance\edefcsname\e!start\currentfittingpage\endcsname{\startfittingpage[\currentfittingpage]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentfittingpage\endcsname{\stopfittingpage}%
 \to \everydefinefittingpage
 
 \permanent\tolerant\protected\def\startfittingpage[#1]#*[#S#2]%

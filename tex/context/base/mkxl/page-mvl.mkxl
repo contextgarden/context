@@ -122,8 +122,8 @@
 
 \appendtoks % could become an option
     \ifempty\currentcolumnset\else
-      \frozen\instance\protected\edefcsname\e!start\currentcolumnset\endcsname{\startcolumnset[\currentcolumnset]}%
-      \frozen\instance\protected\edefcsname\e!stop \currentcolumnset\endcsname{\stopcolumnset}%
+      \protected\frozen\instance\edefcsname\e!start\currentcolumnset\endcsname{\startcolumnset[\currentcolumnset]}%
+      \protected\frozen\instance\edefcsname\e!stop \currentcolumnset\endcsname{\stopcolumnset}%
       \clf_definecolumnset {
         name     {\currentcolumnset}%
         nofrows  {\columnsetparameter\c!lines}%

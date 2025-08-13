@@ -198,13 +198,13 @@
 
 \appendtoks
     \ifcstok{\startstopparameter\c!arguments}\v!yes
-        \frozen\instance\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_yes {\currentstartstop}}%
-        \frozen\instance\protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_yes  }%
-        \frozen\instance\protected\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_yes{\currentstartstop}}%
+        \protected\frozen\instance\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_yes {\currentstartstop}}%
+        \protected\frozen\instance\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_yes  }%
+        \protected\frozen\instance\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_yes{\currentstartstop}}%
     \else
-        \frozen\instance\protected\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_nop {\currentstartstop}}%
-        \frozen\instance\protected\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_nop  {\currentstartstop}}%
-        \frozen\instance\protected\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_nop{\currentstartstop}}%
+        \protected\frozen\instance\edefcsname\e!start\currentstartstop\endcsname{\syst_startstop_start_nop {\currentstartstop}}%
+        \protected\frozen\instance\edefcsname\e!stop \currentstartstop\endcsname{\syst_startstop_stop_nop  {\currentstartstop}}%
+        \protected\frozen\instance\edefcsname        \currentstartstop\endcsname{\syst_startstop_indeed_nop{\currentstartstop}}%
     \fi
 \to \everydefinestartstop
 
@@ -304,7 +304,7 @@
 
 \appendtoks
     \ifcstok{\highlightparameter\c!define}\v!yes
-        \frozen\instance\protected\edefcsname\currenthighlight\endcsname
+        \protected\frozen\instance\edefcsname\currenthighlight\endcsname
            {\typo_highlights_indeed{\currenthighlight}}%
     \fi
 \to \everydefinehighlight

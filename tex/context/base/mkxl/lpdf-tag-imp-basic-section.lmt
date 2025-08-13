@@ -1,0 +1,94 @@
+-- This is a hack to get around the specifications "We can't expect an application
+-- to keep track of nested H's (but otherwise expect very complex things things to
+-- be properly dealt with)". A typical example of bugs becoming features, standards
+-- being not really standards as they get adapted, etc. That said: it is up to the
+-- user to decide what to do but don't blame us for the resulting less optimal
+-- structure.
+--
+-- Because we don't want to spoil the otherwise rather clean structure in ConTeXt,
+-- this kicks in very late in the backend. We might extend this hackery but there
+-- are limits to what is desired. After all, in over a decade of pdf tagging nothing
+-- significant happened (we're speaking 2024) nor proper viewer support showed up
+-- and we can anyway expect LLM's to deal with proper tags anyway some day.
+--
+-- criterium : parent    : use parent "detail"
+--             parents   : use first in parent "parents" list
+--             otherwise : look at self "detail"
+--
+-- We need violate the proper structure by getting a Hn on the title so we
+-- have to backtrack to what we're in, thereby also denying the proper
+-- section instance. Don't ask. The plural "parents" will make sure we
+-- consult the first in the chain and not the instance that is encoded in
+-- "detail".
+
+local level   = structures.tags.getoption("level")
+local current = 0
+local used    = 0
+
+local function HN(bump)
+    if bump then
+        current = current + 1
+        if current >= level then
+            used = used + 1
+        end
+    end
+    if used > 0 and used < 10 then
+        return "H" .. used
+    else
+        return "NonStruct"
+    end
+end
+
+return {
+
+    name      = "basic pdf specific tagging",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        sectionblock   = { pdf = "NonStruct" },
+
+        -- 1.28.1 1.29.57 (otherwise complaints about P)
+
+        section        = { pdf = "Sect" },
+        sectioncaption = { pdf = "Div"  },
+        sectiontitle   = { pdf = "Lbl"  }, -- Span is fragile
+        sectionnumber  = { pdf = "Lbl"  }, -- Span is fragile
+        sectioncontent = { pdf = "Div"  },
+
+    },
+
+
+    remapping = {
+
+        { element = "sectioncaption", parent = "part",                            pdf = HN(true ) },
+        { element = "sectioncaption", parent = "chapter",                         pdf = HN(true ) },
+        { element = "sectioncaption", parent = "title",                           pdf = HN(false) },
+        { element = "sectioncaption", parent = "section",                         pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subject",                         pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsection",                      pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubject",                   pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsection",                   pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubject",                pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsection",                pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubject",             pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsection",             pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubject",          pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsection",          pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubject",       pdf = HN(false) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubsection",    pdf = HN(true ) },
+        { element = "sectioncaption", parent = "subsubsubsubsubsubsubsubsubject", pdf = HN(false) },
+
+        { element = "sectionblock",   pdf = "NonStruct" },
+
+        { element = "section",        pdf = "Sect" },
+        { element = "sectioncaption", pdf = "Div"  },
+        { element = "sectiontitle",   pdf = "Lbl"  },
+        { element = "sectionnumber",  pdf = "Lbl"  },
+        { element = "sectioncontent", pdf = "Div"  },
+
+    },
+
+}

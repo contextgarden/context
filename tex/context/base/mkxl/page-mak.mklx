@@ -42,8 +42,8 @@
 \installcommandhandler \??makeup {makeup} \??makeup
 
 \appendtoks
-   \frozen\protected\instance\edefcsname\e!start\currentmakeup\e!makeup\endcsname{\startmakeup[\currentmakeup]}%
-   \frozen\protected\instance\edefcsname\e!stop \currentmakeup\e!makeup\endcsname{\stopmakeup}%
+   \protected\frozen\instance\edefcsname\e!start\currentmakeup\e!makeup\endcsname{\startmakeup[\currentmakeup]}%
+   \protected\frozen\instance\edefcsname\e!stop \currentmakeup\e!makeup\endcsname{\stopmakeup}%
    \doifelselayoutdefined\currentmakeup\donothing{\definelayout[\currentmakeup]}% new
 \to \everydefinemakeup
 

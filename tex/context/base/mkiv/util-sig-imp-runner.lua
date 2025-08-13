@@ -22,8 +22,9 @@ local prune    = false
 
 local trace    = environment.arguments.verbose
 
-local report   = utilities.signals.report or logs.reporter("signal")
-local state    = utilities.signals.loadstate()
+local signals  = utilities.signals
+local report   = signals.report or logs.reporter("signal")
+local state    = signals.loadstate()
 
 local server   = state and state.servers[state.usage.server or "default"]
 local protocol = server and server.protocol or "hue"
@@ -70,13 +71,18 @@ if protocol == "serial" and serialwrite then
         lamps = lamps_8
     end
 
+    local prefix = signals.serialprefix
+
     enable = function(state,first,last)
         local command = states[state]
         if command then
             local count = #lamps
             for i=first,last do
                 -- q=squid k=quadrant s=segment a=all
-                local cmd = (count == 8 and "s" or "k") .. command .. i
+                local cmd = prefix .. (count == 8 and "s" or "k") .. command .. i
+--                 .. "\n"
+--                 .. " "
+--                 print(cmd)
                 serialwrite(port,baud,cmd)
             end
         end

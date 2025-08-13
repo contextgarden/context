@@ -1298,7 +1298,7 @@
    \let\minimumlinedistance\zeropoint}
 
 \overloaded\permanent\protected\def\nointerlineskip
-  {\prevdepth\ignoredepthcriterion}% -\thousandpoint
+  {\ifvmode\prevdepth\ignoredepthcriterion\fi}% -\thousandpoint
 
 \aliased\let\normaloffinterlineskip\offinterlineskip % knuth's original
 

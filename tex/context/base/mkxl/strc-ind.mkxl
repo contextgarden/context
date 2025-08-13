@@ -60,12 +60,12 @@
 \newdimension\d_strc_indentedtexts_distance
 
 \appendtoks
-   \frozen\instance\protected\edefcsname\e!start\currentindentedtext\endcsname{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
-   \frozen\instance\protected\edefcsname\e!stop \currentindentedtext\endcsname{\strc_indentedtexts_stop}%
+   \protected\frozen\instance\edefcsname\e!start\currentindentedtext\endcsname{\strc_indentedtexts_start{\currentindentedtext}\c_strc_indentedtexts_nesting}%
+   \protected\frozen\instance\edefcsname\e!stop \currentindentedtext\endcsname{\strc_indentedtexts_stop}%
    % to be avoided ... might go away
-   \frozen\instance\protected\edefcsname            \currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{0}}%
-   \frozen\instance\protected\edefcsname      \v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{1}}%
-   \frozen\instance\protected\edefcsname\v!sub\v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
+   \protected\frozen\instance\edefcsname            \currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{0}}%
+   \protected\frozen\instance\edefcsname      \v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{1}}%
+   \protected\frozen\instance\edefcsname\v!sub\v!sub\currentindentedtext\endcsname{\strc_indentedtexts_direct{\currentindentedtext}{2}}%
 \to \everydefineindentedtext
 
 \protected\def\strc_indentedtexts_start#1#2% we need to get rid of \spr

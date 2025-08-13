@@ -812,8 +812,8 @@
    \c!default=\v!middle]
 
 \appendtoks
-   \frozen\instance\protected\edefcsname\e!start\currentnarrower\endcsname{\spac_narrower_start[\currentnarrower]}%
-   \frozen\instance\protected\edefcsname\e!stop \currentnarrower\endcsname{\spac_narrower_stop}%
+   \protected\frozen\instance\edefcsname\e!start\currentnarrower\endcsname{\spac_narrower_start[\currentnarrower]}%
+   \protected\frozen\instance\edefcsname\e!stop \currentnarrower\endcsname{\spac_narrower_stop}%
 \to \everydefinenarrower
 
 \permanent\protected\def\installnarrowermethod#1#2%

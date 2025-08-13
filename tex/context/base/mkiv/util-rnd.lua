@@ -1,5 +1,5 @@
 if not modules then modules = { } end modules ['util-rnd'] = {
-    version   = 1.001,
+    version   = 1.003,
     comment   = "companion to luat-lib.mkiv",
     author    = "Tamara, Adriana, Tomáš Hála & Hans Hagen",
     copyright = "ConTeXt Development Team", -- umbrella
@@ -44,25 +44,25 @@ local methods = {
         return ceil(num * coef -0.5) / coef
     end,
     halfabsup = function(num,coef)
-        -- rounds deciaml numbers as usual, numbers with 0.5 away from zero, e.g. numbers -0.5 and 0.5 will be rounded to -1 and 1
+        -- rounds decimal numbers as usual, numbers with 0.5 away from zero, e.g. numbers -0.5 and 0.5 will be rounded to -1 and 1, respectively
         coef = coef and pow(10,coef) or 1
         return (num >= 0 and floor(num * coef + 0.5) or ceil(num * coef - 0.5)) / coef
     end,
     halfabsdown = function(num,coef)
-        -- rounds deciaml numbers as usual, numbers with 0.5 towards zero, e.g. numbers -0.5 and 0.5 will be rounded both to 0
+        -- rounds decimal numbers as usual, numbers with 0.5 towards zero, e.g. numbers -0.5 and 0.5 will be rounded both to 0
         coef = coef and pow(10,coef) or 1
         return (num <  0 and floor(num * coef + 0.5) or ceil(num * coef - 0.5)) / coef
     end,
     halfeven = function(num,coef)
-       -- rounds deciaml numbers as usual, numbers with 0.5 to the nearest even, e.g. numbers 1.5 and 2.5 will be rounded both to 2
+       -- rounds decimal numbers as usual, numbers with 0.5 to the nearest even, e.g. numbers 1.5 and 2.5 will be rounded both to 2
         coef = coef and pow(10,coef) or 1
-        num = num*coef
+        num  = num*coef
         return floor(num + (((num - floor(num)) ~= 0.5 and 0.5) or ((floor(num) % 2 == 1) and 1) or 0)) / coef
     end,
     halfodd = function(num,coef)
-        -- rounds deciaml numbers as usual, numbers with 0.5 to the nearest odd (e.g. numbers 1.5 and 2.5 will be rounded to 1 and 3
+        -- rounds decimal numbers as usual, numbers with 0.5 to the nearest odd (e.g. numbers 1.5 and 2.5 will be rounded to 1 and 3
         coef = coef and pow(10,coef) or 1
-        num = num * coef
+        num  = num * coef
         return floor(num + (((num - floor(num)) ~= 0.5 and 0.5) or ((floor(num) % 2 == 1) and 0) or 1)) / coef
     end,
 }
@@ -73,22 +73,20 @@ rounding.methods = table.setmetatableindex(methods,function(t,k)
     local s = gsub(lower(k),"[^a-z]","")
     local v = rawget(t,s)
     if not v then
-        v = t.halfup
+        v = t.default
     end
-    t[k] = v
+    t[k] = v -- we keep this
     return v
 end)
 
 -- If needed I can make a high performance one.
-
-local defaultmethod = methods.halfup
 
 rounding.round = function(num,dec,mode)
     if type(dec) == "string" then
         mode = dec
         dec  = 1
     end
-    return (mode and methods[mode] or defaultmethod)(num,dec)
+    return methods[mode or ""](num,dec)
 end
 
 number.rounding = rounding
@@ -112,5 +110,18 @@ number.rounding = rounding
 --     print(n,"HALF_ABS_DOWN",number.rounding.round(n,1,"HALF_ABS_DOWN"))
 --     print(n,"HALF_ABS_DOWN",myround(n,1))
 -- end
+
+--[[
+
+-- Tomáš' test parameters:
+
+context( round(6.55,1,"halfdown") )
+context( round(6.55,1,"xxx") )
+context( round(6.55,1) )
+context( round(6.55,"halfdown") )
+context( round(6.55,"yyy") )
+context( round(6.55) )
+
+--]]
 
 return rounding

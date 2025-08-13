@@ -1,0 +1,21 @@
+return {
+
+    name      = "basic pdf specific tagging : verbatim",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        verbatimblock = { pdf = "Div"  },
+        verbatimlines = { pdf = "Code" },
+        verbatimline  = { pdf = "Sub"  },
+        verbatim      = { pdf = "Code" },
+
+     -- lines         = { pdf = "NonStruct" },
+     -- line          = { pdf = "NonStruct" },
+     -- linenumber    = { pdf = "NonStruct" },
+
+    },
+
+}

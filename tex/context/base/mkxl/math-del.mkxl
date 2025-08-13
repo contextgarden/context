@@ -86,7 +86,7 @@
 \appendtoks
     \ifcstok{\mathdelimiterparameter\c!define}\v!yes
         % we can intercept auto here
-        \frozen\instance\protected\edefcsname\currentmathdelimiter\endcsname{\mathdelimiter[\currentmathdelimiter]}%
+        \protected\frozen\instance\edefcsname\currentmathdelimiter\endcsname{\mathdelimiter[\currentmathdelimiter]}%
     \fi
 \to \everydefinemathdelimiter
 

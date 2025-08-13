@@ -50,7 +50,7 @@
 \aliased\let\setupbuttons\setupbutton
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentbutton\endcsname{\scrn_button_direct{\currentbutton}}%
+    \protected\frozen\instance\edefcsname\currentbutton\endcsname{\scrn_button_direct{\currentbutton}}%
 \to \everydefinebutton
 
 \protected\def\scrn_button_direct#tag%

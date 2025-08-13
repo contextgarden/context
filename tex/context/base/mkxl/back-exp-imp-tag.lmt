@@ -261,6 +261,8 @@ end
 
 do
 
+    -- todo: register prerolled alt
+
     local synonyms = { }
     local sortings = { }
 
@@ -301,6 +303,9 @@ do
     structurestags.setsynonym = setsynonym
     structurestags.setsorting = setsorting
 
+    structurestags.getsynonym = function(fulltag) return synonyms[fulltag] end
+    structurestags.getsorting = function(fulltag) return sortings[fulltag] end
+
 end
 
 do
@@ -308,8 +313,24 @@ do
     local descriptions = { }
     local symbols      = { }
     local linked       = { }
+    local listindices  = { }
 
     -- we could move the notation itself to the first reference (can be an option)
+
+    -- this is not ok ...
+
+    local function setdescriptionindex(n,l)
+        local fulltag = locatedtag("description")
+        if fulltag then
+            -- why not in ... we are not to much off here
+         -- local spec = specifications[fulltag]
+            listindices[fulltag] = {
+                noteindex = n,
+                listindex = l,
+            }
+        else
+        end
+    end
 
     local function setnotation(tag,n) -- needs checking (is tag needed)
         -- we can also use the internals hash or list
@@ -355,6 +376,12 @@ do
     end
 
     implement {
+        name      = "settagdescriptionindex",
+        actions   = setdescriptionindex,
+        arguments = "2 integers",
+    }
+
+    implement {
         name      = "settagnotation",
         actions   = setnotation,
         arguments = { "string", "integer" }
@@ -366,8 +393,13 @@ do
         arguments = { "string", "integer" }
     }
 
-    structurestags.setnotation       = setnotation
-    structurestags.setnotationsymbol = setnotationsymbol
+    structurestags.setdescriptionindex = setdescriptionindex
+    structurestags.setnotation         = setnotation
+    structurestags.setnotationsymbol   = setnotationsymbol
+
+    function structurestags.getdescriptionindex(fulltag)
+        return listindices[fulltag]
+    end
 
 end
 
@@ -421,11 +453,15 @@ end
 
 do
 
-    local image      = { }
-    local nofimages  = 0
-    usedimages.image = image
+    local image          = { }
+    local mpgraphic      = { }
+    local nofimages      = 0
+    local nofmpgraphics  = 0
+    usedimages.image     = image
+    usedimages.mpgraphic = mpgraphic
 
-    structurestags.usewithcare.images = image
+    structurestags.usewithcare.image     = image
+    structurestags.usewithcare.mpgraphic = mpgraphic
 
     local function setfigure(
         name,used,page,
@@ -433,7 +469,7 @@ do
         category,exported,
         descriptiontext,alternativetext
     )
-        local fulltag = locatedtag("image")
+        local fulltag = locatedtag("image") -- we actually can be deeper
         local spec    = specifications[fulltag]
         if spec then
             local id
@@ -444,6 +480,24 @@ do
                 id = tex.jobname .. "-image-" .. nofimages
             end
             local page = tonumber(page)
+            --
+            -- This is rather ugly but very much a side effect of MS wanting to be able to tag
+            -- them as figure so these /Alt's are mandate then .. sigh:
+            --
+            -- \startimage[alternativetext=outer] \startMPcode
+            -- \startimage                        \startMPcode[alternativetext=inner wins]
+            -- \startMPcode[alternativetext=inner wins]
+            -- \startimage                        \startMPcode
+            -- \startMPcode
+            --
+            -- which gets processed (set) in the reverse order but so be it.
+            --
+            local found = image[fulltag]
+            if found then
+                if descriptiontext == "" then descriptiontext = found.descriptiontext or descriptiontext end
+                if alternativetext == "" then alternativetext = found.alternativetext or alternativetext end
+            end
+            --
             image[fulltag] = {
                 exported        = exported,
                 id              = id,
@@ -461,6 +515,19 @@ do
             }
         else
             -- we ignore images in layers in the background / pagebody
+        end
+    end
+
+    local function setmpgraphic(
+        descriptiontext,alternativetext
+    )
+        local fulltag = locatedtag("mpgraphic")
+        local spec    = specifications[fulltag]
+        if spec then
+            mpgraphic[fulltag] = {
+                descriptiontext = descriptiontext,
+                alternativetext = alternativetext,
+            }
         end
     end
 
@@ -484,6 +551,14 @@ do
         end
     end
 
+    function extras.mpgraphic(di,element,n,fulltag)
+        local data = image[fulltag]
+        if data then
+            setattribute(di,"descriptiontext",data.descriptiontext)
+            setattribute(di,"alternativetext",data.alternativetext)
+        end
+    end
+
     implement {
         name      = "settagfigure",
         actions   = setfigure,
@@ -502,7 +577,17 @@ do
         }
     }
 
-    structurestags.setfigure = setfigure
+   implement {
+        name      = "settagmpgraphic",
+        actions   = setmpgraphic,
+        arguments = {
+            "string",    -- descriptiontext
+            "string",    -- alternativetext
+        }
+    }
+
+    structurestags.setfigure    = setfigure
+    structurestags.setmpgraphic = setmpgraphic
 
 end
 
@@ -760,10 +845,24 @@ do
     implement {
         name      = "settaglist",
         actions   = setlist,
-        arguments = "integer"
+        arguments = "integer",
     }
 
-    structurestags.setlist = setlist
+end
+
+do
+
+    local list = { }
+
+    function structurestags.gettagreferencedescription(id)
+        return list[id]
+    end
+
+    implement {
+        name      = "settagsetreferencedescription",
+        actions   = function(id,str) list[id] = str end,
+        arguments = { "integer", "string" },
+    }
 
 end
 

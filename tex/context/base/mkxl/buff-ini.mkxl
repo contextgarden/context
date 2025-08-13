@@ -128,9 +128,9 @@
     \setexpandedbufferparameter\c!number{\the\c_buff_n_of_defined}%
     \cdef\currentdefinedbuffer{def-\the\c_buff_n_of_defined}%
     \ifcstok{\bufferparameter\c!define}\v!yes
-      \frozen\instance\protected\edefcsname\e!start\currentbuffer\endcsname
+      \protected\frozen\instance\edefcsname\e!start\currentbuffer\endcsname
         {\buff_start_defined{\currentbuffer}{\currentdefinedbuffer}{\e!start\currentbuffer}{\e!stop\currentbuffer}}%
-      \frozen\instance\protected\edefcsname\e!get  \currentbuffer\endcsname
+      \protected\frozen\instance\edefcsname\e!get  \currentbuffer\endcsname
         {\buff_get_stored   {\currentbuffer}{\currentdefinedbuffer}}%
     \fi
 \to \everydefinebuffer

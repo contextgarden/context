@@ -1046,7 +1046,6 @@ function codeinjections.prerollreference(actions,index) -- share can become opti
             local contents = action.arguments
             local color    = pdfcolorarray(author and "pdfhighlight:" .. author or nil)
             local bs, bc   = pdfborder(actions)
-
             local main = pdfdictionary {
                 Subtype     = pdf_highlight,
                 Border      = pdfshareobjectreference(bs),

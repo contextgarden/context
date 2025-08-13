@@ -1,0 +1,17 @@
+return {
+
+    name      = "basic pdf specific tagging : combination",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        combination        = { pdf = "Table" },
+        combinationpair    = { pdf = "TR"    },
+        combinationcontent = { pdf = "TD"    },
+        combinationcaption = { pdf = "TD"    },
+
+    },
+
+}

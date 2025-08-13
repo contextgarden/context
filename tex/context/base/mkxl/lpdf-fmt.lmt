@@ -542,6 +542,8 @@ function codeinjections.setformat(s)
                     majorversion,minorversion)
             end
             --
+            lpdf.setutfstringmode(majorversion >= 2)
+            --
             -- maybe block by pdf version
             --
             codeinjections.settaggingsupport(formatspecification.tagging)

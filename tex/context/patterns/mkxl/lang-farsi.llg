@@ -1,0 +1,10 @@
+return {
+    name     = "Farsi",
+    version  = "1.00",
+    comment  = "Some Farsi stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "fa",
+        export = "fa",
+    }
+}

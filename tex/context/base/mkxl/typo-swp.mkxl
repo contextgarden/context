@@ -39,8 +39,8 @@
 
 \appendtoks
     \ifcstok{\rowsparameter\c!define}\v!yes
-      \frozen\protected\instance\edefcsname\e!start\currentrows\endcsname{\startrows[\currentrows]}%
-      \frozen\protected\instance\defcsname \e!stop \currentrows\endcsname{\stoprows}%
+      \protected\frozen\instance\edefcsname\e!start\currentrows\endcsname{\startrows[\currentrows]}%
+      \protected\frozen\instance\defcsname \e!stop \currentrows\endcsname{\stoprows}%
     \fi
 \to \everydefinerows
 

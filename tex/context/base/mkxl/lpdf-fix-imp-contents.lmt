@@ -147,8 +147,12 @@ report_fixes("weird object")
                     end
                     --
                     local r = v.Resources
-                    if r then
-                        if procset_done and r.__raw__.ProcSet then r.__raw__.ProcSet = nil procset_done = procset_done + 1 end
+                    if r and not r.__resources_processed__ then
+                        r.__resources_processed__ = true
+                        if procset_done and r.__raw__.ProcSet then
+                            r.__raw__.ProcSet = nil
+                            procset_done = procset_done + 1
+                        end
                         local x = r.XObject
                         if x then
                             for k, v in expanded(x) do
@@ -279,7 +283,8 @@ do
         if x then
             for k, v in expanded(x) do
                 local resources = v.Resources
-                if resources then
+                if resources and not resources.__resources_cidsets_cleanedup__ then
+                    resources.__resources_cidsets_cleanedup__ = true
                     pdf_cleanup_cidsets(pdfdoc,page,pagenumber,resources,compactor,action)
                 end
             end
@@ -313,7 +318,8 @@ do
         if x then
             for k, v in expanded(x) do
                 local resources = v.Resources
-                if resources then
+                if resources and not resources.__resources_procsets_cleanedup__ then
+                    resources.__resources_procsets_cleanedup__ = true
                     pdf_cleanup_procsets(pdfdoc,page,pagenumber,resources,compactor)
                 end
             end

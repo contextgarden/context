@@ -25,7 +25,8 @@ local serialwrite = serial and serial.write
 
 if serialwrite then
 
-    signals.serialwrite = serialwrite
+    signals.serialwrite  = serialwrite
+    signals.serialprefix = ":lmtx:1:"
 
     local ports = { }
 

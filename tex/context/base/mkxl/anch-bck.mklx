@@ -97,9 +97,9 @@
 \installcommandhandler \??textbackground {textbackground} \??textbackground
 
 \appendtoks
-    \frozen\instance\protected\edefcsname        \currenttextbackground\endcsname{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
-    \frozen\instance\protected\edefcsname\e!start\currenttextbackground\endcsname{\starttextbackground[\currenttextbackground]}%
-    \frozen\instance\protected\edefcsname\e!stop \currenttextbackground\endcsname{\stoptextbackground}%
+    \protected\frozen\instance\edefcsname        \currenttextbackground\endcsname{\groupedcommand{\starttextbackground[\currenttextbackground]}{\stoptextbackground}}%
+    \protected\frozen\instance\edefcsname\e!start\currenttextbackground\endcsname{\starttextbackground[\currenttextbackground]}%
+    \protected\frozen\instance\edefcsname\e!stop \currenttextbackground\endcsname{\stoptextbackground}%
 \to \everydefinetextbackground
 
 \newconstant   \c_anch_backgrounds_pos_state

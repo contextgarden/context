@@ -40,7 +40,8 @@ if protocol == "serial" then
         return
     end
 
-    local prefix = "s"
+ -- local prefix = "s"
+    local prefix = signals.serialprefix .. "s"
 
     local function squidsome(cmd,run)
         cmd = prefix .. cmd .. (run or "0") .. "\r"

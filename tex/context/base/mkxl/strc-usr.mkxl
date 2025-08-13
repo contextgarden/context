@@ -92,8 +92,8 @@
 \installcommandhandler \????userdataalternative {userdataalternative} \????userdataalternative
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\e!start\currentuserdata\endcsname{\userdata_start_instance{\currentuserdata}}%
-    \frozen\protected\instance\letcsname \e!stop \currentuserdata\endcsname\userdata_stop_instance
+    \protected\frozen\instance\edefcsname\e!start\currentuserdata\endcsname{\userdata_start_instance{\currentuserdata}}%
+    \protected\frozen\instance\letcsname \e!stop \currentuserdata\endcsname\userdata_stop_instance
 \to \everydefineuserdata
 
 \permanent\protected\def\startuserdata

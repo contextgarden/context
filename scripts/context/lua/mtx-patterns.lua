@@ -686,14 +686,25 @@ function scripts.patterns.hyphenate()
         leftchar        = false,
         rightchar       = false,
     }
-    trackers.enable("hyphenator.steps")
-    for i=1,#words do
-        local word = words[i]
-        report("%s %s %s : %s : %s",
-            language, left, right,
-            word,
-            traditional.injecthyphens(dictionary,word,specification)
-        )
+    if environment.argument("direct") then
+        for i=1,#words do
+            words[i] = traditional.injecthyphens(dictionary,words[i],specification)
+        end
+        words = concat(words," ")
+        if environment.argument("soft") then
+            words = gsub(words,"%-",utf.char(0xAD))
+        end
+        print(words)
+    else
+        trackers.enable("hyphenator.steps")
+        for i=1,#words do
+            local word = words[i]
+            report("%s %s %s : %s : %s",
+                language, left, right,
+                word,
+                traditional.injecthyphens(dictionary,word,specification)
+            )
+        end
     end
 end
 

@@ -46,7 +46,7 @@
      \offinterlineskip
      \setbox\MPbox\vpack\bgroup
        \dotaggedplaceholder
-       \dostartignoretagging
+       \dostartignoretagging\empty
        \ignorespaces         % not that needed
        \clf_convertmpstopdf{\MPfilename}%
        \removeunwantedspaces % not that needed

@@ -660,7 +660,7 @@
    \c!backgroundcolor=gray]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\currenttooltip\endcsname{\scrn_tooltip_direct{\currenttooltip}}%
+    \protected\frozen\instance\edefcsname\currenttooltip\endcsname{\scrn_tooltip_direct{\currenttooltip}}%
 \to \everydefinetooltip
 
 \protected\def\scrn_tooltip_direct#tag%

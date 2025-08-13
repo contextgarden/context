@@ -27,7 +27,7 @@
 \installcommandhandler \??placement {placement} \??placement
 
 \appendtoks
-   \frozen\instance\protected\edefcsname\e!place\currentplacement\endcsname{\pack_placement{\currentplacement}}%
+   \protected\frozen\instance\edefcsname\e!place\currentplacement\endcsname{\pack_placement{\currentplacement}}%
 \to \everydefineplacement
 
 \setupplacement

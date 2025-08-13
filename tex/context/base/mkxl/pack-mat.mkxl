@@ -262,7 +262,7 @@
 \newdimension\d_pack_framed_mathframed
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
+    \protected\frozen\instance\edefcsname\currentmathframed\endcsname{\pack_framed_mathframed[\currentmathframed]}%
 \to \everydefinemathframed
 
 \tolerant\protected\def\pack_framed_mathframed[#1]#*[#S#2]#:#3% needs testing !

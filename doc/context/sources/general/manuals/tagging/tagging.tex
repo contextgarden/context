@@ -3,7 +3,8 @@
 % todo: use concrete
 
 \usemodule
-  [abbreviations-logos,scite,math-verbatim]
+% [abbreviations-logos,scite,math-verbatim] % math verbatim messes up text
+  [abbreviations-logos,scite] % math verbatim messes up text
 
 % \showframe
 
@@ -254,7 +255,16 @@ All that said, we assume that \PDF\ level 2 is used, if only because it looks
 like validators aim for that. Also, if you find pre level 2 documents produced
 elsewhere, often tagging is so bad or weird that one can as well ignore it.
 
-Tagging in a document is enabled with:
+You should realize that tagging is actually rather old, it was already available
+in the early version. You can enable tagging with:
+
+\starttyping
+\setuptagging[state=start]
+\stoptyping
+
+This will give you basic tagging: directives in the page stream combined with
+a structure tree. You can also decide to add mapping to \PDF\ specific tags. This
+is done with:
 
 \starttyping
 \setupbackend[format=pdf/ua-2]
@@ -272,19 +282,40 @@ choices to the user. By default we use robust mapping (read: not sensitive for
 limitations in nesting \PDF\ specific tags cf.\ checkers) but you can say this:
 
 \starttyping
-\enabledirectives [backend.usetags=crap]
+\setuptagging[preset=basic]
 \stoptyping
 
-and get an you can map to an alternative set. With
+The basic mapping is defined in \typ {lpdf-tag-imp-basic*} files and get and of
+course define your own. The basic set works for a few complex documents we tried
+but has to work around limitations. We have no clue how that works out in the
+long term because (as mentioned) validation, standardization and whatever relates
+are fluid. We still provide:
 
 \starttyping
-\enabledirectives [backend.usetags=mkiv]
+\setuptagging [preset=mkiv]
 \stoptyping
 
-you get the mapping used in \MKIV\ but that one fails level 2 validation. The
-\quote {crap} file has some notes on how to define things. The somewhat strange
-section title mapping is due to the fact that nested sections are not really
-supported in a way that permits the title and content to be properly tagged.
+you get the mapping used in \MKIV\ but that one fails level 2 validation. In due
+time we might explain (re)mapping here in more detail. There are various features
+controlled by directives but these mostly serve(d) testing.
+
+\stopchapter
+
+\startchapter[title=Interactivity]
+
+By default we ignore references and links in the mapping. This because we found
+it to be confusing, unreliable, limited and (some searching indicated) open to
+interpretations and changes. It doesn't bring anything to the table anyway. In
+\CONTEXT\ users can make advanced interactive documents; it was always a strong
+point and for for some users a reason to use this system. If you really want
+it to be taken into account, you can do this:
+
+\starttyping
+\setuptagging [option=interactivity]
+\stoptyping
+
+You might need to change your document if validation fails, for instance because
+you add buttons and such in constructs that no one could envisage.
 
 \stopchapter
 
@@ -580,7 +611,8 @@ the \type {H} mapping for classes of documents. But in ISO 14289-2:2024 we can
 read \quotation {The \type {H} structure type requires processors to track
 section depth, which adds an unnecessary burden on processors and can cause
 ambiguity.} This is a quite baffling remark given the complexity of \PDF\ and web
-technologies in general.
+technologies in general. So in the end it was dropped in order to make some
+developers lives easier, while complicating that of others.
 
 It is this, and other vague (and changing) descriptions, take for instance \type
 {Part} and \type {Sect}, that made us decide to draw a line. We tried some in our
@@ -607,10 +639,41 @@ so we just mention them:
 \enabletrackers[structures.tags.blobs]
 \enabletrackers[structures.tags.internals]
 \enabletrackers[structures.tags.suspects]
+\enabletrackers[structures.tags.attribute]
+\enabletrackers[structures.tags.paragraphs]
+\enabletrackers[structures.tags.objects]
 \stoptyping
 
-The first one is probably the most useful as it shows how \CONTEXT\ sees the
-structure of your document.
+The first few are probably the most useful as it shows how \CONTEXT\ sees the
+structure of your document. Others are there because they help figuring out
+issues.
+
+We also have a script that can help checking:
+
+\starttyping
+mtxrun --script pdf --validate yourfile
+\stoptyping
+
+This will use (currently only) verapdf to check the file and show a summary.
+Another feature is:
+
+\starttyping
+mtxrun --script pdf --structure yourfile  [--details --save]
+\stoptyping
+
+and both can be done in one step with:
+
+\starttyping
+mtxrun --script pdf --check yourfile
+\stoptyping
+
+When you tag a document, best do that as late as possible because it adds runtime
+and checking doesn't really help much when writing something. You might want to
+put the setup in a mode so that you can enable it from the command line. The
+documents also become way bigger. And, if you really care about accessibility,
+consider making two versions: one that suits your typographic needs, and one that
+targets the audience that needs accessibility. And, for printed documents, you
+can just ignore it.
 
 \stopchapter
 

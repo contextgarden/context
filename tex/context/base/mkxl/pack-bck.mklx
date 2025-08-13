@@ -65,9 +65,9 @@
 \setnewconstant\backgroundsplitmode\plusthree
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\e!start\currentbackground\endcsname{\pack_backgrounds_start [\currentbackground]}%
-    \frozen\protected\instance\edefcsname\e!stop \currentbackground\endcsname{\pack_backgrounds_stop                      }%
-    \frozen\protected\instance\edefcsname        \currentbackground\endcsname{\pack_backgrounds_direct[\currentbackground]}%
+    \protected\frozen\instance\edefcsname\e!start\currentbackground\endcsname{\pack_backgrounds_start [\currentbackground]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentbackground\endcsname{\pack_backgrounds_stop                      }%
+    \protected\frozen\instance\edefcsname        \currentbackground\endcsname{\pack_backgrounds_direct[\currentbackground]}%
 \to \everydefinebackground
 
 \protected\def\pack_backgrounds_start[#tag]%

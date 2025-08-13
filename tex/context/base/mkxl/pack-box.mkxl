@@ -576,7 +576,7 @@
 
 \appendtoks
     \ifcstok{\bleedingparameter\c!define}\v!yes
-        \frozen\instance\protected\edefcsname\currentbleeding\endcsname{\pack_boxes_bleeding{\currentbleeding}}%
+        \protected\frozen\instance\edefcsname\currentbleeding\endcsname{\pack_boxes_bleeding{\currentbleeding}}%
     \fi
 \to \everydefinebleeding
 

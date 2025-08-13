@@ -27,6 +27,8 @@ local protocol = server and server.protocol or "hue"
 
 if protocol == "serial" then
 
+    -- use signals.serialwrite
+
     local port = false
     local baud = 115200
 
@@ -40,8 +42,10 @@ if protocol == "serial" then
         return
     end
 
+    local prefix = signals.serialprefix
+
     local function squidsome(cmd)
-        serialwrite(port,baud,cmd .. "\r")
+        serialwrite(port,baud,prefix .. cmd .. "\r")
     end
 
     local function squidreset  () squidsome("qr") end
@@ -52,11 +56,11 @@ if protocol == "serial" then
     local function squiderror  () squidsome("qe") end
 
     local function squidstep()
-        signals.serialfast(port,baud,"qs")
+        signals.serialfast(port,baud,prefix .. "qs")
     end
 
     local function squiddone(currentrun,details)
-        signals.serialfast(port,baud,"qf")
+        signals.serialfast(port,baud,prefix .. "qf")
         if details and statistics and statistics.feedback then
             statistics.feedback.processstates(function(s)
                 local index    = s.index
@@ -70,7 +74,12 @@ if protocol == "serial" then
                     command = "fe"
                 end
                 if command then
-                    signals.serialfast(port,baud,command .. index .. "\n")
+                    command = prefix .. command .. index
+                    -- "\n"
+--                     command = command .. " "
+--                     command = command .. "\n"
+-- print(command)
+                    signals.serialfast(port,baud,command)
                 end
             end)
         end

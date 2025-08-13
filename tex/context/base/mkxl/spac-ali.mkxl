@@ -1565,7 +1565,7 @@
 % Some obsolete (old) helpers:
 
 \permanent\tolerant\protected\def\definehbox[#1]#*[#2]%
-  {\ifarguments\else\frozen\instance\protected\defcsname hbox#1\endcsname##1{\hbox to #2{\begstrut##1\endstrut\hss}}\fi}
+  {\ifarguments\else\protected\frozen\instance\defcsname hbox#1\endcsname##1{\hbox to #2{\begstrut##1\endstrut\hss}}\fi}
 
 %D Some direction related helpers:
 

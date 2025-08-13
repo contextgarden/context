@@ -1,0 +1,613 @@
+if not modules then modules = { } end modules ['lpdf-crp.lmt'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-ini.mkxl and mtx-pdf.lua",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- One reason for having a look at it is that we might need to be able to merge ..
+-- bah. I'm sure someone on the list will ask for it. For now we keep it local as
+-- not all is valid (xml or whatever).
+--
+-- A first quick pick-up-on-this (I lost old code) with Riverside Live ID (2025)
+-- blasting from the speakers. A pitty I missed one of these shows live (went
+-- to few in NL before).
+
+local type, tonumber, rawget = type, tonumber, rawget
+local gsub, formatters, lower = string.gsub, string.formatters, string.lower
+local concat, setmetatableindex, sortedhash = table.concat, table.setmetatableindex, table.sortedhash
+
+local getpagecontent = lpdf.epdf.getpagecontent
+
+local xmlescaped = xml.escaped
+
+local softhyphen = utf.char(0xAD) .. " +"
+
+local function striphyphens(str)
+    return str and gsub(str,softhyphen,"") or ""
+end
+
+local function collectcontent(pdffile,first,last,everything)
+    local current = false
+    for i=first,last do
+        local collected = setmetatableindex("table")
+        local content   = getpagecontent(pdffile,i,false,true)
+        everything[i] = collected
+        if content then
+            local mcid = false
+            for i=1,#content do
+                local ci   = content[i]
+                local what = ci[#ci]
+                if what == "BDC" then
+                 -- if mcid then
+                 --     print("! nesting in mcid",mcid)
+                 -- end
+                    local name = ci[1]
+                    local dict = ci[2]
+                    if name and name[1] == "name" then
+                        name = name[2]
+                    else
+                        name = false
+                    end
+                    if dict and dict[1] == "dict" then
+                        dict = dict[2]
+                        for i=1,#dict,2 do
+                            local key = dict[i]
+                            local val = dict[i+1]
+                            if key[1] == "name" and key[2] ==  "MCID" then
+                                mcid = val
+                            end
+                        end
+                    else
+                        dict = false
+                    end
+                    if name and mcid then
+                        current = collected[tonumber(mcid) or false]
+                     -- print("BDC",mcid,name,current)
+                    else
+                        current = false
+                     -- mcid    = false
+                     -- current = collected[tonumber(mcid) or false]
+                    end
+                elseif what == "BMC" then -- artifact
+                 -- print("BMC")
+                    if mcid then
+                     -- print("! nesting in mcid",mcid)
+                        current = false
+                        mcid    = false
+                    else
+                    end
+                elseif what == "EMC" then
+                 -- if mcid then
+                 --     print("EMC",mcid)
+                 -- end
+                    current = false
+                    mcid    = false
+                elseif current then
+-- if what == "Tm" then
+-- end
+
+                    if what == "TJ" then
+                        local list = ci[1]
+                        if list[1] == "array" then
+                            list = list[2]
+                            if type(list) == "table" then
+                                current[#current+1] = concat(list)
+                            end
+                        end
+                 -- elseif what == "Tj" or what == "'" or what == '"' then
+                    elseif what == "Tj" then
+                        -- needs checking
+                        local list = ci[1]
+                        if list[1] == "array" then
+                            list = list[2]
+                            if type(list) == "string" then
+                                current[#current+1] = list
+                            end
+                        end
+                    end
+                end
+            end
+        end
+   end
+   setmetatableindex(collected,nil)
+   return collected
+end
+
+-- options  : attachments
+-- comments : add alt as comment
+
+function lpdf.collectcontent(pdffile,options)
+
+    -- todo: fetch one page
+
+    if not pdffile then
+        return
+    end
+
+    local tree = pdffile.Catalog.StructTreeRoot
+    if not tree then
+        return
+    end
+
+    local pages    = pdffile.pages
+    local nofpages = pdffile.nofpages
+    if nofpages == 0 then
+        return
+    end
+
+    local statistics = {
+        pages = nofpages,
+    }
+
+    local sharedroles = { }
+
+    local rolemap = tree.RoleMap
+    if rolemap then
+        for k, v in lpdf.epdf.expanded(rolemap) do
+            sharedroles[k] = v
+        end
+    end
+
+    local preferattachments = false
+    local addaltascomment   = true
+    local nobreaks          = false
+    local details           = true -- false
+
+    if type(options) == "table" then
+        if options.attachments ~= nil then
+            preferattachments = options.attachments
+        end
+        if options.comments ~= nil then
+            addaltascomment = options.comments
+        end
+        if options.nobreaks ~= nil then
+            nobreaks = options.nobreaks
+        end
+        if options.details ~= nil then
+            details = options.details
+        end
+    end
+
+    local nofnamespaces = 0
+
+    local namespaces = setmetatableindex(function(t,k)
+        local map  = { }
+        local url  = k.NS
+        local rns  = k.RoleMapNS
+        if rns then
+            for k, v in lpdf.epdf.expanded(rns) do
+                map[k] = tostring(v[1])
+            end
+        end
+        nofnamespaces = nofnamespaces + 1
+        local v = {
+            url   = url,
+            map   = map,
+            index = nofnamespaces,
+            name  = k.LMTX_NameSpace or "unset",
+        }
+        t[k] = v
+        return v
+    end)
+
+    local everything = { }
+
+    collectcontent(pdffile,1,nofpages,everything)
+
+    -- Todo: also collect in table so that we can include.
+
+    local r      = 1
+    local result = {
+        [[
+<?xml version="1.0" standalone=yes"?>
+
+<!--
+    This representation serves no other purpose than testing because tagging is
+    not suitable for advanced structuring or fancy typesetting (unless a document
+    is relatively simple). This tracing is a side effect of testing (mostly math).
+
+    This is work in progress, and some needs to be implemented and /or finished
+    but we will pick up this thread when there is demand for this kind of tracing.
+
+    It's not hard to add more here but most time goes into deciding how to present
+    it as we mostly uses it for checking and tracing.
+-->
+]],
+    }
+
+    -- at some point we can use the template mechanism because we can then be
+    -- selective but it is slower (no that relevant here)
+
+    local f_text      = formatters[ [[%w%s]] ]
+    local f_simple_b  = formatters[ [[%w<%s>]] ]
+    local f_simple_e  = formatters[ [[%w</%s>]] ]
+ -- local f_element_b = formatters[ [[%w<%s namespace="%s" rolemap="%s">]] ]
+    local f_element_e = f_simple_e
+    local f_comment   = formatters[ [[%w<!-- %s -->]] ]
+
+    local common =
+        [[%?overload: overload="%overload%"?%]] ..
+        [[%?title: title="%title%"?%]] ..
+        [[%?language: language="%language%"?%]] ..
+        [[%?rowspan: rowspan="%rowspan%"?%]] ..
+        [[%?colspan: colspan="%colspan%"?%]] ..
+        [[%?symbol: symbol="%symbol%"?%]] ..
+        [[%?description: description="%description%"?%]] ..
+        [[%?continue: continue="%continue%"?%]]
+
+    local detail =
+        [[%?attribute: attribute="%attribute%"?%]] ..
+        [[%?namespace: ns="%namespace%"?%]] ..
+        [[%?rolemap: pdf="%rolemap%"?%]]
+
+    local fuzzy =
+        [[%?attribute: attribute="%attribute%"?%]] ..
+        [[%?namespace: ns="%namespace%"?%]] ..
+        [[%?overload: overload="%overload%"?%]] ..
+        [[%?description: description="%description%"?%]]
+
+    local f_comment_d = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<!--]] ..
+        detail ..
+        common ..
+        [[ -->]]
+    )
+
+    local f_comment_n = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<!--]] ..
+        common ..
+        [[ -->]]
+    )
+
+    local f_simple_l = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<%element%]] ..
+        common ..
+        [[>]]
+    )
+
+    local f_element_f = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<%element%]] ..
+        detail ..
+        fuzzy ..
+        [[/>]]
+    )
+
+    local f_element_b = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<%element%]] ..
+        detail ..
+        common ..
+        [[>]]
+    )
+
+    local f_element_i = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<%element%]] ..
+        [[%?index: index="%index%"?%]] ..
+        [[>]] ..
+        [[%value%]] ..
+        [[</%element%>]]
+    )
+
+    local f_simple_url = formatters [
+        [[%w<%s name="%s" index="%s" url="%s">]]
+    ]
+    local f_simple_map = formatters [
+        [[%w<%s user="%s" pdf="%s" />]]
+    ]
+
+    local f_element_kv = utilities.templates.replacer (
+        [[%:w:level%]] ..
+        [[<%element%>]] ..
+        [[%value%]] ..
+        [[</%element%>]]
+    )
+
+ -- local attachments = lpdf.epdf.resolvers.embeddedfiles(pdffile)
+ -- inspect(attachments)
+
+    local collected      = false
+    local nothing        = { }
+    local nofelements    = 0
+    local nofendpoints   = 0
+    local nofattachments = 0
+    local nofalternates  = 0
+    local nofbreaks      = 0
+    local noflevels      = 0
+
+    local function flushcontent(index,level)
+        -- We assume proper spaces being used, otherwise expansion and protrusion start
+        -- interfering, introducing spaces if we would concatinate with a space.
+        if not collected then
+            -- error
+            print("no collected")
+        elseif not index then
+            -- suspicious
+            print("no index")
+        else
+            local text = rawget(collected,index)
+            if text then
+                text = concat(text," ")
+                collected[index] = false
+                if #text > 0 then
+                    r = r + 1 ; result[r] = f_text(level,xmlescaped(striphyphens(text)))
+                    nofendpoints = nofendpoints + 1
+                end
+            else
+                -- weird but okay
+            end
+        end
+    end
+
+    local showkids -- defined later
+
+    local function showkid(kid,level)
+        if type(kid) == "table" then
+            if kid.Type == "MCR" then
+              -- inspect(kid)
+            else
+                local element     = kid.S
+                local namespace   = kid.NS
+                local page        = kid.Pg
+             -- local id          = kid.ID
+                local parent      = kid.P
+                local kids        = kid.K
+                local alternate   = kid.Alt
+                local content     = kid.Contents
+                local attached    = kid.AF
+                local title       = kid.T
+                local rolemap     = false
+                local iscontext   = false
+                local language    = kid.Lang
+                local attributes  = kid.A or nothing
+                local realelement = kid.LMTX_S or element
+                local attribute   = kid.LMTX_A
+-- only relevant when Pg
+collected = everything[page and page.number or 0]
+-- print(realelement,element)
+-- todo: level 1 rolemap based
+                if not namespace then
+                 -- inspect(kid)
+                elseif namespace.Type == "Namespace" then -- resolves so we can hash
+                    local LMTX = namespace.LMTX_NameSpace
+                    if details then
+                        local n = namespaces[namespace]
+                     -- namespace = n.url or ""
+                        namespace = n.index or ""
+                        rolemap   = n.map[element] or ""
+                    else
+                        namespace = false
+                        rolemap   = false
+                    end
+                    iscontext = LMTX == "context"
+                else
+                    if details then
+                        namespace = ""
+                        rolemap   = sharedroles[element] or ""
+                    else
+                        namespace = false
+                        rolemap   = false
+                    end
+                end
+                -- element == "math"
+                if attached then
+                    if alternate and not preferattachments then
+                        -- let's forget about this
+                    else
+                        attached = attached[1]
+                        if attached then
+                            attached = attached.EF
+                            if attached then
+                                attached = attached.F
+                                if attached then
+                                    attached = attached()
+                                end
+                            end
+                        end
+                    end
+                end
+                -- if attachments and id then
+                --     attached = attachments[id].EF.F()
+                -- end
+                if type(attached) == "string" then
+                    if addaltascomment and type(alternate) == "string" then
+                        r = r + 1 ; result[r] = f_comment(level,xmlescaped(alternate))
+                    end
+                    attached = gsub(attached,"[\r\n]+","\n" .. string.nspaces[level])
+                    if details then
+                        r = r + 1 ; result[r] = f_comment_d {
+                            level     = level,
+                            element   = original,
+                            attribute = attribute,
+                            namespace = namespace,
+                            rolemap   = rolemap,
+                            title     = title,
+                            overload  = realelement ~= element and element or nil,
+                        }
+                    else
+                        r = r + 1 ; result[r] = f_comment_n {
+                            level     = level,
+                            element   = original,
+                            attribute = attribute,
+                        }
+                    end
+                    r = r + 1 ; result[r] = f_text(level,attached)
+                    nofattachments = nofattachments + 1
+                elseif type(contents) == "string" and (element == "link" or element == "reference") then
+                    r = r + 1 ; result[r] = f_element_f {
+                        level       = level,
+                        element     = element,
+                        attribute   = attribute,
+                        namespace   = details and namespace or nil,
+                        rolemap     = details and rolemap or nil,
+                        description = xmlescaped(contents)
+                    }
+                    nofelements = nofelements + 1
+                elseif type(alternate) == "string" then
+                    r = r + 1 ; result[r] = f_text(level,xmlescaped(alternate))
+                    nofalternates = nofalternates + 1
+                elseif not kids then
+                    -- go on
+                elseif iscontext and nobreaks and element == "break" then
+                    r = r + 1 ; result[r] = "\n"
+                    nofbreaks = nofbreaks + 1
+                elseif details then
+                    local original = realelement or element
+                 -- r = r + 1 ; result[r] = f_element_b(level,element,namespace,rolemap)
+                    r = r + 1 ; result[r] = f_element_b {
+                        level     = level,
+                        element   = original,
+                        attribute = attribute,
+                        namespace = namespace,
+                        rolemap   = rolemap,
+                        title     = title,
+                        rowspan   = attributes.RowSpan,
+                        colspan   = attributes.ColSpan,
+                        symbol    = attributes.ListNumbering and lower(attributes.ListNumbering),
+                        continue  = attributes.ContinuedList and "yes" or nil,
+                        overload  = realelement ~= element and element or nil,
+                    }
+                    showkids(kids,level+1)
+                    r = r + 1 ; result[r] = f_element_e(level,original)
+                    nofelements = nofelements + 1
+                else
+                 -- r = r + 1 ; result[r] = f_simple_b(level,element)
+                    r = r + 1 ; result[r] = f_simple_l {
+                        level     = level,
+                        element   = element,
+                        attribute = attribute,
+                        language  = language
+                    }
+                    showkids(kids,level+1)
+                    r = r + 1 ; result[r] = f_simple_e(level,element)
+                    nofelements = nofelements + 1
+                end
+                if level > noflevels then
+                    noflevels = level
+                end
+             end
+        else
+            flushcontent(tonumber(kid),level)
+        end
+    end
+
+    showkids = function(kids,level)
+        if type(kids) == "number" then
+            flushcontent(kids,level)
+        elseif #kids == 0 then
+            showkid(kids,level)
+        else
+            for i=1,#kids do
+                showkid(kids[i],level)
+            end
+        end
+    end
+
+    local nofsharedroles = 0
+    local nofspacedroles = 0
+
+    local function flush_kv(level,element,value)
+        if type(value) == "table" then
+            for i=1,#value do
+                value[i] = tostring(value[i])
+            end
+            value = xmlescaped(concat(value," "))
+        elseif type(value) == "string" then
+            value  = xmlescaped(value)
+        elseif value then
+            value  = tostring(value)
+        else
+            return
+        end
+        if value and #value > 0 then
+            r = r + 1 ; result[r] = f_element_kv {
+                level   = 3,
+                element = element,
+                value   = value
+            }
+        end
+    end
+    local kids = tree.K
+    if not kids then
+        return -- no need to show something
+    elseif details then
+        r = r + 1 ; result[r] = f_simple_b(0,"pdfstructure")
+        r = r + 1 ; result[r] = f_simple_b(1,"pdfcontent")
+        showkids(kids,2)
+        r = r + 1 ; result[r] = f_simple_e(1,"pdfcontent")
+        if next(namespaces) then
+            r = r + 1 ; result[r] = f_simple_b(1,"pdfnamespaces")
+            for k, v in sortedhash(namespaces) do
+                r = r + 1 ; result[r] = f_simple_url(2,"pdfnamespace", v.name or "*", v.index, xmlescaped(v.url or""))
+                for k, v in sortedhash(v.map) do
+                    r = r + 1 ; result[r] = f_simple_map(4,"pdfrolemap",k,v)
+                    nofspacedroles = nofspacedroles + 1
+                end
+                r = r + 1 ; result[r] = f_simple_e(2,"pdfnamespace")
+            end
+            r = r + 1 ; result[r] = f_simple_e(1,"pdfnamespaces")
+        end
+        if next(sharedroles) then
+            r = r + 1 ; result[r] = f_simple_b(1,"pdfroles")
+            for k, v in sortedhash(sharedroles) do
+                r = r + 1 ; result[r] = f_simple_map(2,"pdfrolemap",k,v)
+                nofsharedroles = nofsharedroles + 1
+            end
+            r = r + 1 ; result[r] = f_simple_e(1,"pdfroles")
+        end
+        local tagging = pdffile.catalog.LMTX_Tagging
+        if tagging then
+            r = r + 1 ; result[r] = f_simple_b(1,"pdfprofiles")
+            flush_kv(1,"comment",tagging.Comment)
+            flush_kv(1,"versiont",tagging.Version)
+            local profiles = tagging.Profiles
+            if profiles then
+                for i=1,#profiles do
+                    local profile = profiles[i]
+                    r = r + 1 ; result[r] = f_simple_b(2,"profile")
+                    flush_kv(3,"name",     profile.name)
+                    flush_kv(3,"version",  profile.version)
+                    flush_kv(3,"size",     profile.size)
+                    flush_kv(3,"mapping",  profile.mapping)
+                    flush_kv(3,"remapping",profile.remapping)
+                    flush_kv(3,"endpoints",profile.endpoints)
+                    r = r + 1 ; result[r] = f_simple_e(2,"profile")
+                end
+            end
+            r = r + 1 ; result[r] = f_simple_e(1,"pdfprofiles")
+        end
+
+        --
+        r = r + 1 ; result[r] = f_simple_e(0,"pdfstructure")
+    else
+        showkids(kids,0)
+    end
+
+    result = concat(result,"\n")
+
+    result = gsub(result,     "<(paragraph[^>]-)>%s+</paragraph>",     "<%1/>")
+    result = gsub(result,           "<(div[^>]-)>%s+</div>",           "<%1/>")
+    result = gsub(result,          "<(span[^>]-)>%s+</span>",          "<%1/>")
+    result = gsub(result,         "<(break[^>]-)>%s+</break>",         "<%1/>")
+    result = gsub(result,"<(navigationpage[^>]-)>%s+</navigationpage>","<%1/>")
+    result = gsub(result,     "<(reference[^>]-)>%s+</reference>",     "<%1/>")
+    result = gsub(result,          "<(link[^>]-)>%s+</link>",          "<%1/>")
+
+    statistics.namespaces  = nofnamespaces
+    statistics.spacedroles = nofspacedroles
+    statistics.sharedroles = nofsharedroles
+    statistics.elements    = nofelements
+    statistics.attachments = nofattachments
+    statistics.alternates  = nofalternates
+    statistics.endpoints   = nofendpoints
+    statistics.breaks      = nofbreaks
+    statistics.levels      = noflevels
+
+    return result, statistics
+end

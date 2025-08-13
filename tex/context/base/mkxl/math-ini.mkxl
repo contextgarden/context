@@ -2227,7 +2227,7 @@
 \installcommandhandler \??mathfunction {mathfunction} \??mathfunction
 
 \appendtoks
-    \frozen\protected\edefcsname\currentmathfunction\endcsname{\math_function_handle\plusone{\currentmathfunction}{}}% \instance
+    \protected\frozen\instance\edefcsname\currentmathfunction\endcsname{\math_function_handle\plusone{\currentmathfunction}{}}% \instance
 \to \everydefinemathfunction
 
 \aliased\let\setupmathfunctions\setupmathfunction
@@ -5013,7 +5013,7 @@
 \installcommandhandler \??mathnesting {mathnesting} \??mathnesting
 
 \appendtoks
-    \frozen\protected\instance\edefcsname\currentmathnesting\endcsname{\math_nesting[\currentmathnesting]}%
+    \protected\frozen\instance\edefcsname\currentmathnesting\endcsname{\math_nesting[\currentmathnesting]}%
 \to \everydefinemathnesting
 
 \newconstant\c_math_boundary_old

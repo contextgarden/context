@@ -1,0 +1,190 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-shift
+
+\environment musings-style
+
+\startchapter[title={The shift (or: just moving on)}]
+
+When you use a programming language like \CCODE\ or \PASCAL, the language \TEX\
+was originally written in, there can be various results, most of which have
+little relation to each other. A word processor written in some language is not
+the same as a program that controls traffic lights. In addition to the core
+language, which provides data types, loops, conditionals, etc. there can be
+specific features like native support for strings, or a defined set of libraries
+to be provided, for instance for memory management or math. At some point if was
+fashion to add layers of abstraction to languages, for instance object oriented
+layers, or database oriented functionality. One can add to a language or use
+pre-processors for that. One can talk macros and templates.
+
+If we look at \TEX\ we also have a core language but at the same time there is a
+rather large set of built in functionality. You can mix programming with content
+and the content gets processed into something that eventually might end up on
+paper or on a screen. The built in functionality deals with paragraphs of text,
+rendering math formulas, splitting of pages, making tables, and so on. It's
+actually an attractive mix.
+
+When \TEX\ showed up the idea was that one writes a specific set of macros that
+help to structure and render the input. Although there is a basic set of plain
+\TEX\ macros, the look and feel got programmed per document. However, as not all
+authors have the skills to program or want to be bothered with that larger sets
+of macros popped up: macro packages. Some survived, some went extinct, but in the
+end we only find a few.
+
+If you go back in time, the users of \TEX\ found each other in shared interest
+and a common need for resources. Of course there is the program, that needs to be
+available for the platform that one uses, then there was the backend driver
+needed for previewing or printing, and of course fonts and hyphenation patterns
+could be shared too. There was even some common ground for further development.
+At user group meetings it was not uncommon to hear about something new, successes
+and failures, usage patterns that can inspire etc.
+
+But over the decades things changed. New engines showed up that added
+functionality. For instance \LUATEX\ brought an efficient mix of \TEX, \LUA, and
+\METAPOST, and \LUAMETATEX\ adds to the language as well as typesetting
+functionality. The first one resulted in the more hybrid \CONTEXT\ variant \MKIV,
+and the second in \MKXL\ (aka \LMTX\ as it pairs with the engine in a lean and
+mean installation). The later is what most users nowadays use. And the principles
+can be summarized as:
+
+\startitemize
+\startitem
+    We use the \TEX\ input method by default, which means commands that start
+    with a backslash. As always with \CONTEXT\ commands can have options:
+    keywords (arrays), key|/|value pairs (hashes), or both. We do also accept
+    \XML, \LUA\ (so called cld documents), some other formats and a mix of it.
+\stopitem
+\startitem
+    It being a major \TEX\ features, we support math in the usual way but we
+    don't want users to tweak to much which is made possible by the enhanced
+    engine.
+\stopitem
+\startitem
+    Solutions not available via the more high level user commands can be
+    programmed using the regular \TEX\ language, \LUA, or \METAPOST\ or a
+    combinations. There are of course helpers but we don't discourage going
+    primitive.
+\stopitem
+\startitem
+    We consider \TEX\ as a niche product. For sure it excels at math but for many
+    it is not beforehand a better solution than alternatives like word processors
+    and web based rendering. It should never be enforced. Using \CONTEXT\ is best
+    a positive choice.
+\stopitem
+\startitem
+    It is users and usage that drives what features are added, extended,
+    upgraded. As development and support is volunteer work there is also no or at
+    least little (occasional projects) that binds it to big tech, publishers and
+    hidden backend usage.
+\stopitem
+\stopitemize
+
+So how does \CONTEXT\ then fit into the larger \TEX\ picture. As mentioned above
+in the beginning there was common ground but today one can wonder if that is
+still the case. With for instance \LATEX\ moving to the web and competing with
+other large scale word processing, there is little in common. Also, we never had
+the same approach to styles (low level hacking) and definitely don't want to
+enforce some intermediate programming layer hides (and discourages) the use of
+the primitive language, although we do impose some restrictions with respect to
+overloading. We don't want to end up in competition with other systems out there
+either: one should be free to use whatever ones likes. There is no overlap in
+development and macro package development is rather isolated. You can see that
+reflected in use group meetings: they are small compared to the early days. The
+generic meetings bring little news and the more dedicated ones are (indeed)
+dedicated to specific solutions (macro packages). There is still some common
+ground to be found, like in distributions, specific resources like hyphenation
+patterns, and journals but even there macro packages go their own way. One has to
+look deep down to see to what extend they share concepts and usage patterns. Of
+course this is natural for a program that has evolved over four decades and where
+usage patterns also evolved.
+
+So to come full circle, if we see \TEX\ as a programming language it is not much
+different from other languages. Of course its domain is typesetting but in what
+way the results are achieved can differ a lot. When someone says to be using
+\TEX\ that doesn't tell much more than saying that one programs in \PASCAL ,
+although it is an indication of how typesetting solutions can be reached.
+
+In a nostalgic mood I took a look at the rather large archive of \MODULA\ files I
+wrote in the second half of the 80's and first half of the 90's. Among the dozens
+of programs are a few that sort of translate to what we have today. We're talking
+\MSDOS\ here using a common text based windowing system that I wrote for \VAX\
+mainframes and ported to the personal computer.
+
+There is an editor that could handle relatively large files, supported a project
+structure, had syntax highlighting and did real time spell checking. I just
+translated that to \SCITE\ extensions and for instance the project structure
+(including fast opening of files) is not much different from what we have now.
+The syntax highlighting evolved to a mixture of languages but still determines
+how I look at files and thereby how \CONTEXT\ is programmed.
+
+But before we actually used \TEX\ that same editor was used for just \ASCII\
+based rendering so in addition we then had a converter that turned simple tagged
+text into something for a printer. It actually is not that different from these
+markdown ways of coding. We also could split of pages and move reserved areas
+(floats) around. Of course all that was left behind when we moved on to \TEX. It
+is kind of curious that much of this actually was written for terminals connected
+to a VAX (at the university) where we printed out on these fast daisy wheel line
+printers. Only decades later we figured that already at that time there could
+have been \TEX\ or precursors running on those machines, probably of little use
+because there one needs an (expensive) phototypesetter and some workstation for
+previewing.
+
+Yet another program was the one that we used for making computer assisted
+learning programs, think of presenting text, questions, feedback, video and
+audio. Equipment was controlled via serial connections connected to for instance
+random access video tape players. We made a small language for that with regular
+programming features enhanced with some specific for learning environments.
+Interesting is that it involved parsers, scripts in that language, efficient
+storage, and bytecode ran through what I later learned was called a virtual
+machine. I guess that around that time, when we were not connected to the (not
+yet existing) web, many people were inventing the same wheels. As a side note:
+there was never a real market in a small country like ours so this was typically
+only applied in projects where it somehow fit in, as goodie. Of course all this
+is now done in browsers and \JAVASCRIPT, but I guess the experiences somehow
+translated into interfaces mixed into \CONTEXT. I never felt the need to abstract
+\TEX\ away behind layers like the one mentioned her because nowadays we have
+these interpreted scripting languages.
+
+Then there were graphics. At some point we were involved in making a heavy duty
+(3D) milling machine using simple robust of the shelf components. The friend we
+did this with needed it for some production process. We controlled motors with
+brakes and couplers and feedback happened with optical feedback. All was
+programmed in \MODULA\ and controlled via an \IO\ board. Here again we made some
+simple language for describing shapes but also handled output from drawing
+programs (exporting to hpgl). Looking backward it was a lot of fun and there was
+nothing on the market that could do the same for that price but the (more than
+square meter devices) were mostly used for milling displays and components for an
+automated film development machine. Here we can wonder how that translated to
+today's \CONTEXT. Using \METAPOST\ for this is not an option although with the
+library we have we could actually cook up some backend. Also, you can now use
+micro controllers that cost a few euros and stepper motors than come cheap. So,
+looking back it's probably mostly the learning experience that translates. And
+the recent serial \CONTEXT\ signal gadget brings us back to connected hardware.
+
+There are more programs, some concern databases, others concern for instance
+distributing structured handbooks (on floppies, meant for portable simple
+laptops). One easily forgets what has been done. The same is true for manuals: we
+can find plenty of early \CONTEXT\ manuals dating from the time it evolved. Most
+never made it into the public. Much also had to be done on computers from the
+i386 times. And it definitely was from before we were connected to the internet.
+But in the end, with intermediate steps using \PERL\ and \RUBY\ for scripting and
+run management, we eventually arrived at this \TEX, \LUA\ and \METAPOST\ mix, now
+with even a bit of connected hardware to watch the process. There is no need to
+look back apart from realizing that we didn't arrive here by accident.
+
+So to wrap this up: at some point we arrived at using \TEX\ combined with various
+programs we made that themselves evolved but eventually all those became obsolete
+and the \LUA\ plus \TEX\ plus \METAPOST\ approach was the winner, with an
+occasional resemblance of what came before. First we operated in isolation, then
+entered the \TEX\ community that at that time was also exploring several
+solutions for similar problems and adapting itself to what it was confronted
+with. But in the end, just as we forget the past, that \TEX\ related past also
+starts fading away: the current \TEX\ solutions evolved independent and share
+little. But what remains is that they are built upon Don Knuths masterpiece and
+that we share forever.
+
+{\em comment: this text is not yet corrected for errors}
+
+\stopchapter
+
+\stopcomponent

@@ -138,12 +138,12 @@
      \edefcsname\??enumeration#tag:\s!parent\endcsname{\??enumeration#parent}%
    \fi
    \ifcstok{\enumerationparameter\c!define}\v!yes
-     \frozen\protected\instance\edefcsname\e!next #tag\endcsname{\strc_enumerations_next{#tag}{\number#level}}%  obsolete
-     \frozen\protected\instance\edefcsname\c!reset#tag\endcsname{\strc_enumerations_reset{#tag}{\number#level}}% obsolete
-     %frozen\protected\instance\edefcsname\c!set  #tag\endcsname{\strc_enumerations_set{#tag}{\number#level}}%   obsolete
-     \frozen\protected\instance\edefcsname        #tag\endcsname{\namedenumeration[#tag]}%
-     \frozen\protected\instance\edefcsname\e!start#tag\endcsname{\startnamedenumeration[#tag]}%
-     \frozen\protected\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}%
+     \protected\frozen\instance\edefcsname\e!next #tag\endcsname{\strc_enumerations_next{#tag}{\number#level}}%  obsolete
+     \protected\frozen\instance\edefcsname\c!reset#tag\endcsname{\strc_enumerations_reset{#tag}{\number#level}}% obsolete
+     %protected\frozen\instance\edefcsname\c!set  #tag\endcsname{\strc_enumerations_set{#tag}{\number#level}}%   obsolete
+     \protected\frozen\instance\edefcsname        #tag\endcsname{\namedenumeration[#tag]}%
+     \protected\frozen\instance\edefcsname\e!start#tag\endcsname{\startnamedenumeration[#tag]}%
+     \protected\frozen\instance \defcsname\e!stop #tag\endcsname{\stopnamedenumeration}%
    \fi}
 
 \lettonothing\m_strc_enumeration_sub

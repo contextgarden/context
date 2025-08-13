@@ -346,9 +346,9 @@
 \aliased\let\setupitemgroups\setupitemgroup
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!start\currentitemgroup           \endcsname{\startitemgroup[\currentitemgroup]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentitemgroup           \endcsname{\stopitemgroup}%
-    \frozen\instance\protected\edefcsname\e!setup\currentitemgroup\e!endsetup\endcsname{\setupitemgroup[\currentitemgroup]}% obsolete
+    \protected\frozen\instance\edefcsname\e!start\currentitemgroup           \endcsname{\startitemgroup[\currentitemgroup]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentitemgroup           \endcsname{\stopitemgroup}%
+    \protected\frozen\instance\edefcsname\e!setup\currentitemgroup\e!endsetup\endcsname{\setupitemgroup[\currentitemgroup]}% obsolete
     \let\currentparentitemgroup\currentitemgroup
     \definecounter[\v_strc_itemgroups_counter]%
 \to \everydefineitemgroup
@@ -2180,9 +2180,9 @@
    \strc_itemgroups_table_pickup}
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!stop \currentitemgroup\v!table\endcsname
+    \protected\frozen\instance\edefcsname\e!stop \currentitemgroup\v!table\endcsname
       {}% {\strc_itemgroups_stop_table}
-    \frozen\instance\protected\edefcsname\e!start\currentitemgroup\v!table\endcsname
+    \protected\frozen\instance\edefcsname\e!start\currentitemgroup\v!table\endcsname
       {\strc_itemgroups_start_table[\currentitemgroup]}%
 \to \everydefineitemgroup
 

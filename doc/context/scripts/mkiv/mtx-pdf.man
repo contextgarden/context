@@ -44,6 +44,9 @@ sign document (assumes signature template)
 .B --verify
 verify document
 .TP
+.B --validate
+validate document (calls verapdf)
+.TP
 .B --detail
 print detail to the console
 .TP
@@ -51,7 +54,7 @@ print detail to the console
 print userdata to the console
 .TP
 .B --structure
-show the structure of the content
+check the (context speficic) structure of the content
 .SH AUTHOR
 More information about ConTeXt and the tools that come with it can be found at:
 

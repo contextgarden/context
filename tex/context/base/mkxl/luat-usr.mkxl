@@ -60,7 +60,7 @@
      %
      \clf_registernamedlua{#1}{#2}{\m_syst_name}%
      %
-     \frozen\instance\protected\xdefcsname\s!start#1\s!code\endcsname
+     \protected\frozen\instance\xdefcsname\s!start#1\s!code\endcsname
        {\begingroup
         \obeyluatokens
         \csname\??luacode#1\endcsname}%

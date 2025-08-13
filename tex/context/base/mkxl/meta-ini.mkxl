@@ -276,17 +276,61 @@
 
 \let\meta_relocate_graphic\relax % experimental hook
 
-\def\meta_process_graphic_start
+% \def\meta_process_graphic_start
+%   {\pushMPboundingbox
+%    \dostarttaggednodetail\t!mpgraphic
+%    \setbox\b_meta_graphic\hpack\bgroup
+%      % We now make everything an artifact because it's not worth the trouble to
+%      % deal with nested text .. it will not be properly dealt with in viewers
+%      % either so why bother mixing content and artifacts.
+%      \dotaggedplaceholder
+%      \dostartignoretagging\empty}
+
+% \def\meta_process_graphic_stop
+%   {\dostopignoretagging
+%    \egroup
+%    \meta_place_graphic
+%    \meta_relocate_graphic
+%    \dostoptagged
+%    \popMPboundingbox}
+
+\aliased\lettonothing\dotagmpgraphic
+
+\def\meta_process_graphic_start_normal
+  {\pushMPboundingbox
+   \setbox\b_meta_graphic\hpack\bgroup}
+
+\def\meta_process_graphic_stop_normal
+  {\egroup
+   \meta_place_graphic
+   \meta_relocate_graphic
+   \popMPboundingbox}
+
+\def\meta_process_graphic_start_tagged
   {\pushMPboundingbox
    \dostarttaggednodetail\t!mpgraphic
-   \setbox\b_meta_graphic\hpack\bgroup
+   % only if exporting or tagging / a real nasty bit fo code as we can work inner out
+   \enforced\edef\figuredescriptiontext{\mplevelparameter\c!descriptiontext}% directly use this
+   \enforced\edef\figurealternativetext{\mplevelparameter\c!alternativetext}% directly use this
+   \ifconditional\c_grph_in_image
+     % set description if to yet set
+     \dotagfigure
+   \else
+     \dotagmpgraphic % so it will be faster then
+   \fi
+   % We use image id 3 but then also check need to check the export!
+   \setbox\b_meta_graphic\hpack attr \imageattribute \plusthree\bgroup
      % We now make everything an artifact because it's not worth the trouble to
      % deal with nested text .. it will not be properly dealt with in viewers
      % either so why bother mixing content and artifacts.
-     \dotaggedplaceholder
-     \dostartignoretagging}
+       \dotaggedplaceholder
+       \dostartignoretagging\empty
+     % We also need to prevent that there are annotations that then have no
+     % pointer to what what into tagged, unless we then point to the whole.
+     % \locationfalse % better not
+   }
 
-\def\meta_process_graphic_stop
+\def\meta_process_graphic_stop_tagged
   {\dostopignoretagging
    \egroup
    \meta_place_graphic
@@ -294,6 +338,21 @@
    \dostoptagged
    \popMPboundingbox}
 
+% we can alias in the tag enabler
+
+\def\meta_process_graphic_start
+  {\ifconditional\c_strc_tags_enabled
+     \meta_process_graphic_start_tagged
+   \else
+     \meta_process_graphic_start_normal
+   \fi}
+
+\def\meta_process_graphic_stop
+  {\ifconditional\c_strc_tags_enabled
+     \meta_process_graphic_stop_tagged
+   \else
+     \meta_process_graphic_stop_normal
+   \fi}
 
 \protected\def\meta_process_graphic_instance#1#2% used in startMPpage
   {\cdef\currentMPinstance{#1}%
@@ -714,9 +773,14 @@
 
 \def\meta_uniquempgraphic_yes[#1]#*#=%
   {% ugly code but we run on top of older code
-   \resetdummyparameter\c!instance
-   \getdummyparameters[#1]%
-   \cdef\currentMPinstance{\dummyparameter\c!instance}%
+%    \resetdummyparameter\c!instance
+%    \getdummyparameters[#1]%
+%    \cdef\currentMPinstance{\dummyparameter\c!instance}%
+   %
+   \meta_bump_current_level
+   \setupcurrentmplevel[#1]%
+   \cdef\currentMPinstance{\mplevelparameter\c!instance}%
+   %
    % here we feed the instance into the analyzer
    \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#1}%
    \checkmpcategoryparent
@@ -788,9 +852,14 @@
 
 \def\meta_usempgraphic_yes[#1]#*#=%
   {% ugly code but we run on top of older code
-   \resetdummyparameter\c!instance
-   \getdummyparameters[#1]%
-   \cdef\currentMPinstance{\dummyparameter\c!instance}%
+%    \resetdummyparameter\c!instance
+%    \getdummyparameters[#1]%
+%    \cdef\currentMPinstance{\dummyparameter\c!instance}%
+   %
+   \meta_bump_current_level
+   \setupcurrentmplevel[#1]%
+   \cdef\currentMPinstance{\mplevelparameter\c!instance}%
+   %
    % here we feed the instance into the analyzer
    \meta_begin_graphic_group{\ifempty\currentMPinstance\else\currentMPinstance::\fi#2}%
    \ifcsname\??mpgraphic#2\endcsname
@@ -1015,11 +1084,17 @@
 
 \def\meta_start_mpcode_yes[#1]#2\stopMPcode
   {\begingroup
-   \resetdummyparameter\c!instance
-   \resetdummyparameter\c!stacking
-   \getdummyparameters[#1]%
-   \cdef\currentMPinstance{\dummyparameter\c!instance}%
-   \setmpcategoryparameter\c!stacking{\dummyparameter\c!stacking}%
+%    \resetdummyparameter\c!instance
+%    \resetdummyparameter\c!stacking
+%    \getdummyparameters[#1]%
+%    \cdef\currentMPinstance{\dummyparameter\c!instance}%
+%    \setmpcategoryparameter\c!stacking{\dummyparameter\c!stacking}%
+   %
+   \meta_bump_current_level
+   \setupcurrentmplevel[#1]%
+   \cdef\currentMPinstance{\mplevelparameter\c!instance}%
+   \setmpcategoryparameter\c!stacking{\mplevelparameter\c!stacking}%
+   %
    \ifempty\currentMPinstance
      \let\currentMPinstance\defaultMPinstance
    \fi
@@ -1118,6 +1193,22 @@
 \permanent          \def\MPtext     #1{\begincsname\??mptext#1\endcsname\empty}
 \permanent          \def\MPstring   #1{"\begincsname\??mptext#1\endcsname\empty"}
 \permanent          \def\MPbetex    #1{btex \begincsname\??mptext#1\endcsname\space etex}
+
+%D Another helper:
+
+\installcorenamespace {mplevel}
+
+\installsetuponlycommandhandler \??mplevel {mplevel}
+
+\lettonothing\currentmplevel
+
+\newinteger\c_meta_mp_level
+
+\def\meta_bump_current_level
+  {\advanceby\c_meta_mp_level\plusone
+   \ifnum\c_meta_mp_level>\plusone
+     \cdef\currentmplevel{mp:\the\c_meta_mp_level}%
+   \fi}
 
 %D In order to communicate conveniently with the \TEX\ engine, we introduce some
 %D typesetting variables.

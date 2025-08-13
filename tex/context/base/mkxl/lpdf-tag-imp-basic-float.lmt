@@ -1,0 +1,30 @@
+return {
+
+    name      = "basic pdf specific tagging : float",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        float        = { pdf = "Aside" },
+        subfloat     = { pdf = "Div"   },
+        floatcaption = { pdf = "Div"   }, -- Caption contains the three below
+        floatlabel   = { pdf = "Lbl"   },
+        floatnumber  = { pdf = "Lbl"   },
+        floattext    = { pdf = "P"     },
+        floatcontent = { pdf = "Div"   }, -- the figure/table
+
+     -- float        = { pdf = "Div"       },
+     -- floatcaption = { pdf = "NonStruct" }, -- contains the three below
+     -- floatlabel   = { pdf = "Lbl"       },
+     -- floatnumber  = { pdf = "Lbl"       },
+     -- floattext    = { pdf = "Lbl"       },
+     -- floatcontent = { pdf = "Div"       }, -- the figure/table
+
+        image        = { pdf = "Figure"   },
+     -- mpgraphic    = { pdf = "Artifact" },
+
+    },
+
+}

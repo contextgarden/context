@@ -1,0 +1,10 @@
+return {
+    name     = "Chinese",
+    version  = "1.00",
+    comment  = "Some Chinese stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "zh",
+        export = "zh",
+    }
+}

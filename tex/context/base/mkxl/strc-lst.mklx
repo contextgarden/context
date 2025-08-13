@@ -534,7 +534,52 @@
 \permanent\def\usestructurelistprocessor#tag%
   {\begincsname\??structurelistprocessor#tag\endcsname}
 
+\mutable\lettonothing\currentlistentrydescription
+
+% begin of of tagging horror
+
 \aliased\let\dotaglistlocation\relax
+
+\def\strc_lists_prerolled_list
+  {\prerolltostring{%
+     \strc_lists_placement_check
+     \dostartignoretagging\empty
+     \doifelsetext{\labeltext\currentlist}%
+       {\labeltext\currentlist}%
+       {\currentlist\space}%
+     \ifconditional\c_lists_show_number
+       \structurelistgenericnumber
+       \space :
+     \fi
+     \clf_listbookmark{\currentlistindex}\empty\relax
+    %\structurelistgenerictitle
+     \ifconditional\c_lists_has_page\relax
+       \space at %
+       \doifelsetext{\labeltext\v!page}%
+         {\labeltext\v!page}%
+         {\v!page\space}%
+       \structurelistpagenumber
+     \fi
+     \dostopignoretagging
+  }}
+
+\def\strc_lists_add_list_description
+  {\ifexporting\orelse\iflocation
+     \ifnum\a_strc_lists_reference=\attributeunsetvalue\else
+       \edef\tempstring{%
+         %\clf_listbookmark{\currentlistindex}\empty
+         \strc_lists_prerolled_list
+       }%
+     % \writestatus{!!!!!}{\tempstring}%
+       \dotagsetreferencedescription
+         \a_strc_lists_reference
+         \tempstring
+     \fi
+   \fi}
+
+\lettonothing\dotagmarklist
+
+% end of tagging horror
 
 \def\strc_lists_entry_process_default
   {no list method}
@@ -547,6 +592,7 @@
    \ifcsname\??structurelistprocessor\currentlistmethod             \endcsname\lastnamedcs\orelse
    \ifcsname\??structurelistprocessor\currentlist                   \endcsname\lastnamedcs\else
                                                          \strc_lists_entry_process_default\fi
+   \dotagmarklist % here, as we need to know the attributes (assumes no grouping)
    \dostoptagged
    \listextraparameter\c!after}
 
@@ -901,49 +947,41 @@
     \dontconvertfont % (**) this has to become an option (see publ)
 \to \t_lists_every_renderingtext
 
+% because these tests happen often and because we're dealing with
+% rather complex composed data we have special conditionals; keep
+% in mind that testing for empty fails due to tagging being applied
+
+\def\strc_lists_placement_check
+  {\c_lists_show_page\conditionalfalse % necessary?
+   \processcommacommand[\listparameter\c!pagenumber]\strc_lists_process_pagenumber
+   \ifconditional\c_lists_has_page \else
+     \doifelsestructurelisthaspage
+       {\c_lists_has_page\conditionaltrue}%
+       {\c_lists_has_page\conditionalfalse}%
+   \fi
+   % always forces number placement (in bib we use a forced number)
+   \edef\p_headnumber{\listparameter\c!headnumber}%
+   \ifx\p_headnumber\v!always
+     \c_lists_has_number\conditionaltrue
+     \c_lists_show_number\conditionaltrue
+   \else
+     \doifelsestructurelisthasnumber
+       {\c_lists_has_number\conditionaltrue}%
+       {\c_lists_has_number\conditionalfalse}%
+     \ifx\p_headnumber\v!yes
+       \c_lists_show_number\conditionaltrue
+     \else
+       \c_lists_show_number\conditionalfalse
+     \fi
+   \fi}
+
 \appendtoks
     % because we want to avoid redundant lua calls we expand the
     % location beforehand
     \ifempty\currentlistentrylocation
         \enforced\edef\currentlistentrylocation{\structurelistlocation}% needs attention
     \fi
-    % because these tests happen often and because we're dealing with
-    % rather complex composed data we have special conditionals; keep
-    % in mind that testing for empty fails do to tagging being applied
-%   \edef\p_pagenumber{\listparameter\c!pagenumber}%
-%   \ifx\p_pagenumber\v!always
-%     \c_lists_has_page\conditionaltrue
-%     \c_lists_show_page\conditionaltrue
-%   \else
-%     \doifelsestructurelisthaspage{\c_lists_has_page\conditionaltrue}{\c_lists_has_page\conditionalfalse}%
-%     \ifx\p_pagenumber\v!yes
-%       \c_lists_show_page\conditionaltrue
-%     \else
-%       \c_lists_show_page\conditionalfalse
-%     \fi
-%   \fi
-    \c_lists_show_page\conditionalfalse % necessary?
-    \processcommacommand[\listparameter\c!pagenumber]\strc_lists_process_pagenumber
-    \ifconditional\c_lists_has_page \else
-      \doifelsestructurelisthaspage
-        {\c_lists_has_page\conditionaltrue}%
-        {\c_lists_has_page\conditionalfalse}%
-    \fi
-    % always forces number placement (in bib we use a forced number)
-    \edef\p_headnumber{\listparameter\c!headnumber}%
-    \ifx\p_headnumber\v!always
-      \c_lists_has_number\conditionaltrue
-      \c_lists_show_number\conditionaltrue
-    \else
-      \doifelsestructurelisthasnumber
-        {\c_lists_has_number\conditionaltrue}%
-        {\c_lists_has_number\conditionalfalse}%
-      \ifx\p_headnumber\v!yes
-        \c_lists_show_number\conditionaltrue
-      \else
-        \c_lists_show_number\conditionalfalse
-      \fi
-    \fi
+    \strc_lists_placement_check
     \strc_lists_interaction_check
 \to \t_lists_every_renderingsetup
 
@@ -1182,7 +1220,7 @@
         }
     }% new
     \endgraf % new, else problems with nointerlinespace and prevdepth
-    \nointerlineskip % anders verkeerde spatiering bij multi-line
+    \ifvmode\nointerlineskip\fi % anders verkeerde spatiering bij multi-line
     \endgraf
     \allowbreak
     \listparameter\c!after

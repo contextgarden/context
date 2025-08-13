@@ -26,7 +26,7 @@
 */
 #define LUAC_VERSION	(LUA_VERSION_MAJOR_N*16+LUA_VERSION_MINOR_N)
 
-#define LUAC_FORMAT	0	/* 0 this is the official format */
+#define LUAC_FORMAT	0	/* this is the official format */
 
 
 /* load one chunk; from lundump.c */

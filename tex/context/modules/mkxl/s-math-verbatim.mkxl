@@ -53,6 +53,13 @@
 \definefont[MyMathFontBold][MonoMathBaseBold]
 \definefont[MyTextFont]    [MonoTextBase]
 
+% Todo, be specific
+
+\definetyping[mathtyping][style=MyMathFont]
+\definetype  [mathtype]  [style=MyMathFont]
+
+% Then these can go:
+
 \setuptyping
   [style=MyMathFont]
 

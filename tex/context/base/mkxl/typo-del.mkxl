@@ -413,9 +413,9 @@
 
 \appendtoks
     \expandafter\newinteger\csname\??delimitedtextlevel\currentdelimitedtext\endcsname
-    \frozen\instance\protected\edefcsname\currentdelimitedtext        \endcsname{\delimitedtext[\currentdelimitedtext]}%
-    \frozen\instance\protected\edefcsname\e!start\currentdelimitedtext\endcsname{\startdelimitedtext[\currentdelimitedtext]}%
-    \frozen\instance\protected\edefcsname\e!stop \currentdelimitedtext\endcsname{\stopdelimitedtext}%
+    \protected\frozen\instance\edefcsname\currentdelimitedtext        \endcsname{\delimitedtext[\currentdelimitedtext]}%
+    \protected\frozen\instance\edefcsname\e!start\currentdelimitedtext\endcsname{\startdelimitedtext[\currentdelimitedtext]}%
+    \protected\frozen\instance\edefcsname\e!stop \currentdelimitedtext\endcsname{\stopdelimitedtext}%
 \to \everydefinedelimitedtext
 
 \setupdelimitedtext

@@ -1,0 +1,24 @@
+return {
+
+    name      = "basic pdf specific tagging : description",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        description        = { pdf = "Sect"      },
+        descriptiontag     = { pdf = "Lbl"       },
+        descriptioncontent = { pdf = "Div"       },
+        descriptionsymbol  = { pdf = "NonStruct" },
+
+    },
+
+    remapping = {
+
+        { element = "description",    detail = "footnote", pdf = "FENote" },
+     -- { element = "descriptiontag", parent = "footnote", pdf = "" },
+
+    },
+
+}

@@ -50,9 +50,11 @@
      \expandafter\ctxcommand
    \fi}
 
+% todo: \c_strc_tags_enabled for the setters
+
 \appendtoks
     \enforced\permanent\protected\def\dotagTABLEcell
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagtablecell{\tablecellrows}{\tablecellcolumns}{\raggedstatus}%
        \fi}%
     % brrr, we need to tag empty cells (unless we start numbering)
@@ -62,7 +64,7 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagtabulatecell
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagtabulatecell\c_tabl_tabulate_align\c_tabl_tabulate_kind
        \fi}%
     \enforced\permanent\protected\def\dotagtabulatesignal
@@ -71,17 +73,21 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsynonym
-      {\iftrialtypesetting\else\clf_settagsynonym{\currentsynonymtag}\fi}%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagsynonym{\currentsynonymtag}%
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsorting
-      {\iftrialtypesetting\else\clf_settagsorting{\currentsortingtag}\fi}%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagsorting{\currentsortingtag}%
+       \fi}%
 \to \everyenableelements
 
 \appendtoks % frozen and assumed global per highlight class
     \enforced\permanent\protected\def\dotagconstruct
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagconstruct
            {\currentstartstop}%
            {\startstopparameter\c!style}%
@@ -93,7 +99,7 @@
 
 \appendtoks % frozen and assumed global per highlight class
     \enforced\permanent\protected\def\dotaghighlight
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settaghighlight
            {\currenthighlight}%
            {\highlightparameter\c!style}
@@ -108,7 +114,7 @@
 
 \appendtoks % we can have differently scaled images
     \enforced\permanent\protected\def\dotagfigure
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagfigure
            {\figurefileoriginal}%
            {\figurefullname}%
@@ -125,21 +131,41 @@
 \to \everyenableelements
 
 \appendtoks
+    \enforced\permanent\protected\def\dotagimage
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagimage
+           {\figurelabel}%
+           {\figuredescriptiontext}%
+           {\figurealternativetext}%
+       \fi}%
+\to \everyenableelements
+
+
+\appendtoks
+    \enforced\permanent\protected\def\dotagmpgraphic
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagmpgraphic
+           {\figuredescriptiontext}%
+           {\figurealternativetext}%
+       \fi}%
+\to \everyenableelements
+
+\appendtoks
     \enforced\permanent\protected\def\dotagcombination
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagcombination
             {\combinationparameter\c!nx}%
             {\combinationparameter\c!ny}%
        \fi}%
     \enforced\permanent\protected\def\dotagcombinationpair#1#2%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagcombinationpair{#1}{#2}%
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetitemgroup
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagitemgroup
            \ifconditional\c_strc_itemgroups_pack     true\else false\fi\relaxedspace
            \ifconditional\c_strc_itemgroups_continue true\else false\fi\relaxedspace
@@ -147,63 +173,65 @@
            {\currentitemgroupsymbol}%
        \fi}%
     \enforced\permanent\protected\def\dotagsetitem#1%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagitem{#1}%
        \fi}%
 \to \everyenableelements
 
-%     \appendtoks
-%         \enforced\permanent\protected\def\dotagsetdescription
-%           {\iftrialtypesetting\else
-%              \clf_settagdescription{\currentdescription}\currentdescriptionnumberentry\relax
-%            \fi}%
-%     \to \everyenableelements
+\appendtoks
+    \enforced\permanent\protected\def\dotagsetdescriptionindex#1#2%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagdescriptionindex{#1}{#2}\relax
+       \fi}%
+\to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetnotation
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
         \clf_settagnotation{\currentnote}\currentnotenumber\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetnotesymbol
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagnotationsymbol{\currentnote}\currentnotenumber\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagregisterlocation
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagregister{\currentregister}\currentregisternumber\relax
        \fi}%
 \to \everyenableelements
 
+\aliased\let\dotagsetreferencedescription\gobbletwoarguments
+
 \appendtoks
-    \enforced\permanent\protected\def\dotaglistlocation
-      {\iftrialtypesetting\else
-         \clf_settaglist\currentlistindex\relax
+    \enforced\permanent\protected\def\dotagsetreferencedescription#1#2%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagsetreferencedescription{#1}{#2}\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetdelimitedsymbol#1%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagdelimitedsymbol{#1}\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagsetsubsentencesymbol#1%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagsubsentencesymbol{#1}\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagregisterfloat#1#2%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagfloat{#1}{#2}\relax
        \fi}%
 \to \everyenableelements
@@ -217,29 +245,44 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagregisterformula#1#2%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagformulacontent{#1}{#2}%
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagmarginanchor#1%
-      {\iftrialtypesetting\else\clf_settagmarginanchor#1\relax\fi}%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagmarginanchor#1\relax
+       \fi}%
     \enforced\permanent\protected\def\dotagmargintext#1%
-      {\iftrialtypesetting\else\clf_settagmargintext#1\relax\fi}%
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \clf_settagmargintext#1\relax
+       \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagpublication#1#2%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagpublication{#1}{#2}\relax
        \fi}%
 \to \everyenableelements
 
 \appendtoks
     \enforced\permanent\protected\def\dotagparagraph#1%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagparagraph{#1}\relax
+       \fi}%
+\to \everyenableelements
+
+% bah bah bah
+
+% \lettonothing\dotagmarklist
+
+\appendtoks
+    \enforced\permanent\protected\def\dotagmarklist
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
+         \strc_lists_add_list_description
        \fi}%
 \to \everyenableelements
 
@@ -249,7 +292,7 @@
 
 \appendtoks
     \enforced\permanent\protected\def\dotagcodepoint#1#2%
-      {\iftrialtypesetting\else
+      {\iftrialtypesetting\orelse\ifconditional\c_strc_tags_enabled
          \clf_settagcodepoint{#1}#2\relax
        \fi}%
 \to \everyenableelements

@@ -1,0 +1,14 @@
+return {
+
+    name      = "basic pdf specific tagging : whatever",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        whatever       = { pdf = "P" },
+
+    },
+
+}

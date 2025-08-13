@@ -1,0 +1,51 @@
+return {
+    name      = "basic pdf specific tagging",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    validated = {
+        {
+            name    = "verapdf",
+            version = "1.29.90",
+            date    = "20250801",
+        },
+    },
+
+    includes  = {
+
+        "basic-combination",
+        "basic-delimited",
+        "basic-description",
+        "basic-float",
+        "basic-formula",
+        "basic-itemgroup",
+        "basic-list",
+        "basic-margin",
+        "basic-section",
+        "basic-verbatim",
+        "basic-whatever",
+
+    },
+
+    endpoints = {
+        Part = "p",
+        Div  = "p",
+        Sect = "p",
+    },
+
+    mapping = {
+
+        -- also in basic
+
+        p         = { pdf = "P",        warning = true },
+        t         = { pdf = "Span",     warning = true },
+        m         = { pdf = "Artifact", warning = true },
+
+        highlight = { pdf = "Artifact" },
+        unit      = { pdf = "Artifact" },
+        narrower  = { pdf = "Div"      },
+        citation  = { pdf = "Artifact" },
+    },
+
+}

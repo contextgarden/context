@@ -910,15 +910,15 @@
 \installcommandhandler \??mathalignment {mathalignment} \??mathalignment
 
 \appendtoks
-              \frozen\protected\instance\edefcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
-    \noaligned\frozen\protected\instance \defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}%
+              \protected\frozen\instance\edefcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
+    \noaligned\protected\frozen\instance \defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}%
 \to \everydefinemathalignment
 
 % to be tested
 %
 % \appendtoks
-%               \frozen\instance\protected\defcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
-%     \noaligned\frozen\instance\protected\defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}%
+%               \protected\frozen\instance\defcsname\e!start\currentmathalignment\endcsname{\math_alignment_start[\currentmathalignment]}%
+%     \noaligned\protected\frozen\instance\defcsname\e!stop \currentmathalignment\endcsname{\math_alignment_stop}%
 % \to \everydefinemathalignment
 
 \setupmathalignment
@@ -1210,7 +1210,7 @@
    \c!numberdistance=\zeropoint]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!start\currentmathcases\endcsname{\math_cases_start[\currentmathcases]}%
+    \protected\frozen\instance\edefcsname\e!start\currentmathcases\endcsname{\math_cases_start[\currentmathcases]}%
     \frozen\instance          \defcsname \e!stop \currentmathcases\endcsname{\math_cases_stop}%
 \to \everydefinemathcases
 
@@ -1243,7 +1243,7 @@
 \appendtoks
     \edef\p_simplecommand{\mathcasesparameter\c!simplecommand}%
     \ifempty\p_simplecommand\else
-        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_cases_simple[\currentmathcases]}%
+        \protected\frozen\instance\edefcsname\p_simplecommand\endcsname{\math_cases_simple[\currentmathcases]}%
     \fi
 \to \everydefinemathcases
 
@@ -1505,7 +1505,7 @@
    \c!rulethickness=\linewidth]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!start\currentmathmatrix\endcsname{\math_matrix_start[\currentmathmatrix]}%
+    \protected\frozen\instance\edefcsname\e!start\currentmathmatrix\endcsname{\math_matrix_start[\currentmathmatrix]}%
     % \noaligned\protected should work here:
     \frozen\instance          \defcsname \e!stop \currentmathmatrix\endcsname{\math_matrix_stop}% no u else lookahead problem
 \to \everydefinemathmatrix
@@ -2704,7 +2704,7 @@
 \appendtoks
     \edef\p_simplecommand{\mathmatrixparameter\c!simplecommand}%
     \ifempty\p_simplecommand\else
-        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_matrix_simple[\currentmathmatrix]}%
+        \protected\frozen\instance\edefcsname\p_simplecommand\endcsname{\math_matrix_simple[\currentmathmatrix]}%
     \fi
 \to \everydefinemathmatrix
 
@@ -3844,7 +3844,7 @@
    \c!textdistance=.25\emwidth]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname\e!start\currentmathsimplealign\endcsname{\math_simplealign_start[\currentmathsimplealign]}%
+    \protected\frozen\instance\edefcsname\e!start\currentmathsimplealign\endcsname{\math_simplealign_start[\currentmathsimplealign]}%
     \frozen\instance          \defcsname \e!stop \currentmathsimplealign\endcsname{\math_simplealign_stop}%
 \to \everydefinemathsimplealign
 
@@ -4160,7 +4160,7 @@
 \appendtoks
     \edef\p_simplecommand{\mathsimplealignparameter\c!simplecommand}%
     \ifempty\p_simplecommand\else
-        \frozen\protected\instance\edefcsname\p_simplecommand\endcsname{\math_align_simple[\currentmathsimplealign]}%
+        \protected\frozen\instance\edefcsname\p_simplecommand\endcsname{\math_align_simple[\currentmathsimplealign]}%
     \fi
 \to \everydefinemathsimplealign
 

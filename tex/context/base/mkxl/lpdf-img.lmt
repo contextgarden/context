@@ -52,7 +52,6 @@ local lpdf                 = lpdf or { }
 local pdfdictionary        = lpdf.dictionary
 local pdfarray             = lpdf.array
 local pdfconstant          = lpdf.constant
-local pdfstring            = lpdf.string
 local pdfreference         = lpdf.reference
 local pdfverbose           = lpdf.verbose
 local pdfflushstreamobject = lpdf.flushstreamobject

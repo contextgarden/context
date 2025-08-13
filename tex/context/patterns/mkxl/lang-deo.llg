@@ -1,0 +1,10 @@
+return {
+    name     = "German (1901)",
+    version  = "1.00",
+    comment  = "Some old German ortography stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "de-1901",
+        export = "de-1901",
+    }
+}

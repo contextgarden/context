@@ -121,7 +121,7 @@
    \c!symbol=\fractionbarextenderuc]
 
 \appendtoks
-    \instance\frozen\protected\edefcsname\currentmathfraction\endcsname{\math_frac{\currentmathfraction}}%
+    \protected\frozen\instance\edefcsname\currentmathfraction\endcsname{\math_frac{\currentmathfraction}}%
 \to \everydefinemathfraction
 
 % Sometimes users want control over the distances:

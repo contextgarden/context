@@ -69,9 +69,9 @@
    \c!backgroundcolor=gray]
 
 \appendtoks
-    \frozen\instance\protected\edefcsname        \currenthelp\endcsname{\scrn_help_argument{\currenthelp}}%
-    \frozen\instance\protected\edefcsname\e!start\currenthelp\endcsname{\scrn_help_start   {\currenthelp}}%
-    \frozen\instance\protected\edefcsname\e!stop \currenthelp\endcsname{\scrn_help_stop                  }%
+    \protected\frozen\instance\edefcsname        \currenthelp\endcsname{\scrn_help_argument{\currenthelp}}%
+    \protected\frozen\instance\edefcsname\e!start\currenthelp\endcsname{\scrn_help_start   {\currenthelp}}%
+    \protected\frozen\instance\edefcsname\e!stop \currenthelp\endcsname{\scrn_help_stop                  }%
 \to \everydefinehelp
 
 \mutable\lettonothing\currenthelpreference

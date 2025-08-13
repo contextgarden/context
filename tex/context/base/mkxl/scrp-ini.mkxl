@@ -58,7 +58,7 @@
 % presets are global and are currently defined in lua
 
 % \appendtoks
-%     \frozen\instance\protected\edefcsname\currentscript\endcsname{\setscript[\currentscript]}%
+%     \protected\frozen\instance\edefcsname\currentscript\endcsname{\setscript[\currentscript]}%
 % \to \everydefinescript
 
 \permanent\protected\def\setlocalscript[#1]%

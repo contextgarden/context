@@ -988,6 +988,7 @@ div.narrower {
 /* floatcontent : mixed   */
 
 float,
+subfloat,
 div.float {
     display       : block ;
     margin-top    : 1em ;

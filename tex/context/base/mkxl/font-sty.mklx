@@ -236,9 +236,9 @@
 \appendtoks
     \letcsname\??stylecheck\currentstyle\endcsname\relax
     \ifcstok{\styleparameter\c!method}\v!command
-        \frozen\instance\protected\edefcsname\e!start\currentstyle\endcsname{\font_styles_apply_start{\currentstyle}}%
-        \frozen\instance\protected\edefcsname\e!stop \currentstyle\endcsname{\font_styles_apply_stop}%
-        \frozen\instance\protected\edefcsname        \currentstyle\endcsname{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
+        \protected\frozen\instance\edefcsname\e!start\currentstyle\endcsname{\font_styles_apply_start{\currentstyle}}%
+        \protected\frozen\instance\edefcsname\e!stop \currentstyle\endcsname{\font_styles_apply_stop}%
+        \protected\frozen\instance\edefcsname        \currentstyle\endcsname{\font_styles_apply_grouped{\currentstyle}}% no longer groupedcommand here
     \fi
 \to \everydefinestyle
 

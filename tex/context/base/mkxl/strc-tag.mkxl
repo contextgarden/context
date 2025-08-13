@@ -177,6 +177,7 @@
 \definetagconstant{floattext}
 \definetagconstant{floatnumber}
 \definetagconstant{floatcontent}
+\definetagconstant{subfloat}
 
 \definetagconstant{image}
 
@@ -260,7 +261,7 @@
 
 % the real code
 
-\definesystemattribute[tagged][public]
+\definesystemattribute[tagged][public,pickup] % pickup added
 \definesystemattribute[image] [public]
 
 % \setelementbackendtag [#1][#2] % define at the lua end
@@ -389,7 +390,7 @@
      \enforced\let\dostarttaggednodetail\gobbleoneargument
      \enforced\let\dostarttaggedchained \gobblefourarguments
      \enforced\let\dostoptagged         \donothing
-     \enforced\let\dostartignoretagging \donothing
+     \enforced\let\dostartignoretagging \gobbleoneargument
      \enforced\let\dostopignoretagging  \donothing
      \enforced\let\dotagdocumentpush    \donothing
      \enforced\let\dotagdocumentpop     \donothing
@@ -499,6 +500,23 @@
   [\c!state=\v!stop,
    \c!method=\v!auto]
 
+% We now have a proper key instead of a directive:
+
+\appendtoks
+    \ifempty{\taggingparameter\c!preset}\else
+        \clf_settaggingpresets
+          preset {\lastnamedcs}%
+          level  {\taggingparameter\c!level}%
+        \relax
+    \fi
+    \ifempty{\taggingparameter\c!comment}\else
+        \clf_settaggingcomment{\lastnamedcs}%
+    \fi
+    \ifempty{\taggingparameter\c!option}\else
+        \clf_settaggingoption{\lastnamedcs}%
+    \fi
+\to \everysetuptagging
+
 % Cf suggestion by Wolfgang we now have named paragraphs. Watch out, the content
 % is grouped but only when we have an instance.
 %
@@ -551,7 +569,8 @@
 \def\strc_tags_document_start_indeed
   {\glet\strc_tags_document_start_indeed\relax
    \dostarttaggednodetail\t!document
-   \dostarttaggednodetail\t!documentpart} % ua2 demands at least one level more
+   \dostarttaggednodetail\t!documentpart
+   } % ua2 demands at least one level more
 
 \def\strc_tags_document_stop_indeed
   {\glet\strc_tags_document_stop_indeed\relax
@@ -755,7 +774,6 @@
   {\beginlocalcontrol
    \clf_strc_tags_parcounter_pop
    \endlocalcontrol}
-
 
 \permanent\protected\def\strc_tags_parcounter_reset
   {\c_attr_taggedpar\attributeunsetvalue}

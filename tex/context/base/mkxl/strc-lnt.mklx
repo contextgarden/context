@@ -47,9 +47,9 @@
      \pushmacro\currentnote
      \cdef\currentnote{#1}
      \letcsname\??linenote\currentnote\expandafter\endcsname\csname\currentnote\endcsname % use copy command
-     \frozen\instance\protected\edefcsname        \currentnote\endcsname{\strc_linenotes_direct{\currentnote}}%
-     \frozen\instance\protected\edefcsname\e!start\currentnote\endcsname{\strc_linenotes_start {\currentnote}}%
-     \frozen\instance\protected\edefcsname\e!stop \currentnote\endcsname{\strc_linenotes_stop                }%
+     \protected\frozen\instance\edefcsname        \currentnote\endcsname{\strc_linenotes_direct{\currentnote}}%
+     \protected\frozen\instance\edefcsname\e!start\currentnote\endcsname{\strc_linenotes_start {\currentnote}}%
+     \protected\frozen\instance\edefcsname\e!stop \currentnote\endcsname{\strc_linenotes_stop                }%
      \expand\everydefinelinenote
      \popmacro\currentnote
    \fi}

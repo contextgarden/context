@@ -120,6 +120,8 @@ function pdfflusher.stopfigure(message)
     expandmacro("stopMPLIBtoPDF")
 end
 
+-- pdfliterals = "/Artifact BMC\n" .. pdfliterals .. "\n" .. "EMC"
+
 function pdfflusher.flushfigure(pdfliterals) -- table
     if #pdfliterals > 0 then
         pdfliterals = concat(pdfliterals,"\n")
@@ -483,8 +485,8 @@ function metapost.flush(specification,result)
                     local miterlimit = -1
                     local linecap    = -1
                     local linejoin   = -1
-local repeater = { }
-local repeated = 0
+                    local repeater   = { }
+                    local repeated   = 0
                     local dashed     = false
                     local linewidth  = false
                     local llx        = properties.llx

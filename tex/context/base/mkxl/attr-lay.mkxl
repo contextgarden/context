@@ -52,9 +52,9 @@
 \appendtoks
   \attr_layoutcomponent_whatever\clf_defineviewerlayer
   \ifcstok{\viewerlayerparameter\c!method}\v!command
-    \frozen\protected\instance\xdefcsname\e!start\currentviewerlayer\endcsname{\startviewerlayer[\currentviewerlayer]}%
+    \protected\frozen\instance\xdefcsname\e!start\currentviewerlayer\endcsname{\startviewerlayer[\currentviewerlayer]}%
   \else
-    \frozen\protected\instance\xdefcsname\e!stop \currentviewerlayer\endcsname{\stopviewerlayer}%
+    \protected\frozen\instance\xdefcsname\e!stop \currentviewerlayer\endcsname{\stopviewerlayer}%
   \fi
 \to \everydefineviewerlayer
 

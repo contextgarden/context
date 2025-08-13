@@ -60,15 +60,15 @@
      \edefcsname\??label#1:\s!parent\endcsname{\??label#3}%
    \fi
    \ifconditional\c_strc_constructions_define_commands
-     \frozen\instance\protected\edefcsname\e!next #1\endcsname{\strc_labels_next {#1}{\number#2}}% obsolete
-     \frozen\instance\protected\edefcsname\v!reset#1\endcsname{\strc_labels_reset{#1}{\number#2}}% obsolete % should be \e!reset anyway
-     %frozen\instance\protected\edefcsname\c!set  #1\endcsname{\strc_labels_set  {#1}{\number#2}}% obsolete
+     \protected\frozen\instance\edefcsname\e!next #1\endcsname{\strc_labels_next {#1}{\number#2}}% obsolete
+     \protected\frozen\instance\edefcsname\v!reset#1\endcsname{\strc_labels_reset{#1}{\number#2}}% obsolete % should be \e!reset anyway
+     %protected\frozen\instance\edefcsname\c!set  #1\endcsname{\strc_labels_set  {#1}{\number#2}}% obsolete
      \ifcsname\v!current#1\endcsname
        % we play safe
      \else
        \protected\edefcsname\v!current#1\endcsname{\strc_labels_current{#1}}%          % obsolete % should be \e!current anyway
      \fi
-     \frozen\instance\protected\edefcsname#1\endcsname{\strc_labels_command[#1]}%
+     \protected\frozen\instance\edefcsname#1\endcsname{\strc_labels_command[#1]}%
    \fi}
 
 % todo: \strc_labels_command for user

@@ -19,9 +19,10 @@
     <flag name="comments"><short>show comments</short></flag>
     <flag name="sign"><short>sign document (assumes signature template)</short></flag>
     <flag name="verify"><short>verify document</short></flag>
+    <flag name="validate"><short>validate document (calls verapdf)</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
     <flag name="userdata"><short>print userdata to the console</short></flag>
-    <flag name="structure"><short>show the structure of the content</short></flag>
+    <flag name="structure"><short>check the (context speficic) structure of the content</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>
@@ -32,6 +33,7 @@
     <example><command>mtxrun --script pdf --verify --certificate=somesign.pem --password=test --uselibrary somefile</command></example>
     <example><command>mtxrun --script pdf --detail=nofpages somefile</command></example>
     <example><command>mtxrun --script pdf --userdata=keylist [--format=lua|json|lines] somefile</command></example>
+    <example><command>mtxrun --script pdf --validate --structure --details --save somefile</command></example>
    </subcategory>
   </category>
  </flags>

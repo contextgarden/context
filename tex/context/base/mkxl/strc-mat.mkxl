@@ -142,8 +142,8 @@
 
 \appendtoks
     \expanded{\definelist[\currentformula]}% is expansion needed?
-    \frozen\instance\protected\edefcsname\e!start\currentformula\v!formula\endcsname{\strc_formulas_start_formula{\currentformula}}%
-    \frozen\instance\protected\edefcsname\e!stop \currentformula\v!formula\endcsname{\strc_formulas_stop_formula}%
+    \protected\frozen\instance\edefcsname\e!start\currentformula\v!formula\endcsname{\strc_formulas_start_formula{\currentformula}}%
+    \protected\frozen\instance\edefcsname\e!stop \currentformula\v!formula\endcsname{\strc_formulas_stop_formula}%
 \to \everydefineformula
 
 \definelist[\v!formula]
@@ -161,8 +161,8 @@
 \let\strc_formulas_stop_formula \relax % defined later
 
 \permanent\tolerant\protected\def\defineformulaalternative[#1]#*[#2]#*[#3]%
-  {\frozen\instance\protected\defcsname\e!start#1\v!formula\endcsname{#2}%
-   \frozen\instance\protected\defcsname\e!stop #1\v!formula\endcsname{#3}}
+  {\protected\frozen\instance\defcsname\e!start#1\v!formula\endcsname{#2}%
+   \protected\frozen\instance\defcsname\e!stop #1\v!formula\endcsname{#3}}
 
 % sp = single line paragraph sd = single line display
 % mp = multi  line paragraph md = multi  line display

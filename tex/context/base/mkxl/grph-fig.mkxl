@@ -81,7 +81,7 @@
 
 \tolerant\permanent\protected\def\definetypesetting[#1]#*[#2]#*[#S#3]% <name> options settings-a
   {\ifparameter#1\or
-     \frozen\instance\protected\defcsname\??typesettingfile#1\endcsname{\grph_typesetting_process_indeed{#2}{#3}}%
+     \protected\frozen\instance\defcsname\??typesettingfile#1\endcsname{\grph_typesetting_process_indeed{#2}{#3}}%
    \fi}
 
 \tolerant\permanent\protected\def\typesetfile[#1]#*[#S#2]#*[#S#3]% <name> filename settings-b | filename options settings

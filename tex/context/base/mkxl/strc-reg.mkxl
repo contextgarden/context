@@ -179,13 +179,13 @@
       \definemixedcolumns[\currentregister][\v!register]% first as otherwise it overloads start/stop
       \clf_defineregister{\currentregister}{\registerparameter\c!referencemethod}%
       \expanded{\presetheadtext[\currentregister=\Word{\currentregister}]}%
-      \frozen\instance\protected\edefcsname\currentregister\endcsname{\strc_registers_insert_entry[\currentregister]}%
-      \frozen\instance\protected\edefcsname\e!see\currentregister\endcsname{\strc_registers_insert_see[\currentregister]}%
-      %frozen\instance\protected\edefcsname\e!coupled\currentregister\endcsname{\dolinkedregister{\currentregister}}%
+      \protected\frozen\instance\edefcsname\currentregister\endcsname{\strc_registers_insert_entry[\currentregister]}%
+      \protected\frozen\instance\edefcsname\e!see\currentregister\endcsname{\strc_registers_insert_see[\currentregister]}%
+      %protected\frozen\instance\edefcsname\e!coupled\currentregister\endcsname{\dolinkedregister{\currentregister}}%
       % historic ballast
-      \frozen\instance\protected\edefcsname\e!place\currentregister\endcsname{\placeregister[\currentregister]}%
-      \frozen\instance\protected\edefcsname\e!complete\currentregister\endcsname{\completeregister[\currentregister]}%
-      \frozen\instance\protected\edefcsname\e!setup\currentregister\e!endsetup\endcsname{\setupregister[\currentregister]}%
+      \protected\frozen\instance\edefcsname\e!place\currentregister\endcsname{\placeregister[\currentregister]}%
+      \protected\frozen\instance\edefcsname\e!complete\currentregister\endcsname{\completeregister[\currentregister]}%
+      \protected\frozen\instance\edefcsname\e!setup\currentregister\e!endsetup\endcsname{\setupregister[\currentregister]}%
       \dorecurse\c_strc_registers_maxlevel{% weird, expanded should not be needed
         \expanded{\defineregister[\currentregister:\recurselevel][\currentregister]}%
        %\defineregister[\currentregister:\recurselevel][\currentregister]%

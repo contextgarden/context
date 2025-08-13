@@ -271,12 +271,12 @@
 \permanent\tolerant\protected\def\definesynonyms[#1]#*[#2]#*[#3]#*[#4]% name plural \meaning \use
   {\ifnum\lastarguments=\plusfour
      \protected\instance\def#4##1{\strc_synonyms_insert{#1}{##1}}% name tag
-     \frozen\instance\protected\defcsname#1\endcsname{\definesynonym[\v!no][#1]}% \name
+     \protected\frozen\instance\defcsname#1\endcsname{\definesynonym[\v!no][#1]}% \name
    \else
-     \frozen\instance\protected\defcsname#1\endcsname{\definesynonym[\v!yes][#1]}% \name
+     \protected\frozen\instance\defcsname#1\endcsname{\definesynonym[\v!yes][#1]}% \name
    \fi
    \ifparameter#3\or
-     \frozen\instance\protected\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
+     \protected\frozen\instance\def#3##1{\strc_synonyms_insert_meaning{#1}{##1}}% \meaning
    \fi
    \cdef\currentsynonym{#1}%
    %
@@ -295,9 +295,9 @@
      %
      % These will go away. Actually the overloads catched this empty case!
      %
-     \frozen\instance\protected\defcsname\e!setup #2\e!endsetup\endcsname{\setupsynonyms[#1]}% obsolete definition
-     \frozen\instance\protected\defcsname\e!place   \e!listof#2\endcsname{\placelistofsynonyms[#1]}% accepts extra argument
-     \frozen\instance\protected\defcsname\e!complete\e!listof#2\endcsname{\completelistofsynonyms[#1]}%
+     \protected\frozen\instance\defcsname\e!setup #2\e!endsetup\endcsname{\setupsynonyms[#1]}% obsolete definition
+     \protected\frozen\instance\defcsname\e!place   \e!listof#2\endcsname{\placelistofsynonyms[#1]}% accepts extra argument
+     \protected\frozen\instance\defcsname\e!complete\e!listof#2\endcsname{\completelistofsynonyms[#1]}%
    \fi}
 
 % \abbreviation[XXX][321]{321}{Three, Two, One} : optional sort key
@@ -561,9 +561,9 @@
      \else
        \protected\instance\def#3##1{\strc_sorting_insert{#1}{##1}}%
      \fi
-     \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!no][#1]}%
+     \protected\frozen\instance\defcsname#1\endcsname{\definesort[\v!no][#1]}%
    \else
-     \frozen\instance\protected\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
+     \protected\frozen\instance\defcsname#1\endcsname{\definesort[\v!yes][#1]}%
    \fi
    \cdef\currentsorting{#1}%
    \c_strc_constructions_define_commands\conditionalfalse
@@ -582,9 +582,9 @@
      %
      \presetheadtext[#2=\Word{#2}]%
      %
-     \frozen\instance\protected\defcsname\e!setup #2\e!endsetup\endcsname{\setupsorting[#1]}% obsolete definition
-     \frozen\instance\protected\defcsname\e!place   \e!listof#2\endcsname{\placelistofsorts[#1]}%
-     \frozen\instance\protected\defcsname\e!complete\e!listof#2\endcsname{\completelistofsorts[#1]}%
+     \protected\frozen\instance\defcsname\e!setup #2\e!endsetup\endcsname{\setupsorting[#1]}% obsolete definition
+     \protected\frozen\instance\defcsname\e!place   \e!listof#2\endcsname{\placelistofsorts[#1]}%
+     \protected\frozen\instance\defcsname\e!complete\e!listof#2\endcsname{\completelistofsorts[#1]}%
    \fi}
 
 \permanent\tolerant\protected\def\definesort[#1]#*[#2]#*[#3]%
@@ -666,6 +666,8 @@
 \startsetups [\??simplelistrenderings:\v!sorting:\v!normal]
    \fastsetup{\??simplelistrenderings::\v!sorting}%
 \stopsetups
+
+% todo: prerolltostring -> alt text (currently we just use the tag)
 
 \startsetups [\??simplelistrenderings::\v!sorting]
     \begingroup

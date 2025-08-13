@@ -271,19 +271,19 @@
    \strc_floats_define_commands{#1}{#2}}
 
 \def\strc_floats_define_commands#1#2%
-  {\frozen\protected\instance\edefcsname\e!place      \e!listof#2\endcsname{\strc_lists_place[#1]}% call will change
-   \frozen\protected\instance\edefcsname\e!complete   \e!listof#2\endcsname{\strc_lists_complete[#1][#2]}% call will change
-   \frozen\protected\instance\edefcsname\e!place               #1\endcsname{\placefloat[#1]}%
-   \frozen\protected\instance\edefcsname\e!start       \e!place#1\endcsname{\startplacefloat[#1]}%
-   \frozen\protected\instance\edefcsname\e!stop        \e!place#1\endcsname{\stopplacefloat}%
-   \frozen\protected\instance\edefcsname\e!start        #1\e!text\endcsname{\startfloattext[#1]}%
-   \frozen\protected\instance\edefcsname\e!stop         #1\e!text\endcsname{\stopfloattext}%
-   \frozen\protected\instance\edefcsname\e!start\e!place#1\e!text\endcsname{\startplacefloattext[#1]}%
-   \frozen\protected\instance\edefcsname\e!stop \e!place#1\e!text\endcsname{\stopplacefloattext}%
+  {\protected\frozen\instance\edefcsname\e!place      \e!listof#2\endcsname{\strc_lists_place[#1]}% call will change
+   \protected\frozen\instance\edefcsname\e!complete   \e!listof#2\endcsname{\strc_lists_complete[#1][#2]}% call will change
+   \protected\frozen\instance\edefcsname\e!place               #1\endcsname{\placefloat[#1]}%
+   \protected\frozen\instance\edefcsname\e!start       \e!place#1\endcsname{\startplacefloat[#1]}%
+   \protected\frozen\instance\edefcsname\e!stop        \e!place#1\endcsname{\stopplacefloat}%
+   \protected\frozen\instance\edefcsname\e!start        #1\e!text\endcsname{\startfloattext[#1]}%
+   \protected\frozen\instance\edefcsname\e!stop         #1\e!text\endcsname{\stopfloattext}%
+   \protected\frozen\instance\edefcsname\e!start\e!place#1\e!text\endcsname{\startplacefloattext[#1]}%
+   \protected\frozen\instance\edefcsname\e!stop \e!place#1\e!text\endcsname{\stopplacefloattext}%
    % these will become obsolete:
-   \frozen\instance\protected\edefcsname\e!reserve               #1\endcsname{\strc_floats_reserve[#1]}%
-   \frozen\instance\protected\edefcsname\e!start\e!reserve#1\e!text\endcsname{\strc_floats_start_reserve_text[#1]}%
-   \frozen\instance\protected\edefcsname\e!stop \e!reserve#1\e!text\endcsname{\strc_floats_stop_reserve_text}}
+   \protected\frozen\instance\edefcsname\e!reserve               #1\endcsname{\strc_floats_reserve[#1]}%
+   \protected\frozen\instance\edefcsname\e!start\e!reserve#1\e!text\endcsname{\strc_floats_start_reserve_text[#1]}%
+   \protected\frozen\instance\edefcsname\e!stop \e!reserve#1\e!text\endcsname{\strc_floats_stop_reserve_text}}
 
 %D Fallback float body:
 
@@ -1044,6 +1044,8 @@
    \fi
    \splitfloat{\strc_floats_place_next_box_normal}}
 
+\newinteger\c_strc_float_nesting
+
 \protected\def\strc_floats_place_next_box_normal
   {\ifconditional\c_page_floats_some_waiting
      % this was \checkwaitingfloats spread all over
@@ -1055,8 +1057,20 @@
      % but which should be done before using box \floatbox
    \fi
    \page_margin_strc_floats_before % todo: each float handler gets a before
-   \global\insidefloattrue
-   \dostarttaggedchained\t!float\currentfloat\currentfloat\??float
+   \ifinsidefloat
+     \dostarttaggedchained\t!subfloat\currentfloat\currentfloat\??float
+   \else
+     \dostarttaggedchained\t!float\currentfloat\currentfloat\??float
+   \fi
+   \global\advanceby\c_strc_float_nesting\plusone
+   \ifcase\c_strc_float_nesting
+     % of course not
+   \or
+     % we start nestign (likely a float combination)
+     \global\insidefloattrue
+   \else
+     % well ... we'll see
+   \fi
    \page_margin_strc_floats_set_hsize % todo: each float handler gets a set_hsize
    \expand\everyinsidefloat
    \strc_floats_analyze_variables_one
@@ -1491,7 +1505,16 @@
    % place the float
    \strc_floats_set_box
    \strc_floats_get_box
-   \global\insidefloatfalse}
+   \ifcase\c_strc_float_nesting
+     % error
+   \or
+     % back at the outer level
+     \global\c_strc_float_nesting\zerocount
+     \global\insidefloatfalse
+   \else
+     % nested float (probably combination)
+     \global\advanceby\c_strc_float_nesting\minusone
+   \fi}
 
 \newdimension\availablefloatwidth
 \newdimension\availablefloatheight

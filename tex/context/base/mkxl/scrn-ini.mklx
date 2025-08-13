@@ -75,9 +75,9 @@
 % interactions so a general start-stop will do
 %
 % \appendtoks
-%     \frozen\instance\protected\edefcsname        \currentinteraction\endcsname{\scrn_interaction_direct{\currentinteraction}}%
-%     \frozen\instance\protected\edefcsname\e!start\currentinteraction\endcsname{\scrn_interaction_start {\currentinteraction}}%
-%     \frozen\instance\protected\edefcsname\e!stop \currentinteraction\endcsname{\scrn_interaction_stop                       }%
+%     \protected\frozen\instance\edefcsname        \currentinteraction\endcsname{\scrn_interaction_direct{\currentinteraction}}%
+%     \protected\frozen\instance\edefcsname\e!start\currentinteraction\endcsname{\scrn_interaction_start {\currentinteraction}}%
+%     \protected\frozen\instance\edefcsname\e!stop \currentinteraction\endcsname{\scrn_interaction_stop                       }%
 % \to \everydefineinteraction
 %
 % \protected\def\scrn_interaction_direct#1%

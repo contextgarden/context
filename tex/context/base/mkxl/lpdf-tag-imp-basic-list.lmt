@@ -1,0 +1,22 @@
+return {
+
+    name      = "basic pdf specific tagging: list",
+    version   = "1.00",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "ConTeXt development team",
+
+    mapping   = {
+
+        -- trying the same as itemgroup
+
+        list        = { pdf = "L"         },
+        listitem    = { pdf = "LI"        },
+        listtag     = { pdf = "Lbl"       },
+        listcontent = { pdf = "LBody"     },
+        listdata    = { pdf = "NonStruct" },
+        listpage    = { pdf = "Lbl"       },
+        listtext    = { pdf = "NonStruct" },
+
+    },
+
+}

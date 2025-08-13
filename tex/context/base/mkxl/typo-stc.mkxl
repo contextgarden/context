@@ -57,9 +57,9 @@
         \clf_newstacking{\currentstacking}{\stackingparameter\c!number}%
     \relax
     \ifcstok{\stackingparameter\c!define}\v!yes
-        \frozen\instance\protected\edefcsname        \currentstacking\endcsname{\typo_stacking{\currentstacking}}%
-        \frozen\instance\protected\edefcsname\e!start\currentstacking\endcsname{\typo_stacking_start{\currentstacking}}%
-        \frozen\instance\protected\edefcsname\e!stop \currentstacking\endcsname{\typo_stacking_stop}%
+        \protected\frozen\instance\edefcsname        \currentstacking\endcsname{\typo_stacking{\currentstacking}}%
+        \protected\frozen\instance\edefcsname\e!start\currentstacking\endcsname{\typo_stacking_start{\currentstacking}}%
+        \protected\frozen\instance\edefcsname\e!stop \currentstacking\endcsname{\typo_stacking_stop}%
     \fi
 \to \everydefinestacking
 

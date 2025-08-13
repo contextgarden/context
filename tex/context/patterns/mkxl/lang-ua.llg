@@ -1,0 +1,10 @@
+return {
+    name     = "Ukranian",
+    version  = "1.00",
+    comment  = "Some Ukranian stuff",
+    author   = "Hans Hagen",
+    metadata = {
+        pdftag = "uk",
+        export = "uk",
+    }
+}

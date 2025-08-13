@@ -69,9 +69,9 @@
 \appendtoks
     \clf_registertransliteration{\currenttransliterationparent}{\currenttransliteration}%
     \ifcstok{\transliterationparameter\c!define}\v!yes
-      \frozen\protected\instance\edefcsname\e!start\currenttransliteration\endcsname{\starttransliteration[\currenttransliteration]}%
-      \frozen\protected\instance\edefcsname\e!stop \currenttransliteration\endcsname{\stoptransliteration}%
-      \frozen\protected\instance\edefcsname        \currenttransliteration\endcsname{\transliteration[\currenttransliteration]}%
+      \protected\frozen\instance\edefcsname\e!start\currenttransliteration\endcsname{\starttransliteration[\currenttransliteration]}%
+      \protected\frozen\instance\edefcsname\e!stop \currenttransliteration\endcsname{\stoptransliteration}%
+      \protected\frozen\instance\edefcsname        \currenttransliteration\endcsname{\transliteration[\currenttransliteration]}%
     \fi
 \to \everydefinetransliteration
 
