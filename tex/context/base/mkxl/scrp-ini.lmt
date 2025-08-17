@@ -308,7 +308,7 @@ local function setscriptstatus(n,s)
     end
 end
 
-function getscriptstatus(n)
+local function getscriptstatus(n)
     local p = propertydata[n]
     if p then
         return p.scriptstatus

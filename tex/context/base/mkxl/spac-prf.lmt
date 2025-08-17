@@ -216,8 +216,8 @@ local function getprofile(line,step)
             -- progress
             position = width
             width    = position + wd
-                p = floor((position - margin)/step + 0.5)
-                w = floor((width    + margin)/step - 0.5)
+            local p = floor((position - margin)/step + 0.5)
+            local w = floor((width    + margin)/step - 0.5)
             if p < 0 then
                 p = 0
             end
@@ -262,11 +262,10 @@ profiling.get = getprofile
 
 local function getpagelist()
     local pagehead = texlists.pagehead
+    local pagetail = nil
     if pagehead then
         pagehead = tonut(texlists.pagehead)
         pagetail = find_node_tail(pagehead)
-    else
-        pagetail = nil
     end
     return pagehead, pagetail
 end
@@ -1027,10 +1026,10 @@ do
                 -- progress
                 position = width
                 width    = position + wd
-             -- p = round((position - margin)/step)
-             -- w = round((width    + margin)/step)
-                p = floor((position - margin)/step + 0.5)
-                w = floor((width    + margin)/step - 0.5)
+             -- local p = round((position - margin)/step)
+             -- local w = round((width    + margin)/step)
+                local p = floor((position - margin)/step + 0.5)
+                local w = floor((width    + margin)/step - 0.5)
                 if p < 0 then
                     p = 0
                 end
@@ -1079,30 +1078,33 @@ do
 
     end
 
-    getdepthprofile = function(line,step,margin,max,list)
+    local getdepthprofile = function(line,step,margin,max,list)
         return getprofile(line,step,margin,max,list,1)
     end
-    getheightprofile = function(line,step,margin,max,list)
+    local getheightprofile = function(line,step,margin,max,list)
         return getprofile(line,step,margin,max,list,0)
     end
 
-experiments.register("optimize.spacing.profile",function()
-    local getprofile = helper and helper.getprofile
-    if getprofile then
-        -- todo: pass the table directly
-        getdepthprofile = function(line,step,margin,max,list)
-            local t = { step = step, margin = margin, maximum = max, method = 1 }
-            return getprofile(line,list,t)
+    experiments.register("optimize.spacing.profile",function()
+        local getprofile = helper and helper.getprofile
+        if getprofile then
+            -- todo: pass the table directly
+            getdepthprofile = function(line,step,margin,max,list)
+                local t = { step = step, margin = margin, maximum = max, method = 1 }
+                return getprofile(line,list,t)
+            end
+            getheightprofile = function(line,step,margin,max,list)
+                local t = { step = step, margin = margin, maximum = max, method = 0 }
+                return getprofile(line,list,t)
+            end
         end
-        getheightprofile = function(line,step,margin,max,list)
-            local t = { step = step, margin = margin, maximum = max, method = 0 }
-            return getprofile(line,list,t)
-        end
-    end
-end)
+    end)
 
     local show_lineprofile = false
     local show_linedetails = false
+
+    local glue_mode = nil
+    local line_mode = nil
 
     trackers.register("profiling.lines.show", function(v)
         local visualizers = nodes.visualizers
@@ -1113,7 +1115,7 @@ end)
     end)
 
     trackers.register("profiling.lines.details", function(v)
-        show_linedetail = v
+        show_linedetails = v
     end)
 
     local defaultstep   = 65536 * 2 -- 2pt
@@ -1123,7 +1125,7 @@ end)
     -- I played with different methods (like only get depths and then on the fly check with heights
     -- but there is no gain and it is also fuzzy. So for now we just do the whole scan.
 
-    function profilelines(list,prev)
+    local function profilelines(list,prev)
 
         if not list then
             return
@@ -1230,7 +1232,7 @@ end)
                                                     setattr(bot,a_visual,line_mode)
                                                     setattr(top,a_visual,line_mode)
                                                 end
-                                                if show_linedetail then
+                                                if show_linedetails then
                                                     report("lineskip changed from %p to %p on page %i",amount,overshoot,tex.getcount("realpageno"))
                                                 end
                                             end

@@ -1152,7 +1152,7 @@ do
                 if op == "Tf" then
                     -- maybe use /R<N> for replacement
                     f = ti[1][2]
-                    d = data[f]
+                    local d = data[f]
                     if d then
                         m = d.map
                         u = d.used
@@ -1217,7 +1217,6 @@ do
                                         end
                                     end
                                 end
-                            else
                             end
                         end
                     end

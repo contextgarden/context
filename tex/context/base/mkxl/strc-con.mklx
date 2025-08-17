@@ -1222,12 +1222,14 @@
        \edef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
      \xmlstopraw
      \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-       \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
+       \ifconditional\c_strc_tags_enabled
+         \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
+       \fi
      \fi \fi
      \ifempty\currentconstructionlist
        \let\currentconstructionlist\currentconstructiontitle
      \fi
-     \glet\currentconstructioncoding\s!xml
+     \let\currentconstructioncoding\s!xml
    \else
      \ifx\currentconstructionexpansion\v!yes
        \edef\currentconstructiontitle        {\constructionparameter\c!title}%
@@ -1236,7 +1238,9 @@
        \edef\currentconstructionlist         {\constructionparameter\c!list}%
        \edef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
        \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-         \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
+         \ifconditional\c_strc_tags_enabled
+           \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
+         \fi
        \fi \fi
      \else
        \edef\currentconstructiontitle        {\detokenizedconstructionparameter\c!title}%
@@ -1245,7 +1249,9 @@
        \edef\currentconstructionlist         {\detokenizedconstructionparameter\c!list}%
        \edef\currentconstructionreferencetext{\detokenizedconstructionparameter\c!referencetext}%
        \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-         \edef\currentconstructionbookmark{\prerolltostring{\constructionparameter\c!title}}%
+         \ifconditional\c_strc_tags_enabled
+           \edef\currentconstructionbookmark{\prerolltostring{\constructionparameter\c!title}}%
+         \fi
        \fi \fi
      \fi
      \ifempty\currentconstructionlist

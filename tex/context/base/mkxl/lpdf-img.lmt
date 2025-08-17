@@ -303,7 +303,7 @@ do
     local pngtomask      = pngdecode.tomask
     local pngmakemask    = pngdecode.makemask
 
-    local filtermask, decodemask, decodestrip, transpose, expand, tocmyk
+    local createmask, filtermask, decodemask, decodestrip, transpose, expand, tocmyk
 
     local newindex = lua.newindex
     local newtable = lua.newtable

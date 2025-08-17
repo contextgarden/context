@@ -130,13 +130,13 @@ end -- end of namespace closure
 
 local nsremap, resolvens = xml.xmlns, xml.resolvens
 
-local stack, level, top, at, xmlnms, errorstr
+local stack, level, top, at, xmlns, errorstr
 local entities, parameters
 local strip, utfize, resolve, cleanup, resolve_predefined, unify_predefined
 local dcache, hcache, acache
 local mt, dt, nt
 local currentfilename, currentline, linenumbers
-
+local reported_at_errors
 local grammar_parsed_text_one
 local grammar_parsed_text_two
 local grammar_unparsed_text

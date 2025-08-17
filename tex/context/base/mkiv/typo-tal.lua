@@ -136,7 +136,6 @@ local function setcharacteralign(column,separator,before,after)
             signs      = validsigns,
         }
         datasets[column] = dataset
-        used = true
     end
     return dataset
 end

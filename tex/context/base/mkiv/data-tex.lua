@@ -163,8 +163,7 @@ local function textopener(tag,filename,filehandle,coding)
             if trace_locating then
                 report_tex("%a closer: %a closed",tag,filename)
             end
-            handler = nil
-            lines   = nil
+            lines = nil
         end,
         reader      = function(self)
             self = self or handler

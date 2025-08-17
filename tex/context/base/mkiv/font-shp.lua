@@ -169,7 +169,7 @@ local function loadoutlines(cache,filename,sub,instance)
     local size = attr and attr.size or 0
     local time = attr and attr.modification or 0
     local sub  = tonumber(sub)
-
+    local data = nil
     -- fonts.formats
 
     if size > 0 and (kind == "otf" or kind == "ttf" or kind == "tcc") then

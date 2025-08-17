@@ -2789,7 +2789,8 @@
 \appendtoks
     \permanent\def\prerolltostring#1%
       {\beginlocalcontrol
-       \setbox\b_syst_boxes\hbox{\expand\everypreroll#1}%
+       % hbox can fails when we have vskips (mail to list)
+       \setbox\b_syst_boxes\vpack{\expand\everypreroll#1}%
        \expanded
          {\setbox\b_syst_boxes\emptybox
           \endlocalcontrol

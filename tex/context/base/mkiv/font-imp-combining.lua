@@ -92,6 +92,8 @@ end
 
 -- see analyzeprocessor in case we want scripts
 
+local sorter = false
+
 local function reorder(head)
     if count == 2 then
         local first = slide[1]

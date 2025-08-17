@@ -1373,6 +1373,8 @@ extern void tex_forced_define      (int g, halfword p, singleword flag, singlewo
 extern void tex_word_define        (int g, halfword p, halfword w);
 /*     void tex_forced_word_define (int g, halfword p, singleword flag, halfword w); */
 
+extern int  tex_overload_permitted (halfword flags);
+
 /*tex
 
     The |*_par| macros expand to the variables that are (in most cases) also accessible at the users

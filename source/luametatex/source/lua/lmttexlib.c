@@ -737,6 +737,11 @@ static int texlib_isprintable(lua_State* L)
     return 1;
 }
 
+static int texlib_overloadpermitted(lua_State* L)
+{
+    return tex_overload_permitted(lua_tointeger(L, 1));
+}
+
 /*tex We actually don't need to copy and could read from the string. */
 
 int lmt_cstring_input(halfword *result, int *cattable, int *partial, int *finalline)
@@ -7023,6 +7028,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "tprint",                       texlib_tprint                         },
     { "cprint",                       texlib_cprint                         },
     { "isprintable",                  texlib_isprintable                    },
+    { "overloadpermitted",            texlib_overloadpermitted              },
     { "pushlocal",                    texlib_pushlocal                      },
     { "poplocal",                     texlib_poplocal                       },
     { "runlocal",                     texlib_runlocal                       },

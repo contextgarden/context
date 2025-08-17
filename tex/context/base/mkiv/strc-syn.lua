@@ -261,10 +261,11 @@ function synonyms.finalize(data,options) -- mostly the same as registers so we w
     local lasttag  = nil
     local lasttag  = nil
     local nofdone  = 0
+    local done     = nil
     for k=1,#result do
         local entry = result[k]
         local first, tag = firstofsplit(entry)
-        if tag ~= lasttag then
+        if tag ~= lasttag or not done then
          -- if trace_registers then
          --     report_registers("splitting at %a",tag)
          -- end

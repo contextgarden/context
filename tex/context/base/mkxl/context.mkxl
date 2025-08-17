@@ -56,7 +56,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \permanent\edef\contextformat {\jobname}
-\permanent\edef\contextversion{2025.08.13 16:31}
+\permanent\edef\contextversion{2025.08.17 17:53}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error
@@ -689,6 +689,10 @@
 % \overloadmode\zerocount % for now
 
 % \ifcsname\endcsname\fi % make sure that we reset it
+
+\prependtoks
+    \ctxlua{lua.protectglobal()}% can also be done at the lua end
+\to \everyjob
 
 \prependtoks
     \overloadmode\plusthree

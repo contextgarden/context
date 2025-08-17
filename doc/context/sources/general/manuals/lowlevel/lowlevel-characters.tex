@@ -239,10 +239,210 @@ Where are the spaces?
 
 \typebuffer
 
-The \type {hccode} tells the machinery that the underscore is a valid word
+The \type {\hccode} tells the machinery that the underscore is a valid word
 separator (think compound words).
 
 \start \getbuffer \stop
+
+\stopsectionlevel
+
+\startsectionlevel[title=Casing]
+
+We started by mentioning that \TEX\ was primarily made and used for typesetting
+English although quickly other Latin scripts were supported. As long as a
+language uses a script that fits nicely in a few hundred characters we're okay.
+Of course mixing scripts and languages is more demanding, but Latin, Cyrillic and
+Greek were no problem.
+
+A characteristic of western languages and these scripts is that there is a mix of
+upper and lowercase characters. Now, in most cases the input has the right usage
+of casing so there is little for \TEX\ to worry about. However, in the
+traditional approach every character has a so called \type {\lccode} and \type
+{\uccode}. These are used to map from upper- to lowercase or reverse and the
+lowercase code, when set, is also a signal that controls hyphenation. In \LUATEX\
+and \LUAMETATEX\ that role is taken over by the \type {\hccode}.
+
+Good old \TEX\ has two primitives that deal with case swapping.
+
+\startbuffer
+\lowercase{Don't get fooled!}
+\uppercase{Don't get fooled!}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+This does what one expects:
+
+\startlines
+\getbuffer
+\stoplines
+
+So, what do you expect here?
+
+\startbuffer
+\edef\fooled{\lowercase{Don't get fooled!}}\meaning\fooled
+\edef\fooled{\uppercase{Don't get fooled!}}\meaning\fooled
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+And here?
+
+\startbuffer
+\lowercase{\edef\fooled{Don't get fooled!}}\meaning\fooled
+\uppercase{\edef\fooled{Don't get fooled!}}\meaning\fooled
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+These primitives are non-expandable but act on a token list when interpretation
+takes place.
+
+\startbuffer
+\begingroup
+    \lowercase{\edefcsname fooled\endcsname{Guess}}
+    \meaningfull\fooled
+    \meaningfull\FOOLED
+\endgroup
+\begingroup
+    \uppercase{\edefcsname fooled\endcsname{Guess}}
+    \meaningfull\fooled
+    \meaningfull\FOOLED
+\endgroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+It will be clear that using these primitives in a situation where you want
+expansion you really need to make sure that in getting there no side effects take
+place. Instead of these primitives, that we keep around for compatibility
+reasons, you can better use the converters that \CONTEXT\ provides. Even these
+are probably of little used when typesetting is your main focus, because when
+case mapping of various kind is needed there are high level mechanism for just
+that.
+
+\startbuffer
+\edef\fooled{\utflower{Don't get fooled!}}\meaning\fooled
+\edef\fooled{\utfupper{Don't get fooled!}}\meaning\fooled
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+It will be clear that in an \UNICODE\ environment there is more than an English
+alphabet involved. The primitive case mapping as well as the \CONTEXT\ variants
+use of course \UNICODE\ specified mapping but the last two macros are just
+wrappers around a lot more character related properties.
+
+In \MKII\ we supported various encodings and each came with a case mapping. We
+gradually moved to \UTF8 and for instance hyphenation patterns came in that
+format so that they could easily be shared. \footnote {This was reason for Arthur
+and Mojca to start the hyphenation project that resulted in \UTF\ patterns being
+that standard now. It's a nice example of prototyping and exploring in \CONTEXT\
+and applying it to a wider audience.}
+
+When we started in 2005 with a follow up a major change in approach to dealing
+with characters between \MKII\ and \MKIV\ was that we could get rid of, if really
+needed, remapping at the \TEX\ end. We delegate much to \LUA\ which also has the
+advantage that we operate on the text as intended, possibly resulting from
+generated input. This means that right from the start we had support for
+\UNICODE, although of course that standard also evolved over time. Some was
+driven by specific user need: for the oriental \TEX\ project we needed
+bidirectional interpretation, for some scripts we needed (de)composition, we
+needed sorting, tracing, special purpose conversions, etc. \footnote {If
+manipulation of character properties in the \TEX\ language is your hobby, maybe
+\MKII\ is a better choice as it pretty much belongs to that period.}
+
+Most of this is rather stable and as it has been present from the start and it
+hasn't been touched much, although we do keep up with \UNICODE. But one has to
+keep in mind that much is about control and user input and demand so we can
+deviate from what is considered \quote {standard}: we target typesetting, not
+programming and text manipulation! We keep most (not all) information in the
+\type {char-def.lua} file and actually although it gets adapted to \UNICODE\
+updates (for which of course we use a script) it hasn't changed much, apart from
+an update with respect to math classes and such when we upgraded the math engine.
+It can be an interesting read.
+
+That said: if users want some more explanations or low level examples, just let
+us know and we will add them here (or to the low level manual that makes sense).
+
+% amcode     active math
+% hccode     hyphenation control
+% hmcode     math discretionary
+% lccode     lower case
+% uccode     upper case
+% sfcode     space factor
+% cccode     classification
+% catcode    command category
+% delcode    math delimiter
+% mathcode   math character
+
+\stopsectionlevel
+
+\startsectionlevel[title=Specials]
+
+Traditionally \TEX\ has a few specially interpreted characters. Most noticeably
+the backslash starts a control sequence. Any programming languages has some
+escape and this the one that \TEX\ uses. Of course any character can be an escape
+character.
+
+The dollar is well known for bounding inline math. A pair of dollars wraps
+display math. In \CONTEXT\ you can use the dollars but double ones act as single ones
+and trigger inline display style math. In practice one will use \type {\im {...}} and \type {\dm {...}}
+and for display math \typ {\startformula} and \typ {\stopformula}.
+
+The ampersand is, unlike in other macro packages, just that and not a table cell
+separator. The circumflex character is also just that. However, in math upto four
+are used for super scripts (pre, post and index) while the underscore(s) handle
+the subscripts. The single quote is in math signaling a prime (multiple primes
+are supported).
+
+The end of line character(s) are in fact spaces unless configured to be obeyed,
+what can be the case when you use \typ {\startlines} and \typ {\stoplines} or
+display verbatim.
+
+The tilde is normally active and equivalent to a \type {\nbsp} character. In
+\CONTEXT\ it as an \type {\amcode} set so that it will never expand in for
+instance an \type {\edef} like situation. The hash mark is used to signal a
+parameter in a macro body and is followed by a (hexadecimal) digit. They get
+duplicated in nested macro definitions. The percent sign starts comment that then
+runs till the end of the line.
+
+Hyphens are also special, as they can become a discretionary (hyphenation point),
+or when entered double or triple can become an en- of emdash, either or not with
+similar hyphenation behavior (think compound words).
+
+Quotation and explanation marks and some punctuation like periods, commas, colons
+and semicolons can get different spacing depending on the \type {\sfcode}. Here
+\quote {french spacing} is the buzzword.
+
+In \CONTEXT\ the vertical bar has always been an active character used for
+compound word marks and other word bounding characters. They come in pairs where
+the second one is a delimiter of a possible argument. In math it behaves as
+normal bar, although bars in math are sort special too. In fact, all characters
+in math get a treatment depending on what they represent. More about that
+can be read in the math manual.
+
+The various spacing characters in \UNICODE\ are interpreted but normally can't be
+seen in an editor. Instead one can use commands. {\em todo: list them here}
+
+Of course all can be changed to ones need but be careful and aware of interferences,
+especially when loading code that assumes otherwise.
 
 \stopsectionlevel
 

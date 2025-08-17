@@ -77,7 +77,7 @@ function metapost.showglyph(specification)
                     (all or options[v_box])     and f_in_red   (metapost.boundingbox(glyph,factor)) or "",
                     (all or options[v_width])   and f_in_green (metapost.widthline(glyph,factor)) or "",
                     (all or options[v_min])     and f_in_blue  (metapost.zeroline(glyph,factor)) or "",
-                    (all or options[v_max])     and f_setbounds(metapost.maxbounds(data,index,factor),offset or 1) or "",
+                    (all or options[v_max])     and f_setbounds(metapost.maxbounds(shapedata,index,factor),offset or 1) or "",
                     (all or options[v_comment]) and f_comment  (what,1) or "",
                 })
                 if alternative == v_page then

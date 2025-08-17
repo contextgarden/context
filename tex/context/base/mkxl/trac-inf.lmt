@@ -427,7 +427,6 @@ function statistics.showusage(when)
             for k, v in sortedhash(h) do
                 if v ~= 0 then
                     report("  hyphenation state     : %-10s  %7i",k,v)
-                    done = true
                 end
             end
      -- end

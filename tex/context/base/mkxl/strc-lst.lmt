@@ -436,7 +436,7 @@ end
 
 local enhanced = { }
 
-local synchronizepage = function(r)  -- bah ... will move
+local function synchronizepage(r)  -- bah ... will move
     synchronizepage = references.synchronizepage
     return synchronizepage(r)
 end

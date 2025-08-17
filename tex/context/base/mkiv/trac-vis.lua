@@ -927,7 +927,7 @@ local ruledglyph do
 
 end
 
-local ruledglue do
+local ruledglue, ruledspace do
 
     local gluecodes             = nodes.gluecodes
 

@@ -13,7 +13,7 @@ local tables     = utilities.tables
 local format, gmatch, gsub, sub = string.format, string.gmatch, string.gsub, string.sub
 local concat, insert, remove, sort = table.concat, table.insert, table.remove, table.sort
 local setmetatable, getmetatable, tonumber, tostring, rawget = setmetatable, getmetatable, tonumber, tostring, rawget
-local type, next, rawset, tonumber, tostring, load, select = type, next, rawset, tonumber, tostring, load, select
+local type, next, rawset, rawget, tonumber, tostring, load, select = type, next, rawset, rawget, tonumber, tostring, load, select
 local lpegmatch, P, Cs, Cc = lpeg.match, lpeg.P, lpeg.Cs, lpeg.Cc
 local sortedkeys, sortedpairs = table.sortedkeys, table.sortedpairs
 local formatters = string.formatters
@@ -980,7 +980,7 @@ end
 --     end
 -- end
 
-function combine(target,source)
+local function combine(target,source)
     -- no copy so if that is needed one needs to deepcopy source first
     if target then
         for k, v in next, source do
@@ -1018,4 +1018,37 @@ table.combine = combine
 --         end
 --     end
 --     return result
+-- end
+
+-- can be a helper
+
+-- function table.identify(t)
+--     local size = #t
+--     if size > 0 then
+--         local count  = 0
+--         local simple = true
+--         for k, v in next, t do
+--             if type(k) ~= "number" then
+--                 count = -1
+--                 break
+--             end
+--             count = count + 1
+--             if simple and type(v) == "table" then
+--                 simple = false
+--             end
+--         end
+--         if rawget(t,0) then
+--             return
+--                 (size == count - 1) and size,
+--                 true,
+--                 simple
+--         else
+--             return
+--                 (size == count) and size,
+--                 false,
+--                 simple
+--         end
+--     else
+--         return false, false, false
+--     end
 -- end

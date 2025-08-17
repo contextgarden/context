@@ -443,8 +443,8 @@ function mp.lmt_contours_start()
 
     end
 
-    minz = data[1][1]
-    maxz = minz
+    local minz = data[1][1]
+    local maxz = minz
 
     for i=1,nx do
         local d = data[i]
@@ -1867,8 +1867,8 @@ local f_color = formatters [ [[
   -- end
      %s
      return function(f,z)
-         brightness_factor = f
-         function_value    = z
+         local brightness_factor = f
+         local function_value    = z
          return %s
      end
 ]] ]

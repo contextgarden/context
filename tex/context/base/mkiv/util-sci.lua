@@ -18,10 +18,7 @@ utilities.scite = scite
 local report = logs.reporter("scite")
 
 do
---     local lexerroot = "c:/data/system/scite/wscite/context/lexers"
---     if not lexerroot then
-        lexerroot = file.dirname(resolvers.findfile("scite-context-lexer.lua"))
---     end
+    local lexerroot = file.dirname(resolvers.findfile("scite-context-lexer.lua"))
     if lfs.isdir(lexerroot) then
     -- pushluapath
         package.extraluapath(lexerroot)
@@ -59,6 +56,8 @@ local knownlexers  = {
  -- todo: pat/hyp ori
 }
 
+-- use context loader instead of require
+
 lexers = nil -- main lexer, global (for the moment needed for themes)
 
 local function loadscitelexer()
@@ -69,7 +68,6 @@ local function loadscitelexer()
             (lexers.disablewordcheck or lexers.context.disablewordcheck)()
         end
     end
-    return lexer
 end
 
 local loadedlexers = setmetatableindex(function(t,k)

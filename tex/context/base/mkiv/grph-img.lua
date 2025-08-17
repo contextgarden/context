@@ -257,6 +257,7 @@ do
         end
         local xres         = 0
         local yres         = 0
+        local units        = 1
         local orientation  = 1
         local okay         = false
         local filesize     = f:getsize() -- seek end

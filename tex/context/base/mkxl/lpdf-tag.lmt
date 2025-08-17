@@ -136,7 +136,6 @@ local getprev             = nuts.getprev
 local getnext             = nuts.getnext
 local getlist             = nuts.getlist
 local getchar             = nuts.getchar
-local getwhd              = nuts.getwhd
 local getleader           = nuts.getleader
 local getlanguage         = nuts.getlanguage
 local getruledimensions   = nuts.getruledimensions
@@ -148,8 +147,9 @@ local setlist             = nuts.setlist
 local copy_node           = nuts.copy
 local tosequence          = nuts.tosequence
 
-local nextnode            = nuts.traversers.node
-local nextcontent         = nuts.traversers.content
+----- nextnode            = nuts.traversers.node
+----- nextcontent         = nuts.traversers.content
+local nextpossible        = nuts.traversers.possible
 
 local structure_kids   -- delayed
 local structure_ref    -- delayed
@@ -181,48 +181,6 @@ local destinations        = { }
 local references          = { }
 
 local pdffallback <const> = "Artifact"
-
-structurestags.states = {
-    -- weird or obsolete
-    ["Caption"]          = "useless",
-    ["H"]                = "obsolete",
-    -- useless and confusing
-    ["Art"]              = "useless",
-    -- useless and obsolete
-    ["TOC"]              = "obsolete",
-    ["TOCI"]             = "obsolete",
-    ["BlockQuote"]       = "obsolete",
-    ["Quote"]            = "obsolete",
-    ["Part"]             = "useless",
- -- ["Private"]          = true,
-    ["Document"]         = "internal",
-    ["DocumentFragment"] = "useless",
-    -- useless and irrelevant
-    ["Form"]             = "useless",
-    -- internal
-    ["Artifact"]         = "internal",
-    -- internal
-    ["Annot"]            = "internal",
-    ["Link"]             = "internal",
-    ["Reference"]        = "internal",
-    --
-    ["BibEntry"]         = "useless",
-    ["FENote"]           = "useless",
-    ["Note"]             = "useless",
-    ["Index"]            = "useless",
-    ["Title"]            = "useless",
-}
-
-structurestags.groups = {
-    list    = { "L", "LI", "LBody" },
-    table   = { "Table", "THead", "TFoot", "TBody", "TR", "TD", "TH" },
-    ruby    = { "Ruby", "RB", "RP", "RT" },
-    warichu = { "Warichu", "WP", "WT" },
-    general = { "Hn", "Aside", "Code", "Figure", "Formula", "Hn", "Sect", "Sub" },
-    neutral = { "NonStruct", "Div", "Span", "P", "Private", "Artifact" },
-    tricky  = { "FEnote", "BlockQuote" },
-    styling = { "Em", "Strong" },
-}
 
 structurestags.where = {
     -- only in 1.7
@@ -659,7 +617,7 @@ local function checknamespace(tagname,tagnameused,detail,specification)
             end
         end
     end
-    ns = directmapping[tagnameused]
+    local ns = directmapping[tagnameused]
     if ns then
         if warnedmapping[tagnameused] then
             local p = problems[pagenum]
@@ -711,102 +669,102 @@ local function finishstructure()
             end
         end
 
-if isrolemapped then
+        if isrolemapped then
 
-        local usedrolemap    = nil
-        local usednamespaces = nil
-        local originals      = { }
-        if version == 1 or forcerolemap then
-            for k, v in next, usedmapping do
-                local k = usedlabels[k] or k
-                local p = properties[k]
-                if p then
-                    local pdf = p.pdf
-                    if not pdf then
-                        pdf = missingua[pdf]
-                    end
-                    local r = pdfconstant(pdf)
-                    if usedrolemap then
-                        usedrolemap[k] = r
-                    else
-                        usedrolemap = pdfdictionary { [k] = r }
-                    end
-                else
-                    report("beware: missing property %s", k)
-                end
-            end
-        end
-        if version > 1 then
-            for k, v in next, usedmapping do
-                local k = usedlabels[k] or k
-                local p = properties[k]
-                if p then
-                    local s = p.namespace
-                    local n = namespaces[s]
-                    if n then
+            local usedrolemap    = nil
+            local usednamespaces = nil
+            local originals      = { }
+            if version == 1 or forcerolemap then
+                for k, v in next, usedmapping do
+                    local k = usedlabels[k] or k
+                    local p = properties[k]
+                    if p then
                         local pdf = p.pdf
                         if not pdf then
                             pdf = missingua[pdf]
                         end
-                        if not usednamespaces then
-                            usednamespaces = pdfarray()
+                        local r = pdfconstant(pdf)
+                        if usedrolemap then
+                            usedrolemap[k] = r
+                        else
+                            usedrolemap = pdfdictionary { [k] = r }
                         end
-                        local original = p.original
-                        if original then
-                            local o = originals[s]
-                            if not o then
-                                o = pdfdictionary()
-                                originals[s] = o
-                            end
-                            o[k] = pdfdictionary {
-                                S = pdfconstant(original[1]),
-                             -- T = pdfstring(original[2]),
-                                T = pdfunicode(original[2]),
-                            }
-                        end
-                        --
                     else
-                        report("beware: missing namespace %s", s)
+                        report("beware: missing property %s", k)
                     end
-                else
-                    report("beware: missing property %s", k)
                 end
             end
-            if usednamespaces then
-                for k, v in sortedhash(namespaces) do
-                    local o = originals[k]
-                    if o then
-                        o = pdfreference(pdfflushobject(o))
-                    end
-                    if v.force then
-                        local n = pdfdictionary {
-                            Type           = pdfconstant("Namespace"),
-                            NS             = pdfunicode(v.url),
-                            LMTX_NameSpace = pdfconstant(k),
-                            LMTX_Originals = o,
-                        }
-                        pdfflushobject(v.num,n)
-                        usednamespaces[#usednamespaces+1] = v.ref
+            if version > 1 then
+                for k, v in next, usedmapping do
+                    local k = usedlabels[k] or k
+                    local p = properties[k]
+                    if p then
+                        local s = p.namespace
+                        local n = namespaces[s]
+                        if n then
+                            local pdf = p.pdf
+                            if not pdf then
+                                pdf = missingua[pdf]
+                            end
+                            if not usednamespaces then
+                                usednamespaces = pdfarray()
+                            end
+                            local original = p.original
+                            if original then
+                                local o = originals[s]
+                                if not o then
+                                    o = pdfdictionary()
+                                    originals[s] = o
+                                end
+                                o[k] = pdfdictionary {
+                                    S = pdfconstant(original[1]),
+                                 -- T = pdfstring(original[2]),
+                                    T = pdfunicode(original[2]),
+                                }
+                            end
+                            --
+                        else
+                            report("beware: missing namespace %s", s)
+                        end
                     else
-                        local map = v.map
-                        if map and next(map) then
-                            local m = pdfreference(pdfflushobject(pdfdictionary(map)))
+                        report("beware: missing property %s", k)
+                    end
+                end
+                if usednamespaces then
+                    for k, v in sortedhash(namespaces) do
+                        local o = originals[k]
+                        if o then
+                            o = pdfreference(pdfflushobject(o))
+                        end
+                        if v.force then
                             local n = pdfdictionary {
                                 Type           = pdfconstant("Namespace"),
                                 NS             = pdfunicode(v.url),
-                                RoleMapNS      = m,
                                 LMTX_NameSpace = pdfconstant(k),
                                 LMTX_Originals = o,
                             }
                             pdfflushobject(v.num,n)
                             usednamespaces[#usednamespaces+1] = v.ref
+                        else
+                            local map = v.map
+                            if map and next(map) then
+                                local m = pdfreference(pdfflushobject(pdfdictionary(map)))
+                                local n = pdfdictionary {
+                                    Type           = pdfconstant("Namespace"),
+                                    NS             = pdfunicode(v.url),
+                                    RoleMapNS      = m,
+                                    LMTX_NameSpace = pdfconstant(k),
+                                    LMTX_Originals = o,
+                                }
+                                pdfflushobject(v.num,n)
+                                usednamespaces[#usednamespaces+1] = v.ref
+                            end
                         end
                     end
                 end
             end
-        end
 
-end
+        end
 
         -- we can split the loop: with and without links
 
@@ -999,7 +957,10 @@ lpdf.registerdocumentfinalizer(finishstructure,"document structure")
 
 -- pagenum has been moved up
 
-local index, pageref, list = 0, nil, nil
+local index      = 0
+local pageref    = nil
+local list       = nil
+local namespaced = false
 
 local pdf_mcr            = pdfconstant("MCR")
 local pdf_struct_element = pdfconstant("StructElem")
@@ -1194,8 +1155,9 @@ local makeelement  do
 
         function blobfunctions.math(tagname,specification)
             local tagindex = specification.tagindex
-            local id = f_tagid(tagindex)
-            local blob = specification.blob
+            local id       = f_tagid(tagindex)
+            local blob     = specification.blob
+            local af       = nil
             if blob then
                 local blobindex = mathematics.getblobindex("pdf",blob)
                 if blobindex then
@@ -1228,7 +1190,7 @@ local makeelement  do
                         shared[blobindex] = { af, blobindex }
                         btags[blob] = blobindex
                     end
-                    actualtext = mathematics.gettextblob("pdf",specification.language or "en",blob)
+                    local actualtext = mathematics.gettextblob("pdf",specification.language or "en",blob)
                     if actualtext then
                         if trace_blobs then
                             actualtexts[blob] = { index and true or false, blobindex, actualtext }
@@ -1330,7 +1292,8 @@ local makeelement  do
             if detail then
                 local dataset, tag = match(detail,"^(.+)::(.+)$")
                 local index = shared[tag]
-                local id = f_tagid(tag)
+                local id    = f_tagid(tag)
+                local af    = nil
                 if index then
                     af = index[1]
                     btags[tag] = index[2]
@@ -1423,6 +1386,7 @@ local makeelement  do
                 end
                 local index = shared[tag]
                 local id    = f_tagid(detail,tag)
+                local af    = nil
                 if index then
                     af = index[1]
                     btags[tag] = index[2]
@@ -1580,6 +1544,7 @@ local makeelement  do
         usedmapping[tagname] = true
         --
         local af         = nil
+        local id         = nil
         local actualtext = nil
         --
         if embeddedtags[tagname] then
@@ -1596,25 +1561,23 @@ elseif tagname == "synonym" then
 end
         --
 
-    if isrolemapped then
-
-        if version > 1 then
-            if namespace then
-                namespace = namespaces[namespace].ref or nil
-            else
-                local p = properties[tagname]
-                if p then
-                    namespace = namespaces[p.namespace].ref or nil
+        if isrolemapped then
+            if version > 1 then
+                if namespace then
+                    namespace = namespaces[namespace].ref or nil
                 else
-                    namespace = nil
-                    -- do we need a fallback like:
-                 -- namespace = "user"
-                 -- properties[tagname] = { namespace = namespace, pdf = "Span", nature = "inline" }
+                    local p = properties[tagname]
+                    if p then
+                        namespace = namespaces[p.namespace].ref or nil
+                    else
+                        namespace = nil
+                        -- do we need a fallback like:
+                     -- namespace = "user"
+                     -- properties[tagname] = { namespace = namespace, pdf = "Span", nature = "inline" }
+                    end
                 end
             end
         end
-
-end
 
         local kids      = pdfarray()
         local tag       = usedlabels[tagnameused] or tagnameused
@@ -1838,109 +1801,84 @@ stoptag()
     local lastpar   = 0
     local lastparat = 0
 
+    -- most are glyphs and lists anyway adn those take time
+
     local function collectranges(head,parent)
-        for n, id, subtype in nextnode, head do
+     -- for n, id, subtype in nextnode, head do
+     -- for n, id, subtype, list in nextcontent, head do
+        for n, id, subtype, list in nextpossible, head do
          -- check(n,id)
             if id == glyph_code then
-             -- if getchar(n) ~= 0 then
-                    local at, blob, ap = getattrs(n,a_tagged,a_mathblob,a_taggedpar)
-                    if at == 0 then
-                        at = false
-                    elseif at == 1 then
-                        at = false
-                    elseif at then
-                        --
-                    else
-                        at = false
-                    end
-                 -- if detailedmath then
-                 --     -- skip
-                 -- elseif blob then
-                 --     if blob == mblob then
-                 --         ranges[nofranges] = range
-                 --         last = at
-                 --     else
-                 --         mblob = blob
-                 --     end
-                 -- else
-                 --     mblob = false
-                 -- end
-                 -- if last ~= at then
-                 --     range = { at, ap or 0, "glyph", n, n, parent, blob } -- attr id start stop list
-                 --     nofranges = nofranges + 1
-                 --     ranges[nofranges] = range
-                 --     last = at
-                 -- elseif range then
-                 --     range[5] = n -- stop
-                 -- end
-                    if not blob then
-                        mblob = false
-                        if last ~= at then
-                            range = { at, ap or 0, "glyph", n, n, parent } -- attr id start stop list
+                -- we no longer intercept char 0 here
+                local at, blob, ap = getattrs(n,a_tagged,a_mathblob,a_taggedpar)
+                if at == 0 then
+                    at = false
+                elseif at == 1 then
+                    at = false
+                elseif at then
+                    --
+                else
+                    at = false
+                end
+                -- no check for detailed math, see archive (2025-07)
+                if not blob then
+                    mblob = false
+                    if last ~= at then
+                        range = { at, ap or 0, "glyph", n, n, parent } -- attr id start stop list
+                        nofranges = nofranges + 1
+                        ranges[nofranges] = range
+                        last = at
+                        lastparat = at
+                        lastpar = ap
+                    elseif range then
+                        if lastpar ~= ap and at and lastparat == at then
+                         -- local specification = taglist[at]
+                            pushtag(at < tag_document_level and tag_document_level or at)
+                            local ac = starttag("break")
+                            stoptag()
+                            poptag()
+                            range = { ac, ap or 0, "break", n, false }
+                            nofranges = nofranges + 1
+                            ranges[nofranges] = range
+                            lastpar = ap
+                            range = { at, ap or 0, "glyph", n, n, parent } -- , false, false, ap } -- attr id start stop list
                             nofranges = nofranges + 1
                             ranges[nofranges] = range
                             last = at
                             lastparat = at
-                            lastpar = ap
-                        elseif range then
-                            if lastpar ~= ap and at and lastparat == at then
-                             -- local specification = taglist[at]
-                                pushtag(at < tag_document_level and tag_document_level or at)
-                                local ac = starttag("break")
-                                stoptag()
-                                poptag()
-                                range = { ac, ap or 0, "break", n, false }
-                                nofranges = nofranges + 1
-                                ranges[nofranges] = range
-                                lastpar = ap
-                                range = { at, ap or 0, "glyph", n, n, parent } -- , false, false, ap } -- attr id start stop list
-                                nofranges = nofranges + 1
-                                ranges[nofranges] = range
-                                last = at
-                                lastparat = at
-                            else
-                                range[5] = n -- stop
-                            end
-                        end
-                    elseif blob == mblob and (last and last > 0) then
-                        if range then
+                        else
                             range[5] = n -- stop
                         end
-                        last = at
-                    else
-                        mblob = blob
-                     -- if last ~= at then
-                            local a = ablob[blob]
-                            if not a then
-                                a = tag_document_level
-                                if at then
-                                    local t = taglist[at].taglist
-                                 -- for i=#t,1,-1 do
-                                 --     local s = specifications[t[i]]
-                                 --     if s.tagname == "math" then
-                                 --         a = s.attribute
-                                 --     end
-                                 -- end
-                                 -- we could store the index in specifications but we only need it once
-                                    for i=1,#t do
-                                        local s = specifications[t[i]]
-                                        if s.tagname == "math" then
-                                            a = s.attribute
-                                            break
-                                        end
-                                    end
-                                end
-                                ablob[blob] = a
-                            end
-                            range = { a, ap or 0, "math", n, n, parent, blob } -- attr id start stop list
-                            nofranges = nofranges + 1
-                            ranges[nofranges] = range
-                            last = at
-                     -- elseif range then
-                     --     range[5] = n -- stop
-                     -- end
                     end
-             -- end
+                elseif blob == mblob and (last and last > 0) then
+                    if range then
+                        range[5] = n -- stop
+                    end
+                    last = at
+                else
+                    mblob = blob
+                    local a = ablob[blob]
+                    if not a then
+                        a = tag_document_level
+                        if at then
+                            local t = taglist[at].taglist
+                            -- no check for simple math, see archive (2025-07)
+                            -- we could store the index in specifications but we only need it once
+                            for i=1,#t do
+                                local s = specifications[t[i]]
+                                if s.tagname == "math" then
+                                    a = s.attribute
+                                    break
+                                end
+                            end
+                        end
+                        ablob[blob] = a
+                    end
+                    range = { a, ap or 0, "math", n, n, parent, blob } -- attr id start stop list
+                    nofranges = nofranges + 1
+                    ranges[nofranges] = range
+                    last = at
+                end
             elseif id == hlist_code or id == vlist_code then
                 local at, img = getattrs(n,a_tagged,a_image)
                 -- todo: img id 3 == mp
@@ -1951,17 +1889,6 @@ stoptag()
                     ranges[nofranges] = range
                     last = tag_image_state
                     mblob = false
-                    --
-                    -- TODO, plugin
-                    --
-                 -- local specification = taglist[at] -- todo: img attr
-                 -- if specification and specification.tagname == "mpgraphic" then
-                 --     local list = getlist(n)
-                 --     if list then
-                 --         collectranges(list,n)
-                 --     end
-                 -- end
-                    --
                 elseif at == 0 then
                     range = { false, false, "ignore", n, n, parent } -- attr id start stop list
                     nofranges = nofranges + 1
@@ -2014,7 +1941,7 @@ stoptag()
                             destinations[d] = true -- ac
                         end
                     end
-                    local list = getlist(n)
+                 -- local list = getlist(n)
                     if list then
                         collectranges(list,n)
                     end
@@ -2023,12 +1950,13 @@ stoptag()
          --     -- can't happen
             elseif id == glue_code then
                 if subtype >= leaders_code then
-                    local leader = getleader(n)
-                    if leader then
-                        collectranges(leader,n)
+                 -- local list = getleader(n)
+                    if list then
+                        collectranges(list,n)
                     end
                 end
             elseif id == rule_code then
+                -- This is nasty: struts are also changing the state!
                 if subtype == empty_rule_code then
                     -- skip
                 else
@@ -2174,7 +2102,6 @@ stoptag()
         local start = range[4]
         local stop  = range[5]
         local list  = range[6]
--- inspect(range)
         if attr == 0 then -- should be false then
             local literal = setstate(makeignore(false,range))
             inject(start,stop,list,literal)
@@ -2367,16 +2294,14 @@ function codeinjections.settaggingsupport(option)
             end
             permitted = false
         end
-isrolemapped = false
+        isrolemapped = false
     else
-isrolemapped = true
+        isrolemapped = true
     end
 end
 
 do
 
-    local states = structurestags.states
-    local groups = structurestags.groups
     local where  = structurestags.where
     local modes  = structurestags.modes
 
@@ -2581,11 +2506,11 @@ do
 PDF tags best as possible given the constraints. It can result in a degradation
 of the original document structure. The authors take no responsonility for that.]]
 
-    function settaggingcomment(str)
+    local function settaggingcomment(str)
         comment = type(str) == "string" and str or nil
     end
 
-    function settaggingoption(str)
+    local function settaggingoption(str)
         local o = utilities.parsers.settings_to_hash(str)
         if o.interaction then
             handlelinks = true
@@ -2593,30 +2518,26 @@ of the original document structure. The authors take no responsonility for that.
     end
 
     function lpdf.gettaggingstatus()
-
-if isrolemapped then
-
-        if enabled then
-            local disclaimer = pdfunicode(disclaimer)
-            local comment    = comment and pdfunicode(comment)
-            if #profiles > 0 then
-                return {
-                    origin     = "additional basic or user maping",
-                    disclaimer = disclaimer,
-                    comment    = comment,
-                    profiles   = profiles,
-                }
-            else
-                return {
-                    origin     = "only build in default mapping",
-                    disclaimer = pdfunicode(disclaimer),
-                    comment    = comment,
-                }
+        if isrolemapped then
+            if enabled then
+                local disclaimer = pdfunicode(disclaimer)
+                local comment    = comment and pdfunicode(comment)
+                if #profiles > 0 then
+                    return {
+                        origin     = "additional basic or user maping",
+                        disclaimer = disclaimer,
+                        comment    = comment,
+                        profiles   = profiles,
+                    }
+                else
+                    return {
+                        origin     = "only build in default mapping",
+                        disclaimer = pdfunicode(disclaimer),
+                        comment    = comment,
+                    }
+                end
             end
         end
-
-end
-
     end
 
     -- this should be a proper codeinjections:

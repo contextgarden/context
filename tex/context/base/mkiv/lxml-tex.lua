@@ -324,6 +324,8 @@ function lxml.stopraw()
     forceraw = false
 end
 
+local rawroot = nil
+
 function lxml.rawroot()
     return rawroot
 end
@@ -1054,9 +1056,9 @@ local function sprint(root,p) -- check rawroot usage
                 root = xmldespecialized(xmltostring(root))
                 lpegmatch(xmltextcapture,root) -- goes to toc
             else
-if setfilename and p then -- and not root.cl
-    syncfilename(p,"sprint t")
-end
+                if setfilename and p then -- and not root.cl
+                    syncfilename(p,"sprint t")
+                end
                 xmlserialize(root,xmltexhandler)
             end
         end

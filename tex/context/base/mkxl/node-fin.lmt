@@ -136,7 +136,7 @@ end
 
 local nsdata, nsnone, nslistwise, nsforced, nsselector
 local current, current_selector = 0, 0 -- nb, stack has a local current !
-local nsbegin, nsend, nsreset
+local nsbegin, nsend, nsreset, nsstep, nspush, nspop
 
 function states.initialize(namespace,attribute,head)
     nsdata           = namespace.data

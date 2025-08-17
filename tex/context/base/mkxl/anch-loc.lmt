@@ -493,10 +493,10 @@ do
     registerscript("anchorspan", function()
         local l = valid(scanstring(),scaninteger(),scaninteger())
         local r = valid(scanstring(),scaninteger(),scaninteger())
-        local llx, lly, urx, ury, lb, ub
+        local llx, lly, urx, ury
         if l and r then
-            lb  = l[7]
-            rb  = r[7]
+            local lb = l[7]
+            local rb = r[7]
             llx = min((l[1]        ),(r[1]        )) * bpfactor
             lly = min((l[2] - lb[3]),(r[2] - rb[3])) * bpfactor
             urx = max((l[1] + lb[1]),(r[1] + rb[1])) * bpfactor

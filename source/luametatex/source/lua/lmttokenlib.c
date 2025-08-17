@@ -3723,6 +3723,8 @@ static int tokenlib_setlua(lua_State *L)
                 } else {
                     tex_define(flags, cs, lua_call_cmd, funct);
                 }
+                lua_pushinteger(L, flags);
+                return 1;
             }
         }
     }

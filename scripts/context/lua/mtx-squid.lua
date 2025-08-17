@@ -323,11 +323,15 @@ function scripts.squid.signal()
 end
 
 function scripts.squid.text()
-    local text = string.upper(environment.files[1] or "")
+    local text  = string.upper(environment.files[1] or "")
+    local delay = tonumber(arguments.delay) or .2
+    local pause = tonumber(arguments.pause) or delay/2
     send("ar")
     for c in string.gmatch(text,".") do
         send("tf"..c)
-        ossleep(tonumber(arguments.delay) or .2)
+        ossleep(delay)
+        send("ar")
+        ossleep(pause)
     end
     ossleep(1)
     send("ar")

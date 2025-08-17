@@ -411,13 +411,13 @@ function visualizers.registerescapeline(name,befores,normalmethod,escapemethod,p
         if type(processors) ~= "table" then processors = { processors } end
         for i=1,#befores do
             local before    = befores[i]
+            local after     = space_pattern * P("\n")
             local processor = processors[i]
+            local action    = nil
             if trace_visualize then
                 report_visualizers("registering escape line pattern, name %a, before %a, after <<newline>>",name,before)
             end
             before = P(before) * space_pattern
-            after = space_pattern * P("\n")
-            local action
             if processor then
                 action = function(s) apply_processor(processor,s) end
             else

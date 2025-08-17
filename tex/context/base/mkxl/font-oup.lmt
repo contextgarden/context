@@ -24,7 +24,7 @@ local report_optimizations = logs.reporter("otf reader","merges")
 local report_unicodes      = logs.reporter("otf reader","unicodes")
 
 local trace_markwidth      = false  trackers.register("otf.markwidth",     function(v) trace_markwidth     = v end)
-local trace_cleanup        = false  trackers.register("otf.cleanups",      function(v) trace_cleanups      = v end)
+local trace_cleanup        = false  trackers.register("otf.cleanups",      function(v) trace_cleanup       = v end)
 local trace_optimizations  = false  trackers.register("otf.optimizations", function(v) trace_optimizations = v end)
 local trace_unicodes       = false  trackers.register("otf.unicodes",      function(v) trace_unicodes      = v end)
 

@@ -42,6 +42,8 @@ local helpinfo = [[
     <example><command>mtxrun --script grep --pattern=module --first *.mkiv</command></example>
     <example><command>mtxrun --script grep --pattern=module --nocomment *.mkiv</command></example>
     <example><command>mtxrun --script grep --pattern=module --n=10 *.mkiv</command></example>
+    <example><command>mtxrun --script grep framed **.tex</command></example>
+    <example><command>mtxrun --script grep framed **.tex --count</command></example>
    </subcategory>
   </category>
  </examples>

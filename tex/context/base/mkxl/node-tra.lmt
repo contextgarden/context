@@ -777,7 +777,7 @@ local patchattributes = nuts.patchattributes
 
 local texgetattribute = tex.getattribute
 
-function recolor(head,colormodel,color,transparency)
+local function recolor(head,colormodel,color,transparency)
     -- todo loop over content
     for n, id in nextnode, head do
         if id == glyph_code or id == rule_code then

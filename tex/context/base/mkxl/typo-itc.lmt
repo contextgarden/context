@@ -637,7 +637,7 @@ function italics.handler(head)
     end
 end
 
-local enabletext = function()
+local function enabletext()
     if enable then
         enable()
     end
@@ -648,7 +648,7 @@ local enabletext = function()
     textokay   = true
 end
 
-local enablemath = function()
+local function enablemath()
     if enable then
         enable()
     end

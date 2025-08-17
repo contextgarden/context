@@ -39,8 +39,9 @@ local setaction     = nodes.tasks.setaction
 
 -- scale = multiplier + ef/multiplier
 
-local trace_both    = false  trackers.register("builders.paragraphs.expansion.both",    function(v) trace_verbose = false trace_both  = v end)
-local trace_verbose = false  trackers.register("builders.paragraphs.expansion.verbose", function(v) trace_verbose = v     trace_color = v end)
+local trace_verbose = false
+
+trackers.register("builders.paragraphs.expansion.verbose", function(v) trace_verbose = v end)
 
 local report_verbose = logs.reporter("fonts","expansion")
 
@@ -137,4 +138,4 @@ local function set(v)
 end
 
 trackers.register("builders.paragraphs.expansion.verbose",set)
-trackers.register("builders.paragraphs.expansion.both",set)
+trackers.register("builders.paragraphs.expansion.both",   set)

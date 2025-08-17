@@ -299,6 +299,7 @@ local checkmarks         = false
 local spaces             = false
 
 local sweepnode          = nil
+local sweeptype          = nil
 local sweephead          = { } -- we don't nil entries but false them (no collection and such)
 
 local notmatchpre        = { } -- to be checked: can we use false instead of nil / what if a == b tests

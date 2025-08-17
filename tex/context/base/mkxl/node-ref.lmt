@@ -507,8 +507,8 @@ local colorize, justadd do
             n = 0
         end
         u_transparency = u_transparency or transparencies.register(nil,2,.65)
-        local ucolor = u_colors[n]
-        if not ucolor then
+        local u_color = u_colors[n]
+        if not u_color then
             if n == 1 then
                 u_color = register_color(nil,'rgb',.75,0,0)
             elseif n == 2 then

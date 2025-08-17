@@ -1126,6 +1126,7 @@ do
         end
      -- report("checking width %p, height %p, depth %p, slot (%i,%i)",boxwidth,boxheight,boxdepth,c,r)
         local nr = ceil(boxheight/(lineheight+linedepth))
+        local nc = 0
         --
         local action = methods[method]
         local cfound = false

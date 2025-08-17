@@ -577,7 +577,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
 
--- original size: 9604, stripped down to: 6394
+-- original size: 9700, stripped down to: 6452
 
 if not modules then modules={} end modules ['l-sandbox']={
  version=1.001,
@@ -735,12 +735,6 @@ function require(name)
   return requiem(name)
  end
 end
-function blockrequire(name,lib)
- if trace then
-  report("preventing reload of: %s",name)
- end
- blocked[name]=lib or _G[name] or false
-end
 function sandbox.enable()
  if not sandboxed then
   debug={
@@ -800,10 +794,19 @@ function sandbox.enable()
   sandboxed=true
  end
 end
-blockrequire("lfs",lfs)
-blockrequire("io",io)
-blockrequire("os",os)
-blockrequire("ffi",ffi)
+do
+ local function blockrequire(name,lib)
+  if trace then
+   report("preventing reload of: %s",name)
+  end
+  blocked[name]=lib or _G[name] or false
+ end
+ blockrequire("lfs",lfs)
+ blockrequire("io",io)
+ blockrequire("os",os)
+ blockrequire("ffi",ffi)
+ sandbox.blockrequire=blockrequire
+end
 local function supported(library)
  local l=_G[library]
  return l
@@ -7672,7 +7675,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 34169, stripped down to: 18433
+-- original size: 35024, stripped down to: 18453
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7687,7 +7690,7 @@ local tables=utilities.tables
 local format,gmatch,gsub,sub=string.format,string.gmatch,string.gsub,string.sub
 local concat,insert,remove,sort=table.concat,table.insert,table.remove,table.sort
 local setmetatable,getmetatable,tonumber,tostring,rawget=setmetatable,getmetatable,tonumber,tostring,rawget
-local type,next,rawset,tonumber,tostring,load,select=type,next,rawset,tonumber,tostring,load,select
+local type,next,rawset,rawget,tonumber,tostring,load,select=type,next,rawset,rawget,tonumber,tostring,load,select
 local lpegmatch,P,Cs,Cc=lpeg.match,lpeg.P,lpeg.Cs,lpeg.Cc
 local sortedkeys,sortedpairs=table.sortedkeys,table.sortedpairs
 local formatters=string.formatters
@@ -8408,7 +8411,7 @@ function table.ordered(t)
   return function() end
  end
 end
-function combine(target,source)
+local function combine(target,source)
  if target then
   for k,v in next,source do
    if type(v)=="table" then
@@ -16829,7 +16832,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-tab"] = package.loaded["lxml-tab"] or true
 
--- original size: 62833, stripped down to: 36542
+-- original size: 62856, stripped down to: 36566
 
 if not modules then modules={} end modules ['lxml-tab']={
  version=1.001,
@@ -16870,12 +16873,13 @@ function xml.resolvens(url)
 end
 end
 local nsremap,resolvens=xml.xmlns,xml.resolvens
-local stack,level,top,at,xmlnms,errorstr
+local stack,level,top,at,xmlns,errorstr
 local entities,parameters
 local strip,utfize,resolve,cleanup,resolve_predefined,unify_predefined
 local dcache,hcache,acache
 local mt,dt,nt
 local currentfilename,currentline,linenumbers
+local reported_at_errors
 local grammar_parsed_text_one
 local grammar_parsed_text_two
 local grammar_unparsed_text
@@ -20638,7 +20642,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 11096, stripped down to: 7702
+-- original size: 11118, stripped down to: 7721
 
 if not modules then modules={} end modules ['lxml-xml']={
  version=1.001,
@@ -20742,6 +20746,7 @@ local function raw(collected)
   return ""
  end
 end
+local result=false
 local xmltexthandler=xmlnewhandlers {
  name="string",
  initialize=function()
@@ -26965,8 +26970,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1077744
--- stripped bytes    : 429381
+-- original bytes    : 1078740
+-- stripped bytes    : 430256
 
 -- end library merge
 

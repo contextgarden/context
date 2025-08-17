@@ -324,6 +324,7 @@ local nuts = {
     traverse                = d_traverse,
     traversechar            = direct.traversechar,
     traversecontent         = direct.traversecontent,
+    traversepossible        = direct.traversepossible,
     traverseglyph           = direct.traverseglyph,
     traverseid              = direct.traverseid,
     traverseitalic          = direct.traverseitalic,

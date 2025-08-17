@@ -1143,6 +1143,7 @@ local function analyzeregister(class,options)
         local entries    = { }
         local nofentries = 0
         local multiple   = false
+        local metadata   = false -- needs chcking
         for i=1,#list do
             if used[list[i]] then
                 multiple = true
@@ -1162,26 +1163,25 @@ local function analyzeregister(class,options)
             end
             if d then
                 local e = d.entries
---                 local u = u and { u.prefix } or nil
-local u = multiple and { string.formatters["%03i"](i) } or nil -- maybe prefix but then how about main
+             -- local u = u and { u.prefix } or nil
+                local u = multiple and { string.formatters["%03i"](i) } or nil -- maybe prefix but then how about main
                 for i=1,#e do
                     -- see has no pagedata
                     local ei = e[i]
                     local external = ei.external
-if multiple and ei.metadata.kind == "see" and external then
-    -- too messy, could be an option but useless
-else
-
-                    nofentries = nofentries + 1
-                    entries[nofentries] = ei
-                    if u then
-                        local eil = ei.list
-                        eil[#eil+1] = u
-if external then
-                        ei.external = l -- this is the (current) abstract tag, used for prefix
-end
+                    if multiple and ei.metadata.kind == "see" and external then
+                     -- too messy, could be an option but useless
+                    else
+                        nofentries = nofentries + 1
+                        entries[nofentries] = ei
+                        if u then
+                            local eil = ei.list
+                            eil[#eil+1] = u
+                            if external then
+                                ei.external = l -- this is the (current) abstract tag, used for prefix
+                            end
+                        end
                     end
-end
                 end
                 if not metadata then
                     metadata = d.metadata

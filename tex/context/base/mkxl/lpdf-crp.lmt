@@ -326,10 +326,10 @@ function lpdf.collectcontent(pdffile,options)
         -- interfering, introducing spaces if we would concatinate with a space.
         if not collected then
             -- error
-            print("no collected")
+         -- print("no collected")
         elseif not index then
             -- suspicious
-            print("no index")
+         -- print("no index")
         else
             local text = rawget(collected,index)
             if text then
@@ -368,10 +368,10 @@ function lpdf.collectcontent(pdffile,options)
                 local attributes  = kid.A or nothing
                 local realelement = kid.LMTX_S or element
                 local attribute   = kid.LMTX_A
--- only relevant when Pg
-collected = everything[page and page.number or 0]
--- print(realelement,element)
--- todo: level 1 rolemap based
+                -- only relevant when Pg
+                collected = everything[page and page.number or 0]
+                -- print(realelement,element)
+                -- todo: level 1 rolemap based
                 if not namespace then
                  -- inspect(kid)
                 elseif namespace.Type == "Namespace" then -- resolves so we can hash

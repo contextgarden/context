@@ -682,7 +682,7 @@ function xtables.reflow_width()
         end
     elseif nofwide > 0 then
         while true do
-            done = false
+            local done = false
             local available = (widetotal + delta) / nofwide
             if trace_xtable then
                 report_xtable("shrink check, total %p, delta %p, columns %s, fixed %p",widetotal,delta,nofwide,available)

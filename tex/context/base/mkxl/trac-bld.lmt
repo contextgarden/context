@@ -54,6 +54,7 @@ local count      = 0
 local forced     = { } -- we can combine forced and ignored but then we can't disable
 local ignored    = { } -- the callback easily
 local detail     = false
+local trace      = false
 local enabled    = false
 local ejecting   = false
 

@@ -747,7 +747,7 @@ tmry             = 1
 
     local width_factor = 72.27 / 72.0
 
-    local last_fpdf
+    local last_pdf
 
     local function set_font()
      -- if need_width and need_width ~= 0 then
@@ -3645,8 +3645,7 @@ do
     local function embedimage(specification)
         if specification then
             lastindex = lastindex + 1
-            index     = lastindex
-            specification.index = index
+            specification.index = lastindex
             local xobject = pdfdictionary { }
             if not specification.notype then
                 xobject.Type     = pdf_xobject
@@ -3702,7 +3701,7 @@ do
             specification.stream      = nil
             specification.attr        = nil
             specification.type        = specification.kind or specification.type or img_none
-            indices[index]            = specification -- better create a real specification
+            indices[lastindex]        = specification -- better create a real specification
             return specification
         end
     end

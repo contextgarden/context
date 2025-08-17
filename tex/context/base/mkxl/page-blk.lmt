@@ -71,8 +71,9 @@ implement {
 
 -- maybe intercept nesting with error
 
-local currentpreroll = false
-local prerolled = { }
+local currentpreroll  = false
+local currentrealpage = 0
+local prerolled       = { }
 
 implement {
     name      = "startprerollpageblock",

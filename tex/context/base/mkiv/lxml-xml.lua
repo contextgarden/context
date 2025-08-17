@@ -136,6 +136,8 @@ end
 
 --
 
+local result = false
+
 local xmltexthandler = xmlnewhandlers {
     name       = "string",
     initialize = function()

@@ -27,6 +27,9 @@ local settings_to_set   = utilities.parsers.settings_to_set
 
 local pattern           = C(utf8character^-1) * C(P(1)^0)
 
+local boolean_value <const> = tokens.values.boolean
+----- string_value  <const> = tokens.values.string
+
 implement {
     name      = "getfirstcharacter",
     arguments = "string",
@@ -247,10 +250,17 @@ implement { name = "texdefinition_two", actions = texdefinition_two, scope = "pr
 
 do
 
-    -- Quite probably we don't yet have characters loaded so we delay some
-    -- aliases.
+    -- These are old helpers from early mkiv and I['ll update them when checking the
+    -- cld manual which might result in a few more here and we now also avoid clf_
+    -- prefixing. In the end, very few users need to apply such low level helpers
+    -- because we operate at the typesetting level. Low level messing around with
+    -- e.g. casing (or any unicode/utf property for that matter) might as well be an
+    -- indication that you're doing something wrong.
 
-    local _lower_, _upper_, _strip_
+    -- Quite probably we don't yet have characters loaded so we delay some aliases
+    -- and redefine the mappers.
+
+    local _lower_, _upper_, _shape_, _strip_
 
     _lower_ = function(s)
         if characters and characters.lower then
@@ -268,6 +278,14 @@ do
         return string.upper(s)
     end
 
+    _shape_ = function(s)
+        if characters and characters.shape then
+            _shape_ = characters.shape
+            return _shape_(s)
+        end
+        return s
+    end
+
     _strip_ = function(s)
         -- or utf.strip
         if string.strip then
@@ -277,13 +295,43 @@ do
         return s
     end
 
-    local function lower(s) context(_lower_(s)) end
-    local function upper(s) context(_upper_(s)) end
-    local function strip(s) context(_strip_(s)) end
+ -- local function lower(s) context(_lower_(s)) end
+ -- local function upper(s) context(_upper_(s)) end
+ -- local function strip(s) context(_strip_(s)) end
 
-    implement { name = "upper", arguments = "string", actions = upper }
-    implement { name = "lower", arguments = "string", actions = lower }
-    implement { name = "strip", arguments = "string", actions = strip }
+ -- implement { name = "upper", arguments = "string", actions = upper }
+ -- implement { name = "lower", arguments = "string", actions = lower }
+ -- implement { name = "strip", arguments = "string", actions = strip }
+
+    implement {
+        name      = "utfupper",
+        public    = true,
+        arguments = "string",
+        actions   = function(s) context(_upper_(s)) end,
+    }
+
+    implement {
+        name      = "utflower",
+        public    = true,
+        arguments = "string",
+        actions   = function(s) context(_lower_(s)) end,
+    }
+
+    implement {
+        name      = "utfshape",
+        public    = true,
+        arguments = "string",
+        actions   = function(s) context(_shape_(s)) end,
+    }
+
+    implement {
+        name      = "utfstrip",
+        public    = true,
+        arguments = "string",
+        actions   = function(s) context(_strip_(s)) end,
+    }
+
+    -- what more ... depends on what users want but no requests so far
 
 end
 
@@ -383,8 +431,6 @@ context.firstoftwoarguments    = ctx_firstoftwoarguments
 context.secondoftwoarguments   = ctx_secondoftwoarguments
 context.firstofoneargument     = ctx_firstofoneargument
 context.gobbleoneargument      = ctx_gobbleoneargument
-
-local boolean_value <const> = tokens.values.boolean
 
 local hash = utilities.parsers.hashes.settings_to_set
 

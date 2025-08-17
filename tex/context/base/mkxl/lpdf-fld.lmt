@@ -335,6 +335,7 @@ local function fieldsurrounding(specification)
     local fontsize        = specification.fontsize or "12pt"
     local fontstyle       = specification.fontstyle or "rm"
     local fontalternative = specification.fontalternative or "tf"
+    local fontraise       = 0
     local colorvalue      = tonumber(specification.colorvalue)
     local s = fontnames[fontstyle]
     if not s then

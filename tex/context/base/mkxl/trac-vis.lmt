@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 
 local node, nodes, attributes, tex = node, nodes, attributes, tex
 local type, tonumber, next, rawget = type, tonumber, next, rawget
-local gmatch, gsub, sub = string.gmatch, string.gsub, string.sub
+local gmatch, sub = string.gmatch, string.sub
 local formatters = string.formatters
 local round = math.round
 
@@ -187,8 +187,9 @@ local
     l_glyph, l_discretionary, l_expansion, l_fontkern, l_italic, l_marginkern, l_space,
     l_math, l_mathkern, l_mathshape,
     l_dir, l_whatsit,
-    l_mark, l_insert, l_boundary
- -- l_user
+    l_mark, l_insert, l_boundary,
+ -- l_user,
+    l_mathshapekern, l_par
 
 local enabled = false
 local layers  = { }
@@ -568,7 +569,7 @@ function visualizers.registercache(name)
     return caches[name]
 end
 
-local fontkern, italiccorrection, marginkern, mathkern do
+local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
 
     local f_cache = caches["fontkern"]
     local i_cache = caches["italiccorrection"]
@@ -1246,7 +1247,7 @@ local ruledglyph do
 
 end
 
-local ruledglue, ruledmathglue do
+local ruledglue, ruledmathglue, ruledspace do
 
     local effectiveglue         = nuts.effectiveglue
     local iszeroglue            = nuts.iszeroglue
@@ -1455,6 +1456,8 @@ local ruledglue, ruledmathglue do
         return v
     end)
 
+    local gsub = string.gsub
+
     local temphack = setmetatableindex(function(t,k)
         local v = mathvalues[k]
         if v then
@@ -1573,7 +1576,7 @@ local ruledstrut do
                 end
                 if a then
                     local p = getprev(current)
-                    local b, e
+                    local b, e, rule
                     for n in traverseid(math_code,current) do
                         e = n
                         break

@@ -785,7 +785,7 @@ local function copy_glyph(main,target,original,unicode,slot)
         end
         local oldparts = olddata.parts
         if oldparts then
-            newparts = fastcopy(oldparts)
+            local newparts           = fastcopy(oldparts)
             newdata.parts            = newparts
             newdata.partsorientation = olddata.partsorientation
             newdata.partsitalic      = olddata.partsitalic
@@ -831,7 +831,9 @@ local noitalics = true -- false can be used to test the engine
 -- The following code is now only used for iwona and antykwa, so I simplified it a
 -- bit to suit that purpose. It might get even simpler.
 
-local integrals = setmetatableindex(function(t,k)
+local integrals = { } -- we want to overload
+
+setmetatableindex(integrals, function(t,k)
     integrals = tohash(mathematics.tweaks.subsets.integrals)
     return integrals[k]
 end)

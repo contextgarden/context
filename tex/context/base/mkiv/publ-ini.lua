@@ -1211,13 +1211,9 @@ do
                                 local author = getcasted(dataset,tag,field,specifications[btxspc])
                                 local kind   = type(author)
                                 if kind == "table" or kind == "string" then
-                                    if u then
-                                        u = listentry.entries.text -- hm
-                                    else
-                                        u = "0"
-                                    end
-                                    local year  = tonumber(entry.year) or 9999
-                                    local data  = { tag, year, u, i }
+                                    local text = listentry.entries.text or "0"
+                                    local year = tonumber(entry.year) or 9999
+                                    local data = { tag, year, text, i }
                                     -- authors
                                     local hash  = hasher(author)
                                     local found = authors[hash]
@@ -3639,3 +3635,8 @@ do
     }
 
 end
+
+-- Here we also predefine the global bibtex namespace. It will be populated
+-- when there is need for it.
+
+bibtex = { }

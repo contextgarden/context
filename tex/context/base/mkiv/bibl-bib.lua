@@ -742,7 +742,6 @@ if commands then
 
 end
 
-
 --~ local function test(sample)
 --~     local authors = splitauthors(sample)
 --~     print(table.serialize(authors))

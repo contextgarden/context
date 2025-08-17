@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-08-13 16:31
+-- merge date  : 2025-08-17 17:53
 
 do -- begin closure to overcome local limits and interference
 
@@ -24195,7 +24195,7 @@ local report_cleanup=logs.reporter("otf reader","cleanup")
 local report_optimizations=logs.reporter("otf reader","merges")
 local report_unicodes=logs.reporter("otf reader","unicodes")
 local trace_markwidth=false  trackers.register("otf.markwidth",function(v) trace_markwidth=v end)
-local trace_cleanup=false  trackers.register("otf.cleanups",function(v) trace_cleanups=v end)
+local trace_cleanup=false  trackers.register("otf.cleanups",function(v) trace_cleanup=v end)
 local trace_optimizations=false  trackers.register("otf.optimizations",function(v) trace_optimizations=v end)
 local trace_unicodes=false  trackers.register("otf.unicodes",function(v) trace_unicodes=v end)
 local readers=fonts.handlers.otf.readers
@@ -27686,6 +27686,7 @@ local threshold=0
 local checkmarks=false
 local spaces=false
 local sweepnode=nil
+local sweeptype=nil
 local sweephead={} 
 local notmatchpre={} 
 local notmatchpost={} 
@@ -37525,6 +37526,7 @@ local function loadoutlines(cache,filename,sub,instance)
  local size=attr and attr.size or 0
  local time=attr and attr.modification or 0
  local sub=tonumber(sub)
+ local data=nil
  if size>0 and (kind=="otf" or kind=="ttf" or kind=="tcc") then
   local hash=makehash(filename,sub,instance)
   data=containers.read(cache,hash)

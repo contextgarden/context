@@ -133,6 +133,10 @@ local flushrule
 local flushliteral
 local flushwhatsit
 local flushspace
+local flushsimplerule
+local flushspecialrule
+local pushleaderlevel
+local popleaderlevel
 
 -- make local
 
@@ -691,7 +695,7 @@ local dirstack = { }
 local anchors  = { }
 local befores  = setmetatableindex("table")
 local afters   = setmetatableindex("table")
-local stired   = false
+local stored   = false
 
 local function reset_directions()
     dirstack = { }
@@ -1453,7 +1457,7 @@ local boxh = pos_h
                                 local edge = cur_v + glueheight
                                 local ly   = 0
                                 if subtype == gleaders_code then
-                                    save_v = cur_v
+                                    local save_v = cur_v
                                     cur_v  = ref_v - shipbox_v - cur_v
                                     cur_v  = total * (cur_v / total)
                                     cur_v  = ref_v - shipbox_v - cur_v
@@ -1463,7 +1467,7 @@ local boxh = pos_h
                                     local lr = glueheight % total
                                     cur_v = cur_v + lr / 2
                                 elseif subtype == leaders_code then -- aleader
-                                    save_v = cur_v
+                                    local save_v = cur_v
                                     cur_v = top_edge + total * ((cur_v - top_edge) // total)
                                     if cur_v < save_v then
                                         cur_v = cur_v + total
@@ -1804,9 +1808,6 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
         pos_h       = pos_r == righttoleft_code and width or 0
 
     end
-
-    shipbox_ref_h = pos_h
-    shipbox_ref_v = pos_v
 
     details = {
         shippingmode  = smode, -- target

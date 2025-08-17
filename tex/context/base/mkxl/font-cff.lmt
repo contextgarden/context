@@ -2779,7 +2779,7 @@ do
 
     stopparsing = function(fontdata,data)
         stack        = { }
-        glyphs       = false
+     -- glyphs       = false
         result       = { }
         top          = 0
         locals       = false

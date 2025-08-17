@@ -16,7 +16,7 @@ local NC, NR = context.NC, context.NR
 local space, dontleavehmode, glyph, getvalue = context.space, context.dontleavehmode, context.glyph, context.getvalue
 local formatters = string.formatters
 
-function char(id,k)
+local function char(id,k)
     dontleavehmode()
     glyph(id,k)
 end

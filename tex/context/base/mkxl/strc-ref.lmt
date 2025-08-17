@@ -533,6 +533,7 @@ local function register_from_list(collected,derived,external,namestack)
     end
     local action = trace_external and
         function(s)
+local structure = references.structure
             if structure then
                 for i=1,#structure do
                     local si = structure[i]
@@ -577,6 +578,7 @@ local function register_from_list(collected,derived,external,namestack)
             if not derived_g[s] then
                 derived_g[s] = entry -- first wins
             end
+local structure = references.structure
             if structure then
                 for i=1,#structure do
                     local si = structure[i]
@@ -628,7 +630,7 @@ local function register_from_list(collected,derived,external,namestack)
 --                             else
 --                                 derived_c = nil
 --                             end
-                            structure = references.structure
+                            local structure = references.structure
                             if structure then
                                 structure = resolvers.jobs.namelist(structure,namestack)
                                 references.namestack = structure
@@ -2624,7 +2626,7 @@ end
 
 function genericfilters.number(data,what,prefixspec,numberspec)
     if data then
-        numberdata = lists.reordered(data) -- data.numberdata
+        local numberdata = lists.reordered(data) -- data.numberdata
         if numberdata then
             helpers.prefix(data,prefixspec)
             sections.typesetnumber(numberdata,"number",numberspec,numberdata)

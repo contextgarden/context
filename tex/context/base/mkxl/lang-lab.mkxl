@@ -194,8 +194,11 @@
    \fi
    \grabuntil{stop#1text}\lang_labels_text_prefix_start_indeed}
 
+% \def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
+%   {\edefcsname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\clf_strip{#1}}\empty}}
+
 \def\lang_labels_text_prefix_start_indeed#1% text (not special checking done here yet, only for long texts anyway)
-  {\edefcsname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\clf_strip{#1}}\empty}}
+  {\edefcsname\??label\currenttextprefixclass:\currenttextprefixtag:\currenttextprefixname\endcsname{{\utfstrip{#1}}\empty}}
 
 \tolerant\def\lang_labels_text_prefix_setup[#1]#*[#2]%
   {\ifarguments\or

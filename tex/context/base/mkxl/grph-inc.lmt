@@ -128,7 +128,7 @@ local ctx_doboxfigureobject        = context.doboxfigureobject
 
 -- extensions
 
-function checkimage(figure)
+local function checkimage(figure)
     if figure then
         local width  = figure.width or 0
         local height = figure.height or 0

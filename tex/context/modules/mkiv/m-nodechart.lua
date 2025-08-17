@@ -115,7 +115,7 @@ local function flow_nodes_to_chart(specification)
             if components then
                 commands.flow_set_connection("rl","",tostring(components))
                 commands.flow_stop_cell()
-                n = flow_nodes_to_chart { head = components, comment = "component",x = x+2, y = y-1 }
+                flow_nodes_to_chart { head = components, comment = "component",x = x+2, y = y-1 }
             else
                 commands.flow_stop_cell()
             end
@@ -129,7 +129,7 @@ local function flow_nodes_to_chart(specification)
                 end
                 commands.flow_stop_cell()
                 if pre then
-                    n = flow_nodes_to_chart { head = pre, comment = "prebreak", x = x+1, y = y-1 }
+                    flow_nodes_to_chart { head = pre, comment = "prebreak", x = x+1, y = y-1 }
                 end
             else
                 if pre then
@@ -143,13 +143,13 @@ local function flow_nodes_to_chart(specification)
                 end
                 commands.flow_stop_cell()
                 if pre then
-                    n = flow_nodes_to_chart{ head = pre, comment = "prebreak", x = x+1, y = y-1 }
+                    flow_nodes_to_chart { head = pre, comment = "prebreak", x = x+1, y = y-1 }
                 end
                 if rep then
-                    n = flow_nodes_to_chart{ head = rep, comment = "replacement", x = x+3, y = y-1 }
+                    flow_nodes_to_chart { head = rep, comment = "replacement", x = x+3, y = y-1 }
                 end
                 if pos then
-                    n = flow_nodes_to_chart{ head = pos, comment = "postbreak", x = x+2, y = y-1 }
+                    flow_nodes_to_chart { head = pos, comment = "postbreak", x = x+2, y = y-1 }
                 end
             end
         elseif nodecode == "hlist" then
@@ -157,7 +157,7 @@ local function flow_nodes_to_chart(specification)
             if list then
                 commands.flow_set_connection("rl","",tostring(list))
                 commands.flow_stop_cell()
-                n = flow_nodes_to_chart { head = list, comment = "list", x = x+2, y = y-1 }
+                flow_nodes_to_chart { head = list, comment = "list", x = x+2, y = y-1 }
             else
                 commands.flow_stop_cell()
             end

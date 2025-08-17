@@ -19,7 +19,7 @@ local trace_result = false  trackers.register("potrace.results", function(v) tra
 
 local report = logs.reporter("metapost","potrace")
 
-local potracefromfile do -- this will move to another module
+local potracefromfile, potracefrompng do -- this will move to another module
 
     local newreader      = io.newreader
     local openstring     = utilities.streams.openstring

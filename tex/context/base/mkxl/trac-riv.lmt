@@ -123,8 +123,8 @@ local function analyze(line,max)
             -- progress
             position = width
             width    = position + wd
-            p = floor((position - margin)/step + 0.5)
-            w = floor((width    + margin)/step - 0.5)
+            local p = floor((position - margin)/step + 0.5)
+            local w = floor((width    + margin)/step - 0.5)
             if p < 0 then
                 p = 0
             end

@@ -1660,7 +1660,7 @@ end
 
 do
 
-    local enable = function()
+    local function enable()
         if trace_italics then
             report_italics("enabling math italics")
         end
@@ -1952,7 +1952,7 @@ setclass(parent,class)
         processnoads(head,numbers,"numbers")
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.numbers")
      -- if trace_numbers then
      --     report_numbers("enabling math numbers")
@@ -1972,7 +1972,7 @@ setclass(parent,class)
         processnoads(head,spacing,"spacing")
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.spacing")
      -- if trace_spacing then
      --     report_spacing("enabling math spacing")
@@ -1992,7 +1992,7 @@ setclass(parent,class)
         processnoads(head,fencing,"fencing")
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.fencing")
      -- if trace_fencing then
      --     report_fencing("enabling math fencing")
@@ -2153,12 +2153,12 @@ setchardict(pointer,properties,group,found)
         processnoads(head,collapse,"collapse")
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.collapse")
         if trace_collapsing then
             report_collapsing("enabling math collapsing")
         end
-        enable = false
+        enable = false -- already onlyonce
     end
 
     implement {
@@ -2489,6 +2489,8 @@ do
         [v_big]    = 2,
     }
 
+    local enabled = false
+
     function mathematics.setsnapping(s)
         if not enabled then
             enableaction("math","noads.handlers.snap")
@@ -2551,9 +2553,7 @@ end
 --         return attr
 --     end
 --
---     local enable
---
---     enable = function()
+--     local function enable()
 --         enableaction("math", "noads.handlers.domains")
 --         if trace_domains then
 --             report_domains("enabling math domains")

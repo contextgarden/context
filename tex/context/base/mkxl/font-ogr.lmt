@@ -93,7 +93,8 @@ do
         if method and shapes then
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
-            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes, props
+         -- local droppedin, tfmdrop, dropchars, dropdescs, colrshapes, props
+            local droppedin, tfmdrop, dropchars, colrshapes, props
             local idx  = 255
             local slot = 0
             -- sorted ?
@@ -109,7 +110,7 @@ do
                                 colrshapes = setmetatableindex({ },shapes)
                                 slot, droppedin, tfmdrop, props = dropins.provide(method,tfmdata,colrshapes)
                                 dropchars = tfmdrop.characters
-                                dropdescs = tfmdrop.descriptions
+                             -- dropdescs = tfmdrop.descriptions
                             else
                                 idx = idx + 1
                             end
@@ -122,7 +123,7 @@ do
                             setmetatableindex(c,v)
                             setmetatableindex(d,description)
                             dropchars[idx] = c
-                            dropdescs[idx] = d -- not needed
+                         -- dropdescs[idx] = d -- not needed
                         end
                     end
                 end
@@ -139,7 +140,7 @@ do
             local droppedin    = tfmdata.droppedin
             local tfmdrop      = tfmdata.tfmdrop
             local dropchars    = tfmdata.dropchars
-            local dropdescs    = tfmdata.dropdescs
+         -- local dropdescs    = tfmdata.dropdescs
             local colrshapes   = tfmdata.colrshapes
             local idx          = tfmdata.dropindex or 255
             local slot         = tfmdata.dropslot  or 0
@@ -154,7 +155,7 @@ do
                             colrshapes = setmetatableindex({ },shapes)
                             slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
                             dropchars = tfmdrop.characters
-                            dropdescs = tfmdrop.descriptions
+                         -- dropdescs = tfmdrop.descriptions
                         else
                             idx = idx + 1
                         end
@@ -167,14 +168,14 @@ do
                         setmetatableindex(c,v)
                         setmetatableindex(d,description)
                         dropchars[idx] = c
-                        dropdescs[idx] = d -- not needed
+                     -- dropdescs[idx] = d -- not needed
                     end
                 end
             end
             tfmdata.droppedin  = droppedin
             tfmdata.tfmdrop    = tfmdrop
             tfmdata.dropchars  = dropchars
-            tfmdata.dropdescs  = dropdescs
+         -- tfmdata.dropdescs  = dropdescs
             tfmdata.colrshapes = colrshapes
             tfmdata.dropindex  = idx
             tfmdata.dropslot   = slot
@@ -190,19 +191,19 @@ do
             local droppedin    = tfmdata.droppedin
             local tfmdrop      = tfmdata.tfmdrop
             local dropchars    = tfmdata.dropchars
---             local dropdescs    = tfmdata.dropdescs
+        --  local dropdescs    = tfmdata.dropdescs
             local colrshapes   = tfmdata.colrshapes
             local idx          = tfmdata.dropindex or 255
             local slot         = tfmdata.dropslot  or 0
             local character    = characters[unicode]
---             local description  = descriptions[unicode] or { }
+        --  local description  = descriptions[unicode] or { }
             if character then
                 if idx >= 255 then
                     idx = 1
                     colrshapes = setmetatableindex({ },shapes)
                     slot, droppedin, tfmdrop = dropins.provide(method,tfmdata,colrshapes)
                     dropchars = tfmdrop.characters
-                    dropdescs = tfmdrop.descriptions
+                 -- dropdescs = tfmdrop.descriptions
                 else
                     idx = idx + 1
                 end
@@ -211,16 +212,16 @@ do
                 character.commands = { slotcommand[slot][idx] }
                 -- hack to prevent that type 3 also gets 'use' flags .. todo
                 local c = { commands = false, index = idx, dropin = tfmdrop }
---                 local d = { } -- index = idx, dropin = tfmdrop }
+             -- local d = { } -- index = idx, dropin = tfmdrop }
                 setmetatableindex(c,character)
---                 setmetatableindex(d,description)
+             -- setmetatableindex(d,description)
                 dropchars[idx] = c
---                 dropdescs[idx] = d -- not needed
+             -- dropdescs[idx] = d -- not needed
             end
             tfmdata.droppedin  = droppedin
             tfmdata.tfmdrop    = tfmdrop
             tfmdata.dropchars  = dropchars
---             tfmdata.dropdescs  = dropdescs
+         -- tfmdata.dropdescs  = dropdescs
             tfmdata.colrshapes = colrshapes
             tfmdata.dropindex  = idx
             tfmdata.dropslot   = slot
@@ -508,7 +509,8 @@ local initializeoverlay  do
                 if colorvalues then
                     local characters   = tfmdata.characters
                     local descriptions = tfmdata.descriptions
-                    local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
+                 -- local droppedin, tfmdrop, dropchars, dropdescs, colrshapes
+                    local droppedin, tfmdrop, dropchars, colrshapes
                     local idx  = 255
                     local slot = 0
                     --
@@ -526,7 +528,7 @@ local initializeoverlay  do
                                         colrshapes = { }
                                         slot, droppedin, tfmdrop = fonts.dropins.provide("color",tfmdata,colrshapes,colorvalues)
                                         dropchars = tfmdrop.characters
-                                        dropdescs = tfmdrop.descriptions
+                                     -- dropdescs = tfmdrop.descriptions
                                     else
                                         idx = idx + 1
                                     end
@@ -549,7 +551,7 @@ local initializeoverlay  do
                                     setmetatableindex(c,v)
                                     setmetatableindex(d,description)
                                     dropchars[idx] = c
-                                    dropdescs[idx] = d -- not needed
+                                 -- dropdescs[idx] = d -- not needed
                                 end
                             end
                         end

@@ -1181,6 +1181,7 @@ local finishreference  do
     local checkmesh     = false
     local lastprerolled = false
     local lastmeshedup  = false
+    local lastmeshed    = false
     local lastrealpage  = 0
 
     local count = 0
@@ -1196,6 +1197,7 @@ local finishreference  do
             lastrealpage  = r
             lastprerolled = false
             lastmeshedup  = false
+            lastmeshed    = false
         end
         if prerolled == lastprerolled then
             if not more then
@@ -1265,6 +1267,7 @@ local finishreference  do
  --         lastrealpage  = r
  --         lastprerolled = false
  --         lastmeshedup  = false
+ --         lastmeshed    = false
  --     end
  --     if prerolled == lastprerolled then
  --         if not more then
@@ -1335,6 +1338,7 @@ local finishreference  do
             lastrealpage  = r
             lastprerolled = false
             lastmeshedup  = false
+            lastmeshed    = false
         end
         if prerolled == lastprerolled then
             if not more then
@@ -1934,7 +1938,7 @@ local function build(levels,start,parent,method,nested)
     local noflevels  = #levels
     local i = start
     local n = 0
-    local child, entry, m, prev, first, last, f, l
+    local child, entry, m, prev, first, last, f, l, realpage
     while i and i <= noflevels do
         local current = levels[i]
         if current.usedpage == false then

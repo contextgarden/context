@@ -55,7 +55,7 @@ local function collect(t, x, y, i, j, xx, yy)
     end
 end
 
-function longestcommon(first,second)
+local function longestcommon(first,second)
     local m = #first
     local n = #second
     local t = newindex(m)
@@ -140,6 +140,7 @@ local markers    = { }
 local list       = { }
 local collect    = false
 local mark       = false
+local special    = false
 
 collectors[v_character] = function(data,head)
     local unic = false

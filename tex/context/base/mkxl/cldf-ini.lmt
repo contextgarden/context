@@ -90,34 +90,24 @@ local texsprint         = tex.sprint    -- just appended (no space,eol treatment
 local texprint          = tex.print     -- each arg a separate line (not last in directlua)
 ----- texwrite          = tex.write     -- all 'space' and 'character'
 
--- In this stage we don't yet have nodes populated so we access the library directly ...
+-- In this stage we don't yet have nodes populated so we access the library
+-- directly ...
 
-local isnode            = node.isnode   or node.is_node
-local copynodelist      = node.copylist or node.copy_list
+local isnode            = node.isnode
+local copynodelist      = node.copylist
 local writenode         = node.write
 local tonut             = node.direct.todirect
 local tonode            = node.direct.tonode
 
 local newtoken          = token.new
------ createtoken       = token.create
+local istoken           = token.istoken
+local setluatoken       = token.setlua
 
-local istoken           = token.istoken or token.is_token
-local setluatoken       = token.setlua  or token.set_lua
+local isprintable       = tex.isprintable
+local overloadpermitted = tex.overloadpermitted
 
--- ... till here.
-
-local isprintable       = tex.isprintable or function(n)
-    return n and (type(n) == "string" or isnode(n) or istoken(n))
-end
-
-if tex.runlocal then
-    -- obselete names
-    tex.runtoks  = tex.runlocal
-    tex.quittoks = tex.quitlocal
-else
-    tex.runlocal  = tex.runtoks
-    tex.quitlocal = tex.quittoks
-end
+tex.runtoks             = tex.runlocal   -- obselete name
+tex.quittoks            = tex.quitlocal  -- obselete name
 
 local catcodenumbers    = catcodes.numbers
 
@@ -147,7 +137,7 @@ end
 
 context.trialtypesetting = function() return trialtypesetting() end -- can be aliased !
 
-local knownfunctions = (lua.getfunctionstable or lua.get_functions_table)(true)
+local knownfunctions = lua.getfunctionstable(true)
 local showstackusage = false
 
 trackers.register("context.stack",function(v) showstackusage = v end)
@@ -160,7 +150,7 @@ local usedstack = function()
     return nofused, noffreed
 end
 
-local flushfunction = function(slot,arg)
+local function flushfunction(slot,arg)
     if arg() or trialtypesetting() then
         -- keep
     else
@@ -170,7 +160,7 @@ local flushfunction = function(slot,arg)
     end
 end
 
-local storefunction = function(arg)
+local function storefunction(arg)
     local f = function(slot) flushfunction(slot,arg) end
     if noffreed > 0 then
         local n = freed[noffreed]
@@ -185,7 +175,7 @@ local storefunction = function(arg)
     end
 end
 
-local flushnode = function(slot,arg)
+local function flushnode(slot,arg)
     if trialtypesetting() then
         writenode(copynodelist(arg))
     else
@@ -196,7 +186,7 @@ local flushnode = function(slot,arg)
     end
 end
 
-local storenode = function(arg)
+local function storenode(arg)
     local f = function(slot) flushnode(slot,arg) end
     if noffreed > 0 then
         local n = freed[noffreed]
@@ -383,14 +373,42 @@ interfaces.namesofscanners = namesofscanners
 
 storage.register("interfaces/storedscanners", storedscanners, "interfaces.storedscanners")
 
+-- todo: bitmap
+
+-- always permanent but we can consider to obey permanent==false
+-- todo: make bitset instead of keys (nil is skipped anyway)
+
+local function toflags(specification)
+    local protected = (specification.protected and "protected") or (specification.semiprotected and "semiprotected")
+    local untraced  = specification.untraced and "untraced"
+    local noaligned = specification.noaligned and "noaligned"
+    local usage     = specification.usage
+    if usage == "value" then
+        return "global", "value", "permanent", "untraced", protected
+    elseif usage == "condition" then
+        return "global", "conditional", "permanent", "untraced", protected
+    elseif specification.frozen then
+        return "global", "frozen", untraced, protected
+    elseif specification.permanent == false or specification.onlyonce then -- for now onlyonce here
+        return "global", untraced, protected, semiprotected, noaligned
+    else
+        return "global", "permanent", untraced, protected, noaligned
+    end
+end
+
+local flagged = { }
+
 local function registerscanner(name,action,specification)
     rawset(interfacescanners,name,action)
-    local n = storedscanners[name]
-    n = registerfunction("interfaces.scanners."..name,true,n)
+    local n = registerfunction("interfaces.scanners."..name,true,storedscanners[name])
     storedscanners[name] = n
     namesofscanners[n] = name
     name = specification.public and name or (privatenamespace .. name)
-    setluatoken(name,n,"global",specification.protected and "protected" or "")
+ -- print(name,n,toflags(specification))
+    local flags = setluatoken(name,n,toflags(specification))
+    if flags then
+        flagged[n] = flags
+    end
 end
 
 interfaces.registerscanner = registerscanner
@@ -403,6 +421,12 @@ function interfaces.nameofscanner(slot)
     return namesofscanners[slot] or slot
 end
 
+callbacks.register("show_lua_call", function(what, slot)
+    local name = namesofscanners[slot]
+ -- return name and formatters["%s: \\%s, slot: %i"](what,name,slot) or ""
+    return name and formatters["%s \\%s"](what,name) or ""
+end, "provide lua call details")
+
 setmetatablenewindex(interfacescanners, function(t,k,v)
     report_cld("don't register scanner %a directly",k)
  -- registerscanner(k,v)
@@ -410,11 +434,43 @@ end)
 
 interfaces.scanners = storage.mark(interfacescanners)
 
+-- We have to make sure that functions don't get overloaded. This is unlikely to
+-- happen in \CONTEXT\ but we have to keep in mind that unknown code can be
+-- loaded. We still provide access but might drop that when abuse is noticed.
+--
+-- For the moment we don't check register, unregister and reserve but if that is
+-- also a security risk we might drop all access and replace the few times that
+-- it's used in \CONTEXT\ by more dedicated mechanisms.
+
+local warned = { }
+local strict = true -- false -- can become true when abused
+
+local onlyknownfunctions = setmetatable({ }, {
+    __index = function(t,k)
+        return knownfunctions[k]
+    end,
+    __newindex = function(t,k,v)
+        if not strict then
+            local f = flagged[k]
+            if not f then
+                knownfunctions[k] = b
+            elseif overloadpermitted(f) then
+                knownfunctions[k] = b
+            end
+        end
+        if not warned then
+            warned[k] = true
+            report_cld("don't assign function %a directly",k)
+        end
+    end,
+})
+
 context.functions = {
     register   = function(qualifiedname) return registerfunction(qualifiedname) end, -- only one argument
     unregister = unregisterfunction,
     reserve    = reservefunction,
-    known      = knownfunctions,
+ -- known      = knownfunctions,
+    known      = onlyknownfunctions,
     callonce   = callfunctiononce,
 }
 
@@ -1731,9 +1787,110 @@ do
 
     for i=1,#t do local k = t[i] modelevels[-k] = modelevels[k] end
 
+    local flagcodes = tex.getflagvalues()
+    tex.flagcodes   = table.swapped(flagcodes,flagcodes) -- utilities.storage.allocate()
+
 end
 
-function lua.registerglobal(k,v)
-    rawset(_G,k,v)
-    return v
+do
+
+    local rawset, rawget, setmetatable, type = rawset, rawget, setmetatable, type
+    local basename = file.basename
+
+    local report = logs.reporter("system")
+
+    local getdebuginfo = lua.getdebuginfo or function() end
+
+    local collected = setmetatableindex("table")
+
+    local exceptions = {
+        lexers = true, -- for scite
+    }
+
+    local function registerglobal(k,v,warn)
+        if exceptions[k] then
+            rawset(_G,k,v)
+            return
+        end
+        local current = rawget(_G,k)
+        local verdict = false
+        if current == v then
+            verdict = "value retained"
+        elseif current then
+            verdict = "overloading blocked"
+        else
+            rawset(_G,k,v)
+            if warn then
+                verdict = "might clash"
+            end
+        end
+        if verdict then
+            local name, source, line = getdebuginfo(true)
+            local detail = type(source) == "string" and type(line) == "number"
+            if collected then
+                local c = collected[k]
+                if detail then
+                    source = basename(source)
+                else
+                    source = "<unknown>"
+                    line   = 0
+                end
+                local s = c[source]
+                if not s then
+                    s = setmetatableindex("number")
+                    c[source] = s
+                end
+                s[line] = s[line] + 1
+            else
+                report()
+                if detail then
+                    report("global %a : %s : source %a, line %i",k,verdict,basename(source),line)
+                else
+                    report("global %a : %s",k,verdict)
+                end
+                report()
+            end
+        end
+    end
+
+    statistics.register("global variables", function()
+        if collected and next(collected) then
+            for name, files in table.sortedhash(collected) do
+                report()
+                report("global %a",name)
+                for file, lines in table.sortedhash(files) do
+                    local t = { }
+                    for line, count in table.sortedhash(lines) do
+                        t[#t+1] = line .. "=" .. count
+                    end
+                    report("  %s : % t",file,t)
+                end
+            end
+            report()
+        end
+    end)
+
+    function lua.protectglobal()
+        setmetatable(_G, {
+            __newindex = function(t,k,v)
+                registerglobal(k,v,true)
+            end
+        })
+    end
+
+    function lua.registerglobal(k,v)
+        registerglobal(k,v,false)
+        return v
+    end
+
+    local function protectmodule(name)
+        setmetatable(_G[name], {
+            __newindex = function(t,k)
+                report("module %a is protected, assignment %a is ignored",name,k)
+            end
+        })
+    end
+
+    protectmodule("string")
+
 end

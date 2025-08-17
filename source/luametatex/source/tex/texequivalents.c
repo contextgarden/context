@@ -1109,6 +1109,29 @@ int tex_define_permitted(halfword cs, halfword prefixes)
     return 1;
 }
 
+int tex_overload_permitted(halfword flags)
+{
+    halfword overload = overload_mode_par;
+    if (! overload || has_flag_bits(flags, mutable_flag_bit)) {
+        return 1;
+    } else if (is_overloaded(flags)) {
+        if (overload > 2 && has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit)) {
+            return tex_report_overload(flags, overload);
+        }
+    } else if (overload > 4) {
+        if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit | instance_flag_bit)) {
+            return tex_report_overload(flags, overload);
+        }
+    } else if (overload > 2) {
+        if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit)) {
+            return tex_report_overload(flags, overload);
+        }
+    } else if (has_flag_bits(flags, immutable_flag_bit)) {
+        return tex_report_overload(flags, overload);
+    }
+    return 1;
+}
+
 int tex_mutation_permitted(halfword cs)
 {
     halfword overload = overload_mode_par;

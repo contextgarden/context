@@ -266,7 +266,7 @@ function chemistry.define(name,spec,text)
     }
 end
 
-local metacode, variant, keys, max, txt, pstack, sstack, align
+local metacode, variant, keys, max, txt, stack, pstack, sstack, align
 local molecule = chemistry.molecule -- or use lpegmatch(chemistry.moleculeparser,...)
 
 local function fetch(txt)

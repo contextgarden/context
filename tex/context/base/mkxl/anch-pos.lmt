@@ -863,7 +863,7 @@ local nofpages   = nil
 
 -- beware ... we're not sparse here as lua will reserve slots for the nilled
 
-local getpos, gethpos, getvpos, getrpos
+local getpos, gethvrpos, gethpos, getvpos, getrpos
 
 function jobpositions.registerhandlers(t)
     getpos    = t and t.getpos    or function() return 0, 0 end
@@ -970,7 +970,7 @@ local function set(name,index,value) -- ,key
     -- officially there should have been a settobesaved
     local data = enhance(value or {})
     if value then
-        container = tobesaved[name]
+        local container = tobesaved[name]
         if not container then
             tobesaved[name] = {
                 [index] = data
@@ -989,7 +989,7 @@ local function setspec(specification)
     local value = specification.value
     local data  = enhance(value or {})
     if value then
-        container = tobesaved[name]
+        local container = tobesaved[name]
         if not container then
             tobesaved[name] = {
                 [index] = data

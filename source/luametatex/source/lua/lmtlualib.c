@@ -545,9 +545,10 @@ static int lualib_get_debug_info(lua_State *L)
 
 static int lualib_get_debug_info(lua_State *L) 
 {
-    if (! lua_isthread(L, 1)) {
+    if (! lua_isthread(L, 1)) { /* useless test */
         lua_Debug ar;
-        if (lua_getstack(L, 2, &ar) && lua_getinfo(L, "nS", &ar)) {
+        /* so with true we go one level up */
+        if (lua_getstack(L, lua_toboolean(L, 1) ? 3 : 2, &ar) && lua_getinfo(L, "nS", &ar)) {
             lua_pushstring(L, ar.name ? ar.name : (ar.namewhat ? ar.namewhat : (ar.what ? ar.what : "<unknown>")));
             lua_pushstring(L, ar.short_src);
             lua_pushinteger(L, ar.linedefined);

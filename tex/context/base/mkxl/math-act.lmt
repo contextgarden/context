@@ -2020,7 +2020,9 @@ do
             local yscale   = parameters.yscale  or 1
             local mwidth   = minus.width
             local mheight  = minus.height
+            local width    = 0
             local height   = (parameters.height  or 1) * mheight
+            local xshift   = 0
             local yshift   = (parameters.yoffset or 0) * mheight
             local loverlap = parameters.leftoverlap  or 0
             local roverlap = parameters.rightoverlap or 0

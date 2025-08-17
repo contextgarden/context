@@ -678,7 +678,7 @@ jobstructure.tobesaved  = root
 jobstructure.components = { }
 jobstructure.namestack  = { }
 
-function collectstructure(collected)
+local function collectstructure(collected)
     local namestack = { }
     local n         = 0
     local function collect(root,result,stack)

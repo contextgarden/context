@@ -1649,7 +1649,7 @@ do
         return true -- not needed
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.italics")
         if trace_italics then
             report_italics("enabling math italics")
@@ -1896,7 +1896,7 @@ do
         return true -- not needed
     end
 
-    local enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.collapse")
         if trace_collapsing then
             report_collapsing("enabling math collapsing")
@@ -2189,9 +2189,7 @@ do
         return attr
     end
 
-    local enable
-
-    enable = function()
+    local function enable()
         enableaction("math", "noads.handlers.domains")
         if trace_domains then
             report_domains("enabling math domains")

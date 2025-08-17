@@ -58,8 +58,8 @@ typesetters            = typesetters or { }
 local alignments       = { }
 typesetters.alignments = alignments
 
-local report_realign   = logs.reporter("typesetters","margindata")
-local trace_realign    = trackers.register("typesetters.margindata", function(v) trace_margindata = v end)
+local report_realign   = logs.reporter("typesetters","realign")
+local trace_realign    = trackers.register("typesetters.realign", function(v) trace_realign = v end)
 
 local nofrealigned     = 0
 

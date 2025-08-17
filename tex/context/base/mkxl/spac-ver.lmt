@@ -196,7 +196,10 @@ local splittopskip_code   <const> = gluecodes.splittopskip
 
 local linelist_code       <const> = nodes.listcodes.line
 
-local setvisual           = function(...) setvisual = nuts.setvisual return setvisual(...) end
+local function setvisual(...)
+    setvisual = nuts.setvisual
+    return setvisual(...)
+end
 
 local properties          = nodes.properties.data
 

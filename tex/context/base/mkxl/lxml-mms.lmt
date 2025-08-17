@@ -380,7 +380,7 @@ local prepare  do
 
 end
 
-local tomeaning, getlast  do
+local tomeaning  do
 
     -- we don't really need to handle mfenced
 
@@ -1135,14 +1135,10 @@ local tomeaning, getlast  do
                 xmlfixattributes(x)
                 buffers.assign(type(keep_last) == "string" and keep_last or "lastmms",tostring(x))
             else
-                lastxml = false
+                -- maybe wipe the buffer
             end
             return concat(t," ",1,n)
         end
-    end
-
-    getlast = function()
-        return lastxml or ""
     end
 
 end

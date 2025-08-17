@@ -466,7 +466,7 @@ function selectfont.registerfiles(index)
         if arguments and arguments ~= "" then
             local entries = settings_to_array(arguments)
             for index, entry in next, entries do
-                method, argument = lpegmatch(colon,entry)
+                local method, argument = lpegmatch(colon,entry)
                 if not argument then
                     argument = method
                     method   = "name"

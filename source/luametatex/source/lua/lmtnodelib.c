@@ -6738,15 +6738,17 @@ static int nodelib_aux_nil(lua_State *L)
 /* node.direct.traverseleader */
 /* node.direct.traverseitalic */
 /* node.direct.traversecontent */
+/* node.direct.traversepossible */
 
-# define traverse_usage        common_usage
-# define traverseid_usage      common_usage
-# define traversechar_usage    common_usage
-# define traverseglyph_usage   common_usage
-# define traverselist_usage    common_usage
-# define traverseleader_usage  common_usage
-# define traverseitalic_usage  common_usage
-# define traversecontent_usage common_usage
+# define traverse_usage         common_usage
+# define traverseid_usage       common_usage
+# define traversechar_usage     common_usage
+# define traverseglyph_usage    common_usage
+# define traverselist_usage     common_usage
+# define traverseleader_usage   common_usage
+# define traverseitalic_usage   common_usage
+# define traversecontent_usage  common_usage
+# define traversepossible_usage common_usage
 
 static int nodelib_direct_aux_next(lua_State *L)
 {
@@ -7371,6 +7373,74 @@ static int nodelib_direct_traversecontent(lua_State *L)
         }
     }
 }
+
+/* We might move this to the context specific optimizer module instead. */
+
+static int nodelib_direct_aux_next_possible(lua_State *L)
+{
+    halfword t;
+    halfword l = null;
+    if (lua_isnil(L, 2)) {
+        t = lmt_tohalfword(L, 1) ;
+        lua_settop(L, 1);
+    } else {
+        t = lmt_tohalfword(L, 2) ;
+        t = node_next(t);
+        lua_settop(L, 2);
+    }
+    while (t) {
+        switch (node_type(t)) {
+            case glyph_node:
+            case disc_node:
+            case rule_node:
+                goto FOUND;
+            case glue_node:
+                if (is_leader(t)) {
+                    l = glue_leader_ptr(t);
+                    goto FOUND;
+                } else {
+                    break;
+                }
+            case hlist_node:
+            case vlist_node:
+                l = box_list(t);
+                goto FOUND;
+        }
+        t = node_next(t);
+    }
+    lua_pushnil(L);
+    return 1;
+  FOUND:
+    lua_pushinteger(L, t);
+    lua_pushinteger(L, node_type(t));
+    lua_pushinteger(L, node_subtype(t));
+    if (l) {
+        nodelib_push_direct_or_nil(L, l);
+        return 4;
+    } else {
+        return 3;
+    }
+}
+
+static int nodelib_direct_traversepossible(lua_State *L)
+{
+    if (lua_isnil(L, 1)) {
+        lua_pushcclosure(L, nodelib_aux_nil, 0);
+        return 1;
+    } else {
+        halfword n = nodelib_valid_direct_from_index(L, 1);
+        if (n) {
+            lua_pushcclosure(L, nodelib_direct_aux_next_possible, 0);
+            lua_pushinteger(L, n);
+            lua_pushnil(L);
+            return 3;
+        } else {
+            lua_pushcclosure(L, nodelib_aux_nil, 0);
+            return 1;
+        }
+    }
+}
+
 
 /* node.traverse */
 /* node.traverseid */
@@ -11710,6 +11780,7 @@ static const usage_record usage_data[] = {
     { .name = "traverse",                .target = separate_usage_target, .usage = traverse_usage                },
     { .name = "traversechar",            .target = direct_usage_target,   .usage = traversechar_usage            },
     { .name = "traversecontent",         .target = direct_usage_target,   .usage = traversecontent_usage         },
+    { .name = "traversepossible",        .target = direct_usage_target,   .usage = traversepossible_usage        },
     { .name = "traverseglyph",           .target = direct_usage_target,   .usage = traverseglyph_usage           },
     { .name = "traverseid",              .target = separate_usage_target, .usage = traverseid_usage              },
     { .name = "traverseitalic",          .target = direct_usage_target,   .usage = traverseitalic_usage          },
@@ -12075,6 +12146,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "traverse",                nodelib_direct_traverse                },
     { "traversechar",            nodelib_direct_traversechar            },
     { "traversecontent",         nodelib_direct_traversecontent         },
+    { "traversepossible",        nodelib_direct_traversepossible        },
     { "traverseglyph",           nodelib_direct_traverseglyph           },
     { "traverseid",              nodelib_direct_traverseid              },
     { "traverseitalic",          nodelib_direct_traverseitalic          },

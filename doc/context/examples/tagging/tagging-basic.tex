@@ -35,16 +35,14 @@
 % ua2 tagging  : 198,652  uncompressed 688,203
 
 \setupbackend
-  [format=pdf/ua-2]
-
-% \setupbackend
-%   [level=0]
+  [%level=0,
+   format=pdf/ua-2]
 
 \setuptagging
   [state=start,
    preset=basic,
    option=interaction,
-   level=2,
+   level=3,
    comment={A document explaining a basic tagging setup}]
 
 \setuplayout

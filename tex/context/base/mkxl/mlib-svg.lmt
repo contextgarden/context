@@ -345,10 +345,10 @@ local percentage_r = 1/100
 local percentage_x = percentage_r
 local percentage_y = percentage_r
 
-local asnumber, asnumber_r, asnumber_x, asnumber_y, asnumber_vx, asnumber_vy
+local asnumber, asnumber_p, asnumber_r, asnumber_x, asnumber_y, asnumber_vx, asnumber_vy
 local asnumber_vx_t, asnumber_vy_t
 local p_number, p_separator, p_optseparator, p_numbers, p_fournumbers, p_path
-local p_number_n, p_number_x, p_number_vx, p_number_y, p_number_vy, p_number_r
+local p_number_n, p_number_p, p_number_u, p_number_x, p_number_vx, p_number_y, p_number_vy, p_number_r
 
 do
 
@@ -436,12 +436,12 @@ end
 -- local function hexcolor (c) return hexhash [c] end -- directly do hexhash [c]
 -- local function hexcolor3(c) return hexhash3[c] end -- directly do hexhash3[c]
 
-local colormap  = false
+local colormap = false
 
 local function prepared(t)
     if type(t) == "table" then
-        local mapping = t.mapping or { }
-        local mapper  = t.mapper
+        local mapping  = t.mapping or { }
+        local mapper   = t.mapper
         local colormap = setmetatableindex(mapping)
         if mapper then
             setmetatableindex(colormap,function(t,k)
@@ -1228,7 +1228,7 @@ end
 local s_wrapped_start <const> = "draw image ("
 local f_wrapped_stop          = formatters[") shifted (0,%N) scaled %N ;"]
 
-local handletransform, handleviewbox  do
+local handletransform, handletransformstring, handleviewbox  do
 
     local sind = math.sind
 
@@ -1408,7 +1408,7 @@ local dashed  do
 
 end
 
-do
+local handledefinitions do
 
     local handlers    = { }
     local process     = false
@@ -1418,6 +1418,7 @@ do
     local definitions = false
     local classstyles = false
     local tagstyles   = false
+ -- local colormap    = false
 
     local tags = {
         ["a"]                  = true,
@@ -1718,17 +1719,17 @@ do
                         transform = handletransformstring(transform)
                     end
 
-local tr = rawget(at,"transform")
-if tr then
-    tr = handletransformstring(tr)
-    if tr then
-        if transform then
-            transform = transform .. " " .. tr
-        else
-            transform = tr
-        end
-    end
-end
+                    local tr = rawget(at,"transform")
+                    if tr then
+                        tr = handletransformstring(tr)
+                        if tr then
+                            if transform then
+                                transform = transform .. " " .. tr
+                            else
+                                transform = tr
+                            end
+                        end
+                    end
 
                     return p, clippath, transform
                 else

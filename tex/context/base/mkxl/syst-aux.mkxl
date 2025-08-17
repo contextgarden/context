@@ -5911,11 +5911,22 @@
 %D These macros are sort of obsolete as we never use uppercase this way. But
 %D nevertheless we provide them:
 
-\permanent\def\utfupper#1{\clf_upper{#1}} % expandable
-\permanent\def\utflower#1{\clf_lower{#1}} % expandable
+% Defined at the \LUA\ end (which saves us one step. I need to check the macro
+% tables for more candidates):
+%
+% \permanent\def\utfupper#1{\clf_upper{#1}} % expandable
+% \permanent\def\utflower#1{\clf_lower{#1}} % expandable
+% \permanent\def\utfshape#1{\clf_shape{#1}} % expandable
+% \permanent\def\utfstrip#1{\clf_strip{#1}} % expandable
 
-\permanent\protected\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\clf_upper{#1}}}
-\permanent\protected\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\clf_lower{#1}}}
+% This are obsolete because we can just do an \type {\edef} and avoid the
+% somewhat weird \type {\to} interface.
+
+% \permanent\protected\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\clf_upper{#1}}}
+% \permanent\protected\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\clf_lower{#1}}}
+
+\permanent\protected\def\uppercasestring#1\to#2{\dodoglobal\edef#2{\utfupper{#1}}}
+\permanent\protected\def\lowercasestring#1\to#2{\dodoglobal\edef#2{\utflower{#1}}}
 
 %D \macros
 %D   {handletokens}

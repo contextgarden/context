@@ -425,7 +425,10 @@ function job.loadother(filename)
             unpacked.job.packed = nil -- nicer in inspecting
             othercache[filename] = unpacked
             --
-            utilitydata.components, utilitydata.namestack = collectstructure(utilitydata.job.structure.collected)
+            local collectstructure = resolvers.jobs.collectstructure
+            if collectstructure then
+                utilitydata.components, utilitydata.namestack = collectstructure(utilitydata.job.structure.collected)
+            end
             --
             structures.lists     .integrate(utilitydata)
             structures.registers .integrate(utilitydata)

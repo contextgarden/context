@@ -1,0 +1,130 @@
+if not modules then modules = { } end modules ['lpdf-tag-imp-uac'] = {
+    version   = 1.001,
+    comment   = "companion to lpdf-tag.mkiv",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local subruby    = { "Annot", "Artifact", "Em", "Form", "Link", "NonStruct", "Private", "Quote", "Reference", "Span", "Strong", "Sub" }
+local subtable   = { "Artifact", "NonStruct", "Private", "TR" }
+local spanlike   = { "Annot", "Artifact", "BibEntry", "Code", "Em", "FENote", "Figure", "Form", "Formula", "Lbl", "Link", "NonStruct", "Note", "Private", "Quote", "Reference", "Ruby", "Span", "Strong", "Sub", "Warichu", "contentitem" }
+local document   = { "Annot", "Art", "Artifact", "Aside", "BlockQuote", "Code", "Div", "Document", "DocumentFragment", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Link", "NonStruct", "Note", "P", "Part", "Private", "Sect", "TOC", "Table", "Title" }
+local tablecell  = { "Annot", "Art", "Artifact", "BibEntry", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Table", "Warichu", "contentitem" }
+local rubish     = { }
+local tricky     = { "inherited" }
+local somebody   = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Table", "Warichu", "contentitem" }
+
+structures.tags.states = {
+    -- weird or obsolete
+    ["Caption"]          = "useless",
+    ["H"]                = "obsolete",
+    -- useless and confusing
+    ["Art"]              = "useless",
+    -- useless and obsolete
+    ["TOC"]              = "obsolete",
+    ["TOCI"]             = "obsolete",
+    ["BlockQuote"]       = "obsolete",
+    ["Quote"]            = "obsolete",
+    ["Part"]             = "useless",
+ -- ["Private"]          = true,
+    ["Document"]         = "internal",
+    ["DocumentFragment"] = "useless",
+    -- useless and irrelevant
+    ["Form"]             = "useless",
+    -- internal
+    ["Artifact"]         = "internal",
+    -- internal
+    ["Annot"]            = "internal",
+    ["Link"]             = "internal",
+    ["Reference"]        = "internal",
+    --
+    ["BibEntry"]         = "useless",
+    ["FENote"]           = "useless",
+    ["Note"]             = "useless",
+    ["Index"]            = "useless",
+    ["Title"]            = "useless",
+}
+
+structures.tags.groups = {
+    list    = { "L", "LI", "LBody" },
+    table   = { "Table", "THead", "TFoot", "TBody", "TR", "TD", "TH" },
+    ruby    = { "Ruby", "RB", "RP", "RT" },
+    warichu = { "Warichu", "WP", "WT" },
+    general = { "Hn", "Aside", "Code", "Figure", "Formula", "Hn", "Sect", "Sub" },
+    neutral = { "NonStruct", "Div", "Span", "P", "Private", "Artifact" },
+    tricky  = { "FEnote", "BlockQuote" },
+    styling = { "Em", "Strong" },
+}
+
+local pdfstates      = table.copy(structures.tags.states)      -- a copy just in case we patch is
+local pdfgroups      = table.copy(structures.tags.groups)      -- idem
+local pdfunsupported = table.copy(structures.tags.unsupported) -- idem
+
+return {
+
+    name      = "bad news",
+    version   = "1.00",
+    comment   = "This is just a file we use when documenting.",
+    author    = "Hans Hagen & Mikael Sundqvits",
+    copyright = "ConTeXt development team",
+
+    states      = pdfstates,
+    groups      = pdfgroups,
+    unsupported = pdfunsupported,
+
+    quack     = {
+        ["Annot"]            = { "Annot", "Art", "Artifact", "BibEntry", "Code", "Div", "Em", "FENote", "Figure", "Formula", "Lbl", "Link", "NonStruct", "Note", "Quote", "Ruby", "Sect", "Span", "Strong", "Sub", "Warichu", "contentitem" },
+        ["Art"]              = { "Annot", "Artifact", "Aside", "BlockQuote", "Caption", "Code", "Div", "DocumentFragment", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Sect", "TOC", "Table", "Title" },
+        ["Artifact"]         = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Code", "Div", "Document", "DocumentFragment", "Em", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "LBody", "LI", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "RB", "RP", "RT", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "TBody", "TD", "TFoot", "TH", "THead", "TOC", "TOCI", "TR", "Table", "Title", "WP", "WT", "Warichu", "contentitem" },
+        ["Aside"]            = { "Annot", "Art", "Artifact", "BlockQuote", "Code", "Div", "Document", "DocumentFragment", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Reference", "Sect", "TOC", "Table", "contentitem" },
+        ["BibEntry"]         = { "Annot", "Artifact", "Div", "Em", "FENote", "Figure", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Reference", "Span", "Strong", "contentitem" },
+        ["BlockQuote"]       = { "Annot", "Art", "Artifact", "BlockQuote", "Code", "Div", "Document", "DocumentFragment", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Reference", "Sect", "TOC", "Table", "Title", "contentitem" },
+        ["Caption"]          = rubish,
+        ["Code"]             = { "Annot", "Artifact", "BibEntry", "Div", "Em", "FENote", "Link", "NonStruct", "Note", "Part", "Private", "Reference", "Span", "Strong", "contentitem" },
+        ["Div"]              = tricky,
+        ["Document"]         = document,
+        ["DocumentFragment"] = document,
+        ["Em"]               = spanlike,
+        ["FENote"]           = { "Annot", "Art", "Artifact", "Aside", "BlockQuote", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "Table", "Warichu", "contentitem" },
+        ["Figure"]           = somebody,
+        ["Form"]             = { "Artifact", "BibEntry", "Caption", "Div", "FENote", "Lbl", "NonStruct", "Note", "Private", "contentitem" },
+        ["Formula"]          = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Private", "Quote", "Reference", "Ruby", "Span", "Strong", "Sub", "Table", "Warichu", "contentitem" },
+        ["H"]                = rubish,
+        ["Hn"]               = { "Annot", "Artifact", "BibEntry", "Code", "Em", "FENote", "Figure", "Form", "Formula", "Lbl", "Link", "NonStruct", "Note", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "Warichu", "contentitem" },
+        ["Index"]            = { "Annot", "Artifact", "Caption", "Div", "FENote", "Figure", "Formula", "H", "Hn", "L", "NonStruct", "Note", "P", "Part", "Private", "Reference", "Sect", "Table" },
+        ["L"]                = { "Artifact", "L", "LI", "NonStruct", "Private" },
+        ["LBody"]            = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "Hn", "Index", "L", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "Table", "Warichu", "contentitem" },
+        ["LI"]               = { "Artifact", "Div", "LBody", "Lbl", "NonStruct", "Private", "contentitem" },
+        ["Link"]             = { "Annot", "Art", "Artifact", "BibEntry", "Code", "Div", "Em", "FENote", "Figure", "Formula", "Lbl", "NonStruct", "Note", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "Warichu", "contentitem" },
+        ["NonStruct"]        = rubish,
+        ["Note"]             = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "Table", "Warichu", "contentitem" },
+        ["P"]                = { "Annot", "Artifact", "BibEntry", "Code", "Em", "FENote", "Figure", "Form", "Formula", "L", "Lbl", "Link", "NonStruct", "Note", "Private", "Quote", "Reference", "Ruby", "Span", "Strong", "Sub", "Table", "Warichu", "contentitem" },
+        ["Part"]             = rubish,
+        ["Private"]          = { "Annot", "Art", "Artifact", "Aside", "BibEntry", "BlockQuote", "Caption", "Code", "Div", "Document", "DocumentFragment", "Em", "FENote", "Figure", "Form", "Formula", "H", "Hn", "Index", "L", "LBody", "LI", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "RB", "RP", "RT", "Reference", "Ruby", "Sect", "Span", "Strong", "Sub", "TBody", "TD", "TFoot", "TH", "THead", "TOC", "TOCI", "TR", "Table", "Title", "WP", "WT", "Warichu", "contentitem" },
+        ["Quote"]            = spanlike,
+        ["RB"]               = subruby,
+        ["RP"]               = subruby,
+        ["RT"]               = subruby,
+        ["Reference"]        = { "Annot", "Artifact", "BibEntry", "Em", "FENote", "Figure", "Lbl", "Link", "NonStruct", "Note", "Private", "Span", "Strong", "contentitem" },
+        ["Ruby"]             = { "NonStruct", "Private", "RB", "RP", "RT", "contentitem" },
+        ["Sect"]             = { "Annot", "Art", "Artifact", "Aside", "BlockQuote", "Caption", "Code", "Div", "DocumentFragment", "FENote", "Figure", "Form", "Formula", "H", "Hn", "Index", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Sect", "TOC", "Table", "Title" },
+        ["Span"]             = spanlike,
+        ["Strong"]           = spanlike,
+        ["Sub"]              = { "Annot", "Artifact", "BibEntry", "Code", "Em", "FENote", "Figure", "Form", "Formula", "L", "Lbl", "Link", "NonStruct", "Note", "Private", "Quote", "Reference", "Ruby", "Span", "Strong", "Warichu", "contentitem" },
+        ["TBody"]            = subtable,
+        ["TD"]               = tablecell,
+        ["TFoot"]            = subtable,
+        ["TH"]               = tablecell,
+        ["TOC"]              = { "Artifact", "NonStruct", "Part", "Private", "TOC", "TOCI" },
+        ["TOCI"]             = { "Artifact", "Div", "Lbl", "NonStruct", "P", "Private", "Reference", "TOC" },
+        ["TR"]               = { "Artifact", "NonStruct", "Private", "TD", "TH" },
+        ["Table"]            = { "Artifact", "Caption", "NonStruct", "Private", "TBody", "TFoot", "THead", "TR" },
+        ["THead"]            = subtable,
+        ["Title"]            = { "Annot", "Artifact", "Aside", "BibEntry", "Code", "Div", "Em", "FENote", "Figure", "Form", "Formula", "L", "Lbl", "Link", "NonStruct", "Note", "P", "Part", "Private", "Quote", "Reference", "Ruby", "Span", "Strong", "Table", "Warichu", "contentitem" },
+        ["WT"]               = subruby,
+        ["WP"]               = subruby,
+        ["Warichu"]          = { "NonStruct", "Private", "WP", "WT", "contentitem" },
+    },
+
+}

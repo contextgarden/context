@@ -200,6 +200,7 @@ return {
   ["lpdf-tag-imp-basic.lmt"]=true,
   ["lpdf-tag-imp-demo.lmt"]=true,
   ["lpdf-tag-imp-mkiv.lmt"]=true,
+  ["lpdf-tag-imp-uac.lmt"]=true,
   ["lucida-math.lfg"]=true,
   ["lucida-text.lfg"]=true,
   ["lucida-typeone-math.lfg"]=true,
