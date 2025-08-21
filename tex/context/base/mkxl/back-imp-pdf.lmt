@@ -13,6 +13,8 @@ if not modules then modules = { } end modules ['back-imp-pdf'] = {
 -- instance by first loading or enabling some compatibility layer so that we can
 -- trace possible interferences.
 
+local rawset = rawset
+
 updaters.register("backends.pdf.latebindings",function()
     --
     local dummy  = function() end
@@ -27,8 +29,15 @@ updaters.register("backends.pdf.latebindings",function()
         immediateobj = lpdf.immediateobject
     }
 
+    table.setmetatablenewindex(pdf,function(t,k,v)
+        report("pdf.%s can't be set, ask for it if really needed",k)
+        rawset(t,k,dummy)
+        return dummy
+    end)
+
+
     table.setmetatableindex(pdf,function(t,k)
-        report("calling unavailable pdf.%s function",k)
+        report("accessing unavailable pdf.%s function or value",k)
         t[k] = dummy
         return dummy
     end)

@@ -594,7 +594,7 @@ static inline halfword tex_aux_new_math_glyph(halfword fnt, halfword chr, quarte
     glyph_x_scale(glyph) = tex_aux_math_glyph_x_scale(xscale);
     glyph_y_scale(glyph) = tex_aux_math_glyph_y_scale(yscale);
     glyph_protected(glyph) = glyph_protected_math_code;
-glyph_weight(glyph) = tex_aux_math_glyph_weight(weight);
+    glyph_weight(glyph) = tex_aux_math_glyph_weight(weight);
     return glyph;
 }
 

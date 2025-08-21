@@ -62,15 +62,15 @@ do
         if fxi1 == NaN or fxi1 == Inf or fxi1 < fmin or fxi1 > fmax then
             return true -- singularity at xi1
         end
-        fxi2 = f(xi2)
+        local fxi2 = f(xi2)
         if fxi2 == NaN or fxi2 == Inf or fxi2 < fmin or fxi2 > fmax then
             return true -- singularity at xi2
         end
-        fx_i1 = f(x_i1)
+        local fx_i1 = f(x_i1)
         if fx_i1 == NaN or fx_i1 == Inf or fx_i1 < fmin or fx_i1 > fmax then
             return true -- singularity at x_i1
         end
-        fx_i2 = f(x_i2)
+        local fx_i2 = f(x_i2)
         if fx_i2 == NaN or fx_i2 == Inf or fx_i2 < fmin or fx_i2 > fmax then
             return true -- singularity at x_i2
         end

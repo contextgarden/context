@@ -85,6 +85,7 @@
     2.10.11 : first half of 2024
     2.10.12 : around the ctx 2024 meeting
     2.11.07 : just after texlive 2025 code freeze
+    2.11.08 : just before the ctx 2025 meeting
 
     At some point the \CONTEXT\ group will be responsible for guaranteeing that the official version
     is what comes with \CONTEXT\ and that long term support and stability is guaranteed and that no 
@@ -106,10 +107,10 @@
 # define luametatex_minorversion     11
 # define luametatex_version          211
 # define luametatex_revision         0
-# define luametatex_release          07
-# define luametatex_version_string   "2.11.07"
-# define luametatex_version_number   211.7
-# define luametatex_development_id   20250816
+# define luametatex_release          8
+# define luametatex_version_string   "2.11.08"
+# define luametatex_version_number   211.8
+# define luametatex_development_id   20250821
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"

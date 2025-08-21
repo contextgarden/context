@@ -640,32 +640,33 @@ enddef ;
 
     string signal_characters[];
 
-    signal_characters[ASCII "A"] := "+++++!!+++-----+++!!++++" ;
-    signal_characters[ASCII "B"] := "------------------------" ;
+    signal_characters[ASCII "A"] := "++++++!!++-----++!!+++++" ;
+    signal_characters[ASCII "B"] := "+-----!!+++++++++!!+++++" ;
     signal_characters[ASCII "C"] := "+++------+++++++++++++++" ;
-    signal_characters[ASCII "D"] := "------------------------" ;
-    signal_characters[ASCII "E"] := "++---!!!---++++++!!!++++" ;
-    signal_characters[ASCII "F"] := "------------------------" ;
-    signal_characters[ASCII "G"] := "------------------------" ;
-    signal_characters[ASCII "H"] := "------------------------" ;
-    signal_characters[ASCII "I"] := "+++++++++++++-----------" ;
-    signal_characters[ASCII "J"] := "++++++++++++++++--------" ;
-    signal_characters[ASCII "K"] := "------------------------" ;
+    signal_characters[ASCII "D"] := "++++++!!+++++++++!!-----" ;
+    signal_characters[ASCII "E"] := "++++++!!---++++++!!+++++" ;
+    signal_characters[ASCII "F"] := "++++--!!---++++++!!+++++" ;
+    signal_characters[ASCII "G"] := "+++---!!+++++++++!!+++++" ;
+    signal_characters[ASCII "H"] := "--++++!!+++---+++!!++++-" ;
+    signal_characters[ASCII "I"] := "++--+++++++++++---------" ;
+    signal_characters[ASCII "J"] := "+++++++++++++++---------" ;
+    signal_characters[ASCII "K"] := "--!!-----!!--++++!!+++++" ;
     signal_characters[ASCII "L"] := "+--------+++++++++++++++" ;
-    signal_characters[ASCII "M"] := "!!++++++++-!!!-++++++++!" ;
+%   signal_characters[ASCII "L"] := "--------++++++++++++++++" ;
+    signal_characters[ASCII "M"] := "-!!+++++++-!!!-+++++++!!" ;
     signal_characters[ASCII "N"] := "++++++++++-----+++++++++" ;
     signal_characters[ASCII "O"] := "++++++++++++++++++++++++" ;
-    signal_characters[ASCII "P"] := "------------------------" ;
-    signal_characters[ASCII "Q"] := "------------------------" ;
-    signal_characters[ASCII "R"] := "------------------------" ;
-    signal_characters[ASCII "S"] := "------------------------" ;
+    signal_characters[ASCII "P"] := "++++++!!----+++++!!+++++" ;
+    signal_characters[ASCII "Q"] := "++++++++!!++++++++++++++" ;
+    signal_characters[ASCII "R"] := "++++++!!--!!+++++!!+++++" ;
+    signal_characters[ASCII "S"] := "++++--!!+++++++--!!+++++" ;
     signal_characters[ASCII "T"] := "!!+++------!!!------+++!" ;
-    signal_characters[ASCII "U"] := "------------------------" ;
-    signal_characters[ASCII "V"] := "------------------------" ;
-    signal_characters[ASCII "W"] := "------------------------" ;
+    signal_characters[ASCII "U"] := "---+++++++++++++++++++--" ;
+    signal_characters[ASCII "V"] := "---!!+++++++++++++++!!--" ;
+    signal_characters[ASCII "W"] := "---!!++++++!!!++++++!!--" ;
     signal_characters[ASCII "X"] := "-+++-----+++--+++----+++" ;
-    signal_characters[ASCII "Y"] := "------------------------" ;
-    signal_characters[ASCII "Z"] := "------------------------" ;
+    signal_characters[ASCII "Y"] := "---+++-----+++-----+++--" ;
+    signal_characters[ASCII "Z"] := "++++++!!--+++++++!!--+++" ;
 
     signal_characters[ASCII "0"] := "------------------------" ;
     signal_characters[ASCII "1"] := "+-----------+-----------" ;
@@ -790,10 +791,10 @@ enddef ;
 %     \startTEXpage\getbuffer[squid-006]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-007]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-008]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-009]\stopTEXpage
+    \startTEXpage\getbuffer[squid-009]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-010]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-011]\stopTEXpage
-    \startTEXpage\getbuffer[squid-012]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-012]\stopTEXpage
 \stoptext
 
 \stopmodule

@@ -1891,6 +1891,6 @@ do
         })
     end
 
-    protectmodule("string")
+ -- protectmodule("string") -- to soon, delay till end
 
 end

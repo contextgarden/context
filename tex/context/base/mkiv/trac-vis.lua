@@ -30,10 +30,7 @@ local round = math.round
 -- todo: tags can also be numbers (just add to hash)
 -- todo: make a lmtx variant (a few more efficient fetchers)
 
-local nodecodes           = nodes.nodecodes
-
 local nuts                = nodes.nuts
-local tonut               = nuts.tonut
 
 local setboth             = nuts.setboth
 local setlink             = nuts.setlink
@@ -342,6 +339,8 @@ do
     end
 
     nuts.applyvisuals = applyvisuals
+
+    local tonut = nuts.tonut
 
     function nodes.applyvisuals(n,mode)
         applyvisuals(tonut(n),mode)
@@ -1237,6 +1236,7 @@ end
 
 do
 
+    local nodecodes            = nodes.nodecodes
     local disc_code            = nodecodes.disc
     local kern_code            = nodecodes.kern
     local glyph_code           = nodecodes.glyph
@@ -1542,6 +1542,7 @@ end
 
 do
 
+    local nodecodes  = nodes.nodecodes
     local hlist_code = nodecodes.hlist
     local vlist_code = nodecodes.vlist
     local nextnode   = nuts.traversers.node

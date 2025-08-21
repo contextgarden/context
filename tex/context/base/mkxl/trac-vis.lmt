@@ -11,7 +11,7 @@ if not modules then modules = { } end modules ['trac-vis'] = {
 
 local node, nodes, attributes, tex = node, nodes, attributes, tex
 local type, tonumber, next, rawget = type, tonumber, next, rawget
-local gmatch, sub = string.gmatch, string.sub
+local gmatch = string.gmatch
 local formatters = string.formatters
 local round = math.round
 
@@ -1449,14 +1449,14 @@ local ruledglue, ruledmathglue, ruledspace do
     mathvalues[-1] = "left"  -- (script) slack detail value
     mathvalues[-2] = "right" -- (script) slack detail value
 
+    local gsub, sub = string.gsub, string.sub
+
     local morehack = setmetatableindex(function(t,k)
         local v = mathematics.classnames[k] -- yet unknown
         v = v and sub(v,1,3) or formatters["x%02x"](k)
         t[k] = v
         return v
     end)
-
-    local gsub = string.gsub
 
     local temphack = setmetatableindex(function(t,k)
         local v = mathvalues[k]
@@ -1739,6 +1739,8 @@ local ruleddiscretionary, ruledglyphdiscretionary do
      -- maybe: return head, getnext(current)
         return head, current
     end
+
+    local sub = string.sub
 
     ruledglyphdiscretionary = function(head,current,glyph)
         local part, after, code = getdiscpart(glyph)

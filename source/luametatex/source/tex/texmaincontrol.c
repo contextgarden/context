@@ -6881,7 +6881,7 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         case register_posit_cmd: 
         case internal_dimension_cmd: 
         case register_dimension_cmd: 
-        case font_property_cmd : 
+        case font_property_cmd: 
         case internal_glue_cmd: 
         case register_glue_cmd: 
         case internal_muglue_cmd: 
