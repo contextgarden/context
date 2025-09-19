@@ -1,0 +1,320 @@
+if not modules then modules = { } end modules ['mlib-eff'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- musical timestamp: Snarky Puppy & Metropole Orkest - Waves Upon Waves (cond.
+-- Jules Buckley) [Official Video] : begin september 2025 (we still have
+-- fantastic human made music!)
+
+local type, tonumber, load = type, tonumber, load
+
+local report = logs.reporter("metapost","effect")
+
+local registerdirect = metapost.registerdirect
+
+local scannumber       = mp.scan.number
+local injectnumber     = mp.inject.number
+local setbytemap       = mp.setbytemap
+local getbytemap       = mp.getbytemap
+local newbytemap       = mp.newbytemap
+local getbytemapdata   = mp.getbytemapdata
+local loadbytemapfile  = mp.loadbytemapfile
+local setbytemapoctave = mp.setbytemapoctave
+
+local perlinnoise     = effects.perlinnoise
+local perlinoctave    = effects.perlinoctave
+local simplexnoise    = effects.simplexnoise
+local simplexoctave   = effects.simplexoctave
+local angleoctave     = effects.angleoctave
+local detailoctave    = effects.detailoctave
+
+local directoctave    = effects.octave
+local octavebytemap   = effects.octavebytemap
+
+local newoctave  = effects.newoctave
+local stepoctave = effects.stepoctave
+
+local octavemethods  = effects.getoctavemethods()
+local octaveloops    = effects.getoctaveloops()
+local octavevariants = effects.getoctavevariants()
+
+local function noise(method)
+    injectnumber(method(
+        scannumber(), -- x
+        scannumber(), -- y
+        scannumber()  -- z
+    ))
+end
+
+local function octave(method)
+    injectnumber(method(
+        scannumber(), -- iterations
+        scannumber(), -- amplitude
+        scannumber(), -- frequency
+        scannumber(), -- persistence
+        scannumber(), -- lacunarity
+        scannumber(), -- angle
+        scannumber(), -- minimum
+        scannumber(), -- maximum
+        scannumber(), -- x
+        scannumber()  -- y
+    ))
+end
+
+registerdirect("perlinnoise",   function() noise(perlinnoise)   end)
+registerdirect("simplexnoise",  function() noise(simplexnoise)  end)
+
+registerdirect("perlinoctave",  function() noise(perlinoctave)  end)
+registerdirect("simplexoctave", function() noise(simplexoctave) end)
+
+local getparameterset = metapost.getparameterset
+
+local f_function = [[
+    local math  = math
+    local round = math.round
+    %s
+    -- todo: only dx dy when detail
+    return function(v,x,y,dx,dy)
+      return %s
+    end
+]]
+
+function mp.lmt_noise_do()
+    local p = getparameterset()
+    --
+    local bytemap       = tonumber(p.bytemap)     or 1
+    local nx            = tonumber(p.nx)          or 10
+    local ny            = tonumber(p.ny)          or 10
+    local nz            = tonumber(p.nz)          or 1
+    local iterations    = tonumber(p.iterations)  or 1
+    local amplitude     = tonumber(p.amplitude)   or 1.0
+    local frequency     = tonumber(p.frequency)   or tonumber(p.scale) or 1.0
+    local persistence   = tonumber(p.persistence) or 0.5
+    local lacunarity    = tonumber(p.lacunarity)  or 2.0
+    local minimum       = tonumber(p.minimum)     or 0
+    local maximum       = tonumber(p.maximum)     or 255
+    local colorcode     = p.colorcode             or ""
+    local colorfunction = p.colorfunction         or ""
+    local method        = p.method                or "perlin"
+    local preamble      = p.preamble              or ""
+    local angle         = tonumber(p.angle)       or 0
+    local initialize    = p.initialize
+    local filename      = p.filename              or ""
+    local action        = false
+    local trace         = p.trace
+    -- todo: check color depth
+    if colorfunction ~= "" then
+        action = MP[colorfunction]
+    end
+    if type(action) ~= "function" and colorcode ~= "" then
+        colorcode = string.formatters[f_function](preamble,colorcode)
+        action = load(colorcode)
+        if type(action) == "function" then
+            action = action()
+        end
+    end
+    if type(action) ~= "function" then
+     -- action = function(v) return v, v, v end
+        action = false -- function(v) return v, v, v end
+    end
+    --
+    local slowloop = true
+    local slowloop = false
+    --
+    local data
+    local keep = false
+    if filename ~= "" then
+        nx, ny, nz = loadbytemapfile(bytemap,filename)
+        if not slowloop then
+            nx, ny, nz, data = getbytemapdata(bytemap,true)
+        end
+        keep = true
+    elseif initialize == false then
+        -- redefinition needs checking
+--         nx, ny, nz, data = getbytemapdata(bytemap,false)
+        if not slowloop then
+            nx, ny, nz, data = getbytemapdata(bytemap,true)
+        end
+        keep = true
+    else
+        newbytemap(bytemap,nx,ny,nz)
+    end
+    --
+--     print(data)
+    --
+    local z = p.z
+    local t = { }
+    if trace then
+        statistics.starttiming(t)
+        report("method       : %s",method)
+        report("horizontal   : %i",nx)
+        report("vertical     : %i",ny)
+        report("depth        : %i",nz)
+        report("iterations   : %i",iterations)
+        report("amplitude    : %N",amplitude)
+        report("frequency    : %N",frequency)
+        report("persistence  : %N",persistence)
+        report("lacunarity   : %N",lacunarity)
+        report("minimum      : %N",minimum)
+        report("maximum      : %N",maximum)
+        report("angle        : %N",angle)
+     if z then
+        report("z value      : %N",z)
+     end
+    end
+    --
+    local octave
+    if method == "test1" then
+        if not action then
+            -- ignore
+        elseif z then
+            for x=0,nx-1 do
+                for y=0,ny-1 do
+                    local v = directoctave(2,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,x,y,z)
+                    setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                end
+            end
+        else
+            for x=0,nx-1 do
+                for y=0,ny-1 do
+                    local v = directoctave(2,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,x,y)
+                    setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                end
+            end
+        end
+    elseif method == "test2" then
+        octave = newoctave(2,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,z or false)
+        local result, size = octavebytemap(octave,nx,ny,nz,action,data)
+        newbytemap(bytemap,nx,ny,nz,result)
+    elseif method == "simplex" then
+        if slowloop and action then
+            octave = newoctave(2,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum)
+            if z then
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y,z)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            else
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            end
+        else
+            octave = newoctave(2,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,z or false)
+            newbytemap(bytemap,nx,ny,nz)
+            setbytemapoctave(bytemap,octave,action)
+        end
+    elseif method == "detail" then
+        if slowloop and action then
+            octave = newoctave(4,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum)
+            if z then
+                if keep then
+                    for x=0,nx-1 do
+                        for y=0,ny-1 do
+                            local v, dx, dy = stepoctave(octave,x,y,z)
+                            setbytemap(bytemap,x,y,action(v,x,y,dx,dy,getbytemap(bytemap,x,y))) -- r, g, b
+                        end
+                    end
+                else
+                    for x=0,nx-1 do
+                        for y=0,ny-1 do
+                            local v, dx, dy = stepoctave(octave,x,y,z)
+                            setbytemap(bytemap,x,y,action(v,x,y,dx,dy)) -- r, g, b
+                        end
+                    end
+                end
+            else
+                if keep then
+                    for x=0,nx-1 do
+                        for y=0,ny-1 do
+                            local v, dx, dy = stepoctave(octave,x,y)
+                            setbytemap(bytemap,x,y,action(v,x,y,dx,dy,getbytemap(bytemap,x,y))) -- r, g, b
+                        end
+                    end
+                else
+                    for x=0,nx-1 do
+                        for y=0,ny-1 do
+                            local v, dx, dy = stepoctave(octave,x,y)
+                            setbytemap(bytemap,x,y,action(v,x,y,dx,dy)) -- r, g, b
+                        end
+                    end
+                end
+            end
+        else
+            octave = newoctave(4,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,z or false)
+            newbytemap(bytemap,nx,ny,nz)
+            setbytemapoctave(bytemap,octave,action)
+        end
+    elseif method == "angle" then
+        if slowloop and action then
+            octave = newoctave(3,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum)
+            if z then
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y,z)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            else
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            end
+        else
+            octave = newoctave(3,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,z or false)
+            newbytemap(bytemap,nx,ny,nz)
+            setbytemapoctave(bytemap,octave,action)
+        end
+    else
+        if slowloop and action then
+            octave = newoctave(1,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum)
+            if z then
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y,z)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            else
+                for x=0,nx-1 do
+                    for y=0,ny-1 do
+                        local v = stepoctave(octave,x,y)
+                        setbytemap(bytemap,x,y,action(v,x,y)) -- r, g, b
+                    end
+                end
+            end
+        else
+            octave = newoctave(1,iterations,amplitude,frequency,persistence,lacunarity,angle,minimum,maximum,z or false)
+            newbytemap(bytemap,nx,ny,nz)
+            setbytemapoctave(bytemap,octave,action)
+        end
+    end
+    if trace then
+      if octave then
+        local s = effects.getoctavestatus(octave)
+        report("used method  : %s", octavemethods[s.method])
+        report("used variant : %s", octavevariants[s.variant])
+      if s.zset then
+        report("used z value : %N", s.z)
+      end
+      if s.wset then
+        report("used w value : %N", s.w)
+      end
+      end
+        statistics.stoptiming(t)
+        report("seconds used : %s",statistics.elapsedseconds(t))
+    end
+end

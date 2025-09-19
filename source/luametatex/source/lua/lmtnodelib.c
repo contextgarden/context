@@ -11879,6 +11879,201 @@ static int nodelib_direct_getusage(lua_State *L)
     return 0;
 }
 
+/* experiment */
+
+static int nodelib_direct_newfontcheck(lua_State *L)
+{
+    halfword n = tex_new_node(font_spec_node, normal_code);
+    font_spec_identifier(n) = lua_tointeger(L, 1);
+    font_spec_data(n) =  lua_tointeger(L, 2);
+    font_spec_scale(n) = lua_tointeger(L, 3);
+    font_spec_x_scale(n) = lua_tointeger(L, 4);
+    font_spec_y_scale(n) = lua_tointeger(L, 5);
+    font_spec_dummy(n) = 0;
+    font_spec_slant(n) = 0;
+    font_spec_weight(n) = 0;
+    lua_pushinteger(L, n);
+    return 1;
+}
+
+static int nodelib_direct_setfontcheck(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == font_spec_node) {
+        if (lua_gettop(L) == 2) { 
+            halfword g = nodelib_valid_direct_from_index(L, 2);
+            switch (node_type(g)) { 
+                case glyph_node:
+                 // memcpy(&(font_spec_scale(n)), &(glyph_scale(g)), 2 * sizeof(memoryword));
+                    font_spec_scale(n) = glyph_scale(g);
+                    font_spec_x_scale(n) = glyph_x_scale(g);
+                    font_spec_y_scale(n) = glyph_y_scale(g);
+                    break;
+                case font_spec_node:
+                 // memcpy(&(font_spec_identifier(n)), &(font_spec_identifier(g)), 3 * sizeof(memoryword));
+                    font_spec_identifier(n) = font_spec_identifier(g);
+                    font_spec_data(n) = font_spec_data(g);
+                    font_spec_scale(n) = font_spec_scale(g);
+                    font_spec_x_scale(n) = font_spec_x_scale(g);
+                    font_spec_y_scale(n) = font_spec_y_scale(g);
+                    break;
+                case disc_node:
+                    /* only replace makes sense as loner */
+                    { 
+                        halfword r = disc_no_break_head(g);
+                        if (r && node_type(r) == glyph_node) { 
+                            font_spec_scale(n) = glyph_scale(r);
+                            font_spec_x_scale(n) = glyph_x_scale(r);
+                            font_spec_y_scale(n) = glyph_y_scale(r);
+                        }
+                    }
+                    break;
+            }
+        } else {
+            font_spec_identifier(n) = lua_tointeger(L, 2);
+            font_spec_data(n) =  lua_tointeger(L, 3);
+            font_spec_scale(n) = lua_tointeger(L, 4);
+            font_spec_x_scale(n) = lua_tointeger(L, 5);
+            font_spec_y_scale(n) = lua_tointeger(L, 6);
+        }
+    }
+    return 0;
+}
+
+static int nodelib_direct_getfontcheck(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == font_spec_node) {
+        lua_pushinteger(L, font_spec_identifier(n));
+        lua_pushinteger(L, font_spec_data(n));
+        lua_pushinteger(L, font_spec_scale(n));
+        lua_pushinteger(L, font_spec_x_scale(n));
+        lua_pushinteger(L, font_spec_y_scale(n));
+        return 5;
+    } else { 
+        return 0;
+    }
+}
+
+static int nodelib_direct_samefontcheck(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    int same = 0;
+    if (n && node_type(n) == font_spec_node) {
+        same = 
+            font_spec_identifier(n) == lua_tointeger(L, 1)
+         && font_spec_data(n)       == lua_tointeger(L, 2)
+         && font_spec_scale(n)      == lua_tointeger(L, 3)
+         && font_spec_x_scale(n)    == lua_tointeger(L, 4)
+         && font_spec_y_scale(n)    == lua_tointeger(L, 5);
+    }
+    lua_pushboolean(L, same);
+    return 1;
+}
+
+# if (1) 
+
+    static inline int nodelib_aux_same_check(halfword g, halfword f)
+    {
+        return memcmp(&(font_spec_identifier(f)), &(glyph_font(g)), 3 * sizeof(memoryword)) == 0;
+    }
+
+# else 
+
+    static inline int nodelib_aux_same_check(halfword g, halfword f)
+    {
+        return (
+               font_spec_identifier(f) == glyph_font(g)
+            && font_spec_data(f)       == glyph_data(g)
+            && font_spec_scale(f)      == glyph_scale(g)
+            && font_spec_x_scale(f)    == glyph_x_scale(g)
+            && font_spec_y_scale(f)    == glyph_y_scale(g)
+        );
+    }
+
+# endif 
+
+static int nodelib_direct_isfontcheck(lua_State *L)
+{
+    halfword g = nodelib_valid_direct_from_index(L, 1); /* glyph node */
+    halfword f = nodelib_valid_direct_from_index(L, 2); /* check node */
+    lua_pushboolean(L, 
+        g && f && node_type(g) == glyph_node && node_type(f) == font_spec_node 
+        && nodelib_aux_same_check(g, f));
+    return 1;
+}
+
+static int nodelib_direct_ischarcheck(lua_State *L)
+{
+    halfword g = nodelib_valid_direct_from_index(L, 1);
+    halfword f = nodelib_valid_direct_from_index(L, 2);
+    if (g && f && node_type(f) == font_spec_node) {
+        if (node_type(g) != glyph_node) {
+            lua_pushnil(L);
+            lua_pushinteger(L, node_type(g));
+            return 2;
+        } else {
+            if (nodelib_aux_same_check(g, f)) {
+                lua_pushinteger(L, glyph_character(g));
+            } else {
+                lua_pushboolean(L, 0);
+            }
+            return 1;
+        }
+    } else {
+        lua_pushnil(L);
+        return 1;
+    }
+}
+
+static int nodelib_direct_isprevcharcheck(lua_State *L)
+{
+    halfword g = nodelib_valid_direct_from_index(L, 1);
+    halfword f = nodelib_valid_direct_from_index(L, 2);
+    if (g && f && node_type(f) == font_spec_node) {
+        nodelib_push_direct_or_nil(L, node_prev(g));
+        if (node_type(g) != glyph_node) {
+            lua_pushnil(L);
+            lua_pushinteger(L, node_type(g));
+            return 3;
+        } else {
+            if (nodelib_aux_same_check(g, f)) {
+                lua_pushinteger(L, glyph_character(g));
+            } else {
+                lua_pushboolean(L, 0);
+            }
+            return 2;
+        }
+    }
+    /* or just return 0 */
+    lua_pushnil(L);
+    return 1;
+}
+
+static int nodelib_direct_isnextcharcheck(lua_State *L)
+{
+    halfword g = nodelib_valid_direct_from_index(L, 1);
+    halfword f = nodelib_valid_direct_from_index(L, 2);
+    if (g && f && node_type(f) == font_spec_node) {
+        nodelib_push_direct_or_nil(L, node_next(g));
+        if (node_type(g) != glyph_node) {
+            lua_pushnil(L);
+            lua_pushinteger(L, node_type(g));
+            return 3;
+        } else {
+            if (nodelib_aux_same_check(g, f)) {
+                lua_pushinteger(L, glyph_character(g));
+            } else {
+                lua_pushboolean(L, 0);
+            }
+            return 2;
+        }
+    }
+    /* or just return 0 */
+    lua_pushnil(L);
+    return 1;
+}
+
 /* node.direct.* */
 
 static const struct luaL_Reg nodelib_direct_function_list[] = {
@@ -12194,6 +12389,15 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "insertcurrenthead",       nodelib_direct_insertcurrenthead       },
     { "appendcurrenttail",       nodelib_direct_appendcurrenttail       },
     { "prependcurrenttail",      nodelib_direct_prependcurrenttail      },
+
+    { "newfontcheck",            nodelib_direct_newfontcheck            },
+    { "setfontcheck",            nodelib_direct_setfontcheck            },
+    { "getfontcheck",            nodelib_direct_getfontcheck            },
+    { "samefontcheck",           nodelib_direct_samefontcheck           },
+    { "isfontcheck",             nodelib_direct_isfontcheck             },
+    { "ischarcheck",             nodelib_direct_ischarcheck             },
+    { "isprevcharcheck",         nodelib_direct_isprevcharcheck         },
+    { "isnextcharcheck",         nodelib_direct_isnextcharcheck         },
 
     { NULL,                      NULL                                   },
 

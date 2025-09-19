@@ -99,6 +99,8 @@ typedef enum linebreak_states {
 linebreak_state_info lmt_linebreak_state = {
     .just_box                     = 0,
     .last_line_fill               = 0,
+    .last_line_width              = 0,
+    .last_line_count              = 0,
     .no_shrink_error_yet          = 0,
     .callback_id                  = 0,
     .threshold                    = 0,
@@ -3093,12 +3095,16 @@ static void tex_aux_remove_special_penalties(line_break_properties *properties)
                         if (tex_has_penalty_option(current, penalty_option_orphaned)) {
                             tex_try_couple_nodes(prev, node_next(current));
                             tex_flush_node(current);
+                        } else { 
+                            /* keep it for tracing, could be an option */
                         }
                         break;
                     case toddler_penalty_subtype:
                         if (tex_has_penalty_option(current, penalty_option_toddlered)) {
                             tex_try_couple_nodes(prev, node_next(current));
                             tex_flush_node(current);
+                        } else { 
+                            /* keep it for tracing, could be an option */
                         }
                         break;
                 }
@@ -3109,6 +3115,8 @@ static void tex_aux_remove_special_penalties(line_break_properties *properties)
                      if (tex_has_math_option(current, math_option_orphaned)) {
                         math_penalty(current) = 0;
                         tex_remove_math_option(current, math_option_orphaned);
+                     } else { 
+                         /* keep it for tracing, could be an option */
                      }
                  }
                 return;
@@ -3116,6 +3124,8 @@ static void tex_aux_remove_special_penalties(line_break_properties *properties)
                 if (tex_has_disc_option(current, disc_option_orphaned)) {
                     disc_orphaned(current) = 0;
                     tex_remove_disc_option(current, disc_option_orphaned);
+                } else { 
+                    /* keep it for tracing, could be an option */
                 }
                 break;
         }
@@ -3288,8 +3298,12 @@ static inline int tex_aux_prev_penalty_found(halfword current)
     if (prev) {
         switch (node_type(prev)) {
             case glue_node:
-                prev = node_prev(prev);
-                return prev && node_type(prev) == penalty_node && node_subtype(prev) != toddler_penalty_subtype;
+                if (tex_has_glue_option(prev, glue_option_no_auto_break)) {
+                    return 1;
+                } else {
+                    prev = node_prev(prev);
+                    return prev && node_type(prev) == penalty_node && node_subtype(prev) != toddler_penalty_subtype;
+                }
             case penalty_node:
                 return node_subtype(prev) != toddler_penalty_subtype;
             default:
@@ -3306,8 +3320,12 @@ static inline int tex_aux_next_penalty_found(halfword current)
     if (next) {
         switch (node_type(next)) {
             case glue_node:
-                next = node_prev(next);
-                return next && node_type(next) == penalty_node && node_subtype(next) != toddler_penalty_subtype;
+                if (tex_has_glue_option(next, glue_option_no_auto_break)) {
+                    return 1;
+                } else {
+                    next = node_prev(next);
+                    return next && node_type(next) == penalty_node && node_subtype(next) != toddler_penalty_subtype;
+                }
             case penalty_node:
                 return node_subtype(next) != toddler_penalty_subtype;
             default:
@@ -5026,6 +5044,8 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.emergency_right_extra = 0;
     lmt_linebreak_state.has_orphans = 0;
     lmt_linebreak_state.has_toddlers = 0;
+    lmt_linebreak_state.last_line_width = 0;
+    lmt_linebreak_state.last_line_count = 0;
 
  // for (int i = 0; i < n_of_glue_amounts; i++) {
  //     lmt_linebreak_state.active_width[i] = 0;
@@ -6261,6 +6281,25 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                         lmt_packaging_state.last_overshoot
                     );
                 }
+            } 
+            /*tex So only set when we normalize. */
+            if (last_line) {
+                halfword linebox = lmt_linebreak_state.just_box;
+                halfword width = 0;
+                if (linebox) {
+                    width = box_width(linebox);
+                    width -= tex_effective_glue(linebox, properties->left_skip);
+                    width -= tex_effective_glue(linebox, properties->right_skip);
+                    width -= tex_effective_glue(linebox, properties->parfill_left_skip);
+                    width -= tex_effective_glue(linebox, properties->parfill_right_skip);
+                    if (first_line) { 
+                        width -= tex_effective_glue(linebox, properties->parinit_left_skip);
+                        width -= tex_effective_glue(linebox, properties->parinit_right_skip);
+                    }
+                 // width -= lmt_packaging_state.last_overshoot;
+                }
+                lmt_linebreak_state.last_line_width = width;
+                lmt_linebreak_state.last_line_count = cur_line;
             }
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */

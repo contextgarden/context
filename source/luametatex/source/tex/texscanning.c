@@ -1083,6 +1083,14 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val_level = integer_val_level;
             cur_val = lmt_page_builder_state.last_extra_used;
             return 1;
+        case last_line_width_code:
+            cur_val_level = dimension_val_level;
+            cur_val = lmt_linebreak_state.last_line_width;
+            return 1;
+        case last_line_count_code:
+            cur_val_level = integer_val_level;
+            cur_val = lmt_linebreak_state.last_line_count;
+            return 1;
         case math_atom_glue_code:
             {
                 halfword style = tex_scan_math_style_identifier(0, 0);
@@ -3841,9 +3849,11 @@ halfword tex_scan_font(int optional_equal)
         /*tex We create a new one and assign the mandate id. */
         fs = tex_new_node(font_spec_node, normal_code);
         font_spec_identifier(fs) = id;
+        font_spec_data(fs) = 0;
         font_spec_scale(fs) = unused_scale_value;
         font_spec_x_scale(fs) = unused_scale_value;
         font_spec_y_scale(fs) = unused_scale_value;
+        font_spec_dummy(fs) = 0;
         font_spec_slant(fs) = 0;
         font_spec_weight(fs) = 0;
     }

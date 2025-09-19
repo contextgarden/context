@@ -659,11 +659,13 @@ typedef enum some_item_codes {
     last_par_trigger_code,
     last_par_context_code,
     last_page_extra_code,
+    last_line_width_code,          /*tex |\lastlinewidth| */
+    last_line_count_code,          /*tex |\lastlinecount| */
 } some_item_codes;
 
-extern const unsigned char some_item_classification[last_page_extra_code+1];
+extern const unsigned char some_item_classification[last_line_count_code + 1];
 
-# define last_some_item_code last_page_extra_code
+# define last_some_item_code last_line_count_code
 
 typedef enum catcode_table_codes {
     save_cat_code_table_code,

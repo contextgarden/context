@@ -2032,13 +2032,13 @@ permanent loadbytemapfromfile ;
 
 % kind of fundamental, therefore here
 
-newscriptindex mfid_meshcontour ; mfid_meshcontour  := scriptindex("meshcontour")  ;
+newscriptindex mfid_meshcontour ; mfid_meshcontour := scriptindex("meshcontour")  ;
 
-def meshcontour(expr name) = runscript mfid_meshcontour name ; enddef ; % just combine with the next one
+def meshcontour(expr name, kind) = runscript mfid_meshcontour name kind ; enddef ; % just combine with the next one
 
 vardef meshexperiment(expr name, kind) =
     image (
-        save p ; path p ; p := meshcontour(name) ;
+        save p ; path p ; p := meshcontour(name,kind) ;
         addto currentpicture doublepath p
             withprescript "ms_name=" & name
             withprescript "ms_kind=" & kind

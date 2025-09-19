@@ -581,18 +581,15 @@ local function copytotfm(data)
         parameters.descender  = abs(metadata.descender or 0)
         parameters.units      = 1000
         --
-        properties.spacer   = spacer
-        properties.format   = fonts.formats[filename] or "type1"
-        properties.filename = filename
-        properties.fontname = fontname
-        properties.fullname = fullname
-        properties.psname   = fullname
-        properties.name     = filename or fullname or fontname
-        properties.private  = properties.private or data.private or privateoffset
-        --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
+        properties.spacer        = spacer
+        properties.format        = fonts.formats[filename] or "type1"
+        properties.filename      = filename
+        properties.fontname      = fontname
+        properties.fullname      = fullname
+        properties.psname        = fullname
+        properties.name          = filename or fullname or fontname
+        properties.private       = properties.private or data.private or privateoffset
         properties.encodingbytes = 2
-end
         --
         if next(characters) then
             return {

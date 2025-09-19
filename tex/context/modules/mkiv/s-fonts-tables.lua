@@ -288,7 +288,6 @@ end
 function tabletracers.showpositionings(specification)
 
     local tfmdata, fontid, resources = checked(specification)
-
     if resources then
 
         local direction = lefttoright_code -- not that relevant probably

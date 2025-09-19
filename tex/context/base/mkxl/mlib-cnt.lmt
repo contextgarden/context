@@ -1873,7 +1873,7 @@ local f_color = formatters [ [[
      end
 ]] ]
 
-function mp.lmt_surface_do(specification)
+function mp.lmt_surface_do()
     --
     -- The projection and color brightness calculation have been inlined. We also store
     -- differently.

@@ -526,8 +526,7 @@ potrace.convert     = potraceconvert
 -- enjoyed attending Pineapple Thief (good view on the drums) and Rendezvous Point (perfect,
 -- also sound-wise for all instruments) concerts as a reward.
 
-function mp.bytemap_load_from_file(index,filename)
- -- local bytes, nx, ny, nz = potrace.fromfile {
+function mp.loadbytemapfile(index,filename)
     local fullname = resolvers.findfile(filename) or ""
     if fullname ~= "" then
         local bytes, nx, ny, nz = potracefromfile {
@@ -538,9 +537,14 @@ function mp.bytemap_load_from_file(index,filename)
             nz = 1
         end
         mp.newbytemap(index,nx,ny,nz,bytes)
-        return mp.color(nx, ny, nz)
+        return nx, ny, nz
     else
         mp.newbytemap(index,1,1)
-        return mp.color(1,1,1)
+        return 1, 1, 1
     end
+end
+
+function mp.bytemap_load_from_file(index,filename)
+    local nx, ny, nz = mp.loadbytemapfile(index,filename)
+    return mp.color(nx, ny, nz)
 end

@@ -21,12 +21,24 @@ return {
             -- optional:
             baud    = 115200,
             -- Windows (check the device list for the number):
-            port     = "COM6",
+         -- port     = "\\\\.\\COM10"
+         -- port     = "COM6",
             -- Linux (also add user with permissions, see manual):
             port     = "/dev/ttyACM0",
             -- OSX (ls -la /dev/tty.usbserial*):
-            port     = "/dev/tty.usbmodem14101",
+         -- port     = "/dev/tty.usbmodem14101",
         },
+    },
+
+    -- it is possible to forward results to another device. For this the
+    -- parent has to be configured as 'access' and the child as 'forward'
+    -- gadget. This is experimental.
+
+    clients = {
+        squid = {
+            protocol = "forward",
+            url      = "http://192.168.4.1",
+       },
     },
 
     -- This controls the mtxrun cq. contect scripts as they know best
@@ -44,6 +56,7 @@ return {
     usage = {
          enabled = true,
          server  = "squid",
-    },
+      -- client  = "squid",
+     },
 
 }

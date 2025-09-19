@@ -79,6 +79,8 @@ typedef struct linebreak_state_info {
     /*tex the |hlist_node| for the last line of the new paragraph */
     halfword     just_box;
     halfword     last_line_fill;
+    scaled       last_line_width;
+    halfword     last_line_count;
     int          no_shrink_error_yet;
     int          threshold;
     halfword     quality;

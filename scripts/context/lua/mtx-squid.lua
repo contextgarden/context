@@ -184,9 +184,6 @@ function scripts.squid.configure()
     if arguments.format then
         send("cf")
     end
-    if arguments.reset then
-        send("cr")
-    end
     local mode = arguments.mode
     if type(mode) == "string" then
         if mode == "serial" then
@@ -195,11 +192,31 @@ function scripts.squid.configure()
             send("cmh")
         elseif mode == "wifi" then
             send("cmw")
+        elseif mode == "access" then
+            send("cma")
         elseif mode == "bluetooth" then
             send("cmb")
         end
     end
-    if arguments.hue then
+    if arguments.remote then
+        if arguments.reset then
+            send("crr")
+        elseif arguments.enable then
+            send("cre")
+        elseif arguments.disable then
+            send("crd")
+        end
+        local address = arguments.address
+        if type(address) == "string" then
+            send(format("cra%s\r",address))
+        end
+     -- if arguments.server then
+     --     send("crs")
+     -- end
+     -- if arguments.client then
+     --     send("crc")
+     -- end
+    elseif arguments.hue then
         local token = arguments.token
         local hub   = arguments.hub
         local light = arguments.light or arguments.lamps
@@ -322,6 +339,15 @@ function scripts.squid.signal()
     end
 end
 
+function scripts.squid.forward()
+    send("wf")
+end
+
+
+function scripts.squid.address()
+    send("wa")
+end
+
 function scripts.squid.text()
     local text  = string.upper(environment.files[1] or "")
     local delay = tonumber(arguments.delay) or .2
@@ -410,6 +436,8 @@ elseif arguments.signal then
     scripts.squid.signal()
 elseif arguments.squid then
     scripts.squid.squid()
+elseif arguments.forward then
+    scripts.squid.forward()
 elseif arguments.text then
     scripts.squid.text()
 elseif arguments.number then
@@ -422,6 +450,8 @@ elseif arguments.reset then
     scripts.squid.reset()
 elseif arguments.sleep then
     scripts.squid.sleep()
+elseif arguments.address then
+    scripts.squid.address()
 elseif arguments.exporthelp then
     application.export(arguments.exporthelp,environment.files[1])
 else

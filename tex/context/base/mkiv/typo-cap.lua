@@ -412,7 +412,7 @@ function cases.handler(head) -- not real fast but also not used on much data
         elseif id == math_code then
             start = endofmath(start)
             count = 0
-        elseif prev_id == kern_code and getsubtype(prev) == fontkern_code then
+        elseif previd == kern_code and getsubtype(prev) == fontkern_code then
             -- still inside a word ...normally kerns are added later
         else
             count = 0

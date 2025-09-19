@@ -3323,7 +3323,7 @@ function readers.sbix(f,fontdata,specification)
             end
         end)
         local glyphs  = { }
-        local delayed = CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 or fonts.handlers.typethree
+        local delayed = fonts.handlers.typethree
         for i=1,nofstrikes do
             local strike       = strikes[i]
             local strikeppem   = strike.ppem
@@ -3563,7 +3563,7 @@ do
 
             local default = { width = 0, height = 0 }
             local glyphs  = fontdata.glyphs
-            local delayed = CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 or fonts.handlers.typethree
+            local delayed = fonts.handlers.typethree
 
             for index, subtable in sortedhash(shapes) do
                 if type(subtable) == "table" then

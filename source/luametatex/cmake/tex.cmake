@@ -11,6 +11,7 @@ set(tex_sources
     source/utilities/auxunistring.c
     source/utilities/auxfile.c
     source/utilities/auxposit.c
+    source/utilities/auxbytemaps.c
 
     source/libraries/hnj/hnjhyphen.c
 
@@ -53,6 +54,8 @@ set(tex_sources
     source/luarest/lmtqrcodegen.c
     source/luarest/lmtserial.c
     source/luarest/lmtvectorlib.c
+    source/luarest/lmtbytemaplib.c
+    source/luarest/lmteffectslib.c
 
     source/tex/texalign.c
     source/tex/texarithmetic.c

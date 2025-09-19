@@ -843,19 +843,6 @@ do
 
 end
 
-implement {
-    name      = "lastlinewidth",
-    usage     = "value",
-    public    = true,
-    protected = true,
-    actions   = function()
-        local n = texgetnest()
-        local l = n and getlist(tonut(n.tail))
-        -- todo: a variant that backtracks over penalties and glue
-        return dimension_value, l and getdimensions(l) or 0
-    end
-}
-
 -- implement {
 --     name      = "shiftbox",
 --     arguments = { "integer", "dimension" },

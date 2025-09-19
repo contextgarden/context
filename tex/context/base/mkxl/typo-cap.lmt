@@ -40,7 +40,8 @@ local insertafter     = nuts.insertafter
 local findattribute   = nuts.findattribute
 ----- unsetattributes = nuts.unsetattributes
 
-local nextglyph       = nuts.traversers.glyph
+local nextchar        = nuts.traversers.char -- we prevent processing twice in case
+local ischar          = nuts.ischar          -- unboxing as it can reverse casing
 
 local nodecodes       = nodes.nodecodes
 local kerncodes       = nodes.kerncodes
@@ -307,8 +308,10 @@ function cases.handler(head)
         local lastattr = nil
         local count    = 0
         while start do -- while because start can jump ahead
-            local id = getid(start)
-            if id == glyph_code then
+         -- local id = getid(start)
+         -- if id == glyph_code then
+            local char, id = ischar(start)
+            if char then
                 local attr = getattr(start,a_cases)
                 if attr and attr > 0 then
                     local data = getvalue(a_cases,attr)
@@ -353,7 +356,7 @@ function cases.handler(head)
                             local pre, post, replace = getdisc(start)
                             if replace then
                                 local cnt = count
-                                for g in nextglyph, replace do
+                                for g in nextchar, replace do
                                     cnt = cnt + 1
                                     getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"replace",g)
@@ -364,7 +367,7 @@ function cases.handler(head)
                             end
                             if pre then
                                 local cnt = count
-                                for g in nextglyph, pre do
+                                for g in nextchar, pre do
                                     cnt = cnt + 1
                                     getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"pre",g)
@@ -375,7 +378,7 @@ function cases.handler(head)
                             end
                             if post then
                                 local cnt = count
-                                for g in nextglyph, post do
+                                for g in nextchar, post do
                                     cnt = cnt + 1
                                     getattr(g,a_cases) -- why no check
                                     local h, quit = action(start,data,lastfont,tag,cnt,"post",g)
@@ -388,10 +391,14 @@ function cases.handler(head)
                         count = count + 1
                     end
                 end
+            elseif id == math_code then
+                start = endofmath(start)
+                count = 0
+            elseif id == kern_code and getsubtype(start) == fontkern_code then
+                -- still inside a word ...normally kerns are added later but we can pass
+                -- twice as in an unhbox .. brrr .. is now catched but not yet in
+                -- disc ...
             else
-                if id == math_code then
-                    start = endofmath(start)
-                end
                 count = 0
             end
             if start then

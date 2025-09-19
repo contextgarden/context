@@ -44,8 +44,8 @@ local gsub   = string.gsub
 local qrcodes    = document.qrcodes or { }
 document.qrcodes = qrcodes
 
-qrcodegen.bitmap = qrbitmap
-figures.qrcode   = qrbitmap
+-- qrcodegen.bitmap = qrbitmap
+-- figures.qrcode   = qrbitmap
 
 qrcodes.colors = {
     char(200,  0,  0),
@@ -269,6 +269,16 @@ The control sequence at the end of the top line of your error message was never
 
 \starttext
 
+    \dorecurse{31}{
+        \startMPpage
+            lua.mp.coloredqrcode(0, #1) ;
+            draw unitsquare xsized 5cm withbytemap 0 ;
+            setbounds currentpicture to boundingbox currentpicture enlarged 2mm;
+        \stopMPpage
+    }
+
+    % document.qrcodes.data gets wiped:
+
     \startTEXpage[offset=1ts]
         \qrcode[text={Hi, this uses the regular interface!},color=darkred]
     \stopTEXpage
@@ -290,13 +300,5 @@ The control sequence at the end of the top line of your error message was never
             are replaced by "blah" or some other grunting noise. (Donald Knuth)
         \stopcoloredqrcode
     \stopTEXpage
-
-    \dorecurse{31}{
-        \startMPpage
-            lua.mp.coloredqrcode(0, #1) ;
-            draw unitsquare xsized 5cm withbytemap 0 ;
-            setbounds currentpicture to boundingbox currentpicture enlarged 2mm;
-        \stopMPpage
-    }
 
 \stoptext

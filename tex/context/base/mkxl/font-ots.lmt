@@ -192,20 +192,19 @@ local setprev            = nuts.setprev
 local getboth            = nuts.getboth
 local setboth            = nuts.setboth
 local getid              = nuts.getid
-local getstate           = nuts.getstate
 local getchar            = nuts.getchar
 local setchar            = nuts.setchar
 local getdisc            = nuts.getdisc
 local setdisc            = nuts.setdisc
 local getreplace         = nuts.getreplace
+local setreplace         = nuts.setreplace
 local setlink            = nuts.setlink
 local getwidth           = nuts.getwidth
 local getoptions         = nuts.getoptions
 local setoptions         = nuts.setoptions
 
 local getglyphdata       = nuts.getglyphdata
-local getscales          = nuts.getscales
-
+----- getscales          = nuts.getscales
 ---------------------------------------------------------------------------------------
 
 -- Beware: In ConTeXt components no longer are real components. We only keep track of
@@ -287,14 +286,23 @@ local characters         = false
 local descriptions       = false
 local marks              = false
 local classes            = false
-local currentfont        = false
-local currentdynamic     = false
-local currentscale       = 1000
-local currentxscale      = 1000
-local currentyscale      = 1000
+----- currentfont        = false
+----- currentdynamic     = false
+----- currentscale       = 1000
+----- currentxscale      = 1000
+----- currentyscale      = 1000
 local factor             = 0
 local threshold          = 0
 local checkmarks         = false
+
+local ischck       = node.direct.ischarcheck
+local isnextchck   = node.direct.isnextcharcheck
+local isprevchck   = node.direct.isprevcharcheck
+local setfontcheck = node.direct.setfontcheck
+local getfontcheck = node.direct.getfontcheck
+local newfontcheck = node.direct.newfontcheck
+
+local currentcheck = newfontcheck()
 
 local spaces             = false
 
@@ -600,7 +608,7 @@ local function toligature(head,start,stop,char,dataset,sequence,skiphash,discfou
         -- we can have one accent as part of a lookup and another following
         local start = getnext(current)
         while start do
-            local nxt, char = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char = isnextchck(start,currentcheck)
             if char then
                 -- also something skiphash here?
                 if marks[char] then
@@ -836,7 +844,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
     local startchar = getchar(start)
     if skiphash and skiphash[startchar] then
         while current do
-            local nxt, char = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char = isnextchck(current,currentcheck)
             if char and not hasglyphoption(current,no_left_ligature_code) then
                 local lg = not tonumber(ligature) and ligature[char]
                 if lg then
@@ -869,7 +877,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
         local discfound = false
         local hasmarks  = marks[startchar]
         while current do
-            local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char, id = isnextchck(current,currentcheck)
             if char then
                 if skiphash and skiphash[char] then
                     current = nxt
@@ -912,13 +920,13 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             local pre, post, replace = getdisc(discfound)
             local match
             if replace then
-                local nxt, char = isnextchar(replace,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                local nxt, char = isnextchck(replace,currentcheck)
                 if char and ligature[char] and not hasglyphoption(replace,no_left_ligature_code) then
                     match = true
                 end
             end
             if not match and pre then
-                local nxt, char = isnextchar(pre,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                local nxt, char = isnextchck(pre,currentcheck)
                 if char and ligature[char] and not hasglyphoption(pre,no_left_ligature_code) then
                     match = true
                 end
@@ -926,7 +934,7 @@ function handlers.gsub_ligature(head,start,dataset,sequence,ligature,rlmode,skip
             -- is this test ok:
             if not match and not pre or not replace then
                 local ndf = getnext(discfound)
-                local nxt, char = isnextchar(ndf,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                local nxt, char = isnextchck(ndf,currentcheck)
                 if char and ligature[char] and not hasglyphoption(ndf,no_left_ligature_code) then
                     match = true
                 end
@@ -1035,7 +1043,7 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
         else
             local prev = start
             while snext do
-                local nxt, nextchar = isnextchar(snext,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                local nxt, nextchar = isnextchck(snext,currentcheck)
                 if nextchar then
                     if skiphash and skiphash[nextchar] then -- includes marks too when flag
                         prev  = snext
@@ -1083,6 +1091,8 @@ function handlers.gpos_pair(head,start,dataset,sequence,kerns,rlmode,skiphash,st
                         end
                     end
                 else
+-- print("!!!!!!!!!!!!!",getchar(start))
+--KE: Hans, hier gaat het nog niet goed in het geval van een disc!!!
                     break
                 end
             end
@@ -1099,14 +1109,14 @@ function handlers.gpos_mark2base(head,start,dataset,sequence,markanchors,rlmode,
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [start=mark]
         if base then
-            local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local prv, basechar = isprevchck(base,currentcheck)
             if basechar then
                 if marks[basechar] then
                     -- todo: use prv
                     while base do
                         base = getprev(base)
                         if base then
-                            prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                            prv, basechar = isprevchck(base,currentcheck)
                             if basechar then
                                 if not marks[basechar] then
                                     break
@@ -1155,14 +1165,14 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
     if marks[markchar] then
         local base = getprev(start) -- [glyph] [optional marks] [start=mark]
         if base then
-            local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local prv, basechar = isprevchck(base,currentcheck)
             if basechar then
                 if marks[basechar] then
                     -- todo: use prv
                     while base do
                         base = getprev(base)
                         if base then
-                            prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                            prv, basechar = isprevchck(base,currentcheck)
                             if basechar then
                                 if not marks[basechar] then
                                     break
@@ -1201,8 +1211,8 @@ function handlers.gpos_mark2ligature(head,start,dataset,sequence,markanchors,rlm
                         end
                     end
                 elseif trace_bugs then
-                --  logwarning("%s: char %s is missing in font",pref(dataset,sequence),gref(basechar))
-                    onetimemessage(currentfont,basechar,"no base anchors")
+                --  onetimemessage(currentfont,basechar,"no base anchors")
+                    onetimemessage((getfontcheck(currentcheck)),basechar,"no base anchors")
                 end
             elseif trace_bugs then
                 logwarning("%s: prev node is no char, case %i",pref(dataset,sequence),1)
@@ -1232,7 +1242,7 @@ function handlers.gpos_mark2mark(head,start,dataset,sequence,markanchors,rlmode,
             end
         end
         if base then
-            local nxt, basechar = isnextchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, basechar = isnextchck(base,currentcheck)
             if basechar then -- subtype test can go
                 local ba = markanchors[1][basechar] -- slot 1 has been made copy of the class hash
                 if ba then
@@ -1261,7 +1271,7 @@ function handlers.gpos_cursive(head,start,dataset,sequence,exitanchors,rlmode,sk
     else
         local nxt = getnext(start)
         while nxt do
-            local n, nextchar = isnextchar(nxt,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local n, nextchar = isnextchck(nxt,currentcheck)
             if not nextchar then
                 break
             elseif marks[nextchar] then -- always sequence.flags[1]
@@ -1406,7 +1416,7 @@ function chainprocs.gsub_single(head,start,stop,dataset,sequence,currentlookup,r
     if mapping then
         local current = start
         while current do
-            local nxt, currentchar = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, currentchar = isnextchck(current,currentcheck)
             if currentchar then
                 local replacement = mapping[currentchar]
                 if not replacement or replacement == "" then
@@ -1455,7 +1465,7 @@ function chainprocs.gsub_alternate(head,start,stop,dataset,sequence,currentlooku
         local value   = what == true and tfmdata.shared.features[kind] or what -- todo: optimize in ctx
         local current = start
         while current do
-            local nxt, currentchar = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, currentchar = isnextchck(current,currentcheck)
             if currentchar then
                 local alternatives = mapping[currentchar]
                 if alternatives then
@@ -1538,7 +1548,7 @@ function chainprocs.gsub_ligature(head,start,stop,dataset,sequence,currentlookup
             local last            = stop
             local nofreplacements = 1
             while current do
-                local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                local nxt, char, id = isnextchck(current,currentcheck)
                 if char then
                     if current and hasglyphoption(current,no_left_ligature_code) then
                         break
@@ -1652,7 +1662,7 @@ function chainprocs.gpos_pair(head,start,stop,dataset,sequence,currentlookup,rlm
                 if kerns then
                     local prev = start
                     while snext do
-                        local nxt, nextchar = isnextchar(snext,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                        local nxt, nextchar = isnextchck(snext,currentcheck)
                         if not nextchar then
                             break
                         elseif skiphash and skiphash[nextchar] then
@@ -1720,14 +1730,14 @@ function chainprocs.gpos_mark2base(head,start,stop,dataset,sequence,currentlooku
             if markanchors then
                 local base = getprev(start) -- [glyph] [start=mark]
                 if base then
-                    local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                    local prv, basechar = isprevchck(base,currentcheck)
                     if basechar then
                         if marks[basechar] then
                             -- todo: use prv
                             while base do
                                 base = getprev(base)
                                 if base then
-                                    local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                                    local prv, basechar = isprevchck(base,currentcheck)
                                     if basechar then
                                         if not marks[basechar] then
                                             break
@@ -1786,14 +1796,14 @@ function chainprocs.gpos_mark2ligature(head,start,stop,dataset,sequence,currentl
             if markanchors then
                 local base = getprev(start) -- [glyph] [optional marks] [start=mark]
                 if base then
-                    local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                    local prv, basechar = isprevchck(base,currentcheck)
                     if basechar then
                         if marks[basechar] then
                             -- todo: use prv
                             while base do
                                 base = getprev(base)
                                 if base then
-                                    local prv, basechar = isprevchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                                    local prv, basechar = isprevchck(base,currentcheck)
                                     if basechar then
                                         if not marks[basechar] then
                                             break
@@ -1867,7 +1877,7 @@ function chainprocs.gpos_mark2mark(head,start,stop,dataset,sequence,currentlooku
                     end
                 end
                 if base then -- subtype test can go
-                    local nxt, basechar = isnextchar(base,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                    local nxt, basechar = isnextchck(base,currentcheck)
                     if basechar then
                         local ba = markanchors[1][basechar]
                         if ba then
@@ -1913,7 +1923,7 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
             else
                 local nxt = getnext(start)
                 while nxt do
-                    local n, nextchar = isnextchar(nxt,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                    local n, nextchar = isnextchck(nxt,currentcheck)
                     if not nextchar then
                         break
                     elseif marks[nextchar] then
@@ -1935,7 +1945,8 @@ function chainprocs.gpos_cursive(head,start,stop,dataset,sequence,currentlookup,
                                 end
                             end
                         elseif trace_bugs then
-                            onetimemessage(currentfont,startchar,"no entry anchors")
+                         -- onetimemessage(currentfont,startchar,"no entry anchors")
+                            onetimemessage((getfontcheck(currentcheck)),startchar,"no entry anchors")
                         end
                         break
                     end
@@ -2083,7 +2094,7 @@ local function chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck,wher
             while start do
                 if skiphash then -- hm, so we know we skip some
                     while start do
-                        local nxt, char = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                        local nxt, char = isnextchck(start,currentcheck)
                         if char then
                             if skiphash and skiphash[char] then
                                 start = nxt
@@ -2178,8 +2189,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
     local last          = start
     local prev          = getprev(start)
     local hasglue       = false
-    local useddisc      = nil   -- new 2022-09-25
-    local usedstart     = start -- new 2022-09-25
 
     -- fishy: so we can overflow and then go on in the sweep?
     -- todo : id can also be glue_code as we checked spaces
@@ -2350,7 +2359,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         local cprev         = getprev(start)
         local insertedmarks = 0
         while cprev do
-            local nxt, char = isnextchar(cf,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char = isnextchck(cf,currentcheck)
             if char and marks[char] then
                 insertedmarks = insertedmarks + 1
                 cf            = cprev
@@ -2405,9 +2414,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             setdisc(lookaheaddisc,cf,post,new)
         end
         start          = getprev(lookaheaddisc)
-        if done then -- new 2022-12-22 : discretionary-001.tex
-            useddisc   = lookaheaddisc -- new 2022-09-25
-        end
         sweephead[cf]  = getnext(clast) or false
         sweephead[new] = getnext(cl) or false
     elseif backtrackdisc then
@@ -2416,7 +2422,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
         local cnext         = getnext(start)
         local insertedmarks = 0
         while cnext do
-            local nxt, char = isnextchar(cnext,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char = isnextchck(cnext,currentcheck)
             if char and marks[char] then
                 insertedmarks = insertedmarks + 1
                 cl            = cnext
@@ -2468,25 +2474,16 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
             setdisc(backtrackdisc,pre,post,replace)
         end
         start              = getprev(backtrackdisc)
-        if done then -- new 2022-12-22 : discretionary-001.tex
-            useddisc       = backtrackdisc -- new 2022-09-25
-        end
         sweephead[post]    = getnext(clast) or false
         sweephead[replace] = getnext(last) or false
     else
-
         local ok = false
         head, start, ok = chainrun(head,start,last,dataset,sequence,rlmode,skiphash,ck,5)
         if ok then
             done = true
         end
-
     end
--- test case ?
-    if useddisc and start ~= usedstart then -- make this option per font -- new 2022-09-25
-       start = getnext(start)                                            -- new 2022-09-25
-    end                                                                  -- new 2022-09-25
-    return head, start, done, useddisc                                   -- new 2022-09-25
+    return head, start, done
 end
 
 local chaintrac do
@@ -2577,7 +2574,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
 
     local nofcontexts = contexts.n -- #contexts
 
-    local startchar = nofcontext == 1 or ischar(start,currentfont) -- already checked
+    local startchar = nofcontext == 1 or ischck(start,currentcheck)
     for k=1,nofcontexts do -- does this disc mess work well with n > 1
 
         local ck   = contexts[k]
@@ -2595,9 +2592,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
             local l       = ck[5] -- last current
             local current = start
          -- local last    = start
-
             -- current match
-
             if l > f then
                 -- before/current/after | before/current | current/after
                 local discfound -- = nil
@@ -2609,7 +2604,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                         sweeptype = nil
                     end
                     if last then
-                        local nxt, char, id = isnextchar(last,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                        local nxt, char, id = isnextchck(last,currentcheck)
                         if char then
                             if seq[n][char] then
                                 if n < l then
@@ -2717,7 +2712,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                         local n = f - 1
                         while n >= 1 do
                             if prev then
-                                local prv, char, id = isprevchar(prev,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                                local prv, char, id = isprevchck(prev,currentcheck)
                                 if char then
                                    if seq[n][char] then
                                         if n > 1 then
@@ -2848,7 +2843,7 @@ local function handle_contextchain(head,start,dataset,sequence,contexts,rlmode,s
                     local n = l + 1
                     while n <= s do
                         if current then
-                            local nxt, char, id = isnextchar(current,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                            local nxt, char, id = isnextchck(current,currentcheck)
                             if char then
                                 if seq[n][char] then
                                     if n < s then
@@ -3203,8 +3198,12 @@ local function kernrun(disc,k_run,...)
     -- can be optional, because why on earth do we get a disc after a mark (okay, maybe when a ccmp
     -- has happened but then it should be in the disc so basically this test indicates an error)
     --
+    if getid(prev) == disc_code then
+        local h, t = getreplace(prev,true)
+        prevmarks = t
+    end
     while prevmarks do
-        local prv, char = isprevchar(prevmarks,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+        local prv, char = isprevchck(prevmarks,currentcheck)
         if char and marks[char] then
             prevmarks = prv
         else
@@ -3212,11 +3211,23 @@ local function kernrun(disc,k_run,...)
         end
     end
     --
-    if prev and not ischar(prev,currentfont) then  -- and (pre or replace) -- weak test
+    if prev and not ischck(prev,currentcheck) then  -- and (pre or replace) -- weak test
         prev = false
     end
-    if next and not ischar(next,currentfont) then  -- and (post or replace) -- weak test
-        next = false
+    --
+    local nisc
+    if next then
+        local chr, id = ischck(next,currentcheck) -- and (post or replace) -- weak test
+        if chr then
+            -- ok
+        elseif id == disc_code then
+            nisc = getreplace(next)
+            if nisc and not ischck(nisc,currentcheck) then
+                nisc = false
+            end
+        else
+            next = false
+        end
     end
     --
     -- we need to get rid of this nest mess some day .. has to be done otherwise
@@ -3232,6 +3243,14 @@ local function kernrun(disc,k_run,...)
             end
             setprev(pre)
             setlink(prev,disc)
+        elseif prevmarks then
+            local n = getnext(prevmarks)
+            setlink(prevmarks,pre)
+            if k_run(prevmarks,"preinjections",pre,...) then -- getnext(replace))
+                done = true
+            end
+            setprev(pre)
+            setnext(prevmarks,n)
         end
     end
     --
@@ -3239,7 +3258,15 @@ local function kernrun(disc,k_run,...)
         if k_run(post,"injections",nil,...) then
             done = true
         end
-        if next then
+        if nisc then
+            setlink(posttail,nisc)
+            if k_run(posttail,"postinjections",nisc,...) then
+                done = true
+            end
+            setnext(posttail)
+            setprev(nisc)
+            setreplace(next,nisc)
+        elseif next then
             setlink(posttail,next)
             if k_run(posttail,"postinjections",next,...) then
                 done = true
@@ -3260,8 +3287,24 @@ local function kernrun(disc,k_run,...)
             end
             setprev(replace)
             setlink(prev,disc)
+        elseif prevmarks then
+            local n = getnext(prevmarks)
+            setlink(prevmarks,replace)
+            if k_run(prevmarks,"replaceinjections",replace,...) then -- getnext(replace))
+                done = true
+            end
+            setprev(replace)
+            setnext(prevmarks,n)
         end
-        if next then
+        if nisc then
+            setlink(replacetail,nisc)
+            if k_run(replacetail,"replaceinjections",nisc,...) then
+                done = true
+            end
+            setnext(replacetail)
+            setprev(nisc)
+            setreplace(next,nisc)
+        elseif next then
             setlink(replacetail,next)
             if k_run(replacetail,"replaceinjections",next,...) then
                 done = true
@@ -3269,6 +3312,8 @@ local function kernrun(disc,k_run,...)
             setnext(replacetail)
             setlink(disc,next)
         end
+    elseif nisc then
+        -- well
     elseif prev and next then
         setlink(prev,next)
         if k_run(prevmarks,"emptyinjections",next,...) then
@@ -3488,7 +3533,7 @@ local function c_run_single(head,lookupcache,step,dataset,sequence,rlmode,skipha
         start = head
     end
     while start do
-        local nxt, char, id = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+        local nxt, char, id = isnextchck(start,currentcheck)
         if char then
             local lookupmatch = lookupcache[char]
             if lookupmatch then
@@ -3519,7 +3564,7 @@ end
 local function t_run_single(start,stop,lookupcache)
     local lastd = nil
     while start ~= stop do
-        local nxt, char = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+        local nxt, char = isnextchck(start,currentcheck)
         if char then
             local lookupmatch = lookupcache[char]
             if lookupmatch then -- hm, hyphens can match (tlig) so we need to really check
@@ -3544,7 +3589,7 @@ local function t_run_single(start,stop,lookupcache)
                 local l = nil
                 local d = 0
                 while s do
-                    local nxt, char = isnextchar(s,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                    local nxt, char = isnextchck(s,currentcheck)
                     if char then
                         local lg = not tonumber(lookupmatch) and lookupmatch[char]
                         if lg then
@@ -3592,23 +3637,32 @@ local function t_run_single(start,stop,lookupcache)
     return 0
 end
 
+-- Inside a disc we assume the same conditions wrt fonts so we don't check for
+-- a scale here. Otherwise we need to push and pop.
+--
+-- However, we can have a lone discretionary in which case we might start with
+-- a wrong scale. This can happen with pseudo caps or in general in mixed
+-- scale situations where the initial character has a different size.
+
 local function k_run_single(sub,injection,last,lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
+    local done  = false
     for n in nextnode, sub do -- only gpos
         if n == last then
             break
         else
-            local nxt, char = isnextchar(n,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local char, id = ischck(n,currentcheck)
             if char then
                 local lookupmatch = lookupcache[char]
                 if lookupmatch then
                     local h, d, ok = handler(sub,n,dataset,sequence,lookupmatch,rlmode,skiphash,step,injection)
                     if ok then
-                        return true
+                        done = true
                     end
                 end
             end
         end
     end
+    return done
 end
 
 local function c_run_multiple(head,steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
@@ -3623,7 +3677,7 @@ local function c_run_multiple(head,steps,nofsteps,dataset,sequence,rlmode,skipha
         start = head
     end
     while start do
-        local nxt, char = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+        local nxt, char = isnextchck(start,currentcheck)
         if char then
             for i=1,nofsteps do
                 local step        = steps[i]
@@ -3662,7 +3716,7 @@ end
 local function t_run_multiple(start,stop,steps,nofsteps)
     local lastd = nil
     while start ~= stop do
-        local startnext, char = isnextchar(start,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+        local startnext, char = isnextchck(start,currentcheck)
         if char then
             for i=1,nofsteps do
                 local step = steps[i]
@@ -3688,7 +3742,7 @@ local function t_run_multiple(start,stop,steps,nofsteps)
                     local l = nil
                     local d = 0
                     while s do
-                        local nxt, char = isnextchar(s,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+                        local nxt, char = isnextchck(s,currentcheck)
                         if char then
                             local lg = not tonumber(lookupmatch) and lookupmatch[char]
                             if lg then
@@ -3742,7 +3796,7 @@ local function k_run_multiple(sub,injection,last,steps,nofsteps,dataset,sequence
         if n == last then
             break
         else
-            local nxt, char = isnextchar(n,currentfont,currentdynamic,currentscale,currentxscale,currentyscale)
+            local nxt, char = isnextchck(n,currentcheck)
             if char then
                 for i=1,nofsteps do
                     local step        = steps[i]
@@ -3846,13 +3900,13 @@ do
         local sequences = sequencelists[font] -- temp hack
 
         nesting = nesting + 1
-
         if nesting == 1 then
-            currentfont    = font
-            currentdynamic = dynamic
-            currentscale   = 1000
-            currentxscale  = 1000
-            currentyscale  = 1000
+         -- currentfont    = font
+         -- currentdynamic = dynamic
+         -- currentscale   = 1000
+         -- currentxscale  = 1000
+         -- currentyscale  = 1000
+            setfontcheck(currentcheck,font,dynamic,1000,1000,1000)
             tfmdata        = fontdata[font]
             descriptions   = tfmdata.descriptions -- only needed in gref so we could pass node there instead
             characters     = tfmdata.characters   -- but this branch is not entered that often anyway
@@ -3869,12 +3923,11 @@ do
 
             spaces = setmetatable({},getfastspace)
 
-        elseif currentfont ~= font then
-
+     -- elseif currentfont ~= font then
+        elseif getfontcheck(currentcheck) ~= font then
             report_warning("nested call with a different font, level %s, quitting",nesting)
             nesting = nesting - 1
             return head, false
-
         end
 
         if trace_steps then
@@ -3934,7 +3987,8 @@ do
                     local prv, char, id = isprevchar(start,font,dynamic,state)
                     if char then
                         local m = merged[char]
-                        currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                     -- currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                        setfontcheck(currentcheck,start)
                         if m then
                             for i=m[1],m[2] do
                                 local step = steps[i]
@@ -3960,17 +4014,21 @@ do
                     end
                 end
             else
+                local d      = false
                 local start  = head
                 local rlmode = initialrl
                 if nofsteps == 1 then -- happens often
                     local step = steps[1]
                     local lookupcache = step.coverage
                     while start do
+                        -- state: isol etc, feature specific
                         local nxt, char, id = isnextchar(start,font,dynamic,state) -- we can move the data/state checks here
                         if char then
                             -- no skiphash check here
                             local lookupmatch = lookupcache[char]
-                            currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                         -- currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                            setfontcheck(currentcheck,start)
+                            d = true
                             if lookupmatch then
                                 local ok, df
                                 head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
@@ -3986,6 +4044,10 @@ do
                             -- a different font|state or glue (happens often)
                             start = nxt
                         elseif id == disc_code then
+                            if not d then
+                                setfontcheck(currentcheck,start)
+                                d = true
+                            end
                             if gpossing then
                                 start = kernrun(start,k_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                             elseif forcetestrun then
@@ -4008,11 +4070,13 @@ do
                 else
                     local merged = steps.merged
                     while start do
+                        -- state: isol etc, feature specific
                         local nxt, char, id = isnextchar(start,font,dynamic,state)
                         if char then
                             -- no skiphash check here
                             local m = merged[char]
-                            currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                         -- currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                            setfontcheck(currentcheck,start)
                             if m then
                                 local ok, df
                                 for i=m[1],m[2] do
@@ -4020,8 +4084,8 @@ do
                                     local lookupcache = step.coverage
                                     local lookupmatch = lookupcache[char]
                                     if lookupmatch then
-                                        -- we could move all code inline but that makes things even more unreadable
---                                                 local ok, df
+                                     -- we could move all code inline but that makes things even more unreadable
+                                     --        local ok, df
                                         head, start, ok, df = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
                                         if df then
                                             break
@@ -4045,6 +4109,10 @@ do
                             -- a different font|state or glue (happens often)
                             start = nxt
                         elseif id == disc_code then
+if not d then
+    setfontcheck(currentcheck,start)
+    d = true
+end
                             if gpossing then
                                 start = kernrun(start,k_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                             elseif forcetestrun then
@@ -4083,11 +4151,14 @@ do
 
     function otf.datasetpositionprocessor(head,font,direction,dataset)
 
-        currentfont     = font
-        currentdynamic  = false
-        currentscale    = 1000
-        currentxscale   = 1000
-        currentyscale   = 1000
+        local dynamic = false
+
+     -- currentfont     = font
+     -- currentdynamic  = dynamic
+     -- currentscale    = 1000
+     -- currentxscale   = 1000
+     -- currentyscale   = 1000
+        setfontcheck(currentcheck,font,dynamic,1000,1000,1000)
         tfmdata         = fontdata[font]
         descriptions    = tfmdata.descriptions -- only needed in gref so we could pass node there instead
         characters      = tfmdata.characters   -- but this branch is not entered that often anyway
@@ -4129,7 +4200,8 @@ do
         local position  = 0
 
         while start do
-            local nxt, char, id = isnextchar(start,currentfont,currentdynamic)
+         -- local nxt, char, id = isnextchar(start,currentfont,currentdynamic)
+            local nxt, char, id = isnextchar(start,font,dynamic)
             if char then
                 position = position + 1
                 local m = merged[char]
@@ -4139,7 +4211,8 @@ do
                         local step = steps[i]
                         local lookupcache = step.coverage
                         local lookupmatch = lookupcache[char]
-                        currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                     -- currentscale, currentxscale, currentyscale = getscales(start) -- before if test
+                        setfontcheck(currentcheck,start)
                         if lookupmatch then
                             local ok
                             head, start, ok = handler(head,start,dataset,sequence,lookupmatch,rlmode,skiphash,step)
@@ -4263,7 +4336,7 @@ registerotffeature {
 }
 
 -- Moved here (up) a bit. This doesn't really belong in generic so it will move to a
--- context module some day. It is kind of bsolete anyway.
+-- context module some day. It is kind of obsolete anyway.
 
 local function markinitializer(tfmdata,value)
     local properties = tfmdata.properties

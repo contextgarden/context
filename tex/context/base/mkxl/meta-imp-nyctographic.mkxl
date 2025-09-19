@@ -1,0 +1,683 @@
+%D \module
+%D   [       file=meta-imp-nyctographic,
+%D        version=2025.09.14,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Nyctographic Square Alphabet,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\startMPcalculation{simplefun}
+
+    vardef NyctographicNorth (expr Category, Shape, Style, MarkerSize, Start, Stop, Angle) =
+
+        pair LineStart ; LineStart := Start ;
+        pair LineStop  ; LineStop  := Stop ;
+
+        if Category = "letter" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStart := Start shifted (MarkerSize,0) ;
+            elseif Style = "italic" :
+                LineStart := Start shifted (cosd(70) * MarkerSize/2 + MarkerSize/2, sind(70) * MarkerSize/2 - MarkerSize/2) ;
+            else :
+                LineStart := Start shifted (MarkerSize/2, 0) ;
+            fi ;
+        elseif Category = "other" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStop := Stop shifted (-MarkerSize,0) ;
+            elseif Style = "italic" :
+                LineStop := Stop shifted (-(cosd(70) * MarkerSize/2 + MarkerSize/2), sind(70) * MarkerSize/2 - MarkerSize/2) ;
+            else :
+                LineStop := Stop shifted (-MarkerSize/2, 0) ;
+            fi ;
+        fi ;
+
+        numeric LineAngle ; LineAngle := 360 - scantokens(Angle) ;
+
+        if Style = "italic" :
+            draw (LineStart{dir LineAngle} .. LineStop) ;
+        else :
+            draw (LineStart -- LineStop) ;
+        fi ;
+
+    enddef ;
+
+    vardef NyctographicWest (expr Category, Shape, Style, MarkerSize, Start, Stop, Angle) =
+
+        pair LineStart ; LineStart := Start ;
+        pair LineStop  ; LineStop  := Stop ;
+
+        if Category = "letter" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStop := Stop shifted (0,-MarkerSize) ;
+            elseif Style = "italic" :
+                LineStop := Stop shifted (MarkerSize/2 - sind(70) * MarkerSize/2, -(MarkerSize/2 + cosd(70) * MarkerSize/2)) ;
+            else :
+                LineStop := Stop shifted (0, -MarkerSize/2) ;
+            fi ;
+        elseif Category = "number" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStart := Start shifted (0,MarkerSize) ;
+            elseif Style = "italic" :
+                LineStart := Start shifted (MarkerSize/2 - sind(70) * MarkerSize/2, MarkerSize/2 + cosd(70) * MarkerSize/2) ;
+            else :
+                LineStart := Start shifted (0, MarkerSize/2) ;
+            fi ;
+        fi ;
+
+        numeric LineAngle ; LineAngle := 90 - scantokens(Angle) ;
+
+        if Style = "italic" :
+            draw (LineStart{dir LineAngle} .. LineStop) ;
+        else :
+            draw (LineStart -- LineStop) ;
+        fi ;
+
+    enddef ;
+
+    vardef NyctographicEast (expr Category, Shape, Style, MarkerSize, Start, Stop, Angle) =
+
+        pair LineStart ; LineStart := Start ;
+        pair LineStop  ; LineStop  := Stop ;
+
+        if Category = "other" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStop := Stop shifted (0,-MarkerSize) ;
+            elseif Style = "italic" :
+                LineStop := Stop shifted (-(MarkerSize/2 - sind(70) * MarkerSize/2), -(MarkerSize/2 + cosd(70) * MarkerSize/2)) ;
+            else :
+                LineStop := Stop shifted (0, -MarkerSize/2) ;
+            fi ;
+        elseif Category = "symbol" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStart := Start shifted (0,MarkerSize) ;
+            elseif Style = "italic" :
+                LineStart := Start shifted (-(MarkerSize/2 - sind(70) * MarkerSize/2), MarkerSize/2 + cosd(70) * MarkerSize/2) ;
+            else :
+                LineStart := Start shifted (0, MarkerSize/2) ;
+            fi ;
+        fi ;
+
+        numeric LineAngle ; LineAngle := 90 + scantokens(Angle) ;
+
+        if Style = "italic" :
+            draw (LineStart{dir LineAngle} .. LineStop) ;
+        else :
+            draw (LineStart -- LineStop) ;
+        fi ;
+
+    enddef ;
+
+    vardef NyctographicSouth (expr Category, Shape, Style, MarkerSize, Start, Stop, Angle) =
+
+        pair LineStart ; LineStart := Start ;
+        pair LineStop  ; LineStop  := Stop ;
+
+        if Category = "number" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStart := Start shifted (MarkerSize,0) ;
+            elseif Style = "italic" :
+                LineStart := Start shifted (MarkerSize/2 + cosd(70) * MarkerSize/2, MarkerSize/2 - sind(70) * MarkerSize/2) ;
+            else :
+                LineStart := Start shifted (MarkerSize/2, 0) ;
+            fi ;
+        elseif Category = "symbol" :
+            if (Shape = "square") or (Shape = "triangle") or (Shape = "quartercircle") :
+                LineStop := Stop shifted (-MarkerSize,0) ;
+            elseif Style = "italic" :
+                LineStop := Stop shifted (-(MarkerSize/2 + cosd(70) * MarkerSize/2), MarkerSize/2 - sind(70) * MarkerSize/2) ;
+            else :
+                LineStop := Stop shifted (-MarkerSize/2, 0) ;
+            fi ;
+        fi ;
+
+        numeric LineAngle ; LineAngle := scantokens(Angle) ;
+
+        if Style = "italic" :
+            draw (LineStart{dir LineAngle} .. LineStop) ;
+        else :
+            draw (LineStart -- LineStop) ;
+        fi ;
+
+    enddef ;
+
+    vardef NyctographicAlphabet (expr Sides, Corners, Case, Category) =
+
+        save NW, NE, SW, SE ;
+
+        save MarkerSize, SymbolSize ;
+
+        save Weight, Style, Angle, Shape ;
+
+        save MarkerPosition ;
+        save MarkerShape ;
+
+        save SidesEntry, CornersEntry ;
+
+        numeric MarkerSize ; MarkerSize := 3 ;
+        numeric SymbolSize ; SymbolSize := MarkerSize / 2 ;
+
+        pair NW ; NW := (1,9) ;
+        pair NE ; NE := (9,9) ;
+        pair SW ; SW := (1,1) ;
+        pair SE ; SE := (9,1) ;
+
+        string Weight ; Weight := getparameterdefault "mpsfont" "weight" "regular" ;
+        string Style  ; Style  := getparameterdefault "mpsfont" "style"  "regular" ;
+        string Shape  ; Shape  := getparameterdefault "mpsfont" "shape"  "circle"  ;
+        string Angle  ; Angle  := getparameterdefault "mpsfont" "angle"  "25"      ;
+
+        if Weight = "light" :
+            pickup pencircle scaled 1/3 ;
+        elseif Weight = "medium" :
+            pickup pencircle scaled 3/3 ;
+        elseif Weight = "bold" :
+            pickup pencircle scaled 4/3 ;
+        else :
+            pickup pencircle scaled 2/3 ;
+        fi ;
+
+        pair MarkerPosition ;
+
+        if Category = "letter" :
+            xpart MarkerPosition = xpart NW if (Shape <> "triangle") and (Shape <> "quartercircle") : + MarkerSize / 2 fi ;
+            ypart MarkerPosition = ypart NW if (Shape <> "triangle") and (Shape <> "quartercircle") : - MarkerSize / 2 fi ;
+        elseif Category = "symbol" :
+            xpart MarkerPosition = xpart SE if (Shape <> "triangle") and (Shape <> "quartercircle") : - MarkerSize / 2 fi ;
+            ypart MarkerPosition = ypart SE if (Shape <> "triangle") and (Shape <> "quartercircle") : + MarkerSize / 2 fi ;
+        elseif Category = "number" :
+            xpart MarkerPosition = xpart SW if (Shape <> "triangle") and (Shape <> "quartercircle") : + MarkerSize / 2 fi ;
+            ypart MarkerPosition = ypart SW if (Shape <> "triangle") and (Shape <> "quartercircle") : + MarkerSize / 2 fi ;
+        else :
+            xpart MarkerPosition = xpart NE if (Shape <> "triangle") and (Shape <> "quartercircle") : - MarkerSize / 2 fi ;
+            ypart MarkerPosition = ypart NE if (Shape <> "triangle") and (Shape <> "quartercircle") : - MarkerSize / 2 fi ;
+        fi ;
+
+        path MarkerShape ;
+
+        if Shape = "square" :
+            MarkerShape := fullsquare ;
+        elseif Shape = "triangle" :
+            if Category = "letter" :
+                MarkerShape := lrtriangle scaled 2 ;
+            elseif Category = "number" :
+                MarkerShape := urtriangle scaled 2 ;
+            elseif Category = "symbol" :
+                MarkerShape := ultriangle scaled 2 ;
+            else :
+                MarkerShape := lltriangle scaled 2 ;
+            fi ;
+        elseif Shape = "quartercircle" :
+            if Category = "letter" :
+                MarkerShape := lrcircle scaled 2 ;
+            elseif Category = "number" :
+                MarkerShape := urcircle scaled 2 ;
+            elseif Category = "symbol" :
+                MarkerShape := ulcircle scaled 2 ;
+            else :
+                MarkerShape := llcircle scaled 2 ;
+            fi ;
+        else :
+            MarkerShape := fullcircle ;
+        fi ;
+
+        draw image (
+
+            if Case = "upper" :
+                draw
+            else :
+                drawfill
+            fi
+            MarkerShape scaled MarkerSize shifted MarkerPosition ;
+
+            string SidesEntry ;
+
+            for i = 0 upto 3 :
+                SidesEntry := substring(i,i+1) of Sides ;
+                if SidesEntry = "N" :
+                    NyctographicNorth(Category,Shape,Style,MarkerSize,NW,NE,Angle)
+                elseif SidesEntry = "W" :
+                    NyctographicWest (Category,Shape,Style,MarkerSize,SW,NW,Angle)
+                elseif SidesEntry = "E" :
+                    NyctographicEast (Category,Shape,Style,MarkerSize,SE,NE,Angle)
+                elseif SidesEntry = "S" :
+                    NyctographicSouth(Category,Shape,Style,MarkerSize,SW,SE,Angle)
+                fi ;
+            endfor ;
+
+            string CornersEntry ;
+
+            for i = 0 upto 3 :
+                CornersEntry := substring(i,i+1) of Corners ;
+                if CornersEntry = "1" :
+                    if Shape = "triangle" :
+                        drawfill lrtriangle scaled (2 * SymbolSize) shifted NW ;
+                    elseif Shape = "quartercircle" :
+                        drawfill lrcircle scaled (2 * SymbolSize) shifted NW ;
+                    else :
+                        drawfill MarkerShape scaled SymbolSize shifted (xpart NW + SymbolSize/2, ypart NW - SymbolSize/2) ;
+                    fi ;
+                elseif CornersEntry = "2" :
+
+                    if Shape = "triangle" :
+                        drawfill lltriangle scaled (2 * SymbolSize) shifted NE ;
+                    elseif Shape = "quartercircle" :
+                        drawfill llcircle scaled (2 * SymbolSize) shifted NE ;
+                    else :
+                        drawfill MarkerShape scaled SymbolSize shifted (xpart NE - SymbolSize/2, ypart NE - SymbolSize/2) ;
+                    fi ;
+                elseif CornersEntry = "3" :
+                    if Shape = "triangle" :
+                        drawfill urtriangle scaled (2 * SymbolSize) shifted SW ;
+                    elseif Shape = "quartercircle" :
+                        drawfill urcircle scaled (2 * SymbolSize) shifted SW ;
+                    else :
+                        drawfill MarkerShape scaled SymbolSize shifted (xpart SW + SymbolSize/2, ypart SW + SymbolSize/2) ;
+                    fi ;
+                elseif CornersEntry = "4" :
+                    if Shape = "triangle" :
+                        drawfill ultriangle scaled (2 * SymbolSize) shifted SE ;
+                    elseif Shape = "quartercircle" :
+                        drawfill ulcircle scaled (2 * SymbolSize) shifted SE ;
+                    else :
+                        drawfill MarkerShape scaled SymbolSize shifted (xpart SE - SymbolSize/2, ypart SE + SymbolSize/2) ;
+                    fi ;
+                fi ;
+            endfor ;
+
+            setbounds currentpicture to unitsquare scaled 10 ;
+
+        ) shifted (1,-1) ;
+
+    enddef ;
+
+    vardef NyctographicUppercase (expr Sides, Corners) =
+        NyctographicAlphabet(Sides, Corners, "upper", "letter")
+    enddef ;
+
+    vardef NyctographicLowercase (expr Sides, Corners) =
+        NyctographicAlphabet(Sides, Corners, "lower", "letter")
+    enddef ;
+
+    vardef NyctographicSymbol (expr Sides, Corners) =
+        NyctographicAlphabet(Sides, Corners, "lower", "symbol")
+    enddef ;
+
+    vardef NyctographicNumber (expr Sides, Corners) =
+        NyctographicAlphabet(Sides, Corners, "lower", "number")
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "nyctographic",
+        units    = 12,
+        width    = 12,
+        height   = 10,
+        depth    = 2,
+        usecolor = true,
+    ] ;
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0041", code = NyctographicUppercase("____", "___4") ] ; % A
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0042", code = NyctographicUppercase("_W__", "_2_4") ] ; % B
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0043", code = NyctographicUppercase("NW_S", "____") ] ; % C
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0044", code = NyctographicUppercase("N_ES", "____") ] ; % D
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0045", code = NyctographicUppercase("N___", "____") ] ; % E
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0046", code = NyctographicUppercase("NW__", "___4") ] ; % F
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0047", code = NyctographicUppercase("_W_S", "_2__") ] ; % G
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0048", code = NyctographicUppercase("_WE_", "____") ] ; % H
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0049", code = NyctographicUppercase("___S", "____") ] ; % I
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004A", code = NyctographicUppercase("__ES", "____") ] ; % J
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004B", code = NyctographicUppercase("_W__", "___4") ] ; % K
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004C", code = NyctographicUppercase("_W_S", "____") ] ; % L
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004D", code = NyctographicUppercase("NWE_", "____") ] ; % M
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004E", code = NyctographicUppercase("_WES", "____") ] ; % N
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x004F", code = NyctographicUppercase("NWES", "____") ] ; % O
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0050", code = NyctographicUppercase("_W__", "_2__") ] ; % P
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0051", code = NyctographicUppercase("__E_", "____") ] ; % Q
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0052", code = NyctographicUppercase("N_E_", "__3_") ] ; % R
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0053", code = NyctographicUppercase("NW__", "____") ] ; % S
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0054", code = NyctographicUppercase("N_E_", "____") ] ; % T
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0055", code = NyctographicUppercase("____", "_2__") ] ; % U
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0056", code = NyctographicUppercase("____", "_2_4") ] ; % V
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0057", code = NyctographicUppercase("___S", "_2__") ] ; % W
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0058", code = NyctographicUppercase("N___", "__3_") ] ; % X
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0059", code = NyctographicUppercase("N___", "___4") ] ; % Y
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x005A", code = NyctographicUppercase("N__S", "____") ] ; % Z
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE000", code = NyctographicUppercase("____", "_23_") ] ; % Figures
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE001", code = NyctographicUppercase("____", "_234") ] ; % Date
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE002", code = NyctographicUppercase("____", "__34") ] ; % Letters
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE003", code = NyctographicUppercase("__E_", "__3_") ] ; % And
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE004", code = NyctographicUppercase("N___", "__34") ] ; % The
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0061", code = NyctographicLowercase("____", "___4") ] ; % a
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0062", code = NyctographicLowercase("_W__", "_2_4") ] ; % b
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0063", code = NyctographicLowercase("NW_S", "____") ] ; % c
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0064", code = NyctographicLowercase("N_ES", "____") ] ; % d
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0065", code = NyctographicLowercase("N___", "____") ] ; % e
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0066", code = NyctographicLowercase("NW__", "___4") ] ; % f
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0067", code = NyctographicLowercase("_W_S", "_2__") ] ; % g
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0068", code = NyctographicLowercase("_WE_", "____") ] ; % h
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0069", code = NyctographicLowercase("___S", "____") ] ; % i
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006A", code = NyctographicLowercase("__ES", "____") ] ; % j
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006B", code = NyctographicLowercase("_W__", "___4") ] ; % k
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006C", code = NyctographicLowercase("_W_S", "____") ] ; % l
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006D", code = NyctographicLowercase("NWE_", "____") ] ; % m
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006E", code = NyctographicLowercase("_WES", "____") ] ; % n
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x006F", code = NyctographicLowercase("NWES", "____") ] ; % o
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0070", code = NyctographicLowercase("_W__", "_2__") ] ; % p
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0071", code = NyctographicLowercase("__E_", "____") ] ; % q
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0072", code = NyctographicLowercase("N_E_", "__3_") ] ; % r
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0073", code = NyctographicLowercase("NW__", "____") ] ; % s
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0074", code = NyctographicLowercase("N_E_", "____") ] ; % t
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0075", code = NyctographicLowercase("____", "_2__") ] ; % u
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0076", code = NyctographicLowercase("____", "_2_4") ] ; % v
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0077", code = NyctographicLowercase("___S", "_2__") ] ; % w
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0078", code = NyctographicLowercase("N___", "__3_") ] ; % x
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0079", code = NyctographicLowercase("N___", "___4") ] ; % y
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x007A", code = NyctographicLowercase("N__S", "____") ] ; % z
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE005", code = NyctographicLowercase("____", "_23_") ] ; % figures
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE006", code = NyctographicLowercase("____", "_234") ] ; % date
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE007", code = NyctographicLowercase("____", "__34") ] ; % letters
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE008", code = NyctographicLowercase("__E_", "__3_") ] ; % and
+    lmt_registerglyph [ category = "nyctographic", unicode = "0xE009", code = NyctographicLowercase("N___", "__34") ] ; % the
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x002E", code = NyctographicSymbol   ("____", "1___") ] ; % .
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x002C", code = NyctographicSymbol   ("___S", "____") ] ; % ,
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x003A", code = NyctographicSymbol   ("____", "12__") ] ; % :
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x003B", code = NyctographicSymbol   ("___S", "_2__") ] ; % ;
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0021", code = NyctographicSymbol   ("__E_", "1___") ] ; % !
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x003F", code = NyctographicSymbol   ("NWE_", "____") ] ; % ?
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x002D", code = NyctographicSymbol   ("N___", "____") ] ; % -
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x2018", code = NyctographicSymbol   ("_W_S", "____") ] ; % ‘
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x2019", code = NyctographicSymbol   ("N_E_", "____") ] ; % ’
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x201C", code = NyctographicSymbol   ("_W_S", "_2__") ] ; % “
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x201D", code = NyctographicSymbol   ("N_E_", "__3_") ] ; % ”
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0028", code = NyctographicSymbol   ("NW_S", "____") ] ; % (
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0029", code = NyctographicSymbol   ("N_ES", "____") ] ; % )
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x005B", code = NyctographicSymbol   ("NW_S", "____") ] ; % [
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x005D", code = NyctographicSymbol   ("N_ES", "____") ] ; % ]
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x007B", code = NyctographicSymbol   ("NW_S", "____") ] ; % {
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x007D", code = NyctographicSymbol   ("N_ES", "____") ] ; % }
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x00AD", code = NyctographicSymbol   ("N___", "____") ] ; % -
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x2013", code = NyctographicSymbol   ("N___", "____") ] ; % –
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x2014", code = NyctographicSymbol   ("N___", "____") ] ; % —
+
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0030", code = NyctographicNumber   ("NWES", "____") ] ; % 0
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0031", code = NyctographicNumber   ("___S", "____") ] ; % 1
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0032", code = NyctographicNumber   ("__ES", "____") ] ; % 2
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0033", code = NyctographicNumber   ("___S", "1___") ] ; % 3
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0034", code = NyctographicNumber   ("_W_S", "____") ] ; % 4
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0035", code = NyctographicNumber   ("N__S", "____") ] ; % 5
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0036", code = NyctographicNumber   ("NW_S", "____") ] ; % 6
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0037", code = NyctographicNumber   ("N_E_", "____") ] ; % 7
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0038", code = NyctographicNumber   ("_WES", "____") ] ; % 8
+    lmt_registerglyph [ category = "nyctographic", unicode = "0x0039", code = NyctographicNumber   ("N_ES", "____") ] ; % 9
+
+\stopMPcalculation
+
+\startluacode
+
+    fonts.handlers.otf.addfeature {
+        name    = "nyctographic:words",
+        type    = "ligature",
+        nocheck = true,
+        data    = {
+            [0xE003] = { 0x0041, 0x006E, 0x0064 }, -- And
+            [0xE004] = { 0x0054, 0x0068, 0x0065 }, -- The
+            [0xE008] = { 0x0061, 0x006E, 0x0064 }, -- and
+            [0xE009] = { 0x0074, 0x0068, 0x0065 }, -- the
+        }
+    }
+
+    fonts.handlers.otf.addfeature {
+        name = "nyctographic:numbers",
+        type = "substitution",
+        data = {
+            [0x0030] = 0x007A, -- 0 = z
+            [0x0031] = 0x0062, -- 1 = b
+            [0x0032] = 0x0064, -- 2 = d
+            [0x0033] = 0x0074, -- 3 = t
+            [0x0034] = 0x0066, -- 4 = f
+            [0x0035] = 0x006C, -- 5 = l
+            [0x0036] = 0x0073, -- 6 = s
+            [0x0037] = 0x006D, -- 7 = m
+            [0x0038] = 0x0068, -- 8 = h
+            [0x0039] = 0x006E, -- 9 = n
+        }
+    }
+
+    local shapes = { }
+
+    for k, v in next, characters.data do
+        local s = v.shcode
+        if s then
+            if type(s) == "number" then
+                shapes[utf.char(k)] = { utf.char(s) }
+            elseif #s == 2 then
+                shapes[utf.char(k)] = { utf.char(s[1]), utf.char(s[2]) }
+            end
+        end
+    end
+
+    fonts.handlers.otf.addfeature {
+        name = "nyctographic:shapes",
+        type = "multiple",
+        data = shapes,
+    }
+
+\stopluacode
+
+\starttypescriptcollection [nyctograph]
+
+\definefontfeature [nyctographic:words]   [nyctographic:words=yes]
+\definefontfeature [nyctographic:numbers] [nyctographic:numbers=yes]
+\definefontfeature [nyctographic:shapes]  [nyctographic:shapes=yes]
+
+\definefontfeature [nyctographic] [always] [nyctographic:shapes=yes]
+
+\definefontfeature [nyctographic:circle:light]               [nyctographic] [metapost={category=nyctographic,shape=circle,weight=light,style=regular}]
+\definefontfeature [nyctographic:circle:lightitalic]         [nyctographic] [metapost={category=nyctographic,shape=circle,weight=light,style=italic}]
+\definefontfeature [nyctographic:circle:regular]             [nyctographic] [metapost={category=nyctographic,shape=circle,weight=regular,style=regular}]
+\definefontfeature [nyctographic:circle:italic]              [nyctographic] [metapost={category=nyctographic,shape=circle,weight=regular,style=italic}]
+\definefontfeature [nyctographic:circle:medium]              [nyctographic] [metapost={category=nyctographic,shape=circle,weight=medium,style=regular}]
+\definefontfeature [nyctographic:circle:mediumitalic]        [nyctographic] [metapost={category=nyctographic,shape=circle,weight=medium,style=italic}]
+\definefontfeature [nyctographic:circle:bold]                [nyctographic] [metapost={category=nyctographic,shape=circle,weight=bold,style=regular}]
+\definefontfeature [nyctographic:circle:bolditalic]          [nyctographic] [metapost={category=nyctographic,shape=circle,weight=bold,style=italic}]
+
+\definefontfeature [nyctographic:square:light]               [nyctographic] [metapost={category=nyctographic,shape=square,weight=light,style=regular}]
+\definefontfeature [nyctographic:square:lightitalic]         [nyctographic] [metapost={category=nyctographic,shape=square,weight=light,style=italic}]
+\definefontfeature [nyctographic:square:regular]             [nyctographic] [metapost={category=nyctographic,shape=square,weight=regular,style=regular}]
+\definefontfeature [nyctographic:square:italic]              [nyctographic] [metapost={category=nyctographic,shape=square,weight=regular,style=italic}]
+\definefontfeature [nyctographic:square:medium]              [nyctographic] [metapost={category=nyctographic,shape=square,weight=medium,style=regular}]
+\definefontfeature [nyctographic:square:mediumitalic]        [nyctographic] [metapost={category=nyctographic,shape=square,weight=medium,style=italic}]
+\definefontfeature [nyctographic:square:bold]                [nyctographic] [metapost={category=nyctographic,shape=square,weight=bold,style=regular}]
+\definefontfeature [nyctographic:square:bolditalic]          [nyctographic] [metapost={category=nyctographic,shape=square,weight=bold,style=italic}]
+
+\definefontfeature [nyctographic:quartercircle:light]        [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=light,style=regular}]
+\definefontfeature [nyctographic:quartercircle:lightitalic]  [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=light,style=italic}]
+\definefontfeature [nyctographic:quartercircle:regular]      [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=regular,style=regular}]
+\definefontfeature [nyctographic:quartercircle:italic]       [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=regular,style=italic}]
+\definefontfeature [nyctographic:quartercircle:medium]       [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=medium,style=regular}]
+\definefontfeature [nyctographic:quartercircle:mediumitalic] [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=medium,style=italic}]
+\definefontfeature [nyctographic:quartercircle:bold]         [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=bold,style=regular}]
+\definefontfeature [nyctographic:quartercircle:bolditalic]   [nyctographic] [metapost={category=nyctographic,shape=quartercircle,weight=bold,style=italic}]
+
+\definefontfeature [nyctographic:triangle:light]             [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=light,style=regular}]
+\definefontfeature [nyctographic:triangle:lightitalic]       [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=light,style=italic}]
+\definefontfeature [nyctographic:triangle:regular]           [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=regular,style=regular}]
+\definefontfeature [nyctographic:triangle:italic]            [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=regular,style=italic}]
+\definefontfeature [nyctographic:triangle:medium]            [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=medium,style=regular}]
+\definefontfeature [nyctographic:triangle:mediumitalic]      [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=medium,style=italic}]
+\definefontfeature [nyctographic:triangle:bold]              [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=bold,style=regular}]
+\definefontfeature [nyctographic:triangle:bolditalic]        [nyctographic] [metapost={category=nyctographic,shape=triangle,weight=bold,style=italic}]
+
+\starttypescript [serif] [nyctographic-light]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]           [DefaultFont] [features=nyctographic:circle:light]
+    \definefontsynonym [SerifItalic]     [DefaultFont] [features=nyctographic:circle:lightitalic]
+    \definefontsynonym [SerifBold]       [DefaultFont] [features=nyctographic:circle:medium]
+    \definefontsynonym [SerifBoldItalic] [DefaultFont] [features=nyctographic:circle:mediumitalic]
+\stoptypescript
+
+\starttypescript [serif] [nyctographic]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif]           [DefaultFont] [features=nyctographic:circle:regular]
+    \definefontsynonym [SerifItalic]     [DefaultFont] [features=nyctographic:circle:italic]
+    \definefontsynonym [SerifBold]       [DefaultFont] [features=nyctographic:circle:bold]
+    \definefontsynonym [SerifBoldItalic] [DefaultFont] [features=nyctographic:circle:bolditalic]
+\stoptypescript
+
+\starttypescript [sans] [nyctographic-light]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [DefaultFont] [features=nyctographic:square:light]
+    \definefontsynonym [SansItalic]     [DefaultFont] [features=nyctographic:square:lightitalic]
+    \definefontsynonym [SansBold]       [DefaultFont] [features=nyctographic:square:medium]
+    \definefontsynonym [SansBoldItalic] [DefaultFont] [features=nyctographic:square:mediumitalic]
+\stoptypescript
+
+\starttypescript [sans] [nyctographic]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]           [DefaultFont] [features=nyctographic:square:regular]
+    \definefontsynonym [SansItalic]     [DefaultFont] [features=nyctographic:square:italic]
+    \definefontsynonym [SansBold]       [DefaultFont] [features=nyctographic:square:bold]
+    \definefontsynonym [SansBoldItalic] [DefaultFont] [features=nyctographic:square:bolditalic]
+\stoptypescript
+
+\starttypescript [mono] [nyctographic-light]
+    \setups[font:fallback:mono]
+    \definefontsynonym [Mono]           [DefaultFont] [features=nyctographic:quartercircle:light]
+    \definefontsynonym [MonoItalic]     [DefaultFont] [features=nyctographic:quartercircle:lightitalic]
+    \definefontsynonym [MonoBold]       [DefaultFont] [features=nyctographic:quartercircle:medium]
+    \definefontsynonym [MonoBoldItalic] [DefaultFont] [features=nyctographic:quartercircle:mediumitalic]
+\stoptypescript
+
+\starttypescript [mono] [nyctographic]
+    \setups[font:fallback:mono]
+    \definefontsynonym [Mono]           [DefaultFont] [features=nyctographic:quartercircle:regular]
+    \definefontsynonym [MonoItalic]     [DefaultFont] [features=nyctographic:quartercircle:italic]
+    \definefontsynonym [MonoBold]       [DefaultFont] [features=nyctographic:quartercircle:bold]
+    \definefontsynonym [MonoBoldItalic] [DefaultFont] [features=nyctographic:quartercircle:bolditalic]
+\stoptypescript
+
+\starttypescript [nyctographic-light,nyctographic]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone]
+    \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone]
+    \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]
+\stoptypescript
+
+\permanent\def\nyctographicnumerals#1%
+  {{\feature[+][nyctographic:numbers]\utfchar{0xE005}#1\utfchar{0xE007}}}
+
+\defineconversion [nyctographicnumerals] [\nyctographicnumerals]
+
+\stoptypescriptcollection
+
+\continueifinputfile{meta-imp-nyctographic.mkxl}
+
+\usebodyfont[nyctographic]
+
+\setuppapersize[A4,landscape]
+
+\setuplayout[tight][topspace=1.5cm,bottomspace=1.5cm,backspace=1.5cm,cutspace=1.5cm]
+\setuplayout[tight]
+
+\definebodyfontenvironment[30pt]
+\switchtobodyfont[30pt,dejavu]
+
+\setupinterlinespace[line=5ex]
+
+\starttext
+
+\startalignment[middle]
+
+\dostepwiserecurse{`A}{`Z}{1}
+  {\ruby{\switchtobodyfont[nyctographic]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`A+1);13}
+     \par
+   \else
+     \space
+   \fi}
+
+\blank
+
+\dostepwiserecurse{`a}{`z}{1}
+  {\ruby{\switchtobodyfont[nyctographic]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`a+1);13}
+     \par
+   \else
+     \space
+   \fi}
+
+\blank
+
+\dostepwiserecurse{`0}{`9}{1}
+  {\ruby{\switchtobodyfont[nyctographic]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`0+1);10}
+     \par
+   \else
+     \space
+   \fi}
+
+\stopalignment
+
+\page
+
+\startbuffer[pangram]
+The quick brown fox jumps over the lazy dog
+\stopbuffer
+
+\starttabulate[|l|plf{\switchtobodyfont[nyctographic]}|]
+\NC \tex{rm} \NC \rm \getbuffer[pangram] \NC\NR
+\NC \tex{ss} \NC \ss \getbuffer[pangram] \NC\NR
+\NC \tex{tt} \NC \tt \getbuffer[pangram] \NC\NR
+\stoptabulate
+
+\page
+
+\startalignment[middle]
+
+\doloopoverlist{and,And,the,The}
+  {\ruby{\switchtobodyfont[nyctographic]\feature[+][nyctographic:words]\recursestring}{\recursestring}
+   \space}
+
+\blank
+
+\doloopoverlist{0,1,2,3,4,5,6,7,8,9}
+  {\ruby{\switchtobodyfont[nyctographic]\feature[+][nyctographic:numbers]\recursestring}{\recursestring}
+   \space}
+
+\blank
+
+\doloopoverlist{a,à,á,â,ã,ä,å,ā,ă,ą,ǎ,ȁ}
+  {\ruby{\switchtobodyfont[nyctographic]\feature[+][nyctographic:shapes]\recursestring}{\recursestring}
+   \space}
+
+\stopalignment
+
+\page
+
+\startbuffer[randomcharacter]
+  \ifcase\randomnumber{0}{5}\red\or\green\or\blue\or\cyan\or\magenta\or\yellow\fi
+  \ifcase\randomnumber{0}{2}\rm\or\ss\or\tt\fi
+  \ifcase\randomnumber{0}{1}\tf\or\it\fi
+  \ifcase\randomnumber{0}{2}
+    \char\randomnumber{`0}{`9}\or
+    \char\randomnumber{`a}{`z}\or
+    \char\randomnumber{`A}{`Z}\or
+  \fi
+  \hskip\zeropoint plus\spaceamount\relax
+\stopbuffer
+
+\start
+\switchtobodyfont[nyctographic]
+\setupalign[paragraph]
+\setupinterlinespace[line=1fs,height=0.8,depth=0.2]
+\dorecurse{400}{\getbuffer[randomcharacter]}
+\removeunwantedspaces\par
+\stop
+
+\stoptext

@@ -22,8 +22,10 @@ local signals  = utilities.signals
 local report   = signals.report or logs.reporter("signal")
 local state    = signals.loadstate()
 
-local server   = state and state.servers[state.usage.server or "default"]
-local protocol = server and server.protocol or "hue"
+local server   = state and state.servers and state.servers[state.usage.server or "default"]
+local client   = state and state.clients and state.clients[state.usage.client or "default"]
+
+local protocol = server and server.protocol or "serial"
 
 if protocol == "serial" then
 
@@ -42,13 +44,21 @@ if protocol == "serial" then
         return
     end
 
-    local prefix = signals.serialprefix
+    local prefix  = signals.serialprefix
+    local forward = signals.serialprefix .. "wf"
 
-    local function squidsome(cmd)
-        serialwrite(port,baud,prefix .. cmd .. "\r")
+    if not (client and client.protocol == "forward") then
+        forward = false
     end
 
-    local function squidreset  () squidsome("qr") end
+    local function squidsome(cmd,fwd)
+        serialwrite(port,baud,prefix .. cmd .. "\r")
+        if forward and fwd then
+            serialwrite(port,baud,forward)
+        end
+    end
+
+    local function squidreset  () squidsome("qr",true) end
     local function squidbusy   () squidsome("qs") end
     local function squidstep   () squidsome("qs") end
     local function squiddone   () squidsome("qf") end

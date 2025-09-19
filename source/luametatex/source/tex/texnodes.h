@@ -1275,39 +1275,52 @@ static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rul
 
 */
 
-# define glyph_node_size     14
+# define glyph_node_size     15
 # define glyph_character(a)  memone(a,2)
-# define glyph_font(a)       memtwo(a,2)   /*tex can be quarterword */
-# define glyph_data(a)       memone(a,3)   /*tex handy in context */
-# define glyph_state(a)      memtwo(a,3)   /*tex handy in context */
-# define glyph_language(a)   memone0(a,4)
-# define glyph_script(a)     memone1(a,4)
-# define glyph_control(a)    memtwo0(a,4)  /*tex we store 0xXXXX in the |\cccode| */
-//define glyph_disccode(a)   memtwo1(a,4)  /*tex can be smaller */
-# define glyph_disccode(a)   memtwo02(a,4)
-# define glyph_processing(a) memtwo03(a,4)
-# define glyph_options(a)    memone(a,5)
-# define glyph_hyphenate(a)  memtwo(a,5)
-# define glyph_protected(a)  memone00(a,6)
-# define glyph_lhmin(a)      memone01(a,6)
-# define glyph_rhmin(a)      memone02(a,6)
-# define glyph_discpart(a)   memone03(a,6)
-# define glyph_expansion(a)  memtwo(a,6)
-# define glyph_x_scale(a)    memone(a,7)
-# define glyph_y_scale(a)    memtwo(a,7)
-# define glyph_scale(a)      memone(a,8)
-# define glyph_raise(a)      memtwo(a,8)
-# define glyph_left(a)       memone(a,9)
-# define glyph_right(a)      memtwo(a,9)
-# define glyph_x_offset(a)   memone(a,10)
-# define glyph_y_offset(a)   memtwo(a,10)
-# define glyph_weight(a)     memone(a,11)
-# define glyph_slant(a)      memtwo(a,11)
-# define glyph_properties(a) memone0(a,12)  /*tex for math */
-# define glyph_group(a)      memone1(a,12)  /*tex for math */
-# define glyph_index(a)      memtwo(a,12)   /*tex for math */
-# define glyph_input_file(a) memone(a,13)
-# define glyph_input_line(a) memtwo(a,13)
+# define glyph_state(a)      memtwo(a,2)   /*tex handy in context */
+
+# define glyph_font(a)       memone(a,3)   /*tex can be quarterword */
+# define glyph_data(a)       memtwo(a,3)   /*tex can be quarterword */
+# define glyph_scale(a)      memone(a,4)
+# define glyph_x_scale(a)    memtwo(a,4)
+# define glyph_y_scale(a)    memone(a,5)
+# define glyph_dummy(a)      memtwo(a,5)   /*tex then this one can go */
+
+# define glyph_weight(a)     memone(a,6)
+# define glyph_slant(a)      memtwo(a,6)
+
+# define glyph_language(a)   memone0(a,7)
+# define glyph_script(a)     memone1(a,7)
+# define glyph_control(a)    memtwo0(a,7)  /*tex we store 0xXXXX in the |\cccode| */
+# define glyph_unusedl(a)    memtwo1(a,7) 
+
+# define glyph_lhmin(a)      memone00(a,8)
+# define glyph_rhmin(a)      memone01(a,8)
+# define glyph_discpart(a)   memone02(a,8)
+# define glyph_disccode(a)   memone03(a,8)
+# define glyph_processing(a) memtwo00(a,8)
+# define glyph_protected(a)  memtwo01(a,8)
+# define glyph_unused_1(a)   memtwo02(a,8)
+# define glyph_unused_2(a)   memtwo03(a,8)
+
+# define glyph_options(a)    memone(a,9)
+# define glyph_hyphenate(a)  memtwo(a,9)
+
+# define glyph_expansion(a)  memone(a,10)
+# define glyph_raise(a)      memtwo(a,10)
+
+# define glyph_left(a)       memone(a,11)
+# define glyph_right(a)      memtwo(a,11)
+
+# define glyph_x_offset(a)   memone(a,12)
+# define glyph_y_offset(a)   memtwo(a,12)
+
+# define glyph_properties(a) memone0(a,13)  /*tex for math */
+# define glyph_group(a)      memone1(a,13)  /*tex for math */
+# define glyph_index(a)      memtwo(a,13)   /*tex for math */
+
+# define glyph_input_file(a) memone(a,14)
+# define glyph_input_line(a) memtwo(a,14)
 
 # define get_glyph_data(a)       ((halfword) glyph_data(a))
 # define get_glyph_state(a)      ((halfword) glyph_state(a))
@@ -1745,14 +1758,20 @@ typedef enum fontspec_states {
     font_spec_all_set     = 0x001F,
 } font_spec_states;
 
-# define font_spec_node_size     5           /* we can be smaller: no attr and no prev */
+# define font_spec_node_size     6            /* we can be smaller: no attr and no prev */
 # define font_spec_state(a)      memone(a,1)  /* slot of node_attr */
-# define font_spec_identifier(a) memone(a,2)
-# define font_spec_scale(a)      memtwo(a,2)
-# define font_spec_x_scale(a)    memone(a,3)
-# define font_spec_y_scale(a)    memtwo(a,3)
-# define font_spec_slant(a)      memone(a,4)
-# define font_spec_weight(a)     memtwo(a,4)
+
+# define font_spec_identifier(a) memone(a,2)  /* glyph_font        */
+# define font_spec_data(a)       memtwo(a,2)  /* glyph_data        */ 
+# define font_spec_scale(a)      memone(a,3)  /* glyph_scale       */
+# define font_spec_x_scale(a)    memtwo(a,3)  /* glyph_x_scale     */
+# define font_spec_y_scale(a)    memone(a,4)  /* glyph_y_scale     */
+# define font_spec_dummy(a)      memtwo(a,4)  /* glyph_dummy       */
+
+# define font_spec_slant(a)      memone(a,5)  /* glyph_weight      */ 
+# define font_spec_weight(a)     memtwo(a,5)  /* glyph_slant       */   
+
+# define font_spec_font          font_spec_identifier
 
 # define font_spec_property_is_set(a,b) ((font_spec_state(a) & b) == b)
 

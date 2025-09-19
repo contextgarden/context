@@ -4,7 +4,6 @@
     \startluacode
         local specification = table.load("context-lmtx-error.lua")
         local errortext = "unknown error, ask a human"
-    --  inspect(specification)
         if specification then
             local lasttexerror = specification.lasttexerror or ""
             local lasttexhelp  = specification.lasttexhelp  or ""

@@ -477,11 +477,11 @@ local function featuresinitializer(tfmdata,value)
                                 if value then
                                     local script   = script
                                     local language = language
-if type(value) == "string" then
-    local t = utilities.parsers.settings_to_hash(value)
-    script   = t and t.script   or script
-    language = t and t.language or language
-end
+                                    if type(value) == "string" then
+                                        local t = utilities.parsers.settings_to_hash(value)
+                                        script   = t and t.script   or script
+                                        language = t and t.language or language
+                                    end
                                     local validlookups, lookuplist = collectlookups(rawdata,feature,script,language)
                                     if not validlookups then
                                         -- skip

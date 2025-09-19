@@ -233,9 +233,7 @@ local function read_from_tfm(specification)
             --
             -- The tounicode data is passed to the backend that constructs the vectors for us.
             --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-           tfmdata.tounicode = 1
-end
+            tfmdata.tounicode = 1
             local tounicode = fonts.mappings.tounicode
             for unicode, v in next, tfmdata.characters do
                 local u = v.unicode
@@ -525,11 +523,9 @@ do
         tfmdata.filename      = pfbfile
      -- tfmdata.format        = bitmap and "type3" or "type1"
         tfmdata.format        = "type1"
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
         tfmdata.encodingbytes = 2
         tfmdata.tounicode     = 1
         tfmdata.embedding     = "subset"
-end
         tfmdata.usedbitmap    = bitmap and virtualid
         tfmdata.private       = private
 

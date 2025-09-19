@@ -311,10 +311,22 @@ static luscode_state_info lmt_luscode_state = {
 
 */
 
+static int tex_set_okay(const char *s, int gl, int n) 
+{
+    if (gl == level_one && overload_mode_par) {
+        tex_formatted_warning(s, "global assignment of U+%05X blocked by overload protection",n);
+        return 0;
+    } else {
+        return 1;
+    }
+}
+
 void tex_set_lc_code(int n, halfword v, int gl)
 {
-    sa_tree_item item = { .int_value = v };
-    sa_set_item_4(lmt_luscode_state.lccode_head, n, item, gl);
+    if (tex_set_okay("lccode", gl, n)) {
+        sa_tree_item item = { .int_value = v };
+        sa_set_item_4(lmt_luscode_state.lccode_head, n, item, gl);
+    }
 }
 
 halfword tex_get_lc_code(int n)
@@ -356,8 +368,10 @@ static void tex_aux_free_lccodes(void)
 
 void tex_set_uc_code(int n, halfword v, int gl)
 {
-    sa_tree_item item = { .int_value = v };
-    sa_set_item_4(lmt_luscode_state.uccode_head, n, item, gl);
+    if (tex_set_okay("uccode", gl, n)) {
+        sa_tree_item item = { .int_value = v };
+        sa_set_item_4(lmt_luscode_state.uccode_head, n, item, gl);
+    }
 }
 
 halfword tex_get_uc_code(int n)

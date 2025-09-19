@@ -153,30 +153,26 @@ return {
             ["12pt"] = "file:lmmono12-regular",
             default  = "file:lmmono10-regular",
         },
+
         ["LMTypewriter-Light"] = {
             default  = "file:lmmonolt10-regular",
-        },
-        ["LMTypewriter-Dark"] = {
-            default  = "file:lmmonolt10-bold",
-        },
-        ["LMTypewriter-Italic"] = {
-            default  = "file:lmmono10-italic",
         },
         ["LMTypewriter-LightOblique"] = {
             default  = "file:lmmonolt10-oblique",
         },
+        ["LMTypewriter-Italic"] = {
+            default  = "file:lmmono10-italic",
+        },
         ["LMTypewriter-Oblique"] = {
             default  = "file:lmmonoslant10-regular",
+        },
+        ["LMTypewriter-Dark"] = {
+            default  = "file:lmmonolt10-bold",
         },
         ["LMTypewriter-DarkOblique"] = {
             default  = "file:lmmonolt10-boldoblique",
         },
-        ["LMTypewriter-LightCondensed"] = {
-            default  = "file:lmmonoltcond10-regular",
-        },
-        ["LMTypewriter-LightCondensedOblique"] = {
-            default  = "file:lmmonoltcond10-oblique",
-        },
+
         ["LMTypewriterVarWd-Regular"] = {
             default  = "file:lmmonoproplt10-regular",
         },
@@ -195,6 +191,14 @@ return {
         ["LMTypewriterVarWd-DarkOblique"] = {
             default  = "file:lmmonoproplt10-boldoblique",
         },
+
+        ["LMTypewriter-LightCondensed"] = {
+            default  = "file:lmmonoltcond10-regular",
+        },
+        ["LMTypewriter-LightCondensedOblique"] = {
+            default  = "file:lmmonoltcond10-oblique",
+        },
+
         ["LMTypewriter-CapsRegular"] = {
             default  = "file:lmmonocaps10-regular",
         },

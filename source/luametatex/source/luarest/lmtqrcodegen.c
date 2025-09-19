@@ -57,6 +57,7 @@ static int qrcodegenlib_generate(lua_State *L)
         	}
             lua_pushlstring(L, bytemap, length);
             lua_pushinteger(L, size);
+            lmt_memory_free(bytemap);
             return 2;
         }
 	}

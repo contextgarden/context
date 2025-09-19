@@ -1367,7 +1367,7 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
                         report("no shape for glyph %a",name)
                     end
                 else
-                    lastoffset = startoffset
+                 -- lastoffset = startoffset
                     setposition(f,startoffset)
                     local flags     = readushort(f)
                     local count     = band(flags,0x0FFF)

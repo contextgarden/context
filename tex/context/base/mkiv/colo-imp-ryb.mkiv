@@ -1,0 +1,111 @@
+%D \module
+%D   [       file=colo-imp.ryb,
+%D        version=2025.09.14,
+%D          title=\CONTEXT\ Color Macros,
+%D       subtitle=RYB,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+% https://www.w3schools.com/colors/colors_wheels.asp
+
+\startprotectedcolors
+
+  \definecolor [redorange]         [x=FC600A]
+  \definecolor [orange]            [x=FB9902]
+  \definecolor [yelloworange]      [x=FCCC1A]
+  \definecolor [yellow]            [x=FEFE33]
+  \definecolor [yellowgreen]       [x=B2D732]
+  \definecolor [green]             [x=66B032]
+  \definecolor [bluegreen]         [x=347C98]
+  \definecolor [blue]              [x=0247FE]
+  \definecolor [bluepurple]        [x=4424D6]
+  \definecolor [purple]            [x=8601AF]
+  \definecolor [redpurple]         [x=C21460]
+  \definecolor [red]               [x=FE2712]
+
+  \definecolor [lightredorange]    [.5(redorange,white)]
+  \definecolor [lightorange]       [.5(orange,white)]
+  \definecolor [lightyelloworange] [.5(yelloworange,white)]
+  \definecolor [lightyellow]       [.5(yellow,white)]
+  \definecolor [lightyellowgreen]  [.5(yellowgreen,white)]
+  \definecolor [lightgreen]        [.5(green,white)]
+  \definecolor [lightbluegreen]    [.5(bluegreen,white)]
+  \definecolor [lightblue]         [.5(blue,white)]
+  \definecolor [lightbluepurple]   [.5(bluepurple,white)]
+  \definecolor [lightpurple]       [.5(purple,white)]
+  \definecolor [lightredpurple]    [.5(redpurple,white)]
+  \definecolor [lightred]          [.5(red,white)]
+
+  \definecolor [darkredorange]     [.5(redorange,black)]
+  \definecolor [darkorange]        [.5(orange,black)]
+  \definecolor [darkyelloworange]  [.5(yelloworange,black)]
+  \definecolor [darkyellow]        [.5(yellow,black)]
+  \definecolor [darkyellowgreen]   [.5(yellowgreen,black)]
+  \definecolor [darkgreen]         [.5(green,black)]
+  \definecolor [darkbluegreen]     [.5(bluegreen,black)]
+  \definecolor [darkblue]          [.5(blue,black)]
+  \definecolor [darkbluepurple]    [.5(bluepurple,black)]
+  \definecolor [darkpurple]        [.5(purple,black)]
+  \definecolor [darkredpurple]     [.5(redpurple,black)]
+  \definecolor [darkred]           [.5(red,black)]
+
+\stopprotectedcolors
+
+\continueifinputfile{colo-imp-ryb.mkiv}
+
+\starttext
+
+\startluacode
+
+local ryb_colors = {
+    "redorange",
+    "orange",
+    "yelloworange",
+    "yellow",
+    "yellowgreen",
+    "green",
+    "bluegreen",
+    "blue",
+    "bluepurple",
+    "purple",
+    "redpurple",
+    "red",
+}
+
+local ryb_hues = {
+    "",      -- hue
+    "light", -- tint
+    "dark",  -- shade
+}
+
+context.showcolorcomponents{ utilities.parsers.array_to_string(ryb_colors) }
+
+context.startTEXpage()
+context.setupTABLE( { "c" }, { 2 }, { background = "color", backgroundcolor = "black"} )
+context.bTABLE{ frame = "off", strut = "no", offset = "1ts" }
+for _, hue in next, ryb_hues do
+    context.bTR()
+        context.bTD()
+            context.startMPcode()
+            for index, color in next, ryb_colors do
+                context('drawfill fullcircle scaled 4ts shifted (9ts,0) rotated %i withcolor "%s" ;', 30*(index-1), hue .. color)
+            end
+            context.stopMPcode()
+        context.eTD()
+        context.bTD()
+            context.startMPcode()
+            for index, color in next, ryb_colors do
+                context('fill fullcircle scaled 4ts shifted (9ts,0) rotated %i withcolor "%s" ;', 30*(index-1), hue .. color)
+                context('draw fullcircle scaled 4ts shifted (9ts,0) rotated %i withcolor "%s" ;', 30*(index-1), "white" )
+            end
+            context.stopMPcode()
+        context.eTD()
+    context.eTR()
+end
+context.eTABLE()
+context.stopTEXpage()
+
+\stopluacode
+
+\stoptext

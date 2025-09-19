@@ -2515,7 +2515,7 @@ function injections.handler(head,where)
             report_injections("injection variant %a (%s)","everything","kerns")
         end
         -- I will do useadvance here when I am playing with fonts that follow this
-        -- injection routem, which is seldom.
+        -- injection route, which is seldom.
         return inject_everything(head,where)
     elseif nofregisteredpositions > 0 then
         if trace_injections then

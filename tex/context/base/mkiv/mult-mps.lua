@@ -62,7 +62,7 @@ return {
         "newbytemap", "copybytemap", "resetbytemap", "resetbytemaps",
         "withbytemap", "bytevalue", "bytefound", "bytepath",
         "setbytemapoptions", "setbytemapoffset", "reducebytemap",
-        "setbytemap", "bytemapbounds", "clipbytemap", "setbyte",
+        "setbytemap", "bytemapbounds", "clipbytemap", "setbyte", "bytemapscaled",
         --
         -- aliased
         --
@@ -146,6 +146,8 @@ return {
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --
         "withbytemask",
+        --
+        "downsamplebytemap",
     },
     internals = { -- we need to remove duplicates above
         --

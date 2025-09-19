@@ -47,6 +47,8 @@
 \permanent\def\utfchar #1{\clf_utfchar {#1}} % todo: define public at lua end
 \permanent\def\safechar#1{\clf_safechar{#1}} % todo: define public at lua end
 
+% This actually keeps the catcode and therefore the meaning of an active character too!
+
 \permanent\protected\def\Ux #1{\tocharacter{"#1}} % used in xml (sometimes overloaded)
 \permanent          \def\eUx#1{\tocharacter{"#1}} % used in xml (sometimes overloaded)
 

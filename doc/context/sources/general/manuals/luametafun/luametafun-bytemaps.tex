@@ -7,7 +7,7 @@
 \startchapter[title={Bytemaps}]
 
 In this chapter we explore bytemaps, which essentially are arrays of bytes
-thatcan be used to store states. There are two variants: single bytes and
+that can be used to store states. There are two variants: single bytes and
 triplets, or in \METAPOST\ speak: numerics or colors. The reason why we added
 this to the engine is that we expect these to be used in situations where storing
 states efficiently makes sense. The results can of course be bitmaps but also
@@ -454,9 +454,9 @@ well as the fact that we can rotate a bitmap (see \in {figure}
 newbytemap 3 of (100,100,3) ;
 setbytemap 3 to 50 ;
 setbytemapoffset (1,1) of 3;
-
+numeric n ;
 for i=1 step 5 until 100 :
-    numeric n ; n := 100 ;
+    n := 100 ;
     for j=1 step 5 until 100 :
         setbyte (i,j) of 3 to n ;
         n := n + 5 ;
@@ -547,7 +547,7 @@ manual) but we can imagine users finding some application.
         for j=0 upto 4 :
             n := 0 randomized 10 ;
             setbyte (i,j) of 1 to n ;
-            show((n,bytevalue (i,j) of 1)) ;
+          % show((n,bytevalue (i,j) of 1)) ;
         endfor ;
     endfor ;
 
@@ -583,6 +583,133 @@ are most accurate in the smaller values.
 \startplacefigure[title={Some operations return posits.},reference=bytemaps:moreposit]
     \scale[width=1tw]{\getbuffer}
 \stopplacefigure
+
+Filing a bytemap with values can be done with a \METAPOST\ loop or at
+the \LUA\ end. A rather convenient variant is using a function and delate the
+loop to the engine. This is more efficient when we also need access to the
+currently set values. Here are some examples:
+
+\startbuffer
+\startluacode
+    local round  = math.round
+    local random = math.random
+
+    function MP.bw_inverse(x,y,s)
+        return 255 - s
+    end
+    function MP.bw_darker(x,y,s)
+        return 0.8 * s
+    end
+    function MP.bw_grain(x,y,s)
+        return s - 25 + random(50)
+    end
+\stopluacode
+\stopbuffer
+
+\getbuffer \typebuffer[option=TEX]
+
+\startbuffer
+\startMPcode
+    triplet bm ; bm := loadbytemapfromfile(1, "mill.png") ;
+    copybytemap 1 to 2;
+    copybytemap 1 to 3;
+    copybytemap 1 to 4;
+    draw lmt_bytemap [
+        bytemap       = 1,
+    ] bytemapscaled 1 xsized .25TextWidth ;
+    draw lmt_bytemap [
+        bytemap       = 2,
+        colorfunction = "bw_inverse",
+    ] bytemapscaled 1 xsized .25TextWidth xshifted .25TextWidth;
+    draw lmt_bytemap [
+        bytemap       = 3,
+        colorfunction = "bw_darker",
+    ] bytemapscaled 1 xsized .25TextWidth xshifted .50TextWidth;
+    draw lmt_bytemap [
+        bytemap       = 4,
+        colorfunction = "bw_grain",
+    ] bytemapscaled 1 xsized .25TextWidth xshifted .75TextWidth;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The replacement happens in-place which is why we make some copied to
+work with.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here we manipulated the existing bytes. In the next example we don't do that
+but nevertheless use the function approach:
+
+\startbuffer
+\startluacode
+    local sin = math.sin
+    local cos = math.cos
+    local abs = math.abs
+    function MP.bc_test(x,y,b1,b2,b3)
+        return x/2, y/2, (x+y)/500
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Here we demonstrate the downsample feature. Doing that in pure \LUA\ is actually
+not that slow but of course this one is faster.
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (1000,1000,3) ;
+    newbytemap 2 of (1,1,1);
+    picture p ; p := image ( draw lmt_bytemap [
+        bytemap       = 1,
+        colorfunction = "bc_test",
+    ] ; ) ;
+    downsamplebytemap(1,2,40);
+    copybytemap 2 to 3 ;
+    reducebytemap 3;
+    draw unitsquare bytemapscaled 1 xsized (TextWidth/3) withbytemap 1 ;
+    draw unitsquare bytemapscaled 1 xsized (TextWidth/3) shifted ( TextWidth/3,0) withbytemap 2 ;
+    draw unitsquare bytemapscaled 1 xsized (TextWidth/3) shifted (2TextWidth/3,0) withbytemap 3 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Here we apply downsampling to a \quote {real} image:
+
+\startbuffer
+\startMPcode
+    triplet bm ; bm := loadbytemapfromfile(1, "mill.png") ;
+    newbytemap 2 of (1,1,1);
+    downsamplebytemap(1,2,2);
+    draw unitsquare
+        bytemapscaled 1 xsized .5 TextWidth
+        withbytemap 1
+    ;
+    draw unitsquare
+        bytemapscaled 1 xsized .5TextWidth
+        shifted (.5TextWidth,0)
+        withbytemap 2
+    ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Sampling takes the average of the given cell width, in this case 2. The result in
+normally quite okay.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
 
 \stopchapter
 

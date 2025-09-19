@@ -89,7 +89,7 @@ might speed that up but even then I'm not going to stare at the screen for
 minutes. Seeing a summary is good enough. So there one has to wait in order to
 identify potential issues. Normally that run happens in the background which
 brings the danger of forgetting to check the final error report. Ideally that
-suite should runs without issues before we update.
+suite should run without issues before we update.
 
 Often, running a large job in the background can make sense so how then to keep
 track of potential issues and progress? While preparing a talk for Bacho\TEX\
@@ -105,7 +105,11 @@ to a \ZIGBEE\ hub so we got the best of two worlds.
 
 In the following sections we describe the various possibilities: the original
 approach of using \ZIGBEE\ devices, and the more practical follow up using a
-small device, nicknamed \SQUID.
+small device, nicknamed \CONTEXTWATCH\ or \SQUID\ (take your choice). \footnote
+{We started calling the device \SQUID\ but as Mojca put the \CONTEXTWATCH\ text
+on the round board that name also makes sense sense. And we are already prepared
+to add clock functionality as follow up. When we talk in terms of \SQUID\ we
+likely refer to using all 24 leds which is also the most detailed feedback mode.}
 
 % Some squids communicate in colors and when I pondered IOT becoming COT it struck
 % me that Children Of Time (by Adrian T) also has these initials and squids play a
@@ -148,7 +152,7 @@ a document. We distinguish (at least) these scenarios:
 When it comes to problems, these can get unnoticed, for instance unknown
 references, missing files, absent images, overfull boxes. Future versions of
 signals will deal with that too. An error is more dramatic because when a \PDF\
-file is written and an error occurs, we en dup with an invalid file. For that
+file is written and an error occurs, we end up with an invalid file. For that
 reason \CONTEXT\ produces an error document. But still, some additional feedback
 doesn't hurt.
 
@@ -179,6 +183,11 @@ that is still evolving.
 
 \startsection[title=A \ZIGBEE\ setup]
 
+{\em You can skip this bit of history. Support for \HUE\ lamps is still available
+but is probably on,y used by me. If can however come in handy when you want to
+monitor something running in another room. We might come up with a variant that
+uses \WIFI\ to communicate between two devices.}
+
 It all started with a \ZIGBEE\ based setup, a low power mesh network with devices
 like lamps, switches, sensors and whatever. For signaling the state of a run I
 used four \HUE\ color lamps that came into my possession but for which I never
@@ -190,20 +199,20 @@ machine it runs on.
 For the record, already for ages I use the warm white \HUE\ bulbs combined with
 motion detectors and switches in the office rooms and living spaces. For that we
 employ two hubs for communication but for performance reasons we always ran our
-own controller script, written in \LUA\ using \LUATEX\ as \LUA\ engine as it has
-socket support and can communicate \HTTP. That way we got around the limitations
-of that time: the hubs have a low performance and couldn't handle multiple
-sensors per room. In fact we could handle more devices than officially supported.
-\footnote {In a similar fashion we abuse \LUATEX\ plus script to control a 12
-zone \EVOHOME\ heating setup, again to get around limitations. So, here the long
-term stability of \LUATEX\ combined with a relative rich set of libraries that
-come with \CONTEXT\ pays off.}
+own controller script, written in \LUA\ using \LUATEX\ as \LUA\ engine because it
+has socket support and can communicate \HTTP. That way we got around the
+limitations of that time: the hubs have a low performance and couldn't handle
+multiple sensors per room. In fact we could handle more devices than officially
+supported. \footnote {In a similar fashion we abuse \LUATEX\ plus script to
+control a 12 zone \EVOHOME\ heating setup, again to get around limitations. So,
+here the long term stability of \LUATEX\ combined with a relative rich set of
+libraries that come with \CONTEXT\ pays off.}
 \stopnarrower
 
 Announced changes in the \HUE\ \API\ and accessibility of those hubs plus the
 fact that one has to be online when initializing a hub made me look at some
-fallback solution, just in case. Already for a while, I had a few \PHOSCOM\
-\CONBEE\ sticks in stock and I decided hat this was a good moment to play with
+fallback solutions, just in case. Already for a while, I had a few \PHOSCOM\
+\CONBEE\ sticks in stock and I decided that this was a good moment to play with
 them. Such a \USB\ stick plugs into the laptop that I use and thereby is
 independent on the \HUE\ hub which actually improves performance: a state switch
 takes some 25 milliseconds. Of course there is still some management software
@@ -228,20 +237,20 @@ avoid this dilemma.
 
 \startnarrower \small
 We tried to use cheap Ikea switches but they tend to disappear or drain batteries
-when a \CONBEE\ stick is not active. It should be possible to use their devices
+when a \CONBEE\ stick is not active. It should be possible to use these devices
 but the \HUE\ hardware bulbs and switches are of good quality so why bother. In
 the experimental setup the larger bulbs were hidden in opal white glass balls and
 were sitting next to the 65 inch monitor that I used (@ 3 meter distance); one
 quickly gets accustomed to this!
 \stopnarrower
 
-After using the the test setup at \BACHOTEX\ with a dedicated wireless network
-and \ZIGBEE\ hub(s) we decided to follow up with a dedicated device connected to
-the \USB\ port. This was in the end more reasonable than using \WIFI\ because
-client can be isolated from each other and thereby a \WIFI\ controlled approach
-is fragile. The device actually can be set up to respond to \WIFI\ signals but
-that is mostly an experiment. Less experimental is the ability to act as proxy to
-a \HUE\ hub in parallel to running in circles (\SQUID), which we will discuss in
+After using the test setup at \BACHOTEX\ with a dedicated wireless network and
+\ZIGBEE\ hub(s) we decided to follow up with a dedicated device connected to the
+\USB\ port. This was in the end more reasonable than using \WIFI\ because devices
+can be isolated from each other and thereby a \WIFI\ controlled approach is
+fragile. The device actually can be set up to respond to \WIFI\ signals but that
+is mostly an experiment. Less experimental is the ability to act as proxy to a
+\HUE\ hub in parallel to running in circles (\SQUID), which we will discuss in
 the next section. The main hurdles in a serial connection are figuring out what
 port to configure and making sure (on \LINUX) that the user can access the port.
 
@@ -336,7 +345,7 @@ granularity is limited because a squid has 24 leds and a quadrant only 6. Anyway
 detail comes at the price of a little more runtime.
 
 For the curious: a device 2 uses a rectangular setup and therefore can also show
-(single) characters in Knuths 36 font. This is more of a a playground.
+(single) characters in Knuths 36 font. This is more of a playground.
 
 \stopsection
 
@@ -483,16 +492,16 @@ mtxrun --script signal --enable runner
 
 \startsection[title=The prerequisites]
 
-This section is only relevant iF you use \ZIGBEE\ without a \SQUID. The \SQUID\
+This section is only relevant when you use \ZIGBEE\ without a \SQUID. The \SQUID\
 can be configured to also control \HUE\ lamps for which it has to be connected to
-the relevant \WIFI\ network.
+the relevant \WIFI\ network. Now that we went serial this is less relevant.
 
 The signal \ZIGBEE\ handler assumes that curl is installed, the binary and/or
 library. We also need a \ZIGBEE\ gateway, like \HUE\ or \CONBEE\ (that last one
-needs the \PHOSCOM\ app \DECONZ\ has to be run). In the case of a \HUE\ system
-the hub should be on the same network. You need to configure lights and then
-register these as shown above. In order to access the \ZIGBEE\ interfaces you
-need to get a token. For instance in \DECONZ:
+needs the \PHOSCOM\ app \DECONZ\ to be run on some machine). In the case of a
+\HUE\ system the hub should be on the same network. You need to configure lights
+and then register these as shown above. In order to access the \ZIGBEE\
+interfaces you need to get a token. For instance in \DECONZ:
 
 \starttyping
 curl -X POST -i "http://127.0.0.1/api" \
@@ -636,7 +645,8 @@ rings and controllers being cheap you can in principle make a \SQUID\ for less
 than 15 euro but you might want to spice it a bit with a switch. We run the leds
 at low brightness so there is no need for additional power.
 
-(todo: reference to design document and some photos)
+{\em Here we will at some point also describe the hardware, show schematics, and
+explain the flashing process.}
 
 \stopsection
 
@@ -647,7 +657,42 @@ what we want to do, the second character is a specifier within that category.
 Follow up characters are data, like a specific action (busy, done, etc.)
 optionally followed by a number (segment, quadrant, etc.), or some configuration
 number or string. In all cases ending with a return \type {\n} avoids getting out
-of sync due to look ahead confusion.
+of sync due to look ahead confusion. The current set of commands (with possible
+sub-commands) is:
+
+\startcolumns[n=4]
+\starttabulate [|T|p|]
+\NC a \NC all \NC \NR
+\NC c \NC configure \NC \NR
+\NC d \NC direct \NC \NR
+\NC f \NC feedback \NC \NR
+\NC h \NC hue \NC \NR
+\NC i \NC individual \NC \NR
+\NC k \NC quadrant \NC \NR
+\NC n \NC number \NC \NR
+\NC o \NC one \NC \NR
+\NC q \NC squid \NC \NR
+\NC r \NC reset \NC \NR
+\NC s \NC segment \NC \NR
+\NC t \NC text \NC \NR
+\NC w \NC wireless \NC \NR
+\stoptabulate
+\stopcolumns
+A command is prefixed so that we can intercept bad sequences. In the case of
+string or a number a end of line, carriage return or space can be used as
+terminator.
+
+% maybe also support "..."
+
+\starttabulate
+\NC \type {:lmtx:1:kb3} \NC quadrant 3 busy \NC \NR
+\NC \type {:lmtx:1:sf4} \NC segment 4 busy \NC \NR
+\NC \type {:lmtx:1:cmw} \NC configure mode wifi \NC \NR
+\stoptabulate
+
+We shortly explain the commands. Normally \typ {mtxrun --script squid} and|/|or
+\typ {mtxrun --script signal} are used to control the gadget. For regular runs
+\CONTEXT\ itself deals with it.
 
 We can set all leds with the \type {a} command. The other commands can do the
 same but here a step is equivalent to busy.
@@ -746,13 +791,31 @@ using the configuration file.
 \NC c m s       \NC mode serial             \NC \NR
 \NC c m h       \NC mode serial + hue       \NC \NR
 \NC c m w       \NC mode serial + wifi      \NC \NR
+\NC c m w       \NC mode serial + access    \NC \NR
 \NC c m b       \NC mode serial + bluetooth \NC \NR
 \LL
 \stoptabulate
 
-If you have a device 2, there's also a text option, where the character set is
-limited to the repertoire in Knuths 36 font. This is more for myself to play
-with. You can also send text (string) via the signal script.
+When configured as access point, you can connect directly to the device. This is
+handy when you use a second one away from the computer.
+
+\starttabulate [|T|p|]
+\FL
+\NC r r \NC reset remote \NC \NR
+\NC r d \NC disable remote \NC \NR
+\NC r e \NC enable remote \NC \NR
+\NC r a \NC set address of remote \NC \NR
+\LL
+\stoptabulate
+
+% If you have a device 2, there's also a text option, where the character set is
+% limited to the repertoire in Knuths 36 font. This is more for myself to play
+% with.
+
+There is (just for fun) also an option to send text to the device. We use a
+somewhat limited font that uses the 24 pixels. You can also send text (string)
+via the signal script. Not all characters come out well and numbers are actually
+two digit counters laid out on the top and bottom half.
 
 \starttabulate [|T|p|]
 \FL
@@ -760,14 +823,19 @@ with. You can also send text (string) via the signal script.
 \LL
 \stoptabulate
 
+{\em Let me know if you discover features (in the scripts or code) that are not
+mentioned here. In principle you can write your own \LUA\ scripts to control the
+device and integrate tracing in your workflows. In due time we will provide more
+examples.}
+
 \stopsection
 
 \startsection[title=Configuration]
 
-The device itself has a simple way to set up some properties. Here the two
-buttons come into play. The left button by default will turn off the leds. The
-state is remembered so hitting that button again will show the last remembered
-state.
+The device itself has a simple way to set up some properties of the gadget like
+color schemes and wifi connections. Here the two buttons come into play. The left
+button by default will turn off the leds. The state is remembered so hitting that
+button again will show the last remembered state.
 
 The right button initiates configuration mode. That right button is that used to
 jump from option to option. The last option is colored red which indicates that
@@ -775,15 +843,22 @@ we reached the exit option, and hitting the left button gets us out of
 configuration mode. In fact, the left button is confirmation for the other
 options as well.
 
+\startlinecorrection
+    \getbuffer[squid-013]
+\stoplinecorrection
+
+
 \starttabulate[|||]
-\NC palette  \NC choose a different color palette (color blind related) \NC \NR
-\NC preroll  \NC show the startup led test sequence \NC \NR
-\NC dimming  \NC dim the leds, start bright when out of levels \NC \NR
-\NC defaults \NC set the default configuration \NC \NR
-\NC logo     \NC show a couple of \quote {characters} \NC \NR
-\NC restart  \NC restart the device \NC \NR
-\NC save     \NC save the settings in flash memory \NC \NR
-\NC exit     \NC exit the configuration \NC \NR
+\NC palette     \NC choose a different color palette (color blind related) \NC \NR
+\NC preroll     \NC show the startup led test sequence \NC \NR
+\NC dimming     \NC dim the leds, start bright when out of levels \NC \NR
+\NC defaults    \NC set the default configuration \NC \NR
+\NC logo        \NC show a couple of \quote {characters} \NC \NR
+\NC accesspoint \NC set the device as access point (for \type {http://<ip>/info}) \NC \NR
+\NC address     \NC show the ip address (numbers on top of the circle) \NC \NR
+\NC restart     \NC restart the device \NC \NR
+\NC save        \NC save the settings in flash memory \NC \NR
+\NC exit        \NC exit the configuration \NC \NR
 \stoptabulate
 
 So, when you hit the right button, the top led will be green and represent the
@@ -821,4 +896,22 @@ are to be expected.
 
 \stopsection
 
+\startsection[title=How to get it]
+
+Those who attended the \CONTEXT\ 2025 meeting in Poland and got the gadget as
+part of the (board and wood) workshop. For that purpose we had a batch of 40
+boards made. The wooden Willi is of course a (conference) collectors item but we
+will experiment and improve the 3D printed enclosure. In principle we're talking
+of a kit that has to be assembled: a board with standard already certified ESP
+component, a separate enclosure, and to be installed firmware. Of course a
+standard small board and separate led ring also works out okay: it's what we
+started out with. \footnote {Providing a fully assembled item would cost us a lot
+of money and effort due to regulations multiplied by the number of (European)
+countries where users reside. This is why we consider for a user group
+member|/|meeting to be assembled kit instead.}
+
+\stopsection
+
 \stopdocument
+
+% Musical timestamp synchronize two devices: Cory Wong - Live At Montreux Jazz Festival 2025

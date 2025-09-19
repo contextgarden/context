@@ -257,7 +257,8 @@
    \endgroup}
 
 \protected\def\strc_enumerations_text
-  {\expand\everyenumeration % will become obsolete
+  {\push_macro_currentconstructionreference % see strc-con xdef
+   \expand\everyenumeration % will become obsolete
    \ifconditional\c_strc_constructions_number_state
      \ifx\currentconstructionreference\!!plustoken
        \strc_enumerations_full_number_symbol
@@ -268,7 +269,8 @@
      \fi
    \else
      \strc_enumerations_full_number_nop
-   \fi}
+   \fi
+   \pop_macro_currentconstructionreference}
 
 % \protected\def\strc_enumerations_inject_text_with_space
 %   {\edef\p_text{\constructionparameter\c!text}%

@@ -22,8 +22,10 @@ local signals  = utilities.signals
 local report   = signals.report or logs.reporter("signal")
 local state    = signals.loadstate()
 
-local server   = state and state.servers[state.usage.server or "default"]
-local protocol = server and server.protocol or "hue"
+local server   = state and state.servers and state.servers[state.usage.server or "default"]
+local client   = state and state.clients and state.clients[state.usage.client or "default"]
+
+local protocol = server and server.protocol or "serial"
 
 if protocol == "serial" then
 
@@ -40,21 +42,28 @@ if protocol == "serial" then
         return
     end
 
- -- local prefix = "k"
-    local prefix = signals.serialprefix .. "k"
+    local prefix  = signals.serialprefix .. "k"
+    local forward = signals.serialprefix .. "wf"
 
-    local function squidsome(cmd,run)
-        cmd = prefix .. cmd .. (run or "0") .. "\r"
-        serialwrite(port,baud,cmd)
+    if not (client and client.protocol == "forward") then
+        forward = false
     end
 
-    local function squidreset   (run) squidsome("r",run) end
-    local function squidbusy    (run) squidsome("b",run) end
-    local function squidstep    (run) squidsome("s",run) end
-    local function squiddone    (run) squidsome("d",run) end
-    local function squidfinished(run) squidsome("f",run) end
-    local function squidproblem (run) squidsome("p",run) end
-    local function squiderror   (run) squidsome("e",run) end
+    local function squidsome(cmd,run,fwd)
+        cmd = prefix .. cmd .. (run or "0") .. "\r"
+        serialwrite(port,baud,cmd)
+        if forward and fwd then
+            serialwrite(port,baud,forward)
+        end
+    end
+
+    local function squidreset   (run) squidsome("r",run,true)  end
+    local function squidbusy    (run) squidsome("b",run,true)  end
+    local function squidstep    (run) squidsome("s",run,false) end
+    local function squiddone    (run) squidsome("d",run,true)  end
+    local function squidfinished(run) squidsome("f",run,false) end
+    local function squidproblem (run) squidsome("p",run,true)  end
+    local function squiderror   (run) squidsome("e",run,true)  end
 
     signals.squidinit     = squidreset
     signals.squidreset    = squidreset

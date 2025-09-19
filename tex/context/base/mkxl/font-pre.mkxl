@@ -78,13 +78,24 @@
   [itlc=yes, % new per 10-2023
    liga=yes]
 
- % ccmp=yes, % maybe too
- % locl=yes, % maybe too
- % calt=yes, % maybe too
- % clig=yes, % maybe too
- % rlig=yes, % maybe too
- % tlig=yes, % no longer default (texligatures=yes)
- % trep=yes, % no longer default (texquotes=yes)
+% ccmp=yes, % maybe too
+% locl=yes, % maybe too
+% calt=yes, % maybe too
+% clig=yes, % maybe too
+% rlig=yes, % maybe too
+% tlig=yes, % no longer default (texligatures=yes)
+% trep=yes, % no longer default (texquotes=yes)
+
+\definefontfeature
+   [recommended]
+   [always]
+   [itlc=yes,
+  % ccmp=yes,
+  % locl=yes,
+    rlig=yes,
+    liga=yes,
+    clig=yes,
+    calt=yes]
 
 % if needed users can add this to a local cont-loc.mkxl in texmf-local:
 

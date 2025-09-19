@@ -80,7 +80,6 @@ implement {
 }
 
 local patterns = {
-    CONTEXTLMTXMODE > 0 and "meta-imp-%s.mkxl" or "",
     "meta-imp-%s.mkiv",
     "meta-imp-%s.tex",
     -- obsolete:

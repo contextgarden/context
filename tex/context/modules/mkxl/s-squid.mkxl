@@ -42,7 +42,14 @@
    finished=green,
 %  problem=magenta,
    problem=orange,
-   error=red]
+   error=red,
+   red=red,
+   green=green,
+   blue=blue,
+   cyan=cyan,
+   magenta=magenta,
+   yellow=yellow,
+   white=white]
 
 \startMPdefinitions
 
@@ -622,6 +629,121 @@ enddef ;
 \stopcombination
 \stopbuffer
 
+\startbuffer[squid-013]
+\startcombination [nx=5,ny=2,style=\ttxx]
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(1, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        palette
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(3, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        preroll
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(5, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        dimming
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(7, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        defaults
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(9, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        logo
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(11, "squid:magenta");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        accesspoint
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(13, "squid:magenta");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        address
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(15, "squid:blue");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        save
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(17, "squid:green");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        restart
+    \stopcaption
+    \startcontent
+        \startMPcode
+            draw image (
+                signal_all_leds;
+                signal_one_led(19, "squid:red");
+            ) ysized 20mm ;
+        \stopMPcode
+    \stopcontent
+    \startcaption
+        exit
+    \stopcaption
+\stopcombination
+\stopbuffer
+
 \startMPdefinitions
     def signal_just_text(expr s) =
         for i=1 upto 24 :
@@ -779,7 +901,6 @@ enddef ;
     \stopMPcode
 \stopbuffer
 
-
 \continueifinputfile{s-squid.mkxl}
 
 \starttext
@@ -791,10 +912,11 @@ enddef ;
 %     \startTEXpage\getbuffer[squid-006]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-007]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-008]\stopTEXpage
-    \startTEXpage\getbuffer[squid-009]\stopTEXpage
+%     \startTEXpage\getbuffer[squid-009]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-010]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-011]\stopTEXpage
 %     \startTEXpage\getbuffer[squid-012]\stopTEXpage
+    \startTEXpage\getbuffer[squid-013]\stopTEXpage
 \stoptext
 
 \stopmodule

@@ -623,7 +623,8 @@ function context.newtexthandler(specification)
     local pattern
     if f_space then
         if p_exception then
-            local content = lpegC((1-spacing-p_exception)^1)
+         -- local content = lpegC((1-spacing-p_exception)^1)
+            local content = lpegC((1-space-endofline-p_exception)^1)
             pattern =
               (
                     justaspace   / f_space

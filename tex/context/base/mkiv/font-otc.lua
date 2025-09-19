@@ -132,6 +132,8 @@ end
 
 local function addfeature(data,feature,specifications,prepareonly,filename)
 
+    -- todo: move helpers out
+
     -- todo: add some validator / check code so that we're more tolerant to
     -- user errors
 
@@ -680,23 +682,24 @@ local function addfeature(data,feature,specifications,prepareonly,filename)
         local valid = specification.valid -- nowhere used
         local files = specification.files
         if files and filename then
-            local name = string.lower(file.basename(filename))
+            local base = string.lower(file.basename(filename))
             -- hash test
-            local okay = files[name]
+            local okay = files[base]
             -- list test
             if not okay then
                 for i=1,#files do
-                    if name == files[i] then
+                    if base == files[i] then
                         okay = true
                         break
                     end
                 end
             end
             if okay then
-             -- report_otf("feature applied to file %a",name)
+             -- report_otf("feature %a applied to file %a",specification.name,base)
             else
-             -- report_otf("feature skipped for file %a",name)
-                return
+             -- report_otf("feature %a skipped for file %a",specification.name,base)
+             -- return
+                goto next
             end
         end
         --
@@ -908,6 +911,7 @@ local function addfeature(data,feature,specifications,prepareonly,filename)
             end
 
         end
+      ::next::
     end
     if trace_loading then
         report_otf("registering feature %a, affected glyphs %a, skipped glyphs %a",feature,done,skip)
@@ -936,7 +940,7 @@ function otf.addfeature(name,specification)
             slot = #extrafeatures + 1
             knownfeatures[name] = slot
         elseif specification.overload == false then
-            -- we add an extre one
+            -- we add an extra one
             slot = #extrafeatures + 1
             knownfeatures[name] = slot
         else

@@ -394,7 +394,8 @@ local runners = {
             if trace then
                 report("resultof: %s",command)
             end
-            local handle = iopopen(command,"rb") -- already has flush
+--             local handle = iopopen(command,"rb") -- already has flush
+            local handle = iopopen(command,"r") -- already has flush
             if handle then
                 local result = handle:read("*all") or ""
                 handle:close()

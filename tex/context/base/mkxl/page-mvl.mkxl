@@ -1804,6 +1804,9 @@
      \par
      \balanceboundary\zerocount\zerocount\relax
      \endgroup
+     % good enough but it should be a property of \balanceboundary or
+     % we could actually intercept it in spac-ver
+     \inhibitblank
    \fi}
 
 \protected\def\page_mvl_command_next_spread{\page_mvl_break\plusone}

@@ -24,7 +24,7 @@
 
 % todo: use labeltext
 
-\enablemode[balance-verses] % too late
+% \enablemode[balance-verses] % too late
 
 \startmodule [bibles]
 

@@ -37,11 +37,13 @@ local getprev             = nuts.getprev
 local getprop             = nuts.getprop
 local setprop             = nuts.setprop
 local getchar             = nuts.getchar
+local getdisc             = nuts.getdisc
 local ischar              = nuts.ischar
 local isnextchar          = nuts.isnextchar
 ----- isprevchar          = nuts.isprevchar
 
 local endofmath           = nuts.endofmath
+local nextglyph           = nuts.traversers.glyph
 
 local nodecodes           = nodes.nodecodes
 local disc_code           <const> = nodecodes.disc
@@ -168,7 +170,7 @@ end
 local is_letter = characters.is_letter
 local is_mark   = characters.is_mark
 
-function analyzers.setstate(head,font) -- latin
+local function setstate_latn(head,font) -- latin
     local useunicodemarks = analyzers.useunicodemarks
     local descriptions    = descriptiondata[font]
     local first           = false
@@ -217,10 +219,18 @@ function analyzers.setstate(head,font) -- latin
                 nxt = getnext(endofmath(current))
             end
         elseif id == disc_code then
-            -- always in the middle .. it doesn't make much sense to assign a property
-            -- here ... we might at some point decide to flag the components when present
-            -- but even then it's kind of bogus
-            setstate(current,s_medi)
+            -- We're always in the middle .. it doesn't make much sense to assign a property
+            -- here ... we might at some point decide to flag the components when present but
+            -- even then it's kind of bogus. Just don't hyphenate in handwriting.
+            --
+         -- setstate(current,s_medi) -- doesn't do anything .. no glyph
+            --
+            local pre, post, replace = getdisc(current)
+            if pre     then for g in nextglyph, pre     do setstate(g,s_medi) end end
+            if post    then for g in nextglyph, post    do setstate(g,s_medi) end end
+            if replace then for g in nextglyph, replace do setstate(g,s_medi) end end
+            -- We abuse the fact that discs have no state so when we setstate(last,...) it
+            -- will just be ignored.
             last = current
         else -- finish
             if first then
@@ -240,6 +250,8 @@ function analyzers.setstate(head,font) -- latin
     end
     return head, done
 end
+
+analyzers.setstate = setstate_latn
 
 -- in the future we will use language/script attributes instead of the
 -- font related value, but then we also need dynamic features which is

@@ -80,17 +80,24 @@ local expandtex = mplib.expandtex
 mp.solve     = function(...) return solvepath(currentmpx,...) end
 mp.expandtex = function(...) return expandtex(currentmpx,...) end
 
-local newbytemap     = mplib.newbytemap
-local getbytemap     = mplib.getbytemap
-local setbytemap     = mplib.setbytemap
-local fillbytemap    = mplib.fillbytemap
-local getbytemapdata = mplib.getbytemapdata
+local newbytemap        = mplib.newbytemap
+local getbytemap        = mplib.getbytemap
+local setbytemap        = mplib.setbytemap
+local fillbytemap       = mplib.fillbytemap
+local getbytemapdata    = mplib.getbytemapdata
+local setbytemapoctave  = mplib.setbytemapoctave
+local setbytemapoctave  = mplib.setbytemapoctave
+local processbytemap    = mplib.processbytemap
+local downsamplebytemap = mplib.downsamplebytemap
 
-mp.newbytemap     = function(...) return newbytemap    (currentmpx,...) end
-mp.getbytemap     = function(...) return getbytemap    (currentmpx,...) end
-mp.setbytemap     = function(...) return setbytemap    (currentmpx,...) end
-mp.fillbytemap    = function(...) return fillbytemap   (currentmpx,...) end
-mp.getbytemapdata = function(...) return getbytemapdata(currentmpx,...) end
+mp.newbytemap        = function(...) return newbytemap       (currentmpx,...) end
+mp.getbytemap        = function(...) return getbytemap       (currentmpx,...) end
+mp.setbytemap        = function(...) return setbytemap       (currentmpx,...) end
+mp.fillbytemap       = function(...) return fillbytemap      (currentmpx,...) end
+mp.getbytemapdata    = function(...) return getbytemapdata   (currentmpx,...) end
+mp.setbytemapoctave  = function(...) return setbytemapoctave (currentmpx,...) end
+mp.processbytemap    = function(...) return processbytemap   (currentmpx,...) end
+mp.downsamplebytemap = function(...) return downsamplebytemap(currentmpx,...) end
 
 local getlastaddtype = mplib.getlastaddtype
 

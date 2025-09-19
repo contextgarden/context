@@ -1069,7 +1069,12 @@ do
     local restore_code    <const> = 2
     ----- tracing_code    <const> = 3
 
+    local trace = false ; trackers.register("metapost.internals",function(v) trace = v end)
+
     function metapost.runinternal(action,index,kind,name)
+        if trace then
+            report("run internal: action %a, index %a, kind %a, name %a",action,index,kind,name)
+        end
         if action == initialize_code then
             names[name] = index
          -- types[index] = kind

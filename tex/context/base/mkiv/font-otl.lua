@@ -538,43 +538,17 @@ local function copytotfm(data,cache_id,wipemath)
         parameters.units      = units
         parameters.vheight    = metadata.defaultvheight
         --
-        properties.space      = spacer
-        properties.format     = data.format or formats.otf
-        properties.filename   = filename
-        properties.fontname   = fontname
-        properties.fullname   = fullname
-        properties.psname     = psname
-        properties.name       = filename or fullname
-        properties.subfont    = subfont
-        --
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE == 0 then
-    --
-    properties.encodingbytes = 2
-elseif CONTEXTLMTXMODE then
-    local duplicates = resources and resources.duplicates
-    if duplicates then
-        local maxindex = data.nofglyphs or metadata.nofglyphs
-        if maxindex then
-            for u, d in sortedhash(duplicates) do
-                local du = descriptions[u]
-                if du then
-                    for uu in sortedhash(d) do
-                        maxindex = maxindex + 1
-                        descriptions[uu].dupindex = du.index
-                        descriptions[uu].index    = maxindex
-                    end
-                else
-                 -- report_otf("no %U in font %a, duplicates ignored",u,filename)
-                end
-            end
-        end
-    end
-    --
-end
-        --
+        properties.space         = spacer
+        properties.format        = data.format or formats.otf
+        properties.filename      = filename
+        properties.fontname      = fontname
+        properties.fullname      = fullname
+        properties.psname        = psname
+        properties.name          = filename or fullname
+        properties.subfont       = subfont
+        properties.encodingbytes = 2
      -- properties.name          = specification.name
      -- properties.sub           = specification.sub
-        --
         properties.private       = properties.private or data.private or privateoffset
         --
         return {

@@ -2,8 +2,8 @@
     See license.txt in the root of this project.
 */
 
-# ifndef LNVECTORLIB_H
-# define LNVECTORLIB_H
+# ifndef LUAVECTORLIB_H
+# define LUAVECTORLIB_H
 
 /* 
 

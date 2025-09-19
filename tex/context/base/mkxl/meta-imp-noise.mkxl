@@ -1,0 +1,143 @@
+%D \module
+%D   [       file=meta-imp-noise,
+%D        version=2025.11.12,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Perlin Noise,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D Exactly a year ago the meta-imp-perlin module was made for Keith McKay, That one
+%D implemented Perlin Noise in pure \METAPOST. In the meantime we have native noise
+%D in the engine as well as an interface, so here is an application.
+
+% todo: reserved bytemaps
+
+\startMPdefinitions
+    def PerlinOverlay(expr kind, min, max, med, n, code) =
+        numeric resolution ; resolution := 5 ;
+        numeric variation ; variation := 100 ;
+        numeric nx ; nx := resolution * round(OverlayWidth +2OverlayOffset);
+        numeric ny ; ny := resolution * round(OverlayHeight+2OverlayOffset);
+        numeric lw ; lw := resolution * round(OverlayLineWidth);
+        picture p ; p := image ( draw lmt_noise [
+            bytemap = 3,
+            nx      = nx,
+            ny      = ny,
+            nz      = n,
+            method  = "detail",
+            minimum = min,
+            maximum = max,
+          colorcode = code,
+            z       = if variation <> 0 : uniformdeviate fi variation,
+        ] ) ;
+        if kind == 0 :
+            % frame
+            setbyte (lw,lw,nx-2lw,ny-2lw) of 3 to 255 ;
+        elseif kind == 1 :
+            % fill
+        elseif kind == 2 :
+            % both (range)
+            setbyte (lw,lw,nx-2lw,ny-2lw) of 3 to (med,max) ;
+        fi ;
+        draw p
+            xysized (OverlayWidth,OverlayHeight)
+        ;
+    enddef ;
+\stopMPdefinitions
+
+\startuseMPgraphic{perlinframe}{min,max}
+    PerlinOverlay(0, \MPvar{min}, \MPvar{max}, \MPvar{med}, 1, "") ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{perlinbackground}{min,max}
+    PerlinOverlay(1, \MPvar{min}, \MPvar{max}, \MPvar{med}, 1, "") ;
+\stopuseMPgraphic
+
+\startuseMPgraphic{perlincombined}{min,max}
+    PerlinOverlay(2, \MPvar{min}, \MPvar{max}, \MPvar{med}, 1, "") ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [perlinframe]
+  [\useMPgraphic{perlinframe}{min=125,max=250,med=125}]
+
+\defineoverlay
+  [perlinbackground]
+  [\useMPgraphic{perlinbackground}{min=220,max=250,med=220}]
+
+\defineoverlay
+  [perlincombined]
+  [\useMPgraphic{perlincombined}{min=125,max=250,med=200}]
+
+\continueifinputfile{meta-imp-noise.mkxl}
+
+\starttext
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   background=perlinframe,
+   rulethickness=4pt]
+  {\samplefile{ward}}
+
+\blank
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   background=perlinbackground,
+   rulethickness=4pt]
+  {\samplefile{ward}}
+
+\blank
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   background=perlincombined,
+   rulethickness=4pt]
+  {\samplefile{ward}}
+
+\defineoverlay
+  [perlinbackground]
+  [\useMPgraphic{perlinbackground}{min=230,max=250,med=230}]
+
+\blank
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   background=perlinbackground,
+   rulethickness=4pt]
+  {\samplefile{ward}}
+
+\blank
+
+\switchtobodyfont[bonum]
+
+\startuseMPgraphic{perlinbackground}{min,max}
+%     PerlinOverlay(1, 50, 255, 3, "v/1.2, v/1.4, v") ;
+    PerlinOverlay(1, 50, 255, 50, 3, "1-v, 0, v") ;
+\stopuseMPgraphic
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   foregroundstyle=bold,
+   foregroundcolor=white,
+   background=perlinbackground,
+   rulethickness=4pt]
+  {\samplefile{ward}}
+
+\stoptext
+

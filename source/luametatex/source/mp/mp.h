@@ -32,6 +32,7 @@
 # include "avl.h"
 # include "auxmemory.h"
 # include "auxposit.h"
+# include "auxbytemaps.h"
 
 /*tex
 
@@ -529,7 +530,7 @@ typedef enum mp_variable_type {
     mp_transform_node_type,
     mp_color_node_type,
     mp_cmykcolor_node_type,
-    /*
+    /*tex
         It is important that the next 7 items remain in this order, for export as
         well as switch/case offsets.
     */
@@ -692,6 +693,7 @@ typedef enum mp_name_type_type {
     mp_y_scaled_operation,          /* operation code for |yscaled| */
     mp_z_scaled_operation,          /* operation code for |zscaled| */
     mp_xy_scaled_operation,         /* operation code for |xyscaled| */
+    mp_bytemap_scaled_operation,
     mp_uncycled_operation,          /* operation code for |uncycled| */
     mp_intertimes_operation,        /* operation code for |intersectiontimes| */
     mp_intertimes_list_operation,   /* operation code for |intersectiontimeslist| */
@@ -1203,21 +1205,6 @@ typedef struct mp_internal {
     int       run;
     int       padding;
 } mp_internal;
-
-typedef enum mp_bytemap_options {
-    mp_bytemap_option_persistent = 1,
-    mp_bytemap_option_posit      = 2,
-} mp_bytemap_options;
-
-typedef struct mp_bytemap {
-    unsigned char *data;
-    int            nx;
-    int            ny;
-    int            nz;
-    int            ox;
-    int            oy;
-    int            options; 
-} mp_bytemap;
 
 typedef struct mp_symbol_data {
     int        type;
@@ -1744,7 +1731,7 @@ typedef struct MP_instance {
     /*  */
     mp_internal        *internal;               /* the values of internal quantities */
     /*  */
-    mp_bytemap         *bytemaps;
+    bytemap_data       *bytemaps;
     /*  */
     unsigned int        old_selector;
     /*  */
@@ -2004,7 +1991,7 @@ extern int              mp_finished                   (MP mp);
 
 extern void             mplib_shipout_backend         (MP mp, void *h);
 
-extern mp_bytemap      *mp_bytemap_get_by_index       (MP mp, int index);
+extern bytemap_data    *mp_bytemap_get_by_index       (MP mp, int index);
 extern int              mp_bytemap_new_by_index       (MP mp, int index, int nx, int ny, int nz, unsigned char *data);
 
 extern void             mp_graphic_toss_object        (MP mp, mp_graphic_object_node p);

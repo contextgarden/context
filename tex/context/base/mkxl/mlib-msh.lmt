@@ -24,6 +24,7 @@ local type, next, tonumber = type, next, tonumber
 
 local concat, sortedkeys, sortedhash, sort = table.concat, table.sortedkeys, table.sortedhash, table.sort
 local format = string.format
+local round = math.round
 
 local starttiming           = statistics.starttiming
 local stoptiming            = statistics.stoptiming
@@ -82,6 +83,7 @@ local granularities = {
     quad     = 4, quads     = 4,
     line     = 2, lines     = 2,
     dot      = 1, dots      = 1,
+    pixel    = 0, pixels    = 0,
 }
 
 function mp.mesh_register(specification)
@@ -206,9 +208,14 @@ contour.show        = contourshow
 
 ---
 
+-- local setbytemap  = mp.setbytemap
+-- local getbytemap  = mp.getbytemap
+-- local newbytemap  = mp.newbytemap
+-- local fillbytemap = mp.fillbytemap
+
 local function mesh_convert(current,kind)
 
-local state = current.substate or current.state
+    local state = current.substate or current.state
 
     local llx = state.minx
     local lly = state.miny
@@ -279,7 +286,21 @@ local state = current.substate or current.state
     n = n + 1 ; t[n] = f_line(line)
     n = n + 1 ; t[n] = f_cm(rx,0,0,ry,tx,ty)
 
-    if granularity == 1 then
+    if granularity == 0 then
+
+        for i=1,#points do
+         -- if not hash or not hash[i] or keep[i] then
+                local x, y, c, w = vectorgetrow(points,i)
+                if vdelta ~= 0 then
+                    c = (c - vmin) / vdelta -- TODO
+                end
+                n = n + 1 ; t[n] = f_tdraw(color(c,i))
+                n = n + 1 ; t[n] = f_shape_1(x,y,x,y)
+             -- n = n + 1 ; t[n] = f_shape_1(x,y)
+         -- end
+        end
+
+    elseif granularity == 1 then
 
         local lastw = false
         for i=1,#points do
@@ -407,8 +428,193 @@ local state = current.substate or current.state
     return t, llx, lly, urx, ury
 end
 
-function metapost.mesh(name,kind)
+-- In the end we don't get what we want unless we snap the coordinates. Calculating
+-- bitmap triangles is tricky. So when I'm in the mood I'll do a snap on grid first
+-- and then continue the experiment. Needs discussion first. We anyway keep the
+-- pixel variant (granularity 0).
 
+-- local function mesh_bytemap(current)
+--
+--     local state = current.substate or current.state
+--
+--     local llx = state.minx
+--     local lly = state.miny
+--     local urx = state.maxx
+--     local ury = state.maxy
+--
+--     local rx = 1 / (urx - llx)
+--     local ry = 1 / (ury - lly)
+--     local tx = -llx * rx
+--     local ty = -lly * ry
+--
+--     local color   = current.color  or function(v) return v, v, v end
+--     local points  = current.points
+--     local list    = current.list
+--     local vmin    = current.vmin
+--     local vdelta  = current.vdelta
+--
+--     local bytemap = current.bytemap or 1
+--     local nx      = round((urx - llx) * 100)
+--     local ny      = round((ury - lly) * 100)
+--
+-- if xtrue then
+--
+-- --     local cmap = 20
+-- --     local dmap = 21
+--
+-- --     -- if we go gray scale we cmap can be bytemap
+--
+-- --  -- local r, g, b = 200, 200, 200
+-- --     local r, g, b = 255, 255, 255
+--
+-- --     newbytemap(bytemap,nx,ny,3)
+-- --     fillbytemap(bytemap,r,g,b)
+--
+-- --     newbytemap(cmap,nx,ny,1)
+-- --     newbytemap(dmap,nx,ny,1)
+--
+-- --     local function setbyte(x,y,c,r,g,b)
+-- --         local d = getbytemap(dmap,x,y)
+-- --         if d then
+-- --             if d == 0 then
+-- --                 setbytemap(dmap,x,y,1)
+-- --                 -- set
+-- --             elseif getbytemap(cmap,x,y) < c then
+-- --                 -- set
+-- --             else
+-- --                 -- ignore
+-- --                 goto next
+-- --             end
+-- --         end
+-- --         setbytemap(bytemap,x,y,r,g,b)
+-- --         setbytemap(cmap,x,y,c)
+-- --       ::next::
+-- --     end
+--
+-- --     local min, max = math.min, math.max
+--        -- this pixel inside a trangle approach is not okay
+-- --     local function triangle(m,c,r,g,b)
+-- --         local x1 = round((m[1] - llx) * 100)
+-- --         local y1 = round((m[2] - lly) * 100)
+-- --         local x2 = round((m[3] - llx) * 100)
+-- --         local y2 = round((m[4] - lly) * 100)
+-- --         local x3 = round((m[5] - llx) * 100)
+-- --         local y3 = round((m[6] - lly) * 100)
+--
+-- --         local xmin = min(x1,x2,x3)
+-- --         local xmax = max(x1,x2,x3)
+-- --         local ymin = min(y1,y2,y3)
+-- --         local ymax = max(y1,y2,y3)
+--
+-- --         local x1x2 = x1 - x2
+-- --         local x2x3 = x2 - x3
+-- --         local x3x1 = x3 - x1
+--
+-- --         for y=ymin,ymax do
+-- --             local d1 = x1x2 * (y - y1) ; local dd1 = y1 - y2
+-- --             local d2 = x2x3 * (y - y2) ; local dd2 = y2 - y3
+-- --             local d3 = x3x1 * (y - y3) ; local dd3 = y3 - y1
+-- --             d1 = d1 + dd1 * x1
+-- --             d2 = d2 + dd2 * x2
+-- --             d3 = d3 + dd3 * x3
+-- --             for x=xmin,xmax do
+-- --                 if d1 > dd1 * x and d2 > dd2 * x and d3 > dd3 * x then
+-- --                     setbyte(x,y,c,r,g,b)
+-- --                 end
+-- --             end
+-- --         end
+-- --     end
+--
+-- --     for i=1,#points do
+-- --         local m, c = contourgetmesh(points,list,i)
+-- --         if vdelta ~= 0 then
+-- --             c = (c - vmin) / vdelta -- TODO
+-- --         end
+-- --         c = round(c * 255)
+-- --         local r, g, b = color(c,i)
+-- --         r = round(r * 255)
+-- --         g = round(g * 255)
+-- --         b = round(b * 255)
+-- --         triangle(m,c,r,g,b)
+-- --     end
+--
+-- elseif true then
+--
+--     -- why limited ? we need one outside mp
+--
+--     local cmap = 20
+--     local dmap = 21
+--
+--     -- if we go gray scale we cmap can be bytemap
+--
+--  -- local r, g, b = 200, 200, 200
+--     local r, g, b = 255, 255, 255
+--
+--     newbytemap(bytemap,nx,ny,3)
+--     fillbytemap(bytemap,r,g,b)
+--
+--     newbytemap(cmap,nx,ny,1)
+--     newbytemap(dmap,nx,ny,1)
+--
+--     for i=1,#points do
+--         local x, y, c, w = vectorgetrow(points,i)
+--         if vdelta ~= 0 then
+--             c = (c - vmin) / vdelta -- TODO
+--         end
+--         x = round((x - llx) * 100)
+--         y = round((y - lly) * 100)
+--         c = round(c * 255)
+--         local d = getbytemap(dmap,x,y)
+--         if d then
+--             if d == 0 then
+--                 setbytemap(dmap,x,y,1)
+--                 -- set
+--             elseif getbytemap(cmap,x,y) < c then
+--                 -- set
+--             else
+--                 -- ignore
+--                 goto next
+--             end
+--         end
+--         local r, g, b = color(c,i)
+--         r = round(r * 255)
+--         g = round(g * 255)
+--         b = round(b * 255)
+--         setbytemap(bytemap,x,y,r,g,b)
+--         setbytemap(cmap,x,y,c)
+--       ::next::
+--     end
+--
+-- else
+--
+-- --     local base = 200 -- 255
+--
+-- --     newbytemap(bytemap,nx,ny,3)
+-- --     fillbytemap(bytemap,base,base,base)
+--
+-- --     for i=1,#points do
+-- --         local x, y, c, w = vectorgetrow(points,i)
+-- --         if vdelta ~= 0 then
+-- --             c = (c - vmin) / vdelta -- TODO
+-- --         end
+-- --         x = round((x - llx) * 100)
+-- --         y = round((y - lly) * 100)
+-- --         c = round(color(c,i) * 255)
+-- --         local cc = getbytemap(bytemap,x,y)
+-- --         if cc and (cc == base or cc < c) then
+-- --             setbytemap(bytemap,x,y,c,128,128)
+-- --          -- print("+",x,y,cc,c)
+-- --         else
+-- --          -- print("-",x,y,cc,c)
+-- --         end
+-- --     end
+--
+-- end
+--
+--     return bytemap, 0, nx, 0, ny
+-- end
+
+function metapost.mesh(name,kind)
 
     local current = meshes[name]
 
@@ -435,10 +641,14 @@ function metapost.mesh(name,kind)
     return result
 end
 
+-- todo messages and timing
+
 local function mesh_contour()
+
     nofruns = nofruns + 1
 
     local name    = scanstring()
+    local kind    = scanstring()
     local current = meshes[name]
 
     if not current then
@@ -504,11 +714,26 @@ local function mesh_contour()
         current.substate = state
     end
 
+    local bytemap, llx , lly, urx, ury
+
+ -- if kind == "bytemap" then
+ --
+ --     bytemap, llx, lly, urx, ury = mesh_bytemap(current)
+ --
+ -- else
+
+        llx = state.minx
+        lly = state.miny
+        urx = state.maxx
+        ury = state.maxy
+
+ -- end
+
     local bounds = {
-        { state.minx, state.miny },
-        { state.maxx, state.miny },
-        { state.maxx, state.maxy },
-        { state.minx, state.maxy },
+        { llx, lly },
+        { urx, lly },
+        { urx, ury },
+        { llx, ury },
         close = true,
     }
 
@@ -518,7 +743,7 @@ local function mesh_contour()
 
 end
 
-registerscript("meshcontour",  mesh_contour)
+registerscript("meshcontour", mesh_contour)
 
 -- For now, as we have examples
 

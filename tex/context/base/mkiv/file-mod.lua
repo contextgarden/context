@@ -41,18 +41,7 @@ local prefixes = {
 
 -- the order might change and how about cld
 
-local suffixes = CONTEXTLMTXMODE > 0 and
-{
-    "mklx", -- preprocessed mkiv lmtx files
-    "mkxl", -- mkiv lmtx files
-    "mkvi", -- preprocessed mkiv files
-    "mkiv", -- mkiv files
-    "tex",  -- normally source code files
-    "cld",  -- context lua documents (often stand alone)
-    "lua",  -- lua files
-}
-    or
-{
+local suffixes = {
     "mkvi",
     "mkiv",
     "tex",

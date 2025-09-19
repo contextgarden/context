@@ -339,6 +339,7 @@
 
 \permanent\tolerant\protected\def\showdirtree[#1]#*[#2]%
   {\begingroup
+     \offinterlineskip
      % maybe handle options in show
      \iftok{#2}{empty}%
        \ctxlua{utilities.dirtree.show("#1","private","split",true)}
@@ -392,6 +393,8 @@
        \else
          \symbol[dirtree:open]#2%
        \fi}
+
+%     \setupwhitespace[big]
 
     \startcolumns
        % \showdirtree[t:/texmf/tex/context/base/**]

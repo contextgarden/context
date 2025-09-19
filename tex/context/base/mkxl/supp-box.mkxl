@@ -2880,9 +2880,10 @@
 %   {\expandafter\newbox\csname\??localbox\string#1\endcsname
 %    \newlocalbox#1}
 
-%D Who knows when this comes in handy:
+%D This is now a primitive:
 
-%permanent\protected\def\lastlinewidth{\dimexpr\clf_lastlinewidth\scaledpoint\relax} % at lua end
+% \lastlinewidth % minus [|parinit|parfil][left|right]skip
+% \lastlinecount % can be used to compensate for above
 
 %D Keep as reference:
 

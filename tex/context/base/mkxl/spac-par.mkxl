@@ -376,6 +376,13 @@
    \gtoksapp\t_spac_paragraphs_intro_first{#1}%
    \glet\spac_paragraphs_flush_intro\spac_paragraphs_flush_intro_indeed}
 
+% see strc-reg.mkxl: when we have a nested note this can happen esp when we
+% bookmark tagged crap
+
+\appendtoks
+    \enforced\let\doflushatpar\gobbleoneargument
+\to \everypreroll
+
 %D Here comes the flusher (we misuse the one level expansion of token registers to
 %D feed a nice stream into the paragraph.)
 

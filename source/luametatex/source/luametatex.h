@@ -110,7 +110,7 @@
 # define luametatex_release          8
 # define luametatex_version_string   "2.11.08"
 # define luametatex_version_number   211.8
-# define luametatex_development_id   20250821
+# define luametatex_development_id   20250917
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -294,6 +294,7 @@ extern version_state_info lmt_version_state;
 # include "utilities/auxarithmetic.h"
 # include "utilities/auxmemory.h"
 # include "utilities/auxposit.h"
+# include "utilities/auxbytemaps.h"
 # include "utilities/auxzlib.h"
 
 # include "tex/texmainbody.h"
@@ -356,6 +357,8 @@ extern version_state_info lmt_version_state;
 # include "lua/lmttexlib.h"
 # include "lua/lmtenginelib.h"
 # include "luarest/lmtvectorlib.h"
+# include "luarest/lmteffectslib.h"
+# include "luarest/lmtbytemaplib.h"
 
 /*tex
 

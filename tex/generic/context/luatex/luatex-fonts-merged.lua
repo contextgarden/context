@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-08-21 23:27
+-- merge date  : 2025-09-19 18:27
 
 do -- begin closure to overcome local limits and interference
 
@@ -16708,7 +16708,6 @@ function readers.gvar(f,fontdata,specification,glyphdata,shapedata)
       report("no shape for glyph %a",name)
      end
     else
-     lastoffset=startoffset
      setposition(f,startoffset)
      local flags=readushort(f)
      local count=band(flags,0x0FFF)
@@ -19578,7 +19577,7 @@ function readers.sbix(f,fontdata,specification)
    end
   end)
   local glyphs={}
-  local delayed=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 or fonts.handlers.typethree
+  local delayed=fonts.handlers.typethree
   for i=1,nofstrikes do
    local strike=strikes[i]
    local strikeppem=strike.ppem
@@ -19792,7 +19791,7 @@ do
    end
    local default={ width=0,height=0 }
    local glyphs=fontdata.glyphs
-   local delayed=CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 or fonts.handlers.typethree
+   local delayed=fonts.handlers.typethree
    for index,subtable in sortedhash(shapes) do
     if type(subtable)=="table" then
      local data=nil
@@ -21901,27 +21900,7 @@ local function copytotfm(data,cache_id,wipemath)
   properties.psname=psname
   properties.name=filename or fullname
   properties.subfont=subfont
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
- properties.encodingbytes=2
-elseif CONTEXTLMTXMODE then
- local duplicates=resources and resources.duplicates
- if duplicates then
-  local maxindex=data.nofglyphs or metadata.nofglyphs
-  if maxindex then
-   for u,d in sortedhash(duplicates) do
-    local du=descriptions[u]
-    if du then
-     for uu in sortedhash(d) do
-      maxindex=maxindex+1
-      descriptions[uu].dupindex=du.index
-      descriptions[uu].index=maxindex
-     end
-    else
-    end
-   end
-  end
- end
-end
+  properties.encodingbytes=2
   properties.private=properties.private or data.private or privateoffset
   return {
    characters=characters,
@@ -26729,85 +26708,6 @@ function readers.compact(data)
   end
  end
 end
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE>0 then
- local done=0
- local function condense_1(k,v,t)
-  if type(v)=="table" then
-   local u=false
-   local l=false
-   for k,v in next,v do
-    if k=="ligature" then
-     l=v
-     if u then
-      break
-     end
-    elseif u then
-     break
-    else
-     u=true
-    end
-   end
-   if l and not u then
-    t[k]=l
-    done=done+1
-   end
-   if u then
-    for k,vv in next,v do
-     if k~="ligature" then
-      condense_1(k,vv,v)
-     end
-    end
-   end
-  end
- end
- local function condensesteps_1(lookup)
-  done=0
-  if lookup.type=="gsub_ligature" then
-   local steps=lookup.steps
-   if steps then
-    for i=1,#steps do
-     local step=steps[i]
-     local coverage=step.coverage
-     if coverage then
-      for k,v in next,coverage do
-       if condense_1(k,v,coverage) then
-        coverage[k]=v.ligature
-        done=done+1
-       end
-      end
-     end
-    end
-   end
-  end
-  return done
- end
- function readers.condense(data)
-  if not data or data.condensed then
-   return
-  else
-   data.condensed=true
-  end
-  local resources=data.resources
-  local condensed=0
-  local function condense(what)
-   local lookups=resources[what]
-   if lookups then
-    for i=1,#lookups do
-     condensed=condensed+condensesteps_1(lookups[i])
-    end
-   elseif trace_optimizations then
-    report_optimizations("no lookups in %a",what)
-   end
-  end
-  condense("sequences")
-  condense("sublookups")
-  if trace_optimizations then
-   if condensed>0 then
-    report_optimizations("%i ligatures condensed",condensed)
-   end
-  end
- end
-end
 local function mergesteps(t,k)
  if k=="merged" then
   local merged={}
@@ -27621,6 +27521,7 @@ local setchar=nuts.setchar
 local getdisc=nuts.getdisc
 local setdisc=nuts.setdisc
 local getreplace=nuts.getreplace
+local setreplace=nuts.setreplace
 local setlink=nuts.setlink
 local getwidth=nuts.getwidth
 local getattr=nuts.getattr
@@ -29232,8 +29133,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
  local last=start
  local prev=getprev(start)
  local hasglue=false
- local useddisc=nil   
- local usedstart=start
  local i=f
  while i<=l do
   local id=getid(current)
@@ -29445,7 +29344,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    setdisc(lookaheaddisc,cf,post,new)
   end
   start=getprev(lookaheaddisc)
-  useddisc=lookaheaddisc 
   sweephead[cf]=getnext(clast) or false
   sweephead[new]=getnext(cl) or false
  elseif backtrackdisc then
@@ -29506,7 +29404,6 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    setdisc(backtrackdisc,pre,post,replace)
   end
   start=getprev(backtrackdisc)
-  useddisc=backtrackdisc 
   sweephead[post]=getnext(clast) or false
   sweephead[replace]=getnext(last) or false
  else
@@ -29516,10 +29413,7 @@ local function chaindisk(head,start,dataset,sequence,rlmode,skiphash,ck)
    done=true
   end
  end
- if useddisc and start~=usedstart then 
-    start=getnext(start)           
- end                  
- return head,start,done,useddisc           
+ return head,start,done
 end
 local chaintrac do
  local level=0
@@ -30087,6 +29981,10 @@ local function kernrun(disc,k_run,font,attr,...)
  local done=false
  local pre,post,replace,pretail,posttail,replacetail=getdisc(disc,true)
  local prevmarks=prev
+ if getid(prev)==disc_code then
+  local h,t=getreplace(prev,true)
+  prevmarks=t
+ end
  while prevmarks do
   local char=ischar(prevmarks,font)
   if char and marks[char] then
@@ -30098,8 +29996,17 @@ local function kernrun(disc,k_run,font,attr,...)
  if prev and not ischar(prev,font) then  
   prev=false
  end
- if next and not ischar(next,font) then  
-  next=false
+ local nisc
+ if next then
+  nisc=getid(next)==disc_code
+  if nisc then
+   nisc=getreplace(next)
+   if nisc and not ischar(nisc,font) then
+    nisc=false
+   end
+  elseif not ischar(next,font) then  
+   next=false
+  end
  end
  if pre then
   if k_run(pre,"injections",nil,font,attr,...) then
@@ -30112,13 +30019,29 @@ local function kernrun(disc,k_run,font,attr,...)
    end
    setprev(pre)
    setlink(prev,disc)
+  elseif prevmarks then
+   local n=getnext(prevmarks)
+   setlink(prevmarks,pre)
+   if k_run(prevmarks,"preinjections",pre,font,attr,...) then 
+    done=true
+   end
+   setprev(pre)
+   setnext(prevmarks,n)
   end
  end
  if post then
   if k_run(post,"injections",nil,font,attr,...) then
    done=true
   end
-  if next then
+  if nisc then
+   setlink(posttail,nisc)
+   if k_run(posttail,"postinjections",nisc,font,attr,...) then
+    done=true
+   end
+   setnext(posttail)
+   setprev(nisc)
+   setreplace(next,nisc)
+  elseif next then
    setlink(posttail,next)
    if k_run(posttail,"postinjections",next,font,attr,...) then
     done=true
@@ -30138,8 +30061,24 @@ local function kernrun(disc,k_run,font,attr,...)
    end
    setprev(replace)
    setlink(prev,disc)
+  elseif prevmarks then
+   local n=getnext(prevmarks)
+   setlink(prevmarks,replace)
+   if k_run(prevmarks,"replaceinjections",replace,font,attr,...) then 
+    done=true
+   end
+   setprev(replace)
+   setnext(prevmarks,n)
   end
-  if next then
+  if nisc then
+   setlink(replacetail,nisc)
+   if k_run(replacetail,"replaceinjections",nisc,font,attr,...) then
+    done=true
+   end
+   setnext(replacetail)
+   setprev(nisc)
+   setreplace(next,nisc)
+  elseif next then
    setlink(replacetail,next)
    if k_run(replacetail,"replaceinjections",next,font,attr,...) then
     done=true
@@ -30147,6 +30086,7 @@ local function kernrun(disc,k_run,font,attr,...)
    setnext(replacetail)
    setlink(disc,next)
   end
+ elseif nisc then
  elseif prev and next then
   setlink(prev,next)
   if k_run(prevmarks,"emptyinjections",next,font,attr,...) then
@@ -31841,11 +31781,11 @@ local function addfeature(data,feature,specifications,prepareonly,filename)
   local valid=specification.valid 
   local files=specification.files
   if files and filename then
-   local name=string.lower(file.basename(filename))
-   local okay=files[name]
+   local base=string.lower(file.basename(filename))
+   local okay=files[base]
    if not okay then
     for i=1,#files do
-     if name==files[i] then
+     if base==files[i] then
       okay=true
       break
      end
@@ -31853,7 +31793,7 @@ local function addfeature(data,feature,specifications,prepareonly,filename)
    end
    if okay then
    else
-    return
+    goto next
    end
   end
   local feature=specification.name or feature
@@ -32042,6 +31982,7 @@ local function addfeature(data,feature,specifications,prepareonly,filename)
     end
    end
   end
+   ::next::
  end
  if trace_loading then
   report_otf("registering feature %a, affected glyphs %a, skipped glyphs %a",feature,done,skip)
@@ -36068,9 +36009,7 @@ local function copytotfm(data)
   properties.psname=fullname
   properties.name=filename or fullname or fontname
   properties.private=properties.private or data.private or privateoffset
-if not CONTEXTLMTXMODE or CONTEXTLMTXMODE==0 then
   properties.encodingbytes=2
-end
   if next(characters) then
    return {
     characters=characters,

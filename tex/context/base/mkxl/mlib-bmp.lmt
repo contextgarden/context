@@ -1,0 +1,46 @@
+if not modules then modules = { } end modules ['mlib-bmp'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+local type, tonumber, load = type, tonumber, load
+
+local report = logs.reporter("metapost","bytemap")
+
+local processbytemap  = mp.processbytemap
+local getparameterset = metapost.getparameterset
+
+local f_function = [[
+    local math  = math
+    local round = math.round
+    %s
+    return function(x,y,b1,b2,b3)
+      return %s
+    end
+]]
+
+function mp.lmt_bytemap_do()
+    local p             = getparameterset()
+    local bytemap       = tonumber(p.bytemap)     or 1
+    local colorcode     = p.colorcode             or ""
+    local colorfunction = p.colorfunction         or ""
+    local action        = false
+    if colorfunction ~= "" then
+        action = MP[colorfunction]
+    end
+    if type(action) ~= "function" and colorcode ~= "" then
+        colorcode = string.formatters[f_function](preamble,colorcode)
+        action = load(colorcode)
+        if type(action) == "function" then
+            action = action()
+        end
+    end
+    if type(action) ~= "function" then
+        action = false
+    end
+    processbytemap(bytemap,action,true)
+end

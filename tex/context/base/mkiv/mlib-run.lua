@@ -203,9 +203,6 @@ function metapost.checkformat(mpsinput,method)
  -- if foundfile == "" then
  --     foundfile  = find_file(file.replacesuffix(mpsinput,"mpvi")) or ""
  -- end
-    if CONTEXTLMTXMODE > 0 and foundfile == "" then
-        foundfile  = find_file(file.replacesuffix(mpsinput,"mpxl")) or ""
-    end
     if foundfile == "" then
         foundfile  = find_file(file.replacesuffix(mpsinput,"mpiv")) or ""
     end

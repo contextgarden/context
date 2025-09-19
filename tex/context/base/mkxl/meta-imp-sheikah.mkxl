@@ -1,0 +1,1070 @@
+%D \module
+%D   [       file=meta-imp-nyctographic,
+%D        version=2025.09.14,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Sheikah Letters,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\startMPcalculation{simplefun}
+
+    pen SheikahTrianglePen ;
+    pen SheikahParallelogramPen ;
+    pen SheikahTrapezoidPen ;
+    pen SheikahRectanglePen ;
+    pen SheikahSquarePen;
+
+    SheikahTrianglePen      := makepen ((-1,0) -- (1,0) -- (0,1) -- cycle)           shifted (0,-0.5) ;
+    SheikahParallelogramPen := makepen ((-1,0) -- (0,0) -- (1,1) -- (0,1) -- cycle)  shifted (0,-0.5) ;
+    SheikahTrapezoidPen     := makepen ((-1,0) -- (1,0) -- (1,1) -- (0,1) -- cycle)  shifted (0,-0.5) ;
+    SheikahRectanglePen     := makepen ((-1,0) -- (1,0) -- (1,1) -- (-1,1) -- cycle) shifted (0,-0.5) ;
+    SheikahSquarePen        := makepen ((-1,0) -- (0,0) -- (0,1) -- (-1,1) -- cycle) shifted (0,-0.5) ;
+
+    pen SheikahRoundedTrianglePen ;
+    pen SheikahRoundedParallelogramPen ;
+    pen SheikahRoundedTrapezoidPen ;
+
+    SheikahRoundedTrianglePen      := makepen ((1,0){up} for i = 1 upto 180 : .. ((1,0) rotated i) endfor -- cycle) shifted (0,-0.5) ;
+    SheikahRoundedParallelogramPen := makepen ((-1,0){up} for i = 180 step -1 until 89 : .. ((1,0) rotated i) endfor -- (1,1){down} for i = 360 step -1 until 269 : .. ((1,0) rotated i shifted (0,1)) endfor -- cycle)  shifted (0,-0.5) ;
+    SheikahRoundedTrapezoidPen     := makepen ((-1,0){up} for i = 180 step -1 until 89 : .. ((1,0) rotated i) endfor -- (1,1) -- (1,0) -- cycle) shifted (0,-0.5) ;
+
+    vardef SheikahLine(expr Start, Stop, Rotation, Segment, Direction) =
+
+        string Weight ; Weight := getparameterdefault "mpsfont" "weight" "regular" ;
+        string Shape  ; Shape  := getparameterdefault "mpsfont" "shape"  "triangle"  ;
+
+        pair LineStart, LineStop ;
+
+        if xpart Start = xpart Stop :
+            % vertical line
+            if ypart Start > ypart Stop :
+                % top to bottom
+                LineStart := (xpart Start - 0.5, ypart Start - 1) ;
+                LineStop  := (xpart Stop  - 0.5, ypart Stop     ) ;
+            else :
+                % bottom to top
+                LineStart := (xpart Start - 0.5, ypart Start    ) ;
+                LineStop  := (xpart Stop  - 0.5, ypart Stop  - 1) ;
+            fi ;
+        else :
+            % hirozontal line
+            if xpart Start > xpart Stop :
+                % right to left
+                LineStart := (xpart Start - 1, ypart Start - 0.5) ;
+                LineStop  := (xpart Stop     , ypart Stop  - 0.5) ;
+            else :
+                % left to right
+                LineStart := (xpart Start    , ypart Start - 0.5) ;
+                LineStop  := (xpart Stop  - 1, ypart Stop  - 0.5) ;
+            fi ;
+        fi ;
+
+        pickup
+        if Segment = "triangle" :
+            if Shape = "triangle" :
+                SheikahTrianglePen
+            elseif Shape = "square":
+                SheikahRectanglePen
+            elseif Shape = "circle" :
+                SheikahRoundedTrianglePen
+            fi
+        elseif Segment = "parallelogram" :
+            if Shape = "triangle" :
+                SheikahParallelogramPen
+            elseif Shape = "square" :
+                SheikahRectanglePen
+            elseif Shape = "circle" :
+                SheikahRoundedParallelogramPen
+            fi
+        elseif Segment = "trapezoid" :
+            if Shape = "triangle" :
+                SheikahTrapezoidPen
+            elseif Shape = "square" :
+                SheikahRectanglePen
+            elseif Shape = "circle" :
+                SheikahRoundedTrapezoidPen
+            fi
+        elseif Segment = "rectangle" :
+            SheikahRectanglePen
+        fi
+        if Direction = "reverse" :
+            reflectedabout (up,down)
+        fi 
+        rotated Rotation scaled 1 ;
+
+        draw (LineStart -- LineStop) scaled 1 ;
+
+    enddef ;
+
+    vardef SheikahPoint(expr Point) =
+
+        pickup SheikahSquarePen scaled 1 ;
+
+        draw Point shifted (0,-0.5);
+
+    enddef ;
+
+    vardef SheikahGrid =
+        if hasoption "mpsfont" "option" "test" :
+            draw hlingrid(0, 7, 1, 7, 7) withpen pencircle scaled 1/20 ;
+            draw vlingrid(0, 7, 1, 7, 7) withpen pencircle scaled 1/20 ;
+        fi ;
+    enddef ;
+
+    vardef SheikahLetterA =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((3,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((3,3), (3,7),  90,      "triangle",  "normal");
+            SheikahLine((3,3), (5,3), 180,     "trapezoid", "reverse");
+            %
+            SheikahPoint((5,5));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0);
+    enddef ;
+
+    vardef SheikahLetterB =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,3),  90,      "triangle",  "normal");
+            SheikahLine((1,3), (7,3),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,3), 270,      "triangle",  "normal");
+            %
+            SheikahLine((1,5), (3,5), 180,     "trapezoid",  "normal");
+            SheikahLine((3,5), (3,7), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((5,5), (7,5), 180,     "trapezoid", "reverse");
+            SheikahLine((5,5), (5,7),  90,     "trapezoid",  "normal");
+            %
+            SheikahLine((3,1), (5,1),   0,     "rectangle",  "normal");
+            %
+            SheikahPoint((1,7));
+            SheikahPoint((7,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterC =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (3,1), 180,      "triangle",  "normal");
+            SheikahLine((3,1), (3,3), 270,      "triangle",  "normal");
+            SheikahLine((1,3), (3,3), 180, "parallelogram", "reverse");
+            SheikahLine((1,3), (1,5),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (3,5),   0, "parallelogram",  "normal");
+            SheikahLine((3,5), (3,7), 270,      "triangle",  "normal");
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            %
+            SheikahLine((5,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,3),  90,      "triangle",  "normal");
+            SheikahLine((5,3), (7,3), 180, "parallelogram",  "normal");
+            SheikahLine((7,3), (7,5), 270,      "triangle",  "normal");
+            SheikahLine((5,5), (7,5),   0, "parallelogram", "reverse");
+            SheikahLine((5,5), (5,7),  90,      "triangle",  "normal");
+            SheikahLine((5,7), (7,7),   0,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterD =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,5), 270,      "triangle",  "normal");
+            SheikahLine((1,5), (5,5),   0,     "trapezoid", "reverse");
+            %
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahLine((1,3), (3,3),   0,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterE =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (3,1), 180,      "triangle",  "normal");
+            SheikahLine((3,1), (3,3), 270,      "triangle",  "normal");
+            SheikahLine((1,3), (3,3),   0, "parallelogram", "reverse");
+            SheikahLine((1,3), (1,5),  90,     "trapezoid",  "normal");
+            %
+            SheikahLine((5,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,3),  90,      "triangle",  "normal");
+            SheikahLine((5,3), (7,3),   0, "parallelogram",  "normal");
+            SheikahLine((7,3), (7,5), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((3,5), (3,7), 90,      "trapezoid", "reverse");
+            SheikahLine((3,7), (5,7),   0,      "triangle",  "normal");
+            SheikahLine((5,5), (5,7), 270,     "trapezoid",  "normal");
+            %
+            SheikahPoint((1,7));
+            SheikahPoint((7,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterF =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,3),  90,     "trapezoid",  "normal");
+            SheikahLine((1,1), (3,1), 180,      "triangle",  "normal");
+            SheikahLine((3,1), (3,5), 270, "parallelogram", "reverse");
+            SheikahLine((3,5), (5,5),   0,      "triangle",  "normal");
+            SheikahLine((5,1), (5,5),  90, "parallelogram",  "normal");
+            SheikahLine((5,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,3), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((1,5), (1,7),  90,     "trapezoid", "reverse");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,5), (7,7), 270,     "trapezoid",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterG =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,5), 270,      "triangle",  "normal");
+            SheikahLine((3,5), (5,5),   0,      "triangle",  "normal");
+            SheikahLine((3,3), (3,5),  90, "parallelogram", "reverse");
+            SheikahLine((1,3), (3,3), 180,      "triangle",  "normal");
+            SheikahLine((1,3), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterH =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,5),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (7,5),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,5), 270,      "triangle",  "normal");
+            %
+            SheikahLine((3,1), (3,3),  90,     "trapezoid", "reverse");
+            SheikahLine((3,3), (5,3),   0,      "triangle",  "normal");
+            SheikahLine((5,1), (5,3), 270,     "trapezoid",  "normal");
+            %
+            SheikahPoint((1,7));
+            SheikahPoint((3,7));
+            SheikahPoint((5,7));
+            SheikahPoint((7,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterI =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,5), (1,7),  90,     "trapezoid", "reverse");
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            SheikahLine((3,1), (3,7), 270, "parallelogram",  "normal");
+            SheikahLine((3,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,7),  90, "parallelogram", "reverse");
+            SheikahLine((5,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,5), (7,7), 270,     "trapezoid",  "normal");
+            %
+            SheikahPoint((1,1));
+            SheikahPoint((1,3));
+            SheikahPoint((7,1));
+            SheikahPoint((7,3));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterJ =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,5), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((1,5), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (3,5), 180,      "triangle",  "normal");
+            SheikahLine((3,5), (3,7), 270, "parallelogram", "reverse");
+            SheikahLine((3,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahPoint((1,3));
+            SheikahPoint((3,3));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterK =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            %
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahLine((3,1), (3,3),  90,     "rectangle",  "normal");
+            %
+            SheikahLine((3,5), (3,7),  90,     "rectangle",  "normal");
+            %
+            SheikahLine((5,1), (5,3), 270,     "rectangle",  "normal");
+            %
+            SheikahLine((5,5), (5,7), 270,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterL =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,3), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,3), (3,3), 180,      "triangle",  "normal");
+            SheikahLine((3,3), (3,7), 270, "parallelogram", "reverse");
+            SheikahLine((3,7), (7,7),  0,       "triangle",  "normal");
+            %
+            SheikahLine((5,3), (7,3),   0,     "rectangle",  "normal");
+            %
+            SheikahLine((5,5), (7,5),   0,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterM =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,5), (3,5),   0,     "trapezoid", "reverse");
+            SheikahLine((3,5), (3,3), 270,     "trapezoid",  "normal");
+            %
+            SheikahLine((5,3), (5,5),  90,     "trapezoid", "reverse");
+            SheikahLine((5,5), (7,5),   0,     "trapezoid",  "normal");
+            %
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahPoint((1,3));
+            SheikahPoint((7,3));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterN =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((1,1), (1,3),  90,      "triangle",  "normal");
+            SheikahLine((1,3), (5,3),   0, "parallelogram",  "normal");
+            SheikahLine((5,3), (5,7), 270,     "trapezoid", "reverse");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahLine((1,5), (3,5), 180,     "trapezoid",  "normal");
+            SheikahLine((3,5), (3,7), 270,      "triangle",  "normal");
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterO =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,5), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (3,5),   0, "parallelogram", "reverse");
+            SheikahLine((3,1), (3,5),  90, "parallelogram",  "normal");
+            SheikahLine((3,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,5), 270, "parallelogram", "reverse");
+            SheikahLine((5,5), (7,5),   0, "parallelogram",  "normal");
+            SheikahLine((7,5), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahLine((1,1), (1,3),  90,     "trapezoid",  "normal");
+            %
+            SheikahLine((7,1), (7,3), 270,     "trapezoid", "reverse");
+            %
+            SheikahPoint((3,7));
+            SheikahPoint((5,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterP =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahLine((3,3), (5,3),   0,     "rectangle",  "normal");
+            %
+            SheikahLine((3,5), (5,5),   0,     "rectangle",  "normal");
+            %
+            SheikahLine((3,7), (5,7),   0,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterQ =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,5),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (5,5),   0, "parallelogram",  "normal");
+            SheikahLine((5,5), (5,7), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahLine((3,1), (3,3),  90,     "rectangle",  "normal");
+            %
+            SheikahLine((5,1), (5,3), 270,     "rectangle",  "normal");
+            %
+            SheikahPoint((1,7));
+            SheikahPoint((3,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterR =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,3), (3,3),   0,     "trapezoid", "reverse");
+            SheikahLine((3,3), (3,1),  90, "parallelogram",  "normal");
+            SheikahLine((3,1), (5,1), 180,      "triangle",  "normal");
+            SheikahLine((5,1), (5,3), 270, "parallelogram", "reverse");
+            SheikahLine((5,3), (7,3),   0,     "trapezoid",  "normal");
+            %
+            SheikahLine((1,5), (1,7),  90,     "trapezoid", "reverse");
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            SheikahLine((3,7), (3,5), 270, "parallelogram",  "normal");
+            SheikahLine((3,5), (5,5), 180,      "triangle",  "normal");
+            SheikahLine((5,5), (5,7),  90, "parallelogram", "reverse");
+            SheikahLine((5,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,5), (7,7), 270,     "trapezoid",  "normal");
+            %
+            SheikahPoint((1,1));
+            SheikahPoint((7,1));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterS =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (3,1), 180,     "trapezoid", "reverse");
+            SheikahLine((1,1), (1,7),  90,     "triangle", "normal");
+            SheikahLine((1,7), (3,7),   0,     "trapezoid", "normal");
+            %
+            SheikahLine((5,1), (7,1), 180,     "trapezoid",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((5,7), (7,7),   0,     "trapezoid", "reverse");
+            %
+            SheikahLine((3,3), (5,3), 180,     "rectangle",  "normal");
+            %
+            SheikahLine((3,5), (5,5),   0,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterT =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,3), (1,7),  90,     "trapezoid",  "normal");
+            SheikahLine((1,3), (3,3), 180,      "triangle",  "normal");
+            SheikahLine((3,3), (3,5), 270, "parallelogram", "reverse");
+            SheikahLine((3,5), (5,5),   0,      "triangle",  "normal");
+            SheikahLine((5,3), (5,5),  90, "parallelogram",  "normal");
+            SheikahLine((5,3), (7,3), 180,      "triangle",  "normal");
+            SheikahLine((7,3), (7,7), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((3,7), (5,7),   0,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterU =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,3), (5,3), 180,     "trapezoid", "reverse");
+            SheikahLine((1,3), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (5,7),   0,     "trapezoid",  "normal");
+            %
+            SheikahLine((7,3), (7,7), 270,     "trapezoid",  "normal");
+            %
+            SheikahPoint((3,5));
+            SheikahPoint((5,5));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterV =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,5), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((3,5), (7,5),   0, "parallelogram",  "normal");
+            SheikahLine((3,1), (3,5),  90,     "trapezoid", "reverse");
+            %
+            SheikahLine((5,1), (5,3), 270,     "rectangle",  "normal");
+            %
+            SheikahLine((7,1), (7,3), 270,     "trapezoid", "reverse");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterW =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,5),  90,     "trapezoid",  "normal");
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,5), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            SheikahLine((3,7), (3,3),  90, "parallelogram",  "normal");
+            SheikahLine((3,3), (5,3), 180,      "triangle",  "normal");
+            SheikahLine((5,3), (5,7), 270, "parallelogram", "reverse");
+            SheikahLine((5,7), (7,7),   0,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterX =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (3,1), 180,      "triangle",  "normal");
+            SheikahLine((3,1), (3,3),  90, "parallelogram", "reverse");
+            SheikahLine((3,3), (5,3),   0,      "triangle",  "normal");
+            SheikahLine((5,1), (5,3), 270, "parallelogram",  "normal");
+            SheikahLine((5,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            SheikahLine((3,5), (3,7),  90, "parallelogram",  "normal");
+            SheikahLine((3,5), (5,5), 180,      "triangle",  "normal");
+            SheikahLine((5,5), (5,7), 270, "parallelogram", "reverse");
+            SheikahLine((5,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahLine((1,3), (1,5),  90,     "rectangle",  "normal");
+            %
+            SheikahLine((7,3), (7,5), 270,     "rectangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterY =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,7), (3,7),   0,      "triangle",  "normal");
+            SheikahLine((3,1), (3,7), 270,     "trapezoid",  "normal");
+            %
+            SheikahLine((5,1), (5,7),  90,     "trapezoid",  "normal");
+            SheikahLine((5,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,1), (1,5),  90,     "trapezoid",  "normal");
+            %
+            SheikahLine((7,3), (7,7), 270,     "trapezoid",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterZ =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,5),  90,      "triangle",  "normal");
+            SheikahLine((1,5), (3,5),   0,      "triangle",  "normal");
+            SheikahLine((3,3), (3,5), 270,     "trapezoid",  "normal");
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((5,5), (5,3),  90,     "trapezoid",  "normal");
+            SheikahLine((5,3), (7,3), 180,      "triangle",  "normal");
+            SheikahLine((7,3), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitZero =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (4,7),   0,     "trapezoid",  "normal");
+            %
+            SheikahLine((4,1), (7,1), 180,     "trapezoid",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahPoint((4,4));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitOne =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            
+            SheikahLine((1,4), (4,4), 180,     "trapezoid",  "normal");
+            SheikahLine((4,4), (4,7), 270,     "trapezoid", "reverse");
+            %
+            SheikahPoint((1,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitTwo =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((1,4), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,4), (7,4), 180,      "triangle",  "normal");
+            SheikahLine((7,4), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahPoint((4,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitThree =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            %
+            SheikahLine((4,4), (4,7),  90,     "trapezoid",  "normal");
+            SheikahLine((4,4), (7,4), 180,     "trapezoid", "reverse");
+            %
+            SheikahPoint((7,7));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitFour =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (4,1), 180,      "triangle",  "normal");
+            SheikahLine((4,1), (4,7), 270,      "triangle",  "normal");
+            SheikahLine((1,7), (4,7),   0,      "triangle",  "normal");
+            %
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            SheikahPoint((1,4));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitFive =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,4), 270,     "trapezoid", "reverse");
+            %
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((1,4), (1,7),  90,      "triangle", "reverse");
+            %
+            SheikahPoint((4,4));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitSix =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            %
+            SheikahLine((4,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((4,1), (4,7),  90,      "triangle",  "normal");
+            SheikahLine((4,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahPoint((7,4));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitSeven =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((4,1), (4,4), 270,     "trapezoid",  "normal");
+            SheikahLine((1,4), (4,4),   0,     "trapezoid", "reverse");
+            %
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,7), (7,1), 270,      "triangle",  "normal");
+            %
+            SheikahPoint((1,1));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitEight =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,4),  90,      "triangle",  "normal");
+            SheikahLine((1,4), (7,4),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,4), 270,      "triangle",  "normal");
+            %
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahPoint((4,1));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahDigitNine =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahLine((4,1), (4,4),  90,     "trapezoid", "reverse");
+            SheikahLine((4,4), (7,4),   0,     "trapezoid",  "normal");
+            %
+            SheikahPoint((7,1));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterPeriod =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (4,1), 180,      "triangle",  "normal");
+            SheikahLine((4,1), (4,4), 270,     "trapezoid", "reverse");
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (7,7),   0,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterHyphen =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (4,1), 180,     "trapezoid", "reverse");
+            SheikahLine((1,1), (1,4),  90,      "triangle",  "normal");
+            SheikahLine((1,4), (7,4),   0, "parallelogram",  "normal");
+            SheikahLine((7,4), (7,7), 270,      "triangle",  "normal");
+            SheikahLine((4,7), (7,7),   0,     "trapezoid", "reverse");
+            %
+            SheikahPoint((1,7));
+            SheikahPoint((7,1));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterExclamationmark =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (1,7),  90,      "triangle",  "normal");
+            SheikahLine((1,7), (4,7),   0,      "triangle",  "normal");
+            SheikahLine((4,1), (4,7), 270, "parallelogram",  "normal");
+            SheikahLine((4,1), (7,1), 180,      "triangle",  "normal");
+            SheikahLine((7,1), (7,7), 270,      "triangle",  "normal");
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    vardef SheikahLetterQuestionmark =
+        draw image (
+            SheikahGrid;
+            %
+            SheikahLine((1,1), (4,1), 180,      "triangle",  "normal");
+            SheikahLine((4,1), (4,7), 270, "parallelogram", "reverse");
+            SheikahLine((4,7), (7,7),   0,      "triangle",  "normal");
+            %
+            SheikahPoint((1,4));
+            SheikahPoint((1,7));
+            SheikahPoint((7,1));
+            SheikahPoint((7,4));
+            %
+            setbounds currentpicture to unitsquare scaled 7 ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "sheikah",
+        units    = 9,
+        width    = 9,
+        height   = 8,
+        depth    = 1,
+        usecolor = true,
+    ] ;
+
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0041", code = "SheikahLetterA"               ] ; % A
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0042", code = "SheikahLetterB"               ] ; % B
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0043", code = "SheikahLetterC"               ] ; % C
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0044", code = "SheikahLetterD"               ] ; % D
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0045", code = "SheikahLetterE"               ] ; % E
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0046", code = "SheikahLetterF"               ] ; % F
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0047", code = "SheikahLetterG"               ] ; % G
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0048", code = "SheikahLetterH"               ] ; % H
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0049", code = "SheikahLetterI"               ] ; % I
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004A", code = "SheikahLetterJ"               ] ; % J
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004B", code = "SheikahLetterK"               ] ; % K
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004C", code = "SheikahLetterL"               ] ; % L
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004D", code = "SheikahLetterM"               ] ; % M
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004E", code = "SheikahLetterN"               ] ; % N
+    lmt_registerglyph [ category = "sheikah", unicode = "0x004F", code = "SheikahLetterO"               ] ; % O
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0050", code = "SheikahLetterP"               ] ; % P
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0051", code = "SheikahLetterQ"               ] ; % Q
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0052", code = "SheikahLetterR"               ] ; % R
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0053", code = "SheikahLetterS"               ] ; % S
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0054", code = "SheikahLetterT"               ] ; % T
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0055", code = "SheikahLetterU"               ] ; % U
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0056", code = "SheikahLetterV"               ] ; % V
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0057", code = "SheikahLetterW"               ] ; % W
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0058", code = "SheikahLetterX"               ] ; % X
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0059", code = "SheikahLetterY"               ] ; % Y
+    lmt_registerglyph [ category = "sheikah", unicode = "0x005A", code = "SheikahLetterZ"               ] ; % Z
+
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0030", code = "SheikahDigitZero"             ] ; % 0
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0031", code = "SheikahDigitOne"              ] ; % 1
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0032", code = "SheikahDigitTwo"              ] ; % 2
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0033", code = "SheikahDigitThree"            ] ; % 3
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0034", code = "SheikahDigitFour"             ] ; % 4
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0035", code = "SheikahDigitFive"             ] ; % 5
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0036", code = "SheikahDigitSix"              ] ; % 6
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0037", code = "SheikahDigitSeven"            ] ; % 7
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0038", code = "SheikahDigitEight"            ] ; % 8
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0039", code = "SheikahDigitNine"             ] ; % 9
+
+    lmt_registerglyph [ category = "sheikah", unicode = "0x002E", code = "SheikahLetterPeriod"          ] ; % .
+    lmt_registerglyph [ category = "sheikah", unicode = "0x002D", code = "SheikahLetterHyphen"          ] ; % -
+    lmt_registerglyph [ category = "sheikah", unicode = "0x003F", code = "SheikahLetterQuestionmark"    ] ; % ?
+    lmt_registerglyph [ category = "sheikah", unicode = "0x0021", code = "SheikahLetterExclamationmark" ] ; % !
+
+    lmt_registerglyph [ category = "sheikah", unicode = "0x00AD", code = "SheikahLetterHyphen"          ] ; % -
+
+\stopMPcalculation
+
+\startluacode
+
+    local shapes = { }
+
+    for k, v in next, characters.data do
+        local s = v.shcode
+        if s then
+            if type(s) == "number" then
+                shapes[utf.char(k)] = { utf.char(s) }
+            elseif #s == 2 then
+                shapes[utf.char(k)] = { utf.char(s[1]), utf.char(s[2]) }
+            end
+        end
+    end
+
+    fonts.handlers.otf.addfeature {
+        name = "sheikah:shapes",
+        type = "multiple",
+        data = shapes,
+    }
+
+    local uppercase = { }
+
+    for i = utf.byte("a"), utf.byte("z") do
+        uppercase[i] = i - 32
+    end
+
+    fonts.handlers.otf.addfeature {
+        name = "sheikah:uppercase",
+        type = "substitution",
+        data = uppercase,
+    }
+
+\stopluacode
+
+\starttypescriptcollection [sheikah]
+
+\definefontfeature [sheikah:shapes]    [sheikah:shapes=yes]
+\definefontfeature [sheikah:uppercase] [sheikah:uppercase=yes]
+
+\definefontfeature [sheikah] [always] [sheikah:uppercase=yes,sheikah:shapes=yes]
+
+\definefontfeature [sheikah:triangle] [sheikah] [metapost={category=sheikah,shape=triangle}]
+\definefontfeature [sheikah:circle]   [sheikah] [metapost={category=sheikah,shape=circle}]
+\definefontfeature [sheikah:square]   [sheikah] [metapost={category=sheikah,shape=square}]
+
+\starttypescript [serif] [sheikah]
+    \setups[font:fallback:serif]
+    \definefontsynonym [Serif] [DefaultFont] [features=sheikah:triangle]
+\stoptypescript
+
+\starttypescript [sans] [sheikah]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [DefaultFont] [features=sheikah:circle]
+\stoptypescript
+
+\starttypescript [mono] [sheikah]
+    \setups[font:fallback:mono]
+    \definefontsynonym [Mono] [DefaultFont] [features=sheikah:square]
+\stoptypescript
+
+\starttypescript [sheikah]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone]
+    \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone]
+    \definetypeface [\typescriptone] [tt] [mono]  [\typescriptone]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\continueifinputfile{meta-imp-sheikah.mkxl}
+
+\usebodyfont[sheikah]
+
+\setuppapersize[A4,landscape]
+
+\setuplayout[tight][topspace=1.5cm,bottomspace=1.5cm,backspace=1.5cm,cutspace=1.5cm]
+\setuplayout[tight]
+
+\definebodyfontenvironment[30pt]
+\switchtobodyfont[30pt,dejavu]
+
+\setupinterlinespace[line=5ex]
+
+\starttext
+
+\startalignment[middle]
+
+\dostepwiserecurse{`A}{`Z}{1}
+  {\ruby{\switchtobodyfont[sheikah]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`A+1);13}
+     \par
+   \else
+     \space
+   \fi}
+
+\blank
+
+\dostepwiserecurse{`a}{`z}{1}
+  {\ruby{\switchtobodyfont[sheikah]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`a+1);13}
+     \par
+   \else
+     \space
+   \fi}
+
+\blank
+
+\dostepwiserecurse{`0}{`9}{1}
+  {\ruby{\switchtobodyfont[sheikah]\utfchar{#1}}{\utfchar{#1}}
+   \ifcase{(#1-`0+1);13}
+     \par
+   \else
+     \space
+   \fi}
+
+\stopalignment
+
+\page
+
+\startbuffer[pangram]
+The quick brown fox jumps over the lazy dog
+\stopbuffer
+
+\starttabulate[|l|plf{\switchtobodyfont[sheikah]}|]
+\NC \tex{rm} \NC \rm \getbuffer[pangram] \NC\NR
+\NC \tex{ss} \NC \ss \getbuffer[pangram] \NC\NR
+\NC \tex{tt} \NC \tt \getbuffer[pangram] \NC\NR
+\stoptabulate
+
+\page
+
+\startbuffer[randomcharacter]
+  \ifcase\randomnumber{0}{5}\red\or\green\or\blue\or\cyan\or\magenta\or\yellow\fi
+  \ifcase\randomnumber{0}{2}\rm\or\ss\or\tt\fi
+  \ifcase\randomnumber{0}{1}\tf\or\it\fi
+  \ifcase\randomnumber{0}{2}
+    \char\randomnumber{`0}{`9}\or
+    \char\randomnumber{`a}{`z}\or
+    \char\randomnumber{`A}{`Z}\or
+  \fi
+  \hskip\zeropoint plus\spaceamount\relax
+\stopbuffer
+
+\start
+\switchtobodyfont[sheikah]
+\setupalign[paragraph]
+\setupinterlinespace[line=1fs,height=0.8,depth=0.2]
+\dorecurse{400}{\getbuffer[randomcharacter]}
+\removeunwantedspaces\par
+\stop
+
+\stoptext

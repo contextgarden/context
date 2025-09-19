@@ -989,7 +989,7 @@ local tx_reset, tx_process  do
     -- should use textext so this is just a catch. When not in lmtx it's never immediate.
 
     local reported   = false
-    local alwayswrap = false -- CONTEXTLMTXMODE <= 1 -- was always nil due to typo
+    local alwayswrap = false
 
     function metapost.maketext(s,mode)
         if not reported then

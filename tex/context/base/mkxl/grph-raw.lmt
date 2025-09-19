@@ -28,7 +28,6 @@ local function bitmapimage(t)
             height      = t.height,
             data        = data,
             mask        = t.mask,
-            bytes       = t.bytes,
             colorspace  = t.colorspace,
             format      = t.format,
             bytes       = t.bytes or false,
@@ -68,8 +67,13 @@ local gsub, char = string.gsub, string.char
 local rgbbytes = attributes.colors.rgbbytes
 
 local function qrbitmap(str,color,width)
+if not width then
+    width = color
+    color = nil
+end
     local data, size = qrcodegen.generate(str)
     if color and color ~= "" then
+        -- we can pass yes and nop
         color = rgbbytes(color)
         if color ~= rgbbytes("black") then
             local black = char(0)

@@ -56,7 +56,11 @@
 \registerctxluafile{font-otj}{autosuffix}
 \registerctxluafile{font-oup}{autosuffix}
 \registerctxluafile{font-ota}{autosuffix}
+% \doifelsefileexists{font-ots-new.lmt} {
+%     \registerctxluafile{font-ots-new}{autosuffix}
+% } {
 \registerctxluafile{font-ots}{autosuffix}
+% }
 \registerctxluafile{font-otd}{autosuffix}
 \registerctxluafile{font-otc}{}
 \registerctxluafile{font-oth}{}

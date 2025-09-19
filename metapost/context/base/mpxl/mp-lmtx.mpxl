@@ -3068,6 +3068,7 @@ presetparameters "vectorplot" [
   % tmin      = -1,
   % tmax      =  1,
   % tolerance =  0.0001,
+    bytemap   =  1,
 ] ;
 
 def lmt_vectorplot = applyparameters "vectorplot" "lmt_do_vectorplot" enddef ;
@@ -3086,13 +3087,103 @@ vardef lmt_do_vectorplot =
 
         pushparameters "vectorplot" ;
 
-        save p ; path p ; p := meshcontour(getparameter "name") ;
-        addto currentpicture doublepath p
-            withprescript "ms_name=" & (getparameter "name")
-            withprescript "ms_kind=" & (getparameter "kind")
-        ;
+        save p ; path p ; p := meshcontour(getparameter "name",getparameter "kind") ;
+%         if (getparameter "kind") = "bytemap" :
+%             addto currentpicture doublepath unitsquare
+%                 withbytemap getparameter "bytemap"
+%         else :
+            addto currentpicture doublepath p
+                withprescript "ms_name=" & (getparameter "name")
+                withprescript "ms_kind=" & (getparameter "kind")
+%         fi ;
 
         popparameters ;
     )
 
 enddef ;
+
+%D For Keith McKay:
+
+newscriptindex mfid_perlinnoise   ; mfid_perlinnoise   := scriptindex "perlinnoise" ;
+newscriptindex mfid_simplexnoise  ; mfid_simplexnoise  := scriptindex "simplexnoise" ;
+newscriptindex mfid_perlinoctave  ; mfid_perlinoctave  := scriptindex "perlinoctave" ;
+newscriptindex mfid_simplexoctave ; mfid_simplexoctave := scriptindex "simplexoctave" ;
+
+vardef perlinnoise (expr p, q, r) = runscript mfid_perlinnoise  p q r enddef ;
+vardef simplexnoise(expr p, q, r) = runscript mfid_simplexnoise p q r enddef ;
+
+vardef perlinoctave (expr        iterations, amplitude, frequency, persistence, lacunarity, ang, minimum, maximum, x, y) =
+    runscript mfid_perlinoctave  iterations  amplitude  frequency  persistence  lacunarity  ang  minimum  maximum  x  y
+enddef ;
+vardef simplexoctave(expr        iterations, amplitude, frequency, persistence, lacunarity, ang, minimum, maximum, x, y) =
+    runscript mfid_simplexoctave iterations  amplitude  frequency  persistence  lacunarity  ang  minimum  maximum  x  y
+enddef ;
+
+presetparameters "noise" [
+    bytemap     = 1,
+    nx          = 10,
+    ny          = 10,
+    nz          = 1,
+    iteration   = 2,
+    persistence = 128,
+    scale       = 0.01,
+    low         = 0,
+    high        = 255,
+    colorcode   = "",
+    angle       = 0,
+    method      = "perlin", % simplex angle detail
+] ;
+
+def lmt_noise = applyparameters "noise" "lmt_do_noise" enddef ;
+
+def lmt_load_mlib_eff =
+    runscript("lua.registercode('mlib-eff')");
+    let lmt_load_mlib_eff = relax ;
+enddef ;
+
+vardef lmt_do_noise =
+    lmt_load_mlib_eff ;
+    image (
+        pushparameters "noise" ;
+        lua.mp.lmt_noise_do() ;
+        draw unitsquare
+            withbytemap (getparameterdefault "bytemap" 1)
+            withpen pencircle scaled 0 ;
+        popparameters ;
+    )
+enddef ;
+
+% bytemaps
+
+presetparameters "bytemap" [
+    bytemap   = 1,
+    colorcode = "",
+] ;
+
+def lmt_bytemap = applyparameters "bytemap" "lmt_do_bytemap" enddef ;
+
+def lmt_load_mlib_bmp =
+    runscript("lua.registercode('mlib-bmp')");
+    let lmt_load_mlib_bmp = relax ;
+enddef ;
+
+vardef lmt_do_bytemap =
+    lmt_load_mlib_bmp ;
+    image (
+        pushparameters "bytemap" ;
+        lua.mp.lmt_bytemap_do() ;
+        draw unitsquare
+            withbytemap (getparameterdefault "bytemap" 1)
+            withpen pencircle scaled 0 ;
+        popparameters ;
+    )
+enddef ;
+
+% We need a vardef instead of def here in order to prevents expansion
+% of the suffix!
+
+vardef downsamplebytemap(expr source, target, n) =
+    lua.mp.downsamplebytemap(source,target,n);
+enddef ;
+
+permanent downsamplebytemap;

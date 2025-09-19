@@ -79,6 +79,8 @@ extern int  luaopen_pngdecode   (lua_State *L);
 extern int  luaopen_posit       (lua_State *L);
 extern int  luaopen_potrace     (lua_State *L);
 extern int  luaopen_qrcodegen   (lua_State *L);
+extern int  luaopen_effects     (lua_State *L);
+extern int  luaopen_bytemap     (lua_State *L);
 extern int  luaopen_sha2        (lua_State *L);
 extern int  luaopen_sio         (lua_State *L);
 extern int  luaopen_socket_core (lua_State *L);

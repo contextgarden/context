@@ -41,8 +41,7 @@ local prefixes = {
 
 -- the order might change and how about cld
 
-local suffixes = CONTEXTLMTXMODE > 0 and
-{
+local suffixes = {
     "mklx", -- preprocessed mkiv lmtx files
     "mkxl", -- mkiv lmtx files
     "mkvi", -- preprocessed mkiv files
@@ -50,14 +49,6 @@ local suffixes = CONTEXTLMTXMODE > 0 and
     "tex",  -- normally source code files
     "cld",  -- context lua documents (often stand alone)
     "lua",  -- lua files
-}
-    or
-{
-    "mkvi",
-    "mkiv",
-    "tex",
-    "cld",
-    "lua",
 }
 
 -- This controls embedded overloads. Maybe at some point we will limit this to files in the

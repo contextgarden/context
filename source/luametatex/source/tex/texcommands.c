@@ -154,6 +154,8 @@ const unsigned char some_item_classification[] = {
     [last_loop_iterator_code]       = classification_no_arguments,
     [last_par_context_code]         = classification_no_arguments,
     [last_page_extra_code]          = classification_no_arguments,
+    [last_line_width_code]          = classification_no_arguments,
+    [last_line_count_code]          = classification_no_arguments,
 };
 
 const unsigned char some_convert_classification[] = {
@@ -914,6 +916,8 @@ void tex_initialize_commands(void)
         tex_primitive(luametatex_command, no_legacy,       "lastnodesubtype",                some_item_cmd,          last_node_subtype_code,                   0);
         tex_primitive(etex_command,       no_legacy,       "lastnodetype",                   some_item_cmd,          last_node_type_code,                      0);
         tex_primitive(luametatex_command, no_legacy,       "lastpageextra",                  some_item_cmd,          last_page_extra_code,                     0);
+        tex_primitive(luametatex_command, no_legacy,       "lastlinewidth",                  some_item_cmd,          last_line_width_code,                     0);
+        tex_primitive(luametatex_command, no_legacy,       "lastlinecount",                  some_item_cmd,          last_line_count_code,                     0);
         tex_primitive(luametatex_command, no_legacy,       "lastpartrigger",                 some_item_cmd,          last_par_trigger_code,                    0);
         tex_primitive(luametatex_command, no_legacy,       "lastparcontext",                 some_item_cmd,          last_par_context_code,                    0);
         tex_primitive(tex_command,        no_legacy,       "lastpenalty",                    some_item_cmd,          lastpenalty_code,                         0);

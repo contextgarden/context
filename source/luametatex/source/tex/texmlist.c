@@ -298,6 +298,7 @@ typedef enum limits_modes {
 
 static inline void tex_math_wipe_kerns(kernset *kerns) {
     if (kerns) {
+     // memset(kerns, 0, sizeof(kernset) / sizeof(int));
         kerns->topright = 0;
         kerns->topleft = 0;
         kerns->bottomright = 0;
@@ -315,6 +316,7 @@ static inline void tex_math_wipe_kerns(kernset *kerns) {
 
 static inline void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
     if (kerns && parent) {
+     // memcpy(kerns, parent, sizeof(kernset));
         kerns->topright = parent->topright;
         kerns->topleft = parent->topleft;
         kerns->bottomright = parent->bottomright;

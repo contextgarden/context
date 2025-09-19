@@ -95,15 +95,15 @@ static inline int vectorlib_aux_zero_in_column(const vector a, int c, double eps
     return 0;
 }
 
-static inline int vectorlib_aux_zero_in_row(const vector a, int r, double epsilon)
-{
-    for (int c = 0; c < a->columns; c++) {
-        if (ISZERO(a->data[r * a->columns + c])) {
-            return 1;
-        }
-    }
-    return 0;
-}
+// static inline int vectorlib_aux_zero_in_row(const vector a, int r, double epsilon)
+// {
+//     for (int c = 0; c < a->columns; c++) {
+//         if (ISZERO(a->data[r * a->columns + c])) {
+//             return 1;
+//         }
+//     }
+//     return 0;
+// }
 
 /* let the compiled deal with this: */ 
 
@@ -413,7 +413,7 @@ static int vectorlib_tostring(lua_State *L)
         lua_pushfstring(L, "<vector %d x %d : %p>", v->rows, v->columns, v);
         return 1;
     } else {
-      return 0;
+        return 0;
     }
 }
 

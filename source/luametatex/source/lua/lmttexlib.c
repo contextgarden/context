@@ -3132,6 +3132,7 @@ static int texlib_setmath(lua_State *L)
                 case math_muglue_parameter:
                     {
                         halfword p = tex_copy_node(zero_glue);
+                        /* todo: no need for opt when zero */
                         glue_amount(p) = lmt_optroundnumber(L, slot++, 0);
                         glue_stretch(p) = lmt_optroundnumber(L, slot++, 0);
                         glue_shrink(p) = lmt_optroundnumber(L, slot++, 0);
@@ -5988,7 +5989,6 @@ static int texlib_getprotrusionboundaryvalues(lua_State *L)
     lua_set_string_by_index(L, protrusion_skip_both,     "skipboth");
     return 1;
 }
-
 
 static int texlib_getlinebreakstatevalues(lua_State *L)
 {

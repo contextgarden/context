@@ -29,6 +29,7 @@ local lxml = lxml
 local catcodenumbers     = catcodes.numbers
 local ctxcatcodes        = catcodenumbers.ctxcatcodes -- todo: use different method
 local notcatcodes        = catcodenumbers.notcatcodes -- todo: use different method
+local tpacatcodes        = catcodenumbers.tpacatcodes
 
 local commands           = commands
 local context            = context
@@ -150,9 +151,10 @@ function lxml.resolvedentity(str)
                 e(str)
             elseif e then
                 if trace_entities then
-                    report_xml("passing entity %a as %a using %a",str,e,"ctxcatcodes")
+                    report_xml("passing entity %a as %a using %a, case %i",str,e,"ctxcatcodes",1)
                 end
                 context(e)
+-- contextsprint(ctxcatcodes,e)
             end
             return
         end
@@ -164,7 +166,7 @@ function lxml.resolvedentity(str)
             end
             if e then
                 if trace_entities then
-                    report_xml("passing entity %a as %a using %a",str,e,"notcatcodes")
+                    report_xml("passing entity %a as %a using %a, case %i",str,e,"notcatcodes",2)
                 end
                 contextsprint(notcatcodes,e)
                 return
@@ -176,13 +178,14 @@ function lxml.resolvedentity(str)
         if chr then
             if parsedentity == reparsedentity then
                 if trace_entities then
-                    report_xml("passing entity %a as %a using %a",str,chr,"ctxcatcodes")
+                    report_xml("passing entity %a as %a using %a, case %i",str,chr,"ctxcatcodes",3)
                 end
                 context(chr)
+-- contextsprint(ctxcatcodes,chr)
             else
                 contextsprint(notcatcodes,chr)
                 if trace_entities then
-                    report_xml("passing entity %a as %a using %a",str,chr,"notcatcodes")
+                    report_xml("passing entity %a as %a using %a, case %i",str,chr,"notcatcodes",4)
                 end
             end
         elseif err then
@@ -200,7 +203,7 @@ function lxml.resolvedentity(str)
             contextsprint(texcatcodes,"}")
         else
             if trace_entities then
-                report_xml("passing entity %a as %a using %a",str,str,"notcatcodes")
+                report_xml("passing entity %a as %a using %a, case %i",str,str,"notcatcodes",5)
             end
             contextsprint(notcatcodes,str)
         end
@@ -246,6 +249,7 @@ local _, xmlspacecapture_yes = context.newtexthandler {
     simpleline = context.xmlcdataobeyedline,
     space      = context.xmlcdataobeyedspace,
     catcodes   = notcatcodes,
+ -- catcodes   = tpacatcodes, -- to be considered but maybe we want to keep 'm
     exception  = entity,
 }
 local _, xmlspacecapture_nop = context.newtexthandler {
@@ -254,6 +258,7 @@ local _, xmlspacecapture_nop = context.newtexthandler {
     simpleline = context.xmlcdataobeyedline,
     space      = context.xmlcdataobeyedspace,
     catcodes   = notcatcodes,
+ -- catcodes   = tpacatcodes, -- to be considered but maybe we want to keep 'm
 }
 
 local _, xmllinecapture_yes = context.newtexthandler {
@@ -970,6 +975,8 @@ lxml.xmltexhandler = xmltexhandler
 
 local function tex_space(e)
     e = xmlunspecialized(e)
+    -- the special characters are now entities like &U+7C; for |
+ -- print(e)
     lpegmatch(xmlspacecapture,e)
 end
 

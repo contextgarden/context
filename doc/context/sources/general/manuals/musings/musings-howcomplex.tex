@@ -1,0 +1,792 @@
+
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-howcomplex
+
+\environment musings-style
+
+\startchapter[title={How complex is \TEX}]
+
+\startsection[title={Introduction}]
+
+Sometimes on mailing lists (or support platforms) a user comes up with a
+questions that sounds a bit disappointed, for instance because what looks like a
+trivial case has no trivial solution or doesn't work as expected. Of course this
+relates to a view limited by the specific task, one that maybe by itself looks
+easy but that can become way more complex when all kind of interactions kick in.
+Functionality wrapped into a macro can hide a lot. Take \type {\section}: it has
+to pick up a title, typeset it according to some specification, prefix the title
+with number (that can be prefixed by other numbers), save the title to a list,
+including the number and page and maybe more. It has to also save a reference
+used for running titles, aka marks, maybe it has an embedded footnote reference,
+often some specific font is used, maybe a language switch is needed that then
+also can affect a label, some coloring can happen, and specific transformations
+e.g. smallcaps might have to be applied. The title has to be kept with the
+following text but can have spacing before and after. It might end up in the
+margin next to the text. Following text might demand suppressing of indentation.
+In the case of tagged output some additional work might be needed. We can go on
+and on here but the message is clear: various subsystems of a macro package are
+involved and they themselves use various subsystems of the \TEX\ engine. Here
+\typ {\tracingall} can be revealing!
+
+Below I will not go into the complications, workings and writing of a complex
+integrated macro package. Instead I will tell a bit about the engines and what
+subsystems are the most complex, in code and|/|or understanding. This is of course
+a personal impression but one I can expose because I've been involved in the
+development of various engines. As such I will not limit myself to the
+traditional engine(s) but also handle \LUAMETATEX, which has extensions all over
+the place, some that made already complex subsystems more complex, although there
+are cases where one can argue that it became less complex.
+
+The order below is arbitrary. The exploration is also not intended to be complete
+and of course determined by personal experiences and interpretations. But I hope
+that the reader will get the idea. It might lead to some people that ask
+questions to be a bit more \quote {careful of what to ask for} or at least
+understand that what they ask for is non trivial. But of course there is little
+change that they will read this. We start with three more general observations
+that determine how we look at the rest.
+
+\stopsection
+
+\startsection[title={Open or close}]
+
+The \TEX\ engine has primitive operations that operate on content collected from
+the input. An example is \type {\hbox}. The user knows what it does: packaging
+content, but how that happens and what exactly goes in is an abstraction. Even if
+we talk about \quote {nodes} (glyphs, kerns, glue etc.) and a list of them being
+processed, it still stays abstract. It is the result that matters: a box with
+dimensions.
+
+That all changed with \LUATEX\ where the internals got accessible with the help
+of callbacks. These are intercepts or overloads in terms of \LUA\ functions that
+for instance can get a node list, mess around with it, and return some result.
+This means that out of a sudden, users who want to use that functionality have to
+deal with internal representations: token and node speak goes beyond
+abstractions! But more important in the perspective of our discussion is that it
+has consequences for how we look at the engine's code base. Before it was a fact
+that for instance a packing routine as used in \type {\hbox} could assume no one
+had access to the list while suddenly assumptions could become violated.
+
+It also means that shortcuts in the code base or even dirty hacks no longer were
+reliable although we were careful with changing too much in \LUATEX. There are
+for instance various places that nodes of similar size can change in nature by
+changing a subtype that then drives decisions later on. Or take glue that uses
+shared nodes with reference counters. For instance, as long as spacing doesn't
+change glue between words can share a value, which is not a simple number but an
+object that holds multiple properties (width, stretch, shrink, etc). Actually,
+vertical glue also talks \quote {width} while maybe in an open approach \quote
+{advance} had made more sense. But when we see glue at the \LUA\ end one actually
+wants to consider these nodes to be unique, especially when values are changed.
+You don't want all spaces with the same reference to change when a specific space
+is adapted. Of course one can create a new glue node and use that instead but how
+to know when to do that.
+
+So if we compare the code base of traditional \TEX\ and \LUATEX, we already see
+some of these abstractions and assumptions change. Keep in mind that the code
+bases are hard to compare because since \LUATEX\ we use a \CCODE\ base and not
+\WEB. But there we still rely on the low level coder to plug in sane \LUA\ code:
+you can mess up internals and successive operations so have to be careful. In
+\LUAMETATEX\ some more precautions are taken and the engine provides way more
+information about possible values of various node fields. It also carries more
+states and options with nodes, and the additional level of control makes for less
+messing around. In a traditional engine a subtype number (in nodes and commands)
+was never exposed. In \LUATEX\ it is public but extending the engine beyond what
+it provides now could lead to a change in that number or additional numbers that
+need to be intercepted. In \LUAMETATEX\ all these (for instance subtype) numbers
+and their meaning can be queried and as such the engine is more self documenting.
+
+Because some mechanisms got more features some parts of the original engine got
+more complex code. Sometimes we could simplify things. Again \LUAMETATEX\ goes
+further: better separation of components, more abstraction, less hard coded
+assumptions, more consistency (all due to less constraints). The code base is
+larger because features were added but probably also less interwoven as \LUATEX.
+In the end the program is still surprisingly small, in 2025 we're still below
+4~MB, even with additional features, especially in the graphic department (for
+\METAPOST).
+
+We will mention various subsystems but an in-depth explanation of what is
+involved in for instance the builders can be found in our other publications, like
+development wrapups and the so called \quote {low level} manuals.
+
+\stopsection
+
+\startsection[title={Programming}]
+
+A second general aspect that relates to complexity is the programming language.
+For good reason original \TEX\ has a limited number of primitives. But as
+computing power and memory grew so did macro packages. The number of helper
+macros in plain \TEX\ is small but macro packages excel in that department.
+Between the user interface with high level commands and the primitive behavior
+there can be layers of support macros. When \MKII\ evolved so did the repertoire
+of helpers but in practice the number was not that large and many of those
+related to consistent user interfacing.
+
+In \MKIV, on top of \LUATEX, we could remove some of that by introducing new
+primitive operations with the help of \LUA: for a user it doesn't really matter
+if it is a real primitive or looks like one. In \MKXL\ we go even further because
+\LUAMETATEX\ has extended some existing primitives and introduced new ones. That
+actually means that we could remove mediating macro code and simplify the code
+base a bit. It also means that code looks nicer and more natural. We don't really
+need an intermediate layer of abstraction, on the contrary: we prefer to see
+native \TEX\ code which is also more efficient. On the mailing list very few
+users go beyond the user level commands, and when they do a handful of simple
+helpers that are there since \MKII\ are used. Go deeper and it makes sense to use
+the (somewhat extended) \TEX\ language.
+
+When we discuss complexity, we will not go deeply into programming features and
+only mention what was or became complex internally. The low level manuals cover
+various mechanism so there you can get more information. They also show where we
+came for and aimed for. What we added doesn't come out of thin air, it is there
+because we evolved in that direction; we had a wish list.
+
+Just to give you an idea of what we're dealing with, here is a list of the (\TEX)
+code blocks in \LUAMETATEX: adjust, align, arithmetic, balance, buildpage,
+commands, conditional, directions, discretionaries, dumpdata, equivalents,
+errors, expand, fileio, font, inputstack, inserts, language, legacy, linebreak,
+localboxes, mainbody, maincontrol, marks, math, mathcodes, mlist, nesting, nodes,
+packaging, primitive, printing, rules, scanning, snapping, specifications,
+stringpool, textcodes, token and types.
+
+\stopsection
+
+\startsection[title=Performance]
+
+The third aspect concerns performance. Sometimes (on public fora) users complain
+about performance of \TEX, although it seldom refers to \CONTEXT, which is
+considered to be fast (enough). If you look at what the engine is supposed to
+deliver, and if you keep in mind that we're talking about a macro processor, the
+engine is actually very fast. Huge amounts of data (stored tokens) are consumed
+and processed without the user noticing. Even processes like par building hardly
+cost time and quite some calculations and juggling goes on there.
+
+Quote often claims and observations wrt performance are not that accurate. They
+need to take into account that there is a lot of memory access, we jump all over
+the place, we have object manipulation and not byte processing, calculations
+involve accessing various resources. Some simple measurements of performance are
+seldom representative of the real usage pattern. Also, inefficient macro coding
+can grind down and user styles (like inefficient font switches) can do a lot of
+harm to performance.
+
+So, even if we're talking of complex tasks, all engines perform pretty good given
+what they are asked to to, being it in an 8 bit setup (\PDFTEX) or 32 bit one
+(\LUATEX). It is a fact that in the meantime \LUAMETATEX\ is faster than \LUATEX,
+but we're not talking factors, more percentages. And it depends on what one does.
+
+\stopsection
+
+\startsection[title=Languages]
+
+Engines have no real concept of a language. It is just a number and that number
+drives the hyphenation. In the case of \LUATEX\ it also creates a name space for
+some related properties, for instance those related to hyphenation (like pre and
+post characters and lowercase codes) but managing a bit more data is not adding
+much to complexity. It does demand additional storage facilities, in our case
+using a hash and not 256 slot arrays; after all we moved to \UNICODE.
+
+But there is an important difference when we talk about hyphenation. An original
+engine loads patterns and as we normally use a so called format file it stores
+them. The patterns are encoded in a memory saving way and are really a subsystem
+in the sense that it was developed as part of separate research. In \LUATEX\
+patterns are (normally) loaded at runtime because they get initialized from a
+text stream; they are not packed in the format. The complexity of loading just
+changed but remains the same.
+
+In \LUATEX\ we introduced a separate library for managing the hyphenation
+patterns and exceptions and applying them to words. But even there, the
+principles are the same. So there is no difference between engines when it comes
+to complexity. Actually when it comes to patterns the complexity is in creating
+them. Even if one can get the words and knows the valid breaks, creating pattern
+files is an art and magic numbers kick in. How to come to these patterns is to
+some extend a well kept secret. Okay, this is not entirely true: we have can have
+weighted hyphenation points (penalties per discretionary), handle compound words,
+do some collapsing (of e.g. hyphens), etc. And yes that makes the code more messy
+and influences performance. But the general ideas are the same.
+
+The fact that in \LUATEX\ we support dedicated hyphenation codes (so no lowercase
+code abuse) and also support compound word prioritizing and penalty driven breaks
+is not that well known. It falls in the category: users ask for it but then don't
+use it. Of course, as mentioned, that adds to the complexity of the hyphenator in
+\LUATEX. In \LUAMETATEX\ we have more control over various matters and it adds a
+little complexity nut not much; it can be well recognized in various places of
+the code.
+
+Discretionaries, basically manually inserted discretionary nodes, are the same
+but in \LUAMETATEX\ carry a bit more information. Additional control and status
+information complicates the code of course but not much. A bigger issue is that
+usage ends up all over the place (checks, application) so one has to know what one
+deals with, even if the addition involves a few lines only. Normally this is
+covered in the manual or low level manuals that come with \CONTEXT. We carry over
+some information to the glyphs that we end up with, but that's just for the sake
+of tracing. It means that the glyph node got larger and more complex, additional
+access in \LUA\ is needed, states have to be updated but it more code, not more
+complex code. One can argue that the complexity goes in the conceptual additions
+to the system: one has to understand why we added it.
+
+One aspect needs mentioning. When \TEX\ got support for more than one language
+the way to switch between them was by language nodes indicating a switch. In
+\LUAMETATEX\ the language is a property of glyphs. This simplifies the code at
+the cost of more memory but it also makes for less checking at the \LUA\ end due
+to the lack of language nodes. Of course with \LUA\ we can do a lot more so
+language (and script) subsystems in \CONTEXT\ became more advanced.
+
+\stopsection
+
+\startsection[title=Fonts]
+
+When processing text the engine only needs dimensions of glyphs, how to construct
+ligatures and where to inject font kerns. In math rendering it needs some
+information about how to get to larger sizes and construct extensibles, think of
+larger parentheses or radicals. In \OPENTYPE\ fonts more is needed because there
+we have features: single to single, single to multiple and multiple to single
+replacements, as well as inter character kerning, relative positioning, mark
+anchoring and cursive anchoring. That can also happen in a contextual analysis:
+looking at one or more characters at the same time, optionally checking character
+before and after those. That's not for the \TEX\ engine to worry about: one can
+either delegate it to a library (feed it characters and get some replacement
+stream back with glyph indices and positioning info) or handle it in \LUA\ as we
+do in \CONTEXT\ with \LUATEX\ and \LUAMETATEX. For the record: traditional
+engines have forward linked lists so that can't look back, but in \LUATEX\ we
+have double linked lists, initially for this purpose It actually took some time
+before all mechanisms guaranteed that, so a minor complication.
+
+In a traditional engine ligature building as well as kerning happens when reading
+input and also in the par builder when decisions are made wrt where to hyphenate
+words. So there we have construction, deconstruction and reconstruction going on.
+In \LUATEX\ the stages are separated which is less complex, and conceptually
+easier to deal with. There the complexity comes from handling features but that
+is, as mentioned, not an engine thing so one can say that the engine is less
+complex. because \TEX\ is written in a literate way steps are well documented but
+the whole picture is still pretty intimidating.
+
+But what if complex font processing was done in the engine? It would add quite
+some code if we want the same flexibility, that is adapting fonts and glyphs on
+the fly, which means managing data in \LUA. It would also freeze the interface
+which is not what we want. But the worst part is that we need to decide on what
+to do with discretionaries. Although for instance Arabic fonts look complex (
+design wise with plenty feature processing), and as Devanagari fonts are actually
+complex because they needs a reshuffled input, Latin fonts are rather demanding
+because of hyphenation in the languages that they are used for. There we need to
+traverse into pre, post and replace lists of discretionaries and often multiple
+such nodes are in a word. It can get nasty when multiple discretionaries follow
+each other. Add, optionally to be ignored, marks and another level of complexity is
+added. We prefer to keep that logic at the \LUA\ end because it permits tracing,
+adaptation, upgrading, or alternative implementations. But if it were in the
+engine it would be the more complex bit of code. Keep in mind that solutions also
+need to be efficient.
+
+Expansion and protrusion in traditional engines demand newly created instances
+because the engine needs the adapted dimensions. In \LUATEX\ we scale on the fly
+and carry information in the glyph and kern nodes. The additional costs in
+recalculating expansion is compensated by less memory usage because we don't need
+extra font instances and therefore we also gain on font creation as \UNICODE\
+aware fonts can be pretty large. Of course now the backend has to do more work
+but it pays back in less fonts resources in the \PDF\ file. It is a win-win. In
+\LUAMETATEX\ we also distinguish between expansion and compression so we have
+more code but it didn't add much complexity.
+
+The \PDFTEX\ and \LUATEX\ engines have a backend built-in. That means quite some
+extra code that normally would sit in a \DVI\ post-processor is now part of the
+engine and needs to be maintained. And yes, that code is kind of complex because
+it has to filter glyphs from font resources, do subsetting, create required data
+structures, etc. It has to share resources when possible. It also has to apply
+expansion, slanting, boldening etc.
+
+Loading metric etc.\ information from a font is more extensive in \LUATEX\ that
+provides a \FONTFORGE\ library but in the meantime we delegate this to \LUA, so
+we can consider that complexity to be outsourced. In fact, because \LUAMETATEX\
+has no font loader and backend included, as all that is done in \LUA, the engine
+is less complex in that respect. This is not to say that the \LUA\ replacement
+looks simple: it doesn't. Although this is very much dependent on the macro
+package, and \CONTEXT\ is the only package that uses \LUAMETATEX\ as intended,
+the backend is more complex than in \LUATEX. We have to deal with image
+inclusion, including \PDF, resource management, optimal page stream generation,
+etc. A particular (and somewhat complex) aspect is virtual fonts. Here we support
+the basics but also additional features, just because we can and also because
+virtual fonts are tightly integrated in the concept. It all pays back in
+flexibility.
+
+\stopsection
+
+\startsection[title=Paragraphs]
+
+When \TEX\ breaks a paragraph into lines, it might end up with an overflow and
+that is the moment a word gets hyphenated. In \LUATEX\ we have these callbacks
+which means that we apply hyphenation to the list as a whole. As a consequence we
+have a simpler routine in \LUATEX\ than in original \TEX: we don't need to
+hyphenate, deal with ligatures and kerns.
+
+On the other hand, when \PDFTEX\ introduced font expansion the traditional
+routine got more complex because expansion had to be taken into account too. In
+\LUATEX\ we got rid of font-generation-on-the-fly and use a dedicated expansion
+field in a glyph node so that actually simplified the code. Also in \LUATEX\ we
+also got left- and right boxes so that again made for more code although it can
+easily be separated.
+
+But then, in \LUAMETATEX\ we added various new features, toddler penalties,
+twin penalties, orphan penalties, multiple passes driven by various (additional)
+parameters. We also have a better interaction with math, more advanced shaping,
+and normalization of the lines, which makes usage in \LUA\ more predictable
+and convenient. Also note that we handle marks, inserts and vadjusts in a more
+advanced way so there is extra code present for that. Understanding all that also
+means that one has to be aware of all these aspects (features) of the engine.
+
+When it comes to complexity, a traditional par builder is an intimidating piece
+of code, also because of the up to three passes (interwoven code), integration of
+sub-processes like hyphenation, solution tree building, and subtle optimizations.
+In \LUAMETATEX\ the builder is also complex but there the reason is that we have
+way more functionality, configurable multiple passes, additional control over
+aspects, tracing and what more. We've written plenty about that.
+
+In \LUAMETATEX\ The par shaper (\typ {\parshape}) but also the penalty arrays
+(like \typ {\widowpenalties}) are generalized in what we call \quote
+{specifications}. There is more code involved in managing them but this is also
+due to the fact that we have options (like repeated shapes), left- and right page
+specific penalties. Instead of considering this management more complex, we can
+better look at it as if it is something new.
+
+\stopsection
+
+\startsection[title=Pages]
+
+The page builder is actually relatively simple if we forget about the fact that
+inserts have to be handled. There can be multiple inserts, set up with different
+constraints. Because they can be huge or plenty, the page builder has to make
+decisions between inserts but also has to split one, assuming it is permitted,
+when it overshoots the page.
+
+In \LUAMETATEX\ we made the builder a bit more complex because we want to have
+more information when the output routine is triggered. We can also add additional
+slack to a page so that the solution space becomes larger. And, as with nearly
+all mechanism, in \LUAMETATEX\ tracing has been boosted, with parameters as well
+as with optional callbacks. So more code, and more complexity.
+
+\stopsection
+
+\startsection[title=Packaging]
+
+There are two packaging functions, one for horizontal boxes and one dedicated to
+vertical boxes. The vertical one is rather simple: it only needs to accumulate
+heights and stretch and shrink that eventually can be applied when a vertical box
+has a target height specified.
+
+The horizontal packager is more complex because there we access glyphs and these
+can have expansion applied. In traditional \TEX\ this is not present, in \PDFTEX\
+it is equally simple because there an expanded font has its own font id, in
+\LUATEX\ some scaling has to be applied driven by a variable in the glyph node
+and in \LUAMETATEX\ we also have compression. Actually, in \LUAMETATEX\ we also
+have glyph scaling (\typ {\glyphscale}, \typ {\glyphxscale}, \typ {\glyphyscale},
+\typ {\glyphweight}, and \typ {\glyphslant} reflected in the node so much more
+calculations go on there.
+
+The so called hpack routine is also used to pack a line in the par builder in
+which case we basically do some work twice: in the builder expansion, shrink and
+stretch are part of the decision tree, while in the packer it is more static: the
+desired line width is known so now these properties can really be applied because
+now is known how much stretch and shrink has to be applied to get the desired
+width; so the work really has to be done twice, also because some information
+from the par builders has been lost in reaching the optimal solution and we need
+to be accurate in the end (the box gets some glue specific properties set that
+the backend applies).
+
+Overall the packer is not that complex, it's just a bit different between
+engines. Because the packers are called a lot they'd better be efficient. In for
+instance rendering math formulas a lot of packing goes on, although there often
+boxes are just filled and their dimensions set, simply because they are already
+known.
+
+In \LUATEX\ (and \LUAMETATEX) in the case of \type {\hbox} and alike a callback
+can be triggered that then can (for instance) deal with fonts. This can be
+prevented by using \type {\hpack}. The overhead of a callback can be considerable
+and it can do very complex node list manipulations, so it's safe to say that when
+this is considered part of the game, packing is pretty complex. Fortunately this
+is only true with explicit packing. A pitfall is that when one doesn't do the
+callbacks, some processing expected by users can be bypassed. This means that the
+macro package has to orchestrate this well.
+
+\stopsection
+
+\startsection[title=Alignments]
+
+The par builder, page builder and math builder are important subsystems. Another
+one alignments. This is a multi-step process: collect table cells and lines,
+preroll then so that we know the final widths (in the case of horizontal
+alignment) and finally can assemble the lot. Here the complication is maybe more
+in the preparations than in the actual work. Of course we do more in \LUAMETATEX,
+combined with less use of resources, but we leave it by mentioning this. The
+problem is in scanning: there is some look-ahead going on. For instance, we need
+to know if we're at the end of a row or start a new cell. And we need to know
+when the alignment ends. There is a preamble to be scanned, so called tabskips as
+well as leading and trailing cell content has to be injected (often left or right
+end fillers).
+
+In \LUAMETATEX\ we can plug in additional functionality so there is more code. In
+general various places in the source code (also in traditional engines) have some
+checking related to alignment scanning and state. When an alignment is collected
+we're in a constant switch between scanning and building lists, with grouping,
+preamble token list expansion and what more going on. We wanted some more control
+over scanning, that is, can influence look-ahead expansion, because looking ahead
+in alignments can badly interfere with nice user interfaces, so that wish has
+been fulfilled.
+
+So yes, in the end alignments are more complex that at first sight, also because
+it is an fundamental state switch: we're either in alignments, or in math, or in
+text and each has its twists. It is nevertheless good to notice that tables
+spanning hundreds of pages with many cells can be rendered quite comfortable. In
+that respect it is good to realize that \TEX\ is used for cases that the author
+could not foresee but can handle them well.
+
+\stopsection
+
+\startsection[title=Macros]
+
+In \TEX\ the macro model is split in two processes: definition and usage (also
+known as expanding). When defining a macro the so called preamble is scanned,
+that is: checking if there are arguments and, if so, how are they (optionally)
+delimited. In \LUAMETATEX\ the preamble is more advanced and therefore takes more
+effort to be parsed. The same is true when the macro gets expanded but the new
+argument related features (for instance optional arguments, mandate fences,
+discardable items, nested fences) pay back in runtime. Just look at the low-level
+manual that explains this to get an idea; it is one of the more interesting
+additions.
+
+In traditional \TEX\ we have regular, \type {\long} and \type {\outer} macros.
+These are gone in \LUAMETATEX. But there we also have more call variants than the
+regular one, like native protection \typ {\protected}, dealing with expansion in
+alignments (\typ {\noaligned}, optional arguments (\typ {\tolerant}), and such,
+but that is not really complicating matters. What is making things more complex
+is overload protection (\typ {\permanent} and \typ {\immutable} for example),
+which is a way to prevent users from messing with definitions. The code related
+to that is all over the place.
+
+We use a slightly different way to keep track of properties and save state (which
+relates to grouping) but that is more related to memory management than to
+substantially more code. It does make it easier to optimize some code paths so
+occasionally we have alternative code paths but again, once you understand what
+is going on, the complexity level stays the same. Maybe the way we deal with
+parameters is the most differential aspect and one needs to understand more of
+what the engine provides to the user in order to also grasp what the code does.
+We don't have the same high quality explanations that the original engine comes
+with.
+
+It might be worth noticing that the \LUAMETATEX\ code base used \type {enum}'s
+and \type {switch}'s all over the place and expects the compiler to do a decent
+job. Keep in mind that compilers had decades to become better, for instance in
+optimizing the machine code and inlining. We also got processors that can cache
+memory and predict branches. Although \TEX\ is a single threaded application it
+can nowadays benefit a lot from other cores dealing with the file system etc. We
+have plenty of memory, lots of \CPU\ cycles, floating point processors, etc. This
+all contributes to a macro machinery performing very well. Add \SSD's to the
+picture and file caching by the operating system and multiple runs bring little
+startup overhead, even with huge macro collections.
+
+\stopsection
+
+\startsection[title=Migration]
+
+Marks are state token lists that can be used for e.g.\ running headers like
+chapter titles. Inserts are collected node lists that can be used for e.g.\
+footnotes and are attached to (content) nodes. Adjusts are node lists that get
+injected before or after the specific line that they end up in. Users seldom see
+the related commands because they make most sense in some more advanced setup,
+one that hides the details.
+
+In a traditional engine the related code is not complex, apart from dealing with
+inserts in the page builder (decisions to be made as well as optional split). In
+\LUATEX\ it is the same but in \LUAMETATEX\ we have a mechanism that will migrate
+these elements up stream. In itself that is not complex but it involves quite
+some code in various places so conceptually it might be considered hard.
+
+Also, where in traditional \TEX\ inserts are using a set of registers, in
+\LUAMETATEX\ we have a dedicated data structure for that. This permits more
+properties and also avoids register clutter. The storage model has been
+abstracted and doesn't influence the code complexity.
+
+\stopsection
+
+\startsection[title=Math]
+
+Math rendering is complex in the sense that one has to know a bit what the target
+is in order to see why things happen. In the traditional code path the
+complications are: italic correction and kerning (get added and possibly
+removed), extensible construction, and attaching scripts to a nucleus. The process
+is a bit mystified by the fact that two passes use the same code, with choices.
+
+In \LUATEX\ many functions got two code paths: one for traditional fonts and one
+for \OPENTYPE. There are also many more math font parameters in play. As in the
+traditional code we have lots of switches to script and script script, depending
+on hard codes assumptions (heuristics). In the meantime, because the way fonts
+evolved, and because the way other macro packages like to see things we
+simplified the more modern paths in \LUATEX, also because in \CONTEXT\ we made
+some decisions that made for better output in general. In \LUAMETATEX\ on the
+other hand we went further and have a lot of freedom but in the end made choices
+of what to use in \CONTEXT. We can however discuss, show and play with all
+aspects, also for (\TEX\ related) educational purposes.
+
+In \LUAMETATEX\ we have dynamic scaling of glyphs (as with text) which gives much
+more code, and there we also have opened up all the hard coded assumptions so we
+have more parameters and more code. The super- and subscript attachment code is
+way more complex that in the predecessors because we also have prescripts and a
+native prime construct. We can have multi-scripts so we need to handle more
+spacing. There are more classes and all inter-class spacing and penalties can be
+set, plus various options. The good news is that we have split the main code blob
+in separate steps so the two-step rendering is now multi-step. That also gave
+some possibilities, of course not present in traditional engines. More can be
+found in articles and the \CONTEXT\ math manual also gives a good impression.
+Because we're the only macro package that will use these new features, the added
+complexity is irrelevant.
+
+So yes, definitely in \LUAMETATEX\ math rendering is complex, if only because
+everything is opened up and a lot can be controlled. Just think of this: where in
+predecessors the nodes involved are relatively small, in \LUAMETATEX\ then are
+several times larger and all that extra information is really used and supported.
+At the input end most constructs have many keywords (options) to be processed.
+
+\stopsection
+
+\startsection[title=Balancing]
+
+This is a \LUAMETATEX\ feature: splitting main vertical lists into pieces that
+can be assembled to pages, columns or whatever. The mvl collector is relatively
+simple. There can be many lists collected, which also included appending to
+already collected content. The balancer itself is more complex and looks like the
+par builder, so it has for instance shapes and supports multiple passes.
+
+Here the complication to a large extent is in the concepts involved: details of
+shape slots, boxes and rules that can be discarded, inserts and marks that have
+to be fetched, a possible decision loop, etc. As with \TEX\ itself, it has to
+grow on you: much makes little sense unless you need it and have a clue what it
+is intended for. The complexity in many ways is comparable with the par builder.
+
+\stopsection
+
+\startsection[title=Scanning]
+
+Of course \TEX\ has to interpret input and there are basically a few places where
+that can come from: files or stored token lists. In \LUATEX\ we can add \LUA\
+prints to the repertoire.
+
+In the end it is all about tokens and interpreting them. A token is basically a
+combination of an operator and operand or in \TEX\ speak, a command and a char.
+Here again we see that a non exposed classification can comfortably be used deep
+down: not every operand is a character. The same is actually true for memory
+usage: a memory word consists of an info and link field even if represents
+neither of then. These nominations have often been adapted in \LUAMETATEX\ to
+reflect reality because opening up we have to be more consistent. In fact, the
+\LUAMETATEX\ ending is more consistent than \LUATEX.
+
+A token can be an element in a token list in which case it combines with a
+pointer to a next token. That model is the same in all engines although in
+\LUAMETATEX\ there can be a bit more granularity especially in the reference
+token at the start of a list but this is not exposed (via \LUA).
+
+Tokens get interpreted (expanded), created, discarded, pushed back in case of a
+look-ahead, etc. This is kind of complex as it happens all over the place but it
+helps to know what \TEX\ does, read: have written plenty macros. We could
+consider a double linked list, so that we need less pushing back into the input,
+but that would explode memory usage. It would also add more overhead to a critical
+(in terms of performance) process.
+
+There are specific scanners for keywords, like fo instance the \type {height} key
+for rules or \type {by} for advancing a register value. In \LUAMETATEX\ we have
+way more keywords and places where they are scanned so the keyword scanner has
+been optimized which gives more code. But that code has to be there anyway.
+Instead of pushing back a keyword when it makes no sense or when a partial key
+has been read we do a stepwise progressive scan and no push back. This is
+definitely faster.
+
+There are also scanners for integers and dimensions (with units) and glue (with
+additional properties). All these are rewritten in \LUAMETATEX\ for better
+performance and sometimes more features. We really try to avoid pushing back
+already read tokens for reinterpretation. So, indeed, more complex code but as
+this is rather isolated it's not harder to grasp. The scanner for units has been
+extended to support user defined units.
+
+The expression scanner from \ETEX\ has been rewritten and additional more
+advanced scanners have been added but we had to accept its limitations because
+its functionality can't be changed. Instead we added some more advanced scanners
+with more operators and more reasonable order related constraints. This is
+moderately complex code because of the mixed data-types (integers with units,
+dimensions with units, proper operator precedence). But contrary to for instance
+complex rendering mechanisms this is predictable and users don't have to deal
+with these low level representations or workings.
+
+\stopsection
+
+\startsection[title=Input]
+
+Reading from file, token list or \LUA\ is complex in the sense that in
+\LUAMETATEX\ we have more housekeeping. There, input from file comes from a
+callback. Input from \LUA\ is collected till the call ends. In order to do that
+efficiently, because when one uses \LUA\ huge quantities can be pushed, the
+mechanism are not trivial. We don't want every \quote {character} to become a
+token in a linked token list as that costs lots of memory.
+
+Another aspect of input is the input stack. Opening a file pushed the stack,
+expanding a macro also does that as does expanding a token list. Pushing back
+a token in the input for reinterpretation \unknown\ indeed a push. Using
+a macro argument also does it. It can involve pushing a reference to a
+list or a (later to be released) copy. So, maybe the complication is not so
+much in the concept but more in imagining what happens.
+
+There is also the input state: text, math or alignment but that is kept track
+of by state variables. In traditional \TEX\ quite some state is handled global,
+in \LUAMETATEX\ we try to work with local or at least collected in structures
+variables. That makes the code a bit more readable, also because we have more
+code due to extensions.
+
+\stopsection
+
+\startsection[title=Stacks]
+
+These complicate matters, if only because one needs to know why they are there:
+input stack (files, token lists, \LUA\ output), condition stack (if statements),
+save stack (grouping), expression stack (indeed for expressions), parameter stack
+(for macro parameters). Some are native \TEX\ but for instance in order to deal
+with the many possible \UNICODE's and math character definitions and math
+parameters, in \LUATEX\ and \LUAMETATEX\ we use hashes to store then. These then
+also come with a stack model that relates to stacking hash entries. An example is
+grouping of catcode tables; it is not the easiest code. In general there are many
+subtle details in stacking. There are also related complexities: reference
+counting in node lists or much more tricky: efficient handling of attributes
+lists because every content related node gets one attached and we need to keep
+memory usage and assignments performing.
+
+In \LUAMETATEX\ this is often different than in \LUATEX\ but as that happened
+stepwise the increased complexity goes unnoticed. Although: when one looks at how
+attributes are dealt with (space and time efficient) one cannot deny a degree of
+complexity and indeed it did involve some time to get there. Lucky us that once it
+worked okay, we never had to go back to it.
+
+\stopsection
+
+\startsection[title=Assignments]
+
+There are many data types in the engine, like registers, fonts and character
+properties. The \PDFTEX\ engine added some more, after that \LUATEX\ extended the
+repertoire and indeed \LUAMETATEX\ did the same. For instance in \LUAMETATEX\ we
+also have integers, dimensions, etc, in an alternative form, not as registers but
+as more direct entities. This potentially frees memory because we can have less
+registers (that take space but are not used) but we can still go way beyond what
+registers provided. So, more results in more complexity, also because some data
+types can cast to other types.
+
+In \LUAMETATEX, assignments where dimensions, integers, floats (posits) and
+similar quantities are involved often we can assign expressions (delimited by
+curly braces). This only complicates the code in the sense that scanners have
+been extended.
+
+What does complicate is overload protection. We not only want to be able to
+freeze a definition (or allocation, think \typ {\permanent}) but also values
+(think \typ {\immutable}).
+
+Because \TEX\ has grouping, assignments result in pushing old values on the save
+stack. In \LUAMETATEX\ we have optimized this in order to reduce the stack. This
+comes at the price of complexity indeed, especially when also combined with
+overload protection. This kind of code evolved stepwise so from the authors point
+of view in might look less intimidating and easier. But I admit that once some
+new neat feature is applied in the \CONTEXT\ code base, I tend to forget things,
+especially if it is low level code that doesn't change, even if it's used a lot.
+
+\stopsection
+
+\startsection[title=Conditions]
+
+The code related to conditions is not that complex one you get the idea. The more
+tricky part is the handling of nested conditions and in \LUAMETATEX\ that has
+become more complex because we support continuation (think \type {\orelse}) and
+user defined (via \LUA) conditions. There are many more than the handful of
+built-in traditional conditions but that is just more code. Okay, some of that
+might look complex. In \LUAMETATEX\ we also tried to optimize performance but
+that doesn't make it more complex: it just might look different, also because we
+have regrouped some so called command codes and values (operands). The original
+comments, that we kept, don't always apply but the idea remains the same. And
+yes, it helps to know how to write macros.
+
+\stopsection
+
+\startsection[title=Format file]
+
+The initial state can be saved in a format file that then can be loaded fast when
+we have a real run: dumping and undumping are the terms used to describe this.
+The code in \LUATEX\ is more complex than in traditional engines because we have
+to also save the (\UNICODE\ and math related) hashes. In \LUAMETATEX\ the process
+is a bit more complex because we optimize the way various things are stored. At
+the cost of a bit more effort when dumping, we get a smaller format files and
+gain on undumping. In the end we're upto twice as fast in \LUAMETATEX\ as in
+\LUATEX, and we have a smaller effective file (\LUATEX\ compresses the format
+while \LUAMETATEX\ doesn't need that any longer). Anyway, in \LUAMETATEX\ the
+code is moderately complex.
+
+\stopsection
+
+\startsection[title={Not mentioned}]
+
+This is just a simple overview, for those who might draw the wrong conclusions
+based on incomplete observations, wishful thinking, over- or underestimating how
+something works, etc. We didn't discuss splitting lists ( similar to the page
+builder), cleaning up processed data (like flattening node lists), directions
+(actually very simple as it is a backend thing mostly), new features like various
+native loops, manipulating token list registers (appending and such), local
+control (nested main loop), hashing (name lookups), calculations, etc.
+
+We also didn't discuss anything happening at the \LUA\ end, for instance
+libraries, access to internal data, scanning, \METAPOST\ (which deserves a
+discussion itself). We have a lot of \LUA\ code in \CONTEXT\ and some of that can
+be considered complex. Reasons are that we need to be efficient but even more
+important is that we try to solve something that is kind of complex, so the code
+then also it hard to grasp. One can argue that we then need more documentation
+but that costs time and effort. Supporting a macro package already takes much
+time and it all is done and comes for free, so we can't allocate additional
+resources to it.
+
+There are other fundamental differences between engines that add complexity. For
+instance, in \LUAMETATEX\ we don't allocate all memory in advance, so there is
+different checking gong on combined with stepwise allocation and (of course)
+callbacks to keep track of this. Where in \PDFTEX\ and \LUATEX\ image inclusion
+is in the backend and libraries hide details, in \LUAMETATEX\ we have (rather
+minimalistic) \LUA\ libraries that make it possible to deal with that in \LUA. So
+we have some compressors but reading a \ZIP\ file is up to \LUA. We have some
+\PNG\ related byte jugglers but reading the file and its structure is managed by
+\LUA. One can consider this complex but it is probably less so than using the
+(often somewhat bloated) libraries.
+
+I might occasionally add something to this story, either because in the end it is
+(or became) complex, or because I simply forgot about it. On the other hand, the
+\LUAMETATEX\ manual can enlighten a bit too, even if one doesn't get all that is
+mentioned there (which is my bad then).
+
+\stopsection
+
+\startsection[title={Conclusion}]
+
+So, is \TEX\ complex? I let you decide. I remember that when I first saw the
+\TEX\ book it looked intriguing. And because at that time I programmed in
+\PASCAL, and later \MODULA 2, the program in print also looked interesting.
+However, with only paper and no computer it all remained intriguing and a
+miracle. Then, when \TEX\ came to the Personal Computer I reread the book, played
+with \TEX\ started writing a macro package because there wasn't much out there
+that we could use for educational purposes (and there was no internet either).
+Some things you read in the book I only understood after a while and a reread.
+The same is true for \METAFONT: after a few chapters reading on makes no sense if
+you can't try things out.
+
+In \TEX\ concepts like for instance an output routine makes little sense until
+you have to write one. Just like inserts only get meaning when you have to deal
+with them in that perspective. The same is true for the code base: someone like
+me, who has troubles getting into the mind of a coder, has to kind of reinvent
+the wheel. And at some point maybe the \quote {Aha} principle kicks in. In the
+end this is why I can probably extend the engine: because I also write a macro
+package. Abstract discussions are simply lost on me: I have to do it. And in that
+case, complexity actually matters little and definitely less that seeing people
+drawing weird conclusions wrt \TEX, \CONTEXT, our intentions, applications, the
+joy of working on this with users and friends. Also, I'm basically dealing with
+all aspects of the machinery: engine, macros, fonts, \METAPOST, \LUA, all of the
+above comes together in \CONTEXT. Maybe this wrap up helps seeing our point of
+view.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

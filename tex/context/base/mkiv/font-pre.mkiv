@@ -63,17 +63,28 @@
   [default]
   [always]
   [liga=yes,
-% ccmp=yes, % maybe too
-% locl=yes, % maybe too
-% calt=yes, % maybe too
-% clig=yes, % maybe too
-% rlig=yes, % maybe too
+ % ccmp=yes, % maybe too
+ % locl=yes, % maybe too
+ % calt=yes, % maybe too
+ % clig=yes, % maybe too
+ % rlig=yes, % maybe too
    tlig=yes,
    trep=yes] % texligatures=yes,texquotes=yes
 
 \definefontfeature
   [original] % a clone of default so we can revert
   [default]
+
+\definefontfeature
+   [recommended]
+   [always]
+   [itlc=yes,
+  % ccmp=yes,
+  % locl=yes,
+    rlig=yes,
+    liga=yes,
+    clig=yes,
+    calt=yes]
 
 \definefontfeature
   [smallcaps]

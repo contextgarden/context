@@ -47,6 +47,7 @@
 \registerctxluafile{mlib-ptr}{autosuffix}
 %registerctxluafile{mlib-fnc}{autosuffix} % delayed
 \registerctxluafile{mlib-msh}{autosuffix} % can't be delayed as it has helpers
+%registerctxluafile{mlib-eff}{autosuffix} % delayed
 
 \unprotect
 

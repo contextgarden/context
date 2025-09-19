@@ -31,9 +31,7 @@ local setslant           = nuts.setslant
 local getweight          = nuts.getweight
 local setweight          = nuts.setweight
 local getxscale          = nuts.getxscale
-local setxscale          = nuts.setxscale
 local getyscale          = nuts.getyscale
-local setyscale          = nuts.setyscale
 local setprop            = nuts.setprop
 local getcharspec        = nuts.getcharspec
 
@@ -542,7 +540,7 @@ if neweffect then
                 newextend = round(newextend*useextend/oldextend)
             end
         end
-        setxscale(n,newextend)
+        setscales(n,nil,newextend,nil)
     end
     if newsqueeze ~= 1000 then
         local oldsqueeze = oldeffect.squeeze
@@ -552,7 +550,7 @@ if neweffect then
                 newsqueeze = round(newsqueeze*usesqueeze/oldsqueezed)
             end
         end
-        setyscale(n,newsqueeze)
+        setscales(n,nil,nil,newsqueeze)
     end
 end
     --

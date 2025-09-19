@@ -93,8 +93,7 @@ do
         if method and shapes then
             local characters   = tfmdata.characters
             local descriptions = tfmdata.descriptions
-         -- local droppedin, tfmdrop, dropchars, dropdescs, colrshapes, props
-            local droppedin, tfmdrop, dropchars, colrshapes, props
+            local droppedin, tfmdrop, dropchars, dropdescs, colrshapes, props
             local idx  = 255
             local slot = 0
             -- sorted ?
@@ -110,7 +109,7 @@ do
                                 colrshapes = setmetatableindex({ },shapes)
                                 slot, droppedin, tfmdrop, props = dropins.provide(method,tfmdata,colrshapes)
                                 dropchars = tfmdrop.characters
-                             -- dropdescs = tfmdrop.descriptions
+                                dropdescs = tfmdrop.descriptions
                             else
                                 idx = idx + 1
                             end
@@ -119,11 +118,11 @@ do
                             v.commands = { slotcommand[slot][idx] }
                             -- hack to prevent that type 3 also gets 'use' flags .. todo
                             local c = { commands = false, index = idx, dropin = tfmdrop }
-                            local d = { } -- { index = idx, dropin = tfmdrop }
+                            local d = { index = idx, dropin = tfmdrop }
                             setmetatableindex(c,v)
                             setmetatableindex(d,description)
                             dropchars[idx] = c
-                         -- dropdescs[idx] = d -- not needed
+                            dropdescs[idx] = d -- not needed
                         end
                     end
                 end

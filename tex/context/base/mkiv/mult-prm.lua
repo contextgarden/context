@@ -553,6 +553,8 @@ return {
   "lastchkdimension",
   "lastchknumber",
   "lastleftclass",
+  "lastlinecount",
+  "lastlinewidth",
   "lastloopiterator",
   "lastnamedcs",
   "lastnodesubtype",

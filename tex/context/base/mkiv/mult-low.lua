@@ -68,7 +68,7 @@ return {
         "inicatcodes",
         "ctxcatcodes", "texcatcodes", "notcatcodes", "txtcatcodes", "vrbcatcodes",
         "prtcatcodes", "nilcatcodes", "luacatcodes", "tpacatcodes", "tpbcatcodes",
-        "xmlcatcodes", "ctdcatcodes", "rlncatcodes",
+        "xmlcatcodes", "ctdcatcodes", "rlncatcodes", "hshcatcodes",
         --
         "escapecatcode", "begingroupcatcode", "endgroupcatcode", "mathshiftcatcode", "alignmentcatcode",
         "endoflinecatcode", "parametercatcode", "superscriptcatcode", "subscriptcatcode", "ignorecatcode",
@@ -688,8 +688,6 @@ return {
         "setparagraphfreezing", "forgetparagraphfreezing",
         "updateparagraphproperties", "updateparagraphpenalties", "updateparagraphdemerits", "updateparagraphshapes", "updateparagraphlines",
         "updateparagraphpasses",
-        --
-        "lastlinewidth",
         --
         "assumelongusagecs",
         --

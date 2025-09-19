@@ -1952,12 +1952,12 @@ do
         local f_index      = formatters["I%d"]
         local f_image_xy   = formatters["%N 0 d0 1 0 0 1 %N %N cm /%s Do"]
         local f_image_c    = formatters["/%s Do"]
-        local f_image_c_xy = formatters["%N 0 0 %N %N %N cm /%s Do"]
+        ----- f_image_c_xy = formatters["%N 0 0 %N %N %N cm /%s Do"]
         local f_image_w    = formatters["%N 0 d0 %s"]
         ----- f_image_d    = formatters["%N 0 d0 1 0 0 1 0 %N cm /%s Do"]
         local f_stream     = formatters["%N 0 d0 %s"]
         local f_stream_c   = formatters["%N 0 0 0 0 0 d1 %s"] -- last four bbox
-local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
+        local f_stream_cc  = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
         local f_stream_d   = formatters["%N 0 d0 1 0 0 1 0 %N cm %s"]
      -- local f_stream_s   = formatters["%N 0 0 %N 0 0 cm /%s Do"]
 
@@ -2070,7 +2070,7 @@ local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
             end
         end
 
-        function methods.pdf(filename,details)
+        function methods.pdf(filename,details) -- dropin.clones sets descriptions!
             local properties = details.properties
             local pdfshapes  = properties.indexdata[1]
             local filename   = pdfshapes.filename
@@ -2090,7 +2090,7 @@ local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
                     if not image then
                         image = embedimage(copypage(pdfdoc,glyph))
                         if not image then
-                            report_fonts("bad image in file %a",filenameme)
+                            report_fonts("bad image in file %a",filename)
                             return
                         end
                         nofglyphs    = nofglyphs + 1
@@ -2099,17 +2099,21 @@ local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
                         if fixdepth then
                             local depth = data.depth  or 0
                             if depth ~= 0 then
-                                local d     = data.dropin.descriptions[data.index]
-                                local b     = d.boundingbox
-                                local l     = b[1]
-                                local r     = b[3]
-                                local w     = r - l
-                                local scale = w / d.width
-                                local x     = l
-                             -- local y     = - b[4] - b[2] - (d.depth or 0)
-                                local y     = - (d.depth or 0)
-                                local scale = w / (image.width * bpfactor)
-                                stream = f_image_c_xy(scale,scale,x,y,name)
+                                local d = data.dropin.descriptions[data.index]
+                                if d then
+                                    local b     = d.boundingbox
+                                    local l     = b[1]
+                                    local r     = b[3]
+                                    local w     = r - l
+                                    local scale = w / d.width
+                                    local x     = l
+                                 -- local y     = - b[4] - b[2] - (d.depth or 0)
+                                    local y     = - (d.depth or 0)
+                                    local scale = w / (image.width * bpfactor)
+                                    stream = f_image_c_xy(scale,scale,x,y,name)
+                                else
+                                 -- report_fonts("no image in file %a, case %i",filename,1)
+                                end
                             end
                         end
                         if not stream then
@@ -2386,7 +2390,12 @@ local f_stream_cc   = formatters["%N 0 %N %N %N %N d1 %s"] -- last four bbox
                         end
                         local e = descriptions[entry.slot]
                         if e then
-                            n = n + 1 ; t[n] = f_char(dropid,fontslots[e.index])
+                            local f = fontslots[e.index]
+                            if f then
+                                n = n + 1 ; t[n] = f_char(dropid,f)
+                            else
+                             -- report_fonts("no image in file %a, case %i",filename,2)
+                            end
                         end
                     end
                     -- we're not going to hash this ... could be done if needed (but who mixes different

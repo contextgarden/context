@@ -154,14 +154,18 @@
 %D Just a basic environment (mostly for testing). We will provide a 'setup' based
 %D plugin once the rest is sorted out.
 
+\installmacrostack\currentconstructionreference
+
 \tolerant\permanent\protected\def\startnamedconstruction[#1]#*[#S#2]#*[#3]%
   {\begingroup
+   \push_macro_currentconstructionreference % global
    \strc_constructions_initialize{#1}%
    \strc_constructions_register[#3][\c!reference=,\c!title=,\c!bookmark=,\c!list=,\c!referencetext=,#2]%
    \csname\??constructionstarthandler\currentconstructionhandler\endcsname}
 
 \permanent\protected\def\stopnamedconstruction
   {\csname\??constructionstophandler\currentconstructionhandler\endcsname
+   \pop_macro_currentconstructionreference
    \endgroup}
 
 %D As we will build on top of the generic construction mechanism we have handlers
@@ -639,6 +643,12 @@
 
 \permanent\protected\def\flushconstructionheadbox
   {\ifhbox\constructionheadbox\unhbox\else\box\fi\constructionheadbox}
+
+% \permanent\protected\def\flushconstructionheadbox
+%   {\ifhbox\constructionheadbox
+%      \scratchdimen\boxrepack\constructionheadbox
+%    \fi
+%    \box\constructionheadbox}
 
 % The setups. These only deal with placement of the descriptor and initializing the
 % environment. The wrapping happens elsewhere.
@@ -1199,7 +1209,9 @@
    \edef\currentconstructionxmlsetup       {\constructionparameter\c!xmlsetup}%
    \edef\currentconstructioncatcodes       {\constructionparameter\s!catcodes}%
    \edef\currentconstructionlabel          {\constructionparameter\c!label}%
-   \edef\currentconstructionreference      {\constructionparameter\c!reference}%
+   % watch out, this one is global, see usage in strc-enu
+   \xdef\currentconstructionreference      {\constructionparameter\c!reference}%
+   %
    \edef\currentconstructionreferencetext  {\constructionparameter\c!referencetext}%
    \edef\currentconstructionreferenceprefix{\constructionparameter\c!referenceprefix}%
    %edef\currentconstructionshownumber     {\constructionparameter\c!number}%

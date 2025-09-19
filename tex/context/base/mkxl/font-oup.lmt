@@ -2994,7 +2994,7 @@ function readers.compact(data)
     end
 end
 
-if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+do
 
     local done = 0
 
@@ -3234,6 +3234,10 @@ function readers.expand(data)
                                 v[1] = coverage -- slot 1 is a placeholder
                             end
                         end
+-- saves memory but not that impressive:
+--
+-- step.baseclasses = nil
+-- step.markclasses = nil -- saves memory but not that impressive
                         local rules = step.rules
                         if rules then
                             local rulehash   = { n = 0 } -- is contexts in font-ots
@@ -3276,9 +3280,9 @@ function readers.expand(data)
                                         if lookups then
                                             for k, v in next, lookups do -- actually this one is indexed
                                                 local lookup = sublookups[v]
-if not lookup and whatever then
-    lookup = whatever[v]
-end
+                                                if not lookup and whatever then
+                                                    lookup = whatever[v]
+                                                end
                                                 if lookup then
                                                     lookups[k] = lookup
                                                     if not subtype then

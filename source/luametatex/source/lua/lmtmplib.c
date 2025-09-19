@@ -3795,12 +3795,13 @@ static int mplib_bytemap_set(lua_State *L)
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
         int index = lmt_tointeger(L, 2);
-        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        bytemap_data *b = mp_bytemap_get_by_index(mp, index);
         if (b) { 
             int x = lmt_roundnumber(L, 3);
             int y = lmt_roundnumber(L, 4);
             if (x >= 0 && x < b->nx && y >= 0 && y < b->ny) { 
                  y = bm_current_y(b->ny,y);
+                 /* todo: no need for opt here, zero default anyway */
                  switch (b->nz) { 
                      case 1:
                         {
@@ -3810,9 +3811,9 @@ static int mplib_bytemap_set(lua_State *L)
                      case 3:
                         {
                              int o = (y * b->nx * b->nz) + x * b->nz;
-                             b->data[o]   = (unsigned char) lmt_optroundnumber(L, 5, 0);
-                             b->data[o+1] = (unsigned char) lmt_optroundnumber(L, 6, 0);
-                             b->data[o+2] = (unsigned char) lmt_optroundnumber(L, 7, 0);
+                             b->data[o++] = (unsigned char) lmt_optroundnumber(L, 5, 0);
+                             b->data[o++] = (unsigned char) lmt_optroundnumber(L, 6, 0);
+                             b->data[o  ] = (unsigned char) lmt_optroundnumber(L, 7, 0);
                              break;
                         }
                  }
@@ -3827,22 +3828,26 @@ static int mplib_bytemap_get(lua_State *L)
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
         int index = lmt_tointeger(L, 2);
-        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        bytemap_data *b = mp_bytemap_get_by_index(mp, index);
         if (b) { 
             int x = lmt_tointeger(L, 3);
             int y = lmt_tointeger(L, 4);
             if (x >= 0 && x < b->nx && y >= 0 && y < b->ny) { 
-                int o = y * b->ny + x;
                 y = bm_current_y(b->ny,y);
                 switch (b->nz) { 
                     case 1:
-                        lua_pushinteger(L, (int) b->data[o]);
-                        return 1;
+                        {
+                            lua_pushinteger(L, (int) b->data[y * b->nx + x]);
+                            return 1;
+                        }
                     case 3:
-                        lua_pushinteger(L, (int) b->data[o]);
-                        lua_pushinteger(L, (int) b->data[o+1]);
-                        lua_pushinteger(L, (int) b->data[o+2]);
-                        return 3;
+                        {
+                            int o = (y * b->nx * b->nz) + x * b->nz;
+                            lua_pushinteger(L, (int) b->data[o++]);
+                            lua_pushinteger(L, (int) b->data[o++]);
+                            lua_pushinteger(L, (int) b->data[o  ]);
+                            return 3;
+                        }
                 }
             }
         }
@@ -3855,7 +3860,7 @@ static int mplib_bytemap_fill(lua_State *L)
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
         int index = lmt_tointeger(L, 2);
-        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        bytemap_data *b = mp_bytemap_get_by_index(mp, index);
         if (b) { 
             switch (b->nz) { 
                 case 1:
@@ -3890,7 +3895,7 @@ static int mplib_bytemap_data(lua_State *L)
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
         int index = lmt_tointeger(L, 2);
-        mp_bytemap *b = mp_bytemap_get_by_index(mp, index);
+        bytemap_data *b = mp_bytemap_get_by_index(mp, index);
         if (b) { 
             lua_pushinteger(L, b->nx);
             lua_pushinteger(L, b->ny);
@@ -3901,6 +3906,44 @@ static int mplib_bytemap_data(lua_State *L)
             } else { 
                 return 3;
             }
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_octave(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        bytemap_data *b = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 2));
+        if (b) { 
+            effectslib_octave_bytemapped(L, b->data, b->nx, b->ny, b->nz, 3);
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_process(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        bytemap_data *b = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 2));
+        if (b) { 
+            bytemaplib_bytemapped(L, b->data, b->nx, b->ny, b->nz, 3);
+        }
+    }
+    return 0;
+}
+
+static int mplib_bytemap_downsample(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        bytemap_data *source = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 2));
+        bytemap_data *target = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 3));
+        int r = lmt_optinteger(L, 4, 2);
+        if (source && target) { 
+            bytemap_downsample(source, target, r);
         }
     }
     return 0;
@@ -4020,6 +4063,11 @@ static const struct luaL_Reg mplib_functions_list[] = {
     { "getbytemap",         mplib_bytemap_get        },
     { "fillbytemap",        mplib_bytemap_fill       },
     { "getbytemapdata",     mplib_bytemap_data       },
+    /* */
+    { "setbytemapoctave",   mplib_bytemap_octave     },
+    /* */
+    { "processbytemap",     mplib_bytemap_process    },
+    { "downsamplebytemap",  mplib_bytemap_downsample },
     /* */                                            
     { NULL,                 NULL                     },
 };

@@ -915,9 +915,9 @@ code when we make then the same. Todo: use char for some.
 
 */
 
-# define bm_current_y(ny,y)  (ny-y-1)
-# define bm_first_y(ny,y,dy) (bm_current_y(ny,y)-dy+1)
-# define bm_last_y(ny,y,dy)  (bm_current_y(ny,y)-1)
+//define bm_current_y(ny,y)  (ny-y-1)
+//define bm_first_y(ny,y,dy) (bm_current_y(ny,y)-dy+1)
+//define bm_last_y(ny,y,dy)  (bm_current_y(ny,y)-1)
 
 # define mp_path_ptr(A)       (A)->path
 # define mp_pen_ptr(A)        (A)->pen
@@ -2056,10 +2056,6 @@ static void                mp_bytemap_set_offset          (MP mp);
 static int                 mp_bytemap_valid               (MP mp, int index);
 static int                 mp_bytemap_valid_data          (MP mp, int index);
 static char               *mp_bytemap_get_value           (MP mp, int index, int *nx, int *ny, int *nz);
-static int                 mp_bytemap_get_byte            (MP mp, int index, int x, int y, int z);
-static int                 mp_bytemap_has_byte_gray       (MP mp, int index, int s);
-static int                 mp_bytemap_has_byte_rgb        (MP mp, int index, int r, int g, int b);
-static int                 mp_bytemap_has_byte_range      (MP mp, int index, int s1, int s2);
 static int                 mp_aux_weighted                (int r, int g, int b);
 /*     void                mp_clear_color                 (MP mp, void *n); */
 
@@ -3619,6 +3615,7 @@ static const char *mp_op_string_names[] = {
     [mp_y_scaled_operation]          = "yscaled",
     [mp_z_scaled_operation]          = "zscaled",
     [mp_xy_scaled_operation]         = "xyscaled",
+    [mp_bytemap_scaled_operation]    = "bytemapscaled",
     [mp_uncycled_operation]          = "uncycled",
     [mp_intertimes_operation]        = "intersectiontimes",
     [mp_intertimes_list_operation]   = "intersectiontimeslist",
@@ -22510,6 +22507,28 @@ static void mp_set_up_trans(MP mp, int c)
                     goto DONE;
                 }
                 break;
+            case mp_bytemap_scaled_operation:
+                if (p->type == mp_known_type) {
+                    int index = mp_round_unscaled(mp_get_value_number(p));
+                    int nx = 1;
+                    int ny = 1; 
+                    mp_number sx, sy;
+                    if (mp_bytemap_valid_data(mp, index)) {
+                        bytemap_data b = mp->bytemaps[index];
+                        nx = b.nx;
+                        ny = b.ny;
+                    }
+                    mp_new_number(sx);
+                    mp_new_number(sy);
+                    mp_set_number_from_int(sx, nx);
+                    mp_set_number_from_int(sy, ny);
+                    mp_set_value_number(mp_xx_part(q), sx);
+                    mp_set_value_number(mp_yy_part(q), sy);
+                    mp_free_number(sx);
+                    mp_free_number(sy);
+                    goto DONE;
+                }
+                break;
             case mp_transformed_operation:
                 break;
         }
@@ -24539,6 +24558,7 @@ static void mp_do_binary(MP mp, mp_node p, int c)
         case mp_y_scaled_operation:
         case mp_z_scaled_operation:
         case mp_xy_scaled_operation:
+        case mp_bytemap_scaled_operation:
             if (mp_set_up_transform(mp, p, c, old_p, old_exp)) {
                 return;
             } else {
@@ -26412,35 +26432,14 @@ static void mp_do_new_internal(MP mp)
 
 */
 
-static inline unsigned char max_of_three(unsigned char a, unsigned char b, unsigned char c)
-{
-    if (a > b && a > c) {
-        return a;
-    } else if (a > c) {
-        return a;
-    } else if (b > c) {
-        return b;
-    } else {
-        return c;
-    }
-}
-
-static inline unsigned char min_of_three(unsigned char a, unsigned char b, unsigned char c)
-{
-    if (a < b && a < c) {
-        return a;
-    } else if (a < c) {
-        return a;
-    } else if (b < c) {
-        return b;
-    } else {
-        return c;
-    }
-}
+/* 
+    We will move much of the bytemap code to an auxiliary module and eventually have an 'internal' that hold a bytemap
+    reference. 
+*/
 
 # define max_bytemaps 1024
 
-static int mp_bytemap_grow(MP mp)
+static int mp_bytemap_grow(MP mp) /* todo */
 {
     int oldmax = mp->memory_pool[mp_bytemaps_pool].max;
     int newmax = oldmax + mp->memory_pool[mp_bytemaps_pool].step;
@@ -26449,10 +26448,10 @@ static int mp_bytemap_grow(MP mp)
      // mp_confusion(mp, "out of memory"); /* can't be reached */
         return 0;
     } else {
-        size_t newsize = (size_t) (newmax + 1) * sizeof(mp_bytemap);
+        size_t newsize = (size_t) (newmax + 1) * sizeof(bytemap_data);
         mp->bytemaps = mp_memory_reallocate(mp->bytemaps, newsize);
         for (int index = oldmax; index < newmax; index++) {
-            mp->bytemaps[index] = (mp_bytemap) {
+            mp->bytemaps[index] = (bytemap_data) {
                 .data    = NULL,
                 .nx      = 0,
                 .ny      = 0,
@@ -26467,35 +26466,28 @@ static int mp_bytemap_grow(MP mp)
     return 1;
 }
 
-static int mp_bytemap_valid(MP mp, int index)
+static int mp_bytemap_valid(MP mp, int index) /* todo */
 {
     return (index >= 0 && (index < mp->memory_pool[mp_bytemaps_pool].max || mp_bytemap_grow(mp)));
 }
 
-static int mp_bytemap_valid_data(MP mp, int index)
+static int mp_bytemap_valid_data(MP mp, int index) /* todo */
 {
  // return index >= 0 && (index < mp->memory_pool[mp_bytemaps_pool].max || mp_bytemap_grow(mp))
  //     && mp->bytemaps[index].data;
     return mp_bytemap_valid(mp, index) && mp->bytemaps[index].data;
 }
 
-static char *mp_bytemap_get_value(MP mp, int index, int *nx, int *ny, int *nz)
+static char *mp_bytemap_get_value(MP mp, int index, int *nx, int *ny, int *nz) 
 {
     if (index >= 0 && index < mp->memory_pool[mp_bytemaps_pool].max && mp->bytemaps[index].data) {
-        *nx = mp->bytemaps[index].nx;
-        *ny = mp->bytemaps[index].ny;
-        *nz = mp->bytemaps[index].nz;
-        if (nx > 0 && ny > 0) {
-            size_t length = (size_t) ((*nx) * (*ny) * (*nz));
-            char *result = mp_memory_allocate(length);
-            memcpy(result, mp->bytemaps[index].data, length);
-            return result;
-        }
+        return bytemap_get_value(&(mp->bytemaps[index]), nx, ny, nz);
+    } else {
+        return NULL;
     }
-    return NULL;
 }
 
-static inline unsigned char mp_valid_byte(int value)
+static inline unsigned char mp_valid_byte(int value) /* todo */
 {
     if (value < 0) {
         return 0;
@@ -26506,14 +26498,14 @@ static inline unsigned char mp_valid_byte(int value)
     }
 }
 
-static inline int mp_aux_weighted(int r, int g, int b)
+static inline int mp_aux_weighted(int r, int g, int b) /* todo */
 {
     return round(0.299 * r + 0.587 * g + 0.114 * b);
 }
 
-static inline int mp_aux_bytemap_get_byte(MP mp, mp_bytemap *bytemap, mp_number *source)
+static inline int mp_aux_bytemap_get_byte(MP mp, bytemap_data *bytemap, mp_number *source) /* todo */
 {
-    if (bytemap->options & mp_bytemap_option_posit) { 
+    if (bytemap->options & bytemap_option_posit) { 
         posit8_t p = convertDoubleToP8(mp_number_to_double(*source));
         return (int) p.v; 
     } else {
@@ -26521,9 +26513,9 @@ static inline int mp_aux_bytemap_get_byte(MP mp, mp_bytemap *bytemap, mp_number 
     }
 }
 
-static inline void mp_aux_bytemap_set_byte(MP mp, mp_bytemap *bytemap, mp_number *target, int value)
+static inline void mp_aux_bytemap_set_byte(MP mp, bytemap_data *bytemap, mp_number *target, int value)
 { 
-    if (bytemap->options & mp_bytemap_option_posit) {
+    if (bytemap->options & bytemap_option_posit) {
         posit8_t p = { .v = (uint8_t) value };
         mp_set_number_from_double(*target, convertP8ToDouble(p));
     } else {
@@ -26531,40 +26523,7 @@ static inline void mp_aux_bytemap_set_byte(MP mp, mp_bytemap *bytemap, mp_number
     }
 }
 
-static inline void mp_aux_set_bytemap_gray(mp_bytemap *bytemap, int x, int y, int s)
-{
-    if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny) {
-        switch (bytemap->nz) {
-            case 1:
-                bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + x] = mp_valid_byte(s);
-                break;
-            case 3:
-                memset(bytemap->data + (bm_current_y(bytemap->ny,y) * bytemap->nx + x) * 3, mp_valid_byte(s), 3);
-                break;
-        }
-    }
-}
-
-static inline void mp_aux_set_bytemap_rgb(mp_bytemap *bytemap, int x, int y, int r, int g, int b)
-{
-    if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny) {
-        switch (bytemap->nz) {
-            case 1:
-                bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + x] = mp_valid_byte(mp_aux_weighted(r, g, b));
-                break;
-            case 3:
-                {
-                    int offset = (bm_current_y(bytemap->ny,y) * bytemap->nx + x) * 3;
-                    bytemap->data[offset+0] = mp_valid_byte(r);
-                    bytemap->data[offset+1] = mp_valid_byte(g);
-                    bytemap->data[offset+2] = mp_valid_byte(b);
-                }
-                break;
-        }
-    }
-}
-
-static inline void mp_aux_set_bytemap_channel(mp_bytemap *bytemap, int x, int y, int z, int v)
+static inline void mp_aux_set_bytemap_channel(bytemap_data *bytemap, int x, int y, int z, int v)
 {
     if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny && z < bytemap->nz) {
         switch (bytemap->nz) {
@@ -26579,173 +26538,17 @@ static inline void mp_aux_set_bytemap_channel(mp_bytemap *bytemap, int x, int y,
     }
 }
 
-static void mp_aux_set_bytemap_slice_gray(mp_bytemap *bytemap, int x, int y, int dx, int dy, int s);
-static void mp_aux_set_bytemap_slice_rgb (mp_bytemap *bytemap, int x, int y, int dx, int dy, int r, int g, int b);
-
-static void mp_aux_set_bytemap_slice_gray(mp_bytemap *bytemap, int x, int y, int dx, int dy, int s)
-{
-
-    if (dx > 0 && dy > 0) {
-        switch (bytemap->nz) {
-            case 1:
-                {
-                    unsigned char *p = bytemap->data;
-                    int w = bytemap->nx;
-                    int o = x;
-                    if (x + dx > bytemap->nx) {
-                        dx = bytemap->nx - x;
-                    }
-                    if (y + dy > bytemap->ny) {
-                        dy = bytemap->ny - y;
-                    }
-                    o += bm_current_y(bytemap->ny,y) * w;
-                    memset(p + o, mp_valid_byte(s), dx);
-                    for (int i = bm_first_y(bytemap->ny,y,dy); i <= bm_last_y(bytemap->ny,y,dy); i++) {
-                        memcpy(p + x + i * w, p + o, dx);
-                    }
-                }
-                break;
-            case 3:
-                mp_aux_set_bytemap_slice_rgb(bytemap, x, y, dx, dy, s, s, s);
-                break;
-        }
-
-    }
-}
-
-static void mp_aux_set_bytemap_slice_rgb(mp_bytemap *bytemap, int x, int y, int dx, int dy, int r, int g, int b)
-{
-    if (dx > 0 && dy > 0) {
-        switch (bytemap->nz) {
-            case 1:
-                mp_aux_set_bytemap_slice_gray(bytemap, x, y, dx, dy, mp_aux_weighted(r,g,b));
-                break;
-            case 3:
-                {
-                    unsigned char *p = bytemap->data;
-                    int w = 3 * bytemap->nx;
-                    int o = 3 * x;
-                    if (x + dx > bytemap->nx) {
-                        dx = bytemap->nx - x;
-                    }
-                    if (y + dy > bytemap->ny) {
-                        dy = bytemap->ny - y;
-                    }
-                    o += bm_current_y(bytemap->ny,y) * w;
-                    bytemap->data[o+1] = mp_valid_byte(g);
-                    bytemap->data[o+0] = mp_valid_byte(r);
-                    bytemap->data[o+2] = mp_valid_byte(b);
-                    for (int i = 1; i < dx; i++) {
-                        memcpy(p + o + i * 3, p + o, 3);
-                    }
-                    for (int i = bm_first_y(bytemap->ny,y,dy); i <= bm_last_y(bytemap->ny,y,dy); i++) {
-                        memcpy(p + 3 * x + i * w, p + o, 3 * dx);
-                    }
-                }
-                break;
-        }
-    }
-}
-
-static int mp_bytemap_get_byte(MP mp, int index, int x, int y, int z)
-{
-    if (mp_bytemap_valid_data(mp, index)) {
-        int nx = mp->bytemaps[index].nx;
-        int ny = mp->bytemaps[index].ny;
-        if (x >= 0 && y >= 0 && x < nx && y < ny) {
-            int nz = mp->bytemaps[index].nz;
-            switch (nz) {
-                case 1:
-                    return mp->bytemaps[index].data[bm_current_y(ny,y) * nx + x];
-                case 3:
-                    {
-                        int p = bm_current_y(ny,y) * ny * nz + x;
-                        if (z >= 1 && z <= 3) { 
-                            return mp->bytemaps[index].data[p+z-1];
-                        } else {
-                            return mp_aux_weighted (
-                                mp->bytemaps[index].data[p+0],
-                                mp->bytemaps[index].data[p+1],
-                                mp->bytemaps[index].data[p+2]
-                            );
-                        }
-                    }
-            }
-        }
-    }
-    return 0;
-}
-
-static int mp_bytemap_has_byte_gray(MP mp, int index, int s)
-{
-    if (mp_bytemap_valid_data(mp, index)) {
-        switch (mp->bytemaps[index].nz) {
-            case 1:
-                for (int i = 0; i < mp->bytemaps[index].nx * mp->bytemaps[index].ny; i++) {
-                    if (mp->bytemaps[index].data[i] == (unsigned char) s) {
-                        return 1;
-                    }
-                }
-                return 0;
-            case 3:
-                return mp_bytemap_has_byte_rgb(mp, index, s, s, s);
-        }
-    }
-    return 0;
-}
-
-static int mp_bytemap_has_byte_range(MP mp, int index, int s1, int s2)
-{
-    if (mp_bytemap_valid_data(mp, index)) {
-        switch (mp->bytemaps[index].nz) {
-            case 1:
-                for (int i = 0; i < mp->bytemaps[index].nx * mp->bytemaps[index].ny; i++) {
-                    if  (mp->bytemaps[index].data[i] >= (unsigned char) s1 &&
-                         mp->bytemaps[index].data[i] <= (unsigned char) s2) {
-                        return 1;
-                    }
-                }
-                return 0;
-            case 3:
-                return 0;
-        }
-    }
-    return 0;
-}
-
-static int mp_bytemap_has_byte_rgb(MP mp, int index, int r, int g, int b)
-{
-    if (mp_bytemap_valid_data(mp, index)) {
-        switch (mp->bytemaps[index].nz) {
-            case 1:
-                return mp_bytemap_has_byte_gray(mp, index, mp_aux_weighted(r, g, b));
-            case 3:
-                {
-                    for (int i = 0; i < mp->bytemaps[index].nx * mp->bytemaps[index].ny * mp->bytemaps[index].nz; i += 3) {
-                        if (mp->bytemaps[index].data[i+0] == (unsigned char) r &&
-                            mp->bytemaps[index].data[i+1] == (unsigned char) g &&
-                            mp->bytemaps[index].data[i+2] == (unsigned char) b
-                        ) {
-                            return 1;
-                        }
-                    }
-                    return 0;
-                }
-        }
-    }
-    return 0;
-}
-
 static int mp_aux_bytemap_allocate(MP mp, int index, int nx, int ny, int nz, unsigned char *data)
 {
-    if (nx > 0 && ny > 0 && nx <= 0x4FFF && ny <= 0x4FFF) {
+ // if (nx > 0 && ny > 0 && nx <= 0x4FFF && ny <= 0x4FFF) {
+    if (bytemap_okay(nx, ny, nz)) {
         if (mp->bytemaps[index].data) {
             mp_memory_free(mp->bytemaps[index].data);
             mp->memory_pool[mp_bytemaps_pool].used--;
             mp->memory_pool[mp_bytemap_data_pool].count -=
                 mp->bytemaps[index].nx * mp->bytemaps[index].ny * mp->bytemaps[index].nz;
         }
-        mp->bytemaps[index] = (mp_bytemap) {
+        mp->bytemaps[index] = (bytemap_data) {
             /* There is no checking in valid data here! */
             .data    = data ? data : mp_memory_clear_allocate(nx * ny * nz),
             .nx      = nx,
@@ -26765,7 +26568,7 @@ static int mp_aux_bytemap_allocate(MP mp, int index, int nx, int ny, int nz, uns
 
 /* begin of public */
 
-mp_bytemap *mp_bytemap_get_by_index(MP mp, int index)
+bytemap_data *mp_bytemap_get_by_index(MP mp, int index)
 {
     if (index >= 0 && index < mp->memory_pool[mp_bytemaps_pool].max) {
         if (mp->bytemaps[index].data) {
@@ -26784,10 +26587,9 @@ int mp_bytemap_new_by_index(MP mp, int index, int nx, int ny, int nz, unsigned c
     return mp_bytemap_valid(mp, index) && mp_aux_bytemap_allocate(mp, index, nx, ny, nz, data);
 }
 
-
 /* end of public */
 
-static void mp_bytemap_copy(MP mp)
+static void mp_bytemap_copy(MP mp) /* done */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -26803,21 +26605,8 @@ static void mp_bytemap_copy(MP mp)
                     case mp_known_type:
                         {
                             int newindex = mp_round_unscaled(cur_exp_value_number);
-                            if (mp_bytemap_valid_data(mp, oldindex)) {
-                                int size = mp->bytemaps[oldindex].nx * mp->bytemaps[oldindex].ny * mp->bytemaps[oldindex]. nz;
-                                if  (mp_bytemap_valid_data(mp, newindex)) {
-                                    mp_memory_free(mp->bytemaps[newindex].data);
-                                }
-                                mp->bytemaps[newindex] = (mp_bytemap) {
-                                    .data    = mp_memory_allocate(size),
-                                    .nx      = mp->bytemaps[oldindex].nx,
-                                    .ny      = mp->bytemaps[oldindex].ny,
-                                    .nz      = mp->bytemaps[oldindex].nz,
-                                    .ox      = mp->bytemaps[oldindex].ox,
-                                    .oy      = mp->bytemaps[oldindex].oy,
-                                    .options = 0,
-                                };
-                                memcpy(mp->bytemaps[newindex].data, mp->bytemaps[oldindex].data, size);
+                            if (mp_bytemap_valid(mp, oldindex) && mp_bytemap_valid(mp, newindex)) {
+                                bytemap_copy(&(mp->bytemaps[oldindex]), &(mp->bytemaps[newindex]), &(mp->memory_pool[mp_bytemap_data_pool].count));
                             }
                         }
                         break;
@@ -26832,68 +26621,7 @@ static void mp_bytemap_copy(MP mp)
     }
 }
 
-static int mp_aux_bytemap_bounds(mp_bytemap *b, int value, int *lx, int *ly, int *rx, int *ry)
-{
-    unsigned char *d = b->data;
-    int nx = b->nx;
-    int ny = b->ny;
-    int nz = b->nz;
-    int llx = nx - 1;
-    int lly = ny - 1;
-    int urx = 0;
-    int ury = 0;
-    switch (nz) {
-        case 1:
-            for (int y = 0; y < ny; y++) {
-                for (int x = 0; x < nx; x++) {
-                    /* here posit */
-                    if (*d != value) {
-                        if (y < lly) { lly = y; }
-                        if (y > ury) { ury = y; }
-                        if (x < llx) { llx = x; }
-                        if (x > urx) { urx = x; }
-                    }
-                    d = d + 1;
-                }
-                if (llx == 0 && urx == nx && lly == 0 && ury == ny) {
-                    goto DONE;
-                }
-            }
-            break;
-        case 3:
-            for (int y = 0; y < ny; y++) {
-                for (int x = 0; x < nx; x++) {
-                    /* here posit */
-                    if (*d != value || *(d+1) != value || *(d+2) != value) {
-                        if (y < lly) { lly = y; }
-                        if (y > ury) { ury = y; }
-                        if (x < llx) { llx = x; }
-                        if (x > urx) { urx = x; }
-                    }
-                    d = d + 3;
-                    if (llx == 0 && urx == nx && lly == 0 && ury == ny) {
-                        goto DONE;
-                    }
-                }
-            }
-            break;
-    }
-  DONE:
-    if (urx < llx || ury < lly) {
-        *lx = 0;
-        *ly = 0;
-        *rx = nx - 1;
-        *ry = ny - 1;
-    } else {
-        *lx = llx;
-        *ly = lly;
-        *rx = urx;
-        *ry = ury;
-    }
-    return (*lx > 0 || *ly > 0 || *rx < nx || *ry < ny);
-}
-
-static void mp_bytemap_clip(MP mp)
+static void mp_bytemap_clip(MP mp) /* done */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -26910,35 +26638,9 @@ static void mp_bytemap_clip(MP mp)
                         {
                          // int value = mp_round_unscaled(cur_exp_value_number);
                             if (mp_bytemap_valid_data(mp, index)) {
-                                mp_bytemap *b = &mp->bytemaps[index];
+                                bytemap_data *b = &mp->bytemaps[index];
                                 int value = mp_aux_bytemap_get_byte(mp, b, &(cur_exp_value_number));
-                                int llx = 0;
-                                int urx = b->nx;
-                                int lly = 0;
-                                int ury = b->ny;
-                                if (mp_aux_bytemap_bounds(b, value, &llx, &lly, &urx, &ury)) {
-                                    int oldnx = b->nx;
-                                    int oldny = b->ny;
-                                    int oldnz = b->nz;
-                                    int newnx = urx - llx + 1;
-                                    int newny = ury - lly + 1;
-                                    unsigned char *p = b->data + lly * oldnx * oldnz + llx;
-                                    unsigned char *c = mp_memory_allocate(newnx * newny * oldnz);
-                                    unsigned char *d = c;
-                                    for (int y=1; y <= newny; y++) {
-                                        memcpy(c, p, newnx * oldnz);
-                                        c = c + newnx * oldnz;
-                                        p = p + oldnx * oldnz;
-                                    }
-                                    mp_memory_free(b->data);
-                                    b->data = d;
-                                    b->ox   = 0;
-                                    b->oy   = 0;
-                                    b->nx   = newnx;
-                                    b->ny   = newny;
-                                    mp->memory_pool[mp_bytemap_data_pool].count -= oldnx * oldny * oldnz;
-                                    mp->memory_pool[mp_bytemap_data_pool].count += newnx * newny * oldnz;
-                                }
+                                bytemap_clip(b, value, &(mp->memory_pool[mp_bytemap_data_pool].count));
                             }
                         }
                         break;
@@ -26953,7 +26655,7 @@ static void mp_bytemap_clip(MP mp)
     }
 }
 
-static void mp_bytemap_new(MP mp)
+static void mp_bytemap_new(MP mp) /* todo */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27000,7 +26702,7 @@ static void mp_bytemap_new(MP mp)
                         break;
                 }
                 if (mp_aux_bytemap_allocate(mp, index, nx, ny, nz, NULL)) {
-// mp_print_format(mp, "new bytemap %i: nx %i, ny %i, nz %i", nx, ny, nz);
+                 // mp_print_format(mp, "new bytemap %i: nx %i, ny %i, nz %i", nx, ny, nz);
                 } else {
                     mp_warn(mp, "invalid bytemap specification");
                 }
@@ -27012,7 +26714,7 @@ static void mp_bytemap_new(MP mp)
     }
 }
 
-static void mp_bytemap_reduce(MP mp)
+static void mp_bytemap_reduce(MP mp) /* done */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27028,59 +26730,7 @@ static void mp_bytemap_reduce(MP mp)
                     method = mp_round_unscaled(cur_exp_value_number);
                 }
                 if (mp_bytemap_valid_data(mp, index)) {
-                    int nz = mp->bytemaps[index].nz;
-                    if (nz == 3) {
-                        int nx = mp->bytemaps[index].nx;
-                        int ny = mp->bytemaps[index].ny;
-                        unsigned char *color = mp->bytemaps[index].data;
-                        unsigned char *gray = mp_memory_allocate(nx*ny);
-                        unsigned c = 0;
-                        switch (method) {
-                            case 1: /* average */
-                                for (int g = 0; g < nx * ny; g++) {
-                                    int s = round( (double) (
-                                          (unsigned char) color[c]
-                                        + (unsigned char) color[c+1]
-                                        + (unsigned char) color[c+2]
-                                    ) / 3.0);
-                                    c += 3;
-                                    gray[g] = s > 255 ? 255 : (unsigned char) s;
-                                }
-                                break;
-                            case 2: /* min-max */
-                                for (int g = 0; g < nx * ny; g++) {
-                                    int s = round( (double) (
-                                        max_of_three(color[c], color[c+1], color[c+2]),
-                                      + min_of_three(color[c], color[c+1], color[c+2])
-                                    ) / 2.0);
-                                    c += 3;
-                                    gray[g] = s > 255 ? 255 : (unsigned char) s;
-                                }
-                                break;
-                            default: /* weighted */
-                                for (int g = 0; g < nx * ny; g++) {
-                                    int s = round(
-                                          0.299 * (unsigned char) color[c]
-                                        + 0.587 * (unsigned char) color[c+1]
-                                        + 0.114 * (unsigned char) color[c+2]
-                                    );
-                                    c += 3;
-                                    gray[g] = s > 255 ? 255 : (unsigned char) s;
-                                }
-                                break;
-                        }
-                        mp->memory_pool[mp_bytemap_data_pool].count -= nx * ny * 2;
-                        mp_memory_free(color);
-                        mp->bytemaps[index] = (mp_bytemap) {
-                            .data    = gray,
-                            .nx      = nx,
-                            .ny      = ny,
-                            .nz      = 1,
-                            .ox      = 0,
-                            .oy      = 0,
-                            .options = 0,
-                        };
-                    }
+                    bytemap_reduce(&(mp->bytemaps[index]), method, &(mp->memory_pool[mp_bytemap_data_pool].count));
                 }
             }
             break;
@@ -27090,7 +26740,7 @@ static void mp_bytemap_reduce(MP mp)
     }
 }
 
-static void mp_bytemap_value(MP mp, mp_node p, int c)
+static void mp_bytemap_value(MP mp, mp_node p, int c) /* done */
 {
     switch (cur_exp_type) {
         case mp_numeric_type:  /* needed ? */
@@ -27120,7 +26770,9 @@ static void mp_bytemap_value(MP mp, mp_node p, int c)
                         break;
                 }
                 mp_new_number(r);
-                mp_aux_bytemap_set_byte(mp, &(mp->bytemaps[index]), &r, mp_bytemap_get_byte(mp, index, x, y, z));
+                if (mp_bytemap_valid_data(mp, index)) {
+                    mp_aux_bytemap_set_byte(mp, &(mp->bytemaps[index]), &r, bytemap_get_byte(&(mp->bytemaps[index]), x, y, z));
+                }
                 mp_set_cur_exp_value_number(mp, &r);
                 mp_free_number(r);
             }
@@ -27131,7 +26783,7 @@ static void mp_bytemap_value(MP mp, mp_node p, int c)
     }
 }
 
-static void mp_bytemap_found(MP mp, mp_node p, int c)
+static void mp_bytemap_found(MP mp, mp_node p, int c) /* done */ /* todo */
 {
     switch (cur_exp_type) {
         case mp_numeric_type:  /* needed ? */
@@ -27143,31 +26795,37 @@ static void mp_bytemap_found(MP mp, mp_node p, int c)
                     case mp_numeric_type:  /* needed ? */
                     case mp_known_type:
                          /* here posit */
-                         found = mp_bytemap_has_byte_gray(mp, index,
-                            // mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)))
-                            // mp_round_unscaled(mp_get_value_number(p))
-                            mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)))
-                        );
+                         if (mp_bytemap_valid_data(mp, index)) {
+                             found = bytemap_has_byte_gray(&mp->bytemaps[index],
+                                // mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)))
+                                // mp_round_unscaled(mp_get_value_number(p))
+                                mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)))
+                            );
+                         }
                         break;
                     case mp_pair_type:
                         if (mp_pair_is_known(mp_get_value_node(p))) {
                             /* here posit */
-                            found = mp_bytemap_has_byte_range(mp, index,
-                            // mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
-                            // mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
-                               mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p))))),
-                               mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))))
-                            );
+                            if (mp_bytemap_valid_data(mp, index)) {
+                                found = bytemap_has_byte_range(&mp->bytemaps[index],
+                                // mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
+                                // mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
+                                   mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p))))),
+                                   mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))))
+                                );
+                            }
                         }
                         break;
                     case mp_color_type:
                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
                             /* here posit */
-                            found = mp_bytemap_has_byte_rgb(mp, index,
-                                mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
-                                mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
-                                mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
-                            );
+                            if (mp_bytemap_valid_data(mp, index)) {
+                                found = bytemap_has_byte_rgb(&mp->bytemaps[index],
+                                    mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
+                                    mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
+                                    mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
+                                );
+                            }
                         }
                         break;
                     default:
@@ -27184,7 +26842,7 @@ static void mp_bytemap_found(MP mp, mp_node p, int c)
     }
 }
 
-static void mp_bytemap_path(MP mp, mp_node p, int c)
+static void mp_bytemap_path(MP mp, mp_node p, int c) /* no need */
 {
     (void) c;
     switch (cur_exp_type) {
@@ -27337,7 +26995,7 @@ static void mp_bytemap_path(MP mp, mp_node p, int c)
     }
 }
 
-static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
+static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip) /* done */
 {
     (void) c; 
     (void) clip; /* todo */
@@ -27347,13 +27005,8 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
             {
                 int index = mp_round_unscaled(cur_exp_value_number);
                 if (mp_bytemap_valid_data(mp, index)) {
-                    mp_bytemap b = mp->bytemaps[index];
-                    int nx = b.nx;
-                    int ny = b.ny;
-                    int llx = nx - 1;
-                    int lly = ny - 1;
-                    int urx = 0;
-                    int ury = 0;
+                    bytemap_data b = mp->bytemaps[index];
+                    int llx, lly, urx, ury;
                     unsigned char value = 0;
                     switch (p->type) {
                         case mp_numeric_type:  /* needed ? */
@@ -27365,9 +27018,7 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
                             /* error */
                             break;
                     }
-                    mp_aux_bytemap_bounds(&b, value, &llx, &lly, &urx, &ury);
-                    lly = bm_current_y(ny,lly);
-                    ury = bm_current_y(ny,ury);
+                    bytemap_bounds(&b, value, &llx, &lly, &urx, &ury);
                     mp_set_number_from_int(mp_minx, llx);
                     mp_set_number_from_int(mp_miny, ury);
                     mp_set_number_from_int(mp_maxx, urx);
@@ -27381,7 +27032,7 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip)
     }
 }
 
-static void mp_bytemap_set_options(MP mp)
+static void mp_bytemap_set_options(MP mp) /* no need */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27408,7 +27059,7 @@ static void mp_bytemap_set_options(MP mp)
     }
 }
 
-static void mp_bytemap_set(MP mp)
+static void mp_bytemap_set(MP mp) /* done */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27424,7 +27075,7 @@ static void mp_bytemap_set(MP mp)
                     case mp_known_type:
                         if (mp_bytemap_valid_data(mp, index)) {
                             /* here posit */
-                            mp_aux_set_bytemap_slice_gray(
+                            bytemap_slice_gray(
                                 &(mp->bytemaps[index]),
                                 0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
                              // mp_round_unscaled(cur_exp_value_number)
@@ -27436,7 +27087,7 @@ static void mp_bytemap_set(MP mp)
                         if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
                             if (mp_bytemap_valid_data(mp, index)) {
                                 /* here posit */
-                                mp_aux_set_bytemap_slice_rgb(
+                                bytemap_slice_rgb(
                                     &(mp->bytemaps[index]),
                                     0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
                                     mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
@@ -27457,30 +27108,16 @@ static void mp_bytemap_set(MP mp)
     }
 }
 
-static void mp_aux_reset_bytemap(MP mp, int index)
+static void mp_aux_reset_bytemap(MP mp, int index) /* done */
 {
-    if (mp->bytemaps[index].options & mp_bytemap_option_persistent) {
+    if (mp->bytemaps[index].options & bytemap_option_persistent) {
         /* don't free */
-    } else {
-        if (mp->bytemaps[index].data) {
-            mp_memory_free(mp->bytemaps[index].data);
-            mp->memory_pool[mp_bytemap_data_pool].count -=
-                mp->bytemaps[index].nx * mp->bytemaps[index].ny * mp->bytemaps[index].nz;
-                mp->memory_pool[mp_bytemaps_pool].used--;
-        }
-        mp->bytemaps[index] = (mp_bytemap) {
-            .data    = NULL,
-            .nx      = 0,
-            .ny      = 0,
-            .nz      = 0,
-            .ox      = 0,
-            .oy      = 0,
-            .options = 0,
-        };
+    } else if (bytemap_reset(&(mp->bytemaps[index]),&(mp->memory_pool[mp_bytemap_data_pool].count))) {
+        mp->memory_pool[mp_bytemaps_pool].used--;
     }
 }
 
-static void mp_aux_reset_bytemaps(MP mp)
+static void mp_aux_reset_bytemaps(MP mp) /* todo */
 {
     if (mp->memory_pool[mp_bytemaps_pool].used) {
         for (int index = 0; index < mp->memory_pool[mp_bytemaps_pool].max; index++) {
@@ -27494,7 +27131,7 @@ static void mp_aux_reset_bytemaps(MP mp)
     }
 }
 
-static void mp_bytemap_reset(MP mp)
+static void mp_bytemap_reset(MP mp) /* todo */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27521,7 +27158,7 @@ static void mp_bytemap_reset_all(MP mp)
     mp_aux_reset_bytemaps(mp);
 }
 
-static void mp_bytemap_set_byte(MP mp)
+static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -27546,7 +27183,8 @@ static void mp_bytemap_set_byte(MP mp)
                                         if (mp_bytemap_valid_data(mp, index)) {
                                             x += mp->bytemaps[index].ox;
                                             y += mp->bytemaps[index].oy;
-                                            mp_aux_set_bytemap_gray(
+                                         // mp_aux_set_bytemap_gray(
+                                            bytemap_set_gray(
                                                 &(mp->bytemaps[index]),
                                                 x, y,
                                                 mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
@@ -27558,7 +27196,8 @@ static void mp_bytemap_set_byte(MP mp)
                                             if (mp_bytemap_valid_data(mp, index)) {
                                                 x += mp->bytemaps[index].ox;
                                                 y += mp->bytemaps[index].oy;
-                                                mp_aux_set_bytemap_rgb(
+                                             // mp_aux_set_bytemap_rgb(
+                                                bytemap_set_rgb(
                                                     &(mp->bytemaps[index]),
                                                     x, y,
                                                     mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
@@ -27661,16 +27300,26 @@ static void mp_bytemap_set_byte(MP mp)
                                         switch (cur_exp_type) {
                                             case mp_numeric_type:
                                             case mp_known_type:
-                                                mp_aux_set_bytemap_slice_gray(
+                                                bytemap_slice_gray(
                                                     &(mp->bytemaps[index]),
                                                     x, y, dx, dy,
                                                     mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
                                                 );
                                                 break;
+                                            case mp_pair_type:
+                                                if (mp_pair_is_known(mp_get_value_node(cur_exp_node))) {
+                                                    bytemap_slice_range(
+                                                        &(mp->bytemaps[index]),
+                                                        x, y, dx, dy,
+                                                        mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node)))),
+                                                        mp_round_unscaled(mp_get_value_number(mp_y_part (mp_get_value_node(cur_exp_node))))
+                                                    );
+                                                }
+                                                break;
                                             case mp_color_type:
                                                 if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
                                                     /* here posit */
-                                                    mp_aux_set_bytemap_slice_rgb(
+                                                    bytemap_slice_rgb(
                                                         &(mp->bytemaps[index]),
                                                         x, y, dx, dy,
                                                         mp_round_unscaled(mp_get_value_number(mp_red_part  (mp_get_value_node(cur_exp_node)))),
@@ -27708,7 +27357,7 @@ static void mp_bytemap_set_byte(MP mp)
     }
 }
 
-static void mp_bytemap_set_offset(MP mp)
+static void mp_bytemap_set_offset(MP mp) /* todo */
 {
     mp_get_x_next(mp);
     mp_scan_primary(mp);
@@ -32119,6 +31768,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "yscaled",               mp_secondary_binary_command, mp_y_scaled_operation);
     mp_primitive(mp, "zscaled",               mp_secondary_binary_command, mp_z_scaled_operation);
     mp_primitive(mp, "xyscaled",              mp_secondary_binary_command, mp_xy_scaled_operation);
+    mp_primitive(mp, "bytemapscaled",         mp_secondary_binary_command, mp_bytemap_scaled_operation);
 
     mp_primitive(mp, "intersectiontimes",     mp_tertiary_binary_command,  mp_intertimes_operation);
     mp_primitive(mp, "intersectiontimeslist", mp_tertiary_binary_command,  mp_intertimes_list_operation);
@@ -32479,7 +32129,7 @@ MP mp_initialize(MP_options *opt)
     mp->memory_pool[mp_start_object_pool] = (mp_memory_pool_data) { .state = mp_pool_pooled,     .list = NULL, .pool = 0, .used = 0, .max = 0, .kept =  250, .size = sizeof(mp_start_object) };
     mp->memory_pool[mp_stop_object_pool]  = (mp_memory_pool_data) { .state = mp_pool_pooled,     .list = NULL, .pool = 0, .used = 0, .max = 0, .kept =  250, .size = sizeof(mp_stop_object) };
     mp->memory_pool[mp_identifiers_pool]  = (mp_memory_pool_data) { .state = mp_pool_counted,    .list = NULL, .pool = 0, .used = 0, .max = 0, .kept =    0, .count = 0 };
-    mp->memory_pool[mp_bytemaps_pool]     = (mp_memory_pool_data) { .state = mp_pool_persistent, .list = NULL, .pool = 0, .used = 0, .max = 0, .step =   25, .size = sizeof(mp_bytemap) };
+    mp->memory_pool[mp_bytemaps_pool]     = (mp_memory_pool_data) { .state = mp_pool_persistent, .list = NULL, .pool = 0, .used = 0, .max = 0, .step =   25, .size = sizeof(bytemap_data) };
     mp->memory_pool[mp_bytemap_data_pool] = (mp_memory_pool_data) { .state = mp_pool_counted,    .list = NULL, .pool = 0, .used = 0, .max = 0, .step =    0, .count = 0 };
     mp->memory_pool[mp_internals_pool]    = (mp_memory_pool_data) { .state = mp_pool_counted,    .list = NULL, .pool = 0, .used = 0, .max = 0, .step = 1000, .count = 0 };
 

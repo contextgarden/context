@@ -18,6 +18,16 @@
         int      closed;
     } serial_data;
 
+ //  CreateFile(
+ //      "\\\\.\\COM10", // address of name of the communications device: \\.\COM10
+ //      fdwAccess,      // access (read-write) mode
+ //      0,              // share mode
+ //      NULL,           // address of security descriptor
+ //      OPEN_EXISTING,  // how to create
+ //      0,              // file attributes
+ //      NULL            // handle of file with attributes to copy
+ //  );
+
     static serial_data *seriallib_aux_open(lua_State *L, serial_data *existing)
     {
         int           success  = 0;

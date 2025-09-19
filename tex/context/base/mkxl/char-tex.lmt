@@ -675,6 +675,9 @@ end)
 
 if not csletters then
 
+local o = tex.get("overloadmode")
+tex.set("overloadmode",0)
+
     csletters            = allocate()
     characters.csletters = csletters
 
@@ -750,6 +753,8 @@ if not csletters then
             texsetlccode(u,u,u) -- for hyphenation
         end
     end
+
+tex.set("overloadmode",o)
 
     if blocks_too then
         -- this slows down format generation by over 10 percent

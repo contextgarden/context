@@ -13,6 +13,8 @@ set(mp_sources
 
     source/libraries/avl/avl.c
 
+    source/utilities/auxbytemaps.c
+
     source/lua/lmtmplib.c
 
     source/luarest/lmtxdecimallib.c
