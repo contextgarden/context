@@ -646,16 +646,13 @@ but nevertheless use the function approach:
 
 \startbuffer
 \startluacode
-    local sin = math.sin
-    local cos = math.cos
-    local abs = math.abs
     function MP.bc_test(x,y,b1,b2,b3)
         return x/2, y/2, (x+y)/500
     end
 \stopluacode
 \stopbuffer
 
-\typebuffer[option=TEX]
+\getbuffer \typebuffer[option=TEX]
 
 Here we demonstrate the downsample feature. Doing that in pure \LUA\ is actually
 not that slow but of course this one is faster.
@@ -706,6 +703,121 @@ Here we apply downsampling to a \quote {real} image:
 
 Sampling takes the average of the given cell width, in this case 2. The result in
 normally quite okay.
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Let's summarize some of these manipulations. Bytemaps are mostly there for
+special purposes and not so much for manipulating images that one normally would
+include with \typ {\externalfigure}. One can fill a bytemap manually, from a
+lossless \PNG\ file or a lossy \JPG\ file. For runtime usage the bytemaps loaded
+from file can best not be too large. When the resolution is reasonable
+performance is quite ok. And if you're worried about a resolution, just think of
+the days that a few megapixel images were quite acceptable.
+
+There are various ways to make a large bytemap a bit smaller. For instance, you
+can reduce the color range in the output file. Here we can either clip or round
+and in both cases an 8 bit color component becomes a 4 bit one. So, for every six
+bytes (two pixels) we get three bytes back. In practice, because we now have less
+distinctive values, compression also works out better.
+
+%     loadbytemap(1,"P1010013.jpg") ;
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (1,1,1) ;
+    newbytemap 2 of (1,1,1) ;
+    newbytemap 3 of (1,1,1) ;
+    loadbytemap (1,"hacker.jpg") ;
+    copybytemap 1 to 2 ;
+    copybytemap 1 to 3 ;
+    draw bytemap 1 xsized 3cm xshifted 0.0cm ;
+    draw bytemap 2 xsized 3cm xshifted 3.1cm withreduction "round" ;
+    draw bytemap 3 xsized 3cm xshifted 6.2cm withreduction "clip" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Reduction gives us:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+Another way to reduce the size is downgrading. Here we also reudce the number
+of distinct values, and you can go pretty extreme here:
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (1,1,1) ;
+    newbytemap 2 of (1,1,1) ;
+    newbytemap 3 of (1,1,1) ;
+    loadbytemap (1,"hacker.jpg") ;
+    downgradebytemap (1,2,20) ;
+    downgradebytemap (1,3,40) ;
+    draw bytemap 1 xsized 3cm xshifted 0.0cm ;
+    draw bytemap 2 xsized 3cm xshifted 3.1cm ;
+    draw bytemap 3 xsized 3cm xshifted 6.2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+A probably nicer result is possible with downsampling:
+
+%  loadbytemap(1,"P1010013.jpg") ;
+
+\startbuffer
+\startMPcode
+    newbytemap 1 of (1,1,1) ;
+    newbytemap 2 of (1,1,1) ;
+    newbytemap 3 of (1,1,1) ;
+    loadbytemap (1,"hacker.jpg") ;
+    downsamplebytemap (1,2,2) ;
+    downsamplebytemap (1,3,4) ;
+    draw bytemap 1 xsized 3cm xshifted 0.0cm ;
+    draw bytemap 2 xsized 3cm xshifted 3.1cm ;
+    draw bytemap 3 xsized 3cm xshifted 6.2cm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+In the next example we show a combination of effects: downsampling
+and using a palette:
+
+\startbuffer
+\startluacode
+    local sin = math.sin
+    local cos = math.cos
+    local p = { }
+    for i=0,255 do
+        p[i] = { 255*sin(i), 255*cos(i), i }
+    end
+    figures.palettes.foo = p
+\stopluacode
+
+\startMPcode
+    newbytemap 1 of (1,1,1) ;
+    newbytemap 2 of (1,1,1) ;
+    loadbytemap (1,"mill.png") ;
+    downsamplebytemap (1,2,4) ;
+    draw bytemap 1 xsized 7cm xshifted 0.0cm withpalette "foo" ;
+    draw bytemap 2 xsized 7cm xshifted 7.2cm withpalette "foo" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
 
 \startlinecorrection
 \getbuffer

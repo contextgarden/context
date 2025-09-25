@@ -89,6 +89,7 @@ local setbytemapoctave  = mplib.setbytemapoctave
 local setbytemapoctave  = mplib.setbytemapoctave
 local processbytemap    = mplib.processbytemap
 local downsamplebytemap = mplib.downsamplebytemap
+local downgradebytemap  = mplib.downgradebytemap
 
 mp.newbytemap        = function(...) return newbytemap       (currentmpx,...) end
 mp.getbytemap        = function(...) return getbytemap       (currentmpx,...) end
@@ -98,6 +99,7 @@ mp.getbytemapdata    = function(...) return getbytemapdata   (currentmpx,...) en
 mp.setbytemapoctave  = function(...) return setbytemapoctave (currentmpx,...) end
 mp.processbytemap    = function(...) return processbytemap   (currentmpx,...) end
 mp.downsamplebytemap = function(...) return downsamplebytemap(currentmpx,...) end
+mp.downgradebytemap  = function(...) return downgradebytemap (currentmpx,...) end
 
 local getlastaddtype = mplib.getlastaddtype
 

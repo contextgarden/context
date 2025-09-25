@@ -346,10 +346,12 @@ do
     local rlncatcodes = tex.rlncatcodes
     local texgetcount = tex.getcount
 
-    local bytes       = string.bytes
+    ----- bytes       = string.bytes
+    local utfvalues   = string.utfvalues
     local getcatcode  = tex.getcatcode
 
-    local char, concat = string.char, table.concat
+ -- local concat      = table.concat
+    local utfconcat   = string.utftabletostring
 
     -- This uses the normal bin lookup method that we also use for other files,
     -- and in principle there is no limit on the amount of files other than the
@@ -418,21 +420,49 @@ do
             local m = scancsname(true)
             local g = 0
             local s
+            local r = { }
+            local e = texgetcount("endlinechar") -- we can have tex.endline if needed
+            if e < 0 or e > 127 then
+                e = false -- ""
+            else
+                e = true  -- " "
+            end
             l = 0
             if c then
                 while true do
                     local s = c and c:reader()
                     if s then
-                        l = l + 1
                         s = gsub(s," *$","")
-                        t[l] = s
-                        for c in bytes(s) do
+                        local eol = e
+                        for c in utfvalues(s) do
                             local cc = getcatcode(c)
                             if cc == 1 then
+                                -- begin group
                                 g = g + 1
+                                l = l + 1 ; t[l] = c
                             elseif cc == 2 then
+                                -- end group
                                 g = g - 1
+                                l = l + 1 ; t[l] = c
+                            elseif cc == 14 then
+                                -- comment
+                                eol = false
+                                break
+                            elseif cc == 9 then
+                                -- ignore
+                            elseif cc == 10 then
+                                -- space
+                                if t[l] ~= c then
+                                    l = l + 1 ; t[l] = c
+                                else
+                                    -- skip it
+                                end
+                            else
+                                l = l + 1 ; t[l] = c
                             end
+                        end
+                        if eol then
+                            l = l + 1 ; t[l] = 32
                         end
                         if g <= 0 then
                             break
@@ -456,15 +486,8 @@ do
                     end
                     channels[n] = false
                 else
-                    local e = texgetcount("endlinechar") -- we can have tex.endline if needed
-                    if e < 0 or e > 127 then
-                        e = ""
-                    else
-                        e = " "
-                        l = l + 1
-                        t[l] = ""
-                    end
-                    s = concat(t, e, 1, l)
+                 -- s = concat(t, "", 1, l)
+                    s = utfconcat(t,1,l) -- or set a sentinel false slot
                 end
             else
                 s = ""
@@ -472,6 +495,7 @@ do
             setmacro(m, s, prefix) -- checks for frozen
         end,
     }
+
 
     -- This is an etex extension. All characters become catcode 12 but a space gets code
     -- 10. The etex manual specifies a lineending of catcode 12 too. Should we strip spaces
@@ -493,7 +517,7 @@ do
             if s then
                 local e = texgetcount("endlinechar") -- we can have tex.endline if needed
                 if e > 0 then -- forget about 0
-                    s = s .. char(e)
+                    s = s .. utfchar(e)
                 end
             else
                 channels[n] = false
@@ -517,7 +541,7 @@ do
             if s then
                 local e = texgetcount("endlinechar") -- we can have tex.endline if needed
                 if e > 0 then -- forget about 0
-                    s = s .. char(e)
+                    s = s .. utfchar(e)
                 end
                 context(s)
             else
@@ -538,6 +562,10 @@ do
             return boolean_value, not channels[n]
         end,
     }
+
+end
+
+do
 
     -- This one doesn't belong here and it might become a real primitive if we need it
     -- frequently. So, for the moment we keep it in this file.

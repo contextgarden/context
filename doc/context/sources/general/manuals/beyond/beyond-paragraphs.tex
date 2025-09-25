@@ -1,0 +1,2743 @@
+% language=en runpath=texruns:manuals/beyond
+
+% \justimageoffset 1ES
+% \justimages
+
+% Needed not to get extra penalties showing
+% when invoking \showmakeup[hpenalty]
+\setlocalshowmakeup
+
+\def\reducewidth#1{\hsize\dimexpr469.5pt - #1\relax}
+
+\startcomponent beyond-introduction
+
+\environment beyond-style
+
+% \setupalign[stretch]
+% \setupalignpass[default]
+
+\startchapter[title={A new take on paragraphs},author=Hans Hagen & Mikael Sundqvist]
+
+\startsection[title=Introduction]
+
+The excellence of the Knuth||Plass algorithm for breaking paragraphs into lines
+is one of the reasons for the success of \TEX. It is very fast (built upon
+dynamic programming) and powerful (it can combine both justification and
+hyphenation in one go). The algorithm is built to use so-called demerits in a
+cost function to determine the optimal breakpoints.
+
+The paragraph builder is however limited to at most three runs over each
+paragraph to get the job done. In this article we will describe some new ideas
+and tools regarding the process of paragraph building. What we describe is
+already available in \LUAMETATEX\ and \CONTEXT. The main new feature is that it
+is now possible to have an arbitrary number of runs over each paragraph and to
+configure them independently.
+
+If \TEX\ is an example of \quotation {The Art of Programming}, then we might
+approach some of its building blocks as pictures. These come in flavors; some are
+concrete and show a scene that leaves no doubt about what is pictured. Others are
+more abstract and can let us imagine or experience something and anyway leave
+interpretation to the viewer. When old paintings are restored quite often layers
+under the top layer show something different. The canvas might have been
+repurposed or we can see intermediate (even different) versions of what the final
+result is. Modern paintings can use paint that was hip at that moment but was not
+durable over a long term, so drastic measures are needed.
+
+The par builder code in \LUAMETATEX\ has all these aspects: features were added,
+some on top of others, the code and algorithm is open for interpretation, some
+tricks relate to the toolkit used. This makes fundamental extensions hard and a
+rewrite has the danger of losing compatibility. To quote from Knuth's \TEX\
+source:
+
+\startquotation
+    This particular part of \TEX\ was a source of several subtle bugs before the
+    correct program logic was finally discovered; readers who seek to improve
+    \TEX\ should therefore think thrice before daring to make any changes here.
+\stopquotation
+
+The original \TEX\ par builder is (at least for us) not something that
+immediately reveals its workings. Since the logic is a bit fuzzy to us, we have
+to be able to analyze what we see. There are many parameters like \typ
+{\pretolerance} and \typ {\tolerance}, as well as badness, penalties, demerits
+and all of these plus slack in a line leads to a conclusion about how bad
+breakpoints are. Add to that comparing neighboring lines with respect to how much
+the applied spacing differs.
+
+On top of that \ETEX\ added some layers (like last line related) and \PDFTEX\
+added even more due to expansion and protrusion. We can see some remnants of
+\OMEGA\ (\ALEPH) like local boxes, too. The \LUATEX\ approach separated the
+hyphenation, ligature building and kerning from the main task. Then \LUAMETATEX\
+added more control, various new features, and node list normalization from the
+perspective of access by \LUA.
+
+So, the whole picture becomes more complex and abstract over time. And one indeed
+has to be careful when adding new features to it. Some comments in the source
+indicate that coming to the right solution has been a step-wise process. Just
+like painters made their own paint we have all kinds of helpers. We can trace
+what \TEX\ does, and what solution was considered best. We can do that visually
+as well as via extensive logging. These helpers have been invaluable in the work
+to extend the paragraph builder.
+
+The idea to use more runs over the paragraph is however not new. In D.E.\ Knuth's
+\italic {Digital Typography} we can read the following:
+
+\startquotation
+  On the other hand, some paragraphs are inherently difficult, and there is no
+  way to break them into feasible lines. In such cases the algorithm we have
+  described will find that its active list dwindles until eventually there is no
+  activity left; what should be done in such a case? It would be possible to
+  start over with a more tolerant attitude toward infeasibility (a higher
+  threshold value for the adjustment ratios). \TEX\ takes the attitude that the
+  user wants to make some manual adjustment when there is no way to meet the
+  specified criteria, so the active list is forcibly prevented from becoming
+  empty by simply declaring a breakpoint to be feasible if it would otherwise
+  leave the active list empty. This results in an overset line and an error
+  message that encourages the user to take corrective action.
+\stopquotation
+
+Maybe it was the limitations of computers at that time that prevented more runs?
+So, given the faster computers and already opened-up code base, which permits
+extensive visual tracing, we decided to play with multiple passes, a mechanism
+that will be discussed below. When documenting this we occasionally went back to
+Knuth's descriptions, like the ones above, and admit that some started making
+sense only in retrospect. For instance the \quotation {so the active list is
+forcibly prevented from becoming empty by simply declaring a breakpoint to be
+feasible} action was something that we had to circumvent in order to let
+additional passes kick in at all. We still learn.
+
+\stopsection
+
+\startsection[title=The traditional par builder]
+
+Before we move on and discuss the possibility of using more paragraph passes, we
+will discuss in a bit more detail how the traditional par builder works. This
+will help us to better understand the various extensions in \LUAMETATEX.
+
+For good order a paragraph is a horizontal list, wrapped over lines. This happens
+either in a \type {\vbox} or in the main vertical list (page). When such a list
+is broken, \TEX\ has to keep track of the current width of a line. That width can
+change depending on the so-called par shape or hanging indentation.
+
+\startbuffer
+There are four possible combinations of hang indent and hang after being positive
+and negative:
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:hangindent,title={hangindent}]
+  \startimage
+    \startcombination[nx=4,ny=1]
+      {\framed[foregroundstyle=\txx,width=10em,align={tolerant,stretch,normal}]{\hangindent  1.5em \hangafter  1 \getbuffer}} {}
+      {\framed[foregroundstyle=\txx,width=10em,align={tolerant,stretch,normal}]{\hangindent -1.5em \hangafter  1 \getbuffer}} {}
+      {\framed[foregroundstyle=\txx,width=10em,align={tolerant,stretch,normal}]{\hangindent  1.5em \hangafter -1 \getbuffer}} {}
+      {\framed[foregroundstyle=\txx,width=10em,align={tolerant,stretch,normal}]{\hangindent -1.5em \hangafter -1 \getbuffer}} {}
+    \stopcombination
+  \stopimage
+\stopplacefloat
+
+We show the hanging indentation in \in {Figure}[fig:hangindent], which makes
+clear that it adds a constraint. We can also have an indentation on the first
+line, left and right par fill skip (last line) as well as left and right init
+skip (first line). Then there are left and right skip but these are the same for
+every line. All this means that the par builder has to keep track of the current
+line, in order to set the current width.
+
+If we render table cells, or captions, or a narrow quote, or text flowing around
+an image, the width can be a limiting factor and combined with penalizing
+hyphenation, multiple hyphens in a row, specific demands like inline math, the
+solution space can become cramped but we will notice that the engine can quite
+well deal with these situations, unless of course we leave no room, for instance
+by setting every penalty that plays a role to 10000 or demerits to the maximum
+number possible.
+
+It is also good to keep in mind that a macro package can have features that
+interfere with what otherwise would be a pristine paragraph. Think of a forced
+linebreak (\type {\crlf}), binding words (using~\type {~}), switching fonts and
+thereby spacing, ligatures and kerning, changing to a language with fewer or more
+short words, compound words and possibly different hyphenation rules, verbatim,
+which normally runs wider and doesn't hyphenate.
+
+\TEX\ first tries to break the paragraph list into lines without using
+hyphenation, within the constraints of the \typ {\pretolerance} value. If this
+fails a second pass will use \typ {\tolerance} as the constraint, with
+hyphenation enabled. The verdict is also influenced by various penalties, for
+instance those that penalize one or more hyphens at the end of lines. If the
+outcome is still not right, a third pass permits \typ {\emergencystretch} to be
+applied.
+
+The decision to enter a next pass is determined by a valid result. So, if a pass
+processes the whole list within the constraints we have a result and no further
+passes are done. When there is no result, the next pass will be entered. We can
+skip the first pass by setting \tex {pretolerance} to \m {-1}, and the third pass
+won't happen if we have no emergency stretch. It is important to have a final
+pass, because \TEX\ has to make sure to provide a result. Thus, we can have the
+following cases.
+
+\startitemize[n,packed]
+  \startitem pretolerance tolerance \stopitem
+  \startitem pretolerance tolerance stretch \stopitem
+  \startitem tolerance \stopitem
+  \startitem tolerance stretch \stopitem
+\stopitemize
+
+Take the first situation: we run the pretolerance pass, if there is a valid
+result we quit, otherwise we run the tolerance pass which is tagged final and
+therefore will be forced to always have a result by dealing with troublesome
+breakpoints. There is no third pass because emergency stretch is zero. This is
+where the majority of \TEX\ users end up.
+
+In the second case we can succeed after the pretolerance pass and quit, or carry
+on with the tolerance pass, where again we can succeed or carry on. The stretch
+pass is the final one and it must result in something.
+
+The third case is final right from the start so the first pass will always result
+in something, no matter how bad. The fourth case can succeed after the tolerance
+pass but can carry on with the last pass, which then must return a result.
+
+Traditionally, \TEX\ can break lines
+
+\startitemize[packed]
+  \startitem
+    at glue (after words, not usually inside math),
+  \stopitem
+  \startitem
+    at a kern followed by glue,
+  \stopitem
+  \startitem
+    at a discretionary (hyphenation),
+  \stopitem
+  \startitem
+    due to a penalty (also inside math).
+  \stopitem
+\stopitemize
+
+We will look at many examples below, and for them we will (re)use a paragraph
+written by the famous mathematician and physicist P.A.M.\ Dirac.\footnote {From
+his article \quotation {Pretty Mathematics}, \italic{Internat.\ J.\ Theoret.\
+Phys.}\ vol.\ 21, no.\ 8||9, pp.\ 603||605, 1981/82. Presented at the Dirac
+Symposium, Loyola University, New~Orleans, May 1981.}
+
+\startbuffer[Dirac]
+  I can give a good example of this procedure. At one time, in 1927, I was
+  playing around with three \m {2 \times 2} matrices whose squares are equal to
+  unity and which anticommute with one another. Calling them \m {\sigma__1},
+  \m{\sigma__2}, \m {\sigma__3}, I noticed that if one multiplied them into the
+  three components of a momentum so as to form \m {\sigma__1 p__1 + \sigma__2
+  p__2 + \sigma__3 p__3}, one obtained a quantity whose square was just \m
+  {p__1^2 + p__2^2 + p__3^2}. This was an exciting result, but what use could
+  one make of it?\par
+\stopbuffer
+
+As \TEX\ runs over a paragraph, a badness value is attached to each possible
+breakpoint. With the default parameter settings of \typ {\pretolerance} to \typ
+{100} and \typ {\tolerance} to \typ {200}, many of the possible breakpoints are
+discarded, since the badnesses attached to them are greater than the tolerance;
+they would simply lead to non-optimal (within our measurement of tolerance)
+lines. In \CONTEXT\ we can use the pair of commands \tex {startshowbreakpoints}
+and \tex {stopshowbreakpoints} to show the possible breakpoints; see \in
+{Figure}[fig:feasiblebreakpoints].
+
+\startplacefloat
+  [figure]
+  [reference=fig:feasiblebreakpoints,
+   title={Feasible breakpoints are marked with vertical bars. Here we are using
+   the default settings \tex {\pretolerance=100} (and \tex {\tolerance=200}).}]
+  \startexample
+    \startshowbreakpoints
+      \start
+      \switchtobodyfont[10pt]
+      \reducewidth{1.6pt}
+      \pretolerance100
+      \tolerance200
+      \getbuffer[Dirac]
+      \stop
+    \stopshowbreakpoints
+  \stopexample
+\stopplacefloat
+
+In fact, each breakpoint (except the first one, which sits at the start of the
+paragraph and has index 0) points to a previous breakpoint; a tree is built. With
+\tex {showbreakpoints} we can get some information about the breakpoints that
+\TEX\ kept until it was time to make the choice; see \in {Figure}
+[fig:showbreakpoints]. We will discuss the details a bit later when we have
+introduced the relevant concepts.
+
+\startplacetable
+  [figure]
+  [reference=fig:showbreakpoints,
+   title={A table representing the tree \TEX\ uses for the example paragraph. The
+   various columns are described in the text below.}]
+    \start
+    \startimage
+      \showbreakpoints[option=compact]
+    \stopimage
+    \stop
+\stopplacetable
+
+We can also draw a representation of the tree with \tex {drawbreakpoints}, where
+each line represent the possible breakpoints for different lines; see \in
+{Figure} [fig:traditionaltree]. Some of the nodes are kept by \TEX\ until the
+end, even though no later node points back to them.
+
+\startplacefloat
+  [figure]
+  [reference=fig:traditionaltree,
+   title={The tree \TEX\ has after going over the paragraph, with the selected
+   path dashed.}]
+   \startimage
+    \drawbreakpoints[dx=3fs,dy=3fs,sx=1.1fs,sy=1.1fs,rulethickness=.1fs]
+   \stopimage
+\stopplacefloat
+
+By setting the parameters \tex {pretolerance} to \typ {-1} and \tex {tolerance}
+to \typ {10000}, we can fool \TEX\ into viewing all possible breakpoints in a
+paragraph as feasible, not throwing away any of them; see \in
+{Figures}[fig:allbreakpoints] and \in [fig:traditionaltreeall].
+
+\startplacefloat
+  [figure]
+  [reference=fig:allbreakpoints,
+   title={All possible breakpoints considered by \TEX.}]
+  \startexample
+  \startshowbreakpoints
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{1.6pt}
+    \pretolerance-1
+    \tolerance10000
+    \getbuffer[Dirac]
+    \stop
+  \stopshowbreakpoints
+  \stopexample
+\stopplacefloat
+
+\startplacefloat
+  [figure]
+  [reference=fig:traditionaltreeall,
+   title={All possible breakpoints, drawn in a cramped manner. We observe that
+   among all solutions, some are one line longer than the selected solution.}]
+   \startimage
+     \drawbreakpoints[dx=0.8fs,dy=3fs,sx=1.05fs,sy=1.05fs,rulethickness=.1fs]
+   \stopimage
+\stopplacefloat
+
+We have mentioned badness and tolerance, and that breakpoints are discarded if
+their badness is larger than the tolerance. We will next explain how badness
+values are calculated. To do that, we first need the {\italic adjustment ratio}.
+
+When \TEX\ starts to run over a paragraph, it knows the desired length of each
+line. Usually these lengths are fixed, but they can vary a bit depending on
+(hanging) indentation, or even more advanced par shapes. While running over the
+paragraph, there will be a few active nodes. At the start, it is only the one
+that we have marked with a 0 in the upper left of the figures. Then every
+possible breakpoint points back to node 0. When \TEX\ goes on, it will check for
+each possible breakpoint in turn, whether it, when pointing back to 0, will give
+a line that is okay according to the rules set up. If so, it will add that point
+to the list of active nodes and move on. Once we come to a point where the first
+line would be more than completely filled, it will deactivate node 0. Hopefully,
+there will be new active nodes to test new possible breakpoints against (if not,
+the run fails). Other active nodes will also be deactivated in a similar way as
+\TEX\ moves on.
+
+When \TEX\ creates an active node it also creates a so-called passive node, which
+carries additional information. It is the passive nodes that point to the
+previous breakpoints and build the tree. There can be multiple nodes pointing to
+a node, but only the one with the fewest demerits in each fitness class is kept.
+If an active node is deactivated, the passive nodes are not cleaned up. (This is
+also why we can generate the tree graphics.)
+
+We now assume that we have a new possible breakpoint, and an active one that it
+might be able to point back to. Let \m {\ell} be the desired length of the
+corresponding line (which is known). Let \m {L} be the total {\italic natural
+width} of what we have so far (without stretch and shrink), calculated from the
+active breakpoint, considered at the moment, up to the current candidate. Also,
+let \m {Y > 0} be the total {\italic stretchability} and \m {Z > 0} be the total
+{\italic shrinkability}. (Negative values are possible but we leave them out of
+this discussion.) Define the adjustment ratio \m {r} as
+
+\startformula
+  r =
+  \startcases
+    \NC (\ell - L)/Y \mtp{,} \NC L < \ell\mtp{;} \NR
+    \NC 0            \mtp{,} \NC L = \ell\mtp{;} \NR
+    \NC (\ell - L)/Z \mtp{,} \NC L > \ell\mtp{.} \NR
+  \stopcases
+\stopformula
+
+The closer \m {r} is to \m {0}, the less stretch or shrink is needed. When \m {r
+= -1}, all available shrink is asked for, and when \m {r = 1} all stretch is
+needed.
+
+The {\italic badness} \m {\beta} of the breakpoint is defined as (here \m
+{\floor{x}} denotes the integer part of a real number~\m {x})
+
+\startformula
+  \beta =
+    \startcases
+      \NC +\infty\mtp{,}                     \NC r < -1\mtp{;} \NR
+      \NC \floor[size=1]{100 \abs{r}^3 + 0.5}\mtp{,} \TC otherwise.    \NR
+    \stopcases
+\stopformula
+
+The badness does not depend on the sign of~\m {r}. \TEX\ never allows more shrink
+than specified, and therefore the badness is defined to be infinite if \m {r <
+-1}. We emphasize that \TEX\ {\italic does} allow more stretch than what is
+specified, so \m {r > 1} is allowed in the second line of the badness calculation
+above.
+
+It is possible in \CONTEXT\ to show beside each line the badness values that were
+calculated for each used breakpoint; see \in {Figure}[fig:showbadness]. The
+turquoise bars at right (grayscaled for print) indicate if the line is set tight
+or loose.
+
+\startplacefloat
+  [figure]
+  [reference=fig:showbadness,
+   title={The turquoise bars indicate how much the first, third and fourth lines
+   are stretched and therefore a bit loose. The second line is shrunk and
+   therefore tight.}]
+  \startexample
+    \startshowbreakpoints[option={margin,simple}]
+      \start
+      \switchtobodyfont[10pt]
+      \reducewidth{30pt}
+      \pretolerance100
+      \tolerance200
+      \getbuffer[Dirac]
+      \stop
+    \stopshowbreakpoints
+  \stopexample
+\stopplacefloat
+
+In \in {Figure}[fig:nothyphenated] we have set the paragraph on a narrower width.
+To the left, with hyphenations enabled, we get a solution that is okay, while to
+the right the word Calling is sticking out. Here the second run failed and \TEX\
+gave up on finding a good solution.
+
+\startplacefloat
+  [figure]
+  [reference=fig:nothyphenated,
+   title={Left: a narrow paragraph, with hyphenation enabled. Right: The same
+   narrow paragraph, with hyphenation disabled.}]
+  \startcombination[nx=2,ny=1,distance=5ts]
+   {\startexample
+      \startshowbreakpoints
+        \start
+        \switchtobodyfont[10pt]
+        \hsize228.07165pt
+        \pretolerance100
+        \tolerance200
+        \getbuffer[Dirac]
+        \stop
+      \stopshowbreakpoints
+    \stopexample
+    }{}
+   {\startexample
+      \startshowbreakpoints
+        \start
+        \switchtobodyfont[10pt]
+        \setupalign[nothyphenated]
+        \hsize228.07165pt
+        \pretolerance100
+        \tolerance200
+        \getbuffer[Dirac]
+        \stop
+      \stopshowbreakpoints
+    \stopexample
+    }{}
+  \stopcombination
+\stopplacefloat
+
+In \TEX, hyphenations are controlled by penalties. We want to avoid hyphenation
+if possible, but we do not want to disable it completely, since then \TEX\ will
+sometimes fail to find feasible solutions. Each hyphenated line costs a \tex
+{hyphenpenalty}, and there is a competition between different costs that
+determine how \TEX\ will break the paragraphs.
+
+Going even narrower, we will eventually end up in a situation where none of the
+first two passes succeed, with or without hyphenations enabled. With \tex
+{emergencystretch} unset (left in \in {Figure} [fig:emergencyrun]), we get
+overfull lines sticking out. We absolutely want to avoid that, if at all
+possible. To the right we set \tex {emergencystretch} to \typ {2em}. This means
+that each line gets an amount of \typ {2em} extra stretch to distribute. For this
+paragraph \typ {2em} was enough for \TEX\ to find a solution without any line
+sticking out.
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergencyrun,
+   title={Left: a narrow paragraph. \TEX\ has failed to find a solution with its
+   both first runs, and we see several overfull lines. Right: The same paragraph
+   with the emergency run enabled by setting \tex {emergencystretch} to 2em.}]
+  \startcombination[nx=2,ny=1,distance=3ts]
+   {\startexample
+      \startshowbreakpoints
+        \start
+        \hsize164.314pt
+        \switchtobodyfont[10pt]
+        \pretolerance100
+        \tolerance200
+        \getbuffer[Dirac]
+        \stop
+      \stopshowbreakpoints
+    \stopexample
+    }{}
+    {\startexample
+      \startshowbreakpoints
+        \start
+        \hsize164.314pt
+        \switchtobodyfont[10pt]
+        \emergencystretch2em
+        \pretolerance100
+        \tolerance200
+        \getbuffer[Dirac]
+        \stop
+      \stopshowbreakpoints
+    \stopexample
+    }{}
+  \stopcombination
+\stopplacefloat
+
+As discussed above, when \TEX\ reads a paragraph, it will put possible
+breakpoints in a tree-like structure (in fact a single-linked list, with new
+entries added at the beginning). If the badness is greater than the
+(pre)tolerance, the breakpoints will be discarded. Once the paragraph is read,
+\TEX\ will work on the tree with the breakpoints that survived, as shown in \in
+{Figures}[fig:showbreakpoints] and~\in {}[fig:traditionaltree] (unless there was
+a complete failure, and then \TEX\ will typically produce a paragraph where some
+line sticks out, as in \in {Figure} [fig:emergencyrun], left). To choose among
+the possible breakpoints, \TEX\ calculates demerit values for each possible
+solution, and the final choice is the path in the tree that adds up to the least
+total amount of demerits.
+
+Let us explain the content in \in {Figure}[fig:showbreakpoints]. The first column
+denotes what linebreak we are looking at, so for example the three first rows all
+correspond to the breakpoint after the first line. Since there are three such
+rows there are exactly three possible line breaks. The second column is an index
+for the possible breakpoints. The third column shows what breakpoint each
+breakpoint is pointing at. We see that the first three point at 0, which means
+the beginning of the paragraph. The fourth breakpoint is pointing at breakpoint
+1. The values in the fourth column are the badness values. The fifth column keeps
+the (accumulated) demerits. The sixth column shows the fitness class of the break
+(more on that below) and the seventh column shows the type of break. The
+breakpoints that have colored numbers are the ones that are used.
+
+After that we get a summary on what paths in the tree were still valid at the
+end; here there were seven, and \m {15 \to 8 \to 4 \to 1}, marked in color, was
+the chosen one. Looking at the paragraph we note that the breakpoints~15 and~16
+sit at the same place. The difference is that they point to different previous
+breakpoints (8 and 7, respectively).
+
+In the summary we also see what subpass was used (\typ {P} means the pretolerance
+run). We also see that the total demerits was \m {1139}, that we did not use
+(extra) paragraph passes, and not looseness (more on that later).
+
+Next, we describe how the demerits are calculated. For each breakpoint, the
+following happens. Let \m {\beta} be the badness, \m {\ell} the line penalty (by
+default set to \the\linepenalty), \m {\pi} the possible penalty, and \m {\alpha}
+the additional demerits that correspond to a certain breakpoint (but that usually
+comes from a combination with the previous one). Then the demerits value \m
+{\delta} for that breakpoint is defined by
+
+\startformula
+  \delta =
+    \startcases
+      \NC (\ell + \beta)^2 + \pi^2 + \alpha \mtp{,}
+      \NC \mtext{if }\pi \geq 0             \mtp{;} \NR
+      \NC (\ell + \beta)^2 - \pi^2 + \alpha \mtp{,}
+      \NC \mtext{if }-\infty < \pi < 0      \mtp{;} \NR
+      \NC (\ell + \beta)^2 + \alpha         \mtp{,}
+      \NC \mtext{if } \pi = -\infty         \mtp{.} \NR
+    \stopcases
+\stopformula
+
+The penalty \m {\pi} can come, for example, from a hyphenation (\tex
+{hyphenpenalty} is often set to \the \hyphenpenalty) or a break inside a formula.
+The only places where traditional \TEX\ breaks inside formulas are after binary
+operators such as \m {+} (default penalty 700) and binary relations such as \m
+{=} (500). This means that hyphenations are preferred over breaks inside
+formulas.
+
+The additional demerits, \m {\alpha} in the formula, come from the interplay of
+neighboring lines. There is for example \tex {doublehyphendemerits} (\the
+\doublehyphendemerits) that gets added when consecutive hyphenated lines are
+considered during line breaking, \tex {finalhyphendemerits} (\the
+\finalhyphendemerits) that is added if the final breakpoint of the paragraph is
+hyphenated and also \tex {adjdemerits} (\the \adjdemerits) that is added when
+consecutive lines are considered to be incompatible with each other, say one with
+fitness class tight and one with loose. The values given above in parentheses are
+the ones that Knuth set up for plain \TEX; they have survived also in other macro
+packages.
+
+We stress that in the formula for demerits, the \m {\ell + \beta} and \m {\pi}
+are squared, while \m {\alpha} is not. This means that \m {\alpha = 10000}
+corresponds to a penalty \m {\pi = 100}. This is important to have in mind when
+setting up the parameters, since when \TEX\ chooses the line breaks, these are
+the kind of terms that compete with each other, and that influence the final
+choice.
+
+Traditional \TEX\ has four fitness classes: tight, decent, loose and very loose.
+They are attached to breakpoints and depend on the badness. The adjacent demerits
+are added when we jump over at least one fitness class. Looking at \in
+{Figure}[fig:traditionalbadness], we see that it happens when we go from A to
+either C or D (from tight to either loose or very loose), or when we go from B to
+D (decent to very loose). The same amount is added both for jumps from A to C and
+from A to D, even though the latter is likely worse.
+
+\startbuffer[traditionalbadness]
+  numeric c ; c := 0.5/5^(2/3) ;
+  vardef fun(expr x) =
+    (2*x - 1)^(1/3)*c
+  enddef ;
+  path badness[] ;
+
+  badness[1] :=
+    (0,0) -- (c,0) &&
+    for bv = 1 upto 100 :
+      (fun(bv),bv) -- (fun(bv + 1),bv) &&
+    endfor nocycle ;
+  badness[2] := badness[1] xyscaled(-1,1) ;
+  badness[3] := badness[1] && badness[2] ;
+  badness[3] := badness[3] xyscaled(100,2.5) ;
+
+  draw (
+    (-fun(99),-15) -- (-fun(99),99) &&
+    (-fun(12),-15) -- (-fun(12),12) &&
+    (       0,-15) -- (0,0)         &&
+    ( fun(12),-15) -- ( fun(12),12) &&
+    ( fun(99),-15) -- ( fun(99),99)
+    )
+    xyscaled (100,2.5)
+    withpen pencircle scaled 1 ;
+  draw badness[3] withpen pencircle scaled 1 withcolor "maincolor" ;
+  drawarrow ((-fun(130),0) -- (fun(130),0)) xyscaled (100,2.5) ;
+  drawarrow ((0,0) -- (0,115)) xyscaled (100,2.5) ;
+  label.bot ("\strut\m {r}",       ( fun(130), 0) xyscaled (100,2.5)) ;
+  label.llft ("\strut\m {-1}",      ( -fun(100), 0) xyscaled (100,2.5)) ;
+  label.llft ("\strut\m { 1}",      ( fun(100), 0) xyscaled (100,2.5)) ;
+  label.lft ("\strut\m { 12}",    (0,   12) xyscaled (100,2.5)) ;
+  label.lft ("\strut\m { 99}",    (0,   99) xyscaled (100,2.5)) ;
+  label.lft ("\strut\m {\beta}",   (0, 110) xyscaled (100,2.5)) ;
+  label.ulft("\strut\m {+\infty}", ulcorner badness[3]  ) ;
+  label.urt ("\strut\m {\uparrow}",urcorner badness[3]  ) ;
+  label ("\strut A" , 0.5[(-fun(99),-15),(-fun(12),-15)] xyscaled (100,2.5)) ;
+  label ("\strut B" , 0.5[(-fun(12),-15),(0,-15)] xyscaled (100,2.5)) ;
+  label ("\strut B" , 0.5[(0,-15),(fun(12),-15)] xyscaled (100,2.5)) ;
+  label ("\strut C" , 0.5[(fun(12),-15),(fun(99),-15)] xyscaled (100,2.5)) ;
+  label ("\strut D" , 0.5[(fun(99),-15),(fun(99) + 0.5fun(12),-15)] xyscaled (100,2.5)) ;
+\stopbuffer
+
+\startbuffer
+  Traditional fitness classes. A:~tight, B:~decent, C:~loose and D:~very loose.
+  The graph shows the badness \m {\beta} as a function of the adjustment ratio \m
+  {r}. The jumps are due to the integer part in the formula (we want integers).
+  The division into fitness classes is done so that the subintervals on the \m
+  {r}-axis have the same length. This gives the thresholds 12 and 99 for the
+  badness.
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:traditionalbadness,
+   title=\getbuffer]
+  \startimage
+    \processMPbuffer[traditionalbadness]
+  \stopimage
+\stopplacefloat
+
+Problematic paragraphs can be tweaked manually. We can locally increase the
+tolerance to make \TEX\ accept less good solutions, we can enable font expansion
+in order to stretch or shrink characters slightly, and thus enable line breaks
+that otherwise would be considered bad. Excessive use of expansion might lead to
+visually incompatible lines and ugly results. We can also, as mentioned and shown
+above, set the \tex {emergencystretch} to a positive value, and hope for a good
+final run.
+
+Sometimes, the last line of a paragraph is too short. It can look bad if
+indentation is enabled and the size of the indentation is approximately the same,
+or even bigger, than the width of the last line in the paragraph before. One way
+to avoid such short last lines is to use orphan penalties (we will come back to
+them). If set to 10000, \TEX\ may no longer break between the last two words.
+
+When optimizing for the number of lines to stay on a page, or to add one extra,
+it is sometimes possible to shorten (or lengthen, but that usually does not give
+good results) paragraphs with help of \tex {looseness}. As an example, look at
+\in {Figure}[fig:shortlastline]. By adding \tex {looseness-1} we ask for a
+paragraph that is one line shorter than the number of lines that the optimal
+paragraph considered by \TEX\ has, if possible. In this case it succeeded.
+
+\startplacefloat
+  [figure]
+  [reference=fig:shortlastline,
+   title={A paragraph with a short last line.}]
+  \startcombination[nx=1,ny=2]
+  \startcontent
+  \startexample
+  \startshowbreakpoints
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{122pt}
+    \pretolerance100
+    \tolerance200
+    \getbuffer[Dirac]
+    \stop
+  \stopshowbreakpoints
+  \stopexample
+  \stopcontent
+  \startcaption
+    A paragraph with a short last line.
+  \stopcaption
+  \startcontent
+  \startexample
+  \startshowbreakpoints
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{122pt}
+    \looseness-1
+    \pretolerance100
+    \tolerance200
+    \getbuffer[Dirac]
+    \stop
+  \stopshowbreakpoints
+  \stopexample
+  \stopcontent
+  \startcontent
+    By using \tex {looseness-1}, the paragraph is shortened by one line.
+  \stopcontent
+  \stopcombination
+\stopplacefloat
+
+We emphasize once more that this will only work if there is a case among the
+possible solutions that \TEX\ has collected that has the number of lines asked
+for. Also, an otherwise-successful pretolerance run might be discarded in the
+hunt for a paragraph with the number of lines asked for. In \LUAMETATEX\ the user
+will get a message in the log that tells if it was successful or not. The \typ
+{\looseness-1} is local, bound to the current paragraph, so it is completely a
+manual tweak.
+
+\stopsection
+
+\startsection[title=Introducing paragraph passes]
+
+We are now ready to discuss the \LUAMETATEX\ extension of the traditional
+paragraph builder, where we set up and use our own paragraph passes (par passes
+for short). The idea is that more runs on each paragraph, and the possibility of
+configuring the relevant parameters for each run independently, will give a
+higher quality in general. The model with badness, penalties and demerits is
+kept, and we also keep the same logic when running over the paragraph to decide
+which breakpoints to keep and which to throw away. We did in fact test altering
+the formulas both for badness (for instance, why the cube?)\ and demerits, but we
+did not see any improvements.
+
+Let us introduce the new concept by studying examples, where we step-wise show
+what we can do and the different parameters available. We will use some low-level
+setups here. Later we will indicate a few possible high-level interfaces
+available to \CONTEXT\ users. We start with a very simple example where we use
+two passes, the first with tolerance set to 50 and the second with tolerance set
+to 100. We disable hyphenation.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation   0
+  tolerance    50
+next
+  tolerance   100
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+Here, the \typ {\parpasses 2} specifies that we will use two passes. The keyword
+\typ {next} is the divider for successive par pass setups. Values are inherited,
+so hyphenation is still disabled in the second run. The specification ends with
+\typ {\relax} just to be sure that we do not read on. We can enable these par
+passes with \typ {\linebreakpasses 1}, and have a look at the test paragraph.
+
+\startplacefloat
+  [figure]
+  [reference=fig:firstparpass,
+   title={With the same text width as in \in {Figure}[fig:feasiblebreakpoints] it
+   happens that we get the same breakpoints with the par passes enabled.}]
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{1.6pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+This happens to work out well; we get the same result as the traditional
+parbuilder gave us. If we go a bit narrower, we will get an overfull line pretty
+soon, since the tolerance is low and we do not hyphenate: see \in {Figure}
+[fig:narrowerparpass].
+
+\startplacefloat
+  [figure]
+  [reference=fig:narrowerparpass,
+   title={Hyphenation is disabled in the defined par pass. A narrower width leads
+   to a problematic paragraph.}]
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{100pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+One way to prevent the overfull line could be to enable hyphenation in the second
+run; see \in {Figure} [fig:narrowerparpasswithhyphen]. Except for the lower
+tolerance, this is close to the traditional \TEX\ setup that we started with,
+with a pretolerance run and a tolerance run, only a bit stricter.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation   0
+  tolerance    50
+next
+  hyphenation   1
+  tolerance   100
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:narrowerparpasswithhyphen,
+   title={Hyphenation enabled in the second run.}]
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{100pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+In the example above, we specified the values of a few parameters. Then the logic
+follows the traditional paragraph builder: \TEX\ does a run with the settings of
+the first pass. If it is successful, we are done. If not, it will run the second
+pass, and since we have no more passes, it is marked as a final pass. This means
+that \TEX\ will make sure that something is returned, even if it fails to fulfill
+the constraints of the parameter values. That is why we got an overfull line in
+\in {Figure} [fig:narrowerparpass], with hyphenations disabled. Another option
+for fixing the overfull line would be to increase the tolerance. A value of 200
+would work in this case.
+
+\stopsection
+
+\startsection[title=Hyphenation]
+
+We just saw how one can turn hyphenations on and off in par passes. The outer
+value of \typ {\hyphenpenalty} (\the\hyphenpenalty) will be used; for technical
+reasons, it cannot be changed inside the par passes. Therefore, we have
+introduced the keyword \typ {extrahyphenpenalty}, that adds to the exterior \tex
+{hyphenpenalty}.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation          0
+  tolerance           50
+next
+  hyphenation          1
+  tolerance          100
+  extrahyphenpenalty 150
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+Here we have set \typ {extrahyphenpenalty} to 150. It is additive, so with \tex
+{hyphenpenalty} set to 50, the total penalty for breaking at hyphens becomes 200.
+The outcome would in this case be the same, whatever finite value of \typ
+{extrahyphenpenalty} we give, because this is essentially the only solution that
+is available. We would need an extremely high value (9950) to prevent the
+hyphenated line, but that would just mean that we forbid hyphenations, so we
+could then equally well not enable it. And we saw that the paragraph did not come
+out well without hyphenation.
+
+It is also possible to influence hyphenations by setting the parameters \typ
+{doublehyphendemerits} and \typ {finalhyphendemerits}. We need to
+remember that these are indeed demerits, and therefore of the order of
+penalties squared.
+
+\stopsection
+
+\startsection[title=Font expansion]
+
+It has become very popular in so-called microtypography to use font expansion,
+i.e.\ to stretch and shrink glyphs just slightly. This can reduce the amount of
+hyphenations needed, and it can also even out the spacing a bit, leading to
+better paragraphs. An excessive use of expansion quickly becomes ugly, as we can
+see in many newspapers, with narrow columns.
+
+One of the nice aspects of par passes is that one can apply expansion
+selectively. It is indeed possible to enable and disable expansion. Below we
+disable it in the first run (it might have been enabled outside the par passes
+with \typ {\setupalign[hz]}) and then enable it in the third run by doing \typ
+{adjustspacing 3} to expand glyphs and font kerns. We set the step to 1, maximum
+shrink to 10 (that means 1\percent) and maximum stretch to 15 (that means
+1.5\percent). These values might seem small, but, by using several paragraph
+passes, one can increase the values in the latter passes, and thereby not use
+more than needed.
+
+\startbuffer[testpass]
+\parpasses 3
+    tolerance             50
+    hyphenation            0
+    adjustspacing          0
+next
+    tolerance            100
+next
+    adjustspacing          3
+    adjustspacingstep      1
+    adjustspacingshrink   10
+    adjustspacingstretch  15
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+Note that we disabled hyphenation in this setup. The narrow paragraph, that
+before introduced the lines sticking out, now typesets okay; see \in
+{Figure}[fig:expansion]. We get a linebreak inside a formula, and we will soon
+come back to that problem.
+
+\startplacefloat
+  [figure]
+  [reference=fig:expansion,
+   title={The tight paragraph, with expansion. The blue and red numbers indicate
+   the amount of stretch and glue, respectively.}]
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \reducewidth{100pt}
+    \getbuffer[testpass]
+    \showmakeup[expansion]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+In the paragraph in \in {Figure}[fig:expansion] we used the command \typ
+{\showmakeup[expansion]} to show the amount of stretch and shrink for each
+character. In \CONTEXT\ it makes sense to set \typ {expansion=quality} as a font
+feature. This will take the difference in characters into account when spreading
+the stretch and shrink.
+
+\startbuffer[fontfeature]
+\definefontfeature
+  [default]
+  [default]
+  [expansion=quality]
+\stopbuffer
+
+\typebuffer[fontfeature]
+
+For those who are familiar with expansion in the other engines we remark that in
+\LUAMETATEX\ we implemented it a bit differently. For instance, we have an
+expansion as well as compression factor per glyph. Instead of \quote {freezing}
+the step, stretch and shrink in a font definition, we can change it any time.
+Sensible values can still be bound to a specific font switch but when we set the
+adjustment properties in a pass those values are taken instead. Moreover, instead
+of initializing the glyph compression and expansion factors when a font is loaded
+we (can) delay this until it is needed. Experiments demonstrated that it is less
+often needed that one might think, so not all fonts need this to be set up. For
+this reason, font expansion in the par passes has only a small impact on run
+time.
+
+\stopsection
+
+\startsection[title=Mathematics]
+
+When developing this extension we were also busy with extending math support in
+the engine and as a consequence we took math into account. For instance, we have
+a parameter that can influence the inter-atom penalties.
+
+\starttyping
+mathpenaltyfactor 500
+\stoptyping
+
+This reduces several math penalties by 50\percent. To minimize the number of
+breaks inside math, we can start out with a large \typ {mathpenaltyfactor} in the
+first run, and decrease it during later runs. We consider the narrow paragraph,
+but under more natural tolerance values, and without hyphenation (\in
+{Figure}[fig:narrowmath]).
+
+\startbuffer[testpass]
+\parpasses 2
+    tolerance   100
+    hyphenation   0
+next
+    tolerance   200
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:narrowmath,
+   title={A narrow paragraph. We get penalties before short formulas
+   and after binary operators and binary relations. In this case the
+   penalty does not prevent a break in a formula.}]
+  \startexample
+    \start
+    \setupbodyfont[10pt]
+    \reducewidth{98pt}
+    \getbuffer[testpass]
+    \showmakeup[hpenalty]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+We get the default penalty of 700 after binary operators (the plus signs). We
+would also get 500 after binary relations, if we had any. We do also get the
+\CONTEXT\ specific penalties of 150 before short formulas. We do indeed get a
+line break inside the formula. If we want a run that prohibits both the breaks
+after the plus signs and before the short formulas we need to multiply by a
+factor that ensures that both are 10000 or more. In this case 67 is sufficient;
+see \in {Figure} [fig:narrowmathhighpenalty].
+
+\startbuffer[testpass]
+\parpasses 2
+    tolerance           100
+    hyphenation           0
+    mathpenaltyfactor 67000
+next
+    tolerance           200
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:narrowmathhighpenalty,
+   title={With high enough \typ {mathpenaltyfactor}, we can forbid \TEX\ to break
+   inside formulas and before short formulas. In this case it was not
+   successful.}]
+  \startexample
+    \start
+    \setupbodyfont[10pt]
+    \reducewidth{98pt}
+    \getbuffer[testpass]
+    \showmakeup[hpenalty]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+\stopplacefloat
+
+This was not especially successful, since we kept the high value through all
+paragraph passes. We reiterate that it might be better to forbid those breaks in
+the first pass(es) and then maybe decrease the factor for later runs.
+
+% Below we set the factor to 15
+% in the second run, which means that breaking inside formulas is not forbidden,
+% but it costs a lot. This second run fails (if the factor would have been 10, we
+% would have gotten a break in the formula again). We reset the factor to 1 in the
+% last run, and also increase the tolerance, and indeed we get a solution that does
+% not stick out. It is in general good to have a \quotation {generous} last run.
+
+% \startbuffer[testpass]
+% \parpasses 3
+%     tolerance           100
+%     hyphenation           0
+%     mathpenaltyfactor 67000
+% next
+%     tolerance           200
+%     mathpenaltyfactor 15000
+% next
+%     tolerance           400
+%     mathpenaltyfactor  1000
+% \relax
+% \stopbuffer
+
+% \typebuffer[testpass]
+
+% \startplacefloat
+%   [figure]
+%   [reference=fig:narrowmathmoreruns,
+%    title={With more par passes, we can prevent unwanted breaks in the first runs,
+%    and decrease the \typ {mathpenaltyfactor} in later passes. In this case, we
+%    are back at the first solution, since \TEX\ for this paragraph does not
+%    succeed in the first runs.}]
+%   \startexample
+%   \start
+%   \setupbodyfont[10pt]
+%   \reducewidth{98pt}
+%   \getbuffer[testpass]
+%   \showmakeup[hpenalty]
+%   \enabletrackers[paragraphs.passes]
+%   \linebreakpasses\plusone
+%   \getbuffer[Dirac]
+%   \disabletrackers[paragraphs.passes]
+%   \stop
+%   \stopexample
+% \stopplacefloat
+
+The \typ {mathpenaltyfactor} also works in combination with forward and backward
+penalties, which can be used to try to avoid line breaks in the beginning or at
+the end of a longer inline math formula. A possible setup for these is given
+below.
+
+\starttyping
+\mathforwardpenalties  2 200 100
+\mathbackwardpenalties 2 200 100
+\stoptyping
+
+These will add a penalty of 200 to the first and last available breakpoints in an
+inline math formula, and a penalty of 100 to the second and second from last.
+
+\stopsection
+
+\startsection[title=We have an emergency!!]
+
+Oh, just kidding! The word emergency in the traditional \TEX\ primitive \tex
+{emergencystretch} might have been a bit unfortunate, since it is not a bad idea
+to enable it, sparingly of course.
+
+If we set the emergency stretch to \typ {2em} in the example with low tolerance,
+we do indeed get the break inside the formula (\in {Figure}[fig:emergency2em]).
+With emergency stretch set to \typ {1em} above, it won't help (\in
+{Figure}[fig:emergency1em]).
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation        0
+  tolerance         50
+next
+  tolerance        100
+  emergencystretch   2em
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergency2em,
+   title={Paragraph set with \tex {emergencystretch=2em}}.]
+  \startexample
+    \setupbodyfont[10pt]
+    \reducewidth{90pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation        0
+  tolerance         50
+next
+  tolerance        100
+  emergencystretch   1em
+\relax
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergency1em,
+   title={Paragraph set with \tex {emergencystretch=1em}}.]
+  \startexample
+    \setupbodyfont[10pt]
+    \reducewidth{90pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+There are more \quotation {cheats}. In \in {Figure}[fig:emergencyrightextra] we
+use an emergency stretch of 1em and also mess with the width of the paragraph, to
+the right. The \type {20} here means 2\percent.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation           0
+  tolerance            50
+next
+  tolerance           100
+  emergencystretch      1em
+  emergencyleftextra    0
+  emergencyrightextra  20
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergencyrightextra,
+   title={Paragraph set with \typ {emergencyrightextra}.}]
+  \startexample
+    \setupbodyfont[10pt]
+    \reducewidth{90pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+Another one is \typ {emergencywidthextra}: use a different width when the line
+breaks are decided, but not apply it in the end. This means it only works out
+well if lines have stretch and shrink. In the example in \in
+{Figure}[fig:emergencywidthextra] we use 2\percent\ extra width. This should
+probably only be used in true emergencies, if at all.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation           0
+  tolerance            50
+next
+  tolerance           100
+  emergencystretch      1em
+  emergencywidthextra  20
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergencywidthextra,
+   title={Paragraph set with \typ {emergencywidthextra}.}]
+  \startexample
+    \setupbodyfont[10pt]
+    \reducewidth{90pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+We have so far set the emergency stretch explicitly, in terms of font \typ {em}
+units. If we have hanging indentation or parshapes, the widths of different lines
+in the paragraph will vary. One can then argue that it makes more sense to set
+the amount of emergency stretch as a percentage of the line width, even if it
+does not matter for most paragraphs. In \in {Figure} [fig:emergencypercentage] we
+set the stretch to 4\percent\ of the line width, which was sufficient this time.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation           0
+  tolerance            50
+next
+  tolerance           100
+  emergencypercentage  40
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+% TODO percentage <-> 1000... posit?
+
+\startplacefloat
+  [figure]
+  [reference=fig:emergencypercentage,
+   title={Paragraph set with \typ {emergencypercentage}.}]
+  \startexample
+    \setupbodyfont[10pt]
+    \reducewidth{90pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+It might happen that \tex {emergencystretch} is set to a positive value outside
+of the par pass setups (for example via \typ {\setupalign[stretch]}). When we go
+in to the par passes, we can use \typ {emergencyfactor} to handle that. We can
+start by setting it to 0 in the first pass to be sure to disable the emergency
+stretch, and then update it to a positive value in a later run to enable it.
+
+\startbuffer[testpass]
+\parpasses 2
+  hyphenation        0
+  emergencyfactor    0
+  tolerance         50
+next
+  tolerance        100
+  emergencyfactor 1000
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\stopsection
+
+\startsection[title=More penalties]
+
+An example above showed the \typ {extrahyphenpenalty} parameter, which is
+specific to paragraph passes. There are a few more penalties available. The ones
+below can also be set by primitives. An orphan penalty can prevent a line break
+before the last word in a paragraph (we come back to that one), and a toddler
+penalty might prevent a line break before a single glyph.
+
+\starttyping
+linepenalty    100
+orphanpenalty  200
+toddlerpenalty 200
+\stoptyping
+
+We show one example with \typ {linepenalty}. Earlier we used \tex {looseness-1}
+to get the paragraph one line shorter. In \in {Figure}[fig:linepenalty] we
+succeed in obtaining the same paragraph by increasing the \typ {linepenalty} from
+10 to 100. It is, however, difficult to predict when it will work.
+
+\startbuffer[testpass]
+\parpasses 2
+    tolerance    50
+    hyphenation   0
+    linepenalty 200
+next
+    tolerance   100
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:linepenalty,
+   title={Shortening a paragraph with a higher \tex {linepenalty}.}]
+  \startexample
+    \switchtobodyfont[10pt]
+    \reducewidth{122pt}
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    \getbuffer[Dirac]
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+It's worth mentioning that the first versions of \TEX\ did not come with the \tex
+{linepenalty} parameter. The corresponding number was then 1 instead of the 10,
+which is probably used everywhere now.
+
+The orphan penalties can be problematic if set too aggressively, in particular
+for short paragraphs that often occur in novels with a lot of dialogue. In \in
+{Figure}[fig:orphanpenaltiesoneline] we see such a problematic example, where we
+have prohibited breaks before the last word by setting the penalty there to
+10000.
+
+\startbuffer[testpass]
+\parpasses 1
+    tolerance       100
+    orphanpenalties 1 10000
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:orphanpenaltiesoneline,
+   title={A one-liner with too-strict orphan penalties.}]
+  \startexample
+    \switchtobodyfont[10pt]
+    \hsize 280pt
+    \showmakeup[hpenalty]
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    This is just a short sentence that is just a bit longer than one line.\par
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+To avoid this problem we have factors that can be used. Below we multiply by 0.1
+if the paragraph has one line break, 0.5 if it has two and 1.0 if it has more
+than two. We see in \in {Figure}[fig:orphanlinefactors] that this is sufficient;
+we can now break before the last word.
+
+\startbuffer[testpass]
+\parpasses 1
+    tolerance       100
+    orphanpenalties   1 10000
+    orphanlinefactors 3 100 500 1000
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:orphanlinefactors,
+   title={A one liner with strict orphan penalties and multipliers.}]
+  \startexample
+    \switchtobodyfont[10pt]
+    \hsize 280pt
+    \showmakeup[hpenalty]
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    This is just a short sentence that is just a bit longer than one line.\par
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+Let us also show an example where we set toddler penalties both to the left and
+the right. If you are able to zoom in \in {Figure}[fig:toddlerpenalties], you
+will see that we get penalties of 50 sitting to the right of the single character
+letters, and 25 to the left of the leftmost one. The \tex {parfillrightskip} was
+set to 0pt here, to get a bit extra space between the words so that the penalties
+show better. We do not know if there are languages where single-letter words can
+be stacked like this.
+
+\startbuffer[testpass]
+\parpasses 1
+    tolerance       100
+    toddlerpenalties 1 options 2 50 25
+\relax
+\stopbuffer
+
+\typebuffer[testpass]
+
+\startplacefloat
+  [figure]
+  [reference=fig:toddlerpenalties,
+   title={Penalized toddlers.}]
+  \startexample
+    \switchtobodyfont[10pt]
+    \hsize 180pt
+    \parfillrightskip 0pt
+    \showmakeup[hpenalty]
+    \getbuffer[testpass]
+    \enabletrackers[paragraphs.passes]
+    \linebreakpasses\plusone
+    Some write: I owe you one.\par
+    The kids write: I o u 1.\par
+    \disabletrackers[paragraphs.passes]
+  \stopexample
+\stopplacefloat
+
+\stopsection
+
+\startsection[title=Being more granular]
+
+It is possible to specify the number of fitness classes to be used. We saw before
+that traditional \TEX\ uses four: tight, decent, loose and very loose. By
+invoking
+
+\starttyping
+\setupalign[granular]
+\stoptyping
+
+we enable more. You can see in \in {Figure}[fig:granularbadness] that they are
+evenly spread out regarding the adjustment ratio, and how they are related to the
+badness values. This should be compared with \in {Figure}
+[fig:traditionalbadness].
+
+\startbuffer[granularbadness]
+  numeric c ; c := 0.5/5^(2/3) ;
+  vardef fun(expr x) =
+    (2*x - 1)^(1/3)*c
+  enddef ;
+
+  path badness[] ;
+  badness[1] :=
+    (0,0) -- (c,0) &&
+    for bv = 1 upto 105 :
+      (fun(bv),bv) -- (fun(bv + 1),bv) &&
+    endfor nocycle ;
+  badness[2] := badness[1] xyscaled(-1,1) ;
+  badness[3] := badness[1] && badness[2] ;
+  badness[3] := badness[3] xyscaled(100,2.5) ;
+
+  draw (
+    (-fun(99),-15) -- (-fun(99),99) &&
+    (-fun(42),-15) -- (-fun(42),42) &&
+    (-fun(12),-15) -- (-fun(12),12) &&
+    (-fun(2), -15) -- (-fun(2),  2) &&
+    (       0,-15) -- (       0, 0) &&
+    ( fun(2), -15) -- ( fun(2),  2) &&
+    ( fun(12),-15) -- ( fun(12),12) &&
+    ( fun(42),-15) -- ( fun(42),42) &&
+    ( fun(99),-15) -- ( fun(99),99)
+      )
+    xyscaled (100,2.5)
+    withpen pencircle scaled 1 ;
+  draw badness[3] withpen pencircle scaled 1 withcolor "maincolor" ;
+  drawarrow ((-fun(130),0) -- (fun(130),0)) xyscaled (100,2.5) ;
+  drawarrow ((0,0) -- (0,115)) xyscaled (100,2.5) ;
+
+  label.bot  ("\strut\m {  r}",   ( fun(130),   0) xyscaled (100,2.5)) ;
+  label.llft ("\strut\m { -1}",   (-fun(100),   0) xyscaled (100,2.5)) ;
+  label.llft ("\strut\m {  1}",   ( fun(100),   0) xyscaled (100,2.5)) ;
+  label.lft  ("\strut\m {  2}",   (0        ,   2) xyscaled (100,2.5)) ;
+  label.lft  ("\strut\m { 12}",   (0        ,  12) xyscaled (100,2.5)) ;
+  label.lft  ("\strut\m { 42}",   (0        ,  42) xyscaled (100,2.5)) ;
+  label.lft  ("\strut\m { 99}",   (0        ,  99) xyscaled (100,2.5)) ;
+  label.lft  ("\strut\m {\beta}", (0        , 110) xyscaled (100,2.5)) ;
+  label ("\strut A" , 0.5[(-fun(99)-.5fun(12),-15),(-fun(99),-15)]    xyscaled (100,2.5)) ;
+  label ("\strut B" , 0.5[(-fun(99), -15),(-fun(42),-15)]             xyscaled (100,2.5)) ;
+  label ("\strut C" , 0.5[(-fun(42), -15),(-fun(12),-15)]             xyscaled (100,2.5)) ;
+  label ("\strut D" , 0.5[(-fun(12), -15),(-fun(2),-15)]              xyscaled (100,2.5)) ;
+  label ("\strut E" , 0.5[( -fun(2), -15),(0,-15)]                    xyscaled (100,2.5)) ;
+  label ("\strut E" , 0.5[(       0, -15),(fun(2),-15)]               xyscaled (100,2.5)) ;
+  label ("\strut F" , 0.5[(  fun(2), -15),(fun(12),-15)]              xyscaled (100,2.5)) ;
+  label ("\strut G" , 0.5[( fun(12), -15),(fun(42),-15)]              xyscaled (100,2.5)) ;
+  label ("\strut H" , 0.5[( fun(42), -15),(fun(99),-15)]              xyscaled (100,2.5)) ;
+  label ("\strut I" , 0.5[( fun(99), -15),(fun(99) + 0.5fun(12),-15)] xyscaled (100,2.5)) ;
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:granularbadness,
+   title={Granular fitness classes. A: very tight. B: tight. C: almost tight. D:
+   barely tight. E: decent. F: barely loose. G: almost loose. H: loose. I: very
+   loose.}]
+  \startimage
+    \processMPbuffer[granularbadness]
+  \stopimage
+\stopplacefloat
+
+The granular fitness classes are defined by a \tex {specificationdef} command
+(more about them later). The classes are defined to spread evenly over the
+adjustment ratios, just as in the non-granular situation.
+
+\starttyping
+\permanent \specificationdef \granularfitnessclasses
+  \fitnessclasses 9
+  99
+  42 % .75
+  12 % .50
+   2 % .25
+   0 % .00
+   2 % .25
+  12 % .50
+  42 % .75
+  99
+\stoptyping
+
+It becomes more meaningful to enable the granular mode if we also configure how
+these fitness classes are to be used. As previously mentioned, in traditional
+\TEX\ the \tex {adjdemerits} is added whenever we jump over at least one fitness
+class when going from one line to the next. We can use \typ {adjacentdemerits} in
+the par passes. For example,
+
+\starttyping
+adjacentdemerits 4 0 5000 7500 10000
+\stoptyping
+
+defines four levels of adjacent demerits. For two consecutive linebreaks with
+neighboring fitness classes, no demerits is added. If we jump one step 5000 is
+added, jumping two steps cost 7500 and three steps (or more) cost 10000.
+
+\startbuffer[testpass]
+\parpasses 2
+  tolerance         50
+  hyphenation        0
+  adjacentdemerits   4 0 5000 7500 10000
+next
+  tolerance        300
+  hyphenation        1
+\relax
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:granularparagraph,
+   title={The test paragraph, set with more granular fitness classes.}]
+  \startexample
+    \startshowbreakpoints
+      \switchtobodyfont[10pt]
+      \reducewidth{1.6pt}
+      \setupalign[granular]
+      \getbuffer[testpass]
+      \enabletrackers[paragraphs.passes]
+      \linebreakpasses\plusone
+      \getbuffer[Dirac]
+      \disabletrackers[paragraphs.passes]
+    \stopshowbreakpoints
+  \stopexample
+\stopplacefloat
+
+\startplacefloat
+  [figure]
+  [reference=fig:granulartable,
+   title={Information on the breakpoints that \TEX\ used for the paragraph in
+   \in {Figure}[fig:granularparagraph].}]
+  \startimage
+    \showbreakpoints[option=compact]
+  \stopimage
+\stopplacefloat
+
+In \in {Figure} [fig:granulartable] we see fitness classes that we did not see
+before, such as barely tight and almost loose. We see in \in {Figure}
+[fig:granulartree] that the tree is slightly different from the one in \in
+{Figure} [fig:traditionaltree].
+
+\startplacefloat
+  [figure]
+  [reference=fig:granulartree,
+   title={The tree corresponding to the paragraph in \in
+   {Figure}[fig:granularparagraph].}]
+  \startimage
+    \drawbreakpoints[dx=3fs,dy=3fs,sx=1.1fs,sy=1.1fs,rulethickness=.1fs]
+  \stopimage
+\stopplacefloat
+
+We got here the same linebreaks as for the traditional parbuilder (\in {Figure}
+[fig:feasiblebreakpoints]). But in the traditional case we had fitness classes
+loose, decent, decent, which means that we paid no demerits for them. Now we got
+almost loose (cost 5000), barely loose (0), decent (0). Thus, the total demerits
+in this case landed at 6139 instead of 1139.
+
+Going back to the default fitness classes, one can use
+
+\starttyping
+\fitnessdemerits 0
+\stoptyping
+
+and to go granular in only one par pass, one can use
+
+\starttyping
+...
+    fitnessclasses   \granularfitnessclasses
+    adjacentdemerits \granularadjacentdemerits
+next
+    classes          \matchallfitnessclasses
+...
+\stoptyping
+
+where the \tex {granularadjacentdemerits} have been defined to be compatible with
+the more granular fitness classes. The \type {classes} parameter (a bitset) tells
+the builder to check all set classes; the constant is a generous \type {"FF}.
+
+On a bigger project, we have seen only a few changes when enabling the granular
+setup. Since they are few it is difficult to say something general about quality,
+but we expect that the neighboring lines are slightly more compatible.
+
+\stopsection
+
+\startsection[title=Other demerits]
+
+We recall that it is the demerits of the paragraph that \TEX\ uses as a cost
+function to select the best set of line breaks; the solution with minimal
+demerits wins. We emphasize again that the additional demerits are not added
+to singular breakpoints, but to combinations of breakpoints that fulfill some
+condition.
+
+We have already seen how the granular fitness classes could be used, together
+with \typ {adjdemerits} (defaults to \the\adjdemerits), or rather the plural
+version \typ {adjacentdemerits}, to be able to detect smaller differences in
+badness values between consecutive lines. There are other demerits we can set. In
+\in {Figure} [fig:doublehyphendemerits], we compare results with \typ
+{doublehyphendemerits} set to zero (left), and set to a high value (right),
+preventing two consecutive lines from being hyphenated.
+
+\startbuffer[testpass1]
+\parpasses 2
+  tolerance             50
+  hyphenation            0
+next
+  tolerance            400
+  hyphenation            1
+  emergencystretch     1em
+  doublehyphendemerits   0
+\relax
+\stopbuffer
+
+\startbuffer[testpass2]
+\parpasses 2
+  tolerance                 50
+  hyphenation                0
+next
+  tolerance                400
+  hyphenation                1
+  emergencystretch           1em
+  doublehyphendemerits  300000
+\relax
+\stopbuffer
+
+\startplacefloat
+  [figure]
+  [reference=fig:doublehyphendemerits,
+   title={Left: A narrow paragraph set with \typ {doublehyphendemerits} set to 0.
+   Right: The same paragraph with \typ {doublehyphendemerits} set to 300000.}]
+  \startcombination[nx=2,ny=1,distance=5ts]
+    {\startexample
+      \hsize170pt
+      \switchtobodyfont[10pt]
+      \getbuffer[testpass1]
+      \enabletrackers[paragraphs.passes]
+      \linebreakpasses\plusone
+      \getbuffer[Dirac]
+      \disabletrackers[paragraphs.passes]
+    \stopexample
+    }{}
+    {\startexample
+      \hsize170pt
+      \switchtobodyfont[10pt]
+      \getbuffer[testpass2]
+      \enabletrackers[paragraphs.passes]
+      \linebreakpasses\plusone
+      \getbuffer[Dirac]
+      \disabletrackers[paragraphs.passes]
+    \stopexample
+    }{}
+  \stopcombination
+\stopplacefloat
+
+We also have \typ {finalhyphendemerits} that can be used to discourage the last
+breakpoint from being hyphenated. Its default value is \the \finalhyphendemerits.
+
+The settings are equivalent to the primitives and more about them can be found
+in regular \TEX\ documentation. We also have twin demerits:
+
+\starttyping
+lefttwindemerits  2000
+righttwindemerits 2000
+\stoptyping
+
+These discourage line breaks where words at the beginning or end of lines are the
+same; be aware that this doesn't prevent mid-line occurrences. And of course it
+puts more constraints on the solution and has to work with other constraints.
+More about this feature can be found in another recent TUGboat
+article.\footnote{\quotation {Twin demerits}, Hans Hagen and Mikael~P. Sundqvist,
+\TUGBOAT, vol.\ 45, no.\ 2, pp.\ 362||369, 2024,
+\hyphenatedurl {https://tug.org/TUGboat/tb45-3/tb141hagen-twins.pdf}.}
+
+\stopsection
+
+\startsection[title=Conditionally entering par passes]
+
+We have seen several examples of using par passes, where the standard logic of
+\TEX\ is kept: if \TEX\ is happy after a run, we are done with the line breaking.
+It is possible to also enter par passes conditionally. There are three main
+criteria that we can use. The valid criteria keys are \typ {demerits}, \typ
+{threshold} and \typ {class}:
+
+\startitemize[packed]
+  \startitem
+    \typ {demerits}: the overall measure that \TEX\ uses to select the best
+    choice.
+  \stopitem
+  \startitem
+    \typ {threshold}: over- or underfull lines
+  \stopitem
+  \startitem
+    \typ {classes}: compatibility between successive lines.
+  \stopitem
+\stopitemize
+
+The first is not that useful because it is hard to come up with some good
+numbers. Longer paragraphs typically have higher demerits than shorter, and for
+very long paragraphs some shortcuts are taken and large values get clipped in
+order not to overflow numbers. We will discuss the \typ {classes} option soon.
+
+In the traditional paragraph builder it is difficult to go back and deduce what
+decisions were made during the runs, and how and why they were made. The values
+are not kept, except for the demerits, but those are recalculated as we go.
+
+When we add more passes we don't know in advance what is the final pass, but we
+need one because in the end we must have a result. We could of course always add
+a final one automatically but then we might just as well take the last one
+anyway. The multiple pass mechanism will always do the regular pretolerance and
+tolerance passes but we can set the values in a par pass definition. We have two
+situations:
+
+\startitemize[n,packed]
+  \startitem
+    When we have a criterion in the first par pass, we will first do the two
+    tolerant passes. The second tolerant pass is a final pass so we do have a
+    result but we check for further actions in the list of par passes.
+  \stopitem
+  \startitem
+    When we have three or more par passes, the first two will act like tolerance
+    passes when there are no criteria. Again the second one is a final pass that
+    can have a follow up.
+  \stopitem
+\stopitemize
+
+Here we have a single par pass of the first category:
+
+\starttyping
+\parpasses 1
+  threshold          0.025pt
+  tolerance        300
+  emergencyfactor 1000
+\relax
+\stoptyping
+
+and here is an example of the second:
+
+\starttyping
+\parpasses 3
+  tolerance        100
+next
+  tolerance        200
+next
+  threshold          0.025pt
+  tolerance        300
+  emergencyfactor 1000
+\relax
+\stoptyping
+
+The second one has no criteria, so the last pass becomes the final pass, which
+kicks in when none of the previous ones gave an acceptable solution.
+
+The \typ {classes} key is the most difficult one to describe. In \CONTEXT\ we
+can add
+
+\starttyping
+\parpasses 1
+  classes            \indecentparpassclasses
+  tolerance        300
+  emergencyfactor 1000
+\relax
+\stoptyping
+
+and that needs an explanation. When \TEX\ looks at lines it will use adjacent
+demerits to penalize neighboring lines that are space wise incompatible. The \tex
+{indecentparpassclasses} condition will let you enter the par pass if there are
+any lines that ar flagged as not being decent.
+
+In \CONTEXT, when using the granular mode described above, we have these
+constants defined:
+
+\starttyping
+\integerdef\verylooseparpassclass   "0001
+\integerdef\looseparpassclass       "0002
+\integerdef\almostlooseparpassclass "0004
+\integerdef\barelylooseparpassclass "0008
+\integerdef\decentparpassclass      "0010
+\integerdef\barelytightparpassclass "0020
+\integerdef\almosttightparpassclass "0040
+\integerdef\tightparpassclass       "0080
+\integerdef\verytightparpassclass   "0100
+
+\integerdef\allparpassclasses       "FFFF
+\stoptyping
+
+The definition of \tex {indecentparpassclasses} is then:
+
+\starttyping
+\integerdef\indecentparpassclasses\numexpr
+    \allparpassclasses
+  - \decentparpassclass
+\relax
+\stoptyping
+
+As you see the condition is really using a bitset, but it is easier to have
+names for them. There are a few others predefined:
+
+\starttyping
+\almostdecentparpassclasses
+\looseparpassclasses
+\tightparpassclasses
+\stoptyping
+
+and you can define your own just as we showed above.
+
+In addition to the \typ {demerits}, \typ {threshold} and \typ {classes} criteria
+mentioned above, we can also decide if entering (using) a par pass with the
+following keys
+
+\startitemize[packed]
+  \startitem
+    \typ {ifadjustspacing}: enter if \typ {expansion} is enabled.
+  \stopitem
+  \startitem
+    \typ {ifemergencystretch}: enter if \typ {emergencystretch} is enabled.
+  \stopitem
+  \startitem
+    \typ {ifglue}: enter if there is anything to stretch or shrink.
+  \stopitem
+  \startitem
+    \typ {iftext}: enter if the paragraph has text (glyphs/discretionaries).
+  \stopitem
+  \startitem
+    \typ {ifmath}: enter if the paragraph has math.
+  \stopitem
+  \startitem
+    \typ {unlessmath}: enter if the paragraph does not have math.
+  \stopitem
+\stopitemize
+
+A new block of parameters is marked by \typ {next}. With \typ {quit} processing
+passes can be stopped, and \typ {skip} will bypass a pass. These last two are
+mostly for testing.
+
+To sum up, we have three situations:
+
+\startitemize[packed]
+    \startitem
+        traditional mode, up to three passes,
+    \stopitem
+    \startitem
+        mixed mode, first two traditional passes and then additional ones,
+    \stopitem
+    \startitem
+        par passes that likely include traditional setups,
+    \stopitem
+\stopitemize
+
+and we have various different ways to condition on entering the par passes.
+
+\stopsection
+
+\startsection[title=A bit of infrastructure]
+
+For administrative purposes we have the directives \typ {callback}, \typ
+{identifier}, and \typ {linebreakchecks}, as well as \typ {linebreakoptional}
+to select what optional content to enable.
+
+We can add an identifier:
+
+\starttyping
+\parpasses 3
+  identifier         1
+  tolerance        100
+next
+  tolerance        200
+  hyphenation        1
+next ifemergencystretch
+  emergencyfactor 1000
+\relax
+\stoptyping
+
+This identifier will be used in reporting and in \CONTEXT\ we can relate this to
+a more meaningful name, like \quote {default}. We can avoid altering the current
+par pass by defining an alias:
+
+\starttyping
+\specificationdef \parpassdefault \parpasses 3
+  identifier         1
+  tolerance        100
+next
+  tolerance        200
+  hyphenation        1
+next ifemergencystretch
+  emergencyfactor 1000
+\relax
+\stoptyping
+
+We use a generic \typ {\specificationdef} and by just issuing the given name the
+par pass is activated. However, one also has to set \typ {\linebreakpasses} to a
+positive value to let it do its work.
+
+\stopsection
+
+\startsection[title=Changing par passes locally]
+
+We saw how to use \tex {looseness} to manually (try to) tweak a single paragraph
+in the traditional par builder. We have a similar local par pass mechanism. With
+\tex {parpassesexception} we can locally use a specified par pass setup for the
+current paragraph. It has to be called just before the paragraph in
+question, as in:
+
+\starttyping
+\parpassesexception \mylocalparpasses
+Paragraph comes here ...
+\stoptyping
+
+will use the par passes setup \tex {mylocalparpasses}, which must have been
+previously defined with a \tex {specificationdef}. This opens it up for a simple
+but complete local control when needed.
+
+\stopsection
+
+\startsection[title=After breaking the paragraph into lines]
+
+Breaking a paragraph into lines and, at some asynchonous, point breaking pages
+are separate processes. The first process has related penalties and demerits that
+are part of the decision making that are no longer relevant once the work is
+done. The second process also has penalties to consider, for instance widow and
+club penalties. These are inserted between lines by the par builder because it is
+that routine that, after optimal breakpoints have been determined calls out to a
+post line break routine that constructs the lines. The lines themselves as well
+as various glue and penalties, plus possible \type {\vadjust} and \type {\insert}
+material, are added to a current list of contributions that is eventually
+transferred to the page. So, it makes sense to mention them here.
+
+It goes unnoticed, but the broken line is in practice no more than a begin and
+end point in the horizontal list that enters the routine. Every line is just a
+range and although the decisions were made using glue and optionally font
+expansion, the original nodes are still there. So, when that range has to become
+a line, the horizontal pack routine is called to wrap it into a \type {\hbox},
+and, as with any horizontal box construction, it will recalculate what the final
+glue will be and what expansion is applied, based on what the par builder
+decided. Also, before packaging, the left and right skip, indentation, paragraph
+related shape measure etc.\ are injected. This somewhat redundant effort is fast
+enough not to be of impact.
+
+An important activity in this packing is that we (when enabled) can normalize the
+line. Depending on what line we are, we have a lot of skips to consider (for
+practical purposes items that are actually kerns, like indentation, also use glue
+nodes):
+
+\starttyping
+leftskip lefthangskip leftparskip leftinitskip
+indentskip [content] correctionskip
+rightinitskip rightparskip righthangskip rightskip
+\stoptyping
+
+We also make sure that direction nodes are balanced and math is well indicated
+across lines. Discussing this process is beyond what this article focuses on, but
+you can imagine that it involves some code. This pays off in nicer code at the
+\LUA\ end when we want to mess with the lines afterwards.
+
+The abovementioned widow and club penalties (plus some more) are taken from the
+singular and plural commands \typ {\widowpenalty}, \typ {\widowpenalties}, \typ
+{\clubpenalty}, \typ {\clubpenalties}. In \LUAMETATEX\ these values are stored in
+the initial par node.
+
+For the record: there are uet more penalties that matter, for instance we have
+\type {\shapingpenalty} that can prevent breaks in a parshape or hanging setup
+and \type {\singlelinepenalty} that penalizes a two line result. We don't discuss
+how display math is handed in line breaks and wrapping up, but just mention that
+we can have a display formula that combines with the previous and upcoming
+paragraph. In that case the builder sees three paragraphs as one and display math
+as three lines, which of course influences what is seen as the current line width
+when shaping the whole. It doesn't affect the discussed break mechanism. In
+\CONTEXT\ we handle display math differently, so we have not added features for
+mixed-in display math.
+
+A par pass definition is what (in \LUAMETATEX) we internally call a specification
+command. Other examples of specification commands are \type {\parshape} and the
+mentioned plural penalties. Each of their values is a pointer to a node, and
+because the amount of data can differ these have a variable size. In \LUATEX\
+they are taken from the regular pool and when the set of values change another
+sized one is needed. Released nodes are kept in a pool but one can think of
+scenarios where too many different sizes will create a bit of a mess. This is why
+in \LUAMETATEX\ we allocate the variable part dynamically as an independent
+\quote {array} of parameters.
+
+The reason for mentioning these details is that, because of the decoupling
+between the handful of primitives and the way their information is stored, it
+started making sense to provide ways to create variables as with registers. This
+brings us to an example:
+
+\starttyping
+\widowpenalties 4 2000 500 250 0
+\stoptyping
+
+We can also say:
+
+\starttyping
+\specificationdef \lesswidowpenalties \widowpenalties
+  4 2000 500 250 0
+\relax
+\stoptyping
+
+and then use \typ {\lesswidowpenalties} to enable this set of penalties.
+
+The \tex {specificationdef} command can also be used to define par passes, as we
+saw above. Using these definitions is not only faster but also has the advantage
+that we can provide interfaces in \CONTEXT\ in the way we like. It also makes it
+easier to reset the plural penalties to default values. An even more important
+feature is that we can get rid of the singulars which is a big benefit because of
+the way the engine works. When \ETEX\ introduced these plurals it had to remain
+compatible so this is what happens there:
+
+\startitemize[packed]
+\startitem
+    When \typ {\widowpenalties} is set, \typ {\widowpenalty} is ignored.
+\stopitem
+\startitem
+    When \typ {\widowpenalties} is reset, \typ {\widowpenalty} kicks in again.
+\stopitem
+\stopitemize
+
+Resetting \typ {\widowpenalties} is done with:
+
+\starttyping
+\widowpenalties 0
+\stoptyping
+
+That said, what about the following?
+
+\starttyping
+\def\widowpenalty{\widowpenalties 1 }
+\stoptyping
+
+This is very close to what we want but because the last value is used for all
+that follow we would need this to be compatible.
+
+\starttyping
+\widowpenalty     500
+\widowpenalties 2 500 0
+\stoptyping
+
+This is why we end up with:
+
+\starttyping
+\permanent\protected\untraced\def\widowpenalty
+  {\widowpenalties\minusone}
+\stoptyping
+
+where the negative one sets an option to not reuse the last value. The prefixes
+declare that the command can't be redefined when overload protection is enabled,
+that it doesn't expand (in e.g.\ an \type {\edef}) and that in tracing it gets
+reported without its meaning, so basically the users see a primitive. The
+advantage of this approach is that we only have to deal with one variable. Of
+course users should be aware of this but few will set these plurals explicitly,
+leaving that to \CONTEXT.
+
+The plural widow and club penalties can result in better results but also add
+constraints. This means that we can get less full pages or when we have stretch
+in the white space (if present) possibly inconsistent spacing. We can handle this
+by limiting the stretch in the vertical spacing combined with overall vertical
+scaling that we call vz, analogous to hz (Hermann Zapf's initials for expansion);
+it was Hermann who suggested to us to play with this because \quotation {No
+reader will notice a few percent vertical scaling of the page}. Limiting stretch
+is an engine feature (in the page builder) while vertical scaling is a \CONTEXT\
+trick. Applied to the large test document this also helps to make it look great.
+
+Another new feature is that when a paragraph is eventually broken across a page,
+you might want to distinguish between a left and right page of a spread. It is
+therefore possible to do this:
+
+\starttyping
+\widowpenalties 3 options \numexpr8 + 4\relax % largest + double
+  5000 7500
+   250  500
+     0    0
+\relax
+\stoptyping
+
+This says: use higher penalties for the right page and when you
+overlap with club penalties use the larger of the widow and club penalty, i.e.,
+we do not want to add them. The \typ {options} is a bitset that differs per
+specification.
+
+The \typ {\adjdemerits} parameter controls what demerits get added to lines that
+have a distance of more than one step in the fitness sequence tight, decent,
+loose, very loose. In \LUAMETATEX\ we have more control over this; for instance
+we can, as we have seen, have more steps. In that case we also apply different
+demerits for every distance and even have accumulated demerits. This is
+controlled by \typ {\adjacentdemerits} and we can redefine the traditional
+parameter like this:
+
+\starttyping
+\permanent\protected\untraced\def\adjdemerits
+  {\adjacentdemerits\minusone}
+\stoptyping
+
+So, to summarize this part: setting up and using par passes to get better results
+is worth the effort, but part of this often also involves making sure the
+vertical penalties are right. This is bound (applied) to the result of line
+breaking.
+
+\stopsection
+
+\startsection[title=Tracing and debugging]
+
+It would be impossible for us to develop these new features without extensive
+testing, and the testing would be very difficult to do without tracing. There are
+two ways to trace what the engine is doing: built-in (hard-coded in the engine)
+reporting, and \CONTEXT\ trackers that use \LUA\ to add visual or report textual
+information. The first one is probably not that useful unless you need to know
+what goes on deep inside; the second can help you improve a specific document
+setup.
+
+When \typ {\tracingpenalties} is set to 1, you will get reports like this, where
+\type {l} and \type {r} refer to the left and right page of a spread where the
+values kick in when the page is broken in a double sided layout:
+
+\starttyping[style=\ttx]
+[linebreak: interline penalty, line 1, index 1, delta 101, total 101]
+[linebreak: club l penalty, line 1, index 1, delta 100, total 201]
+[linebreak: club r penalty, line 1, index 1, delta 100, total 201]
+[linebreak: interline penalty, line 2, index 2, delta 101, total 101]
+[linebreak: interline penalty, line 3, index 3, delta 101, total 101]
+[linebreak: interline penalty, line 4, index 4, delta 101, total 101]
+[linebreak: interline penalty, line 5, index 5, delta 101, total 101]
+[linebreak: interline penalty, line 6, index 6, delta 101, total 101]
+[linebreak: interline penalty, line 7, index 7, delta 101, total 101]
+[linebreak: interline penalty, line 8, index 8, delta 101, total 101]
+[linebreak: widow l penalty, line 8, index 1, delta 101, total 202]
+[linebreak: widow r penalty, line 8, index 1, delta 101, total 202]
+\stoptyping
+
+When the value is set to 2, you will also get lines that report the \typ
+{\shapingpenaltiesmode} value that was applied. This is a bitset that determines
+what penalties will be applied when we have a hanging situation.
+
+\starttyping[style=\ttx]
+[linebreak: penalty, line 1, best line 10, prevgraf 0, mode "FF (i=1 c=4 w=2 b=8)]
+\stoptyping
+
+Another tracing option is the traditional \TEX\ \typ {\tracingparagraphs} that
+reports a lot and even more when its value exceeds~1. Probably more interesting
+is \typ {\tracingpasses}, which reports the parameters used, and, when set to
+more than~1, also reports details over the decisions made. We mention also \typ
+{\tracingtoddlers} and \typ {\tracingorphans} that might come in handy.
+
+When we discussed and tested these extensions with \CONTEXT\ users, there was
+some confusion about \typ {\looseness}. These parameters can, as we have
+explained, be used to increase or decrease the number of lines relative to the
+optimum, if possible. Any change to the involved parameters might spoil the
+ability to get that extra line. With \typ {\tracinglooseness} you get some
+information about the attempts to fit the demands. When tracing with the trackers
+that show all possible breakpoints it quickly becomes clear that \TEX\ doesn't
+discard bad solutions as it goes forward but keeps them around till (at the end
+of a successful pass) it tries to loosen.
+
+While developing features like these it helps very much to see what we're
+dealing with. For instance, \TEX\ distinguishes between spaces between words
+(that become glue) and spaces after punctuation (influenced by the space
+factors). With \typ {\showmakeup[space]} you can show both (\in {Figure}
+[fig:spaces]). This example also shows another feature: space factoring applied
+after uppercase characters, in this case shown but not applied. Think of
+situations like \quote {D.E. Knuth}. More control over space factors is
+part of the optimizations because we have ways to limit the maximum stretch, just
+like \TEX\ already limits the shrink.
+
+\startplacefloat
+  [figure]
+  [reference=fig:spaces]
+\startcombination[nx=1,ny=3]
+  \startentry
+    \startcontent
+      \startimage
+        \scale[width=.7tw]{\clip[nx=2,ny=2]{\unframed[align=normal]{\showmakeup[space]\getbuffer[Dirac]}}}
+      \stopimage
+    \stopcontent
+    \startcaption
+      spaces between words and after punctuation
+    \stopcaption
+  \stopentry
+  \startentry
+    \startcontent
+      \startimage
+        \scale[width=.7tw]{\unframed[align=normal]{\showmakeup[space]D.E. Knuth, author of \TEX.}}
+      \stopimage
+    \stopcontent
+    \startcaption
+      spaces after initials and punctuation
+    \stopcaption
+  \stopentry
+  \startentry
+    \startcontent
+      \startimage
+        {\showmakeup[space]\hbox to 10cm{I can give, if needed, an example}}
+      \stopimage
+    \stopcontent
+    \startcaption
+      space factors and stretch
+    \stopcaption
+  \stopentry
+\stopcombination
+\stopplacefloat
+
+Similarly, we can use \typ {\showmakeup [hpenalty]} to see where horizontal
+penalties are applied and \typ {\showmakeup [vpenalty]} for vertical penalties;
+see \in {Figure}[fig:penaltytrackers].
+
+\startplacefloat
+  [figure]
+  [reference=fig:penaltytrackers]
+\startcombination[nx=1,ny=2]
+  \startentry
+    \startcontent
+      \startimage
+        \scale[width=.7tw]{\clip[nx=2,ny=2]{\unframed[align=normal]{\showmakeup[hpenalty]\getbuffer[Dirac]}}}
+      \stopimage
+    \stopcontent
+    \startcaption
+      math has plenty penalties
+    \stopcaption
+  \stopentry
+  \startentry
+    \startcontent
+      \startimage
+        \scale[width=.7tw]{\clip[nx=2,ny=2]{\unframed[align=normal]{\showmakeup[vpenalty]\getbuffer[Dirac]}}}
+      \stopimage
+    \stopcontent
+    \startcaption
+      vertical penalties are added between lines
+    \stopcaption
+  \stopentry
+\stopcombination
+\stopplacefloat
+
+Hyphenation results in injected discretionary nodes; \type {\showmakeup
+[discretionary]} lets us see them. The ones at ends of lines eventually get
+replaced by the content of pre and post fields but we can show the places where
+they were seen in the rest. We can show them because in \LUAMETATEX\ we keep
+track of such decisions in the glyph nodes so we know at what places hyphenation
+is possible; see \in {Figure} [fig:discretionary].
+
+\startplacefloat
+  [figure]
+  [reference=fig:discretionary,
+   title={We look at all discretionaries, but only longer words get hyphenated.}]
+  \startimage
+    \scale[width=.7tw]{\clip[nx=2,ny=2]{\unframed[align=normal]{\showmakeup[discretionary]\getbuffer[Dirac]}}}
+  \stopimage
+\stopplacefloat
+
+Expansion is another feature that we might want to track, and \type {\showmakeup
+[expansion]} reveals it, see \in {Figure} [fig:expansiontracker].
+
+\startplacefloat
+  [figure]
+  [reference=fig:expansiontracker,
+   title={Expansion kicks in.}]
+  \startimage
+    \scale[width=.7tw]{\clip[nx=2,ny=2]{\unframed[align={normal,stretch,hz}]{\showmakeup[expansion]\getbuffer[Dirac]}}}
+  \stopimage
+\stopplacefloat
+
+\stopsection
+
+\startsection[title=Larger example used in a math book]
+
+We have experimented a lot with a first year analysis book that Mikael has
+written with his colleague Tomas Persson, in Swedish. We emphasize that the
+settings we have ended up using might not fit everyone, but they did seem to work
+well for this book.
+
+We use five par passes, and we don't enter any of them conditionally; we quit
+directly if \TEX\ is happy after a run. Our strategy is trying to avoid both
+hyphenations and breaking inside of mathematics, as much as possible.
+
+The book contains 3023 paragraphs. A vast majority, 2697 paragraphs, are done by
+the first run. This is one of the reasons that the extra par passes do not add
+much overhead.
+
+The first run is a typical pretolerance run. We use no expansion, no emergency
+stretch, and we accept no hyphenations. Also, the math penalties (inside formulas
+and before short formulas) are multiplied by 20. This means that they reach at
+least 10000 and thus such breaks are prohibited.
+
+We follow up with a run with a slightly higher tolerance, and also a very small
+allowed font expansion, with a stretch of at most 1\percent\ and a shrink of at
+most 0.5\percent. This one is used 192 times.
+
+In the third run we switch expansion off again, but allow for a
+tolerance of 300; this is
+used only five times. In the fourth run we go back to tolerance 200 but increase
+the possible amount of expansion, and get 76 paragraphs. Finally, in the fifth
+run we enable hyphenation, but add 200 to its penalty, we increase the
+amount of font expansion allowed, enable some additional emergency stretch, and
+also reset the math penalties to the outer values. This run takes care of the 53
+remaining paragraphs.
+
+\startbuffer[analysisbook]
+\startsetups align:pass:analysisbook
+\parpasses 5
+  identifier           \parpassdefaultone
+  tolerance            100
+  adjustspacing          0
+  emergencyfactor        0
+  hyphenation            0
+  mathpenaltyfactor  20000
+next
+  tolerance            200
+  adjustspacing          3
+  adjustspacingstep      1
+  adjustspacingshrink    5
+  adjustspacingstretch  10
+next
+  tolerance            300
+  adjustspacing          0
+next
+  tolerance            200
+  adjustspacing          3
+  adjustspacingshrink   20
+  adjustspacingstretch  40
+next
+  tolerance            400
+  hyphenation            1
+  extrahyphenpenalty   200
+  adjustspacing          3
+  adjustspacingshrink   30
+  adjustspacingstretch  60
+  emergencystretch       1\bodyfontsize
+  emergencyfactor     1000
+  mathpenaltyfactor   1000
+\relax
+\stopsetups
+
+\newinteger\parpassdefaultone
+\parpassdefaultone\parpassidentifier{analysisbook}
+\stopbuffer
+
+\typebuffer[analysisbook][style=\ttx]
+
+With the last line, we can set up these par passes with
+
+\starttyping
+\setupalignpass[analysisbook]
+\stoptyping
+
+With
+
+\starttyping
+\enabletrackers[paragraphs.passes=summary]
+\stoptyping
+
+we get a summary in the log file. Here we find how many times each run was
+used and also what the paragraphs contained (\typ {t} is text, \typ {d} is
+discretionary and \typ {m} is math).
+
+\starttyping[style=\ttx]
+'subpass 01', count 2697, states 93:t-- 199:td- 1:--m 145:t-m 44:t-- 549:td- 135:t-m 1443:tdm 18:td- 69:tdm 1:tdm
+'subpass 02', count 0192, states 35:td- 1:t-m 138:tdm 6:td- 12:tdm
+'subpass 03', count 0005, states 5:tdm
+'subpass 04', count 0076, states 12:td- 57:tdm 2:td- 5:tdm
+'subpass 05', count 0053, states 1:t-m 10:td- 40:tdm 1:td- 1:tdm
+\stoptyping
+
+Before comparing some outputs, let us first make clear that it is only a few
+paragraphs that change. This is good, we do not want to alter \TEX's usual very
+high quality output.
+
+Since we enable hyphenations only in the last run, we get fewer hyphenations. We
+show one example in \in {Figure} [fig:analysintro-43].
+
+\startplacefloat
+  [figure]
+  [reference=fig:analysintro-43]
+  \startcombination[nx=1,ny=2]
+    \startcontent
+      \externalfigure[a-t-43]
+    \stopcontent
+    \startcaption
+      traditional
+    \stopcaption
+    \startcontent
+      \externalfigure[a-p-43]
+    \stopcontent
+    \startcaption
+      par passes
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+It is possible to disallow line breaks before short math formulas by manually
+inserting a maximum penalty. Knuth calls them \quotation {ties}, and it has
+become standard to use a tilde to type them, as in \typ {Om~$A$}. With our math
+penalties setup we do not need that manual tweak in the source. Compare the
+results in \in {Figure} [fig:analysintro-3], where the stricter math penalties
+avoids short formulas at the beginning of lines.
+
+\startplacefloat
+  [figure]
+  [reference=fig:analysintro-3]
+  \startcombination[nx=1,ny=2]
+    \startcontent
+      \externalfigure[a-t-3]
+    \stopcontent
+    \startcaption
+      traditional
+    \stopcaption
+    \startcontent
+      \externalfigure[a-p-3]
+    \stopcontent
+    \startcaption
+      par passes
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+Line breaks inside formulas can become very ugly, compare the results in \in
+{Figure} [fig:analysintro-27].
+
+\startplacefloat
+  [figure]
+  [reference=fig:analysintro-27]
+  \startcombination[nx=1,ny=2]
+    \startcontent
+      \externalfigure[a-t-27]
+    \stopcontent
+    \startcaption
+      traditional
+    \stopcaption
+    \startcontent
+      \externalfigure[a-p-27]
+    \stopcontent
+    \startcaption
+      par passes
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+The orphan penalties sometimes help us to prevent just a word or a symbol at the
+end of the line. Compare the results in \in {Figure} [fig:analysintro-60].
+
+\startplacefloat
+  [figure]
+  [reference=fig:analysintro-60]
+  \startcombination[nx=1,ny=2]
+    \startcontent
+      \externalfigure[a-t-60]
+    \stopcontent
+    \startcaption
+      traditional
+    \stopcaption
+    \startcontent
+      \externalfigure[a-p-60]
+    \stopcontent
+    \startcaption
+      par passes
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+We also show one example of a paragraph where \TEX\ fails with the traditional
+runs but succeeds with the par passes, see \in {Figure} [fig:analysintro-258].
+
+\startplacefloat
+  [figure]
+  [reference=fig:analysintro-258]
+  \startcombination[nx=1,ny=2]
+    \startcontent
+      \externalfigure[a-t-258]
+    \stopcontent
+    \startcaption
+      traditional
+    \stopcaption
+    \startcontent
+      \externalfigure[a-p-258]
+    \stopcontent
+    \startcaption
+      par passes
+    \stopcaption
+  \stopcombination
+\stopplacefloat
+
+In addition to the previously mentioned settings for the math book, we also use
+
+\startbuffer[mathbookalign]
+\setupalign
+  [hanging,     % protrusion
+   depth,       % align stuff at bottom of page
+   profile,     % even line spacing if possible
+   granular,    % a granular setup (classes and adjacentdemerits)
+   lesswidows,  % a strict widow setup
+   lessclubs,   % a strict club setup
+   lessorphans, % a strict orphan setup
+   lessbroken,  % try to avoid hyphenations over pages
+   strictmath]  % strict math penalty setup
+\stopbuffer
+
+\typebuffer[mathbookalign]
+
+The \typ {lessbroken} option makes sure that we penalize hyphenations that run
+from right to left pages more than from left to right pages. This make sense in a
+book, where one has to turn pages.
+
+Let us also mention that these extra par passes do not increase compilation time
+much. We have kept track of some of the compilation times for the book (290
+pages) while working. The par passes were enabled in the September 2023 run (but
+the setup has been evolving).
+
+\starttyping
+December  2022 | total runtime: 12.109 seconds
+July      2023 | total runtime: 7.997  seconds
+September 2023 | total runtime: 8.306  seconds
+April     2024 | total runtime: 9.739  seconds
+April     2024 | total runtime: 18.439 seconds (with synctex and tagging)
+September 2024 | total runtime: 9.290  seconds
+\stoptyping
+
+So, it has not slowed down much. This is of course non-scientific, but the runs
+were done on the same computer. If it was only the par passes that had changed
+(it is not), one second extra is not a big deal. With synctex and tagging
+enabled, the compilation time doubles.
+
+\stopsection
+
+\startsection[title=Another test paragraph]
+
+In D.E. Knuth's \italic {Digital Typography} he uses a rather math-dense
+paragraph
+as a showcase. We display that paragraph below, in a few different text widths,
+with the traditional run, and with the par passes from the last section,
+used in the math book.
+
+In \in {Figure} [fig:knuth-dt-traditional-300] we note that the traditional
+paragraph builder is hyphenating and breaking inside one of the formulas.
+The third subpass manages without both.
+
+\def\knuthtraditional#1{%
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \hsize#1pt
+    \enabletrackers[paragraphs.passes]
+    \samplefile{math-knuth-dt}\par
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+}
+
+\def\knuthparpasses#1{%
+  \startexample
+    \start
+    \switchtobodyfont[10pt]
+    \hsize#1pt
+    \getbuffer[analysisbook]
+    \getbuffer[mathbookalign]
+    \setupalignpass[analysisbook]
+    \enabletrackers[paragraphs.passes]
+    \samplefile{math-knuth-dt}\par
+    \disabletrackers[paragraphs.passes]
+    \stop
+  \stopexample
+}
+
+\startplacefloat
+  [figure]
+  [reference=fig:knuth-dt-traditional-300,
+   title={A test paragraph from Knuth's Digital typography. Here \tex {hsize} is 300pt.}]
+  \startcombination[nx=1,ny=2]
+  \startcontent
+    \knuthtraditional{300}
+  \stopcontent
+  \startcaption
+    traditional
+  \stopcaption
+  \startcontent
+    \knuthparpasses{300}
+  \stopcontent
+  \startcaption
+    par passes
+  \stopcaption
+  \stopcombination
+\stopplacefloat
+
+
+\def\mathknuthdt#1{%
+\startplacefloat
+  [figure]
+  [reference=fig:knuth-dt-traditional-#1,
+   title={A test paragraph from Knuth's Digital typography. Here \tex {hsize} is #1pt}]
+  \startcombination[nx=2,ny=1,distance=4ts]
+  \startcontent
+    \knuthtraditional{#1}
+  \stopcontent
+  \startcaption
+    traditional
+  \stopcaption
+  \startcontent
+    \knuthparpasses{#1}
+  \stopcontent
+  \startcaption
+    par passes
+  \stopcaption
+  \stopcombination
+\stopplacefloat
+}
+
+In \in {Figure} [fig:knuth-dt-traditional-240] (\tex {hsize}=240pt), the
+traditional parbuilder fails, with an overfull line. Here we need subpass 5. The
+first line is a bit loose, but overall it looks good.
+
+\mathknuthdt{240}
+
+In \in {Figure} [fig:knuth-dt-traditional-180], the text block is quite narrow
+(180pt). The traditional builder fails again, while subpass 5 succeeds. We get
+another broken formula and a few hyphenated lines, but given the constraints it
+is not too bad.
+
+\mathknuthdt{180}
+
+\stopsection
+
+\startsection[title=Summary]
+
+We have discussed an extension to the traditional Knuth--Plass paragraph builder,
+implemented in \LUAMETATEX, and available today to \CONTEXT\ users.
+
+The main new feature is the possibility of having an arbitrary number of runs
+over each paragraph, with independent setups for each run. With a setup where the
+first two runs are similar to the traditional pretolerance and tolerance runs,
+most ordinary paragraphs are taken care of by them, leaving only the more
+difficult paragraphs to be handled by the later runs. This means that the impact
+on speed is negligible.
+
+We have also introduced a few new penalty and demerit parameters, and made others
+more configurable, with plural versions and sometimes also with the possibility
+to keep track of left and right pages.
+
+The next step is to test this on various types of documents and to provide a few
+standard setups that make sense for the users who don't want to mess with details.
+There are already a few users who are up and running on their book projects,
+and they seem to be very satisfied.
+
+We also touched upon how the result of the paragraph builder can influence the
+page builder. The process of building pages is at a first glance simpler than the
+building the paragraphs, since we merely add content to a vertical list until it
+is deemed as being full, and then ship out the page. On the other hand one has to
+handle footnotes, floats, sections, columns, and so on, and that greatly
+complicates the matter. We intend to study this process in a future project.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+
+% \pushoverloadmode
+% \permanent\protected\untraced\def\adjdemerits{\adjacentdemerits\minusone}
+% \popoverloadmode
+%
+% \specificationdef \MyTestA \adjacentdemerits \plusthree \zerocount \plusfivethousand \plustenthousand
+% \specificationdef \MyTestB \adjacentdemerits \plustwo   \zerocount \plustenthousand
+% \specificationdef \MyTestC \adjacentdemerits \minusone             \plustenthousand
+%
+% \testfeatureonce{1000000}{\normaladjdemerits\plustenthousand                                        } \elapsedtime
+% \testfeatureonce{1000000}{\adjdemerits      \plustenthousand                                        } \elapsedtime
+% \testfeatureonce{1000000}{\adjacentdemerits \plustwo   \zerocount \plustenthousand                  } \elapsedtime
+% \testfeatureonce{1000000}{\adjacentdemerits \plusthree \zerocount \plusfivethousand \plustenthousand} \elapsedtime
+% \testfeatureonce{1000000}{\MyTestA} \elapsedtime
+% \testfeatureonce{1000000}{\MyTestB} \elapsedtime
+% \testfeatureonce{1000000}{\MyTestC} \elapsedtime
+%
+% \startlines
+% 0.039 0.125 0.160 0.172 0.079 0.082 0.043
+% 0.029 0.128 0.169 0.200 0.141 0.098 0.032
+% 0.012 0.127 0.164 0.167 0.078 0.077 0.044
+% 0.019 0.154 0.184 0.197 0.137 0.081 0.063
+% 0.043 0.126 0.190 0.209 0.100 0.081 0.064
+% 0.029 0.132 0.205 0.188 0.118 0.104 0.084
+% 0.031 0.168 0.174 0.205 0.075 0.076 0.043
+% 0.061 0.187 0.159 0.210 0.147 0.107 0.046
+% 0.022 0.129 0.172 0.237 0.117 0.163 0.040
+% 0.030 0.123 0.151 0.182 0.076 0.086 0.011
+% \stoplines

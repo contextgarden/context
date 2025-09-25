@@ -22,6 +22,11 @@ static inline bytemap_data * bytemaplib_aux_valid(lua_State *L, int i)
     return (bytemap_data *) luaL_checkudata(L, i, BYTEMAP_METATABLE);
 }
 
+bytemap_data * bytemaplib_valid(lua_State *L, int i)
+{
+    return lua_type(L, i) == LUA_TUSERDATA ? (bytemap_data *) luaL_checkudata(L, i, BYTEMAP_METATABLE) : NULL;
+}
+
 static inline int bytemaplib_new(lua_State *L)
 {
     int nx = lua_tointeger(L, 1);
@@ -378,7 +383,16 @@ static int bytemaplib_downsample(lua_State *L)
     return 0;
 }
 
-
+static int bytemaplib_downgrade(lua_State *L)
+{
+    bytemap_data *source = bytemaplib_aux_valid(L, 1);
+    bytemap_data *target = bytemaplib_aux_valid(L, 2);
+    if (source && target) {
+        int r = lmt_optinteger(L, 3, 2);
+        bytemap_downgrade(source, target, r);
+    }
+    return 0;
+}
 
 int bytemaplib_bytemapped(lua_State * L, unsigned char * bytemap, int nx, int ny, int nz, int slot)
 {
@@ -436,6 +450,7 @@ static struct luaL_Reg bytemaplib_function_list[] = {
     { "getvalue",     bytemaplib_get_value      },
     { "process",      bytemaplib_process        },
     { "downsample",   bytemaplib_downsample     },
+    { "downgrade",    bytemaplib_downgrade      },
     { NULL,           NULL                      },
 };
 

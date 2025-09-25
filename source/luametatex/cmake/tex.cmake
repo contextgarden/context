@@ -52,6 +52,7 @@ set(tex_sources
     source/luarest/lmtposit.c
     source/luarest/lmtpotrace.c
     source/luarest/lmtqrcodegen.c
+    source/luarest/lmtnanojpeg.c
     source/luarest/lmtserial.c
     source/luarest/lmtvectorlib.c
     source/luarest/lmtbytemaplib.c
@@ -120,5 +121,6 @@ target_include_directories(tex PRIVATE
     source/libraries/softposit/source/include
     source/libraries/potrace/src
     source/libraries/qrcodegen
+    source/libraries/nanojpeg
     source/libraries/triangles
 )

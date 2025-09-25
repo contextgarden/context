@@ -1,0 +1,243 @@
+if not modules then modules = { } end modules ['grph-bmp'] = {
+    version   = 1.001,
+    comment   = "companion to grph-inc.mkiv",
+    author    = "Hans Hagen, PRAGMA-ADE, Hasselt NL",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+local random = math.random
+local context = context
+
+local formatters, gsub, byte = string.formatters, string.gsub, string.byte
+local setmetatableindex = table.setmetatableindex
+
+local report_bitmap = logs.reporter("graphics","bitmap")
+
+local bitmaps       = { }
+graphics.bitmaps    = bitmaps
+
+local wrapimage     = images.wrap
+
+function bitmaps.new(xsize,ysize,colorspace,colordepth,mask,index)
+    if not xsize or not ysize or xsize == 0 or ysize == 0 then
+        report_bitmap("provide 'xsize' and 'ysize' larger than zero")
+        return
+    end
+    if not colorspace then
+        report_bitmap("provide 'colorspace' (1, 2, 3, 'gray', 'rgb', 'cmyk'")
+        return
+    end
+    if not colordepth then
+        report_bitmap("provide 'colordepth' (1, 2)")
+        return
+    end
+    return graphics.identifiers.bitmap {
+        colorspace = colorspace,
+        colordepth = colordepth,
+        xsize      = xsize,
+        ysize      = ysize,
+        mask       = mask and true or nil,
+        index      = index and true or nil,
+    }
+end
+
+local function flush(bitmap)
+    local specification = backends.codeinjections.bitmap(bitmap)
+    if specification then
+        return wrapimage(specification)
+    end
+end
+
+bitmaps.flush = flush
+
+function bitmaps.tocontext(bitmap,width,height)
+    local bmp = flush(bitmap)
+    if bmp then
+        if type(width) == "number" then
+            width = width .. "sp"
+        end
+        if type(height) == "number" then
+            height = height .. "sp"
+        end
+        if width or height then
+            context.scale (
+                {
+                    width  = width,
+                    height = height,
+                },
+                bmp
+            )
+        else
+            context(bmp)
+        end
+    end
+end
+
+local function placeholder(nx,ny)
+
+    local nx     = nx or 8
+    local ny     = ny or nx
+    local bitmap = bitmaps.new(nx,ny,"gray",1)
+    local data   = bitmap.data
+
+    for i=1,ny do
+        local d = data[i]
+        for j=1,nx do
+            d[j] = random(100,199)
+        end
+    end
+
+    return backends.codeinjections.bitmap(bitmap)
+
+end
+
+bitmaps.placeholder = placeholder
+
+
+-- We can load a png or jpg file in a bytemap. For the png file we use a stripped
+-- down loader and for jpg we just decode simple ones.
+
+local   loaders = { }
+bitmaps.loaders = loaders
+
+do
+
+    local newreader      = io.newreader
+    local openstring     = utilities.streams.openstring
+    local readstring     = utilities.streams.readstring
+    local zlibdecompress = xzip.decompress
+    local pngapplyfilter = pngdecode.applyfilter
+    local pngsplitmask   = pngdecode.splitmask
+    local loadbinfile    = resolvers.loadbinfile
+
+    local function newcontent(filename)
+        local found, data = loadbinfile(filename)
+        return newreader(data or "", "string")
+    end
+
+    local function decodestrip(s,nx,ny,slice)
+        local input = readstring(s,ny*(nx*slice+1))
+        input = pngapplyfilter(input,nx,ny,slice)
+        return input, false
+    end
+
+    local function decodemask(content,xsize,ysize,colordepth,colorspace)
+        -- same as in lpdf-img.lmt
+        local mask   = true
+        local filter = false
+        local bytes  = colordepth == 16 and 2 or 1
+        local bpp    = colorspace == "DeviceRGB" and 3 or 1
+        local slice  = bytes * (bpp + 1) -- always a mask
+        content      = pngapplyfilter(content,xsize,ysize,slice)
+        return pngsplitmask(content,xsize,ysize,bpp,bytes,mask,filter)
+    end
+
+    local function simplify(content,threshold)
+        if not threshold then
+            threshold = 127
+        end
+        local thresholds = setmetatableindex(function(t,k)
+            local v = byte(k) < threshold and '0' or '1'
+            t[k] = v
+            return v
+        end)
+        return (gsub(content,".",thresholds))
+    end
+
+    loaders.png = function(filename,parameters)
+        if not filename then
+            return false
+        end
+
+        local threshold     = parameters.criterium
+        local specification = figures.getinfo(filename)
+
+        specification = specification and specification.status and specification.status.private
+
+        if not specification then
+            print("no specification")
+            return
+        end
+
+        local colorspace  = specification.colorspace
+        local xsize       = specification.xsize
+        local ysize       = specification.ysize
+        local zsize       = 1
+        local colordepth  = specification.colordepth or 8
+        local mask        = false
+
+        if colordepth ~= 8 then
+            print("unsupported color depth",colordepth)
+            return
+        end
+        if colorspace == 0 then     -- gray
+         -- zsize = 1
+        elseif colorspace == 2 then -- rgb
+            zsize = 3
+        elseif colorspace == 4 then -- gray
+            mask = true
+        elseif colorspace == 6 then -- rgb
+            zsize = 3
+            mask  = true
+        else
+            print("unsupported color space",colorspace)
+            return
+        end
+        if specification.interlace == 1 then
+            print("unsupported interlace")
+            return
+        end
+        local tables = specification.tables
+        if not tables then
+            print("no tables")
+            return
+        end
+        local idat = tables.idat
+        if not idat then
+            print("no data")
+            return
+        end
+        local pngfile = newcontent(filename,method,true)
+        local content = idat[1]
+        if type(content) == "table" then
+            if not pngfile then
+                return
+            end
+            content = idat(pngfile,true)
+        end
+        content = zlibdecompress(content)
+if mask then
+    content, mask = decodemask(content,xsize,ysize,colordepth,colorspace)
+else
+        content = decodestrip(openstring(content),xsize,ysize,zsize)
+end
+        if not parameters.raw and zsize == 1 then
+            content = simplify(content,threshold)
+        end
+        pngfile:close()
+        return xsize, ysize, zsize, content
+    end
+
+end
+
+do
+
+    loaders.jpg = function(filename,parameters)
+        local j = io.loaddata(filename)
+        if j then
+            -- maybe also support simplify here
+            return nanojpeg.decode(j)
+        end
+    end
+
+    loaders.jpeg = loaders.jpg
+
+end
+
+function bitmaps.load(filename,parameters)
+    local loader = loaders[file.suffix(filename)]
+    if loader then
+        return loader(filename,parameters or { })
+    end
+end

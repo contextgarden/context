@@ -1,0 +1,275 @@
+% language=us runpath=texruns:manuals/beyond
+
+\startcomponent beyond-expressions
+
+\environment beyond-style
+
+\startchapter[title={Expressions},author=Hans Hagen]
+
+Examples of quantities are internal and register dimensions, counters (also
+referred to as integers or numbers), attributes, glue, and floats. Most commonly
+used are dimensions and numbers. Assignments happen like this:
+
+\starttyping
+\dimen0        10pt % an indexed register
+\count20     = 10   % the = is optional
+\hsize         15cm % an internal quantity
+\scratchdimen  10pt % a \dimendef'd indexed register
+\stoptyping
+
+The scanners involved are also used for getting quantities that are arguments to
+primitives.
+
+The \ETEX\ extension came with \type {\dimexpr}, \type {\numexpr} and \type
+{\glueexpr} which support simple expressions where the order of what is
+permitted, so this is ok:
+
+\starttyping
+x\hskip \dimexpr 10pt * 10 \relax x\par
+\stoptyping
+
+But this isn't:
+
+\starttyping
+x\hskip \dimexpr 10 * 10pt \relax x\par
+\stoptyping
+
+There are a few pitfalls. For instance, this works ok:
+
+\starttyping
+x\hskip \dimexpr (10 * 10pt) \relax x\par
+\stoptyping
+
+but this doesn't:
+
+\starttyping
+x\hskip \dimexpr (10 * 10pt) \relax x\par
+\stoptyping
+
+and the reason is that this feature is either looking for a number or an operator
+and \type {(} is kind of an operator here. In order to make that work the integer
+scanner has to backtrack when it sees a parenthesis but as this scanner is shares
+in other situations that actually is an error. Alternatively there could be more
+look ahead which complicates the code and brings a (nowadays small) performance
+penalty. Keep in mind that expressions were not part of original \TEX, the the
+simple expressions used what was already there. It does the job but one has to be
+aware of the somewhat weird parsing rules.
+
+However, \LUAMETATEX\ has additional scanners that accept the same operators:
+
+\starttyping
+x\hskip \dimexpression 10 * 10pt \relax x\par
+\stoptyping
+
+They have more operators and also handle boolean expression that can be used in
+tests. Although these scanners likely can be improved on the average they already
+perform better than the (also optimized) \ETEX\ siblings.
+
+One problem with expressions is that they keep looking ahead until they run into
+something that doesn't make sense, like \type {\relax}, or other tokens that are
+not part of an expression. A common way to end a \type {\dimexpr} us to use \type
+{\relax} but take this:
+
+\starttyping
+x\hskip \dimexpr 10pt * #1 \relax x\par
+\stoptyping
+
+What if \type {#1} itself is an expression that doesn't end with a \type
+{\relax}? In that case scanning continues after one us seen. It is for that
+reason that \type {\dimexpression} also handles braced expressions. When adding
+some flexibility to the \CONTEXT\ user interface, by moving (optional) explicit
+expressions in values to keys that set quantities to the lower level handlers, it
+started making sense to replace:
+
+\starttyping
+\def\foo#1{\scratchdimen\relax} \foo{\dimexpr10pt + 1ex\relax}
+\stoptyping
+
+and actually deep down we often already had:
+
+\starttyping
+\def\foo#1{\scratchdimen\dimexpr#1\relax} \foo{\dimexpr10pt + 1ex\relax}
+\stoptyping
+
+which gives double expression scanning overhead. If we change to the other
+scanner we get:
+
+\starttyping
+\def\foo#1{\scratchdimen\dimexpression#1\relax} \foo{10pt + 1ex}
+\stoptyping
+
+or, given that we can use braces:
+
+\starttyping
+\def\foo#1{\scratchdimen\dimexpression{#1}} \foo{10pt + 1ex}
+\stoptyping
+
+But if we do this frequently do we really need the explicit expression
+primitive. A few line patch made this possible:
+
+\starttyping
+\def\foo#1{\scratchdimen{#1}} \foo{10pt + 1ex}
+\stoptyping
+
+and even this:
+
+\starttyping
+\def\foo#1{\scratchdimen{#1}} \foo{{10pt  +  1ex}}
+\def\foo#1{\scratchdimen{#1}} \foo{{10pt} + {1ex}}
+\stoptyping
+
+How dangerous is this from the perspective of compatibility? We'll see but as
+users normally get an error when doing this in an other engine, it's unlikely
+that they expect an error here, unless they enjoy triggering errors. There is one
+side effect worth mentioning:
+
+\starttyping
+\the\dimexpr {1 + 4}
+\stoptyping
+
+actually works, as does
+
+\starttyping
+\the\dimexpr -{1 + 4}
+\stoptyping
+
+This is so because numbers scan for expressions, so
+
+\starttyping
+\number -{1 + 4}
+\stoptyping
+
+is indeed valid. Of course the \type {\dimexpr} will keep scanning till it sees a
+\type {\relax} or something it considers no operator or number.
+
+Once the decision was made to switch to the new expression parser at the \TEX\
+end quite some files were affected which is a delicate operation. In the process
+glue expressions also had to accept the braced variant, something that had been
+postponed. Also, because we don't have a \quote {new} parse for glue, we need
+nested braced scanning there too.
+
+There are more features in \LUAMETATEX\ that are yet sparsely used but eventually
+will decorate the code base. An intended side effect is less clutter and less
+tracing noise but that's more a concern for developers than users.
+
+So what is supported? The usual operators \type {+}, \type {-}, \type {*} and
+\type {/} are of course handles. We also interpret \type {:} (or \type {div}) and
+\type {;} (or \type {mod}). Bitwise operators are \type {|} (or \type {bor} or
+\type {v}), \type {&} (or \type {band}, \type {^} (or \type {bxor}, \type {!} (or
+\type {bnot}, \type {bset} and \type {bunset}. The conditional \type {cand} and
+\type {cor} result in a value instead of zero if the condition succeeds. We can
+shift with \type {<<} and \type {>>} and compare with \type {<}, \type {<=},
+\type {=} or \type {==}, \type {<>} or \type {!=}, \type {and} (or \type {&&}) as
+well as \type {or} (or \type {||}). Negation happens with \type {not}, \type {!}
+and \type {~} for bitwise operations. There are two somewhat odd infix operators:
+\type {nmp} (minus plus) and \type {npm} (plus minus) that result in a negative
+or positive value and can be used to get the (complement of an) absolute value.
+
+We can have integers, floats and dimensions ans use parentheses for sub
+expressions. The \type {\dimexpression} \type {\numexpression} don't prioritize
+because they are variants of \type {\dimexpr} and \type {\numexpr}. The \type
+{\dimexperimental} and \type {\numexperimental} cousins actually do prioritize
+and internally create an RPL stack. In the future we might switch to that
+alternative when scanning integers and dimensions.
+
+There are some aspects that you need to keep in mind. Compare these two. In the
+first case we stay within the dimension space which means that the \type {1pt}
+and \type {2pt} are dimension results and therefore get serialized as such,
+including the zero:
+
+\startbuffer
+\scratchdimenone 100pt \scratchdimentwo 200pt \todimension {
+    (\scratchdimenone > \scratchdimentwo) cand 1pt cor 2pt
+}
+\stopbuffer
+
+\typebuffer
+
+So we get: \inlinebuffer. In the next case we get what we explicitly asked for:
+the three token sequences:
+
+\startbuffer
+\ifdim\scratchdimenone>\scratchdimentwo 1pt\else 2pt\fi
+\stopbuffer
+
+\typebuffer
+
+So expect this: \inlinebuffer. In practice this doesn't matter much and to be
+honest, even in \CONTEXT\ using complex expressions is not happening that often,
+but that might change over time. By the way, both sides of the \quote {and} and
+friends are evaluated, contrary to what some programming languages do. On a 2018
+laptop, one million iterations of the following give the runtime in seconds shown
+after the comment. In the second case we use the \im {∧} (U+2227) and \im {∨}
+(U+2228) symbols which saves some parsing but of course one will probably never
+do such tests so consider it a bit of \quote {showing off}.
+
+\starttyping
+\scratchdimenone 100pt
+\scratchdimentwo 200pt
+
+\scratchdimen % 0.440
+    {(\scratchdimenone>\scratchdimentwo) cand 1pt cor 2pt}
+\scratchdimen % 0.411
+    {(\scratchdimenone>\scratchdimentwo) ∧ 1pt ∨ 2pt}
+\scratchdimen % 0.210
+    \ifdim\scratchdimenone>\scratchdimentwo 1pt\else 2pt\fi
+\scratchdimen  % 0.209
+    \ifdim\scratchdimenone>\scratchdimentwo 1\else 2\fi pt
+\stoptyping
+
+Here are some equivalent operations:
+
+\startbuffer
+\the\dimexperimental{(2   + 1  ) * \lineheight}
+\the\dimexperimental{(2.0 + 1.0) * \lineheight}
+\the\dimexperimental{(2.1 + 0.9) * \lineheight}
+\the\dimexperimental{(1   + 2.0) * \lineheight}
+\the\dimexperimental{(2.0 + 1  ) * \lineheight}
+\the\dimexperimental{(3        ) * \lineheight}
+\the\dimexperimental{(3.0      ) * \lineheight}
+\stopbuffer
+
+\typebuffer
+
+We get: \getbuffer, all the same of course. Instead of \typ {\lineheight} in
+\CONTEXT\ we can also use \type {lh} because that is one of the units that we
+define.
+
+There is undoubtely more to say here but that is for the low level manuals to
+deal with. Here we just discuss it as some \LUAMETATEX\ enhancement.
+
+% \the\dimexperimental{(4.0 < 4pt) cand 1pt cor 2pt}
+% \the\dimexperimental{(2 * 2) * 4pt}
+% \the\dimexperimental{(4.0 / 2) * 4pt}
+
+\stopchapter
+
+\stopcomponent
+
+% maybe [sin] or [ ] as equivalent for ()
+
+% \withoutpt\dimexperimental{@sin 90.0}
+% \withoutpt\dimexperimental{@sin 93.0}
+
+% \withoutpt\dimexperimental{@sin 90}
+% \withoutpt\dimexperimental{@sin 93}
+
+% \withoutpt\dimexperimental{@tan 90}
+% \withoutpt\dimexperimental{@tan 00}
+
+% \the\numexperimental{( 1+{2}) * (3+4)}
+% \the\numexperimental{( 1+ 2 ) * (3+4)}
+% % \the\numexperimental{({1+ 2)} * (3+4)} % error
+
+% \the\numexpression{( 1+{2}) * (3+4)}
+% \the\numexpression{( 1+ 2 ) * (3+4)}
+% % \the\numexpression{({1+ 2)} * (3+4)} % error
+
+% \the\dimexpression{( 1pt+{2pt})  * (3pt+4pt)}
+% \the\dimexpression{( 1pt+ 2pt )  * (3pt+4pt)}
+% % \the\dimexpression{({1pt+ 2pt )} * (3pt+4pt)} % error
+
+% \scratchskip  100pt plus 10pt        \relax \the\scratchskip\par
+% \scratchskip {100pt plus 10pt     }  \relax \the\scratchskip\par
+% \scratchskip {100pt plus {9pt+1pt}}  \relax \the\scratchskip\par
+% \scratchskip {100pt plus 1fil     }  \relax \the\scratchskip\par

@@ -87,5 +87,6 @@ extern void   bytemap_get_bytes      (bytemap_data *bytemap, int x, int y, unsig
 extern char * bytemap_get_value      (bytemap_data *bytemap, int *nx, int *ny, int *nz);
 
 extern void   bytemap_downsample     (bytemap_data *source, bytemap_data *target, int r);
+extern void   bytemap_downgrade      (bytemap_data *source, bytemap_data *target, int r);
 
 # endif

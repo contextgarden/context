@@ -629,6 +629,76 @@ static int pnglib_makemask(lua_State *L) /* for palette */
     return 2;
 }
 
+/*
+    I tested reduction to two bytes but it's too slow for runtime usage and also useless in terms
+    of quality. Rendering is also slower. So we only kept the half option. We know that we're below 
+    max int because we only have bytemaps here.
+*/
+
+static int pnglib_reduce(lua_State *L)
+{
+    size_t size; 
+    const char * data = lua_tolstring(L, 1, &size);
+    if (data && size) {
+        int nx = lmt_tointeger(L, 2);
+        int ny = lmt_tointeger(L, 3);
+        int nz = lmt_tointeger(L, 4);
+        if (nx * ny * nz == size) {
+            unsigned char *result;
+            int dx = nx * nz;
+            int mx = dx / 2;
+            int more = 0;
+            if (dx % 2 == 1) { 
+                more = 1;
+                size = (mx + 1) * ny;
+            } else { 
+                size = mx * ny;
+            }
+            result = lmt_memory_malloc(size);
+            if (result) {
+                int accurate = lua_toboolean(L, 5);
+                int r = 0;
+                int d = 0;
+                if (accurate) {
+                    for (int y = 0; y < ny; y++) {
+                        d = y * dx;
+                        for (int x = 0; x < mx; x++) {
+                            unsigned char b1 = (unsigned char) data[d++];
+                            unsigned char b2 = (unsigned char) data[d++];
+                            b1 = b1 > 0xF7 ? 0xF0 :  ((b1 + 0x07) & 0xF0);
+                            b2 = b2 > 0xF7 ? 0x0F : (((b2 + 0x07) & 0xF0) >> 4);
+                            result[r++] = (unsigned char) (b1 + b2);
+                        }
+                        if (more) { 
+                            unsigned char b1 = (unsigned char) data[d++];
+                            b1 = b1 > 0xF7 ? 0xF0 : ((b1 + 0x07) & 0xF0);
+                            result[r++] = b1;
+                        }
+                    }
+                } else { 
+                    /* we go for speed so no round etc here */
+                    for (int y = 0; y < ny; y++) {
+                        d = y * dx;
+                        for (int x = 0; x < mx; x++) {
+                            unsigned char b1 = ((unsigned char) data[d++]) & 0xF0;
+                            unsigned char b2 = ((unsigned char) data[d++]) & 0xF0;
+                            result[r++] = (unsigned char) (b1 + (b2 >> 4));
+                        }
+                        if (more) { 
+                            unsigned char b1 = ((unsigned char) data[d++]) & 0xF0;
+                            result[r++] = (unsigned char) b1;
+                        }
+                    }
+                }
+                lua_pushlstring(L, (const char *) result, size);
+                lmt_memory_free(result);
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
 static const struct luaL_Reg pngdecodelib_function_list[] = {
     { "applyfilter", pnglib_applyfilter },
     { "splitmask",   pnglib_splitmask   },
@@ -637,6 +707,7 @@ static const struct luaL_Reg pngdecodelib_function_list[] = {
     { "tocmyk",      pnglib_tocmyk      },
     { "tomask",      pnglib_tomask      },
     { "makemask",    pnglib_makemask    },
+    { "reduce",      pnglib_reduce      },
     { NULL,          NULL               },
 };
 

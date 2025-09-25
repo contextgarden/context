@@ -9,6 +9,7 @@
 
 /* 
     todo: set nz to zero when no data so we have a test less 
+    todo: round keep in integer domain (see end of decodelib)
 */
 
 static inline unsigned char max_of_three(unsigned char a, unsigned char b, unsigned char c)
@@ -576,12 +577,11 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
         int nx = source->nx;
         int ny = source->ny; 
         int nz = source->nz;
-        if (nx % 2 == 1) { 
-            --nx;
-        }
-        if (ny % 2 == 1) { 
-            --ny;
-        }
+        int dy = nx * nz; 
+        int mx = nx / r;
+        int my = ny / r;
+        nx = mx * r;
+        ny = my * r;
         if (r > nx) {
             r = 0;
         } else if (r < 2) { 
@@ -590,8 +590,6 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
             r = (nx * nz) / 2;
         }
         if (r > 1) {
-            int mx = nx / r;
-            int my = ny / r;
             unsigned char *q = lmt_memory_malloc(mx * my * nz);
             if (q) {
                 int rr = r * r;
@@ -612,8 +610,8 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
                         for (int x = 0; x < nx; x += r) {
                             int s = 0;
                             for (int j = y; j < y + r; j++) {
-                                unsigned char *p = &(source->data[j*nx+x]);
-                                for (int i = x; i < x + r; i++) {
+                                unsigned char *p = &(source->data[j*dy+x]);
+                                for (int i = 0; i < r; i++) {
                                     s += (unsigned char) *(p++);
                                 }
                             }
@@ -621,7 +619,6 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
                         }
                     }
                 } else {
-                    int dy = nx * nz;
                     for (int y = 0; y < ny; y += r) {
                         for (int x = 0; x < nx; x += r) {
                             int rc = 0;
@@ -630,10 +627,10 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
                             int dx = x * nz;
                             for (int j = y; j < y + r; j++) {
                                 unsigned char *p = &(source->data[j*dy+dx]);
-                                for (int i = x; i < x + r; i++) {
-                                    rc += *(p++);
-                                    gc += *(p++);
-                                    bc += *(p++);
+                                for (int i = 0; i < r; i++) {
+                                    rc += (unsigned char) *(p++);
+                                    gc += (unsigned char) *(p++);
+                                    bc += (unsigned char) *(p++);
                                 }
                             }
                             *(q++) = (unsigned char) (rc / rr);
@@ -642,6 +639,44 @@ void bytemap_downsample(bytemap_data *source, bytemap_data *target, int r)
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+void bytemap_downgrade(bytemap_data *source, bytemap_data *target, int r)
+{
+    /* 
+        Todo: when source and target are the same, we have to use a temporary bytemap. 
+    */
+    if (source && target && source != target && source->data != target->data && source->data) {
+        int nx = source->nx;
+        int ny = source->ny; 
+        int nz = source->nz;
+        if (r > 255) {
+            r = 255;
+        } else if (r < 1) {
+            r = 1; 
+        }
+        unsigned char *q = lmt_memory_malloc(nx * ny * nz);
+        if (q) {
+            unsigned char *p = source->data;
+            if (target->data) {
+                lmt_memory_free(target->data);
+            }
+            *target = (bytemap_data) {
+                .data    = q,
+                .nx      = nx,
+                .ny      = ny,
+                .nz      = nz,
+                .ox      = 0,
+                .oy      = 0,
+                .options = 0,
+            };
+            /* todo: fast path for 2 and 4 */
+            for (int i = 0; i < nx * ny * nz; i++) {
+                int l = r * lround(((double) ((unsigned char) p[i]))/r);
+                q[i] = l > 0xFF ? 0xFF : (unsigned char) l;
             }
         }
     }

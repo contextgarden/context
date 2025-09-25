@@ -332,6 +332,7 @@ static void enginelib_show_credits(void)
         "  softposit  : S. H. Leong (Cerlane)\n"
         "  potrace    : Peter Selinger\n"
         "  qrcodegen  : Project Nayuki\n"
+        "  nanojpeg   : Martin J. Fiedler (adapted)\n"
         "  triangles  : Moller, Guigue and Devillers (adapted)\n"
         "  effects    : Ken Perlin and Stefan Gustavson (adapted)\n"
         "\n"
@@ -1097,6 +1098,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "vector",    luaopen_vector    },
     { "potrace",   luaopen_potrace   },
     { "qrcodegen", luaopen_qrcodegen },
+    { "nanojpeg",  luaopen_nanojpeg  },
     { "effects",   luaopen_effects   },
     { "bytemap",   luaopen_bytemap   },
     { "serial",    luaopen_serial    },

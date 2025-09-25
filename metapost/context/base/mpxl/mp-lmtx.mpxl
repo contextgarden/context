@@ -3186,4 +3186,34 @@ vardef downsamplebytemap(expr source, target, n) =
     lua.mp.downsamplebytemap(source,target,n);
 enddef ;
 
-permanent downsamplebytemap;
+vardef downgradebytemap(expr source, target, n) =
+    lua.mp.downgradebytemap(source,target,n);
+enddef ;
+
+permanent downsamplebytemap, downgradebytemap ;
+
+% Handy as otherwise we forget the withpen:
+
+vardef bytemap primary n =
+    image (
+        draw unitsquare
+            bytemapscaled n
+            withbytemap n
+            withpen pencircle scaled 0
+        ;
+    )
+enddef ;
+
+def withreduction expr t =
+    if string t :
+        withprescript ("bytereduce=" & t)
+    fi
+enddef ;
+
+def withpalette expr t =
+    if string t :
+        withprescript ("bytepalette=" & t)
+    fi
+enddef ;
+
+permanent bytemap, withreduction, withpalette ;

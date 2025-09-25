@@ -7,7 +7,7 @@ if not modules then modules = { } end modules ['lpdf-grp'] = {
 }
 
 local type, tonumber = type, tonumber
-local formatters, gsub = string.formatters, string.gsub
+local formatters, gsub, char = string.formatters, string.gsub, string.char
 local sort = table.sort
 local round = math.round
 
@@ -19,17 +19,18 @@ local nodeinjections = pdfbackend.nodeinjections
 local codeinjections = pdfbackend.codeinjections
 local registrations  = pdfbackend.registrations
 
-local lpdf           = lpdf
-local pdfdictionary  = lpdf.dictionary
-local pdfarray       = lpdf.array
-local pdfconstant    = lpdf.constant
-local pdfboolean     = lpdf.boolean
-local pdfreference   = lpdf.reference
-local pdfflushobject = lpdf.flushobject
+local lpdf                 = lpdf
+local pdfdictionary        = lpdf.dictionary
+local pdfarray             = lpdf.array
+local pdfconstant          = lpdf.constant
+local pdfboolean           = lpdf.boolean
+local pdfreference         = lpdf.reference
+local pdfflushobject       = lpdf.flushobject
+local pdfflushstreamobject = lpdf.flushstreamobject
 
-local createimage    = images.create
-local wrapimage      = images.wrap
-local embedimage     = images.embed
+local createimage = images.create
+local wrapimage   = images.wrap
+local embedimage  = images.embed
 
 -- can also be done indirectly:
 --
@@ -251,6 +252,7 @@ do
         end
         local colorspace = t.colorspace
         local colordepth = 8
+        local components = 8
         local colors     = 1
         if colorspace ~= "rgb" and colorspace ~= "gray" then
             local b = round(#data / (xresolution * yresolution))
@@ -268,6 +270,14 @@ do
         if not colorspace then
             return -- fatal error
         end
+        local reduce = t.reduce
+        if reduce == "clip" or reduce == "round" then
+            local result = pngdecode.reduce(data,xresolution,yresolution,colors,reduce ~= "clip")
+            if result then
+                data       = result
+                components = 4
+            end
+        end
         local width  = t.width
         local height = t.height
         if width == 0 and height == 0 then
@@ -278,15 +288,28 @@ do
         elseif height == 0 then
             height = width  * yresolution / xresolution
         end
-     -- data = zlibcompress(lpegmatch(pattern,data),compresslevel)
         data = zlibcompress(data,compresslevel)
+        --
+        local palette = t.palette
+        if palette then
+            palette = components == 8 and colors == 1 and figures.bytepalette(palette)
+            if palette then
+                palette = pdfarray {
+                    pdfconstant("Indexed"),
+                    pdfconstant("DeviceRGB"),
+                    #palette // 3,
+                    pdfreference(pdfflushstreamobject(palette)),
+                }
+            end
+        end
+        --
         local xobject = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
             Width            = xresolution,
             Height           = yresolution,
-            BitsPerComponent = 8,
-            ColorSpace       = colorspace,
+            BitsPerComponent = components,
+            ColorSpace       = palette or colorspace,
             Length           = #data,
             Filter           = pdfconstant("FlateDecode"),
         }
@@ -294,14 +317,14 @@ do
         local mask = tonumber(t.mask)
         if mask then
             -- we can share masks when we have the same size and value
-            mask = string.char(mask > 255 and 255 or mask)
+            mask = char(mask > 255 and 255 or mask)
             mask = zlibcompress(string.rep(mask,xresolution*yresolution),compresslevel)
             local d = pdfdictionary {
                 Type             = pdfconstant("XObject"),
                 Subtype          = pdfconstant("Image"),
                 Width            = xresolution,
                 Height           = yresolution,
-                BitsPerComponent = 8,
+                BitsPerComponent = components,
                 ColorSpace       = pdfconstant("DeviceGray"),
                 Length           = #mask,
                 Filter           = pdfconstant("FlateDecode"),
@@ -309,7 +332,7 @@ do
             xobject.SMask = pdfreference(lpdf.flushstreamobject(mask,d()))
         end
         local image = createimage {
---             bbox     = { 0, 0, round(width/xresolution), round(height/yresolution) }, -- mandate
+         -- bbox_no  = { 0, 0, round(width/xresolution), round(height/yresolution) }, -- mandate
             bbox     = { 0, 0, round(width), round(height) }, -- mandate
             width    = round(width),
             height   = round(height),

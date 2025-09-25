@@ -556,6 +556,8 @@ typedef enum mp_name_type_type {
     mp_attribute_operation,         /* |name_type| in an attribute node */
     mp_x_part_operation,            /* |name_type| in the |xpart| of a node */
     mp_y_part_operation,            /* |name_type| in the |ypart| of a node */
+    mp_z_part_operation,            
+    mp_w_part_operation,            
     mp_xx_part_operation,           /* |name_type| in the |xxpart| of a node */
     mp_xy_part_operation,           /* |name_type| in the |xypart| of a node */
     mp_yx_part_operation,           /* |name_type| in the |yxpart| of a node */

@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['syst-aux'] = {
 local tonumber, next, type = tonumber, next, type
 local utfsub = utf.sub
 local P, S, R, C, Cc, Cs, Carg, lpegmatch = lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.Carg, lpeg.match
-local find, formatters = string.find, string.formatters
+local find, formatters, gsub = string.find, string.formatters, string.gsub
 
 local context           = context
 local implement         = interfaces.implement
@@ -649,5 +649,17 @@ implement {
     protected = true,
     actions   = function()
         output():setvbuf("line")
+    end,
+}
+
+--
+
+implement {
+    name      = "replacewildcard",
+    public    = true,
+ -- usage     = "value",
+    arguments = "2 arguments",
+    actions = function(original,replacement)
+        context((gsub(original,"%*",replacement)))
     end,
 }

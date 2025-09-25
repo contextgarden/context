@@ -1,0 +1,152 @@
+% language=us runpath=texruns:manuals/beyond
+
+\startcomponent beyond-bonus
+
+\environment beyond-style
+
+\startchapter[title={Bonus features},author=Hans Hagen]
+
+In \ETEX\ the plural \type {\widowpenalties} and friends were introduced. These
+use, like \type {\parshape} a node type that varies in size. In \LUAMETATEX\ we
+implement the variable part differently which gives more efficient (and
+recoverable) memory usage. This is needed because we have more such structures,
+like \type {\parpasses} that can become pretty large. The basic approach is:
+
+\starttyping
+\somecommand number entries
+\stoptyping
+
+where the number of entries is multiplied by a constant depending on \type
+{\somecommand}. A \type {\parshape} takes twice the number, and \type
+{\widowpenalties} one or two times the number, depending on a passed option
+indicating if we differentiate between left and right pages. The \type
+{\parpasses} primitive takes dozens of named entries separated by a \type {next}
+key and ends with a \type {\relax}.
+
+\starttyping
+\somecommand number options bitset entries
+\stoptyping
+
+The bitset after the \type {options} keyword depends on the command. The fact
+that we have a somewhat generic structure makes that we can also provide a
+mechanism for storing \quote {arrays} of integers, dimensions, posits (and maybe
+some day token lists). Adding this was a cheap bonus feature that needed little
+extra code. We implement this using the \type {\specificationdef} command that
+takes the form:
+
+\starttyping
+\specificationdef \somename \widowpenalties ....
+\stoptyping
+
+with of course support for structures other than these penalties. An array is
+defined with
+
+\starttyping
+\specificationdef \foo \dimen 3 1pt 2pt 3pt
+\specificationdef \oof \count 3 1 2 3
+\specificationdef \ofo \float 3 1.1 2.2 3.3
+%specificationdef \fof \toks  3 {a} {b} {c} % some day
+\stoptyping
+
+You can access the fields like this:
+
+\starttyping
+(\the\foo  1) (\the\foo  2) (\the\foo  3)
+(\the\ofo -1) (\the\ofo -2) (\the\ofo -3)
+(\the\oof  1) (\the\oof -2) (\the\oof  3)
+\stoptyping
+
+The negative index starts at the end and a zero index returns the number of
+entries and out of range values are zero. An array with two entries per row is
+defined with an option:
+
+\starttyping
+\specificationdef \foo \dimen 3 options 4
+  1pt 1pt
+  3pt 2pt
+  5pt 3pt
+\stoptyping
+
+This time we use an index and subindex.
+
+\starttyping
+(\the\foo 3 1, \the\foo 3 2) : (5pt,3pt)
+\stoptyping
+
+If you want an integer and dimension (or float) you can do this, where the four
+triggers double entries and 32 tells that the first of each pair is an integer:
+
+\starttyping
+\specificationdef \oof \dimen 3
+    options \numexpr 4 + 32 \relax
+    5 2pt
+    9 3pt
+    2 1pt
+\stoptyping
+
+Although \CONTEXT\ has all kind of data structures like this using \LUA, the
+advantage is that when \TEX\ itself manages this grouping works more naturally.
+Also, these ways of storing and accessing data is extremely runtime efficient. To
+what extend if will be used in \CONTEXT\ is to be seen, but it can come in handy
+when we experiment with paragraph and page builder enhancements in \LUA\ that we
+want to drive from the \TEX\ end. Given:
+
+\starttyping
+\specificationdef \foo \dimen 3 options 4
+  1pt 1pt
+  3pt 2pt
+  5pt 3pt
+\stoptyping
+
+the \LUA\ call \type {tex.getspecification("foo")} gives a table like:
+
+\starttyping
+{
+    {  65536,  65536 },
+    { 196608, 131072 },
+    { 327680, 196608 },
+}
+\stoptyping
+
+So we can for instance consider this to be a table of coordinates defined at the
+\TEX\ end that can be processed at the \LUA\ end.
+
+\stopchapter
+
+\stopcomponent
+
+% todo: block pushmacro
+%
+% \specificationdef \xxx \foo
+%
+% (\the\xxx 1) (\the\xxx 2) (\the\xxx 3)\par
+%
+%  \specificationdef  \SomeSet \count 9 options 32 0 : 0 0 0 0 0 0 0 0 0
+%  \specificationset  \SomeSet 4 5                   : 0 0 0 5 0 0 0 0 0
+%  \specificationset  \SomeSet 8 2                   : 0 0 0 5 0 0 0 2 0
+%  \specificationswap \SomeSet 5 6
+%
+% \specificationdef \SomeSet \count 9 3 2 1 6 5 4 9 8 7
+%
+% \dorecurse {\SomeSet \zerocount} {
+%     (\dorecurse {#1} {%
+%         \the \SomeSet ##1
+%     })
+% }
+%
+% \permanent\protected\untraced\def\newdimensionlist#1%
+%   {\afterassigned{\specificationdef #1 \dimen \scratchcounter}%
+%    \scratchcounter}
+%
+% \permanent\protected\untraced\def\newdimensionpairs#1%
+%   {\afterassigned{\specificationdef #1 \dimen \scratchcounter options \doublespecificationoptioncode}%
+%    \scratchcounter}
+%
+% \newdimensionpairs\foo 3
+%     1pt 2pt
+%     2pt 3pt
+%     3pt 1pt
+%
+% (\the\foo 1 1,\the\foo 1 2)
+%
+% \ctxlua{inspect(tex.getspecification("foo"))}

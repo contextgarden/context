@@ -1375,9 +1375,11 @@ local function bm_process(object,prescript,before,after)
     if bm_xresolution then
      -- before[#before+1] = f_cm_b(cm(object))
         local sx, rx, ry, sy, tx, ty = cm(object)
-        local data   = bytemap and bytemap.data      or object.postscript
-        local mask   = bytemap and bytemap.mask      or prescript.bytemask
-        local expand = bytemap and bytemap.expansion or prescript.byteexpansion
+        local data    = bytemap and bytemap.data      or object.postscript
+        local mask    = bytemap and bytemap.mask      or prescript.bytemask
+        local expand  = bytemap and bytemap.expansion or prescript.byteexpansion
+        local reduce  = bytemap and bytemap.reduce    or prescript.bytereduce
+        local palette = bytemap and bytemap.palette   or prescript.bytepalette
         if expand then
             data = posit.expand(data,tonumber(expand) or 4)
         end
@@ -1395,6 +1397,8 @@ local function bm_process(object,prescript,before,after)
                         mask        = mask,
                         bytes       = bytemap and true  or false,
                         format      = bytemap and "png" or "hex",
+                        reduce      = reduce,
+                        palette     = palette,
                     }
                 end,
                 sx, rx, ry, sy, tx, ty

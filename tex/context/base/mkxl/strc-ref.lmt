@@ -2137,6 +2137,15 @@ function references.checked(prefix,reference,specification)
     return references.valid(prefix,reference,specification,true)
 end
 
+function references.referenced(prefix,reference)
+    -- use with care ... oscillation can happen
+    local set = identify(prefix,reference)
+    if set then
+        set = set[1].i
+    end
+    return set and set.references.used or false
+end
+
 implement {
     name      = "doifelsereference",
     actions   = { references.valid, ctx_doifelse },
@@ -2163,6 +2172,12 @@ implement {
             { "layer" },
         }
     }
+}
+
+implement {
+    name      = "doifelsereferenced",
+    arguments = "2 strings",
+    actions   = { references.referenced, ctx_doifelse },
 }
 
 logs.registerfinalactions(function()
@@ -2430,9 +2445,6 @@ implement {
     arguments = "integer"
 }
 
-
---
-
 function references.getcurrentmetadata(tag)
     local data = currentreference and currentreference.i
     if data then
@@ -2655,6 +2667,13 @@ function genericfilters.page(data,prefixspec,pagespec)
         end
     else
         helpers.prefixpage(data,prefixspec,pagespec)
+    end
+end
+
+function genericfilters.used(data,name)
+    if data then
+        local references = data.references
+        context(references and references.used or "")
     end
 end
 

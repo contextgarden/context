@@ -1202,6 +1202,17 @@
 %      }%
 %    \fi}
 
+\def\strc_constructions_preroll#1%
+  {\iflocation
+     \ifempty\currentconstructionbookmark % maybe also when tagging
+       \ifconditional\c_strc_tags_enabled
+         \ifcstok{\currentconstructiondelay}\v!text\else
+           \edef\currentconstructionbookmark{\prerolltostring{#1}}%
+         \fi
+       \fi
+    \fi
+  \fi}
+
 \def\strc_constructions_register_yes[#S#1][#S#2]% #1=optional user data #2=interfaced-settings
   {\begingroup                              % similar to structure so we might generalize this
    \setupcurrentconstruction[#2]%           % xdef's will become edef's
@@ -1233,11 +1244,7 @@
        \edef\currentconstructionlist         {\constructionparameter\c!list}%
        \edef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
      \xmlstopraw
-     \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-       \ifconditional\c_strc_tags_enabled
-         \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
-       \fi
-     \fi \fi
+     \strc_constructions_preroll\currentconstructiontitle
      \ifempty\currentconstructionlist
        \let\currentconstructionlist\currentconstructiontitle
      \fi
@@ -1249,22 +1256,14 @@
        \edef\currentconstructionmarking      {\constructionparameter\c!marking}%
        \edef\currentconstructionlist         {\constructionparameter\c!list}%
        \edef\currentconstructionreferencetext{\constructionparameter\c!referencetext}%
-       \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-         \ifconditional\c_strc_tags_enabled
-           \edef\currentconstructionbookmark{\prerolltostring{\currentconstructiontitle}}%
-         \fi
-       \fi \fi
+       \strc_constructions_preroll\currentconstructiontitle
      \else
        \edef\currentconstructiontitle        {\detokenizedconstructionparameter\c!title}%
        \edef\currentconstructionbookmark     {\detokenizedconstructionparameter\c!bookmark}%
        \edef\currentconstructionmarking      {\detokenizedconstructionparameter\c!marking}%
        \edef\currentconstructionlist         {\detokenizedconstructionparameter\c!list}%
        \edef\currentconstructionreferencetext{\detokenizedconstructionparameter\c!referencetext}%
-       \iflocation \ifempty\currentconstructionbookmark % maybe also when tagging
-         \ifconditional\c_strc_tags_enabled
-           \edef\currentconstructionbookmark{\prerolltostring{\constructionparameter\c!title}}%
-         \fi
-       \fi \fi
+       \strc_constructions_preroll{\constructionparameter\c!title}%
      \fi
      \ifempty\currentconstructionlist
        \let\currentconstructionlist\currentconstructiontitle

@@ -1,0 +1,238 @@
+% language=us runpath=texruns:manuals/beyond
+
+\startcomponent beyond-whatif
+
+\environment beyond-style
+
+\startchapter[title={What if \unknown},author=Hans Hagen]
+
+\startsection[title=Introduction]
+
+We don't remove features present in \TEX\ in \LUAMETATEX, although there are some
+exceptions in the sense that we delegate some tasks to \LUA. Of course we dropped
+some \ETEX\ and \PDFTEX\ extensions and kept very little of what \ALEPH\ (\OMEGA)
+added but apart from relaxing the \type {\long} and \type {\outer} prefixes we
+are good. Of course some primitives, like \typ {\ifcsname} behave better and we
+handle \type {\par} in math but that's not really influencing the results. As we
+go forward it can become tempting to replace some functionality that is sort of
+redundant or will never be used but it should not have consequences for existing
+user code. Below I will collect some ideas that fit these criteria.
+
+\stopsection
+
+\startsection[title=Penalty lists]
+
+The \ETEX\ extensions introduced a multiple penalty approach, like \typ
+{\widowpenalties} and \typ {\clubpenalties}. This have a few side effects. First
+of all they take a variable amount of values so they need a variable size data
+structure and that happens to be nodes. Normally there are not that many
+definitions so the impact that this has on node memory is limited but if you have
+thousands of different sized lists it might go bad because they don't get
+reclaimed and|/|or reused. This is why in \LUAMETATEX\ we have a basic so called
+specification node with a dynamically allocated list. Of course this has some
+impact on dumping and undumping because we need to handle these nodes in a
+special way but it can be done reliable. We also have \typ {\specificationdef} to
+predefine the various plurals, par passes and fitness demerits, so that we can
+conveniently switch between states.
+
+Another side effect is that setting the \typ {\widowpenalties} masquerades the
+normal \typ {\widowpenalty} and resetting the plural it makes the singular active
+gain. So we have two mechanisms (the plural and singular) and one really needs to
+manage both well in order not to confuse users. For instance, when you want no
+widow penalties at all, you need to disable both.
+
+Related to this is that when a paragraph starts a node is added, it stores the
+current state and therefore contains various single and plural penalty states
+that the post line break routine has to check and apply check: first for the
+plural and when that one is unset, for the singular. It takes memory, time and code.
+
+When we were setting up the new par passes and extended alignment options we also
+decided to provide keys (options) for controlling the penalties. I then realized
+that we can actually redefine \typ {\widowpenalty} and alike like this:
+
+\starttyping
+\permanent\protected\untraced\def\widowpenalty{\widowpenalties\plusone}
+\stoptyping
+
+However we don't want them to be repeated, which is what the plural does when
+there is no final \quote {reset} value.
+
+\starttyping
+\widowpenalties\plustwo 2500 0
+\stoptyping
+
+The way to deal with this is to use an option:
+
+\starttyping
+\permanent\protected\untraced\def\widowpenalty
+  {\widowpenalties \plusone options \finalspecificationoptioncode}
+\stoptyping
+
+Which of course involved more parsing, so we made that equivalent to:
+
+\starttyping
+\permanent\protected\untraced\def\widowpenalty{\widowpenalties\minusone}
+\stoptyping
+
+In a similar way we can also define \typ {\clubpenalty}, \typ
+{\displaywidowpenalty}, which we ignore in \CONTEXT\ because we do display math
+differently), \typ { \brokenpenalty}, \typ {\orphanpenalty} and \typ
+{\interlinepenalty}. When doing so we also set the \typ {\untraced} flag so that
+when we ask the meaning or enable some tracing they are presented to the user as
+if they ae primitive. The \typ {\permanent} flag will protect them against
+redefinition when overload protection is enabled. The \typ {\protected} flag
+makes sure that we don't expand it in for instance an \type {\edef} situation.
+
+\starttyping
+\meaningfull\widowpenalty
+\stoptyping
+
+Compare no prefixed:
+
+\start \tttf
+\pushoverloadmode
+\def\widowpenalty{\widowpenalties\minusone}\meaningfull\widowpenalty
+\popoverloadmode
+\stop
+
+with only \typ {\permanent}:
+
+\start \tttf
+\pushoverloadmode
+\permanent\def\widowpenalty{\widowpenalties\minusone}\meaningfull\widowpenalty
+\popoverloadmode
+\stop
+
+and with both \typ{\permanent} and \typ {\untraced}:
+
+\start \tttf
+\pushoverloadmode
+\permanent\untraced\def\widowpenalty{\widowpenalties\minusone}\meaningfull\widowpenalty
+\popoverloadmode
+\stop
+
+Actually, the reason why this works out well is because in the context of am
+integer value, like \type {\the} the plural already returned the value requested
+by the integer following the command, so effectively this already did the job:
+
+\starttyping
+\the\widowpenaltie\plusone
+\stoptyping
+
+Removing the primitives and replacing them this way has the advantage of removing
+related code which simplifies the post line break routine a bit. Making the par
+nodes smaller also is nice.
+
+Om an average run a user won't notice the difference because these
+penalties are not consulted that often during a run: basically once for every
+line. So, with the standard Tufte test renders in 7 lines, 7000 lines using
+these three scenarios:
+
+\starttyping
+\normalwidowpenalty   0 \normalwidowpenalties 0
+\normalwidowpenalty 500 \normalwidowpenalties 0
+\normalwidowpenalty   0 \normalwidowpenalties 3 500 0 0
+\stoptyping
+
+We get the following results for ten times three times 1000 paragraphs:
+
+\starttyping
+(3.170,3.208,3.109) (3.161,3.310,3.155) (3.120,3.166,3.142) (3.116,3.134,3.154)
+(3.119,3.193,3.208) (3.063,3.060,3.058) (3.166,3.182,3.142) (3.158,3.054,3.063)
+(3.111,3.198,3.070) (3.195,3.242,3.224)
+\stoptyping
+
+I didn't even bother to turn of the music running in the background because that
+process, although it slows down the runs, averages well. with such tests it are
+the patterns that matters, the user experience.
+
+% \startbuffer
+% \start
+%     \normalwidowpenalty 0 \normalwidowpenalties 0
+%     \testfeatureonce{1000}{\samplefile{tufte}\par} \xdef\TestA{\elapsedtime}
+% \stop
+% \start
+%     \normalwidowpenalty 500 \normalwidowpenalties 0
+%     \testfeatureonce{1000}{\samplefile{tufte}\par} \xdef\TestB{\elapsedtime}
+% \stop
+% \start
+%     \normalwidowpenalty 0 \normalwidowpenalties 3 500 0 0
+%     \testfeatureonce{1000}{\samplefile{tufte}\par} \xdef\TestC{\elapsedtime}
+% \stop
+% (\TestA,\TestB,\TestC)
+% \stopbuffer
+
+So, currently (September 2024) we just redefine these primitives in \CONTEXT\ but
+at some point we can either alias them already in the engine or just expect the
+format file to define them as part of the \LUAMETATEX\ \quote {primitives}
+initialization.
+
+\stopsection
+
+\startsection[title=Math italics]
+
+This can be completely dropped from the engine. But because we want to
+demonstrate differences between tweaked and untweaked fonts, we keep it for now.
+Maybe some day it will be dropped but then we need to fake the examples in older
+articles when we rerun them or we need to make the examples into images.
+Sometimes the simple fact of documenting behavior has that side effect. But it
+would simplify the code a lot!
+
+\stopsection
+
+\startsection[title=Keywords]
+
+Occasionally I wonder how much time is wasted on verbose keywords but because
+this feature has already been very much optimized, there is little to gain. So,
+for instance replacing the popular:
+
+\starttyping
+\srule height\strutht depth\strutdp\relax
+\stoptyping
+
+by
+
+\starttyping
+\srule ht\strutht dp\strutht\relax
+\stoptyping
+
+or even
+
+\starttyping
+\srule hd\strutht\strutht\relax
+\stoptyping
+
+will save little, also because this happens in already tokenized macros. So while
+50.000 times \typ {\normalsrule \relax} takes 0.004 seconds, the two argument one
+needs 0.001 seconds (passing just one argument indeed takes 0.007 seconds); this
+number is a reasonable guess for an average complex 250 page document. So, for
+now I see no reason to go forward with this also because distinguishing between
+what follow the \type {h}, \type {d} or \type {w} also adds time.
+
+However, because a strut rule in most cases takes both height and depth, so adding
+a \type {pair} keyword can safe some noise on tracing, so I tested that:
+
+\starttyping
+\srule pair \strutht\strutht\relax
+\stoptyping
+
+And although we only save 0.002 seconds on the 50.000 calls I decided to keep
+that experiment, if only because we have other noise reduction measures elsewhere
+too. At the same time I decided to default such rules to zero width; for the
+record, the running height and depth dimensions are used as signals in (math)
+char struts so these two need to be set explicitly when values are needed.
+
+% \testfeatureonce{50000}{\normalsrule depth\strutdp\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule height\strutht depth\strutdp\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule pair\strutht\strutdp\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule height\strutht depth\strutdp width\zeropoint\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule\s!height\strutht\s!depth\strutdp\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule\s!depth\strutdp\relax} \elapsedtime
+% \testfeatureonce{50000}{\normalsrule\s!pair\strutht\strutdp\relax} \elapsedtime
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

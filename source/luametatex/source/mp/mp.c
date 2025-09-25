@@ -4835,8 +4835,58 @@ static int mp_interesting(MP mp, mp_node p)
         if (t >= mp_x_part_operation && t != mp_capsule_operation) {
             mp_node tt = mp_get_value_node(p->link);
             switch (t) {
+# if 0
+                case mp_x_part_operation:
+                    switch (tt->type) {
+                        case mp_color_type:
+                            t = mp_red_part(tt)->name_type; 
+                            break;
+                        case mp_cmykcolor_type:
+                            t = mp_cyan_part(tt)->name_type; 
+                            break;
+                        default:
+                                t = mp_x_part(tt)->name_type; 
+                                break;
+                    }
+                    break;
+                case mp_y_part_operation:       
+                    switch (tt->type) {
+                        case mp_color_type:
+                            t = mp_green_part(tt)->name_type; 
+                            break;
+                        case mp_cmykcolor_type:
+                            t = mp_magenta_part(tt)->name_type; 
+                            break;
+                        default:
+                            t = mp_y_part(tt)->name_type; 
+                            break;
+                    }
+                    break;
+                case mp_z_part_operation:       
+                    switch (tt->type) {
+                        case mp_color_type:
+                            t = mp_blue_part(tt)->name_type; 
+                            break;
+                        case mp_cmykcolor_type:
+                            t = mp_yellow_part(tt)->name_type; 
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+                case mp_w_part_operation:       
+                    switch (tt->type) {
+                        case mp_cmykcolor_type:
+                            t = mp_black_part(tt)->name_type; 
+                            break;
+                        default:
+                            break;
+                    }
+                    break;
+# else 
                 case mp_x_part_operation:       t = mp_x_part      (tt)->name_type; break;
                 case mp_y_part_operation:       t = mp_y_part      (tt)->name_type; break;
+# endif 
                 case mp_xx_part_operation:      t = mp_xx_part     (tt)->name_type; break;
                 case mp_xy_part_operation:      t = mp_xy_part     (tt)->name_type; break;
                 case mp_yx_part_operation:      t = mp_yx_part     (tt)->name_type; break;
@@ -19989,54 +20039,95 @@ static void mp_take_part(MP mp, int c)
     mp_free_value_node(mp, cur_exp_node);
     switch (c) {
         case mp_x_part_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_make_exp_copy(mp, mp_x_part(p), 3);
-            } else {
-                mp_make_exp_copy(mp, mp_tx_part(p), 4);
+            switch (cur_exp_type) { 
+                case mp_pair_type:
+                    mp_make_exp_copy(mp, mp_x_part(p), c);
+                    break;
+                case mp_color_type:
+                    mp_make_exp_copy(mp, mp_red_part(p), c);
+                    break;
+                case mp_cmykcolor_type:
+                    mp_make_exp_copy(mp, mp_cyan_part(p), c);
+                    break;
+                default:
+                    mp_make_exp_copy(mp, mp_tx_part(p), c);
+                    break;
             }
             break;
         case mp_y_part_operation:
-            if (cur_exp_type == mp_pair_type) {
-                mp_make_exp_copy(mp, mp_y_part(p), 5);
-            } else {
-                mp_make_exp_copy(mp, mp_ty_part(p), 6);
+            switch (cur_exp_type) { 
+                case mp_pair_type:
+                    mp_make_exp_copy(mp, mp_y_part(p), c);
+                    break;
+                case mp_color_type:
+                    mp_make_exp_copy(mp, mp_green_part(p), c);
+                    break;
+                case mp_cmykcolor_type:
+                    mp_make_exp_copy(mp, mp_magenta_part(p), c);
+                    break;
+                default:
+                    mp_make_exp_copy(mp, mp_ty_part(p), c);
+                    break;
+            }
+            break;
+        case mp_z_part_operation:
+            switch (cur_exp_type) { 
+                case mp_color_type:
+                    mp_make_exp_copy(mp, mp_blue_part(p), c);
+                    break;
+                case mp_cmykcolor_type:
+                    mp_make_exp_copy(mp, mp_yellow_part(p), c);
+                    break;
+                default:
+                    /* can't happen */
+                    break;
+            }
+            break;
+        case mp_w_part_operation:
+            switch (cur_exp_type) { 
+                case mp_cmykcolor_type:
+                    mp_make_exp_copy(mp, mp_black_part(p), c);
+                    break;
+                default:
+                    /* can't happen */
+                    break;
             }
             break;
         case mp_xx_part_operation:
-            mp_make_exp_copy(mp, mp_xx_part(p), 7);
+            mp_make_exp_copy(mp, mp_xx_part(p), c);
             break;
         case mp_xy_part_operation:
-            mp_make_exp_copy(mp, mp_xy_part(p), 8);
+            mp_make_exp_copy(mp, mp_xy_part(p), c);
             break;
         case mp_yx_part_operation:
-            mp_make_exp_copy(mp, mp_yx_part(p), 9);
+            mp_make_exp_copy(mp, mp_yx_part(p), c);
             break;
         case mp_yy_part_operation:
-            mp_make_exp_copy(mp, mp_yy_part(p), 10);
+            mp_make_exp_copy(mp, mp_yy_part(p), c);
             break;
         case mp_red_part_operation:
-            mp_make_exp_copy(mp, mp_red_part(p), 11);
+            mp_make_exp_copy(mp, mp_red_part(p), c);
             break;
         case mp_green_part_operation:
-            mp_make_exp_copy(mp, mp_green_part(p), 12);
+            mp_make_exp_copy(mp, mp_green_part(p), c);
             break;
         case mp_blue_part_operation:
-            mp_make_exp_copy(mp, mp_blue_part(p), 13);
+            mp_make_exp_copy(mp, mp_blue_part(p), c);
             break;
         case mp_cyan_part_operation:
-            mp_make_exp_copy(mp, mp_cyan_part(p), 14);
+            mp_make_exp_copy(mp, mp_cyan_part(p), c);
             break;
         case mp_magenta_part_operation:
-            mp_make_exp_copy(mp, mp_magenta_part(p), 15);
+            mp_make_exp_copy(mp, mp_magenta_part(p), c);
             break;
         case mp_yellow_part_operation:
-            mp_make_exp_copy(mp, mp_yellow_part(p), 16);
+            mp_make_exp_copy(mp, mp_yellow_part(p), c);
             break;
         case mp_black_part_operation:
-            mp_make_exp_copy(mp, mp_black_part(p), 17);
+            mp_make_exp_copy(mp, mp_black_part(p), c);
             break;
         case mp_grey_part_operation:
-            mp_make_exp_copy(mp, mp_grey_part(p), 18);
+            mp_make_exp_copy(mp, mp_grey_part(p), c);
             break;
     }
     mp_recycle_value(mp, mp->temp_val);
@@ -20053,6 +20144,8 @@ static void mp_take_picture_part(MP mp, int c)
         switch (c) {
             case mp_x_part_operation:
             case mp_y_part_operation:
+            case mp_z_part_operation:
+            case mp_w_part_operation:
             case mp_xx_part_operation:
             case mp_xy_part_operation:
             case mp_yx_part_operation:
@@ -21618,6 +21711,10 @@ static void mp_set_up_part(MP mp, int c)
                 case mp_green_part_operation:
                 case mp_blue_part_operation:
                     /* take */
+                case mp_x_part_operation:
+                case mp_y_part_operation:
+                case mp_z_part_operation:
+                    /* also */
                     break;
                 default: 
                     goto BAD;
@@ -21630,6 +21727,11 @@ static void mp_set_up_part(MP mp, int c)
                 case mp_yellow_part_operation:
                 case mp_black_part_operation:
                     /* take */
+                case mp_x_part_operation:
+                case mp_y_part_operation:
+                case mp_z_part_operation:
+                case mp_w_part_operation:
+                    /* also */
                     break;
                 default: 
                     goto BAD;
@@ -21703,6 +21805,8 @@ static void mp_do_unary(MP mp, int c)
             break;
         case mp_x_part_operation:
         case mp_y_part_operation:
+        case mp_z_part_operation:
+        case mp_w_part_operation:
         case mp_xx_part_operation:
         case mp_xy_part_operation:
         case mp_yx_part_operation:
@@ -31654,6 +31758,8 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "turningnumber",         mp_unary_command,            mp_turning_operation);
     mp_primitive(mp, "xpart",                 mp_unary_command,            mp_x_part_operation);
     mp_primitive(mp, "ypart",                 mp_unary_command,            mp_y_part_operation);
+    mp_primitive(mp, "zpart",                 mp_unary_command,            mp_z_part_operation);
+    mp_primitive(mp, "wpart",                 mp_unary_command,            mp_w_part_operation);
     mp_primitive(mp, "xxpart",                mp_unary_command,            mp_xx_part_operation);
     mp_primitive(mp, "xypart",                mp_unary_command,            mp_xy_part_operation);
     mp_primitive(mp, "yxpart",                mp_unary_command,            mp_yx_part_operation);

@@ -225,6 +225,8 @@ static int strlib_utfcharacters(lua_State *L)
     return 1;
 }
 
+/* a bit costly to push and replace what is just a integer as upvalue */
+
 static int strlib_aux_utfvalues(lua_State *L)
 {
     size_t l = 0;
@@ -442,6 +444,9 @@ static inline void strlib_aux_add_utftable(lua_State *L, luaL_Buffer *b, int ind
                     break;
                 case LUA_TSTRING: 
                     strlib_aux_add_utfstring(L, b, -1);
+                    break;
+                default: 
+                    /* we could just quit */
                     break;
             }
             lua_pop(L, 1);
@@ -1017,6 +1022,38 @@ static int strlib_chrtointeger(lua_State *L)
     return 1; 
 }
 
+/*tex 
+    I considered a version where we |break| on a non-number but in that case we normally know where
+    the last useful slot is anyway so I removed that variant. 
+*/
+
+static int strlib_utftabletostring(lua_State *L)
+{
+    if (lua_type(L, 1) == LUA_TTABLE) {
+        lua_Integer n = lua_rawlen(L, 1);
+        if (n > 0) {
+            lua_Integer f = lmt_optinteger(L, 2, 1);
+            lua_Integer l = lmt_optinteger(L, 3, n);
+            if (f < 1) { f = 1; }
+            if (l > n) { l = n; }
+            if (l >= f) {
+                luaL_Buffer b;
+                luaL_buffinitsize(L, &b, (size_t) (l-f+1) * 4); 
+                for (lua_Integer i = f; i <= l; i++) {
+                    if (lua_rawgeti(L, 1, i) == LUA_TNUMBER) {
+                        strlib_aux_add_utfnumber(L, &b, -1);
+                        lua_pop(L, 1);
+                    }
+                }
+                luaL_pushresult(&b);
+                return 1;
+            }
+        }
+    }
+    lua_pushliteral(L, "");
+    return 1;
+}
+
 static const luaL_Reg strlib_function_list[] = {
     { "characters",        strlib_characters         },
     { "characterpairs",    strlib_characterpairs     },
@@ -1031,6 +1068,7 @@ static const luaL_Reg strlib_function_list[] = {
     { "utflength",         strlib_utflength          },
     { "utfvaluetable",     strlib_utfvaluetable      },
     { "utfcharactertable", strlib_utfcharactertable  },
+    { "utftabletostring",  strlib_utftabletostring   },
     { "f6",                strlib_format_f6          },
     { "tounicode16",       strlib_format_tounicode16 },
     { "toutf8",            strlib_format_toutf8      },

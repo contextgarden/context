@@ -353,7 +353,28 @@
 \let\strc_formulas_reference_trace\relax
 \let\strc_formulas_reference_show \relax
 
+%D New, to be used with care, only show numbers when referenced.
+%D
+%D \starttyping
+%D \setupformula[numberstate=auto]
+%D \stoptyping
+
+% \ifempty{\expand\getreference[used][\currentplaceformulareference]}%
+
 \permanent\protected\def\placecurrentformulanumber
+  {\ifcstok{\formulaparameter\c!numberstate}\v!auto
+     \doifelsereferenced\currentplaceformulareference
+       \strc_formula_number_place_indeed
+       \strc_formula_number_place_holder
+   \else
+       \strc_formula_number_place_indeed
+   \fi}
+
+\permanent\protected\def\strc_formula_number_place_holder
+  {\strc_counters_decrement\v!formula
+   \dosetdirectpagereference\currentplaceformulareference}
+
+\permanent\protected\def\strc_formula_number_place_indeed
   {\begingroup
    \rm % determines the distance and main font
    \edef\p_location{\formulaparameter\c!location}%

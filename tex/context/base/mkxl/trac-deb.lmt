@@ -136,6 +136,7 @@ end
 local nop           = function() end
 local resetmessages = status.resetmessages or nop
 local erroroffset   = 10
+local erroraction   = false
 
 local function processerror(errortype)
     local readstate      = status.getreadstate()
@@ -168,6 +169,9 @@ local function processerror(errortype)
     tracers.printerror(specification)
     if job and type(job.disablesave) == "function" then
         job.disablesave()
+    end
+    if erroraction then
+        erroraction()
     end
     lua.setexitcode(1)
 end
@@ -263,6 +267,9 @@ function tracers.printerror(specification)
                 report_nl()
                 report_nl()
             end
+            if erroraction then
+                erroraction()
+            end
             luatex.abort()
         end
         busy = false
@@ -322,59 +329,72 @@ callbacks.register {
 -- Let's no longer do this in lmtx .. it was actually a proof of concept. There is no
 -- reliable way to pop up a browser anyway. We keep the code around becuae if really
 -- needed we can plug it into the normal error handler as addendum.
+--
+-- Well ... back per request.
 
--- lmx = lmx or { }
---
--- lmx.htmfile = function(name) return environment.jobname .. "-status.html" end
--- lmx.lmxfile = function(name) return resolvers.findfile(name,'tex') end
---
--- local function reportback(lmxname,default,variables)
---     if lmxname == false then
---         return variables
---     else
---         local name = lmx.show(type(lmxname) == "string" and lmxname or default,variables)
---         if name then
---             logs.report("context report","file: %s",name)
---         end
---     end
--- end
---
--- local function showerror(lmxname)
---     local readstate    = status.getreadstate()
---     local filename     = readstate.filename
---     local linenumber   = tonumber(readstate.linenumber) or 0
---     local errorcontext = ""
---     if not filename then
---         filename     = status.iocodes[readstate.iocode]
---         errorcontext = 'error in filename'
---     else
---         errorcontext = tracers.showlines(filename,linenumber,offset)
---     end
---     local variables = {
---         ['title']                = 'ConTeXt Error Information',
---         ['errormessage']         = status.geterrorstate().error or "?",
---         ['linenumber']           = linenumber,
---         ['color-background-one'] = lmx.get('color-background-yellow'),
---         ['color-background-two'] = lmx.get('color-background-purple'),
---         ['filename']             = filename,
---         ['errorcontext']         = errorcontext,
---     }
---     reportback(lmxname,"context-error.lmx",variables)
---     luatex.abort()
--- end
---
+lmx = lmx or { }
+
+lmx.htmfile = function(name) return environment.jobname .. "-status.html" end
+lmx.lmxfile = function(name) return resolvers.findfile(name,'tex') end
+
+local function reportback(lmxname,default,variables)
+    if lmxname == false then
+        return variables
+    else
+        local name = lmx.show(type(lmxname) == "string" and lmxname or default,variables)
+        if name then
+            logs.report("context report","file: %s",name)
+        end
+    end
+end
+
+local function showerror(lmxname)
+    local readstate    = status.getreadstate()
+    local filename     = readstate.filename
+    local linenumber   = tonumber(readstate.linenumber) or 0
+    local errorcontext = ""
+    if not filename then
+        filename     = status.iocodes[readstate.iocode]
+        errorcontext = 'error in filename'
+    else
+        errorcontext = tracers.showlines(filename,linenumber,offset)
+    end
+    local variables = {
+        ['title']                = 'ConTeXt Error Information',
+        ['errormessage']         = status.geterrorstate().error or "?",
+        ['linenumber']           = linenumber,
+        ['color-background-one'] = lmx.get('color-background-yellow'),
+        ['color-background-two'] = lmx.get('color-background-purple'),
+        ['filename']             = filename,
+        ['errorcontext']         = errorcontext,
+    }
+    reportback(lmxname,"context-error.lmx",variables)
+ -- luatex.abort() -- done in caller
+end
+
+-- We need to be more protective and block callbacks so that when code meant for
+-- other macro package is loaded it can't do harm to callbacks. So we go local.
+
 -- lmx.showerror = showerror
 --
 -- function lmx.overloaderror(v)
 --     if v == "scite" then
 --         usescitelexer = true
 --     end
---     callbacks.register { name = "show_error_message",  action = function() showerror() end }
+--     erroraction = v and showerror or false
+--  -- callbacks.register { name = "show_error_message",  action = function() showerror() end }
 --  -- callbacks.register { name = "intercept_lua_error", action = function() showerror() end }
 --  -- callbacks.register { name = "intercept_tex_error", action = function() showerror() end }
 -- end
 --
 -- directives.register("system.showerror", lmx.overloaderror)
+
+directives.register("system.showerror", function(v)
+    if v == "scite" then
+        usescitelexer = true
+    end
+    erroraction = v and showerror or false
+end)
 
 -- This is also gone
 

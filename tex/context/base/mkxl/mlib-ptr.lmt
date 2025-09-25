@@ -13,100 +13,16 @@ if not modules then modules = { } end modules ['mlib-ptr'] = {
 
 local formatters, gsub, sub = string.formatters, string.gsub, string.sub
 local concat, setmetatableindex = table.concat, table.setmetatableindex
-local byte, gsub = string.byte, string.gsub
 
 local trace_result = false  trackers.register("potrace.results", function(v) trace_result = v end)
 
 local report = logs.reporter("metapost","potrace")
 
-local potracefromfile, potracefrompng do -- this will move to another module
+local potracefromfile -- implemented later on
 
-    local newreader      = io.newreader
-    local openstring     = utilities.streams.openstring
-    local readstring     = utilities.streams.readstring
-    local zlibdecompress = xzip.decompress
-    local pngapplyfilter = pngdecode.applyfilter
-    local loadbinfile    = resolvers.loadbinfile
-
-    local function newcontent(filename)
-        local found, data = loadbinfile(filename)
-        return newreader(data or "", "string")
-    end
-
-    local function decodestrip(s,nx,ny,slice)
-        local input = readstring(s,ny*(nx*slice+1))
-        input = pngapplyfilter(input,nx,ny,slice)
-        return input, false
-    end
-
-    local function simplify(content,threshold)
-        if not threshold then
-            threshold = 127
-        end
-        local thresholds = setmetatableindex(function(t,k)
-            local v = byte(k) < threshold and '0' or '1'
-            t[k] = v
-            return v
-        end)
-        return (gsub(content,".",thresholds))
-    end
-
-    potracefrompng = function(filename,parameters)
-
-        if not filename then
-            return false
-        end
-
-        local threshold     = parameters.criterium
-        local specification = figures.getinfo(filename)
-
-        specification = specification and specification.status and specification.status.private
-
-        if not specification then
-            print("no specification")
-            return
-        end
-
-        local colorspace  = specification.colorspace
-        local xsize       = specification.xsize
-        local ysize       = specification.ysize
-        local colordepth  = specification.colordepth or 8
-
-        if colorspace ~= 0 or colordepth ~= 8 then
-            print("unsupported colorspace",colorspace,colordepth)
-            return
-        end
-        if specification.interlace == 1 then
-            print("unsupported interlace")
-            return
-        end
-        local tables = specification.tables
-        if not tables then
-            print("no tables")
-            return
-        end
-        local idat = tables.idat
-        if not idat then
-            print("no data")
-            return
-        end
-        local pngfile = newcontent(filename,method,true)
-        local content = idat[1]
-        if type(content) == "table" then
-            if not pngfile then
-                return
-            end
-            content = idat(pngfile,true)
-        end
-        content = zlibdecompress(content)
-        content = decodestrip(openstring(content),xsize,ysize,1)
-        if not parameters.raw then
-            content = simplify(content,threshold)
-        end
-        pngfile:close()
-        return content, xsize, ysize
-    end
-
+local function potracefrompng(filename,parameters)
+    local nx, ny, nz, bytes = bitmaps.load(filename,parameters)
+    return bytes, nx, ny
 end
 
 local potracecontourplot, potracegetbitmap, potracesetbitmap, potraceconcat do
@@ -527,24 +443,26 @@ potrace.convert     = potraceconvert
 -- also sound-wise for all instruments) concerts as a reward.
 
 function mp.loadbytemapfile(index,filename)
-    local fullname = resolvers.findfile(filename) or ""
-    if fullname ~= "" then
-        local bytes, nx, ny, nz = potracefromfile {
-            filename = fullname,
-            raw      = true,
-        }
-        if not nz then
-            nz = 1
+    local fullname = figures.exists(filename,nil,true)
+    if fullname then
+        local nx, ny, nz, bytes = graphics.bitmaps.load(fullname, {
+            raw        = true, -- no potrace 0/1
+            colordepth = 8,
+        })
+        if bytes then
+            mp.newbytemap(index,nx,ny,nz,bytes)
+            return nx, ny, nz
         end
-        mp.newbytemap(index,nx,ny,nz,bytes)
-        return nx, ny, nz
-    else
-        mp.newbytemap(index,1,1)
-        return 1, 1, 1
     end
+    mp.newbytemap(index,1,1)
+    return 1, 1, 1
 end
 
 function mp.bytemap_load_from_file(index,filename)
     local nx, ny, nz = mp.loadbytemapfile(index,filename)
     return mp.color(nx, ny, nz)
+end
+
+function mp.loadbytemap(index,filename)
+    mp.loadbytemapfile(index,filename) -- returns nothing
 end

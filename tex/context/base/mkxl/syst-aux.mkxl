@@ -4831,6 +4831,8 @@
 %D results we needed. Both implementations show some insight in the manipulation of
 %D arguments.
 
+%D This is typically something that we can delegate to \LUA:
+
 \let\syst_helpers_split_string\relax
 
 \permanent\protected\def\beforesplitstring#1\at#2\to#3%
@@ -4943,6 +4945,15 @@
 \permanent\protected\def\splitatasterisk#1{\expanded{\syst_helpers_splitatasterisk#1}**^^^^0004}
 \permanent\protected\def\splitatcolon   #1{\expanded{\syst_helpers_splitatcolon   #1}::^^^^0004}
 \permanent\protected\def\splitatcolons  #1{\expanded{\syst_helpers_splitatcolons  #1}::::^^^^0004}
+
+%D \macros
+%D   {replacewildcard}
+%D
+%D \starttyping
+%D \replacewildcard{foo:*}{bar} == foo:bar
+%D \stoptyping
+
+% This one is defined at the \LUA\ end.
 
 %D \macros
 %D   {removesubstring}

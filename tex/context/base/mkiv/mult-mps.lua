@@ -28,7 +28,7 @@ return {
         "normaldeviate", "readfrom", "closefrom", "odd", "known", "unknown",
         "not", "decimal", "reverse", "uncycle", "makepath", "makepen", "makenep",
         "convexed", "uncontrolled", "oct", "hex", "ASCII", "char", "length",
-        "turningnumber", "xpart", "ypart", "xxpart", "xypart", "yxpart",
+        "turningnumber", "xpart", "ypart", "zpart", "wpart", "xxpart", "xypart", "yxpart",
         "yypart", "redpart", "greenpart", "bluepart", "cyanpart", "magentapart",
         "yellowpart", "blackpart", "greypart", "colormodel", "prescriptpart",
         "postscriptpart", "stackingpart", "pathpart", "penpart", "dashpart",
@@ -145,9 +145,8 @@ return {
         --
         "top", "bot", "lft", "rt", "ulft", "urt", "llft", "lrt",
         --
-        "withbytemask",
-        --
-        "downsamplebytemap",
+        "bytemap", "withbytemask", "loadbytemap", "loadbytemapfromfile",
+        "downsamplebytemap", "downgradebytemap", "withreduction", "withpalette",
     },
     internals = { -- we need to remove duplicates above
         --

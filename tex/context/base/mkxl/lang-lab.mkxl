@@ -13,8 +13,12 @@
 
 % TODO: only preload English and delay loading of other languages
 % till some related command is used.
+%
+% TODO: more to lua and use setmacro then for local overloads
 
 \writestatus{loading}{ConTeXt Language Macros / Labels}
+
+\installcorenamespace{hiddenlabel}
 
 \registerctxluafile{lang-lab}{autosuffix}
 \registerctxluafile{lang-txt}{}

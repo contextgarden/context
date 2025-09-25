@@ -27,6 +27,7 @@ target_link_libraries(luametatex
     potrace
     qrcodegen
     triangles
+    nanojpeg    
 )
 
 if (LUAMETATEX_NOLDL) 

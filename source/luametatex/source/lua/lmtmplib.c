@@ -3949,6 +3949,20 @@ static int mplib_bytemap_downsample(lua_State *L)
     return 0;
 }
 
+static int mplib_bytemap_downgrade(lua_State *L)
+{
+    MP mp = mplib_aux_is_mp(L, 1);
+    if (mp) {
+        bytemap_data *source = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 2));
+        bytemap_data *target = mp_bytemap_get_by_index(mp, lmt_tointeger(L, 3));
+        int r = lmt_optinteger(L, 4, 2);
+        if (source && target) { 
+            bytemap_downgrade(source, target, r);
+        }
+    }
+    return 0;
+}
+
 /* */
 
 static const struct luaL_Reg mplib_instance_metatable[] = {
@@ -4068,6 +4082,7 @@ static const struct luaL_Reg mplib_functions_list[] = {
     /* */
     { "processbytemap",     mplib_bytemap_process    },
     { "downsamplebytemap",  mplib_bytemap_downsample },
+    { "downgradebytemap",   mplib_bytemap_downgrade  },
     /* */                                            
     { NULL,                 NULL                     },
 };

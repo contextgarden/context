@@ -10574,13 +10574,12 @@ return {
    ["pe"]="شماره‌گذاری",
    ["ro"]="numerotare",
   },
+  ["numberlocation"]={
+   ["en"]="numberlocation",
+  },
   ["numberorder"]={
    ["en"]="numberorder",
    ["fr"]="ordrenumero",
-  },
-  ["numberlocation"]=
-  {
-    ["en"]="numberlocation",
   },
   ["numberprefix"]={
    ["en"]="numberprefix",
@@ -10611,6 +10610,9 @@ return {
   ["numberstarter"]={
    ["en"]="numberstarter",
    ["fr"]="demarreurnumero",
+  },
+  ["numberstate"]={
+   ["en"]="numberstate",
   },
   ["numberstopper"]={
    ["en"]="numberstopper",

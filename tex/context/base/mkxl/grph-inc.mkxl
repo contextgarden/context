@@ -22,7 +22,7 @@
 
 \registerctxluafile{grph-img}{}
 \registerctxluafile{grph-inc}{autosuffix}
-\registerctxluafile{grph-bmp}{}
+\registerctxluafile{grph-bmp}{autosuffix}
 \registerctxluafile{grph-chk}{}
 \registerctxluafile{grph-con}{}
 \registerctxluafile{grph-fil}{}

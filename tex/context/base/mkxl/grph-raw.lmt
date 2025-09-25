@@ -10,17 +10,46 @@ if not modules then modules = { } end modules ['grph-raw'] = {
 -- her gnuplot project. It's somewhat premliminary code but it
 -- works ok for that purpose.
 
-local tonumber = tonumber
+local tonumber, type = tonumber, type
+local char = string.char
+local concat = table.concat
 
 local report_bitmap = logs.reporter("graphics","bitmaps")
 
 local context = context
+
+local palettes   = figures.palettes or { }
+figures.palettes = palettes
+
+function figures.bytepalette(palette)
+    if type(palette) == "string" then
+        palette = palettes[palette]
+    end
+    if type(palette) == "table" and palette[0] then
+        local count = #palette
+        if count > 0 then
+            local result = { }
+            for i=0,count do
+                local p = palette[i]
+                local r = p[1] or 0 ; if r < 0 then r = 0 elseif r > 255 then r = 255 end
+                local g = p[2] or 0 ; if g < 0 then g = 0 elseif g > 255 then g = 255 end
+                local b = p[3] or 0 ; if b < 0 then b = 0 elseif b > 255 then b = 255 end
+                result[i] = char(r//1,g//1,b//1)
+            end
+            return concat(result,"",0,count)
+        end
+    end
+end
 
 local function bitmapimage(t)
     local data        = t.data
     local xresolution = t.xresolution
     local yresolution = t.yresolution
     if data and xresolution and yresolution then
+        local palette = t.palette
+        if palette then
+            palette = palettes[palette]
+        end
         local n = backends.nodeinjections.injectbitmap {
             xresolution = xresolution,
             yresolution = yresolution,
@@ -31,6 +60,8 @@ local function bitmapimage(t)
             colorspace  = t.colorspace,
             format      = t.format,
             bytes       = t.bytes or false,
+            reduce      = t.reduce,
+            palette     = palette,
         }
         if n then
          -- context.hpack(n)

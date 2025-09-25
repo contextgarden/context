@@ -2028,7 +2028,11 @@ vardef loadbytemapfromfile(expr index, filename) =
     lua.mp.bytemap_load_from_file(index, filename)
 enddef ;
 
-permanent loadbytemapfromfile ;
+vardef loadbytemap(expr index, filename) =
+    lua.mp.loadbytemap(index, filename)
+enddef ;
+
+permanent loadbytemapfromfile, loadbytemap ;
 
 % kind of fundamental, therefore here
 

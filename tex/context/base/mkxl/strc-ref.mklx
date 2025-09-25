@@ -713,6 +713,11 @@
 
 \aliased\let\doifcheckedreferencefoundelse\doifelsereferencechecked
 
+\permanent\def\doifelsereferenced#label%
+  {\clf_doifelsereferenced{\referenceprefix}{#label}}
+
+\aliased\let\doifreferencedelse\doifelsereferenced
+
 %D The tester only splits the reference in components but does not look into them.
 %D The following macro does a preroll and determines for instance the current real
 %D reference pagenumber. The \type {\currentrealreference} macro does the same so
@@ -1405,53 +1410,110 @@
    \c!setups=,
    \c!color=]
 
-\protected\def\strc_references_apply_format#name%
-  {\strc_references_start_goto
-   \edef\currentreferenceformat{#name}%
-   \enforced\gdef\leftofreference      {\referenceformatparameter\c!left    }%
-   \enforced\gdef\rightofreference     {\referenceformatparameter\c!right   }%
-   \edef\currentreferenceformatlabel   {\referenceformatparameter\c!label   }%
-   \edef\currentreferenceformattype    {\referenceformatparameter\c!type    }%
-   \edef\currentreferenceformatsetups  {\referenceformatparameter\c!setups  }%
-   \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
-   \usereferenceformatstyleandcolor\c!style\c!color
-   \ifempty\currentstyleparameter \else
-     \resetinteractionstyle
-   \fi
-   \ifempty\currentcolorparameter \else
-     \resetinteractioncolor
-   \fi
-   \ifx\currentreferenceformatlabel\wildcardsymbol
-      \let\currentreferenceformatlabel\autoreferencelabeltext
-   \fi
-   \ifempty\currentreferenceformatlabel
-     \defaultleftreferencetoks {\referenceformatparameter\c!text}%
-     \defaultrightreferencetoks\emptytoks
-   \else
-     \defaultleftreferencetoks {\leftlabeltext \currentreferenceformatlabel}%
-     \defaultrightreferencetoks{\rightlabeltext\currentreferenceformatlabel}%
-   \fi
-   \ifempty\currentreferenceformattype
-     \def\currentreferenceformattype{default}%
-   \fi
-   %
-   \ifempty\currentreferenceformatsetups
-     \def\currentreferencecontent{\filterreference\currentreferenceformattype}%
-   \else
-     \def\currentreferencecontent{\directsetup\currentreferenceformatsetups}%
-   \fi
-   %
-   \enforced\lettonothing\leftofreferencecontent
-   \enforced\lettonothing\rightofreferencecontent
-   %
-   \ifx\currentreferenceformatautocase\v!yes
-     \setcharactercleaning[1]%
-   \fi
-   \strc_references_pickup_goto}
+% see labels-003.tex in test suite
+%
+% label=*             same section as currenty
+% label=reference:*   use name metatable field
+% label=reference::*  use kind metatable field
+% label=reference:::* use name or kind metatable field and try to fetch label
+%
+% \setuplabeltext
+%   [en]
+%   [reference:section=Section~,
+%    reference:formula=Formula~]
 
-\permanent\def\autoreferencelabeltext
-%   {\clf_getcurrentreferencemetadata{name}}
-  {\clf_getcurrentreferencelabel}
+\def\strc_references_check_tripple
+  {\iftext       {\labeltext\autoreferencenametext}%
+     \cdef\currentreferenceformatlabel{\autoreferencenametext}%
+   \orelse\iftext{\labeltext{\??hiddenlabel\autoreferencenametext}}%
+     \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencenametext}%
+   \orelse\iftext{\labeltext\autoreferencekindtext}%
+     \cdef\currentreferenceformatlabel{\autoreferencenametext}%
+   \orelse\iftext{\labeltext{\??hiddenlabel\autoreferencekindtext}}%
+     \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencekindtext}%
+   \else
+     \cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencenametext}%
+   \fi}
+
+\def\strc_references_check_double
+  {\cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencekindtext}}
+
+\def\strc_references_check_single
+  {\cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencenametext}}
+
+\tolerant\protected\def\strc_references_apply_format#1#*#=#*#=#:#*[#4]% #* added so that we can do \in {} {} []
+  {\strc_references_start_goto
+  % we need to resolve the metadata etc
+  \edef\currentreferenceformat{#1}%
+  \doifelsereferencefound{#4}\donetrue\donefalse
+  \enforced\gdef\leftofreference      {\referenceformatparameter\c!left    }%
+  \enforced\gdef\rightofreference     {\referenceformatparameter\c!right   }%
+  \edef\currentreferenceformatlabel   {\referenceformatparameter\c!label   }%
+  \edef\currentreferenceformattype    {\referenceformatparameter\c!type    }%
+  \edef\currentreferenceformatsetups  {\referenceformatparameter\c!setups  }%
+  \edef\currentreferenceformatautocase{\referenceformatparameter\c!autocase}%
+  \usereferenceformatstyleandcolor\c!style\c!color
+  \ifempty\currentstyleparameter \else
+    \resetinteractionstyle
+  \fi
+  \ifempty\currentcolorparameter \else
+    \resetinteractioncolor
+  \fi
+  \ifx\currentreferenceformatlabel\wildcardsymbol
+     \let\currentreferenceformatlabel\autoreferencelabeltext
+  \orelse\ifhasxtoks{:::\wildcardsymbol}{\currentreferenceformatlabel}%
+    \strc_references_check_tripple
+  \orelse\ifhasxtoks{::\wildcardsymbol}{\currentreferenceformatlabel}%
+    \strc_references_check_double
+  \orelse\ifhasxtoks{:\wildcardsymbol}{\currentreferenceformatlabel}%
+    \strc_references_check_single
+  \fi
+  \ifempty\currentreferenceformatlabel
+    \defaultleftreferencetoks {\referenceformatparameter\c!text}%
+    \defaultrightreferencetoks\emptytoks
+  \else
+    \defaultleftreferencetoks {\leftlabeltext \currentreferenceformatlabel}%
+    \defaultrightreferencetoks{\rightlabeltext\currentreferenceformatlabel}%
+  \fi
+  \ifempty\currentreferenceformattype
+    \def\currentreferenceformattype{default}%
+  \fi
+  %
+  \ifempty\currentreferenceformatsetups
+    \def\currentreferencecontent{\filterreference\currentreferenceformattype}%
+  \else
+    \def\currentreferencecontent{\directsetup\currentreferenceformatsetups}%
+  \fi
+  %
+  \enforced\lettonothing\leftofreferencecontent
+  \enforced\lettonothing\rightofreferencecontent
+  %
+  \ifx\currentreferenceformatautocase\v!yes
+    \setcharactercleaning[1]%
+  \fi
+  \ifdone\else
+    \let\currentreferencecontent\strc_references_dummy
+  \fi
+  \leftreferencetoks
+    \ifparameter#2\or
+      {#2}%
+    \else
+      \defaultleftreferencetoks
+      \enforced\lettonothing\leftofreferencecontent
+    \fi
+  \rightreferencetoks
+    \ifparameter#3\or
+      {#3}%
+    \else
+      \defaultrightreferencetoks
+      \enforced\lettonothing\rightofreferencecontent
+    \fi
+   \goto{\referencesequence}[#4]% redundant lookup
+   \strc_references_stop_goto}
+
+\permanent\def\autoreferencelabeltext{\clf_getcurrentreferencelabel}
+\permanent\def\autoreferencenametext {\clf_getcurrentreferencemetadata{name}}
+\permanent\def\autoreferencekindtext {\clf_getcurrentreferencemetadata{kind}}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]

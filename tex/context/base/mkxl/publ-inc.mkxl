@@ -69,13 +69,16 @@
   {\setbox\b_btx_cmd\vbox\bgroup
      \forgetall
      \nohyphens
+     \settrialtypesetting
      \let\currentlist\s!btx
      \setuplist
        [\s!btx]
        [\c!before=,%
         \c!after=]%
-     \setupbtx
-       [\c!specification=\v!default]%
+   % no, makes custom field go wrong, so we would have to push pop
+   % anyway ... now we just used the set one whoch is probbably okay
+   % \setupbtx
+   %   [\c!specification=\v!default]%
      \setupbtxrendering
        [\v!default]%
        [\c!numbering=\v!no]%

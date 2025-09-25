@@ -997,9 +997,9 @@
 \newconditional\c_strc_notes_delayed
 \newconditional\c_strc_notes_flushed
 
-\protected\def\strc_notes_set_delayed_yes{\c_strc_notes_delayed\conditionaltrue\c_strc_notes_flushed\conditionalfalse}
+\protected\def\strc_notes_set_delayed_yes{\c_strc_notes_delayed\conditionaltrue \c_strc_notes_flushed\conditionalfalse}
 \protected\def\strc_notes_set_delayed_nop{\c_strc_notes_delayed\conditionalfalse\c_strc_notes_flushed\conditionalfalse}
-\protected\def\strc_notes_set_delayed_lst{\c_strc_notes_delayed\conditionaltrue\c_strc_notes_flushed\conditionaltrue}
+\protected\def\strc_notes_set_delayed_lst{\c_strc_notes_delayed\conditionaltrue \c_strc_notes_flushed\conditionaltrue }
 
 \defcsname\??notelocation\v!page\endcsname
   {\letcsname\??notedelayedvariant \currentnote\endcsname\strc_notes_set_delayed_nop
@@ -1156,7 +1156,7 @@
    \ifnum\nofcolumns=\zerocount
      \c_strc_notes_columns\plusone
    \fi
-   \page_inserts_set_location  \currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
+   \page_inserts_set_location\currentnoteinsertion\v!columns % \setupinsertion[\currentnote][\c!location=\v!columns]%
    \insertmultiplier\currentnoteinsertionnumber{\plusthousand/\c_strc_notes_columns}%
    \insertlimit     \currentnoteinsertionnumber\ifnotelimit{(\noteparameter\c!height)*\c_strc_notes_columns}\else\maxdimen\fi
    \insertdistance  \currentnoteinsertionnumber\s_strc_notes_distance}
@@ -1165,7 +1165,7 @@
   {\c_strc_notes_delayed\conditionalfalse
    \strc_notes_set_distance
    \strc_notes_set_columns
-   \page_inserts_set_location  \currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
+   \page_inserts_set_location\currentnoteinsertion#whatcolumn% \setupinsertion[\currentnote][\c!location=#whatcolumn]%
    \insertmultiplier\currentnoteinsertionnumber\plusthousand
    \insertlimit     \currentnoteinsertionnumber\ifnotelimit{\noteparameter\c!height}\else\maxdimen\fi
    \insertdistance  \currentnoteinsertionnumber\s_strc_notes_distance}
@@ -1176,7 +1176,7 @@
 \def\strc_notes_set_location_text % we don't use inserts anyway (e.g. endnotes)
   {\c_strc_notes_delayed\conditionaltrue
    \clf_setnotestate{\currentnote}{store}%
-   \page_inserts_set_location  \currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
+   \page_inserts_set_location\currentnoteinsertion\v!text % \setupinsertion[\currentnote][\c!location=\v!text]%
    \insertmultiplier\currentnoteinsertionnumber\zerocount
    \insertlimit     \currentnoteinsertionnumber\maxdimen
    \insertdistance  \currentnoteinsertionnumber\zeropoint}

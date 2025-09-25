@@ -1,5 +1,4 @@
-
-% language=us runpath=texruns:manuals/beyond
+% language=us runpath=texruns:manuals/beyond signal=squid
 
 \environment beyond-style
 
@@ -15,13 +14,29 @@
 
     \startbodymatter
         \component beyond-introduction
-      % \component beyond-paragraphs
-        \startchapter[title=A new take on paragraphs] {\em Appears first in TUGboat.} \stopchapter
-      % \component beyond-twins
-        \startchapter[title=Twins]                    {\em Appears first in TUGboat.} \stopchapter
+        \component beyond-paragraphs
+        \component beyond-twins
         \component beyond-namespaces
-      % \component beyond-bonus
-      % \component beyond-whatif
+        \component beyond-bonus
+        \component beyond-whatif
+        \component beyond-expression
+
+        \startchapter[title={\METAPOST}]     {\em This first appears in \TUGBOAT} \stopchapter
+        \startchapter[title={Getting noisy}] {\em This first appears in \TUGBOAT} \stopchapter
+        \startchapter[title={Pages}]         {\em This first appears in \TUGBOAT} \stopchapter
+        \startchapter[title={Flagging}]      {\em This first appears in \TUGBOAT} \stopchapter
+
+      % \component beyond-metapost     % first in tugboat
+      % \component beyond-noisy        % first in tugboat
+      % \component beyond-pages        % first in tugboat
+      % \component beyond-tagging      % first in tugboat
+
+      % \component beyond-balancing    % todo
+        \component beyond-howcomplex
+      % \component beyond-protection   % todo
+      % \component beyond-programming  % to be finished
     \stopbodymatter
 
 \stopdocument
+
+

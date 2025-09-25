@@ -70,7 +70,7 @@ local cleanvirtual         = resolvers.cleaners.virtual -- false -- for now
 
 local report_jpg           = logs.reporter("graphics","jpg")
 local report_jp2           = logs.reporter("graphics","jp2")
-local report_png           = logs.reporter("graphics","png")
+local report_pngpng           = logs.reporter("graphics","png")
 
 trackers.register("graphics.backend", function(v) trace = v end)
 
@@ -294,6 +294,8 @@ do
 
     -- The amount of code is larger that I like and looks somewhat redundant but we sort of
     -- optimize a few combinations that happen often.
+
+    -- This will go to its own module as we also want to do bytemaps.
 
     local pngapplyfilter = pngdecode.applyfilter
     local pngsplitmask   = pngdecode.splitmask
@@ -1328,6 +1330,8 @@ do
 end
 
 do
+
+    -- we could have a helper for this
 
     local function pack(specification,what)
         local t = { }

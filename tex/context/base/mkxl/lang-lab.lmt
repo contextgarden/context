@@ -88,35 +88,73 @@ end
 --     context.popcatcodes()
 -- end
 
+-- function labels.define(class,name,prefixed)
+--     local list = languages.data.labels[name]
+--     if list then
+--         report_labels("defining label set %a",name)
+--         for key, data in next, list do
+--             local tag = variables[key] or key
+--             if not data.hidden then
+--                 local key = tag
+--                 if prefixed then
+--                     local first, second = lpegmatch(splitter,tag)
+--                     if second then
+--                         if rawget(variables,first) then
+--                             if rawget(variables,second) then
+--                                 key = f_key_key(first,second)
+--                             else
+--                                 key = f_key_raw(first,second)
+--                             end
+--                         elseif rawget(variables,second) then
+--                             key = f_raw_key(first,second)
+--                         else
+--                             key = f_raw_raw(first,second)
+--                         end
+--                     elseif rawget(variables,rawtag) then
+--                         key = f_key(tag)
+--                     end
+--                 end
+--              -- report_labels("defining class %a, key %a, tag %a",class,key,tag)
+--                 definelanguagelabels(data,class,key,tag)
+--             end
+--         end
+--     else
+--         report_labels("unknown label set %a",name)
+--     end
+-- end
+
+local hiddenlabel = interfaces.getnamespace("hiddenlabel")
+
 function labels.define(class,name,prefixed)
     local list = languages.data.labels[name]
     if list then
         report_labels("defining label set %a",name)
         for key, data in next, list do
             local tag = variables[key] or key
-            if not data.hidden then
-                local key = tag
-                if prefixed then
-                    local first, second = lpegmatch(splitter,tag)
-                    if second then
-                        if rawget(variables,first) then
-                            if rawget(variables,second) then
-                                key = f_key_key(first,second)
-                            else
-                                key = f_key_raw(first,second)
-                            end
-                        elseif rawget(variables,second) then
-                            key = f_raw_key(first,second)
-                        else
-                            key = f_raw_raw(first,second)
-                        end
-                    elseif rawget(variables,rawtag) then
-                        key = f_key(tag)
-                    end
-                end
-             -- report_labels("defining class %a, key %a, tag %a",class,key,tag)
-                definelanguagelabels(data,class,key,tag)
+            local key = tag
+            if data.hidden then
+                key = hiddenlabel .. key
             end
+            if prefixed then
+                local first, second = lpegmatch(splitter,tag)
+                if second then
+                    if rawget(variables,first) then
+                        if rawget(variables,second) then
+                            key = f_key_key(first,second)
+                        else
+                            key = f_key_raw(first,second)
+                        end
+                    elseif rawget(variables,second) then
+                        key = f_raw_key(first,second)
+                    else
+                        key = f_raw_raw(first,second)
+                    end
+                elseif rawget(variables,rawtag) then
+                    key = f_key(tag)
+                end
+            end
+         -- report_labels("defining class %a, key %a, tag %a",class,key,tag)
+            definelanguagelabels(data,class,key,tag)
         end
     else
         report_labels("unknown label set %a",name)

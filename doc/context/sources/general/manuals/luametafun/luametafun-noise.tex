@@ -1,0 +1,394 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-noise
+
+\startchapter[title={Noise}]
+
+This feature is work in progress and probably will be for a long time because we
+have to figure out nice parameters to drive this mechanism. An introduction can
+be found in \type {beyond-noisy} which is published in the fall \TUGBOAT\ 2025 by
+Keith McKay and Hans Hagen. Some of what we tell below comes from that article.
+
+With noise we mean so called Perlin noise. Among the many implementations of
+Perlin noise those of Stefan Gustavson at Linköping University makes most sense
+so we started from those. He has has written an excellent introduction on
+procedural methods that can be used for creating pseudo-random noise see
+\hyphenatedurl {https://github.com/stegu/noiseisbeautiful/tree/main} that points
+to \hyphenatedurl
+{https://liu.diva-portal.org/smash/get/diva2:1954979/FULLTEXT01.pdf}.
+
+Although we started our experiments with coding in pure \METAPOST\ eventually we
+ended up with using the available bytemap mechanism combined with a mix of engine
+features and \LUA. This performs well enough to make it a runtime feature.
+
+We show a few examples and assume that you read up on the matter, so we won't
+explain the parameters in detail. Just experiment with them and when you've found
+interesting patterns, share them on the mailing list; we might add some to a
+module.
+
+\startbuffer[perlin-1]
+\startMPcode
+draw lmt_noise [
+    bytemap    = 1,
+    nx         = 200,
+    ny         = 200,
+    nz         = 1,
+    iterations = 1,
+    frequency  = 0.05,
+    minimum    = 0,
+    maximum    = 255,
+    method     = "perlin",
+] xsized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[simplex-1]
+\startMPcode
+draw lmt_noise [
+    bytemap    = 1,
+    nx         = 200,
+    ny         = 200,
+    nz         = 1,
+    iterations = 1,
+    frequency  = 0.05,
+    minimum    = 0,
+    maximum    = 255,
+    method     = "simplex",
+] xsized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[perlin-2]
+\startMPcode
+draw lmt_noise [
+    bytemap    = 1,
+    nx         = 200,
+    ny         = 200,
+    nz         = 1,
+    iterations = 2,
+    frequency  = 0.05,
+    minimum    = 0,
+    maximum    = 255,
+    method     = "perlin",
+] xsized 5cm ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[simplex-2]
+\startMPcode
+draw lmt_noise [
+    bytemap    = 1,
+    nx         = 200,
+    ny         = 200,
+    nz         = 1,
+    iterations = 2,
+    frequency  = 0.05,
+    minimum    = 0,
+    maximum    = 255,
+    method     = "simplex",
+] xsized 5cm ;
+\stopMPcode
+\stopbuffer
+
+Stefan improved the original Perlin a bit and called it Simplex. In addition
+he added features to feed back some details and apply angles. The later permit
+animations: for that you just generate a lot of \METAPOST\ pages and feed
+those into a graphical editor to produce an animated \GIF\ or \PNG.
+
+\typebuffer[perlin-1][option=TEX]
+
+Here we replaced \type {perlin} by \type {simplex} in the comparison. In \in
+{figure} [fig:perlin-simplex] we compare these for one and two iterations. There
+are various parameters that we will shortly explain later:
+
+\starttabulate[|T|||]
+\NC bytemap       \NC number  \NC 1      \NC \NR
+\NC nx            \NC number  \NC 10     \NC \NR
+\NC ny            \NC number  \NC 10     \NC \NR
+\NC nz            \NC number  \NC 1      \NC \NR
+\NC iterations    \NC number  \NC 1      \NC \NR
+\NC amplitude     \NC number  \NC 1.0    \NC \NR
+\NC frequency     \NC number  \NC 1.0    \NC \NR
+\NC persistence   \NC number  \NC 0.5    \NC \NR
+\NC lacunarity    \NC number  \NC 2.0    \NC \NR
+\NC minimum       \NC number  \NC 0      \NC \NR
+\NC maximum       \NC number  \NC 255    \NC \NR
+\NC preamble      \NC string  \NC        \NC \NR
+\NC colorcode     \NC string  \NC        \NC \NR
+\NC colorfunction \NC string  \NC        \NC \NR
+\NC method        \NC string  \NC perlin \NC \NR
+\NC angle         \NC number  \NC 0      \NC \NR
+\NC initialize    \NC boolean \NC true   \NC \NR
+\NC filename      \NC string  \NC        \NC \NR
+\NC trace         \NC         \NC false  \NC \NR
+\stoptabulate
+
+\startplacefigure[location=top,reference=fig:perlin-simplex,title={Perlin versus Simplex, one or two iterations.}]
+    \startcombination[nx=2,ny=2]
+        {\getbuffer[perlin-1]}  {perlin  1}
+        {\getbuffer[perlin-2]}  {perlin  2}
+        {\getbuffer[simplex-1]} {simplex 1}
+        {\getbuffer[simplex-2]} {simplex 2}
+    \stopcombination
+\stopplacefigure
+
+A color function can be more advanced than just returning the normalized noise.
+Here we register one in the \type {MP} namespace. It works with one of the
+derivatives.
+
+\startbuffer[detail-lua]
+\startluacode
+    local cos = math.cos
+    local r = 256
+    function MP.MyFunction(v,x,y,dx,dy)
+        -- dx dy only available in last step
+        return dy and cos(r-dy) * r
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer[detail-lua][option=TEX]
+
+\getbuffer[detail-lua]
+
+\startbuffer[detail-mps]
+\startMPcode
+    draw lmt_noise [
+        bytemap       = 9,
+        nx            = 200,
+        ny            = 200,
+        nz            = 1,
+        iterations    = \recurselevel,
+        frequency     = .05,
+        amplitude     = 1,
+        lacunarity    = 2.0,
+        minimum       = 0,
+        maximum       = 255,
+        colorfunction = "MyFunction",
+        method        = "detail",
+    ] xsized .2TextWidth ;
+\stopMPcode
+\stopbuffer
+
+We will loop a few times to show the difference between iterations as
+demonstrated in \in {figure} [fig:detail].
+
+\typebuffer[detail-mps][option=TEX]
+
+\startplacefigure[reference=fig:detail,title={Detail noise generation with 2 upto 5 iterations.}]
+    \dontleavehmode
+    \hbox to 1tw \bgroup
+        \hss
+        \dostepwiserecurse{2}{5}{1}
+          {\getbuffer[detail-mps]\hss}%
+    \egroup
+\stopplacefigure
+
+The next (third) example is actually a nice one, as it combines several \METAFUN\
+features. For this we use a slightly adapted \TEX\ logo because we want
+overlapping glyphs. A suitable font for this purpose is \TEX Gyre Bonum.
+
+\protected\frozen\instance\def\MyTeX
+  {\dontleavehmode
+   \begingroup
+   \scratchdimen\scaledfontcharwd\font`M%
+   T%
+   \kern-.1667\scratchdimen
+   \lower.415\exheight\hbox{E}% but on the average this looks better
+   \kern-.125\scratchdimen
+   X%
+   \endgroup}
+
+\startbuffer[angle-lua]
+\startluacode
+    function MP.MyFunction(v)
+        return v/2, v, v/4
+    end
+\stopluacode
+\stopbuffer
+
+\typebuffer[angle-lua][option=TEX]
+
+\getbuffer[angle-lua]
+
+An angle is used to calculate a sin and cosine multiplier so we get rotating
+effects. This example was used to check how well an animation will look as well
+as performance. Keep in mind that \TEX\ is not really an animation machine, but
+these graphics can be used in that context. One can of course imagine changing
+page backgrounds in a document.
+
+\startbuffer[angle-mps]
+\startMPcode
+draw
+    (
+        lmt_outline [
+            kind = "outline",
+            text = "\strut \bf \MyTeX",
+        ]
+    ) xsized .25TextWidth
+    withpattern image (
+        draw lmt_noise [
+            bytemap       = 4,
+            nx            = 500,
+            ny            = 500,
+            nz            = 3,
+            iterations    = 1,
+            frequency     = 0.01,
+            amplitude     = 1,
+            persistence   = 0.5,
+            lacunarity    = 2.0,
+            minimum       = 0,
+            maximum       = 255,
+            colorfunction = "MyFunction",
+            method        = "angle",
+            angle         = \recurselevel,
+          % z             = sqrt(\recurselevel),
+          % trace         = true,
+        ] xsized .25TextWidth ;
+    ) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[angle-mps][option=tex]
+
+\startplacefigure[reference=fig:angle,title={Angled noise generated logos, to be used in a movie.}]
+    \switchtobodyfont[bonum]
+    \dontleavehmode
+    \hsize 1tw \lineskip1.5ex
+    \dostepwiserecurse{0}{110}{10}
+      {\getbuffer[angle-mps]%
+       \space}%
+\stopplacefigure
+
+\stopsubject
+
+\startsubject[title=Controlled noise]
+
+The bytemap resolution is determined by \type {nx} and \type {ny} and the color
+depth \type {nz}. We need to explicitly mention a bytemap number because later on
+one might want to mess with it. When \type {filename} is given that file is
+loaded. It had better be a \PNG\ image! When \type {initialize} is false an
+existing bytemap is used.
+
+Possible \type {method}s are perlin, simplex, detail and angle. Internally these
+will be combined with an optional \type {angle} and \type {z} parameter to choose
+the right generator. The result is normalized to the range \type {minumum} and
+\type {maximum}.
+
+The \type {colorfunction} has been show above and alternatively one can specify
+one or three return values in \type {colorcode} in which the \type {preamble} can
+define \LUA\ shortcuts. We leave it at this, since there is more in the manuals.
+
+That leaves the parameters that really control the noise. The general term of the
+wrapping generator is called \quote {octave} because multiple steps determine the
+result. A single step over \type {x} and \type {y} is defined as follows, we use
+\LUA\ speak:
+
+\starttyping[option=LUA]
+maxamplitude = 0
+for i = 1, iterations do
+    result       = simplex_noise_2(x * frequency, y * frequency)
+    noise        = noise + amplitude * result
+    maxamplitude = maxamplitude + amplitude
+    amplitude    = amplitude * persistence
+    frequency    = frequency * lacunarity
+}
+noise = noise / maxamplitude
+noise = noise * (maximum - minimum) + (maximum + minimum)
+noise = noise / 2
+if noise > maximum then
+    noise = maximum
+elseif noise < minimum then
+    noise = minimum
+end
+\stoptyping
+
+An explanation of these terms and additional terms can be found on the internet
+and in the literature relating to Perlin noise. They can explain this way better
+than we can. Here we just want to show what is involved. Believe us, the \type
+{simplex_noise_2} and similar functions do quite some computations so it is
+surprising that we can be as fast as we are!
+
+To give you a taste of future usage, we show what the the example library \typ
+{\useMPlibrary [noise]} provides: backgrounds.
+
+\startbuffer[1]
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   background=perlinframe,
+   rulethickness=4pt]
+  {Here is an example of a noisy frame around some text.}
+\stopbuffer
+
+\startplacefigure[reference=noisy:1,title=A noisy frame.]
+    \getbuffer[1]
+\stopplacefigure
+
+\startbuffer[2]
+\startuseMPgraphic{perlinbackground}{min,max}
+    PerlinOverlay(1, 50, 255, 50, 3, "1-v, 0, v") ; % updated
+\stopuseMPgraphic
+
+\framed
+  [align=normal,
+   frame=off,
+   offset=4pt,
+   foregroundstyle=bold,
+   foregroundcolor=white,
+   background=perlinbackground,
+   rulethickness=4pt]
+  {\samplefile{zelensky}}
+\stopbuffer
+
+\startplacefigure[reference=noisy:2,title=More colorful noise behind a quote (Zelensky).]
+    \switchtobodyfont[bonum]
+    \getbuffer[2]
+\stopplacefigure
+
+\in {Figure} [noisy:2] is defined as follows. We use a predefined \METAPOST\
+graphic that we hook into the framed command.
+
+\typebuffer[2][option=TEX]
+
+We use the opportunity to point out that we can fill a bytemap with noise but
+then optionally wipe out part of that bytemap, which is what we do when we just
+want an outline. As you can see, we have access from the \METAPOST\ end to
+properties like \typ {OverlayWidth} that relate to the background (an overlay).
+These are actually \type {vardef} macros that does an efficient \LUA\ call to get
+some property.
+
+\starttyping[option=MP]
+def PerlinOverlay(expr kind, min, max, med, n, code) = % updated
+    numeric resolution ; resolution := 5 ;
+    numeric variation ; variation := 100 ;
+    numeric nx ; nx := resolution * round(OverlayWidth +2OverlayOffset);
+    numeric ny ; ny := resolution * round(OverlayHeight+2OverlayOffset);
+    numeric lw ; lw := resolution * round(OverlayLineWidth);
+    picture p ; p := image ( draw lmt_noise [
+        bytemap   = 3,
+        nx        = nx,
+        ny        = ny,
+        nz        = n,
+        method    = "detail",
+        minimum   = min,
+        maximum   = max,
+        colorcode = code,
+        z         = if variation <> 0 : uniformdeviate fi variation,
+    ] ) ;
+    if kind == 0 : % frame
+        setbyte (lw,lw,nx-2lw,ny-2lw) of 3 to 255 ;
+    elseif kind == 2 : % ligher inside
+        setbyte (lw,lw,nx-2lw,ny-2lw) of 3 to (med,max) ;
+    fi ;
+    draw p xysized (OverlayWidth,OverlayHeight) ;
+enddef ;
+\stoptyping
+
+\stopchapter
+
+\stopcomponent
+

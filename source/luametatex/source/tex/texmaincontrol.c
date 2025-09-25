@@ -577,14 +577,13 @@ static void tex_aux_run_active(void)
 {
     if ((cur_mode == mmode || lmt_nest_state.math_mode) && tex_check_active_math_char(cur_chr)) {
         /*tex We have an intercept. */
-        tex_back_input(cur_tok);
     } else {
         cur_cs = tex_active_to_cs(cur_chr, ! lmt_hash_state.no_new_cs);
         cur_cmd = eq_type(cur_cs);
         cur_chr = eq_value(cur_cs);
         tex_x_token();
-        tex_back_input(cur_tok);
     }
+    tex_back_input(cur_tok);
 }
 
 /*tex

@@ -1,0 +1,713 @@
+% language=us
+
+% \justimageoffset .25\onebasepoint \justimages
+% \justimages
+
+\setupfloats[ntop=10]
+
+\startcomponent beyond-twins
+
+\environment beyond-style
+
+\startchapter[title=Twin demerits,author=Hans Hagen & Mikael Sundqvist]
+
+{\em This chapter was written for the \TUGBOAT\ and appeared as preprint in the
+proceedings of the 2024 \CONTEXT\ meeting. Many thanks to Karl Berry who, as
+usual, improved the writing a lot and also gave valuable feedback on the
+confusing bits of the content. Thanks Karl!}
+
+Upgrading math support in \CONTEXT\ not only concerns rendering formulas but also
+breaking formulas across lines. For instance, fenced formulas should cross lines
+while retaining the automatic scaling of fences but at the same time you don't
+want a single fence at the beginning or end of a line. Longer formulas should
+preferably break somewhere away from the begin and start. Single atoms should not
+end up at the end of a line and the same is in fact true for text. The later can
+be prevented by so|-|called toddler penalties. And then there are languages where
+(binary) operators need to be repeated, in a similar way as hyphens, at the start
+of a broken line. Alternative content (swapping one word for another in order to
+get a visually better looking paragraph) is also possible but those are more
+(usable) proofs of concept than features used daily. We are fans of the \quote
+{rewrite if needed} approach, but it is of course a nice and fun challenge to
+solve some typographical problems in a generic way, when possible.
+
+So, looking at the end of a broken line and the beginning of the following
+becomes second nature when moving forward with development. In order to explore
+and test all these possibilities, we added ways to trace the process of breaking
+lines: we love to visualize such things. When playing with this we also looked at
+the start and end of lines with repeated sequences, for instance avoiding the
+same words or math variable stacking at the start or end, similar to repeated
+hyphens. But we had enough on our plate to not fully explore this beyond some
+experiments.
+
+Around that time we had some email contact with Didier Verna, who at the 2023
+\TUG\ meeting reported on some experiments he conducted in the ETAP (Experimental
+typesetting algorithms platform) software that he develops. He followed up on
+that in 2024 with a preprint of an article reporting on further experiments,
+especially avoiding similar words at the start and end of successive lines.
+\footnote {Similarity Problems in Paragraph Justification, An Extension to the
+Knuth|-|Plass Algorithm, Didier Verna, EPITA Research Laboratory, Le
+Kremlin|-|Bicêtre, France, July 2024 (preprint).} Of course given the long
+history of \TEX\ it is no surprise that the wish to avoid that has been expressed
+before, but this was the first time we have seen detailed data on the topic. We
+already knew that extensions to the par builder didn't come at a huge performance
+hit and Didier, also knowing this, therefore wondered if adding such prevention
+to the engine was an option.
+
+Before we dive into this one should notice that over time many suggestions have
+been made with regards to where \TEX\ can be improved. Among the reasons why
+these never made it into the engine are that \TEX\ is frozen, so extensions have
+to go into successors like \ETEX, \PDFTEX, \XETEX, \LUATEX, \LUAMETATEX, etc. One
+complication is in the way \TEX\ is programmed: it uses a linked list of nodes
+for what eventually becomes a list of lines, a paragraph. This is a
+forward|-|linked list so one cannot look back, although in some cases \TEX\ keeps
+a pointer to the previous node around. But looking back a \quote {word} demands
+quite a bit of extra code. In \LUATEX\ and \LUAMETATEX\ we have a dual linked
+list so there we can go back. This means that implementing a feature as discussed
+here is less hard and also can be prototyped in \LUA. On top of that, in
+\LUAMETATEX\ we also carry around more information to act upon. Of course it
+doesn't change the fact that while experiments can show that \quote {it can be
+done} doesn't mean that we don't run into complications that have to be dealt
+with in order to make it usable and not backfire with bad results elsewhere. We
+will show a few cases that demonstrate that one reason for engines not to support
+this out of the box is that for a single (extra) feature like this, one likely
+has to add far more control options. So keep this in mind when reading on: there
+is always more involved than at first sight. What looks like a home run for
+\LUAMETATEX\ is less so for other engines.
+
+As we had been playing a bit with tracing and analysing decisions we have a
+mechanism in place to plug code into the par builder. We use this for instance to
+force breaks based on feedback. Discouraging a break at similar words can be done
+using those same hooks so we decided to take the challenge and just made it a
+more permanent feature, possibly with the side effect of it being more integrated
+in the engine. \footnote {We often keep experimental code around, interfaced not
+at the user level but via runtime directives, if only because we need it for
+articles. Supporting a feature as discussed here needs some thinking with respect
+to integrating in, for instance, the paragraph rendering setups which differs
+from low|-|level directives.} Below are some outcomes that can be seen as a
+progress report on this feature.
+
+The first thing we did was go back to the already existing callback. Because the
+builder is rather complex (keep in mind that we have several extensions) there
+are nine places where the callback can be triggered, mysteriously identified as:
+initialize, start, list, stop, collect, line, delete, report, and wrap up. Each
+call to the same callback gets a different set of status parameters that at that
+particular moment make sense. It is up to \LUA\ code to collect, analyze,
+feedback and|/|or use it somehow. This plugin mechanism seems like a lot of
+overhead but as it is only needed for tracing it goes unnoticed.
+
+When we play with these repeated words we distinguish between what we call left
+and right edge twins. \footnote {So in addition to widows, clubs, toddlers and
+orphans we now have twins too.} We look at glyphs as well as discretionaries and
+ignore font kerns. We need to check the pre, post and replacement parts of
+discretionary nodes because we must assume that more complex \OPENTYPE\ features
+might give a more complex discretionary than a single hyphen. \footnote {In his
+preprint Didier only mentions glyphs and stops in his experiments at
+discretionary nodes.}
+
+Using a \LUA\ approach is quite flexible and permits nice tracing but, as said,
+it abuses a callback that, due to the many different invocations, is not the best
+candidate for this. We could add another callback but that is overkill.
+Therefore, after testing, part of the \LUA\ code has been turned into a native
+feature so that we can do both: native twin checking as well as tracing of the
+break routine (which we need for testing par passes) but also exploring more
+variants using that callback.
+
+So, the reference implementation is still done in \LUA\ where we then also have
+twin tracing. In principle that is fast enough; the overhead on a 240 page (1000)
+Tufte quote test is around .1 seconds. The native \CCODE\ implementation works
+slightly differently but is derived from the \LUA\ code. In the engine we have
+some constraints, such as limiting the maximum length of a snippet to 16
+characters.
+
+In both cases (\LUA\ and \CCODE) the overhead is rather small because we look
+only at a limited set of breakpoints. In \LUA\ we gain performance by caching, in
+\CCODE\ by limiting the snippet. We can squeeze out some more performance if
+needed by immediately comparing the second snippet with the first one. Unlike the
+\LUA\ variant, the \CCODE\ implementation checks for a so|-|called glyph option
+being set. \footnote {Glyph options control features like kerning, ligature
+building, protrusion, expansion, at the individual glyph level.} Because it has
+to fit into how we handle linebreak controlling parameters, we carry new \typ
+{\lefttwindemerits} and \typ {\righttwindemerits} registers in the paragraph
+state node and we can also set it in the (optional extra) paragraph passes, so
+that it can be disabled when we get bad results. This makes a relatively small
+patch a bit larger due to housekeeping.
+
+With support in the engine (\CCODE) as well as in \LUA\ (the callback), we can
+now come back to some of the observations we made when we discussed this feature
+during experiments. But first let's stress that adding this feature to the engine
+makes sense so that users can play with it, but this doesn't mean that it always
+solves the problem. Also, like other features, one might only benefit in a few
+places in hundreds of pages of text. One should always visually check the result.
+
+\startbuffer
+In olden times when wishing still helped one, there lived a king whose daughters
+were all beautiful; and the youngest was so beautiful that the sun itself, which
+has seen so much, was astonished whenever it shone in her face. Close by the
+king’s castle lay a great dark forest, and under an old lime-tree in the forest
+was a well, and when the day was very warm, the king’s child went out into the
+forest and sat down by the side of the cool fountain; and when she was bored she
+took a golden ball, and threw it up on high and caught it; and this ball was her
+favorite plaything.
+\stopbuffer
+
+In his article Didier uses a quote (from Grimm Brothers' \quotation {Frog King})
+that in his case has three \quote {and}'s in row (using an eight bit Computer
+Modern font). Actually there are four \quote {and}'s close together that can team
+up. Here we use a different setup with the same quote. We have different defaults
+for e.g.\ tolerance and spacing in \CONTEXT\ anyway. In \in {figure} [example:1],
+we start with the paragraph as it comes out normally, using 12 point Latin Modern
+and an \type {\hsize} of 82mm.
+
+\startplacefigure[reference=example:1]
+    \switchtobodyfont[modern,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+            \lefttwindemerits 0
+            \righttwindemerits0
+            \hsize82mm \getbuffer
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+In \in {figure} [example:2] we show what we get when we set the demerits to 7500
+thereby enabling twin detection. This number is pretty high because demerits are
+usually large numbers, as in squared penalties. When a paragraph is broken into
+lines \TEX\ keeps track of reasonable breakpoints. As it goes over the paragraph
+breakpoints get identified and depending on criteria previous breakpoints get
+looked at. That means that at any of these points we can check if there are
+similar words before and|/|or after a pair. If that is the case one or both extra
+demerits get added to the current accumulated amount. Normally the current amount
+is in the thousands so that is why we need relatively high twin values.
+
+\startplacefigure[reference=example:2,title={Twin demerits parameters set to 7500, engine implementation.}]
+    \switchtobodyfont[modern,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize82mm \getbuffer
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+In \in {figure} [example:2] we use the engine variant; in the next example we use
+the \LUA\ implementation, which permits coloring the snippets that we found
+troublesome. Tracing also happens on the console and that is why we use the
+callback: if we report the words that matter, we need a proper \UNICODE\ string
+and in a typeset paragraph we might have (in the case of \CONTEXT) private ones
+that point to ligatures, case variants, stylistic alternates etc.
+
+\startplacefigure[reference=example:3,title={\LUA\ implementation, with colored snippets.}]
+    \switchtobodyfont[modern,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \enableexperiments[parbuilder.twins]%
+            \enabletrackers[typesetters.twindemerits]%
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize82mm \getbuffer \par
+            \disabletrackers[typesetters.twindemerits]%
+            \disableexperiments[parbuilder.twins]%
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+Notice that we not only detect an \quote {and} case here but also a hyphenated
+part of \quote {forest}. Of course the whole \quote {forest} could also have
+shown up as a candidate.
+
+All this depends a lot on the fonts and widths used. In \in {figure} [example:4]
+we use the Pagella font. It demonstrates that one cannot simply assume that when
+twins get set up the desired effect occurs. Again we set the values to 7500, and
+in \in {figure} [example:5] we get the same results, contrary to the Latin Modern
+case.
+
+\startplacefigure[reference=example:4,title={The Pagella font, without twin detection.}]
+    \switchtobodyfont[pagella,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+            \lefttwindemerits 0
+            \righttwindemerits0
+            \hsize82mm \getbuffer
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+\startplacefigure[reference=example:5,title={The Pagella font, with twin detection, but line breaks are unchanged.}]
+    \switchtobodyfont[pagella,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize82mm \getbuffer
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+\in {Figure} [example:6] uses the \LUA\ variant so that we can show the
+candidates, red for the right ones; later we'll also see green for the left ones
+and yellow for both left and right. In all cases, words are colored when they
+were considered as twins at some point in the paragraph processing, even if those
+particular line breaks were discarded later. Thus, the colored words might show
+up anywhere in a paragraph.
+
+At any rate, the reason why it doesn't work out here is that we need to bump the
+tolerance and also permit emergency stretch. This shows that just enabling a
+feature doesn't guarantee results. So, \in {figure} [example:7] does that: more
+tolerance and possible emergency stretch. Playing with the widths shows that
+single point differences can have quite some effect.
+
+\startplacefigure[reference=example:6,title={Showing candidates in the Pagella example.}]
+    \switchtobodyfont[pagella,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \enableexperiments[parbuilder.twins]%
+            \enabletrackers[typesetters.twindemerits]%
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize82mm \getbuffer \par
+            \disabletrackers[typesetters.twindemerits]%
+            \disableexperiments[parbuilder.twins]%
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+\startplacefigure[reference=example:7,title={With more tolerance and emergency stretch.}]
+    \switchtobodyfont[pagella,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \setupalign[verytolerant,stretch]%
+            \enableexperiments[parbuilder.twins]%
+            \enabletrackers[typesetters.twindemerits]%
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize82mm \getbuffer \par
+            \disabletrackers[typesetters.twindemerits]%
+            \disableexperiments[parbuilder.twins]%
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+Finally we show a few examples with nonsense text. The red words are the ones
+that show up at the right, the green ones on the left, but when a word can occur
+at both ends yellow is used.
+
+\starttexdefinition Test #1#2#3#4
+    \enableexperiments[parbuilder.twins]
+    \enabletrackers[typesetters.twindemerits]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \setupalign[verytolerant,stretch]%
+          % \hsize\textwidth
+          % \hsize426.78743pt
+            \lefttwindemerits 7500
+            \righttwindemerits7500
+            \hsize#4
+            #3%
+            \lefttwindemerits #1\relax
+            \righttwindemerits#2\relax
+          % \dorecurse{40}{more and {efficiency} and {efficient} }
+            \dorecurse{20}{more and {efficiency} and {efficient} }
+            \removeunwantedspaces
+        \stopframed
+    \stopimage
+    \disabletrackers[typesetters.twindemerits]%
+    \disableexperiments[parbuilder.twins]%
+\stoptexdefinition
+
+\startplacefigure[reference=example:8,title{With demerit registers set to 5000.}]
+    \switchtobodyfont[pagella,12pt]
+    \Test {5000} {5000}{}{426pt}
+\stopplacefigure
+
+With the demerits set to 5000 (\in {figure} [example:8]) we still get a few
+\quote {efficien} at the left but they are different words. One can argue that we
+could use some snippet length (say six glyphs) but of course then something else
+will bother us. In the next variant of the above, we set \typ {\parfillskip} such
+that we have a different solution space, combined with an extreme 25000 demerits
+(\in {figure} [example:9]). In both examples we use a 426 point width.
+
+\startplacefigure[reference=example:9,title={With unusual \cs{parfillskip} and demerit registers at 25000.}]
+    \switchtobodyfont[pagella,12pt]
+    \Test{25000}{25000}{\parfillskip0pt plus 0pt minus 10pt}{426pt}
+\stopplacefigure
+
+Going narrower, as in \in {figure} [example:10], brings us words that can be at
+either end (shown in yellow) and leaves us without solution but that is what we
+expect. One can conclude that this feature works best with a wider layout and is
+not that useful in columns, unless one prefers excessive space glue over no
+twins, but the good news is that \TEX\ is unlikely to favor that.
+
+\startplacefigure[reference=example:10,title={Narrower \cs{hsize}.}]
+    \switchtobodyfont[pagella,12pt]
+    \Test{25000}{25000}{\parfillskip0pt plus 0pt minus 10pt}{200pt}
+\stopplacefigure
+
+So what can we conclude? First of all that it is indeed possible to get rid of
+repetition. To what extent this improves a document while not introducing
+suboptimal paragraphs we leave to the user; Didier makes a case for it.
+Performancewise, there is no reason not to enable it. We did some tests with the
+larger documents that we also use for testing other features (math line breaking,
+page building) and when there are twins seen sometimes they do indeed get
+separated.
+
+One of our test documents, the King James bible in two columns using the
+Unifraktur font, is a good candidate but although we find candidates only in some
+cases the line break routine was not always influenced by the increased demerits.
+Examples of two letter words are \quote {of} and \quote {is} and of course it
+being English we find plenty \quote {the} and \quote {and} but some still ended
+up below each other, simply because we have narrow columns. In \in {figure}
+[example:11] (a bitmap screenshot) we see an interesting case but one that
+happened to render the same without twin detection. Words like \quote {their} and
+\quote {shall} happily team up as twins, no matter how high we set the demerits.
+
+\startplacefigure[reference=example:11,title={Example from the bible.}]
+    \startimage
+        \externalfigure[beyond-twins-001.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+In the \PDFTEX\ project, font expansion was tested on an annotated bible and the
+combination of text, notes, numbers, references was a real challenge. \footnote
+{\THANH's thesis reported on that.} In the abovementioned King James we don't
+have those constraints but one can wonder what setup will make the verse in \in
+{figure} [example:12] come out better. We bet that the double twins here are
+considered less of a problem than excessive spacing or extreme expansion.
+
+\startplacefigure[reference=example:12,title={With perhaps too much font expansion.}]
+    \startimage
+        \externalfigure[beyond-twins-002.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+The good news is that in this 740 page document, there were quite a few catches,
+like the one in \in {figure} [example:13]. In some cases we got one line more or
+less and therefore a different column or page break. Of course this itself then
+can create a problem, like a widow or club but we set that up with pretty high
+penalties and combined with vertical expansion and page slack tolerance (both are
+relatively new features) we still get good output so overall we gain in quality!
+
+\startplacefigure[reference=example:13,title={Overlaying results; the first line ends with a doubled \quote{the}.}]
+    \startimage
+        \externalfigure[beyond-twins-003.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+We tested two other documents that show some interesting (challenging) aspects.
+In Mikael's university course we compared the versions with and without twin
+control. The tracer identified 25 situations where demerits could be bumped. We
+noticed that \quote {att}, \quote {och}, \quote {så}, \quote {vi} and other short
+words were popular candidates but after turning on tracing we saw that many were
+left and were surprised to see quite a few longer words, with of course in a math
+book quite some \quote {komplexa} and \quote {negativa} showing up at the edge.
+
+Keep in mind that we only look at a subset of the possible breakpoints. Of these
+25 only 5 were applied, so for the other 20 the solution space was not adequate.
+For the 5 cases the solution resulted in somewhat narrower lines so we wondered
+if additional par passes made (hz) expansion kick in but it didn't so in the end
+we're okay. Of the 20 remaining cases 10 had long words, some with hyphenation so
+actually we had more cases. An interesting side effect of tracing (by color) is
+that we noticed that the long words also had successive words and that rewriting
+the paragraph made sense.
+
+\startplacefigure[reference=example:21,title={Math example; the \quote {alla} on the first line is repeated at the
+bottom of the previous page.}]
+    \startimage
+        \externalfigure[beyond-twins-011.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+In a math document sometimes it's unavoidable. In \in {figure} [example:21] we
+see a few troublemakers and \quote {alla} is actually not resolved. The figure
+shows the top of a page and at the bottom of the previous page there's also
+\quote {alla}. We don't even want to ponder how to bring page breaks into this
+model. One can also wonder what is more troublesome: edge cases or middle cases.
+
+Also worth noticing is that when twins end up in the middle they tend to stack
+even when the par builders in the end didn't consider the end|-|of|-|line case
+anyway. A bad example had three separate slightly offset but still stacked long
+words, shown in \in {figure} [example:22]. And, once the author saw this, he made
+a note to \quotation {fix it by rephrasing}.
+
+\startplacefigure[reference=example:22,title={Worse math example.}]
+    \startimage
+        \externalfigure[beyond-twins-012.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+The \quote {solved} cases were mostly short words but so were unsolved ones; see
+\in {figure} [example:23]. The constraints that math put on breaking the lines
+win over any twin constraints we add. We also were confirmed in our decision to
+take discretionaries into account.
+
+\startplacefigure[reference=example:23,title={Math example.}]
+    \startimage
+        \externalfigure[beyond-twins-013.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+We also tested a document that Mikael typeset from Gutenberg sources for a book
+club, Henry James' {\em The Turn of the Screw}. Here we again noticed quite a few
+duplicates but also quite a few eventually separated twins, as in \in {figure}
+[example:25].
+
+\startplacefigure[reference=example:25,title={From \quotation {The Turn of the Screw}.}]
+    \startimage
+        \externalfigure[beyond-twins-015.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+In \in {figure} [example:27] we wondered if the twin handler had kicked in which
+indeed was the case. But we also noticed that without this mechanism being
+enabled, the same midline stacking occurred. However, in both cases, without
+coloring they can easily go unnoticed; just try to locate them in \in {figure}
+[example:28]. (See \in {figure} [example:showtwins] for the results.)
+
+\startplacefigure[reference=example:27,title={Another text from \quotation {The Turn of the Screw}.}]
+    \startimage
+        \externalfigure[beyond-twins-017.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+\startplacefigure[reference=example:28]
+    \startimage
+        \externalfigure[beyond-twins-018.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+This document also demonstrated that words close together tend to register as
+siblings, and when Mikael showed one of his children what we were looking at, she
+noticed disturbing repetitions which we hadn't noticed before. \footnote {From
+\in {figure} [example:14] you can deduce what words were involved. In that
+example there are many possible twins, so we set \cs {twinslimit} to~3, a feature
+added for this purpose to the \LUA\ version.} But adding more tricky mechanisms
+will only make the solution space smaller so we will not reveal every annoyance.
+We did once consider \type {\siblingpenalty} but already forgot what for, but we
+hereby reserve that name.
+
+\startplacefigure[reference=example:14,title={Example of many twins, with \cs{twinslimit=3}.}]
+    \startimage
+        \externalfigure[beyond-twins-014.png][width=.75\textwidth]
+    \stopimage
+\stopplacefigure
+
+There is plenty left to explore. It is not uncommon in the \TEX\ community to
+hear users (and developers) express the wish for a feature, offer a few examples
+of why it's needed, and then fall silent. Time and money can be arguments used to
+not spend time on actually implementing something and the possibility keeps
+floating around. One can play science and stop an experiment with the usual
+\quotation {suggestions for further research} and move on. It's therefore nice to
+see some real research on the topic as with Didier's using a prototype. However,
+because typesetting is pretty much about esthetics and boundary conditions we
+have to face reality and that's what we hit when testing. An example is the
+following case:
+
+\starttyping
+.... \im {x+1}.
+.... \im {x+2}.
+\stoptyping
+
+In the paragraph stream we get math formulas followed by a period. However, what
+we really get after the \quote {1} and \quote {2} is a math end node, a penalty,
+and a (likely zero) glue or kern (depending on what we configured). This means
+that the period is seen as a snippet and so we get a twin here, and bumping
+demerits then interferes with our rather advanced math spacing and penalty model.
+This made us be more strict in what makes for a possible sibling: we expect glue
+and glyph after and|/|or glyph and glue before. Maybe we should be even more
+restrictive and look at character properties which makes us end up in \LUA.
+
+Another challenge is shown in \in {figure} [example:27b], where we have twins
+that are followed by punctuation. So how do we tackle that? At the \LUA\ end we
+have access to the font properties so there we can act on the original \UNICODE\
+character being punctuation, in which case we can ignore it. At the \TEX\ end we
+need to figure that out differently. We could look at the \type {\sfcode} but
+that's rather unreliable. We could have a callback that gives the required
+property information, but do we really want an extra callback? In the example the
+third paragraph is done by our \LUA\ implementation. The second one comes from
+the engine where we use an experimental character control feature that we set up
+for this case. \footnote {Think of \cs {cccode"2E = "0001} (period) and \cs
+{cccode"2C = "0001} (comma) that sets the \quote {ignore twin} bit, where
+\cs{cccode} is the ``character control'' primitive.} The verdict is still open if
+we add this feature, also because for it to be useful yet another field in the
+glyph node would be required.
+
+\startplacefigure[reference=example:27,title={Twins with punctuation. First paragraph has default processing;
+        second with an experimental engine feature, third with \LUA.}]
+    \startimage
+        \externalfigure[beyond-twins-021.png][width=.5\textwidth]
+    \stopimage
+\stopplacefigure
+
+So, as we move on and test more, additional constraints can occur. It is easy to
+come up with various \quotation {\TEX\ should do this or that}, or even
+\quotation {I looked into it and it can be done}, and then end up with \quotation
+{Sorry, not now.} It does take time and effort indeed but it also brings one into
+unknown territory. So, we do show that it can be done but we will never claim
+that what we do is perfect and we definitely do not enable it by default. It will
+take some time and likely input from \CONTEXT\ users to fine|-|tune this,
+assuming it gets used. It can currently be enabled by setting one of the align
+options:
+
+\starttyping
+\setupalign[notwins] % for the brave: [notwins,notoddlers,noorphans]
+\stoptyping
+
+Let's end with some statistics. In this document we enable multiple par passes,
+but the number of times that these are needed is small. The extra overhead can
+often be neglected anyway. Here's how many first, second and emergency passes we
+have and how often additional sub|-|passes were needed to fit the criteria. In
+the King James we bumped the demerits by 7500 for 665 left twins, 772 right twins
+and 113 of these end up left and right.
+
+\starttabulate[|l|c|c|c|c|]
+\BC context \BC first  \BC second            \BC emergency     \BC sub|-|pass      \NC \NR
+\NC page    \NC 35989  \NC 4733 (13\percent) \NC 0 (0\percent) \NC 282 (1\percent) \NC \NR
+\NC vbox    \NC  2942  \NC  734 (25\percent) \NC 0 (0\percent) \NC   0 (0\percent) \NC \NR
+\stoptabulate
+
+The document has 246,470 words, of which 112,329 get hyphenated in 35,750 checked
+node lists. A run without twin detection takes 14.50 seconds, with engine twin
+detection that gets raised to 14.75 seconds. Because here we have only text and
+many small paragraphs the \LUA\ variant performs relatively slowly: 15.35
+seconds. Tracing, marking words with color and reporting to the console adds .15
+seconds to that. This document is not the fastest to process: we use columns, a
+rather demanding font, selective expansion (sub|-|pass driven), and the sources
+are \XML\ which gets interpreted and remapped on the fly.
+
+Thanks to Didier for inviting us to prove that it can be added to the engine with
+little effort and providing some stimulating statistics. Let's end with some more
+because it can't be that there is no performance hit when we enable this feature,
+right? So let's check out three scenarios:
+
+% \lefttwindemerits 0
+% \righttwindemerits0
+%
+% % \bitwiseflip\glyphoptions\checktwinglyphoptioncode
+% % \lefttwindemerits7500
+% % \righttwindemerits7500
+%
+% % \bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+% % \lefttwindemerits7500
+% % \righttwindemerits7500
+%
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestA{\elapsedtime}
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestB{\elapsedtime}
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestC{\elapsedtime}
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestD{\elapsedtime}
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestE{\elapsedtime}
+% \testfeatureonce{15000}{\setbox\scratchbox\vbox{\samplefile{tufte}}} \edef\TestF{\elapsedtime}
+%
+% \startTEXpage
+%     \strut
+%     \TestA \quad
+%     \TestB \quad
+%     \TestC \quad
+%     \TestD \quad
+%     \TestE \quad
+%     \TestF \quad
+% \stopTEXpage
+
+\startitemize[n]
+    \startitem
+        The \type {\glyphoptions} variable has the \quote {checktwin} bit set but
+        both twin demerits parameters are zero, so we never enter the check.
+    \stopitem
+    \startitem
+        The \type {\glyphoptions} variable has the \quote {checktwin} bit set and
+        both twin demerits parameters are 7500. We enter the check and per-glyph
+        options permit it.
+    \stopitem
+    \startitem
+        The \type {\glyphoptions} variable has the \quote {checktwin} bit unset but
+        both twin demerits parameters are 7500. We enter the check but per-glyph
+        options prevent it from succeeding.
+    \stopitem
+\stopitemize
+
+In \CONTEXT\ we set the demerits and use the options bit to control it, so we
+always have the check but can quit after some initial tests (case 2 and 3). The
+numbers below are for ten runs of 15000 times each of the well-known Tufte quote,
+for each of the three cases:
+
+\starttyping
+\setbox\scratchbox\vbox{\samplefile{tufte}}}
+\stoptyping
+
+\starttabulate[|c|c|c|c|c|c|c|c|c|c|c|c|]
+\BC 1 \NC 17.860 \NC 18.478 \NC 19.026 \NC 18.824 \NC 18.736 \NC 18.665 \NC 18.623 \NC 19.002 \NC 18.101 \NC 18.905 \BC 18.622 \NC \NR
+\BC 2 \NC 18.672 \NC 19.181 \NC 18.150 \NC 18.960 \NC 18.414 \NC 19.120 \NC 18.246 \NC 18.945 \NC 19.050 \NC 18.744 \BC 18.748 \NC \NR
+\BC 3 \NC 18.979 \NC 18.597 \NC 18.747 \NC 18.837 \NC 18.660 \NC 18.846 \NC 18.513 \NC 18.457 \NC 18.448 \NC 18.414 \BC 18.650 \NC \NR
+\stoptabulate
+
+The results are in table~\ref{table:stats}. These numbers include font processing
+time as well as some other \CONTEXT\ specific callback overhead processing time
+but we want to test with ligatures and discretionaries so this is required. When
+we use \type {\vpack} all times are the same.
+
+But, this is for 15000 nine-line paragraphs using the Tufte quote and that is a
+tough one: many short words, ligatures, four hyphenated lines in the standard
+layout. If we output the result, we get a 3335 page document and a runtime of
+about 37.5 seconds (on my 2018 laptop).
+
+\starttabulate[|c|l|c|c|c|c|c|]
+\BC 1 \BC no check at all   \BC 18.622 \NC 37.270 \NC 37.433 \NC 37.425 \BC 37.376 \NC \NR
+\BC 2 \BC check and honored \BC 18.748 \NC 37.651 \NC 37.261 \NC 37.690 \BC 37.534 \NC \NR
+\BC 3 \BC check but ignored \BC 18.650 \NC 37.032 \NC 37.565 \NC 37.967 \BC 37.521 \NC \NR
+\stoptabulate
+
+So, in the end, assuming that we have the third variant as default (which is the
+most practical in \CONTEXT) users will see a small performance hit due to this
+new feature but on a regular run, which in practice does way more than just
+outputting text only, no one will notice it. So, our and Didier's conclusion that
+we have no performance hit (something that is always considered when making a
+possible extension to a core component) holds.
+
+\startplacefigure[reference=example:14]
+    \switchtobodyfont[modern,12pt]
+    \startimage
+        \startframed[offset=1ts,fr:analyze=no,align=normal]
+            \bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+            \lefttwindemerits 0
+            \righttwindemerits0
+            \twinslimit3
+            \enableexperiments[parbuilder.twins]%
+            \enabletrackers[typesetters.twindemerits]%
+            \hsize 12cm
+            \dorecurse{10}{you (as a daddy) are never too old to learn from young kids are you }
+            \removeunwantedspaces\par
+        \stopframed
+    \stopimage
+\stopplacefigure
+
+\stopchapter
+
+% \disableexperiments[parbuilder.twins]
+% \disabletrackers[typesetters.twindemerits]
+%
+% \startTEXpage[width=92mm,offset=1ts]
+% \startshowbreakpoints[option={margin,simple}]
+%     \hsize82mm
+%     \bitwiseflip\glyphoptions\checktwinglyphoptioncode
+%     \lefttwindemerits 7500\relax
+%     \righttwindemerits7500\relax
+%     \getbuffer
+% \stopshowbreakpoints
+% \stopTEXpage
+%
+% \startTEXpage[width=92mm,offset=1ts]
+% \startshowbreakpoints[option={margin,simple}]
+%     \hsize82mm
+%     \bitwiseflip\glyphoptions-\checktwinglyphoptioncode
+%     \lefttwindemerits 0
+%     \righttwindemerits0
+%     \getbuffer
+% \stopshowbreakpoints
+% \stopTEXpage
+
+% \startplacefigure[reference=example:26]
+%     \externalfigure[beyond-twins-016.png][width=.75\textwidth]
+% \stopplacefigure
+
+\stopcomponent
