@@ -26,7 +26,7 @@ local insert, remove = table.insert, table.remove
 local getrandom = utilities.randomizer.get
 
 local utilities, logs, statistics, fonts, trackers = utilities, logs, statistics, fonts, trackers
-local interfaces, commands, attributes = interfaces, commands, attributes
+local interfaces, attributes = interfaces, attributes
 local nodes, node, tex = nodes, node, tex
 
 local trace_split        = false  trackers.register("builders.paragraphs.solutions.splitters.splitter",  function(v) trace_split    = v end)

@@ -24,7 +24,6 @@ local counterdata         = counters.data
 
 local variables           = interfaces.variables
 local context             = context
-local commands            = commands
 local implement           = interfaces.implement
 
 local processors          = typesetters.processors

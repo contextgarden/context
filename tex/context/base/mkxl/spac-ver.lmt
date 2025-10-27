@@ -1256,28 +1256,51 @@ do
         end
     end
 
-    function vspacing.injectpenalty(penalty)
-        local n = new_glue()
-     -- setattrs(n,false,a_skipcategory,categories.penalty,a_skippenalty,penalty,a_skiporder,1)
-        setspecification(n,categories.penalty,penalty,1)
+    -- If this happens a lot we could preallocate thenodes anc do a copy
+    -- instead.
+
+    local c_penalty <const> = categories.penalty
+    local c_largest <const> = categories.largest
+    local c_disable <const> = categories.disable
+    local c_nowhite <const> = categories.nowhite
+
+    local function inject(category,amount,penalty)
+        local n = new_glue(amount)
+        setspecification(n,category,penalty,1)
         setvisual(k)
         write_node(n)
+    end
+
+    function vspacing.injectpenalty(penalty)
+        inject(c_penalty,0,penalty)
+     -- local n = new_glue()
+     -- setspecification(n,c_penalty,penalty,1)
+     -- setvisual(k)
+     -- write_node(n)
     end
 
     function vspacing.injectskip(amount)
-        local n = new_glue(amount)
-     -- setattrs(n,false,a_skipcategory,categories.largest,a_skippenalty,false,a_skiporder,1)
-        setspecification(n,categories.largest,false,1)
-        setvisual(k)
-        write_node(n)
+        inject(c_largest,amount,false)
+     -- local n = new_glue(amount)
+     -- setspecification(n,c_largest,false,1)
+     -- setvisual(k)
+     -- write_node(n)
     end
 
-    function vspacing.injectdisable(amount)
-        local n = new_glue()
-     -- setattrs(n,false,a_skipcategory,categories.disable,a_skippenalty,false,a_skiporder,1)
-        setspecification(n,categories.disable,false,1)
-        setvisual(k)
-        write_node(n)
+    function vspacing.injectdisable()
+        inject(c_disable,0,false)
+     -- local n = new_glue()
+     -- setspecification(n,c_disable,false,1)
+     -- setvisual(k)
+     -- write_node(n)
+    end
+
+    function vspacing.injectnowhite()
+        inject(c_nowhite,0,false)
+     -- local n = new_glue()
+     -- setspecification(n,c_nowhite,false,1)
+     -- setvisual(k)
+     -- write_node(n)
     end
 
 end
@@ -3023,6 +3046,11 @@ do
     implement {
         name    = "injectdisable",
         actions = vspacing.injectdisable,
+    }
+
+    implement {
+        name    = "injectnowhite",
+        actions = vspacing.injectnowhite,
     }
 
     --

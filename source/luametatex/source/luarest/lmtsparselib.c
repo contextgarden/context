@@ -15,6 +15,8 @@
     So, for the moment I consider this a low impact, and thereby undocumented, fun project.
 */
 
+/*tex See |lmtinterface.h| for |SPARSE_METATABLE_INSTANCE|. */
+
 # define SPARSE_STACK 8
 # define SPARSE_STEP  8
 # define SPARSE_BYTES 4

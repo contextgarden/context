@@ -565,6 +565,30 @@ end
 
 -- housekeeping
 
+local trace = false
+
+trackers.register("attributes.tracking", function(v) trace = v end)
+
+statistics.register("attribute tracking", function()
+    if trace then
+        local t, n = { }, 0
+        local track = tex.attributetracking
+        local names = attributes.names
+        for i=0,track() do
+            local name = names[i]
+            if name then
+                local count = track(i)
+                if count and count > 0 then
+                    n = n + 1 ; t[n] = format("%s %s",name,count)
+                end
+            end
+        end
+        if n > 0 then
+            return concat(t,", ")
+        end
+    end
+end)
+
 local function cleanup(nofboxes) -- todo
     -- this is bonus, not really needed
     local tracers = nodes.tracers

@@ -143,19 +143,21 @@ implement { name = "xmlremovesetup",                      actions = lxml.removes
 implement { name = "xmlflushsetups",                      actions = lxml.flushsetups,       arguments = "3 strings" }    -- 2:*
 implement { name = "xmlresetsetups",                      actions = lxml.resetsetups,       arguments = "string" }
 
-implement { name = "xmlgetindex",          actions = lxml.getindex,          arguments = "2 strings" }
-implement { name = "xmlwithindex",         actions = lxml.withindex,         arguments = "3 strings" }
+implement { name = "xmlgetindex",                         actions = lxml.getindex,          arguments = "2 strings" }
+implement { name = "xmlwithindex",                        actions = lxml.withindex,         arguments = "3 strings" }
 
-implement { name = "xmlsetentity",         actions =  xml.registerentity,    arguments = "2 strings" }
-implement { name = "xmltexentity",         actions = lxml.registerentity,    arguments = "2 strings" }
+implement { name = "xmlsetentity",                        actions =  xml.registerentity,    arguments = "2 strings" }
+implement { name = "xmltexentity",                        actions = lxml.registerentity,    arguments = "2 strings" }
 
-implement { name = "xmlsetcommandtotext",  actions = lxml.setcommandtotext,  arguments = "string" }
-implement { name = "xmlsetcommandtonone",  actions = lxml.setcommandtonone,  arguments = "string" }
+implement { name = "xmlsetcommandtotext",                 actions = lxml.setcommandtotext,  arguments = "string" }
+implement { name = "xmlsetcommandtonone",                 actions = lxml.setcommandtonone,  arguments = "string" }
 
-implement { name = "xmlstarttiming",       actions = function() statistics.starttiming(lxml) end }
-implement { name = "xmlstoptiming",        actions = function() statistics.stoptiming (lxml) end }
+implement { name = "xmlstarttiming",                      actions = function() statistics.starttiming(lxml) end }
+implement { name = "xmlstoptiming",                       actions = function() statistics.stoptiming (lxml) end }
 
-implement { name = "xmlloadentities",      actions = characters.registerentities, onceonly = true }
+implement { name = "xmlloadentities",                     actions = characters.registerentities, onceonly = true }
+
+-- commands.xmlsetfunction = lxml.setaction -- the third argument is a lua function
 
 if CONTEXTLMTXMODE > 0 then
 
@@ -229,7 +231,3 @@ if CONTEXTLMTXMODE > 0 then
     }
 
 end
-
--- kind of special (3rd argument is a function)
-
-commands.xmlsetfunction = lxml.setaction

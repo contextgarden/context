@@ -45,6 +45,7 @@ local getlist         = nuts.getlist
 local getdisc         = nuts.getdisc
 local setattr         = nuts.setattr
 local setattrs        = nuts.setattrs
+local setattrsinlist  = nuts.setattrsinlist
 local getglue         = nuts.getglue
 local isglyph         = nuts.isglyph
 local getdirection    = nuts.getdirection
@@ -580,15 +581,19 @@ nodes.basepoints   = function(n) return numbertodimen(n,"bp")     end
 nodes.pts          = function(n) return numbertodimen(n,"pt")     end
 nodes.nopts        = function(n) return format("%.5f",n*ptfactor) end
 
-local colors       = { }
-tracers.colors     = colors
+local colors           = { }
+tracers.colors         = colors
 
-local unsetvalue   <const> = attributes.unsetvalue
+local transparencies   = { }
+tracers.transparencies = transparencies
 
-local a_color      <const> = attributes.private('color')
-local a_colormodel <const> = attributes.private('colormodel')
+local unsetvalue     <const> = attributes.unsetvalue
+local a_color        <const> = attributes.private('color')
+local a_colormodel   <const> = attributes.private('colormodel')
+local a_transparency <const> = attributes.private('transparency')
 
-local m_color      = attributes.list[a_color] or { }
+local m_color          = attributes.list[a_color] or { }
+local m_transparency   = attributes.list[a_transparency] or { }
 
 function colors.set(n,c,s,t) -- also unsets !
     local mc = m_color[c]
@@ -621,15 +626,17 @@ function colors.setlist(n,c,s,t)
         if type(t) == "string" then
             t = m_transparency[t] or unsetvalue
         end
-        while nn do
-            setattrs(nn,a_colormodel,mm,a_color,mc,a_transparency,t)
-            nn = getnext(nn)
-        end
+--         while nn do
+--             setattrs(nn,a_colormodel,mm,a_color,mc,a_transparency,t)
+--             nn = getnext(nn)
+--         end
+            setattrsinlist(nn,a_colormodel,mm,a_color,mc,a_transparency,t)
     else
-        while nn do
-            setattrs(nn,a_colormodel,mm,a_color,mc)
-            nn = getnext(nn)
-        end
+--         while nn do
+--             setattrs(nn,a_colormodel,mm,a_color,mc)
+--             nn = getnext(nn)
+--         end
+        setattrsinlist(nn,a_colormodel,mm,a_color,mc)
     end
     return n
 end
@@ -641,20 +648,14 @@ end
 
 -- maybe
 
-local transparencies   = { }
-tracers.transparencies = transparencies
-
-local a_transparency   <const> = attributes.private('transparency')
-local m_transparency   = attributes.list[a_transparency] or { }
-
 function transparencies.set(n,t)
     setattr(tonut(n),a_transparency,m_transparency[t] or unsetvalue)
     return n
 end
 
-function transparencies.setlist(n,c,s)
+function transparencies.setlist(n,t)
     local nn = tonut(n)
-    local mt = m_transparency[c] or unsetvalue
+    local mt = m_transparency[t] or unsetvalue
     while nn do
         setattr(nn,a_transparency,mt)
         nn = getnext(nn)

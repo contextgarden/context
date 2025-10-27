@@ -1086,7 +1086,7 @@ static scaled tex_aux_stack_char_into_box(halfword box, halfword fnt, int chr, q
     halfword glyph = tex_aux_new_math_glyph(fnt, chr, subtype);
     scaledwhd whd = tex_char_whd_from_glyph(glyph);
     halfword list = box_list(box);
-    tex_attach_attribute_list_attribute(glyph, get_attribute_list(box));
+    tex_attach_attribute_list_attribute(glyph, node_attr(box));
     if (horiziontal) {
         if (list) {
             tex_couple_nodes(tex_tail_of_node_list(list), glyph);
@@ -1105,7 +1105,7 @@ static scaled tex_aux_stack_char_into_box(halfword box, halfword fnt, int chr, q
         return whd.wd;
     } else {
         halfword boxed = tex_new_null_box_node(hlist_node, math_char_list);
-        tex_attach_attribute_list_attribute(boxed, get_attribute_list(box));
+        tex_attach_attribute_list_attribute(boxed, node_attr(box));
         box_width(boxed) = whd.wd;
         box_height(boxed) = whd.ht;
         box_depth(boxed) = whd.dp;
@@ -1764,7 +1764,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
             the list gets flushed before it can be reused.
         */
 // crap
-        att = get_attribute_list(delimiter);
+        att = node_attr(delimiter);
         wipe_attribute_list_only(delimiter);
         tex_flush_node(delimiter);
     }
@@ -1930,7 +1930,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
         /*tex temporary registers for list manipulation */
         halfword head = box_list(box);
         quarterword subtype = node_subtype(box);
-        halfword att = get_attribute_list(box);
+        halfword att = node_attr(box);
         /*tex When the next two are not seen we can wipe att so we reserve by bump! */
         add_attribute_reference(att);
         if (node_type(box) == vlist_node) {
@@ -2530,7 +2530,7 @@ static void tex_aux_make_over(halfword target, halfword style, halfword size, ha
         halfword result = tex_aux_overbar(
             tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_over_line_variant), style, math_nucleus_list, 0, NULL),
             vgap, thickness, kern,
-            get_attribute_list(noad_nucleus(target)), math_over_rule_subtype, size, fam,
+            node_attr(noad_nucleus(target)), math_over_rule_subtype, size, fam,
             null, style
         );
         node_subtype(result) = math_over_list;
@@ -2561,7 +2561,7 @@ static void tex_aux_make_under(halfword target, halfword style, halfword size, h
         halfword result = tex_aux_underbar(
             tex_aux_clean_box(noad_nucleus(target), tex_math_style_variant(style, math_parameter_under_line_variant), style, math_nucleus_list, 0, NULL),
             vgap, thickness, kern,
-            get_attribute_list(noad_nucleus(target)), math_under_rule_subtype, size, fam,
+            node_attr(noad_nucleus(target)), math_under_rule_subtype, size, fam,
             null, style
         );
         node_subtype(result) = math_over_list;
@@ -2885,8 +2885,7 @@ static void tex_aux_make_root_radical(halfword target, int style, int size, kern
         /* todo bottomdelimiter */
         halfword total = box_total(delimiter);
         halfword list = (has_noad_option_reflected(target) ? tex_aux_underbar : tex_aux_overbar)
-            (nucleus, clearance, theta, kern,
-                get_attribute_list(delimiter),
+            (nucleus, clearance, theta, kern, node_attr(delimiter),
             math_radical_rule_subtype, size, fam, norule ? -1 : topdelimiter, style);
         // todo: link whole delimiter
         radical = tex_aux_link_radical(list, delimiter, companion, rightdelimiter);
@@ -7691,7 +7690,7 @@ static void tex_mlist_to_hlist_preroll_dimensions(mliststate *state)
 //    DONE_WITH_NODE:
         if ((node_type(current) == simple_noad) && noad_new_hlist(current)) {
             if (has_noad_option_phantom(current) || has_noad_option_void(current)) {
-                noad_new_hlist(current) = tex_aux_make_list_phantom(noad_new_hlist(current), has_noad_option_void(current), get_attribute_list(current));
+                noad_new_hlist(current) = tex_aux_make_list_phantom(noad_new_hlist(current), has_noad_option_void(current), node_attr(current));
             }
         }
       DONE_WITH_NODE:

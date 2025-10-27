@@ -17,8 +17,8 @@
 # include <luametatex.h>
 # include "libraries/triangles/triangles.h"
 
-# define VECTOR_METATABLE "vector"
-# define MESH_METATABLE   "mesh"
+/*tex See |lmtinterface.h| for |VECTOR_METATABLE_INSTANCE|. */
+/*tex See |lmtinterface.h| for |MESH_METATABLE_INSTANCE|. */
 
 /*
     todo:
@@ -400,8 +400,16 @@ static inline int vectorlib_onecolumn(lua_State *L)
 vector vectorlib_get(lua_State *L, int index)
 {
     if (lua_type(L, index) == LUA_TUSERDATA) {
-        return (vector) luaL_checkudata(L, index, VECTOR_METATABLE);
-    } else {
+        vector v = lua_touserdata(L, index);
+        if (v && lua_getmetatable(L, index)) {
+            lua_get_metatablelua(vector_instance);
+            if (! lua_rawequal(L, -1, -2)) {
+               v = NULL;
+            }
+            lua_pop(L, 2);
+        }
+        return v;
+    } else { 
         return NULL;
     }
 }
@@ -753,7 +761,7 @@ static int vectorlib_setvaluerc(lua_State *L)
         int row = lmt_tointeger(L, 2) - 1;
         int column = lmt_tointeger(L, 3) - 1;
         if (row >= 0 && row < a->rows && column >= 0 && column < a->columns) {
-            a->data[row * a->columns] = lua_type(L, 4) == LUA_TNUMBER ? lua_tonumber(L, 4) : 0.0;
+            a->data[row * a->columns + column] = lua_type(L, 4) == LUA_TNUMBER ? lua_tonumber(L, 4) : 0.0;
         }
     } else {
         lua_pushnil(L);
@@ -1847,8 +1855,16 @@ inline static mesh vectorlib_mesh_aux_get(lua_State *L, int index)
 mesh vectorlib_get_mesh(lua_State *L, int index)
 {
     if (lua_type(L, index) == LUA_TUSERDATA) {
-        return (mesh) luaL_checkudata(L, index, MESH_METATABLE);
-    } else {
+        mesh m = lua_touserdata(L, index);
+        if (m && lua_getmetatable(L, index)) {
+            lua_get_metatablelua(mesh_instance);
+            if (! lua_rawequal(L, -1, -2)) {
+               m = NULL;
+            }
+            lua_pop(L, 2);
+        }
+        return m;
+    } else { 
         return NULL;
     }
 }

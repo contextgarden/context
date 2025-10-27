@@ -2294,10 +2294,15 @@
    \let\fontstyle\globalfontstyle
    \bf}
 
+% \permanent\overloaded\protected\def\tabl_tabulate_TC_first
+%   {\tabl_tabulate_column_normal\plusone\zerocount
+%    \tt}
+
 \appendtoks
     \enforced\let\VL\tabl_tabulate_VL_first
     \enforced\let\NC\tabl_tabulate_NC_first
     \enforced\let\BC\tabl_tabulate_BC_first
+%   \enforced\let\TC\tabl_tabulate_TC_first
     \enforced\let\RC\tabl_tabulate_RC_first
     \enforced\let\HC\tabl_tabulate_HC_first
     \enforced\let\EQ\tabl_tabulate_EQ_first

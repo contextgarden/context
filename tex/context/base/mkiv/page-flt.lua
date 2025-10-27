@@ -36,7 +36,6 @@ floats                 = floats or { }
 local floats           = floats
 
 local context          = context
-local commands         = commands
 local interfaces       = interfaces
 local showmessage      = interfaces.showmessage
 local implement        = interfaces.implement

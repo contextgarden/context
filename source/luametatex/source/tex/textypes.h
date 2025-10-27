@@ -258,9 +258,8 @@ extern halfword tex_badness(
     make some register ranges smaller. Keep in mind that we already have cheap integer, dimension,
     and glue shortcuts that can be used instead of registers for storing constant values.
 
-    large  : 7 * 64                           = 448   3.584 Kb
-    medium : 4 * 64 + 2 * 32 + 1 * 16         = 336   2.688 Kb
-    small  :          4 * 32          + 3 * 8 = 152   1.216 Kb
+    large  : 8 * 64                  = 512 entries 4096 Kbyte
+    small  : 1 * 32 + 5 * 8 + 2 * 4  =  80 entries  640 Kbyte
 
     The memory saving is not that large but keep in mind that we have these huge eqtb arrays and
     registers are accessed frequently so the more we have in the CPU cache the better. (We already
@@ -296,7 +295,9 @@ extern halfword tex_badness(
 
 # endif
 
-# define max_unit_register_index       26*26
+# define default_tracked_attributes   0xFF
+
+# define max_unit_register_index      26*26
 
 # define max_n_of_toks_registers      (max_toks_register_index      + 1)
 # define max_n_of_box_registers       (max_box_register_index       + 1)
@@ -333,6 +334,8 @@ extern halfword tex_badness(
 # define min_math_style_scale                     0 /*tex Zero is a signal too. */
 # define max_math_style_scale                  2000
 # define max_parameter_index                     15
+
+# define clipped_scale_factor(f) (f < min_scale_factor ? min_scale_factor : f > max_scale_factor ? max_scale_factor : f)
 
 # define max_size_of_word_buffer (4 * max_size_of_word + 2 + 1 + 2) /* utf + two_periods + sentinal_zero + some_slack */
 

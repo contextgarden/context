@@ -6698,7 +6698,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 46220, stripped down to: 24637
+-- original size: 47659, stripped down to: 25531
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6710,7 +6710,7 @@ if not modules then modules={} end modules ['util-str']={
 utilities=utilities or {}
 utilities.strings=utilities.strings or {}
 local strings=utilities.strings
-local format,gsub,rep,sub,find,char=string.format,string.gsub,string.rep,string.sub,string.find,string.char
+local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
 local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
 local unpack,concat=table.unpack,table.concat
@@ -7231,6 +7231,58 @@ end
 local format_X=function(f)
  n=n+1
  return format("format('%%%sX',a%s)",f,n)
+end
+do
+ if not string.hashes then
+  string.hashes={}
+ end
+ local X02=setmetatable({},{
+  __index=function(t,k)
+   if type(k)=="string" then
+    t[k]=t[byte(k)]
+   elseif k<0 then
+    return "00"
+   else
+    return "FF"
+   end
+   return t[k]
+  end
+ })
+ for i=0,255 do
+  X02[i]=format("%02X",i)
+ end
+ local X04=setmetatable({},{
+  __index=function(t,k)
+   if k<0 then
+    return "0000"
+   elseif k<256 then
+    for i=0,255 do
+     t[i]=format("%04X",i)
+    end
+    return t[k]
+   elseif k>0xFFFF then
+    return "FFFF"
+   else
+    local v=format("%04X",k)
+    t[k]=v
+    return v
+   end
+  end
+ })
+ environment.X02=X02
+ environment.X04=X04
+ string.hashes.X02=X02
+ string.hashes.X04=X04
+ format_X=function(f)
+  n=n+1
+  if f=="02" then
+   return format("X02[a%s]",n)
+  elseif f=="04" then
+   return format("X04[a%s]",n)
+  else
+   return format("format('%%%sX',a%s)",f,n)
+  end
+ end
 end
 local format_o=function(f)
  n=n+1
@@ -20642,7 +20694,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["lxml-xml"] = package.loaded["lxml-xml"] or true
 
--- original size: 11118, stripped down to: 7721
+-- original size: 11129, stripped down to: 7722
 
 if not modules then modules={} end modules ['lxml-xml']={
  version=1.001,
@@ -20756,7 +20808,7 @@ local xmltexthandler=xmlnewhandlers {
  finalize=function()
   return concat(result)
  end,
- handle=function(...)
+ handle=function(...) 
   result[#result+1]=concat {... }
  end,
  escape=false,
@@ -22160,7 +22212,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-tmp"] = package.loaded["data-tmp"] or true
 
--- original size: 16995, stripped down to: 12083
+-- original size: 17023, stripped down to: 12085
 
 if not modules then modules={} end modules ['data-tmp']={
  version=1.100,
@@ -22346,7 +22398,7 @@ function caches.usedpaths(separator)
 end
 local r_cache={}
 local w_cache={}
-local function getreadablepaths(...)
+local function getreadablepaths(...) 
  local tags={... }
  local hash=concat(tags,"/")
  local done=r_cache[hash]
@@ -22364,7 +22416,7 @@ local function getreadablepaths(...)
  end
  return done
 end
-local function getwritablepath(...)
+local function getwritablepath(...) 
  local tags={... }
  local hash=concat(tags,"/")
  local done=w_cache[hash]
@@ -26970,8 +27022,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1078878
--- stripped bytes    : 430424
+-- original bytes    : 1080356
+-- stripped bytes    : 431005
 
 -- end library merge
 

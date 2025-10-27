@@ -3928,13 +3928,11 @@ int tex_set_tex_posit_register(int j, halfword v, int flags, int internal)
     }
 }
 
-int tex_set_tex_attribute_register(int j, halfword v, int flags, int internal)
+int tex_set_tex_attribute_register(int index, halfword v, int flags, int internal)
 {
-    halfword p = internal ? internal_attribute_location(j) : register_attribute_location(j);
+    /*tex We have no internals .. if we do we need to adapt quite some. */
+    halfword p = internal ? internal_attribute_location(index) : register_attribute_location(index);
     if (tex_mutation_permitted(p)) {
-        if (j > lmt_node_memory_state.max_used_attribute) {
-            lmt_node_memory_state.max_used_attribute = j;
-        }
         tex_change_attribute_register(flags, p, v);
         tex_word_define(flags, p, v);
         return 1;

@@ -93,7 +93,7 @@ void lmt_undump_registers(dumpstream f)
                 int slot, size;
                 undump_int(f, slot);
                 undump_int(f, size);
-                buffer = (unsigned char *) lmt_memory_malloc((unsigned) size);
+                buffer = (unsigned char *) lmt_memory_malloc((unsigned) size); // todo: calloc 
                 if (buffer) {
                     memset(buffer, 0, (size_t) size);
                     undump_items(f, buffer, 1, size);

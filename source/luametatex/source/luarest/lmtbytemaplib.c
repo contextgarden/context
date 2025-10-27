@@ -5,8 +5,7 @@
 # include <luametatex.h>
 # include "utilities/auxbytemaps.h"
 
-# define BYTEMAP_METATABLE "bytemap"
-
+/*tex See |lmtinterface.h| for |BYTEMAP_METATABLE_INSTANCE|. */
 
 typedef enum bytemap_loop {
     bytemap_loop_xy, 
@@ -18,32 +17,42 @@ typedef enum bytemap_loop {
 
 static inline bytemap_data * bytemaplib_aux_valid(lua_State *L, int i)
 {
-    // we need a fast one for this 
-    return (bytemap_data *) luaL_checkudata(L, i, BYTEMAP_METATABLE);
+    bytemap_data * bytemap = lua_touserdata(L, i);
+    if (bytemap && lua_getmetatable(L, i)) {
+        lua_get_metatablelua(bytemap_instance);
+        if (! lua_rawequal(L, -1, -2)) {
+           bytemap = NULL;
+        }
+        lua_pop(L, 2);
+    }
+    return bytemap;
 }
 
-bytemap_data * bytemaplib_valid(lua_State *L, int i)
+bytemap_data * bytemaplib_valid(lua_State *L, int i) /* the public one */
 {
-    return lua_type(L, i) == LUA_TUSERDATA ? (bytemap_data *) luaL_checkudata(L, i, BYTEMAP_METATABLE) : NULL;
+    return lua_type(L, i) == LUA_TUSERDATA ? bytemaplib_aux_valid(L, i) : NULL;
 }
 
 static inline int bytemaplib_new(lua_State *L)
 {
-    int nx = lua_tointeger(L, 1);
-    int ny = lua_tointeger(L, 2);
-    int nz = lua_tointeger(L, 3);
+    int nx = lmt_tointeger(L, 1);
+    int ny = lmt_optinteger(L, 2, nx);
+    int nz = lmt_optinteger(L, 3, 1);
+    int nn = nx * ny * nz;
     if (bytemap_okay(nx, ny, nz)) {
-        int nn = nx * ny * nz;
         if (nn > 0) { 
             bytemap_data * bytemap = lua_newuserdatauv(L, sizeof(bytemap_data), 0);
             if (bytemap) { 
-                luaL_setmetatable(L, BYTEMAP_METATABLE);
+                lua_get_metatablelua(bytemap_instance);
+                lua_setmetatable(L, -2);
                 bytemap_allocate(bytemap, nx, ny, nz, NULL);
             }
         }
         return 1;
     } else { 
-        tex_formatted_warning("bytemaplib", "new overflow: %i x %i x #i", nx, ny, nz);
+        /* -100 100 -1 also reports overflow .. whatever suits */
+        tex_formatted_warning("bytemaplib", "new, %s: %i x %i x %i", 
+            nn <= 0 ? "invalid" : "overflow", nx, ny, nz);
         return 0;
     }
 }
@@ -71,11 +80,20 @@ static int bytemaplib_slice_gray(lua_State *L)
 {
     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
     if (bytemap) { 
-        int x = lua_tointeger(L, 2);
-        int y = lua_tointeger(L, 3);
-        int dx = lua_tointeger(L, 4);
-        int dy = lua_tointeger(L, 5);
-        int s = lua_tointeger(L, 6);
+        int slot = 2;
+        int x, y, dx, dy, s;
+        if (lua_gettop(L) == 2) {
+            x = 0;
+            y = 0;
+            dx = bytemap->nx;
+            dy = bytemap->ny;
+        } else {
+            x = lua_tointeger(L, slot++);
+            y = lua_tointeger(L, slot++);
+            dx = lua_tointeger(L, slot++);
+            dy = lua_tointeger(L, slot++);
+        }
+        s = lua_tointeger(L, slot);
         bytemap_slice_gray(bytemap, x, y, dx, dy, s);
     }
     return 0;
@@ -85,13 +103,22 @@ static int bytemaplib_slice_rgb(lua_State *L)
 {
     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
     if (bytemap) { 
-        int x = lua_tointeger(L, 2);
-        int y = lua_tointeger(L, 3);
-        int dx = lua_tointeger(L, 4);
-        int dy = lua_tointeger(L, 5);
-        int r = lua_tointeger(L, 6);
-        int g = lua_tointeger(L, 7);
-        int b = lua_tointeger(L, 8);
+        int slot = 2;
+        int x, y, dx, dy, r, g, b;
+        if (lua_gettop(L) == 4) {
+            x = 0;
+            y = 0;
+            dx = bytemap->nx;
+            dy = bytemap->ny;
+        } else {
+            x = lua_tointeger(L, slot++);
+            y = lua_tointeger(L, slot++);
+            dx = lua_tointeger(L, slot++);
+            dy = lua_tointeger(L, slot++);
+        }
+        r = lua_tointeger(L, slot++);
+        g = lua_tointeger(L, slot++);
+        b = lua_tointeger(L, slot);
         bytemap_slice_rgb(bytemap, x, y, dx, dy, r, g, b);
     }
     return 0;
@@ -121,7 +148,7 @@ static int bytemaplib_bounds(lua_State *L)
         int lly = 1;
         int urx = bytemap->nx - 1;
         int ury = bytemap->ny - 1;
-        bytemap_bounds(bytemap, value, &llx, &lly, &urx, &ury);
+        bytemap_bounds(bytemap, value, &llx, &lly, &urx, &ury, 0);
         lua_pushinteger(L, llx);
         lua_pushinteger(L, lly);
         lua_pushinteger(L, urx);
@@ -151,7 +178,8 @@ static int bytemaplib_copy(lua_State *L)
         } else { 
             target = lua_newuserdatauv(L, sizeof(bytemap_data), 0);
             if (target) { 
-                luaL_setmetatable(L, BYTEMAP_METATABLE);
+                lua_get_metatablelua(bytemap_instance);
+                lua_setmetatable(L, -2);
                 bytemap_wipe(target);
             }
         }
@@ -220,6 +248,34 @@ static int bytemaplib_set_rgb(lua_State *L)
         int g = lmt_tointeger(L, 5);
         int b = lmt_tointeger(L, 6);
         bytemap_set_rgb(bytemap, x, y, r, g, b);
+    }
+    return 0;
+}
+
+static int bytemaplib_set_gray_add(lua_State *L)
+{
+    bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+    if (bytemap) { 
+        int x = lmt_tointeger(L, 2);
+        int y = lmt_tointeger(L, 3);
+        int s1 = lmt_tointeger(L, 4);
+        int s2 = lmt_tointeger(L, 5);
+        int s3 = lmt_tointeger(L, 6);
+        bytemap_set_gray_add(bytemap, x, y, s1, s2, s3);
+    }
+    return 0;
+}
+
+static int bytemaplib_set_gray_min(lua_State *L)
+{
+    bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+    if (bytemap) { 
+        int x = lmt_tointeger(L, 2);
+        int y = lmt_tointeger(L, 3);
+        int s1 = lmt_tointeger(L, 4);
+        int s2 = lmt_tointeger(L, 5);
+        int s3 = lmt_tointeger(L, 6);
+        bytemap_set_gray_min(bytemap, x, y, s1, s2, s3);
     }
     return 0;
 }
@@ -423,10 +479,59 @@ static int bytemaplib_gc(lua_State *L)
     return 0;
 }
 
+static int bytemaplib_dimensions(lua_State *L)
+{
+    bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+    if (bytemap) { 
+        lua_pushinteger(L, bytemap->nx);
+        lua_pushinteger(L, bytemap->ny);
+        lua_pushinteger(L, bytemap->nz);
+        return 3;
+    } else {
+        return 0;
+    }
+}
+
+// static int bytemaplib_nx(lua_State *L)
+// {
+//     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+//     if (bytemap) {
+//         lua_pushinteger(L, bytemap->nx);
+//         return 1;
+//     } else {
+//         return 0;
+//     }
+// }
+// 
+// static int bytemaplib_ny(lua_State *L)
+// {
+//     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+//     if (bytemap) {
+//         lua_pushinteger(L, bytemap->ny);
+//         return 1;
+//     } else {
+//         return 0;
+//     }
+// }
+// 
+// static int bytemaplib_nz(lua_State *L)
+// {
+//     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
+//     if (bytemap) {
+//         lua_pushinteger(L, bytemap->nz);
+//         return 1;
+//     } else {
+//         return 0;
+//     }
+// }
+
 static const luaL_Reg bytemaplib_metatable[] =
 {
     { "__tostring", bytemaplib_tostring },
     { "__gc",       bytemaplib_gc       },
+ // { "nx",         bytemaplib_nx       },
+ // { "ny",         bytemaplib_ny       },
+ // { "nz",         bytemaplib_nz       },
     { NULL,         NULL                },
 };
  
@@ -445,18 +550,21 @@ static struct luaL_Reg bytemaplib_function_list[] = {
     { "hasbytergb",   bytemaplib_has_byte_rgb   },
     { "setgray",      bytemaplib_set_gray       },
     { "setrgb",       bytemaplib_set_rgb        },
+    { "setgrayadd",   bytemaplib_set_gray_add   },
+    { "setgraymin",   bytemaplib_set_gray_min   },
     { "getbyte",      bytemaplib_get_byte       },
     { "getbytes",     bytemaplib_get_bytes      },
     { "getvalue",     bytemaplib_get_value      },
     { "process",      bytemaplib_process        },
     { "downsample",   bytemaplib_downsample     },
     { "downgrade",    bytemaplib_downgrade      },
+    { "dimensions",   bytemaplib_dimensions     },
     { NULL,           NULL                      },
 };
 
 int luaopen_bytemap(lua_State *L)
 {
-    luaL_newmetatable(L, BYTEMAP_METATABLE);
+    luaL_newmetatable(L, BYTEMAP_METATABLE_INSTANCE);
     luaL_setfuncs(L, bytemaplib_metatable, 0);
     lua_newtable(L);
     luaL_setfuncs(L, bytemaplib_function_list, 0);

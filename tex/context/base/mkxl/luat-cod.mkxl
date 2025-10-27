@@ -13,6 +13,8 @@
 
 % \writestatus{loading}{ConTeXt Lua Macros / Code}
 
+% \aliased\let\directlua\luascript
+
 \unprotect
 
 \newif\ifproductionrun

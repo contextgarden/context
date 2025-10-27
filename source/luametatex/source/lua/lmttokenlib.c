@@ -28,7 +28,7 @@
 
 # include "luametatex.h"
 
-/* # define TOKEN_METATABLE_INSTANCE "luatex.token" */
+/*tex See |lmtinterface.h| for |TOKEN_METATABLE_INSTANCE|. */
 
 typedef struct lua_token_package {
     struct {
@@ -583,7 +583,7 @@ static unsigned char *tokenlib_aux_get_cs_text(int cs, int *allocated)
     }
 }
 
-static lua_token *tokenlib_aux_maybe_istoken(lua_State *L, int ud)
+static inline lua_token *tokenlib_aux_maybe_istoken(lua_State *L, int ud)
 {
     lua_token *t = lua_touserdata(L, ud);
     if (t && lua_getmetatable(L, ud)) {
@@ -1595,6 +1595,8 @@ static int tokenlib_scantokenstring(lua_State *L) /* noexpand noexpandconstant n
     return 1;
 }
 
+/*tex The next token gets expanded. */
+
 static int tokenlib_scanstring(lua_State *L)
 {
     /*tex can be simplified, no need for intermediate list */
@@ -1652,6 +1654,8 @@ static int tokenlib_scanstring(lua_State *L)
     tokenlib_aux_unsave_tex_scanner(texstate);
     return 1;
 }
+
+/*tex The next token doesn't get expanded. */
 
 static int tokenlib_scanargument(lua_State *L)
 {
@@ -3456,8 +3460,9 @@ static int tokenlib_getmeaning(lua_State *L)
                     }
                 }
             } else {
-                char *str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 0, 0); /* double hashes */
-                lua_pushstring(L, str ? str : "");
+                int size = 0;
+                char *str = tex_tokenlist_to_tstring(chr, 1, &size, 0, 0, 0, 0, 0); /* double hashes */
+                lua_pushlstring(L, str ? str : "", (size_t) size);
             }
             return 1;
         }
@@ -3562,13 +3567,20 @@ static int tokenlib_getmacro(lua_State *L)
         if (is_call_cmd(cmd)) {
             halfword chr = eq_value(cs);
             char *str = NULL;
-            if (lua_toboolean(L, 2)) {
-                chr = tokenlib_aux_expand_macros_in_tokenlist(chr);
-                str = tex_tokenlist_to_tstring(chr, 1, NULL, 0, 0, 0, 1, 0); /* single hashes ? */
-            } else {
-                str = tex_tokenlist_to_tstring(chr, 1, NULL, lua_toboolean(L, 3) ? 2 : 1, 0, 0, 0, 0); /* double hashes */
+            int size = 0;
+            if (token_link(chr)) {
+                int skip = 0; 
+                int expand = lua_toboolean(L, 2);
+                if (expand) {
+                    chr = tokenlib_aux_expand_macros_in_tokenlist(chr);
+                } else {
+                    skip = lua_toboolean(L, 3) ? 2 : 1;
+                }
+                /*tex When we expand we also wipe what goes in (second from end)! */
+                str = tex_tokenlist_to_tstring(chr, 1, &size, skip, 0, 0, expand, 0); /* double hashes */
+             /* printf("%s >> %s\n",name,str ? str : ""); */
             }
-            lua_pushstring(L, str ? str : "");
+            lua_pushlstring(L, str ? str : "", (size_t) size);
             return 1;
         }
     }
@@ -4079,8 +4091,9 @@ static int tokenlib_serialize(lua_State *L)
     if (n) {
         /*tex Do we want single or double hashes here? I need a few use cases */
         halfword t = tokenlib_aux_expand_macros_in_tokenlist(n->token);
-        char *s = tex_tokenlist_to_tstring(t, 1, NULL, 0, 0, 0, 1, 0);
-        lua_pushstring(L, s ? s : "");
+        int l = 0;
+        char *s = tex_tokenlist_to_tstring(t, 1, &l, 0, 0, 0, 1, 0);
+        lua_pushlstring(L, s ? s : "", (size_t) l);
     } else {
         lua_pushnil(L);
     }
@@ -4329,6 +4342,22 @@ void lmt_token_call(int p) /*tex The \TEX\ pointer to the token list. */
     }
 }
 
+static void lua_function_error_report(lua_State *L, const char *what, int slot, int i)
+{
+ // int callback_id = lmt_callback_defined(show_lua_call_callback);
+ // if (callback_id) {
+ //     char *ss = NULL;
+ //     int lua_retval = lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Sd->S", what, slot, &ss);
+ //     if (lua_retval && ss && strlen(ss) > 0) {
+ //         lmt_error(L, ss, -1, i == LUA_ERRRUN ? 0 : 1);
+ //         /* we might not end up here so then we leak, unless we push the string in lua */
+ //         lmt_memory_free(ss);
+ //         return;
+ //     }
+ // }
+    lmt_error(L, what, slot, i == LUA_ERRRUN ? 0 : 1);
+}
+
 void lmt_function_call(int slot, int prefix) /*tex Functions are collected in an indexed table. */
 {
     lua_State *L = lmt_lua_state.lua_instance;
@@ -4347,7 +4376,7 @@ void lmt_function_call(int slot, int prefix) /*tex Functions are collected in an
         i = lua_pcall(L, i, 0, stacktop + 2);
         if (i) {
             lua_remove(L, stacktop + 2);
-            lmt_error(L, "registered function call", slot, i == LUA_ERRRUN ? 0 : 1);
+            lua_function_error_report(L, "registered function call", slot, i);
         }
     }
     lua_settop(L, stacktop);
@@ -4364,7 +4393,7 @@ void lmt_local_call(int slot)
         i = lua_pcall(L, 0, 0, stacktop + 1);
         if (i) {
             lua_remove(L, stacktop + 1);
-            lmt_error(L, "local function call", slot, i == LUA_ERRRUN ? 0 : 1);
+            lua_function_error_report(L, "local function call", slot, i);
         }
     }
     lua_settop(L, stacktop);

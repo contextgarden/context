@@ -554,7 +554,7 @@ implement {
 
 implement {
     name      = "doifelseinelement",
-    actions   = { structures.atlocation, commands.testcase },
+    actions   = { structures.atlocation, commands.doifelse },
     arguments = "string",
 }
 

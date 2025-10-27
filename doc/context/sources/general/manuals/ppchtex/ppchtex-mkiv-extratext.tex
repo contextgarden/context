@@ -1,0 +1,212 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-extratext
+
+\chapter{Extra text}
+
+We can add text and symbols in and around structures. For example:
+
+\startbuffer
+\startchemical
+  [height=4500,top=1250,width=fit,frame=on]
+  \bottext
+    {2,2-Dimethyl-3-ethylpentane}
+  \chemical
+    [ONE,Z3570,SB1357]
+    [CH_3,\T{1}{H_3C},CH_3,\SR{\LT{2}{C}}]
+  \chemical
+    [MOV1,OFF1,Z0,SB3]
+    [\T{3}{CH}]
+  \chemical
+    [MOV3,Z0,SB3,MOV3,Z0,MOV7,MOV7]
+    [CH_2,CH_3]
+  \chemical
+    [OFF1,SB1,MOV1,OFF1,Z0,2OFF1,SB1,Z1]
+    [\T{4}{CH_2},\T{5}{CH_3}]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+There is a range of keys like \type{\T}. In a number of cases the arguments
+are optional. Charges can be displayed in Roman by means of \type{\+} and
+\type{\-} or directly by means of~\type{\1} up to~\type{\7}.
+
+\placetable
+  {Text: charges.}
+  {\starttable[ | l | l | ]
+  \HL
+  \VL \type{\+{number}} \VL positive charge in Roman   \VL\FR
+  \VL \type{\-{number}} \VL negative charge in Roman   \VL\MR
+  \VL \type{\1}         \VL I (without sign)           \VL\MR
+  \VL \type{\7}         \VL II, III, IV, V, VI and VII \VL\LR
+  \HL
+  \stoptable}
+
+A charge is centered above the atom. For example:
+
+\startbuffer
+\placeformula
+  \startformula
+      \chemical{S}
+      \chemical{+}
+      \chemical{O_2}
+      \chemical{GIVES}{violent}
+      \chemical{\+{4}{S}\-{2}{O_2}}
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+will result in:
+
+\getbuffer
+
+Compare this with:
+
+\startbuffer
+\placeformula
+  \startformula
+    \startchemicalformula
+      \chemical{S}
+      \chemical{+}
+      \chemical{O_2}
+      \chemical{GIVES}{violent}
+      \chemical{\+{4}{S}\-{2}{O_2}}
+    \stopchemicalformula
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+which gives:
+
+\getbuffer
+
+
+\endinput
+
+If we want to repeat a number of atoms or molecules we can define an
+(endless) range with \type{\[} and \type{\]}. Both arguments are optional as
+is shown in the example of \kap{PTFE} of Polytetrafluorethane, better knowns
+as Teflon.
+
+\startbuffer
+\startchemical[width=fit,frame=on]
+  \chemical
+    [ONE,ZT5,SB5,OFF1,Z0,OFF1,SB1,MOV1,SB5,OFF1,Z0,OFF1,SB1,ZT1]
+    [\[,CF_2,CF_2,\]{\sl n}]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\placetable
+  {Text: repeating.}
+  {\starttable[ | l | l | l | ]
+   \HL
+   \VL \type{\[{bottom}} \VL \type{\[{top}{bottom}} \VL right repeating sign \VL\FR
+   \VL \type{\]{bottom}} \VL \type{\]{top}{bottom}} \VL left repeating sign  \VL\LR
+   \HL
+   \stoptable}
+
+There is no problem of placing texts
+on the left, right, top or bottom of the atoms or molecules.
+If we preceed the keys \type{\L}, \type{\R}, \type{\T} and \type{\B}
+by \type{\X} the distance from text to atoms is somewhat smaller.
+
+\placetable
+  {Text: around an atom.}
+  {\starttable[ | l | l | ]
+   \HL
+   \VL \type{\L{text}} \VL text left   \VL\FR
+   \VL \type{\R{text}} \VL text right  \VL\MR
+   \VL \type{\T{text}} \VL text top    \VL\MR
+   \VL \type{\B{text}} \VL text bottom \VL\LR
+   \HL
+   \stoptable}
+
+Logical combinations of these keys are also possible. A key to centre text is
+also available.
+
+\dontleavehmode\hbox to \hsize
+  {\def\sample#1{\chemical{#1{\oplus}{\ruledhbox{\ttx\string#1}}}}%
+   \sample\TL\hss\sample\L \hss\sample\LC\hss\sample\BL\hss
+   \sample\TR\hss\sample\R \hss\sample\RC\hss\sample\BR\hss
+   \sample\LT\hss\sample\T \hss\sample\RT\hss\sample\LB\hss
+   \sample\B \hss\sample\RB}
+
+\dontleavehmode\hbox to \hsize
+  {\def\sample#1{\chemical{\X#1{\oplus}{\ruledhbox{\ttx\string\X\string#1}}}}%
+   \sample\TL\hss\sample\L \hss\sample\LC\hss\sample\BL\hss
+   \sample\TR\hss\sample\R \hss\sample\RC\hss\sample\BR\hss
+   \sample\LT\hss\sample\T \hss\sample\RT\hss\sample\LB\hss
+   \sample\B \hss\sample\RB}
+
+In some cases you will need what we may call {\em smashed} text.
+
+\placetable
+  {Text: smashed text.}
+  {\starttable[ | l | l | ]
+   \HL
+   \VL \type{\SL{text}} \VL left align  \VL\FR
+   \VL \type{\SM{text}} \VL centre      \VL\MR
+   \VL \type{\SR{text}} \VL right align \VL\LR
+   \HL
+   \stoptable}
+
+An example is given below. The text is centred around the first character.
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,R36,RZ36][\SL{COOH},\SL{COOH}]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+We can place text above, under or in the middle of
+structures with the keys \type{\toptext}, \type{\midtext}
+and \type{\bottext}. The exact position is determined by the
+height and depth of the structure.
+
+\startbuffer
+\placeformula
+  \startformula
+    \startchemical[width=fit]
+      \chemical[SIX,B,Z1,MOV1,B][\hbox{$\bullet$}]
+      \toptext{{\sl trans}-Decalin}
+    \stopchemical
+    \hskip 24pt
+    \startchemical[width=fit]
+      \chemical[SIX,B,Z12,MOV1,B][\hbox{$\bullet$},\hbox{$\bullet$}]
+      \bottext{{\sl cis}-Decalin}
+    \stopchemical
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+Both {\em Decalin} formulas look like this:
+
+\getbuffer
+
+\stopcomponent

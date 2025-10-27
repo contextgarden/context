@@ -1,0 +1,72 @@
+if not modules then modules = { } end modules ['util-bmp'] = {
+    version   = 1.001,
+    comment   = "support for bytemaps",
+    author    = "Hans Hagen",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files"
+}
+
+-- Musical timestamp: Steve Morse Band's TEX-US (October 2025), but probably not
+-- TeX as we know it.
+
+local round = math.round
+
+local set        = bytemap.setgray
+local add        = bytemap.setgrayadd
+local min        = bytemap.setgraymin
+local get        = bytemap.getbyte
+local new        = bytemap.new
+local clip       = bytemap.clip
+local slicegray  = bytemap.slicegray
+local dimensions = bytemap.dimensions
+
+local function domain(b,xmin,xmax,ymin,ymax)
+    local nx, ny = dimensions(b)
+    local sx = nx/(xmax - xmin)
+    local sy = ny/(ymax - ymin)
+    local xy = function(x,y)
+        return round((x-xmin)*sx), round((y-ymin)*sy)
+    end
+    return sx, sy, xy
+end
+
+bytemap.domain = domain
+
+function bytemap.newdomain(xmin,xmax,ymin,ymax,xres,yres)
+    local nx = round((xmax - xmin)*(xres or 1000))
+    local ny = round((ymax - ymin)*(yres or xres or 1000))
+    local b = new(nx,ny,1)
+    local sx, sy, xy = domain(b,xmin,xmax,ymin,ymax)
+    slicegray(b,255)
+    return {
+        bytemap = b,
+        xmin    = xmin,
+        xmax    = xmax,
+        ymin    = ymin,
+        ymax    = ymax,
+        sx      = sx,
+        sy      = sy,
+        xy      = xy,
+        get     = function(x,y)
+            return get(b,round((x-xmin)*sx),round((y-ymin)*sy))
+        end,
+        set     = function(x,y,v)
+            set(b,round((x-xmin)*sx),round((y-ymin)*sy),v)
+        end,
+        min     = function(x,y,v0,v1,v2)
+            min(b,round((x-xmin)*sx),round((y-ymin)*sy),v0,v1,v2)
+        end,
+        add     = function(x,y,v0,v1,v2)
+            x = round((x-xmin)*sx)
+            y = round((y-ymin)*sy)
+            if get(b,x,y,1) == 255 then
+                min(b,x,y,v0,v1,v2)
+            else
+                add(b,x,y,v0,v1,v2)
+            end
+        end,
+        clip    = function()
+            clip(b,255)
+        end
+    }
+end

@@ -4467,7 +4467,7 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
 /*tex
 
     0x0001 : non data par nodes
-    0x0002 : direction noded
+    0x0002 : direction nodes
     0x0004 : indentation nodes
 
 */

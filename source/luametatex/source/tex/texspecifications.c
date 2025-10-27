@@ -4,25 +4,51 @@
 
 # include "luametatex.h"
 
-
-static int valid_specification_options[] = {
-    [club_penalties_code]          = specification_option_double | specification_option_largest | specification_option_final,
-    [display_widow_penalties_code] = specification_option_double | specification_option_largest | specification_option_final,
-    [inter_line_penalties_code]    = specification_option_final,
-    [math_backward_penalties_code] = 0,
-    [math_forward_penalties_code]  = 0,
-    [orphan_penalties_code]        = 0,
-    [par_passes_code]              = specification_option_presets,
+static int valid_specification_options[number_specification_pars] = {
     [par_shape_code]               = specification_option_repeat,
-    [balance_passes_code]          = specification_option_presets,
-    [balance_final_penalties_code] = 0,
-    [widow_penalties_code]         = specification_option_double | specification_option_largest | specification_option_final,
-    [broken_penalties_code]        = specification_option_double,
-    [fitness_classes_code]         = 0,
-    [adjacent_demerits_code]       = specification_option_double,
-    [integer_list_code]            = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
-    [dimension_list_code]          = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
-    [posit_list_code]              = specification_option_double | specification_option_integer | specification_option_default | specification_option_rotate,
+    [par_passes_code]              = specification_option_presets
+                                   | specification_option_constant,
+    [par_passes_exception_code]    = specification_option_presets,
+    [balance_shape_code]           = 0,
+    [balance_passes_code]          = specification_option_presets
+                                   | specification_option_constant,
+    [balance_final_penalties_code] = specification_option_constant,
+    [inter_line_penalties_code]    = specification_option_final
+                                   | specification_option_constant,
+    [club_penalties_code]          = specification_option_double 
+                                   | specification_option_largest 
+                                   | specification_option_final
+                                   | specification_option_constant,
+    [widow_penalties_code]         = specification_option_double 
+                                   | specification_option_largest 
+                                   | specification_option_final
+                                   | specification_option_constant,
+    [display_widow_penalties_code] = specification_option_double 
+                                   | specification_option_largest 
+                                   | specification_option_final
+                                   | specification_option_constant,
+    [broken_penalties_code]        = specification_option_double
+                                   | specification_option_constant,
+    [orphan_penalties_code]        = specification_option_constant,
+    [toddler_penalties_code]       = specification_option_constant,
+    [fitness_classes_code]         = specification_option_constant,
+    [adjacent_demerits_code]       = specification_option_double
+                                   | specification_option_constant,
+    [orphan_line_factors_code]     = specification_option_constant,
+    [math_forward_penalties_code]  = specification_option_constant,
+    [math_backward_penalties_code] = specification_option_constant,
+    [integer_list_code]            = specification_option_double 
+                                   | specification_option_integer 
+                                   | specification_option_default 
+                                   | specification_option_rotate,
+    [dimension_list_code]          = specification_option_double 
+                                   | specification_option_integer 
+                                   | specification_option_default 
+                                   | specification_option_rotate,
+    [posit_list_code]              = specification_option_double 
+                                   | specification_option_integer 
+                                   | specification_option_default 
+                                   | specification_option_rotate,
 };
 
 static halfword tex_aux_scan_specification_options(quarterword code)
@@ -31,7 +57,7 @@ static halfword tex_aux_scan_specification_options(quarterword code)
     halfword valid = valid_specification_options[code];
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("ordlpifORDLPIF", 0, 1, 0)) {
+        switch (tex_scan_character("orcdlpifORCDLPIF", 0, 1, 0)) {
             case 0:
                 return options;
             case 'o': case 'O':
@@ -93,6 +119,11 @@ static halfword tex_aux_scan_specification_options(quarterword code)
                     options |= specification_option_final;
                 }
                 break;
+            case 'c': case 'C':
+                if ((valid & specification_option_constant) && tex_scan_mandate_keyword("constant", 1)) {
+                    options |= specification_option_constant;
+                }
+                break;
            default:
                 return options;
         }
@@ -122,7 +153,6 @@ static halfword tex_aux_scan_specification_list(quarterword code)
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
         halfword options = tex_aux_scan_specification_options(code);
-     // halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL) : 0;
         int pair = specification_option_double(options);
         int isint = specification_option_integer(options);
         switch (code) { 
@@ -197,7 +227,6 @@ static halfword tex_aux_scan_specification_par_shape(void)
 {
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
-     // halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL) : 0;
         halfword options = tex_aux_scan_specification_options(par_shape_code);
         halfword spec = tex_new_specification_node(count, par_shape_code, options);
         for (int n = 1; n <= count; n++) {
@@ -339,7 +368,6 @@ static halfword tex_aux_scan_specification_penalties(quarterword code)
      /* case math_backward_penalties_code: */
     }
     if (count != 0) { 
-     // halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL, NULL) : 0;
         halfword options = tex_aux_scan_specification_options(code);
         int pair = pairs ? specification_option_double(options) : 0;
         if (count == 1 || count == -1) {
@@ -403,8 +431,8 @@ static halfword tex_aux_scan_specification_par_passes(void)
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
         /*tex 
-            We have no named options here. Presets are automatically set anyway. We might even drop 
-            the option scanning here.
+            We have no named options here. Presets are automatically set anyway. We have too many 
+            keys that can mess up things. 
         */
         halfword options = tex_scan_partial_keyword("options") ? tex_scan_integer(0, NULL, NULL) : 0;
         halfword n = 1;
@@ -524,7 +552,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
                     switch (tex_scan_character("mxMX", 0, 0, 0)) {
                         case 'm': case 'M':
                             if (tex_scan_mandate_keyword("emergency", 2)) {
-                                switch (tex_scan_character("flsprwFLSPRW", 0, 0, 0)) {
+                                switch (tex_scan_character("flspruwFLSPRUW", 0, 0, 0)) {
                                     case 'f': case 'F':
                                         /* tex 
                                             Using a factor is better from the perspective 
@@ -560,6 +588,12 @@ static halfword tex_aux_scan_specification_par_passes(void)
                                             tex_set_passes_okay(p, n, passes_emergencystretch_okay);
                                         }
                                         break;
+                                    case 'u': case 'U':
+                                        if (tex_scan_mandate_keyword("emergencyunit", 10)) {
+                                            tex_set_passes_emergencyunit(p, n, tex_scan_unit_register_number(0));
+                                            tex_set_passes_okay(p, n, passes_emergencyunit_okay);
+                                        }
+                                        break;
                                     case 'w': case 'W':
                                         if (tex_scan_mandate_keyword("emergencywidthextra", 10)) {
                                             tex_set_passes_emergencywidthextra(p, n, tex_scan_integer(0, NULL, NULL));
@@ -571,7 +605,7 @@ static halfword tex_aux_scan_specification_par_passes(void)
                                 }
                             } else { 
                                 NOTDONE4:
-                                tex_aux_show_keyword_error("emergencyfactor|emergencystretch|emergencypercentage|emergencyleftextra|emergencyrightextra");
+                                tex_aux_show_keyword_error("emergencyfactor|emergencystretch|emergencypercentage|emergencyleftextra|emergencyunit|emergencyrightextra");
                                 goto DONE;
                             }
                             break;
@@ -1217,7 +1251,7 @@ void tex_aux_set_specification(int a, halfword target)
     switch (cur_cmd) { 
         case specificationspec_cmd: 
             spec = eq_value(cur_cs); 
-            spec = spec ? tex_copy_node(spec) : null;
+            spec = tex_copy_specification_node(spec);
             break;
         default: 
             tex_back_input(cur_tok);
@@ -1293,7 +1327,7 @@ void tex_run_specification_spec(void)
                 {
                     halfword target = internal_specification_location(code);
                     halfword a = 0; /* local */
-                    halfword p = tex_copy_node(cur_chr);
+                    halfword p = tex_copy_specification_node(cur_chr);
                     tex_define(a, target, specification_reference_cmd, p);
                     if (is_frozen(a) && cur_mode == hmode) {
                         tex_update_par_par(specification_reference_cmd, code);

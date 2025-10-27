@@ -127,6 +127,8 @@
 
 \mutable\lettonothing\currentstructureextradata
 
+% all these globals ...
+
 \protected\def\strc_sectioning_register#1#2#3% #1=interfaced-settings, #2=optional user data (not yet supported)
   {\begingroup
    \setupstructure[\c!name={#1},#2]%
@@ -205,8 +207,8 @@
             resetset {\structureparameter\c!sectionresetset}
         }
         metadata {
-            kind      {section}
-            name      {\currentstructurename}
+            kind      \s!section
+            name      \currentstructurename
             catcodes  \ifempty\currentstructurecatcodes\catcodetable\else\csname\currentstructurecatcodes\endcsname\fi\relaxedspace
             coding    {\currentstructurecoding}
         \ifx\currentstructurecoding\s!xml

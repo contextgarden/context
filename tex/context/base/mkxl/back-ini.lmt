@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['back-ini'] = {
 }
 
 local next, type = next, type
-local format = string.format
 
 backends                = backends or { }
 local backends          = backends

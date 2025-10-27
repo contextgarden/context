@@ -17,7 +17,6 @@ if not modules then modules = { } end modules ['publ-jrn'] = {
 -- Abhandlungen des Naturwissenschaftlichen Vereins zu Bremen = Abh. Nat.wiss. Ver. Bremen
 
 local context  = context
-local commands = commands
 
 local type = type
 local find = string.find

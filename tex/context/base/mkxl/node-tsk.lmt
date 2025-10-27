@@ -174,11 +174,16 @@ function tasks.disablegroup(name,group)
     end
 end
 
-function tasks.appendaction(name,group,action,where,kind,state)
+local checkattributes = true
+
+function tasks.appendaction(name,group,action,where,kind,state,attribute)
     local data = validgroup(name,"append action")
     if data then
         local list = data.list
-        appendaction(list,group,action,where,kind)
+        if not checkattributes then
+            attribute = nil
+        end
+        appendaction(list,group,action,where,kind,false,attribute)
         if state == "disabled" or (state == "production" and environment.initex) then
             disableaction(list,action)
         end
@@ -186,11 +191,14 @@ function tasks.appendaction(name,group,action,where,kind,state)
     end
 end
 
-function tasks.prependaction(name,group,action,where,kind,state)
+function tasks.prependaction(name,group,action,where,kind,state,attribute)
     local data = validgroup(name,"prepend action")
     if data then
         local list = data.list
-        prependaction(list,group,action,where,kind)
+        if not checkattributes then
+            attribute = nil
+        end
+        prependaction(list,group,action,where,kind,false,attribute)
         if state == "disabled" or (state == "production" and environment.initex) then
             disableaction(list,action)
         end
@@ -457,8 +465,9 @@ end
 ]],
 
 process = [[
-local tonut  = nodes.tonut
-local tonode = nodes.nuts.tonode
+local tonut   = nodes.tonut
+local tonode  = nodes.nuts.tonode
+local tracked = tex.trackedattribute
 
 %localize%
 
@@ -469,19 +478,27 @@ end
 ]],
 
 step = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = tonut((%action%(tonode(head),groupcode)))
+  %?attribute: end ?%
 ]],
 
 nut  = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = %action%(head,groupcode)
+  %?attribute: end ?%
 ]],
 
 nohead = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(tonode(head),groupcode)
+  %?attribute: end ?%
 ]],
 
 nonut = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(head,groupcode)
+  %?attribute: end ?%
 ]],
 
     }
@@ -514,8 +531,9 @@ end
 ]],
 
 process = [[
-local tonut  = nodes.tonut
-local tonode = nodes.nuts.tonode
+local tonut   = nodes.tonut
+local tonode  = nodes.nuts.tonode
+local tracked = tex.trackedattribute
 
 %localize%
 
@@ -526,19 +544,27 @@ end
 ]],
 
 step = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = tonut((%action%(tonode(head),groupcode,direction)))
+  %?attribute: end ?%
 ]],
 
 nut  = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = %action%(head,groupcode,direction)
+  %?attribute: end ?%
 ]],
 
 nohead = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(tonode(head),groupcode,direction)
+  %?attribute: end ?%
 ]],
 
 nonut = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(head,groupcode,direction)
+  %?attribute: end ?%
 ]],
 
     }
@@ -665,8 +691,9 @@ end
 ]],
 
 process = [[
-local tonut  = nodes.tonut
-local tonode = nodes.nuts.tonode
+local tonut   = nodes.tonut
+local tonode  = nodes.nuts.tonode
+local tracked = tex.trackedattribute
 
 %localize%
 
@@ -677,19 +704,27 @@ end
 ]],
 
 step = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = tonut((%action%(tonode(head))))
+  %?attribute: end ?%
 ]],
 
 nut  = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = %action%(head)
+  %?attribute: end ?%
 ]],
 
 nohead = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(tonode(head))
+  %?attribute: end ?%
 ]],
 
 nonut = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(head)
+  %?attribute: end ?%
 ]],
 
     }
@@ -1025,8 +1060,9 @@ end
 ]],
 
 process = [[
-local tonut  = nodes.tonut
-local tonode = nodes.nuts.tonode
+local tonut   = nodes.tonut
+local tonode  = nodes.nuts.tonode
+local tracked = tex.trackedattribute
 
 %localize%
 
@@ -1037,19 +1073,27 @@ end
 ]],
 
 step = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)))
+  %?attribute: end ?%
 ]],
 
 nut  = [[
+  %?attribute: if tracked(%attribute%) then ?%
     head = %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
+  %?attribute: end ?%
 ]],
 
 nohead = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)
+  %?attribute: end ?%
 ]],
 
 nonut = [[
+  %?attribute: if tracked(%attribute%) then ?%
     %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
+  %?attribute: end ?%
 ]],
 
     }

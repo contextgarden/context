@@ -328,6 +328,31 @@ local f_cz = formatters["%.6N 0 0 %.6N %.6N %.6N cm"]
 ----- f_tm = formatters["%.6N %.6N %.6N %.6N %.6N %.6N Tm"]
 local f_tm = formatters["%.6N 0 %.6N %.6N %.6N %.6N Tm"]
 
+do
+    local t = { true, "0", true, true, true, true, "Tm" }
+    local f = string.f6
+    local h = setmetatableindex(function(t,k) local v = f(k) t[k] = v return v end)
+    f_tm = function(rx, sy, ry, tx, ty)
+        if rx == ry then
+            rx = h[rx]
+            t[1] = rx
+            t[4] = rx
+        else
+            t[1] = h[rx]
+            t[4] = h[ry]
+        end
+        if sy == 0 then
+            t[3] = "0"
+        else
+         -- t[1] = f(sy)
+            t[1] = h[sy]
+        end
+        t[5] = f(tx)
+        t[6] = f(ty)
+        return concat(t," ")
+    end
+end
+
 directives.register("backend.pdf.accurate", function()
     f_cm = formatters["%.9N %.9N %.9N %.9N %.9N %.9N cm"]
     f_cz = formatters["%.9N 0 0 %.9N %.9N %.9N cm"]
@@ -742,6 +767,9 @@ tmry             = 1
     local f_font  = formatters["/F%i 10 Tf"]
     local f_skip  = formatters["%.2N"]
 
+    local h_font = setmetatableindex(function(t,k) local v = f_font(k) t[k] = v return v end)
+    local h_skip = setmetatableindex(function(t,k) local v = f_skip(k) t[k] = v return v end)
+
     local s_width = "0 w"
     local s_mode  = "0 Tr"
 
@@ -768,7 +796,8 @@ tmry             = 1
         end
         -- no need when the same
         if need_font or last_pdf ~= current_pdf then
-            b = b + 1 ; buffer[b] = f_font(current_pdf)
+--             b = b + 1 ; buffer[b] = f_font(current_pdf)
+            b = b + 1 ; buffer[b] = h_font[current_pdf]
             last_pdf  = current_pdf
             need_font = false
         end
@@ -878,7 +907,8 @@ tmry             = 1
                     -- ok for text with not too long words where spaces synchronize
                  -- b = b + 1 ; buffer[b] = round(d) -- or f_skip(d)
                     -- better for extensibles and incredible long words
-                    b = b + 1 ; buffer[b] = f_skip(d)
+--                     b = b + 1 ; buffer[b] = f_skip(d)
+                    b = b + 1 ; buffer[b] = h_skip[d]
                 end
                 tj_position = tj_position - tj_delta
              -- tj_position = tj_position - tj_delta * tmef_f_x_scale
@@ -1325,6 +1355,7 @@ do
         end
         --
         local width, height, depth = getwhd(list)
+-- print(width,height,depth)
         --
         local l = {
             width      = width,
@@ -2935,7 +2966,7 @@ local pages  do
 
     local texgetcount = tex.getcount
 
-    pages = table.setmetatableindex(function(t,k)
+    pages = setmetatableindex(function(t,k)
         if not preallocated then
             local n = structures.counters.record("realpage")["last"]
             for i=1,n do

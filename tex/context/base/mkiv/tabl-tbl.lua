@@ -14,7 +14,6 @@ local gsub, rep, sub, find = string.gsub, string.rep, string.sub, string.find
 local P, C, Cc, Ct, lpegmatch = lpeg.P, lpeg.C, lpeg.Cc, lpeg.Ct, lpeg.match
 
 local context     = context
-local commands    = commands
 
 local texsetcount = tex.setcount
 

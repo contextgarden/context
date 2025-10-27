@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+% perfect test for - , end of line {\hsize{\hsize-4cm}\samplefile{tufte}}
+
 \writestatus{loading}{ConTeXt Spacing Macros / Vertical}
 
 \unprotect
@@ -1487,40 +1489,51 @@
 %D Next we define the lot. They can be set with the normal align commands and keys.
 
 \permanent \specificationdef \lesswidowpenalties \widowpenalties
-    \plusthree options   {\largestspecificationoptioncode+\doublespecificationoptioncode}%
+    \plusthree options {
+        \largestspecificationoptioncode
+       +\doublespecificationoptioncode
+       +\constantspecificationoptioncode
+    }
     \plusfivethousand    \plusseventyfivehundred
     \plustwohundredfifty \plusfivehundred
     \zerocount           \zerocount
 \relax
 
 \permanent \specificationdef \lessclubpenalties \clubpenalties
-    \plusthree options   {\largestspecificationoptioncode+\doublespecificationoptioncode}%
+    \plusthree options {
+        \largestspecificationoptioncode
+       +\doublespecificationoptioncode
+       +\constantspecificationoptioncode
+    }
     \plusfivethousand    \plusseventyfivehundred
     \plustwohundredfifty \plusfivehundred
     \zerocount           \zerocount
 \relax
 
 \permanent \specificationdef \lessbrokenpenalties \brokenpenalties
-    \plusone options \doublespecificationoptioncode
+    \plusone options {
+        \doublespecificationoptioncode
+       +\constantspecificationoptioncode
+    }
     \plusfifty \plusfivehundred
 \relax
 
-\specificationdef\strictwidowpenalties      \widowpenalties  \plusthree \maxcount \maxcount           \zerocount \relax
-\specificationdef\strictwidowpenaltiestwo   \widowpenalties  \plustwo   \maxcount                     \zerocount \relax
-\specificationdef\strictwidowpenaltiesthree \widowpenalties  \plusthree \maxcount \maxcount           \zerocount \relax
-\specificationdef\strictwidowpenaltiesfour  \widowpenalties  \plusfour  \maxcount \maxcount \maxcount \zerocount \relax
+\permanent \specificationdef\strictwidowpenalties      \widowpenalties  \plusthree constant \maxcount \maxcount           \zerocount \relax
+\permanent \specificationdef\strictwidowpenaltiestwo   \widowpenalties  \plustwo   constant \maxcount                     \zerocount \relax
+\permanent \specificationdef\strictwidowpenaltiesthree \widowpenalties  \plusthree constant \maxcount \maxcount           \zerocount \relax
+\permanent \specificationdef\strictwidowpenaltiesfour  \widowpenalties  \plusfour  constant \maxcount \maxcount \maxcount \zerocount \relax
 
-\specificationdef\strictclubpenalties       \clubpenalties   \plusthree \maxcount \maxcount           \zerocount \relax
-\specificationdef\strictclubpenaltiestwo    \clubpenalties   \plustwo   \maxcount                     \zerocount \relax
-\specificationdef\strictclubpenaltiesthree  \clubpenalties   \plusthree \maxcount \maxcount           \zerocount \relax
-\specificationdef\strictclubpenaltiesfour   \clubpenalties   \plusfour  \maxcount \maxcount \maxcount \zerocount \relax
+\permanent \specificationdef\strictclubpenalties       \clubpenalties   \plusthree constant \maxcount \maxcount           \zerocount \relax
+\permanent \specificationdef\strictclubpenaltiestwo    \clubpenalties   \plustwo   constant \maxcount                     \zerocount \relax
+\permanent \specificationdef\strictclubpenaltiesthree  \clubpenalties   \plusthree constant \maxcount \maxcount           \zerocount \relax
+\permanent \specificationdef\strictclubpenaltiesfour   \clubpenalties   \plusfour  constant \maxcount \maxcount \maxcount \zerocount \relax
 
-\specificationdef\strictbrokenpenalties     \brokenpenalties \plusone   \maxcount                                \relax
+\permanent \specificationdef\strictbrokenpenalties     \brokenpenalties \plusone   constant \maxcount                                \relax
 
-\specificationdef\lessorphanpenalties       \orphanpenalties \plustwo   \plusthreethousand \plusonehundred            \relax
-\specificationdef\lessorphanpenaltiestwo    \orphanpenalties \plusone   \plusthreethousand                            \relax
-\specificationdef\lessorphanpenaltiesthree  \orphanpenalties \plustwo   \plusthreethousand \plusonehundred            \relax
-\specificationdef\lessorphanpenaltiesfour   \orphanpenalties \plusthree \plusthreethousand \plusonehundred \plusfifty \relax
+\permanent \specificationdef\lessorphanpenalties       \orphanpenalties \plustwo   constant \plusthreethousand \plusonehundred            \relax
+\permanent \specificationdef\lessorphanpenaltiestwo    \orphanpenalties \plusone   constant \plusthreethousand                            \relax
+\permanent \specificationdef\lessorphanpenaltiesthree  \orphanpenalties \plustwo   constant \plusthreethousand \plusonehundred            \relax
+\permanent \specificationdef\lessorphanpenaltiesfour   \orphanpenalties \plusthree constant \plusthreethousand \plusonehundred \plusfifty \relax
 
 \installaligncommand{lesswidows}    {\lesswidowpenalties }
 \installaligncommand{lessclubs}     {\lessclubpenalties  }
@@ -1552,11 +1565,11 @@
 %D This is no real problem because most are not blocking and we will fall through to
 %D a next par pass.
 
-\specificationdef\defaultmathforwardpenalties  \mathforwardpenalties \zerocount
-\specificationdef\defaultmathbackwardpenalties \mathforwardpenalties \zerocount
+\permanent \specificationdef\defaultmathforwardpenalties  \mathforwardpenalties \zerocount
+\permanent \specificationdef\defaultmathbackwardpenalties \mathforwardpenalties \zerocount
 
-\specificationdef\optimalmathforwardpenalties  \mathforwardpenalties  \plusthree \plustwohundred \plusonehundred \plusfifty
-\specificationdef\optimalmathbackwardpenalties \mathbackwardpenalties \plusthree \plustwohundred \plusonehundred \plusfifty
+\permanent \specificationdef\optimalmathforwardpenalties  \mathforwardpenalties  \plusthree constant \plustwohundred \plusonehundred \plusfifty
+\permanent \specificationdef\optimalmathbackwardpenalties \mathbackwardpenalties \plusthree constant \plustwohundred \plusonehundred \plusfifty
 
 % align={defaultmath,nonstrictmath}
 
@@ -2470,7 +2483,21 @@
 %
 % but use the following more efficient variant instead:
 
-\permanent\protected\def\inhibitblank{\ifmmode\else\par\ifvmode\clf_injectdisable\fi\fi}
+\permanent\protected\def\inhibitblank
+  {\ifmmode\else\par\ifvmode
+     \clf_injectdisable
+   \fi\fi}
+
+\permanent\protected\def\inhibitwhitespace
+  {\ifmmode\else\par\ifvmode
+     \clf_injectnowhite
+   \fi\fi}
+
+\permanent\protected\def\inhibitallspacing
+  {\ifmmode\else\par\ifvmode
+     \clf_injectdisable
+     \clf_injectnowhite
+   \fi\fi}
 
 \aliased\let\doinhibitblank\inhibitblank % keep this command for a while, used in styles
 

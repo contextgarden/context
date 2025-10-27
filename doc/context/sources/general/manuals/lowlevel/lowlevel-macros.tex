@@ -1619,3 +1619,28 @@ scanning ahead in assignments.
 % \testID {123}{20ex}
 % \testID {123}{123pt}
 % \stoplines
+
+% \def\MyOtherMacroA
+%   {\edef\crap{\MyArgumentOne:\MyArgumentTwo}}
+%
+% \tolerant\protected\def\MyMacroA[#1]#:#2%
+%   {\parameterdef\MyArgumentOne\plusone
+%    \parameterdef\MyArgumentTwo\plustwo
+%    \MyOtherMacroA}
+%
+% \def\MyOtherMacroB#1#2%
+%   {\edef\crap{#1:#2}}
+%
+% \tolerant\protected\def\MyMacroB[#1]#:#2%
+%   {\MyOtherMacroB{#1}{#2}}
+%
+% [\testfeatureonce{1000000}{\MyMacroA[aaa]{bbb}}\elapsedtime]
+% [\testfeatureonce{1000000}{\MyMacroB[aaa]{bbb}}\elapsedtime]
+%
+% [\testfeatureonce{1000000}{\MyMacroA[aaaaa]{bbbbb}}\elapsedtime]
+% [\testfeatureonce{1000000}{\MyMacroB[aaaaa]{bbbbb}}\elapsedtime]
+%
+% \unprotect
+% [\testfeatureonce{1000000}{\MyMacroA[\c!width]{bbbbb}}\elapsedtime]
+% [\testfeatureonce{1000000}{\MyMacroB[\c!width]{bbbbb}}\elapsedtime]
+% \protect

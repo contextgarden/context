@@ -67,7 +67,7 @@ extern void   bytemap_reduce         (bytemap_data *bytemap, int method, size_t 
 extern void   bytemap_slice_gray     (bytemap_data *bytemap, int x, int y, int dx, int dy, int s);
 extern void   bytemap_slice_rgb      (bytemap_data *bytemap, int x, int y, int dx, int dy, int r, int g, int b);
 extern void   bytemap_slice_range    (bytemap_data *bytemap, int x, int y, int dx, int dy, int min, int max);
-extern int    bytemap_bounds         (bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry);
+extern int    bytemap_bounds         (bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry, int compensate);
 extern void   bytemap_clip           (bytemap_data *bytemap, int value, size_t *count);
 extern void   bytemap_copy           (bytemap_data *source, bytemap_data *target, size_t *count);
               
@@ -79,6 +79,8 @@ extern int    bytemap_has_byte_rgb   (bytemap_data *bytemap, int r, int g, int b
 
 extern void   bytemap_set_gray       (bytemap_data *bytemap, int x, int y, int s);
 extern void   bytemap_set_rgb        (bytemap_data *bytemap, int x, int y, int r, int g, int b);
+extern void   bytemap_set_gray_add   (bytemap_data *bytemap, int x, int y, int s1, int s2, int s3);
+extern void   bytemap_set_gray_min   (bytemap_data *bytemap, int x, int y, int s1, int s2, int s3);
 
 /*tex beware: returns an allocated copy*/
 

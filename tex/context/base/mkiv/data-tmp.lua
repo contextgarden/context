@@ -230,7 +230,7 @@ end
 local r_cache = { }
 local w_cache = { }
 
-local function getreadablepaths(...)
+local function getreadablepaths(...) -- ... | tags
     local tags = { ... }
     local hash = concat(tags,"/")
     local done = r_cache[hash]
@@ -249,7 +249,7 @@ local function getreadablepaths(...)
     return done
 end
 
-local function getwritablepath(...)
+local function getwritablepath(...) -- ... | tags
     local tags = { ... }
     local hash = concat(tags,"/")
     local done = w_cache[hash]

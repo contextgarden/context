@@ -310,8 +310,8 @@
      \ifempty\p_mp\else
        \clf_set_extensible_data
            mp     {\p_mp}
-           left   \scratchcounterthree
-           right  \scratchcounterthree
+           left   \scratchcounterone
+           right  \scratchcountertwo
            middle \scratchcounterthree
         \relax
      \fi
@@ -756,29 +756,29 @@
    \c!margin=.25\emwidth,
    \c!rule=\v!symbol]
 
-\definemathfraction [bartext]                [relfraction] [\c!middle="203E]
-\definemathfraction [leftarrowtext]          [relfraction] [\c!middle="2190]
-\definemathfraction [rightarrowtext]         [relfraction] [\c!middle="2192]
-\definemathfraction [twoheadleftarrowtext]   [relfraction] [\c!middle="219E]
-\definemathfraction [twoheadrightarrowtext]  [relfraction] [\c!middle="21A0]
-\definemathfraction [reltext]                [relfraction] [\c!middle="002D]
-\definemathfraction [equaltext]              [relfraction] [\c!middle="003D]
-\definemathfraction [mapstotext]             [relfraction] [\c!middle="21A6]
-\definemathfraction [hookleftarrowtext]      [relfraction] [\c!middle="21A9]
-\definemathfraction [hookrightarrowtext]     [relfraction] [\c!middle="21AA]
-\definemathfraction [leftharpoondowntext]    [relfraction] [\c!middle="21BD]
-\definemathfraction [leftharpoonuptext]      [relfraction] [\c!middle="21BC]
-\definemathfraction [rightharpoondowntext]   [relfraction] [\c!middle="21C1]
-\definemathfraction [rightharpoonuptext]     [relfraction] [\c!middle="21C0]
-\definemathfraction [rightoverleftarrowtext] [relfraction] [\c!middle="21C4]
-\definemathfraction [leftrightharpoonstext]  [relfraction] [\c!middle="21CB]
-\definemathfraction [rightleftharpoonstext]  [relfraction] [\c!middle="21CC]
-\definemathfraction [triplereltext]          [relfraction] [\c!middle="2261]
-\definemathfraction [leftrightarrowtext]     [relfraction] [\c!middle="27F7]
-\definemathfraction [rightleftarrowtext]     [relfraction] [\c!middle="27F7]
-\definemathfraction [Leftarrowtext]          [relfraction] [\c!middle="27F8]
-\definemathfraction [Rightarrowtext]         [relfraction] [\c!middle="27F9]
-\definemathfraction [Leftrightarrowtext]     [relfraction] [\c!middle="27FA]
-\definemathfraction [Rightleftarrowtext]     [relfraction] [\c!middle="27FA]
+\definemathfraction [bartext]                [relfraction] [\c!symbol="203E]
+\definemathfraction [leftarrowtext]          [relfraction] [\c!symbol="2190]
+\definemathfraction [rightarrowtext]         [relfraction] [\c!symbol="2192]
+\definemathfraction [twoheadleftarrowtext]   [relfraction] [\c!symbol="219E]
+\definemathfraction [twoheadrightarrowtext]  [relfraction] [\c!symbol="21A0]
+\definemathfraction [reltext]                [relfraction] [\c!symbol="002D]
+\definemathfraction [equaltext]              [relfraction] [\c!symbol="003D]
+\definemathfraction [mapstotext]             [relfraction] [\c!symbol="21A6]
+\definemathfraction [hookleftarrowtext]      [relfraction] [\c!symbol="21A9]
+\definemathfraction [hookrightarrowtext]     [relfraction] [\c!symbol="21AA]
+\definemathfraction [leftharpoondowntext]    [relfraction] [\c!symbol="21BD]
+\definemathfraction [leftharpoonuptext]      [relfraction] [\c!symbol="21BC]
+\definemathfraction [rightharpoondowntext]   [relfraction] [\c!symbol="21C1]
+\definemathfraction [rightharpoonuptext]     [relfraction] [\c!symbol="21C0]
+\definemathfraction [rightoverleftarrowtext] [relfraction] [\c!symbol="21C4]
+\definemathfraction [leftrightharpoonstext]  [relfraction] [\c!symbol="21CB]
+\definemathfraction [rightleftharpoonstext]  [relfraction] [\c!symbol="21CC]
+\definemathfraction [triplereltext]          [relfraction] [\c!symbol="2261]
+\definemathfraction [leftrightarrowtext]     [relfraction] [\c!symbol="27F7]
+\definemathfraction [rightleftarrowtext]     [relfraction] [\c!symbol="27F7]
+\definemathfraction [Leftarrowtext]          [relfraction] [\c!symbol="27F8]
+\definemathfraction [Rightarrowtext]         [relfraction] [\c!symbol="27F9]
+\definemathfraction [Leftrightarrowtext]     [relfraction] [\c!symbol="27FA]
+\definemathfraction [Rightleftarrowtext]     [relfraction] [\c!symbol="27FA]
 
 \protect \endinput

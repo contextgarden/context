@@ -3763,11 +3763,25 @@ static int tex_aux_set_sub_pass_parameters(
         if (okay & passes_emergencyleftextra_okay) {
             lmt_linebreak_state.emergency_right_extra = tex_get_passes_emergencyrightextra(passes, subpass);
         }
+        if (okay & passes_emergencyunit_okay) {
+            lmt_linebreak_state.emergency_unit = tex_get_passes_emergencyunit(passes, subpass);
+        }
     }
     /*tex
         We also need to handle the current document emergency stretch.
     */
-    if (okay & passes_emergencystretch_okay) {
+    if (okay & passes_emergencyunit_okay) {
+        halfword u = tex_get_passes_emergencyunit(passes, subpass);
+        if (u) { 
+            halfword v = 0;
+            if (tex_get_userunit(u, &v)) {
+                properties->emergency_stretch = v;
+                properties->emergency_original = v; /* ! */
+            }
+        } else { 
+            properties->emergency_stretch = properties->emergency_original;
+        }
+    } else if (okay & passes_emergencystretch_okay) {
         halfword v = tex_get_passes_emergencystretch(passes, subpass);
         if (v) {
             properties->emergency_stretch = v;
@@ -3775,8 +3789,6 @@ static int tex_aux_set_sub_pass_parameters(
         } else {
             properties->emergency_stretch = properties->emergency_original;
         }
-    } else {
-        properties->emergency_stretch = properties->emergency_original;
     }
     if (lmt_linebreak_state.emergency_factor) {
         properties->emergency_stretch = tex_xn_over_d(properties->emergency_original, lmt_linebreak_state.emergency_factor, scaling_factor);
@@ -3962,11 +3974,12 @@ static int tex_aux_set_sub_pass_parameters(
                     tex_get_specification_fitness_class(properties->fitness_classes, c)
                 );
             }
-            tex_print_str(" ]");
+            tex_print_str(" ]\n");
         }
         tex_print_str("  --------------------------------\n");
         tex_print_format("%s emergencyoriginal    %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_original);
         tex_print_format("%s emergencystretch     %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_stretch);
+        tex_print_format("%s emergencyunit        %i\n", is_okay(passes_emergencyunit_okay), tex_get_passes_emergencyunit(passes, subpass));
         tex_print_format("%s emergencyfactor      %i\n", is_okay(passes_emergencyfactor_okay), tex_get_passes_emergencyfactor(passes, subpass));
         tex_print_format("%s emergencypercentage  %i\n", is_okay(passes_emergencypercentage_okay), lmt_linebreak_state.emergency_percentage);
         tex_print_format("%s emergencyleftextra   %i\n", is_okay(passes_emergencyleftextra_okay), lmt_linebreak_state.emergency_left_extra);
@@ -4095,7 +4108,7 @@ static inline int tex_aux_next_subpass(const line_break_properties *properties, 
                 }
             }
             if (features & passes_if_emergency_stretch) {
-                if (! ( (properties->emergency_original || tex_get_passes_emergencystretch(passes, subpass)) && tex_get_passes_emergencyfactor(passes, subpass) ) ) {
+                if (! ( (properties->emergency_original || tex_get_passes_emergencystretch(passes, subpass) || tex_get_passes_emergencyunit(passes, subpass)) && tex_get_passes_emergencyfactor(passes, subpass) ) ) {
                     if (tracing) {
                         tex_aux_skip_message(passes, subpass, nofsubpasses, "emergency stretch");
                     }
@@ -5036,6 +5049,7 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.emergency_amount = 0;
     lmt_linebreak_state.emergency_factor = scaling_factor;
     lmt_linebreak_state.emergency_percentage = 0;
+    lmt_linebreak_state.emergency_unit = 0;
     lmt_linebreak_state.emergency_width_amount = 0;
     lmt_linebreak_state.emergency_width_extra = 0;
     lmt_linebreak_state.emergency_left_amount = 0;

@@ -19,7 +19,8 @@ local allocate = utilities.storage.allocate
 local settings_to_hash = utilities.parsers.settings_to_hash
 local setmetatableindex = table.setmetatableindex
 
-local trace_tags = false  trackers.register("structures.tags", function(v) trace_tags = v end)
+local trace_tags   = false  trackers.register("structures.tags",        function(v) trace_tags   = v end)
+local trace_levels = false  trackers.register("structures.tags.levels", function(v) trace_levels = v end)
 
 local report_tags = logs.reporter("structure","tags")
 
@@ -377,6 +378,8 @@ local patterns = setmetatableindex(function(t,tag)
     return v
 end)
 
+-- nearly always the last one
+
 function tags.locatedtag(tag)
     local attribute = texgetattribute(a_tagged)
     if attribute >= 0 then
@@ -384,10 +387,16 @@ function tags.locatedtag(tag)
         if specification then
             local taglist = specification.taglist
             local pattern = patterns[tag]
-            for i=#taglist,1,-1 do
-                local t = taglist[i]
-                if find(t,pattern) then
-                    return t
+            local n = #taglist
+            local t = taglist[n]
+            if find(t,pattern) then
+                return t
+            else
+                for i=n-1,1,-1 do
+                    t = taglist[i]
+                    if find(t,pattern) then
+                        return t
+                    end
                 end
             end
         end
@@ -411,6 +420,26 @@ function structures.atlocation(str) -- not used
         end
     end
 end
+
+-- function structures.atlocation(str) -- not used , so no need to optimize
+--     local specification = taglist[texgetattribute(a_tagged)]
+--     if specification then
+--         local list = specification.taglist
+--         if list then
+--             local pattern = patterns[str]
+--             local n = #list
+--             if find(list[n],pattern) then
+--                 return true
+--             else
+--                 for i=n-1,1,-1 do
+--                     if find(list[i],pattern) then
+--                         return true
+--                     end
+--                 end
+--             end
+--         end
+--     end
+-- end
 
 function tags.setproperty(tag,key,value)
     local p = properties[tag]
@@ -470,7 +499,8 @@ end
 
 local ignored = { } tags.ignored = ignored
 
-    statistics.feedback.register { name = "tagging", index = 2, category = "performance" }
+statistics.feedback.register { name = "tagging",   index = 2, category = "performance" }
+statistics.feedback.register { name = "structure", index = 4, category = "error" }
 
 local function enabletags()
     if not enabled then
@@ -482,6 +512,33 @@ local function enabletags()
         statistics.feedback.setstate("tagging", true)
         enabled = true
     end
+end
+
+local function show_level(where)
+    report_tags("%s %i : %s",where,stacksize,concat(chain," ",1,stacksize))
+end
+
+-- function tags.nesting()
+--     return { unpack(chain,1,stacksize) }
+-- end
+
+function tags.checknesting()
+    local max = #chain
+    report_tags()
+    if stacksize == 2 then
+        report_tags("stack size %i, max stack %i, %s nesting",stacksize,max,"valid")
+    else
+        report_tags("stack size %i, max stack %i, %s nesting",stacksize,max,"invalid")
+        report_tags()
+        for i=1,stacksize+1 do
+            if i == 3 then
+                report_tags()
+            end
+            report_tags("%w %s",i*2,chain[i])
+        end
+        statistics.feedback.setstate("structure", true)
+    end
+    report_tags()
 end
 
 function tags.start(tag,specification)
@@ -551,6 +608,9 @@ function tags.start(tag,specification)
     end
     --
     texsetattribute(a_tagged,attribute)
+    if trace_levels then
+        show_level("+")
+    end
     return attribute
 end
 
@@ -568,6 +628,9 @@ function tags.restart(attribute)
     end
     stack[stacksize] = attribute
     texsetattribute(a_tagged,attribute)
+    if trace_levels then
+        show_level("!")
+    end
     return attribute
 end
 
@@ -614,6 +677,9 @@ do
 end
 
 function tags.stop()
+    if trace_levels then
+        show_level("-")
+    end
     if stacksize > 0 then
         stacksize = stacksize - 1
     end
@@ -815,6 +881,12 @@ implement {
     protected = true,
     actions   = tags.registermetadata,
     arguments = "optional",
+}
+
+implement {
+    name      = "checknesting",
+    protected = true,
+    actions   = tags.checknesting,
 }
 
 implement {

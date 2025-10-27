@@ -1,0 +1,122 @@
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-whatever
+
+\startchapter[title={Whatever}]
+
+Here we will discuss a few additions that don't fit into a category and are unique
+to the \LMTX\ version of \METAFUN. Some could be in \MKII\ and \MKIV\ but we don't
+want to introduce compatibilities issues. We start with a set of new operators that
+relate to checking against some predefined constants.
+
+\startluacode
+    document.scaledfun = { }
+    document.doublefun = { }
+\stopluacode
+
+\startMPcalculation{scaledfun}
+    runscript("document.scaledfun.eps         = '" & decimal eps         & "'") ;
+    runscript("document.scaledfun.epsilon     = '" & decimal epsilon     & "'") ;
+    runscript("document.scaledfun.neglectable = '" & decimal neglectable & "'") ;
+    runscript("document.scaledfun.infinity    = '" & decimal infinity    & "'") ;
+\stopMPcalculation
+
+\startMPcalculation{doublefun}
+    runscript("document.doublefun.eps         = '" & decimal eps         & "'") ;
+    runscript("document.doublefun.epsilon     = '" & decimal epsilon     & "'") ;
+    runscript("document.doublefun.neglectable = '" & decimal neglectable & "'") ;
+    runscript("document.doublefun.infinity    = '" & decimal infinity    & "'") ;
+\stopMPcalculation
+
+\starttabulate[|||||]
+\BC internal
+\BC scaled
+\BC double
+\BC set value
+\NC \NR \ML
+\BC \type {eps}
+\NC \cldcontext{document.scaledfun.eps}
+\NC \cldcontext{document.doublefun.eps}
+\NC 0.0049
+\NC \NR
+\BC \type {epsilon}
+\NC \cldcontext{document.scaledfun.epsilon}
+\NC \cldcontext{document.doublefun.epsilon}
+\NC 1/256/256
+\NC \NR
+\BC \type {neglectable}
+\NC  \cldcontext{document.scaledfun.neglectable}
+\NC  \cldcontext{document.doublefun.neglectable}
+\NC 0.000001
+\NC \NR
+\BC \type {infinity}
+\NC  \cldcontext{document.scaledfun.infinity}
+\NC  \cldcontext{document.doublefun.infinity}
+\NC  4095.99998
+\NC \NR
+\stoptabulate
+
+We use these values to get around rounding issues, as in:
+
+\starttyping[option=TEX]
+if a ~   b : do_this else : do_that fi ; % eps
+if a ~~  b : do_this else : do_that fi ; % epsilon
+if a ~~~ b : do_this else : do_that fi ; % neglectable
+\stoptyping
+
+\startbuffer[a]
+\startMPcode[instance=scaledfun]
+def ShowAbout text t =
+  fill fullcircle scaled 20mm withcolor if 1 t 1         : red   else : .5 fi ;
+  fill fullcircle scaled 18mm withcolor if 1 t 1.1       : green else : .5 fi ;
+  fill fullcircle scaled 16mm withcolor if 1 t 1.01      : blue  else : .5 fi ;
+  fill fullcircle scaled 14mm withcolor if 1 t 1.001     : white else : .5 fi ;
+  fill fullcircle scaled 12mm withcolor if 1 t 1.0001    : red   else : .5 fi ;
+  fill fullcircle scaled 10mm withcolor if 1 t 1.00001   : green else : .5 fi ;
+  fill fullcircle scaled  8mm withcolor if 1 t 1.000001  : blue  else : .5 fi ;
+  fill fullcircle scaled  6mm withcolor if 1 t 1.0000001 : white else : .5 fi ;
+enddef ;
+draw image (ShowAbout ~  ) ;
+draw image (ShowAbout ~~ ) shifted (21mm,0) ;
+draw image (ShowAbout ~~~) shifted (42mm,0) ;
+\stopMPcode
+\stopbuffer
+
+\startbuffer[b]
+\startMPcode[instance=doublefun]
+def ShowAbout text t =
+  fill fullcircle scaled 20mm withcolor if 1 t 1         : red   else : .5 fi ;
+  fill fullcircle scaled 18mm withcolor if 1 t 1.1       : green else : .5 fi ;
+  fill fullcircle scaled 16mm withcolor if 1 t 1.01      : blue  else : .5 fi ;
+  fill fullcircle scaled 14mm withcolor if 1 t 1.001     : white else : .5 fi ;
+  fill fullcircle scaled 12mm withcolor if 1 t 1.0001    : red   else : .5 fi ;
+  fill fullcircle scaled 10mm withcolor if 1 t 1.00001   : green else : .5 fi ;
+  fill fullcircle scaled  8mm withcolor if 1 t 1.000001  : blue  else : .5 fi ;
+  fill fullcircle scaled  6mm withcolor if 1 t 1.0000001 : white else : .5 fi ;
+enddef ;
+draw image (ShowAbout ~  ) ;
+draw image (ShowAbout ~~ ) shifted (21mm,0) ;
+draw image (ShowAbout ~~~) shifted (42mm,0) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[b][option=TEX]
+
+We get this:
+
+\startlinecorrection
+\startcombination[distance=10mm]
+    {\getbuffer[a]} {scaled}
+    {\getbuffer[b]} {double}
+\stopcombination
+\stoplinecorrection
+
+
+
+
+\stopchapter
+
+\stopcomponent
+

@@ -54,7 +54,6 @@ physics.units      = physics.units or { }
 local allocate     = utilities.storage.allocate
 
 local context      = context
-local commands     = commands
 local implement    = interfaces.implement
 
 local trace_units  = false

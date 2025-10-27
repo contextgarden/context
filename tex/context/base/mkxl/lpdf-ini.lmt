@@ -102,46 +102,48 @@ end)
 local trace_finalizers = false  trackers.register("backend.finalizers", function(v) trace_finalizers = v end)
 local trace_resources  = false  trackers.register("backend.resources",  function(v) trace_resources  = v end)
 
-    -- helpers
+-- helpers
 
-local f_hex_4 = formatters["%04X"]
-local f_hex_2 = formatters["%02X"]
+-- local f_hex_4 = formatters["%04X"]
+-- local f_hex_2 = formatters["%02X"]
 
-local h_hex_4 = table.setmetatableindex(function(t,k) -- we already have this somewhere
-    if k < 0 then
-      --report("fatal h_hex_4 error: %i",k)
-        return "0000"
-    elseif k < 256 then -- maybe 512
-        -- not sparse in this range
-        for i=0,255 do
-            t[i] = f_hex_4(i)
-        end
-        return t[k]
-    else
-        local v = f_hex_4(k)
-        t[k] = v
-        return v
-    end
-end)
+-- local h_hex_4 = table.setmetatableindex(function(t,k) -- we already have this somewhere
+--     if k < 0 then
+--       --report("fatal h_hex_4 error: %i",k)
+--         return "0000"
+--     elseif k < 256 then -- maybe 512
+--         -- not sparse in this range
+--         for i=0,255 do
+--             t[i] = f_hex_4(i)
+--         end
+--         return t[k]
+--     else
+--         local v = f_hex_4(k)
+--         t[k] = v
+--         return v
+--     end
+-- end)
 
-local h_hex_2 = table.setmetatableindex(function(t,k) -- we already have this somewhere
-    if type(k) == "string" then
-        local v = f_hex_2(byte(k))
-        t[k] = v
-        return v
-    elseif k < 0 or k > 255 then
-     -- report("fatal h_hex_2 error: %i",k)
-        return "00"
-    else
-        local v = f_hex_2(k)
-        t[k] = v
-        return v
-    end
-end)
+-- local h_hex_2 = table.setmetatableindex(function(t,k) -- we already have this somewhere
+--     if type(k) == "string" then
+--         local v = f_hex_2(byte(k))
+--         t[k] = v
+--         return v
+--     elseif k < 0 or k > 255 then
+--      -- report("fatal h_hex_2 error: %i",k)
+--         return "00"
+--     else
+--         local v = f_hex_2(k)
+--         t[k] = v
+--         return v
+--     end
+-- end)
+
+local h_hex_2 = string.hashes.X02
+local h_hex_4 = string.hashes.X04
 
 lpdf.h_hex_2 = h_hex_2
 lpdf.h_hex_4 = h_hex_4
-
 
 do
 
@@ -611,7 +613,11 @@ do
                 local tv = type(v)
                 -- mostly numbers and tables
                 if tv == "number" then
-                    r[k] = f_tonumber(v)
+                    if v == 0 then
+                        r[k] = 0
+                    else
+                        r[k] = f_tonumber(v)
+                    end
                 elseif tv == "table" then
                  -- local mv = getmetatable(v)
                  -- if mv and mv.__lpdftype then
@@ -775,7 +781,6 @@ do
             -- nop: left and right parent : 0x27 .. 0x28
             -- yes: after right parent    : we don't like escaping
             -- nop: after tilde           : 0x80 .. 0xBF
-            print(s)
             return tosixteen(s)
         else
             return "(" .. s .. ")"

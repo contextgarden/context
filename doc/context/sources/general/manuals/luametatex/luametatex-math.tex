@@ -569,7 +569,7 @@ with are no longer hard coded but can be set at runtime:
 
 \starttabulate
 \FL
-\BC primitive name                        \BC default \NC \NR
+\BC primitive name                          \BC default           \NC \NR
 \TL
 \NC \type {\Umathoverlinevariant}           \NC cramped           \NC \NR
 \NC \type {\Umathunderlinevariant}          \NC normal            \NC \NR
@@ -599,7 +599,7 @@ These defaults remap styles are as follows:
 
 \starttabulate[|Tl|l|l|]
 \FL
-\BC default           \BC result                    \BC mapping \NC \NR
+\BC default           \BC result                    \BC mapping                     \NC \NR
 \TB
 \NC cramped           \NC cramp the style           \NC D' D' T' T' S'  S'  SS' SS' \NC \NR
 \NC subscript         \NC smaller and cramped       \NC S' S' S' S' SS' SS' SS' SS' \NC \NR
@@ -835,14 +835,14 @@ defaults and tweak them in the goodie files:
 
 \starttabulate[|T|T|c|]
 \FL
-\BC font parameter                    \BC primitive name                             \BC default   \NC \NR
+\BC font parameter                    \BC primitive name                               \BC default   \NC \NR
 \TL
 \NC MinConnectorOverlap               \NC \type {\Umathconnectoroverlapmin}            \NC 0         \NC \NR
 \NC SubscriptShiftDownWithSuperscript \NC \type {\Umathsubsupshiftdown}                \NC inherited \NC \NR
 \NC FractionDelimiterSize             \NC \type {\Umathfractiondelsize}                \NC undefined \NC \NR
 \NC FractionDelimiterDisplayStyleSize \NC \type {\Umathfractiondelsize}                \NC undefined \NC \NR
-\NC NoLimitSubFactor                  \NC \type {\Umathnolimitsupfactor}               \NC 0         \NC \NR
-\NC NoLimitSupFactor                  \NC \type {\Umathnolimitsubfactor}               \NC 0         \NC \NR
+\NC NoLimitSubFactor                  \NC \type {\Umathnolimitsubfactor}               \NC 0         \NC \NR
+\NC NoLimitSupFactor                  \NC \type {\Umathnolimitsupfactor}               \NC 0         \NC \NR
 \NC AccentBaseDepth                   \NC \type {\Umathaccentbasedepth}                \NC reserved  \NC \NR
 \NC FlattenedAccentBaseDepth          \NC \type {\Umathflattenedaccentbasedepth}       \NC reserved  \NC \NR
 \NC SpaceBeforeScript                 \NC \type {\Umathspacebeforescript}              \NC 0         \NC \NR
@@ -889,7 +889,7 @@ of keying in. For that reason is is possible to set parameters groupwise:
 
 \starttabulate[|l|c|c|c|c|c|c|c|c|]
 \FL
-\BC primitive name               \BC D \BC D' \BC T \BC T' \BC S \BC S' \BC SS \BC SS' \NC \NR
+\BC primitive name                 \BC D \BC D' \BC T \BC T' \BC S \BC S' \BC SS \BC SS' \NC \NR
 \TL
 \NC \type {\alldisplaystyles}      \NC$+$\NC$+ $\NC   \NC    \NC   \NC    \NC    \NC     \NC \NR
 \NC \type {\alltextstyles}         \NC   \NC    \NC$+$\NC$+ $\NC   \NC    \NC    \NC     \NC \NR
@@ -1095,15 +1095,15 @@ influencing the appearances. Some were added for experimenting.
 \FL
 \BC primitive \BC meaning \NC \NR
 \TL
-\type {\Umathextrasubpreshift} \NC \NR
-\type {\Umathextrasubprespace} \NC \NR
-\type {\Umathextrasubshift}    \NC \NR
-\type {\Umathextrasubspace}    \NC \NR
-\type {\Umathextrasuppreshift} \NC \NR
-\type {\Umathextrasupprespace} \NC \NR
-\type {\Umathextrasupshift}    \NC \NR
-\type {\Umathextrasupspace}    \NC \NR
-\type {\Umathprimeshiftdrop}   \NC \NR
+\NC \type {\Umathextrasubpreshift} \NC \NC \NR
+\NC \type {\Umathextrasubprespace} \NC \NC \NR
+\NC \type {\Umathextrasubshift}    \NC \NC \NR
+\NC \type {\Umathextrasubspace}    \NC \NC \NR
+\NC \type {\Umathextrasuppreshift} \NC \NC \NR
+\NC \type {\Umathextrasupprespace} \NC \NC \NR
+\NC \type {\Umathextrasupshift}    \NC \NC \NR
+\NC \type {\Umathextrasupspace}    \NC \NC \NR
+\NC \type {\Umathprimeshiftdrop}   \NC \NC \NR
 \LL
 \stoptabulate
 

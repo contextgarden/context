@@ -283,6 +283,10 @@
     \ctxlua{moduledata.engine.codes(tex.getmissingcharactervalues())}
 \stopbuffer
 
+\startbuffer[engine:syntax:emptyparagraphmodevalues]
+    \ctxlua{moduledata.engine.codes(tex.getemptyparagraphmodevalues())}
+\stopbuffer
+
 \stopmodule
 
 \continueifinputfile{s-system-syntax.mkxl}

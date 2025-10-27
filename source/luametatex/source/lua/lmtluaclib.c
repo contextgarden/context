@@ -520,6 +520,10 @@ static void luaclib_aux_print_code(const Proto* f)
                     printf("%d out", c-1);
                 }
                 break;
+            case OP_GETVARG:
+                /* todo */
+                printf("%d",a);
+                break;
             case OP_VARARGPREP:
                 printf("%d",a);
                 break;

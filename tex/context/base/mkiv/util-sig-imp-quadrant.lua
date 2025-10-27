@@ -65,6 +65,13 @@ if protocol == "serial" then
     local function squidproblem (run) squidsome("p",run,true)  end
     local function squiderror   (run) squidsome("e",run,true)  end
 
+    local function squidstep(run)
+        signals.serialfast(port,baud,prefix .. "s" .. run)
+    end
+    local function squidmark(run)
+        signals.serialfast(port,baud,prefix .. "m" .. run)
+    end
+
     signals.squidinit     = squidreset
     signals.squidreset    = squidreset
     signals.squidbusy     = squidbusy
@@ -73,6 +80,7 @@ if protocol == "serial" then
     signals.squidfinished = squidfinished
     signals.squidproblem  = squidproblem
     signals.squiderror    = squiderror
+    signals.squidmark     = squidmark
 
     return {
         name    = "squid",
@@ -105,19 +113,21 @@ if protocol == "serial" then
                 squidproblem(run)
             elseif state == "error" then
                 squiderror(run)
+            elseif state == "mark" then
+                squidmark(run)
             end
         end,
-        signal = function(action)
+        signal = function(state) -- ,currentrun
             local cmd = "ar"
-            if action == "busy" or action == "step" then
+            if state == "busy" or state == "step" then
                 cmd = "ab"
-            elseif action == "done" then
+            elseif state == "done" then
                 cmd = "ad"
-            elseif action == "finished" then
+            elseif state == "finished" then
                 cmd = "af"
-            elseif action == "problem" then
+            elseif state == "problem" then
                 cmd = "ap"
-            elseif action == "error" then
+            elseif state == "error" then
                 cmd = "ae"
             end
             squidsome(cmd)

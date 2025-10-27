@@ -1040,7 +1040,7 @@
 \mutable\let\currentconstructionlistentry\!!zerocount
 
 \protected\def\strc_constructions_register
-  {\clf_doifelselisthasentry{\currentconstructionlistentry}%
+  {\doifelselisthasentry{\currentconstructionlistentry}%
      \strc_constructions_register_nop
      \strc_constructions_register_yes}
 
@@ -1136,8 +1136,8 @@
 %      \relax
 %      \scratchcounter\clf_addtolist
 %         metadata {
-%             kind     {construction}
-%             name     {\currentconstructionmain}
+%             kind     \s!construction
+%             name     \currentconstructionmain
 %           % level    structures.sections.currentlevel()
 %             catcodes \catcodetable
 %         }
@@ -1285,16 +1285,23 @@
      \relax
      \scratchcounter\clf_addtolist
         metadata {
-            kind     {construction}
-            name     {\currentconstructionmain}
+            kind     \s!construction
+            name     \currentconstructionmain
+            detail   {\currentconstruction}
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
         }
         references {
             internal  \locationcount
             order     \locationorder
+        \ifx\currentconstructionreference\!!plustoken
+            % special in enumnerations
+        \orelse\ifx\currentconstructionreference\!!minustoken
+            % special in enumnerations
+        \else
             reference {\currentconstructionreference}
             prefix    {\currentconstructionreferenceprefix}
+        \fi
           % block     {\currentsectionblock}
           % section   structures.sections.currentid(),
             delay     {\currentconstructiondelay}

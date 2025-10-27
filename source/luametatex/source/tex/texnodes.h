@@ -124,6 +124,7 @@ typedef enum node_types {
     unset_node,
     specification_node,
     align_record_node,
+    attribute_list_node,
     attribute_node,
     glue_spec_node,
     temp_node,
@@ -161,10 +162,16 @@ typedef enum node_types {
 
 /* Todo: [type] [subtype|size] [index] -> nodes : advantage is no holes in node id's */
 
+# define track_attributes 1
+# define check_attributes 1
+
 typedef struct node_memory_state_info {
     memoryword  *nodes;
  // memoryword  *volatile nodes;
     char        *nodesizes;
+# if track_attributes
+    unsigned    *attributes;
+# endif 
     halfword     free_chain[max_chain_size];
     memory_data  nodes_data;
     int          reserved; /*tex There are some predefined nodes. */
@@ -173,6 +180,9 @@ typedef struct node_memory_state_info {
     int          lua_properties_level;
     halfword     attribute_cache;
     halfword     max_used_attribute;
+# if track_attributes
+    int          max_tracked_attribute;
+# endif 
     int          node_properties_table_size;
 } node_memory_state_info;
 
@@ -195,6 +205,7 @@ typedef enum field_types {
 } field_types;
 
 extern halfword tex_get_node                    (int size);
+extern halfword tex_get_node_type               (int size, quarterword type);
 extern void     tex_free_node                   (halfword p, int size);
 extern void     tex_dump_node_mem               (dumpstream f);
 extern void     tex_undump_node_mem             (dumpstream f);
@@ -317,6 +328,8 @@ extern void     tex_undump_specification_data   (dumpstream f);
 # define node_attr(a)    memone(a,1)
 # define node_prev(a)    memtwo(a,1)
                          
+# define node_none(a)    lvalue(a,0)
+
 # define node_head(a)    memtwo(a,0) /*tex the head of a disc sublist */
 # define node_tail(a)    memone(a,1) /*tex the tail of a disc node, overlaps with |node_attr()| */
 
@@ -420,21 +433,40 @@ extern void     tex_undump_specification_data   (dumpstream f);
     it's really needed. Chains are often short and using arrays doesn't bring any gain nor does
     using some btree approach.
 
+    When we share the node and use subtype to distinguish:
+
+    attr list [type subtype] [next] [unset]        [count]
+    attr node [type subtype] [next] [index detail] [value]
+
+    When we use dedicated node we can store two values but the cost is higher because we need to 
+    check for more similarity (but it can be a 64 bit compare |lvalue(a,1)| instead:
+
+    attr list [type subtype] [next] [unset] [count]
+    attr node [type index]   [next] [state] [data]
+
+    We only need to adapt |texnodes| and |lmtnodelib| for this. So the question is: how frequently 
+    do we work with pairs of attributes where using both values are halfword and both are fetched. 
+    We have a few cases and it actualLy might also save some memory. We could of course decide to 
+    make an attribute node a spec node i.e. registers then also become node pointers; in that case
+    a new attr node is just a copy and we only need to set the next field. It is not worth the 
+    trouble. 
+
+    In the end, also because dual values would demand some ugly interface at the \TEX\ side we stick 
+    to a single value approach. However, conceptually it is cleaner to have two node types instead 
+    of using a subtype to distinguish between a shared one, something that we introduced when we 
+    moved from \LUATEX\ to \LUAMETATEX; see the code base history for this.  
+
 */
 
-# define attribute_node_size 2
-# define attribute_unset(a)  memone(a,1)
-# define attribute_index(a)  memone0(a,1)
-# define attribute_detail(a) memone1(a,1)
-# define attribute_count(a)  memtwo(a,1)  /*tex the reference count */
-# define attribute_value(a)  memtwo(a,1)
+# define attribute_list_node_size 2
+# define attribute_list_count(a)  memone(a,1)
+# define attribute_list_unset(a)  memtwo(a,1)
+# define attribute_list_reset(a)  lvalue(a,1)
 
-typedef enum attribute_subtypes {
-    attribute_list_subtype,
-    attribute_value_subtype,
-} attribute_subtypes;
-
-# define last_attribute_subtype attribute_value_subtype
+# define attribute_node_size      2
+# define attribute_index(a)       memone(a,1)
+# define attribute_value(a)       memtwo(a,1)
+# define attribute_reset(a)       lvalue(a,1)
 
 /*tex
     Penalties have only one primitive so we don't have |_code| here, also because it would conflict
@@ -1001,10 +1033,10 @@ typedef enum list_balance_states {
 # define box_list(a)          memtwo(a,5)   /* 5 = list_offset */
 # define box_shift_amount(a)  memone(a,5)
 # define box_glue_order(a)    memtwo(a,6)
-# define box_glue_sign(a)     memone01(a,6)
-# define box_balance_state(a) memone02(a,6)
-# define box_content_state(a) memone03(a,6)
-# define box_reserved_2(a)    memone04(a,6) /* can be used */
+# define box_glue_sign(a)     memone00(a,6)
+# define box_balance_state(a) memone01(a,6)
+# define box_content_state(a) memone02(a,6)
+# define box_reserved_2(a)    memone03(a,6) /* can be used */
 # define box_glue_set(a)      dvalue(a,7)  /* So we reserve a whole memory word! */
 # define box_direction(a)     memtwo00(a,8) /* We could encode it as geometry but not now. */
 # define box_package_state(a) memtwo01(a,8)
@@ -1185,31 +1217,31 @@ typedef enum rule_option_codes {
 # define first_rule_code   normal_rule_code
 # define last_rule_code    strut_rule_code
 
-# define rule_node_size      9
-# define rule_width(a)       memtwo(a,2)
-# define rule_x_offset(a)    memone(a,2)
-# define rule_depth(a)       memtwo(a,3)
-# define rule_y_offset(a)    memone(a,3)
-# define rule_height(a)      memtwo(a,4)
-# define rule_data(a)        memone(a,4)   /* used for linewidth */
-# define rule_options(a)     memtwo(a,5)
-# define rule_thickness(a)   memone(a,5)   /* future see data */
-# define rule_left(a)        memone(a,6)   /* depends on subtype */
-# define rule_right(a)       memtwo(a,6)   /* depends on subtype */
-# define rule_extra_1(a)     memone(a,7)   /* depends on subtype */
-# define rule_extra_2(a)     memtwo(a,7)   /* depends on subtype */
-# define rule_discardable(a) memone(a,8)   /* internal usage */
-# define rule_reserved(a)    memtwo(a,8)
+# define rule_node_size       9
+# define rule_width(a)        memtwo(a,2)
+# define rule_x_offset(a)     memone(a,2)
+# define rule_depth(a)        memtwo(a,3)
+# define rule_y_offset(a)     memone(a,3)
+# define rule_height(a)       memtwo(a,4)
+# define rule_data(a)         memone(a,4)  /* used for linewidth */
+# define rule_options(a)      memtwo(a,5)
+# define rule_thickness(a)    memone(a,5)  /* future see data */
+# define rule_left(a)         memone(a,6)  /* depends on subtype */
+# define rule_right(a)        memtwo(a,6)  /* depends on subtype */
+# define rule_extra_1(a)      memone(a,7)  /* depends on subtype */
+# define rule_extra_2(a)      memtwo(a,7)  /* depends on subtype */
+# define rule_discardable(a)  memone(a,8)  /* internal usage */
+# define rule_reserved(a)     memtwo(a,8)
 
-# define rule_line_on         rule_extra_1    /* for user rules */
-# define rule_line_off        rule_extra_2    /* for user rules */
+# define rule_line_on         rule_extra_1 /* for user rules */
+# define rule_line_off        rule_extra_2 /* for user rules */
 
-# define rule_strut_font      rule_extra_1    /* for strut rules */
-# define rule_strut_character rule_extra_2    /* for strut rules */
+# define rule_strut_font      rule_extra_1 /* for strut rules */
+# define rule_strut_character rule_extra_2 /* for strut rules */
 
 # define rule_virtual_width   rule_left
 # define rule_virtual_height  rule_right
-# define rule_virtual_depth   rule_extra_1
+# define rule_virtual_depth   rule_extra_1 /* we could use rule_reserved instead */
 # define rule_virtual_unused  rule_extra_2
 
 # define rule_total(a) (rule_height(a) + rule_depth(a))
@@ -1292,7 +1324,7 @@ static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rul
 # define glyph_language(a)   memone0(a,7)
 # define glyph_script(a)     memone1(a,7)
 # define glyph_control(a)    memtwo0(a,7)  /*tex we store 0xXXXX in the |\cccode| */
-# define glyph_unusedl(a)    memtwo1(a,7) 
+# define glyph_unused(a)     memtwo1(a,7) 
 
 # define glyph_lhmin(a)      memone00(a,8)
 # define glyph_rhmin(a)      memone01(a,8)
@@ -1664,6 +1696,7 @@ static inline int tex_nodetype_has_prev       (halfword t) { return t != glue_sp
 static inline int tex_nodetype_has_next       (halfword t) { return t != glue_spec_node && t != math_spec_node && t != font_spec_node; }
 static inline int tex_nodetype_is_valid       (halfword t) { return (t >= 0) && (t <= max_node_type); }
 static inline int tex_nodetype_is_visible     (halfword t) { return (t >= 0) && (t <= max_node_type) && lmt_interface.node_data[t].visible; }
+static inline int tex_nodetype_is_definable   (halfword t) { return (t >= 0) && (t <= max_node_type) && lmt_interface.node_data[t].definable; }
 
 // static const uint64_t has_prev_map = 0xFFFFFFFFFFFFFFFF
 //     & (~ (uint64_t) ((uint64_t) 1 << ((node_types) (glue_spec_node)) << 1))
@@ -3037,19 +3070,19 @@ static inline halfword tex_tail_of_node_list(halfword n)
 # define attribute_cache_disabled max_halfword
 # define current_attribute_state  lmt_node_memory_state.attribute_cache
 
-extern halfword tex_copy_attribute_list        (halfword attr);
-extern halfword tex_copy_attribute_list_set    (halfword attr, int index, int value);
-extern halfword tex_patch_attribute_list       (halfword attr, int index, int value);
-extern halfword tex_merge_attribute_list       (halfword first, halfword second);
-extern void     tex_dereference_attribute_list (halfword attr);
-extern void     tex_build_attribute_list       (halfword target);
-extern halfword tex_current_attribute_list     (void);
-extern int      tex_unset_attribute            (halfword target, int index, int value);
-extern void     tex_unset_attributes           (halfword first, halfword last, int index);
-extern void     tex_set_attribute              (halfword target, int index, int value);
-extern int      tex_has_attribute              (halfword target, int index, int value);
+extern halfword tex_copy_attribute_list           (halfword attr);
+extern halfword tex_copy_attribute_list_set       (halfword attr, int index, int value);
+extern halfword tex_patch_attribute_list          (halfword attr, int index, int value);
+extern halfword tex_merge_attribute_list          (halfword first, halfword second);
+extern void     tex_dereference_attribute_list    (halfword attr);
+extern void     tex_attach_current_attribute_list (halfword target);
+extern halfword tex_current_attribute_list        (void);
+extern int      tex_unset_attribute               (halfword target, int index, int value);
+extern void     tex_unset_attributes              (halfword first, halfword last, int index);
+extern void     tex_set_attribute                 (halfword target, int index, int value);
+extern int      tex_has_attribute                 (halfword target, int index, int value);
 
-extern void     tex_reset_node_properties      (halfword target);
+extern void     tex_reset_node_properties (halfword target);
 
 # define get_attribute_list(target) \
     node_attr(target)
@@ -3065,7 +3098,7 @@ extern void     tex_reset_node_properties      (halfword target);
 static inline void add_attribute_reference(halfword a)
 {
     if (a && a != attribute_cache_disabled) {
-        ++attribute_count(a);
+        ++attribute_list_count(a);
     }
 }
 
@@ -3134,8 +3167,6 @@ static inline void tex_attach_attribute_list_attribute(halfword target, halfword
     }
 }
 
-# define attach_current_attribute_list tex_build_attribute_list /* (target) */
-
 # define set_current_attribute_state(v) do { \
       current_attribute_state = v; \
 } while (0)
@@ -3181,13 +3212,15 @@ extern void        tex_aux_show_dictionary               (halfword p, halfword p
     Basic node management:
 */
 
-extern halfword tex_new_node        (quarterword i, quarterword j);
-extern void     tex_flush_node_list (halfword n);
-extern void     tex_flush_node      (halfword n);
-extern halfword tex_copy_node_list  (halfword n, halfword e);
-extern halfword tex_copy_node       (halfword n);
-extern halfword tex_copy_node_only  (halfword n);
-/*     halfword tex_fix_node_list   (halfword n); */
+extern halfword tex_new_node                 (quarterword i, quarterword j);
+extern void     tex_flush_node_list          (halfword n);
+extern void     tex_flush_node               (halfword n);
+extern halfword tex_copy_node_list           (halfword n, halfword e);
+extern halfword tex_copy_node                (halfword n);
+extern halfword tex_copy_node_only           (halfword n);
+extern halfword tex_copy_specification_node  (halfword n);
+extern void     tex_flush_specification_node (halfword n);
+/*     halfword tex_fix_node_list            (halfword n); */
 
 /*tex
     We already defined glue and gluespec node but here are some of the properties

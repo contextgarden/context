@@ -205,6 +205,8 @@ enum mp_knot_states {
     mp_single_knot,
 };
 
+# define mp_valid_knot_state(s) (s >= mp_regular_knot && s <= mp_single_knot)
+
 # undef term_in
 # undef term_out
 
@@ -390,6 +392,8 @@ typedef enum mp_knot_type {
     mp_open_knot,      /* |mp_left_type| or |mp_right_type| when \MP\ should choose the direction */
     mp_end_cycle_knot
 } mp_knot_type;
+
+# define mp_valid_knot_type(k) (k >= mp_endpoint_knot && k <= mp_end_cycle_knot)
 
 enum mp_graphical_object_code {
     mp_unset_code,
@@ -1913,7 +1917,9 @@ extern void             mp_show_context               (MP mp);
 extern void             mp_error                      (MP mp, const char *msg, const char *hlp);
 extern void             mp_warn                       (MP mp, const char *msg);
 extern void             mp_fatal_error                (MP mp, const char *s);
-extern  void            mp_confusion                  (MP mp, const char *s);
+extern void             mp_confusion                  (MP mp, const char *s);
+
+extern void             mp_show_path                  (MP mp, mp_knot p);
 
 extern int              mp_initialize_symbol_traverse (MP mp);
 extern void             mp_kill_symbol_traverse       (MP mp);
@@ -1926,12 +1932,14 @@ extern int              mp_close_path                 (MP mp, mp_knot q, mp_knot
 extern mp_knot          mp_create_knot                (MP mp);
 
 extern mp_knot          mp_append_knot                (MP mp, mp_knot p, double x, double y);
-extern mp_knot          mp_append_knot_xy             (MP mp, mp_knot p, double x, double y);
+extern mp_knot          mp_append_knot_xy             (MP mp, mp_knot p, double x, double y, int type);
 
 extern int              mp_set_knot_curl              (MP mp, mp_knot q, double value);
 extern int              mp_set_knot_left_curl         (MP mp, mp_knot q, double value);
 extern int              mp_set_knot_right_curl        (MP mp, mp_knot q, double value);
 extern int              mp_set_knot_simple_curl       (MP mp, mp_knot q);
+extern int              mp_set_knot_simple_left_curl  (MP mp, mp_knot q);
+extern int              mp_set_knot_simple_right_curl (MP mp, mp_knot q);
 extern int              mp_set_knotpair_curls         (MP mp, mp_knot p, mp_knot q, double t1, double t2) ;
 extern int              mp_set_knotpair_tensions      (MP mp, mp_knot p, mp_knot q, double t1, double t2) ;
 extern int              mp_set_knot_left_tension      (MP mp, mp_knot p, double t1);

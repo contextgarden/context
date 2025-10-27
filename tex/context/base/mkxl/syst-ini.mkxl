@@ -1381,6 +1381,8 @@
 %D Also better here:
 
 \permanent\cdef\wildcardsymbol{*}
+%permanent\cdef\plussymbol    {+}
+%permanent\cdef\minussymbol   {-}
 
 %D For a while we will keep these useless numbers as for instance tikz checks for them:
 

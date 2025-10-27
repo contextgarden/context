@@ -1676,6 +1676,72 @@ void tex_balance_reset(balance_properties *properties)
     if (properties->fitness_classes != balance_fitness_classes) { tex_flush_node(properties->fitness_classes); }
 }
 
+/*tex
+
+    These are the vertical glues: 
+
+    \starttyping
+    + user_skip_glue
+      line_skip_glue baseline_skip_glue
+    + par_skip_glue
+    + above_display_skip_glue below_display_skip_glue above_display_short_skip_glue below_display_short_skip_glue
+      top_skip_glue bottom_skip_glue split_top_skip_glue
+      tab_skip_glue
+      page_glue
+    \stoptyping
+
+    But we don't need to deal with all of them, so for now we forget about the display math ones. 
+
+*/
+
+# if (0)
+
+    static void tex_aux_check_boundaries(halfword head)
+    {
+        halfword current = head;
+        while (current) { 
+            if (node_type(current) == boundary_node && node_subtype(current) == balance_boundary) {
+                halfword prev = node_prev(current);
+                while (prev && node_type(prev) == glue_node) {
+                    switch (node_subtype(prev)) { 
+                        case user_skip_glue:
+                        case par_skip_glue:
+                         // if (glue_amount(prev)) {
+                         //     printf("prev >> %i : %f\n",node_subtype(prev),glue_amount(prev)/65536.0);
+                         // }
+                            tex_reset_glue_to_zero(prev);
+                            break;
+                    }
+                    prev = node_prev(prev);
+                }
+                current = node_next(current);
+                while (current && node_type(current) == glue_node) { 
+                    switch(node_subtype(current)) { 
+                        case user_skip_glue:
+                        case par_skip_glue:
+                         // if (glue_amount(current)) {
+                         //     printf("next >> %i : %f\n",node_subtype(current),glue_amount(current)/65536.0);
+                         // }
+                            tex_reset_glue_to_zero(current);
+                            break;
+                    }
+                    current = node_next(current);
+                }
+            } else { 
+                current = node_next(current);
+            }
+        }
+    }
+
+# else 
+
+    static void tex_aux_check_boundaries(halfword head)
+    {
+        /*tex This is a dummy, because we need to test the about first if useful at all. */
+    }
+
+# endif 
+
 /* Should we reset extra after setting the field? */
 
 static void tex_aux_check_extra(halfword head)
@@ -1773,6 +1839,7 @@ void tex_balance(balance_properties *properties, halfword head)
     }
     tex_insert_reset_distances();
     tex_aux_check_extra(head);
+    tex_aux_check_boundaries(head);
     tex_aux_pre_balance(properties, lmt_balance_state.callback_id, properties->checks, 0);
     tex_aux_set_adjacent_demerits(properties);
     tex_aux_set_height(properties);

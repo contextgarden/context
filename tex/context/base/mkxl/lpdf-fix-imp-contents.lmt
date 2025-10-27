@@ -122,7 +122,7 @@ do
             if x or f then
                 local function strip(v)
                     if not v.__raw__ then
-report_fixes("weird object")
+                        report_fixes("weird object")
                         return
                     end
                     if group_done     and v.__raw__.Group     then v.__raw__.Group     = nil group_done     = group_done     + 1 end

@@ -286,14 +286,14 @@ function lpdf.collectcontent(pdffile,options)
         [[>]]
     )
 
-    local f_element_i = utilities.templates.replacer (
-        [[%:w:level%]] ..
-        [[<%element%]] ..
-        [[%?index: index="%index%"?%]] ..
-        [[>]] ..
-        [[%value%]] ..
-        [[</%element%>]]
-    )
+ -- local f_element_i = utilities.templates.replacer (
+ --     [[%:w:level%]] ..
+ --     [[<%element%]] ..
+ --     [[%?index: index="%index%"?%]] ..
+ --     [[>]] ..
+ --     [[%value%]] ..
+ --     [[</%element%>]]
+ -- )
 
     local f_simple_url = formatters [
         [[%w<%s name="%s" index="%s" url="%s">]]
@@ -527,7 +527,7 @@ function lpdf.collectcontent(pdffile,options)
         end
         if value and #value > 0 then
             r = r + 1 ; result[r] = f_element_kv {
-                level   = 3,
+                level   = level,
                 element = element,
                 value   = value
             }
@@ -546,7 +546,7 @@ function lpdf.collectcontent(pdffile,options)
             for k, v in sortedhash(namespaces) do
                 r = r + 1 ; result[r] = f_simple_url(2,"pdfnamespace", v.name or "*", v.index, xmlescaped(v.url or""))
                 for k, v in sortedhash(v.map) do
-                    r = r + 1 ; result[r] = f_simple_map(4,"pdfrolemap",k,v)
+                    r = r + 1 ; result[r] = f_simple_map(3,"pdfrolemap",k,v)
                     nofspacedroles = nofspacedroles + 1
                 end
                 r = r + 1 ; result[r] = f_simple_e(2,"pdfnamespace")
@@ -564,8 +564,8 @@ function lpdf.collectcontent(pdffile,options)
         local tagging = pdffile.catalog.LMTX_Tagging
         if tagging then
             r = r + 1 ; result[r] = f_simple_b(1,"pdfprofiles")
-            flush_kv(1,"comment",tagging.Comment)
-            flush_kv(1,"versiont",tagging.Version)
+            flush_kv(2,"comment",tagging.Comment)
+            flush_kv(2,"version",tagging.Version)
             local profiles = tagging.Profiles
             if profiles then
                 for i=1,#profiles do

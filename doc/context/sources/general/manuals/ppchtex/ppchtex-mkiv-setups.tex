@@ -1,0 +1,188 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-setups
+
+\chapter{Setups}
+
+After \type{\startchemical} and  \type{\setupchemical} you can type the
+setup.
+
+\startbuffer
+\starttable[|lT|Tl|lT|]
+\HL
+\VL \bf parameter \VL \bf values                 \VL \bf default \VL\SR
+\HL
+\VL width         \VL number                     \VL 4000   \VL\FR
+\VL height        \VL number                     \VL 4000   \VL\MR
+\VL left          \VL number                     \VL        \VL\MR
+\VL right         \VL number                     \VL        \VL\MR
+\VL top           \VL number                     \VL        \VL\MR
+\VL bottom        \VL number                     \VL        \VL\LR
+\HL
+\VL bodyfont      \VL 8pt 9pt 10pt etc.          \VL \type{\bodyfontsize} \VL\MR
+\VL textstyle     \VL \type{\rm} \type{\bf} etc. \VL \type{\rm}           \VL\LR
+\VL style         \VL \type{\rm} \type{\bf} etc. \VL \type{\rm}           \VL\LR
+\HL
+\VL color         \VL colorname                  \VL        \VL\SR
+\VL rulecolor     \VL colorname                  \VL        \VL\SR
+\HL
+\VL scale         \VL number                     \VL medium \VL\FR
+\VL size          \VL small medium big           \VL medium \VL\LR
+\HL
+\VL axis          \VL on off                     \VL off    \VL\FR
+\VL frame         \VL on off                     \VL off    \VL\LR
+\HL
+\stoptable
+\stopbuffer
+
+\placetable
+  {Setups for structures.}
+  {\getbuffer}
+
+The axis range from $-2000$ upto $+2000$, height as well as width.
+The parameter \type {Z0} is at $(0,0)$. Other divisions can be set
+up with \type {left}, \type {right}, \type {top} and/or \type
+{bottom} in combination with \type {width} and \type {height}.
+
+You can use the key \type {size} to setup the current text size
+and with \type{scale} you setup the dimensions of the structure
+itself. The scale is also determined by the parameter \type
+{bodyfont}. The values \type {small}, \type {medium} and \type
+{big} are proportionally related.
+
+% The parameter \type {bodyfont} is used for calculations and has
+% no consequences for the text.
+
+Contrary to the old implementation we no longer operate in math mode as
+it makes not much sense. The mathematical symbols are available in text mode
+anyway and control over super and subscripts in implemented differently.
+With the parameter \type {style} an alternative style can be chosen. In
+\in {example} [ex:style] the substituents are typeset {\sl slanted}.
+
+\startbuffer
+\startchemical[frame=on,style=\sl]
+  \chemical[SIX,B,+R,RZ][A,B,C,D,E,F]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example[ex:style]
+\typebuffer
+\stopfiguretext
+
+The \type {style} option is valid for chemical structures in a
+picture and in the text. The sub- and superscripts are changed
+accordingly. This is illustrated in {\setupchemical
+[style=\rm]\chemical {CH_4}}, {\setupchemical [style=\bf]\chemical
+{CH_4}} and {\setupchemical [style=\sl]\chemical {CH_4}}, in which
+the setups are \type {\rm}, \type {\bf} and \type {\sl}. Italic
+\type {\it} formulas lead to a bigger linewidth. The commands
+adjust automatically to the actual fontstyle: {\setupchemical
+[style=\ss \sl]\chemical {CH_4}}, {\setupchemical [style=\rm
+\sl]\chemical {CH_4}}, {\setupchemical [style=\tt \sl]\chemical
+{CH_4}} etc. (\type {\ss}, \type {\rm}, \type {\tt}).
+
+It is also possible to set the style at the instant you type them
+in the argument. \footnote {Not yet documented but already
+available is support for the rendering prefix \type {mystyle->a}
+and alike. This permits a more general setup of styles.}
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+R,RZ][\tf a,\bf b,\it c,\sl d,\bi e,\bs f]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+The parameter \type{frame} and \type{axis} need no further explanation.
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+R,RZ][R_1,R_2,R_3,R_4,R_5,R_6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example[ex:test]
+\typebuffer
+\stopfiguretext
+
+A more controled framing is possible by setting up the encompassing frame:
+
+\startbuffer
+\setupchemicalframed[frame=on,offset=1ex]
+\startchemical
+  \chemical[SIX,B,+R,RZ][R_1,R_2,R_3,R_4,R_5,R_6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example[ex:test]
+\typebuffer
+\stopfiguretext
+
+A structure can be displayed in different sizes. This is done with
+\type{size} and \type{scale}.
+
+\startbuffer
+\startchemical[frame=on,scale=small,size=small]
+  \chemical[SIX,B,+R,RZ][1,2,3,4,5,6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on,scale=medium,size=medium]
+  \chemical[SIX,B,+R,RZ][1,2,3,4,5,6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on,scale=big,size=big]
+  \chemical[SIX,B,+R,RZ][1,2,3,4,5,6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+The values belonging to \type{small}, \type{medium} or \type{big}
+are proportionally related.
+
+\stopcomponent

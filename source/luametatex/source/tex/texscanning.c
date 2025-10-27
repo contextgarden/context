@@ -2306,6 +2306,20 @@ static inline halfword tex_aux_scan_limited_int(int optional_equal, int min, int
     }
 }
 
+/*tex We just clip silenently! */
+
+static inline halfword tex_aux_clip_limited_int(int optional_equal, int min, int max)
+{
+    halfword v = tex_scan_integer(optional_equal, NULL, NULL);
+    if (v < min) { 
+        return min;
+    } else if (v > max) {
+        return max;
+    } else {
+        return v;
+    }
+}
+
 halfword   tex_scan_integer_register_number   (void)               { return tex_aux_scan_limited_int(0, 0, max_integer_register_index, "Integer register index"); }
 halfword   tex_scan_dimension_register_number (void)               { return tex_aux_scan_limited_int(0, 0, max_dimension_register_index, "Dimension register index"); }
 halfword   tex_scan_attribute_register_number (void)               { return tex_aux_scan_limited_int(0, 0, max_attribute_register_index, "Attribute register index"); }
@@ -2328,6 +2342,7 @@ singleword tex_scan_box_axis                  (void)               { return (sin
 halfword   tex_scan_category_code             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_category_code,"Category code"); }
 halfword   tex_scan_space_factor              (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_space_factor, max_space_factor, "Space factor"); }
 halfword   tex_scan_scale_factor              (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_scale_factor, max_scale_factor, "Scale factor"); }
+halfword   tex_scan_clipped_scale_factor      (int optional_equal) { return tex_aux_clip_limited_int(optional_equal, min_scale_factor, max_scale_factor); }
 halfword   tex_scan_function_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_function_reference, "Function reference"); }
 halfword   tex_scan_bytecode_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_bytecode_index, "Bytecode reference"); }
 halfword   tex_scan_limited_scale             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, -max_limited_scale, max_limited_scale, "Limited scale"); }
@@ -3863,11 +3878,11 @@ halfword tex_scan_font(int optional_equal)
                 return fs;
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("all", 1)) {
-                    font_spec_scale(fs) = tex_scan_scale_factor(0);
-                    font_spec_x_scale(fs) = tex_scan_scale_factor(0);
-                    font_spec_y_scale(fs) = tex_scan_scale_factor(0);
-                    font_spec_slant(fs) = tex_scan_scale_factor(0);
-                    font_spec_weight(fs) =  tex_scan_scale_factor(0);
+                    font_spec_scale(fs) = tex_scan_clipped_scale_factor(0);
+                    font_spec_x_scale(fs) = tex_scan_clipped_scale_factor(0);
+                    font_spec_y_scale(fs) = tex_scan_clipped_scale_factor(0);
+                    font_spec_slant(fs) = tex_scan_clipped_scale_factor(0);
+                    font_spec_weight(fs) =  tex_scan_clipped_scale_factor(0);
                     font_spec_state(fs) |= font_spec_all_set;
                 }
                 break;
@@ -3875,13 +3890,13 @@ halfword tex_scan_font(int optional_equal)
                 switch (tex_scan_character("clCL", 0, 1, 0)) {
                     case 'c': case 'C':
                         if (tex_scan_mandate_keyword("scale", 2)) {
-                            font_spec_scale(fs) = tex_scan_scale_factor(0);
+                            font_spec_scale(fs) = tex_scan_clipped_scale_factor(0);
                             font_spec_state(fs) |= font_spec_scale_set;
                         }
                         break;
                     case 'l': case 'L':
                         if (tex_scan_mandate_keyword("slant", 2)) {
-                            font_spec_slant(fs) = tex_scan_scale_factor(0);
+                            font_spec_slant(fs) = tex_scan_clipped_scale_factor(0);
                             font_spec_state(fs) |= font_spec_slant_set;
                         }
                         break;
@@ -3892,25 +3907,25 @@ halfword tex_scan_font(int optional_equal)
                 break;
             case 'x': case 'X':
                 if (tex_scan_mandate_keyword("xscale", 1)) {
-                    font_spec_x_scale(fs) = tex_scan_scale_factor(0);
+                    font_spec_x_scale(fs) = tex_scan_clipped_scale_factor(0);
                     font_spec_state(fs) |= font_spec_x_scale_set;
                 }
                 break;
             case 'y': case 'Y':
                 if (tex_scan_mandate_keyword("yscale", 1)) {
-                    font_spec_y_scale(fs) = tex_scan_scale_factor(0);
+                    font_spec_y_scale(fs) = tex_scan_clipped_scale_factor(0);
                     font_spec_state(fs) |= font_spec_y_scale_set;
                 }
                 break;
             case 'w': case 'W':
                 if (tex_scan_mandate_keyword("weight", 1)) {
-                    font_spec_weight(fs) = tex_scan_scale_factor(0);
+                    font_spec_weight(fs) = tex_scan_clipped_scale_factor(0);
                     font_spec_state(fs) |= font_spec_weight_set;
                 }
                 break;
             case 'o': case 'O': /* oblique */
                 if (tex_scan_mandate_keyword("oblique", 1)) {
-                    font_spec_slant(fs) = tex_scan_scale_factor(0);
+                    font_spec_slant(fs) = tex_scan_clipped_scale_factor(0);
                     font_spec_state(fs) |= font_spec_slant_set;
                 }
                 break;
@@ -5124,7 +5139,7 @@ halfword tex_scan_macro_expand(void)
 
     The states below are used for |\dimexpr|, |\numexpr| etc. as well as |\dimexpression| and 
     |\numexpression|. At some point I might merge them with the later defines states |bit_*| where
-    we also havea priority vector. 
+    we also have a priority vector. 
 
     Maybe we can also add |abs n| but that depends on my needs. 
 
@@ -5538,9 +5553,7 @@ static void tex_aux_scan_expr(halfword level, int braced)
             continue;
         } else if (cur_tok == left_parent_token) { 
             /*tex Push the expression stack and |goto restart|. */
-            halfword t = tex_get_node(expression_node_size);
-            node_type(t) = expression_node;
-            node_subtype(t) = 0;
+            halfword t = tex_get_node_type(expression_node_size, expression_node);
             /* */
             node_next(t) = top;
             expression_type(t) = (singleword) level;
@@ -5609,6 +5622,7 @@ static void tex_aux_scan_expr(halfword level, int braced)
                 operation = expression_idivide;
             }
             break;
+        case percentage_token:
         case semi_colon_token:
             if (etex_expr_mode_par) {
                 goto MAKESOMEFOLKHAPPY;
@@ -7156,7 +7170,7 @@ static void tex_aux_scan_integer_expression(int braced)
         case expression_less     : term = term <  factor; break;
         case expression_more     : term = term >  factor; break;
         case expression_lessequal: term = term <= factor; break;
-        case expression_moreequal: term = term >- factor; break;
+        case expression_moreequal: term = term >= factor; break;
         case expression_unequal  : term = term != factor; break;
         case expression_bleft    : term = term << factor; break;
         case expression_bright   : term = term >> factor; break;
@@ -7813,7 +7827,7 @@ static void tex_aux_scan_dimension_expression(int braced)
             break;
         case expression_moreequal:
             /* todo: check types */
-            term = term >- factor;
+            term = term >= factor;
             termtype = expression_type_integer;
             break;
         case expression_unequal:
@@ -8202,9 +8216,7 @@ static void tex_aux_dispose_stack(stack_info *stack)
 
 static void tex_push_stack_entry(stack_info *stack, long long value)
 {
-    halfword n = tex_get_node(rpn_expression_node_size);
-    node_type(n) = rpn_expression_node;
-    node_subtype(n) = 0;
+    halfword n = tex_get_node_type(rpn_expression_node_size, rpn_expression_node);
     rpn_expression_entry(n) = value;
     if (! stack->head) {
         stack->head = n;
@@ -8533,16 +8545,11 @@ static inline halfword tex_scan_aux_function(int *alreadygotten)
                 case q_token_l: case q_token_o:
                     tex_get_x_token();
                     switch (cur_tok) { 
-                        case q_token_l: case q_token_o:
+                        case r_token_l: case r_token_o:
                             tex_get_x_token();
                             switch (cur_tok) { 
-                                case r_token_l: case r_token_o:
-                                    tex_get_x_token();
-                                    switch (cur_tok) { 
-                                        case t_token_l: case t_token_o:
-                                            return bit_expression_sqrt;
-                                    }
-                                    break;
+                                case t_token_l: case t_token_o:
+                                    return bit_expression_sqrt;
                             }
                             break;
                     }

@@ -592,19 +592,39 @@ void tex_print_sparse_dimension(scaled s, int unit)
     Good enough.
 */
 
-void tex_print_posit(halfword s)
+static void tex_aux_print_posit(halfword s, int texlike)
 {
-    char b[32];
-    sprintf(b, "%.20g", tex_posit_to_double(s));
-    tex_print_str(b);
+    if (s == 0) {
+        tex_print_str("0");
+    } else { 
+        double n = tex_posit_to_double(s);
+        if (n == 1.0) {
+            tex_print_str("1");
+        } else {
+            char s[128];
+            if (fmod(n, 1) == 0 && n >= min_integer && n <= max_integer) {
+                snprintf(s, 128, "%i", (int) n);
+            } else {
+                int i = snprintf(s, 128, texlike ? "%0.5f" : "%0.9f", n) ;
+                int l = i - 1;
+                while (l > 1) {
+                    if (s[l - 1] == '.') {
+                        break;
+                    } else if (s[l] == '0') {
+                        --i;
+                    } else {
+                        break;
+                    }
+                    l--;
+                }
+            }
+            tex_print_str(s);
+        }
+    }
 }
 
-void tex_print_posit_5(halfword s)
-{
-    char b[32];
-    sprintf(b, "%.5g", tex_posit_to_double(s));
-    tex_print_str(b);
-}
+void tex_print_posit  (halfword s) { tex_aux_print_posit(s, 0); }
+void tex_print_posit_5(halfword s) { tex_aux_print_posit(s, 1); }
 
 /*tex
 

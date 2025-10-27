@@ -433,8 +433,9 @@
    %    \c_attr_destination\currentfloatattribute\relax
    % \fi
      \currentfloatsynchronize
-%      \strc_floats_make_complete_caption
- \strc_floats_set_open_up\strc_floats_open_up_caption\strc_floats_make_complete_caption
+     \dostarttaggedchained\t!float\currentfloat\currentfloat\??float
+     \strc_floats_set_open_up\strc_floats_open_up_caption\strc_floats_make_complete_caption
+     \dostoptagged
      %
      \iftrialtypesetting\strc_counters_restore\currentfloatcounter\fi
      \egroup
@@ -454,7 +455,7 @@
        % whatever
      \else
        \usefloatcaptionstyleandcolor\c!style\c!color
-       \clf_doifelselisthastitle{\currentfloat}{\currentfloatnumber}%
+       \doifelselisthastitle{\currentfloat}{\currentfloatnumber}%
          \donothing
          \emptyfloatcaptiontrue
        \ifnofloatnumber
@@ -493,7 +494,7 @@
        \global\d_strc_floats_caption_depth \zeropoint
      \else
        \usefloatcaptionstyleandcolor\c!style\c!color
-       \clf_doifelselisthastitle{\currentfloat}{\currentfloatnumber}%
+       \doifelselisthastitle{\currentfloat}{\currentfloatnumber}%
          \donothing
          \emptyfloatcaptiontrue
        \ifnofloatnumber
@@ -1876,7 +1877,7 @@
      \dp\floatbox\openstrutdepth% \strutdp % toegevoegd
    \fi
    \box\floatbox
-   \dostoptagged
+%    \dostoptagged % left-over
    \blank[\rootfloatparameter\c!spaceafter]%
    \strc_floats_end_text_group
    \page_floats_report_total}

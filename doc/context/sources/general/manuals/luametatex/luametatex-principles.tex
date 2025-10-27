@@ -108,6 +108,148 @@ between glyph runs of the same font.
 % why not proper boundingbox (right side bearing) with (now also small) width
 % instead of unpredictable either or not urx
 
+By now it will be clear that when we talk fonts, from the perspective of \TEX\ we
+actually talk glyphs: the most prominent content item, although it is treated as
+an abstraction: a blob with dimensions and other properties. They are always
+wrapped in a box, often one that comes from the par builder where lines are
+packaged. They then travel around with the rest till the backend processes them
+and eventually discard the nodes that relate to them: glyph nodes.
+
+When a character is entered it ends up in a list. In a traditional approach it
+will be packaged (hboxed) or enter the par builder. Before that happens font
+processing takes place optionally preceded by hyphenation. In \LUAMETATEX\ before
+and after that callbacks can do all kind of things with the character (glyph)
+sequence. It is for that reason that in \CONTEXT\ we keep them as (either or not
+private) \UNICODE, but other macro packages might decide otherwise. The character
+value is in the end just a lookup key for the engine.
+
+A glyph node carries a lot of information and most relates not to processing a
+font but controlling other actions as well as possible tracing. Because setting
+and using is up to the macro package we keep the following simple. One can find
+examples in \CONTEXT\ and in the descriptions of nodes and \LUA\ helpers.
+
+A glyph carries the \nodefield {font} identifier and a \nodefield {character}
+code. The code is just the character from the input but any time a callback can
+change that. But in the end the backend has to know what it gets. Because the
+macro package implements the backend it has to be consistent but users don't need
+to know what actually happens, unless they plug in their own code. Of course the
+character code should relate to information passed to the engine, like
+dimensions. There is no standard so just assume that macro packages behave
+different. The font identifier combined with the character code that maps into
+the \type {characters} table passes to the engine provides the par builder and
+packager what it needs. There are no dimensions stored in the glyph nodes! But
+there are helpers that can provide the effective dimensions of a glyph at the
+\LUA\ end.
+
+A glyph node carries a \nodefield {state} and \nodefield {data}, both integers,
+that have no meaning in the engine. They are just efficient alternatives for
+attributes. In \CONTEXT\ they play a role in font rendering but again, there is
+no prescribed usage.
+
+The \nodefield {scale}, \nodefield {xscale} and \nodefield {yscale} fields in a
+glyph node reflect \type {\glyphscale}, \type {\glyphxscale}, \type
+{\glyphyscale} as set directly or via a \type {\fontspecdef}'d command. The
+\nodefield {weight} and \nodefield {slant} fields relate to \type {\glyphweight}
+and \type {\glyphslant}. These are used in for instance the by now default
+\CONTEXT\ compact font mode. So we can have the same font identifier with
+different scaling. Of course this comes at a price: instead of just picking up
+the width, height or depth from the font, the engine has to apply the scales to
+the natural dimensions. In practice this performance hit is compensated by
+savings elsewhere. But it does for instance means that in order to determine if
+two neighboring glyphs are from the same font in the traditional sense, scales as
+well as states and data fields have to be compared. Here is how that works in
+practice:
+
+\startbuffer
+{\glyphscale  1000 infor}{\glyphscale  1000 mation}
+{\glyphscale  1000 infor}{\glyphscale  1200 mation}
+{\glyphweight  100 infor}{\glyphweight  120 mation}
+\stopbuffer
+
+\typebuffer
+
+We choose a font that has kerns:
+
+\blank[2*big]
+\startlinecorrection
+\switchtobodyfont[pagella]\showfontkerns
+\scale[width=\textwidth]{\getbuffer}
+\stoplinecorrection
+\blank[2*big]
+
+When a text gets hyphenated, the process is controlled by all kind of settings,
+some of which relate to the language, so we have a \nodefield {language} field
+and for practical reasons also a \nodefield {script} field but the engine only
+uses the first one. The left and right hyphenation minima (\nodefield {lhmin} and
+\nodefield {rhmin}) are also stored in each glyph so one can control them
+locally, not that we've seen users doing that.
+
+We only mention the \nodefield {control} and \nodefield {option} fields because
+they reflect what actually is permitted in various stages. We also have a
+\nodefield {protection} state, that can be used to prevent duplicate processing.
+There are a few state variables that keep track of glyph originating in a pre,
+post or replacement discretionary component (\nodefield {discpart} and \nodefield
+{disccode}).
+
+The \nodefield {expansion} field stores the effective expansion factor as
+determined by the par builder. The backend has to follow up on this. When fonts
+features are applied kerning (or positioning in \OPENTYPE\ speak) can be be
+stored in the \nodefield {left}, \nodefield {right} and \nodefield {raise}
+fields. This saves injecting kern nodes. The user applied \type {\glyphxoffset}
+and \type {\glyphyoffset} also are reflected in fields: \nodefield {xoffset} and
+\nodefield {yoffset}.
+
+The final set of fields concern math, because after math has been processed
+glyphs is what we are left with. One can set a \nodefield {group}, \nodefield
+{index} and/or \nodefield {properties}. These can come in handy when interpreting
+the stream (think of exporting, verbose math or tagging). Usage is very macro
+package specific.
+
+The main message here is that in various stages of the rendering glyph fields are
+consulted, set, adapted. It definitely means that where in original \TEX\
+character nodes were one memory word, in \LUAMETATEX\ they are now 15 memory
+words. (At some point I might add some more details here.)
+
+Closely related to glyph nodes, definitely from the perspective of processing
+fonts, are discretionary nodes. When you manually enter them the three components
+are:
+
+\starttyping
+\discretionary {pre break} {post break} {replace}
+\stoptyping
+
+and when for instance an explicit hyphen \type {-} or a sequence of them that
+becomes a compound hyphen, is entered that also becomes such a triplet node. Of
+course the hyphenate machinery produces them in abundance.
+
+In \LUAMETATEX\ (as follow up on \LUATEX) we don't use the traditional \TEX\
+approach of only a pre and post component combined with jumping over the replace.
+We have explicit \nodefield {pre}, \nodefield {post} and \nodefield {replace}
+fields and these can have a list of glyphs (plus some more). A font processor has
+to look into these three streams and make decisions based on matches with
+preceding or following glyphs. Take it from us that this is a complex and not
+easy to follow process, especially not for complex fonts with contextual lookups.
+A word can have more than one discretionary.
+
+Most room in the 13 memory word node goes to housekeeping these three components
+and that has to be managed carefully so from the \LUA\ end control is restricted.
+In addition we have a \nodefield {penalty} and \nodefield {options} field. We
+also have a math specific \nodefield {class} field (so yes, math can have
+discretionaries) and a state field \nodefield {orphaned} that we use in the
+line-break routine. Overall it gives us a lot of control over the process of
+hyphenation and breaking content over lines.
+
+Eventually these discretionaries disappear from the node list. One can decide to
+keep them but it makes little sense. We loose information when the lines are
+constructed so keeping the inline only leaves us with an incomplete picture.
+Instead we store information with the glyphs in the mentioned \nodefield {disc*}
+fields so that we can to some extend reconstruct hyphenation points and provide
+visual feedback to the user on request; in the meantime \CONTEXT\ has a bit of a
+reputation for that kind of feedback. One lines are normalized, read: have a well
+defined final structure with respect to various space related properties, the
+fact that there are no longer discretionary nodes makes later processing of such
+lists a bit more efficient.
+
 \stopsection
 
 \startsection[title=Math fonts]
@@ -232,7 +374,7 @@ backend that turns glyphs, rules and these special boxes into something that one
 can see and print.
 
 Rules have the three dimensions we mentioned. There are horizontal and vertical rules,
-but only at the primives level. Once you specified an \type {\hrule} or \type {\vrule}
+but only at the primitives level. Once you specified an \type {\hrule} or \type {\vrule}
 it became a generic rule with the main difference being the default dimensions. A rule
 initializes with so called running dimensions, think of signals that the final dimension
 comes from the encapsulating box.
@@ -289,6 +431,43 @@ good example of adding little to the fontend in order to make the backend do the
 job. In a similar fashion outlines are delegated. Other tricks involve offsets
 and there is room for some additional features but for now they are on the
 \quotation {Only when I need it.} list, after all we need something to wish for.
+
+Like with glyphs we'll quickly discuss what information travels with the nine
+memory word large rule nodes, but let's first stress that because they are
+basically one of the two content items, it makes a lot of sense to see this blob
+with dimensions as more than rules. The fact that they have dimensions, means
+that routines that look at those, like a packager or line break routine, has only
+glyphs, rules and boxes to take into account when it comes to for instance height
+and depth. Adding a rule subtype is way cheaper than adding a new node type with
+dimensions because that would demand adaption of places where dimensions come
+into play but also \LUA\ code that operates on lists.
+
+This might be a good moment to mention that in \TEX\ engines traditionally fields
+like \nodefield {width}, \nodefield {height} and \nodefield {depth} were kept in
+equivalent places in the memory word set so that macros could be used to access
+them. In \LUAMETATEX\ we went more verbose and every node has its own accessors.
+This permits extending and makes for less potential errors. We leave it to the
+compiler to deal with the (a bit) more code that is needed.
+
+Because we use rules as template for possible extensions but also for some
+control over typesetting we have more fields than the three dimensions. For
+instance we have \nodefield {xoffset} and \nodefield {yoffset} for a displacement
+and \nodefield {left} and \nodefield {right} for margins. Because rules are mode
+sensitive (horizontal vs.\ vertical) these last two can also result in top and
+bottom margins.
+
+We have a \nodefield {rulethickness} that can be used in the backend; the engine
+just passes it around. The same is true for the \nodefield {data} field but some
+of the options in \nodefield {options} are there for the engine.
+
+There are also shared fields, think \nodefield {extra_1} and \nodefield
+{extra_2}, but their convenient names depend on the subtype, so we have
+\nodefield {lineon} and \nodefield {lineoff} for user rules that permit
+implementing a dashed rule. Strut rules provide \nodefield {font} and \nodefield
+{character}. A virtual rule overloads the two margin fields and thereby can
+provide the virtual dimensions while the engine calculates with zero dimensions
+in the usual fields. The \nodefield {discardable} field is there for internal
+purposes (the balancing mechanism). For sure there will be be more in due time.
 
 \stopsection
 

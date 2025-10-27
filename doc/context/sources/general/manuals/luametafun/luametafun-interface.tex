@@ -250,9 +250,9 @@ yes but in most cases it works out.
         {0,2}, { 2, 0}, { 2, 1}, {0,2}, "cycle", "append",
     }
     shapes[5] = {
-        { path = shapes[1], append = true },
-        { path = shapes[2], append = true },
-        { path = shapes[3], append = true },
+        { path = shapes[1], append = true }, -- curled = true, tight = true
+        { path = shapes[2], append = true }, -- curled = true, tight = true
+        { path = shapes[3], append = true }, -- curled = true, tight = true
     }
     function mp.getshapepath(n)
         mp.inject.path(shapes[n])
@@ -313,3 +313,70 @@ We draw the result and see that they are decoupled indeed thanks to some \type
 \stopchapter
 
 \stopcomponent
+
+% \startluacode
+%     local a1 = {   0,   0 }
+%     local a2 = { 100,   0 }
+%     local a3 = { 100, 100 }
+%     local a4 = {   0, 100 }
+%     local b1 = {  25,  25 }
+%     local b2 = {  50,  25 }
+%     local b3 = {  50,  50 }
+%     local b4 = {  25,  50 }
+%
+%     function MP.one()
+%         mp.inject.path {
+%             a1, a2, a3, a4,
+%         }
+%     end
+%     function MP.two()
+%         mp.inject.path {
+%             a1, a2, a3, a4,
+%             cycle  = true,
+%         }
+%     end
+%     function MP.three()
+%         mp.inject.path {
+%             a1, a2, a3, a4,
+%             curled = true
+%         }
+%     end
+%     function MP.four()
+%         mp.inject.path {
+%             a1, a2, a3, a4, a1,
+%             cycle  = true,
+%             curled = true
+%         }
+%     end
+%     function MP.five()
+%         mp.inject.path {
+%             {
+%                 path = { a1, a2, a3, a4 },
+%             },
+%             {
+%                 path = { b1, b2, b3, b4 },
+%             }
+%         }
+%     end
+%     function MP.six()
+%         mp.inject.path {
+%             {
+%                 path   = { a1, a2, a3, a4 },
+%                 append = true,
+%             },
+%             {
+%                 path   = { b1, b2, b3, b4 },
+%                 append = true,
+%             }
+%         }
+%     end
+% \stopluacode
+%
+% \startMPpage[offset=1TS]
+%     draw lua.MP.one  () ysized 4cm xshifted  0cm ;
+%     draw lua.MP.two  () ysized 4cm xshifted  5cm ;
+%     draw lua.MP.three() ysized 4cm xshifted 10cm ;
+%     draw lua.MP.four () ysized 4cm xshifted 15cm ;
+%     draw lua.MP.five () ysized 4cm xshifted 20cm ;
+%     draw lua.MP.six  () ysized 4cm xshifted 25cm ;
+% \stopMPpage

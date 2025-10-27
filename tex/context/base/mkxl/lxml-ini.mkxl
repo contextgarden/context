@@ -76,7 +76,8 @@
 
 % we need to pass the last argument as function, so
 
-\permanent\protected\def\xmlsetfunction#1#2#3{\ctxcommand{xmlsetfunction("#1",\!!bs#2\!!es,#3)}}
+%permanent\protected\def\xmlsetfunction#1#2#3{\ctxcommand{xmlsetfunction("#1",\!!bs#2\!!es,#3)}}
+\permanent\protected\def\xmlsetfunction#1#2#3{\ctxlua{lxml.setaction("#1",\!!bs#2\!!es,#3)}}
 
 % goodie:
 

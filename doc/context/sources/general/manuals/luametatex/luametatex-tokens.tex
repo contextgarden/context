@@ -924,11 +924,11 @@ we get:
 
 \starttabulate[|l|Tl|l|]
 \FL
-\BC name \BC result \NC \NR
+\BC name \BC result \BC meaning \NC \NR
 \TL
-\NC \type {\directlua{token.scanstring()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} {foo} \NC full expansion \NC \NR
+\NC \type {\directlua{token.scanstring()}{foo}} \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} {foo} \NC full expansion     \NC \NR
 \NC \type {\directlua{token.scanstring()}foo}   \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")} foo   \NC letters and others \NC \NR
-\NC \type {\directlua{token.scanstring()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")}\foo   \NC meaning \NC \NR
+\NC \type {\directlua{token.scanstring()}\foo}  \NC \directlua{context("{\\red\\type {"..token.scanstring().."}}")}\foo   \NC meaning            \NC \NR
 \LL
 \stoptabulate
 

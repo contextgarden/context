@@ -33,6 +33,7 @@ local getdisc         = nuts.getdisc
 local setchar         = nuts.setchar
 local setfont         = nuts.setfont
 local setscales       = nuts.setscales
+local setweight       = nuts.setweight
 
 local copy_node       = nuts.copy
 local endofmath       = nuts.endofmath
@@ -88,7 +89,7 @@ local run             = 0 -- a trick to make neighbouring ranges work
 local registervalue   = attributes.registervalue
 local getvalue        = attributes.getvalue
 
-local function set(tag,font,category,xscale,yscale)
+local function set(tag,font,category,xscale,yscale,weight)
     run = run + 1
     local scales = { texgetscales() }
     local settings = {
@@ -97,6 +98,7 @@ local function set(tag,font,category,xscale,yscale)
         run      = run, -- still needed ?
         category = category or 0,
         scales   = scales,
+        weight   = weight,
     }
     if xscale and xscale ~= 1000 then
         scales[2] = scales[2] * xscale / 1000
@@ -234,12 +236,18 @@ local function Capital(start,data,lastfont,n,count,where,first,once) -- 3
     if count == 1 and where ~= "post" then
         local lfa = lastfont[n]
         if lfa then
-            local dc = uccodes[getchar(used)]
+            local char = getchar(used)
+            local dc   = uccodes[char]
             if dc then
                 local s = data.scales
                 setfont(used,lfa)
                 if s then
-                    setscales(used,s[1],s[2],s[3])
+                    local weight = data.weight or 0
+                    if weight ~= 0 then
+                        setweight(used,weight)
+                    end
+                    weight = 1 + weight / 1000
+                    setscales(used,s[1],weight*s[2],s[3])
                 end
             end
         end
@@ -251,8 +259,34 @@ local function Capital(start,data,lastfont,n,count,where,first,once) -- 3
     return start, c
 end
 
-local function capital(start,data,lastfont,n,where,count,first,count) -- 4
+local function capital(start,data,lastfont,n,where,count,first,count)
     return Capital(start,data,lastfont,n,where,count,first,true)
+end
+
+local function fakecaps(start,data,lastfont,n,where,count,first,count)
+    local used = first or start
+    local lfa = lastfont[n]
+    if lfa then
+        local char = getchar(used)
+        local kind = categories[char]
+        if kind ~= "lu" then
+            local dc = uccodes[char]
+            if dc then
+                local s = data.scales
+                setfont(used,lfa)
+                if s then
+                    local weight = data.weight or 0
+                    if weight ~= 0 then
+                        nuts.setweight(used,weight)
+                    end
+                    weight = 1 + weight / 1000
+                    setscales(used,s[1],weight*s[2],s[3])
+                end
+                return replacer(first or start,uccodes)
+            end
+        end
+    end
+    return start, false
 end
 
 local function none(start,data,lastfont,n,count,where,first)
@@ -286,20 +320,21 @@ local function randomized(start,data,lastfont,n,count,where,first)
     return start
 end
 
-register(variables.WORD,   WORD)              --   1
-register(variables.word,   word)              --   2
-register(variables.Word,   Word)              --   3
-register(variables.Words,  Words)             --   4
-register(variables.capital,capital)           --   5
-register(variables.Capital,Capital)           --   6
-register(variables.none,   none)              --   7 (dummy)
-register(variables.random, randomized)        --   8
-register(variables.mixed,  mixed)             --   9
-register(variables.camel,  camel)             --  10
-register(variables.Camel,  Camel)             --  11
+register(variables.WORD,      WORD)       --   1
+register(variables.word,      word)       --   2
+register(variables.Word,      Word)       --   3
+register(variables.Words,     Words)      --   4
+register(variables.capital,   capital)    --   5
+register(variables.Capital,   Capital)    --   6
+register(variables.none,      none)       --   7 (dummy)
+register(variables.random,    randomized) --   8
+register(variables.mixed,     mixed)      --   9
+register(variables.camel,     camel)      --  10
+register(variables.Camel,     Camel)      --  11
+register(variables.fakecaps,  fakecaps)   --  12
 
-register(variables.cap,    variables.capital) -- clone
-register(variables.Cap,    variables.Capital) -- clone
+register(variables.cap, variables.capital) -- clone
+register(variables.Cap, variables.Capital) -- clone
 
 function cases.handler(head)
     local _, start = findattribute(head,a_cases)
@@ -331,8 +366,8 @@ function cases.handler(head)
                             local quit
                             start, quit = action(start,data,lastfont,tag,count)
                             if trace_casing then
-                                report_casing("case trigger %a, instance %a, fontid %a, result %a",
-                                    tag,run,font,quit and "-" or "+")
+                                report_casing("case trigger %a, instance %a, fontid %a, character %c, result %a",
+                                    tag,run,font,char,quit and "-" or "+")
                             end
                         elseif trace_casing then
                             report_casing("unknown case trigger %a",tag)
@@ -411,9 +446,9 @@ end
 
 local enabled = false
 
-local function setcases(n,id,category,xscale,yscale)
+local function setcases(n,id,category,xscale,yscale,weight)
     if n ~= v_reset then
-        n = registered[n] or tonumber(n)
+        n = registered[n] or tonumber(n) or tonumber(category)
         if n then
             if not enabled then
                 enableaction("processors","typesetters.cases.handler")
@@ -422,7 +457,7 @@ local function setcases(n,id,category,xscale,yscale)
                 end
                 enabled = true
             end
-            set(n,id or currentfont(),category,xscale,yscale)
+            set(n,id or currentfont(),category,xscale,yscale,weight)
             return
         end
     end
@@ -435,10 +470,10 @@ cases.set = setcases
 
 interfaces.implement {
     name      = "setcharactercasing",
-    actions   = function(name,category,xscale,yscale)
-        setcases(name,false,category,xscale,yscale)
+    actions   = function(name,category,xscale,yscale,weight)
+        setcases(name,false,category,xscale,yscale,weight)
     end,
-    arguments = { "argument", "integer", "integer", "integer" },
+    arguments = { "argument", "integer", "integer", "integer", "integer" },
 }
 
 interfaces.implement {

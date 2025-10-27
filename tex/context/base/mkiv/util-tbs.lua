@@ -75,44 +75,42 @@ do
     local function field(namespace,name,default)
         local data = loaded[namespace] or current
         if data then
-    --         if find(name,"%[") then
-                local t = lpeg.match(specifier,name)
-                for i=1,#t do
-                    local ti = t[i]
-                    local t1 = ti[1]
-                    local k  = ti[2]
-                    if t1 == "test" then
-                        local v = ti[3]
-                        for j=1,#data do
-                            local dj = data[j]
-                            if dj[k] == v then
-                                data = dj
-                                goto OKAY
-                            end
-                        end
-                        return
-                    else
-                        data = data[k]
-                        if not data then
-                            return
+            local t = lpeg.match(specifier,name)
+            local n = #t
+            local last = nil
+            for i=1,n do
+                local ti = t[i]
+                local t1 = ti[1]
+                local k  = ti[2]
+                if t1 == "test" then
+                    local v = ti[3]
+                    for j=1,#data do
+                        local dj = data[j]
+                        if dj[k] == v then
+                            return dj
                         end
                     end
-                  ::OKAY::
+                    return default
+                else
+                    data = data[k]
+                    if data then
+                       last = data
+                    elseif last == nil then
+                       return default
+                    else
+                       return last
+                    end
                 end
-    --         else
-    --             for s in gmatch(name,"[^%.]+") do
-    --                 data = data[s] or data[tonumber(s) or 0]
-    --                 if not data then
-    --                     return
-    --                 end
-    --             end
-    --         end
-            return data
+            end
+            if last == nil then
+               return default
+            else
+               return last
+            end
         end
     end
 
-
-    function length(namespace,name,default)
+    function length(namespace,name)
         local data = field(namespace,name)
         return type(data) == "table" and #data or 0
     end

@@ -142,7 +142,7 @@ void tex_expand_current_token(void)
         halfword saved_cur_val_level = cur_val_level;
      // halfword saved_head = token_link(token_data.backup_head);
         if (cur_cmd < first_call_cmd) {
-            /*tex Expand a nonmacro. */
+            /*tex Expand a non-macro. */
             halfword code = cur_chr;
             if (tracing_commands_par > 1) {
                 tex_show_cmd_chr(cur_cmd, cur_chr);

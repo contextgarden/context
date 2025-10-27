@@ -27,7 +27,6 @@ local setmetatableindex = table.setmetatableindex
 local utfvalues, strip, utfcharacters = string.utfvalues, string.strip, utf.characters
 
 local context   = context
-local commands  = commands
 local implement = interfaces.implement
 
 local settings_to_array = utilities.parsers.settings_to_array

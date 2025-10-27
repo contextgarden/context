@@ -542,12 +542,15 @@ static int strlib_format_f6(lua_State *L)
         lua_pushliteral(L, "0");
     } else if (n == 1.0) {
         lua_pushliteral(L, "1");
+ // } else if (n == 10.0) {
+ //     /* does happen in our use case but not worth it */
+ //     lua_pushliteral(L, "10");
     } else {
         char s[128];
         int i, l;
-        /* we could use sprintf here */
-        if (fmod(n, 1) == 0) {
-            i = snprintf(s, 128, "%i", (int) n);
+        /* this is really needed in order to get integers in pdf  */
+        if (fmod(n, 1) == 0 && n >= min_integer && n <= max_integer) {
+           i = snprintf(s, 128, "%i", (int) n);
         } else {
             if (lua_type(L, 2) == LUA_TSTRING) {
                 const char *f = lua_tostring(L, 2);
@@ -1098,6 +1101,8 @@ static const luaL_Reg strlib_function_list[] = {
 
 # if (0) 
 
+    /*tex See |lmtinterface.h| for |STRING_BUFFER_METATABLE_INSTANCE|. */
+
     typedef struct lmt_string_buffer {
         char   *buffer;
         size_t  length;
@@ -1208,7 +1213,7 @@ static const luaL_Reg strlib_function_list[] = {
             lua_setfield(L, -2, lib->name);
         }
         lua_pop(L, 1);
-        luaL_newmetatable(L, STRING_BUFFER_INSTANCE);
+        luaL_newmetatable(L, STRING_BUFFER_METATABLE_INSTANCE);
         lua_pushcfunction(L, strlib_buffer_gc);
         lua_setfield(L, -2, "__gc");
         lua_pop(L, 1);

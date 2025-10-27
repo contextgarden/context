@@ -1468,15 +1468,18 @@ enddef ;
 
 permanent properties, withproperties ;
 
-% Experimental:
+% Experimental (nasty shifting to remain in the positive quadrant):
 
 primarydef t asgroup s = % s = isolated|knockout
     begingroup
-    save temp_p, temp_q, temp_r ;
-    picture temp_p, temp_q ; path temp_r ;
+    save temp_p, temp_q, temp_r, temp_c ;
+    picture temp_p, temp_q ; path temp_r ; pair temp_c ;
     temp_p := if picture t : t else : image(draw t) fi ;
     temp_r := boundingbox temp_p ;
-    temp_q:= nullpicture ;
+    temp_c := llcorner temp_r;
+    temp_p := temp_p shifted -temp_c;
+    temp_q := nullpicture ;
+    temp_r := temp_r shifted -temp_c;
     addto temp_q contour temp_r
         withprescript "gr_state=start"
         withprescript "gr_type=" & s

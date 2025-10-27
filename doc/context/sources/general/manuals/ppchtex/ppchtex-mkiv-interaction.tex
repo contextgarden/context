@@ -1,0 +1,51 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-interaction
+
+\chapter[txt:cooh]{Interaction}
+
+We do support interactive texts. An interactive text is a text
+that can be consulted on a computerscreen and contains many
+hyperlinked textareas. This means that clicking on such an area
+will result in a jump to the target area.
+
+\startbuffer
+\startchemical[axis=on,frame=on,width=5000]
+  \chemical[SIX,B]
+  \chemical[sub:cooh][SIX,R1,RZ1][COOH]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example[ex:interaction]
+\typebuffer
+\stopfiguretext
+
+We see a new argument: the reference \type{[sub:cooh]}. This means that we
+can refer from the text \goto{\chemical{COOH}}[sub:cooh] to the structure
+with:
+
+\starttyping
+... text ... \goto{\chemical{COOH}}[sub:cooh] ... text ...
+\stoptyping
+
+In this definition \type{\goto} is a \CONTEXT||command.
+We can also refer from the structure to a particular part of the text.
+
+Clicking in \chemical{COOH} in the structure results in a jump to the text
+that is marked with:
+
+\starttyping
+\paragraph[txt:cooh]{Substituents}
+
+... text ... \chemical{COOH} ... text ...
+\stoptyping
+
+A combination is also possible. In that case it is necessary to mark the
+reference with \type{\chemical} and to refer in the text with
+\type{\gotochemical}.
+
+\stopcomponent

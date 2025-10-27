@@ -83,8 +83,8 @@ nodes.plugindata = nil
 
 local template <const> = [[
 local plugin = nodes.plugindata
-local starttiming = statistics.starttiming
-local stoptiming = statistics.stoptiming
+----- starttiming = statistics.starttiming
+----- stoptiming = statistics.stoptiming
 local namespace = plugin.namespace
 local attribute = namespace.attribute or attributes.numbers[plugin.name]
 local processor = plugin.processor
@@ -98,7 +98,7 @@ if not processor then
     end
 elseif initializer or finalizer or resolver then
     return function(head)
-        starttiming(attributes)
+     -- starttiming(attributes)
         local used, inheritance
         if resolver then
             inheritance = resolver()
@@ -113,14 +113,14 @@ elseif initializer or finalizer or resolver then
                 head = flusher(namespace,attribute,head,used)
             end
         end
-        stoptiming(attributes)
+     -- stoptiming(attributes)
         return head
     end
 else
     return function(head)
-        starttiming(attributes)
+     -- starttiming(attributes)
         head = processor(namespace,attribute,head)
-        stoptiming(attributes)
+     -- stoptiming(attributes)
         return head
     end
 end
@@ -344,7 +344,6 @@ end
 local function selective(attribute,head,inheritance,default) -- two attributes
     local check  = false
     local leader = nil
---   nuts.checkslide(head,"SELECTIVE")
     for stack, id, subtype, content in nextcontent, head do
         if id == glyph_code or id == disc_code then
             check = true
@@ -542,6 +541,88 @@ local function stacked(attribute,head,default) -- no inheritance, but list-wise
     return head
 end
 
+-- needs checking:
+--
+-- local function stacked(attribute,head,default) -- no inheritance, but list-wise
+--     local current = default or 0
+--     local depth   = 0
+--     local check   = false
+--     local leader  = false
+--     for stack, id, subtype, content in nextcontent, head do
+--         if id == glyph_code then
+--             check = true
+--         elseif id == glue_code then
+--             leader = content
+--             if leader then
+--                 check = true
+--             end
+--         elseif id == hlist_code or id == vlist_code then
+-- --             local content = getlist(stack)
+--             if content then
+--              -- the problem is that broken lines gets the attribute which can be a later one
+--                 local list
+--                 if subtype == container_code then
+--                     check   = true
+--                     current = 0
+--                 end
+--                 if nslistwise then
+--                     local a = getattr(stack,attribute)
+--                     if a and current ~= a and nslistwise[a] then -- viewerlayer / needs checking, see below
+--                         local p = current
+--                         current = a
+--                         head    = insertnodebefore(head,stack,copy_node(nsdata[a]))
+--                         list    = stacked(attribute,content,current) -- two return values
+--                         head    = insertnodeafter(head,stack,copy_node(nsnone))
+--                         current = p
+--                     else
+--                         list = stacked(attribute,content,current)
+--                     end
+--                 else
+--                     list = stacked(attribute,content,current)
+--                 end
+--                 if content ~= list then
+--                     setlist(stack,list) -- only if ok
+--                 end
+--             end
+--         elseif id == rule_code then
+--             check = subtype == virtualrule_code or hasdimensions(stack)
+--         end
+--         if check then
+--             local a = getattr(stack,attribute)
+--             if a then
+--                 if current ~= a then
+--                     head    = insertnodebefore(head,stack,copy_node(nsdata[a]))
+--                     depth   = depth + 1
+--                     current = a
+--                 end
+--                 if leader then
+--                     local content = getlist(leader)
+--                     if content then
+--                         local list = stacked(attribute,content,current)
+--                         if leader ~= list then
+--                             setleader(stack,list) -- only if ok
+--                         end
+--                     end
+--                     leader = false
+--                 end
+--             elseif default > 0 then
+--                 --
+--             elseif current > 0 then
+--                 head    = insertnodebefore(head,stack,copy_node(nsnone))
+--                 depth   = depth - 1
+--                 current = 0
+--             end
+--             check = false
+--         end
+--     end
+--     while depth > 0 do
+--         head = insertnodeafter(head,stack,copy_node(nsnone))
+--         depth = depth - 1
+--     end
+--     return head
+-- end
+
+
 states.stacked = function(namespace,attribute,head,default)
     return stacked(attribute,head,default)
 end
@@ -646,6 +727,6 @@ end
 
 -- -- --
 
-statistics.register("attribute processing time", function()
-    return statistics.elapsedseconds(attributes,"front- and backend")
-end)
+-- statistics.register("attribute processing time", function()
+--     return statistics.elapsedseconds(attributes,"front- and backend")
+-- end)

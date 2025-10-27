@@ -23,6 +23,7 @@ local disableaction   = tasks.disableaction
 local enableaction    = tasks.enableaction
 local freezegroup     = tasks.freezegroup
 local freezecallbacks = callbacks.freeze
+local attribute       = attributes.private
 
 ------------("processors",   "before",      "nodes.properties.attach",                          nil, "nut",    "enabled"   )
 
@@ -38,14 +39,14 @@ appendaction("processors",   "characters",  "scripts.autofontfeature.handler",  
 appendaction("processors",   "characters",  "scripts.splitters.handler",                        nil, "nut",    "disabled"  )
 appendaction("processors",   "characters",  "typesetters.cleaners.handler",                     nil, "nut",    "disabled"  )
 appendaction("processors",   "characters",  "typesetters.directions.handler",                   nil, "nut",    "disabled"  )
-appendaction("processors",   "characters",  "typesetters.cases.handler",                        nil, "nut",    "disabled"  )
-appendaction("processors",   "characters",  "typesetters.breakpoints.handler",                  nil, "nut",    "disabled"  )
+appendaction("processors",   "characters",  "typesetters.cases.handler",                        nil, "nut",    "disabled", attribute("case") )
+appendaction("processors",   "characters",  "typesetters.breakpoints.handler",                  nil, "nut",    "disabled", attribute("breakpoint") )
 appendaction("processors",   "characters",  "scripts.injectors.handler",                        nil, "nut",    "disabled"  )
 
 appendaction("processors",   "words",       "typesetters.compare.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "words",       "languages.words.check",                            nil, "nut",    "disabled"  )
 appendaction("processors",   "words",       "languages.hyphenators.handler",                    nil, "nut",    "enabled"   )
-appendaction("processors",   "words",       "typesetters.initials.handler",                     nil, "nut",    "disabled"  )
+appendaction("processors",   "words",       "typesetters.initials.handler",                     nil, "nut",    "disabled"  ) -- has follow up
 appendaction("processors",   "words",       "typesetters.firstlines.handler",                   nil, "nut",    "disabled"  )
 
 appendaction("processors",   "fonts",       "builders.paragraphs.solutions.splitters.split",    nil, "nut",    "disabled"  )
@@ -61,11 +62,11 @@ appendaction("processors",   "fonts",       "nodes.handlers.flatten",           
 appendaction("processors",   "fonts",       "fonts.goodies.colorschemes.coloring",              nil, "nut",    "disabled"  )
 
 appendaction("processors",   "lists",       "typesetters.rubies.check",                         nil, "nut",    "disabled"  )
-appendaction("processors",   "lists",       "typesetters.characteralign.handler",               nil, "nut",    "disabled"  )
-appendaction("processors",   "lists",       "typesetters.spacings.handler",                     nil, "nut",    "disabled"  )
-appendaction("processors",   "lists",       "typesetters.kerns.handler",                        nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.characteralign.handler",               nil, "nut",    "disabled", attribute("characteralign") )
+appendaction("processors",   "lists",       "typesetters.spacings.handler",                     nil, "nut",    "disabled", attribute("spacing") )
+appendaction("processors",   "lists",       "typesetters.kerns.handler",                        nil, "nut",    "disabled", attribute("kern") )
 appendaction("processors",   "lists",       "typesetters.tighten.handler",                      nil, "nut",    "disabled"  )
-appendaction("processors",   "lists",       "typesetters.digits.handler",                       nil, "nut",    "disabled"  )
+appendaction("processors",   "lists",       "typesetters.digits.handler",                       nil, "nut",    "disabled", attribute("digits") )
 appendaction("processors",   "lists",       "typesetters.corrections.handler",                  nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "typesetters.italics.handler",                      nil, "nut",    "disabled"  )
 appendaction("processors",   "lists",       "languages.visualizediscretionaries",               nil, "nut",    "disabled"  )
@@ -87,12 +88,12 @@ appendaction("shipouts",     "normalizers", "nodes.shifts.handler",             
 appendaction("shipouts",     "normalizers", "nodes.shadows.handler",                            nil, "nut",    "disabled"  )
 ------------("shipouts",     "normalizers", "structures.tags.handler",                          nil, "nut",    "disabled"  ) -- moved down
 ------------("shipouts",     "normalizers", "nodes.handlers.accessibility",                     nil, "nut",    "disabled"  )
-appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled"  )
+appendaction("shipouts",     "normalizers", "nodes.handlers.backgrounds",                       nil, "nut",    "disabled", attribute("background") )
 appendaction("shipouts",     "normalizers", "typesetters.rubies.attach",                        nil, "nut",    "disabled"  )
 ------------("shipouts",     "normalizers", "nodes.properties.delayed",                         nil, "nut",    "production")
 appendaction("shipouts",     "normalizers", "nodes.tracers.directions",                         nil, "nut",    "disabled"  )
 
-appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled"  )
+appendaction("shipouts",     "finishers",   "nodes.visualizers.handler",                        nil, "nut",    "disabled", attribute("visual")  )
 appendaction("shipouts",     "finishers",   "attributes.colors.handler",                        nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.transparencies.handler",                nil, "nut",    "disabled"  )
 appendaction("shipouts",     "finishers",   "attributes.colorintents.handler",                  nil, "nut",    "disabled"  )
@@ -108,27 +109,27 @@ appendaction("shipouts",     "wrapup",      "luatex.synctex.collect",           
 
 appendaction("math",         "normalizers", "noads.handlers.showtree",                          nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )  -- first time
-appendaction("math",         "normalizers", "noads.handlers.numbers",                           nil, "nonut",  "disabled"  )
-appendaction("math",         "normalizers", "noads.handlers.spacing",                           nil, "nonut",  "disabled"  )
-appendaction("math",         "normalizers", "noads.handlers.fencing",                           nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.numbers",                           nil, "nonut",  "disabled", attribute("mathnumbers") )
+appendaction("math",         "normalizers", "noads.handlers.spacing",                           nil, "nonut",  "disabled", attribute("mathspacing") )
+appendaction("math",         "normalizers", "noads.handlers.fencing",                           nil, "nonut",  "disabled", attribute("mathfencing") )
 appendaction("math",         "normalizers", "noads.handlers.unscript",                          nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.unstack",                           nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.unstack",                           nil, "nonut",  "disabled", attribute("mathunstack") )
 appendaction("math",         "normalizers", "noads.handlers.relocate",                          nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled",  attribute("mathvariant") )
 appendaction("math",         "normalizers", "noads.handlers.families",                          nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.render",                            nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.render",                            nil, "nonut",  "enabled",  attribute("mathrendering") )
 appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )  -- second time
-appendaction("math",         "normalizers", "noads.handlers.fixscripts",                        nil, "nonut",  "enabled"   )
+------------("math",         "normalizers", "noads.handlers.fixscripts",                        nil, "nonut",  "enabled"   )
 ------------("math",         "normalizers", "noads.handlers.domains",                           nil, "nonut",  "disabled"  )
-appendaction("math",         "normalizers", "noads.handlers.autofences",                        nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.autofences",                        nil, "nonut",  "disabled", attribute("mathautofence") )
 ------------("math",         "normalizers", "noads.handlers.resize",                            nil, "nonut",  "enabled"   )
 ------------("math",         "normalizers", "noads.handlers.respace",                           nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.alternates",                        nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.alternates",                        nil, "nonut",  "enabled",  attribute("mathalternate") )
 -- shouldn't tags move down to after classes and dictionaries
-appendaction("math",         "normalizers", "noads.handlers.intervals",                         nil, "nonut",  "enabled"   )
+appendaction("math",         "normalizers", "noads.handlers.intervals",                         nil, "nonut",  "enabled",  attribute("mathintervals") )
 appendaction("math",         "normalizers", "noads.handlers.tags",                              nil, "nonut",  "disabled"  )
 ------------("math",         "normalizers", "noads.handlers.italics",                           nil, "nonut",  "disabled"  )  -- replaced
-appendaction("math",         "normalizers", "noads.handlers.kernpairs",                         nil, "nonut",  "disabled"  )
+appendaction("math",         "normalizers", "noads.handlers.kernpairs",                         nil, "nonut",  "disabled", attribute("mathkernpairs") )
 appendaction("math",         "normalizers", "noads.handlers.classes",                           nil, "nonut",  "disabled"  )
 appendaction("math",         "normalizers", "noads.handlers.dictionaries",                      nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.suspicious",                        nil, "nonut",  "enabled"   )
@@ -139,7 +140,7 @@ appendaction("math",         "builders",    "noads.handlers.makeup",            
 ------------("math",         "builders",    "noads.handlers.align",                             nil, "nonut",  "enabled"   )
 
 appendaction("math",         "finalizers",  "noads.handlers.normalize",                         nil, "nonut",  "enabled"   )
-appendaction("math",         "finalizers",  "noads.handlers.snap",                              nil, "nonut",  "disabled"  )
+appendaction("math",         "finalizers",  "noads.handlers.snap",                              nil, "nonut",  "disabled", attribute("mathsnap") )
 
 appendaction("finalizers",   "lists",       "nodes.handlers.showhyphenation",                   nil, "nut",    "disabled"  )
 appendaction("finalizers",   "lists",       "nodes.handlers.visualizehyphenation",              nil, "nut",    "disabled"  )

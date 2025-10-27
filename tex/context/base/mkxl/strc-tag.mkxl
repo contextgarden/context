@@ -574,6 +574,9 @@
 
 \def\strc_tags_document_stop_indeed
   {\glet\strc_tags_document_stop_indeed\relax
+   \ifconditional\c_strc_tags_enabled
+     \clf_checknesting
+   \fi
    \dostoptagged
    \dostoptagged}
 

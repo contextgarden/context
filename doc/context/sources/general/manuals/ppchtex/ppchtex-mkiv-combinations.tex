@@ -1,0 +1,456 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-combinations
+
+\chapter{Combinations}
+
+Structures can be combined to more complex compounds. Moving one structure in
+relation to another structure is done by \type {MOV}, \type {ROT}, \type {ADJ}
+and \type {SUB}.
+
+\placetable
+{Moving and rotating.}
+\starttable[ | r T | l w(2cm) | p(8cm) | ]
+\HL
+\VL MOV \VL Move       \VL moving a comparable structure \hbox{structure} in
+                           the direction of a bond\VL\FR
+\VL ADJ \VL Adjace     \VL moving another structure in the direction of the
+                           $x$-- or $y$--axis, adjacent to a bond\VL\MR
+\VL SUB \VL Substitute \VL moving one structure in relation to another in
+                           the direction of the $x$-- or $y$--axis\VL\MR
+\VL ROT \VL Rotate     \VL rotating a structure\VL\LR
+\HL
+\stoptable
+
+The four keys mentioned above have different effects when they are applied to
+different structures. The angle of rotation in \type {\chemical[FIVE,ROT1,B]}
+differs from that in \type {\chemical [SIX,ROT1,B]}.
+
+With the structure \type {ONE} you can use \type {MOV} but the key \type {DIR}
+is also available. Both keys have the same effect but differ in spacing.
+Small adjustments are possible with \type {OFF}.
+
+\placetable
+{Moving and rotating.}
+\starttable[ | r T | l w(2cm) | p(8cm) | ]
+\HL
+\VL DIR \VL Direction \VL moving a structure in a diagonal direction      \VL \FR
+\VL OFF \VL Offset    \VL moving atoms and molecules over small distances \VL \LR
+\HL
+\stoptable
+
+The structure \type {CARBON} can be mirrored with \type {MIR}.
+
+\placetable
+{Mirroring.}
+\starttable[ | r T | l w(2cm) | p(8cm) | ]
+\HL
+\VL MIR \VL Mirror     \VL mirroring a structure\VL\SR
+\HL
+\stoptable
+
+We use a number to indicate the direction of a movement or the level of
+rotation. These keys are closely related with the structure. Therefore they
+have to be defined before bonds are drawn and texts are placed. So definition
+\type {\chemical [FIVE,B,ROT1,R]} and \type {\chemical [FIVE,ROT1,B,R]} will not
+have the same result. The first definition will give an undesirable result.
+
+\startbuffer
+\startchemical[frame=on,width=4000,right=3000]
+  \chemical[SIX,B,MOV1,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+In this example a sixring is drawn because of \type {SIX,B}. Then a movement
+in the direction of bond~1 takes place and a second sixring is
+drawn:~\type {B} (\type {SIX} is stil in effect).
+
+A movement with \type {MOV} in a sixring can occur in six directions. A
+movement with \type {ADJ} will take place in only four axis||directions ($x$,
+$-x$, $y$, $-y$). It is a coincidence that in a sixring some of these
+movements have the same effect. The example above could have been drawn with:
+\type {[SIX,B,ADJ1,B]}.
+
+Structures can be combined. It is possible for example to combine structure
+\type {FIVE} with structure \type {SIX} in such a way that they have one mutual
+bond. Luckily the mechanism that takes care of these kinds of combinations is
+hidden for the user. In the next example you will see a sixring drawn by
+\type {SIX,B}. Then a movement in the positive $x$||direction is done by
+\type {ADJ1}. At last a rotated fivering is drawn: \type {FIVE,ROT3,B}.
+
+\startbuffer
+\startchemical[frame=on,width=4000,right=3000]
+  \chemical[SIX,B,ADJ1,FIVE,ROT3,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on,width=5000,right=4500]
+  \chemical[SIX,ROT2,B,R6,SUB1,FIVE,B,R4]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+To go from one structure to an adjacent one is done with \type {ADJ}. Most of
+the time one of these structures will have to be rotated to obtain a good
+attachment. This is done by \type {ROT}. Rotations are always clockwise in
+steps of 90\celsius. When a structure is attached with a bond you will have to
+use \type {SUB}. Movements with \type {ADJ} and \type {SUB} take place in the
+four directions of the $x$- and $y$||axis.
+
+The next examples illustrate that the dimensions of the smaller structures
+are determined by the larger structures, especially \type {SIX}. You will
+notice that \type {EIGHT} has fewer possibilities than \type {SIX}.
+
+\startbuffer
+\startchemical[width=6000,left=1500,frame=on]
+  \chemical[EIGHT,B,MOV1,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[width=6000,left=1500,frame=on]
+  \chemical[EIGHT,B,ADJ1,SIX,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[width=6000,left=1500,frame=on]
+  \chemical[EIGHT,B,ADJ1,FIVE,ROT3,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+It will be clear by now that the order in which the keys are defined
+makes a lot of difference. The order should be:
+
+\starttyping
+\chemical
+  [structure,                              % SIX, FIVE, ...
+   bonds within the structure,             % B, C, EB, ...
+   bonds pointing to substituents,         % R, DR, ...
+   atoms within the structure,             % Z
+   subsituents attached to the structure]  % RZ, -RZ, ...
+  [atoms,
+   substituents]
+\stoptyping
+
+Most of the time putting structures together is done by translating and
+rotating. You could automate this process. In earlier versions this was done
+automatically, however this led to misinterpretations of users concerning the
+positions of bonds, atoms and substituents. A structure that consists of more
+than one component can best be defined per component, translations included.
+Rotations should wait until the last step.
+
+A sixring may have substituents consisting of a carbon chain. In those
+situations we use \type {DIR} to build the chain.
+
+\startbuffer
+\startchemical
+  [scale=small,width=6000,height=6000,frame=on]
+  \chemical[SIX,SB2356,DB14,Z2346,SR36,RZ36]
+    [C,N,C,C,H,H_2]
+  \chemical[PB:Z1,ONE,Z0,MOV8,Z0,SB24,DB7,Z27,PE]
+    [C,C,CH_3,O]
+  \chemical[PB:Z5,ONE,Z0,MOV6,Z0,SB24,DB7,Z47,PE]
+    [C,C,H_3C,O]
+  \chemical[SR24,RZ24]
+    [CH_3,H_3C]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Because chains have no predefined format the chains are build and positioned
+as a substructure. For positioning we use the keys \type {PB} and \type {PE}.
+
+\placetable
+{Positioning.}
+\starttable[ | r T | l w(4cm) | p(6cm) | ]
+\HL
+\VL PB:.. \VL Picture Begin \VL beginning a substructure \VL\FR
+\VL PE    \VL Picture End   \VL ending a substructure    \VL\LR
+\HL
+\stoptable
+
+Directly after \type {PB} you will have to define the location where the
+substructure is positioned. The first following atom is centered on that
+location. Always use a central atom on this location.
+
+These keys were introduced after trying to obtain structures that are
+typeset in an acceptable quality. There are different ways to define
+structures. The following alternative would have resulted in:
+
+\startbuffer
+\startchemical
+    [scale=small,width=6000,height=6000,frame=on]
+  \chemical
+    [SIX,SB2356,DB14,Z36,SR36,RZ36][N,C,H,H_2]
+  \chemical
+    [PB:Z1,ONE,Z0,MOV8,Z0,SB24,DB7,Z27,PE][C,C,CH_3,O]
+  \chemical
+    [PB:Z5,ONE,Z0,MOV6,Z0,SB24,DB7,Z47,PE][C,C,H_3C,O]
+  \chemical
+    [PB:Z2,ONE,Z0,MOV2,SB6,CZ0,PE][C,CH_3]
+  \chemical
+    [PB:Z4,ONE,Z0,MOV4,SB8,CZ0,PE][C,H_3C]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+You may have noticed that the measurements of the structure is determined by
+the substituents. The chains are not taken into account. This leads to a
+consistent build-up of a structure.
+
+The differences in outcome when using \type {SUB} in stead of \type {PB} are
+very small. However compare the following formulas.
+
+\startbuffer
+\startchemical
+  [width=fit,frame=on,scale=small]
+  \chemical
+    [SIX,ROT2,B,C,+R236,RZ23,
+     SUB6,ONE,OFF1,Z0,4OFF1,SB1,Z1]
+    [HO,HO,CHOH,CH_2NH_2]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [width=fit,frame=on,scale=small]
+  \chemical
+    [SIX,ROT2,B,C,R236,RZ23,
+     PB:RZ6,ONE,Z0,3OFF1,SB1,Z1,PE]
+    [HO,HO,CHOH,CH_2NH_2]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+% The use of the key \type {PB:} might be somewhat more difficult, but the
+% results are much better. In that case you should define the width yourself,
+% because the substituents are not taken into account when determining the
+% dimensions.
+
+% First we will go into the key \type {OFF}. In some cases atom (\type {Z0}) in
+% \type {ONE} can consist of more than one character. The reserved space for
+% these characters would be insufficient and character and bond would overlap.
+% When you need more space for \type {Z0} we can move bond~1, 2 and~8 by means
+% of the key~\type {OFF} ('offset'). The example below will illustrate its use.
+
+We try to predict rotations and shifts as good as possible but it might take
+some trial and error, but we assume that at some poitn one has (and shares)
+definitions.
+
+\startbuffer
+\startchemical
+  [width=fit,frame=on]
+  \chemical
+    [SIX,B,C,
+     ADJ1,FIVE,ROT3,SB34,+SB2,-SB5,Z345,DR35,SR4,RZ35,
+     SUB4,ONE,SB258,Z0,Z28]
+    [C,N,C,O,O,
+     CH,COOC_2H_5,COOC_2H_5]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+% Moving the bonds makes room for an extra character. More space was obtained
+% when we would have typed \type {3OFF1}. The example looks rather complex but
+% you can define it rather easy by defining its components first. Rotating
+% should be done in the last stage.
+
+% You see a new key: \type {CRZ}. This key is used to place the atom or molecule
+% in one line with the bond. You could have used \type {RZ}, because you can
+% influence spacing in the second argument with \type {{\,O}} in stead off
+% \type {O} (spacing in mathematical mode).
+
+We will show another example, produced in two ways. When choosing a method
+you should take into account the consistency throughout your document.
+
+\startbuffer
+\startchemical
+  [width=fit,height=fit,frame=on,
+   scale=small]
+  \chemical
+    [ONE,SB15,DB7,Z057,3OFF1,MOV1,Z0,3OFF1,MOV1,
+     Z017,SB1357,MOV3,Z0,MOV3,SB1357,Z013,3OFF5,
+     MOV5,Z0,3OFF5,SB5,Z5]
+    [C,H_2N,NH,(CH_2)_3,C,COOH,H,\SL{NH},C,COOH,H,
+     (CH_2)_2,HOOC]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [width=fit,height=fit,frame=on,
+   scale=small]
+  \chemical [ONE,SB15,DB7,Z057,3OFF1][C,H_2N,NH]
+  \chemical [MOV1,Z0,3OFF1]          [(CH_2)_3]
+  \chemical [MOV1,Z017,SB1357]       [C,COOH,H]
+  \chemical [MOV3,Z0]                [\SL{NH}]
+  \chemical [MOV3,SB1357,Z013,3OFF5] [C,COOH,H]
+  \chemical [MOV5,Z0,3OFF5,SB5,Z5]   [(CH_2)_2,HOOC]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [width=fit,height=fit,frame=on,
+   scale=small]
+  \chemical
+    [ONE,Z0,SAVE,MOV7,SB1357,Z017,3OFF5,MOV5,Z0,
+     3OFF5,MOV5,SB15,DB7,Z057,RESTORE,
+     MOV3,SB1357,Z013,MOV5,3OFF5,Z0,6OFF5,SB5,Z5]
+    [\SL{NH},C,COOH,H,(CH_2)_3,C,H_2N,NH,C,COOH,H,
+     (CH_2)_2,HOOC]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [width=fit,height=fit,frame=on,scale=small]
+  \chemical
+    [ONE,Z0,MOV7,SB1357,Z017,3OFF5,MOV5,Z0,
+     3OFF5,MOV5,SB15,DB7,Z057,MOV0,MOV3,SB1357,
+     Z013,MOV5,3OFF5,Z0,6OFF5,SB5,Z5]
+    [\SL{NH},C,COOH,H,(CH_2)_3,C,H_2H,NH,C,COOH,H,
+     (CH_2)_2,HOOC]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Notice the use of \type {SAVE} and \type {RESTORE}. These keys enable you to save
+a location in a structure and return to that location in another stage. As an
+extra we will show you a combination of \type {SIX} and \type {FIVE}.
+
+\startbuffer
+\startchemical
+    [width=fit,height=fit,frame=on]
+  \chemical
+    [SIX,DB135,SB246,Z,SR6,RZ6][C,C,N,\SR{HC},N,C,NH_2]
+  \chemical
+    [SIX,MOV1,DB1,SB23,SS6,Z1..3,SR3,RZ3][N,\SL{CH},N,H]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\stopcomponent

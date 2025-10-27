@@ -76,7 +76,7 @@
 
 \aliased\let\MPLIBsettextX\MPLIBsetNtextX
 
-% \permanent\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
+% \permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
 %   {\clf_mpgettext\MPtextbox #1%
 %    \vpack to \zeropoint
 %      {\vss
@@ -86,7 +86,7 @@
 %           [\c!sx=#2,\c!sy=#3]%
 %           {\raise\dp\MPtextbox\box\MPtextbox}\forcecolorhack\hss}}}
 
-\permanent\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
+\permanent\protected\def\MPLIBgettextscaled#1#2#3%  why a copy .. can be used more often
   {\clf_mpgettext\MPtextbox #1%
    \vpack to \zeropoint
      {\vss
@@ -229,7 +229,7 @@
    \ht\scratchbox #6\onebasepoint
    \dp\scratchbox-#4\onebasepoint
    \setbox\scratchbox\hpack\bgroup
-     \kern-#3\onebasepoint
+     \kern{-#3\onebasepoint+\onebasepoint}%
      \box\scratchbox
    \egroup
    \saveboxresource
@@ -237,8 +237,7 @@
      resources {\pdfbackendcurrentresources}
      \scratchbox
    \setbox\scratchbox\hpack\bgroup
-     \kern#3\onebasepoint
-     \kern-\onebasepoint
+     \kern{#3\onebasepoint-\onebasepoint}%
      \useboxresource\lastsavedboxresourceindex
    \egroup
    \wd\scratchbox\zeropoint

@@ -84,6 +84,7 @@ extern void        tex_scan_integer_validate          (void);
 extern halfword    tex_scan_positive_integer          (int optional_equal);
 extern halfword    tex_scan_scale                     (int optional_equal);
 extern halfword    tex_scan_scale_factor              (int optional_equal);
+extern halfword    tex_scan_clipped_scale_factor      (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
 extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped);
 extern void        tex_scan_dimension_validate        (void);

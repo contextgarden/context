@@ -136,14 +136,28 @@ permanent dashpattern, _on_, _off_, on, off ; % on and off are not primitives
 
 % numeric constants
 
-newinternal eps, epsilon, infinity, _ ;
+newinternal eps, epsilon, neglectable, infinity, _ ;
 
-eps      := .00049 ;      % this is a pretty small positive number
-epsilon  := 1/256/256 ;   % but this is the smallest
-infinity := 4095.99998 ;  % and this is the largest
-_        := -1 ;          % internal constant to make macros unreadable but shorter
+eps         := .00049 ;     % this is a pretty small positive number
+epsilon     := 1/256/256 ;  % but this is the smallest
+infinity    := 4095.99998 ; % and this is the largest
+neglectable := 0.000001 ;   % for double
+_           := -1 ;        % internal constant to make macros unreadable but shorter
 
-immutable eps, epsilon, infinity, _ ;
+immutable eps, epsilon, neglectable, infinity, _ ;
+
+primarydef a ~   b = abs(a - b) < eps         enddef ;
+primarydef a ~~  b = abs(a - b) < epsilon     enddef ;
+primarydef a ~~~ b = abs(a - b) < neglectable enddef ;
+
+% fill fullcircle scaled 8mm if 10 ~~ 10         : withcolor red   fi ;
+% fill fullcircle scaled 7mm if 10 ~~ 10.1       : withcolor green fi ;
+% fill fullcircle scaled 6mm if 10 ~~ 10.01      : withcolor blue  fi ;
+% fill fullcircle scaled 5mm if 10 ~~ 10.001     : withcolor white fi ;
+% fill fullcircle scaled 4mm if 10 ~~ 10.0001    : withcolor red   fi ;
+% fill fullcircle scaled 3mm if 10 ~~ 10.00001   : withcolor green fi ;
+% fill fullcircle scaled 2mm if 10 ~~ 10.000001  : withcolor blue  fi ;
+% fill fullcircle scaled 1mm if 10 ~~ 10.0000001 : withcolor white fi ;
 
 % linejoin and linecap types
 

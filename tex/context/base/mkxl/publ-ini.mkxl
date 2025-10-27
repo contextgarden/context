@@ -1238,7 +1238,7 @@
         {\currentbtxfield}%
         {%
             combiner    {#1}%
-            kind        {list}%
+            kind        \s!list
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
             etaloption  {\btxparameter\c!etaloption}%
@@ -1272,7 +1272,7 @@
         {\currentbtxauthorfield}%
         {%
             combiner    {\btxparameter\c!authorconversion}%
-            kind        {cite}%
+            kind        \s!cite
             etallimit   {\btxparameter\c!etallimit}%
             etaldisplay {\btxparameter\c!etaldisplay}%
             etaloption  {\btxparameter\c!etaloption}%

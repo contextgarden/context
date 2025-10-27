@@ -18705,6 +18705,10 @@ return {
    ["pe"]="smallcaps",
    ["ro"]="majusculemici",
   },
+  ["fakecaps"]={
+   ["en"]="fakecaps",
+   ["nl"]="fakecaps",
+  },
   ["smaller"]={
    ["en"]="smaller",
    ["fr"]="pluspetit",

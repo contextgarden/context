@@ -16,7 +16,6 @@ local sortedhash = table.sortedhash
 local nodes             = nodes
 local context           = context
 local storage           = storage
-local commands          = commands
 
 local implement         = interfaces.implement
 

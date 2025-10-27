@@ -36,12 +36,13 @@
 \mutable\lettonothing\currentstructureownnumber
 \mutable\lettonothing\currentstructureplaceholder
 \mutable\lettonothing\currentstructurereference
-\mutable\lettonothing\currentstructurereferenceattribute
 \mutable\lettonothing\currentstructurereferenceprefix
 \mutable\lettonothing\currentstructuresaveinlist
 \mutable\lettonothing\currentstructureshownumber
 \mutable\lettonothing\currentstructuretitle
 \mutable\lettonothing\currentstructurexmlsetup
+
+%mutable\lettonothing\currentstructurereferenceattribute
 
 \mutable\lettonothing\currentstructurecomponentattribute
 \mutable\lettonothing\currentstructurecomponentbookmark

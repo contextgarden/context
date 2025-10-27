@@ -1,0 +1,35 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-color
+
+\chapter{Color}
+
+In \CONTEXT\ you can colorize parts of a structure. In~\in {example}
+[ex:rulecolor] and \in [ex:textcolor] we see a directive being used for the rules
+but for text we just use \TEX\ commands.
+
+\startbuffer
+\startchemical[axis=on,frame=on,width=5000]
+    \chemical[SIX,B,rulecolor,+R1,RZ1][red,COOH]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}
+    \example[ex:ruledcolor]
+    \typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[axis=on,frame=on,width=5000]
+    \chemical
+        [SIX,B,rulecolor,+R1,color,RZ1]
+        [red,{\blue COOH}]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}
+    \example[ex:textcolor]
+    \typebuffer
+\stopfiguretext
+
+\stopcomponent

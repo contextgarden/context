@@ -30,6 +30,13 @@ extern void tex_emergency_message (const char *t, const char *fmt, ...);
 
 */
 
+typedef enum lua_node_errors {
+    lua_no_node_error,
+    lua_new_node_error,
+    lua_set_field_error,
+    lua_get_field_error,
+} lua_node_errors ;
+
 typedef struct lua_state_info {
     lua_State   *lua_instance;
     int          used_bytes;
@@ -50,6 +57,8 @@ typedef struct lua_state_info {
     int          release_number;
     luaL_Buffer *used_buffer;
     int          integer_size;
+    int          last_node_error;
+    int          ignore_node_error;
 } lua_state_info ;
 
 extern lua_state_info lmt_lua_state;
@@ -276,7 +285,7 @@ extern int  luaextend_xcomplex  (lua_State *L);
 
 /*tex Maybe used in |lmtstrlibext| */
 
-# define STRING_BUFFER_INSTANCE "stringbuffer.instance"
+# define STRING_BUFFER_METATABLE_INSTANCE "stringbuffer.instance"
 
 /* Various */
 
@@ -285,6 +294,12 @@ extern int  luaextend_xcomplex  (lua_State *L);
 # define DECIMAL_METATABLE_INSTANCE "decimal"
 # define COMPLEX_METATABLE_INSTANCE "complex"
 # define POSIT_METATABLE_INSTANCE   "posit"
+# define BYTEMAP_METATABLE_INSTANCE "bytemap"
+# define SERIAL_METATABLE_INSTANCE  "serial"
+
+/*tex Directory scanner in |lmtfilelib|  */
+
+# define DIR_HANDLE_INSTANCE  "file.directory" 
 
 /*tex
     There are some more but for now we have no reason to alias them for performance reasons, so
@@ -292,7 +307,6 @@ extern int  luaextend_xcomplex  (lua_State *L);
 */
 
 /*
-# define DIR_METATABLE             "file.directory"
 
 # define LUA_BYTECODES_INDIRECT
 
@@ -335,6 +349,7 @@ typedef struct node_info {
     const char   *name;
     int           lua;
     int           visible;
+    int           definable;
     int           first;
     int           last;
 } node_info;
@@ -1447,6 +1462,7 @@ make_lua_key(L, tracingbalancing);\
 make_lua_key(L, tracingparagraphs);\
 make_lua_key(L, tracingpasses);\
 make_lua_key(L, tracingfitness);\
+make_lua_key(L, trace);\
 make_lua_key(L, trailer);\
 make_lua_key(L, Trailer);\
 make_lua_key(L, triggered);\
@@ -1546,10 +1562,13 @@ make_lua_key_alias(L, mesh_instance,            MESH_METATABLE_INSTANCE);\
 make_lua_key_alias(L, decimal_instance,         DECIMAL_METATABLE_INSTANCE);\
 make_lua_key_alias(L, complex_instance,         COMPLEX_METATABLE_INSTANCE);\
 make_lua_key_alias(L, posit_instance,           POSIT_METATABLE_INSTANCE);\
+make_lua_key_alias(L, bytemap_instance,         BYTEMAP_METATABLE_INSTANCE);\
+make_lua_key_alias(L, serial_instance,          SERIAL_METATABLE_INSTANCE);\
 /* */ \
 make_lua_key_alias(L, file_handle_instance,     LUA_FILEHANDLE);\
+make_lua_key_alias(L, dir_handle_instance,      DIR_HANDLE_INSTANCE);\
 /* */ \
-make_lua_key_alias(L, string_buffer_instance,   STRING_BUFFER_INSTANCE);\
+make_lua_key_alias(L, string_buffer_instance,   STRING_BUFFER_METATABLE_INSTANCE);\
 /* done */
 
 # define declare_metapost_lua_keys(L) \

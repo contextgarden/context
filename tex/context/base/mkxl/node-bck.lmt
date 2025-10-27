@@ -146,6 +146,9 @@ local alignments = false
 
 -- todo: more control over cell attributes
 
+-- When we split these in a_alignbackground and a_background we can optimize with
+-- tracked attributes. But first I need an extensive test.
+
 local function add_alignbackgrounds(head,list)
     for current, id, subtype, list in nextlist, list do
         if list and id == hlist_code and subtype == celllist_code then

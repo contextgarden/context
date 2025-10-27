@@ -45,7 +45,7 @@
 # define R_OK 0x4
 # endif
 
-# define DIR_METATABLE "file.directory"
+// # define DIR_METATABLE "file.directory"
 
 # ifndef _WIN32
     # ifndef _FILE_OFFSET_BITS
@@ -77,6 +77,12 @@
 //         # define MAX_PATH 256
 //     # endif
 // # endif
+
+/*tex 
+    See |lmtinterface.h| for |DIR_HANDLE_INSTANCE|. here it's not really needed to have a high 
+    performance lookup but we are consistent so let's have it. We seldom have more than a few 
+    tens of thousands iterations. 
+*/
 
 # ifdef _WIN32
 
@@ -458,7 +464,19 @@ static int filelib_rmdir(lua_State *L)
     {
         struct _wfinddata_t file_data;
         int details = 1;
-        dir_data *d = (dir_data *) luaL_checkudata(L, 1, DIR_METATABLE);
+     // dir_data *d = (dir_data *) luaL_checkudata(L, 1, DIR_METATABLE);
+        dir_data *d = (dir_data *) lua_touserdata(L, 1);
+        if (d && lua_getmetatable(L, 1)) {
+            lua_get_metatablelua(dir_handle_instance);
+            if (! lua_rawequal(L, -1, -2)) {
+               d = NULL;
+            }
+            lua_pop(L, 2);
+        }
+        if (! d) { 
+            /* some fatal error */
+            return 0;
+        }
         lua_getiuservalue(L, 1, 1);
         details = lua_toboolean(L, -1);
         lua_pop(L, 1);
@@ -476,7 +494,7 @@ static int filelib_rmdir(lua_State *L)
             }
         } else if (_wfindnext(d->handle, &file_data) == -1L) {
             /* no more entries */
-         /* lmt_memory_free(d->handle); */ /* is done for us */
+            /* lmt_memory_free(d->handle); */ /* is done for us */
             _findclose(d->handle);
             d->closed = 1;
             return 0;
@@ -505,7 +523,7 @@ static int filelib_rmdir(lua_State *L)
         d = (dir_data *) lua_newuserdatauv(L, sizeof(dir_data), 1);
         lua_pushboolean(L, detail);
         lua_setiuservalue(L, -2, 1);
-        luaL_getmetatable(L, DIR_METATABLE);
+        lua_get_metatablelua(dir_handle_instance);
         lua_setmetatable(L, -2);
         d->closed = 0;
         d->handle = 0L;
@@ -636,7 +654,20 @@ static int filelib_rmdir(lua_State *L)
         dir_data *d;
         int details = 1;
         lua_pushcfunction(L, filelib_aux_dir_iterator);
-        d = (dir_data *) luaL_checkudata(L, 1, DIR_METATABLE);
+    //  d = (dir_data *) luaL_checkudata(L, 1, DIR_HANDLE_INSTANCE);
+        d = (dir_data *) lua_touserdata(L, 1);
+        if (d && lua_getmetatable(L, 1)) {
+            lua_get_metatablelua(dir_handle_instance);
+            if (! lua_rawequal(L, -1, -2)) {
+               d = NULL;
+            }
+            lua_pop(L, 2);
+        }
+        if (! d) { 
+            /* some fatal error */
+            return 0;
+        }
+        /* */
         lua_getiuservalue(L, 1, 1);
         details = lua_toboolean(L, -1);
         lua_pop(L, 1);
@@ -704,7 +735,7 @@ static int filelib_rmdir(lua_State *L)
         d = (dir_data *) lua_newuserdatauv(L, sizeof(dir_data), 1);
         lua_pushboolean(L, lua_type(L, 2) == LUA_TBOOLEAN ? lua_toboolean(L, 2) : 1);
         lua_setiuservalue(L, -2, 1);
-        luaL_getmetatable(L, DIR_METATABLE);
+        lua_get_metatablelua(dir_handle_instance);
         lua_setmetatable(L, -2);
         d->closed = 0;
         d->handle = opendir(path ? path : ".");
@@ -719,7 +750,7 @@ static int filelib_rmdir(lua_State *L)
 
 static int dir_create_meta(lua_State *L)
 {
-    luaL_newmetatable(L, DIR_METATABLE);
+    luaL_newmetatable(L, DIR_HANDLE_INSTANCE);
     lua_newtable(L);
     lua_pushcfunction(L, filelib_aux_dir_iterator);
     lua_setfield(L, -2, "next");

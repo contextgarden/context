@@ -161,7 +161,7 @@
         }
         metadata {
             kind     {\listparameter\c!type}
-            name     {\currentlist}
+            name     \currentlist
           % level    structures.sections.currentlevel()
             catcodes \catcodetable
         }
@@ -438,10 +438,10 @@
 \permanent\def\rawstructurelistsecond{\rawstructurelistuservariable\s!second} % s! % was \protected
 
 \permanent\protected\def\doifelsestructurelisthaspage
-  {\clf_doifelselisthaspage{\currentlist}{\currentlistindex}}
+  {\doifelselisthaspage{\currentlist}{\currentlistindex}}
 
 \permanent\protected\def\doifelsestructurelisthasnumber
-  {\clf_doifelselisthasnumber{\currentlist}{\currentlistindex}}
+  {\doifelselisthasnumber{\currentlist}{\currentlistindex}}
 
 \aliased\let\doifstructurelisthaspageelse  \doifelsestructurelisthaspage
 \aliased\let\doifstructurelisthasnumberelse\doifelsestructurelisthasnumber

@@ -180,6 +180,7 @@
 \definesystemconstant {compare}
 \definesystemconstant {complex}
 \definesystemconstant {constant}
+\definesystemconstant {construction}
 \definesystemconstant {container}
 \definesystemconstant {counter}
 \definesystemconstant {cramped}
@@ -268,6 +269,7 @@
 \definesystemconstant {italics}
 \definesystemconstant {Italic}
 \definesystemconstant {italic}
+\definesystemconstant {item}
 \definesystemconstant {itemgroupcolumns}
 %definesystemconstant {it}
 \definesystemconstant {keepbase}
@@ -390,6 +392,7 @@
 \definesystemconstant {sc}
 \definesystemconstant {second}
 \definesystemconstant {section}
+\definesystemconstant {see}
 \definesystemconstant {SerifBoldItalic}
 \definesystemconstant {SerifBoldSlanted}
 \definesystemconstant {SerifBold}

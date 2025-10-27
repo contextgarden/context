@@ -21,9 +21,9 @@ local permit_unprefixed = false  directives.register("modules.permitunprefixed",
 
 local report            = logs.reporter("modules")
 
-local commands          = commands
 local context           = context
 local implement         = interfaces.implement
+local ctx_doifelse      = commands.doifelse
 
 local findbyscheme      = resolvers.finders.byscheme -- use different one
 local iterator          = utilities.parsers.iterator
@@ -312,7 +312,7 @@ implement {
 
 implement {
     name      = "doifelseolderversion",
-    actions   = function(one,two) commands.doifelse(comparedversion(one,two) >= 0) end,
+    actions   = function(one,two) ctx_doifelse(comparedversion(one,two) >= 0) end,
     arguments = "2 strings"
 }
 

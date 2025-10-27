@@ -113,12 +113,22 @@
 % \edef\chemicaltoplocation{t}
 % \edef\chemicalbotlocation{b}
 
+% \permanent\protected\def\chemicaltext#1%
+%   {\mathematics
+%      {\usechemicalstyleandcolor\c!style\c!color
+%       \strut
+%       \ifcase\currentxfontsize\or\scriptstyle\or\scriptscriptstyle\fi
+%       #1}}
+
 \permanent\protected\def\chemicaltext#1%
-  {\mathematics
-     {\usechemicalstyleandcolor\c!style\c!color
-      \strut
-      \ifcase\currentxfontsize\or\scriptstyle\or\scriptscriptstyle\fi
-      #1}}
+  {\begingroup
+   \ifmmode
+     \tf
+   \else
+     \usechemicalstyleandcolor\c!style\c!color
+   \fi
+   \strut#1%
+   \endgroup}
 
 \defcsname\??chemicalsize\v!small \endcsname{\txx}
 \defcsname\??chemicalsize\v!medium\endcsname{\tx}
@@ -166,7 +176,7 @@
      scale         {\chemicalparameter\c!scale}%
      rotation      {\chemicalparameter\c!rotation}%
      symalign      {\chemicalparameter\c!symalign}%
-     axis          {\chemicalparameter\c!axis}% was \MPcolor{...}
+     axis          {\chemicalparameter\c!axis}%
      framecolor    {\chemicalparameter\c!framecolor}%
      rulethickness {\chemicalparameter\c!rulethickness}%
      offset        {\chemicalparameter\c!offset}%
@@ -336,39 +346,41 @@
   {\let\chem_box_visual_yes\ruledhbox \let\chem_box_visual_nop\ruledhbox}
   {\let\chem_box_visual_yes\hbox      \let\chem_box_visual_nop\relax    }
 
-\def\chem_top_construct#1#2#3#4%
+\tolerant\def\chem_top_construct#1#2#3#=%
   {\hpack\bgroup
    \setstrut
    \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
-   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\ifparameter#4\or\molecule{#4}\else\space\fi}%
    \setbox\scratchboxone\chem_box_normal_yes{\raise{\dp\scratchboxone+\ht\scratchboxtwo}\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
    \smashbox\scratchboxone
    \box\scratchboxone
    \box\scratchboxtwo
    \egroup}
 
-\def\chem_bottom_construct#1#2#3#4%
+\tolerant\def\chem_bottom_construct#1#2#3#=%
   {\hpack\bgroup
    \setstrut
    \setbox\scratchboxone\chem_box_visual_yes{\strut#3}%
-   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\molecule{#4}}%
+   \setbox\scratchboxtwo\chem_box_visual_yes{\strut\ifparameter#4\or\molecule{#4}\else\space\fi}%
    \setbox\scratchboxone\chem_box_normal_yes{\lower{\dp\scratchboxtwo+\ht\scratchboxone}\hbox to \wd\scratchboxtwo{#1\box\scratchboxone#2}}%
    \smashbox\scratchboxone
    \box\scratchboxone
    \box\scratchboxtwo
    \egroup}
 
-\permanent\protected\def\chemicalleft#1#2% redundant boxes thanks to visual
+\permanent\tolerant\protected\def\chemicalleft#1#=% redundant boxes thanks to visual
   {\hbox\bgroup % hpack ?
    \setstrut
    \llap{\chem_box_visual_nop{\strut#1}}%
+ % \chem_box_visual_nop{\strut\ifparameter#2\else\space\fi#2}% we need something to get a width
    \chem_box_visual_nop{\strut#2}%
    \egroup}
 
-\permanent\protected\def\chemicalright#1#2% redundant boxes thanks to visual
+\permanent\tolerant\protected\def\chemicalright#1#=% redundant boxes thanks to visual
   {\hbox\bgroup % hpack ?
    \setstrut
-   \chem_box_visual_yes{\strut#2}%
+   \chem_box_visual_nop{\strut\ifparameter#2\else\space\fi#2}% we need something to get a width
+ % \chem_box_visual_yes{\strut#2}%
    \rlap{\chem_box_visual_nop{\strut#1}}%
    \egroup}
 

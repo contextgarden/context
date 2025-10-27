@@ -87,6 +87,7 @@
 \let\loadjsonfile     \loadtable
 \let\jsonfield        \tablefield
 \let\jsonfielddefault \tablefielddefault
+\let\jsonformatted    \tableformatted
 \let\jsonlength       \tablelength
 
 \stopmodule

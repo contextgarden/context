@@ -31,6 +31,8 @@ lua_state_info lmt_lua_state = {
     .release_number          = (int) LUA_VERSION_RELEASE_NUM,
     .used_buffer             = NULL,
     .integer_size            = sizeof(lua_Integer),
+    .last_node_error         = lua_no_node_error,
+    .ignore_node_error       = 0,
 };
 
 /*tex

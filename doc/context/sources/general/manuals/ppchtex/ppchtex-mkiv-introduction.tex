@@ -1,0 +1,51 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-introduction
+
+\title{Introduction}
+
+This manual is an update of the \PPCHTEX\ manual. Being one of the first public
+packages in what became the \CONTEXT\ suite, it covers a set of coherent macros
+that can be used to typeset chemical structure formulas. The first version of
+\PPCHTEX\ was ready for use in 1995 and the second release came with the previous
+versions of this manual. Some 15 years later, in the process of upgrading
+\CONTEXT\ to suit \LUATEX, it made sense to reconsider the usage of \PPCHTEX.
+\footnote {The original module was written by J. Hagen and A.F. Otten (with
+contributions by T. Burnus and D. Kuypers) and provided a set of macros based on
+\PICTEX\ or \PSTRICKS\ for the actual drawing of graphics. It could be used with
+\CONTEXT\ as well as with \LATEX.} First of all, we want basic chemical support
+in the kernel, so it made sense to take the relevant code and turn it into a
+kernel module. This means that in \CONTEXT\ \MKIV\ one does not need to load any
+module. For compatibility we keep the old module around.
+
+The old code can also be used outside \CONTEXT, but the integrated code not. This
+permits us to get away from the old \PICTEX\ based approach and combine the power
+of \TEX, \METAPOST\ and \LUA. The differences for \CONTEXT\ users are not that
+noticeable as we already default to \METAPOST\ for rendering the lines and
+curves, but in \CONTEXT\ \MKIV\ users could notice that the runtime is no longer
+influenced by callouts to \METAPOST\ because there we use the integrated library.
+We also changed a couple of aspects like dealing with fonts and provide more
+control over color, as we no longer need to be generic. The fact that we operate
+within \CONTEXT\ also meant that we can use all its facilities (like interaction)
+without special precautions.
+
+This means that this manual is just an overview as before but done a bit
+different. When we moved on to \LUAMETATEX\ and \MKXL, aka \LMTX, the chemical
+modules didn't change apart from adaptations to more efficient \METAPOST\
+integration. This manual is now targetting that version but still is mostly an
+overview. It is important to keep in mind that the code is not compatible with
+\MKII, mostly because we decided to make the interface a bit more flexible for
+which we also needed a bit more consistency across structures, especially the
+usage of plus and minus signs.
+
+As a final introductory note, chemical typesetting has its own rules and
+practices as well as variants. Using the chemical macros described here, it may
+be possible to construct structures that do not make any chemical sense, or to
+produce representations that are incorrect, as no chemical knowledge is built-in.
+Indeed, certain operations are available for completeness and by symmetry and may
+not have any reality in chemical practice. The user is responsible for a correct
+and consistant usage and should not count on the macros to ensure the
+construction of valid structures.
+
+\stopcomponent
+

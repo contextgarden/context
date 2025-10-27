@@ -1,0 +1,135 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-reactions
+
+\chapter{Reactions}
+
+Not only the typesetting of chemical structures is supported but also the
+typesetting of normal reactions. The command \type{\chemical} has three other
+appearances:
+
+\starttyping
+\chemical{formula}
+\chemical{formula}{bottom text}
+\chemical{formula}{top text}{bottom text}
+\stoptyping
+
+This command adapts itself to text mode. That means that it
+'knows' whether it is used in:
+
+\startitemize[packed]
+\item text||mode
+\item mathematical text||mode
+\item mathematical display||mode
+\stopitemize
+
+When the command is used in running text it will automatically be surrounded
+by \type{$ $}. Typing \type{\chemical{NH_4^+}} will result in
+\chemical{NH_4^+}.
+
+The result would be the same if we would place the command between \type{$
+$}. In both cases the second and third argument can be left out. If we place
+the command between \type{$$ $$} (or \type{\startformula} and
+\type{\stopformula}) both arguments do have a function. First a simple
+example. The command \type{\placeformula} is a \CONTEXT\ command and handles
+the positioning and numbering of the formula.
+
+\startbuffer
+\placeformula
+  \startformula
+    \chemical{2H_2} \chemical{PLUS} \chemical{O_2}
+    \chemical{GIVES} \chemical{2H_2O}
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The definition of the chemical part could be somewhat shorter:
+
+\starttyping
+\chemical{2H_2,PLUS,O_2,GIVES,2H_2O}
+\stoptyping
+
+or even:
+
+\starttyping
+\chemical{2H_2,+,O_2,->,2H_2O}
+\stoptyping
+
+A \TEX||addict will notice from these examples that the plus sign and the
+arrow are on the baseline. Compare for example $+$ and \chemical{+}. In the
+reaction you will see that the \chemical{+} and the \chemical{->} are
+vertically aligned.
+
+You can use \type{PLUS}, \type{GIVES} and \type{EQUILIBRIUM} (\type{<->}) in
+this command. With \type{MESOMERIC} or \type{<>} you will get
+\chemical{MESOMERIC}.
+
+The reaction can be placed in the text. In that case a more compact display
+is used: \chemical{2H_2,+,O_2,->,2H_2O}. Some finetuning with \type{\,} would
+result in \chemical{2{\,}H_2,{\,}+{\,},O_2\,,->,\,2{\,}H_2O}.
+
+It is also possible to display bonds in textmode. For example if you want
+\chemical{H,SINGLE,CH,DOUBLE,HC,SINGLE,H} you should type
+\type{\chemical{H,SINGLE,CH,DOUBLE,HC,SINGLE,H}} or something like this
+\type{\chemical{H,-,CH,--,HC,-,H}}. A triple bond can be defined as
+\type{TRIPLE} or \type{---}: \chemical{HC,TRIPLE,CH}.
+
+We return two the display||mode. The second and third argument can be used to
+add text to the reaction:
+
+\startbuffer
+\placeformula
+  \startformula
+    \chemical{2H_2}{hydrogen} \chemical{PLUS} \chemical{O_2}{oxygen}
+    \chemical{GIVES}{heat} \chemical{2H_2O}{water}
+   \stopformula
+\stopbuffer
+
+\typebuffer
+
+So we can also place text over and under symbols!
+
+\getbuffer
+
+The last argument is placed under the compound.
+
+\startbuffer
+\placeformula
+  \startformula
+    \chemical{H_2O}{liquid}{water}
+    \hbox{c.q.}
+    \chemical{H_2O}{water}
+  \stopformula
+\stopbuffer
+
+\getbuffer
+
+The formula above is defined with:
+
+\typebuffer
+
+The size of the formulas or reactions in the running text can be set up
+with:
+
+\placetable
+{Set up in text formulas.}
+\starttable[|lT|Tl|lT|]
+\HL
+\VL \bf parameter \VL \bf set up \VL \bf default \VL\SR
+\HL
+\VL size  \VL small medium big \VL big \VL\SR
+\HL
+\stoptable
+
+The definition \type{\chemical{H,SINGLE,CH,DOUBLE,HC,SINGLE,H}} result with
+\type{big}, \type{medium} and \type{small} in the following formulas:
+
+\dontleavehmode\hbox
+  {\setupchemical[textsize=big]\chemical{H,-,CH,--,HC,-,H}\hskip2em
+   \setupchemical[textsize=medium]\chemical{H,-,CH,--,HC,-,H}\hskip2em
+   \setupchemical[textsize=small]\chemical{H,-,CH,--,HC,-,H}}
+
+\stopcomponent

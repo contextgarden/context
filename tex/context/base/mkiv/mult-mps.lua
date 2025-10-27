@@ -151,7 +151,7 @@ return {
     internals = { -- we need to remove duplicates above
         --
         "mitered", "rounded", "beveled", "butt", "squared",
-        "eps", "epsilon", "infinity",
+        "eps", "epsilon", "neglectable", "infinity",
         "bboxmargin",
         "ahlength", "ahangle",
         "labeloffset", "dotlabeldiam",

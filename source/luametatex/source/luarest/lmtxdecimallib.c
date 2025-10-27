@@ -33,7 +33,7 @@
 # include <decContext.h>
 # include <decNumber.h>
 
-# define DECIMAL_METATABLE "decimal number"
+/*tex See |lmtinterface.h| for |DECIMAL_METATABLE_INSTANCE|. */
 
 typedef decNumber *decimal;
 
@@ -63,7 +63,8 @@ static void xdecimallib_initialize(void)
 static inline decimal xdecimallib_push(lua_State *L)
 {
     decimal p = lua_newuserdatauv(L, sizeof(decNumber), 0);
-    luaL_setmetatable(L, DECIMAL_METATABLE);
+    lua_get_metatablelua(decimal_instance);
+    lua_setmetatable(L, -2);
     return p;
 }
 
@@ -112,7 +113,22 @@ static decimal xdecimallib_get(lua_State *L, int i)
 {
     switch (lua_type(L, i)) {
         case LUA_TUSERDATA:
-            return (decimal) luaL_checkudata(L, i, DECIMAL_METATABLE);
+            {
+                decimal d = lua_touserdata(L, i);
+                if (d && lua_getmetatable(L, i)) {
+                    lua_get_metatablelua(decimal_instance);
+                    if (! lua_rawequal(L, -1, -2)) {
+                        d = NULL;
+                    }
+                    lua_pop(L, 2);
+                }
+                if (d) { 
+                    return d; 
+                } else { 
+                    tex_formatted_error("decimal lib", "lua <decimal> expected, not an object with type %s", luaL_typename(L, i));
+                    goto INVALID;
+                }
+            }
         case LUA_TSTRING:
             {
                 decimal p = xdecimallib_push(L);
@@ -132,6 +148,7 @@ static decimal xdecimallib_get(lua_State *L, int i)
                 return p;
             }
         default:
+         INVALID:
             {
                 decimal p = xdecimallib_push(L);
                 decNumberZero(p);
@@ -489,7 +506,7 @@ int luaopen_xdecimal(lua_State *L)
 {
     xdecimallib_initialize();
 
-    luaL_newmetatable(L, DECIMAL_METATABLE);
+    luaL_newmetatable(L, DECIMAL_METATABLE_INSTANCE);
     luaL_setfuncs(L, xdecimallib_function_list, 0);
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);
@@ -499,7 +516,7 @@ int luaopen_xdecimal(lua_State *L)
     lua_gettable(L, -3);
     lua_settable(L, -3);
     lua_pushliteral(L, "__name");
-    lua_pushliteral(L, "decimal");
+    lua_pushliteral(L, DECIMAL_METATABLE_INSTANCE);
     lua_settable(L, -3);
     return 1;
 }

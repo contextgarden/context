@@ -9,10 +9,8 @@ if not modules then modules = { } end modules ['attr-neg'] = {
 -- this module is being reconstructed and code will move to other places
 -- we can also do the nsnone via a metatable and then also se index 0
 
-local format = string.format
-
 local attributes, nodes, utilities, logs, backends = attributes, nodes, utilities, logs, backends
-local commands, context, interfaces = commands, context, interfaces
+local context, interfaces = context, interfaces
 local tex = tex
 
 local states            = attributes.states

@@ -1922,7 +1922,7 @@ extinfo *tex_char_extensible_recipe_front_last(halfword f, halfword c)
     while (ci) { 
         halfword next = ci->math ? ci->math->next : -1;
         if (next > 0) { // no zero 
-            ci = tex_aux_char_info(f, c);
+            ci = tex_aux_char_info(f, next);
         } else { 
             return ci->math ? ci->math->extensible_recipe : NULL;
         }

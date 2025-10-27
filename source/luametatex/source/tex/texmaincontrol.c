@@ -145,6 +145,11 @@ static void tex_aux_fixup_math_and_unsave(void)
     (2) factor is larger than 0 and below 1000
     (3) space_factor_overload_par > 0 will force that value to be used 
 
+    Maybe:
+
+    - store a penalty in fs code (we have room) 
+    - so that we can encourage a break 
+
 */
 
 static inline int tex_aux_use_space_factor_overload(halfword tail, halfword space_factor)
@@ -366,13 +371,13 @@ static void tex_aux_run_node(void)
     }
     tex_tail_append(n);
     if (tex_nodetype_has_attributes(node_type(n)) && ! node_attr(n)) {
-        attach_current_attribute_list(n);
+        tex_attach_current_attribute_list(n);
     }
     while (node_next(n)) {
         n = node_next(n);
         tex_tail_append(n);
         if (tex_nodetype_has_attributes(node_type(n)) && ! node_attr(n)) {
-            attach_current_attribute_list(n);
+            tex_attach_current_attribute_list(n);
         }
     }
 }
@@ -1849,8 +1854,7 @@ static inline int tex_aux_is_iterator_value(halfword tokeninfo)
 
 static inline void tex_push_stack_entry(void)
 {
-    halfword state = tex_get_node(loop_state_node_size);
-    node_type(state) = loop_state_node;
+    halfword state = tex_get_node_type(loop_state_node_size, loop_state_node);
     loop_state_count(state) = 0;
     if (lmt_main_control_state.loop_stack_head) { 
         node_prev(lmt_main_control_state.loop_stack_head) = state;
@@ -2430,12 +2434,10 @@ void tex_off_save(void)
                         signal is just as good.
                     */
                 
-                 // halfword q = tex_get_available_token(period_token); /* or char 0 */
                     halfword q = tex_get_available_token(token_val(math_char_number_cmd, math_char_ignore_code));
                     halfword f = node_next(cur_list.head);
                     set_token_info(h, deep_frozen_right_token);
                     set_token_link(h, q);
-                 // tex_add_noad_option(f, noad_option_ignore);
                     if (! (f && node_type(f) == fence_noad && has_noad_option_nocheck(f))) {
                         tex_handle_error(
                             normal_error_type,
@@ -2504,12 +2506,25 @@ static void tex_aux_extra_right_brace_error(void)
             );
             break;
         case math_fence_group:
-            tex_handle_error(
-                normal_error_type,
-                "Extra }, or forgotten %eright",
-                helpinfo
-            );
-            break;
+            { 
+                halfword f = node_next(cur_list.head);
+                if (f && node_type(f) == fence_noad && has_noad_option_nocheck(f)) {
+                    halfword h = tex_get_available_token(null);
+                    halfword q = tex_get_available_token(token_val(math_char_number_cmd, math_char_ignore_code));
+                    set_token_info(h, deep_frozen_right_token);
+                    set_token_link(h, q);
+                    tex_back_input(cur_tok);
+                    tex_begin_inserted_list(h);
+                    return;
+                } else {
+                    tex_handle_error(
+                        normal_error_type,
+                        "Extra }, or forgotten %eright",
+                        helpinfo
+                    );
+                    break;
+                }
+            }
     }
     ++lmt_input_state.align_state;
 }
@@ -3620,6 +3635,11 @@ static inline halfword tex_aux_get_register_value(int level, int optionalequal)
             return tex_scan_posit(optionalequal);
         case dimension_val_level:
             return tex_scan_dimension(0, 0, 0, optionalequal, NULL, NULL);
+     // case glue_val_level:
+     // case muglue_val_level:
+     //     return tex_scan_glue(level, optionalequal, 1);
+     // default:
+     //     return null;
         default:
             return tex_scan_glue(level, optionalequal, 1);
     }
@@ -3743,9 +3763,6 @@ static inline void tex_aux_update_register(int a, int level, halfword index, hal
             }
             break;
         case attribute_val_level:
-            if ((register_attribute_number(index)) > lmt_node_memory_state.max_used_attribute) {
-                lmt_node_memory_state.max_used_attribute = register_attribute_number(index);
-            }
             tex_change_attribute_register(a, index, value);
             tex_word_define(a, index, value);
             break;
@@ -3937,6 +3954,8 @@ static void tex_aux_arithmic_register(int a, int code)
                                     if (rounded) {
                                         value = tex_quotient(original >> 16, amount, 1) << 16;
                                         break;
+                                    } else { 
+                                        /* fall through */
                                     }
                                 case integer_val_level:
                                 case attribute_val_level:
@@ -5621,7 +5640,7 @@ static void tex_aux_set_math_parameter(int a)
             halfword n = tex_new_node(parameter_node, (quarterword) style);
             parameter_name(n) = code;
             parameter_value(n) = value;
-            attach_current_attribute_list(n);
+            tex_attach_current_attribute_list(n);
             tex_tail_append(n);
      // } else {
         } {
@@ -5720,9 +5739,6 @@ static void tex_aux_set_internal_attribute(int a, int force)
     halfword p = cur_chr;
     if (force || tex_mutation_permitted(p)) {
         halfword v = tex_scan_integer(1, NULL, NULL);
-        if (internal_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
-            lmt_node_memory_state.max_used_attribute = internal_attribute_number(p);
-        }
         tex_change_attribute_register(a, p, v);
         tex_word_define(a, p, v);
     }
@@ -5733,9 +5749,6 @@ static void tex_aux_set_register_attribute(int a, int force)
     halfword p = cur_chr;
     if (force || tex_mutation_permitted(p)) {
         halfword v = tex_scan_integer(1, NULL, NULL);
-        if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
-            lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
-        }
         tex_change_attribute_register(a, p, v);
         tex_word_define(a, p, v);
     }
@@ -6198,17 +6211,18 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
         case glyph_scale_code:
         case glyph_x_scale_code:
         case glyph_y_scale_code:
-            /* todo: check for reasonable */
+            /*tex Here we silently clip, which we do later on anyway. */
             if (val) {
-                tex_word_define(a, p, val);
+                tex_word_define(a, p, clipped_scale_factor(val));
             } else {
                 /* maybe an error message */
             }
             break;
-     // case glyph_slant_code: 
-     // case glyph_weight_code: 
-     //     /* maybe test for maxima */
-     //     break;
+        case glyph_slant_code: 
+        case glyph_weight_code: 
+            /*tex Here we silently clip, which we do later on anyway. */
+            tex_word_define(a, p, clipped_scale_factor(val));
+            break;
         case glyph_text_scale_code:
         case glyph_script_scale_code:
         case glyph_scriptscript_scale_code:
@@ -6410,9 +6424,6 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
 
 void tex_assign_internal_attribute_value(int a, halfword p, int val)
 {
-    if (register_attribute_number(p) > lmt_node_memory_state.max_used_attribute) {
-        lmt_node_memory_state.max_used_attribute = register_attribute_number(p);
-    }
     tex_change_attribute_register(a, p, val);
     tex_word_define(a, p, val);
 }

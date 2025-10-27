@@ -16,6 +16,8 @@ local tostring          = tostring
 local tonumber          = tonumber
 local print             = print
 
+local loadstring        = loadstring
+
 local string            = string
 local table             = table
 local lpeg              = lpeg
@@ -27,6 +29,7 @@ local lpeg              = lpeg
 local setmetatableindex = table.setmetatableindex
 local load              = load
 local xpcall            = xpcall
+----- pcall             = pcall
 local instance_banner   = string.formatters["=[instance: %s]"] -- the = controls the lua error / see: lobject.c
 local tex_errormessage  = context.errmessage
 
@@ -51,16 +54,24 @@ storage.register("lua/messages", messages, "lua.messages")
 -- variant of it:
 
 local function runscript(code)
-    local done, message = loadstring(code)
-    if done then
-        done()
-    else
-        newline()
-        report_script("error : %s",message or "unknown")
-        report_script()
-        report_script("code  : %s",code)
-        newline()
+    local luascript, message = loadstring(code,"\\luascript")
+ -- local luascript, message = loadstring(code)
+ -- if luascript then
+ --     local result
+ --     result, message = pcall(luascript)
+ --     if result then
+ --         return
+ --     end
+ -- end
+    if luascript then
+        luascript()
+        return
     end
+    newline()
+    report_script("error : %s",message or "unknown")
+    report_script()
+    report_script("code  : %s",code)
+    newline()
 end
 
 local threads = setmetatableindex(function(t,k)
@@ -74,9 +85,9 @@ local function runthread(name,code)
         threads[name] = nil
     else
         local thread = threads[name]
-        local done, message = loadstring(code,nil,nil,thread)
-        if done then
-            done()
+        local luathread, message = loadstring(code,nil,nil,thread)
+        if luathread then
+            luathread()
         else
             newline()
             report_thread("thread: %s",name)

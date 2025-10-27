@@ -647,7 +647,7 @@ Variables of type |color| have 3~values in 6~words identified by |mp_red_part_op
 When a \MP\ user specifies a path, \MP\ will create a list of knots and control points for the
 associated cubic spline curves. If the knots are $z_0$, $z_1$, \dots, $z_n$, there are control points
 $z_k^+$ and $z_{k+1}^-$ such that the cubic splines between knots $z_k$ and $z_{k+1}$ are defined by
-B麩er's formula
+Bezier's formula
 
 $$
 \eqalign{z(t)&=B(z_k,z_k^+,z_{k+1}^-,z_{k+1};t)\cr
@@ -678,7 +678,7 @@ used.
 
 /*tex
 
-Before the B麩er control points have been calculated, the memory space they will ultimately occupy
+Before the Bezier control points have been calculated, the memory space they will ultimately occupy
 is taken up by information that can be used to compute them. There are four cases:
 
 \startitemize
@@ -699,7 +699,7 @@ is taken up by information that can be used to compute them. There are four case
 \stopitem
 
 \startitem
-    If |mp_right_type = mp_explicit|, the B麩er control point for leaving this knot has already been
+    If |mp_right_type = mp_explicit|, the Bezier control point for leaving this knot has already been
     computed; it is in the |mp_right_x| and |mp_right_y| fields.
 \stopitem
 
@@ -712,12 +712,9 @@ represented by negative tension values.
 
 For example, the \MP\ path specification
 
-$$
-|z0..z1..tension atleast 1..\{curl 2\|z2..z3\{-1,-2\}..tension 3 and 4..p},
-$$
+|z0 .. z1 .. tension atleast 1 .. \{curl 2\} z2 .. z3 \{-1,-2\} .. tension 3 and 4 . .p|,
 
-where \.p is the path |z4..controls z45 and z54..z5|, will
-be represented by the six knots
+where |p| is the path |z4..controls z45 and z54..z5|, will be represented by the six knots
 
 \def\lodash{\hbox to 1.1em{\thinspace\hrulefill\thinspace}}
 
@@ -5568,30 +5565,55 @@ A curl of 1 is shown explicitly, so that the user sees clearly that \MP's defaul
 
 */
 
-void mp_print_path_only(MP mp, mp_knot h)
+static const char *mp_knot_type_string[] = {
+    "endpoint",
+    "explicit",
+    "given",
+    "curl",  
+    "open",
+    "endcycle",
+};
+
+static const char *mp_knot_state_string[] = {
+    "regular",
+    "begin",
+    "end",
+    "single",  
+};
+
+static const char * mp_valid_knot_type_string(int n)
+{
+    return mp_valid_knot_type(n) ? mp_knot_type_string[n] : "invalid";
+}
+static const char * mp_valid_knot_state_string(int n)
+{
+    return mp_valid_knot_state(n) ? mp_knot_state_string[n] : "invalid";
+}
+
+static void mp_print_path_only(MP mp, mp_knot h) /* todo: spaces, just after things */
 {
     mp_knot p = h;
     do {
         mp_knot q = mp_next_knot(p);
-        if ((p == NULL) || (q == NULL)) {
-            mp_print_nl(mp, "???");
-            return; /* this won't happen */
+        if (p == NULL) {
+            mp_print_nl(mp, "[no path, no points]");
+            return;
+        } else if (q == NULL) {
+            mp_print_nl(mp, "[no path, no back link]");
+            return;
         } else {
-            /*tex  print information for adjacent knots |p| and |q| */
-            mp_print_format(mp, "(%N,%N)", p->x_coord, p->y_coord);
-            switch (mp_knotstate(p)) {
-                case mp_begin_knot:
-                    mp_print_string(mp, " {begin}");
-                    break;
-                case mp_end_knot:
-                    mp_print_string(mp, " {end}");
-                    break;
-            }
+            mp_print_format(mp, "<%s %s : %s> ", 
+                mp_valid_knot_type_string(mp_left_type(p)),
+                mp_valid_knot_type_string(mp_right_type(p)),
+                mp_valid_knot_state_string(mp_knotstate(p))
+            );
+            /*tex pint information for adjacent knots |p| and |q| */
+            mp_print_format(mp, "(%N,%N) ", p->x_coord, p->y_coord);
             switch (mp_right_type(p)) {
                 case mp_endpoint_knot:
                     {
                         if (mp_left_type(p) == mp_open_knot) {
-                            mp_print_string(mp, " {open?}"); /* can't happen */
+                            mp_print_string(mp, "{open ?} "); /* can't happen */
                         }
                         if ((mp_left_type(q) != mp_endpoint_knot) || (q != h)) {
                             q = NULL; /* force an error */
@@ -5601,38 +5623,38 @@ void mp_print_path_only(MP mp, mp_knot h)
                     break;
                 case mp_explicit_knot:
                     {
-                        /*tex  print control points between |p| and |q|, then |goto done1| */
+                        /*tex print control points between |p| and |q|, then |goto done1| */
                         if (mp_left_type(q) != mp_explicit_knot) {
-                            mp_print_format(mp, " .. controls (%N,%N) and ??", p->right_x, p->right_y); /* can't happen */
+                            mp_print_format(mp, ".. controls (%N,%N) and ?? ", p->right_x, p->right_y); /* can't happen */
                         } else {
-                            mp_print_format(mp, " .. controls (%N,%N) and (%N,%N)", p->right_x, p->right_y, q->left_x, q->left_y);
+                            mp_print_format(mp, ".. controls (%N,%N) and (%N,%N) ", p->right_x, p->right_y, q->left_x, q->left_y);
                         }
                         goto DONE1;
                     }
                     break;
                 case mp_open_knot:
                     {
-                        /*tex  print information for a curve that begins |open| */
+                        /*tex print information for a curve that begins |open| */
                         if ((mp_left_type(p) != mp_explicit_knot) && (mp_left_type(p) != mp_open_knot)) {
-                            mp_print_string(mp, " {open ?}"); /* can't happen */
+                            mp_print_string(mp, "{open ?} "); /* can't happen */
                         }
                     }
                     break;
                 case mp_curl_knot:
                 case mp_given_knot:
                     {
-                        /*tex  print information for a curve that begins |curl| or |given| */
+                        /*tex print information for a curve that begins |curl| or |given| */
                         if (mp_left_type(p) == mp_open_knot) {
-                            mp_print_string(mp, " {?} "); /* can't happen */
+                            mp_print_string(mp, "{open ?} "); /* can't happen */
                         }
                         if (mp_right_type(p) == mp_curl_knot) {
-                            mp_print_format(mp, " {curl %N} ", p->right_curl);
+                            mp_print_format(mp, "{curl %N} ", p->right_curl);
                         } else {
                             mp_number n_sin, n_cos;
                             mp_new_fraction(n_sin);
                             mp_new_fraction(n_cos);
                             mp_n_sin_cos(p->right_given, n_cos, n_sin);
-                            mp_print_format(mp, " {%N,%N} ", n_sin, n_cos);
+                            mp_print_format(mp, "{%N,%N} ", n_sin, n_cos);
                             mp_free_number(n_sin);
                             mp_free_number(n_cos);
                         }
@@ -5640,25 +5662,25 @@ void mp_print_path_only(MP mp, mp_knot h)
                     break;
                 default:
                     {
-                        mp_print_string(mp, "???"); /* can't happen */
+                        mp_print_string(mp, "??? "); /* can't happen */
                     }
                     break;
             }
             if (mp_left_type(q) <= mp_explicit_knot) {
-                mp_print_string(mp, " .. control ?"); /* can't happen */
+                mp_print_string(mp, ".. control ? "); /* can't happen */
             } else if ((! mp_number_equal(p->right_tension, mp_unity_t)) || (! mp_number_equal(q->left_tension, mp_unity_t))) {
-                /*tex  print tension between |p| and |q| */
+                /*tex Print tension between |p| and |q| */
                 mp_number absval;
-                mp_print_string(mp, " .. tension");
+                mp_print_string(mp, ".. tension ");
                 if (mp_number_negative(p->right_tension)) {
-                    mp_print_string(mp, " atleast");
+                    mp_print_string(mp, "atleast ");
                 }
                 mp_new_number_abs(absval, p->right_tension);
                 mp_print_number(mp, absval);
                 if (! mp_number_equal(p->right_tension, q->left_tension)) {
-                    mp_print_string(mp, " and");
+                    mp_print_string(mp, "and ");
                     if (mp_number_negative(q->left_tension)) {
-                        mp_print_string(mp, " atleast");
+                        mp_print_string(mp, "atleast ");
                     }
                     mp_number_abs_clone(absval, p->left_tension);
                     mp_print_number(mp, absval);
@@ -5675,9 +5697,9 @@ void mp_print_path_only(MP mp, mp_knot h)
                 mp_new_fraction(n_cos);
                 if (mp_left_type(p) == mp_given_knot) {
                     mp_n_sin_cos(p->left_given, n_cos, n_sin);
-                    mp_print_format(mp, "%l.. {%N,%N}", n_cos, n_sin);
+                    mp_print_format(mp, "%l.. {%N,%N} ", n_cos, n_sin);
                 } else if (mp_left_type(p) == mp_curl_knot) {
-                    mp_print_format(mp, "%l.. {curl %N}", p->left_curl);
+                    mp_print_format(mp, "%l.. {curl %N} ", p->left_curl);
                 } else {
                     mp_print_format(mp, "%l.. ");
                 }
@@ -5697,13 +5719,20 @@ It is convenient to have another version of |pr_path| that prints the path as a 
 
 */
 
-void mp_print_path(MP mp, mp_knot h, const char *s, int nuline)
+static void mp_print_path(MP mp, mp_knot h, const char *s, int nuline)
 {
     mp_begin_diagnostic_print(mp, "Path", s, nuline);
     mp_print_ln(mp);
     mp_print_path_only(mp, h);
     mp_end_diagnostic(mp, 1);
 }
+
+ void mp_show_path(MP mp, mp_knot h) /* public */
+ {
+    mp_print_ln(mp);
+    mp_print_path_only(mp, h);
+    mp_print_ln(mp);
+ }
 
 static inline mp_knot mp_aux_new_knot(MP mp)
 {
@@ -6038,7 +6067,7 @@ $$
 
 */
 
-static void mp_make_choices(MP mp, mp_knot knots)
+void mp_make_choices(MP mp, mp_knot knots)
 {
     mp_knot h;    /* the first breakpoint */
     mp_knot p, q; /* consecutive breakpoints being processed */
@@ -7109,7 +7138,7 @@ mp_knot mp_append_knot(MP mp, mp_knot p, double x, double y)
     }
 }
 
-mp_knot mp_append_knot_xy(MP mp, mp_knot p, double x, double y)
+mp_knot mp_append_knot_xy(MP mp, mp_knot p, double x, double y, int type)
 {
     mp_knot q = mp_create_knot(mp);
     if (q == NULL) {
@@ -7120,8 +7149,10 @@ mp_knot mp_append_knot_xy(MP mp, mp_knot p, double x, double y)
     } else if (p == NULL) {
         return q;
     } else if (mp_link_knotpair_xy(mp, p, q)) {
-        mp_right_type(p) = mp_explicit_knot;
-        mp_left_type(p) = mp_explicit_knot;
+        if (mp_valid_knot_type(type)) {
+            mp_right_type(p) = type;
+            mp_left_type(p) = type;
+        }
         return q;
     } else {
         mp_memory_free(q);
@@ -7186,10 +7217,32 @@ int mp_set_knot_simple_curl(MP mp, mp_knot q)
         return 0;
     } else {
         /* no need for double */
-        mp_right_type(q) = mp_curl_knot;
-        mp_set_number_from_double(q->right_curl, 1.0);
         mp_left_type(q) = mp_curl_knot;
         mp_set_number_from_double(q->left_curl, 1.0);
+        mp_right_type(q) = mp_curl_knot;
+        mp_set_number_from_double(q->right_curl, 0.0);
+        return 1;
+    }
+}
+
+int mp_set_knot_simple_left_curl(MP mp, mp_knot q)
+{
+    if (q == NULL) {
+        return 0;
+    } else {
+        mp_left_type(q) = mp_curl_knot;
+        mp_set_number_from_double(q->left_curl, 1.0);
+        return 1;
+    }
+}
+
+int mp_set_knot_simple_right_curl(MP mp, mp_knot q)
+{
+    if (q == NULL) {
+        return 0;
+    } else {
+        mp_right_type(q) = mp_curl_knot;
+        mp_set_number_from_double(q->right_curl, 1.0);
         return 1;
     }
 }
@@ -7816,7 +7869,7 @@ static void mp_arc_test(MP mp,
     mp_new_number(simply);
     mp_new_number_clone(tol, *tol_orig);
     /*tex
-        Bisect the b麩er quadratic given by |dx0|, |dy0|, |dx1|, |dy1|, |dx2|, |dy2|.
+        Bisect the bezier quadratic given by |dx0|, |dy0|, |dx1|, |dy1|, |dx2|, |dy2|.
     */
     mp_set_number_half_from_addition(dx01, *dx0, *dx1);
     mp_set_number_half_from_addition(dx12, *dx1, *dx2);
@@ -8154,7 +8207,7 @@ void mp_solve_rising_cubic(MP mp, mp_number *ret, mp_number *a_orig, mp_number *
         do {
             mp_number_add(t, t);
             /*tex
-                Subdivide the b麩er quadratic defined by |a|, |b|, |c|.
+                Subdivide the bezier quadratic defined by |a|, |b|, |c|.
             */
             mp_set_number_half_from_addition(ab, a, b);
             mp_set_number_half_from_addition(bc, b, c);
@@ -10049,13 +10102,13 @@ void mp_print_obj_color(MP mp, mp_node p)
         case mp_grey_model:
             if (mp_number_positive(p0->grey)) {
                 mp_print_format(mp,"greyed (%N)", p0->grey);
-            };
+            }
             break;
         case mp_cmyk_model:
             if (mp_number_positive(p0->cyan)   || mp_number_positive(p0->magenta)
              || mp_number_positive(p0->yellow) || mp_number_positive(p0->black)) {
                 mp_print_format(mp,"processcolored (%N,%N,%N,%N)", p0->cyan, p0->magenta, p0->yellow, p0->black);
-            };
+            }
             break;
         case mp_rgb_model:
             if (mp_number_positive(p0->red) || mp_number_positive(p0->green) || mp_number_positive(p0->blue)) {
@@ -15589,7 +15642,7 @@ static int mp_move_to_next_line(MP mp)
             } else {
                 mp->force_eof = 1;
             }
-        };
+        }
         if (mp->force_eof) {
             mp->force_eof = 0;
             --mp_input_location;
@@ -16625,7 +16678,7 @@ static void mp_expand(MP mp)
             break;
         default:
             break;
-    };
+    }
     mp->expand_depth_count--;
 }
 
@@ -17840,7 +17893,7 @@ by different groups of people. The following programs show what is required for 
 operating system; similar routines for other systems are not difficult to devise.
 
 {\em This section doesn't really apply to the library because files are mostly delegated to the main
-program but we keep some comments fo rhistoric reasons.}
+program but we keep some comments for historic reasons.}
 
 \MP\ assumes that a file name has three parts: the name proper; its \quote {extension}; and a \quote
 {file area} where it is found in an external file system. The extension of an input file is assumed
@@ -18520,7 +18573,7 @@ void mp_print_exp(MP mp, mp_node p, int verbosity)
                     v = mp_get_value_node(v);
                 }
                 mp_print_variable_name(mp, v);
-            };
+            }
             break;
         case mp_string_type:
             mp_print_format(mp, "%Q", mp_get_value_str(p));
@@ -18538,7 +18591,7 @@ void mp_print_exp(MP mp, mp_node p, int verbosity)
                         mp_print_type(mp, t);
                         mp_print_string(mp, " (see the transcript file)");
                         mp->selector = mp_term_and_log_selector;
-                    };
+                    }
                 switch (t) {
                     case mp_pen_type:
                     case mp_nep_type:
@@ -20229,7 +20282,7 @@ static void mp_take_picture_part(MP mp, int c)
                     }
                     mp_flush_cur_exp(mp, new_expr);
                     cur_exp_type = mp_string_type;
-                };
+                }
                 break;
             case mp_postscript_part_operation:
                 if (! mp_has_script(p)) {
@@ -20243,7 +20296,7 @@ static void mp_take_picture_part(MP mp, int c)
                     }
                     mp_flush_cur_exp(mp, new_expr);
                     cur_exp_type = mp_string_type;
-                };
+                }
                 break;
             case mp_stacking_part_operation:
                 mp_number_clone(new_expr.data.n, mp_unity_t);
@@ -20307,7 +20360,7 @@ static void mp_take_picture_part(MP mp, int c)
                 break;
         }
         return;
-    };
+    }
   NOT_FOUND:
     /*tex
         Convert the current expression to a NULL value appropriate for |c|.
@@ -21134,7 +21187,7 @@ static void mp_set_up_length(MP mp, int c)
 {
     /*tex
         The length operation is somewhat unusual in that it applies to a variety of different
-        types of operands. *
+        types of operands. Plain \METAPOST\ lets |abs| to |length|. 
     */
     switch (cur_exp_type) {
         case mp_string_type:
@@ -21160,7 +21213,7 @@ static void mp_set_up_length(MP mp, int c)
         case mp_known_type:
             {
                 mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
-                mp_number_abs(cur_exp_value_number);
+                mp_number_abs(cur_exp_value_number); /* well ... */
                 break;
             }
         case mp_picture_type:
@@ -23626,7 +23679,7 @@ static void mp_set_up_compare(MP mp, mp_node p, int c)
             case mp_unequal_operation:
                 b = mp_number_nonzero(cur_exp_value_number);
                 break;
-        };
+        }
         mp_set_cur_exp_value_boolean(mp, b ? mp_true_operation : mp_false_operation);
     }
     cur_exp_type = mp_boolean_type;
@@ -26174,7 +26227,7 @@ void mp_do_max_knot_pool(MP mp)
             "Missing ':=' has been inserted",
             "Always say 'maxknotpool := <numeric expression>'."
         );
-    };
+    }
     mp_get_x_next(mp);
     mp_scan_expression(mp);
     if (cur_exp_type != mp_known_type) {
@@ -26211,7 +26264,7 @@ void mp_do_random_seed(MP mp)
             "Missing ':=' has been inserted",
             "Always say 'randomseed := <numeric expression>'."
         );
-    };
+    }
     mp_get_x_next(mp);
     mp_scan_expression(mp);
     if (cur_exp_type != mp_known_type) {
@@ -27122,7 +27175,7 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip) /* done */
                             /* error */
                             break;
                     }
-                    bytemap_bounds(&b, value, &llx, &lly, &urx, &ury);
+                    bytemap_bounds(&b, value, &llx, &lly, &urx, &ury, 1);
                     mp_set_number_from_int(mp_minx, llx);
                     mp_set_number_from_int(mp_miny, ury);
                     mp_set_number_from_int(mp_maxx, urx);
@@ -31028,18 +31081,26 @@ static int mp_scan_path(MP mp)
         mp_get_x_next(mp);
         switch (cur_cmd) {
             case mp_tension_command:
-                /*tex Set explicit tensions. */
+                /*tex 
+                    Set explicit tensions. Checking if the number is |mp_at_least_command| code is 
+                    kind of curious. We could just have a boolean instead. 
+                */
+// int atleast = 0;
                 mp_get_x_next(mp);
                 mp_set_number_from_scaled(y, cur_cmd);
+// atleast = cur_cmd == mp_at_least_command;
+// if (atleast) {  
                 if (cur_cmd == mp_at_least_command) {
                     mp_get_x_next(mp);
                 }
                 mp_scan_primary(mp);
                 force_valid_tension_setting(mp);
+// if (atleast && is_number(cur_exp_value_number)) {
                 if (mp_number_to_scaled(y) == mp_at_least_command && is_number(cur_exp_value_number)) {
                     mp_number_negate(cur_exp_value_number);
                 }
                 mp_number_clone(path_q->right_tension, cur_exp_value_number);
+                /* */
                 if (cur_cmd == mp_and_command) {
                     mp_get_x_next(mp);
                     mp_set_number_from_scaled(y, cur_cmd);
@@ -31411,7 +31472,7 @@ static int mp_scan_path(MP mp)
         if (knottype != mp_open_knot) {
             mp_number_clone(pp->left_x, x);
             mp_left_type(pp) = (unsigned char) knottype;
-        };
+        }
     }
     path_q = qq;
     if (cur_cmd >= mp_min_expression_command && cur_cmd <= mp_ampersand_command && ! cycle) {

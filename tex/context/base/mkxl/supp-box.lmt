@@ -939,7 +939,7 @@ local function limitate(t) -- don't pack the result !
         if not list then
             setlist(text)
             setwidth(text,0)
-            return text
+            return tonode(text)
         elseif done then
             width = getdimensions(list)
             setlist(text,list)
@@ -1016,7 +1016,6 @@ local function limitate(t) -- don't pack the result !
         setlist(l)
         flushnode(l)
     end
-
     return tonode(list)
 end
 

@@ -266,7 +266,7 @@ do
         else
             action = action()
         end
-        --
+
         fragments = samplefunction(
             { }, action,
             xmin, xmax,
@@ -275,8 +275,15 @@ do
             dmin, dmax,
             eps, tolerance
         )
-        -- todo: flush whole or flush segments
+
+        if fragments then
+            fragments.curled = p.shape == "curve" or nil
+            fragments.tense  = p.tight            or nil
+        end
     end
+
+    -- Timestamp: shape and tight support added (at the library end) early October
+    -- 2025, celebrated by attending the dual-set RPWL concert in Zoetermeer NL.
 
     function mp.lmt_samplefunction_flush()
         if fragments then
@@ -289,6 +296,8 @@ do
             if #fragments == 0 then
                 fragments = { { 0, 0 } }
             end
+-- fragments.trace = true
+-- inspect(fragments)
             mp.inject.path(fragments)
             fragments = false
         end

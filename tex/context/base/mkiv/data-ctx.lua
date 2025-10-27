@@ -23,7 +23,7 @@ function resolvers.collectlibraries(root)
             local suffix = filesuffix(wanted)
             if suffix == "lfg" or suffix == "llg" then
                 files[wanted] = true
-                report("goodie : %s",name)
+                report("goodie : %s",wanted)
             else
                 local category, name = match(wanted,"^(.*)%-imp%-(.*)$")
                 if category and name then

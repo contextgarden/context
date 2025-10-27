@@ -232,9 +232,7 @@ static void tex_aux_if_warning(void)
 
 static void tex_aux_push_condition_stack(int code, int unless)
 {
-    halfword p = tex_get_node(if_node_size);
-    node_type(p) = if_node;
-    node_subtype(p) = 0; /* unused */
+    halfword p = tex_get_node_type(if_node_size, if_node);
     node_next(p) = lmt_condition_state.cond_ptr;
     if_limit_type(p) = (quarterword) lmt_condition_state.if_limit;
     if_limit_subtype(p) = (quarterword) lmt_condition_state.cur_if;
@@ -467,19 +465,19 @@ static inline halfword tex_aux_grab_toks(int expand, int expandlist, int *head) 
 
 static halfword tex_aux_count_tok(int once)
 {
-    halfword qq = null;
+    halfword qhead = null;
     halfword p, q;
     halfword result = 0;
     int save_scanner_status = lmt_input_state.scanner_status;
     lmt_input_state.scanner_status = scanner_is_normal;
     p = tex_get_token();
-    q = tex_aux_grab_toks(0, 0, &qq);
+    q = tex_aux_grab_toks(0, 0, &qhead);
     if (p == q) {
         result = 1;
     } else {
         while (q) {
             if (p == token_info(q)) {
-                result += 1;
+                ++result;
                 if (once) { 
                     break;
                 }
@@ -488,8 +486,8 @@ static halfword tex_aux_count_tok(int once)
             }
         }
     }
-    if (qq) {
-        tex_flush_token_list(qq);
+    if (qhead) {
+        tex_flush_token_list(qhead);
     }
     lmt_input_state.scanner_status = save_scanner_status;
     return result;
@@ -497,15 +495,15 @@ static halfword tex_aux_count_tok(int once)
 
 static halfword tex_aux_count_toks(int once, int expand)
 {
-    halfword pp = null;
+    halfword phead = null;
     halfword p;
     halfword result = 0;
     int save_scanner_status = lmt_input_state.scanner_status;
     lmt_input_state.scanner_status = scanner_is_normal;
-    p = tex_aux_grab_toks(expand, expand, &pp);
+    p = tex_aux_grab_toks(expand, expand, &phead);
     if (p) {
-        halfword qq = null;
-        halfword q = tex_aux_grab_toks(expand, expand, &qq);
+        halfword qhead = null;
+        halfword q = tex_aux_grab_toks(expand, expand, &qhead);
         if (p == q) {
             result = 1;
         } else {
@@ -532,19 +530,19 @@ static halfword tex_aux_count_toks(int once, int expand)
                     qh = q;
                 }
                 if (! p) {
-                    result += 1;
+                    ++result;
                     if (once) { 
                         break;
                     }
                 }
             }
         }
-        if (qq) {
-            tex_flush_token_list(qq);
+        if (qhead) {
+            tex_flush_token_list(qhead);
         }
     }
-    if (pp) {
-        tex_flush_token_list(pp);
+    if (phead) {
+        tex_flush_token_list(phead);
     }
     lmt_input_state.scanner_status = save_scanner_status;
     return result;
@@ -553,31 +551,31 @@ static halfword tex_aux_count_toks(int once, int expand)
 static halfword tex_aux_count_char(int once)
 {
     halfword tok;
-    halfword qq = null;
+    halfword qhead = null;
     halfword q;
     halfword result = 0;
     int save_scanner_status = lmt_input_state.scanner_status;
     lmt_input_state.scanner_status = scanner_is_normal;
     tok = tex_get_token();
-    q = tex_aux_grab_toks(0, 0, &qq);
+    q = tex_aux_grab_toks(0, 0, &qhead);
     if (q) {
         int nesting = 0;
         while (q) {
             if (! nesting && token_info(q) == tok) {
-                result += 1;
+                ++result;
                 if (once) { 
                     break;
                 }
             } else if (token_cmd(token_info(q)) == left_brace_cmd) {
-                nesting += 1;
+                ++nesting;
             } else if (token_cmd(token_info(q)) == right_brace_cmd) {
-                nesting -= 1;
+                --nesting;
             }
             q = token_link(q);
         }
     }
-    if (qq) {
-        tex_flush_token_list(qq);
+    if (qhead) {
+        tex_flush_token_list(qhead);
     }
     lmt_input_state.scanner_status = save_scanner_status;
     return result;
@@ -889,14 +887,14 @@ void tex_conditional_if(halfword code, int unless)
         case if_tok_code:
         case if_cstok_code:
             {
-                halfword pp = null;
-                halfword qq = null;
+                halfword phead = null;
+                halfword qhead = null;
                 halfword p, q;
                 int expand = code == if_tok_code;
                 int save_scanner_status = lmt_input_state.scanner_status;
                 lmt_input_state.scanner_status = scanner_is_normal;
-                p = tex_aux_grab_toks(expand, 1, &pp);
-                q = tex_aux_grab_toks(expand, 1, &qq);
+                p = tex_aux_grab_toks(expand, 1, &phead);
+                q = tex_aux_grab_toks(expand, 1, &qhead);
                 if (p == q) {
                     /* this is sneaky, a list always is different */
                     result = 1;
@@ -915,11 +913,11 @@ void tex_conditional_if(halfword code, int unless)
                     result = (! p) && (! q);
                 }
               IFTOKDONE:
-                if (pp) {
-                    tex_flush_token_list(pp);
+                if (phead) {
+                    tex_flush_token_list(phead);
                 }
-                if (qq) {
-                    tex_flush_token_list(qq);
+                if (qhead) {
+                    tex_flush_token_list(qhead);
                 }
                 lmt_input_state.scanner_status = save_scanner_status;
             }

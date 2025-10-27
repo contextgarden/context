@@ -1,0 +1,57 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-symbols
+
+\chapter{Symbols}
+
+There are some symbols that can be used to display reactions. The reaction
+below is typed by:
+
+\startbuffer
+\setupchemical
+  [size=small,
+   scale=small,
+   width=fit,
+   height=5500,
+   bottom=1500]
+
+\hbox
+  {\startchemical
+     \chemical[SIX,B,ER6,RZ6][O]
+   \stopchemical
+   \startchemical
+     \chemical[SPACE,PLUS,SPACE]
+   \stopchemical
+   \startchemical
+     \chemical[FIVE,ROT4,B125,+SB3,-SB4,Z4,SR4,RZ4][N,H]
+   \stopchemical
+   \startchemical
+     \chemical[SPACE,GIVES,SPACE][?]
+   \stopchemical
+   \startchemical
+     \chemical[SIX,B,EB6,R6,SUB4,FIVE,ROT4,B125,+SB3,-SB4,Z4][N]
+   \stopchemical
+   \startchemical
+     \chemical[SPACE,PLUS,SPACE,CHEM][H_2O]
+   \stopchemical}
+\stopbuffer
+
+\typebuffer
+
+The \type{\hbox} is necessary to align the structures. The symbols
+\type{GIVES} and \type{PLUS} need no further explanation. With \type{SPACE}
+more room can be created between the structures and symbols.
+
+\placefigure
+  [hier]
+  [fig:reactie]
+  {}
+  {\getbuffer}
+
+An equilibrium can be displayed with \type{EQUILIBRIUM}. Over \type{GIVES}
+and \type{EQUILIBRIUM} you can place text. In the example the text is just a
+'?'. In addition \type{MESOMERIC} is also available. Braces used for
+displaying complexes can be created with \type{OPENCOMPLEX} and
+\type{CLOSECOMPLEX}.
+
+\stopcomponent

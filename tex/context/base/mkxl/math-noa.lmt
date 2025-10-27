@@ -503,7 +503,7 @@ do
     local user_boundary_code      <const> = nodes.boundarycodes.user
     local attribute_boundary_code <const> = nodes.boundarycodes.attribute or -1
 
-    local a_mathmode              <const> = attributes.private('mathmode')
+    local a_mathmode              <const> = privateattribute('mathmode')
     local c_mathmode              <const> = tex.getcount("c_math_display_mode_boundary")
 
     local trace_mathmode  = false  registertracker("math.mode", function(v) trace_mathmode = v end)
@@ -1328,7 +1328,7 @@ end
 
 do
 
-    local a_unstack <const> = privateattribute("mathunstack")
+    local a_mathunstack <const> = privateattribute("mathunstack")
 
     local trace_unstacking  = false  registertracker("math.unstack", function(v) trace_unstacking  = v end)
     local report_unstacking = logreporter("mathematics","unstack")
@@ -1340,7 +1340,7 @@ do
     local indexedsuperscript_code <const> = tex.noadoptioncodes.indexedsuperscript
 
     unstack[noad_code] = function(pointer)
-        local a = getattr(pointer,a_unstack)
+        local a = getattr(pointer,a_mathunstack)
         if a then
             local sup = getsup(pointer)
             local sub = getsub(pointer)
@@ -2457,7 +2457,7 @@ do
                             done = true
                         end
                     end
-                 ::done::
+                  ::done::
                     if done and trace_color then
                      -- w, h, d = getwhd(n)
                      -- local r = newrule(w,h,d,65536)

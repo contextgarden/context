@@ -14,7 +14,7 @@ if not modules then modules = { } end modules ['strc-ref'] = {
 
 -- todo: autoload components when :::
 
-local format, gmatch, match, strip = string.format, string.gmatch, string.match, string.strip
+local format, gmatch, match, strip, gsub = string.format, string.gmatch, string.match, string.strip, string.gsub
 local floor = math.floor
 local rawget, tonumber, type, next = rawget, tonumber, type, next
 local lpegmatch = lpeg.match
@@ -1434,7 +1434,8 @@ implement {
     end
 }
 
-local ctx_useproductuseproduct = commands.useproduct
+----- ctx_useproductuseproduct = commands.useproduct -- oeps, editing glitch
+local ctx_useproduct = commands.useproduct           -- fixed, needs testing
 
 if ctx_useproduct then
 
@@ -2105,36 +2106,68 @@ end
 
 references.identify = identify
 
-local unknowns, nofunknowns, f_valid = { }, 0, formatters["[%s][%s]"]
+local valid   do
 
-function references.valid(prefix,reference,specification,silent)
-    local set, bug = identify(prefix,reference)
-    local unknown = bug or #set == 0
-    if unknown then
-        currentreference = nil -- will go away
-        local str = f_valid(prefix,reference)
-        local u = unknowns[str]
-        if not u then
-            if somefound and not silent then
-                interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+    local unknowns    = { }
+    local nofunknowns = 0
+    local f_valid     = formatters["[%s][%s]"]
+
+    valid = function(prefix,reference,specification,silent)
+        local set, bug = identify(prefix,reference)
+        local unknown = bug or #set == 0
+        if unknown then
+            currentreference = nil -- will go away
+            if not silent then
+                local str = f_valid(prefix,reference)
+                local u = unknowns[str]
+                if not u then
+                 -- if somefound and not silent then
+                    if somefound then
+                        interfaces.showmessage("references",1,str) -- 1 = unknown, 4 = illegal
+                    end
+                    unknowns[str] = 1
+                    nofunknowns = nofunknowns + 1
+                else
+                    unknowns[str] = u + 1
+                end
             end
-            unknowns[str] = 1
-            nofunknowns = nofunknowns + 1
         else
-            unknowns[str] = u + 1
+            set.highlight    = specification.highlight
+            set.newwindow    = specification.newwindow
+            set.layer        = specification.layer
+            currentreference = set[1]
         end
-    else
-        set.highlight    = specification.highlight
-        set.newwindow    = specification.newwindow
-        set.layer        = specification.layer
-        currentreference = set[1]
+        -- we can do the expansion here which saves a call
+        return not unknown
     end
-    -- we can do the expansion here which saves a call
-    return not unknown
-end
 
-function references.checked(prefix,reference,specification)
-    return references.valid(prefix,reference,specification,true)
+    references.valid = valid
+
+    function references.checked(prefix,reference,specification)
+        return valid(prefix,reference,specification,true) -- silent
+    end
+
+    logs.registerfinalactions(function()
+        if nofunknowns > 0 then
+            statistics.register("cross referencing", function()
+                return format("%s identified, %s unknown",nofidentified,nofunknowns)
+            end)
+            local sortedhash = table.sortedhash
+            logs.startfilelogging(report,"missing references")
+            for k, v in table.sortedhash(unknowns) do
+                report("%4i  %s",v,k)
+            end
+            logs.stopfilelogging()
+            if logs.loggingerrors() then
+                logs.starterrorlogging(report,"missing references")
+                for k, v in table.sortedhash(unknowns) do
+                    report("%4i  %s",v,k)
+                end
+                logs.stoperrorlogging()
+            end
+        end
+    end)
+
 end
 
 function references.referenced(prefix,reference)
@@ -2148,7 +2181,7 @@ end
 
 implement {
     name      = "doifelsereference",
-    actions   = { references.valid, ctx_doifelse },
+    actions   = { valid, ctx_doifelse },
     arguments = {
         "string",
         "string",
@@ -2179,27 +2212,6 @@ implement {
     arguments = "2 strings",
     actions   = { references.referenced, ctx_doifelse },
 }
-
-logs.registerfinalactions(function()
-    if nofunknowns > 0 then
-        statistics.register("cross referencing", function()
-            return format("%s identified, %s unknown",nofidentified,nofunknowns)
-        end)
-        local sortedhash = table.sortedhash
-        logs.startfilelogging(report,"missing references")
-        for k, v in table.sortedhash(unknowns) do
-            report("%4i  %s",v,k)
-        end
-        logs.stopfilelogging()
-        if logs.loggingerrors() then
-            logs.starterrorlogging(report,"missing references")
-            for k, v in table.sortedhash(unknowns) do
-                report("%4i  %s",v,k)
-            end
-            logs.stoperrorlogging()
-        end
-    end
-end)
 
 -- The auto method will try to avoid named internals in a clever way which
 -- can make files smaller without sacrificing external references. Some of
@@ -2400,7 +2412,7 @@ implement {
             },
             {
                 "metadata", {
-                    { "kind" },
+                    { "kind", "argument" },
                     { "xmlroot" },
                     { "catcodes", "integer" },
                 },
@@ -2573,7 +2585,7 @@ local function filterreferencedefault()
 end
 
 local function getreferencesectionnumber(reference)
-    if references.valid("",reference,{},false) then
+    if valid("",reference,{},false) then
         local data = currentreference and currentreference.i
         if type(data) == "table" then
             local metadata = data.metadata
@@ -3306,3 +3318,13 @@ function references.pagefromhash(hash,destination,page,actions)
     end
     return page, destination
 end
+
+implement {
+    name      = "replacewildcard",
+ -- public    = true,
+ -- usage     = "value",
+    arguments = "2 arguments",
+    actions = function(original,replacement)
+        context((gsub(original,":*%*",":"..replacement)))
+    end,
+}

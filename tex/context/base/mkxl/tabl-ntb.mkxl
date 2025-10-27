@@ -1792,7 +1792,7 @@
      \localcontrolledloop\plusone\c_tabl_ntb_maximum_col\plusone
        {\advanceby\scratchdimenfour{%
           \tabl_ntb_get_wid\currentloopiterator % no need for expression
-        }
+        }%
         \advanceby\scratchdimenfive{%
           -\tabl_ntb_get_dis\currentloopiterator
           -\d_tabl_ntb_columndistance

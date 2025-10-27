@@ -8,7 +8,7 @@ if not modules then modules = { } end modules ['colo-icc'] = {
 
 -- https://www.color.org/icc32.pdf etc
 
-local char, byte, gsub, match, format, strip = string.char, string.byte, string.gsub, string.match, string.format, string.strip
+local char, strip = string.char, string.strip
 local readstring, readnumber = io.readstring, io.readnumber
 local next = next
 

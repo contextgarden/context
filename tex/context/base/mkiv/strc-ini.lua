@@ -36,7 +36,6 @@ local notcatcodes       = catcodenumbers.notcatcodes
 local txtcatcodes       = catcodenumbers.txtcatcodes
 
 local context           = context
-local commands          = commands
 
 local trace_processors  = false
 local report_processors = logs.reporter("processors","structure")

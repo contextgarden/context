@@ -4,7 +4,7 @@
 
 # include "luametatex.h"
 
-# define SERIAL_METATABLE "serial"
+/*tex See |lmtinterface.h| for |SERIALL_METATABLE_INSTANCE|. */
 
 # ifdef _WIN32
 
@@ -239,11 +239,24 @@
 
 # endif 
 
+static inline serial_data * seriallib_aux_valid(lua_State *L, int i)
+{
+    serial_data * serial = lua_touserdata(L, i);
+    if (serial && lua_getmetatable(L, i)) {
+        lua_get_metatablelua(serial_instance);
+        if (! lua_rawequal(L, -1, -2)) {
+           serial = NULL;
+        }
+        lua_pop(L, 2);
+    }
+    return serial;
+}
+
 static int seriallib_open(lua_State *L)
 {
     serial_data *serial = seriallib_aux_open(L, NULL);
     if (serial) { 
-        luaL_getmetatable(L, SERIAL_METATABLE);
+        lua_get_metatablelua(serial_instance);
         lua_setmetatable(L, -2);
     } else { 
         lua_pushnil(L);
@@ -253,7 +266,7 @@ static int seriallib_open(lua_State *L)
 
 static int seriallib_send(lua_State *L)
 {
-    serial_data *serial = (serial_data *) luaL_checkudata(L, 1, SERIAL_METATABLE);
+    serial_data *serial = seriallib_aux_valid(L, 1);
     int success = 0;
     if (serial && ! serial->closed) {
         size_t      length   = 0;
@@ -268,7 +281,7 @@ static int seriallib_send(lua_State *L)
 
 static int seriallib_close(lua_State *L) /* maybe use the onclose method */
 {
-    serial_data *serial = (serial_data *) luaL_checkudata(L, 1, SERIAL_METATABLE);
+    serial_data * serial = seriallib_aux_valid(L, 1);
     if (serial && ! serial->closed) {
         serial->closed = 1;
         seriallib_aux_close(serial);
@@ -277,7 +290,7 @@ static int seriallib_close(lua_State *L) /* maybe use the onclose method */
 }
 
 static int seriallib_tostring(lua_State *L) {
-    serial_data *serial = (serial_data *) luaL_checkudata(L, 1, SERIAL_METATABLE);
+    serial_data * serial = seriallib_aux_valid(L, 1);
     if (serial && ! serial->closed) {
         const char *port;
         lua_getiuservalue(L, 1, 1);
@@ -307,7 +320,7 @@ static const luaL_Reg seriallib_function_list[] =
 
 int luaopen_serial(lua_State *L)
 {
-    luaL_newmetatable(L, SERIAL_METATABLE);
+    luaL_newmetatable(L, SERIAL_METATABLE_INSTANCE);
     luaL_setfuncs(L, seriallib_function_list, 0);
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);

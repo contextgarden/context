@@ -49,7 +49,6 @@ local report_strings    = logs.reporter("publications","strings")
 
 local allocate          = utilities.storage.allocate
 
-local commands          = commands
 local implement         = interfaces and interfaces.implement
 
 publications            = publications or { }

@@ -504,6 +504,22 @@ do
         end
     end
 
+    function feedback.info()
+        report()
+        for index, name in sortedhash(indices) do
+            report("index %02i, name %a, category %a",index,name,states[name].category)
+        end
+        report()
+    end
+
+    statistics.register("feedback",function()
+        if environment.initex then
+            report()
+            report("registered feedback states:")
+            feedback.info()
+        end
+    end)
+
     feedback.register { name = "module",  index = 6, category = "performance"  }
     feedback.register { name = "badnews", index = 7, category = "interference" }
 

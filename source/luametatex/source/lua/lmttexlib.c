@@ -1862,6 +1862,58 @@ static int texlib_getfloat(lua_State *L)
     return 1;
 }
 
+# if track_attributes
+
+static int texlib_trackedattribute(lua_State *L)
+{
+    /*tex When we don't know we assume usage! */
+    halfword index = lua_tointeger(L, 1);
+    lua_pushboolean(L, 
+         index >= 0 && index < max_attribute_register_index  
+      ?  lmt_node_memory_state.attributes[index] > 0
+      : 1
+    );
+    return 1;
+}
+
+static int texlib_attributetracking(lua_State *L)
+{
+    /*tex When we don't know we return false! */
+    if (lua_gettop(L) == 0) {
+        lua_pushinteger(L, lmt_node_memory_state.max_used_attribute);
+    } else {
+        halfword index = lua_tointeger(L, 1);
+        if (index >= 0 && index < max_attribute_register_index) {
+            lua_pushinteger(L, lmt_node_memory_state.attributes[index]);
+        } else { 
+            lua_pushboolean(L, 0);
+        }
+    }
+    return 1;
+}
+
+# else
+
+static int texlib_trackedattribute(lua_State *L)
+{
+    /*tex When we don't know we assume usage! */
+    lua_pushboolean(L, 1);
+    return 1;
+}
+
+static int texlib_attributetracking(lua_State *L)
+{
+    /*tex When we don't know we return false! */
+    if (lua_gettop(L) == 0) {
+        lua_pushinteger(L, lmt_node_memory_state.max_used_attribute);
+    } else {
+        lua_pushboolean(L, 0);
+    }
+    return 1;
+}
+
+# endif 
+
 static int texlib_isattribute(lua_State *L)
 {
     return texlib_aux_checked_register(L, register_attribute_cmd, register_attribute_base, max_attribute_register_index, -1);
@@ -1995,12 +2047,9 @@ static int texlib_getmark(lua_State *L)
             if (index >= 0 && index <= lmt_mark_state.mark_data.ptr) {
                 halfword ptr = tex_get_some_mark(mark, index);
                 if (ptr) {
-                    char *str = tex_tokenlist_to_tstring(ptr, 1, NULL, 0, 0, 0, 0, 1); /* single hashes */
-                    if (str) {
-                        lua_pushstring(L, str);
-                    } else {
-                        lua_pushliteral(L, "");
-                    }
+                    int size = 0;
+                    char *str = tex_tokenlist_to_tstring(ptr, 1, &size, 0, 0, 0, 0, 1); /* single hashes */
+                    lua_pushlstring(L, str ? str : "", (size_t) size);
                     return 1;
                 }
             } else {
@@ -4502,7 +4551,7 @@ static int texlib_linebreak(lua_State *L)
         get_penalties_par (properties.orphan_penalties,             orphanpenalties,           tex_get_par_par(par, par_orphan_penalties_code), orphan_penalties_code);
         get_demerits_par  (properties.fitness_classes,              fitnessclasses,            tex_get_par_par(par, par_fitness_classes_code), fitness_classes_code);
         get_demerits_par  (properties.adjacent_demerits,            adjacentdemerits,          tex_get_par_par(par, par_adjacent_demerits_code), adjacent_demerits_code);
-        get_demerits_par  (properties.orphan_line_factors,          orphanlinefactors,         tex_get_par_par(par, par_orphan_line_factors_code), orphan_line_factors_code);
+        get_penalties_par (properties.orphan_line_factors,          orphanlinefactors,         tex_get_par_par(par, par_orphan_line_factors_code), orphan_line_factors_code);
         get_par_passes_par(properties.par_passes,                   parpasses,                 line_break_passes_par > 0 ? tex_get_par_par(par, par_par_passes_code) : null);
         get_integer_par   (properties.line_break_checks,            linebreakchecks,           tex_get_par_par(par, par_line_break_checks_code));
         get_integer_par   (properties.line_break_optional,          linebreakoptional,         line_break_optional_par); /* hm */
@@ -4568,16 +4617,16 @@ static int texlib_linebreak(lua_State *L)
             lua_settable(L, -3);
         }
         tex_pop_nest();
-        if (properties.par_shape               != tex_get_par_par(par, par_par_shape_code))               { tex_flush_node(properties.par_shape); }
-        if (properties.inter_line_penalties    != tex_get_par_par(par, par_inter_line_penalties_code))    { tex_flush_node(properties.inter_line_penalties); }
-        if (properties.club_penalties          != tex_get_par_par(par, par_club_penalties_code))          { tex_flush_node(properties.club_penalties); }
-        if (properties.widow_penalties         != tex_get_par_par(par, par_widow_penalties_code))         { tex_flush_node(properties.widow_penalties); }
-        if (properties.display_widow_penalties != tex_get_par_par(par, par_display_widow_penalties_code)) { tex_flush_node(properties.display_widow_penalties); }
-        if (properties.broken_penalties        != tex_get_par_par(par, par_broken_penalties_code))        { tex_flush_node(properties.broken_penalties); }
-        if (properties.orphan_penalties        != tex_get_par_par(par, par_orphan_penalties_code))        { tex_flush_node(properties.orphan_penalties); }
-        if (properties.fitness_classes         != tex_get_par_par(par, par_fitness_classes_code))         { tex_flush_node(properties.fitness_classes); }
-        if (properties.adjacent_demerits       != tex_get_par_par(par, par_adjacent_demerits_code))       { tex_flush_node(properties.adjacent_demerits); }
-        if (properties.orphan_line_factors     != tex_get_par_par(par, par_orphan_line_factors_code))     { tex_flush_node(properties.orphan_line_factors); }
+        if (properties.par_shape               != tex_get_par_par(par, par_par_shape_code))               { tex_flush_specification_node(properties.par_shape); }
+        if (properties.inter_line_penalties    != tex_get_par_par(par, par_inter_line_penalties_code))    { tex_flush_specification_node(properties.inter_line_penalties); }
+        if (properties.club_penalties          != tex_get_par_par(par, par_club_penalties_code))          { tex_flush_specification_node(properties.club_penalties); }
+        if (properties.widow_penalties         != tex_get_par_par(par, par_widow_penalties_code))         { tex_flush_specification_node(properties.widow_penalties); }
+        if (properties.display_widow_penalties != tex_get_par_par(par, par_display_widow_penalties_code)) { tex_flush_specification_node(properties.display_widow_penalties); }
+        if (properties.broken_penalties        != tex_get_par_par(par, par_broken_penalties_code))        { tex_flush_specification_node(properties.broken_penalties); }
+        if (properties.orphan_penalties        != tex_get_par_par(par, par_orphan_penalties_code))        { tex_flush_specification_node(properties.orphan_penalties); }
+        if (properties.fitness_classes         != tex_get_par_par(par, par_fitness_classes_code))         { tex_flush_specification_node(properties.fitness_classes); }
+        if (properties.adjacent_demerits       != tex_get_par_par(par, par_adjacent_demerits_code))       { tex_flush_specification_node(properties.adjacent_demerits); }
+        if (properties.orphan_line_factors     != tex_get_par_par(par, par_orphan_line_factors_code))     { tex_flush_specification_node(properties.orphan_line_factors); }
         return 2;
     } else {
         tex_formatted_warning("linebreak", "[ par ... ] expected");
@@ -6556,16 +6605,17 @@ static int texlib_getmathvariantpresets(lua_State *L)
 
 static int texlib_getspecificationoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 7);
-    lua_set_string_by_index(L, specification_option_repeat,  "repeat");
-    lua_set_string_by_index(L, specification_option_double,  "double");
-    lua_set_string_by_index(L, specification_option_largest, "largest");
-    lua_set_string_by_index(L, specification_option_presets, "presets");
-    lua_set_string_by_index(L, specification_option_integer, "integer");
-    lua_set_string_by_index(L, specification_option_final,   "final");
-    lua_set_string_by_index(L, specification_option_default, "default");
-    lua_set_string_by_index(L, specification_option_ignore,  "ignore");
-    lua_set_string_by_index(L, specification_option_rotate,  "rotate");
+    lua_createtable(L, 2, 8);
+    lua_set_string_by_index(L, specification_option_repeat,   "repeat");
+    lua_set_string_by_index(L, specification_option_double,   "double");
+    lua_set_string_by_index(L, specification_option_largest,  "largest");
+    lua_set_string_by_index(L, specification_option_presets,  "presets");
+    lua_set_string_by_index(L, specification_option_integer,  "integer");
+    lua_set_string_by_index(L, specification_option_final,    "final");
+    lua_set_string_by_index(L, specification_option_default,  "default");
+    lua_set_string_by_index(L, specification_option_ignore,   "ignore");
+    lua_set_string_by_index(L, specification_option_rotate,   "rotate");
+    lua_set_string_by_index(L, specification_option_constant, "constant");
     return 1;
 }
 
@@ -7057,6 +7107,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "ismuglue",                     texlib_ismuglue                       },
     { "setmuglue",                    texlib_setmuglue                      },
     { "getmuglue",                    texlib_getmuglue                      },
+    { "trackedattribute",             texlib_trackedattribute               },
+    { "attributetracking",            texlib_attributetracking              },
     { "isattribute",                  texlib_isattribute                    },
     { "setattribute",                 texlib_setattribute                   },
     { "getattribute",                 texlib_getattribute                   },
@@ -7332,7 +7384,7 @@ defineindexers(nest)
 
 /*tex
     At some point the |__index| and |__newindex |below will go away so that we no longer get
-    interferences when we extedn the |tex| table.
+    interferences when we extend the |tex| table.
 */
 
 int luaopen_tex(lua_State *L)

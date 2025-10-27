@@ -1,0 +1,361 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-bonds
+
+\chapter{Bonds}
+
+{\em Let me know if some bolds are not mentioned here an needs to gbe discussed.
+As the is an update from the older syntax there might be errors, so you can also
+send me fixes.}
+
+This chapter gives an overview of the bonds you can use in structures. From the
+examples throughout this manual the use of the different keys will become more
+meaningful. There is a clear pattern in the specifications so we start with an
+example where \type {S} means single and \type {D} refers to double. The signs
+influence the attachment (or length for that matter).
+
+\startlinecorrection
+\startcombination[nx=3,ny=1]
+    {\startchemical[width=5000] \chemical[SIX,  B, SR14, RD25, RB36,RZ][1,2,3,4,5,6] \stopchemical} {\type{B,SR14,RD25,RB36,RZ}}
+    {\startchemical[width=5000] \chemical[SIX, SB, SR14, RD25, RB36,RZ][1,2,3,4,5,6] \stopchemical} {\type{SB,SR14,RD25,RB36,RZ}}
+    {\startchemical[width=5000] \chemical[SIX, DB,+SR14,+RD25,+RB36,RZ][1,2,3,4,5,6] \stopchemical} {\type{DB,+SR14,+RD25,+RB36,RZ}}
+\stopcombination
+\stoplinecorrection
+
+Bonds always have two alternatives: a long and a short version. The shortened
+bonds leave room to place atoms within a structure. A number of bonds can be
+shortened on both sides left (\type {-}) or right (\type {+}).
+
+\startplacetable[title={Single bonds.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~~B \VL Bond          \VL ~~SB \VL Single Bond       \VL\FR
+        \VL ~~BB \VL Bold Bond     \VL ~-SB \VL Left Single Bond  \VL\MR
+        \VL ~~HB \VL Hydrogen Bond \VL ~+SB \VL Right Single Bond \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+The example below shows a number of bonds combined within one structure:
+
+\startbuffer
+\startchemical[frame=on,width=3000]
+  \chemical[ONE,SD1,SB4,BB2,SB7,Z01247][C,H,H,H,H]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+A bond can be followed by one or more numbers or a range, for example: \type
+{B1}, \type {B135} and \type {B1..5}. When you want to draw all bonds you can
+type~\type {B}.
+
+Within a ring structure you can define extra bonds between atoms, for example
+a double or triple bond.
+
+\startplacetable[title={Multiple bonds.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~EB \VL Extra Bond    \VL ~~DB \VL Double Bond       \VL\FR
+        \VL      \VL               \VL ~~TB \VL Triple Bond       \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+Free electrons and electron pairs can be defined in different ways. The
+accompanying keywords start with an~\type {E}.
+
+\startplacetable[title={Free electrons and electron pairs.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~ES \VL Extra Single  \VL ~~ED \VL Extra Double \VL\FR
+        \VL ~~EP \VL Extra Pair    \VL ~~ET \VL Extra Triple \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+The example below shows a carbon atom with 8~outer electrons arranged in a
+chemically very peculiar way.
+
+\startbuffer
+\startchemical[frame=on,width=2000,height=2000]
+  \chemical[ONE,Z0,ES1,ED3,ET5,EP7][C]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Within a ring structure you can make a shortcut from one atom to another. In
+that case the atom that you want to skip has to be identified. As a
+replacement of the double bonds in an aromatic sixring a circle can be drawn
+and charges can be placed within the ring.
+
+\startplacetable[title={Special bonds.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~SS \VL Short Shortcut       \VL ~~~S \VL Shortcut            \VL\FR
+        \VL ~-SS \VL Left Short Shortcut  \VL ~MID \VL Open Mid Shortcut   \VL\MR
+        \VL ~+SS \VL Right Short Shortcut \VL MIDS \VL Closed Mid Shortcut \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+\startplacetable[title={Circle bonds.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~~C \VL Circle               \VL ~~CD \VL Dashed Circle          \VL\FR
+        \VL ~~CC \VL Shifted Circle       \VL ~CCD \VL Dashed Shifted Circle  \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+An example will explain the use of the circular bond and the use of displaced
+charges.
+
+\writestatus{SIX}{make CCD better}
+
+\startbuffer
+\startchemical[frame=on,width=3000]
+  \chemical
+    [SIX,B,+ER6,CCD12,Z0,SUB6,ONE,SB8,EP6,Z0,ZT6,Z8]
+    [\ominus,O,\oplus,H]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Substituents can be connected to all corners of a structure. A substituent
+can be anything you want. It depends on the presence of atoms or molecules
+whether the bonds are long or short. In the examples you will see a great
+number of the keys that are used to define substituents.
+
+\startplacetable[title={Bonds to substituents.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~~R \VL Radical       \VL ~~SR \VL Single Radical       \VL\FR
+        \VL ~~-R \VL Left Radical  \VL ~-SR \VL Single Left Radical  \VL\MR
+        \VL ~~+R \VL Right Radical \VL ~+SR \VL Single Right Radical \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+There are a few alternatives to draw bridges.
+
+\startplacetable[title={Special bonds to substituents.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~RD \VL Radical Dashed       \VL ~~RB\VL Radical Bold       \VL\FR
+        \VL ~-RD \VL Left Radical Dashed  \VL ~-RB\VL Left Radical Bold  \VL\MR
+        \VL ~+RD \VL Right Radical Dashed \VL ~+RB\VL Right Radical Bold \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+Radicals can be drawn in three ways.\footnote {The word radical schould not be
+interpreted chemically, but typographically.} Some alternatives are seldom
+used.
+
+\startbuffer
+\startchemical[frame=on,width=4000,height=4000]
+  \chemical[SIX,B,R14,+RD25,+RB36]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startplacetable[title={More special bonds to substituents.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~SD \VL Single Dashed \VL ~LDD \VL Left Double Dashed  \VL\FR
+        \VL ~~OE \VL Open Ended    \VL ~RDD \VL Right Double Dashed \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+An example of an {\em Open Ended} is defined below. We see a sixring (\type
+{SIX}) with a number of consecutive \type {ONE}s. The use of \type {PB} is
+explained later.
+
+
+% startchemical[width=5000,top=2500,bottom=1500,frame=on]
+%   \chemical
+%     [SIX,B,C,R6,PB:RZ6,ONE,CZ0,OE1,SB5,MOV5,CZ0,OFF5,OE5,PE]
+%     [CH,CH_2]
+% \stopchemical
+
+\startbuffer
+\startchemical
+    [width=4000,right=1500,
+     top=2500,bottom=1500,
+     frame=on]
+  \chemical
+    [SIX,
+     B,C,+SR6,
+     SUB6,ONE,CZ0,OE1,SB5,MOV5,CZ0,OFF5,OE5]
+    [CH,CH_2]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+It's obvious that substituents can be attached to the structure by means of
+double bonds.
+
+\startplacetable[title={Double bonds to substituents.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~ER \VL Extra Radical \VL ~~DR \VL Double Radical \VL\SR
+        \HL
+    \stoptable
+\stopplacetable
+
+You can comment on a bond. Text is typed in the second argument of \type
+{\chemical}.
+
+\startplacetable[title={Atoms and molecules (radicals).}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~~Z \VL Atom        \VL ~~RZ \VL Radical Atom       \VL\FR
+        \VL ~CRZ \VL Center Atom \VL ~-RZ \VL Left Radical Atom  \VL\MR
+        \VL MIDZ \VL Mid Atom    \VL ~+RZ \VL Right Radical Atom \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+From these keys \type {RZ} is an addition to the key \type {R}. The key
+\type {MID} is only available in combination with a sixring (\type {SIX}). In
+the example below we see the effects of \type {MID} and \type {MIDZ}. These
+keys have no positioning parameter.
+
+\startbuffer
+\startchemical[frame=on,width=2500,height=2500]
+  \chemical[SIX,B,MID,MIDZ][\SL{CH_2}]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Atoms and molecules are numbered clockwise. Combinations are also allowed.
+Position \type {0} (zero) is the middle of a structure.
+
+We can attach labels and numbers to an atom or a bond. This is done with \type
+{ZN} and \type {ZT}:
+
+\startplacetable[title={Labels and numbers.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~ZN \VL Atom Number \VL ~~ZT \VL Atom Text \VL\SR
+        \HL
+    \stoptable
+\stopplacetable
+
+In case of a \type {SIX} and a \type {FIVE} we can also attach text to radicals.
+We use \type {RN} and \type {RT}.
+
+\startplacetable[title={Labels and numbers.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~RN \VL Radical Number        \VL ~~RT \VL Radical Text        \VL\FR
+        \VL ~RTN \VL Radical Top Number    \VL ~RTT \VL Radical Top Text    \VL\MR
+        \VL ~RBN \VL Radical Bottom Number \VL ~RBT \VL Radical Bottom Text \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+The structure \type{ONE} has also a top and bottom alternative.
+
+\startplacetable[title={Extra labels and numbers.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~ZTN \VL Atom Top Number    \VL ~ZTT \VL Atom Top Text    \VL\FR
+        \VL ~ZBN \VL Atom Bottom Number \VL ~ZBT \VL Atom Bottom Text \VL\LR
+        \HL
+    \stoptable
+\stopplacetable
+
+With the keys \type {ZTN} and \type {ZBN} numbers are generated automatically.
+The other keys will use the typed text of the second argument of \type
+{chemical}.
+
+\startbuffer
+\startchemical[frame=on,width=2500,height=2500]
+  \chemical[ONE,SB,Z0,ZTT][C,a,b,c,d,e,f,g,h]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+You can also add some symbols to the structure.
+
+\startplacetable[title={Indications.}]
+    \starttable[|rT|lw(4cm)|rT|lw(4cm)|]
+        \HL
+        \VL ~~AU \VL Arrow Up \VL ~~AD \VL Arrow Down \VL\SR
+        \HL
+    \stoptable
+\stopplacetable
+
+The arrows are positioned between the atoms in a structure.
+
+\startbuffer
+\startchemical[frame=on,width=2500,height=2500]
+  \chemical[SIX,B,AU]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+We want to add that while typesetting atoms and molecules the dimensions of these
+atoms and molecules are taken into account. The width of \chemical {C} and the
+height of \chemical {C^n_m} play an important role during positioning. This
+mechanism may be refined in a later stage.
+
+\stopcomponent

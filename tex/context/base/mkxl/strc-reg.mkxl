@@ -312,7 +312,7 @@
    \glet\currentregistername\currentregister
    \xdef\currentregisternumber{\clf_storeregister % 'own' should not be in metadata
         metadata {%
-            name     {\currentregister}%
+            name     \currentregister % argument
             coding   {\currentregistercoding}%
         \ifx\currentregisterownnumber\v!yes
             own      {\registerparameter\c!alternative}% can be used instead of pagenumber
@@ -390,7 +390,7 @@
    \xdef\currentregisternumber{\clf_storeregister
      {%
         metadata {%
-          name {\currentregister}%
+          name \currentregister % argument
         }
         entries {%
           entry {#2}%
@@ -494,7 +494,7 @@
    \glet\currentregistername\currentregister
    \clf_extendregister { % 'own' should not be in metadata
         metadata {%
-            name     {\currentregister}%
+            name     \currentregister % argument
             coding   {\currentregistercoding}%
         \ifx\currentregisterownnumber\v!yes
             own      {\registerparameter\c!alternative}% can be used instead of pagenumber
@@ -606,8 +606,8 @@
    % we could consider storing register entries in list
    \edef\temp{\clf_storeregister{% \temp grabs the nofentries
      metadata {%
-         kind {see}%
-         name {\currentregister}%
+         kind \s!see
+         name \currentregister
      }%
      references {%
 %         view  {\interactionparameter\c!focus}%
@@ -1605,7 +1605,7 @@
 %    \glet\currentregistername\currentregister
 %    \xdef\currentregisternumber{\clf_storeregister % 'own' should not be in metadata
 %         metadata {%
-%             name     {\currentregister}%
+%             name     \currentregister
 %             coding   {\currentregistercoding}%
 %         \ifx\currentregisterownnumber\v!yes
 %             own      {\registerparameter\c!alternative}% can be used instead of pagenumber

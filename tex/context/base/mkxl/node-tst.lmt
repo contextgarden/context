@@ -92,6 +92,6 @@ end
 
 nodes.leftmarginwidth  = nodes.vianuts(nuts.leftmarginwidth)
 nodes.rightmarginwidth = nodes.vianuts(nuts.rightmarginwidth)
-nodes.somespace        = nodes.vianuts(nuts.somespace)
-nodes.somepenalty      = nodes.vianuts(nuts.somepenalty)
+nodes.somespace        = nodes.vianuts(nuts.somespace)        -- obsolete (use nuts)
+nodes.somepenalty      = nodes.vianuts(nuts.somepenalty)      -- obsolete (use nuts)
 nodes.is_display_math  = nodes.vianuts(nuts.is_display_math)

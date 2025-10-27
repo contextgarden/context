@@ -135,6 +135,8 @@
 
 % lmmonoltcond10regular 4pt
 
+\newbox\visualizerbox
+
 \mutable\lettonothing\visualizerfont
 
 \permanent\tolerant\protected\def\setvisualizerfont[#1]% somename at 4pt
@@ -147,8 +149,14 @@
    \clf_setvisualfont\fontid\font
    \endgroup}
 
+% \def\syst_v_p_indeed#1%
+%   {\setbox\visualizerbox\hpack{\visualizerfont#1}}
+
 \def\syst_v_p_indeed#1%
-  {\setbox\scratchbox\hpack{\visualizerfont#1}}
+  {\begingroup
+   \c_attr_visual\attributeunsetvalue
+   \global\setbox\visualizerbox\hpack{\visualizerfont#1}%
+   \endgroup}
 
 \def\syst_v_p
   {\definefrozenfont[visualizerfont][lmmonoltcond10regular @ 4pt]%

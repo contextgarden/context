@@ -271,7 +271,7 @@ local flush_character, flush_space  do
         -- we assume resolved fonts: id mandate but maybe also size
 
         local function flushchar(fnt,chr,csx,csy,slnt) -- can't be moved out of the function due to binding locals
-            if fnt then                           -- to the function variables etc etc ... kind of messy
+            if fnt then                                -- to the function variables etc etc ... kind of messy
                 local nest = char ~= chr or font ~= fnt
                 if fnt == 0 then
                     fnt = main
@@ -930,7 +930,7 @@ local boxh = pos_h
                 local gluewidth = effectiveglue(current,this_box,true)
                 if gluewidth ~= 0 then
                     if subtype >= leaders_code then
-                        local leader = getleader(current)
+                        local leader = getleader(current) -- could also return id
                         if leader then
                             local id = getid(leader)
                             if id == rule_code then
@@ -1257,7 +1257,7 @@ local boxh = pos_h
              -- end
             elseif id == rule_code then
                 local width, height, depth, virtual = getruledimensions(current)
-                if width > 0 then
+                if width ~= 0 then
                     local runningheight = height == runningrule
                     local runningdepth  = depth  == runningrule
                     if runningheight then
@@ -1669,7 +1669,7 @@ local boxh = pos_h
                     if runningwidth then
                         width = boxwidth
                     end
-                    if width > 0 then
+                    if width ~= 0 then
                         local xoffset, yoffset, left, right, on, off = getoffsets(current)
                         if not virtual then
                             if left ~= 0 then

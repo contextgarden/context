@@ -147,7 +147,7 @@ local xmltexthandler = xmlnewhandlers {
     finalize   = function()
         return concat(result)
     end,
-    handle     = function(...)
+    handle     = function(...) -- ... | t
         result[#result+1] = concat { ... }
     end,
     escape     = false,

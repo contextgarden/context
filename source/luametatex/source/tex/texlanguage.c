@@ -591,7 +591,7 @@ static halfword tex_aux_insert_syllable_discretionary(halfword t, language_varia
     disc_penalty(n) = hyphen_penalty_par;
     tex_couple_nodes(n, node_next(t));
     tex_couple_nodes(t, n);
-    tex_attach_attribute_list_attribute(n, get_attribute_list(t));
+    tex_attach_attribute_list_attribute(n, node_attr(t));
     if (lan->pre_hyphen_char > 0) {
         halfword g = tex_new_glyph_node(glyph_unset_subtype, glyph_font(t), lan->pre_hyphen_char, t);
         tex_set_disc_field(n, pre_break_code, g);

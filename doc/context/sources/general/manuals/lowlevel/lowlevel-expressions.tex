@@ -1,0 +1,453 @@
+% language=us runpath=texruns:manuals/lowlevel
+
+\environment lowlevel-style
+
+\startdocument
+  [title=expressions,
+   color=darkorange]
+
+\startsectionlevel[title=Introduction]
+
+Below we will discuss the traditional arithmetic operations brought by
+traditional \TEX, the simple expressions introduced by \ETEX, and two more
+advanced expression scanners available in \LUAMETATEX. There is some overlap
+with other manuals.
+
+Before we start mentioning the basic traditional primitives, we need to mention
+that whenever we talk about a number, we actually mean an integer. It can be a
+sequence of tokens, a traditional register (\type {\count} and \type
+{\countdef}), an internal quantity, a hash based integer (think \typ
+{\integerdef}). A dimension is internally just an integer but in the case of
+points interpreted as a \type {16.16} floating point number. Glue is like a
+dimension but as a basic amount, stretch, shrink, and fill properties. A mu-glue
+is like a glue but targets math: it has a multiplier dependent on the current
+math style. A float or posit is also an integer but in fact is a floating point
+number with moving decimal fraction with as much precision as possible. More
+about all this in the lowlevel manual about registers.
+
+{\em I will/can add to this chapter when needed/on-demand.}
+
+\stopsectionlevel
+
+\startsectionlevel[title={Primitives}]
+
+In the 2025 \CONTEXT\ code base with 536 files we use \type {\advance} about 700
+times in 119 files, \type {\multiply} 13 times in 7 files and \type {\divide} 51
+times in 22 files. Of course we also use a lot of expressions but these are the
+fast basic primitives. The next usage cases are equivalent:
+
+\starttyping[option=TEX]
+\advance  \scratchcounter by 10
+\advance  \scratchcounter    10
+\advanceby\scratchcounter    10
+\stoptyping
+
+You might think that the first one is slow because of the scanning of the
+optional keyword \type {by} but that is not true. The \type {\advance} primitive
+picks up a quantity (here \type {\scratchcounter} and then checks if there is a
+keyword. When that is not the case it will push back what it read and starts
+scanning for a value. Although in \LUAMETATEX\ this is more optimized than in
+other engines, it still is kind of suboptimal. That is why we have \type
+{\advanceby} which doesn't expect a keyword at all. It is the fastest of the
+three variants. Does this matter when we have so little usage? Actually, usage
+depends on where it's used. If for instance we construct a table and keep track
+of rows and columns, a lot of incrementing and decrementing by one happens. So
+much that we actually considered a dedicated primitive but adding two (addition
+and subtraction) made little sense in the end, unless one wants to minimize
+tracing. \footnote {Some additions to the engine indeed relate to limiting
+tracing because with complex macros one can end up with thousands of
+somewhat redundant looking lines otherwise.}
+
+Of course we also have \type {\multiplyby} and \type {\divideby}. The division is
+sort of special and in the \ETEX\ expressions the \type {/} is not compatible, so
+for that reason we have explicit primitives: \type {\rdivide}, \type
+{\rdivideby}, \type {\edivide} and \type {\edivideby}, just to stress the issue.
+
+\def\TestD#1#2%
+  {\BC #1
+   \BC #2
+   \NC \dimen2 #1 \divide \dimen2     #2 \the\dimen2
+   \NC \dimen2 #1 \rdivide\dimen2     #2 \the\dimen2
+   \NC \dimen2 #1 \edivide\dimen2     #2 \the\dimen2
+   \NC \dimen2 #1 \the\dimexpr\dimen2/#2 \relax
+   \NC \dimen2 #1 \the\dimexpr\dimen2:#2 \relax \NC \NR}
+
+\def\TestN#1#2%
+  {\BC #1
+   \BC #2
+   \NC \count2 #1 \divide \count2     #2 \the\count2
+   \NC \count2 #1 \rdivide\count2     #2 \the\count2
+   \NC \count2 #1 \edivide\count2     #2 \the\count2
+   \NC \count2 #1 \the\numexpr\count2/#2 \relax
+   \NC \count2 #1 \the\numexpr\count2:#2 \relax \NC \NR}
+
+\starttabulate[|c|c|c|c|c|c|c|]
+\FL
+\NC \NC \BC divide  \BC rdivide \BC edivide \BC expr / \BC expr : \BC \NR
+\SL
+\TestD{1pt}{2}
+\TestD{2pt}{2}
+\TestD{3pt}{2}
+\TestD{2pt}{3}
+\TestD{5pt}{2}
+\ML
+\TestN{1}  {2}
+\TestN{2}  {2}
+\TestN{3}  {2}
+\TestN{2}  {3}
+\TestN{5}  {2}
+\LL
+\stoptabulate
+
+One can debate the logic and choices but this is what one gets. Attributes act
+like integers, glue like dimensions, and floats always round. In expressions the
+\type {:} is offered as variant for \type {/}.
+
+Before we move to expressions we like to stress that internally a dimension is
+just an integer which means that when it makes sense the engine will treat a
+dimension as number. Those numbers than are equivalent to scaled points.
+
+\startbuffer
+[\number\dimexpr 5sp \relax]
+[\number\numexpr 5   \relax]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Both cases give the same: \inlinebuffer. A cast works one way:
+
+\starttyping[option=TEX]
+\scratchcounter                 \scratchdimen   % ok
+\scratchcounter \plusone        \scratchdimen   % not ok
+\scratchcounter \plusone        \scratchcounter % not ok
+\scratchdimen   \scratchcounter \onepoint       % ok
+\scratchdimen   \scratchcounter                 % not ok
+\stoptyping
+
+When scanning for a dimension this assignment parser really expects a dimen but
+it first scans for multiplier which can be a integer variable or a given number
+(which can have a fraction).
+
+\stopsectionlevel
+
+\startsectionlevel[title={\type {\...expr}}]
+
+We already mentioned the \ETEX\ expr scanner. It is somewhat limited and
+is sensitive for what comes first. So, for instance in the following code:
+
+\starttyping[option=TEX]
+\scratchdimen \dimexpr 2 * 10pt \relax
+\scratchdimen \dimexpr 10 * 2pt \relax
+\stoptyping
+
+the first line triggers an error because the scanner expects to start out with a
+dimension. This is inconvenient and one of the reasons why we have alternative
+scanners.
+
+The possible operators are \type {+}, \type {-} (also as unary minus), \type {*}
+and \type {/}. In addition to the standard we provide \type {:} for integer
+division and \type {;} (or a percent sign with catcode \quote {other}) for the
+remainder. \footnote {Currently setting \type {\etexexprmode} to a non-zero value
+disables this feature because non-\CONTEXT\ users that use a semi colon as
+sentinel complained about this feature, but we might eventually remove that
+mode.}
+
+You can use parenthesis for sub-expressions and because when we scan for a value
+we interpret curly braces as \type {\numexpression} or \type {\dimexpression},
+you can actually also use those. This means that:
+
+\startbuffer
+\the \dimexpr 10pt + (20pt * 2) \relax
+\the \dimexpr 10pt + {2 * 20pt} \relax
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+is valid and gives:
+
+\startlines
+\getbuffer
+\stoplines
+
+while the next would fail here:
+
+\starttyping[option=TEX]
+\the \dimexpr 10pt + (2 * 20pt) \relax
+\stoptyping
+
+The lack of floating point support in \TEX\ is due to the fact that at that time
+there was no standardized approach. In \LUAMETATEX\ we do have floats but there
+we actually use posits. These are floats encoded in an integer with a high
+precision while still providing support for huge numbers (at a lower accuracy).
+They are (currently) of course slower than native floats but we can comfortably
+carry them around in the data structures that \TEX\ uses (which use integers).
+
+\startbuffer
+\thewithoutunit\dimexpr   10.2pt + 12.4pt      \relax
+\thewithoutunit\dimexpr   10.2pt + 12.400001pt \relax
+\the           \floatexpr 10.2   + 12.4        \relax
+\the           \floatexpr 10.2   + 12.400001   \relax
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The output shows the difference.
+
+\startlines
+\getbuffer
+\stoplines
+
+Of course one can wonder if this all makes sense in \TEX\ and indeed it is not
+used frequently in \CONTEXT. This is due to the fact that existing mechanisms
+work around this limitation and in \MKIV\ we could delegate some to \LUA. I admit
+that adding posits (that were already on my retina for a while) also was a way to
+experiment with them.
+
+% \type {\numexpr}
+% \type {\dimexpr}
+% \type {\glueexpr}
+% \type {\muexpr}
+% \type {\floatexpr}
+
+\stopsectionlevel
+
+\startsectionlevel[title={\type {\...expression}}]
+
+One of the annoyances of the \ETEX\ \type {\dimexpr} extension is that order
+matters and is not always intuitive when exposed to users. The \type
+{\dimexpression} variant is more tolerant.
+
+\startbuffer
+\the\dimexpression { 100 * 2pt }
+\the\dimexpression { 100pt * 2 }
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Give \inlinebuffer\ as expected. But there is more. The next table lists the possible
+operators. Some make no sense for dimensions so consider them undefined.
+
+% logical_nor_token       0x22BD ⊽
+% logical_nand_token      0x22BC ⊼
+% logical_xnor_token      0x2299 ⊙
+%
+% element_token           0x2208 ∈
+% not_element_token       0x2209 ∉
+% not_less_or_equal_token 0x2270 ≰
+% not_more_or_equal_token 0x2271 ≱
+
+\starttabulate[|T|||c|c|]
+\BC operator                                  \NC          \BC effect           \BC number \BC dimension \NC \NR
+\NC +                                         \NC          \NC unary plus       \NC \star  \NC \star     \NC \NR
+\NC -                                         \NC          \NC unary minus      \NC \star  \NC \star     \NC \NR
+\NC not !    \lettertilde                     \NC          \NC logical negation \NC \star  \NC           \NC \NR
+\NC npm      \pm                              \NC U+00B1 ± \NC force negative   \NC \star  \NC           \NC \NR
+\NC nmp      \mp                              \NC U+2213 ∓ \NC force positive   \NC \star  \NC           \NC \NR
+\NC mod ;    \letterpercent                   \NC          \NC integer modulo   \NC \star  \NC \star     \NC \NR
+\NC div :                                     \NC          \NC integer division \NC \star  \NC \star     \NC \NR
+\NC band     \letterampersand                 \NC          \NC bitwise and      \NC \star  \NC           \NC \NR
+\NC bor      \letterbar                       \NC          \NC bitwise or       \NC \star  \NC           \NC \NR
+\NC bxor                                      \NC          \NC bitwise xor      \NC \star  \NC           \NC \NR
+\NC bset                                      \NC          \NC set bit          \NC \star  \NC           \NC \NR
+\NC bunset                                    \NC          \NC unset bit        \NC \star  \NC           \NC \NR
+\NC cand     \letterampersand\letterampersand \NC U+2227 ∧ \NC conditional and  \NC \star  \NC           \NC \NR
+\NC cor      \letterbar\letterbar             \NC U+2228 ∨ \NC conditional or   \NC \star  \NC           \NC \NR
+\NC ==                                        \NC          \NC equal            \NC \star  \NC \star     \NC \NR
+\NC <> !=    \lettertilde=                    \NC U+2260 ≠ \NC not equal        \NC \star  \NC \star     \NC \NR
+\NC <                                         \NC          \NC less than        \NC \star  \NC \star     \NC \NR
+\NC >                                         \NC          \NC more than        \NC \star  \NC \star     \NC \NR
+\NC =< <=                                     \NC U+2264 ≤ \NC less or equal    \NC \star  \NC \star     \NC \NR
+\NC >= =>                                     \NC U+2265 ≥ \NC more or equal    \NC \star  \NC \star     \NC \NR
+\NC <<                                        \NC          \NC shift left       \NC \star  \NC           \NC \NR
+\NC >>                                        \NC          \NC shift right      \NC \star  \NC           \NC \NR
+\NC +                                         \NC          \NC add              \NC \star  \NC \star     \NC \NR
+\NC -                                         \NC          \NC subtract         \NC \star  \NC \star     \NC \NR
+\NC *                                         \NC          \NC multiply         \NC \star  \NC \star     \NC \NR
+\NC /                                         \NC          \NC divide           \NC \star  \NC \star     \NC \NR
+\stoptabulate
+
+Just because it is easy to support, some \UNICODE\ characters also work:
+
+\startbuffer
+[[\number\dimexpression 10pt ≠  10pt\relax]]
+[[\number\dimexpression 10pt ≠  20pt\relax]]
+[[\number\dimexpression 10pt <> 10pt\relax]]
+[[\number\dimexpression 10pt <> 20pt\relax]]
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+So here we get: \inlinebuffer. These special characters also work in conditionals
+so indeed we can say:
+
+\starttyping[option=TEX]
+\ifdim 10pt ≠ 20pt un\fi equal
+\stoptyping
+
+When using these expressions you must realize that they are basically an
+extension that follows up on the simple expressions. Therefore you need to use
+sub-expressions (in parentheses) to make sure that that the priorities are as
+expected when using more complex formulas (messing with bits).
+
+Because the number and dimensions scanners support braces we can mix
+sub-expressions with parentheses and braced but they have to match properly:
+
+\starttyping[option=TEX]
+\the\dimexpression{( 1pt+{2pt})  * (3pt+4pt)} % okay
+\the\dimexpression{( 1pt+ 2pt )  * (3pt+4pt)} % okay
+\the\dimexpression{( 1pt+ 2pt )  * {3pt+4pt}} % okay
+\the\dimexpression{({1pt+ 2pt )} * (3pt+4pt)} % error
+\stoptyping
+
+The glue scanners have their own limitations but we can live with this because
+there are ways out:
+
+\starttyping[option=TEX]
+\scratchskip  100pt plus 10pt       \relax % okay
+\scratchskip {100pt plus 10pt     } \relax % okay
+\scratchskip {100pt plus {9pt+1pt}} \relax % okay
+\scratchskip {100pt plus (9pt+1pt)} \relax % error
+\scratchskip {100pt plus 1fil     } \relax % okay
+\stoptyping
+
+It's not like we use glue expressions that frequently: in 536 files we grep 15
+matches in 8 files and most quality as \quote {play safe} assignments from user
+interfaced commands (values to keys).
+
+\stopsectionlevel
+
+\startsectionlevel[title={\type {\...experimental}}]
+
+It is important to keep in mind that when we want floating point expressions we
+have to use the dimen ones. This is also true for the experimental ones. They are
+tagged experimental because they divert from the other two in the sense that they
+internally use the reverse polish notation approach. This means that we first
+construct a call stack and then do the calculations, which not only permits
+tracing but also makes it easier to extend. For instance we have support for a
+bunch of functions: \typ {sin}, \typ {cos}, \typ {tan}, \typ {asin}, \typ {acos},
+\typ {atan}, \typ {sinh}, \typ {cosh}, \typ {tanh}, \typ {asinh}, \typ {acosh},
+\typ {atanh}, \typ {ceil}, \typ {floor}, \typ {round}, \typ {abs}, \typ {sqrt},
+\typ {log}, \typ {ln} and \typ {exp}.
+
+\startbuffer
+\thewithoutunit\dimexperimental{@sin 90.0}
+\thewithoutunit\dimexperimental{@sin 45.0}
+\thewithoutunit\dimexperimental{@sin 30.0}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get results with dimen-like accuracy: \inlinebuffer. However, internally, as
+with expressions we operate at a higher resolution as long as calculations take
+place. Of course there are limits wrt the end value:
+
+\startbuffer
+\scratchfloat\dimexperimental @sqrt (10.2 * 4) \relax \the\scratchfloat
+\ctxlua{context(math.sqrt(10.2 * 4))}
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In the first line the result of an expression is assigned to a 32 bit posit but
+we calculate in 64 bit doubles and in the second line we serialize a 64 bit
+double from \LUA.
+
+\startlines
+\getbuffer
+\stoplines
+
+% \the\dimexperimental{(4.0 < 4pt) cand 1pt cor 2pt}
+% \the\dimexperimental{(2 * 2) * 4pt}
+% \the\dimexperimental{(4.0 / 2) * 4pt}
+
+\stopsectionlevel
+
+\startsectionlevel[title={Assignments}]
+
+When a value is expected the engine scans for an optional sign, a number possibly
+followed by a fraction and/or unit. It can be that there is an optional equal to
+start with and leading spaces get ignored. Once scanning a number or unit starts,
+scanning can stop when the scanner is satisfied. So for instance when there are
+no more digits. A \type {\relax} is also a sentinel and it gets gobbled but other
+tokens will be pushed back into the input. This means that scanning for some
+value is quite predictable:
+
+\starttyping[option=TEX]
+\scratchdimen = 1.23 pt
+\scratchdimen 1.23 pt
+\scratchdimen \dimexpr 1.23 pt \relax
+\stoptyping
+
+We will get an error when there is unexpected input. But because we don't expect uses
+to be happy triggering errors, we can actually use that fact to enhance the
+value scanner. In \LUAMETATEX\ the following is okay:
+
+\starttyping[option=TEX]
+\scratchdimen = {1.23 pt + 4.56pt}
+\scratchdimen {1.23 pt / 2}
+\stoptyping
+
+There is one pitfall: because now all values, also the nested ones, can be braced expressions,
+and because we can start with a sign, the following is somewhat confusing when we
+have expressions.
+
+\startbuffer
+\scratchdimen =   {1 pt + 2pt} + 3pt (\the\scratchdimen)
+\scratchdimen = - {1 pt + 2pt} + 3pt (\the\scratchdimen)
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+\startbuffer
+\scratchdimen \dimexpr   {1 pt + 2pt} + 3pt \relax (\the\scratchdimen)
+\scratchdimen \dimexpr - {1 pt + 2pt} + 3pt \relax (\the\scratchdimen)
+\scratchdimen \dimexpr   {1 pt + 2pt} + 3pt        (\the\scratchdimen)
+\scratchdimen \dimexpr - {1 pt + 2pt} + 3pt        (\the\scratchdimen)
+\stopbuffer
+
+In the case of an expression you can best properly finish the expression:
+
+\typebuffer[option=TEX]
+
+\startlines
+\getbuffer
+\stoplines
+
+The fact that in \CONTEXT\ we brace many assignments means that when some value
+is passed it can be an expression instead. Of course there is some overhead
+because scanning expressions involved setting up the expression stack, collecting
+bits and pieces and then calculating (intermediate) results but it pays back in
+the end. At some point we might decide to use the marked as \quote {experimental}
+scanner which is then an adaptation in the engine and that comes a bit higher
+price.
+
+This automatic triggering the expression scanner by braces is also true for other
+places where a value is expected, for instance when a primitive expects a value,
+either or not driven by some keyword (like \type {width}). The same is true for
+conditionals that expect a numeric or dimension. Here the \CONTEXT\ code base is
+also using braces all over the place. Of course:
+
+\starttyping[option=TEX]
+\hrule width {#1} height {#2} \relax
+\ifdim{#1}>{#2} ... \else ... \fi
+\stoptyping
+
+looks a bit different but first of all users seldom see low level code, and second
+the unbraced variant also works. So, we we don't over-do this, so here:
+
+\starttyping[option=TEX]
+\hrule width \scratchwidth height \scratchheight \relax
+\ifdim\scratchwidth>\scratchheight ... \else ... \fi
+\stoptyping
+
+braces make no sense at all.
+
+\stopsectionlevel
+
+\page
+
+\stopdocument

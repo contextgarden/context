@@ -1,0 +1,144 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-definitions
+
+\chapter{Definitions}
+
+It is possible to build a library of structures. These predefined structures
+can be used in a later stage, for example as a component of a more complex
+structure. Predefinition can be done with the \TEX||primitive \type{\def}.
+
+\starttyping
+\def\sixring{\chemical[SIX,B,+R,RZ]}
+\stoptyping
+
+However it is better to use the command \type{\definechemical}. In that case
+a message will occur during processing if a duplicate name is found.
+
+\starttyping
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ]}
+\stoptyping
+
+Recalling \type{\chemical[sixring]} will display a bare sixring without
+substituents.
+
+\startbuffer
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ]}
+
+\startchemical[frame=on,width=6000]
+  \chemical[sixring]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+If we want to attach six substituents in a later stage to a sixring we could
+type:
+
+\startbuffer
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ]}
+
+\startchemical[frame=on,width=6000]
+  \chemical[sixring][R_1,R_2,R_3,R_4,R_5,R_6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+The structure \type{sixring} can be defined without substituents (\type{RZ}).
+We could attach them after recalling \type{\chemical[sixring]}.
+
+\startbuffer
+\definechemical[sixring]
+  {\chemical[SIX,B,+R]}
+
+\startchemical[frame=on,width=6000]
+  \chemical[sixring,RZ][A,B,C,D,E,F]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+In principal the possibilities are unlimited. However, you should remember
+that atoms and molecules are selected from the second argument in the order
+of definition in the first argument.
+
+A definition may contain atoms and molecules (texts).
+
+\starttyping
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ135][R_1,R_3,R_5]}
+\stoptyping
+
+In the example above there will always be three substituents. If we want to
+attach more substituents we have to indicate explicitly that we want to
+continue with the sixring (\type{SIX}).
+
+\startbuffer
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ135][R_1,R_3,R_5]}
+
+\startchemical[frame=on,width=6000]
+  \chemical[sixring,SIX,RZ246][A,B,C]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+In a definition \type{\chemical[]} has a global scope (this means that
+\type{SIX} is remembered) and \type{\chemical[][]} has a local scope. The
+idea behind this is that in the first case a range of keys can be added and
+in the second case a complete structure.
+
+In a definition \type{\chemical} may be used more than once. The last example
+could have been defined thus:
+
+\startbuffer
+\definechemical[sixring]
+  {\chemical[SIX,B,+R,RZ135][R_1,R_3,R_5]
+   \chemical[SIX,RZ246]}
+
+\startchemical[frame=on,width=6000]
+  \chemical[sixring][A,B,C]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+When \TEX\ announces that an \type{unknown command} has occurred, you may have
+forgotten to type \type{SIX}, \type{FIVE} or a comparable key.
+
+\stopcomponent

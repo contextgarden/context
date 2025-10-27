@@ -1,0 +1,52 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-frontviews
+
+\chapter{Frontviews}
+
+Structures \type{FIVE} and \type{SIX} can be displayed in a frontview.
+However there are some limitations. Frontviews can not be rotated. Also the
+coupling of several structures is limited.
+
+We illustrate the frontview keys in two examples.
+
+\startbuffer
+\startchemical[height=4500,bottom=2500]
+  \bottext{$\beta$-D-Fructopyranose}
+  \chemical
+    [SIX,FRONT,BB1236,+SB4,-SB5,Z5][O]
+  \chemical
+    [SIX,FRONT,+R12346,+RZ12346][HO,H,H,H,OH]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Positioning the radicals is an optimization of feasability and quality. The
+next example will illustrate this.
+
+\startbuffer
+\startchemical[height=4500,bottom=2500]
+  \bottext{$\alpha$-D-Fructofuranose}
+  \chemical
+    [FIVE,FRONT,BB125,+SB3,-SB4,Z4][O]
+  \chemical
+    [FIVE,FRONT,+R1235,+RZ1235][HO,H,HOH_2C,CH_2OH]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\stopcomponent

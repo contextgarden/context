@@ -15,7 +15,6 @@ xml.ctx           = { }
 xml.ctx.enhancers = { }
 
 local context     = context
-local commands    = commands
 
 -- hashen
 

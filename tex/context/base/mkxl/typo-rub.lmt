@@ -22,8 +22,6 @@ local setmetatableindex = table.setmetatableindex
 local variables       = interfaces.variables
 local implement       = interfaces.implement
 
-local texsetattribute = tex.setattribute
-
 local v_flushleft     <const> = variables.flushleft
 local v_middle        <const> = variables.middle
 local v_flushright    <const> = variables.flushright
@@ -36,7 +34,7 @@ local nuts            = nodes.nuts
 local getid           = nuts.getid
 local getsubtype      = nuts.getsubtype
 local getattr         = nuts.getattr
-local setattr         = nuts.setattr
+----- setattr         = nuts.setattr
 local getnext         = nuts.getnext
 local setnext         = nuts.setnext
 local getprev         = nuts.getprev

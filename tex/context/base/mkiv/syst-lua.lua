@@ -101,9 +101,7 @@ function commands.doifnotthing(b)
     end
 end
 
-commands.testcase = commands.doifelse -- obsolete
-
-function commands.boolcase(b)
+function commands.boolcase(b) -- obsolete
     context(b and 1 or 0)
 end
 

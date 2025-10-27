@@ -192,12 +192,14 @@ function inject.path(p,connector,close)
     local closed = false
     local curled = false
     local tense  = false
+    local trace  = false
     local n = #p
     if close == nil then
         closed = (p.close or p.cycle or p.closed) and true or false
     else
         closed = close
     end
+    trace = p.trace
     if connector then
         if connector == "auto" then
             connector = #p[1] > 2
@@ -205,13 +207,18 @@ function inject.path(p,connector,close)
         if connector == false or connector == "--" then
             curled = true
         end
-    elseif p.tense then
-        tense = true
-    elseif p.curled then
-        curled = true
+    else
+        if p.tense then
+            tense = true
+        end
+        if p.curled then
+            curled = true
+        end
     end
-    if trace then reporti("path") end
-    return injectpath(currentmpx,p,closed,curled,tense)
+    if trace then
+        reporti("path")
+    end
+    return injectpath(currentmpx,p,closed,curled,tense,trace)
 end
 
 -- bonus:

@@ -45,8 +45,7 @@ local getcount                 = tex.getcount
 local gettoks                  = tex.gettoks
 local gettex                   = tex.get
 
-local context                  = context
-commands                       = commands or { }
+      commands                 = commands or { }
 local commands                 = commands
 local context                  = context
 local implement                = interfaces.implement
@@ -114,9 +113,7 @@ function commands.doifnotthing(b)
     end
 end
 
-commands.testcase = commands.doifelse -- obsolete
-
-function commands.boolcase(b)
+function commands.boolcase(b) -- obsolete
     context(b and 1 or 0)
 end
 

@@ -3179,6 +3179,33 @@ vardef lmt_do_bytemap =
     )
 enddef ;
 
+% A variant:
+
+presetparameters "domainmap" [
+    bytemap     = 1,
+    colorcode   = "",
+    xmin        = -10,
+    xmax        =  10,
+    ymin        = -10,
+    ymax        =  10,
+    xresolution = 1000,
+    yresolution = 1000,
+] ;
+
+def lmt_domainmap = applyparameters "domainmap" "lmt_do_domainmap" enddef ;
+
+vardef lmt_do_domainmap =
+    lmt_load_mlib_bmp ;
+    image (
+        pushparameters "domainmap" ;
+        lua.mp.lmt_domainmap_do() ;
+        draw unitsquare
+            withbytemap (getparameterdefault "bytemap" 1)
+            withpen pencircle scaled 0 ;
+        popparameters ;
+    )
+enddef ;
+
 % We need a vardef instead of def here in order to prevents expansion
 % of the suffix!
 

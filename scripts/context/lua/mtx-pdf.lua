@@ -223,7 +223,8 @@ function scripts.pdf.info(filename)
             for i=1, nofpages do
                 local page = pages[i]
                 local bbox = page[what] or page.MediaBox or { 0, 0, 0, 0 }
-                local w, h = bbox[4]-bbox[2],bbox[3]-bbox[1]
+                local w    = bbox[3] - bbox[1]
+                local h    = bbox[4] - bbox[2]
                 if w ~= width or h ~= height then
                     if start then
                         report("%-17s > pages: %s-%s, width: %s, height: %s",box,start,i-1,width,height)

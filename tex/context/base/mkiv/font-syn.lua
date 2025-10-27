@@ -1271,7 +1271,18 @@ local function resetdata()
     }
 end
 
+local plugin = false
+
+if CONTEXTLMTXMODE and CONTEXTLMTXMODE > 0 then
+    function names.setplugin(f)
+        plugin = type(f) == "function" and f or false
+    end
+end
+
 function names.identify(force)
+    if plugin then
+        plugin("before")
+    end
     local starttime = os.gettimeofday() -- use elapser
     resetdata()
     analyzefiles(not force and names.readdata(names.basename))
@@ -1283,6 +1294,9 @@ function names.identify(force)
     addfilenames()
  -- sorthashes() -- will be resorted when saved
     collectstatistics(os.gettimeofday()-starttime)
+    if plugin then
+        plugin("after")
+    end
 end
 
 function names.is_permitted(name)

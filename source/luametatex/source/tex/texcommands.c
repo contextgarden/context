@@ -1100,7 +1100,7 @@ void tex_initialize_commands(void)
         tex_primitive(luametatex_command, no_legacy,       "Ustretched",                     math_fraction_cmd,      math_u_stretched_code,                    0);
         tex_primitive(luametatex_command, no_legacy,       "Ustretchedwithdelims",           math_fraction_cmd,      math_u_stretched_delimited_code,          0);
 
-        tex_primitive(luatex_command,     no_legacy,       "cfcode",                         font_property_cmd,      font_cf_code,                             0); /* obsolete */
+        tex_primitive(luametatex_command, no_legacy,       "cfcode",                         font_property_cmd,      font_cf_code,                             0); /* obsolete */
         tex_primitive(luatex_command,     no_legacy,       "efcode",                         font_property_cmd,      font_ef_code,                             0); /* obsolete */
         tex_primitive(tex_command,        no_legacy,       "fontdimen",                      font_property_cmd,      font_dimension_code,                      0);
         tex_primitive(tex_command,        no_legacy,       "hyphenchar",                     font_property_cmd,      font_hyphen_code,                         0);         

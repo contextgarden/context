@@ -821,9 +821,32 @@ do
         local cells      = dataset.cells
         local nofcolumns = dataset.nofcolumns
         local nofrows    = dataset.nofrows
+        -- see later (will become helper)
+local nextsheet  = not dataset.doublesided and
+                   not dataset.byspread    and
+                   not odd(dataset.sheet)
         --
         local c = t.c or 0
         local r = t.r or 0
+
+local lastcolumn = dataset.nofleft + dataset.nofright
+
+if nextsheet and t.c <= dataset.nofleft then
+    local tc = t.c
+    if tc == 0 then
+        t.c = tc + dataset.nofleft + 1
+    else
+        t.c = tc + dataset.nofleft
+    end
+end
+
+if t.c and t.c >= 1 and t.c <= lastcolumn then
+    c = t.c
+end
+if t.r and t.r >= 1 and t.r <= nofrows then
+    r = t.r
+end
+
         if c == 0 or r == 0 or c > nofcolumns or r > nofrows then
             return
         end
@@ -1111,7 +1134,6 @@ do
     --     t.c = tc
     -- end
         --
-
         local c = t.c or 0
         local r = t.r or 0
         if c == 0 then
@@ -1131,9 +1153,8 @@ do
         local action = methods[method]
         local cfound = false
         local rfound = false
-        local lastcolumn = dataset.lastcolumn
 
-        lastcolumn = dataset.nofleft + dataset.nofright
+        local lastcolumn = dataset.nofleft + dataset.nofright
 
         if nextsheet and t.c <= dataset.nofleft then
             local tc = t.c
@@ -1150,6 +1171,7 @@ do
         if t.r and t.r >= 1 and t.r <= nofrows then
             r = t.r
         end
+
         local w = boxwidth - threshold
         if action then
          -- report("action %s, c %i, r %i, nr %i, width %p",method,c,r,nr,w)
@@ -1914,7 +1936,7 @@ do
         actions   = columnsets.registerarea,
         arguments = { {
             { "name", "string" },
-            { "kind", "string" },
+            { "kind", "argument" },
             { "page", "integer" },
             { "sheet", "integer" },
             { "state", "string" },
@@ -2500,11 +2522,13 @@ shape[cnt].options = 1
                     return
                 else
                     local extralines = (s.extralines or 0) - (reset and -1 or 1)
+--                     if extralines <= 0 then
+--                         -- catch for weird issues
+--                         return integer_value, 0
+--                     end
                     if -extralines >= s.lines + 1 then
--- print(reset,index,-extralines,s.lines + 1)
                         return integer_value, 0
                     else
--- print(reset,index,-extralines,s.lines + 1)
                         s.extralines = extralines
                         s.extra = extralines * (dataset.lineheight + dataset.linedepth)
                         return integer_value, 1
@@ -2882,15 +2906,25 @@ do
                                 quit = #shape
                             else
                                 quit = slot
-                                for i=slot+1,#shape-1 do
+local first = slot + 1
+local last  = #shape - 1
+if first > last then
+    -- We ran out of slots ... we could maybe just quit the test, let more slots be added
+    -- and go on then.
+    result  = trybreak_code
+    penalty = eject
+    goto FORCE
+else
+                                for i=first,last do
                                     local c = shape[i].column
                                     quit = quit + 1
                                     if column == nofcolumns and c == 1 then
                                         break
-                                    elseif c > column then
+                                    elseif c ~= column then
                                         break
                                     end
                                 end
+end
                             end
                             dataset.quit = quit
                         end
@@ -2898,6 +2932,7 @@ do
                             result  = trybreak_code
                             penalty = eject
                         end
+::FORCE::
                     elseif action == "slot" then
                         if count > 0 then
                             quit = slot + count
@@ -2935,11 +2970,16 @@ do
             end
         end
         if trace then
+            local verdict
             if result == skipzeros_code then
-                report("action %s, ignore rest",action or "quit")
+                verdict = "ignore rest"
+                if not action then action = "quit" end
+            elseif result == trybreak_code then
+                verdict = "eject"
             else
-                report("action %s, eject",action)
+                verdict = "some error"
             end
+            report("action %a, verdict %a, penalty %i, extra %i",action,verdict,penalty,extra)
         end
         return result, penalty, extra
     end
@@ -3024,7 +3064,7 @@ do
                     local future = dataset.future[spread]
                     if future then
                         local column = shape.column
-                        cells = future[column]
+                        local cells  = future[column]
                         if cells then
                             local first = false
                             local last  = false

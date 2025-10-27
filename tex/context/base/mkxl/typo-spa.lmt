@@ -33,6 +33,8 @@ local getprev            = nuts.getprev
 local getattr            = nuts.getattr
 local isglyph            = nuts.isglyph
 local getlanguage        = nuts.getlanguage
+local setattrlist        = nuts.setattrlist
+local setoptions         = nuts.setoptions
 
 local insertnodebefore   = nuts.insertbefore
 local insertnodeafter    = nuts.insertafter
@@ -46,9 +48,10 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 
 local math_code          <const> = nodes.nodecodes.math
+local noautobreak_code   <const> = tex.glueoptioncodes.noautobreak
 
-local somespace          = nodes.somespace
-local somepenalty        = nodes.somepenalty
+local somespace          = nuts.somespace
+local somepenalty        = nuts.somepenalty
 
 local enableaction       = nodes.tasks.enableaction
 
@@ -130,8 +133,13 @@ function spacings.handler(head)
                                         if trace_spacing then
                                             report_spacing("inserting penalty and space before %C (left)",char)
                                         end
-                                        insertnodebefore(head,start,new_penalty(10000))
-                                        insertnodebefore(head,start,new_glue(left*quad))
+                                        local g = new_glue(left*quad)
+--                                         local p = new_penalty(10000)
+                                        setattrlist(g,start)
+--                                         setattrlist(p,start)
+--                                         insertnodebefore(head,start,p)
+                                        insertnodebefore(head,start,g)
+                                        setoptions(g,noautobreak_code)
                                     end
                                 end
                                 local next = getnext(start)
@@ -161,8 +169,13 @@ function spacings.handler(head)
                                         if trace_spacing then
                                             report_spacing("inserting penalty and space after %C (right)",char)
                                         end
-                                        insertnodeafter(head,start,new_glue(right*quad))
-                                        insertnodeafter(head,start,new_penalty(10000))
+                                        local g = new_glue(right*quad)
+--                                         local p = new_penalty(10000)
+                                        setattrlist(g,start)
+--                                         setattrlist(p,start)
+                                        insertnodeafter(head,start,g)
+--                                         insertnodeafter(head,start,p)
+                                        setoptions(g,noautobreak_code)
                                     end
                                 end
                             end

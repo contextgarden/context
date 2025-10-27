@@ -1360,13 +1360,14 @@ implement {
                 }
             },
             { "metadata", {
-                    { "kind" },
-                    { "name" },
+                    { "kind", "argument" },
+                    { "name", "argument" },
                     { "level", "integer" },
                     { "catcodes", "integer" },
                     { "coding" },
                     { "xmlroot" },
                     { "setup" },
+                    { "detail" }, -- for construction
                 }
             },
             { "userdata" },
@@ -1509,7 +1510,7 @@ implement { name = "listsize",       actions = { lists.size,       context } }
 implement { name = "listexternal",   actions = { lists.external,   context }, arguments = "integer" }
 implement { name = "listlocation",   actions = { lists.location,   context }, arguments = "integer" }
 implement { name = "listlabel",      actions = { lists.label,      context }, arguments = { "integer", "string" } }
-implement { name = "listbookmark",   actions = { lists.bookmark,   context }, arguments = { "integer", "string" } }
+implement { name = "listbookmark",   actions = { lists.bookmark,   context.verbatim }, arguments = { "integer", "string" } }
 implement { name = "listgroupindex", actions = { lists.groupindex, context }, arguments = "2 strings", }
 
 implement { name = "listrawnumber",   actions = { lists.rawnumber,   context }, arguments = { "string", "integer" } }
@@ -1541,13 +1542,10 @@ implement {
     arguments = { "string", "integer", "string" }
 }
 
--- we could also set variables .. names will change (when this module is done)
--- maybe strc_lists_savedtitle etc
-
-implement { name = "doifelselisthastitle",  actions = { lists.hastitledata,  commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doifelselisthaspage",   actions = { lists.haspagedata,   commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doifelselisthasnumber", actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "string", "integer" } }
-implement { name = "doifelselisthasentry",  actions = { lists.iscached,      commands.doifelse }, arguments = "integer" }
+implement { name = "doifelselisthastitle",  public = true, actions = { lists.hastitledata,  commands.doifelse }, arguments = { "argument", "integer" } }
+implement { name = "doifelselisthaspage",   public = true, actions = { lists.haspagedata,   commands.doifelse }, arguments = { "argument", "integer" } }
+implement { name = "doifelselisthasnumber", public = true, actions = { lists.hasnumberdata, commands.doifelse }, arguments = { "argument", "integer" } }
+implement { name = "doifelselisthasentry",  public = true, actions = { lists.iscached,      commands.doifelse }, arguments =               "integer"   }
 
 -- keep tonumber for split marks: li::n
 

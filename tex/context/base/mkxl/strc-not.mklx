@@ -611,8 +611,8 @@
   {\edef\m_strc_notes_internal{\clf_noteinternal{\currentnote}\currentnotenumber}%
    \strc_references_set_simple_reference{*\m_strc_notes_internal}% destination
    \strc_references_get_simple_reference{internal(\m_strc_notes_internal)}% reference
-   \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\currentdestinationattribute}%
-   \edef\strc_notes_get_reference_attribute_symbol{attr\referenceattribute\currentreferenceattribute}%
+   \edef\strc_notes_get_destination_attribute_symbol{attr\destinationattribute\number\currentdestinationattribute}%
+   \edef\strc_notes_get_reference_attribute_symbol  {attr\referenceattribute  \number\currentreferenceattribute  }%
    \let\strc_notes_set_style_color_inline\strc_notes_set_style_color_inline_yes}
 
 \letcsname\??noteinteractioninline\v!no    \endcsname\strc_notes_prepare_inline_references_nop
@@ -638,7 +638,7 @@
    \else
      \let\strc_notes_set_reference_attribute_text\donothing
      \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
-     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\number\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 
@@ -648,7 +648,7 @@
      \strc_notes_prepare_display_references_nop
    \else
      \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
-     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\number\currentreferenceattribute}%
      \let\strc_notes_set_reference_attribute_number\donothing
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
@@ -659,9 +659,9 @@
      \strc_notes_prepare_display_references_nop
    \else
      \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
-     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_text{\c_attr_reference\number\currentreferenceattribute}%
      \strc_references_get_simple_reference{*\m_strc_notes_internal}% reference
-     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\currentreferenceattribute}%
+     \edef\strc_notes_set_reference_attribute_number{\c_attr_reference\number\currentreferenceattribute}%
      \let\strc_notes_set_style_color_display\strc_notes_set_style_color_display_yes
    \fi}
 

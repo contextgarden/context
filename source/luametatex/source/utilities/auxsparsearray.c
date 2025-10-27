@@ -148,6 +148,8 @@ static void sa_aux_skip_in_stack(const sa_tree head, int n)
 // # define LMT_SA_L_SLOT_4(n) (n)
 // # define LMT_SA_LOWPART_4   (LMT_SA_LOWPART)
 
+# if (! sa_inline_get) 
+
 int sa_get_item_0(const sa_tree head, int n)
 {
     int h = LMT_SA_H_PART(n);
@@ -214,6 +216,8 @@ int sa_get_item_8(const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2)
     *v2 = head->dflt;
     return 0;
 }
+
+# endif 
 
 void sa_set_item_0(const sa_tree head, int n, int v, int gl)
 {

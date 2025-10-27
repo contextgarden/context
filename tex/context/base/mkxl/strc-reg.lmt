@@ -689,7 +689,7 @@ implement {
     arguments = {
         {
             { "metadata", {
-                    { "name" },
+                    { "name", "argument" },
                     { "coding" },
                     { "catcodes", "integer" },
                     { "own" },
@@ -726,8 +726,6 @@ implement {
     end,
 }
 
--- commands.extendregister = extendregister
-
 implement {
     name      = "storeregister",
  -- actions   = function(rawdata)
@@ -739,8 +737,8 @@ implement {
     arguments = {
         {
             { "metadata", {
-                    { "kind" },
-                    { "name" },
+                    { "kind", "argument" },
+                    { "name", "argument" },
                     { "coding" },
                     { "level", "integer" },
                     { "catcodes", "integer" },

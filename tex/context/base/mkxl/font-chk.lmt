@@ -18,7 +18,6 @@ local floor = math.floor
 
 local context              = context
 
-local formatters           = string.formatters
 local fastcopy             = table.fastcopy
 local sortedkeys           = table.sortedkeys
 local sortedhash           = table.sortedhash
@@ -611,6 +610,9 @@ do
                     end
                 end
             end
+            -- This getmacro can be called often in e.g. a manual that shows something but has a
+            -- limited font (something that I noticed for luametatex manual). Just use a better
+            -- font then.
             found = locate(fallbacks[mapping[getmacro("fontstyle")] or "mono"],n,f,c)
             if found then
                 cached[c] = found

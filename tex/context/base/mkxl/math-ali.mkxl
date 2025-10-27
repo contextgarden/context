@@ -75,6 +75,12 @@
    \mathalignmentparameter\c!separator
    \relax}
 
+%D Really needed when we grid snap (an dpackage):
+
+\appendtoks
+    \parindent\zeropoint
+\to \everybeforedisplayformula
+
 %D For compatibility we have this location stuff. It is kind of messy and uses
 %D tabskip magick plus signal 0x08 for an exception. Contrary to normal left
 %D aligned formulas we keep the number inline.
@@ -2759,7 +2765,7 @@
   [matrix:braces]
   [\c!fences=brace,
    \c!align=\v!middle,
-   \c!simplecommand=bracematrix]%Seldom used, bmatrix occupied by brackets
+   \c!simplecommand=bracematrix] % Seldom used, bmatrix occupied by brackets
 
 % MPS: Is this one really used? Yes, in the test suite ...
 

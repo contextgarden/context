@@ -79,7 +79,7 @@
       \updateraggedskips % \setupspacing
     \fi}
 
-\let\currentstructurereferenceattribute\attributeunsetvalue
+\integerdef \currentstructurereferenceattribute \attributeunsetvalue
 
 \permanent\def\headreferenceattributes
   {\iflocation
@@ -101,13 +101,13 @@
    \ifx\currentheadinteraction\v!list
      % setuphead[<section>][interaction=list,...]
      \strc_references_get_simple_reference{*\the\locationcount}%
-     \let\currentstructurereferenceattribute\currentreferenceattribute
+     \currentstructurereferenceattribute\currentreferenceattribute
    \orelse\ifx\currentheadinteraction\v!reference
      % setuphead[<section>][interaction=reference,...] start<section>[backreference=abc,...]
      \edef\currentheadbackreference{\structurevariable\c!backreference}% weird, was references.backreference
      \ifempty\currentheadbackreference \else
        \strc_references_get_simple_reference\currentheadbackreference
-       \let\currentstructurereferenceattribute\currentreferenceattribute
+       \currentstructurereferenceattribute\currentreferenceattribute
      \fi
    \else
       % maybe auto: backreference when given, else list

@@ -60,11 +60,14 @@ if protocol == "serial" then
     local function squidreset   (run) squidsome("r",run,true)  end
     local function squidbusy    (run) squidsome("b",run,true)  end
  -- local function squidstep    (run) squidsome("s",run,false) end
-    local function squidstep    (run)                          end
     local function squiddone    (run) squidsome("d",run,true)  end
     local function squidfinished(run) squidsome("f",run,true)  end
     local function squidproblem (run) squidsome("p",run,true)  end
     local function squiderror   (run) squidsome("e",run,true)  end
+
+    local function squidstep()
+        -- do nothing .. no overhead
+    end
 
     signals.squidinit     = squidreset
     signals.squidreset    = squidreset
@@ -108,21 +111,21 @@ if protocol == "serial" then
                 squiderror(run)
             end
         end,
-        signal = function(action)
+        signal = function(state) -- ,currentrun
             local cmd = "ar"
-            if action == "busy" or action == "step" then
+            if state == "busy" or state == "step" then
                 cmd = "ab"
-            elseif action == "done" then
+            elseif state == "done" then
                 cmd = "ad"
-            elseif action == "finished" then
+            elseif state == "finished" then
                 cmd = "af"
-            elseif action == "problem" then
+            elseif state == "problem" then
                 cmd = "ap"
-            elseif action == "error" then
+            elseif state == "error" then
                 cmd = "ae"
             end
             squidsome(cmd)
-       end,
+        end,
     }
 
 end

@@ -1211,7 +1211,11 @@ static inline void tex_aux_eq_destroy(memoryword *w)
                 tex_delete_token_reference(p);
                 break;
             case eq_node:
-                tex_flush_node(p);
+                if (node_type(p) == specification_node) {
+                    tex_flush_specification_node(p);
+                } else { 
+                    tex_flush_node(p);
+                }
                 break;
             case eq_node_list:
                 tex_flush_node_list(p);

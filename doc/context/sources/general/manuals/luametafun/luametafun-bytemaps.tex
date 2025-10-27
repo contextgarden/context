@@ -823,6 +823,147 @@ and using a palette:
 \getbuffer
 \stoplinecorrection
 
+We have dedicated chapters to drawing functions but sometimes it makes sense
+to combine technologies. Take the following \METAPOST\ code: \footnote {This is an example
+from Mikaels math book that we use for testing and benchmarks.}
+
+\starttyping
+\startMPpage
+draw image (
+    newinternal old, new;
+    newinternal oldx, oldy;
+    for r=2.75 step 0.001 until 4 :
+        old := 0.2 ;
+        oldx := 0;
+        oldy := 0;
+        for i=0 upto 800 :
+            new := r*old*(1 - old);
+            if i > 699 :
+                if (abs(r-oldx) > 0.001) or (abs(old-oldy) > 0.001) :
+                    draw (r,old);
+                    oldx := r;
+                    oldy := old;
+                fi
+            fi
+            old := new ;
+        endfor
+    endfor ;
+) xsized 5.75cm withpen pencircle scaled .4 ;
+\stopMPpage
+\stoptyping
+
+This is an optimized version but even than on my current (2018) laptop it takes
+2.170 seconds to get done. We can of course cache the result but then we still
+need to include a 500 MB \PDF\ image, which also takes time. But we can do better!
+
+\startbuffer
+\startluacode
+local v0 <const> =   0
+local v1 <const> = 200 --  63
+local v2 <const> = 225 -- 127
+
+function MP.bifurkation(resolution,usemin)
+    local bmp = bytemap.newdomain(2.75,4,0,1,resolution)
+    local set = usemin and bmp.min or bmp.set
+    for r = 2.75, 4, 0.002 do
+        local old = 0.2
+        for i = 0, 800 do
+            local new = r * old * (1 - old)
+            if i >  699 then
+                set(r,old,v0,v1,v2)
+            end
+            old = new
+        end
+    end
+ -- bmp.clip()
+    mp.newbytemap(1,bmp.bytemap)
+end
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+In \in {figures} [bifurkation-set] and \in [bifurkation-min] we see a few
+renderings. These eight images took 0.199 seconds. A single 1000 cell instance
+takes 0.035 seconds:
+
+\starttyping[option=TEX]
+\startMPpage
+    lua.MP.bifurkation(1000,true) ;
+    draw bytemap 1 xsized 5.75cm ;
+\stopMPpage
+\stoptyping
+
+\startplacefigure[reference=bifurkation-set,title=Bifurkation using \type {set} setter.]
+    \startcombination[nx=2,ny=2,style=\tttf]
+      {\startMPcode lua.MP.bifurkation( 250,false); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {250}
+      {\startMPcode lua.MP.bifurkation( 500,false); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {500}
+      {\startMPcode lua.MP.bifurkation( 750,false); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {750}
+      {\startMPcode lua.MP.bifurkation(1000,false); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {1000}
+    \stopcombination
+\stopplacefigure
+
+\startplacefigure[reference=bifurkation-min,title=Bifurkation using \type {min} setter.]
+    \startcombination[nx=2,ny=2,style=\tttf]
+      {\startMPcode lua.MP.bifurkation( 250,true); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {250}
+      {\startMPcode lua.MP.bifurkation( 500,true); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {500}
+      {\startMPcode lua.MP.bifurkation( 750,true); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {750}
+      {\startMPcode lua.MP.bifurkation(1000,true); draw bytemap 1 ysized .2TextWidth ; \stopMPcode} {1000}
+    \stopcombination
+\stopplacefigure
+
+The \type {newdomain} function call returns a table with the following fields:
+
+\starttabulate[|l|l|]
+\NC \type {bytemap}           \NC the bytemap user data object \NC \NR
+\NC \type {sx}                \NC the horizontal multiplier \NC \NR
+\NC \type {sy}                \NC the vertical multiplier \NC \NR
+\NC \type {xy(x,y)}           \NC the scaler (returns x and y) \NC \NR
+\NC \type {get(x,y)}          \NC return the current value (byte) \NC \NR
+\NC \type {set(x,y,v)}        \NC sets a point to a value (one byte) \NC \NR
+\NC \type {min(x,y,v0,v1,v3)} \NC sets a point to a value (9 bytes) \NC \NR
+\NC \type {add(x,y,v0,v1,v3)} \NC adds values (first time it's a set) \NC \NR
+\NC \type {clip()}            \NC clips the result to used bytes (not 255) \NC \NR
+\stoptabulate
+
+The following method also works; we might extend it on demand:
+
+\startbuffer
+\startluacode
+local v0 <const> =   0
+local v1 <const> = 200 --  63
+local v2 <const> = 225 -- 127
+
+function MP.bifurkation(bmp) -- or document.bifurkation
+    local set = bmp.min
+    for r = bmp.xmin, bmp.xmax, 0.002 do
+        local old = 0.2
+        for i = 0, 800 do
+            local new = r * old * (1 - old)
+            if i >  699 then
+                set(r,old,v0,v1,v2)
+            end
+            old = new
+        end
+    end
+end
+\stopluacode
+
+\startMPcode
+    draw lmt_domainmap [
+        xmin           = 2.75,
+        xmax           = 4.00,
+        ymin           = 0,
+        ymax           = 1,
+        domainfunction = "bifurkation",
+    ] ysized .40TextWidth;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+% \getbuffer % no need to show
+
 \stopchapter
 
 \stopcomponent

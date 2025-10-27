@@ -63,9 +63,16 @@ function frequencies.getdata(language)
     return frequencydata[language]
 end
 
-function frequencies.averagecharwidth(language,font)
-    return frequencycache[language or "en"][font or currentfont()]
+local getglyphscales = tex.getglyphscales
+local clippedround   = tex.round
+
+local function averagecharwidth(language,font)
+    local w = frequencycache[language or "en"][font or currentfont()] or 0
+    local s, sx = getglyphscales()
+    return clippedround(w*s*sx/1000000)
 end
+
+frequencies.averagecharwidth = averagecharwidth
 
 -- Just because we can, we also have a setter ...
 
@@ -82,7 +89,7 @@ interfaces.implement {
         local language = scanstring()
         local font     = currentfont()
         if what == "value" then
-            return dimension_value, frequencycache[language][font] or 0
+            return dimension_value, averagecharwidth(language,font)
         else
             frequencycache[language][font] = scandimension(false,false,true)
         end

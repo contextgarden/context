@@ -2168,10 +2168,15 @@ stoptag()
                 local cmode = prev.mode
                 for i=noftags-1,1,-1 do
                     local e = elements[currentlist[i]]
-                    local m = e.mode
-                    if m and m ~= "mixed" then
-                        pmode = m
-                        break
+                    if e then
+                        local m = e.mode
+                        if m and m ~= "mixed" then
+                            pmode = m
+                            break
+                        end
+                    else
+-- inspect(currentlist)
+                        break -- actually an error
                     end
                 end
              -- print("MODE",prev.tag,pmode,cmode)

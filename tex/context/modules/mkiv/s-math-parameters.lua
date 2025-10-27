@@ -6,6 +6,8 @@ if not modules then modules = { } end modules ['s-math-coverage'] = {
     license   = "see context related readme files"
 }
 
+-- This one is old .. for mkiv ... we have more in lmtx!
+
 moduledata.math            = moduledata.math            or { }
 moduledata.math.parameters = moduledata.math.parameters or { }
 

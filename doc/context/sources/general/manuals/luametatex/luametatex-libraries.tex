@@ -2534,11 +2534,11 @@ These matrices have different dimensions (rows and columns):
 
 \startlinecorrection
 \startcombination[nx=5,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v44)}} {\hbox{\tt 4 × 4}}
-    {\ctxlua{vector.typeset(document.v14)}} {\hbox{\tt 1 × 4}}
-    {\ctxlua{vector.typeset(document.v41)}} {\hbox{\tt 4 × 1}}
-    {\ctxlua{vector.typeset(document.v22)}} {\hbox{\tt 2 × 2}}
-    {\ctxlua{vector.typeset(document.v33)}} {\hbox{\tt 3 × 3}}
+    {\dm{\ctxlua{vector.typeset(document.v44)}}} {\hbox{\tt 4 × 4}}
+    {\dm{\ctxlua{vector.typeset(document.v14)}}} {\hbox{\tt 1 × 4}}
+    {\dm{\ctxlua{vector.typeset(document.v41)}}} {\hbox{\tt 4 × 1}}
+    {\dm{\ctxlua{vector.typeset(document.v22)}}} {\hbox{\tt 2 × 2}}
+    {\dm{\ctxlua{vector.typeset(document.v33)}}} {\hbox{\tt 3 × 3}}
 \stopcombination
 \stoplinecorrection
 
@@ -2570,10 +2570,10 @@ elements are multiplied.
 
 \startlinecorrection
 \startcombination[nx=4,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v44   )}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\tt 4 ×}}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\tt × 4}}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\tt ×  }}
+    {\dm{\ctxlua{vector.typeset(document.v44   )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {\hbox{\tt 4 ×}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {\hbox{\tt × 4}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {\hbox{\tt ×  }}
 \stopcombination
 \stoplinecorrection
 
@@ -2623,9 +2623,9 @@ only time that this shows is when we do in place assignments as here.
 
 \startlinecorrection
 \startcombination[nx=2,ny=3,distance=2em]
-  {\ctxlua{vector.typeset(document.v1)}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
-  {\ctxlua{vector.typeset(document.v2)}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
-  {\ctxlua{vector.typeset(document.v3)}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v1)}}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v2)}}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v3)}}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2647,9 +2647,9 @@ Watch how we multiply the shared vector object twice:
 
 \startlinecorrection % idem as above
 \startcombination[nx=2,ny=3,distance=2em]
-  {\ctxlua{vector.typeset(document.v1)}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
-  {\ctxlua{vector.typeset(document.v2)}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
-  {\ctxlua{vector.typeset(document.v3)}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v1)}}} {} {\hbox{\tt \cldcontext{tostring(document.v1)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v2)}}} {} {\hbox{\tt \cldcontext{tostring(document.v2)}}} {}
+  {\dm{\ctxlua{vector.typeset(document.v3)}}} {} {\hbox{\tt \cldcontext{tostring(document.v3)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2668,10 +2668,10 @@ replace in the passed vectors.
 
 \startlinecorrection
 \startcombination[nx=4,ny=1,distance=2em]
-  {\ctxlua{vector.typeset(document.v22   )}} {}
-  {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\type {round}}}
-  {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\type {floor}}}
-  {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\type {ceiling}}}
+  {\dm{\ctxlua{vector.typeset(document.v22   )}}} {}
+  {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {\hbox{\type {round}}}
+  {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {\hbox{\type {floor}}}
+  {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {\hbox{\type {ceiling}}}
 \stopcombination
 \stoplinecorrection
 
@@ -2689,9 +2689,9 @@ The identity matrix can be created with:
 
 \startlinecorrection
 \startcombination[nx=3,ny=1,distance=2em]
-  {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\type {3 × 3}}}
-  {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\type {4 × 4}}}
-  {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\type {2 × 2}}}
+  {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {\hbox{\type {3 × 3}}}
+  {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {\hbox{\type {4 × 4}}}
+  {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {\hbox{\type {2 × 2}}}
 \stopcombination
 \stoplinecorrection
 
@@ -2710,12 +2710,12 @@ with a single column and vise versa.
 
 \startlinecorrection
 \startcombination[nx=6,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v44   )}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {\hbox{\tt transpose}}
-    {\ctxlua{vector.typeset(document.v41   )}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {\hbox{\tt swap}}
-    {\ctxlua{vector.typeset(document.v14   )}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {\hbox{\tt swap}}
+    {\dm{\ctxlua{vector.typeset(document.v44   )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {\hbox{\tt transpose}}
+    {\dm{\ctxlua{vector.typeset(document.v41   )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {\hbox{\tt swap}}
+    {\dm{\ctxlua{vector.typeset(document.v14   )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {\hbox{\tt swap}}
 \stopcombination
 \stoplinecorrection
 
@@ -2731,11 +2731,11 @@ document.vdemo3 = vector.rowechelon(document.v33)
 
 \startlinecorrection
 \startcombination[nx=5,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v33   )}}              {\hbox {v33}}
-    {\ctxlua{vector.typeset(document.vdemo1)}}              {\hbox {inverse}}
-    {\ctxlua{vector.typeset(document.vdemo1*document.v33)}} {\hbox {verified}}
-    {\ctxlua{vector.typeset(document.vdemo2)}}              {\hbox {row echelon}}
-    {\ctxlua{vector.typeset(document.vdemo3)}}              {\hbox {reduced echelon}}
+    {\dm{\ctxlua{vector.typeset(document.v33   )}}}              {\hbox {v33}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}}              {\hbox {inverse}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1*document.v33)}}} {\hbox {verified}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}}              {\hbox {row echelon}}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}}              {\hbox {reduced echelon}}
 \stopcombination
 \stoplinecorrection
 
@@ -2754,9 +2754,9 @@ document.vdemo2 = vector.homogenize(document.v33)
 
 \startlinecorrection
 \startcombination[nx=3,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v33   )}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\dm{\ctxlua{vector.typeset(document.v33   )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2781,8 +2781,8 @@ document.vdemo1 = vector.truncate(document.vdemo0)
 
 \startlinecorrection
 \startcombination[nx=2,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo0, { template = 8 } )}} {}
-    {\ctxlua{vector.typeset(document.vdemo1, { template = 3 } )}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0, { template = 8 } )}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1, { template = 3 } )}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2803,8 +2803,8 @@ document.num1 = vector.inner(document.v14,document.v14)
 
 \startlinecorrection
 \startcombination[nx=2,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.num0)}} {}
-    {\ctxlua{vector.typeset(document.num1)}} {}
+    {\dm{\ctxlua{vector.typeset(document.num0)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.num1)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2822,8 +2822,8 @@ document.cvec1 = vector.crossproduct(vector.new {{1},{2},{3}}, vector.new {{4},{
 
 \startlinecorrection
 \startcombination[nx=2,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.cvec0)}} {}
-    {\ctxlua{vector.typeset(document.cvec1)}} {}
+    {\dm{\ctxlua{vector.typeset(document.cvec0)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.cvec1)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2852,10 +2852,10 @@ document.vdemo3 = vector.slice(document.vdemo0,2,2,3,3)
 
 \startlinecorrection
 \startcombination[nx=4,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo0)}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2872,11 +2872,11 @@ document.vdemo4 = vector.delete(document.vdemo0,2,1,true)
 
 \startlinecorrection
 \startcombination[nx=7,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo0)}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
-    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo4)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2893,11 +2893,11 @@ document.vdemo4 = vector.remove(document.vdemo0,2,1,true)
 
 \startlinecorrection
 \startcombination[nx=5,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo0)}} {}
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
-    {\ctxlua{vector.typeset(document.vdemo4)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo4)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2933,10 +2933,10 @@ document.vdemo0rc = vector.new {
 
 \startlinecorrection
 \startcombination[nx=4,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo0)}}   {}
-    {\ctxlua{vector.typeset(document.vdemo0r)}}  {}
-    {\ctxlua{vector.typeset(document.vdemo0c)}}  {}
-    {\ctxlua{vector.typeset(document.vdemo0rc)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0)}}}   {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0r)}}}  {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0c)}}}  {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo0rc)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2954,11 +2954,11 @@ document.vdemo5 = vector.insert(document.vdemo0,document.vdemo0c,4)
 
 \startlinecorrection
 \startcombination[nx=5,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
-    {\ctxlua{vector.typeset(document.vdemo4)}} {}
-    {\ctxlua{vector.typeset(document.vdemo5)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo4)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo5)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2976,11 +2976,11 @@ document.vdemo5 = vector.insert(document.vdemo0,document.vdemo0r,4,true)
 
 \startlinecorrection
 \startcombination[nx=5,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
-    {\ctxlua{vector.typeset(document.vdemo4)}} {}
-    {\ctxlua{vector.typeset(document.vdemo5)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo4)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo5)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -2996,9 +2996,9 @@ document.vdemo3 = vector.replace(document.vdemo0,document.vdemo0rc,3,3)
 
 \startlinecorrection
 \startcombination[nx=3,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
-    {\ctxlua{vector.typeset(document.vdemo3)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo3)}}} {}
 \stopcombination
 \stoplinecorrection
 
@@ -3013,22 +3013,22 @@ document.vdemo2 = vector.exchange(document.vdemo0,1,2,true)
 
 \startlinecorrection
 \startcombination[nx=3,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.vdemo1)}} {}
-    {\ctxlua{vector.typeset(document.vdemo2)}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo1)}}} {}
+    {\dm{\ctxlua{vector.typeset(document.vdemo2)}}} {}
 \stopcombination
 \stoplinecorrection
 
 This leaves a couple of auxiliary function that we just mention:
 
 \starttabulate[|Tl|Tl|l|]
-\NC isvector      \NC (v)       \NC return \type{true} when the argument is a vector \NC \NR
+\NC isvector      \NC (v)       \NC return \type {true} when the argument is a vector \NC \NR
 \NC onerow        \NC (n,...,m) \NC a fast way to create a single row vector \NC \NR
 \NC onecolumn     \NC (n,...,m) \NC a fast way to create a single column vector \NC \NR
 \NC type          \NC (v)       \NC return the string \type {vector} if we pass one \NC \NR
 \NC tostring      \NC (v)       \NC returns the dimensions and pointer value \NC \NR
 \NC totable       \NC (v)       \NC returns a regular table representation \NC \NR
 \NC determinant   \NC (v)       \NC returns the determinant \NC \NR
-\NC issingular    \NC (v,[n])   \NC returns true if the determinant is \m{< 0.001}\NC \NR
+\NC issingular    \NC (v,[n])   \NC returns true if the determinant is \m {< 0.001} \NC \NR
 %NC gettype       \NC (v)       \NC returns the type of the vector (experimental) \NC \NR
 \NC setstacking   \NC (v,n)     \NC set the stacking property (\METAPOST) \NC \NR
 \NC getstacking   \NC (v)       \NC get the stacking property (\METAPOST) \NC \NR
@@ -3066,10 +3066,10 @@ document.t1t2 = vector.product(document.t1,document.t2)
 
 \startlinecorrection
 \startcombination[nx=4,ny=1,distance=2em]
-    {\ctxlua{vector.typeset(document.v1t1)}} {\type{v t}}
-    {\ctxlua{vector.typeset(document.t1v1)}} {\type{t v}}
-    {\ctxlua{vector.typeset(document.v1v2)}} {\type{v v}}
-    {\ctxlua{vector.typeset(document.t1t2)}} {\type{t t}}
+    {\dm{\ctxlua{vector.typeset(document.v1t1)}}} {\type{v t}}
+    {\dm{\ctxlua{vector.typeset(document.t1v1)}}} {\type{t v}}
+    {\dm{\ctxlua{vector.typeset(document.v1v2)}}} {\type{v v}}
+    {\dm{\ctxlua{vector.typeset(document.t1t2)}}} {\type{t t}}
 \stopcombination
 \stoplinecorrection
 

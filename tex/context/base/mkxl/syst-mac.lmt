@@ -13,7 +13,7 @@ if not modules then modules = { } end modules ['syst-mac'] = {
 
 -- Another approach is to have the predefined stack operate use private stacks and
 -- then the pop doesn't need the cs. But ... we then also need to store stuff in
--- the format so that complicates maters more than I'm willing to do.
+-- the format so that complicates matters more than I'm willing to do.
 
 local insert, remove = table.insert, table.remove
 

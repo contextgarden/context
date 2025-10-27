@@ -2846,43 +2846,52 @@ local cdata = characters.data
         local characters = target.characters
         local done       = false
         local factor     = target.parameters.hfactor
+        local ignore     = parameters.ignore
         for unicode, data in sortedhash(characters) do
-            local width = data.width
-            if width == 0 then
-                local d = chardata[data.unicode or unicode]
-                if d then
-                    local c = d and d.category
-                    if c == "mn" or c == "sk" or c == "lm" then -- can probably can go
-                        local b = target.descriptions[unicode]
-                        if b then
-                            b = b.boundingbox
-                        end
-                        if b and not d.anchored then
-                            local topanchor = data.topanchor or 0
-                            local llx       = b[1] * factor
-                            local urx       = b[3] * factor
-                            data.advance = data.width
-                            if true then
-                             -- width         = - topanchor
-                                width = 2 * (topanchor - llx)
-                             -- data.commands = {
-                             --  -- rightcommand[width+width/2],
-                             --     rightcommand[-llx],
-                             --     slotcommand[0][unicode]
-                             -- }
-                                data.xoffset = -llx
-                            else
-                                width         = urx - llx
-                                data.commands = {
-                                    leftcommand[llx],
-                                    slotcommand[0][unicode]
-                                }
+            if ignore and ignore[unicode] then
+                -- well, see stix
+            else
+                local width = data.width
+                if width == 0 then
+                    local d = chardata[data.unicode or unicode]
+                    if d then
+                        local c = d and d.category
+                        if c == "mn" or c == "sk" or c == "lm" then -- can probably can go
+                            local b = target.descriptions[unicode]
+                            if b then
+                                b = b.boundingbox
                             end
-                            data.width        = width
-                            data.topanchor    = width/2
-                            data.bottomanchor = width/2
+                            if b and not d.anchored then
+                                local topanchor = data.topanchor or 0
+                                local llx       = b[1] * factor
+                                local urx       = b[3] * factor
+                                data.advance = data.width
+                             -- report_math("%U : %C : %p",unicode,data.unicode or unicode,topanchor)
+                                if topanchor ~= 0 then -- true then
+                                    -- stix has 0x20D6 and 0x20D7 with top accents but the ssty
+                                    -- 0x20D7 (1 and 2) without and no ssty 0x20D6 at all. We just
+                                    -- intercept it and accept that limitation.
+                                 -- width         = - topanchor
+                                    width = 2 * (topanchor - llx)
+                                 -- data.commands = {
+                                 --  -- rightcommand[width+width/2],
+                                 --     rightcommand[-llx],
+                                 --     slotcommand[0][unicode]
+                                 -- }
+                                    data.xoffset = -llx
+                                else
+                                    width         = urx - llx
+                                    data.commands = {
+                                        leftcommand[llx],
+                                        slotcommand[0][unicode]
+                                    }
+                                end
+                                data.width        = width
+                                data.topanchor    = width/2
+                                data.bottomanchor = width/2
+                            end
+                            done = registerdone(done,unicode)
                         end
-                        done = registerdone(done,unicode)
                     end
                 end
             end

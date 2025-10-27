@@ -29,12 +29,13 @@
 
 # include <luametatex.h>
 
-# define POSIT_METATABLE "posit number"
+/*tex See |lmtinterface.h| for |POSIT_METATABLE_INSTANCE|. */
  
 static inline posit_t *positlib_push(lua_State *L)
 {
     posit p = lua_newuserdatauv(L, sizeof(posit_t), 0);
-    luaL_setmetatable(L, POSIT_METATABLE);
+    lua_get_metatablelua(posit_instance);
+    lua_setmetatable(L, -2);
     return p;
 }
 
@@ -90,7 +91,18 @@ static posit_t *positlib_get(lua_State *L, int i)
 {
     switch (lua_type(L, i)) {
         case LUA_TUSERDATA:
-            return (posit) luaL_checkudata(L, i, POSIT_METATABLE);
+            {
+                posit_t * p = lua_touserdata(L, i);
+                if (p && lua_getmetatable(L, i)) {
+                    lua_get_metatablelua(posit_instance);
+                    if (! lua_rawequal(L, -1, -2)) {
+                     // tex_formatted_error("posit lib", "lua <posit> expected, not an object with type %s", luaL_typename(L, i));
+                        p = NULL;
+                    }
+                    lua_pop(L, 2);
+                }
+                return p;
+            }
         case LUA_TSTRING:
             {
                 posit p = positlib_push(L);
@@ -696,7 +708,7 @@ static const luaL_Reg positlib_function_list[] =
 
 int luaopen_posit(lua_State *L)
 {
-    luaL_newmetatable(L, POSIT_METATABLE);
+    luaL_newmetatable(L, POSIT_METATABLE_INSTANCE);
     luaL_setfuncs(L, positlib_function_list, 0);
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);
@@ -706,7 +718,7 @@ int luaopen_posit(lua_State *L)
     lua_gettable(L, -3);
     lua_settable(L, -3);
     lua_pushliteral(L, "__name");
-    lua_pushliteral(L, "posit");
+    lua_pushliteral(L, POSIT_METATABLE_INSTANCE);
     lua_settable(L, -3);
     return 1;
 }

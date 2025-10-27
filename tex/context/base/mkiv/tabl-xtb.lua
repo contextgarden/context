@@ -28,7 +28,6 @@ this mechamism will be improved so that it can replace its older cousin.
 
 local tonumber, next = tonumber, next
 
-local commands            = commands
 local context             = context
 local ctxnode             = context.nodes.flush
 
@@ -1232,8 +1231,6 @@ function xtables.finish_row()
         end
     end
 end
-
--- eventually we might only have commands
 
 implement {
     name      = "x_table_create",

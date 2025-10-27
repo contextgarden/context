@@ -161,6 +161,10 @@ return {
         "mathaxisheight",
         "muquad",
         --
+        "smallcapsratio",
+        "currentspaceskip", "currentspacevalue", "usedspacevalue",
+        "mathstacktotal", "mathstackvgap",
+        --
         -- maybe a different class
         --
         "startmode", "stopmode", "startnotmode", "stopnotmode", "startmodeset", "stopmodeset",
@@ -232,7 +236,7 @@ return {
         --
         "startlmtxmode", "stoplmtxmode", "startmkivmode", "stopmkivmode",
         --
-        "wildcardsymbol",
+        "wildcardsymbol", -- "plussymbol", "minussymbol",
         --
         "normalhyphenationcode", "automatichyphenationcode", "explicithyphenationcode", "syllablehyphenationcode", "uppercasehyphenationcode",
         "collapsehyphenationcode", "compoundhyphenationcode", "strictstarthyphenationcode", "strictendhyphenationcode",
@@ -272,6 +276,7 @@ return {
         "repeatspecificationoptioncode", "doublespecificationoptioncode", "largestspecificationoptioncode",
         "presetsspecificationoptioncode", "integerspecificationoptioncode", "finalspecificationoptioncode",
         "defaultspecificationoptioncode", "ignorespecificationoptioncode", "rotatespecificationoptioncode",
+        "constantspecificationoptioncode",
         --
         "shortmathoptioncode", "orphanedmathoptioncode", "displaymathoptioncode", "crampedmathoptioncode",
         "nosnappingmathoptioncode",
@@ -337,7 +342,7 @@ return {
         --
         "newcount", "newdimen", "newskip", "newmuskip", "newbox", "newtoks", "newread", "newwrite", "newmarks", "newinsert", "newattribute", "newif", "newfloat", "newmvl",
         "newlanguage", "newfamily", "newfam", "newhelp", -- not used
-        "newuserunit",
+        "newuserunit", "userunitcode",
         --
         "newinteger", "newdimension", "newgluespec", "newmugluespec", "newposit",
         "aliasinteger", "aliasdimension", "aliasposit",

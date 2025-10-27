@@ -20,6 +20,9 @@
 node_memory_state_info lmt_node_memory_state = {
     .nodes       = NULL,
     .nodesizes   = NULL,
+# if track_attributes 
+    .attributes  = NULL,
+# endif 
     .free_chain  = { null },
     .nodes_data  = {
         .minimum   = min_node_size,
@@ -40,6 +43,9 @@ node_memory_state_info lmt_node_memory_state = {
     .lua_properties_level       = 0,
     .attribute_cache            = 0,
     .max_used_attribute         = 1,
+# if track_attributes 
+    .max_tracked_attribute      = 0,
+# endif 
     .node_properties_table_size = 0,
 };
 
@@ -76,10 +82,10 @@ void lmt_nodelib_initialize(void) {
         *subtypes_dir, *subtypes_par, *subtypes_glue, *subtypes_boundary, *subtypes_penalty, *subtypes_kern,
         *subtypes_rule, *subtypes_glyph , *subtypes_disc, *subtypes_list, *subtypes_adjust, *subtypes_mark,
         *subtypes_math, *subtypes_noad, *subtypes_radical, *subtypes_choice, *subtypes_accent, *subtypes_fence,
-        *subtypes_fraction, *subtypes_split, *subtypes_attribute;
+        *subtypes_fraction, *subtypes_split;
 
     value_info
-        *lmt_node_fields_accent, *lmt_node_fields_adjust, *lmt_node_fields_attribute,
+        *lmt_node_fields_accent, *lmt_node_fields_adjust, *lmt_node_fields_attribute, *lmt_node_fields_attribute_list,
         *lmt_node_fields_boundary, *lmt_node_fields_choice, *lmt_node_fields_delimiter, *lmt_node_fields_dir,
         *lmt_node_fields_disc, *lmt_node_fields_fence, *lmt_node_fields_fraction, *lmt_node_fields_glue,
         *lmt_node_fields_glue_spec, *lmt_node_fields_glyph, *lmt_node_fields_insert, *lmt_node_fields_split,
@@ -381,11 +387,6 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_accent, fixedbottom_accent_subtype,  fixedbottom)
     set_value_entry_key(subtypes_accent, fixedboth_accent_subtype,    fixedboth)
 
-    subtypes_attribute = lmt_aux_allocate_value_info(attribute_value_subtype);
-
-    set_value_entry_key(subtypes_attribute, attribute_list_subtype,  list)
-    set_value_entry_key(subtypes_attribute, attribute_value_subtype, value)
-
     /*tex The fields of nodes. I need to update these! */
 
     lmt_node_fields_accent = lmt_aux_allocate_value_info(7);
@@ -398,22 +399,26 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_accent, 5, node_list_field, topovershoot);
     set_value_entry_val(lmt_node_fields_accent, 6, node_list_field, bottomovershoot);
 
-    lmt_node_fields_adjust = lmt_aux_allocate_value_info(8);
+    lmt_node_fields_adjust = lmt_aux_allocate_value_info(7);
 
     set_value_entry_val(lmt_node_fields_adjust, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_adjust, 1, node_list_field, list);
-    set_value_entry_val(lmt_node_fields_adjust, 1, integer_field,   options);
-    set_value_entry_val(lmt_node_fields_adjust, 1, integer_field,   index);
-    set_value_entry_val(lmt_node_fields_adjust, 1, node_list_field, except);
-    set_value_entry_val(lmt_node_fields_adjust, 1, dimension_field, depthbefore);
-    set_value_entry_val(lmt_node_fields_adjust, 1, dimension_field, depthafter);
+    set_value_entry_val(lmt_node_fields_adjust, 2, integer_field,   options);
+    set_value_entry_val(lmt_node_fields_adjust, 3, integer_field,   index);
+    set_value_entry_val(lmt_node_fields_adjust, 4, node_list_field, except);
+    set_value_entry_val(lmt_node_fields_adjust, 5, dimension_field, depthbefore);
+    set_value_entry_val(lmt_node_fields_adjust, 6, dimension_field, depthafter);
 
-    lmt_node_fields_attribute = lmt_aux_allocate_value_info(4);
+    lmt_node_fields_attribute = lmt_aux_allocate_value_info(3);
 
-    set_value_entry_val(lmt_node_fields_attribute, 0, integer_field, count);
-    set_value_entry_val(lmt_node_fields_attribute, 1, integer_field, data);
-    set_value_entry_val(lmt_node_fields_attribute, 2, integer_field, index);
-    set_value_entry_val(lmt_node_fields_attribute, 3, integer_field, value);
+    set_value_entry_val(lmt_node_fields_attribute, 0, integer_field, data);
+    set_value_entry_val(lmt_node_fields_attribute, 1, integer_field, index);
+    set_value_entry_val(lmt_node_fields_attribute, 2, integer_field, value);
+
+    lmt_node_fields_attribute_list = lmt_aux_allocate_value_info(2);
+
+    set_value_entry_val(lmt_node_fields_attribute_list, 0, integer_field, count);
+    set_value_entry_val(lmt_node_fields_attribute_list, 1, integer_field, data);
 
     /* Nothing */
 
@@ -818,70 +823,71 @@ void lmt_nodelib_initialize(void) {
         that!
     */
 
-    lmt_interface.node_data[hlist_node]          = (node_info) { .id = hlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(hlist),          .lua = lua_key_index(hlist),           .visible = 1 };
-    lmt_interface.node_data[vlist_node]          = (node_info) { .id = vlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(vlist),          .lua = lua_key_index(vlist),           .visible = 1 };
-    lmt_interface.node_data[rule_node]           = (node_info) { .id = rule_node,           .size = rule_node_size,           .first = 0, .last = last_rule_subtype,          .subtypes = subtypes_rule,     .fields = lmt_node_fields_rule,           .name = lua_key(rule),           .lua = lua_key_index(rule),            .visible = 1 };
-    lmt_interface.node_data[insert_node]         = (node_info) { .id = insert_node,         .size = insert_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_insert,         .name = lua_key(insert),         .lua = lua_key_index(insert),          .visible = 1 };
-    lmt_interface.node_data[mark_node]           = (node_info) { .id = mark_node,           .size = mark_node_size,           .first = 0, .last = last_mark_subtype,          .subtypes = subtypes_mark,     .fields = lmt_node_fields_mark,           .name = lua_key(mark),           .lua = lua_key_index(mark),            .visible = 1 };
-    lmt_interface.node_data[adjust_node]         = (node_info) { .id = adjust_node,         .size = adjust_node_size,         .first = 0, .last = last_adjust_subtype,        .subtypes = subtypes_adjust,   .fields = lmt_node_fields_adjust,         .name = lua_key(adjust),         .lua = lua_key_index(adjust),          .visible = 1 };
-    lmt_interface.node_data[boundary_node]       = (node_info) { .id = boundary_node,       .size = boundary_node_size,       .first = 0, .last = last_boundary_subtype,      .subtypes = subtypes_boundary, .fields = lmt_node_fields_boundary,       .name = lua_key(boundary),       .lua = lua_key_index(boundary),        .visible = 1 };
-    lmt_interface.node_data[disc_node]           = (node_info) { .id = disc_node,           .size = disc_node_size,           .first = 0, .last = last_discretionary_subtype, .subtypes = subtypes_disc,     .fields = lmt_node_fields_disc,           .name = lua_key(disc),           .lua = lua_key_index(disc),            .visible = 1 };
-    lmt_interface.node_data[whatsit_node]        = (node_info) { .id = whatsit_node,        .size = whatsit_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_whatsit,        .name = lua_key(whatsit),        .lua = lua_key_index(whatsit),         .visible = 1 };
-    lmt_interface.node_data[par_node]            = (node_info) { .id = par_node,            .size = par_node_size,            .first = 0, .last = last_par_subtype,           .subtypes = subtypes_par,      .fields = lmt_node_fields_par,            .name = lua_key(par),            .lua = lua_key_index(par),             .visible = 1 };
-    lmt_interface.node_data[dir_node]            = (node_info) { .id = dir_node,            .size = dir_node_size,            .first = 0, .last = last_dir_subtype,           .subtypes = subtypes_dir,      .fields = lmt_node_fields_dir,            .name = lua_key(dir),            .lua = lua_key_index(dir),             .visible = 1 };
-    lmt_interface.node_data[math_node]           = (node_info) { .id = math_node,           .size = math_node_size,           .first = 0, .last = last_math_subtype,          .subtypes = subtypes_math,     .fields = lmt_node_fields_math,           .name = lua_key(math),           .lua = lua_key_index(math),            .visible = 1 };
-    lmt_interface.node_data[glue_node]           = (node_info) { .id = glue_node,           .size = glue_node_size,           .first = 0, .last = last_glue_subtype,          .subtypes = subtypes_glue,     .fields = lmt_node_fields_glue,           .name = lua_key(glue),           .lua = lua_key_index(glue),            .visible = 1 };
-    lmt_interface.node_data[kern_node]           = (node_info) { .id = kern_node,           .size = kern_node_size,           .first = 0, .last = last_kern_subtype,          .subtypes = subtypes_kern,     .fields = lmt_node_fields_kern,           .name = lua_key(kern),           .lua = lua_key_index(kern),            .visible = 1 };
-    lmt_interface.node_data[penalty_node]        = (node_info) { .id = penalty_node,        .size = penalty_node_size,        .first = 0, .last = last_penalty_subtype,       .subtypes = subtypes_penalty,  .fields = lmt_node_fields_penalty,        .name = lua_key(penalty),        .lua = lua_key_index(penalty),         .visible = 1 };
-    lmt_interface.node_data[style_node]          = (node_info) { .id = style_node,          .size = style_node_size,          .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_style,          .name = lua_key(style),          .lua = lua_key_index(style),           .visible = 1 };
-    lmt_interface.node_data[choice_node]         = (node_info) { .id = choice_node,         .size = choice_node_size,         .first = 0, .last = last_choice_subtype,        .subtypes = subtypes_choice,   .fields = lmt_node_fields_choice,         .name = lua_key(choice),         .lua = lua_key_index(choice),          .visible = 1 };
-    lmt_interface.node_data[parameter_node]      = (node_info) { .id = parameter_node,      .size = parameter_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_parameter,      .name = lua_key(parameter),      .lua = lua_key_index(parameter),       .visible = 1 };
-    lmt_interface.node_data[simple_noad]         = (node_info) { .id = simple_noad,         .size = noad_size,                .first = 0, .last = last_noad_subtype,          .subtypes = subtypes_noad,     .fields = lmt_node_fields_noad,           .name = lua_key(noad),           .lua = lua_key_index(noad),            .visible = 1 };
-    lmt_interface.node_data[radical_noad]        = (node_info) { .id = radical_noad,        .size = radical_noad_size,        .first = 0, .last = last_radical_subtype,       .subtypes = subtypes_radical,  .fields = lmt_node_fields_radical,        .name = lua_key(radical),        .lua = lua_key_index(radical),         .visible = 1 };
-    lmt_interface.node_data[fraction_noad]       = (node_info) { .id = fraction_noad,       .size = fraction_noad_size,       .first = 0, .last = last_fraction_subtype,      .subtypes = subtypes_fraction, .fields = lmt_node_fields_fraction,       .name = lua_key(fraction),       .lua = lua_key_index(fraction),        .visible = 1 };
-    lmt_interface.node_data[accent_noad]         = (node_info) { .id = accent_noad,         .size = accent_noad_size,         .first = 0, .last = last_accent_subtype,        .subtypes = subtypes_accent,   .fields = lmt_node_fields_accent,         .name = lua_key(accent),         .lua = lua_key_index(accent),          .visible = 1 };
-    lmt_interface.node_data[fence_noad]          = (node_info) { .id = fence_noad,          .size = fence_noad_size,          .first = 0, .last = last_fence_subtype,         .subtypes = subtypes_fence,    .fields = lmt_node_fields_fence,          .name = lua_key(fence),          .lua = lua_key_index(fence),           .visible = 1 };
-    lmt_interface.node_data[math_char_node]      = (node_info) { .id = math_char_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathchar),       .lua = lua_key_index(mathchar),        .visible = 1 };
-    lmt_interface.node_data[math_text_char_node] = (node_info) { .id = math_text_char_node, .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathtextchar),   .lua = lua_key_index(mathtextchar),    .visible = 1 };
-    lmt_interface.node_data[sub_box_node]        = (node_info) { .id = sub_box_node,        .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,        .name = lua_key(subbox),         .lua = lua_key_index(subbox),          .visible = 1 };
-    lmt_interface.node_data[sub_mlist_node]      = (node_info) { .id = sub_mlist_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,      .name = lua_key(submlist),       .lua = lua_key_index(submlist),        .visible = 1 };
-    lmt_interface.node_data[delimiter_node]      = (node_info) { .id = delimiter_node,      .size = math_delimiter_node_size, .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_delimiter,      .name = lua_key(delimiter),      .lua = lua_key_index(delimiter),       .visible = 1 };
-    lmt_interface.node_data[glyph_node]          = (node_info) { .id = glyph_node,          .size = glyph_node_size,          .first = 0, .last = last_glyph_subtype,         .subtypes = subtypes_glyph,    .fields = lmt_node_fields_glyph,          .name = lua_key(glyph),          .lua = lua_key_index(glyph),           .visible = 1 };
+    lmt_interface.node_data[hlist_node]          = (node_info) { .id = hlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(hlist),          .lua = lua_key_index(hlist),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[vlist_node]          = (node_info) { .id = vlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(vlist),          .lua = lua_key_index(vlist),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[rule_node]           = (node_info) { .id = rule_node,           .size = rule_node_size,           .first = 0, .last = last_rule_subtype,          .subtypes = subtypes_rule,     .fields = lmt_node_fields_rule,           .name = lua_key(rule),           .lua = lua_key_index(rule),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[insert_node]         = (node_info) { .id = insert_node,         .size = insert_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_insert,         .name = lua_key(insert),         .lua = lua_key_index(insert),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[mark_node]           = (node_info) { .id = mark_node,           .size = mark_node_size,           .first = 0, .last = last_mark_subtype,          .subtypes = subtypes_mark,     .fields = lmt_node_fields_mark,           .name = lua_key(mark),           .lua = lua_key_index(mark),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[adjust_node]         = (node_info) { .id = adjust_node,         .size = adjust_node_size,         .first = 0, .last = last_adjust_subtype,        .subtypes = subtypes_adjust,   .fields = lmt_node_fields_adjust,         .name = lua_key(adjust),         .lua = lua_key_index(adjust),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[boundary_node]       = (node_info) { .id = boundary_node,       .size = boundary_node_size,       .first = 0, .last = last_boundary_subtype,      .subtypes = subtypes_boundary, .fields = lmt_node_fields_boundary,       .name = lua_key(boundary),       .lua = lua_key_index(boundary),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[disc_node]           = (node_info) { .id = disc_node,           .size = disc_node_size,           .first = 0, .last = last_discretionary_subtype, .subtypes = subtypes_disc,     .fields = lmt_node_fields_disc,           .name = lua_key(disc),           .lua = lua_key_index(disc),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[whatsit_node]        = (node_info) { .id = whatsit_node,        .size = whatsit_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_whatsit,        .name = lua_key(whatsit),        .lua = lua_key_index(whatsit),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[par_node]            = (node_info) { .id = par_node,            .size = par_node_size,            .first = 0, .last = last_par_subtype,           .subtypes = subtypes_par,      .fields = lmt_node_fields_par,            .name = lua_key(par),            .lua = lua_key_index(par),             .visible = 1, .definable = 1 };
+    lmt_interface.node_data[dir_node]            = (node_info) { .id = dir_node,            .size = dir_node_size,            .first = 0, .last = last_dir_subtype,           .subtypes = subtypes_dir,      .fields = lmt_node_fields_dir,            .name = lua_key(dir),            .lua = lua_key_index(dir),             .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_node]           = (node_info) { .id = math_node,           .size = math_node_size,           .first = 0, .last = last_math_subtype,          .subtypes = subtypes_math,     .fields = lmt_node_fields_math,           .name = lua_key(math),           .lua = lua_key_index(math),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[glue_node]           = (node_info) { .id = glue_node,           .size = glue_node_size,           .first = 0, .last = last_glue_subtype,          .subtypes = subtypes_glue,     .fields = lmt_node_fields_glue,           .name = lua_key(glue),           .lua = lua_key_index(glue),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[kern_node]           = (node_info) { .id = kern_node,           .size = kern_node_size,           .first = 0, .last = last_kern_subtype,          .subtypes = subtypes_kern,     .fields = lmt_node_fields_kern,           .name = lua_key(kern),           .lua = lua_key_index(kern),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[penalty_node]        = (node_info) { .id = penalty_node,        .size = penalty_node_size,        .first = 0, .last = last_penalty_subtype,       .subtypes = subtypes_penalty,  .fields = lmt_node_fields_penalty,        .name = lua_key(penalty),        .lua = lua_key_index(penalty),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[style_node]          = (node_info) { .id = style_node,          .size = style_node_size,          .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_style,          .name = lua_key(style),          .lua = lua_key_index(style),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[choice_node]         = (node_info) { .id = choice_node,         .size = choice_node_size,         .first = 0, .last = last_choice_subtype,        .subtypes = subtypes_choice,   .fields = lmt_node_fields_choice,         .name = lua_key(choice),         .lua = lua_key_index(choice),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[parameter_node]      = (node_info) { .id = parameter_node,      .size = parameter_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_parameter,      .name = lua_key(parameter),      .lua = lua_key_index(parameter),       .visible = 1, .definable = 1 };
+    lmt_interface.node_data[simple_noad]         = (node_info) { .id = simple_noad,         .size = noad_size,                .first = 0, .last = last_noad_subtype,          .subtypes = subtypes_noad,     .fields = lmt_node_fields_noad,           .name = lua_key(noad),           .lua = lua_key_index(noad),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[radical_noad]        = (node_info) { .id = radical_noad,        .size = radical_noad_size,        .first = 0, .last = last_radical_subtype,       .subtypes = subtypes_radical,  .fields = lmt_node_fields_radical,        .name = lua_key(radical),        .lua = lua_key_index(radical),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[fraction_noad]       = (node_info) { .id = fraction_noad,       .size = fraction_noad_size,       .first = 0, .last = last_fraction_subtype,      .subtypes = subtypes_fraction, .fields = lmt_node_fields_fraction,       .name = lua_key(fraction),       .lua = lua_key_index(fraction),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[accent_noad]         = (node_info) { .id = accent_noad,         .size = accent_noad_size,         .first = 0, .last = last_accent_subtype,        .subtypes = subtypes_accent,   .fields = lmt_node_fields_accent,         .name = lua_key(accent),         .lua = lua_key_index(accent),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[fence_noad]          = (node_info) { .id = fence_noad,          .size = fence_noad_size,          .first = 0, .last = last_fence_subtype,         .subtypes = subtypes_fence,    .fields = lmt_node_fields_fence,          .name = lua_key(fence),          .lua = lua_key_index(fence),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_char_node]      = (node_info) { .id = math_char_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathchar),       .lua = lua_key_index(mathchar),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_text_char_node] = (node_info) { .id = math_text_char_node, .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathtextchar),   .lua = lua_key_index(mathtextchar),    .visible = 1, .definable = 1 };
+    lmt_interface.node_data[sub_box_node]        = (node_info) { .id = sub_box_node,        .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,        .name = lua_key(subbox),        .lua = lua_key_index(subbox),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[sub_mlist_node]      = (node_info) { .id = sub_mlist_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,      .name = lua_key(submlist),        .lua = lua_key_index(submlist),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[delimiter_node]      = (node_info) { .id = delimiter_node,      .size = math_delimiter_node_size, .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_delimiter,      .name = lua_key(delimiter),      .lua = lua_key_index(delimiter),       .visible = 1, .definable = 1 };
+    lmt_interface.node_data[glyph_node]          = (node_info) { .id = glyph_node,          .size = glyph_node_size,          .first = 0, .last = last_glyph_subtype,         .subtypes = subtypes_glyph,    .fields = lmt_node_fields_glyph,          .name = lua_key(glyph),          .lua = lua_key_index(glyph),           .visible = 1, .definable = 1 };
 
     /*tex
         Who knows when someone needs is, so for now we keep it exposed.
     */
 
-    lmt_interface.node_data[unset_node]          = (node_info) { .id = unset_node,          .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_unset,          .name = lua_key(unset),          .lua = lua_key_index(unset),           .visible = 1 };
-    lmt_interface.node_data[specification_node]  = (node_info) { .id = specification_node,  .size = specification_node_size,  .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(specification),  .lua = lua_key_index(specification),   .visible = 0 };
-    lmt_interface.node_data[align_record_node]   = (node_info) { .id = align_record_node,   .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_align_record,   .name = lua_key(alignrecord),    .lua = lua_key_index(alignrecord),     .visible = 1 };
+    lmt_interface.node_data[unset_node]          = (node_info) { .id = unset_node,          .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_unset,          .name = lua_key(unset),          .lua = lua_key_index(unset),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[specification_node]  = (node_info) { .id = specification_node,  .size = specification_node_size,  .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(specification),  .lua = lua_key_index(specification),   .visible = 0, .definable = 0 };
+    lmt_interface.node_data[align_record_node]   = (node_info) { .id = align_record_node,   .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_align_record,   .name = lua_key(alignrecord),    .lua = lua_key_index(alignrecord),     .visible = 1, .definable = 1 };
 
     /*tex
-        These nodes never show up in nodelists and are managed special. Messing with such nodes
+        These nodes never show up in node lists and are managed special. Messing with such nodes
         directly is not a good idea.
     */
 
-    lmt_interface.node_data[attribute_node]      = (node_info) { .id = attribute_node,      .size = attribute_node_size,      .first = 0, .last = last_attribute_subtype,     .subtypes = subtypes_attribute,.fields = lmt_node_fields_attribute,      .name = lua_key(attribute),      .lua = lua_key_index(attribute),       .visible = 1 };
+    lmt_interface.node_data[attribute_list_node] = (node_info) { .id = attribute_list_node, .size = attribute_list_node_size, .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_attribute_list, .name = lua_key(attributelist),  .lua = lua_key_index(attributelist),   .visible = 1, .definable = 0 };
+    lmt_interface.node_data[attribute_node]      = (node_info) { .id = attribute_node,      .size = attribute_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_attribute,      .name = lua_key(attribute),      .lua = lua_key_index(attribute),       .visible = 1, .definable = 0 };
 
     /*
         We still expose the glue spec as they are the containers for skip registers but there is no
         real need to use them at the user end.
     */
 
-    lmt_interface.node_data[glue_spec_node]      = (node_info) { .id = glue_spec_node,      .size = glue_spec_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_glue_spec,      .name = lua_key(gluespec),       .lua = lua_key_index(gluespec),        .visible = 1 };
+    lmt_interface.node_data[glue_spec_node]      = (node_info) { .id = glue_spec_node,      .size = glue_spec_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_glue_spec,      .name = lua_key(gluespec),       .lua = lua_key_index(gluespec),        .visible = 1, .definable = 1 };
 
     /*tex
         This one sometimes shows up, especially when we temporarily need an alternative head pointer,
         simply because we want to retain some head in case the original head is replaced.
     */
 
-    lmt_interface.node_data[temp_node]           = (node_info) { .id = temp_node,           .size = temp_node_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(temp),           .lua = lua_key_index(temp),            .visible = 1 };
+    lmt_interface.node_data[temp_node]           = (node_info) { .id = temp_node,           .size = temp_node_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(temp),           .lua = lua_key_index(temp),            .visible = 1, .definable = 1 };
 
     /*tex
         The split nodes are used for insertions.
     */
 
-    lmt_interface.node_data[split_node]          = (node_info) { .id = split_node,          .size = split_node_size,          .first = 0, .last = last_split_subtype,         .subtypes = subtypes_split,    .fields = lmt_node_fields_split,          .name = lua_key(split),          .lua = lua_key_index(split),           .visible = 1 };
+    lmt_interface.node_data[split_node]          = (node_info) { .id = split_node,          .size = split_node_size,          .first = 0, .last = last_split_subtype,         .subtypes = subtypes_split,    .fields = lmt_node_fields_split,          .name = lua_key(split),          .lua = lua_key_index(split),           .visible = 1, .definable = 1 };
 
     /*tex
         The following nodes are not meant for users. They are used internally for different purposes
@@ -889,22 +895,22 @@ void lmt_nodelib_initialize(void) {
         allocated using fast methods so they never show up in the new, copy and flush handlers.
     */
 
-    lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0 };
-    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(lmtxexpression), .lua = lua_key_index(lmtxexpression),  .visible = 0 };
-    lmt_interface.node_data[rpn_expression_node] = (node_info) { .id = rpn_expression_node, .size = rpn_expression_node_size, .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(rpnexpression),  .lua = lua_key_index(rpnexpression),   .visible = 0 };
-    lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0 };
-    lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0 };
-    lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0 };
-    lmt_interface.node_data[nesting_node]        = (node_info) { .id = nesting_node,        .size = nesting_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(nestedlist),     .lua = lua_key_index(nestedlist),      .visible = 0 };
-    lmt_interface.node_data[span_node]           = (node_info) { .id = span_node,           .size = span_node_size,           .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(span),           .lua = lua_key_index(span),            .visible = 0 };
-    lmt_interface.node_data[align_stack_node]    = (node_info) { .id = align_stack_node,    .size = align_stack_node_size,    .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(alignstack),     .lua = lua_key_index(alignstack),      .visible = 0 };
- // lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0 };
-    lmt_interface.node_data[if_node]             = (node_info) { .id = if_node,             .size = if_node_size,             .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(ifstack),        .lua = lua_key_index(ifstack),         .visible = 0 };
-    lmt_interface.node_data[unhyphenated_node]   = (node_info) { .id = unhyphenated_node,   .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(unhyphenated),   .lua = lua_key_index(unhyphenated),    .visible = 0 };
-    lmt_interface.node_data[hyphenated_node]     = (node_info) { .id = hyphenated_node,     .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(hyphenated),     .lua = lua_key_index(hyphenated),      .visible = 0 };
-    lmt_interface.node_data[delta_node]          = (node_info) { .id = delta_node,          .size = delta_node_size,          .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(delta),          .lua = lua_key_index(delta),           .visible = 0 };
-    lmt_interface.node_data[passive_node]        = (node_info) { .id = passive_node,        .size = passive_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(passive),        .lua = lua_key_index(passive),         .visible = 0 };
-    lmt_interface.node_data[passive_node + 1]    = (node_info) { .id = -1,                  .size = -1,                       .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = NULL,                    .lua = 0,                              .visible = 0 };
+    lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(lmtxexpression), .lua = lua_key_index(lmtxexpression),  .visible = 0, .definable = 0 };
+    lmt_interface.node_data[rpn_expression_node] = (node_info) { .id = rpn_expression_node, .size = rpn_expression_node_size, .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(rpnexpression),  .lua = lua_key_index(rpnexpression),   .visible = 0, .definable = 0 };
+    lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0, .definable = 0 };
+    lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0, .definable = 0 };
+    lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0, .definable = 0 };
+    lmt_interface.node_data[nesting_node]        = (node_info) { .id = nesting_node,        .size = nesting_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(nestedlist),     .lua = lua_key_index(nestedlist),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[span_node]           = (node_info) { .id = span_node,           .size = span_node_size,           .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(span),           .lua = lua_key_index(span),            .visible = 0, .definable = 0 };
+    lmt_interface.node_data[align_stack_node]    = (node_info) { .id = align_stack_node,    .size = align_stack_node_size,    .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(alignstack),     .lua = lua_key_index(alignstack),      .visible = 0, .definable = 0 };
+ // lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0, .definable = 0 };
+    lmt_interface.node_data[if_node]             = (node_info) { .id = if_node,             .size = if_node_size,             .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(ifstack),        .lua = lua_key_index(ifstack),         .visible = 0, .definable = 0 };
+    lmt_interface.node_data[unhyphenated_node]   = (node_info) { .id = unhyphenated_node,   .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(unhyphenated),   .lua = lua_key_index(unhyphenated),    .visible = 0, .definable = 0 };
+    lmt_interface.node_data[hyphenated_node]     = (node_info) { .id = hyphenated_node,     .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(hyphenated),     .lua = lua_key_index(hyphenated),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[delta_node]          = (node_info) { .id = delta_node,          .size = delta_node_size,          .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(delta),          .lua = lua_key_index(delta),           .visible = 0, .definable = 0 };
+    lmt_interface.node_data[passive_node]        = (node_info) { .id = passive_node,        .size = passive_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(passive),        .lua = lua_key_index(passive),         .visible = 0, .definable = 0 };
+    lmt_interface.node_data[passive_node + 1]    = (node_info) { .id = -1,                  .size = -1,                       .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = NULL,                    .lua = 0,                              .visible = 0, .definable = 0 };
 
     lmt_interface.par_data = lmt_memory_malloc(par_n_of_codes * sizeof(par_info));
 
@@ -949,7 +955,7 @@ void lmt_nodelib_initialize(void) {
     lmt_interface.par_data[par_toddler_penalties_code      ] = (par_info) { .cmd = specification_cmd,      .chr = toddler_penalties_code,       .category = par_toddler_penalty_category     };
     lmt_interface.par_data[par_fitness_classes_code        ] = (par_info) { .cmd = specification_cmd,      .chr = fitness_classes_code,         .category = par_fitness_classes_category     };
     lmt_interface.par_data[par_adjacent_demerits_code      ] = (par_info) { .cmd = specification_cmd,      .chr = adjacent_demerits_code,       .category = par_demerits_category            };
-    lmt_interface.par_data[par_orphan_line_factors_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = orphan_line_factors_code,     .category = par_orphan_penalty_category      };
+    lmt_interface.par_data[par_orphan_line_factors_code    ] = (par_info) { .cmd = specification_cmd,      .chr = orphan_line_factors_code,     .category = par_orphan_penalty_category      };
     lmt_interface.par_data[par_baseline_skip_code          ] = (par_info) { .cmd = internal_glue_cmd,      .chr = baseline_skip_code,           .category = par_line_category                };
     lmt_interface.par_data[par_line_skip_code              ] = (par_info) { .cmd = internal_glue_cmd,      .chr = line_skip_code,               .category = par_line_category                };
     lmt_interface.par_data[par_line_skip_limit_code        ] = (par_info) { .cmd = internal_dimension_cmd, .chr = line_skip_limit_code,         .category = par_line_category                };
@@ -1194,7 +1200,7 @@ halfword tex_new_node(quarterword type, quarterword subtype)
             }
         }
         if (tex_nodetype_has_attributes(type)) {
-            attach_current_attribute_list(node);
+            tex_attach_current_attribute_list(node);
         }
     }
     /* last */
@@ -1205,9 +1211,7 @@ halfword tex_new_node(quarterword type, quarterword subtype)
 
 halfword tex_new_temp_node(void)
 {
-    halfword n = tex_get_node(temp_node_size);
-    node_type(n) = temp_node;
-    node_subtype(n) = 0;
+    halfword n = tex_get_node_type(temp_node_size, temp_node);
     memset((void *) (lmt_node_memory_state.nodes + n + 1), 0, (sizeof(memoryword) * (temp_node_size - 1)));
     return n;
 }
@@ -1225,7 +1229,7 @@ static halfword tex_aux_new_glyph_node_with_attributes(halfword parent)
     if (parent) {
         tex_attach_attribute_list_copy(n, parent);
     } else {
-        attach_current_attribute_list(n);
+        tex_attach_current_attribute_list(n);
     }
     return n;
 }
@@ -1485,6 +1489,7 @@ halfword tex_copy_node(halfword original)
                     break;
                 case specification_node:
                     /* next field is zeroed */
+                    specification_pointer(copy) = NULL;
                     specification_count(copy) = specification_count(original);
                     specification_options(copy) = specification_options(original);
                     specification_size(copy) = specification_size(original);
@@ -1513,6 +1518,22 @@ static inline void tex_aux_free_sub_node(halfword source)
 }
 
 /* We don't need the checking for attributes if we make these lists frozen. */
+
+void tex_flush_specification_node(halfword p)
+{
+    if (p && ! specification_constant(p)) {
+        tex_flush_node(p);
+    }
+}
+
+halfword tex_copy_specification_node(halfword p)
+{
+    if (! p || specification_constant(p)) {
+        return p;
+    } else { 
+        return tex_copy_node(p);
+    }
+}
 
 void tex_flush_node(halfword p)
 {
@@ -1569,17 +1590,18 @@ void tex_flush_node(halfword p)
                     tex_flush_node(par_baseline_skip(p));
                     tex_flush_node(par_line_skip(p));
                     tex_flush_node(par_par_shape(p));
-                    tex_flush_node(par_club_penalties(p));
-                    tex_flush_node(par_inter_line_penalties(p));
-                    tex_flush_node(par_widow_penalties(p));
-                    tex_flush_node(par_display_widow_penalties(p));
-                    tex_flush_node(par_broken_penalties(p));
-                    tex_flush_node(par_orphan_penalties(p));
-                    tex_flush_node(par_toddler_penalties(p));
-                    tex_flush_node(par_fitness_classes(p));
-                    tex_flush_node(par_adjacent_demerits(p));
-                    tex_flush_node(par_orphan_line_factors(p));
-                    tex_flush_node(par_par_passes(p));
+                    /* */
+                    tex_flush_specification_node(par_club_penalties(p));
+                    tex_flush_specification_node(par_inter_line_penalties(p));
+                    tex_flush_specification_node(par_widow_penalties(p));
+                    tex_flush_specification_node(par_display_widow_penalties(p));
+                    tex_flush_specification_node(par_broken_penalties(p));
+                    tex_flush_specification_node(par_orphan_penalties(p));
+                    tex_flush_specification_node(par_toddler_penalties(p));
+                    tex_flush_specification_node(par_fitness_classes(p));
+                    tex_flush_specification_node(par_adjacent_demerits(p));
+                    tex_flush_specification_node(par_orphan_line_factors(p));
+                    tex_flush_specification_node(par_par_passes(p));
                     /* tokens */
                     tex_flush_token_list(par_end_par_tokens(p));
                     break;
@@ -1856,9 +1878,29 @@ halfword tex_get_node(int size)
     }
 }
 
+halfword tex_get_node_type(int size, quarterword type)
+{
+ // if (size < max_chain_size) { /*tex This test should not be needed! */
+        halfword p = lmt_node_memory_state.free_chain[size];
+        if (p) {
+            lmt_node_memory_state.free_chain[size] = node_next(p);
+            lmt_node_memory_state.nodesizes[p] = (char) size;
+            node_none(p) = 0;
+            lmt_node_memory_state.nodes_data.ptr += size;
+        } else {
+            p = tex_aux_allocated_node(size);
+        }
+        node_type(p) = type;
+        return p;
+ // } else {
+ //     return tex_normal_error("nodes", "there is a problem in getting a node, case 1");
+ // }
+}
+
 void tex_free_node(halfword p, int size) /* no need to pass size, we can get it here */
 {
-    if (p > lmt_node_memory_state.reserved && size < max_chain_size) {
+ // if (p > lmt_node_memory_state.reserved && size < max_chain_size) {
+    if (p > lmt_node_memory_state.reserved) {
         lmt_node_memory_state.nodesizes[p] = 0;
         node_next(p) = lmt_node_memory_state.free_chain[size];
         lmt_node_memory_state.free_chain[size] = p;
@@ -1905,7 +1947,41 @@ static void tex_aux_initialize_character(halfword n, halfword chr)
     node_type(n) = glyph_node;
     glyph_character(n) = chr;
 }
-# define reserved_node_slots 32
+# define reserved_node_slots     32
+# define reserved_tracking_slots  2
+
+# if track_attributes 
+
+/*tex 
+    Currently we don't store these states in the format, we just assume no attributes are set. If 
+    we do have attributes, we can end up sub zero i.e. wrap around as we're unsigned so actually 
+    always tracked. For now. 
+*/
+
+static void tex_aux_update_attribute_tracking(int n)
+{
+    /*tex Of course we could do a a realloc instead. */
+    if (n >= lmt_node_memory_state.max_tracked_attribute) {
+        n += default_tracked_attributes + reserved_tracking_slots;
+        unsigned int * update = lmt_memory_calloc(n, sizeof(unsigned));
+        if (! update) {
+            tex_overflow_error("attributes", (int) n * sizeof(unsigned));
+        } else { 
+            if (lmt_node_memory_state.max_tracked_attribute) { 
+                memcpy(update, lmt_node_memory_state.attributes, lmt_node_memory_state.max_tracked_attribute * sizeof(unsigned));
+            }
+            if (lmt_node_memory_state.attributes) { 
+                lmt_memory_free(lmt_node_memory_state.attributes);
+            }
+            lmt_node_memory_state.attributes = update;
+            lmt_node_memory_state.nodes_data.extra -=  lmt_node_memory_state.max_tracked_attribute * sizeof(unsigned);
+            lmt_node_memory_state.nodes_data.extra +=  n * sizeof(unsigned);
+            lmt_node_memory_state.max_tracked_attribute = n;
+        }
+    } 
+}
+
+# endif 
 
 void tex_initialize_node_mem()
 {
@@ -1932,6 +2008,10 @@ void tex_initialize_node_mem()
     } else {
         tex_overflow_error("nodes", size);
     }
+# if track_attributes 
+    lmt_node_memory_state.attributes = 0;
+    tex_aux_update_attribute_tracking(1); /* we force a bump */
+# endif 
 }
 
 void tex_initialize_nodes(void)
@@ -2098,13 +2178,22 @@ halfword tex_list_node_mem_usage(void)
     (actually for each node type I guess).
 */
 
-extern void tex_change_attribute_register(halfword a, halfword id, halfword value)
+extern void tex_change_attribute_register(halfword a, halfword eqindex, halfword value)
 {
+    /*tex 
+        Beware, the index is actually an eq pointer so we need to normalize it. When we ever have 
+        an internal this need to be adapted!
+    */
+    int index = register_attribute_number(eqindex);
+    if (index > lmt_node_memory_state.max_used_attribute) {
+        lmt_node_memory_state.max_used_attribute = index;
+# if track_attributes 
+        tex_aux_update_attribute_tracking(index);
+# endif 
+    }
     /* actually global should also kick in when we're not global yet */
-
- // if ((eq_value(id) != value) || (eq_level(id) != level_one && is_global(a))) {
-
-    if (eq_value(id) != value) {
+ // if ((eq_value(eqindex) != value) || (eq_level(eqindex) != level_one && is_global(a))) {
+    if (eq_value(eqindex) != value) {
         if (is_global(a)) {
          // for (int i = (lmt_save_state.save_stack_data.ptr - 1); i >= 0; i--) {
          //     if (save_type(i) == level_boundary_save_type) {
@@ -2136,21 +2225,19 @@ extern void tex_change_attribute_register(halfword a, halfword id, halfword valu
 
 static inline halfword tex_aux_new_attribute_list_node(void)
 {
-    halfword r = tex_get_node(attribute_node_size);
-    node_type(r) = attribute_node;
-    node_subtype(r) = attribute_list_subtype;
-    attribute_unset(r) = 0;
-    attribute_count(r) = 0;
+    halfword r = tex_get_node_type(attribute_list_node_size, attribute_list_node);
+    attribute_list_reset(r) = 0;
     return r;
 }
 
 static inline halfword tex_aux_new_attribute_node(halfword index, int value)
 {
-    halfword r = tex_get_node(attribute_node_size);
-    node_type(r) = attribute_node;
-    node_subtype(r) = attribute_value_subtype;
-    attribute_index(r) = (quarterword) index;
+    halfword r = tex_get_node_type(attribute_node_size, attribute_node);
+    attribute_index(r) = index;
     attribute_value(r) = value;
+# if track_attributes
+    ++lmt_node_memory_state.attributes[index];
+# endif 
     return r;
 }
 
@@ -2158,6 +2245,9 @@ static inline halfword tex_aux_copy_attribute_node(halfword n)
 {
     halfword a = tex_get_node(attribute_node_size);
     memcpy((void *) (lmt_node_memory_state.nodes + a), (void *) (lmt_node_memory_state.nodes + n), (sizeof(memoryword) * attribute_node_size));
+# if track_attributes
+    ++lmt_node_memory_state.attributes[attribute_index(n)];
+# endif 
     return a;
 }
 
@@ -2170,6 +2260,9 @@ halfword tex_copy_attribute_list(halfword a_old)
         p_old = node_next(p_old);
         while (p_old) {
             halfword a = tex_copy_node(p_old);
+# if track_attributes
+            ++lmt_node_memory_state.attributes[attribute_index(p_old)];
+# endif 
             node_next(p_new) = a;
             p_new = a;
             p_old = node_next(p_old);
@@ -2239,7 +2332,7 @@ static void tex_aux_update_attribute_cache(void)
     }
 }
 
-void tex_build_attribute_list(halfword target)
+void tex_attach_current_attribute_list(halfword target)
 {
     if (lmt_node_memory_state.max_used_attribute >= 0) {
         if (! current_attribute_state || current_attribute_state == attribute_cache_disabled) {
@@ -2280,10 +2373,10 @@ halfword tex_current_attribute_list(void)
 void tex_dereference_attribute_list(halfword a)
 {
     if (a && a != attribute_cache_disabled) {
-        if (node_type(a) == attribute_node && node_subtype(a) == attribute_list_subtype){
-            if (attribute_count(a) > 0) {
-                --attribute_count(a);
-                if (attribute_count(a) == 0) {
+        if (node_type(a) == attribute_list_node){
+            if (attribute_list_count(a) > 0) {
+                --attribute_list_count(a);
+                if (attribute_list_count(a) == 0) {
                     if (a == current_attribute_state) {
                         set_current_attribute_state(attribute_cache_disabled);
                     }
@@ -2303,12 +2396,36 @@ void tex_dereference_attribute_list(halfword a)
                             /* this doesn't always (which is weird) */
                             halfword h = a;
                             halfword t = a;
+# if track_attributes
+                            if (a) {
+                                while (1) {
+                                    lmt_node_memory_state.nodesizes[a] = 0;
+                                    ++u;
+                                    t = a;
+                                    a = node_next(a);
+                                    if (a) {
+// if (attribute_index(a) < 0 || attribute_index(a) >= max_attribute_register_index) {
+//     printf("? > %i > ERROR %i\n",node_type(a),attribute_index(a));
+//     if (node_type(a) == glyph_node) { 
+//         printf("> CHAR %i\n",glyph_character(a));   
+//     }
+// } else {
+                                        --lmt_node_memory_state.attributes[attribute_index(a)];
+// }
+                                    } else { 
+                                        break;
+                                    }
+                                }
+                            }
+# else 
+
                             while (a) {
                                 lmt_node_memory_state.nodesizes[a] = 0;
                                 ++u;
                                 t = a;
                                 a = node_next(a);
                             }
+# endif 
                             node_next(t) = lmt_node_memory_state.free_chain[attribute_node_size];
                             lmt_node_memory_state.free_chain[attribute_node_size] = h;
                         }
@@ -2649,7 +2766,7 @@ static void tex_aux_show_attr_list(halfword p)
      if (p) {
         int callback_id = lmt_callback_defined(get_attribute_callback);
         if (tracing_nodes_par > 1) {
-            tex_print_format("<%i#%i>", p, attribute_count(p));
+            tex_print_format("<%i#%i>", p, attribute_list_count(p));
         }
         tex_print_char('[');
         p = node_next(p);
@@ -4166,7 +4283,6 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case shaping_penalties_mode_code : return par_shaping_penalties_mode_code;
                 case shaping_penalty_code        : return par_shaping_penalty_code;
                 case line_break_checks_code      : return par_line_break_checks_code;
-                case orphan_line_factors_code    : return par_orphan_line_factors_code;
                 case adjust_spacing_step_code    : return par_adjust_spacing_step_code;
                 case adjust_spacing_shrink_code  : return par_adjust_spacing_shrink_code;
                 case adjust_spacing_stretch_code : return par_adjust_spacing_stretch_code;
@@ -4197,7 +4313,6 @@ static halfword tex_aux_internal_to_par_code(halfword cmd, halfword index) {
                 case line_skip_code              : return par_line_skip_code;
             }
             break;
-
         case specification_reference_cmd:
             switch (index) {
                 case par_shape_code              : return par_par_shape_code;
@@ -4428,64 +4543,44 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
                 par_par_shape(p) = v ? tex_copy_node(v) : null;
                 break;
             case par_inter_line_penalties_code:
-                if (par_inter_line_penalties(p)) {
-                    tex_flush_node(par_inter_line_penalties(p));
-                }
-                par_inter_line_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_inter_line_penalties(p));
+                par_inter_line_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_club_penalties_code:
-                if (par_club_penalties(p)) {
-                    tex_flush_node(par_club_penalties(p));
-                }
-                par_club_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_club_penalties(p));
+                par_club_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_widow_penalties_code:
-                if (par_widow_penalties(p)) {
-                    tex_flush_node(par_widow_penalties(p));
-                }
-                par_widow_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_widow_penalties(p));
+                par_widow_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_display_widow_penalties_code:
-                if (par_display_widow_penalties(p)) {
-                    tex_flush_node(par_display_widow_penalties(p));
-                }
-                par_display_widow_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_display_widow_penalties(p));
+                par_display_widow_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_broken_penalties_code:
-                if (par_broken_penalties(p)) {
-                    tex_flush_node(par_broken_penalties(p));
-                }
-                par_broken_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_broken_penalties(p));
+                par_broken_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_orphan_penalties_code:
-                if (par_orphan_penalties(p)) {
-                    tex_flush_node(par_orphan_penalties(p));
-                }
-                par_orphan_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_orphan_penalties(p));
+                par_orphan_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_toddler_penalties_code:
-                if (par_toddler_penalties(p)) {
-                    tex_flush_node(par_toddler_penalties(p));
-                }
-                par_toddler_penalties(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_toddler_penalties(p));
+                par_toddler_penalties(p) = tex_copy_specification_node(v);
                 break;
             case par_fitness_classes_code:
-                if (par_fitness_classes(p)) {
-                    tex_flush_node(par_fitness_classes(p));
-                }
-                par_fitness_classes(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_fitness_classes(p));
+                par_fitness_classes(p) = tex_copy_specification_node(v);
                 break;
             case par_adjacent_demerits_code:
-                if (par_adjacent_demerits(p)) {
-                    tex_flush_node(par_adjacent_demerits(p));
-                }
-                par_adjacent_demerits(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_adjacent_demerits(p));
+                par_adjacent_demerits(p) = tex_copy_specification_node(v);
                 break;
             case par_orphan_line_factors_code:
-                if (par_orphan_line_factors(p)) {
-                    tex_flush_node(par_orphan_line_factors(p));
-                }
-                par_orphan_line_factors(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_orphan_line_factors(p));
+                par_orphan_line_factors(p) = tex_copy_specification_node(v);
                 break;
             case par_baseline_skip_code:
                 if (par_baseline_skip(p)) {
@@ -4524,10 +4619,8 @@ void tex_set_par_par(halfword p, halfword what, halfword v, int force)
                 par_emergency_extra_stretch(p) = v;
                 break;
             case par_par_passes_code:
-                if (par_par_passes(p)) {
-                    tex_flush_node(par_par_passes(p));
-                }
-                par_par_passes(p) = v ? tex_copy_node(v) : null;
+                tex_flush_specification_node(par_par_passes(p));
+                par_par_passes(p) = tex_copy_specification_node(v);
                 break;
             case par_line_break_checks_code:
                 par_line_break_checks(p) = v;
@@ -4770,73 +4863,53 @@ void tex_snapshot_par(halfword p, halfword what)
         }
         if (tex_par_to_be_set(what, par_inter_line_penalties_code)) {
             halfword v = unset ? null : inter_line_penalties_par;
-            if (par_inter_line_penalties(p)) {
-                tex_flush_node(par_inter_line_penalties(p));
-            }
-            par_inter_line_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_inter_line_penalties(p));
+            par_inter_line_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_club_penalties_code)) {
             halfword v = unset ? null : club_penalties_par;
-            if (par_club_penalties(p)) {
-                tex_flush_node(par_club_penalties(p));
-            }
-            par_club_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_club_penalties(p));
+            par_club_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_widow_penalties_code)) {
             halfword v = unset ? null : widow_penalties_par;
-            if (par_widow_penalties(p)) {
-                tex_flush_node(par_widow_penalties(p));
-            }
-            par_widow_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_widow_penalties(p));
+            par_widow_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_display_widow_penalties_code)) {
             halfword v = unset ? null : display_widow_penalties_par;
-            if (par_display_widow_penalties(p)) {
-                tex_flush_node(par_display_widow_penalties(p));
-            }
-            par_display_widow_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_display_widow_penalties(p));
+            par_display_widow_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_broken_penalties_code)) {
             halfword v = unset ? null : broken_penalties_par;
-            if (par_broken_penalties(p)) {
-                tex_flush_node(par_broken_penalties(p));
-            }
-            par_broken_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_broken_penalties(p));
+            par_broken_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_orphan_penalties_code)) {
             halfword v = unset ? null : orphan_penalties_par;
-            if (par_orphan_penalties(p)) {
-                tex_flush_node(par_orphan_penalties(p));
-            }
-            par_orphan_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_orphan_penalties(p));
+            par_orphan_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_toddler_penalties_code)) {
             halfword v = unset ? null : toddler_penalties_par;
-            if (par_toddler_penalties(p)) {
-                tex_flush_node(par_toddler_penalties(p));
-            }
-            par_toddler_penalties(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_toddler_penalties(p));
+            par_toddler_penalties(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_fitness_classes_code)) {
             halfword v = unset ? null : fitness_classes_par;
-            if (par_fitness_classes(p)) {
-                tex_flush_node(par_fitness_classes(p));
-            }
-            par_fitness_classes(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_fitness_classes(p));
+            par_fitness_classes(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_adjacent_demerits_code)) {
             halfword v = unset ? null : adjacent_demerits_par;
-            if (par_adjacent_demerits(p)) {
-                tex_flush_node(par_adjacent_demerits(p));
-            }
-            par_adjacent_demerits(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_adjacent_demerits(p));
+            par_adjacent_demerits(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_orphan_line_factors_code)) {
             halfword v = unset ? null : orphan_line_factors_par;
-            if (par_orphan_line_factors(p)) {
-                tex_flush_node(par_orphan_line_factors(p));
-            }
-            par_orphan_line_factors(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_orphan_line_factors(p));
+            par_orphan_line_factors(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_baseline_skip_code)) {
             halfword v = unset ? null : baseline_skip_par;
@@ -4877,12 +4950,9 @@ void tex_snapshot_par(halfword p, halfword what)
             par_emergency_extra_stretch(p) = unset ? null : emergency_extra_stretch_par;
         }
         if (tex_par_to_be_set(what, par_par_passes_code))  {
-         // halfword v = unset ? null : par_passes_par;
             halfword v = unset ? null : (par_passes_exception_par ? par_passes_exception_par : par_passes_par);
-            if (par_par_passes(p)) {
-                tex_flush_node(par_par_passes(p));
-            }
-            par_par_passes(p) = v ? tex_copy_node(v) : null;
+            tex_flush_specification_node(par_par_passes(p));
+            par_par_passes(p) = tex_copy_specification_node(v);
         }
         if (tex_par_to_be_set(what, par_line_break_checks_code)) {
             par_line_break_checks(p) = unset ? null : line_break_checks_par;
@@ -5012,13 +5082,37 @@ halfword tex_new_specification_node(halfword n, quarterword s, halfword options)
 void tex_dispose_specification_list(halfword a)
 {
     if (specification_pointer(a)) {
+        if (specification_constant(a)) { 
+            tex_fatal_error("disposing constant specification");
+        }
         switch (node_subtype(a)) {
             case par_passes_code:
                 for (int i = 1; i <= specification_count(a); i++) {
-                    halfword f = tex_get_passes_fitnessclasses(a, i);
-                    if (f) {
-                       tex_flush_node(f);
-                       tex_set_passes_fitnessclasses(a, i, null);
+                    halfword n;
+                    n = tex_get_passes_fitnessclasses(a, i);
+                    if (n) { 
+                        tex_flush_node(n);
+                        tex_set_passes_fitnessclasses(a, i, null);
+                    }
+                    n = tex_get_passes_adjacentdemerits(a, i);
+                    if (n) { 
+                        tex_flush_node(n);
+                        tex_set_passes_adjacentdemerits(a, i, null); 
+                    }
+                    n = tex_get_passes_toddlerpenalties(a,i);
+                    if (n) {
+                        tex_flush_node(n);
+                        tex_set_passes_toddlerpenalties(a, i, null); 
+                    }
+                    n = tex_get_passes_orphanlinefactors(a, i);
+                    if (n) { 
+                        tex_flush_node(n);
+                        tex_set_passes_orphanlinefactors(a, i, null); 
+                    }
+                    n = tex_get_passes_orphanpenalties(a, i);
+                    if (n) {
+                        tex_flush_node(n);
+                        tex_set_passes_orphanpenalties(a, i, null); 
                     }
                 }
                 break;
@@ -5066,10 +5160,31 @@ void tex_copy_specification_list(halfword target, halfword source)
             switch (node_subtype(target)) {
                 case par_passes_code:
                     for (int i = 1; i <= specification_count(source); i++) {
-                        halfword f = tex_get_passes_fitnessclasses(source, i);
-                        if (f) {
-                            halfword c = tex_copy_node(f);
-                            tex_set_passes_fitnessclasses(target, i, c);
+                        halfword n; 
+                        n =  tex_get_passes_fitnessclasses(source, i);
+                        if (n) { 
+                            halfword c = tex_copy_node(n); 
+                            tex_set_passes_fitnessclasses(target, i, c); 
+                        }
+                        n = tex_get_passes_adjacentdemerits(source, i);
+                        if (n) { 
+                            halfword c = tex_copy_node(n); 
+                            tex_set_passes_adjacentdemerits(target, i, c); 
+                        }
+                        n = tex_get_passes_toddlerpenalties(source,i);
+                        if (n) {
+                            halfword c = tex_copy_node(n); 
+                            tex_set_passes_toddlerpenalties(target, i, c); 
+                        }
+                        n = tex_get_passes_orphanlinefactors(source, i);
+                        if (n) { 
+                            halfword c = tex_copy_node(n); 
+                            tex_set_passes_orphanlinefactors(target, i, c); 
+                        }
+                        n = tex_get_passes_orphanpenalties(source, i);
+                        if (n) {
+                            halfword c = tex_copy_node(n); 
+                            tex_set_passes_orphanpenalties(target, i, c); 
                         }
                     }
                     break;
@@ -5114,45 +5229,42 @@ void tex_dispose_specification_nodes(void)
     }
 }
 
-# define specification_version (specificationspec_cmd * 1000000 + specification_reference_cmd * 1000 + 1)
+# define specification_version (specification_cmd * 1000 + 1)
 
 void tex_dump_specification_data(dumpstream f) {
     int total = 0;
+    halfword node = 0;
     dump_via_int(f, specification_version);
-    for (int cs = 0; cs < (eqtb_size + lmt_hash_state.hash_data.ptr + 1); cs++) {
-        int code = eq_type(cs);
-        switch (code) {
-            case specificationspec_cmd:
-            case specification_reference_cmd:
-                {
-                    halfword value = eq_value(cs);
-                    if (value) {
-                        halfword subtype = node_subtype(value);
-                        halfword size = specification_size(value);
-                        dump_int(f, code);
-                        dump_int(f, cs);
-                        dump_int(f, subtype);
-                        dump_int(f, specification_count(value));
-                        dump_int(f, specification_options(value));
-                        dump_int(f, specification_size(value));
-                        dump_int(f, specification_anything_1(value));
-                        dump_int(f, specification_anything_2(value));
-                        /* dump_mem */
-                        if (size) {
-                         // dump_things(f, specification_pointer(value), size); // /sizeof(memoryword));
-                            dump_items(f, specification_pointer(value), 1, size); // /sizeof(memoryword));
-                        }
-                        /*tex Nodes are already dumped so the stired pointer is not valid! */
-                        if (specification_pointer(value)) {
-                            lmt_memory_free(specification_pointer(value));
-                            specification_pointer(value) = NULL;
-                        }
-                        ++total;
-                    }
-                    break;
+    while (node < lmt_node_memory_state.nodes_data.top) { 
+        halfword type = node_type(node);
+        halfword size = lmt_interface.node_data[type].size;
+        if (type == specification_node) {
+            if (node > lmt_node_memory_state.reserved && lmt_node_memory_state.nodesizes[node] == 0) {
+                /* extra check */
+            } else { 
+                halfword size = specification_size(node);
+             // halfword subtype = node_subtype(node);
+                dump_int(f, type);
+                dump_int(f, node);
+                dump_int(f, size);
+             // dump_int(f, subtype);
+             // dump_int(f, specification_count(node));
+             // dump_int(f, specification_options(node));
+             // dump_int(f, specification_anything_1(node));
+             // dump_int(f, specification_anything_2(node));
+                /* dump_mem */
+                if (size) {
+                    dump_items(f, specification_pointer(node), 1, size);
                 }
+                if (specification_pointer(node)) {
+                    lmt_memory_free(specification_pointer(node));
+                    specification_pointer(node) = NULL;
+                }
+                ++total;
+            }
         }
-    }
+        node += size; 
+    }    
     dump_via_int(f, 0);
     dump_int(f, total);
 }
@@ -5164,52 +5276,48 @@ void tex_undump_specification_data(dumpstream f) {
         int total = 0;
         int check = 0;
         while (1) {
-            int code;
-            undump_int(f, code);
-            switch (code) {
-                case specificationspec_cmd:
-                case specification_reference_cmd:
-                    {
-                        int cs;
-                        undump_int(f, cs);
-                        if (cs) {
-                            /* The node is stored but its list pointer is invalid. */
-                            halfword value = eq_value(cs);
-                            halfword subtype, count, options, size, unused_1, unused_2;
-                            undump_int(f, subtype);
-                            undump_int(f, count);
-                            undump_int(f, options);
-                            undump_int(f, size);
-                            undump_int(f, unused_1);
-                            undump_int(f, unused_2);
-                            if (value) {
-                                if (specification_size(value) == size) {
-                                    specification_anything_1(value) = unused_1;
-                                    specification_anything_2(value) = unused_2;
-                                    if (size) {
-                                        specification_pointer(value) = lmt_memory_malloc(size);
-                                     // undump_things(f, specification_pointer(value), size); // /sizeof(memoryword));
-                                        undump_items(f, specification_pointer(value), 1, size); // /sizeof(memoryword));
-                                    } else {
-                                        specification_pointer(value) = NULL;
-                                    }
-                                    ++total;
-                                } else {
-                                    tex_fatal_undump_error("specifications (size)");
-                                }
-                            } else {
+            halfword type;
+            undump_int(f, type);
+            if (type == specification_node) { 
+             // halfword node, size, subtype, count, options, anything_1, anything_2;
+                halfword node, size;
+                undump_int(f, node);
+                undump_int(f, size);
+             // undump_int(f, subtype);
+             // undump_int(f, count);
+             // undump_int(f, options);
+             // undump_int(f, anything_1);
+             // undump_int(f, anything_2);
+                if (node) { /* maybe sanity check */
+                    if (specification_size(node) == size) {
+                     // /* already set */
+                     // specification_anything_1(node) = anything_1;
+                     // specification_anything_2(node) = anything_2;
+                     // /* */
+                        if (size) {
+                            /* todo : count mem, add to extra */
+//tex_new_specification_list(value, count);
+                            specification_pointer(node) = lmt_memory_malloc(size);
+                            if (specification_pointer(node)) {
+                                undump_items(f, specification_pointer(node), 1, size);
+                            } else { 
                                 tex_fatal_undump_error("specifications (memory)");
                             }
                         } else {
-                            tex_fatal_undump_error("specifications (csname)");
+                            specification_pointer(node) = NULL;
                         }
+                        ++total;
+                    } else {
+                        tex_fatal_undump_error("specifications (size)");
                     }
-                    break;
-                default:
-                    goto DONE;
+                } else {
+                    tex_fatal_undump_error("specifications (node)");
+                }
+            } else {
+                /* The zero sentinal. */
+                break;
             }
         }
-      DONE:
         undump_int(f, check);
         if (check != total) {
             tex_fatal_undump_error("specifications (total)");

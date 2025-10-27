@@ -43,7 +43,7 @@ local fencecodes     = mark(getsubtypes("fence"))
 local choicecodes    = mark(getsubtypes("choice"))
 local fractioncodes  = mark(getsubtypes("fraction"))
 local parcodes       = mark(getsubtypes("par"))
-local attributecodes = mark(getsubtypes("attribute"))
+-- local attributecodes = mark(getsubtypes("attribute"))
 
 local function simplified(t)
     local r = { }
@@ -73,7 +73,7 @@ fencecodes     = allocate(swapped(fencecodes,fencecodes))
 choicecodes    = allocate(swapped(choicecodes,choicecodes))
 fractioncodes  = allocate(swapped(fractioncodes,fractioncodes))
 parcodes       = allocate(swapped(parcodes,parcodes))
-attributecodes = allocate(swapped(attributecodes,attributecodes))
+-- attributecodes = allocate(swapped(attributecodes,attributecodes))
 rulecodes      = allocate(swapped(rulecodes,rulecodes))
 
 nodes.gluecodes      = gluecodes
@@ -93,7 +93,7 @@ nodes.fencecodes     = fencecodes
 nodes.choicecodes    = choicecodes
 nodes.fractioncodes  = fractioncodes
 nodes.parcodes       = parcodes
-nodes.attributecodes = attributecodes
+-- nodes.attributecodes = attributecodes
 nodes.rulecodes      = rulecodes
 
 nodes.nodecodes      = nodecodes
@@ -144,7 +144,7 @@ local subtypes = allocate {
     fence     = fencecodes,
     choice    = choicecodes,
     par       = parcodes,
-    attribute = attributecodes,
+--     attribute = attributecodes,
     rule      = rulecodes,
 
     vlist     = listcodes,

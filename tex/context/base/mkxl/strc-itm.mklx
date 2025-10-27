@@ -281,7 +281,7 @@
    \clf_setdestinationattribute
      {%
          metadata {%
-             kind            {item}% was item, why?
+             kind            \s!item
          \ifx\currentreferencecoding\s!xml
              xmlroot         {\xmldocument}% only useful when text
          \fi
@@ -319,7 +319,7 @@
      }%
    \relax
    \strc_references_stop_destination_nodes
-   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \global\currentdestinationattribute\lastdestinationattribute
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
      \dontleavehmode\hbox attr \destinationattribute\lastdestinationattribute\bgroup
@@ -811,6 +811,7 @@
       \c!prefixsegments=\itemgroupparameter\c!prefixsegments,
       \c!prefixconnector=\itemgroupparameter\c!prefixconnector,
       \c!criterium=\itemgroupparameter\c!criterium,
+      \c!start=\itemgroupparameter\c!start,
       \c!numberorder=\ifconditional\c_strc_itemgroups_reverse\v!reverse\else\v!normal\fi,
       \c!numberstopper=\begincsname\??itemstopper\itemgroupparameter\c!placestopper\endcsname,
       \c!numberconversionset=\v_strc_itemgroups_counter,

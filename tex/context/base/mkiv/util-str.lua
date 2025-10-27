@@ -10,7 +10,7 @@ utilities         = utilities or { }
 utilities.strings = utilities.strings or { }
 local strings     = utilities.strings
 
-local format, gsub, rep, sub, find, char = string.format, string.gsub, string.rep, string.sub, string.find, string.char
+local format, gsub, rep, sub, find, char, byte = string.format, string.gsub, string.rep, string.sub, string.find, string.char, string.byte
 local load, dump = load, string.dump
 local tonumber, type, tostring, next, setmetatable = tonumber, type, tostring, next, setmetatable
 local unpack, concat = table.unpack, table.concat
@@ -889,6 +889,69 @@ end
 local format_X = function(f)
     n = n + 1
     return format("format('%%%sX',a%s)",f,n)
+end
+
+do
+
+    if not string.hashes then
+        string.hashes = { }
+    end
+
+    local X02 = setmetatable({ }, {
+        __index = function(t,k)
+            if type(k) == "string" then
+                t[k] = t[byte(k)]
+            elseif k < 0 then
+                return "00"
+            else
+                return "FF"
+            end
+            return t[k]
+        end
+    })
+
+    for i=0,255 do
+        X02[i] = format("%02X",i)
+    end
+
+    local X04 = setmetatable({ }, {
+        __index = function(t,k)
+            if k < 0 then
+              --report("fatal h_hex_4 error: %i",k)
+                return "0000"
+            elseif k < 256 then -- maybe 512
+                -- not sparse in this range
+                for i=0,255 do
+                    t[i] = format("%04X",i)
+                end
+                return t[k]
+            elseif k > 0xFFFF then
+                return "FFFF"
+            else
+                local v = format("%04X",k)
+                t[k] = v
+                return v
+            end
+        end
+    })
+
+    environment.X02 = X02
+    environment.X04 = X04
+
+    string.hashes.X02 = X02
+    string.hashes.X04 = X04
+
+    format_X = function(f)
+        n = n + 1
+        if f == "02" then
+            return format("X02[a%s]",n)
+        elseif f == "04" then
+            return format("X04[a%s]",n)
+        else
+            return format("format('%%%sX',a%s)",f,n)
+        end
+    end
+
 end
 
 local format_o = function(f)

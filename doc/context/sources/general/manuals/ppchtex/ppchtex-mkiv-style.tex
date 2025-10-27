@@ -1,0 +1,214 @@
+%D For now we only updated the English manual but of course the settings
+%D are multilingual.
+
+% The code is sensitive for scaled vs double and was written when scaled was the
+% default number mode, so in case of issues we need to check with:
+
+% \ctxlua{chemistry.method = "scaled"}
+
+\startenvironment ppchtex-mkiv-style
+
+\dontcomplain
+
+\usemodule
+  [abbreviations-logos]
+
+\setupbodyfont[pagella,11pt]
+
+\definecolor [red]       [r=.8]      \definecolor [fullred]    [r=1]
+\definecolor [green]     [g=.8]      \definecolor [fullgreen]  [g=1]
+\definecolor [blue]      [b=.8]      \definecolor [fullblue]   [b=1]
+\definecolor [yellow]    [r=.8,g=.8] \definecolor [fullyellow] [r=1,g=1]
+\definecolor [gray]      [s=.8]      \definecolor [fullgray]   [s=.5]
+
+\definecolor [MainColor] [red]       \definecolor [TitleColorOne] [r=1]
+\definecolor [SubColor]  [green]     \definecolor [TitleColorTwo] [g=1]
+
+\definecolor [MainColor] [green]     \definecolor [TitleColorOne] [g=1]
+\definecolor [SubColor]  [blue]      \definecolor [TitleColorTwo] [b=1]
+
+\definecolor [MainColor] [blue]      \definecolor [TitleColorOne] [b=1]
+\definecolor [SubColor]  [red]       \definecolor [TitleColorTwo] [r=1]
+
+\definecolor [TitleColorThree] [s=.5]
+
+\definepalet
+  [en]
+  [MainColor=blue,
+   SubColor=yellow,
+   TitleColorOne=fullblue,
+   TitleColorTwo=fullyellow,
+   TitleColorThree=fullgray]
+
+% \definepalet
+%   [nl]
+%   [MainColor=green,
+%    SubColor=blue,
+%    TitleColorOne=fullgreen,
+%    TitleColorTwo=fullblue,
+%    TitleColorThree=fullgray]
+
+% \definepalet
+%   [de]
+%   [MainColor=blue,
+%    SubColor=red,
+%    TitleColorOne=fullblue,
+%    TitleColorTwo=fullred,
+%    TitleColorThree=fullgray]
+
+\setuppalet
+  [\currentmainlanguage]
+
+\setupchemicalframed
+  [framecolor=SubColor] % frame=on]
+
+\setupchemical
+  [rulecolor=MainColor]
+
+\setuptables
+  [rulecolor=SubColor]
+
+\setupfootnotes
+  [rulecolor=SubColor]
+
+\setupwhitespace
+  [big]
+
+\setupinteraction
+  [page=yes,
+   state=start,
+   color=,
+   contrastcolor=]
+
+\setupcombinations
+  [inbetween={\blank[medium]}]
+
+% \setupalign
+%   [bottom]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   topspace=1.5cm,
+   bottomspace=1.5cm,
+   header=1.5cm,
+   footer=1.5cm]
+
+\setuppagenumbering
+    [alternative=doublesided]
+
+\setupfootertexts
+  [\PPCHTEX]
+  [\completepagenumber]
+
+\setuplabeltext [en] [example=Example~]
+% \setuplabeltext [nl] [example=Voorbeeld~]
+% \setuplabeltext [de] [example=Beispiel~]
+
+\definelabel
+  [example]
+  [text=\labeltext{example},
+   headstyle=bold,
+   after={\blank\switchtobodyfont[small]}]
+
+\setupcombinedlist
+  [content]
+  [alternative=a,
+   interaction=all]
+
+\setuplist
+  [chapter]
+  [width=3em,
+   before=,
+   after=]
+
+% This is an oldie but there is no reason to change it ...
+
+\startuseMPgraphic{page}
+    numeric n ; n := OverlayWidth/10 ;
+    path p, q ; p := (1,1) -- (2,2) -- (2,3) -- (1,4) -- (0,3) -- (0,2) -- cycle ;
+    p := p scaled n ; color a, b ;
+    pickup pencircle scaled (n/10) ;
+    for i=-1 step 2n until OverlayWidth+n :
+        for j=0 step 2n until OverlayHeight :
+            q := p shifted (i if odd j : +n fi, j) ;
+            a := \MPcolor{TitleColorOne} randomized(.4,.9) ;
+            b := \MPcolor{TitleColorTwo} randomized(.4,.9) ;
+            circular_shade(q, ceiling(uniformdeviate 4), a, b) ;
+            draw q withcolor \MPcolor{TitleColorThree} ;
+        endfor ;
+    endfor ;
+\stopuseMPgraphic
+
+\defineoverlay
+  [page]
+  [\useMPgraphic{page}]
+
+\startsetups document:start
+    \pushbackground[page]
+    \setupbackgrounds
+        [page]
+        [background=page]
+    \startmakeup[standard]
+        \dontcomplain
+        \startcolor[gray]
+            \setupalign
+                [left]
+            \definedfont[SansBold*default at 96pt]
+            \setupinterlinespace
+            PPCH\TeX
+            \vskip36pt
+            \definedfont[SansBold*default at 24pt]
+            \setupinterlinespace
+            typesetting chemistry in\par
+            \CONTEXT\ \LMTX\par
+\vskip12pt work in progress\par
+            \vfill
+            \definedfont[SansBold*default at 24pt]
+            \setupinterlinespace
+            Hans Hagen\par
+            Ton Otten\par
+            Alan Braslau\par
+          % Pragma ADE, Hasselt NL\par
+            \vskip24pt
+            \currentdate[month,year]
+            \par
+        \stopcolor
+    \stopmakeup
+    \popbackground
+    \setuppagenumber[number=1]
+\stopsetups
+
+\starttexdefinition protected MyChapterCommand #1#2
+    \hbox to \hsize \bgroup
+        \setupframed [
+            offset=6pt,
+            height=2cm,
+            width=6cm,
+            rulethickness=2pt,
+            framecolor=MainColor,
+            top=
+        ]
+        \hfill
+        \framed [
+            frame=off,
+            align=left
+        ] {
+            #1
+        }
+        \framed [
+            frame=off,
+            leftframe=on,
+            align={right,nothyphenated}
+        ] {
+            #2
+        }
+    \egroup
+\stoptexdefinition
+
+\setuphead
+  [chapter]
+  [command=\MyChapterCommand,
+   style=\bfc]
+
+\stopenvironment

@@ -59,4 +59,7 @@
 \permanent\def\mathstacktotal{\dimexpr\Umathstacknumup\scriptstyle+\Umathstackdenomdown\scriptstyle\relax}
 \permanent\def\mathstackvgap {\Umathstackvgap\scriptstyle}
 
+\untraced\permanent\protected\def\smallcapsratio
+  {\numexpression\plusthousand*\exheight/\capheight\relax}
+
 \protect \endinput

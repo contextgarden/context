@@ -1,0 +1,226 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-structures
+
+\chapter{Structures}
+
+The number of commands that is used to typeset chemical structure formulas is
+relatively small once you see the pattern. Often most you need is the following.
+
+\startbuffer
+\setupchemical[axis=on,frame=on,width=5000,axis=on]
+
+\startchemical
+  \chemical[SIX,B,+SR,RZ][1,2,3,4,5,6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example[ex:sixring]
+\typebuffer
+\stopfiguretext
+
+With \type{ \setupchemical} we can influence the makeup of the formulas. These
+setups influence all the following formulas, unless they are superceded by local
+setup variables.
+
+The set up variables can be defined right after \tex {startchemical}. In that
+case the set up is only applied to one structure formula.
+
+\startbuffer
+\startchemical[frame=on,width=fit,height=fit]
+  \chemical[CARBON,CB1][A,B,C,D,E,F]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Both examples show that \type {\chemical} is the essential command. This command,
+that may be used more than once within a \type {\start}||\type {\stop}||pair, is
+accompanied with two arguments. These arguments are written between~\type {[ ]}.
+The first argument is used for defining the chemical bonds, the second argument
+for the atoms and molecules that make up the structure.
+
+\startnarrower
+    If you use(d) this module in the early days you will notice that we use \type
+    {+SR} instead of just \type {R} here. The reason is that it is more
+    consistent to have \type {R} for the full|-|length radical line in all
+    constructs, at the \TEX\ end as well as in \METAPOST. This means that older
+    code has to be adapted.
+\stopnarrower
+
+The carbon example looks simple but in fact is pretty complex. It actually is
+
+\starttyping
+\chemical[CARBON,C,SB,Z234,1.5MOV1,MIR0,C,SB,Z234][A,B,C,D,E,F]
+\stoptyping
+
+and the simplification comes from \type {CB1} being a shortcut definition in the
+\type {CARBON} namespace. This will be discussed later, so consider it a teaser.
+
+Text is typeset in mathematical mode, this means that you may type anything that
+normally is allowed between~\type{$ $} or with \type {\im}.
+
+We will explore the examples in more detail. The key \type {SIX} means that we
+want to draw a sixring. In analogy we could type \type {ONE}, \type {THREE},
+\type {FOUR} and \type {FIVE}, \type {EIGHT}, \type {CARBON}, \type {NEWMAN},
+\type {CHAIR}, some alternatives on these keys and some symbols.
+
+\def\littlestructure[#1]%
+  {\startchemical[frame=on,scale=small,size=small,width=3cm,height=3cm]%
+     \chemical[#1][1,2,3,4,5,6,7,8]%
+   \stopchemical}
+
+\startplacefigure[title=A few examples]
+    \startcombination[nx=5,ny=3]
+        {\littlestructure[ONE,SB,Z]}               {One}
+        {\littlestructure[THREE,B,+SR,RZ]}         {Three}
+        {\littlestructure[FOUR,B,+SR,RZ]}          {Four}
+        {\littlestructure[FIVE,B,+SR,RZ]}          {Five}
+        {\littlestructure[SIX,B,+SR,RZ]}           {Six}
+        {\littlestructure[SEVEN,B,+SR,RZ]}         {Seven}
+        {\littlestructure[EIGHT,B]}                {Eight}
+        {\littlestructure[NINE,B]}                 {Nine}
+        {\littlestructure[FIVE,FRONT,B,+LSR,+RSR]} {Five Front}
+        {\littlestructure[SIX,FRONT,B,+LSR,+RSR]}  {Six Front}
+        {\littlestructure[CARBON,C,SB,Z]}          {Carbon}         % suboptimal
+        {\littlestructure[NEWMANSTAGGER,C,+SR,Z]}  {Newman Stagger} % suboptimal
+        {\littlestructure[NEWMANECLIPSED,C,+SR,Z]} {Newman Eclipse} % suboptimal
+        {\littlestructure[CHAIR,B,+LSR,+RSR]}      {Chair}
+        {\littlestructure[BOAT,B,+LSR,+RSR]}       {Boat}
+    \stopcombination
+\stopplacefigure
+
+The dimensions of \type {CHAIR} and \type {BOAT} are somewhat different from the
+others. This structure is also different in other ways. Rotation for example is
+not possible.
+
+\startbuffer
+\startchemical[frame=on,width=5000]
+  \chemical
+    [CHAIR,B,+LSR,+RSR,+LRZ,+RRZ]
+    [a,b,c,d,e,f,1,2,3,4,5,6]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+Within a structure the chemical bonds between the \kap {c}||atoms are defined in
+the same way. In this example we use~\type {B} and~\type {SR}. Bonds within a
+structure are numbered and can be defined by:
+
+\starttyping
+\chemical[SIX,B1,B2,B3,B4,B5,B6]
+\chemical[SIX,B135]
+\chemical[SIX,B1..5]
+\stoptyping
+
+These keys draw parts of a sixring. With \type {R} and \type {RZ} we place
+substituents on the ring. The key \type {R} draws the bond from a ring corner to
+the substituent (\im {\angle~120^\circ}). The corner is also identified with a
+number.
+
+\starttyping
+\chemical[SIX,B1..6,+SR1..6]
+\stoptyping
+
+The definition above draws the six bonds in the sixring and the bonds to the
+substituents. The substituents are identified by the key \type {RZ}. Again numbers
+are used to mark the position. The substituents themselves are defined as text in
+the second argument.
+
+\startbuffer
+\startchemical[frame=on,width=6000]
+  \chemical
+    [SIX,B1..6,+SR1..6,RZ1..3]
+    [CH_3,CH_3,OH]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+When the second argument is left out no text (substituents) are placed on the
+ring and the key \type{RZ1..3} has no effect.
+
+Splitting the specification part from the text has the advantage that we can
+predefine structures (as we will see later) that we call within a structure and
+that pick up text from the calling structure. In such a nested case the texts are
+put on a sort of stack and fetching a text can involve the whole stack.
+
+The disadvantage is that in complex structures it might be hard to see which text
+belongs to what specification. Therefore we provide a key|/|value variant as
+well.
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ1=a]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ1..3=a]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ135=a]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ=a]
+\stopchemical
+\stopbuffer
+
+As you can see here, the text is repeated in the case of a key specification that
+involves more bonds. Compare this with the split definition approach:
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ] [a]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\startbuffer
+\startchemical[frame=on]
+  \chemical[SIX,B,+SR,RZ] [a,b]
+\stopchemical
+\stopbuffer
+
+\startfiguretext[left]{}{\getbuffer}\example\typebuffer\stopfiguretext
+
+\stopcomponent

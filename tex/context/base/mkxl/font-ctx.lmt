@@ -3418,11 +3418,10 @@ end
 
 do
 
-    -- We can make these real font dimens instead:
-
     local yscaled = font.yscaled
 
-    local dimen_code <const> = tokens.values.dimension
+    local dimen_value   <const> = tokens.values.dimension
+    local integer_value <const> = tokens.values.dimension
 
     implement {
         name      = "ascender",
@@ -3430,10 +3429,10 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-         -- return dimen_code, yscaled(parameters[true].ascender or 0) -- unreliable
-         -- return dimen_code, yscaled(parameters[true].ascent   or 0) -- too much
+         -- return dimen_value, yscaled(parameters[true].ascender or 0) -- unreliable
+         -- return dimen_value, yscaled(parameters[true].ascent   or 0) -- too much
             local c = characters[true][0x28] -- (
-            return dimen_code, yscaled(c and c.height or 0)
+            return dimen_value, yscaled(c and c.height or 0)
         end
     }
 
@@ -3443,10 +3442,10 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-         -- return dimen_code, yscaled(parameters[true].descender or 0) -- unreliable
-         -- return dimen_code, yscaled(parameters[true].descent   or 0) -- too much
+         -- return dimen_value, yscaled(parameters[true].descender or 0) -- unreliable
+         -- return dimen_value, yscaled(parameters[true].descent   or 0) -- too much
             local c = characters[true][0x28] -- (
-            return dimen_code, yscaled(c and c.depth or 0)
+            return dimen_value, yscaled(c and c.depth or 0)
         end
     }
 
@@ -3456,9 +3455,9 @@ do
         protected = true,
         usage     = "value",
         actions   = function(index)
-         -- return dimen_code, yscaled(parameters[true].capheight or 0) -- unreliable
+         -- return dimen_value, yscaled(parameters[true].capheight or 0) -- unreliable
             local c = characters[true][0x58] -- X
-            return dimen_code, yscaled(c and c.height or 0)
+            return dimen_value, yscaled(c and c.height or 0)
         end
     }
 
@@ -3476,7 +3475,7 @@ do
  --     protected = true,
  --     usage     = "value",
  --     actions   = function(index)
- --         return dimen_code, yscaled(parameters[true][properties[index]] or 0)
+ --         return dimen_value, yscaled(parameters[true][properties[index]] or 0)
  --     end
  -- }
 
@@ -3500,7 +3499,7 @@ do
                     v = b
                 end
             end
-            return dimen_code, v
+            return dimen_value, v
         end
     }
 

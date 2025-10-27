@@ -11,8 +11,6 @@ if not modules then modules = { } end modules ['regi-ini'] = {
 
 -- Todo: use regi-imp*.lua instead
 
-local commands, context = commands, context
-
 local tostring = tostring
 local utfchar = utf.char
 local P, Cs, Cc, lpegmatch = lpeg.P, lpeg.Cs, lpeg.Cc, lpeg.match

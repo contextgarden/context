@@ -726,16 +726,30 @@ they are handled.
 
 \stopsubsection
 
+
+\startsubsection[title={attributelist}]
+
+This is the initial node of an attribute list that gets assigned to the attribute
+field of nodes that qualify for it. It points to a list of attributes nodes that
+have an index and value. Before October 2025 this was a special type of regular
+attribute node (we used subtypes to distinguish). Messing with these nodes can
+give side effects because they are reference counted.
+
+\showenginefields {attributelist}
+
+\showengineusagepernode{attributelist}
+
+\stopsubsection
+
 \startsubsection[title={attribute}]
 
 This is a small node but used a lot. When an attribute is set and travels with a
-node, we actually have a forward (only) linked list with a head node that keeps a
-reference count. These lists are (to be) sorted by attribute index. Normally you
-will {\em not} mess directly with these list because you can get unwanted side
-effects.
+node, we actually have a forward (only) linked list with a head node (see
+previous section) that keeps a reference count. These lists are (to be) sorted by
+attribute index. Normally you will {\em not} mess directly with these list
+because you can get unwanted side effects.
 
-\showenginefields   {attribute}
-\showenginesubtypes {attribute}
+\showenginefields {attribute}
 
 \showengineusagepernode{attribute}
 

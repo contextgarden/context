@@ -59,6 +59,8 @@ local setmetatableindex       = table.setmetatableindex
 
 local c_transparency          = pdfconstant("Transparency")
 
+-- colors are already cached so no need for speed
+
 local f_gray   = formatters["%.3N g %.3N G"]
 local f_rgb    = formatters["%.3N %.3N %.3N rg %.3N %.3N %.3N RG"]
 local f_cmyk   = formatters["%.3N %.3N %.3N %.3N k %.3N %.3N %.3N %.3N K"]
@@ -310,6 +312,8 @@ end
 
 -- wrong name
 
+local X02 = string.hashes.X02
+
 local function registersomeindexcolor(name,noffractions,names,p,colorspace,range,funct)
     noffractions = tonumber(noffractions) or 1 -- to be checked
     local cnames = pdfarray()
@@ -343,7 +347,8 @@ local function registersomeindexcolor(name,noffractions,names,p,colorspace,range
     local n      = #values
     for i=255,0,-1 do
         for j=1,n do
-            set[j] = format("%02X",round(values[j]*i))
+         -- set[j] = format("%02X",round(values[j]*i))
+            set[j] = X02[round(values[j]*i)]
         end
         vector[#vector+1] = concat(set)
     end

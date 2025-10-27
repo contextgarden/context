@@ -1639,7 +1639,6 @@ do
         return f
     end
 
-
     local function caller(parent,...)
         local a = { ... }
         return function()

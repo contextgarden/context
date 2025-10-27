@@ -75,9 +75,9 @@
 
 \mutable\lettonothing\referenceprefix
 
-\mutable\lettonothing\currentdestinationattribute
+%mutable\lettonothing\currentdestinationattribute
+%mutable\lettonothing\currentreferenceattribute
 
-\mutable\lettonothing\currentreferenceattribute
 \mutable\lettonothing\currentreferencecoding
 \mutable\lettonothing\currentreferencecontent
 \mutable\lettonothing\currentreferencedata
@@ -225,7 +225,7 @@
   {\ifreferencing
      % we could have a more efficient one for page references but for the moment
      % we don't care too much
-     \edef\currentreferencekind     {#kind}%
+     \cdef\currentreferencekind     {#kind}%
      \edef\currentreferencelabels   {#labels}%
      \edef\currentreferenceuserdata {#userdata}%
      \edef\currentreferenceexpansion{\referencingparameter\c!expansion}% {\referenceparameter\c!expansion}
@@ -260,7 +260,7 @@
                     reference {\currentreferencelabels}%
                 }%
                 metadata {%
-                    kind     {\currentreferencekind}%
+                    kind     \currentreferencekind % argument
             \ifx\currentreferencekind\s!page\else
                 \ifx\currentreferencecoding\s!xml
                     xmlroot  {\xmldocument}%
@@ -285,7 +285,7 @@
      \lastdestinationattribute\attributeunsetvalue
    \fi
    % will become obsolete:
-   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \global\currentdestinationattribute\lastdestinationattribute
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
      \strc_references_destination_point_yes
@@ -314,7 +314,7 @@
                     reference {\currentreferencelabels}%
                 }%
                 metadata {%
-                    kind {page}%
+                    kind \s!page % argument
                 }%
             }%
        \relax
@@ -346,7 +346,7 @@
                 reference {#labels}%
             }%
             metadata {%
-                kind {\s!full}%
+                kind \s!full % argument
             }%
         \ifempty\m_strc_references_text \else
             entries {%
@@ -364,7 +364,7 @@
      \lastdestinationattribute\attributeunsetvalue
    \fi
    % will become obsolete:
-   \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+   \global\currentdestinationattribute\lastdestinationattribute
    % will become an option:
    \ifnum\lastdestinationattribute>\zerocount
      \strc_references_destination_point_yes
@@ -419,15 +419,15 @@
                 internal  \locationcount
             }%
             metadata {%
-                kind {\s!page}%
+                kind \s!page % argument
             }%
         }%
      \relax
      \strc_references_stop_destination_nodes
-     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+     \global\currentdestinationattribute\lastdestinationattribute
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
-     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+     \global\currentdestinationattribute\attributeunsetvalue
    \fi}
 
 \def\strc_references_set_simple_internal_reference#label% no prefix
@@ -442,15 +442,15 @@
                 internal  \locationcount
             }%
             metadata {%
-                kind {\s!page}%
+                kind  \s!page % argument
             }%
         }%
      \relax
      \strc_references_stop_destination_nodes
-     \xdef\currentdestinationattribute{\number\lastdestinationattribute}%
+     \global\currentdestinationattribute\lastdestinationattribute
    \else
      \setbox\b_strc_destination_nodes\emptyhbox
-     \xdef\currentdestinationattribute{\number\attributeunsetvalue}%
+     \global\currentdestinationattribute\attributeunsetvalue
    \fi}
 
 \def\strc_references_get_simple_reference#label%
@@ -464,9 +464,9 @@
             \extrareferencearguments
         }%
      \relax
-     \xdef\currentreferenceattribute{\number\lastreferenceattribute}%
+     \global\currentreferenceattribute\lastreferenceattribute
    \else
-     \xdef\currentreferenceattribute{\number\attributeunsetvalue}%
+     \global\currentreferenceattribute\attributeunsetvalue
    \fi}
 
 %D \macros
@@ -1413,33 +1413,57 @@
 % see labels-003.tex in test suite
 %
 % label=*             same section as currenty
-% label=reference:*   use name metatable field
-% label=reference::*  use kind metatable field
-% label=reference:::* use name or kind metatable field and try to fetch label
+% label=reference:*   use detail/name/kind metatable field with fallback
 %
 % \setuplabeltext
 %   [en]
-%   [reference:section=Section~,
-%    reference:formula=Formula~]
+%   [theorem=Theorem~,
+%    lemma=Lemma~]
+%
+% \setuplabeltext
+%   [en]
+%   [reference:section=RefSection~,
+%    reference:formula=RefFormula~,
+%   %reference:lemma=RefLemma~,
+%    reference:theorem=RefTheorem~,
+%   ]
 
-\def\strc_references_check_tripple
-  {\iftext       {\labeltext\autoreferencenametext}%
+% Time consuming heuristics ...  so we comment the cases that don't occur.
+
+\def\strc_references_check_wildcard
+  {% detail
+          \iftext          {\labeltext{\v!reference:\autoreferencedetailtext}}%
+     \cdef\currentreferenceformatlabel{\v!reference:\autoreferencedetailtext}%
+ % \orelse\iftext          {\labeltext{\??hiddenlabel\v!reference:\autoreferencedetailtext}}%
+ %   \cdef\currentreferenceformatlabel{\??hiddenlabel\v!reference:\autoreferencedetailtext}%
+   \orelse\iftext          {\labeltext{\autoreferencedetailtext}}%
+     \cdef\currentreferenceformatlabel{\autoreferencedetailtext}%
+ % \orelse\iftext          {\labeltext{\??hiddenlabel\autoreferencedetailtext}}%
+ %   \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencedetailtext}%
+   % name
+   \orelse\iftext          {\labeltext{\v!reference:\autoreferencenametext}}%
+     \cdef\currentreferenceformatlabel{\v!reference:\autoreferencenametext}%
+ % \orelse\iftext          {\labeltext{\??hiddenlabel\v!reference:\autoreferencenametext}}%
+ %   \cdef\currentreferenceformatlabel{\??hiddenlabel\v!reference:\autoreferencenametext}%
+   \orelse\iftext          {\labeltext{\autoreferencenametext}}%
      \cdef\currentreferenceformatlabel{\autoreferencenametext}%
-   \orelse\iftext{\labeltext{\??hiddenlabel\autoreferencenametext}}%
+   \orelse\iftext          {\labeltext{\??hiddenlabel\autoreferencenametext}}%
      \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencenametext}%
-   \orelse\iftext{\labeltext\autoreferencekindtext}%
-     \cdef\currentreferenceformatlabel{\autoreferencenametext}%
-   \orelse\iftext{\labeltext{\??hiddenlabel\autoreferencekindtext}}%
-     \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencekindtext}%
+   % kind
+   \orelse\iftext          {\labeltext{\v!reference:\autoreferencekindtext}}%
+     \cdef\currentreferenceformatlabel{\v!reference:\autoreferencekindtext}%
+ % \orelse\iftext          {\labeltext{\??hiddenlabel\v!reference:\autoreferencekindtext}}%
+ %   \cdef\currentreferenceformatlabel{\??hiddenlabel\v!reference:\autoreferencekindtext}%
+   \orelse\iftext          {\labeltext{\autoreferencekindtext}}%
+     \cdef\currentreferenceformatlabel{\autoreferencekindtext}%
+ % \orelse\iftext          {\labeltext{\??hiddenlabel\autoreferencekindtext}}%
+ %   \cdef\currentreferenceformatlabel{\??hiddenlabel\autoreferencekindtext}%
+   % whatever
    \else
-     \cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencenametext}%
+     \cdef\currentreferenceformatlabel{\clf_replacewildcard\currentreferenceformatlabel\autoreferencenametext}%
    \fi}
 
-\def\strc_references_check_double
-  {\cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencekindtext}}
-
-\def\strc_references_check_single
-  {\cdef\currentreferenceformatlabel{\replacewildcard\currentreferenceformatlabel\autoreferencenametext}}
+\immutable\cdef\referencewildcard{\v!reference:\wildcardsymbol}
 
 \tolerant\protected\def\strc_references_apply_format#1#*#=#*#=#:#*[#4]% #* added so that we can do \in {} {} []
   {\strc_references_start_goto
@@ -1460,13 +1484,9 @@
     \resetinteractioncolor
   \fi
   \ifx\currentreferenceformatlabel\wildcardsymbol
-     \let\currentreferenceformatlabel\autoreferencelabeltext
-  \orelse\ifhasxtoks{:::\wildcardsymbol}{\currentreferenceformatlabel}%
-    \strc_references_check_tripple
-  \orelse\ifhasxtoks{::\wildcardsymbol}{\currentreferenceformatlabel}%
-    \strc_references_check_double
-  \orelse\ifhasxtoks{:\wildcardsymbol}{\currentreferenceformatlabel}%
-    \strc_references_check_single
+    \let\currentreferenceformatlabel\autoreferencelabeltext
+  \orelse\ifx\currentreferenceformatlabel\referencewildcard
+    \strc_references_check_wildcard
   \fi
   \ifempty\currentreferenceformatlabel
     \defaultleftreferencetoks {\referenceformatparameter\c!text}%
@@ -1511,9 +1531,10 @@
    \goto{\referencesequence}[#4]% redundant lookup
    \strc_references_stop_goto}
 
-\permanent\def\autoreferencelabeltext{\clf_getcurrentreferencelabel}
-\permanent\def\autoreferencenametext {\clf_getcurrentreferencemetadata{name}}
-\permanent\def\autoreferencekindtext {\clf_getcurrentreferencemetadata{kind}}
+\permanent\def\autoreferencelabeltext {\clf_getcurrentreferencelabel}
+\permanent\def\autoreferencenametext  {\clf_getcurrentreferencemetadata{name}}
+\permanent\def\autoreferencekindtext  {\clf_getcurrentreferencemetadata{kind}}
+\permanent\def\autoreferencedetailtext{\clf_getcurrentreferencemetadata{detail}}
 
 % \starttext
 %     \definereferenceformat[inxx]  [left=(,right=),text=txt]
@@ -1582,7 +1603,9 @@
 % The unbox trick is needed in order to permit \par inside a reference. Otherwise
 % the reference attribute migrates to the outer boxes.
 
-\newinteger\lastsavedreferenceattribute
+\newinteger\lastsavedreferenceattribute \lastsavedreferenceattribute\attributeunsetvalue
+\newinteger\currentreferenceattribute   \currentreferenceattribute  \attributeunsetvalue
+\newinteger\currentdestinationattribute \currentdestinationattribute\attributeunsetvalue
 
 \newbox\referencebox
 

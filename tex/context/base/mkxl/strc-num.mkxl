@@ -446,7 +446,7 @@
                   reference {\currentstructurecomponentreference}%
             }%
             metadata {%
-                kind {\s!page}%
+                kind \s!page % argument
             }%
         }%
    \relax
@@ -507,7 +507,7 @@
    \scratchcounter\clf_addtolist %{
       metadata {
           kind     {#1}
-          name     {\currentname}
+          name     \currentname
         % level    structures.sections.currentlevel()
           catcodes \ifempty\currentstructurecomponentcatcodes\catcodetable\else\csname\currentstructurecomponentcatcodes\endcsname\fi
           coding   {\currentstructurecomponentcoding}

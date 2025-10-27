@@ -20,7 +20,7 @@ local nodecodes      = nodes.nodecodes
 local glyph_code     <const> = nodecodes.glyph
 local hlist_code     <const> = nodecodes.hlist
 local vlist_code     <const> = nodecodes.vlist
-local attribute_code <const> = nodecodes.attribute -- temporary
+----- attribute_code <const> = nodecodes.attribute -- temporary
 local par_code       <const> = nodecodes.par
 
 local nuts           = nodes.nuts
@@ -281,14 +281,14 @@ local function link(list,currentfont,currentattr,head,tail) -- an oldie, might b
             elseif not head then
                 head = n
                 tail = find_tail(n)
-            elseif getid(n) == attribute_code then
-                -- weird case
-                report_error("weird node type in list at index %s:",i)
-                for i=1,#list do
-                    local l = list[i]
-                    report_error("%3i: %s %S",i,getid(l) == attribute_code and "!" or ">",l)
-                end
-                os.exit()
+--             elseif getid(n) == attribute_code then
+--                 -- weird case
+--                 report_error("weird node type in list at index %s:",i)
+--                 for i=1,#list do
+--                     local l = list[i]
+--                     report_error("%3i: %s %S",i,getid(l) == attribute_code and "!" or ">",l)
+--                 end
+--                 os.exit()
             else
                 setlink(tail,n)
                 if getnext(n) then

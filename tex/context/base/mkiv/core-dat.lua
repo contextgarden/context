@@ -12,7 +12,6 @@ if not modules then modules = { } end modules ['core-dat'] = {
 local tonumber, tostring, type = tonumber, tostring, type
 
 local context          = context
-local commands         = commands
 local ctx_latelua      = context.latelua
 
 local trace_datasets   = false  trackers.register("job.datasets" ,  function(v) trace_datasets   = v end)

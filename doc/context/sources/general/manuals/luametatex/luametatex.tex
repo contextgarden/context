@@ -1,10 +1,33 @@
-% signal=quadrant
+% language=us runpath=texruns:manuals/luametatex signal=squid
 
-% language=us runpath=texruns:manuals/luametatex xsignal=runner signal=quadrant
+% signal=squid
+% signal=quadrant
+% signal=segment
 
 % https://u.mtxrun.eu/ctxmtg chat
 
 % \enabletrackers[callbacks.calls]
+
+
+% \pushoverloadmode
+
+% \nologbuffering
+
+% \enabletrackers[attributes.tracking]
+
+% \usemodule[system-attributes]
+
+\unprotect
+
+% noattributes as box
+
+% \def\syst_v_p_indeed#1%
+%   {\begingroup
+%    \c_attr_visual\attributeunsetvalue
+%    \global\setbox\visualizerbox\hpack{\visualizerfont#1}%
+%    \endgroup}
+
+\protect
 
 \enableexperiments[optimize.typesetting.char]
 \enableexperiments[optimize.spacing.profile]
@@ -19,14 +42,16 @@
 
 % \linebuffering
 
-% \nologbuffering
-
 % \nopdfcompression
 
 % \enabletrackers[resolvers.virtual]
 % \enabletrackers[resolvers.*]
 
 \environment luametatex-style
+
+% \setuptagging[state=start]
+% \enabledirectives[system.feedback]
+% \enabletrackers[structures.tags.levels]
 
 \setupalign
   [depth]
@@ -56,7 +81,7 @@
     \component luametatex-assumptions
     \component luametatex-internals
     \component luametatex-primitives
-%   \writestatus{FOOCHECK}{\meaningfull\foo}
+  % \writestatus{FOOCHECK}{\meaningfull\foo}
     \component luametatex-callbacks
     \component luametatex-fonts
     \component luametatex-languages

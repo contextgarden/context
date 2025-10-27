@@ -6,35 +6,40 @@
 # define LMT_SPECIFICAITONS_H
 
 typedef enum specification_option_flags {
-    specification_option_repeat  = 0x0001,
-    specification_option_double  = 0x0002,
-    specification_option_largest = 0x0004, /* of widow or club */
-    specification_option_presets = 0x0008, /* definition includes first and second pass */
-    specification_option_integer = 0x0010, /* integer first */
-    specification_option_final   = 0x0020, /* single value replacement, so no repeat */
-    specification_option_default = 0x0040, /* all default */
-    specification_option_ignore  = 0x0080, /* not yet: ignore a slot in shape */
-    specification_option_rotate  = 0x0100, /* when |index| exceeds |count| we use |index % count + 1| instead */
+    specification_option_repeat   = 0x0001,
+    specification_option_double   = 0x0002,
+    specification_option_largest  = 0x0004, /* of widow or club */
+    specification_option_presets  = 0x0008, /* definition includes first and second pass */
+    specification_option_integer  = 0x0010, /* integer first */
+    specification_option_final    = 0x0020, /* single value replacement, so no repeat */
+    specification_option_default  = 0x0040, /* all default */
+    specification_option_ignore   = 0x0080, /* not yet: ignore a slot in shape */
+    specification_option_rotate   = 0x0100, /* when |index| exceeds |count| we use |index % count + 1| instead */
+    specification_option_constant = 0x0200,
 } specifications_options_flags;
 
 # define specification_index(a,n) ((memoryword *) specification_pointer(a))[n - 1]
 
-# define specification_repeat(a)  ((specification_options(a) & specification_option_repeat)  == specification_option_repeat)
-# define specification_double(a)  ((specification_options(a) & specification_option_double)  == specification_option_double)
-# define specification_largest(a) ((specification_options(a) & specification_option_largest) == specification_option_largest)
-# define specification_presets(a) ((specification_options(a) & specification_option_presets) == specification_option_presets)
-# define specification_integer(a) ((specification_options(a) & specification_option_integer) == specification_option_integer)
-# define specification_final(a)   ((specification_options(a) & specification_option_final)   == specification_option_final)
-# define specification_default(a) ((specification_options(a) & specification_option_default) == specification_option_default)
-# define specification_ignore(a)  ((specification_options(a) & specification_option_ignore)  == specification_option_ignore)
-# define specification_rotate(a)  ((specification_options(a) & specification_option_rotate)  == specification_option_rotate)
+# define specification_repeat(a)   ((specification_options(a) & specification_option_repeat)   == specification_option_repeat)
+# define specification_double(a)   ((specification_options(a) & specification_option_double)   == specification_option_double)
+# define specification_largest(a)  ((specification_options(a) & specification_option_largest)  == specification_option_largest)
+# define specification_presets(a)  ((specification_options(a) & specification_option_presets)  == specification_option_presets)
+# define specification_integer(a)  ((specification_options(a) & specification_option_integer)  == specification_option_integer)
+# define specification_final(a)    ((specification_options(a) & specification_option_final)    == specification_option_final)
+# define specification_default(a)  ((specification_options(a) & specification_option_default)  == specification_option_default)
+# define specification_ignore(a)   ((specification_options(a) & specification_option_ignore)   == specification_option_ignore)
+# define specification_rotate(a)   ((specification_options(a) & specification_option_rotate)   == specification_option_rotate)
+# define specification_constant(a) ((specification_options(a) & specification_option_constant) == specification_option_constant)
 
-# define specification_option_double(o)  ((o & specification_option_double)  == specification_option_double)
-# define specification_option_integer(o) ((o & specification_option_integer) == specification_option_integer)
-# define specification_option_final(o)   ((o & specification_option_final)   == specification_option_final)  
-# define specification_option_default(o) ((o & specification_option_default) == specification_option_default)  
-# define specification_option_ignore(o)  ((o & specification_option_ignore)  == specification_option_ignore)  
-# define specification_option_rotate(o)  ((o & specification_option_rotate)  == specification_option_rotate)  
+/* bad names, same as enum */
+
+# define specification_option_double(o)   ((o & specification_option_double)   == specification_option_double)
+# define specification_option_integer(o)  ((o & specification_option_integer)  == specification_option_integer)
+# define specification_option_final(o)    ((o & specification_option_final)    == specification_option_final)  
+# define specification_option_default(o)  ((o & specification_option_default)  == specification_option_default)  
+# define specification_option_ignore(o)   ((o & specification_option_ignore)   == specification_option_ignore)  
+# define specification_option_rotate(o)   ((o & specification_option_rotate)   == specification_option_rotate)  
+# define specification_option_constant(o) ((o & specification_option_constant) == specification_option_constant)  
 
 # define specification_n(a,n) (specification_repeat(a) ? ((n - 1) % specification_count(a) + 1) : (n > specification_count(a) ? specification_count(a) : n))
 
@@ -291,10 +296,11 @@ typedef enum passes_parameter_okay {
 
 /*tex The Microsoft compiler truncates to int, so: */
 
-# define passes_threshold_okay (uint64_t) 0x0000000100000000
-# define passes_demerits_okay  (uint64_t) 0x0000000200000000
-# define passes_tolerance_okay (uint64_t) 0x0000000400000000
-# define passes_classes_okay   (uint64_t) 0x0000000800000000
+# define passes_threshold_okay     (uint64_t) 0x0000000100000000
+# define passes_demerits_okay      (uint64_t) 0x0000000200000000
+# define passes_tolerance_okay     (uint64_t) 0x0000000400000000
+# define passes_classes_okay       (uint64_t) 0x0000000800000000
+# define passes_emergencyunit_okay (uint64_t) 0x0000001000000000
 
 static const uint64_t passes_basics_okay = 
     passes_hyphenation_okay 
@@ -302,7 +308,8 @@ static const uint64_t passes_basics_okay =
   | passes_emergencypercentage_okay
   | passes_emergencywidthextra_okay
   | passes_emergencyleftextra_okay
-  | passes_emergencyrightextra_okay;
+  | passes_emergencyrightextra_okay
+  | passes_emergencyunit_okay;
 
 static const uint64_t passes_expansion_okay = 
     passes_adjustspacingstep_okay 
@@ -366,6 +373,7 @@ static inline void     tex_set_passes_sfstretchfactor      (halfword a, halfword
 static inline void     tex_set_passes_looseness            (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,18)).half0    = v; }
 static inline void     tex_set_passes_orphanlinefactors    (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,18)).half1    = v; }
 static inline void     tex_set_passes_orphanpenalties      (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,19)).half0    = v; }
+static inline void     tex_set_passes_emergencyunit        (halfword a, halfword n, halfword v) { specification_index(a,par_passes_slot(n,19)).half1    = v; }
 
 static inline uint64_t tex_get_passes_okay                 (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 1)).long0;   }
 static inline halfword tex_get_passes_features             (halfword a, halfword n) { return specification_index(a,par_passes_slot(n, 2)).quart00; }
@@ -404,6 +412,7 @@ static inline halfword tex_get_passes_sfstretchfactor      (halfword a, halfword
 static inline halfword tex_get_passes_looseness            (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,18)).half0;   }
 static inline halfword tex_get_passes_orphanlinefactors    (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,18)).half1;   }
 static inline halfword tex_get_passes_orphanpenalties      (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,19)).half0;   }
+static inline halfword tex_get_passes_emergencyunit        (halfword a, halfword n) { return specification_index(a,par_passes_slot(n,19)).half1;   }
 
 /* balance shape */
 

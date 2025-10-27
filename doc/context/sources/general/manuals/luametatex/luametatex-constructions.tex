@@ -71,7 +71,7 @@ end
 
 This is more a discussion of the way some constructs in for instance math work.
 It will never be exhausting and mostly is for our own usage. We don't discuss all
-the options bit many are interfaced in higher level macros in \CONTEXT. This
+the options but many are interfaced in higher level macros in \CONTEXT. This
 chapter will gradually grow, depending on time and mood.
 
 \stopsection
@@ -347,7 +347,7 @@ have them for the post scripts). One can wonder of font parameters make sense
 here because in the end we can decide for a better visual result with different
 ones. After all, assembling scripts is not really what fonts are about.
 
-\starttabulate[||||||]
+\starttabulate[|||||]
 \FL
 \BC engine parameter                                \BC target \BC open type font                      \BC tex font            \BC \NR
 \TL
@@ -551,6 +551,143 @@ instead of the rule.
 Because the rule is optional, we can have the following, which represents a so
 called binom construct.
 
+Involved commands:
+
+\starttyping
+\Uabove
+\Uatop
+\Uover
+\Ustretched
+\Uabovewithdelims
+\Uatopwithdelims
+\Uoverwithdelims
+\Ustretchedwithdelims
+\stoptyping
+
+Relevant parameters:
+
+\starttyping
+\Umathfractionrule
+\Umathfractionnumvgap
+\Umathfractionnumup
+\Umathfractiondenomvgap
+\Umathfractiondenomdown
+\Umathfractiondelsize
+\stoptyping
+
+The values that come with the fonts often are sub-optimal so in \CONTEXT\ we
+adapt them. We also use different means for spacing, like struts. But it will
+always be a compromise. We'll try to show what happens but assume that you're
+familiar with \TEX, read: are able to read a macro. If not, just forget about
+messing with these parameters.
+
+\startbuffer
+\starttexdefinition TestRun #1#2
+    \dontleavehmode
+    \scale[width=1tw] \bgroup \pushoverloadmode
+        \def\TestA{$ \showglyphs \Uover              {#1}{#2} $}
+        \def\TestB{$ \showglyphs \Uover vfactor  100 {#1}{#2} $}
+        \def\TestC{$ \showglyphs \Uover vfactor 2000 {#1}{#2} $}
+        \def\TestD{$ \showglyphs \Uover vfactor    0 {#1}{#2} $}
+        \everymath{\fam\zerocount}%
+        \Umathfractionnumup    \allmathstyles\zeropoint
+        \Umathfractiondenomdown\allmathstyles\zeropoint
+        \Umathfractionnumvgap  \allmathstyles\zeropoint
+        \Umathfractiondenomvgap\allmathstyles\zeropoint
+        \start
+            \TestA
+        \stop \thinspace \start
+            \Umathfractionnumvgap  \allmathstyles 2pt
+            \TestA
+        \stop \thinspace \start
+            \Umathfractiondenomvgap\allmathstyles 2pt
+            \TestA
+        \stop \thinspace \start
+            \Umathfractionnumup    \allmathstyles 2pt
+            \TestA \TestB \TestC \TestD
+        \stop \thinspace \start
+            \Umathfractionnumup    \allmathstyles 1.1ex
+            \TestA \TestB \TestC \TestD
+        \stop \thinspace \start
+            \Umathfractiondenomdown\allmathstyles 2pt
+            \TestA \TestB \TestC \TestD
+        \stop \thinspace \start
+            \Umathfractiondenomdown\allmathstyles 1.1ex
+            \TestA \TestB \TestC \TestD
+      % \stop \thinspace \start
+      %     \Umathfractionnumvgap\allmathstyles -2pt
+      %     \Umathfractionnumup  \allmathstyles  2pt
+      %     \TestA
+      % \stop \thinspace \start
+      %     \Umathfractiondenomvgap\allmathstyles -2pt
+      %     \Umathfractiondenomdown\allmathstyles  2pt
+      %     \TestA
+        \stop
+    \egroup
+\stoptexdefinition
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+We now apply this macro to two different characters, first the often used \im
+{x}:
+
+\startlinecorrection
+    \TestRun{𝑥}{𝑥}
+\stoplinecorrection
+
+Next we use a character with a descender:
+
+\startlinecorrection
+    \TestRun{𝑔}{𝑔}
+\stoplinecorrection
+
+The displacement logic that gets applied in the engine is as follows:
+
+\starttyping[option=LUA]
+factor_up   = num_up     * vfactor
+factor_down = denom_down * vfactor
+
+delta_up    = num_vgap   - (factor_up   - num_depth   ) - (axis + rule/2)
+delta_down  = denom_vgap - (factor_down - denom_height) + (axis - rule/2)
+
+shift_up    = factor_up   + max(0,delta_up)
+shift_down  = factor_down + max(0,delta_down)
+\stoptyping
+
+In \CONTEXT\ we only tweak the gaps, so there we effectively have:
+
+\starttyping[option=LUA]
+delta_up    = num_vgap   + num_depth    - (axis + rule/2)
+delta_down  = denom_vgap + denom_height + (axis - rule/2)
+
+shift_up    = max(0,delta_up)
+shift_down  = max(0,delta_down)
+\stoptyping
+
+\definecolor[tdarkblue][b=.6,t=.5,a=1]
+\definecolor[tdarkred] [r=.6,t=.5,a=1]
+
+Here, in blue we see what \CONTEXT\ does by default, while in red we see the
+engine (and font) defaults in action:
+
+\startlinecorrection
+    \scale [width=.25tw] \bgroup
+        \startoverlay
+            \bgroup \color[tdarkblue]\bgroup
+                \vrule height 1.25sh depth 1.25sd
+                \im {\frac{𝑥}{𝑥} + \frac{𝑔}{𝑔}}%
+            \egroup \egroup
+            \bgroup \color[tdarkred]\bgroup
+                \vrule height 1.25sh depth 1.25sd
+                \pushoverloadmode
+                \everymath{\fam\zerocount}%
+                $\Uover{𝑥}{𝑥} + \Uover{𝑔}{𝑔} $%
+            \egroup \egroup
+        \stopoverlay
+    \egroup
+\stoplinecorrection
+
 \stopsection
 
 \startsection[title=Math radicals]
@@ -642,13 +779,159 @@ Relevant parameters:
 
 \startsection[title=Math accents]
 
-todo
+Math accents a bit of a mess. We have for instance \type {\overline} and \type
+{\underline}which actually can be seen as an accent but is a rule because that
+was easier. It also saved a set of glyph variants and an extensible in a time
+where the number of slots in a font was a limiting factor. Of course a square
+rule doesn't match well with shapes that have rounded corners but given the small
+sizes that often goes unnoticed. Rules are important in \TEX\ anyway: between
+fractions and as extender for a radical. In \LUAMETATEX\ we can instead fall back
+on what a font provides (or what we can fake using virtual assemblies).
+
+Accents, or symbols that go on top or below, can be of a fixed size, go wider in
+steps or eventually stretch. A hat for instance comes in sizes and has no
+stretch variant (that is, no extensible because in \LUAMETATEX\ we actually can
+stretch); the shape is not that suited for it. A brace on the other hand can at
+some point be constructed from pieces. Unfortunately fonts are often inconsistent
+or incomplete, which is likely a side effect of the repertoire that \TEX\ came
+with.
+
+\startlinecorrection
+\startMPcode
+    numeric wd ; wd := 12 ;
+    numeric ht ; ht :=  7 ;
+    numeric dp ; dp :=  3 ;
+    numeric at ; at :=  2 ;
+    numeric ab ; ab :=  2 ;
+    numeric af ; af :=  1 ;
+    numeric dd ; dd :=  1 ;
+
+    path abot ; abot := unitsquare xyscaled (  wd/2, at)    shifted (0,-dd-ab) ;
+    path atop ; atop := unitsquare xyscaled (5*wd/4, ab)    shifted (0, dd) ;
+    path flat ; flat := unitsquare xyscaled (3*wd/4, af)    shifted (0, dd) ;
+    path body ; body := unitsquare xyscaled (  wd,   ht+dp) shifted (0,-dp) ;
+    path line ; line := (0,0) -- (wd,0) ;
+
+    draw line shifted (0, 0)        withcolor "middlegray" ;
+    draw body shifted (0, 0)        withcolor "darkred" ;
+    draw atop shifted (-1*wd/8, ht) withcolor "darkblue" ;
+    draw abot shifted (3,-dp)       withcolor "darkblue" ;
+
+    draw line shifted (20, 0)         withcolor "middlegray" ;
+    draw body shifted (20, 0)         withcolor "darkred" ;
+    draw flat shifted (20+1*wd/8, ht) withcolor "darkblue" ;
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+In \OPENTYPE\ we also have accents but for some reason we only have top anchors.
+Maybe it is because \TEX\ had no real anchors, only a so called skew character
+from which we used a kern between that one and an accent as shift: a pseudo
+anchor so to say. In \LUAMETATEX\ we do support bottom anchors and also provide
+more control over placement. Of course one has to use math font that supports
+this, which is what we do in \CONTEXT, after all we wanted this and had to test
+it. In \OPENTYPE\ fonts we also have so called flat accents, so we have ways to
+choose those variants when needed. They prevent a formula becoming too high.
+
+Involved commands:
+
+\starttyping
+\Umathaccent
+\stoptyping
+
+Relevant parameters:
+
+\starttyping
+\Umathaccenttopshiftup
+\Umathaccentbottomshiftdown
+\Umathaccenttopovershoot
+\Umathaccentbottomovershoot
+\Umathaccentsuperscriptdrop
+\Umathaccentsuperscriptpercent
+\Umathaccentextendmargin
+\Umathflattenedaccenttopshiftup
+\Umathflattenedaccentbottomshiftdown
+\stoptyping
 
 \stopsection
 
 \startsection[title=Math fences]
 
-todo
+Fences are glyphs that adapts itself to what if surrounds. In original \TEX\
+there were only left and right fences that always come in pairs, although one can
+\quote {hide} one by using a bogus fence (often a period is used for that). The
+height and depth normally are at least those of the content but it also depends
+on what a font provides. A font can provide sizes (in steps) and eventually
+provide an extensible although that can only be used when the shape permits it.
+Although technically not a fence, an integral can be seen as a left fence and
+indeed this is why in \LUAMETATEX\ we implement such a fencing operator.
+
+\startlinecorrection
+\startMPcode
+    numeric wd ; wd := 12 ;
+    numeric ht ; ht :=  7 ;
+    numeric dp ; dp :=  3 ;
+
+    path fence ; fence := unitsquare xyscaled (wd/2, 5*(ht+dp)/4) shifted (0,-5*dp/4) ;
+    path body  ; body  := unitsquare xyscaled (wd,      ht+dp   ) shifted (0,-dp) ;
+    path line  ; line  := (0,0) -- (wd,0) ;
+
+    draw fence shifted ( 0,0) withcolor "darkblue" ;
+    draw line  shifted (10,0) withcolor "middlegray" ;
+    draw body  shifted (10,0) withcolor "darkred" ;
+    draw fence shifted (24,0) withcolor "darkgreen" ;
+    draw line  shifted (32,0) withcolor "middlegray" ;
+    draw body  shifted (32,0) withcolor "darkred" ;
+    draw fence shifted (48,0) withcolor "darkblue" ;
+
+    currentpicture := currentpicture scaled 5 ;
+\stopMPcode
+\stoplinecorrection
+
+Here we also visualize a middle fence, something that \ETEX\ introduced. In
+\LUAMETATEX\ we are a bit more tolerant with respect to fences, and we try to
+compensate for missing ones, which is not always possible. Fences can have super-
+and subscripts on the right fence and in \LUAMETATEX\ prescripts on the left
+fence. Here the fences are kind of wide but depending on the shape that can
+actually be the case: it the base character is rather curved, the larger sizes
+also need to follow that design. Font also differ in the depth of these fencing
+characters. When we implemented some new features related to these fences in
+\CONTEXT\ we also decided to add companion fonts that not only provided more
+steps but also did so consistently for various glyphs (parentheses, braces,
+brackets, etc) and we made sure that the height and depths were consistently
+distributed. In case we couldn't come up with a companion we tweak dimensions and
+other properties runtime.
+
+In order to determine the dimensions the content (subformula) has to be processed
+first. In traditional \TEX\ we therefore have two passes but in \LUAMETATEX\ we
+do more and therefore have more passes. There are a lot of subtle details, for
+instance we support specific kerning for scripts attached to fences. We also have
+a dedicated middle class so that we can do proper spacing.
+
+One of the more tricky fences is the bar because it serves different purposes and
+\UNICODE\ doesn't deal with that. Of course there should have been a left and
+right bar and maybe even a middle bar but alas, this is something that we need to
+deal with in the macro package.
+
+Involved commands:
+
+\starttyping
+\Uleft
+\Uright
+\Umiddle
+\Uoperator
+\Uvextensible
+\stoptyping
+
+Relevant parameters:
+
+\starttyping
+\Umathfractionrule
+\Umathoperatorsize
+\Umathdelimitershortfall
+\Umathdelimiterpercent
+\stoptyping
 
 \stopsection
 

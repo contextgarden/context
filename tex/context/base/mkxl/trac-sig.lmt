@@ -26,28 +26,40 @@ implement {
                     if true then
                         -- Here the context runner handles the final states which is more reliable
                         -- when we exit for some reason other than under context control.
-                        local function action(f,details)
+                        local function action(f,details,what)
                             return function()
+-- print("[signal " .. signal .. " " .. what .. "]")
                                 f(tonumber(environment.arguments.currentrun),details)
                             end
                         end
                         implement {
                             name    = "squid_init",
-                            actions = action(signals.squidinit)
+                            actions = action(signals.squidinit,false,"squid_init")
                         }
                         implement {
                             name    = "squid_busy",
-                            actions = action(signals.squidbusy)
+                            actions = action(signals.squidbusy,false,"squid_busy")
                         }
                         implement {
                             name    = "squid_step",
-                            actions = action(signals.squidstep)
+                            actions = action(signals.squidstep,false,"squid_step")
                         }
                         implement {
                             name    = "squid_done",
-                            actions = action(signals.squiddone,true)
+                            actions = action(signals.squiddone,true, "squid_done")
                         }
                         expandmacro("enablesquidmode")
+                        -- bonus:
+                        if signals.squidmark then
+                            local set = fonts.names.setplugin
+                            set(function(where)
+                                if where == "before" then
+                                    signals.squidmark(tonumber(environment.arguments.currentrun))
+                                else
+                                    set(false)
+                                end
+                            end)
+                        end
                     else
                         -- Here context itself handles the final states which is a bit more fragile
                         -- because we can quit for whatever reason. We always use the runner anyway.

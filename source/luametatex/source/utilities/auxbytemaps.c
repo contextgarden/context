@@ -77,9 +77,10 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
             unsigned char *color = bytemap->data;
             unsigned char *gray = lmt_memory_malloc(nx*ny);
             unsigned c = 0;
+            int nxny = nx * ny; 
             switch (method) {
                 case bytemap_reduction_average:
-                    for (int g = 0; g < nx * ny; g++) {
+                    for (int g = 0; g < nxny; g++) {
                         int s = round( (double) (
                               (unsigned char) color[c]
                             + (unsigned char) color[c+1]
@@ -90,7 +91,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
                     }
                     break;
                 case bytemap_reduction_minmax:
-                    for (int g = 0; g < nx * ny; g++) {
+                    for (int g = 0; g < nxny; g++) {
                         int s = round( (double) (
                               max_of_three(color[c], color[c+1], color[c+2]),
                             + min_of_three(color[c], color[c+1], color[c+2])
@@ -102,7 +103,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
              // case bytemap_reduction_weighted:
              //     /* fall through */
                 default:
-                    for (int g = 0; g < nx * ny; g++) {
+                    for (int g = 0; g < nxny; g++) {
                         int s = round(
                               0.299 * (unsigned char) color[c]
                             + 0.587 * (unsigned char) color[c+1]
@@ -114,7 +115,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
                     break;
             }
             if (count) { 
-                *count -= nx * ny * 2;
+                *count -= nxny * 2;
             }
             lmt_memory_free(color);
             *bytemap = (bytemap_data) {
@@ -227,12 +228,13 @@ void bytemap_slice_range(bytemap_data *bytemap, int x, int y, int dx, int dy, in
     }
 }
 
-int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry)
+int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry, int compensate)
 {
     unsigned char *d = bytemap->data;
     int nx = bytemap->nx;
     int ny = bytemap->ny;
     int nz = bytemap->nz;
+    int ok = 0;
     /* bounds */
     int llx = nx - 1;
     int lly = ny - 1;
@@ -275,8 +277,6 @@ int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *
             break;
     }
     DONE:
-    lly = bm_current_y(ny,lly);
-    ury = bm_current_y(ny,ury);
     if (urx < llx || ury < lly) {
         *lx = 0;
         *ly = 0;
@@ -288,17 +288,22 @@ int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *
         *rx = urx;
         *ry = ury;
     }
-    return (*lx > 0 || *ly > 0 || *rx < nx || *ry < ny);
+    ok = *lx > 0 || *ly > 0 || *rx < nx || *ry < ny;
+    if (compensate) {
+        *ly  = bm_current_y(ny,*ly);
+        *ry  = bm_current_y(ny,*ry);
+    }
+    return ok;
 }
 
-int bytemap_bounds(bytemap_data *bytemap, int value, int *llx, int *lly, int *urx, int *ury)
+int bytemap_bounds(bytemap_data *bytemap, int value, int *llx, int *lly, int *urx, int *ury, int compensate)
 {
     if (bytemap) {
         *llx = bytemap->nx - 1;
         *lly = bytemap->ny - 1;
         *urx = 0;
         *ury = 0;
-        return bytemap_aux_bounds(bytemap, value, llx, lly, urx, ury);
+        return bytemap_aux_bounds(bytemap, value, llx, lly, urx, ury, compensate);
     } else { 
         return 0;
     }
@@ -311,31 +316,37 @@ void bytemap_clip(bytemap_data *bytemap, int value, size_t *count)
         int lly = 0;
         int urx = bytemap->nx;
         int ury = bytemap->ny;
-        if (bytemap_aux_bounds(bytemap, value, &llx, &lly, &urx, &ury)) {
+        if (bytemap_aux_bounds(bytemap, value, &llx, &lly, &urx, &ury, 0)) {
             int oldnx = bytemap->nx;
             int oldny = bytemap->ny;
             int oldnz = bytemap->nz;
             int newnx = urx - llx + 1;
             int newny = ury - lly + 1;
-            unsigned char *p = bytemap->data + lly * oldnx * oldnz + llx;
-            unsigned char *c = lmt_memory_malloc(newnx * newny * oldnz);
-            unsigned char *d = c;
-            for (int y=1; y <= newny; y++) {
-                memcpy(c, p, newnx * oldnz);
-                c = c + newnx * oldnz;
-                p = p + oldnx * oldnz;
+            size_t oldsize = oldnx + oldny * oldnz;
+            size_t newsize = newnx * newny * oldnz;
+            if (newsize > 0 && oldsize != newsize) {
+                unsigned char *p = bytemap->data + lly * oldnx * oldnz + llx;
+                unsigned char *c = lmt_memory_malloc(newsize);
+                unsigned char *d = c;
+                for (int y=1; y <= newny; y++) {
+                    memcpy(c, p, newnx * oldnz);
+                    c = c + newnx * oldnz;
+                    p = p + oldnx * oldnz;
+                }
+                lmt_memory_free(bytemap->data);
+                if (count) { 
+                    /* todo : *count */
+                    *count -= oldsize;
+                    *count += newsize;
+                }
+                bytemap->data = d;
+                bytemap->ox   = 0;
+                bytemap->oy   = 0;
+                bytemap->nx   = newnx;
+                bytemap->ny   = newny;
+            } else { 
+                /* todo: warning */
             }
-            lmt_memory_free(bytemap->data);
-            if (count) { 
-                /* todo : *count */
-                *count -= oldnx * oldny * oldnz;
-                *count += newnx * newny * oldnz;
-            }
-            bytemap->data = d;
-            bytemap->ox   = 0;
-            bytemap->oy   = 0;
-            bytemap->nx   = newnx;
-            bytemap->ny   = newny;
         }
     }
 }
@@ -408,6 +419,85 @@ inline void bytemap_set_gray(bytemap_data *bytemap, int x, int y, int s)
             case 3:
                 memset(bytemap->data + (bm_current_y(bytemap->ny,y) * bytemap->nx + x) * 3, valid_byte(s), 3);
                 break;
+        }
+    }
+}
+
+# define gray_min(a,b) if (b < a) { a = b; }
+# define gray_add(a,b) a = valid_byte(a+b);
+
+inline void bytemap_set_gray_min(bytemap_data *bytemap, int x, int y, int s1, int s2, int s3)
+{
+    if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny && bytemap->nz == 1) {
+        int xm = x - 1;
+        int xp = x + 1;
+        int ym = y - 1;
+        int yp = y + 1;
+        unsigned char v1 = valid_byte(s1);
+        unsigned char v2 = valid_byte(s2);
+        unsigned char v3 = valid_byte(s3);
+        bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + x] = v1;
+        if (xm >= 0) {
+            if (ym >= 0) {
+                gray_min(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + xm],v3)
+            }
+            if (yp < bytemap->ny) {
+                gray_min(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + xm],v3)
+            }
+            gray_min(bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + xm],v2)
+        }
+        if (xp < bytemap->nx) {
+            if (ym >= 0) {
+                gray_min(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + xp],v3)
+            }
+            if (yp < bytemap->ny) {
+                gray_min(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + xp],v3)
+            }
+            gray_min(bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + xp],v2)
+        }
+        if (ym >= 0) {
+            gray_min(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + x],v2)
+        }
+        if (yp < bytemap->ny) {
+            gray_min(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + x],v2)
+        }
+    }
+}
+
+inline void bytemap_set_gray_add(bytemap_data *bytemap, int x, int y, int s1, int s2, int s3)
+{
+    if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny && bytemap->nz == 1) {
+        int xm = x - 1;
+        int xp = x + 1;
+        int ym = y - 1;
+        int yp = y + 1;
+        unsigned char v1 = valid_byte(s1);
+        unsigned char v2 = valid_byte(s2);
+        unsigned char v3 = valid_byte(s3);
+        bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + x] = v1;
+        if (xm >= 0) {
+            if (ym >= 0) {
+                gray_add(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + xm],v3)
+            }
+            if (yp < bytemap->ny) {
+                gray_add(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + xm],v3)
+            }
+            gray_add(bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + xm],v2)
+        }
+        if (xp < bytemap->nx) {
+            if (ym >= 0) {
+                gray_add(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + xp],v3)
+            }
+            if (yp < bytemap->ny) {
+                gray_add(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + xp],v3)
+            }
+            gray_add(bytemap->data[bm_current_y(bytemap->ny,y) * bytemap->nx + xp],v2)
+        }
+        if (ym >= 0) {
+            gray_add(bytemap->data[bm_current_y(bytemap->ny,ym) * bytemap->nx + x],v2)
+        }
+        if (yp < bytemap->ny) {
+            gray_add(bytemap->data[bm_current_y(bytemap->ny,yp) * bytemap->nx + x],v2)
         }
     }
 }
@@ -653,12 +743,8 @@ void bytemap_downgrade(bytemap_data *source, bytemap_data *target, int r)
         int nx = source->nx;
         int ny = source->ny; 
         int nz = source->nz;
-        if (r > 255) {
-            r = 255;
-        } else if (r < 1) {
-            r = 1; 
-        }
-        unsigned char *q = lmt_memory_malloc(nx * ny * nz);
+        int size = nx * ny * nz;
+        unsigned char *q = lmt_memory_malloc(size);
         if (q) {
             unsigned char *p = source->data;
             if (target->data) {
@@ -674,7 +760,12 @@ void bytemap_downgrade(bytemap_data *source, bytemap_data *target, int r)
                 .options = 0,
             };
             /* todo: fast path for 2 and 4 */
-            for (int i = 0; i < nx * ny * nz; i++) {
+            if (r > 255) {
+                r = 255;
+            } else if (r < 1) {
+                r = 1; 
+            }
+            for (int i = 0; i < size; i++) {
                 int l = r * lround(((double) ((unsigned char) p[i]))/r);
                 q[i] = l > 0xFF ? 0xFF : (unsigned char) l;
             }

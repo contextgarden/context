@@ -101,7 +101,6 @@
                 StartPage;
                     picture p[] ;
                     p[1] := image (
-                      % draw MyText("LuaMeta\TEX") xsized (0.8PaperWidth) ;
                         draw MyText("luametatex") xsized (0.8PaperWidth) ;
                     ) ;
                     draw p[1] shifted (.1PaperWidth,.8PaperHeight) ;
@@ -112,12 +111,10 @@
                     p[3] := image (
                         draw MyText("version \luametatexverboseversion") ysized 10mm ;
                     ) ;
-%                     draw p[3] shifted lrcorner Page shifted (-bbwidth p[3] - .1PaperWidth, 15mm);
                     draw p[3] shifted lrcorner Page shifted (-bbwidth p[3] - .1PaperWidth, 25mm);
                     p[4] := image (
                         draw MyText("dev id \luametatexfunctionality") ysized 5mm ;
                     ) ;
-%                     draw p[4] shifted lrcorner Page shifted (-bbwidth p[4] - .1PaperWidth, 5mm);
                     draw p[4] shifted lrcorner Page shifted (-bbwidth p[4] - .1PaperWidth, 15mm);
                     addbackground withcolor "darkblue" ;
                 StopPage;
@@ -141,6 +138,8 @@
             \stopMPpage
 
             \page[right]
+
+            \enablemode[document-is-chapter]
 
             \normalexpanded{\startchapter[title={\documentvariable{title}}]}
         }
@@ -178,14 +177,8 @@
 
 \startrawsetups document:stop
 
-    \doif {\documentvariable{alternative}} {manual} {
-
-        \doifnot {\documentvariable{title}} {luametatex} {
-
-            \stopchapter
-
-        }
-
+    \doifmode {document-is-chapter} {
+        \stopchapter
     }
 
 \stoprawsetups
@@ -381,9 +374,9 @@
     function moduledata.showfieldsupport(name,what)
         local id = tonumber(name) or nodes.nodecodes[name]
         if id then
-            node.setfielderror(1)
+            node.setfielderror(true)
             local fields = node.fields(id)
-            local n = node.new(id )
+            local n = node.new(id)
             local t = { }
             for k, v in table.sortedhash(fields) do
                 if not ignore[v] then
@@ -402,7 +395,7 @@
             else
                 context("-")
             end
-            node.setfielderror(0)
+            node.setfielderror(false)
         end
     end
 \stopluacode
@@ -530,5 +523,37 @@
    style=\ttx,
    width=\margindistance,
    distance=-\margindistance]
+
+\definehighlight
+  [nodefield]
+  [style=em]
+
+\disabledirectives[visualizers.layers]
+
+% This might go to some s-math module:
+
+\startluacode
+local styles = { [0] =
+    "D", "D'", "T", "T'", "S", "S'", "SS", "SS'",
+}
+
+interfaces.implement {
+    name      = "tomathstylesstr",
+    public    = true,
+    protected = true,
+    arguments = "integer",
+    actions   = function(s)
+        local t = { }
+        for c in string.gmatch(string.format("%08X",s),".") do
+            t[#t+1] = styles[tonumber(c)]
+        end
+        context("% t",t)
+    end
+}
+\stopluacode
+
+\protected\def\CurrentMathVariant#1%
+  {\mono{\tohexa8 #1\zerocount} or
+   \mono{\tomathstylesstr#1\zerocount}}
 
 \stopenvironment

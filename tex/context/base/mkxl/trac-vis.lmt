@@ -40,6 +40,7 @@ local setlink             = nuts.setlink
 local setlist             = nuts.setlist
 local setsubtype          = nuts.setsubtype
 local setattr             = nuts.setattr
+local setattrs            = nuts.setattrs
 local setwidth            = nuts.setwidth
 local setshift            = nuts.setshift
 local setoffsets          = nuts.setoffsets
@@ -78,8 +79,6 @@ local texsetattribute     = tex.setattribute
 
 local setmetatableindex   = table.setmetatableindex
 
-local unsetvalue          <const> = attributes.unsetvalue
-
 local current_font        = font.current
 
 local fonthashes          = fonts.hashes
@@ -87,7 +86,8 @@ local chardata            = fonthashes.characters
 local exheights           = fonthashes.exheights
 local emwidths            = fonthashes.emwidths
 
-local ptfactor            <const> = number.dimenfactors.pt
+local unsetvalue  <const> = attributes.unsetvalue
+local ptfactor    <const> = number.dimenfactors.pt
 
 local nodepool            = nuts.pool
 local new_rule            = nodepool.rule
@@ -102,7 +102,7 @@ local visualizers         = nodes.visualizers
 
 local setcolor            = tracers.colors.set
 local setlistcolor        = tracers.colors.setlist
-local settransparency     = tracers.transparencies.set
+----- settransparency     = tracers.transparencies.set
 local setlisttransparency = tracers.transparencies.setlist
 
 local starttiming         = statistics.starttiming
@@ -116,6 +116,8 @@ local a_tagged            <const> = attributes.private('tagged')
 local enableaction        = nodes.tasks.enableaction
 
 local report_visualize = logs.reporter("visualize")
+
+local f_amount = formatters["%s:%0.3f"]
 
 local modes = {
     hbox          = 0x0000001,
@@ -387,29 +389,36 @@ local function setfilter(n,a,what,list)
     end
 end
 
-function nuts.setvisual(n,mode)
-    if mode then
-        setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true))
-        setattr(n,a_filter,setfilter(mode,getattr(n,a_filter),true))
-    else
-        local a = texgetattribute(a_visual)
-        if a ~= unsetvalue then
-            setattr(n,a_visual,a)
-            setattr(n,a_filter,texgetattribute(a_visual))
-        end
-    end
-end
-
-function nuts.setvisuals(n,mode) -- currently the same
-    setattr(n,a_visual,setvisual(mode,getattr(n,a_visual),true,true))
-    setattr(n,a_filter,setfilter(mode,getattr(n,a_filter),true,true))
-end
-
--- fast setters
-
 do
 
+    local getattrs       = nuts.getattrs
     local apply_to_nodes = nuts.apply
+
+    function nuts.setvisual(n,mode)
+        if mode then
+            local nv, nf = getattrs(n,a_visual,a_filter)
+            setattrs(n,
+                a_visual,setvisual(mode,nv,true),
+                a_filter,setfilter(mode,nf,true)
+            )
+        else
+            local a = texgetattribute(a_visual)
+            if a ~= unsetvalue then
+                setattrs(n,
+                    a_visual,a,
+                    a_filter,texgetattribute(a_filter)
+                )
+            end
+        end
+    end
+
+    function nuts.setvisuals(n,mode) -- currently the same
+        local nv, nf = getattrs(n,a_visual,a_filter)
+        setattrs(n,
+            a_visual,setvisual(mode,nv,true,true),
+            a_filter,setfilter(mode,nf,true,true)
+        )
+    end
 
     local cached = setmetatableindex(function(t,k)
         if k == true then
@@ -495,7 +504,7 @@ end
 
     local function hpack_string(str)
         expandmacro("syst_v_p",true,str)
-        return tonut(takebox("scratchbox"))
+        return tonut(takebox("visualizerbox"))
     end
 
 -- ... if okay it will replace the current hpack_string in node_typ
@@ -511,13 +520,12 @@ local function sometext(str,layer,color,textcolor,lap,variant)
     local size = getwidth(text)
     local rule = new_virtual_rule(size,2*exheight,exheight/2)
     if color then
-        setcolor(rule,color)
+        setcolor(rule,color,false,"trace:g")
     end
     if textcolor then
-        setlistcolor(getlist(text),textcolor)
+        setlistcolor(getlist(text),textcolor,false,"trace:g")
     end
     local info = setlink(rule,text)
-    setlisttransparency(info,"trace:g")
     info = new_hlist(info)
     local x, y
     if lap then
@@ -532,9 +540,6 @@ local function sometext(str,layer,color,textcolor,lap,variant)
     if use_layers and layer then
         setattr(info,a_layer,layer)
     end
---     if crappytaggingmode then
---         setattr(info,a_tagged,0)
---     end
     return info, size
 end
 
@@ -544,22 +549,18 @@ local function someblob(str,layer,color,textcolor,width)
     local rule = new_rule(width,2*exheight,exheight/2)
     local kern = new_kern(-width + (width-size)/2)
     if color then
-        setcolor(rule,color)
+        setcolor(rule,color,false,"trace:g")
     end
     if textcolor then
-        setlistcolor(getlist(text),textcolor)
+        setlistcolor(getlist(text),textcolor) -- no transparency
     end
     local info = setlink(rule,kern,text)
-    setlisttransparency(info,"trace:g")
     info = hpack_nodes(info)
     local width = getwidth(info)
     info = new_hlist(info)
     if use_layers and layer then
         setattr(info,a_layer,layer)
     end
---     if crappytaggingmode then
---         setattr(info,a_tagged,0)
---     end
     return info, width
 end
 
@@ -586,16 +587,16 @@ local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
             local text = hpack_string(formatters[" %0.3f"](kern*ptfactor),usedfont)
             local rule = new_rule(emwidth/fraction,6*exheight,2*exheight)
             local list = getlist(text)
+            local colr
             if kern > 0 then
-                setlistcolor(list,"trace:db")
+                colr = "trace:db"
             elseif kern < 0 then
-                setlistcolor(list,"trace:dr")
+                colr = "trace:dr"
             else
-                setlistcolor(list,"trace:dg")
+                colr = "trace:dg"
             end
-            setlisttransparency(list,color)
-            setcolor(rule,color)
-            settransparency(rule,color)
+            setlistcolor(list,colr,false,color)
+            setcolor(rule,color,false,color)
             setshift(text,-5 * exheight)
             info = new_hlist(setlink(rule,text))
             if use_layers and layer then
@@ -646,13 +647,13 @@ local ruledglyphexpansion do
                 local rule = new_rule(emwidth/fraction,exheight,2*exheight)
                 local list = getlist(text)
                 if extra > 0 then
-                    setlistcolor(list,"trace:db")
+                    setlistcolor(list,"trace:db",false,"trace:ds")
                 elseif extra < 0 then
-                    setlistcolor(list,"trace:dr")
+                    setlistcolor(list,"trace:dr",false,"trace:ds")
+                else
+                    setlisttransparency(list,"trace:ds")
                 end
-                setlisttransparency(list,"trace:ds")
-                setcolor(rule,"trace:ds")
-                settransparency(rule,"trace:ds")
+                setcolor(rule,"trace:ds",false,"trace:ds")
                 setshift(text,1.75 * exheight)
                 info = new_hlist(setlink(rule,text))
                 if use_layers then
@@ -686,13 +687,13 @@ local kernexpansion do
                 local rule = new_rule(emwidth/fraction,exheight,4*exheight)
                 local list = getlist(text)
                 if extra > 0 then
-                    setlistcolor(list,"trace:db")
+                    setlistcolor(list,"trace:db",false,"trace:ds")
                 elseif extra < 0 then
-                    setlistcolor(list,"trace:dr")
+                    setlistcolor(list,"trace:dr",false,"trace:ds")
+                else
+                    setlisttransparency(list,"trace:ds")
                 end
-                setlisttransparency(list,"trace:ds")
-                setcolor(rule,"trace:ds")
-                settransparency(rule,"trace:ds")
+                setcolor(rule,"trace:ds",false,"trace:ds")
                 setshift(text,3.5 * exheight)
                 info = new_hlist(setlink(rule,text))
                 if use_layers then
@@ -759,7 +760,7 @@ local ruledinsert do
         local index = getindex(current)
         local info  = si_cache[index]
         if not info then
-                info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
+            info = sometext(formatters["SI:%i"](index),usedfont,nil,"trace:w") -- whatsit
             if use_layers then
                 setattr(info,a_layer,l_insert)
             end
@@ -780,17 +781,17 @@ local ruledwhatsit do
     local w_cache      = caches["whatsit"]
 
     local tags         = {
-        [whatsitcodes.open]           = "OPN",
-        [whatsitcodes.write]          = "WRI",
-        [whatsitcodes.close]          = "CLS",
-     -- [whatsitcodes.special]        = "SPE",
-        [whatsitcodes.latelua]        = "LUA",
-        [whatsitcodes.savepos]        = "POS",
-        [whatsitcodes.userdefined]    = "USR",
-        [whatsitcodes.literal]        = "LIT",
-        [whatsitcodes.setmatrix]      = "MAT",
-        [whatsitcodes.save]           = "SAV",
-        [whatsitcodes.restore]        = "RES",
+        [whatsitcodes.open]           =  "OPN",
+        [whatsitcodes.write]          =  "WRI",
+        [whatsitcodes.close]          =  "CLS",
+     -- [whatsitcodes.special]        =  "SPE",
+        [whatsitcodes.latelua]        =  "LUA",
+        [whatsitcodes.savepos]        =  "POS",
+        [whatsitcodes.userdefined]    =  "USR",
+        [whatsitcodes.literal]        =  "LIT",
+        [whatsitcodes.setmatrix]      =  "MAT",
+        [whatsitcodes.save]           =  "SAV",
+        [whatsitcodes.restore]        =  "RES",
         [whatsitcodes.startscaling]   = "+SCA",
         [whatsitcodes.stopscaling]    = "-SCA",
         [whatsitcodes.startrotation]  = "+ROT",
@@ -801,14 +802,12 @@ local ruledwhatsit do
         [whatsitcodes.stopclipping]   = "-CLP",
         [whatsitcodes.startmatrix]    = "+MAT",
         [whatsitcodes.stopmatrix]     = "-MAT",
-        [whatsitcodes.setstate]       = "SET",   -- can't happen because these are added after visualizing
+        [whatsitcodes.setstate]       =  "SET", -- can't happen because these are added after visualizing
     }
 
     ruledwhatsit = function(head,current,subtype)
         local info = w_cache[subtype]
-        if info then
-            -- print("hit whatsit")
-        else
+        if not info then
             info = sometext(formatters["W:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_whatsit)
@@ -838,9 +837,7 @@ local ruledboundary do
 
     ruledboundary = function(head,current,subtype)
         local info = b_cache[subtype]
-        if info then
-            -- print("hit whatsit")
-        else
+        if not info then
             info = sometext(formatters["B:%s"](tags[subtype] or subtype),usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_boundary)
@@ -888,9 +885,7 @@ local ruledpar do
             what = "???"
         end
         local info = p_cache[what]
-        if info then
-            -- print("hit par")
-        else
+        if not info then
             info = sometext(what,usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_dir)
@@ -930,9 +925,7 @@ local ruleddir do
             what = "L2R"
         end
         local info = d_cache[what]
-        if info then
-            -- print("hit dir")
-        else
+        if not info then
             info = sometext(what,usedfont,nil,"trace:w")
             if use_layers then
                 setattr(info,a_layer,l_dir)
@@ -954,9 +947,7 @@ end
 --
 --     ruleduser = function(head,current,subtype)
 --         local info = u_cache[subtype]
---         if info then
---             -- print("hit user")
---         else
+--         if not info then
 --             info = sometext(formatters["U:%s"](subtype),usedfont)
 --             if use_layers then
 --                 setattr(info,a_layer,l_user)
@@ -978,8 +969,7 @@ local ruleddepth do
         local wd, ht, dp = getwhd(current)
         if dp ~= 0 then
             local rule = new_rule(wd,0,dp)
-            setcolor(rule,"trace:o")
-            settransparency(rule,"trace:g")
+            setcolor(rule,"trace:o",false,"trace:g")
             if use_layers then
                 setattr(rule,a_layer,l_depth)
             end
@@ -1005,8 +995,7 @@ local ruledbox do
     setmetatableindex(o_cache,function(t,size)
         local rule   = new_rule(2*size,size,size)
         local origin = hpack_nodes(rule)
-        setcolor(rule,"trace:do")
-        settransparency(rule,"trace:do")
+        setcolor(rule,"trace:do",false,"trace:do")
         if use_layers then
             setattr(rule,a_layer,l_origin)
             setattr(origin,a_layer,l_origin)
@@ -1020,7 +1009,7 @@ local ruledbox do
 
     ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
         local wd, ht, dp = getwhd(current)
---       local wd, ht, dh, shift = nuts.getlistdimensions(current) -- MAYBE
+     -- local wd, ht, dp, shift, list = nuts.getlistdimensions(current) -- MAYBE
         local force_origin = wd == 0 or (dp + ht) == 0
         local shift = getshift(current)
         local orientation, xoffset, yoffset, w, h, d = getorientation(current) -- TODO
@@ -1133,13 +1122,13 @@ local ruledbox do
             end
             info = new_hlist(info,wd,ht,dp,shift)
         end
---         if crappytaggingmode then
---             setattr(info,a_tagged,0)
---         end
--- if orientation then
---     setorientation(current,0,0)
---     setorientation(info,orientation,xoffset,yoffset)
--- end
+     -- if crappytaggingmode then
+     --     setattr(info,a_tagged,0)
+     -- end
+     -- if orientation then
+     --     setorientation(current,0,0)
+     --     setorientation(info,orientation,xoffset,yoffset)
+     -- end
         if next then
             setlink(info,next)
         end
@@ -1201,19 +1190,15 @@ local ruledglyph do
                 type   = "box",
             }
             if toddler then
-                setlistcolor(info,"trace:g")
-                setlisttransparency(info,"trace:dg")
+                setlistcolor(info,"trace:g",false,"trace:dg")
             elseif continuation then
-                setlistcolor(info,"trace:b")
-                setlisttransparency(info,"trace:db")
+                setlistcolor(info,"trace:b",false,"trace:db")
             elseif char and type(char.unicode) == "table" then -- hackery test
                 -- ligature
-                setlistcolor(info,"trace:s")
-                setlisttransparency(info,"trace:ds")
+                setlistcolor(info,"trace:s",false,"trace:ds")
             else
                 -- regular
-                setlistcolor(info,"trace:o")
-                setlisttransparency(info,"trace:do")
+                setlistcolor(info,"trace:o",false,"trace:do")
             end
             info = new_hlist(info)
             if use_layers then
@@ -1333,8 +1318,6 @@ local ruledglue, ruledmathglue, ruledspace do
         [parfillrightskip_code] = -0.75,
     }
 
-    local f_amount = formatters["%s:%0.3f"]
-
     local g_caches = { } for k, v in next, tags do g_caches[k] = caches[v] end
 
     ruledglue = function(head,current,subtype,vertical,parent)
@@ -1406,6 +1389,8 @@ local ruledglue, ruledmathglue, ruledspace do
 
     local getoptions = nuts.getoptions
 
+    local factor_code <const> = tex.glueoptioncodes.hasfactor
+
     ruledspace = function(head,current,subtype,parent)
         local width = effectiveglue(current,parent)
         local info
@@ -1418,7 +1403,7 @@ local ruledglue, ruledmathglue, ruledspace do
                 end
                 g_cache_x[width] = info
             end
-        elseif (getoptions(current) & 2) == 2 then
+        elseif (getoptions(current) & factor_code) == factor_code then
             info = g_cache_f[width]
             if not info then
                 info = someblob("SF",l_glue,"trace:c",nil,width)
@@ -1498,10 +1483,8 @@ local ruledglue, ruledmathglue, ruledspace do
             local text   = hpack_string(amount,usedfont)
             local rule   = new_rule(emwidth/fraction,2*exheight,(zero and 4.25 or 2.75)*exheight)
             local list   = getlist(text)
-            setlistcolor(list,color)
-            setcolor(rule,color)
-            setlisttransparency(list,color)
-            settransparency(rule,color)
+            setlistcolor(list,color,false,color)
+            setcolor(rule,color,false,color)
             setshift(text,(zero and 3.5 or 2)*exheight)
             info = new_hlist(setlink(rule,text))
             if use_layers then
@@ -1533,7 +1516,7 @@ local ruledkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](vertical and "VK" or "HK",kern*ptfactor)
+            local amount = f_amount(vertical and "VK" or "HK",kern*ptfactor)
             local l_kern = vertical and l_v_kern or l_h_kern
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
@@ -1593,8 +1576,7 @@ local ruledstrut do
                     end
                     w = rangedimensions(parent,b,e)
                     setwidth(current,w)
-                    setcolor(current,"trace:ds")
-                    settransparency(current,"trace:ds")
+                    setcolor(current,"trace:ds",false,"trace:ds")
                     if crappytaggingmode then
                         setattr(current,a_tagged,0)
                     end
@@ -1627,7 +1609,7 @@ local ruleditalic do
         local kern = getkern(current)
         local info = i_cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"]("IC",kern*ptfactor)
+            local amount = f_amount("IC",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_kern,"trace:b")
             elseif kern < 0 then
@@ -1661,7 +1643,7 @@ local ruledmarginkern do
         local cache = left and l_cache or r_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](left and "ML" or "MR",kern*ptfactor)
+            local amount = f_amount(left and "ML" or "MR",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_marginkern,"trace:b")
             elseif kern < 0 then
@@ -1691,7 +1673,7 @@ local ruledmathkern do
         local cache = vertical and v_cache or h_cache
         local info  = cache[kern]
         if not info then
-            local amount = formatters["%s:%0.3f"](vertical and "MV" or "MH",kern*ptfactor)
+            local amount = f_amount(vertical and "MV" or "MH",kern*ptfactor)
             if kern > 0 then
                 info = sometext(amount,l_mathkern,"trace:b")
             elseif kern < 0 then
@@ -1724,8 +1706,7 @@ local ruleddiscretionary, ruledglyphdiscretionary do
             local rule = new_rule(4*emwidth/fraction,4*exheight,exheight)
             local kern = new_kern(-2*emwidth/fraction)
             setlink(kern,rule)
-            setcolor(rule,"trace:dd")
-            settransparency(rule,"trace:dd")
+            setcolor(rule,"trace:dd",false,"trace:dd")
             info = new_hlist(kern)
             if use_layers then
                 setattr(info,a_layer,l_discretionary)
@@ -1754,8 +1735,7 @@ local ruleddiscretionary, ruledglyphdiscretionary do
                 local text, width = sometext(sub(code,1,1),l_discretionary,"trace:dd","trace:w",false,-2)
                 local back = new_kern(-width/2-2*emwidth/fraction)
                 setlink(kern,rule,back,text)
-                setcolor(rule,"trace:dd")
-                settransparency(rule,"trace:dd")
+                setcolor(rule,"trace:dd",false,"trace:dd")
                 info = new_hlist(kern)
                 if use_layers then
                     setattr(info,a_layer,l_discretionary)
@@ -1903,8 +1883,7 @@ local ruledmath do
             local text, width = sometext(ttag,usedfont,nil,"trace:dr")
             local rule = new_rule(skip,-655360/fraction,2*655360/fraction)
             local dist = (mtag == "beginmath" or mtag == "beginbrokenmath") and width or skip
-            setcolor(rule,"trace:dr")
-            settransparency(rule,"trace:dr")
+            setcolor(rule,"trace:dr",false,"trace:dr")
             if use_layers then
                 setattr(rule,a_layer,l_math)
             end
@@ -1984,8 +1963,6 @@ do
 
     local setleader               = nuts.setleader
     local setdisc                 = nuts.setdisc
-
-    local flushnodelist           = nuts.flushlist
 
  -- local cache
 
@@ -2360,6 +2337,7 @@ do
     end
 
     local function cleanup()
+        local flushnodelist = nuts.flushlist
         for tag, cache in next, caches do
             for k, v in next, cache do
                 flushnodelist(v)
@@ -2502,23 +2480,20 @@ do
             getusedfont()
         end
         local rule = new_rule(emwidth/fraction,exheight,(4+delta)*exheight)
-        setcolor(rule,rulecolor)
-        settransparency(rule,rulecolor)
+        setcolor(rule,rulecolor,false,rulecolor)
         local info
         if str == "" then
             info = new_hlist(rule)
         else
             local text = hpack_string(str,usedfont)
             local list = getlist(text)
-            setlistcolor(list,textcolor)
-            setlisttransparency(list,textcolor)
+            setlistcolor(list,textcolor,false,textcolor)
             setshift(text,(3.5+delta)*exheight)
             if extra then
                 setwidth(text)
                 extra = hpack_string(extra,usedfont)
                 local list = getlist(text)
-                setlistcolor(extra,textcolor)
-                setlisttransparency(extra,textcolor)
+                setlistcolor(extra,textcolor,false,textcolor)
                 setshift(extra,(3.5)*exheight)
             end
             info = new_hlist(setlink(rule,text,extra))

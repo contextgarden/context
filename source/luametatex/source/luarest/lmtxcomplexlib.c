@@ -23,12 +23,12 @@
 
 # include <complex.h>
 
-# define COMPLEX_METATABLE "complex number"
+/*tex See |lmtinterface.h| for |COMPLEX_METATABLE_INSTANCE|. */
 
 # if (_MSC_VER)
 
     /*tex
-        Instead of the somewhat strange two-doubles-in-a-row hack in C the microsoft vatiant
+        Instead of the somewhat strange two-doubles-in-a-row hack in C the microsoft variant
         uses structs. Here we use the double variant.
     */
 
@@ -38,11 +38,27 @@
     {
         switch (lua_type(L, i)) {
             case LUA_TUSERDATA:
-                return *((Complex*) luaL_checkudata(L, i, COMPLEX_METATABLE));
+                {
+                    Complex * c = lua_touserdata(L, i);
+                    if (c && lua_getmetatable(L, i)) {
+                        lua_get_metatablelua(complex_instance);
+                        if (! lua_rawequal(L, -1, -2)) {
+                           c = NULL;
+                        }
+                        lua_pop(L, 2);
+                    }
+                    if (c) { 
+                        return *c;
+                    } else {
+                        tex_formatted_error("complex lib", "lua <complex> expected, not an object with type %s", luaL_typename(L, i));
+                        goto INVALID;
+                    }
+                }
             case LUA_TNUMBER:
             case LUA_TSTRING:
                 return _Cbuild(luaL_checknumber(L, i), 0);
             default:
+              INVALID:
                 return _Cbuild(0, 0);
         }
     }
@@ -59,12 +75,22 @@
     {
         switch (lua_type(L, i)) {
             case LUA_TUSERDATA:
-                return *((Complex*)luaL_checkudata(L, i, COMPLEX_METATABLE));
+                {
+                    Complex * c = lua_touserdata(L, i);
+                    if (c && lua_getmetatable(L, i)) {
+                        lua_get_metatablelua(complex_instance);
+                        if (! lua_rawequal(L, -1, -2)) {
+                           c = NULL;
+                        }
+                        lua_pop(L, 2);
+                    }
+                    return c ? *c : (Complex) 0;
+                }
             case LUA_TNUMBER:
             case LUA_TSTRING:
-                return luaL_checknumber(L, i);
+                return (Complex) luaL_checknumber(L, i);
             default:
-                return 0;
+                return (Complex) 0;
         }
     }
 
@@ -73,7 +99,8 @@
 static inline int xcomplexlib_push(lua_State *L, Complex z)
 {
     Complex *p = lua_newuserdatauv(L, sizeof(Complex), 0);
-    luaL_setmetatable(L, COMPLEX_METATABLE);
+    lua_get_metatablelua(complex_instance);
+    lua_setmetatable(L, -2);
     *p = z;
     return 1;
 }
@@ -383,7 +410,7 @@ static const struct luaL_Reg xcomplexlib_function_list[] = {
 
 int luaopen_xcomplex(lua_State *L)
 {
-    luaL_newmetatable(L, COMPLEX_METATABLE);
+    luaL_newmetatable(L, COMPLEX_METATABLE_INSTANCE);
     luaL_setfuncs(L, xcomplexlib_function_list, 0);
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);
@@ -397,7 +424,7 @@ int luaopen_xcomplex(lua_State *L)
     lua_gettable(L, -3);
     lua_settable(L, -3);
     lua_pushliteral(L, "__name"); /* kind of redundant */
-    lua_pushliteral(L, "complex");
+    lua_pushliteral(L, COMPLEX_METATABLE_INSTANCE);
     lua_settable(L, -3);
     return 1;
 }

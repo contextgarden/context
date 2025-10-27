@@ -1176,8 +1176,8 @@ implement {
                 }
             },
             { "metadata", {
-                    { "kind" },
-                    { "name" },
+                    { "kind", "argument" },
+                    { "name", "argument" },
                     { "catcodes", "integer" },
                     { "coding" },
                     { "xmlroot" },

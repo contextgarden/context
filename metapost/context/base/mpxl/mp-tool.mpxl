@@ -4860,3 +4860,14 @@ vardef nepstroke (expr N) text F =
 enddef ;
 
 permanent penstroked, nepstroke ;
+
+vardef smoothened expr p =
+    if path p :
+        for i within p : pathpoint ... endfor
+            if cycle p : cycle else : nocycle fi
+    else :
+        p
+    fi
+enddef ;
+
+permanent smoothened ;

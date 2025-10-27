@@ -23,6 +23,7 @@
 \registerctxluafile{util-fmt}{}
 \registerctxluafile{util-dim}{}
 \registerctxluafile{util-vec}{autosuffix}
+\registerctxluafile{util-bmp}{autosuffix}
 
 \registerctxluafile{trac-set}{autosuffix}
 \registerctxluafile{luat-log}{autosuffix}
@@ -31,7 +32,7 @@
 \registerctxluafile{util-deb}{autosuffix}
 
 \registerctxluafile{util-tpl}{} % needs tracker
-\registerctxluafile{util-seq}{}
+\registerctxluafile{util-seq}{autosuffix}
 
 \registerctxluafile{util-sta}{}
 

@@ -11,7 +11,6 @@ local lpegmatch, P, Cs = lpeg.match, lpeg.P, lpeg.Cs
 
 -- more code will move here
 
-local commands   = commands
 local context    = context
 local implement  = interfaces.implement
 
@@ -61,41 +60,6 @@ local patterns = {
     "type-%s.mkiv",
     "type-%s.tex"
 }
-
--- local name_one   = nil
--- local name_two   = nil
---
--- local function failure_two(name)
---     report("unknown library %a or %a",name_one,name_two)
--- end
---
--- local function failure_one(name)
---     name_two = gsub(name,"%-.*$","")
---     if name == "loc" then
---         -- ignore
---     elseif name_two == name then
---         report("unknown library %a",name_one)
---     else
---         resolvers.uselibrary {
---             name     = name_two,
---             patterns = patterns,
---             action   = action,
---             failure  = failure_two,
---             onlyonce = false, -- will become true
---         }
---     end
--- end
---
--- function commands.doprocesstypescriptfile(name)
---     name_one = lpegmatch(p_strip,name) or name
---     uselibrary {
---         name     = name_one,
---         patterns = patterns,
---         action   = action,
---         failure  = failure_one,
---         onlyonce = false, -- will become true
---     }
--- end
 
 implement {
     name      = "doprocesstypescriptfile",

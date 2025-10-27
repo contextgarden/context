@@ -149,7 +149,11 @@ return {
                 presets.moveintegrals         { },
                 presets.wipeitalics           { },
                 {
-                    tweak = "checkaccents",
+                    tweak   = "checkaccents",
+                    ignore  = {
+--                         0x20D6 = true,
+--                         0x20D7 = true,
+                    },
                 },
                 {
                     tweak = "wipecues",

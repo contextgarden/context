@@ -8,9 +8,10 @@ static int tablib_keys(lua_State *L)
 {
     int category = 0; // 0=unknown 1=string 2=number 3=mixed
     lua_settop(L, 1);
-    lua_createtable(L, 0, 0);
+ // lua_createtable(L, 0, 0);
     if (lua_type(L, 1) == LUA_TTABLE) {
         int index = 0;
+        lua_createtable(L, lua_rawlen(L, 1) + 4, 0);
         lua_pushnil(L);
         while (lua_next(L, -3)) {
             int tkey = lua_type(L, -2); /* key at -2, value at -1 */
@@ -37,6 +38,8 @@ static int tablib_keys(lua_State *L)
             lua_rawseti(L, 2, ++index);
             lua_pop(L, 1); /* key kept for next iteration */
         }
+    } else { 
+        lua_createtable(L, 0, 0);
     }
     lua_pushinteger(L, category);
     return 2; 

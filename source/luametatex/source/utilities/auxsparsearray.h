@@ -141,7 +141,9 @@ static inline unsigned int get_nibble(unsigned int original, int position)
     return (original >> (4 * (position % 8))) & 0xF;
 }
 
-# if (1) 
+# define sa_inline_get 0
+
+# if (! sa_inline_get) 
 
     extern int sa_get_item_0 (const sa_tree head, int n);                                     /* these return the value or dflt */
     extern int sa_get_item_1 (const sa_tree head, int n);                                     /* these return the value or dflt */
@@ -151,57 +153,69 @@ static inline unsigned int get_nibble(unsigned int original, int position)
 
 # else 
 
-    inline int sa_get_item_0(const sa_tree head, int n)
+    /* 512 bytes larger binary ... no gain ... well, some .25% in a tex loop so neglectable on a run */
+
+    static inline int sa_get_item_0(const sa_tree head, int n)
     {
         int h = LMT_SA_H_PART(n);
-        int m = LMT_SA_M_PART(n);
-        if (head->tree[h][m]) {
-            return get_nibble(head->tree[h][m][LMT_SA_L_PART(n)/8].uint_value,n);
+        if (head->tree[h]) {
+            int m = LMT_SA_M_PART(n);
+            if (head->tree[h][m]) {
+                return get_nibble(head->tree[h][m][LMT_SA_L_PART(n)/8].uint_value, n);
+            }
         }
         return (int) get_nibble(head->dflt.uint_value,0);
     }
 
-    inline int sa_get_item_1(const sa_tree head, int n)
+    static inline int sa_get_item_1(const sa_tree head, int n)
     {
         int h = LMT_SA_H_PART(n);
-        int m = LMT_SA_M_PART(n);
-        if (head->tree[h][m]) {
-            return head->tree[h][m][LMT_SA_L_PART(n)/4].uchar_value[n%4];
+        if (head->tree[h]) {
+            int m = LMT_SA_M_PART(n);
+            if (head->tree[h][m]) {
+                return head->tree[h][m][LMT_SA_L_PART(n)/4].uchar_value[n%4];
+            }
         }
         return (int) head->dflt.uchar_value[0];
     }
-    
-    inline int sa_get_item_2(const sa_tree head, int n)
+
+    static inline int sa_get_item_2(const sa_tree head, int n)
     {
         int h = LMT_SA_H_PART(n);
-        int m = LMT_SA_M_PART(n);
-        if (head->tree[h][m]) {
-            return head->tree[h][m][LMT_SA_L_PART(n)/2].ushort_value[n%2];
+        if (head->tree[h]) {
+            int m = LMT_SA_M_PART(n);
+            if (head->tree[h][m]) {
+                return head->tree[h][m][LMT_SA_L_PART(n)/2].ushort_value[n%2];
+            }
         }
         return (int) head->dflt.ushort_value[0];
     }
-    
-    inline int sa_get_item_4(const sa_tree head, int n, sa_tree_item *v)
+
+    static inline int sa_get_item_4(const sa_tree head, int n, sa_tree_item *v)
     {
         int h = LMT_SA_H_PART(n);
-        int m = LMT_SA_M_PART(n);
-        if (head->tree[h][m]) {
-            *v = head->tree[h][m][LMT_SA_L_PART(n)];
-            return 1;
+        if (head->tree[h]) {
+            int m = LMT_SA_M_PART(n);
+            if (head->tree[h][m]) {
+                *v = head->tree[h][m][LMT_SA_L_PART(n)];
+                return 1;
+            }
         }
         *v = head->dflt;
         return 0;
     }
-    
-    inline int sa_get_item_8(const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2)
+
+    static inline int sa_get_item_8(const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2)
     {
         int h = LMT_SA_H_PART(n);
-        int m = LMT_SA_M_PART(n);
-        if (head->tree[h][m]) {
-            int l = 2*LMT_SA_L_PART(n);
-            *v1 = head->tree[h][m][l];
-            *v2 = head->tree[h][m][l+1];
-            return 1;
+        if (head->tree[h]) {
+            int m = LMT_SA_M_PART(n);
+            if (head->tree[h][m]) {
+                int l = 2*LMT_SA_L_PART(n);
+                *v1 = head->tree[h][m][l];
+                *v2 = head->tree[h][m][l+1];
+                return 1;
+            }
         }
         *v1 = head->dflt;
         *v2 = head->dflt;

@@ -165,12 +165,12 @@ and \type {~} for bitwise operations. There are two somewhat odd infix operators
 \type {nmp} (minus plus) and \type {npm} (plus minus) that result in a negative
 or positive value and can be used to get the (complement of an) absolute value.
 
-We can have integers, floats and dimensions ans use parentheses for sub
-expressions. The \type {\dimexpression} \type {\numexpression} don't prioritize
-because they are variants of \type {\dimexpr} and \type {\numexpr}. The \type
-{\dimexperimental} and \type {\numexperimental} cousins actually do prioritize
-and internally create an RPL stack. In the future we might switch to that
-alternative when scanning integers and dimensions.
+We can have integers, floats and dimensions and use parentheses for
+sub-expressions. The \type {\dimexpression} \type {\numexpression} don't
+prioritize because they are variants of \type {\dimexpr} and \type {\numexpr}.
+The \type {\dimexperimental} and \type {\numexperimental} cousins actually do
+prioritize and internally create an RPL stack. In the future we might switch to
+that alternative when scanning integers and dimensions.
 
 There are some aspects that you need to keep in mind. Compare these two. In the
 first case we stay within the dimension space which means that the \type {1pt}
@@ -238,38 +238,6 @@ define.
 There is undoubtely more to say here but that is for the low level manuals to
 deal with. Here we just discuss it as some \LUAMETATEX\ enhancement.
 
-% \the\dimexperimental{(4.0 < 4pt) cand 1pt cor 2pt}
-% \the\dimexperimental{(2 * 2) * 4pt}
-% \the\dimexperimental{(4.0 / 2) * 4pt}
-
 \stopchapter
 
 \stopcomponent
-
-% maybe [sin] or [ ] as equivalent for ()
-
-% \withoutpt\dimexperimental{@sin 90.0}
-% \withoutpt\dimexperimental{@sin 93.0}
-
-% \withoutpt\dimexperimental{@sin 90}
-% \withoutpt\dimexperimental{@sin 93}
-
-% \withoutpt\dimexperimental{@tan 90}
-% \withoutpt\dimexperimental{@tan 00}
-
-% \the\numexperimental{( 1+{2}) * (3+4)}
-% \the\numexperimental{( 1+ 2 ) * (3+4)}
-% % \the\numexperimental{({1+ 2)} * (3+4)} % error
-
-% \the\numexpression{( 1+{2}) * (3+4)}
-% \the\numexpression{( 1+ 2 ) * (3+4)}
-% % \the\numexpression{({1+ 2)} * (3+4)} % error
-
-% \the\dimexpression{( 1pt+{2pt})  * (3pt+4pt)}
-% \the\dimexpression{( 1pt+ 2pt )  * (3pt+4pt)}
-% % \the\dimexpression{({1pt+ 2pt )} * (3pt+4pt)} % error
-
-% \scratchskip  100pt plus 10pt        \relax \the\scratchskip\par
-% \scratchskip {100pt plus 10pt     }  \relax \the\scratchskip\par
-% \scratchskip {100pt plus {9pt+1pt}}  \relax \the\scratchskip\par
-% \scratchskip {100pt plus 1fil     }  \relax \the\scratchskip\par

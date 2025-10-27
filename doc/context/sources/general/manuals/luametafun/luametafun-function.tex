@@ -291,7 +291,6 @@ kind of code is not that hard to follow) is:
 \LL
 \stoptabulate
 
-
 In the beginning of 2025 we added support for sampled functions and parametric
 plots. Here are some examples but keep in mind that the interfaces might be
 extended.
@@ -305,6 +304,8 @@ path p ; p := lmt_samplefunction [
     xmax      =  5*pi,
     ymin      =  -10,
     ymax      =   10,
+  % shape     = "curve",
+  % tight     = true,
   % tolerance = 0.001,
 ] scaled 10 ;
 
@@ -317,7 +318,11 @@ drawdot p withpen pencircle scaled  2.5 withcolor white ;
 
 We draw with a thick line and show the points that make up the paths. As you can
 see in \in {figure} [function:sample] the density is larger where more points are
-needed.
+needed. By default the lines are straight (\type{--}) but you can use the \type
+{shape} parameter to generate a curve (\type {..}). Keep in mind that not all
+results come out well when curved, just test \typ {code = "return math.sin(1/x)"}. In
+that case, if you think it will be seen, you can decrease the \typ {tolerance},
+say to \type {0.00005} at the cost for more points.
 
 \startplacefigure[reference=function:sample]
     \getbuffer

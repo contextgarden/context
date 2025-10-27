@@ -512,7 +512,7 @@ function metapost.flush(specification,result)
                             end
                             result[#result+1] = "q"
                             if objects then
-    --                             resetplugins(result) -- we should move the colorinitializer here
+                             -- resetplugins(result) -- we should move the colorinitializer here
                                 local savedpath = nil
                                 local savedhtap = nil
                                 if stacking then
@@ -562,7 +562,7 @@ function metapost.flush(specification,result)
                                                 --
                                                 local before,
                                                       after,
-                                                      options    = processplugins(object)
+                                                      options    = processplugins(object,result)
                                                 local evenodd    = false
                                                 local collect    = false
                                                 local both       = false
@@ -841,7 +841,7 @@ function metapost.flush(specification,result)
                                              -- local evenodd = not object.istext and object.postscript == "evenodd"
                                                 local evenodd = object.postscript == "evenodd"
                                                 result[#result+1] = "q"
--- maybe also rectangle check
+                                                -- maybe also rectangle check
                                                 flushnormalpath(object.path,result,false,tolerance,true)
                                                 result[#result+1] = evenodd and "W* n" or "W n"
                                             elseif objecttype == "stop_clip" then
@@ -850,9 +850,11 @@ function metapost.flush(specification,result)
                                             elseif objecttype == "start_bounds" or objecttype == "stop_bounds" then
                                                 -- skip
                                             elseif objecttype == "start_group" then
+                                                result[#result+1] = "% mps group: begin"
                                                 if lpdf.flushgroup then
                                                     local object = enhancedobject(object)
-                                                    local before, after = processplugins(object)
+                                                    local bbox = toboundingbox(object.path)
+                                                    local before, after = processplugins(object,result)
                                                     local detail = object.detail
                                                     if detail or before then
                                                         result[#result+1] = "q"
@@ -861,7 +863,7 @@ function metapost.flush(specification,result)
                                                             after  = after,
                                                             result = result,
                                                             detail = detail,
-                                                            bbox   = toboundingbox(object.path),
+                                                            bbox   = bbox,
                                                         })
                                                         result = { }
                                                         miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false
@@ -875,7 +877,7 @@ function metapost.flush(specification,result)
                                                 local data = remove(groupstack)
                                                 if data then
                                                     local reference = lpdf.flushgroup(concat(result,"\r"),data.bbox,data.detail)
--- crashes on after = false
+                                                    -- crashes on after = false
                                                     result = data.result
                                                     result[#result+1] = reference
                                                     result = pluginactions(data.after,result,flushfigure)
@@ -896,6 +898,7 @@ function metapost.flush(specification,result)
                                          --     end
                                          -- else
                                                 -- error
+                                                result[#result+1] = "% mps group: end"
                                             end
                                         end
                                     end

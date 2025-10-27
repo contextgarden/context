@@ -102,18 +102,28 @@
 
 \lettonothing\currentalignpass
 
+\permanent\def\synchronizealignpass
+  {\ifcsname\currentalignpass parpasses\endcsname
+     \lastnamedcs % wins
+   \else
+     \fastsetup\currentalignpass\relax
+   \fi}
+
+
 \permanent\protected\def\setupalignpass[#1]%
   {\cdef\tempstring{align:pass:#1}%
    \ifx\tempstring\currentalignpass\else
      \linebreakpasses\plusone % none will reset this
      \let\currentalignpass\tempstring
-     \fastsetup\currentalignpass
-     \relax % to be sure
+     \synchronizealignpass
    \fi}
 
 \appendtoks
-    \ifcase\linebreakpasses\else
-      \fastsetup\currentalignpass
+    \ifcase\linebreakpasses\orelse\ifempty\currentalignpass\else
+      % This is needed just in case we have some dimensions hard coded in a pass
+      % although ... we can actually have a state parameter that keeps track of
+      % that.
+      \synchronizealignpass
     \fi
 \to \everybodyfont
 
@@ -162,5 +172,180 @@
 %
 % \permanent\protected\def\onemoreline {\parpassesexception\parpassonemoreline }
 % \permanent\protected\def\twomorelines{\parpassesexception\parpasstwomorelines}
+
+% \startsetups align:pass:default
+%     \parpasses 2
+%         classes \indecentparpassclasses
+%         fitnessdemerits \zerocount
+%         next
+%         quit
+%     \relax
+%   % \linebreakpasses\plusone
+% \stopsetups
+
+\setnewconstant\c_parpass_granular\parpassidentifier{granular}
+\setnewconstant\c_parpass_decent  \parpassidentifier{decent}
+\setnewconstant\c_parpass_quality \parpassidentifier{quality}
+\setnewconstant\c_parpass_mathbook\parpassidentifier{mathbook}
+
+\specificationdef\granularparpasses
+    \parpasses 2 options \constantspecificationoptioncode
+        identifier      \c_parpass_granular
+        classes         \indecentparpassclasses
+        fitnessclasses  \granularfitnessclasses
+      next
+      quit
+    \relax
+
+% \specificationdef\decentparpasses
+%     %pretolerance          50
+%     %tolerance            150
+%     \parpasses    2
+%         identifier             \c_parpass_decent
+%         threshold              0.05pt
+%         tolerance            200
+%       next
+%         threshold              0.05pt
+%         tolerance            500
+%         adjustspacing          3
+%         adjustspacingstep      1
+%         adjustspacingshrink   20
+%         adjustspacingstretch  40
+%     \relax
+
+\specificationdef\decentparpasses
+    %pretolerance          50
+    %tolerance            150
+    \parpasses 3 options \constantspecificationoptioncode
+        identifier             \c_parpass_decent
+        tolerance             50
+        hyphenation            0
+      next
+        hyphenation            1
+        emergencyfactor        0
+        threshold              0.05pt
+        tolerance            200
+      next
+        threshold              0.05pt
+        tolerance            500
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+    \relax
+
+% \specificationdef\qualityparpasses
+%     %pretolerance          50
+%     %tolerance            150
+%     \parpasses    4
+%         identifier             \c_parpass_quality
+%       % classes                \indecentparpassclasses
+%         threshold              0.025pt
+%         tolerance            175
+%       next
+%         threshold              0.025pt
+%         tolerance            200
+%       next
+%         threshold              0.025pt
+%         tolerance            250
+%       next
+%         threshold              0.025pt
+%         tolerance            250
+%         adjustspacing          3
+%         adjustspacingstep      1
+%         adjustspacingshrink   20
+%         adjustspacingstretch  40
+%     \relax
+
+\specificationdef\qualityparpasses
+    %pretolerance          50
+    %tolerance            150
+    \parpasses 5 options \constantspecificationoptioncode
+        identifier             \c_parpass_quality
+      % classes                \indecentparpassclasses
+        threshold              0.025pt
+        tolerance             50
+        hyphenation            0
+      next
+        tolerance            175
+        hyphenation            1
+      next
+        threshold              0.025pt
+        tolerance            200
+      next
+        threshold              0.025pt
+        tolerance            250
+      next
+        threshold              0.025pt
+        tolerance            250
+        adjustspacing          3
+        adjustspacingstep      1
+        adjustspacingshrink   20
+        adjustspacingstretch  40
+    \relax
+
+\specificationdef\mathbookparpasses
+    \parpasses 5 options \constantspecificationoptioncode
+        identifier              \c_parpass_mathbook
+        emergencyunit           \userunitcode fs
+        tolerance             100
+        adjustspacing           0
+        emergencyfactor         0
+        hyphenation             0
+        mathpenaltyfactor   20000
+        orphanlinefactors       4 100 250 500 1000
+        toddlerpenalties        1 options 2 200 50
+      next
+        tolerance             200
+        adjustspacing           3
+        adjustspacingstep       1
+        adjustspacingshrink     5
+        adjustspacingstretch   10
+      next
+        tolerance             200
+        adjustspacing           3
+        adjustspacingshrink    20
+        adjustspacingstretch   40
+      next
+        tolerance             200
+        hyphenation             1
+        extrahyphenpenalty    200
+        adjustspacingshrink    25
+        adjustspacingstretch   50
+        emergencyfactor       500
+        mathpenaltyfactor    1000
+      next
+        tolerance             300
+        extrahyphenpenalty    100
+        adjustspacingshrink    30
+        adjustspacingstretch   60
+        emergencyfactor      1000
+    \relax
+
+\installaligncommand{granularpasses}  {\linebreakpasses\plusone\granularparpasses}
+\installaligncommand{decentpasses}    {\linebreakpasses\plusone\decentparpasses  }
+\installaligncommand{qualitypasses}   {\linebreakpasses\plusone\qualityparpasses }
+\installaligncommand{mathbookpasses}  {\linebreakpasses\plusone\mathbookparpasses}
+
+% for old times sake
+
+% \startsetups align:pass:granular
+%     \granularparpasses
+% \stopsetups
+%
+% \startsetups align:pass:decent
+%     \decentparpasses
+% \stopsetups
+%
+% \startsetups align:pass:quality
+%     \qualityparpasses
+% \stopsetups
+%
+% \startsetups align:pass:mathbook
+%     \mathbookparpasses
+% \stopsetups
+
+\permanent\protected\def\optional#1#2%
+  {\optionalboundary#1\wordboundary#2\wordboundary\optionalboundary\zerocount}
 
 \protect

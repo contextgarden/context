@@ -1,0 +1,125 @@
+
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-performance
+
+\startchapter[title={Performance}]
+
+When we test new features in \CONTEXT\ \LMTX, Mikael and I use his 290 page math
+book to check performance. In 2025 on an decent ChromeBook processing at some
+point took 7.4 seconds. When identifying a few bottlenecks, we could bring that
+down to 5.3 seconds. Actually the gain we got in the engine and \CONTEXT\ was
+measurable and made sense given specific (new) features we used, like \type
+{\parpasses}, but the biggest gain came from optimizing \METAPOST\ usage.
+
+Large images were already cached using the buffered content approach. This means
+that we only compile an (in this case) image when it has changed. Below we show
+an example. The images in the math book took much more time than these and some
+were huge, one even produced a 500 KB file and that was after we identified it as
+bottleneck and made is smaller.
+
+So why is that, even with buffering, slowing down a run? The reason is that at
+some point we decided, when including \PDF\ images, to check the content in more
+detail. We can remap color spaces, merge fonts and remove for instance tagging
+related crap. This actually slows down inclusion! So, on a huge \METAPOST\
+inclusion we loose time, but, when that one comes from \CONTEXT, it normally is a
+clean image, so we can do better indeed. Take these two examples:
+
+\startbuffer[demo-1]
+% maybe load a style
+\startMPpage
+    picture p ; p := image (
+        for i=1 step 2 until 100 :
+            draw fullcircle scaled i ;
+        endfor ;
+    ) xsized 5cm ;
+    setgroup p to unitsquare;
+    draw p withpen pencircle scaled .4 ;
+    % decoration, normally text
+    fill fullcircle scaled 1cm
+        withcolor white withtransparency (1,.5)
+    ;
+    addbackground withcolor "darkred";
+\stopMPpage
+\stopbuffer
+
+\startbuffer[demo-2]
+% maybe load a style
+\startMPpage
+    draw image (
+        for i=1 step 2 until 100 :
+            draw fullcircle scaled i ;
+        endfor ;
+    ) xsized 5cm withpen pencircle scaled .4 ;
+    setgroup currentpicture to unitsquare ;
+    % decoration, normally text
+    fill fullcircle scaled 1cm
+        withcolor white withtransparency (1,.5)
+    ;
+    addbackground withcolor "darkgreen";
+\stopMPpage
+\stopbuffer
+
+\typebuffer[demo-1][option=TEX]
+
+and
+
+\typebuffer[demo-2][option=TEX]
+
+Now imagine an inclusion like this:
+
+\startbuffer[demo-3]
+\startplacefigure
+    [title={Caching images with grouping.},
+     reference=performance:group]
+    \hbox \bgroup
+        \typesetbuffer[demo-1]%
+        \quad
+        \typesetbuffer[demo-2]%
+    \egroup
+\stopplacefigure
+\stopbuffer
+
+\typebuffer[demo-3][option=TEX]
+
+In both cases the graphic content in the page stream is analyzed, which takes
+time but we can disable that:
+
+\starttyping[option=TEX]
+\startplacefigure
+    [title={Caching images with grouping.},
+     reference=performance:group]
+    \hbox \bgroup
+        \typesetbuffer[demo-1][compact=]%
+        \quad
+        \typesetbuffer[demo-2][compact=]%
+    \egroup
+\stopplacefigure
+\stoptyping
+
+But then we do loose the merging of used font feature which gives smaller files
+at the cost of some extra analysis. Of course not all graphics have fonts
+but what if we have a decorated (with axis) demanding graphic?
+
+To come back to the gain in performance. The still huge image could in the end be
+brought down to a 50 KB good looking bytemap, one we discuss in the chaptrer
+about bytemaps and domain graphics.
+
+\getbuffer[demo-3]
+
+So, how can we actually gain performance on the two graphics in \in {figure}
+[performance:group] and why do we show two variants of the same? The reason is
+that here we use \type {setgroup} to mark a picture as group. When marked as
+such, the inclusion is able to determine that the to be embedded \PDF\ code can
+be passed as-is; there is no need to check it. The only drawback is that when you
+want to decorate the graphic with text, that has to happen outside that group,
+but it is a small price to pay. The \type {unitsquare} is there because a path is
+expected, the \type {setgroup} is in terms of syntax comparable to a \type
+{setbounds} or \type {clip} operation.
+
+\stopchapter
+
+\stopcomponent
+

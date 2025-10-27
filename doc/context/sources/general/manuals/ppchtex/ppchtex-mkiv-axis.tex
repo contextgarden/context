@@ -1,0 +1,78 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-axis
+
+\chapter{Axis}
+
+Structures can be typeset in a frame that is divided by axis. The dimensions
+of the axis and the location of the origin can be defined in the set up. The
+axis and the frame can be made visible.
+
+\startbuffer
+\startchemical
+  [axis=on,
+   width=6000,height=4000]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]{}
+  {\getbuffer}
+\example[ex:axis]
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [axis=on,
+   frame=on,
+   width=6000,height=4000]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]{}
+  {\getbuffer}
+\example[ex:axis]
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [axis=on,
+   frame=on,
+   left=2000,right=4000]
+   \chemical[SIX,B]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]{}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical
+  [axis=on,
+   frame=on,
+   width=6000,top=1000,bottom=3000]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]{}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+The dimensions of the total structure determine the dimensions of the axis. When
+\type {width=fit} and/or \type {height=fit} is typed the dimensions are
+determined by the real dimensions so there need to be content. Your choice will
+depend on how you want to place the structure in the text. As shown here, the
+axis model currently uses rather large numbers. This is an inheritance of the
+previous implementation and we deciced to keep it this way.
+
+\stopcomponent

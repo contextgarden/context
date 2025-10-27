@@ -117,7 +117,8 @@ local s_rule          = "rule"
 local s_glyph         = "glyph"
 local s_todo          = "TODO"
 local s_specification = [==[tokens\relax]==]
-local s_expression    = [==[tokens\relax]==]
+----- s_expression    = [==[tokens\relax]==]
+local s_expression    = choice([==[tokens\relax]==],"{tokens}")
 local s_conditional   = [==[\if...]==]
 local s_tokens_or     = [==[tokens\or]==]
 local s_tokens_relax  = [==[tokens\relax]==]
@@ -263,6 +264,7 @@ result.beginparagraph = newresult {
 }
 
 syntax.boundary = newsyntax {
+    attributeboundary  = sequence(o_equal,s_integer,s_integer),
     balanceboundary    = sequence(o_equal,s_integer,s_integer),
     boundary           = sequence(o_equal,s_integer),
     noboundary         = false,
@@ -352,6 +354,7 @@ result.convert = newresult {
     toscaled          = { s_dimension, c_tokens },
     tosparsedimension = { s_dimension, c_tokens },
     tosparsescaled    = { s_dimension, c_tokens },
+    tolimitedfloat    = { s_float, c_tokens },
 }
 
 syntax.convert = newsyntax { }  for k in next, result.convert do syntax.convert[k] = "" end
@@ -679,6 +682,7 @@ syntax.ignoresomething = newsyntax {
 
 syntax.input = newsyntax {
     endinput      = false,
+    ignoretokens  = s_tokens,
     input         = s_filename,
     eofinput      = sequence(s_tokens, s_filename),
     scantokens    = s_tokens,
@@ -795,11 +799,13 @@ result.internalinteger = {
     doubleadjdemerits        = r_integer,
     doublehyphendemerits     = r_integer,
     doublepenaltymode        = r_integer,
+    emptyparagraphmode       = r_integer,
     endlinechar              = r_integer,
     errorcontextlines        = r_integer,
     escapechar               = r_integer,
     eufactor                 = r_integer,
     etexexprmode             = r_integer,
+    exapostrophechar         = r_integer,
     exceptionpenalty         = r_integer,
     exhyphenchar             = r_integer,
     exhyphenpenalty          = r_integer,
@@ -862,6 +868,7 @@ result.internalinteger = {
     mathinlinepenaltyfactor  = r_integer,
     mathleftclass            = r_integer,
     mathlimitsmode           = r_integer,
+    mathoptions              = r_integer,
     mathnolimitsmode         = r_integer,
     mathpenaltiesmode        = r_integer,
     mathpretolerance         = r_integer,
@@ -989,6 +996,8 @@ result.internaltoks = {
     everymath      = r_toks,
     everymathatom  = r_toks,
     everypar       = r_toks,
+    everyparbegin  = r_toks,
+    everyparend    = r_toks,
     everytab       = r_toks,
     everyvbox      = r_toks,
     output         = r_toks,
@@ -1499,8 +1508,9 @@ result.register = newresult {
 }
 
 syntax.relax = newsyntax {
-    norelax = false,
-    relax   = false,
+    noarguments = false,
+    norelax     = false,
+    relax       = false,
 }
 
 syntax.removeitem = newsyntax {
@@ -1602,27 +1612,40 @@ result.setresult.setfont = newresult {
     nullfont = r_tokens,
 }
 
-
 syntax.fontproperty = newsyntax {
-    cfcode          = sequence(s_font,s_integer,o_equal,s_integer),
-    efcode          = sequence(s_font,s_integer,o_equal,s_integer),
-    fontdimen       = sequence(s_font,s_integer,o_equal,s_dimension),
-    hyphenchar      = sequence(s_font,o_equal,s_integer),
-    lpcode          = sequence(s_font,s_integer,o_equal,s_dimension),
-    rpcode          = sequence(s_font,s_integer,o_equal,s_dimension),
-    scaledfontdimen = sequence(s_font,o_equal,s_integer),
-    skewchar        = sequence(s_font,o_equal,s_integer),
+    cfcode                     = sequence(s_font,s_integer,o_equal,s_integer),
+    efcode                     = sequence(s_font,s_integer,o_equal,s_integer),
+    fontdimen                  = sequence(s_font,s_integer,o_equal,s_dimension),
+    hyphenchar                 = sequence(s_font,o_equal,s_integer),
+    lpcode                     = sequence(s_font,s_integer,o_equal,s_dimension),
+    rpcode                     = sequence(s_font,s_integer,o_equal,s_dimension),
+    scaledfontdimen            = sequence(s_font,o_equal,s_integer),
+    scaledfontemwidth          = false,
+    scaledfontexheight         = false,
+    scaledfontextraspace       = false,
+    scaledfontinterwordshrink  = false,
+    scaledfontinterwordspace   = false,
+    scaledfontinterwordstretch = false,
+    scaledfontslantperpoint    = false,
+    skewchar                   = sequence(s_font,o_equal,s_integer),
 }
 
 result.fontproperty = newresult {
-    cfcode          = { sequence(s_font,s_integer), s_integer },
-    efcode          = { sequence(s_font,s_integer), s_integer },
-    fontdimen       = { sequence(s_font,s_integer), s_dimension },
-    hyphenchar      = { s_font, s_integer },
-    lpcode          = { sequence(s_font,s_integer), s_dimension },
-    rpcode          = { sequence(s_font,s_integer), s_dimension },
-    scaledfontdimen = { s_font, s_integer },
-    skewchar        = { s_font, s_integer },
+    cfcode                     = { sequence(s_font,s_integer), s_integer },
+    efcode                     = { sequence(s_font,s_integer), s_integer },
+    fontdimen                  = { sequence(s_font,s_integer), s_dimension },
+    hyphenchar                 = { s_font, s_integer },
+    lpcode                     = { sequence(s_font,s_integer), s_dimension },
+    rpcode                     = { sequence(s_font,s_integer), s_dimension },
+    scaledfontdimen            = { s_font, s_integer },
+    scaledfontemwidth          = { s_font, s_dimension },
+    scaledfontexheight         = { s_font, s_dimension },
+    scaledfontextraspace       = { s_font, s_dimension },
+    scaledfontinterwordshrink  = { s_font, s_dimension },
+    scaledfontinterwordspace   = { s_font, s_dimension },
+    scaledfontinterwordstretch = { s_font, s_dimension },
+    scaledfontslantperpoint    = { s_font, s_dimension },
+    skewchar                   = { s_font, s_integer },
 }
 
 syntax.interaction = newsyntax {
@@ -1807,10 +1830,13 @@ do
     result.pageproperty = newresult {
         deadcycles           = r_integer,
         insertdepth          = { s_integer, s_dimension },
+        insertdirection      = { s_integer, s_integer },
         insertdistance       = { s_integer, s_dimension },
         insertheight         = { s_integer, s_dimension },
         insertheights        = r_dimension,
         insertlimit          = { s_integer, s_dimension },
+        insertlinedepth      = { s_integer, s_dimension },
+        insertlineheight     = { s_integer, s_dimension },
         insertmaxdepth       = { s_integer, s_dimension },
         insertmultiplier     = { s_integer, s_integer },
         insertpenalties      = r_integer,
@@ -1896,11 +1922,13 @@ syntax.specification = newsyntax {
     brokenpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     clubpenalties         = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     displaywidowpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
-    finalbalancepenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    balancefinalpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     fitnessclasses        = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     interlinepenalties    = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathbackwardpenalties = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     mathforwardpenalties  = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    orphanlinefactors     = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
+    orphanlinefactors     = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     orphanpenalties       = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     toddlerpenalties      = sequence(optional(keyword("options"),s_integer),s_integer,repeated(s_integer)),
     parpasses             = sequence(
@@ -2003,6 +2031,7 @@ result.someitem = newresult {
     currentloopiterator     = { "", s_integer },
     currentloopnesting      = { "", s_integer },
     currentstacksize        = { "", s_integer },
+    dimexperimental         = { s_expression, s_dimension },
     dimexpr                 = { s_expression, s_dimension },
     dimexpression           = { s_expression, s_dimension },
     floatexpr               = { s_expression, s_float },
@@ -2041,6 +2070,8 @@ result.someitem = newresult {
     lastchknumber           = { "", s_integer },
     lastkern                = { "", s_dimension },
     lastleftclass           = { "", s_integer },
+    lastlinecount           = { "", s_integer },
+    lastlinewidth           = { "", s_dimension },
     lastloopiterator        = { "", s_integer },
     lastnodesubtype         = { "", s_integer },
     lastnodetype            = { "", s_integer },
@@ -2068,6 +2099,7 @@ result.someitem = newresult {
     nestedloopiterator      = { "", s_integer },
     numericscale            = { s_number, s_integer },
     numericscaled           = { s_number, s_integer },
+    numexperimental         = { s_expression, s_integer },
     numexpr                 = { s_expression, s_integer },
     numexpression           = { s_expression, s_integer },
     overshoot               = { "", s_dimension },
@@ -2102,6 +2134,7 @@ syntax.someitem = setsyntaxfromresult(result.someitem)
 syntax.the = newsyntax {
     detokenize                  = s_tokens,
     expandeddetokenize          = s_tokens,
+    notexpanded                 = s_tokens,
     protecteddetokenize         = s_tokens,
     protectedexpandeddetokenize = s_tokens,
     the                         = s_dimension,

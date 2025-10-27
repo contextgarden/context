@@ -7,6 +7,9 @@ if not modules then modules = { } end modules ['mlib-bmp'] = {
     license   = "see context related readme files",
 }
 
+-- musical timestamp: Brad Mehldau "Ride into the Sun" (a perfect line-up of course
+-- too); September 2025.
+
 local type, tonumber, load = type, tonumber, load
 
 local report = logs.reporter("metapost","bytemap")
@@ -25,12 +28,13 @@ local f_function = [[
 
 function mp.lmt_bytemap_do()
     local p             = getparameterset()
-    local bytemap       = tonumber(p.bytemap)     or 1
-    local colorcode     = p.colorcode             or ""
-    local colorfunction = p.colorfunction         or ""
+    local mpbytemap     = tonumber(p.bytemap) or 1
+    local colorcode     = p.colorcode or ""
+    local colorfunction = p.colorfunction or ""
+    local preamble      = p.preamble or ""
     local action        = false
     if colorfunction ~= "" then
-        action = MP[colorfunction]
+        action = MP[colorfunction] or document[colorfunction]
     end
     if type(action) ~= "function" and colorcode ~= "" then
         colorcode = string.formatters[f_function](preamble,colorcode)
@@ -42,5 +46,38 @@ function mp.lmt_bytemap_do()
     if type(action) ~= "function" then
         action = false
     end
-    processbytemap(bytemap,action,true)
+    processbytemap(mpbytemap,action,true)
+end
+
+-- local f_function = [[
+--     local math  = math
+--     local round = math.round
+--     %s
+--     return function(bmp)
+--       return %s
+--     end
+-- ]]
+
+function mp.lmt_domainmap_do()
+    local p              = getparameterset()
+    local mpbytemap      = tonumber(p.bytemap) or 1
+ -- local domaincode     = p.domaincode or ""
+    local domainfunction = p.domainfunction or ""
+    local preamble       = p.preamble or ""
+    local action         = false
+    if domainfunction ~= "" then
+        action = MP[domainfunction] or document[domainfunction]
+    end
+ -- if type(action) ~= "function" then
+ --     domaincode = string.formatters[f_function](preamble,domaincode)
+ --     action = load(domaincode)
+ --     if type(action) == "function" then
+ --         action = action()
+ --     end
+ -- end
+    local bmp = bytemap.newdomain(p.xmin,p.xmax,p.ymin,p.ymax,p.xresolution,p.yresolution)
+    if type(action) == "function" then
+        action(bmp)
+    end
+    mp.newbytemap(mpbytemap,bmp.bytemap)
 end

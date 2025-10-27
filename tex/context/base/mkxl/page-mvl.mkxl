@@ -1185,6 +1185,41 @@
    \fi
    \endmvl}
 
+% beware: width settings ... has changed
+
+% \permanent\tolerant\protected\def\startsubcolumnset[#1]#*[#2]% #,[#1]#,#*[#2]
+%   {\unless\ifconditional\c_page_mvl_active
+%      \par
+%    \orelse\ifcase\c_page_mvl_level
+%      \page_mvl_main_mvl_end
+%      \let\page_mvl_main_mvl_end\relax
+%    \fi
+%    \begingroup
+%    \advanceby\c_page_mvl_level\plusone
+%    \ifnum\c_page_mvl_level=\plusone
+%      \ifhastok={#1}%
+%        \cdef\currentsubcolumnset{\currentcolumnset:}%
+%        \setupcurrentsubcolumnset[#1]%
+%      \else
+%        \cdef\currentsubcolumnset{\currentcolumnset:#1}%
+%        \ifparameter#2\or
+%          \setupcurrentsubcolumnset[#2]%
+%        \fi
+%      \fi
+%      \uselanguageparameter\subcolumnsetparameter
+%      \usesubcolumnsetstyleandcolor\c!style\c!color
+%      \usealignparameter\subcolumnsetparameter
+%      \hsize\clf_columnsetcolumnwidth\currentcolumnset{#1}%
+%      \scratchcounter\ifcsname\??subcolumnset:\currentsubcolumnset\endcsname\lastnamedcs\else\plusone\fi
+%      \ifconditional\c_page_mvl_active
+%        \page_mvl_sub_columnset_start\scratchcounter
+%      \else
+%        \subcolumnsetparameter\c!before
+%      \fi
+%    \fi}
+
+\lettonothing\currentsubcolumnsetname
+
 \permanent\tolerant\protected\def\startsubcolumnset[#1]#*[#2]% #,[#1]#,#*[#2]
   {\unless\ifconditional\c_page_mvl_active
      \par
@@ -1197,9 +1232,11 @@
    \ifnum\c_page_mvl_level=\plusone
      \ifhastok={#1}%
        \cdef\currentsubcolumnset{\currentcolumnset:}%
+       \lettonothing\currentsubcolumnsetname
        \setupcurrentsubcolumnset[#1]%
      \else
        \cdef\currentsubcolumnset{\currentcolumnset:#1}%
+       \cdef\currentsubcolumnsetname{#1}%
        \ifparameter#2\or
          \setupcurrentsubcolumnset[#2]%
        \fi
@@ -1207,7 +1244,8 @@
      \uselanguageparameter\subcolumnsetparameter
      \usesubcolumnsetstyleandcolor\c!style\c!color
      \usealignparameter\subcolumnsetparameter
-     \hsize\clf_columnsetcolumnwidth\currentcolumnset{#1}%
+    %\hsize\clf_columnsetcolumnwidth\currentcolumnset{#1}%
+     \hsize\clf_columnsetcolumnwidth\currentcolumnset\currentsubcolumnsetname % adapted
      \scratchcounter\ifcsname\??subcolumnset:\currentsubcolumnset\endcsname\lastnamedcs\else\plusone\fi
      \ifconditional\c_page_mvl_active
        \page_mvl_sub_columnset_start\scratchcounter
@@ -1773,8 +1811,8 @@
      \else
        \blank[\p_spacebefore]%
      \fi
-    %\snaptogrid\ruledvpack\bgroup
-     \ruledvpack\bgroup
+    %\snaptogrid\vpack\bgroup
+     \vpack\bgroup
        \getnoflines{\ht\floatbox}%
        \scratchheight{\noflines\lineheight-\strutdp}%
        \boxyoffset\floatbox{\ht\floatbox-\scratchheight}%
@@ -1806,7 +1844,9 @@
      \endgroup
      % good enough but it should be a property of \balanceboundary or
      % we could actually intercept it in spac-ver
-     \inhibitblank
+  % \inhibitblank
+  % \nowhitespace
+    \inhibitallspacing
    \fi}
 
 \protected\def\page_mvl_command_next_spread{\page_mvl_break\plusone}
@@ -1848,16 +1888,44 @@
 
 %D Spanning all columns (single column mode):
 
-% \permanent\tolerant\protected\def\startwidecolumnset[#1]%
-%   {\flushsubcolumnsets
-%    \startsubcolumnset[\c!width=\makeupwidth,#1]\relax}
-
-% \permanent\protected\def\stopwidecolumnset
-%   {\stopsubcolumnset
-%    \flushsubcolumnsets}
-
-% \let\page_mvl_wide_before\donothing
-% \let\page_mvl_wide_after \donothing
+% \setuplayout[grid=yes]
+%
+% \definecolumnset[example][n=2]
+%
+% \definesubcolumnset[example][1][1,3]
+% \definesubcolumnset[example][2][2,4]
+%
+% \startcolumnsetsheet[example][2]
+%   \startsetcolumnset[c=3,r=1]
+%     \framed
+%       [width=\columnsetspanwidth{1},
+%        height=6\lineheight,
+%        background=color,
+%        backgroudncolor=darkyellow]{TEST}
+%   \stopsetcolumnset
+% \stopcolumnsetsheet
+%
+% \starttext
+%     \null\page
+%     \startcolumnset[example]
+%         \startsubcolumnset[1]
+%             \dorecurse{2}{\samplefile{ward}\par}
+%         \stopsubcolumnset
+%         \startsubcolumnset[2]
+%             \dorecurse{1}{\samplefile{knuth}\par}
+%         \stopsubcolumnset
+%        % \startsubcolumnset[1] % automatic
+%          \startwidecolumnset
+%              \red \dorecurse{2}{
+%                 \begstrut\samplefile{tufte}\endstrut\par
+%             }
+%          \stopwidecolumnset
+%        % \stopsubcolumnset
+%         \startsubcolumnset[1]
+%             \dorecurse{10}{\samplefile{ward}\par}
+%         \stopsubcolumnset
+%     \stopcolumnset
+% \stoptext
 
 % \enabletrackers[columnsets.keepdiscard]
 
@@ -1879,7 +1947,8 @@
      \relax
      \par
    \fi
-   \endgroup}
+   \endgroup
+   \hsize\makeupwidth\relax}
 
 \def\page_mvl_wide_after
   {\begingroup
@@ -1903,10 +1972,11 @@
    \endgroup}
 
 \permanent\tolerant\protected\def\page_mvl_start_wide_yes[#1]%
-  {%\flushsubcolumnsets\relax
+  {\flushsubcolumnsets\relax
    \begingroup
-   \ifnum\columnsetlastmvl{\currentcolumnset}=\plusone
-     \startsubcolumnset[\c!width=\makeupwidth,#1]\relax
+  %\ifnum\columnsetlastmvl{\currentcolumnset}=\plusone
+   \ifnum\columnsetlastmvl{\currentcolumnset}=\plusthree % changeD
+     \startsubcolumnset[1][\c!width=\makeupwidth,#1]\relax
      \page_mvl_wide_before\relax
      \enforced\let\stopwidecolumnset\page_mvl_stop_wide_yes
    \else

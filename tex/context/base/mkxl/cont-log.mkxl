@@ -221,15 +221,52 @@
 %D Some placeholders:
 
 %protected\frozen\instance\def\eTeX      {\mathematics{\varepsilon}-\TeX}
-\protected\frozen\instance\def\eTeX      {{\tf \nocap $\varepsilon$}-\TeX} % compact mode hack for epsilon
 \protected\frozen\instance\def\pdfTeX    {pdf\wordboundary\TeX}
-\protected\frozen\instance\def\pdfeTeX   {pdfe-\wordboundary\TeX}
 \protected\frozen\instance\def\luaTeX    {lua\wordboundary\TeX}
 \protected\frozen\instance\def\Lua       {Lua}
 \protected\frozen\instance\def\luajitTeX {lua\wordboundary jit\wordboundary\TeX}
 \protected\frozen\instance\def\luametaTeX{lua\wordboundary meta\wordboundary\TeX}
 \protected\frozen\instance\def\XeTeX     {X\lower.5\exheight\hbox{\kern-.15\emwidth\mirror{E}}\kern-.1667\emwidth\TeX}
 
+%protected\frozen\instance\def\eTeX      {{\tf \nocap $\varepsilon$}-\TeX} % compact mode hack for epsilon
+%protected\frozen\instance\def\pdfeTeX   {pdfe-\wordboundary\TeX}
+
+% The epsilon in the etex logo is kind of weird and also not that pretty. Taking it
+% from a math font is risky and we also don't want math in tagged stuff so let's go
+% for a bit more simple and modern variant. More logos qualify for such a treatment.
+
+% \def\Test#1{{Test \eTeX\ Some \pdfeTeX\ Logos} (#1)}
+%
+% \startTEXpage[offset=1ts,strut=no] \showglyphs
+%   \startlines[before=,after=]
+%                 \Test{no caps}
+%     {\smallcaps \Test{real smallcaps}}
+%     \fsc       {\Test{emulated small caps}}
+%     \cap       {\Test{pseudo small caps}}
+%   \stoplines
+% \stopTEXpage
+
+\protected\frozen\instance\def\eTeX
+  {\dontleavehmode
+  %{\nocap e}% we keep \smallcaps
+   e%
+   \begingroup
+   \scratchdimen.05\emwidth
+   \kern\scratchdimen-\kern-2\scratchdimen
+   \endgroup
+   \TeX}
+
+\protected\frozen\instance\def\pdfeTeX
+  {pdf%
+   \begingroup
+   \scratchdimen.05\emwidth
+   \kern\scratchdimen-\kern\scratchdimen
+   e%
+   \discretionary
+     {\kern\scratchdimen-}{}%
+     {\kern\scratchdimen-\kern-2\scratchdimen}%
+   \endgroup
+   \TeX}
 
 % % Adapted from a patch by Mojca:
 %
@@ -315,6 +352,8 @@
 
 \protected\instance\def\LUATEX   {\LuaTeX}
 \protected\instance\def\LUAJITTEX{\LuajitTeX}
+
+% It's all about sound ... and for obvious reasons we avoided III.
 
 \protected\instance\def\MKII{MkII} % MarkTwo
 \protected\instance\def\MKIV{MkIV} % MarkFour   : MKIV

@@ -29,8 +29,6 @@ local protocol = server and server.protocol or "serial"
 
 if protocol == "serial" then
 
-    -- use signals.serialwrite
-
     local port = false
     local baud = 115200
 
@@ -52,21 +50,26 @@ if protocol == "serial" then
     end
 
     local function squidsome(cmd,fwd)
-        serialwrite(port,baud,prefix .. cmd .. "\r")
+        cmd = prefix .. cmd .. "\r"
+        serialwrite(port,baud,cmd)
         if forward and fwd then
             serialwrite(port,baud,forward)
         end
     end
 
-    local function squidreset  () squidsome("qr",true) end
-    local function squidbusy   () squidsome("qs") end
-    local function squidstep   () squidsome("qs") end
-    local function squiddone   () squidsome("qf") end
-    local function squidproblem() squidsome("qp") end
-    local function squiderror  () squidsome("qe") end
+    local function squidreset   () squidsome("qr",true) end
+    local function squidbusy    () squidsome("qs") end
+ -- local function squidstep    () squidsome("qs") end
+ -- local function squiddone    () squidsome("qf") end
+ -- local function squidfinished() squidsome("qf") end
+    local function squidproblem () squidsome("qp") end
+    local function squiderror   () squidsome("qe") end
 
     local function squidstep()
         signals.serialfast(port,baud,prefix .. "qs")
+    end
+    local function squidmark()
+        signals.serialfast(port,baud,prefix .. "qm")
     end
 
     local function squiddone(currentrun,details)
@@ -81,6 +84,8 @@ if protocol == "serial" then
                 elseif category == "problem" then
                     command = "fp"
                 elseif category == "interference" then
+                    command = "fe"
+                elseif category == "error" then
                     command = "fe"
                 end
                 if command then
@@ -104,6 +109,7 @@ if protocol == "serial" then
     signals.squidfinished = squiddone
     signals.squidproblem  = squidproblem
     signals.squiderror    = squiderror
+    signals.squidmark     = squidmark
 
     return {
         name    = "squid",
@@ -126,16 +132,18 @@ if protocol == "serial" then
          --     squidfinished() -- already set
             end
         end,
-        stepper = function(action,process,step,issue)
+        stepper = function(state,process,step,issue)
             local cmd = "r"
-            if action == "busy" then
+            if state == "busy" then
                 cmd = issue and "e" or "s"
-            elseif action == "finished" then
+            elseif state == "finished" then
                 cmd = "f"
-            elseif action == "problem" then
+            elseif state == "problem" then
                 cmd = "p"
-            elseif action == "error" then
+            elseif state == "error" then
                 cmd = "e"
+            elseif state == "mark" then
+                cmd = "m"
             end
             if process then
                 cmd = "s" .. cmd .. process
@@ -144,17 +152,17 @@ if protocol == "serial" then
             end
             squidsome(cmd)
         end,
-        signal = function(action,currentrun)
+        signal = function(state) -- ,currentrun
             local cmd = "ar"
-            if action == "busy" or action == "step" then
+            if state == "busy" or state == "step" then
                 cmd = "ab"
-            elseif action == "done" then
+            elseif state == "done" then
                 cmd = "ad"
-            elseif action == "finished" then
+            elseif state == "finished" then
                 cmd = "af"
-            elseif action == "problem" then
+            elseif state == "problem" then
                 cmd = "ap"
-            elseif action == "error" then
+            elseif state == "error" then
                 cmd = "ae"
             end
             squidsome(cmd)

@@ -134,7 +134,7 @@ implement {
     actions   = setpagestate,
     arguments = {
         {
-            { "name" },
+            { "name", "argument" },
             { "tag" },
             { "delay" },
         }

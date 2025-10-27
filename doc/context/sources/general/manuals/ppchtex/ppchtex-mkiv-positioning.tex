@@ -1,0 +1,329 @@
+\environment ppchtex-mkiv-style
+
+\startcomponent ppchtex-mkiv-positioning
+
+\chapter{Positioning}
+
+When you are combining atoms or molecules, for example with \type{SUB}, some
+positions and dimensions change their value. To overcome this problem it is
+possible to save a location with \type{SAVE} and return to that location with
+\type{RESTORE}.
+
+\placetable{Positioning.}
+\starttable[ | r T | l w(4cm) | p(6cm) | ]
+\HL
+\VL SAVE    \VL Save Status    \VL save actual status    \VL\FR
+\VL RESTORE \VL Restore Status \VL restore actual status \VL\LR
+\HL
+\stoptable
+
+The keys \type{SAVE} and \type{RESTORE} are used with substituents. When
+placing radicals we use \type{PB} and \type{PE}. This example also
+illustrates the possibility to create chains.
+
+\startbuffer
+\definechemical[molecule]
+  {\chemical
+     [ONE,Z0,SB1357,
+      SAVE,SUB3,SIX,B,+R6,C,RESTORE,
+      MOV1,Z0,SB137,
+      MOV1,Z0,SB37,
+      MOV1]
+     [C,C,C]}
+
+\startchemical[width=fit,height=fit]
+  \chemical[molecule,molecule,molecule]
+\stopchemical
+\stopbuffer
+
+\typebuffer
+
+\placefigure
+  [here,force]
+  [fig:save]
+  {}
+  {\getbuffer}
+
+The example below is more complicated and show a complete reaction. The set
+up of bottom and top is essential in this example.
+
+\startbuffer
+\placeformula
+  \startformula
+    \setupchemical
+      [width=fit,top=1000,bottom=2500,
+]%       scale=small,size=small]
+    \startchemical
+      \chemical
+        [ONE,
+         SAVE,
+            Z0,SB7,SB3,SB1,MOV1,Z0,SB1,MOV1,Z0,DB8,CZ8,SB1,Z1,
+         RESTORE,
+         SUB3,ONE,
+         SAVE,
+            Z0,SB3,SB1,MOV1,Z0,SB1,MOV1,Z0,DB8,CZ8,SB1,Z1,
+         RESTORE,
+         SUB3,ONE,
+            Z0,SB7,SB1,MOV1,Z0,SB1,MOV1,Z0,DB8,CZ8,SB1,Z1
+        ]
+        [\SR{HC},O,C,O,C_{19}H_{39},
+         \SR{H_{2}C},O,C,O,C_{17}H_{29},
+         \SR{H_{2}C},O,C,O,C_{21}H_{41}]
+    \stopchemical
+    \startchemical
+      \chemical[SPACE,PLUS,SPACE]
+    \stopchemical
+    \startchemical[right=600]
+      \chemical[ONE,CZ0][3CH_{3}OH]
+    \stopchemical
+    \startchemical
+      \chemical[SPACE,GIVES,SPACE,SPACE][H^+/H_2O]
+    \stopchemical
+    \startchemical
+      \chemical
+        [ONE,Z0,SB7,SB3,SB1,Z3,OFF1,
+         SUB1,
+         ONE,Z0,OFF1,SAVE,-OFF1,SB3,Z3,RESTORE,SB1,OFF1,
+         SUB1,
+         ONE,Z0,OFF1,SAVE,-OFF1,SB3,Z3,RESTORE,SB1,OFF1]
+        [HC,OH,
+         H_{2}C,OH,
+         H_{2}C,OH]
+    \stopchemical
+    \startchemical
+      \chemical[SPACE,PLUS,SPACE]
+    \stopchemical
+    \startchemical[frame=on]
+      \chemical
+        [ONE,
+         SAVE,
+            Z0,
+            DB8,CZ8,SB1,SB5,Z5,MOV1,Z0,SB1,Z1,
+         RESTORE,
+         SUB3,ONE,
+         SAVE,
+            Z0,DB8,CZ8,SB1,SB5,Z5,MOV1,Z0,SB1,Z1,
+         RESTORE,
+         SUB3,ONE,
+            Z0,DB8,CZ8,SB1,SB5,Z5,MOV1,Z0,SB1,Z1
+        ]
+        [C,O,C_{19}H_{39},O,CH_{3},
+         C,O,C_{17}H_{29},O,CH_{3},
+         C,O,C_{21}H_{41},O,CH_{3}]
+    \stopchemical
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+This definition might have been more compact if we would have typed
+\type{SB731} in stead of \type{SB7,SB3,SB1}. But in this way the definition
+is readable. Complex structures can best be defined in its respective
+components.
+
+\getbuffer
+
+Just two more examples where we place text under a structure.
+
+\startbuffer
+\placeformula
+  \startformula
+    \setupchemical
+      [width=fit,top=1500,bottom=3500]
+    \startchemical
+      \chemical
+        [ONE,Z0,DB1,SB3,SB7,Z7,MOV1,Z0,SB3,SB7,Z3,Z7,
+         MOV0,SUB3,SIX,B,+R6,C]
+        [C,H,C,H,H]
+      \bottext{styreen}
+    \stopchemical
+    \quad\quad\quad
+    \startchemical
+      \chemical
+        [ONE,Z0,DB1,SB3,SB7,Z3,Z7,
+         MOV1,Z0,SB1,SB3,Z3,
+         MOV1,Z0,DB1,SB3,Z3,
+         MOV1,Z0,SB3,SB7,Z3,Z7]
+        [C,H,H,C,H,C,H,C,H,H]
+      \bottext{1,3-butadieen}
+   \stopchemical
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The use of \type{OFF} can be very subtle. The examples below illustrate this
+and show minor shifts of \type{ONE}.
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,SB]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,SB,3OFF1,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,SB,MOV1,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,SB,3OFF1,MOV1,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,SB,MOV1,3OFF1,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,MOV1,3OFF1,OFF0,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,MOV1,3OFF1,MOV0,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+\startbuffer
+\startchemical[height=fit,frame=on]
+  \chemical[ONE,MOV1,MOV0,rulecolor,SB][red]
+\stopchemical
+\stopbuffer
+
+\startfiguretext
+  [left][]
+  {}
+  {\getbuffer}
+\example
+\typebuffer
+\stopfiguretext
+
+The next example shows the definition of complexes. Pay special attention to
+the use of \type{RBT}. Normally an extra spacing is not necessary but we use
+here |<|the command is not visible|>| a smaller bodyfont to prevent the
+structure to run in the margin.
+
+\startbuffer
+\startformula
+\setupchemical[scale=small,width=fit]
+\startchemical
+  \chemical[OPENCOMPLEX,SPACE]
+\stopchemical
+\startchemical
+  \chemical[SIX,B,EB35,+R6,+LR1,+RR1]
+  \chemical[SIX,ONE,SAVE,OFF1,Z0,EP57,RESTORE][\SL{OH}]
+  \chemical[SIX,RZ6,LRZ1,RRZ1,RT2][H,Br,\oplus]
+\stopchemical
+\startchemical
+  \chemical[SPACE,MESOMERIC,SPACE]
+\stopchemical
+\startchemical
+  \chemical[SIX,B,EB25,R6,-R1,+R1]
+  \chemical[SIX,PB:RZ6,ONE,OFF1,Z0,EP57,PE][\SL{OH}]
+  \chemical[SIX,-RZ1,+RZ1,RT4][H,Br,\oplus]
+\stopchemical
+\startchemical
+  \chemical[SPACE,MESOMERIC,SPACE]
+\stopchemical
+\startchemical
+  \chemical[SIX,B,EB24,+R6,+LR1,+RR1]
+  \chemical[SIX,SAVE,SUB6,ONE,Z0,EP57,RESTORE][\SL{OH}]
+  \chemical[SIX,LRZ1,RRZ1,RT6][H,Br,\L{\oplus}] % \L takes upto two arguments
+\stopchemical
+\startchemical
+  \chemical[SPACE,MESOMERIC,SPACE]
+\stopchemical
+\startchemical
+  \chemical[SPACE,MESOMERIC,SPACE]
+  \chemical[SIX,B,EB24,+ER6,+LR1,+RR1]
+  \chemical[SIX,SAVE,SUB6,ONE,Z0,Z0,ZT7,RESTORE][\SL{OH},\T{\oplus}]
+  \chemical[SIX,LRZ1,RRZ1][H,Br]
+\stopchemical
+\startchemical
+  \chemical[SPACE,CLOSECOMPLEX]
+\stopchemical
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+Without the use of \type{SPACE} the seperate structures would merge. Most of
+the time the optimization of such a reaction is an iterative proces.
+
+\start
+\switchtobodyfont[small]
+\getbuffer
+\stop
+
+\stopcomponent
