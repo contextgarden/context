@@ -21,6 +21,9 @@
 %D redefined in the synonyms modules. We use old school definitions. Watch out: when
 %D a math font is used the \AMS\ logos can come out ugly but they are ugly anyway.
 
+%D We will at some point move the non-\CONTEXT\ logos to the abbreviations file
+%D because it makes no sense to have e.g. the \LATEX\ logo defined here.
+
 \unprotect
 
 % \protected\frozen\instance\def\TeX
@@ -290,7 +293,7 @@
 %       \fi}%
 %    \kern-.1667\emwidth\TeX}
 
-% This is good enough for th efew times that we need it:
+% This is good enough for the few times that we need it:
 
 \def\syst_logos_xe
   {X\lower.5\exheight

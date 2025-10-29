@@ -1,0 +1,37 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\starttext
+
+\startcolumnset[example]
+
+\useexternalfigure[fake][fake][width=\textwidth,lines=3]
+
+\placefigure[btlr]{btlr}{\externalfigure[fake]}
+\placefigure[btlr]{btlr}{\externalfigure[fake]}
+\placefigure[btrl]{btrl}{\externalfigure[fake]}
+\placefigure[btrl]{btrl}{\externalfigure[fake]}
+\placefigure[tblr]{tblr}{\externalfigure[fake]}
+\placefigure[tblr]{tblr}{\externalfigure[fake]}
+\placefigure[tbrl]{tbrl}{\externalfigure[fake]}
+\placefigure[tbrl]{tbrl}{\externalfigure[fake]}
+
+\placefigure[lrbt]{lrbt}{\externalfigure[fake]}
+\placefigure[lrbt]{lrbt}{\externalfigure[fake]}
+\placefigure[lrtb]{lrtb}{\externalfigure[fake]}
+\placefigure[lrtb]{lrtb}{\externalfigure[fake]}
+\placefigure[rlbt]{rlbt}{\externalfigure[fake]}
+\placefigure[rlbt]{rlbt}{\externalfigure[fake]}
+\placefigure[rltb]{rltb}{\externalfigure[fake]}
+\placefigure[rltb]{rltb}{\externalfigure[fake]}
+
+\dorecurse{10}{\simulatewords[n=50,m=100]\par}
+
+\stopcolumnset
+
+\stoptext

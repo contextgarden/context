@@ -1,0 +1,50 @@
+\environment mvlcolumnsets-000
+
+\starttext
+
+% \enabletrackers[columnsets.floats]
+% \enabletrackers[columnsets.uinsert]
+
+\definecolumnset
+  [example]
+  [n=2,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\setupbackgrounds
+  [text]
+  [background=color,
+   backgroundcolor=color-1]
+
+\setupnotes
+  [width=\columnsetspanwidth{1}] % weird
+
+\startcolumnset[example]
+    \dorecurse{10}{
+        \simulatewords[n=50,m=100]
+        \footnote{\simulatewords[n=10,m=15]}
+        \placefigure[top]
+          {}
+          {\framed
+             [frame=off,background=color,backgroundcolor=gray,
+              height=\columnsetgridlines{4},width=\columnsethspan{1}{1}]
+             {TOP #1.1}}
+        \simulatewords[n=50,m=100]
+        \placefigure[bottom]
+          {}
+          {\framed
+             [frame=off,background=color,backgroundcolor=gray,
+              height=\columnsetgridlines{3},width=\columnsethspan{1}{1}]
+             {BOTTOM #1}}
+        \simulatewords[n=50,m=100]
+        \placefigure[top]
+          {}
+          {\framed
+             [frame=off,background=color,backgroundcolor=gray,
+              height=\columnsetgridlines{3},width=\columnsethspan{1}{1}]
+             {TOP #1.2}}
+        \par
+    }
+\stopcolumnset
+
+\stoptext

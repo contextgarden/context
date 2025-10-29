@@ -11,7 +11,7 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-\newcontextversion{2025.10.27 22:02}
+\newcontextversion{2025.10.29 22:28}
 
 %D This file is loaded at runtime, thereby providing an excellent place for hacks,
 %D patches, extensions and new features. There can be local overloads in cont-loc

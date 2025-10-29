@@ -5178,7 +5178,7 @@ static void mp_flush_variable(MP mp, mp_node p, mp_node t, int discard_suffixes)
             if (n == mp_collective_subscript) {
                 mp_node q = mp_get_subscr_head(p);
                 mp_node r = NULL;
-                while (q->name_type == mp_subscript_operation) {
+                while (q && q->name_type == mp_subscript_operation) { /*tex The q test makes compiler happy. */
                     mp_flush_variable(mp, q, t, discard_suffixes);
                     if (t != NULL) {
                         r = q;

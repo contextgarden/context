@@ -826,6 +826,12 @@ typedef enum unit_codes {
 // # define undefined_control_sequence    (special_sequence_base + undefined_control_sequence_code)
 // # define first_register_base           (special_sequence_base + n_of_special_sequences)
 
+/*
+    We no longer need to have these register ranges in main memory because we use an 
+    abstraction. However, it would demand quite some changes as we then need these indices
+    to point to different data arrays.
+*/
+
 # define undefined_control_sequence     deep_frozen_cs_undefined_code
 
 # define special_sequence_base          (last_deep_frozen_cs_location + 1)
@@ -1035,17 +1041,17 @@ extern save_state_info lmt_save_state;
 
 */
 
-# define save_type(A)    lmt_save_state.save_stack[A].saved_type     /*tex classifies a |save_stack| entry */
-# define save_record(A)  lmt_save_state.save_stack[A].saved_record
-# define save_level(A)   lmt_save_state.save_stack[A].saved_level    /*tex saved level for regions 5 and 6, or group code, or ...  */
-# define save_group(A)   lmt_save_state.save_stack[A].saved_group
-
-# define save_value(A)   lmt_save_state.save_stack[A].saved_value    /*tex |eqtb| location or token or |save_stack| location or ... */
-# define save_word(A)    lmt_save_state.save_stack[A].saved_word     /*tex |eqtb| entry */
-
-# define save_value_1(A) lmt_save_state.save_stack[A].saved_value_1
-# define save_value_2(A) lmt_save_state.save_stack[A].saved_value_2
-# define save_value_3(A) lmt_save_state.save_stack[A].saved_value_3
+# define save_type(A)     lmt_save_state.save_stack[A].saved_type     /*tex classifies a |save_stack| entry */
+# define save_record(A)   lmt_save_state.save_stack[A].saved_record
+# define save_level(A)    lmt_save_state.save_stack[A].saved_level    /*tex saved level for regions 5 and 6, or group code, or ...  */
+# define save_group(A)    lmt_save_state.save_stack[A].saved_group
+                          
+# define save_value(A)    lmt_save_state.save_stack[A].saved_value    /*tex |eqtb| location or token or |save_stack| location or ... */
+# define save_word(A)     lmt_save_state.save_stack[A].saved_word     /*tex |eqtb| entry */
+                          
+# define save_value_1(A)  lmt_save_state.save_stack[A].saved_value_1
+# define save_value_2(A)  lmt_save_state.save_stack[A].saved_value_2
+# define save_value_3(A)  lmt_save_state.save_stack[A].saved_value_3
 
 # define saved_type(A)    lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_type
 # define saved_record(A)  lmt_save_state.save_stack[lmt_save_state.save_stack_data.ptr + (A)].saved_record

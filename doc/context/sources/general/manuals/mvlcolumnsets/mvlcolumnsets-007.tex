@@ -1,0 +1,41 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=3,
+   page=left.
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\definecolumnsetspan[wide][n=2,background=contrast,color=white]
+
+\starttext
+
+\startbuffer
+
+  \startcolumnsetspan[wide]
+    \simulatewords[n=25,m=50]
+  \stopcolumnsetspan
+
+  \simulatewords[n=25,m=50]
+
+  \startcolumnsetspan[wide]
+    \simulatewords[n=25,m=50]
+  \stopcolumnsetspan
+
+  \startcolumnsetspan[wide][default=btrl]
+    \simulatewords[n=25,m=50]
+  \stopcolumnsetspan
+
+  \dorecurse{3}{\simulatewords[n=100,m=200]\par}
+
+\stopbuffer
+
+\startcolumnset[example]
+
+  \dorecurse{4}{\getbuffer}
+
+  \dorecurse{5}{\simulatewords[n=100,m=200]\par}
+
+\stopcolumnset
+
+\stoptext

@@ -63,6 +63,8 @@
 \definefilesynonym [type-imp-latin-modern.mkiv]           [type-imp-latinmodern.mkiv]
 \definefilesynonym [type-imp-modern-latin.mkiv]           [type-imp-modernlatin.mkiv]
 \definefilesynonym [type-imp-less-modern-latin.mkiv]      [type-imp-modernlatin.mkiv]
+\definefilesynonym [type-imp-modernlatin.mkiv]            [type-imp-modernlatin.mkiv]
+\definefilesynonym [type-imp-lessmodernlatin.mkiv]        [type-imp-modernlatin.mkiv]
 
 \definefilesynonym [type-imp-lucida-opentype.mkiv]        [type-imp-lucida.mkiv]
 \definefilesynonym [type-imp-lucidaot.mkiv]               [type-imp-lucida.mkiv]

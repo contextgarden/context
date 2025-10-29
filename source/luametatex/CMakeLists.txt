@@ -27,8 +27,9 @@ include(GNUInstallDirs)
 set(LMT_KPSE_TOO 1) # In case we want to manage MKII scripts (etc) with mtxrun.
 set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi stuff)
 
-# This triggere link time optimization, which adds to compile time and gains (at most) a few 
-# percent on runtime. When set, because we're sparse, we also strip the binary.
+# This triggers link time optimization, which adds to compile time and gains (at most) a few 
+# percent on runtime. When set, because we're sparse, we also strip the binary. On the manual
+# we gain 2 percent, so not that much. 
 
 # set(LMT_OPTIMIZE 1)
 

@@ -18,27 +18,28 @@ local report_metapost = logs.reporter("metapost")
 
 local trace_variables = false  trackers.register("metapost.variables",function(v) trace_variables = v end)
 
-local mplib           = mplib
-local context         = context
+local mplib             = mplib
+local context           = context
 
-local allocate        = utilities.storage.allocate
+local allocate          = utilities.storage.allocate
 
-local peninfo         = mplib.peninfo
-local getfields       = mplib.getfields or mplib.fields -- todo: in lmtx get them once and then use gettype
+local getfields         = mplib.getfields or mplib.fields -- todo: in lmtx get them once and then use gettype
+local getobjectdata     = mplib.getobjectdata
+local getobjectstacking = mplib.getobjectstacking
 
-local save_table      = false
-local force_stroke    = false
+local save_table        = false
+local force_stroke      = false
 
-metapost              = metapost or { }
-local metapost        = metapost
+metapost                = metapost or { }
+local metapost          = metapost
 
-metapost.flushers     = metapost.flushers or { }
-local pdfflusher      = { }
-metapost.flushers.pdf = pdfflusher
+metapost.flushers       = metapost.flushers or { }
+local pdfflusher        = { }
+metapost.flushers.pdf   = pdfflusher
 
-metapost.n            = 0
+metapost.n              = 0
 
-local mpsliteral      = nodes.pool.originliteral
+local mpsliteral        = nodes.pool.originliteral
 
 local f_f  = formatters["%.6N"]
 local f_m  = formatters["%.6N %.6N m"]
@@ -136,11 +137,15 @@ end
 
 local rx, sx, sy, ry, tx, ty, divider = 1, 0, 0, 1, 0, 0, 1
 
-local function pen_characteristics(object)
-    local t = peninfo(object)
-    rx, ry, sx, sy, tx, ty = t.rx, t.ry, t.sx, t.sy, t.tx, t.ty
+local function pen_characteristics(peninfo)
+    rx = peninfo.rx
+    ry = peninfo.ry
+    sx = peninfo.sx
+    sy = peninfo.sy
+    tx = peninfo.tx
+    ty = peninfo.ty
     divider = sx*sy - rx*ry
-    return not (sx == 1 and rx == 0 and ry == 0 and sy == 1 and tx == 0 and ty == 0), t.width
+    return not (sx == 1 and rx == 0 and ry == 0 and sy == 1 and tx == 0 and ty == 0), peninfo.width
 end
 
 local function mpconcat(px, py) -- no tx, ty here / we can move this one inline if needed
@@ -445,10 +450,6 @@ directives.register("metapost.optimizecolor", function(v)
     optimizecolor = v
 end)
 
-local function enhancedobject(original)
-    return setmetatable({ }, { __index = original })
-end
-
 function metapost.flush(specification,result)
     if result then
         local flusher   = specification.flusher
@@ -516,15 +517,22 @@ function metapost.flush(specification,result)
                                 local savedpath = nil
                                 local savedhtap = nil
                                 if stacking then
-                                    stacking = { }
-                                    for o=1,#objects do
-                                        local stack = objects[o].stacking
-                                        if stack then
-                                            if filtering then
-                                                stacking[stack] = filtering[stack]
-                                            else
-                                                stacking[stack] = true
-                                            end
+                                 -- stacking = { }
+                                 -- for o=1,#objects do
+                                 --     local stack = objects[o].stacking
+                                 --     if stack then
+                                 --         if filtering then
+                                 --             stacking[stack] = filtering[stack]
+                                 --         else
+                                 --             stacking[stack] = true
+                                 --         end
+                                 --     end
+                                 -- end
+                                    for stack in next, stacking do
+                                        if filtering then
+                                            stacking[stack] = filtering[stack]
+                                        else
+                                            stacking[stack] = true
                                         end
                                     end
                                     stacking = sortedkeys(stacking)
@@ -532,23 +540,15 @@ function metapost.flush(specification,result)
                                     stacking = nostacking
                                 end
                                 for i=1,#stacking do
+                                    -- We now use a direct table instead of a metatabled one. See pre 2025-10-19
+                                    -- code for the old, more indirect approach depending on field asccessors.
                                     local stack = stacking[i]
                                     for o=1,#objects do
                                         local object = objects[o]
-                                        if stack == object.stacking then
+                                        if stack == getobjectstacking(object) then
+                                            object = getobjectdata(object)
                                             local objecttype = object.type
                                             if objecttype == "fill" or objecttype == "outline" then
-                                                -- we use an indirect table as we want to overload
-                                                -- entries but this is not possible in userdata
-                                                --
-                                                -- can be optimized if no path
-                                                --
-                                                local original = object
-                                                local object   = { }
-                                                setmetatable(object, {
-                                                    __index = original
-                                                })
-                                                --
                                                 if object.bytemap then
                                                     -- We trigger the bm plugin. There can be a prescript "bytemask=n" so we
                                                     -- need to preserve that. In that plugin we use object.bytemap directly.
@@ -680,7 +680,7 @@ function metapost.flush(specification,result)
                                                         local open = last == "open"
                                                         --
                                                         if pen and pen.type == "elliptical" or outline then
-                                                            transformed, penwidth = pen_characteristics(original) -- boolean, value
+                                                            transformed, penwidth = pen_characteristics(object.peninfo) -- boolean, value
                                                             if penwidth ~= linewidth then
                                                                 result[#result+1] = f_w(penwidth)
                                                                 linewidth = penwidth
@@ -721,7 +721,7 @@ function metapost.flush(specification,result)
                                                         --
                                                         if pen then
                                                            if pen.type == "elliptical" or outline then
-                                                                transformed, penwidth = pen_characteristics(original) -- boolean, value
+                                                                transformed, penwidth = pen_characteristics(object.peninfo) -- boolean, value
                                                                 if penwidth ~= linewidth then
                                                                     result[#result+1] = f_w(penwidth)
                                                                     linewidth = penwidth
@@ -852,7 +852,6 @@ function metapost.flush(specification,result)
                                             elseif objecttype == "start_group" then
                                                 result[#result+1] = "% mps group: begin"
                                                 if lpdf.flushgroup then
-                                                    local object = enhancedobject(object)
                                                     local bbox = toboundingbox(object.path)
                                                     local before, after = processplugins(object,result)
                                                     local detail = object.detail

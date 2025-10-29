@@ -115,7 +115,7 @@ appendaction("math",         "normalizers", "noads.handlers.fencing",           
 appendaction("math",         "normalizers", "noads.handlers.unscript",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.unstack",                           nil, "nonut",  "disabled", attribute("mathunstack") )
 appendaction("math",         "normalizers", "noads.handlers.relocate",                          nil, "nonut",  "enabled"   )
-appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled",  attribute("mathvariant") )
+appendaction("math",         "normalizers", "noads.handlers.variants",                          nil, "nonut",  "enabled"   ) -- attribute driven but also explicit
 appendaction("math",         "normalizers", "noads.handlers.families",                          nil, "nonut",  "enabled"   )
 appendaction("math",         "normalizers", "noads.handlers.render",                            nil, "nonut",  "enabled",  attribute("mathrendering") )
 appendaction("math",         "normalizers", "noads.handlers.collapse",                          nil, "nonut",  "disabled"  )  -- second time

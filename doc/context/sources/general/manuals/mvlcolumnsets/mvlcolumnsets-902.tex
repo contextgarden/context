@@ -1,0 +1,37 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=3,
+   page=left,
+   distance=1cm]
+
+\setupcolumnset
+  [example]
+  [background=contrast]
+
+\setuphead
+  [section]
+  [style=\bfd,
+   color=fakecolor]
+
+\setuplinenumbering
+  [style=bold,
+   distance=0pt,
+   align=inner]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{30}{
+    \startsection[title=foo #1]
+      \startlinenumbering
+        \simulatewords[n=50,m=100]\par
+      \stoplinenumbering
+    \stopsection
+  }
+
+\stopcolumnset
+
+\stoptext

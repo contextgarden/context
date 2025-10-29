@@ -69,7 +69,7 @@
     The |internal_font_number| type is now also a |halfword| so it's no longer used as such.
 
     We now use 64 memory words split into whatever pieces we need. This also means that we can use
-    a double as glueratio which us saves some casting.
+    a double as glue ratio which us saves some casting.
 
     In principle we can widen up the engine to use long instead of int because it is relatively easy 
     to adapt the nodes but it will take much more memory and we gain nothing. I might (re)introduce 
@@ -273,8 +273,8 @@ extern halfword tex_badness(
 
 # if 1
 
-    # define max_toks_register_index      0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 32 */
-    # define max_box_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 32 */
+    # define max_toks_register_index      0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 16 */
+    # define max_box_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 16 */
     # define max_integer_register_index   0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
     # define max_dimension_register_index 0xFFFF /* 0xFFFF 0xFFFF 0x3FFF */ /* 64 64 16 */
     # define max_posit_register_index     0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */

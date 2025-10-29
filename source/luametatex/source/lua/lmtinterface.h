@@ -1624,6 +1624,8 @@ make_lua_key(L, open_file);\
 make_lua_key(L, pairs);\
 make_lua_key(L, path);\
 make_lua_key(L, pen);\
+make_lua_key(L, pentype);\
+make_lua_key(L, peninfo);\
 make_lua_key(L, postscript);\
 make_lua_key(L, prescript);\
 make_lua_key(L, primary);\

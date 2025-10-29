@@ -1,0 +1,29 @@
+\environment mvlcolumnsets-000
+
+\starttext
+
+\definecolumnset
+  [example]
+  [n=2,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\setupbackgrounds
+  [text]
+  [background=color,
+   backgroundcolor=color-1]
+
+\setupnotes
+  [width=\columnsetspanwidth{1}] % weird
+
+\startcolumnset[example]
+    \dorecurse{5} {
+        \dorecurse{10} {
+            \simulatewords[n=100,m=150]
+            \footnote{\setupalign[strictwidows,strictclubs]\simulatewords[n=20,m=100]}
+        }
+        \par
+    }
+\stopcolumnset
+
+\stoptext

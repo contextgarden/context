@@ -742,7 +742,12 @@ local processoractions = sequencers.new { arguments = "object,prescript,before,a
 appendgroup(resetteractions, "system")
 appendgroup(processoractions,"system")
 
--- later entries come first
+-- Later entries come first. In a few cases we have multiple sets (no _n) like with
+-- shades so we can't do:
+--
+-- scriptsplitter = Cf ( Ct("") * Cg ( C((1-S("= \n\r"))^1) * S("= ")^0 * C((1-S("\n\r"))^0) * S("\n\r")^0)^0, rawset)
+--
+-- but end up with an array as well as hash.
 
 local scriptsplitter = Ct ( Ct (
     C((1-S("= "))^1) * S("= ")^1 * C((1-S("\n\r"))^0) * S("\n\r")^0
@@ -752,9 +757,9 @@ local function splitprescript(script)
     local hash = lpegmatch(scriptsplitter,script)
     for i=#hash,1,-1 do
         local h = hash[i]
-        if h == "reset" then
+        if h == "reset" then -- not used
             for k, v in next, hash do
-                if type(k) ~= "number" then
+                if type(k) ~= "number" then -- when is this true anyway
                     hash[k] = nil
                 end
             end
@@ -1244,7 +1249,7 @@ local tx_reset, tx_process  do
             end
             object.color   = false
             object.grouped = true
-            object.istext  = true
+         -- object.istext  = true -- not used
         end
     end
 
@@ -1277,7 +1282,7 @@ local function bx_process(object,prescript,before,after)
         end
         object.color   = false
         object.grouped = true
-        object.istext  = true
+     -- object.istext  = true -- not used
     end
 end
 

@@ -66,7 +66,7 @@ hash_state_info lmt_hash_state = {
     .eqtb        = NULL,
     .no_new_cs   = 1,
     .padding     = 0,
-    .destructors = { eq_none}, 
+    .destructors = { eq_none }, 
 };
 
 /*tex

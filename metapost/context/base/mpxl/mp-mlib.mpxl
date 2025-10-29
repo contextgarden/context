@@ -11,6 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See licen-en.pdf for
 %C details.
 
+% todo: ... & mfun_prescript_separator & ...
+
 if known metafun_loaded_mlib : endinput ; fi ;
 
 newinternal boolean metafun_loaded_mlib ; metafun_loaded_mlib := true ; immutable metafun_loaded_mlib ;

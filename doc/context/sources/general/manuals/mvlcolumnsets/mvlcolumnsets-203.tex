@@ -1,0 +1,29 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\definecolumnsetarea
+  [one]% [left]
+  [x=1,y=1,nx=6,ny=6,
+   background=contrast,state=start]
+
+\definecolumnsetarea
+  [two]%[left]
+  [x=3,y=10,nx=4,ny=6,
+   background=contrast,state=start]
+
+\stopsetups
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{25}{\simulatewords[n=50,m=100]\par}
+
+\stopcolumnset
+
+\stoptext

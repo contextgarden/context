@@ -1,0 +1,23 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\setupbackgrounds[text][text][background=contrast]
+
+\definecolor[maincolor][middlegray]
+
+\setupcolumnset[example][width=.15\makeupwidth]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{25}{\simulatewords[n=100,m=150]\par}
+
+\stopcolumnset
+
+\stoptext

@@ -1,0 +1,27 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=3,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\definecolumnsetspan[wide][n=2,background=contrast,color=white]
+
+\starttext
+
+\startcolumnset[example]
+
+  \startcolumnsetspan[wide][method=btrl]
+
+    \startsimplecolumns
+      \dorecurse{2}{\fakewords{25}{40}\par}
+    \stopsimplecolumns
+
+  \stopcolumnsetspan
+
+  \dorecurse{15}{\simulatewords[n=100,m=200]}
+
+\stopcolumnset
+
+\stoptext

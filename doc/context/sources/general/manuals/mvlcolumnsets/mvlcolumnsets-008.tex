@@ -1,0 +1,40 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=3,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\definecolumnsetspan[wide] [n=2,background=contrast]
+\definecolumnsetspan[wider][n=3,background=contrast]
+
+\definesubcolumnset[example][one][*]
+
+\starttext
+
+\startcolumnset[example]
+
+  \startcolumnsetspan[wider]
+    wider: \dorecurse{2}{#1: \simulatewords[n=25,m=50]\par}
+  \stopcolumnsetspan
+
+  \startsubcolumnset[one]
+     inbetween: \simulatewords[n=125,m=150]\par
+  \stopsubcolumnset
+
+  \balancesubcolumnsets
+
+  \startcolumnsetspan[wide][method=tblr]
+    wide : \dorecurse{2}{#1: \simulatewords[n=25,m=50]\par}
+  \stopcolumnsetspan
+
+  \startsubcolumnset[one]
+    after: \dorecurse{15}{#1: \simulatewords[n=100,m=200]\par}
+  \stopsubcolumnset
+
+  \balancesubcolumnsets
+
+\stopcolumnset
+
+\stoptext

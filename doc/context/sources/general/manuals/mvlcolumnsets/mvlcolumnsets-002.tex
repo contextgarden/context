@@ -1,0 +1,19 @@
+\environment mvlcolumnsets-000
+
+\showmakeup[vpenalty]
+
+\definecolumnset
+  [example]
+  [nleft=3,nright=2,
+   width=5cm,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{15}{\simulatewords[n=100,m=200]\par}
+
+\stopcolumnset
+
+\stoptext

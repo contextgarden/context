@@ -1,0 +1,27 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left,
+   direction=reverse,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\setupbackgrounds[text][text][background=contrast]
+
+\starttext
+
+\startcolumnset[example]
+
+  \dorecurse{50}{
+    \dontleavehmode
+    \snaptogrid\hbox
+      {\scale[height=2.5\lineheight]{\color[fakecolor]{#1}}}%
+    \space
+    \simulatewords[n=30,m=60]\par
+    \par
+  }
+
+\stopcolumnset
+
+\stoptext

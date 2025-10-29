@@ -1,0 +1,30 @@
+\environment mvlcolumnsets-000
+
+\definecolumnset
+  [example]
+  [n=4,
+   page=left,
+   align={defaultwidows,defaultclubs,defaultbroken}]
+
+\starttext
+
+\startbuffer
+\simulatewords[n=100,m=200,color=fakecolor]
+\placefigure
+  {}
+  {\externalfigure[placeholder][width=\columnsetspanwidth{1}]}
+\simulatewords[n=100,m=200,color=fakecolor]
+\placefigure
+  {}
+  {\externalfigure[placeholder][width=\columnsetspanwidth{2}]}
+\simulatewords[n=100,m=200,color=fakecolor]
+\stopbuffer
+
+\startcolumnset[example]
+
+  \dorecurse {5}{\getbuffer}
+  \dorecurse{10}{\simulatewords[n=100,m=200]\par}
+
+\stopcolumnset
+
+\stoptext

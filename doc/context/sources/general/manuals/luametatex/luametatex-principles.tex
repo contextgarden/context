@@ -505,13 +505,38 @@ no (or at least less) interference with grouping.
 
 \startsection[title=Pages]
 
-{\em todo}
+The page builder is less complex than the par builder as it doesn't really
+optimize. When the target size overflows it backtracks to the last best break.
+The main complication is in handling the inserts: these need to stay with the
+content and therefore can break over a page boundary.
+
+In \LUAMETATEX\ we added only a few features like \type {\pageextragoal} for some
+slack in calculations and we also added the more explicit \type {\pagevsize} and
+a few state access primitives. We might at some point extend this builder a bit
+although the \quote {balance} mechanism (that for instance in \CONTEXT\ is used
+in column sets) already provides a multi-pass solution.
 
 \stopsection
 
 \startsection[title=Alignments]
 
-{\em todo}
+Alignments are on the one hand an independent builder but because cells in tables
+are kind of independent snippets this mechanism is also very much mixed in the
+parser. The engine is, when it comes to processing content, in text mode, math
+mode and both these states can happen inside alignments. When the alignment
+(group) is finished the table will be constructed from the snippets which happens
+in a few steps because the dimensions can depend on the content of a whole row of
+column.
+
+This mechanism is rather straightforward if we forget about possible look-ahead
+issues in the \quote {preamble parsing} and \quote {determining if we're done}.
+This issue is a bit less problematic in \LUAMETATEX\ because we can define macros
+as being \type {\noaligned} which instructs the scanner to not expand but assume
+we're still doing table (cells).
+
+Compared to \LUATEX\ there are some extras, like setting attributes on cells, as
+well as optimizations, like ignoring zero \type {\tabskip} which makes tables
+that span hundreds of pages and many columns less memory hungry.
 
 \stopsection
 
@@ -525,7 +550,6 @@ mechanism have been extended so that we can actually uses them in am meaningful
 way.
 
 \stopsection
-
 
 \startsection[title=Marks]
 
@@ -550,13 +574,49 @@ that they have more properties.
 
 \startsection[title=Boxes]
 
-{\em todo}
+Boxes are one of the most important structures. Eventually the result is a bunch
+of nested boxes with glyphs, kerns, glue and so called whatsits that the backend
+will convert into something, like a \PDF\ file. We have a low level manual on boxes
+and their many properties.
+
+\start \showboxes
+Where glyphs are the visual elements, boxes are invisible wrappers. A line is a
+box that groups (collects) glyphs and spacing but we don't really see that box.
+In this paragraph we enable the \CONTEXT\ visualizer so we do see the boxes when
+you zoom in. Every line is a \type {\hbox} with a height and depth depending on
+the content but a width determined by the \type {\hsize}. Of course we can have
+also boxes in the line, as we see with the \TEX\ logo, where the lowered \type {E}
+is moved down boxed.
+\par \stop
+
+In a traditional engine box nodes have a width, height and depth field for
+dimensions but also a shift field that signal a displacement. Moving a box while
+still keeping its dimensions is used in the math builder and post line break
+routine but in \LUAMETATEX\ we did away with that in most places. The reason is
+that where in original \TEX\ no one is confronted with these engine
+imposed|/|applied shifts, in an opened up \LUAMETATEX\ it can be confusing. Of
+course the field is still there, also because it's used in \type {\moveleft} and
+friends. In addition we can set offsets, orientation in four ways, anchor the box
+on corners and such. As a result we have more keywords to check when we set a box
+which actually was one of the reasons to optimize the keyword scanner.
 
 \stopsection
 
 \startsection[title=Language]
 
-{\em todo}
+The language model in \LUAMETATEX\ is similar to \LUATEX. A glyph node has a
+language field that is used by the engine for hyphenation. There are some fields
+in the glyph node that carry states related to hyphenation and in \LUAMETATEX\ we
+have more control options. There are some text codes that one can see as related
+to languages, like \type {\lccode} and \type {\uccode} and even \type {\sfcode}
+but especially in a \UNICODE\ environment the macro package likely will do some
+independent of these shared vectors.
+
+Hyphenation patterns are loaded at runtime which saves on the size of the format
+file; after all we seldom need more than one, and pre-loading dozens makes little
+sense. The hyphenate and exception handlers provide features for compound words
+and penalties and also have callbacks to add additional functionality. Users will
+not directly mess with these and trust the macro package to do the right thing.
 
 \stopsection
 
@@ -595,7 +655,59 @@ instance Antykwa.
 
 \startsection[title=Programming]
 
-{\em todo}
+There are some major extensions to the way one can program macros, of which we
+mention a few:
+
+\startitemize[packed]
+
+\startitem
+    Macros can have more complex definitions, for instance optional arguments,
+    mandate braces, optional spaces between arguments.
+\stopitem
+
+\startitem
+    We have more conditionals and conditionals can be less nested by using \type
+    {\orelse} and continued tests at the same nesting level.
+\stopitem
+
+\startitem
+    We have various kind of native loops which makes for more advanced fully
+    expandable solutions.
+\stopitem
+
+\startitem
+    There are additional, more advanced, expression scanners for numbers
+    (integers) and dimensions. In fact, when a value is needed these scanners can
+    kick in (curly braced values).
+\stopitem
+
+\startitem
+    There are user units that hook into registers and other properties. Of course
+    this feature is rather macro package dependent.
+\stopitem
+
+\startitem
+    We can have local expansion, a.k.a.\ \quote {local control} which means that
+    the main loops basically acts as a function.
+\stopitem
+
+\startitem
+    There are more (powerful) input parsers at the \LUA\ end which helps making
+    extensions to the syntax without bloating the already large set of
+    primitives.
+\stopitem
+
+\startitem
+    Macros can have properties that make them more robust in alignment and
+    expansion contexts and can be protected against overloading.
+\stopitem
+
+\stopitemize
+
+There are many small extensions that are the result of years of experience with
+programming in the \TEX\ language and accumulated observations. Of course most is
+driven by \CONTEXT\ development. Some of the new programming features are
+explained below.
 
 \stopsection
 
@@ -605,7 +717,7 @@ The idea behind \TEX\ is that users define macros. However, when they do so in
 the perspective of a macro package there is the danger that core functionality
 can be overwritten. Now, one can of course make all primitives less accessible,
 for instance by some prefix. But that makes no real sense for features that
-belong to the language. When users use CamelCase for their names they're unlikely
+belong to the language. When users use Camel Case for their names they're unlikely
 to run into issues, so while internal macros are actually prefixed, we don't
 do that with the primitives, so you can write code that looks \TEX.
 
@@ -877,13 +989,26 @@ skip is seen as content.
 
 \startsection[title=Hooks]
 
-{\em todo}
+In many places callbacks are possible that can be used for implementing
+extensions or extensive tracing. Of course usage is macro package dependent and
+users should be aware of possible interferences when callbacks are chained. There
+are ways to block changes. Compared to \LUATEX, some callbacks are mandate, like
+reading from files or dealing with (and even loading) fonts. Some callbacks can
+replace built-in functionality but that will probably seldom be done.
+
+Although officially callbacks are the way to extend the engine, we did in many
+places add functionality, simply because it integrates better in already complex
+features (like the par builder) and it is also faster.
 
 \stopsection
 
 \startsection[title=Expressions]
 
-{\em todo}
+The \ETEX\ expression scanner has been optimized and extended with a \type
+{\divide} compatible operator. In addition we have a scanner with more features
+and another (experimental) one that does operator priorities proper (and
+internally uses an reverse Polish stack approach). When a number or dimension is
+expected a braced value is parsed as extended expression.
 
 \stopsection
 
