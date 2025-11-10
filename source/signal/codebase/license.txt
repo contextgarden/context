@@ -1,0 +1,53 @@
+------------------------------------------------------------------------------------------
+PREAMBLE
+------------------------------------------------------------------------------------------
+
+The ConTeXt Watch gadget (aka Signal or Squid) is device that can monitor a ConTeXt run in
+various ways: segment, quadrant, squid, feedback. It uses serial and/or wifi connections.
+The details are discussed in the signals.pdf manual that is part of the regular ConTeXt
+distribution. The idea is that a visual feedback is easier (more direct) than staring at a
+log. Future versions will provide more detailed feedback.
+
+After prototyping, first with a Raspberry Pico, later with an ESP 32, we settled for the
+later. The separate 24 led ring was integrated by Mojca into a circular board. At the 2025
+ConTeXt meeting in Poland the first official version was released in a workshop where a
+dedicated case (using wood) by Willi was combined with the hardware and flashed by those
+present. A prototype 3D printed housing (designed by Vincent) was also presented there.
+
+This project is part of the the LuaMetaTeX / ConText LMTX project. This TeX engine has
+serial communication support built in which is used by ConTeXt runner and macro package to
+keep track of the current state of the job, oen that can require several passes. The soft-
+and hardware designs are part of distribution and has the same license.
+
+------------------------------------------------------------------------------------------
+CREDITS
+------------------------------------------------------------------------------------------
+
+software        : Hans Hagen
+circuit board   : Mojca Miklavec
+wooden stand    : Willi Egger
+3D printed case : Vincent Groenhuis
+testing         : Ton Otten
+
+------------------------------------------------------------------------------------------
+WEBSITE
+------------------------------------------------------------------------------------------
+
+http://contextgarden.net
+http://www.pragma-ade.com / http://www.pragma-nl.com
+
+------------------------------------------------------------------------------------------
+SUPPORT
+------------------------------------------------------------------------------------------
+
+http://www.ntg.nl/mailman/listinfo/ntg-context
+http://www.ntg.nl/mailman/listinfo/dev-context
+
+------------------------------------------------------------------------------------------
+MORE LINKS
+------------------------------------------------------------------------------------------
+
+http://www.ntg.nl
+http://www.tug.org
+
+------------------------------------------------------------------------------------------

@@ -224,7 +224,8 @@
 
 \def\mlib_stop_group#1#2#3#4#5#6% some day this might happen elsewhere
   {\egroup
-   \setbox\scratchbox\hpack{\kern\onebasepoint\box\scratchbox}% weird correction
+   % a bit weird one basepoint correction here
+   \setbox\scratchbox\hpack{\box\scratchbox}%
    \wd\scratchbox {#5\onebasepoint-#3\onebasepoint+2\onebasepoint}%
    \ht\scratchbox #6\onebasepoint
    \dp\scratchbox-#4\onebasepoint
@@ -233,8 +234,8 @@
      \box\scratchbox
    \egroup
    \saveboxresource
-     attr      {/Group << /S /Transparency /I \ifnum#1=1 true \else false \fi /K \ifnum#2=1 true \else false \fi >>}
-     resources {\pdfbackendcurrentresources}
+     attr      {/Group << /S /Transparency /I \ifnum#1=1 true \else false \fi /K \ifnum#2=1 true \else false \fi >>}%
+     resources {\pdfbackendcurrentresources}%
      \scratchbox
    \setbox\scratchbox\hpack\bgroup
      \kern{#3\onebasepoint-\onebasepoint}%

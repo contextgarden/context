@@ -41,6 +41,7 @@ local getprop           = nuts.getprop
 local setprop           = nuts.setprop
 
 local setfield          = nuts.setfield
+local getfield          = nuts.getfield
 
 local setlink           = nuts.setlink
 local setprev           = nuts.setprev
@@ -50,6 +51,8 @@ local setscale          = nuts.setscale
 local setwhd            = nuts.setwhd
 local setkern           = nuts.setkern
 local setoffsets        = nuts.setoffsets
+local getdirection      = nuts.getdirection
+local setdirection      = nuts.setdirection
 local setglyphdata      = nuts.setglyphdata
 local getparstate       = nuts.getparstate
 local patchparshape     = nuts.patchparshape
@@ -59,7 +62,7 @@ local hpack_nodes       = nuts.hpack
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
 
-local insertbefore      = nuts.insertbefore
+----- insertbefore      = nuts.insertbefore
 local insertafter       = nuts.insertafter
 local remove_node       = nuts.remove
 
@@ -90,6 +93,8 @@ local hlist_code        <const> = nodecodes.hlist
 local glue_code         <const> = nodecodes.glue
 local kern_code         <const> = nodecodes.kern
 local par_code          <const> = nodecodes.par
+
+local righttoleft_code  <const> = tex.directioncodes.righttoleft
 
 local actions           = { }
 local busyactions       = { }
@@ -171,6 +176,7 @@ setfield(head,"shapingpenaltiesmode",255)
             return
         end
     end
+    -- set in par node
     texset("hangafter",hangafter,true)
     texset("hangindent",hangindent,true)
 end
@@ -198,8 +204,10 @@ actions[v_default] = function(head,settings)
         local distance  = settings.distance or 0
         local voffset   = settings.voffset or 0
         local hoffset   = settings.hoffset or 0
-        local parindent = texget("parindent")
-        local baseline  = texget("baselineskip",false)
+        local parindent = texget("parindent")          -- todo: get from par node
+        local baseline  = texget("baselineskip",false) -- todo: get from par node
+     -- local parindent = getfield(head,"parindent")
+     -- local baseline  = getfield(head,"baselineskip")
         local lines     = tonumber(settings.n) or 0
         local dynamic   = settings.dynamic
         local font      = settings.font
@@ -327,6 +335,9 @@ actions[v_default] = function(head,settings)
         --
         setlink(prev,dropper,next)
         --
+        if getdirection(head) == righttoleft_code then
+            setdirection(dropper,righttoleft_code)
+        end
         if next then
             local current = next
             while current do

@@ -20,6 +20,7 @@ local scannumeric    = scan.numeric
 local scanpath       = scan.path
 
 local injectpath     = mp.inject.path
+local injectnumeric  = mp.inject.numeric
 local injectcolor    = mp.inject.color
 
 local getparameter   = metapost.getparameter

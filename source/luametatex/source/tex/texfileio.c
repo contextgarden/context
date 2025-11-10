@@ -740,8 +740,11 @@ void tex_start_input(char *fn, halfword at_end_of_file)
             one passed on the command line can fall though this checking.
         */
         tex_end_file_reading();
-        tex_emergency_message("runtime error", "input file '%s' is not found, quitting", fn);
-        tex_emergency_exit();
+//        tex_emergency_message("runtime error", "input file '%s' is not found, quitting", fn);
+//        tex_emergency_exit();
+        tex_close_files_and_terminate(1);
+        tex_normal_exit();
+        return;
     }
     lmt_input_state.in_stack[lmt_input_state.in_stack_data.ptr].full_source_filename = fn;
     lmt_input_state.cur_input.name = io_file_input_code;

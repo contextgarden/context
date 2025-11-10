@@ -94,27 +94,27 @@ return {
                             filename = "latinmodernmathcompanion-regular.otf",
                             unicodes = {
                                 0x0002F, -- solidus
-                                -- 0x00028, -- left parenthesis
-                                -- 0x00029, -- right parenthesis
-                                -- 0x0005B, -- left bracket
+                             -- 0x00028, -- left parenthesis
+                             -- 0x00029, -- right parenthesis
+                             -- 0x0005B, -- left bracket
                                 0x0005C, -- reverse solidus
-                                -- 0x0005D, -- right bracket
-                                -- 0x0007B, -- left brace
+                             -- 0x0005D, -- right bracket
+                             -- 0x0007B, -- left brace
                                 0x0007C, -- single vertical bar
-                                -- 0x0007D, -- right brace
+                             -- 0x0007D, -- right brace
                                 0x02016, -- double vertical bar
-                                -- 0x02308, -- left ceiling
-                                -- 0x02309, -- right ceiling
-                                -- 0x0230A, -- left floor
-                                -- 0x0230B, -- right floor
-                                -- 0x027E6, -- left white bracket
-                                -- 0x027E7, -- right white bracket
+                             -- 0x02308, -- left ceiling
+                             -- 0x02309, -- right ceiling
+                             -- 0x0230A, -- left floor
+                             -- 0x0230B, -- right floor
+                             -- 0x027E6, -- left white bracket
+                             -- 0x027E7, -- right white bracket
                                 0x027E8, -- left angle
                                 0x027E9, -- right angle
                                 0x027EA, -- left double angle
                                 0x027EB, -- right double angle
-                                -- 0x027EE, -- left flattened parenthesis
-                                -- 0x027EF, -- right flattened parenthesis
+                             -- 0x027EE, -- left flattened parenthesis
+                             -- 0x027EF, -- right flattened parenthesis
                                 0x02980, -- triple vertical bar
                             },
                         },

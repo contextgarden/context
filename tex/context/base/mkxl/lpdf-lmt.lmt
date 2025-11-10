@@ -344,8 +344,8 @@ do
         if sy == 0 then
             t[3] = "0"
         else
-         -- t[1] = f(sy)
-            t[1] = h[sy]
+         -- t[3] = f(sy)
+            t[3] = h[sy]
         end
         t[5] = f(tx)
         t[6] = f(ty)
@@ -3373,12 +3373,15 @@ local openfile, closefile  do
     end
 
     closefile = function(abort)
+        if lpdf.getnofpages() == 0 then
+            abort = usedname
+        end
         if abort then
             close(f)
             if not environment.arguments.nodummy then
                 f = io.open(abort,"wb")
                 if f then
-                f:close()
+                    f:close()
                     local name = geterrorfilename()
                     if name then
                         local data = io.loaddata(name)

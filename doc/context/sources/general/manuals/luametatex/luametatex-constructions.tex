@@ -834,25 +834,200 @@ this, which is what we do in \CONTEXT, after all we wanted this and had to test
 it. In \OPENTYPE\ fonts we also have so called flat accents, so we have ways to
 choose those variants when needed. They prevent a formula becoming too high.
 
-Involved commands:
+\startbuffer[1]
+\im {\Umathaccent           "0 "0 "20D7             {xxx}}
+\im {\Umathaccent top       "0 "0 "20D7             {xxx}}
+\im {\Umathaccent bottom    "0 "0 "20D7             {xxx}}
+\im {\Umathaccent both      "0 "0 "20D7 "1 "0 "20D7 {xxx}}
+\im {\Umathaccent top fixed "0 "0 "20D7             {xxx}}
+\stopbuffer
 
-\starttyping
-\Umathaccent
-\stoptyping
+\startbuffer[21]
+\im {\Umathaccent         top "0 "0 "0302 {xxxxxxxx}}
+\im {\Umathaccent exact   top "0 "0 "0302 {xxxxxxxx}}
+\im {\Umathaccent stretch top "0 "0 "0302 {xxxxxxxx}}
+\im {\Umathaccent shrink  top "0 "0 "0302 {xxxxxxxx}}
+\im {\Umathaccent center  top "0 "0 "0302 {xxxxxxxx}}
+\im {\Umathaccent single  top "0 "0 "0302 {xxxxxxxx}}
+\stopbuffer
 
-Relevant parameters:
+\startbuffer[22]
+\im {\Umathaccent         top "0 "0 `x    {\blue x}}
+\im {\Umathaccent shrink  top "0 "0 `x    {\blue x}}
+\im {\Umathaccent         top "0 "0 "0302 {\red x}}
+\im {\Umathaccent shrink  top "0 "0 "0302 {\red x}}
+\stopbuffer
 
-\starttyping
-\Umathaccenttopshiftup
-\Umathaccentbottomshiftdown
-\Umathaccenttopovershoot
-\Umathaccentbottomovershoot
-\Umathaccentsuperscriptdrop
-\Umathaccentsuperscriptpercent
-\Umathaccentextendmargin
-\Umathflattenedaccenttopshiftup
-\Umathflattenedaccentbottomshiftdown
-\stoptyping
+\startbuffer[3]
+\im {\Umathaccent top "0 "0 "0302 {x}}
+\im {\Umathaccent top "0 "0 "0302 {xx}}
+\im {\Umathaccent top "0 "0 "0302 {xxx}}
+\im {\Umathaccent top "0 "0 "0302 {xxxx}}
+\im {\Umathaccent top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent top "0 "0 "0302 {xxxxxx}}
+\stopbuffer
+
+\startbuffer[4]
+\im {\Umathaccent fraction 100 top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent fraction 200 top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent fraction 300 top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent fraction 400 top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent fraction 500 top "0 "0 "0302 {xxxxx}}
+\im {\Umathaccent fraction 600 top "0 "0 "0302 {xxxxx}}
+\stopbuffer
+
+\startbuffer[5]
+\im {\Umathaccent overlay      "0 "0 `a {xxxxxxxx}}
+\im {\Umathaccent base overlay "0 "0 `a {xxxxxxxx}}
+\stopbuffer
+
+In its simplest form, the accent constructor takes a single math character
+specification but you can control the location with a keyword. Given the
+availability of wider variants and/or an extensible the accent will cover the
+body. The fixed keyword will force the smallest variant.
+
+\typebuffer[1][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[1] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[1] \par \stop
+
+To what extend the accent will stretch is controlled by keywords. As above, we
+show what happens with a font-as-is and with one set up by \CONTEXT. The later
+will always stretch or shrink to fit.
+
+\typebuffer[21][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[2] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[2] \par \stop
+
+It's not so easy to come up with an example for shrink because it will only
+happen when there is a reason to do so. Also, it's kind of hard to see because
+accents can be shifted based on the italic correction (or kern). The good news is
+that the macro package will set up things. Also good news is that some of these
+options are just there as left-over from experiments, so you might find no real
+reason to apply them.
+
+\typebuffer[22][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[2] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[2] \par \stop
+
+The reason why you see a difference between \CONTEXT\ and the non-tuned variant
+is that the rendering is controlled by a lot of options. After this mechanism is
+set up according to circumstances, font parameters, math font options, class
+options and available glyphs, we eventually end up at the following steps:
+
+\startitemize[n]
+\startitem
+    When the glyph involved has option \number\noitaliccorrectionclassoptioncode\
+    the italic correction will be set to zero. In \CONTEXT\ we always have zero
+    italic corrections anyway.
+\stopitem
+\startitem
+    When we don't stretch or shrink and still have italic correction and
+    italic correction is actually to be dealt with, we apply it to the accent
+    if \type {\mathfontcontrol} has \number\applycharitalickernmathcontrolcode\
+    set. When italic has been applied we need to position and fall through,
+    otherwise we continue.
+\stopitem
+\startitem
+    We assume we have an accent with some width, otherwise we quit. The two
+    previous steps are not applied in \CONTEXT.
+\stopitem
+\startitem
+    When \type {\mathfontcontrol} has the \number\extendaccentsmathcontrolcode\
+    bit set and when we have an extensible, it will stretch when to narrow or
+    shrink when too wide. In that case we will subtract \typ
+    {\Umathaccentextendmargin} at both ends before checking. Independent of
+    scaling being applied we then quit further actions. In \CONTEXT\ we end up
+    here, so we're done.
+\stopitem
+\startitem
+    If the control option is not set, we will do a simple check for under- or
+    overfull and just scale. We don't reposition, at least not currently, after
+    all we don't use this branch so we can't decide on this.
+\stopitem
+\stopitemize
+
+We now carry on with some more examples. We can add an \typ {nooverflow}
+directive just to be compatible with other mechanisms and to be prepared for
+future extensions, but as you see, accent placement is not overflowing due to
+constraints.
+
+\typebuffer[3][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[3] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[3] \par \stop
+
+The \type {fraction} applied to the target width.
+
+\typebuffer[4][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[4] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[4] \par \stop
+
+The \type {overlay} keyword can be used for special effects. The \typ {base}
+keyword shown here doesn't do much: it compensate the fonts' accent base height
+with the depth of an accent. It's there to catch suboptional dimensions.
+
+\typebuffer[5][option=TEX]
+
+\start \switchtobodyfont[pagella-nt] \getbuffer[5] \par \stop
+\start \switchtobodyfont[pagella]    \getbuffer[5] \par \stop
+
+This only part of the story because accent placement is not just a matter of size
+but also of shifting to the (normally) right so that it looks beter over the
+(normally) sloped glyph. Because we started from \OPENTYPE\ font parameters
+combined with \TEX\ existing algorithm the code involved it kind of messy. We
+might eventually decide to just remove what we don't need to do a proper job.
+
+The shift to the right is in \TEX\ speak called skew. In traditional \TEX\ that
+value is defined by a kern between the accent and a bogus skew character, in
+\OPENTYPE\ we have a top accent value. In \LUAMETATEX\ we also have a bottom
+accent value. In \LUAMETATEX\ we also have kerns in all corners. These are used
+when we anchor scripts. We can set an permitted overshoot for a character which
+again is a \LUAMETATEX\ feature.
+
+Before the steps above take place we need to resolve the character. The result of
+the search can be a single glyph or an assembly made from extensibles. When that
+is done we can trigger a callback which makes it possible for the macro package
+to mess with the result, for instance turn it into a \TYPETHREE\ character.
+
+We also have to deal with so called flat accents, unless that font option is
+disabled. As more, it's driven by font parameters and of course an accent that
+qualifies should have such a variant. Anyway, there are all kind of optimizations
+going on.
+
+We can control the styles applied with \prm {Umathtopaccentvariant}, \prm
+{Umathbottomaccentvariant} and \prm {Umathoverlayaccentvariant}. Spacing is
+influenced by the font parameters \prm {Umathconnectoroverlapmin}, \prm
+{Umathaccentbaseheight}, \prm {Umathaccenttopshiftup}, \prm
+{Umathflattenedaccentbaseheight}, \prm {Umathflattenedaccenttopshiftup}, \prm
+{Umathflattenedaccentbottomshiftdown}, \prm {Umathaccentbottomshiftdown}. There
+is actually no need for these and we can let the engine to a nice job without
+them. Given the number of times that we find ourselves adapting them indicates
+their uselessness. One reason is that for consistent spacing one will use
+different interfaces.
+
+% \Umathfractionrule (callback)
+
+How we deal with specific situations is also driven by the \prm {mathfontcontrol}
+options \quote {accent top skew with offset}, \quote {accent skew half} and
+\quote {ignore flat accents}. The skew comes from the top accent anchor value or
+just is the middle of the accent. We already mentioned left and right margins and
+overshoot properties of glyphs. The character can have so called tag bits set:
+\quote {keep base}, \quote {extensible} and \quote {inner bottom}. We only
+mention them as something that the font loaded needs to set.
+
+We can place accents above (top), below (bottom) and overlay, and we can let them
+stretch or shrink as well as play visually safe with a bit of scaling (this
+factor). We have to deal with attaching scripts which can be controlled with
+corner kerns as well as class options \quote {left bottom kern} and \quote {right
+bottom kern}.
+
+We could have hard coded the way \CONTEXT\ likes it with just the control
+features that we need which makes a description easier. But for now we keep what
+we have.
 
 \stopsection
 

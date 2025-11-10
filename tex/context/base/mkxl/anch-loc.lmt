@@ -473,11 +473,12 @@ do
         end
         local p = {
             cycle  = true,
-            curled = true,
+--             curled = true,
             { llx, lly },
             { urx, lly },
             { urx, ury },
-            { llx, ury }
+            { llx, ury },
+-- { llx, lly },
         }
         injectpath(p)
     end)
@@ -509,11 +510,12 @@ do
         end
         local p = {
             cycle  = true,
---             curled = true,
+-- curled = true,
             { llx, lly },
             { urx, lly },
             { urx, ury },
-            { llx, ury }
+            { llx, ury },
+-- { llx, lly }
         }
         injectpath(p)
     end)

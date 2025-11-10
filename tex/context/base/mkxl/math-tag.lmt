@@ -114,7 +114,7 @@ local gextensible_code       <const> = nodes.glyphcodes.extensible
 local a_tagged               <const> = attributes.private('tagged')
 local a_mathcategory         <const> = attributes.private('mathcategory')
 local a_mathstack            <const> = attributes.private('mathstack')
-local a_mathmode             <const> = attributes.private('mathmode')
+----- a_mathmode             <const> = attributes.private('mathmode')
 local a_mathfamily           <const> = attributes.private('mathfamily')
 local a_mathdomain           <const> = attributes.private('mathdomain')
 

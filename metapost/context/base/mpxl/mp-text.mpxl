@@ -73,8 +73,6 @@ def lmt_do_parshape = % todo: check and improve this rather oldie
     offset       := getparameterdefault "offset"       0 ;
     trace        := getparameterdefault "trace"        false ;
 
-    %
-
     n  := 0 ;
     cp := center p ;
 

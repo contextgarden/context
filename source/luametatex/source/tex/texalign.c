@@ -207,11 +207,12 @@
 */
 
 typedef enum align_options {
-    align_option_exactly  = 0x01, 
-    align_option_reverse  = 0x10, 
-    align_option_discard  = 0x20, 
-    align_option_noskips  = 0x40, 
-    align_option_callback = 0x80, 
+    align_option_exactly    = 0x001, 
+    align_option_reverse    = 0x010, 
+    align_option_discard    = 0x020, 
+    align_option_noskips    = 0x040, 
+    align_option_callback   = 0x080, 
+    align_option_nolastskip = 0x100, 
 } align_options;
 
 /* Do we still need these .. we have a dedicated stack. */
@@ -621,8 +622,26 @@ static void tex_aux_scan_align_spec(quarterword c)
                 }
                 break;
             case 'n': case 'N':
-                if (tex_scan_mandate_keyword("noskips", 1)) {
-                    options |= align_option_noskips;
+                if (tex_scan_character("oO", 0, 0, 0)) {
+                    switch (tex_scan_character("lsLS", 0, 0, 0)) {
+                        case 's': case 'S':
+                            if (tex_scan_mandate_keyword("noskips", 3)) {
+                                options |= align_option_noskips;
+                            }
+                            break;
+                        case 'l': case 'L':
+                            if (tex_scan_mandate_keyword("nolastskip", 3)) {
+                                options |= align_option_nolastskip;
+                            }
+                            break;
+                        default:
+                            goto SKIPERROR;
+                        }
+                        break;
+                } else { 
+                   SKIPERROR:
+                    tex_aux_show_keyword_error("noskips|nolastskip");
+                    goto DONE;
                 }
                 break;
             case 'r': case 'R':
@@ -1831,6 +1850,12 @@ static void tex_aux_finish_align(void)
         alignment is overfull or underfull.
 
     */
+    if (lmt_alignment_state.options & align_option_nolastskip) {
+        halfword t = tex_tail_of_node_list(preamble);
+        if (node_type(t) == glue_node) { 
+            tex_reset_glue_to_zero(t);
+        }
+    }
     if (cur_list.mode == internal_vmode) {
         halfword rule_save = overfull_rule_par;
         /*tex Prevent the rule from being packaged. */

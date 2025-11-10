@@ -1031,15 +1031,6 @@
 \permanent\protected\def\keeptwins   {\lefttwindemerits \zerocount
                                       \righttwindemerits\zerocount}
 
-% for now, not interfaced (maybe never):
-
-\permanent\def\s!noorphans   {noorphans}
-\permanent\def\s!keeporphans {keeporphans}
-\permanent\def\s!notwins     {notwins}
-\permanent\def\s!keeptwins   {keeptwins}
-\permanent\def\s!notoddlers  {notoddlers}
-\permanent\def\s!keeptoddlers{keeptoddlers}
-
 \defcsname\??aligncommand\s!noorphans   \endcsname{\toksapp\t_spac_align_collected{\noorphans}}
 \defcsname\??aligncommand\s!keeporphans \endcsname{\toksapp\t_spac_align_collected{\keeporphans}}
 \defcsname\??aligncommand\s!notwins     \endcsname{\toksapp\t_spac_align_collected{\notwins}}
@@ -1239,43 +1230,7 @@
 \aliased\let\spaceamount  \interwordspace
 \aliased\let\emspaceamount\emwidth
 
-% tracing:
-
-\def\spac_show_par_data#1%
-  {\ifrelax#1\else
-     \ifzero#1\else
-       \hbox{\string#1: \the#1}\endgraf
-     \fi
-     \expandafter\spac_show_par_data
-   \fi}
-
-\permanent\protected\def\showpardata
-  {\expanded{\dontleavehmode\inleftmargin{\vsmash{\infofont\framed[\c!align=\v!right]{%
-     \hbox{font: \fontname\font}\endgraf
-     \spac_show_par_data
-       \interwordspace \interwordstretch \interwordshrink \emwidth \exheight \extraspace
-       \hsize     \vsize
-       \leftskip  \rightskip
-       \spaceskip \xspaceskip
-       \parindent \parfillleftskip \parinitrightskip \parinitleftskip \parfillrightskip
-       \hyphenpenalty \exhyphenpenalty \automatichyphenpenalty \explicithyphenpenalty
-     % \displaywidowpenalty
-       \widowpenalty \clubpenalty \brokenpenalty
-       \doublehyphendemerits \finalhyphendemerits \adjdemerits \orphanpenalty
-       \toddlerpenalty \lefttwindemerits \righttwindemerits
-     % \linebreakstretchcriterion \linebreakshrinkcriterion
-   \relax}}}}}
-
-\permanent\protected\def\startshowpardata
-  {\begingroup
-   \showstruts
-   \tracingparagraphs\maxdimen
-   \enforced\let\startshowpardata\begingroup
-   \toksapp\everypar{\showpardata}}
-
-\permanent\protected\def\stopshowpardata
-  {\endgraf
-   \endgroup}
+\fetchmodulecommand \showpardata \f!spac_run
 
 % Structure:
 

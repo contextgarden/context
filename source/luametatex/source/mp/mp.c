@@ -8315,7 +8315,7 @@ static void mp_get_arc_length(MP mp, mp_number *ret, mp_knot h)
     mp_set_number_to_inf(arcgoal);
     while (mp_right_type(p) != mp_endpoint_knot) {
         mp_knot q = mp_next_knot(p);
-        /*tex  add arclength of path segment */
+        /*tex add arclength of path segment */
         mp_set_number_from_subtraction(arg1, p->right_x, p->x_coord);
         mp_set_number_from_subtraction(arg2, p->right_y, p->y_coord);
         mp_set_number_from_subtraction(arg3, q->left_x,  p->right_x);
@@ -8324,7 +8324,6 @@ static void mp_get_arc_length(MP mp, mp_number *ret, mp_knot h)
         mp_set_number_from_subtraction(arg6, q->y_coord, q->left_y);
         mp_do_arc_test(mp, &a, &arg1, &arg2, &arg3, &arg4, &arg5, &arg6, &arcgoal);
         mp_slow_add(a_tot, a, a_tot);
-
         if (q == h) {
             break;
         } else {
@@ -8483,15 +8482,15 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
                     mp_new_number(n);
                     mp_new_number(v1);
                     mp_new_number_from_sub(d1, arc0, arc); /* d1 = arc0 - arc */
-                    mp_new_number_from_div(n1, arc, d1);           /* n1 = (arc / d1) */
+                    mp_new_number_from_div(n1, arc, d1);   /* n1 = (arc / d1) */
                     mp_floor_scaled(n1); /* added */
                     mp_number_clone(n, n1);
-                    mp_set_number_from_mul(n1, n1, d1);            /* n1 = (n1 * d1) */
-                    mp_number_subtract(arc, n1);                   /* arc = arc - n1 */
-                    mp_number_clone(d1, mp_inf_t);                 /* reuse d1 */
-                    mp_number_clone(v1, n);                        /* v1 = n */
-                    mp_number_add(v1, mp_epsilon_t);               /* v1 = v1 + 1 */
-                    mp_set_number_from_div(d1, d1, v1);            /* |d1 = EL_GORDO / v1| */
+                    mp_set_number_from_mul(n1, n1, d1);    /* n1 = (n1 * d1) */
+                    mp_number_subtract(arc, n1);           /* arc = arc - n1 */
+                    mp_number_clone(d1, mp_inf_t);         /* reuse d1 */
+                    mp_number_clone(v1, n);                /* v1 = n */
+                    mp_number_add(v1, mp_epsilon_t);       /* v1 = v1 + 1 */
+                    mp_set_number_from_div(d1, d1, v1);    /* |d1 = EL_GORDO / v1| */
                     if (mp_number_greater(t_tot, d1)) {
                         mp->arithmic_error = 1;
                         mp_check_arithmic(mp);
@@ -19740,6 +19739,18 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                 mp_set_cur_exp_value_boolean(mp, mp_number_greater(i, n) ? mp_true_operation : mp_false_operation);
             }
             break;
+        case 10: /* xpart */
+            {
+                cur_exp_type = mp_known_type;
+                mp_set_cur_exp_value_number(mp,  &(p->x_coord));
+            }
+            break;
+        case 11: /* ypart */
+            {
+                cur_exp_type = mp_known_type;
+                mp_set_cur_exp_value_number(mp,  &(p->y_coord));
+            }
+            break;
     }
 }
 
@@ -19855,6 +19866,9 @@ static void mp_do_command_nullary(MP mp, int c)
         case mp_path_length_operation:
         case mp_path_first_operation:
         case mp_path_last_operation:
+        case mp_path_xpart_operation:
+        case mp_path_ypart_operation:
+            cur_exp_type = mp_undefined_type;
             if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
                 mp_push_of_path_result(mp, c - mp_path_point_operation, mp->loop_ptr->point, mp->loop_ptr->value, mp->loop_ptr->final_value);
             } else {
@@ -21443,6 +21457,8 @@ static void mp_set_up_center_of(MP mp, int c)
         mp_number_add(x, mp_minx);
         mp_number_add(y, mp_miny);
         mp_pair_value(mp, &x, &y);
+        mp_free_number(x);
+        mp_free_number(y);
     } else {
         mp_bad_unary(mp, c);
     }
@@ -24263,9 +24279,11 @@ static void mp_set_up_arc_point(MP mp, mp_node p, int c)
         }
         if (k) {
             int toss = 0;
-            if (mp_number_equal(new_expr.data.n, mp_unity_t)) {
+         // if (mp_number_equal(new_expr.data.n, mp_unity_t)) {
+            if (! mp_number_less(new_expr.data.n, mp_unity_t)) {
                 k = mp_next_knot(k);
             } else if (! mp_number_equal(new_expr.data.n, mp_zero_t)) {
+         // } else if (mp_number_non_equal_abs(new_expr.data.n, mp_zero_t)) {
                 mp_convert_scaled_to_fraction(new_expr.data.n);
                 k = mp_split_cubic_knot(mp, k, &new_expr.data.n);
                 toss = 1;
@@ -31793,6 +31811,8 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "pathlength",            mp_nullary_command,          mp_path_length_operation);
     mp_primitive(mp, "pathfirst",             mp_nullary_command,          mp_path_first_operation);
     mp_primitive(mp, "pathlast",              mp_nullary_command,          mp_path_last_operation);
+    mp_primitive(mp, "pathxpart",             mp_nullary_command,          mp_path_xpart_operation);
+    mp_primitive(mp, "pathypart",             mp_nullary_command,          mp_path_ypart_operation);
     mp_primitive(mp, "mpversion",             mp_nullary_command,          mp_version_operation);
 
     mp_primitive(mp, "readfrom",              mp_unary_command,            mp_read_from_operation);

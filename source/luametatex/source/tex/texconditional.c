@@ -1389,13 +1389,13 @@ void tex_conditional_if(halfword code, int unless)
                 result = box_register(n) != null && box_list(box_register(n)) != null;
             }
             goto RESULT;
-     // case if_bitwise_and_code:
-     //     {
-     //         halfword n1 = scan_integer(0, NULL);
-     //         halfword n2 = scan_integer(0, NULL);
-     //         result = n1 & n2 ? 1 : 0;
-     //         goto RESULT;
-     //     }
+        case if_bitwise_and_code:
+            {
+                halfword n1 = tex_scan_integer(0, NULL, NULL);
+                halfword n2 = tex_scan_integer(0, NULL, NULL);
+                result = n1 & n2 ? 1 : 0;
+                goto RESULT;
+        }
         default:
             {
                 int category;

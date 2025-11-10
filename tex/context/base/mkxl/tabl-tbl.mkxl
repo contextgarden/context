@@ -954,6 +954,8 @@
 
 \newconditional\c_tabl_tabulate_balanced_split
 
+\settrue\c_tabl_tabulate_balanced_split % default per 2025-11-01
+
 \def\tabl_tabulate_normalize_splitline
   {\ifconditional\c_tabl_tabulate_balanced_split
      \boxyoffset\b_tabl_tabulate-\strutdp

@@ -489,12 +489,12 @@
 
 % in spac-ali ... not yet interfaced .. maybe never
 
-% definesystemconstant {noorphans}
-% definesystemconstant {keeporphans}
-% definesystemconstant {notwins}
-% definesystemconstant {keeptwins}
-% definesystemconstant {notoddlers}
-% definesystemconstant {keeptoddlers}
+\definesystemconstant {noorphans}
+\definesystemconstant {keeporphans}
+\definesystemconstant {notwins}
+\definesystemconstant {keeptwins}
+\definesystemconstant {notoddlers}
+\definesystemconstant {keeptoddlers}
 
 %D As the name of their define command states, the next set of constants is used in
 %D the message macro's.
@@ -677,6 +677,7 @@
 \definefileconstant {symb_run} {s-symbols-show}
 \definefileconstant {publ_tra} {s-publications-show}
 \definefileconstant {math_run} {s-math-show}
+\definefileconstant {spac_run} {s-spacing-show}
 
 %D For figure inclusion we need(ed):
 

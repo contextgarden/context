@@ -543,13 +543,13 @@ local function contours2outlines_normal(glyphs,shapes) -- maybe accept the bbox 
                                 end
                                 local x = first_pt[1]
                                 local y = first_pt[2]
-                                if not done then
-                                    xmin = x
-                                    ymin = y
-                                    xmax = x
-                                    ymax = y
-                                    done = true
-                                end
+                             -- if not done then
+                             --     xmin = x
+                             --     ymin = y
+                             --     xmax = x
+                             --     ymax = y
+                             --     done = true
+                             -- end
                                 nofsegments = nofsegments + 1
                                 segments[nofsegments] = { x, y, "m" } -- "moveto"
                                 if not quadratic then

@@ -1308,7 +1308,7 @@ static void tex_aux_display_fraction_noad  (halfword n, int threshold, int max);
 
 static void tex_aux_print_fam_and_char(halfword n)
 {
-    tex_print_format(", family %x, character %x, original %x", kernel_math_family(n), kernel_math_character(n));
+    tex_print_format(", family %x, character %x", kernel_math_family(n), kernel_math_character(n));
     tex_aux_show_dictionary(n, kernel_math_properties(n), kernel_math_group(n), kernel_math_index(n), tex_fam_fnt(kernel_math_family(n), 0), kernel_math_character(n));
 }
 
@@ -3667,13 +3667,13 @@ void tex_run_math_accent(void)
                         }
                         break;
                     case 'f': case 'F':
-                        switch (tex_scan_character("frFR", 0, 0, 0)) {
+                        switch (tex_scan_character("riRI", 0, 0, 0)) {
                             case 'r': case 'R':
                                 if (tex_scan_mandate_keyword("fraction", 2)) {
                                     accent_fraction(accent) = tex_scan_integer(0, NULL, NULL);
                                 }
                                 break;
-                            case 'f': case 'F':
+                            case 'i': case 'I':
                                 /*tex fixed <char> */
                                 if (tex_scan_mandate_keyword("fixed", 2)) {
                                     node_subtype(accent) = fixedtop_accent_subtype;
@@ -3684,6 +3684,7 @@ void tex_run_math_accent(void)
                                 tex_aux_show_keyword_error("fraction|fixed");
                                 goto DONE;
                         }
+                        break;
                     case 'k': case 'K':
                         if (tex_scan_mandate_keyword("keepbase", 1)) {
                             noad_options(accent) |= noad_option_keep_base;

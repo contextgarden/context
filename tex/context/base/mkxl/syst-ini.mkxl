@@ -1711,7 +1711,7 @@
 \permanent\protected\untraced\def\orphanpenalty      {\orphanpenalties      \minusone} % once
 \permanent\protected\untraced\def\toddlerpenalty     {\toddlerpenalties     \minusone} % once
 \permanent\protected\untraced\def\interlinepenalty   {\interlinepenalties   \plusone } % repeats
-%permanent\protected\untraced\def\adjdemerits        {\adjacentdemerits     \minusone}
+\permanent\protected\untraced\def\adjdemerits        {\adjacentdemerits     \minusone}
 
 \popoverloadmode
 
@@ -1722,6 +1722,48 @@
   % could be a primitive
 \else
     \expanded{\permanent\let\noexpand\relaxedspace=\space\space}
+\fi
+
+%D Tracing:
+
+% tracing:
+
+% \untraced\permanent\protected\def\thespecification#1%
+%   {\the#1\zerocount :%
+%    \ifcase#1\maxcount
+%      \expandedloop \plusone #1\zerocount \plusone { %
+%          \the#1\currentloopiterator
+%      }%
+%    \else
+%      \expandedloop \plusone #1\zerocount \plusone { %
+%          \the#1\currentloopiterator\plusone,%
+%          \the#1\currentloopiterator\plustwo
+%      }%
+%    \fi}
+
+\untraced\permanent\protected\def\thespecification#1%
+  {\the\specificationcount#1:%
+   \ifbitwiseand\specificationoptions#1\plustwo
+     \expandedloop\plusone\specificationcount#1\plusone{ %
+         \the\specificationfirst #1\currentloopiterator,%
+         \the\specificationsecond#1\currentloopiterator
+     }%
+   \else
+     \expandedloop\plusone\specificationcount#1\plusone{ %
+         \the\specificationfirst #1\currentloopiterator
+     }%
+   \fi}
+
+% \edef\foo{\expand\thespecification\parshape}
+
+\ifdefined\parshapelength \else
+
+    \protected\untraced\def\parshapelength{\specificationcount \parshape}
+    \protected\untraced\def\parshapeindent{\specificationfirst \parshape}
+    \protected\untraced\def\parshapewidth {\specificationsecond\parshape}
+
+    \aliased\let\parshapedimen\parshapewidth % weird etex name
+
 \fi
 
 %D Only when testing non \CONTEXT\ usage:

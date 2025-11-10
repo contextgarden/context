@@ -20,8 +20,13 @@ local utfbyte = utf.byte
 -- CP2 = QP2 + 2/3 *(QP1-QP2)
 
 fonts               = fonts or { }
-local metapost      = fonts.metapost or { }
-fonts.metapost      = metapost
+local metapostfonts = fonts.metapost or { }
+fonts.metapost      = metapostfonts
+
+local mpprint       = mp.print
+local injectpair    = mp.inject.pair
+local injectnumeric = mp.inject.numeric
+local injectcolor   = mp.inject.color
 
 local f_moveto      = formatters["(%N,%N)"]
 local f_lineto      = formatters["--(%N,%N)"]
@@ -37,7 +42,7 @@ local f_draw        = formatters["draw %s;"]
 local f_rectangle   = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
 local f_line        = formatters["((%N,%N)--(%N,%N))"]
 
-function metapost.boundingbox(d,factor)
+function metapostfonts.boundingbox(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1
     local llx    = factor*bounds[1]
@@ -47,7 +52,7 @@ function metapost.boundingbox(d,factor)
     return f_rectangle(llx,lly,urx,lly,urx,ury,llx,ury)
 end
 
-function metapost.baseline(d,factor)
+function metapostfonts.baseline(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1
     local llx    = factor*bounds[1]
@@ -55,7 +60,7 @@ function metapost.baseline(d,factor)
     return f_line(llx,0,urx,0)
 end
 
-function metapost.widthline(d,factor)
+function metapostfonts.widthline(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1
     local lly    = factor*bounds[2]
@@ -64,7 +69,7 @@ function metapost.widthline(d,factor)
     return f_line(width,lly,width,ury)
 end
 
-function metapost.zeroline(d,factor)
+function metapostfonts.zeroline(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1
     local lly    = factor*bounds[2]
@@ -72,7 +77,7 @@ function metapost.zeroline(d,factor)
     return f_line(0,lly,0,ury)
 end
 
-function metapost.paths(d,xfactor,yfactor)
+function metapostfonts.paths(d,xfactor,yfactor)
     -- todo: add tracer that shows d
     local sequence = d.sequence
     local segments = d.segments
@@ -187,7 +192,7 @@ function metapost.paths(d,xfactor,yfactor)
     return list
 end
 
-function metapost.fill(paths)
+function metapostfonts.fill(paths)
     local r = { }
     local n = #paths
     for i=1,n do
@@ -200,7 +205,7 @@ function metapost.fill(paths)
     return concat(r)
 end
 
-function metapost.draw(paths,trace)
+function metapostfonts.draw(paths,trace)
     local r = { }
     local n = #paths
     for i=1,n do
@@ -213,7 +218,7 @@ function metapost.draw(paths,trace)
     return concat(r)
 end
 
-function metapost.maxbounds(data,index,factor)
+function metapostfonts.maxbounds(data,index,factor)
     local maxbounds   = data.maxbounds
     local factor      = factor or 1
     local glyphs      = data.glyphs
@@ -281,7 +286,6 @@ local userrule_code      <const> = rulecodes.user
 local emptyrule_code     <const> = rulecodes.empty
 
 local nuts               = nodes.nuts
------ getwhd             = nuts.getwhd
 local getexpansion       = nuts.getexpansion
 local getscales          = nuts.getscales
 local isglyph            = nuts.isglyph
@@ -293,7 +297,7 @@ local fontparameters     = fonthashes.parameters
 local fontshapes         = fonthashes.shapes
 local fontdescriptions   = fonthashes.descriptions
 
-local topaths            = metapost.paths
+local topaths            = metapostfonts.paths
 
 local f_text             = formatters["mfun_do_outline_text_flush(%q,%i,%N,%N,%q)(%,t);"]
 local f_rule             = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N);"]
@@ -343,7 +347,7 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
-                        return f_text(kind,#paths,advance,shift,detail,paths) -- , character.width * fc * wfactor
+                        return f_text(kind,#paths,advance,shift,detail,paths), character.width * fc * wfactor
                     end
                 end
             end
@@ -351,51 +355,45 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
     end
 end
 
-metapost.glyph = glyph
+metapostfonts.glyph = glyph
 
-local kind   = ""
-local buffer = { }
-local b      = 0
+local kind      = ""
+local buffer    = { }
+local b         = 0
+local positions = { } -- todo: have a flag that tells to keep
+local firstpos  = 0
+local boxwidth  = 0
+local boxheight = 0
+local boxdepth  = 0
 
-local function reset()
-    buffer = { }
-    b      = 0
-end
-
-local function flushcharacter(current, pos_h, pos_v, pod_r, font, char)
-    if current then
-        local char, font = isglyph(current)
-        local s, sx, sy = getscales(current)
-        local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
-        if code then
-            b = b + 1
-            buffer[b] = code
-        end
+local function register(pos,wd)
+    if b == 1 then
+        firstpos     = pos
+        positions[b] = pos + wd
     else
-        logs.report("mlib-fnt","check 'flushcharacter', no current, font %i, char %i", font or 0, char or 0)
+        positions[b] = pos - firstpos + wd
     end
 end
 
--- Messy ... todo:
-
---                            current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,sx,sy,slnt or slant,weight)
 local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,factor,ssx,ssy)
     if current then
         local char, font = isglyph(current)
         local s, sx, sy = getscales(current)
-        local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,getexpansion(current),s,sx,sy)
+        local ph = pos_h*fc
+        local code, width = glyph(kind,font,char,ph,pos_v*fc,getexpansion(current),s,sx,sy)
         if code then
             b = b + 1
             buffer[b] = code
+register(ph,width/2)
         end
     elseif font and char then
         if not data then
             data = fontcharacters[font][char] or { }
         end
         if data then
-            local width  = data.width or 0
-            local height = data.height or 0
-            local depth  = data.depth or 0
+         -- local width  = data.width or 0
+         -- local height = data.height or 0
+         -- local depth  = data.depth or 0
             local s  = 1000
             local sx = 1000
             local sy = 1000
@@ -403,10 +401,12 @@ local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,f
             if csy then sy = sy * csy end
             if ssx then sx = sx * ssx end
             if ssy then sy = sy * ssy end
-            local code = glyph(kind,font,char,pos_h*fc,pos_v*fc,factor,s,sx,sy)
+            local ph = pos_h*fc
+            local code, width = glyph(kind,font,char,ph,pos_v*fc,factor,s,sx,sy)
             if code then
                 b = b + 1
                 buffer[b] = code
+register(ph,width/2)
             end
         else
             logs.report("mlib-fnt","no font %i with char %i", font, char)
@@ -418,16 +418,26 @@ local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,f
 end
 
 local function flushrule(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
+    -- how about math rules
     if subtype == normalrule_code then
+        local ph = pos_h*fc
+        local sh = size_h*fc
         b = b + 1
-        buffer[b] = f_rule(kind,pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+        buffer[b] = f_rule(kind,ph,pos_v*fc,sh,size_v*fc)
+register(ph,sh/2)
     elseif subtype == outlinerule_code then
+        local ph = pos_h *fc
+        local sh = size_h*fc
         b = b + 1
-        buffer[b] = f_rule("d",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+        buffer[b] = f_rule("d",ph,pos_v*fc,sh,size_v*fc)
+register(ph,sh/2)
     elseif subtype == userrule_code then
-     -- print("USER RULE")
-     -- b = b + 1
-     -- buffer[b] = f_rule("d",size_h*fc,size_v*fc,pos_h*fc,pos_v*fc)
+        -- same as normal_rule
+        local ph = pos_h *fc
+        local sh = size_h*fc
+        b = b + 1
+        buffer[b] = f_rule(kind,ph,pos_v*fc,sh,size_v*fc)
+register(ph,sh/2)
     elseif subtype == emptyrule_code then
         -- ignore
     else
@@ -450,8 +460,13 @@ drivers.install {
     name    = "mpo",
     actions = {
         initialize = function()
-            reset()
-        end,
+            buffer    = { }
+            b         = 0
+            positions = { }
+            boxwidth  = 0
+            boxheight = 0
+            boxdepth  = 0
+       end,
         finalize = function(driver,details)
             local bb  = details.boundingbox
             local llx = bb[1] * fc
@@ -472,12 +487,33 @@ drivers.install {
     }
 }
 
-function metapost.boxtomp(n,k)
+local bpfactor = number.dimenfactors.bp
+
+local function boxtompposition  (i) return positions[i] or 0 end
+local function boxtompdimensions( ) return boxwidth*bpfactor, boxheight*bpfactor, boxdepth*bpfactor end
+
+metapost.registerscript("outlineposition", function()
+    injectnumeric(boxtompposition(scannumeric()))
+end)
+
+metapost.registerscript("outlinedimensions", function()
+    injectcolor(boxtompdimensions())
+end)
+
+metapostfonts.boxtompposition   = boxtompposition
+metapostfonts.boxtompdimensions = boxtompdimensions
+
+function metapostfonts.boxtomp(n,k)
     kind = k
     nodes.handlers.finalizebox(n,false)
-    drivers.converters.lmtx(drivers.instances.mpo,texgetbox(n),"box",1)
+    local box = texgetbox(n)
+    drivers.converters.lmtx(drivers.instances.mpo,box,"box",1)
     local result = concat(buffer,";")
-    reset()
+    buffer    = { }
+    b         = 0
+    boxwidth  = box.width
+    boxheight = box.height
+    boxdepth  = box.depth
     return result
 end
 
@@ -531,9 +567,9 @@ function mp.lmt_glyphshape_start(id,character)
                     local italic = (math and math.italic or 0) * factor
                     local accent = (math and math.accent or 0) * factor
                     mpdata = {
-                        paths       = metapost.paths(glyph,factor),
-                        boundingbox = metapost.boundingbox(glyph,factor),
-                        baseline    = metapost.baseline(glyph,factor),
+                        paths       = metapostfonts.paths(glyph,factor),
+                        boundingbox = metapostfonts.boundingbox(glyph,factor),
+                        baseline    = metapostfonts.baseline(glyph,factor),
                         width       = width,
                         height      = height,
                         depth       = depth,
@@ -554,10 +590,6 @@ function mp.lmt_glyphshape_start(id,character)
     end
     insert(mpstack, mpdata)
 end
-
-local mpprint       = mp.print
-local injectpair    = mp.inject.pair
-local injectnumeric = mp.inject.numeric
 
 function mp.lmt_glyphshape_stop()
     mpdata = remove(mpstack)

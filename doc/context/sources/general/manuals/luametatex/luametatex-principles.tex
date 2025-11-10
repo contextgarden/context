@@ -2,7 +2,7 @@
 
 \environment luametatex-style
 
-\startdocument[title=principles]
+\startdocument[title=Principles]
 
 \startsection[title=Introduction]
 
@@ -1183,6 +1183,137 @@ experimental so what gets displayed might change.
 The \prm {letfrozen}, \prm {unletfrozen}, \prm {letprotected} and \prm
 {unletprotected} primitives do as their names advertise. Of course the \prm
 {overloadmode} must be set so that it is permitted.
+
+\stopsection
+
+\startsection[reference=specifications,title=Specifications]
+
+We need to discuss specifications and this will be a bit more detailed in terms
+of mentioning primitives. In original \TEX\ we have \prm {parshape}. This is an
+array of indentations and widths with a variable number of entries. The engine
+manages an array of memory words from which it can take slices called nodes. The
+start of such a slice is a node pointer (actually an index in that memory array).
+A paragraph shape is stored in such a slice. Once it's no longer used the node is
+returned to a pool and can be used again later. When the engines runs low on
+memory it can combine pooled nodes and these shape nodes are a good candidate for
+that as they can be large. But it is suboptimal. The \ETEX\ engine introduced
+more arrays, like \prm {widowpenalties} and in
+
+\LUAMETATEX\ we added for instance \prm {parpasses}. We also extended the
+\LUATEX\ initial par node with many more fields, and some of these point to these
+variable nodes, for instance \prm {linepenalties} or \prm {orphanpenalties} and
+we make copy of these, unless, as we will see, they are defined as constant. The
+more extensive usage of these variables nodes made for a change in approach.
+These arrays are now small fixed size nodes with a pointer to a dynamically
+allocated array of data. This comes at some cost but on a modern machine that is
+not much. The advantage is that we are less likely to run our of node memory. The
+generic node and mechanism that manages are called specifications.
+
+Original \TEX\ has only \prm {parshape}, \ETEX\ added four and \LUAMETATEX\ went
+on adding:
+
+\starttabulate[|||]
+\FL
+\NC \type {\parshape}                \NC dimension pairs \NC \NR
+\ML
+\NC \type {\interlinepenalties}      \NC integer pairs \NC \NR
+\NC \type {\clubpenalties}           \NC integer pairs \NC \NR
+\NC \type {\widowpenalties}          \NC integer pairs \NC \NR
+\NC \type {\displaywidowpenalties}   \NC integer pairs \NC \NR
+\ML
+\NC \type {\adjacentdemerits}        \NC integer pair \NC \NR
+\NC \type {\balancefinalpenalties}   \NC integer pairs \NC \NR
+\NC \type {\balancepasses}           \NC multiple field sets \NC \NR
+\NC \type {\balanceshape}            \NC multiple field sets \NC \NR
+\NC \type {\brokenpenalties}         \NC integer pairs \NC \NR
+\NC \type {\fitnessclasses}          \NC integers \NC \NR
+\NC \type {\mathbackwardpenalties}   \NC integer pairs \NC \NR
+\NC \type {\mathforwardpenalties}    \NC integer pairs \NC \NR
+\NC \type {\orphanlinefactors}       \NC integers \NC \NR
+\NC \type {\orphanpenalties}         \NC integer pairs \NC \NR
+\NC \type {\parpassesexception}      \NC multiple field sets \NC \NR
+\NC \type {\parpasses}               \NC multiple field sets \NC \NR
+\NC \type {\toddlerpenalties}        \NC integer pairs \NC \NR
+\ML
+\NC \type {\specificationdef \count} \NC integer (pairs) \NC \NR
+\NC \type {\specificationdef \dimen} \NC dimension (pairs) \NC \NR
+\NC \type {\specificationdef \float} \NC posit (pairs) \NC \NR
+\LL
+\stoptabulate
+
+We set these specification according to their purpose but it always starts
+with a counter indicating how many entries to expect, where zero resets the
+specification.
+
+\starttyping[option=TEX]
+\somespecification
+   count
+   [options]
+   one or more [single|pair|fieldset]
+\stoptyping
+
+We can't set individual fields, it always has to be a whole specification, but we
+can get fields values. In \ETEX\ we have \typ {\parshapelength}, \typ
+{\parshapeindent} and (weirdly named) \typ {\parshapedimen} which best can be
+aliased to \typ {\parshapewidth}. Of course one can wonder why these are needed.
+For balancing shapes we have \typ {\balanceshapevsize}, \typ
+{\balanceshapetopspace} and \typ {\balanceshapebottomspace}. The passes don't
+have such introspection helpers. In order not to drown in primitives just for the
+sake of tracing we added a few generic accessor helpers that can be used like:
+
+\starttyping[option=TEX]
+\widowpenalties 5 option 2 100 150 200 250 300 350 400 450 500 550
+\the \specificationcount   \widowpenalties    % here 5
+\the \specificationoptions \widowpenalties    % bit 2 set when double
+\the \specificationfirst   \widowpenalties  3 % penalty 3 left  (300 )
+\the \specificationsecond  \widowpenalties  3 % penalty 3 right (350)
+\stoptyping
+
+We use these primitives to implement a serializer in \CONTEXT\ so that we can
+say:
+
+\startbuffer
+\parshape 3 0mm \hsize 20mm {\hsize-20mm} 30mm {\hsize-30mm} \relax
+\thespecification\parshape
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+and get:
+
+{\tttf \getbuffer}.
+
+When \type {\the} is applied to a specification with double entries you
+need to pass an extra subindex. Per tradition \typ {\the \widowpenalties}
+takes an integer argument as index into the array. A zero value returns the
+size. A minus one will skip the index scanning and when we have a left- and
+right page penalty set we need to pass the subindex. The minus one permits us
+to overload the singular ones:
+
+\start\small
+\starttyping[option=TEX]
+\permanent\protected\untraced\def\widowpenalty       {\widowpenalties       \minusone} % once
+\permanent\protected\untraced\def\clubpenalty        {\clubpenalties        \minusone} % once
+\permanent\protected\untraced\def\displaywidowpenalty{\displaywidowpenalties\minusone} % once
+\permanent\protected\untraced\def\brokenpenalty      {\brokenpenalties      \minusone} % singular anyway
+\permanent\protected\untraced\def\orphanpenalty      {\orphanpenalties      \minusone} % once
+\permanent\protected\untraced\def\toddlerpenalty     {\toddlerpenalties     \minusone} % once
+\permanent\protected\untraced\def\interlinepenalty   {\interlinepenalties   \plusone } % repeats
+\permanent\protected\untraced\def\adjdemerits        {\adjacentdemerits     \minusone}
+\stoptyping
+\stop
+
+And we can actually at some point to decide to drop the \ETEX\ ones:
+
+\start\small
+\starttyping[option=TEX]
+\permanent\protected\untraced\def\parshapelength{\specificationcount \parshape}
+\permanent\protected\untraced\def\parshapeindent{\specificationfirst \parshape}
+\permanent\protected\untraced\def\parshapewidth {\specificationsecond\parshape}
+
+\aliased\let\parshapedimen\parshapewidth % weird etex name
+\stoptyping
+\stop
 
 \stopsection
 

@@ -116,16 +116,14 @@ typedef enum if_test_codes {
     if_in_alignment_code,    /*tex |\ifinalignment| */
     if_cramped_code,         /*tex |\ifcrampedmathstyle| */
     if_list_code,            /*tex |\iflist| */
- // if_bitwise_and_code,     /*tex |\ifbitwiseand| */
+    if_bitwise_and_code,     /*tex |\ifbitwiseand| */
 } if_test_codes;
 
 # define first_if_test_code fi_code
-# define last_if_test_code  if_list_code
-//define last_if_test_code  if_bitwise_and_code
+# define last_if_test_code  if_bitwise_and_code
 
 # define first_real_if_test_code if_char_code
-# define last_real_if_test_code  if_list_code
-//define last_real_if_test_code  if_bitwise_and_code
+# define last_real_if_test_code  if_bitwise_and_code
 
 typedef struct condition_state_info {
     halfword    cond_ptr;      /*tex top of the condition stack */

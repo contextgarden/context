@@ -1674,59 +1674,34 @@
      \markanchor{matrix}{\numexpr\c_math_eqalign_column+\plusone\relax}\c_math_eqalign_row
    \fi}
 
-\protected\def\math_matrix_anchor_first
-  {\relax
-   \ifcase\c_math_matrix_anchor_mode\else
-     \math_matrix_anchor
-   % \ifdim\d_math_eqalign_distance>\zeropoint
-   %   \ifbitwiseand\c_math_matrix_anchor_mode\plustwo
-   %      \kern.5\d_math_eqalign_distance
-   %   \fi
-   % \fi
-   \fi}
-
-\protected\def\math_matrix_anchor_last
-  {\relax
-   \ifcase\c_math_matrix_anchor_mode\else
-   % \ifdim\d_math_eqalign_distance>\zeropoint
-   %   \ifbitwiseand\c_math_matrix_anchor_mode\plusfour
-   %     \kern.5\d_math_eqalign_distance
-   %   \fi
-   % \fi
-     \math_matrix_anchor
-   \fi}
-
 \def\math_matrix_preamble
   {\math_matrix_strut
-   \math_matrix_anchor_first
-   \global\advanceby\c_math_eqalign_column\plusone
-   \math_matrix_start_cell
-     \aligncontent
-   \math_matrix_stop_cell
-   \aligntab
-   \aligntab
+   \kern-.25\d_math_eqalign_distance
    \math_matrix_anchor
-   \kern.5\d_math_eqalign_distance
-   \aligncontent
-   \aligntab
+   \kern.25\d_math_eqalign_distance
    \global\advanceby\c_math_eqalign_column\plusone
    \math_matrix_start_cell
-     \aligncontent
+   \aligncontent
+   \math_matrix_stop_cell
+   % from here we repeat
+   \aligntab
+   \aligntab
+   \kern.25\d_math_eqalign_distance
+   \math_matrix_anchor
+   \kern.25\d_math_eqalign_distance
+   \global\advanceby\c_math_eqalign_column\plusone
+   \math_matrix_start_cell
+   \aligncontent
    \math_matrix_stop_cell}
-
-% \permanent\protected\def\math_matrix_NR
-%   {\math_matrix_anchor_last
-%    \math_matrix_stop_row
-%    \math_matrix_pickup
-%    \crcr
-%    \math_matrix_start_row}
 
 \permanent\protected\def\math_matrix_NR
   {% we need to make sure we end the cell first (otherwise export looses mtd)
    \math_matrix_stop_cell
    \let\math_matrix_stop_cell\relax
    %
-   \math_matrix_anchor_last
+   \kern.25\d_math_eqalign_distance
+   \math_matrix_anchor
+   \kern-.25\d_math_eqalign_distance
    \math_matrix_stop_row
    \math_matrix_pickup
    \crcr
@@ -1741,7 +1716,7 @@
 
 \permanent\protected\def\math_matrix_pickup{\global\c_math_matrix_first\conditionaltrue}
 \permanent\protected\def\math_matrix_NC_yes{\global\c_math_matrix_first\conditionalfalse}
-\permanent\protected\def\math_matrix_NC_nop{\aligntab\aligntab} % avoids lookahead
+\permanent\protected\def\math_matrix_NC_nop{\aligntab} % avoids lookahead
 
 \def\math_matrix_check_rule_step#1%
   {\ifchkdim#1\or
@@ -1910,7 +1885,7 @@
     % \s!bottom-\dimexpr\mathmatrixparameter\c!boffset\relax
    \hfilll
  % \endgroup
-   \kern{.5\d_math_eqalign_distance}%
+   \kern.5\d_math_eqalign_distance\relax
    \aligntab}
 
 \protected\def\math_matrix_horizontal_rule_yes{\math_matrix_horizontal_rule_indeed\hrule  }
@@ -1996,7 +1971,7 @@
 
 \permanent\protected\def\math_matrix_NL_NR
   {\expand\t_math_matrix_NL_NR
-   \math_matrix_anchor_last
+   \math_matrix_anchor
    \math_matrix_stop_row
    \math_matrix_pickup
    \crcr
@@ -2157,7 +2132,6 @@
    \d_math_matrix_margin_b\strutht
    \global\d_math_matrix_max_left \zeropoint
    \global\d_math_matrix_max_right\zeropoint
-  %\tabskip.5\d_math_eqalign_distance
    \tabskip\zeroskip
    \math_matrix_pickup
    \expand\everymathmatrix

@@ -191,25 +191,11 @@ vardef lmt_do_axis =
 
                             c := getparameter "color" ;
 
-                            % p := for i = 1 upto getparametercount "points":
-                            %     if (i > 1) : -- fi (getparameter "points" i)
-                            % endfor
-                            % if (getparameterdefault "close" false) : -- cycle fi ;
-
-                            % this can become:
-
-                            % p := if (getparameterdefault "close" false) :
-                            %   % getparameterpath "points" "--" true ;
-                            %     getparameterpath "points" true ;
-                            % else :
-                            %   % getparameterpath "points" "--" false ;
-                            %     getparameterpath "points" ;
-                            % fi ;
-
-                            % p := getparameterpath "points" if (getparameterdefault "close" false) : true fi ;
-
-                            p := getparameterpath "points" (getparameterdefault "close" false) ;
-                          % p := getparameterpath "points" getparameterdefault "close" false ;
+                            if (getparameterdefault "close" false) :
+                                p := getparameterpath "points" "close" ;
+                            else :
+                                p := getparameterpath "points" ;
+                            fi
 
                             draw p withcolor c ;
 
@@ -3244,3 +3230,161 @@ def withpalette expr t =
 enddef ;
 
 permanent bytemap, withreduction, withpalette ;
+
+% outlined text on a curve
+
+newscriptindex mfid_outlineposition   ; mfid_outlineposition   := scriptindex "outlineposition" ;
+newscriptindex mfid_outlinedimensions ; mfid_outlinedimensions := scriptindex "outlinedimensions" ;
+
+vardef outlineposition (expr n) =
+    runscript mfid_outlineposition n
+enddef ;
+
+vardef outlinedimensions =
+    runscript mfid_outlinedimensions
+enddef ;
+
+% Optimized for as less as possible parameter passing and copying variables as
+% well as avoiding using hide. For now we keep the a, b and c here but they might
+% to to a module. It all depends on if we need them for an article.
+
+numeric mfun_oscillate_depth, mfun_oscillate_resolution, mfun_oscillate_ratio, mfun_oscillate_stepsize ;
+path mfun_oscillate_shape, mfun_oscillate_path ;
+picture mfun_oscillate_outline ;
+
+def mfun_oscilatedsteps_a(expr p) =
+    for i within arcpointlist mfun_oscillate_resolution of p :
+        unitvector (
+            direction
+                (arctime pathxpart of mfun_oscillate_shape)
+            of mfun_oscillate_shape
+        )
+        rotated 90
+        scaled (pathypart - mfun_oscillate_depth)
+        shifted (arcpoint pathxpart of mfun_oscillate_shape)
+        --
+    endfor
+enddef ;
+
+vardef mfun_oscilatedstep_a(expr p) =
+    for i = 0 step 1 until length p - 1 :
+        mfun_oscilatedsteps_a(subpath(i,i + 1) of p)
+    endfor cycle
+enddef ;
+
+def mfun_oscilatedstep_b(expr p) =
+    for i within arcpointlist (length(p)*mfun_oscillate_resolution) of p :
+        unitvector (
+            direction
+                (arctime pathxpart of mfun_oscillate_shape)
+            of mfun_oscillate_shape
+        )
+        rotated 90
+        scaled (pathypart - mfun_oscillate_depth)
+        shifted (arcpoint pathxpart of mfun_oscillate_shape)
+        --
+    endfor cycle
+enddef ;
+
+def mfun_oscilatedsteps_c(expr p) =
+    for i within arcpointlist (arclength(p)/mfun_oscillate_stepsize) of p :
+        unitvector (
+            direction
+                (arctime pathxpart of mfun_oscillate_shape)
+            of mfun_oscillate_shape
+        )
+        rotated 90
+        scaled (pathypart - mfun_oscillate_depth)
+        shifted (arcpoint pathxpart of mfun_oscillate_shape)
+        --
+    endfor
+enddef ;
+
+vardef mfun_oscilatedstep_c(expr p) =
+    for i = 0 step 1 until length p - 1 :
+        mfun_oscilatedsteps_c(subpath(i,i + 1) of p)
+    endfor cycle
+enddef ;
+
+def mfun_oscilatedsteps_d(expr p,n) =
+    for i within arcpointlist n of p :
+        unitvector (
+            direction
+                (arctime pathxpart of mfun_oscillate_shape)
+            of mfun_oscillate_shape
+        )
+        rotated 90
+        scaled (pathypart - mfun_oscillate_depth)
+        shifted (arcpoint pathxpart of mfun_oscillate_shape)
+        --
+    endfor
+enddef ;
+
+vardef mfun_oscilatedstep_d(expr p) =
+    for i = 0 step 1 until length p - 1 :
+        hide(mfun_oscillate_path := subpath(i,i + 1) of p)
+        mfun_oscilatedsteps_d(
+            mfun_oscillate_path,
+            ceiling(arclength(mfun_oscillate_path)/mfun_oscillate_stepsize)
+        )
+    endfor cycle
+enddef ;
+
+presetparameters "oscillated" [
+    path       = fullcircle scaled 100,
+    text       = "test",
+    yoffset    =  0,
+    stepsize   =  0, % a dimension, but zero will auto set it
+  % resolution = 20,
+    resolution = 15,
+  % resolution = 10,
+  % method     =  1,
+  % method     =  2,
+  % method     =  3,
+    method     =  4,
+] ;
+
+def lmt_oscillated = applyparameters "oscillated" "lmt_do_oscillated" enddef ;
+
+vardef lmt_do_oscillated =
+    hide (
+        pushparameters "oscillated" ;
+        save result ; path result ;
+        mfun_oscillate_outline := lmt_outline [
+            text = getparameter "text",
+            kind = "path",
+        ] ;
+        mfun_oscillate_shape      := getparameter "path" ;
+        mfun_oscillate_resolution := getparameter "resolution" ;
+        mfun_oscillate_outline    := mfun_oscillate_outline xshifted - xpart llcorner mfun_oscillate_outline ;
+        mfun_oscillate_ratio      := arclength(mfun_oscillate_shape) / bbwidth(mfun_oscillate_outline) ;
+      % mfun_oscillate_ratio      := arclength(mfun_oscillate_shape) / xpart outlinedimensions ;
+        mfun_oscillate_depth      := (zpart outlinedimensions) * mfun_oscillate_ratio - getparameter "yoffset" ;
+        mfun_oscillate_stepsize   := getparameter "stepsize" ;
+        if mfun_oscillate_stepsize = 0 :
+            mfun_oscillate_stepsize := mfun_oscillate_ratio * (ypart outlinedimensions) / mfun_oscillate_resolution ;
+        fi
+    )
+    if (getparameter "method") == 4 :
+        for i within mfun_oscillate_outline scaled mfun_oscillate_ratio :
+            mfun_oscilatedstep_d(pathpart i) &&
+        endfor cycle
+    elseif (getparameter "method") == 3 :
+        for i within mfun_oscillate_outline scaled mfun_oscillate_ratio :
+            mfun_oscilatedstep_c(pathpart i) &&
+        endfor cycle
+    elseif (getparameter "method") == 3 :
+        for i within mfun_oscillate_outline scaled mfun_oscillate_ratio :
+            mfun_oscilatedstep_b(pathpart i) &&
+        endfor cycle
+    else :
+        for i within mfun_oscillate_outline scaled mfun_oscillate_ratio :
+            mfun_oscilatedstep_a(pathpart i) &&
+        endfor cycle
+    fi
+    hide (
+        mfun_oscillate_shape := origin ;
+        mfun_oscillate_outline := nullpicture ;
+        popparameters ;
+    )
+enddef ;

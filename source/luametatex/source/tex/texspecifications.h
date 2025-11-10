@@ -62,9 +62,10 @@ extern void            tex_copy_specification_list     (halfword a, halfword b);
 extern void            tex_shift_specification_list    (halfword a, int n, int rotate);
 
 static inline int      tex_get_specification_count     (halfword a)                         { return a ? specification_count(a) : 0; }
-static inline void     tex_set_specification_option    (halfword a, int o)                  { specification_options(a) |= o; }
-static inline int      tex_has_specification_option    (halfword a, int o)                  { return (specification_options(a) & o) == o; }
 
+static inline void     tex_set_specification_option    (halfword a, int o)                  { specification_options(a) |= o; }
+static inline int      tex_get_specification_options   (halfword a)                         { return specification_options(a); }
+static inline int      tex_has_specification_option    (halfword a, int o)                  { return (specification_options(a) & o) == o; }
 static inline void     tex_add_specification_option    (halfword a, halfword o)             { specification_options(a) |= o; }
 static inline void     tex_remove_specification_option (halfword a, halfword o)             { specification_options(a) &= ~o; }
 
@@ -477,13 +478,13 @@ static inline halfword tex_get_balance_passes_reserved            (halfword a, h
 
 /* general */
 
-extern        halfword tex_new_specification_node          (halfword n, quarterword s, halfword options);
-extern        void     tex_dispose_specification_nodes     (void);
-extern        void     tex_run_specification_spec          (void);
-extern        halfword tex_scan_specifier                  (void);
-extern        void     tex_aux_set_specification           (int a, halfword target);
-extern        halfword tex_aux_get_specification_value     (int a, halfword code);
-
-extern        void     tex_specification_range_error       (halfword target);
+extern        halfword tex_new_specification_node       (halfword n, quarterword s, halfword options);
+extern        void     tex_dispose_specification_nodes  (void);
+extern        void     tex_run_specification_spec       (void);
+extern        halfword tex_scan_specifier               (void);
+extern        void     tex_specification_range_error    (halfword target);
+extern        void     tex_aux_set_specification        (int a, halfword target);
+extern        void     tex_aux_get_specification_value  (halfword specification);
+extern        void     tex_aux_get_specification_index  (halfword specification, int subindex);
 
 # endif

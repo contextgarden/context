@@ -905,6 +905,52 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                 cur_val_level = dimension_val_level;
                 break;
             }
+        case specification_count_code:
+     // case specification_double_code:
+        case specification_options_code:
+        case specification_first_code:
+        case specification_second_code:
+            {
+                do {
+                    tex_get_x_token();
+                } while (cur_cmd == spacer_cmd);
+                switch (cur_cmd) {
+                    case specification_cmd:
+                        cur_chr = eq_value(cur_chr);
+                    case specificationspec_cmd:
+                        if (cur_chr) { 
+                            switch (code) { 
+                                case specification_count_code:
+                                 // cur_val = tex_get_specification_count(cur_chr);
+                                    cur_val = specification_count(cur_chr);
+                                    cur_val_level = integer_val_level;
+                                    return 1;
+                             // case specification_double_code:
+                             //     cur_val = specification_option_double(specification_options(cur_chr));
+                             //     cur_val_level = integer_val_level;
+                             //     return 1;
+                                case specification_options_code:
+                                 // cur_val = tex_get_specification_options(cur_chr);
+                                    cur_val = specification_options(cur_chr);
+                                    cur_val_level = integer_val_level;
+                                    return 1;
+                                case specification_first_code:
+                                    tex_aux_get_specification_index(cur_chr, 1);
+                                    return 1;
+                                case specification_second_code:
+                                    tex_aux_get_specification_index(cur_chr, 2);
+                                    return 1;
+                            }
+                            break;
+                        } else { 
+                           // fall through 
+                        }
+                    default:
+                        cur_val = 0; 
+                        cur_val_level = integer_val_level;
+                        break;
+                }
+            }
         case par_shape_length_code:
             {
                 cur_val = par_shape_par ? specification_count(par_shape_par) : 0;
@@ -1149,18 +1195,6 @@ static void tex_aux_set_cur_val_by_auxiliary_cmd(int code)
             cur_val_level = integer_val_level;
             break;
     }
-}
-
-/*tex
-    For penalty specifications a zero count will report the number of entries. For the others we
-    always report that value. New is that negative numbers will count from the end.
-*/
-
-static void tex_aux_set_cur_val_by_specification_cmd(int code)
-{
-    halfword spec = eq_value(code);
-    cur_val = spec ? tex_aux_get_specification_value(spec, code) : 0;
-    cur_val_level = integer_val_level;
 }
 
 # define page_state_okay (lmt_page_builder_state.contents == contribute_nothing && ! lmt_page_builder_state.output_active)
@@ -2007,9 +2041,6 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
         case page_property_cmd:
             tex_aux_set_cur_val_by_page_property_cmd(chr);
             break;
-        case specification_cmd:
-            tex_aux_set_cur_val_by_specification_cmd(chr);
-            break;
         case define_char_code_cmd:
             tex_aux_set_cur_val_by_define_char_cmd(chr);
             break;
@@ -2146,80 +2177,22 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
                 goto DEFAULT;
             }
         case interaction_cmd:
-            cur_val = cur_chr;
+            cur_val = cur_chr; // chr 
             cur_val_level = integer_val_level;
             break;
+        case specification_cmd:
+            chr = eq_value(chr);
+            if (! chr) { 
+                cur_val = 0; 
+                cur_val_level = integer_val_level;
+                break;
+            } else { 
+                // fall through 
+            }
         case specificationspec_cmd:
             {
-                quarterword code = node_subtype(chr);
-                halfword count = tex_get_specification_count(chr);
-                if (count) {
-                    switch (code) {
-                        case integer_list_code:
-                        case dimension_list_code:
-                        case posit_list_code:
-                            {
-                                /* todo: repeat */
-                                halfword index = tex_scan_integer(0, NULL, NULL);
-                                halfword value = 0;
-                                if (index) {
-                                    if (index < 0) {
-                                        index = count + index + 1;
-                                    }
-                                    if (index > count && specification_rotate(chr)) {
-                                        index = (index % specification_count(chr));
-                                        if (index == 0) { 
-                                            index = specification_count(chr);
-                                        }
-                                    } 
-                                    if (index >= 1 && index <= count) {
-                                        if (specification_double(chr)) {
-                                            switch (tex_scan_integer(0, NULL, NULL)) {
-                                                case 1:
-                                                    value = tex_get_specification_nepalty(chr, index);
-                                                    if (specification_integer(chr)) {
-                                                        code = integer_list_code;
-                                                    }
-                                                    break;
-                                                case 2:
-                                                    value = tex_get_specification_penalty(chr, index);
-                                                    break;
-                                            }
-                                        } else {
-                                            value = tex_get_specification_penalty(chr, index);
-                                        }
-                                    } else {    
-                                        tex_specification_range_error(chr);
-                                    }
-                                    switch (code) {
-                                        case integer_list_code:
-                                            cur_val = value;
-                                            cur_val_level = integer_val_level;
-                                            break ;
-                                        case dimension_list_code:
-                                            cur_val = value;
-                                            cur_val_level = dimension_val_level;
-                                            break;
-                                        case posit_list_code:
-                                            cur_val = value;
-                                            cur_val_level = posit_val_level;
-                                            break;
-                                    }
-                                } else {
-                                    cur_val = count;
-                                    cur_val_level = integer_val_level;
-                                }
-                            }
-                            break;
-                        default:
-                            cur_val = count;
-                            cur_val_level = integer_val_level;
-                            break;
-                    }
-                } else {
-                    cur_val = count;
-                    cur_val_level = integer_val_level;
-                }
+                /*tex The next one sets |cur_val| and |cur_val_level| which can be an integer or dimen. */ 
+                tex_aux_get_specification_value(chr);
                 break;
             }
 # if (match_experiment)

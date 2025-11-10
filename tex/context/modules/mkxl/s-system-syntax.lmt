@@ -47,11 +47,11 @@ local function newresult(t)
     return t or { }
 end
 
-local category = setmetatableindex(function(t,k)
-    local v = "unset" -- might go
-    t[k]= v
-    return v
-end)
+-- local category = setmetatableindex(function(t,k)
+--     local v = "unset" -- might go
+--     t[k]= v
+--     return v
+-- end)
 
 local syntax = setmetatableindex(function(t,k)
     local v = newsyntax()
@@ -520,6 +520,7 @@ syntax.halign = newsyntax {
         optional(sequence(keyword("callbacks"),s_integer)),
         optional(keyword("discard")),
         optional(keyword("noskips")),
+        optional(keyword("nolastskip")),
         optional(keyword("reverse")),
         optional(sequence(keyword("to"),s_dimension)),
         optional(sequence(keyword("spread"),s_dimension)),
@@ -2299,7 +2300,7 @@ if context then
 
     local cmd = setmetatableindex("table")
     local lst = { }
-    local cat = { }
+--     local cat = { }
     local org = { }
 
     for i=1,#primitives do
@@ -2312,7 +2313,7 @@ if context then
         }
         cmd[n][p] = t
         lst[p]    = t
-        cat[p]    = category[n]
+--         cat[p]    = category[n]
         org[p]    = l[4]
     end
  -- local tag = { }

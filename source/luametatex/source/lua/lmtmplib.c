@@ -811,7 +811,7 @@ static void mplib_aux_inject_vector(lua_State *L, MP mp, vector v)
     }
 }
 
-static void mplib_aux_with_path(lua_State *L, MP mp, int index, int what, int multiple);
+static void mplib_aux_with_path(lua_State *L, MP mp, int index, int what);
 
 static void mplib_aux_inject_whatever(lua_State *L, MP mp, int index)
 {
@@ -834,7 +834,7 @@ static void mplib_aux_inject_whatever(lua_State *L, MP mp, int index)
                 if (lua_rawgeti(L, index, 1) == LUA_TTABLE) {
                     /* table of tables */
                     lua_pop(L, 1);
-                    mplib_aux_with_path(L, mp, index, 1, 0);
+                    mplib_aux_with_path(L, mp, index, 1);
                 } else {
                     lua_pop(L, 1);
                     switch (lua_rawlen(L, index)) {
@@ -2448,7 +2448,7 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
     int midcycle = 0;
     mp_knot ln = NULL;
     mp_knot rn = NULL;
-    double tension = *tense ? -1.0 : 1.0;
+    double tension = *tense ? -1.0 : 1.0; /* todo  */
     for (int i = 1; i <= numpoints; i++) {
         switch (lua_rawgeti(L, index, i)) { 
             case LUA_TTABLE:
@@ -2474,15 +2474,24 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                     *p = mp_append_knot_xy(mp, *p, x0, y0, *curled ? -1 : mp_explicit_knot);
                     lua_pop(L, 2);
                     if (*p) {
+// todo : use tension when 
                         if (*curled) {
+if (ln && ln != rn) { 
+    mp_set_knot_simple_right_curl(mp, ln);
+    mp_set_knot_simple_left_curl(mp, rn);  
+}
+ln = NULL;
+rn = NULL;
                             if (! ln) { 
                                 ln = *p;
                             }
                             rn = *p;
-                            mp_set_knot_left_tension(mp, *p, tension);
-                            mp_set_knot_right_tension(mp, *p, tension);
+//                            mp_set_knot_left_tension(mp, *p, tension);
+//                            mp_set_knot_right_tension(mp, *p, tension);
                             (*p)->left_type = mp_open_knot;
                             (*p)->right_type = mp_open_knot;
+//mp_set_knot_simple_right_curl(mp, *p);
+//mp_set_knot_simple_left_curl(mp, *p);  
                         } else {
                             double x1, y1, x2, y2;
                             lua_rawgeti(L, -1, 3);
@@ -2683,9 +2692,10 @@ static const char * mplib_aux_with_path_hashed(lua_State *L, MP mp, mp_knot *fir
     return NULL;
 }
 
-static void mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int multiple)
+static void mplib_aux_with_path(lua_State *L, MP mp, int index, int inject)
 {
     const char *errormsg = NULL;
+    index = lua_absindex(L, index);
     if (! mp) {
         errormsg = "valid instance expected";
     } else if (! lua_istable(L, index) || lua_rawlen(L, index) <= 0) {
@@ -2709,41 +2719,28 @@ static void mplib_aux_with_path(lua_State *L, MP mp, int index, int inject, int 
         /*
             todo: no need for the else, just always check for the key 
         */
-        if (multiple && lua_type(L, index + 1) == LUA_TBOOLEAN) {
-            cyclic = lua_toboolean(L, index + 1);
-        } else {
+        if (lua_type(L, index) == LUA_TTABLE) {
+            /*tex The index can be negative so |lua_rawget| must be relative! */
             lua_push_key(close);
-            if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
+            if (lua_rawget(L, index) == LUA_TBOOLEAN) {
                 cyclic = lua_toboolean(L, -1);
             }
             lua_pop(L, 1);
             lua_push_key(cycle); /* wins */
-            if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
+            if (lua_rawget(L, index) == LUA_TBOOLEAN) {
                 cyclic = lua_toboolean(L, -1);
             }
             lua_pop(L, 1);
-        }
-        if (multiple && lua_type(L, index + 2) == LUA_TBOOLEAN) {
-            curled = lua_toboolean(L, index + 2);
-        } else {
             lua_push_key(curled);
-            if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
+            if (lua_rawget(L, index) == LUA_TBOOLEAN) {
                 curled = lua_toboolean(L, -1);
             }
             lua_pop(L, 1);
-        }
-        if (multiple && lua_type(L, index + 3) == LUA_TBOOLEAN) {
-            tense = lua_toboolean(L, index + 3);
-        } else {
             lua_push_key(tense);
-            if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
+            if (lua_rawget(L, index) == LUA_TBOOLEAN) {
                 tense = lua_toboolean(L, -1);
             }
             lua_pop(L, 1);
-        }
-        if (multiple && lua_type(L, index + 4) == LUA_TBOOLEAN) {
-            trace = lua_toboolean(L, index + 4);
-        } else { 
             lua_push_key(trace);
             if (lua_rawget(L, index - 1) == LUA_TBOOLEAN) {
                 trace = lua_toboolean(L, -1);
@@ -2915,7 +2912,7 @@ static int mplib_solvepath(lua_State *L)
 {
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
-        mplib_aux_with_path(L, mp, 2, 0, 1);
+        mplib_aux_with_path(L, mp, 2, 0);
     }
     return 0;
 }
@@ -2924,7 +2921,7 @@ static int mplib_inject_path(lua_State *L)
 {
     MP mp = mplib_aux_is_mp(L, 1);
     if (mp) {
-        mplib_aux_with_path(L, mp, 2, 1, 1);
+        mplib_aux_with_path(L, mp, 2, 1);
     }
     return 0;
 }
@@ -3834,6 +3831,8 @@ static int mplib_aux_start_table(lua_State *L, struct mp_start_object *h, lua_Nu
 
 static int mplib_aux_stop_table(lua_State *L, struct mp_stop_object *h, lua_Number bendtolerance, lua_Number movetolerance)
 {
+    (void) bendtolerance;
+    (void) movetolerance;
     lua_createtable(L, 0, 2);
     lua_push_key(type);
     lua_push_key_by_index(mplib_values_type[h->type]);

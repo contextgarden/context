@@ -307,17 +307,30 @@
  %{\dimexpr\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi\relax}
   {\ifnum\bottomraggednessmode=\plusthree\strutdp\else\zeropoint\fi}
 
+% \protected\def\anch_mark_column_box#1#2% box n
+%   {\global\advanceby\c_anch_column\plusone
+%    \clf_markregionboxtaggedn
+%      #1%
+%      {columnarea}%
+%      \c_anch_column
+%      \zeropoint
+%      \zerofloat
+%      #2%
+%    \relax
+%    \f_anch_extra_y_scale\zerofloat}
+
 \protected\def\anch_mark_column_box#1#2% box n
-  {\global\advanceby\c_anch_column\plusone
-   \clf_markregionboxtaggedn
-     #1%
-     {columnarea}%
-     \c_anch_column
-     \zeropoint
-     \zerofloat
-     #2%
-   \relax
-   \f_anch_extra_y_scale\zerofloat}
+  {\ifconditional\c_page_areas_enabled
+     \global\advanceby\c_anch_column\plusone
+     \clf_markregionboxtaggedn
+       #1%
+       {columnarea}%
+       \c_anch_column
+       \zeropoint
+       \zerofloat
+       #2%
+     \relax % extra height, todo depth
+   \fi}
 
 \protected\def\anch_mark_region_box % auto region:index
   {\iftrialtypesetting

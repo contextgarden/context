@@ -812,6 +812,8 @@ return {
         --
         "digitspace",
         --
-        "inhibitprimitive"
+        "inhibitprimitive",
+        --
+        "thespecification",
     }
 }

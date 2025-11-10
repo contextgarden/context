@@ -723,6 +723,8 @@ typedef enum mp_name_type_type {
     mp_path_length_operation,       /* operation code for |pathlength| */
     mp_path_first_operation,        /* operation code for |pathfirst| */
     mp_path_last_operation,         /* operation code for |pathlast| */
+    mp_path_xpart_operation,        /* operation code for |pathxpart| */
+    mp_path_ypart_operation,        /* operation code for |pathypart| */
     mp_pen_offset_operation,        /* operation code for |penoffset| */
     mp_arc_time_operation,          /* operation code for |arctime| */
     mp_arc_point_operation,         /* operation code for |arcpoint| */

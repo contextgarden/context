@@ -892,11 +892,11 @@
 %D it comes first (unless we look ahead a few nodes). That said, this is the robust
 %D approach:
 
-\def\math_display_mode_signal{\c_attr_mathmode\plusone}
+% \def\math_display_mode_signal{\c_attr_mathmode\plusone}
 
 %D This one is cheaper but it needs checking when we change leading stuff:
 
-% \def\math_display_mode_signal{\boundary\c_math_display_mode_boundary}
+\def\math_display_mode_signal{\boundary\c_math_display_mode_boundary} % default per 2025-11-01
 
 %D Here we do the same but more granular (like more modes in the future):
 

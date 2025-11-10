@@ -278,6 +278,7 @@
    \c!lefthyphen=,
    \c!righthyphen=-,
    \c!hyphen=-,
+   \s!apostrophe=\v!yes, % Per 2025-11-01 this is enabled by default
    \c!spacing=\v!packed,
    \c!compoundhyphen=\compoundhyphen,
    \c!rightcompoundhyphen=\compoundhyphen,
@@ -551,6 +552,8 @@
       \noapostrophes
     \fi
 \to \everylanguage
+
+\doapostrophes % enabled by default
 
 \exapostrophechar\singlequoteasciicode
 

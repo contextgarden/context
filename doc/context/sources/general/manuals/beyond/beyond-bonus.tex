@@ -61,7 +61,7 @@ entries and out of range values are zero. An array with two entries per row is
 defined with an option:
 
 \starttyping
-\specificationdef \foo \dimen 3 options 4
+\specificationdef \foo \dimen 3 options 2
   1pt 1pt
   3pt 2pt
   5pt 3pt
@@ -74,11 +74,11 @@ This time we use an index and subindex.
 \stoptyping
 
 If you want an integer and dimension (or float) you can do this, where the four
-triggers double entries and 32 tells that the first of each pair is an integer:
+triggers double entries and 16 tells that the first of each pair is an integer:
 
 \starttyping
 \specificationdef \oof \dimen 3
-    options \numexpr 4 + 32 \relax
+    options \numexpr 2 + 16 \relax
     5 2pt
     9 3pt
     2 1pt
@@ -92,7 +92,7 @@ when we experiment with paragraph and page builder enhancements in \LUA\ that we
 want to drive from the \TEX\ end. Given:
 
 \starttyping
-\specificationdef \foo \dimen 3 options 4
+\specificationdef \foo \dimen 3 options 2
   1pt 1pt
   3pt 2pt
   5pt 3pt
@@ -121,7 +121,7 @@ So we can for instance consider this to be a table of coordinates defined at the
 %
 % (\the\xxx 1) (\the\xxx 2) (\the\xxx 3)\par
 %
-%  \specificationdef  \SomeSet \count 9 options 32 0 : 0 0 0 0 0 0 0 0 0
+%  \specificationdef  \SomeSet \count 9 options 16 0 : 0 0 0 0 0 0 0 0 0
 %  \specificationset  \SomeSet 4 5                   : 0 0 0 5 0 0 0 0 0
 %  \specificationset  \SomeSet 8 2                   : 0 0 0 5 0 0 0 2 0
 %  \specificationswap \SomeSet 5 6

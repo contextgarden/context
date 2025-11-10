@@ -852,7 +852,6 @@ function metapost.flush(specification,result)
                                             elseif objecttype == "start_group" then
                                                 result[#result+1] = "% mps group: begin"
                                                 if lpdf.flushgroup then
-                                                    local bbox = toboundingbox(object.path)
                                                     local before, after = processplugins(object,result)
                                                     local detail = object.detail
                                                     if detail or before then
@@ -862,7 +861,7 @@ function metapost.flush(specification,result)
                                                             after  = after,
                                                             result = result,
                                                             detail = detail,
-                                                            bbox   = bbox,
+                                                            bbox   = toboundingbox(object.path),
                                                         })
                                                         result = { }
                                                         miterlimit, linecap, linejoin, dashed, linewidth = -1, -1, -1, "", false

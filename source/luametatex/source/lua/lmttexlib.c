@@ -3334,6 +3334,7 @@ int lmt_push_specification(lua_State *L, halfword ptr, int onlycount)
                     if (onlycount == 1) {
                         lua_pushinteger(L, n);
                     } else {
+                        lua_createtable(L, n, 0);
                         for (int m = 1; m <= n; m++) {
                             lua_pushinteger(L, tex_get_specification_fitness_class(ptr, m));
                             lua_rawseti(L, -2, m);
@@ -3347,6 +3348,7 @@ int lmt_push_specification(lua_State *L, halfword ptr, int onlycount)
                     if (onlycount == 1) {
                         lua_pushinteger(L, n);
                     } else {
+                        lua_createtable(L, n, 0);
                         for (int m = 1; m <= n; m++) {
                             lua_createtable(L, 2, 0);
                             lua_pushinteger(L, tex_get_specification_adjacent_u(ptr, m));
@@ -3361,7 +3363,9 @@ int lmt_push_specification(lua_State *L, halfword ptr, int onlycount)
             case par_passes_code:
             case balance_passes_code:
                 {
-                    return 0;
+                 // lua_pushnil(L);
+                 // return 1;
+                    break;
                 }
             case inter_line_penalties_code:
             case club_penalties_code:

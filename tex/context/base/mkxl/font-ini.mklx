@@ -2718,6 +2718,10 @@
 \newconstant\c_font_keep_x_size
 \newinteger \c_font_saved_x_size
 
+\lettonothing\m_saved_fontalternative
+\lettonothing\m_saved_fontsize
+\lettonothing\m_saved_fontstyle
+
 \def\font_keep_x_size
   {\ifcase\c_font_keep_x_size
      \c_font_keep_x_size\plusone % experiment, when \plustwo we always do it
@@ -2726,7 +2730,7 @@
 \def\font_push_x_size
   {\c_font_saved_x_size\currentxfontsize}
 
-\def\font_pop_x_size
+\def\font_pop_x_size % adpated version moved from cont-exp per 2025-11-01
   {\ifcase\c_font_keep_x_size
      % disabled
    \or
@@ -2736,7 +2740,11 @@
    \else
      % always
      \font_pop_x_size_indeed
-   \fi}
+   \fi
+ % \let\fontstyle      \m_saved_fontstyle
+   \let\fontalternative\m_saved_fontalternative
+   \let\fontsize       \m_saved_fontsize
+   \font_helpers_synchronize_font}
 
 \def\font_pop_x_size_indeed
   {\ifcase\c_font_saved_x_size\or
@@ -2745,6 +2753,31 @@
      \currentxfontsize\c_font_saved_x_size\txx
    \fi
    \c_font_saved_x_size\zerocount}
+
+% At some point we need to get rid of the normalizing ... say, when we go only
+% compact fonts. Now we have issues when we define bodyfonts in bp but have not
+% set up the bodyfont environments (see Mikaels test files).
+
+% {\bfd Latin Modern \switchtobodyfont[keep,pagella] TeX Gyre Pagella}
+% {\bfd Latin Modern \switchtobodyfont[pagella]      TeX Gyre Pagella}
+% {     Latin Modern \setupbodyfont   [pagella]      TeX Gyre Pagella}
+% {     Latin Modern \switchtobodyfont[pagella]      TeX Gyre Pagella}
+
+% moved from cont-exp per 2025-11-01
+
+\prependtoks
+    \aliased\let\m_saved_fontalternative\fontalternative
+    \aliased\let\m_saved_fontsize       \fontsize
+    \lettonothing\fontalternative
+    \lettonothing\fontsize
+\to \everysetupbodyfont
+
+\prependtoks
+    \aliased\let\m_saved_fontalternative\fontalternative
+    \aliased\let\m_saved_fontsize       \fontsize
+    \lettonothing\fontalternative
+    \lettonothing\fontsize
+\to \everyswitchtobodyfont
 
 %D When asking for a complete font switch, for instance from 10 to 12~points, the
 %D next macro does the job. First we normalize the size, next we define the current

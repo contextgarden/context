@@ -613,38 +613,43 @@ typedef enum some_item_codes {
     scaled_math_axis_code,
     scaled_math_ex_height_code,
     scaled_math_em_width_code,
-    last_arguments_code,        /*tex |\lastarguments| */
-    parameter_count_code,       /*tex |\parametercount| */
-    parameter_index_code,       /*tex |\parametercount| */
- /* lua_value_function_code, */ /*tex |\luavaluefunction| */
-    insert_progress_code,       /*tex |\insertprogress| */
-    left_margin_kern_code,      /*tex |\leftmarginkern| */
-    right_margin_kern_code,     /*tex |\rightmarginkern| */
-    par_shape_length_code,      /*tex |\parshapelength| */
-    par_shape_indent_code,      /*tex |\parshapeindent| */
-    par_shape_width_code,       /*tex |\parshapewidth| */
+    last_arguments_code,           /*tex |\lastarguments| */
+    parameter_count_code,          /*tex |\parametercount| */
+    parameter_index_code,          /*tex |\parametercount| */
+ /* lua_value_function_code, */    /*tex |\luavaluefunction| */
+    insert_progress_code,          /*tex |\insertprogress| */
+    left_margin_kern_code,         /*tex |\leftmarginkern| */
+    specification_count_code,
+ /* specification_double_code,  */ /* not used */
+    specification_options_code,
+    specification_first_code,
+    specification_second_code,
+    right_margin_kern_code,        /*tex |\rightmarginkern| */
+    par_shape_length_code,         /*tex |\parshapelength| */
+    par_shape_indent_code,         /*tex |\parshapeindent| */
+    par_shape_width_code,          /*tex |\parshapewidth| */
     balance_shape_vsize_code,
     balance_shape_top_space_code,
     balance_shape_bottom_space_code,
-    glue_stretch_code,          /*tex |\gluestretch| */
-    glue_shrink_code,           /*tex |\glueshrink| */
-    mu_to_glue_code,            /*tex |\mutoglue| */
-    glue_to_mu_code,            /*tex |\gluetomu| */
-    numexpr_code,               /*tex |\numexpr| */
+    glue_stretch_code,             /*tex |\gluestretch| */
+    glue_shrink_code,              /*tex |\glueshrink| */
+    mu_to_glue_code,               /*tex |\mutoglue| */
+    glue_to_mu_code,               /*tex |\gluetomu| */
+    numexpr_code,                  /*tex |\numexpr| */
     posexpr_code,
- /* attrexpr_code, */           /*tex not used */
-    dimexpr_code,               /*tex |\dimexpr| */
-    glueexpr_code,              /*tex |\glueexpr| */
-    muexpr_code,                /*tex |\muexpr| */
-    numexpression_code,         /*tex |\numexpression| */
-    dimexpression_code,         /*tex |\dimexpression| */
-    numexperimental_code,       /*tex |\numexperimental| */
-    dimexperimental_code,       /*tex |\dimexperimental| */
-    last_chk_integer_code,      /*tex |\ifchkinteger| */
-    last_chk_dimension_code,    /*tex |\ifchkdimension| */
- // dimen_to_scale_code,        /*tex |\dimentoscale| */
-    numeric_scale_code,         /*tex |\numericscale| */
-    numeric_scaled_code,        /*tex |\numericscaled| */
+ /* attrexpr_code, */              /*tex not used */
+    dimexpr_code,                  /*tex |\dimexpr| */
+    glueexpr_code,                 /*tex |\glueexpr| */
+    muexpr_code,                   /*tex |\muexpr| */
+    numexpression_code,            /*tex |\numexpression| */
+    dimexpression_code,            /*tex |\dimexpression| */
+    numexperimental_code,          /*tex |\numexperimental| */
+    dimexperimental_code,          /*tex |\dimexperimental| */
+    last_chk_integer_code,         /*tex |\ifchkinteger| */
+    last_chk_dimension_code,       /*tex |\ifchkdimension| */
+ // dimen_to_scale_code,           /*tex |\dimentoscale| */
+    numeric_scale_code,            /*tex |\numericscale| */
+    numeric_scaled_code,           /*tex |\numericscaled| */
     index_of_register_code,
     index_of_character_code,
     math_atom_glue_code,

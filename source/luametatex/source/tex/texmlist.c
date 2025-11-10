@@ -1013,6 +1013,16 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
 
 */
 
+/*tex   
+
+    Todo: 
+
+    This is a bit fishy because delimiters also use this helper, in which case the 
+    |math_control_extend_accents| checking makes no sense. It needs fixing or a 
+    dedicated |math_control_extend_delimiters|.
+
+*/
+
 static halfword tex_aux_char_box(halfword fnt, int chr, halfword att, scaled *ic, quarterword subtype, scaled target, int style, int shrink, int stretch, int *isscaled)
 {
     /*tex The new box and its character node. */
@@ -3451,6 +3461,23 @@ static int tex_aux_compute_accent_skew(halfword target, int flags, scaled *skew,
     }
     return absolute;
 }
+
+/*tex 
+
+    This is of course way to much code for just accent placement. However, it is the result of 
+    starting from original code, then in \LUATEX\ adding support for \OPENTYPE, which, certainly
+    at that time came with the need to deal with fuzzy specifications and imperfect fonts. Then, 
+    when we moved on, a first step was to make all controllable, and next to add some control that
+    we found useful. Code for better kerning, overshoot, factors, margins, stretch, shrink, and 
+    features like attributes and callbacks accumulates. Various horizontal and vertical scaling of
+    parameters and glyphs also adds code. 
+    
+    Showing how all works with examples is not that easy because a font might change. Especially 
+    features that compensate for shortcomings might not kick in after an update. But, if you're not 
+    into optimizing look-and-feel, as we are in \CONTEXT, but want traditional behavior, you can 
+    just ignore most tuning options. 
+
+*/
 
 static void tex_aux_do_make_math_accent(halfword target, halfword source, halfword accentfnt, halfword accentchr, int flags, int style, int size, scaled *accenttotal, scaled *leftkern, scaled *rightkern)
 {

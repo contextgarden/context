@@ -952,6 +952,11 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,       no_legacy,       "parshapeindent",                 some_item_cmd,          par_shape_indent_code,                    0);
         tex_primitive(etex_command,       no_legacy,       "parshapelength",                 some_item_cmd,          par_shape_length_code,                    0);
         tex_primitive(luametatex_command, no_legacy,       "parshapewidth",                  some_item_cmd,          par_shape_width_code,                     0);
+        tex_primitive(luametatex_command, no_legacy,       "specificationcount",             some_item_cmd,          specification_count_code,                 0);
+    /*  tex_primitive(luametatex_command, no_legacy,       "specificationdouble",            some_item_cmd,          specification_double_code,                0); */
+        tex_primitive(luametatex_command, no_legacy,       "specificationoptions",           some_item_cmd,          specification_options_code,               0);
+        tex_primitive(luametatex_command, no_legacy,       "specificationfirst",             some_item_cmd,          specification_first_code,                 0);
+        tex_primitive(luametatex_command, no_legacy,       "specificationsecond",            some_item_cmd,          specification_second_code,                0);
         tex_primitive(luametatex_command, no_legacy,       "balanceshapevsize",              some_item_cmd,          balance_shape_vsize_code,                 0);
         tex_primitive(luametatex_command, no_legacy,       "balanceshapetopspace",           some_item_cmd,          balance_shape_top_space_code,             0);
         tex_primitive(luametatex_command, no_legacy,       "balanceshapebottomspace",        some_item_cmd,          balance_shape_bottom_space_code,          0);

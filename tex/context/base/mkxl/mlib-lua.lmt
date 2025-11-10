@@ -112,6 +112,7 @@ local injectboolean   = mplib.injectboolean
 local injectinteger   = mplib.injectinteger
 local injectstring    = mplib.injectstring
 local injectcolor     = mplib.injectcolor
+----- injecttriplet   = mplib.injectcolor
 local injectcmykcolor = mplib.injectcmykcolor
 local injecttransform = mplib.injecttransform
 local injectwhatever  = mplib.injectwhatever
@@ -119,13 +120,14 @@ local injectvector    = mplib.injectvector
 local injectvectors   = mplib.injectvectors
 ----- injecttokens    = mplib.injecttokens
 
-------.path      = function(t,cycle,curled)  if trace then reporti("path")      end return injectpath     (currentmpx,t,cycle,curled)  end
+inject.path      = function(p)               if trace then reporti("path")      end return injectpath     (currentmpx,p)               end
 inject.numeric   = function(n)               if trace then reporti("numeric")   end return injectnumeric  (currentmpx,n)               end
 inject.pair      = function(x,y)             if trace then reporti("pair")      end return injectpair     (currentmpx,x,y)             end
 inject.boolean   = function(b)               if trace then reporti("boolean")   end return injectboolean  (currentmpx,b)               end
 inject.integer   = function(i)               if trace then reporti("integer")   end return injectinteger  (currentmpx,i)               end
 inject.string    = function(s)               if trace then reporti("string")    end return injectstring   (currentmpx,s)               end
 inject.color     = function(r,g,b)           if trace then reporti("color")     end return injectcolor    (currentmpx,r,g,b)           end
+-----.triplet    = function(w,h,d)           if trace then reporti("triplet")   end return injectcolor    (currentmpx,w,h,d)           end
 inject.cmykcolor = function(c,m,y,k)         if trace then reporti("cmykcolor") end return injectcmykcolor(currentmpx,c,m,y,k)         end
 inject.transform = function(x,y,xx,xy,yx,yy) if trace then reporti("transform") end return injecttransform(currentmpx,x,y,xx,xy,yx,yy) end
 inject.whatever  = function(...)             if trace then reporti("whatever")  end return injectwhatever (currentmpx,...)             end
@@ -156,69 +158,6 @@ local function same(p,n)
         return true
     end
     return false
-end
-
--- function inject.path(p,close,connector)
---     local closed = false
---     local curled = false
---     local n = #p
--- print("spec",p,close,connector)
---     if close == nil then
---         closed = (p.close or p.cycle or p.closed) and true or false
---     else
---         closed = close
---     end
---     if connector then
---         if connector == "auto" then
---             connector = #p[1] > 2
---         end
---         if connector == false or connector == "--" then
---             curled = true
---      -- elseif connector == true or connector == ".." then
---      --     if close and not same(p,n) then
---      --         p[n+1] = p[1]
---      --     end
---         end
---     elseif p.curled then
---         curled = true
---     end
---     if trace then reporti("path") end
---     inspect(p)
---     print(p,closed,curled)
---     return injectpath(currentmpx,p,closed,curled)
--- end
-
-function inject.path(p,connector,close)
-    local closed = false
-    local curled = false
-    local tense  = false
-    local trace  = false
-    local n = #p
-    if close == nil then
-        closed = (p.close or p.cycle or p.closed) and true or false
-    else
-        closed = close
-    end
-    trace = p.trace
-    if connector then
-        if connector == "auto" then
-            connector = #p[1] > 2
-        end
-        if connector == false or connector == "--" then
-            curled = true
-        end
-    else
-        if p.tense then
-            tense = true
-        end
-        if p.curled then
-            curled = true
-        end
-    end
-    if trace then
-        reporti("path")
-    end
-    return injectpath(currentmpx,p,closed,curled,tense,trace)
 end
 
 -- bonus:

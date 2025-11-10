@@ -227,7 +227,7 @@ static halfword tex_aux_scan_specification_par_shape(void)
 {
     halfword count = tex_scan_integer(1, NULL, NULL);
     if (count > 0) {
-        halfword options = tex_aux_scan_specification_options(par_shape_code);
+        halfword options = tex_aux_scan_specification_options(par_shape_code) | specification_option_double;
         halfword spec = tex_new_specification_node(count, par_shape_code, options);
         for (int n = 1; n <= count; n++) {
             tex_set_specification_indent(spec, n, tex_scan_dimension(0, 0, 0, 0, NULL, NULL));
@@ -276,12 +276,12 @@ static halfword tex_aux_scan_specification_adjacent_demerits(void)
             /*tex This permits an efficient redefinition of the traditional |\adjdemerits|. */
             spec = tex_new_specification_node(0, adjacent_demerits_code, options);
             specification_count(spec) = 1;
-            max = tex_scan_integer(0, NULL, NULL);
+            max = tex_scan_integer(1, NULL, NULL);
             specification_adjacent_adj(spec) = max;
         } else { 
             spec = tex_new_specification_node(count, adjacent_demerits_code, options);
             for (int n = 1; n <= count; n++) {
-                halfword value = tex_scan_integer(0, NULL, NULL);
+                halfword value = tex_scan_integer(n == 1 ? 1 : 0, NULL, NULL);
                 tex_set_specification_adjacent_u(spec, n, value);
                 if (value > max) {
                     max = value; 
@@ -1377,55 +1377,223 @@ halfword tex_scan_specifier(void)
     return null;
 }
 
-halfword tex_aux_get_specification_value(halfword spec, halfword code)
+void tex_aux_get_specification_value(halfword specification)
 {
-    halfword count = specification_count(spec);
-    (void) code;
-    switch (node_subtype(spec)) { 
-        case par_shape_code:
-        case par_passes_code:
-        case fitness_classes_code:
-            {
-                halfword index = tex_scan_integer(0, NULL, NULL);
-                return tex_get_specification_fitness_class(spec, index); /* weird call */
-            }
-        case balance_shape_code:
-            {
-                return 0;
-            }
-        case adjacent_demerits_code:
-            {
-                halfword index = tex_scan_integer(0, NULL, NULL);
-                if (index == -1) {
-                    return specification_adjacent_adj(spec);
-                } else { 
-                    return tex_get_specification_adjacent_u(spec, index);
+    quarterword code = node_subtype(specification);
+    halfword count = tex_get_specification_count(specification);
+    if (count) {
+        switch (code) {
+            case integer_list_code:
+            case dimension_list_code:
+            case posit_list_code:
+            case balance_final_penalties_code:
+            case inter_line_penalties_code:
+            case club_penalties_code:
+            case widow_penalties_code:
+            case display_widow_penalties_code:
+            case broken_penalties_code:
+            case orphan_penalties_code:
+            case toddler_penalties_code:
+            case fitness_classes_code:
+            case adjacent_demerits_code:
+            case orphan_line_factors_code:
+            case math_forward_penalties_code:
+            case math_backward_penalties_code:
+                {
+                    /* todo: repeat */
+                    halfword index = tex_scan_integer(0, NULL, NULL);
+                    if (index == 0) {
+                        cur_val = count;
+                        cur_val_level = integer_val_level;
+                    } else if (index == max_integer) {
+                        cur_val = specification_double(specification) ? 1 : 0;
+                        cur_val_level = integer_val_level;
+                    } else if (code == adjacent_demerits_code) {
+                        if (index == -1 || (index == 1 && count == 1)) {
+                            cur_val = specification_adjacent_adj(specification);
+                        } else { 
+                            cur_val = tex_get_specification_adjacent_u(specification, index);
+                        }
+                        cur_val_level = integer_val_level;
+                    } else { 
+                        halfword value = 0;
+                        if (index < 0) {
+                            index = count + index + 1;
+                        }
+                        if (index > count && specification_rotate(specification)) {
+                            index = (index % specification_count(specification));
+                            if (index == 0) { 
+                                index = specification_count(specification);
+                            }
+                        } 
+                        if (index >= 1 && index <= count) {
+                            if (specification_double(specification)) {
+                                halfword subindex = tex_scan_integer(0, NULL, NULL);
+                                switch (subindex) {
+                                    case 1:
+                                        value = tex_get_specification_nepalty(specification, index);
+                                        if (specification_integer(specification)) {
+                                            code = integer_list_code;
+                                        }
+                                        break;
+                                    case 2:
+                                        value = tex_get_specification_penalty(specification, index);
+                                        break;
+                                }
+                            } else {
+                                value = tex_get_specification_penalty(specification, index);
+                            }
+                        } else {    
+                            tex_specification_range_error(specification);
+                        }
+                        switch (code) {
+                            case integer_list_code:
+                                cur_val = value;
+                                cur_val_level = integer_val_level;
+                                break ;
+                            case dimension_list_code:
+                                cur_val = value;
+                                cur_val_level = dimension_val_level;
+                                break;
+                            case posit_list_code:
+                                cur_val = value;
+                                cur_val_level = posit_val_level;
+                                break;
+                            default: 
+                                /* the penalties */
+                                cur_val = value;
+                                cur_val_level = integer_val_level;
+                                break ;
+                        }
+                    }
                 }
-            }
-        default:
-            {
-                halfword index = tex_scan_integer(0, NULL, NULL);
-                if (! count) { 
-                    if (index == 1 || index == -1) {
-                        return tex_get_specification_penalty(spec, 1);
-                    }
-                } else if (index) {
-                    if (index < 1) {
-                        /*tex We count from the end. */
-                        index = count + index + 1;
-                    }
-                    if (index > count) {
-                        /*tex The last one in a penalty list repeated. */
-                        index = count; 
-                    }
-                    if (index >= 1) { 
-                        return tex_get_specification_penalty(spec, index);
-                    } else {
-                        /*tex We silently ignore this. */
-                    }
-                }
-           }
-           break;
+                break;
+            default:
+                cur_val = count;
+                cur_val_level = integer_val_level;
+                break;
+        }
+    } else {
+        cur_val = count;
+        cur_val_level = integer_val_level;
     }
-    return 0;
+}
+
+void tex_aux_get_specification_index(halfword specification, int subindex)
+{
+    quarterword code = node_subtype(specification);
+    halfword count = tex_get_specification_count(specification);
+    if (count) {
+        switch (code) {
+            case par_shape_code:
+         /* case unsupported_code: */
+            case integer_list_code:
+            case dimension_list_code:
+            case posit_list_code:
+            case balance_final_penalties_code:
+            case inter_line_penalties_code:
+            case club_penalties_code:
+            case widow_penalties_code:
+            case display_widow_penalties_code:
+            case broken_penalties_code:
+            case orphan_penalties_code:
+            case toddler_penalties_code:
+            case fitness_classes_code:
+            case adjacent_demerits_code:
+            case orphan_line_factors_code:
+            case math_forward_penalties_code:
+            case math_backward_penalties_code:
+                {
+                    /* todo: repeat */
+                    halfword index = tex_scan_integer(0, NULL, NULL);
+                    if (index == 0 || index == max_integer) {
+                        goto BADNEWS;
+                    } else { 
+                        switch (code) { 
+                            case adjacent_demerits_code: 
+                                {
+                                    if (index == -1 || (index == 1 && count == 1)) {
+                                        cur_val = specification_adjacent_adj(specification);
+                                    } else { 
+                                        cur_val = tex_get_specification_adjacent_u(specification, index);
+                                    }
+                                    cur_val_level = integer_val_level;
+                                    break;
+                                }
+                            case par_shape_code:
+                                {
+                                    /* code = dimension_list_entry */
+                                    if (index >= 1 && index <= specification_count(specification)) {
+                                        cur_val = subindex == 1 ? tex_get_specification_indent(specification, index) : tex_get_specification_width(specification, index);
+                                    } else {
+                                        cur_val = 0;
+                                    }
+                                    cur_val_level = dimension_val_level;
+                                    break;
+                                } 
+                            default: 
+                                { 
+                                    halfword value = 0;
+                                    if (index < 0) {
+                                        index = count + index + 1;
+                                    }
+                                    if (index > count && specification_rotate(specification)) {
+                                        index = (index % specification_count(specification));
+                                        if (index == 0) { 
+                                            index = specification_count(specification);
+                                        }
+                                    } 
+                                    if (index >= 1 && index <= count) {
+                                        if (specification_double(specification)) {
+                                            switch (subindex) {
+                                                case 1:
+                                                    value = tex_get_specification_nepalty(specification, index);
+                                                    if (specification_integer(specification)) {
+                                                        code = integer_list_code;
+                                                    }
+                                                    break;
+                                                case 2:
+                                                    value = tex_get_specification_penalty(specification, index);
+                                                    break;
+                                            }
+                                        } else {
+                                            value = tex_get_specification_penalty(specification, index);
+                                        }
+                                    } else {    
+                                        goto BADNEWS;
+                                    }
+                                    switch (code) {
+                                        case integer_list_code:
+                                            cur_val = value;
+                                            cur_val_level = integer_val_level;
+                                            break ;
+                                        case dimension_list_code:
+                                            cur_val = value;
+                                            cur_val_level = dimension_val_level;
+                                            break;
+                                        case posit_list_code:
+                                            cur_val = value;
+                                            cur_val_level = posit_val_level;
+                                            break;
+                                        default: 
+                                            /* the penalties */
+                                            cur_val = value;
+                                            cur_val_level = integer_val_level;
+                                            break ;
+                                    }
+                                }
+                        }
+                    }
+                }
+                break;
+            default:
+                goto NONEWS;
+        }
+    } else {
+      BADNEWS:
+        tex_specification_range_error(specification);
+      NONEWS:
+        cur_val = 0;
+        cur_val_level = integer_val_level;
+    }
 }

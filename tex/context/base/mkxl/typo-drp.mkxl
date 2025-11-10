@@ -123,6 +123,7 @@
 \protected\def\typo_initial_handle_indeed#1#2%
   {\dontleavehmode
    \begingroup
+   \scratchheight\lineheight % see comment
    \cdef\currentinitial{#1}%
    \setupcurrentinitial[#2]%
    \resetfontfeature % might be needed in more places
@@ -139,8 +140,11 @@
    \fi
    \scratchcounter{\initialparameter\c!n}%
    \edef\p_voffset{\initialparameter\c!voffset}%
-   \scratchvoffset{\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi}%
- % \scratchvoffset{\ifcstok{\initialparameter\c!voffset}\v!line\scratchcounter\lineheight-\lineheight\else\lastnamedcs\fi}%
+   % Just using \lineheight is not ok as it should be the outer lineheight (in case one used \switchtobodyfont
+   % as style) so we need to use a saved lineheight instead:
+   %scratchvoffset{\ifx\p_voffset\v!line\scratchcounter\lineheight-\lineheight\else\p_voffset\fi}%
+   \scratchvoffset{\ifx\p_voffset\v!line\scratchcounter\scratchheight-\scratchheight\else\p_voffset\fi}%
+   %scratchvoffset{\ifcstok{\initialparameter\c!voffset}\v!line\scratchcounter\scratchheight-\scratchheight\else\lastnamedcs\fi}%
    \clf_setinitial
         location   {\initialparameter\c!location}%
         enabled    true\relaxedspace

@@ -7,7 +7,6 @@
 
 % \tracepositions
 
-
 % The usual time stamp. This written while listening intermized to Fish (just ran
 % into), Lazulli (some yt videos too, looking forward to a next live act) and
 % because this all is boring checking out Sarah Coopers channel for new DT syncs
@@ -89,8 +88,6 @@
 \startdocument[title=Primitives]
 
 \pushoverloadmode
-
-\doifmode{checktodo}{\startbodymatter}
 
 \startsection[title={Introduction}]
 
@@ -311,9 +308,9 @@ See \prm {Uover} for an introduction.
 
 \stopnewprimitive
 
-See \prm {Uover} for an introduction.
-
 \startnewprimitive[title={\prm {Uatopwithdelims}}]
+
+See \prm {Uover} for an introduction.
 
 \stopnewprimitive
 
@@ -416,6 +413,61 @@ and get: \inlinebuffer .
 \startnewprimitive[title={\prm {Umathaccent}}]
 
 {\em todo} \writestatus{TODO}{\string\Umathaccent}
+
+% \startbuffer
+% \im {\Umathaccent top "1 "0 `A {xxx}}
+% \stopbuffer
+
+% \typebuffer
+
+% \getbuffer
+
+% <NUMBER>
+
+\starttabulate[|Tl|l|l|]
+\NC attr        \NC integer integer                               \NC \NC \NR
+\NC base        \NC                                               \NC \NC \NR
+\NC bottom      \NC \type {[fixed]} <char>                        \NC \NC \NR
+\NC both        \NC \type {[fixed]} <char> \type {[fixed]} <char> \NC \NC \NR
+\NC center      \NC                                               \NC \NC \NR
+\NC class       \NC integer                                       \NC \NC \NR
+\NC exact       \NC                                               \NC \NC \NR
+\NC fraction    \NC integer                                       \NC \NC \NR
+\NC fixed       \NC char                                          \NC \NC \NR
+\NC keepbase    \NC                                               \NC \NC \NR
+\NC nooverflow  \NC                                               \NC \NC \NR
+\NC overlay     \NC\type {[fixed]} char                           \NC \NC \NR
+\NC shrink      \NC                                               \NC \NC \NR
+\NC single      \NC                                               \NC \NC \NR
+\NC source      \NC integer                                       \NC \NC \NR
+\NC stretch     \NC                                               \NC \NC \NR
+\NC symbolattr  \NC integer integer                               \NC \NC \NR
+\NC top         \NC \type {[fixed]} char                          \NC \NC \NR
+\NC usecallback \NC                                               \NC \NC \NR
+\stoptabulate
+
+% \startbuffer
+% \im {\Umathaccent top       "0 "0 "20D7             {xxx}}
+% \im {\Umathaccent bottom    "0 "0 "20D7             {xxx}}
+% \im {\Umathaccent both      "0 "0 "20D7 "1 "0 "20D7 {xxx}}
+% \im {\Umathaccent top fixed "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent exact top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent stretch top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent shrink top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent center top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent single top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent overlay          "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent base overlay          "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent nooverflow top       "0 "0 "0302             {xxxxxxxx}}
+% \im {\Umathaccent fraction 123  top       "0 "0 "0302             {xxxxxxxx}}
+% \stopbuffer
+
+% \typebuffer
+
+% \startlines
+% \getbuffer
+% \stoplines
 
 \stopnewprimitive
 
@@ -5936,13 +5988,14 @@ few keywords in addition to \type {to} and \type {spread}:
 
 \starttabulate[|l|p|]
 \FL
-\BC keyword          \BC explanation \NC \NR
+\BC keyword            \BC explanation \NC \NR
 \TL
-\NC \type {attr}     \NC set the given attribute to the given value \NC \NR
-\NC \type {callback} \NC trigger the \type {alignment} callback \NC \NR
-\NC \type {discard}  \NC discard zero \prm {tabskip}'s \NC \NR
-\NC \type {noskips}  \NC don't even process zero \prm {tabskip}'s \NC \NR
-\NC \type {reverse}  \NC reverse the final rows \NC \NR
+\NC \type {attr}       \NC set the given attribute to the given value \NC \NR
+\NC \type {callback}   \NC trigger the \type {alignment} callback \NC \NR
+\NC \type {discard}    \NC discard zero \prm {tabskip}'s \NC \NR
+\NC \type {noskips}    \NC don't even process zero \prm {tabskip}'s \NC \NR
+\NC \type {reverse}    \NC reverse the final rows \NC \NR
+\NC \type {nolastskip} \NC remove the last \prm {tabskip} \NC \NR
 \LL
 \stoptabulate
 
@@ -5958,6 +6011,34 @@ The two primitives \prm {alignmentcellsource} and \prm {alignmentwrapsource} tha
 associate a source id (integer) to the current cell and row (line). Sources and
 targets are experimental and are being explored in \CONTEXT\ so we'll see where
 that ends up in.
+
+\startbuffer
+\halign {
+    \tabskip1cm
+    \aligncontent \aligntab
+    \aligncontent \aligntab \aligntab
+    \aligncontent \cr
+    x \aligntab x \aligntab x \aligntab x\cr
+    x \aligntab x \aligntab x \aligntab x\cr
+}
+
+\halign nolastskip {
+    \tabskip1cm
+    \aligncontent \aligntab
+    \aligncontent \aligntab \aligntab
+    \aligncontent \cr
+    x \aligntab x \aligntab x \aligntab x\cr
+    x \aligntab x \aligntab x \aligntab x\cr
+}
+\stopbuffer
+
+Here is an example of \typ {nolastskip} usage:
+
+\typebuffer[option=TEX]
+
+This feature is mostly handy for repeated preamble entries:
+
+{\showboxes \getbuffer}
 
 \stopoldprimitive
 
@@ -12942,6 +13023,21 @@ are seen.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {specificationcount}}]
+
+See \in {section} [specifications] for more about specifications. This primitive returns
+an integer indicating how many entries the specification has.
+
+\startbuffer
+\the\specificationcount\widowpenalties
+\stopbuffer
+
+\typebuffer
+
+Gives in \CONTEXT: \inlinebuffer.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {specificationdef}}]
 
 There are some datastructures that are like arrays: \prm {adjacentdemerits}, \prm
@@ -12965,6 +13061,45 @@ way it work is as follows:
 where the relax is optional but a reasonabel way to make sure we end the
 definition (when keywords are used, as in \prm {parpasses} it prevents running
 into unexpected keywords.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {specificationfirst}}]
+
+See \in {section} [specifications] for more about specifications. This primitive returns
+an integer or dimension.
+
+\startbuffer
+\the\specificationfirst\widowpenalties 1
+\stopbuffer
+
+\typebuffer
+
+Gives in \CONTEXT: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {specificationoptions}}]
+
+\startbuffer
+0x\tohexadecimal\specificationoptions\widowpenalties
+\stopbuffer
+
+\typebuffer
+
+Gives in \CONTEXT: \inlinebuffer.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {specificationsecond}}]
+
+\startbuffer
+\the\specificationsecond\widowpenalties 1
+\stopbuffer
+
+\typebuffer
+
+Gives in \CONTEXT: \inlinebuffer.
 
 \stopnewprimitive
 
@@ -14836,8 +14971,6 @@ This internal number starts out with the year that the job started.
 %     Run \type {s-system-syntax.mkxl} for a complete overview of the \LUAMETATEX\
 %     primitives.
 \stopmode
-
-\doifmode{checktodo}{\stopbodymatter}
 
 \popoverloadmode
 
