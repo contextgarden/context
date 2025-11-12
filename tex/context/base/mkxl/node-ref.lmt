@@ -112,8 +112,6 @@ local dir_code             <const> = nodecodes.dir
 local par_code             <const> = nodecodes.par
 local whatsit_code         <const> = nodecodes.whatsit
 
-local fontkern_code        <const> = kerncodes.fontkern
-
 local leftskip_code        <const> = gluecodes.leftskip
 local lefthang_code        <const> = gluecodes.lefthangskip
 local rightskip_code       <const> = gluecodes.rightskip
@@ -334,31 +332,8 @@ local inject_areas do
             local id, subtype, next = getidsubtypenext(current)
             -- So we jump to NEXT or CONTINUE when possible. In most cases we have glyphs
             -- which is why we test that first.
-            if id == glyph_code then
-                -- This happens often, have to check later on, but then might continue.
-            elseif id == kern_code then
-if subtype == fontkern_code then
-    if last then
-        last = current
-    end
-    current = next
-    goto CONTINUE
-else
--- print(getwidth(current))
-    if getwidth(current) == 0 then -- cheaper than attr test
--- print("YES")
-        current = next
-        goto CONTINUE
-    else
--- print("NOP")
-        --
-    end
-end
-                -- idem
-            elseif id == penalty_code then
-                -- idem
-current = next
-goto CONTINUE
+            if id == glyph_code or id == penalty_code or id == kern_code then
+                -- optimizing for font kerns doesn't work out well
             elseif id == hlist_code or id == vlist_code then
                 local r = getattr(current,attribute)
                 -- test \goto{test}[page(2)] test \gotobox{test}[page(2)]

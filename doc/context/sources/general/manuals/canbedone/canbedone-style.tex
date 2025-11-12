@@ -16,6 +16,7 @@
   [document]
   [title=No Title,
    author=No Author,
+   coauthor=,
    color=NoColor]
 
 \setupbodyfont
@@ -103,8 +104,8 @@
    {section,subject},
    {subsection,subsubject},
    {subsubsection,subsubsubject},
-   {subsubsubsection,subsubsubject},
-   {subsubsubsubsection,subsubsubject}]
+   {subsubsubsection,subsubsubsubject},
+   {subsubsubsubsection,subsubsubsubsubject}]
 
 \startsetups document:start
 
@@ -130,11 +131,15 @@
 \startsectionlevel[title=Colofon,number=no,saveinlist=no]
 
     \starttabulate
-        \NC Author      \NC Hans Hagen         \NC \NR
-        \NC \CONTEXT    \NC \contextversion    \NC \NR
-        \NC \LUAMETATEX \NC \texengineversion  \NC \NR
-        \NC Support     \NC www.pragma-ade.com \NC \NR
-        \NC             \NC contextgarden.net  \NC \NR
+        \NC Author      \NC Hans Hagen
+                           \doifdocumentvariable{coauthor}{ & \documentvariable{coauthor}}
+                                                      \NC \NR
+        \NC \CONTEXT    \NC \contextversion           \NC \NR
+        \NC \LUAMETATEX \NC \luametatexverboseversion \space\vl\space
+                            \luametatexfunctionality  \NC \NR
+        \NC Support     \NC www.pragma-ade.com        \NC \NR
+        \NC             \NC contextgarden.net         \NC \NR
+        \NC             \NC ntg-context@ntg.nl        \NC \NR
     \stoptabulate
 
 \stopsectionlevel

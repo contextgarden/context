@@ -1,6 +1,4 @@
 
-
-
 % signal=squid
 
 %D \module
@@ -904,18 +902,18 @@ enddef ;
 \continueifinputfile{s-squid.mkxl}
 
 \starttext
-%     \startTEXpage\getbuffer[squid-001]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-002]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-003]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-004]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-005]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-006]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-007]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-008]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-009]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-010]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-011]\stopTEXpage
-%     \startTEXpage\getbuffer[squid-012]\stopTEXpage
+    \startTEXpage\getbuffer[squid-001]\stopTEXpage
+    \startTEXpage\getbuffer[squid-002]\stopTEXpage
+    \startTEXpage\getbuffer[squid-003]\stopTEXpage
+    \startTEXpage\getbuffer[squid-004]\stopTEXpage
+    \startTEXpage\getbuffer[squid-005]\stopTEXpage
+    \startTEXpage\getbuffer[squid-006]\stopTEXpage
+    \startTEXpage\getbuffer[squid-007]\stopTEXpage
+    \startTEXpage\getbuffer[squid-008]\stopTEXpage
+    \startTEXpage\getbuffer[squid-009]\stopTEXpage
+    \startTEXpage\getbuffer[squid-010]\stopTEXpage
+    \startTEXpage\getbuffer[squid-011]\stopTEXpage
+    \startTEXpage\getbuffer[squid-012]\stopTEXpage
     \startTEXpage\getbuffer[squid-013]\stopTEXpage
 \stoptext
 

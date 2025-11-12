@@ -1,0 +1,176 @@
+%D \module
+%D   [       file=type-imp-penstander,
+%D        version=2025.11.12,
+%D          title=\CONTEXT\ Typescript Macros,
+%D       subtitle=Pennstander fonts,
+%D         author={Julius Ross, Hans Hagen, Mikael Sundqvist}, % adapted from original
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\usetypescriptfile[dejavu]
+
+\starttypescriptcollection[penstander]
+
+\definefontfeature[pennstander-math-scale][pennstanderscale=yes]
+
+\starttypescript [Pennstander-Thin,Pennstander-ExtraLight,Pennstander-Light,Pennstander-Regular,Pennstander-Medium,Pennstander-SemiBold,Pennstander-Bold,Pennstander-ExtraBold,Pennstander-Black]
+     \definefontsynonym[PSThin]            [\s!file:Pennstander-Thin.otf]            [\s!features=\s!default]
+     \definefontsynonym[PSExtraLight]      [\s!file:Pennstander-ExtraLight.otf]      [\s!features=\s!default]
+     \definefontsynonym[PSLight]           [\s!file:Pennstander-Light.otf]           [\s!features=\s!default]
+     \definefontsynonym[PSRegular]         [\s!file:Pennstander-Regular.otf]         [\s!features=\s!default]
+     \definefontsynonym[PSMedium]          [\s!file:Pennstander-Medium.otf]          [\s!features=\s!default]
+     \definefontsynonym[PSSemiBold]        [\s!file:Pennstander-SemiBold.otf]        [\s!features=\s!default]
+     \definefontsynonym[PSBold]            [\s!file:Pennstander-Bold.otf]            [\s!features=\s!default]
+     \definefontsynonym[PSExtraBold]       [\s!file:Pennstander-ExtraBold.otf]       [\s!features=\s!default]
+     \definefontsynonym[PSBlack]           [\s!file:Pennstander-Black.otf]           [\s!features=\s!default]
+     % Italic Text
+     \definefontsynonym[PSThinItalic]      [\s!file:Pennstander-ItalicThin.otf]      [\s!features=\s!default]
+     \definefontsynonym[PSExtraLightItalic][\s!file:Pennstander-ItalicExtraLight.otf][\s!features=\s!default]
+     \definefontsynonym[PSLightItalic]     [\s!file:Pennstander-ItalicLight.otf]     [\s!features=\s!default]
+     \definefontsynonym[PSRegularItalic]   [\s!file:Pennstander-ItalicRegular.otf]   [\s!features=\s!default]
+     \definefontsynonym[PSMediumItalic]    [\s!file:Pennstander-ItalicMedium.otf]    [\s!features=\s!default]
+     \definefontsynonym[PSSemiBoldItalic]  [\s!file:Pennstander-ItalicSemiBold.otf]  [\s!features=\s!default]
+     \definefontsynonym[PSBoldItalic]      [\s!file:Pennstander-ItalicBold.otf]      [\s!features=\s!default]
+     \definefontsynonym[PSExtraBoldItalic] [\s!file:Pennstander-ItalicExtraBold.otf] [\s!features=\s!default]
+     \definefontsynonym[PSBlackItalic]     [\s!file:Pennstander-ItalicBlack.otf]     [\s!features=\s!default]
+     % Math
+     \definefontsynonym[PSMathThin]        [\s!file:PennstanderMath-Thin.otf]
+     \definefontsynonym[PSMathExtraLight]  [\s!file:PennstanderMath-ExtraLight.otf]
+     \definefontsynonym[PSMathLight]       [\s!file:PennstanderMath-Light.otf]
+     \definefontsynonym[PSMathRegular]     [\s!file:PennstanderMath-Regular.otf]
+     \definefontsynonym[PSMathMedium]      [\s!file:PennstanderMath-Medium.otf]
+     \definefontsynonym[PSMathSemiBold]    [\s!file:PennstanderMath-SemiBold.otf]
+     \definefontsynonym[PSMathBold]        [\s!file:PennstanderMath-Bold.otf]
+     \definefontsynonym[PSMathExtraBold]   [\s!file:PennstanderMath-ExtraBold.otf]
+     \definefontsynonym[PSMathBlack]       [\s!file:PennstanderMath-Black.otf]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Thin]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSThin]       [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSThinItalic] [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSLight]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSLightItalic][\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Thin]
+    \definefontsynonym [\s!MathRoman][PSMathThin] [\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathLight][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-ExtraLight]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSExtraLight]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSExtraLightItalic][\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSRegular]         [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSRegularItalic]   [\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-ExtraLight]
+    \definefontsynonym [\s!MathRoman][PSMathExtraLight][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathLight]     [\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Light]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSLight]       [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSLightItalic] [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSMedium]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSMediumItalic][\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Light]
+    \definefontsynonym [\s!MathRoman][PSMathLight]  [\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathRegular][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Regular]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSRegular]       [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSRegularItalic] [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSSemiBold]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSSemiBoldItalic][\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Regular]
+    \definefontsynonym [\s!MathRoman][PSMathRegular][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathmedium] [\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Medium]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSMedium]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSMediumItalic][\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSBold]        [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSBoldItalics] [\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Medium]
+    \definefontsynonym [\s!MathRoman][PSMathMedium]  [\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathSemiBold][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-SemiBold]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSSemiBold]       [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSSemiBoldItalic] [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSExtraBold]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSExtraBoldItalic][\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-SemiBold]
+    \definefontsynonym [\s!MathRoman][PSMathSemiBold][\s!features={\s!math\mathsizesuffix,pennstander-math-scale},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathBold]    [\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Bold]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSBold]       [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSBoldItalic] [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSBlack]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSBlackItalic][\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Bold]
+    \definefontsynonym [\s!MathRoman][PSMathBold]     [\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathExtraBold][\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-ExtraBold]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSExtraBold]      [\s!features=\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSExtraBoldItalic][\s!features=\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSBlack]          [\s!features=\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSBlackItalic]    [\s!features=\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-ExtraBold]
+    \definefontsynonym [\s!MathRoman][PSMathExtraBold][\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathBlack]    [\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [\s!serif] [Pennstander-Black]
+    \setups[\s!font:\s!fallback:\typescriptone]
+    \definefontsynonym [\s!Serif]          [PSBlack]      [\s!features=~\s!default]
+    \definefontsynonym [\s!SerifItalic]    [PSBlackItalic][\s!features=~\s!default]
+    \definefontsynonym [\s!SerifBold]      [PSBlack]      [\s!features=~\s!default]
+    \definefontsynonym [\s!SerifBoldItalic][PSBlackItalic][\s!features=~\s!default]
+\stoptypescript
+
+\starttypescript [\s!math] [Pennstander-Black]
+    \definefontsynonym [\s!MathRoman][PSMathBlack][\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+    \definefontsynonym [\s!MathBold] [PSMathBlack][\s!features={\s!math\mathsizesuffix},\s!goodies=pennstander-math]
+\stoptypescript
+
+\starttypescript [Pennstander-Thin,Pennstander-ExtraLight,Pennstander-Light,Pennstander-Regular,Pennstander-Medium,Pennstander-SemiBold,Pennstander-Bold,Pennstander-ExtraBold,Pennstander-Black]
+    \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
+    \definetypeface [\typescriptone] [\s!ss] [\s!serif] [\typescriptone] [\s!default]
+    \definetypeface [\typescriptone] [\s!mm] [\s!math]  [\typescriptone]
+    \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]
+\stoptypescript
+
+\stoptypescriptcollection

@@ -192,7 +192,7 @@
   % \global\pdfptexprefix            0
     \global\pdfpagebox               0
   % \global\pdfmajorversion          1
-    \global\pdfminorversion          4
+    \global\pdfminorversion          4 % 7 is needed for objectcompression
     \global\pdfuniqueresname         0
 
     \global\pdfhorigin             1in
@@ -206,3 +206,20 @@
 \endgroup
 
 \endinput
+
+% % engine=luatex texformat=plain
+%
+% % mtxrun --script plain thisfile
+%
+% \pdfminorversion     7 % otherwise no object compression
+% \pdfobjcompresslevel 3
+% \pdfcompresslevel    3
+%
+% \immediate\pdfextension obj                          {<</crap1/crap1>>}
+% \immediate\pdfextension obj uncompressed             {<</crap2/crap2>>}
+% \immediate\pdfextension obj                          {<</crap3/crap3>>}
+% \immediate\pdfextension obj              stream attr   {/crap1/crap1}   {crap stream data 1}
+% \immediate\pdfextension obj uncompressed stream attr   {/crap2/crap2}   {crap stream data 2}
+% \immediate\pdfextension obj              stream attr   {/crap3/crap3}   {crap stream data 3}
+%
+% done \end

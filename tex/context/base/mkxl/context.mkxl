@@ -56,7 +56,7 @@
 %D {YYYY.MM.DD HH:MM} format.
 
 \permanent\edef\contextformat {\jobname}
-\permanent\edef\contextversion{2025.11.10 17:46}
+\permanent\edef\contextversion{2025.11.12 23:08}
 
 %overloadmode 1 % check frozen / warning
 %overloadmode 2 % check frozen / error

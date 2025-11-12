@@ -1373,6 +1373,7 @@ local finishreference  do
         local quadpoints = specification.mesh
         local forcemesh = specification.forcemesh
         local rotated = specification.rotated
+        local bugged = false
         if quadpoints then
             -- this always wins when set (normally only happens with mp graphics)
         elseif checkmesh then

@@ -300,8 +300,11 @@
 
 % todo: dostarttagged\t!document
 
+\newinteger\documentlevel
+
 \permanent\tolerant\protected\def\startdocument[#S#namespace]#spacer[#S#settings]%
   {\pushmacro\currentdocument
+   \global\advance\documentlevel\plusone
    \ifparameters
    \or
      \ifhastok={#namespace}%
@@ -324,6 +327,7 @@
    \expand\everystopdocument
    \stoptext
    \ifempty\currentdocument\else\resetmode\currentdocument\fi
+   \global\advance\documentlevel\minusone
    \popmacro\currentdocument}
 
 \aliased            \let\documentvariable           \documentparameter

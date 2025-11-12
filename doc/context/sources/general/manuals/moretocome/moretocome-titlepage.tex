@@ -1,0 +1,34 @@
+% language=us runpath=texruns:manuals/moretocome
+
+\startcomponent moretocome-titlepage
+
+\environment moretocome-style
+
+\startluacode
+    local sin = math.sin
+    local cos = math.cos
+    local p = { }
+    local c = 50
+    local c = 0
+    for i=0,255 do
+        p[i] = { 255*sin(i-c), 255*cos(i+c), i }
+    end
+    figures.palettes.foo = p
+\stopluacode
+
+\startMPpage[pagestate=stop]
+  % newbytemap 1 of (1,1,1) ;
+    loadbytemap (1,"mill.png") ;
+    draw bytemap 1
+        xysized (PaperWidth,PaperHeight)
+        withpalette "foo"
+    ;
+    draw textext.urt("\framed[foregroundstyle=\bf,strut=no,frame=off,align={lohi,flushright}]{more\vskip-1ex to come}")
+        xsized .75PaperWidth
+        shifted (.25PaperWidth-0.025PaperHeight,.05PaperHeight)
+        withcolor "white"
+    ;
+\stopMPpage
+
+\stopcomponent
+

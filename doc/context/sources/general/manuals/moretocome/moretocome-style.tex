@@ -1,0 +1,92 @@
+% language=us runpath=texruns:manuals/moretocome
+
+\startenvironment moretocome-style
+
+% copied from ontarget but it might evolve
+% copied from beyond   but it might evolve
+
+\usemodule[abbreviations-smallcaps]
+\usemodule[scite]
+
+\logo [LUAMETATEX] {LuaMeta\TeXsuffix}
+
+\definefontfeature
+  [default]
+  [default]
+  [expansion=quality]
+
+\setupbodyfont[pagella,12pt]
+
+\setuplayout
+  [width=middle,
+   height=middle,
+   header=0pt,
+   footer=1cm,
+   footerdistance=5mm,
+   backspace=20mm,
+   cutspace=25mm,
+   topspace=2cm,
+   bottomspace=1cm,
+   style=bold,
+   color=maincolor]
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+\setupwhitespace
+  [big]
+
+\setupfootertexts
+  [][{\getmarking[chapter]\quad\pagenumber}]
+  [{\pagenumber\quad\getmarking[chapter]}][]
+
+\definecolor
+  [maincolor]
+  [darkblue]
+
+\definecolor
+  [bgcolor]
+  [s=0.95]
+
+\protected\def\startexample{\startimage\backgroundvtop[bgcolor]\bgroup}
+\protected\def\stopexample {\egroup\stopimage}
+
+\setuphead
+  [chapter]
+  [style=\ss\bfc,
+   color=maincolor]
+
+\setuphead
+  [section]
+  [style=\ss\bfa,
+   color=maincolor]
+
+\setuphead
+  [subsection]
+  [style=\ss\bf,
+   color=maincolor]
+
+\setupalign
+  [tolerant,xstretch]
+
+\setuptyping
+  [color=maincolor,
+   align=hangright]
+
+\setuptype
+  [color=maincolor]
+
+\setupitemize
+  [color=maincolor]
+
+\setupcaption
+  [figure]
+  [headstyle=sans,
+   style=small,
+   headcolor=maincolor,
+   maxwidth=.9\textwidth]
+
+\setupcombination
+  [style=small]
+
+\stopenvironment

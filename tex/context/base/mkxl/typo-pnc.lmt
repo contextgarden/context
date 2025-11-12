@@ -99,7 +99,7 @@ function periodkerns.handler(head)
                                             end
                                         end
                                         local next3 = getnext(next2)
-                                        if next3 and getidsubtype(next3,glue_code,spaceskip_code) then
+                                        if next3 and hasidsubtype(next3,glue_code,spaceskip_code) then
                                             local width = getwidth(next3)
                                             local space = fontspace or parameters[getfont(current)].space -- can be sped up
                                             if width > space then -- space + extraspace

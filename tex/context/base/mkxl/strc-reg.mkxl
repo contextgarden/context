@@ -1305,7 +1305,7 @@
    \ifnum#2=\plusone
      \registerpageseparator
    \fi
-   \global\setconstant\c_strc_registers_page_state\plustwo
+   \ \setconstant\c_strc_registers_page_state\plustwo
    \def\currentregisterpageindex{#5}%
    \dostarttaggednodetail\t!registersection
    \c_strc_registers_page_done\conditionaltrue

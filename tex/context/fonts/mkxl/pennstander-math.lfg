@@ -1,0 +1,104 @@
+local common  = fonts.goodies.load("common-math.lfg")
+local presets = common.mathematics.tweaks.presets
+
+return {
+    name        = "Pennstander",
+    version     = "0.1",
+    comment     = "Goodies that complement Pennstander.",
+ -- author      = "Julius Ross", -- replaced by more extensive variant by:
+    author      = "Hans Hagen & Mikael Sundqvist",
+    copyright   = "ConTeXt development team",
+    mathematics = {
+        parameters = {
+            PrimeShiftUpCramped = "SuperscriptShiftUp",
+        },
+        tweaks = {
+            aftercopying = {
+                {
+                    tweak = "accentdimensions",
+                },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "kernpairs",  -- can I put this instead in the font?
+                    list = {
+                        [0x002F] = { -- slash
+                            [0x007C] = .2,
+                        },
+                    },
+                },
+                presets.fallbacks            { },
+                presets.moveitalics          { correct = true },
+                presets.moveitalics          { correct = true, letters = true },
+                presets.moveintegrals        { },
+                presets.wipeitalics          { },
+                {
+                    -- needed for stupid corner kerns
+                    tweak = "simplifykerns",
+                },
+                {
+                    tweak = "checkaccents",
+                },
+                {
+                    tweak = "extendaccents",
+                },
+                {
+                    tweak = "flattenaccents",
+                },
+                {
+                    tweak = "fixaccents",
+                },
+                {
+                    tweak = "copyaccents",
+                },
+                presets.addmathkerns { },
+                {
+                    tweak = "checkspacing",
+                },
+                {
+                    tweak = "addscripts",
+                },
+                {
+                    tweak = "accentdimensions",
+                },
+                -- Assume the font will be complete
+                -- {
+                --     tweak = "addrules",
+                -- },
+                -- Maybe not, since font is squarish
+             -- {
+             --     tweak    = "replacerules",
+             --     fraction = { height = .254, yoffset = .746, leftoffset = .1, rightoffset = .1,  },
+             --     radical  = { height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
+             --     stacker  = { height = .254, yoffset = .746 },
+             -- },
+                {
+                    tweak = "wipecues",
+                },
+             -- {
+             --     tweak   = "addbars",
+             --     advance = 0.175,
+             -- },
+                {
+                    tweak = "addactuarian",
+                },
+                {
+                    tweak = "addequals",
+                },
+                {
+                    tweak   = "addfourier",
+                    variant = 1,
+                },
+                {
+                    tweak = "addprimed",
+                },
+            },
+        },
+        scales = {
+            feature            = "pennstanderscale",
+            scriptweight       =  80,
+            scriptscriptweight = 140,
+        },
+    },
+}

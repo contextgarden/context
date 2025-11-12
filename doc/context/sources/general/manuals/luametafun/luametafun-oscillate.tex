@@ -1,0 +1,187 @@
+
+% language=us runpath=texruns:manuals/luametafun
+
+\environment luametafun-style
+
+\startcomponent luametafun-oscillate
+
+\startchapter[title={Oscillate}]
+
+We have a command that makes text follow a shape but that one rotates the
+individual glyphs so that the bottom is parallel to the point it sits at. The
+feature shown here is different: here we adapt the shape fo the glyph to the
+curve it sits on. A first example is shown in \in {figure} [fig:oscillate:1]
+where we have two texts on the same shape. We use Dejavu because that is a font
+where we don't get weird side effects due to for instance fancy serifs.
+
+\startbuffer
+\startMPcode
+    path shape ; shape := fullcircle xyscaled (500,400) rotated 45 ;
+    draw shape withpen pencircle scaled 5 withcolor "darkgray" ;
+    fill lmt_oscillated [
+        text    = "\bf inside out ",
+        path    = shape,
+        yoffset = 0,
+    ] withcolor "darkgreen" ;
+    fill lmt_oscillated [
+        text    = "\bf up and down and ",
+        path    = reverse shape,
+        yoffset = 40,
+    ] withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:oscillate:1]
+    \switchtobodyfont[dejavu]
+    \scale[width=.4tw]{\getbuffer}
+\stopplacefigure
+
+In order to keep the words separated we have added a space at the end. By default
+the baseline is on the curve but the \type {offset} parameter can change that. A
+shape can be closed or open, like in \in {figure} [fig:oscillate:2]. In order to
+make a curve oscillate we need to add more points so here we show these points.
+
+\startbuffer
+\startMPcode
+    path shape ; shape := (
+        (0,0) { up } .. (1,1) .. (2,0) .. (3,-1) .. { up } (4,0)
+    ) xyscaled (500,200) ;
+    path p ; p := lmt_oscillated [
+        text       = " \bf up and down and off we go ",
+        path       = shape,
+      % resolution = 5,
+    ] ;
+    fill        p withcolor "darkgreen" ;
+    drawpoints  p withcolor white ;
+    addbackground withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:oscillate:2]
+    \switchtobodyfont[dejavu]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+The text is typeset by \TEX\ so we get proper kerning and font features are
+applied, which is demonstrated in \in {figure} [fig:oscillate:3] where we use
+a Dutch snippet.
+
+\startbuffer
+\startMPcode
+    path shape ; shape := (
+        (0,0) { up } .. (1,1) ..  (2,0) .. (3,-1) .. { up } (4,0)
+    ) xyscaled (500,200) ;
+    draw shape withpen pencircle scaled 5 withcolor "darkgray" ;
+    path p ; p := lmt_oscillated [
+        text       = " \bf effe flink fietsen op een fiets ",
+        path       = shape,
+      % resolution = 5,
+    ] ;
+    fill p withcolor "darkgreen" ;
+    draw p withcolor "darkred" withpen pencircle scaled 5 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:oscillate:3]
+    \switchtobodyfont[dejavu]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+In \in {figure} [fig:oscillate:4] we apply a bit of kerning. Although this
+normally is not recommended here it makes sense, depending on the shape that is
+to be followed.
+
+\startbuffer
+\definecharacterkerning
+  [mine1]
+  [factor=0.05]
+
+\startMPcode
+    path shape ; shape := reverse fullcircle xyscaled (500,400) rotated 45 ;
+    draw shape withpen pencircle scaled 5 withcolor "middlegray" ;
+    path p ; p := lmt_oscillated [
+        text       = "\setcharacterkerning[mine1]\bf\CONTEXT\ LMTX is FUN! "
+        path       = shape,
+        resolution = 10,
+    ] ;
+    fill       p withcolor "darkyellow" ;
+    drawpoints p withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:oscillate:4,location=page]
+    \switchtobodyfont[dejavu]
+    \scale[width=1tw]{\getbuffer}
+\stopplacefigure
+
+A shape can best have curvature but straight lines do work. However, you should
+be prepared for strange effects. In \in {figure} [fig:oscillate:5] we have a
+rectangular path. The points are rather equally spaces. You can change the amount
+of points with a different resolution (15 is the default value) or you can set
+\type {stepsize} to some dimensions (say 2mm). We currently have four methods for
+calculating points with \type {method = 4} being the default. Best use that
+default because the rest might go away and we only need it for historic reasons
+and documentation.
+
+\startbuffer[a]
+\definecharacterkerning
+  [mine2]
+  [factor=0.1]
+
+\startMPcode
+    path shape ; shape := reverse ( fullsquare smoothed .25 scaled 400 );
+    drawarrow shape withpen pencircle scaled 1 withcolor "darkgray" ;
+    path p ; p := lmt_oscillated [
+      % text       = "\setcharacterkerning[mine2]\bf\CONTEXT\ LMTX is FUN! "
+        text       = "\setcharacterkerning[mine2]\bf\CONTEXT\ LMTX can be a lot of FUN! "
+        path       = shape,
+        resolution = 10,
+    ] ;
+    fill p withcolor darkyellow ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX][a]
+
+The result (also) shown in \in {figure} [fig:oscillate:5] is not a bug but a
+feature. The oscillator just follows the rules. Getting the right way to
+oscillate actually took is some experimenting and we settled on the current
+approach. It's not the most efficient in terms of processing time but this
+feature is unlikely to be used in critical runs.
+
+\startbuffer[b]
+\startMPcode
+    path shape ; shape := (0,0) -- (250,100) -- (500,0) ;
+    path p ; p := lmt_oscillated [
+        text       = "\setcharacterkerning[mine1]\bf CONTEXT!"
+        path       = shape,
+        resolution = 10,
+        method     = 4, % default (others might go away)
+        stepsize   = 0, % default anyway
+    ] ;
+    fill p withcolor "darkblue" ;
+    draw p withcolor "middlegray" withpen pencircle scaled 2.5 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX][b]
+
+\startplacefigure[reference=fig:oscillate:5]
+    \switchtobodyfont[dejavu]
+    \startcombination[location=middle,distance=4em]
+        {\scale[width=.25tw]{\getbuffer[a]}} {a}
+        {\scale[width=.25tw]{\getbuffer[b]}} {b}
+    \stopcombination
+\stopplacefigure
+
+\stopchapter
+
+\stopcomponent
