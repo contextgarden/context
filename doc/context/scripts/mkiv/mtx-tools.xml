@@ -8,7 +8,7 @@
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="disarmutfbomb"><short>remove utf bomb if present</short></flag>
+    <flag name="disarmutfbom"><short>remove utf bom if present</short></flag>
     <flag name="force"><short>remove indeed</short></flag>
    </subcategory>
    <subcategory>

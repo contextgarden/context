@@ -16,6 +16,11 @@ if known metafun_loaded_base : endinput ; fi ;
 
 newinternal boolean metafun_loaded_base ; metafun_loaded_base := true ; immutable metafun_loaded_base ;
 
+% We accept "foo" as well as 'foo' so when someone wants to use e.g. T' as string
+% this mode has to be turned off.
+
+singlequotemode := true ;
+
 delimiters () ; % this makes parentheses behave like parentheses
 
 def upto   = step  1 until enddef ;

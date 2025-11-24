@@ -84,7 +84,7 @@ local function saveusedfilesintrees(format)
     elseif format == "json" then
         io.savedata(filename,utilities.json.tojson(data))
     else
-        io.savedata(filename,table.toxml(data,"job"))
+        io.savedata(filename,table.toxml(data,{ name = "job" }))
     end
 end
 

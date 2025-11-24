@@ -98,6 +98,15 @@ end
 
 file.checksum = checksum
 
+function file.savechecksum(name,sum)
+    if not sum then sum = checksum(name) end
+    if sum and savedata(name .. ".md5",sum) then
+        return sum
+    else
+        return nil
+    end
+end
+
 function file.loadchecksum(name)
     if md5 then
         local data = loaddata(name .. ".md5")
@@ -106,11 +115,3 @@ function file.loadchecksum(name)
     return nil
 end
 
-function file.savechecksum(name,checksum)
-    if not checksum then checksum = checksum(name) end
-    if checksum then
-        savedata(name .. ".md5",checksum)
-        return checksum
-    end
-    return nil
-end

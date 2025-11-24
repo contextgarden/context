@@ -88,7 +88,7 @@
 
 */
 
-static const unsigned char p[512] = {
+static const unsigned char pmap[512] = {
     151, 160, 137,  91,  90,  15, 131,  13, 201,  95,  96,  53, 194, 233,   7, 225,
     140,  36, 103,  30,  69, 142,   8,  99,  37, 240,  21,  10,  23, 190,   6, 148,
     247, 120, 234,  75,   0,  26, 197,  62,  94, 252, 219, 203, 117,  35,  11,  32,
@@ -168,17 +168,17 @@ static double effectslib_perlin_noise_3(double x, double y, double z)
     double v = fade(y);
     double w = fade(z);
     /* Hash coordinates of the 8 cube corners: */
-    int A = p[X  ] + Y; int AA = p[A] + Z; int AB = p[A+1] + Z;
-    int B = p[X+1] + Y; int BA = p[B] + Z; int BB = p[B+1] + Z;
+    int A = pmap[X  ] + Y; int AA = pmap[A] + Z; int AB = pmap[A+1] + Z;
+    int B = pmap[X+1] + Y; int BA = pmap[B] + Z; int BB = pmap[B+1] + Z;
     /* Add blended results from  8 corners of cube: */
-    return lerp(w, lerp(v, lerp(u, grad(p[AA  ], x  , y  , z  ),
-                                   grad(p[BA  ], x-1, y  , z  )),
-                           lerp(u, grad(p[AB  ], x  , y-1, z  ),
-                                   grad(p[BB  ], x-1, y-1, z  ))),
-                   lerp(v, lerp(u, grad(p[AA+1], x  , y  , z-1),
-                                   grad(p[BA+1], x-1, y  , z-1)),
-                           lerp(u, grad(p[AB+1], x  , y-1, z-1),
-                                   grad(p[BB+1], x-1, y-1, z-1))));
+    return lerp(w, lerp(v, lerp(u, grad(pmap[AA  ], x  , y  , z  ),
+                                   grad(pmap[BA  ], x-1, y  , z  )),
+                           lerp(u, grad(pmap[AB  ], x  , y-1, z  ),
+                                   grad(pmap[BB  ], x-1, y-1, z  ))),
+                   lerp(v, lerp(u, grad(pmap[AA+1], x  , y  , z-1),
+                                   grad(pmap[BA+1], x-1, y  , z-1)),
+                           lerp(u, grad(pmap[AB+1], x  , y-1, z-1),
+                                   grad(pmap[BB+1], x-1, y-1, z-1))));
 }
 
 static int effectslib_perlinnoise(lua_State *L)
@@ -306,8 +306,8 @@ static double effectslib_simplex_noise_1(double x)
     double t1 = 1.0 - x1 * x1;
     t0 *= t0;
     t1 *= t1;
-    n0 = t0 * t0 * grad1(p[ i0 & 0xFF ], x0);
-    n1 = t1 * t1 * grad1(p[ i1 & 0xFF ], x1);
+    n0 = t0 * t0 * grad1(pmap[ i0 & 0xFF ], x0);
+    n1 = t1 * t1 * grad1(pmap[ i1 & 0xFF ], x1);
     return 0.25 * (n0 + n1);
 }
 
@@ -355,7 +355,7 @@ static double effectslib_simplex_noise_2(double x, double y)
     /* offsets for last corner in (x,y) unskewed coords */
     double x2 = x0 - 1.0 + 2.0 * G2;
     double y2 = y0 - 1.0 + 2.0 * G2;
-    /* wrapped integer indices at 256, to avoid indexing p[] out of bounds */
+    /* wrapped integer indices at 256, to avoid indexing pmap[] out of bounds */
     int ii = i & 0xFF;
     int jj = j & 0xFF;
     /* calculate the contribution from the three corners */
@@ -366,19 +366,19 @@ static double effectslib_simplex_noise_2(double x, double y)
         n0 = 0.0;
     } else {
         t0 *= t0;
-        n0 = t0 * t0 * grad2(p[ ii + p[ jj ] ], x0, y0);
+        n0 = t0 * t0 * grad2(pmap[ ii + pmap[ jj ] ], x0, y0);
     }
     if (t1 < 0.0) {
         n1 = 0.0;
     } else {
         t1 *= t1;
-        n1 = t1 * t1 * grad2(p[ ii + i1 + p[ jj + j1 ] ], x1, y1);
+        n1 = t1 * t1 * grad2(pmap[ ii + i1 + pmap[ jj + j1 ] ], x1, y1);
     }
     if (t2 < 0.0) {
         n2 = 0.0;
     } else {
         t2 *= t2;
-        n2 = t2 * t2 * grad2(p[ ii + 1 + p[ jj + 1 ] ], x2, y2);
+        n2 = t2 * t2 * grad2(pmap[ ii + 1 + pmap[ jj + 1 ] ], x2, y2);
     }
     /*
         Add contributions from each corner to get the final noise value. The result is scaled to
@@ -467,7 +467,7 @@ static double effectslib_simplex_noise_3(double x, double y, double z)
     double x3 = x0 - 1.0 + 3.0 * G3;
     double y3 = y0 - 1.0 + 3.0 * G3;
     double z3 = z0 - 1.0 + 3.0 * G3;
-    /* wrap the integer indices at 256, to avoid indexing p[] out of bounds */
+    /* wrap the integer indices at 256, to avoid indexing pmap[] out of bounds */
     int ii = i & 0xFF;
     int jj = j & 0xFF;
     int kk = k & 0xFF;
@@ -480,25 +480,25 @@ static double effectslib_simplex_noise_3(double x, double y, double z)
         n0 = 0.0;
     } else {
         t0 *= t0;
-        n0 = t0 * t0 * grad3(p[ ii + p[ jj + p[ kk ] ] ], x0, y0, z0);
+        n0 = t0 * t0 * grad3(pmap[ ii + pmap[ jj + pmap[ kk ] ] ], x0, y0, z0);
     }
     if (t1 < 0.0) {
         n1 = 0.0;
     } else {
         t1 *= t1;
-        n1 = t1 * t1 * grad3(p[ ii + i1 + p[ jj + j1 + p[ kk + k1 ] ] ], x1, y1, z1);
+        n1 = t1 * t1 * grad3(pmap[ ii + i1 + pmap[ jj + j1 + pmap[ kk + k1 ] ] ], x1, y1, z1);
     }
     if (t2 < 0.0) {
         n2 = 0.0;
     } else {
         t2 *= t2;
-        n2 = t2 * t2 * grad3(p[ ii + i2 + p[ jj + j2 + p[ kk + k2 ] ] ], x2, y2, z2);
+        n2 = t2 * t2 * grad3(pmap[ ii + i2 + pmap[ jj + j2 + pmap[ kk + k2 ] ] ], x2, y2, z2);
     }
     if (t3 < 0.0) {
         n3 = 0.0;
     } else {
         t3 *= t3;
-        n3 = t3 * t3 * grad3(p[ ii + 1 + p[ jj + 1 + p[ kk + 1 ] ] ], x3, y3, z3);
+        n3 = t3 * t3 * grad3(pmap[ ii + 1 + pmap[ jj + 1 + pmap[ kk + 1 ] ] ], x3, y3, z3);
     }
     /*
         Add contributions from each corner to get the final noise value. The result is scaled to
@@ -605,7 +605,7 @@ static double effectslib_simplex_noise_4(double x, double y, double z, double w)
     double y4 = y0 - 1.0 + 4.0 * G4;
     double z4 = z0 - 1.0 + 4.0 * G4;
     double w4 = w0 - 1.0 + 4.0 * G4;
-    /* Wrap the integer indices at 256, to avoid indexing p[] out of bounds */
+    /* Wrap the integer indices at 256, to avoid indexing pmap[] out of bounds */
     int ii = i & 0xFF;
     int jj = j & 0xFF;
     int kk = k & 0xFF;
@@ -620,31 +620,31 @@ static double effectslib_simplex_noise_4(double x, double y, double z, double w)
         n0 = 0.0;
     } else {
         t0 *= t0;
-        n0 = t0 * t0 * grad4(p[ ii + p[ jj + p[ kk + p[ ll ] ] ] ], x0, y0, z0, w0);
+        n0 = t0 * t0 * grad4(pmap[ ii + pmap[ jj + pmap[ kk + pmap[ ll ] ] ] ], x0, y0, z0, w0);
     }
     if (t1 < 0.0) {
         n1 = 0.0;
     } else {
         t1 *= t1;
-        n1 = t1 * t1 * grad4(p[ ii + i1 + p[ jj + j1 + p[ kk + k1 + p[ ll + l1 ] ] ] ], x1, y1, z1, w1);
+        n1 = t1 * t1 * grad4(pmap[ ii + i1 + pmap[ jj + j1 + pmap[ kk + k1 + pmap[ ll + l1 ] ] ] ], x1, y1, z1, w1);
     }
     if (t2 < 0.0) {
         n2 = 0.0;
     } else {
         t2 *= t2;
-        n2 = t2 * t2 * grad4(p[ ii + i2 + p[ jj + j2 + p[ kk + k2 + p[ ll + l2 ] ] ] ], x2, y2, z2, w2);
+        n2 = t2 * t2 * grad4(pmap[ ii + i2 + pmap[ jj + j2 + pmap[ kk + k2 + pmap[ ll + l2 ] ] ] ], x2, y2, z2, w2);
     }
     if(t3 < 0.0) {
         n3 = 0.0;
     } else {
         t3 *= t3;
-        n3 = t3 * t3 * grad4(p[ ii + i3 + p[ jj + j3 + p[ kk + k3 + p[ ll + l3 ] ] ] ], x3, y3, z3, w3);
+        n3 = t3 * t3 * grad4(pmap[ ii + i3 + pmap[ jj + j3 + pmap[ kk + k3 + pmap[ ll + l3 ] ] ] ], x3, y3, z3, w3);
     }
     if (t4 < 0.0) {
         n4 = 0.0;
     } else {
         t4 *= t4;
-        n4 = t4 * t4 * grad4(p[ ii + 1 + p[ jj + 1 + p[ kk + 1 + p[ ll + 1 ] ] ] ], x4, y4, z4, w4);
+        n4 = t4 * t4 * grad4(pmap[ ii + 1 + pmap[ jj + 1 + pmap[ kk + 1 + pmap[ ll + 1 ] ] ] ], x4, y4, z4, w4);
     }
     /* sum up and scale the result to cover the range [-1,1] */
     return 62.0 * (n0 + n1 + n2 + n3 + n4);
@@ -799,7 +799,7 @@ static double effectslib_simplex_detail_2(double x, double y, double sin_t, doub
     if (t0 < 0.0) {
         t40 = t20 = t0 = n0 = gx0 = gy0 = 0.0;
     } else {
-        gradrot2(p[ ii + p[ jj ] ], sin_t, cos_t, &gx0, &gy0);
+        gradrot2(pmap[ ii + pmap[ jj ] ], sin_t, cos_t, &gx0, &gy0);
         t20 = t0 * t0;
         t40 = t20 * t20;
         n0 = t40 * graddotp2(gx0, gy0, x0, y0);
@@ -811,7 +811,7 @@ static double effectslib_simplex_detail_2(double x, double y, double sin_t, doub
     if (t1 < 0.0) {
         t21 = t41 = t1 = n1 = gx1 = gy1 = 0.0;
     } else {
-        gradrot2(p[ ii + i1 + p[ jj + j1 ] ], sin_t, cos_t, &gx1, &gy1);
+        gradrot2(pmap[ ii + i1 + pmap[ jj + j1 ] ], sin_t, cos_t, &gx1, &gy1);
         t21 = t1 * t1;
         t41 = t21 * t21;
         n1 = t41 * graddotp2(gx1, gy1, x1, y1);
@@ -819,7 +819,7 @@ static double effectslib_simplex_detail_2(double x, double y, double sin_t, doub
     if (t2 < 0.0) {
         t42 = t22 = t2 = n2 = gx2 = gy2 = 0.0;
     } else {
-        gradrot2(p[ ii + 1 + p[ jj + 1 ] ], sin_t, cos_t, &gx2, &gy2);
+        gradrot2(pmap[ ii + 1 + pmap[ jj + 1 ] ], sin_t, cos_t, &gx2, &gy2);
         t22 = t2 * t2;
         t42 = t22 * t22;
         n2 = t42 * graddotp2(gx2, gy2, x2, y2);
@@ -905,7 +905,7 @@ static double effectslib_simplex_detail_3(double x, double y, double z, double s
     if (t0 < 0.0) {
         n0 = t0 = t20 = t40 = gx0 = gy0 = gz0 = 0.0;
     } else {
-        gradrot3(p[ ii + p[ jj + p[ kk ] ] ], sin_t, cos_t, &gx0, &gy0, &gz0);
+        gradrot3(pmap[ ii + pmap[ jj + pmap[ kk ] ] ], sin_t, cos_t, &gx0, &gy0, &gz0);
         t20 = t0 * t0;
         t40 = t20 * t20;
         n0 = t40 * graddotp3(gx0, gy0, gz0, x0, y0, z0);
@@ -919,7 +919,7 @@ static double effectslib_simplex_detail_3(double x, double y, double z, double s
     if (t1 < 0.0) {
         n1 = t1 = t21 = t41 = gx1 = gy1 = gz1 = 0.0;
     } else {
-      gradrot3(p[ ii + i1 + p[ jj + j1 + p[ kk + k1 ] ] ], sin_t, cos_t, &gx1, &gy1, &gz1);
+      gradrot3(pmap[ ii + i1 + pmap[ jj + j1 + pmap[ kk + k1 ] ] ], sin_t, cos_t, &gx1, &gy1, &gz1);
       t21 = t1 * t1;
       t41 = t21 * t21;
       n1 = t41 * graddotp3(gx1, gy1, gz1, x1, y1, z1);
@@ -927,7 +927,7 @@ static double effectslib_simplex_detail_3(double x, double y, double z, double s
     if (t2 < 0.0) {
         n2 = t2 = t22 = t42 = gx2 = gy2 = gz2 = 0.0;
     } else {
-        gradrot3(p[ ii + i2 + p[ jj + j2 + p[ kk + k2 ] ] ], sin_t, cos_t, &gx2, &gy2, &gz2);
+        gradrot3(pmap[ ii + i2 + pmap[ jj + j2 + pmap[ kk + k2 ] ] ], sin_t, cos_t, &gx2, &gy2, &gz2);
         t22 = t2 * t2;
         t42 = t22 * t22;
         n2 = t42 * graddotp3(gx2, gy2, gz2, x2, y2, z2);
@@ -935,7 +935,7 @@ static double effectslib_simplex_detail_3(double x, double y, double z, double s
     if (t3 < 0.0) {
         n3 = t3 = t23 = t43 = gx3 = gy3 = gz3 = 0.0;
     } else {
-        gradrot3(p[ ii + 1 + p[ jj + 1 + p[ kk + 1 ] ] ], sin_t, cos_t, &gx3, &gy3, &gz3);
+        gradrot3(pmap[ ii + 1 + pmap[ jj + 1 + pmap[ kk + 1 ] ] ], sin_t, cos_t, &gx3, &gy3, &gz3);
         t23 = t3 * t3;
         t43 = t23 * t23;
         n3 = t43 * graddotp3(gx3, gy3, gz3, x3, y3, z3);
@@ -1142,8 +1142,8 @@ static int effectslib_octave_variants(lua_State *L)
 static int effectslib_octave_aux_set(lua_State *L, octave *o, int direct)
 {
     /* todo: also accept a table */
-    o->method      = lua_tointeger(L, 1);
-    o->iterations  = lua_tointeger(L, 2);
+    o->method      = lmt_tointeger(L, 1);
+    o->iterations  = lmt_tointeger(L, 2);
     o->amplitude   = lua_tonumber(L, 3);
     o->frequency   = lua_tonumber(L, 4);
     o->persistence = lua_tonumber(L, 5);
@@ -1558,9 +1558,9 @@ static int effectslib_octave_bytemap(lua_State *L)
 {
     octave *o = effectslib_octave_aux_valid(L, 1);
     if (o) {
-        int nx = lua_tointeger(L, 2);
-        int ny = lua_tointeger(L, 3);
-        int nz = lua_tointeger(L, 4);
+        int nx = lmt_tointeger(L, 2);
+        int ny = lmt_tointeger(L, 3);
+        int nz = lmt_tointeger(L, 4);
         if (nx > 0 && ny > 0 && (nz == 1 || nz == 3)) {
             size_t length = nx * ny * nz; /* todo: check this for overflow */
             unsigned char *bytemap = NULL; 

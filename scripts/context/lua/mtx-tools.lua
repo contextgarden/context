@@ -19,7 +19,7 @@ local helpinfo = [[
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="disarmutfbomb"><short>remove utf bomb if present</short></flag>
+    <flag name="disarmutfbom"><short>remove utf bom if present</short></flag>
     <flag name="force"><short>remove indeed</short></flag>
    </subcategory>
    <subcategory>
@@ -59,9 +59,13 @@ local writeln = (logs and logs.writer) or (texio and texio.write_nl) or print
 scripts       = scripts       or { }
 scripts.tools = scripts.tools or { }
 
-local bomb_1, bomb_2 = "^\254\255", "^\239\187\191"
+local boms = {
+    "^\255\254",
+    "^\254\255",
+    "^\239\187\191"
+}
 
-function scripts.tools.disarmutfbomb()
+function scripts.tools.disarmutfbom()
     local force, done = environment.argument("force"), false
     local files = environment.files
     for i=1,#files do
@@ -70,20 +74,18 @@ function scripts.tools.disarmutfbomb()
             local data = io.loaddata(name)
             if not data then
                 -- just skip
-            elseif find(data,bomb_1) then
-                report("file '%s' has a 2 character utf bomb",name)
-                if force then
-                    io.savedata(name,(gsub(data,bomb_1,"")))
-                end
-                done = true
-            elseif find(data,bomb_2) then
-                report("file '%s' has a 3 character utf bomb",name)
-                if force then
-                    io.savedata(name,(gsub(data,bomb_2,"")))
-                end
-                done = true
             else
-            --  report("file '%s' has no utf bomb",name)
+                for i=1,#boms do
+                    local bom = boms[i]
+                    if find(data,bom) then
+                        report("file '%s' has a %i character utf bom",#bom,name)
+                        if force then
+                            io.savedata(name,(gsub(data,bom,"")))
+                        end
+                        done = true
+                        break
+                    end
+                end
             end
         end
     end
@@ -230,8 +232,8 @@ function scripts.tools.libraries()
     end
 end
 
-if environment.argument("disarmutfbomb") then
-    scripts.tools.disarmutfbomb()
+if environment.argument("disarmutfbom") or environment.argument("disarmutfbomb") then
+    scripts.tools.disarmutfbom()
 elseif environment.argument("libraries") then
     scripts.tools.libraries()
 elseif environment.argument("dirtoxml") then

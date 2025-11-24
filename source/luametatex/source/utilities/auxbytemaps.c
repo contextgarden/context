@@ -403,6 +403,9 @@ void bytemap_copy(bytemap_data *source, bytemap_data *target, size_t *count)
         };
         if (source->data && target->data) {
             memcpy(target->data, source->data, size);
+            if (count) { 
+                *count += size;
+            }
         }
     }
 }

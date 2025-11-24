@@ -426,7 +426,7 @@ void tex_wipe_insert(halfword i) {
 halfword lmt_get_insert_distance(halfword i, int slot)
 {
     int callback_id = lmt_callback_defined(insert_distance_callback);
-    if (callback_id != 0) {
+    if(callback_id > 0) {
         halfword replacement = null;
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "dd->N", i, slot, &replacement);
         if (replacement) {
@@ -725,7 +725,7 @@ int tex_identify_inserts(halfword b, halfword cbk)
         while (current) { 
             if (node_type(current) == insert_node) {
                 int callback = lmt_callback_defined(balance_insert_callback);
-                if (callback) {
+                if (callback > 0) {
                     ++lmt_balance_state.n_of_callbacks;
                     lmt_run_callback(lmt_lua_state.lua_instance, callback, "Nddd->",
                         current, 

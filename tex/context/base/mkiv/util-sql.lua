@@ -503,9 +503,6 @@ sql.tokens = {
 
 if tex and tex.systemmodes then
 
-    local droptable = table.drop
-    local threshold = 16 * 1024 -- use slower but less memory hungry variant
-
     function sql.prepare(specification,tag)
         -- could go into tuc if needed
         -- todo: serialize per column
@@ -519,11 +516,11 @@ if tex and tex.systemmodes then
             if not keys then
                 keys = { }
             end
-            io.savedata(filename,droptable({ data = data, keys = keys },#keys*#data>threshold))
+            table.save(filename,{ data = data, keys = keys })
             return data, keys
         else
-            local result = table.load(filename)
-            return result.data, result.keys
+            local result = table.load(filename) or { }
+            return result.data or { }, result.keys or { }
         end
     end
 

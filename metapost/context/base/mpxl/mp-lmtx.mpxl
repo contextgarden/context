@@ -3388,3 +3388,201 @@ vardef lmt_do_oscillated =
         popparameters ;
     )
 enddef ;
+
+%D Experimental l-system code (Mikael, Keith, Hans), don't use this yet!
+
+numeric mfun_lsystem_angle_p ;
+numeric mfun_lsystem_angle_m ;
+numeric mfun_lsystem_angle   ;
+numeric mfun_lsystem_size    ;
+
+boolean mfun_lsystem_busy    ; mfun_lsystem_busy  := false ;
+boolean mfun_lsystem_image   ; mfun_lsystem_image := false ;
+numeric mfun_lsystem_s_level ; mfun_lsystem_level := 0 ;
+
+numeric mfun_lsystem_x  ; mfun_lsystem_x  := 0 ;
+numeric mfun_lsystem_y  ; mfun_lsystem_y  := 0 ;
+boolean mfun_lsystem_b  ; mfun_lsystem_b  := false ;
+
+pair    mfun_lsystem_s_point[];
+numeric mfun_lsystem_s_angle[];
+numeric mfun_lsystem_s_sx[];
+numeric mfun_lsystem_s_sy[];
+
+def mfun_lsystem_check_busy_do =
+    if not mfun_lsystem_busy :
+        hide(mfun_lsystem_busy := true ;)
+        ;
+        draw lastxy
+    fi
+enddef ;
+
+def mfun_lsystem_draw_l =
+    mfun_lsystem_check_busy
+    if mfun_lsystem_b :
+        hide(mfun_lsystem_b := false ;)
+        && xyrelative (
+            mfun_lsystem_x,
+            mfun_lsystem_y
+        )
+    fi
+    --
+    xyrelative (
+         cosd(mfun_lsystem_angle) * sx,
+       - sind(mfun_lsystem_angle) * sy
+    )
+enddef ;
+def mfun_lsystem_draw_c =
+    mfun_lsystem_check_busy
+    if mfun_lsystem_b :
+        hide(mfun_lsystem_b := false ;)
+        && xyrelative (
+            mfun_lsystem_x,
+            mfun_lsystem_y
+        )
+    fi
+    ..
+    xyrelative (
+         cosd(mfun_lsystem_angle) * sx,
+       - sind(mfun_lsystem_angle) * sy
+    )
+enddef ;
+
+def mfun_lsystem_minus_do =
+    mfun_lsystem_angle := (mfun_lsystem_angle - mfun_lsystem_angle_m) mod 360 ;
+enddef ;
+def mfun_lsystem_plus_do =
+    mfun_lsystem_angle := (mfun_lsystem_angle - mfun_lsystem_angle_p) mod 360 ;
+enddef;
+def mfun_lsystem_minus = hide(mfun_lsystem_minus_do) enddef ;
+def mfun_lsystem_plus  = hide(mfun_lsystem_plus_do ) enddef ;
+
+def mfun_lsystem_move_do =
+    if mfun_lsystem_b :
+        mfun_lsystem_x := mfun_lsystem_x + cosd(mfun_lsystem_angle) * sx ;
+        mfun_lsystem_y := mfun_lsystem_y - sind(mfun_lsystem_angle) * sy ;
+    else :
+        mfun_lsystem_x :=   cosd(mfun_lsystem_angle) * sx ;
+        mfun_lsystem_y := - sind(mfun_lsystem_angle) * sy ;
+        mfun_lsystem_b := true ;
+    fi
+enddef ;
+def mfun_lsystem_move  = hide(mfun_lsystem_move_do) enddef ;
+
+% todo : only dx dy when we have expressions
+
+def mfun_lsystem_push_do =
+    mfun_lsystem_level := mfun_lsystem_level + 1 ;
+    mfun_lsystem_s_point[mfun_lsystem_level] := lastxy ;
+    mfun_lsystem_s_angle[mfun_lsystem_level] := mfun_lsystem_angle ;
+    mfun_lsystem_s_sx   [mfun_lsystem_level] := sx ;
+    mfun_lsystem_s_sy   [mfun_lsystem_level] := sy ;
+enddef ;
+def mfun_lsystem_pop_do =
+    sy := mfun_lsystem_s_sy[mfun_lsystem_level] ;
+    sx := mfun_lsystem_s_sx[mfun_lsystem_level] ;
+    mfun_lsystem_angle := mfun_lsystem_s_angle[mfun_lsystem_level] ;
+    mfun_lsystem_level := mfun_lsystem_level - 1 ;
+enddef ;
+def mfun_lsystem_push =
+    mfun_lsystem_check_busy
+    -- lastxy
+    hide(mfun_lsystem_push_do)
+enddef ;
+def mfun_lsystem_pop  =
+    mfun_lsystem_check_busy
+%     -- lastxy
+    && mfun_lsystem_s_point[mfun_lsystem_level]
+    hide(mfun_lsystem_pop_do)
+enddef ;
+
+def mfun_lsystem_close =
+    mfun_lsystem_check_busy
+    && cycle
+enddef ;
+
+def mfun_lsystem_options(text t) =
+    if mfun_lsystem_busy :
+        mfun_lsystem_draw_options
+        ;
+        hide(mfun_lsystem_busy := false ;)
+    fi
+    hide(
+        def mfun_lsystem_draw_options = t enddef
+    )
+enddef ;
+
+def mfun_lsystem_expression(text t) =
+    hide(
+        t ;
+    )
+enddef ;
+
+presetparameters "lsystem" [
+    angle     = 0,
+    start     = "start",
+    curved    = false,
+    iteration = 2,
+    scale     = 1,
+    isimage   = false,
+    linewidth = 0.1,
+    syntax    = [
+        start = "R",
+        R     = "L",
+        L     = "R",
+    ]
+] ;
+
+def lmt_lsystem = applyparameters "lsystem" "lmt_do_lsystem" enddef ;
+
+def lmt_load_mlib_lsy =
+    runscript("lua.registercode('mlib-lsy.lmt')");
+    let lmt_load_mlib_lsy = relax ;
+enddef ;
+
+vardef lmt_do_lsystem =
+    save sx, sy, lw;
+    lmt_load_mlib_lsy ;
+    % ready
+    pushparameters "lsystem" ;
+    % prepare
+    lua.mp.lsystem_prepare() ;
+    % apply
+    def mfun_lsystem_draw_options =
+        % dummy
+    enddef ;
+    sx := 1 ;
+    sy := 1 ;
+    lw := getparameter("linewidth") ;
+    mfun_lsystem_b       := false ;
+    mfun_lsystem_busy    := false ;
+    mfun_lsystem_image   := getparameter("isimage") ;
+    mfun_lsystem_angle_p := getparameter "angle" ;
+    mfun_lsystem_angle_m := -mfun_lsystem_angle_p ;
+    mfun_lsystem_angle   := if mfun_lsystem_angle_p <> 0 : -90  else : 0 fi ;
+    mfun_lsystem_minus ;
+    mfun_lsystem_plus ;
+    if (getparameter("curved")) :
+        let mfun_lsystem_draw = mfun_lsystem_draw_c ;
+    else :
+        let mfun_lsystem_draw = mfun_lsystem_draw_l ;
+    fi ;
+    if mfun_lsystem_image :
+        let mfun_lsystem_check_busy = mfun_lsystem_check_busy_do ;
+        image (
+            def mfun_lsystem_draw_options = enddef ;
+            mfun_lsystem_start(getparameter "iteration")
+            if mfun_lsystem_busy :
+                mfun_lsystem_draw_options
+                ;
+            fi
+        )
+    else :
+        let mfun_lsystem_check_busy = relax ;
+        (origin mfun_lsystem_start(getparameter "iteration"))
+    fi
+    if (getparameter "scale") <> 1 :
+        scaled (getparameter "scale")
+    fi
+    hide(popparameters ;)
+enddef ;

@@ -75,6 +75,9 @@
       \the\righttwindemerits
     % \the\linebreakstretchcriterion
     % \the\linebreakshrinkcriterion
+      \the\emergencystretch
+      \the\tolerance
+      \the\pretolerance
     \relax\relax}
 
 \permanent\tolerant\protected\gdef\showpardata[#1]%
@@ -97,7 +100,7 @@
           \vcenter\bgroup
             \expanded{\framed
               [\c!align=\v!right,%
-               \c!foregroundstyle=\smallinfofont,%
+               \c!foregroundstyle=\smallinfofont\setupinterlinespace,%
                \c!frame=\v!off,%
                \c!foregroundcolor=darkblue,%
                \c!background=\v!color,%

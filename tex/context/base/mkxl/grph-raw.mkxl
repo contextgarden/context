@@ -62,7 +62,22 @@
 
 \permanent\protected\lettonothing\stopbitmapimage
 
-% Built in:
+%D Built in:
+%D
+%D \starttyping
+%D \startTEXpage
+%D   \qrcode[width=8cm,buffer=foo]
+%D   \qrcode[width=8cm,text={a test text},,color=darkgray]
+%D \stopTEXpage
+%D \stoptyping
+%D
+%D \starttyping
+%D \startTEXpage
+%D     \startluacode
+%D         context(figures.qrcode("this also works","darkgray",tex.sp("4cm")))
+%D     \stopluacode
+%D \stopTEXpage
+%D \stoptyping
 
 \permanent\protected\def\qrcode[#1]%
   {\bgroup

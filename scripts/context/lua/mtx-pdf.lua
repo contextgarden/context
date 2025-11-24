@@ -19,7 +19,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-pdf</entry>
   <entry name="detail">ConTeXt PDF Helpers</entry>
-  <entry name="version">0.10</entry>
+  <entry name="version">0.20</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -58,7 +58,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-pdf",
-    banner   = "ConTeXt PDF Helpers 0.10",
+    banner   = "ConTeXt PDF Helpers 0.20",
     helpinfo = helpinfo,
 }
 
@@ -628,7 +628,8 @@ function scripts.pdf.userdata(filename,name,format)
 end
 
 local function getfonts(pdffile)
-    local usedfonts  = { }
+    local usedfonts  = setmetatableindex("table")
+    local xrefs      = pdffile.__xrefs__
 
     local function collect(where,tag)
         local resources = where.Resources
@@ -636,16 +637,19 @@ local function getfonts(pdffile)
             local fontlist = resources.Font
             if fontlist then
                 for k, v in expanded(fontlist) do
-                    usedfonts[tag and (tag .. "." .. k) or k] = v
+                    local key = tag and (tag .. "." .. k) or k
+                    local obj = xrefs[v]
+                    usedfonts[obj][key] = true
                     if v.Subtype == "Type3" then
-                        collect(v,tag and (tag .. "." .. k) or k)
+                        collect(v,key)
                     end
                 end
             end
             local objects = resources.XObject
             if objects then
                 for k, v in expanded(objects) do
-                    collect(v,tag and (tag .. "." .. k) or k)
+                    local key = tag and (tag .. "." .. k) or k
+                    collect(v,key)
                 end
             end
         end
@@ -654,11 +658,10 @@ local function getfonts(pdffile)
     for i=1,pdffile.nofpages do
         collect(pdffile.pages[i])
     end
-
     return usedfonts
 end
 
--- todo: fromunicode16
+local splitsixteen = lpdf.splitsixteen
 
 local function getunicodes(font)
     local cid = font.ToUnicode
@@ -688,8 +691,9 @@ local function getunicodes(font)
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
             for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
                 indices[tonumber(old,16)] = true
-                for n in gmatch(new,"....") do
-                    local c = tonumber(n,16)
+                local t = { splitsixteen(new) }
+                for i=1,#t do
+                    local c = t[i]
                     counts[c] = counts[c] + 1
                 end
             end
@@ -698,41 +702,54 @@ local function getunicodes(font)
     end
 end
 
+local function isprivate(c)
+    return (c >= 0x00E000 and c <= 0x00F8FF)
+        or (c >= 0x0F0000 and c <= 0x0FFFFD)
+        or (c >= 0x100000 and c <= 0x10FFFD)
+        or c == 0xEFBBBF
+        or c == 0xFFFE
+        or c == 0xFEFF
+        or c == 0xFFFF
+     -- or c == 0x0000FEFF
+     -- or c == 0xFEFF0000
+end
+
 function scripts.pdf.fonts(filename)
     local pdffile = loadpdffile(filename)
     if pdffile then
+        local objects   = pdffile.__cache__
         local usedfonts = getfonts(pdffile)
         local found     = { }
         local common    = setmetatableindex("table")
-        for k, v in sortedhash(usedfonts) do
-            local basefont = v.BaseFont
-            local encoding = v.Encoding
-            local subtype  = v.Subtype
-            local unicode  = v.ToUnicode
+        local haschar   = false
+        for obj, list in sortedhash(usedfonts) do
+            local font     = objects[obj]
+            local basefont = font.BaseFont
+            local encoding = font.Encoding
+            local subtype  = font.Subtype
+            local unicode  = font.ToUnicode
             local counts,
-                  indices  = getunicodes(v)
+                  indices  = getunicodes(font)
             local codes    = { }
             local chars    = { }
-         -- local freqs    = { }
             local names    = { }
+if type(basefont) == "table" then
+    basefont = basefont[2]
+end
+            local prefix,
+                  suffix   = match(basefont or "","^(.-)%+(.*)$")
             if counts then
                 codes = sortedkeys(counts)
                 for i=1,#codes do
                     local k = codes[i]
-                    if k > 32 then
-                        local c = utfchar(k)
-                        chars[i] = c
-                     -- freqs[i] = format("U+%05X  %s  %s",k,counts[k] > 1 and "+" or " ", c)
+                    if k == 32 then
+                        chars[i] = "SPACE"
+                    elseif k < 32 then
+                        chars[i] = format("U+%03X",k)
+                    elseif isprivate(k) then
+                        chars[i] = format("U+%06X",k)
                     else
-                        chars[i] = k == 32 and "SPACE" or format("U+%03X",k)
-                     -- freqs[i] = format("U+%05X  %s  --",k,counts[k] > 1 and "+" or " ")
-                    end
-                end
-                if basefont and unicode then
-                    local b = gsub(basefont,"^.*%+","")
-                    local c = common[b]
-                    for k in next, indices do
-                        c[k] = true
+                        chars[i] = utfchar(k)
                     end
                 end
                 for i=1,#codes do
@@ -749,69 +766,97 @@ function scripts.pdf.fonts(filename)
                 end
             end
             if not basefont then
-                local fontdescriptor = v.FontDescriptor
+                local fontdescriptor = font.FontDescriptor
                 if fontdescriptor then
                     basefont = fontdescriptor.FontName
                 end
             end
-            found[k] = {
-                basefont = basefont or "no basefont",
+            local base = basefont or ("no base font" .. (#found + 1))
+            found[#found+1] = {
+                basefont = base,
                 encoding = (d and "custom n=" .. #d) or "no encoding",
                 subtype  = subtype or "no subtype",
                 unicode  = unicode and "unicode" or "no vector",
                 chars    = chars,
                 codes    = codes,
-             -- freqs    = freqs,
                 names    = names,
+                indices  = indices,
+                tags     = table.sortedkeys(list),
+                object   = obj,
+                prefix   = prefix or "",
+                suffix   = suffix or "",
             }
-        end
-
-        local haschar = false
-
-        local list = { }
-        for k, v in next, found do
-            local s = string.gsub(k,"(%d+)",function(s) return format("%05i",tonumber(s)) end)
-            list[s] = { k, v }
-            if #v.chars > 0 then
+            if #chars > 0 then
                 haschar = true
             end
         end
 
-        if details then
-            for k, v in sortedhash(found) do
---             for s, f in sortedhash(list) do
---                 local k = f[1]
---                 local v = f[2]
-                report("id         : %s",  k)
-                report("basefont   : %s",  v.basefont)
-                report("encoding   : % t", v.names)
-                report("subtype    : %s",  v.subtype)
-                report("unicode    : %s",  v.unicode)
-                if #v.chars > 0 then
-                    report("characters : % t", v.chars)
-                end
-                if #v.codes > 0 then
-                    report("codepoints : % t", v.codes)
-                end
-                report("")
+        table.sort(found,function(a,b)
+            if a.suffix ~= b.suffix then
+                return a.suffix < b.suffix
+            elseif a.prefix ~= b.prefix then
+                return a.prefix < b.prefix
+            else
+                return a.basefont < b.basefont
             end
-            for k, v in sortedhash(common) do
-                report("basefont   : %s",k)
-                report("indices    : % t", sortedkeys(v))
-                report("")
+        end)
+
+        if details then
+            for i=1,#found do
+                local v = found[i]
+                report("id         : % t", v.tags)
+                report("object     : %s", v.object)
+                report("basefont   : %s", v.basefont)
+            if v.encoding ~= "no encoding" then
+                report("encoding   : %s", v.encoding)
+            end
+                report("subtype    : %s", v.subtype)
+            if v.unicode ~= "no vector" then
+                report("unicode    : %s", v.unicode)
+            end
+            if v.names and next(v.names) then
+                report("names      : % t", v.names)
+            end
+            if v.chars and next(v.chars) then
+                report("characters : % t", v.chars)
+            end
+            if v.codes and next(v.codes) then
+                report("codepoints : % t", v.codes)
+            end
+            if v.indices and next(v.indices) then
+                report("indices    : % t", sortedkeys(v.indices))
+            end
+            report("")
             end
         else
-            local results = { { "id", "basefont", "encoding", "subtype", "unicode", haschar and "characters" or nil } }
+            local results = { {
+                "basefont",
+                "object",
+                "id",
+                "encoding",
+                "subtype",
+                "unicode",
+                haschar and "characters" or nil
+            } }
             local shared  = { }
-            for s, f in sortedhash(list) do
-                local k = f[1]
-                local v = f[2]
+            for i=1,#found do
+                local v = found[i]
                 local basefont   = v.basefont
-                local characters = shared[basefont] or (haschar and concat(v.chars," ")) or nil
-                results[#results+1] = { k, v.basefont, v.encoding, v.subtype, v.unicode, characters }
-                if not shared[basefont] then
-                    shared[basefont] = "shared with " .. k
+                local characters = haschar and concat(v.chars," ") or ""
+                local tags       = v.tags
+                local alltags    = concat(tags," ")
+                if #alltags > 30 then
+                    alltags = tags[1] .. " .. " .. tags[#tags]
                 end
+                results[#results+1] = {
+                    v.basefont,
+                    format("% 6i",v.object),
+                    alltags,
+                    v.encoding,
+                    v.subtype,
+                    v.unicode,
+                    characters
+                }
             end
             utilities.formatters.formatcolumns(results)
             report(results[1])

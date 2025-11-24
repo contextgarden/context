@@ -579,9 +579,8 @@ context("n1 = %s and n2 = %s",n1,n2)
 
 \typebuffer
 
-results in: \getbuffer
-
-So, you cannot really depend on the length operator here. On the other hand, with:
+results in: \getbuffer. So, you cannot really depend on the length operator here.
+On the other hand, with:
 
 \startbuffer
 \startluacode
@@ -598,7 +597,7 @@ context("n1 = %s and n2 = %s",n1,n2)
 
 \typebuffer
 
-we get: \getbuffer, so the \type {select} is quite useable. However, that function also
+we get: \getbuffer, so the \type {select} is quite usable. However, that function also
 has its specialities. The following example needs some close reading:
 
 \startbuffer
@@ -655,6 +654,41 @@ local v3 = filter ( 3, 1, 2, 3 )
 
 context("v1 = %s and v2 = %s and v3 = %s",v1,v2,v3)
 \stoptyping
+
+It can be that you want this so called \quote {vararg} as a table, which is easy
+to accomplish: just wrap the \type {...} in curly braces (a table constructor):
+
+\startbuffer
+\startluacode
+local function grab(v,...)
+    context("%s = % + t",v,{ ... })
+end
+
+grab("x",1,2,3) context(" and ") grab("y",4,5,6)
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+And indeed we get: \getbuffer. There is an extension in the working that permits
+the second variant of:
+
+\starttyping
+\startluacode
+local function grab(v,...)
+    local temp = { ... }
+    context("%s = % + t",v,temp)
+end
+
+local function grab(v,... temp)
+    context("%s = % + t",v,temp)
+end
+\stopluacode
+\stoptyping
+
+At the moment of writing this, it works but it is a bit less performing than the
+first variant. Of course this might change: we're talking \quote {beta versions}
+here.
 
 \stopsection
 
@@ -861,6 +895,55 @@ The second definition creates a command, so there we do:
 
 There are some more helpers but for use in document sources they make less sense. You
 can always browse the source code for examples.
+
+\stopsection
+
+\startsection[title=\LUA\ versions]
+
+The \LUA\ language is rather stable. The main change over the \LUATEX\ life cycle
+has been the numbers going from doubles to either integers or doubles. This has a
+side effect of numbers being printed as \type {10.0} or \type {10} depending on
+their history. For instance, multiplication or division can convert an integer
+into a double even if the result is an integer.
+
+Some changes have little consequence, for instance the addition of bitwise
+operators. Of course it means that we can ditch the function variant but old code
+still works. The change of the (default) garbage collector of course can have
+impact but there has been no change needed in coding. This is less true when a
+new keyword is introduced. The \type {<constant>} prefix is harmless, but \type
+{global} actually forced us to no longer use that as equivalent for \type {_G}.
+
+A more significant, but for the (rather large) \CONTEXT\ code base relatively
+harmless change was that iterators use local constant variables. This means that:
+
+\starttyping
+\startluacode
+for i=1,100 do
+    i = 2 * i
+    ...
+end
+\stopluacode
+\stoptyping
+
+is no longer valid, although
+
+
+\starttyping
+\startluacode
+for i=1,100 do
+    local i = 2 * i
+    ...
+end
+\stopluacode
+\stoptyping
+
+is. Lucky us that it is intercepted by the \LUA\ parser, so we immediately know
+that we need to fix it.
+
+One of the reasons that we keep up with (even beta) versions is that because we
+have a large code base, we're able to detect issues. Consider it our way to
+contribute to the testing. We're currently at the development variant of
+\cldcontext {LUAVERSION} as published in the not official repository.
 
 \stopsection
 

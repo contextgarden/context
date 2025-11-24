@@ -132,7 +132,8 @@ local function registername(name,message)
     local report = reporter("lua instance",message)
     local proxy = {
         -- we can access all via:
-        ["global"]   = _G,
+    -- ["global"]   = _G, -- let's not encourage this keyword any longer
+       globaldata   = _G,
         -- some protected data
         moduledata   = setmetatableindex(moduledata),
         thirddata    = setmetatableindex(thirddata),

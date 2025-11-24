@@ -71,6 +71,8 @@ do
 
     -- sometimes we gain (e.g. .5 sec on the sync test)
 
+    -- This only works because we assign a function to the cache values:
+
     local cache = table.makeweak()
 
     local runscripts = { }

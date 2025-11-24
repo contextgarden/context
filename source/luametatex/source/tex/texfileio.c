@@ -932,7 +932,7 @@ void tex_print_file_name(unsigned char *name)
 void tex_report_start_file(unsigned char *name)
 {
     int callback_id = lmt_callback_defined(start_file_callback);
-    if (callback_id) {
+    if (callback_id > 0) {
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "S->", name);
     } else {
         tex_print_char('(');
@@ -943,7 +943,7 @@ void tex_report_start_file(unsigned char *name)
 void tex_report_stop_file(void)
 {
     int callback_id = lmt_callback_defined(stop_file_callback);
-    if (callback_id) {
+    if (callback_id > 0) {
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "->");
     } else {
         tex_print_char(')');

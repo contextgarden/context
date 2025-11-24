@@ -159,7 +159,7 @@ do
         if trailing then
             text[#text+1] = 32
         end
-        return toutf32(text)
+        return toutf32(text,true) -- add zeros
     end
 
 end

@@ -5415,7 +5415,7 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.dir_ptr = null;
     {
         int callback_id = lmt_callback_defined(linebreak_quality_callback);
-        if (callback_id) {
+        if (callback_id > 0) {
             halfword overfull = 0;
             halfword underfull = 0;
             halfword verdict = 0;

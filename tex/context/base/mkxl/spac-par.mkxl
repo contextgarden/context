@@ -383,6 +383,12 @@
     \enforced\let\doflushatpar\gobbleoneargument
 \to \everypreroll
 
+%D We don't for instance to flush indices or trigger a side float:
+
+\prependtoks
+    \forgetall
+\to \everypreroll
+
 %D Here comes the flusher (we misuse the one level expansion of token registers to
 %D feed a nice stream into the paragraph.)
 
@@ -464,7 +470,7 @@
      \enforced\glet\flushpostponednodedata\spac_postponed_data_flush
    \fi}
 
-\permanent\protected\def\flushatnextpar
+\permanent\protected\def\flushatnextpar % maybe we need a blocker that keep the data for a next par
   {\begingroup
    \expand\everyflushatnextpar
    \enforced\glet\flushpostponednodedata\spac_postponed_data_flush

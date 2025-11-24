@@ -11,8 +11,8 @@
 .B Some File Related Goodies
 .SH OPTIONS
 .TP
-.B --disarmutfbomb
-remove utf bomb if present
+.B --disarmutfbom
+remove utf bom if present
 .TP
 .B --force
 remove indeed

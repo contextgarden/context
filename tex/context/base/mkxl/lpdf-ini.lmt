@@ -486,6 +486,30 @@ do
     lpdf.fromeight   = fromeight
     lpdf.frompdfdoc  = frompdfdoc
 
+    local more = 0
+
+    local pattern = (
+        lpeg.C(4) / function(s) -- needs checking !
+            local now = hextointeger(s)
+            if more > 0 then
+                now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+                more = 0
+                return now
+            elseif now >= 0xD800 and now <= 0xDBFF then
+                more = now
+            else
+                return now
+            end
+        end
+    )^1
+
+    lpdf.splitsixteen = function(str)
+        if str and str ~= "" then
+            more = 0
+            return lpegmatch(pattern,str)
+        end
+    end
+
 end
 
 local pdfescaped do

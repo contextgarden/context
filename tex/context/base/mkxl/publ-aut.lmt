@@ -43,7 +43,7 @@ local expand_authors  = false  directives.register("publications.prerollauthor",
 local report          = logs.reporter("publications","authors")
 local report_cite     = logs.reporter("publications","cite")
 
-local v_last          <const> = interfaces.variables.last
+local v_last  <const> = interfaces.variables.last
 
 -- local function makesplitter(separator)
 --     return Ct { "start",

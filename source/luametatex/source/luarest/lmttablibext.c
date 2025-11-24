@@ -11,7 +11,7 @@ static int tablib_keys(lua_State *L)
  // lua_createtable(L, 0, 0);
     if (lua_type(L, 1) == LUA_TTABLE) {
         int index = 0;
-        lua_createtable(L, lua_rawlen(L, 1) + 4, 0);
+        lua_createtable(L, (int) lua_rawlen(L, 1) + 4, 0);
         lua_pushnil(L);
         while (lua_next(L, -3)) {
             int tkey = lua_type(L, -2); /* key at -2, value at -1 */

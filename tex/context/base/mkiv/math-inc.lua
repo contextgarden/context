@@ -12,7 +12,7 @@ if not modules then modules = { } end modules ['back-inc'] = {
 local tonumber, next = tonumber, next
 local utfbyte, utfchar, utfsplit = utf.byte, utf.char, utf.split
 local match, gsub = string.match, string.gsub
-local nspaces = string.nspaces
+local nspaces = string.hashes.spaces
 local concat = table.concat
 local xmltext = xml.text
 local undent = buffers.undent

@@ -1501,7 +1501,7 @@ static inline halfword tex_aux_balance_list(const balance_properties *properties
                 if (node_subtype(current) == balance_boundary) {
                     if (properties->shape && specification_count(properties->shape) > 0) { 
                         int callback = lmt_callback_defined(balance_boundary_callback);
-                        if (callback) {
+                        if (callback > 0) {
                             halfword penalty = 0;
                             halfword extra = 0;
                             halfword trybreak = 0;
@@ -1737,6 +1737,7 @@ void tex_balance_reset(balance_properties *properties)
 
     static void tex_aux_check_boundaries(halfword head)
     {
+        (void) head;
         /*tex This is a dummy, because we need to test the about first if useful at all. */
     }
 

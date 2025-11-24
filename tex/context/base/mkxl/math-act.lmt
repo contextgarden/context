@@ -1140,6 +1140,7 @@ do
                     if preset then
                         local p = predefined[preset]
                         if p then
+                            -- we replace preset = name by the table bound to name
                             v = table.combine(p,v)
                             p.preset = nil
                         else

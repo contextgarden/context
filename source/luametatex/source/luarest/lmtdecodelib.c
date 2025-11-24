@@ -643,7 +643,7 @@ static int pnglib_reduce(lua_State *L)
         int nx = lmt_tointeger(L, 2);
         int ny = lmt_tointeger(L, 3);
         int nz = lmt_tointeger(L, 4);
-        if (nx * ny * nz == size) {
+        if (nx * ny * nz == (int) size) {
             unsigned char *result;
             int dx = nx * nz;
             int mx = dx / 2;

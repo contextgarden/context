@@ -34,11 +34,18 @@ local P, S, C, Ct, Cc, Cs = lpeg.P, lpeg.S, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.Cs
 --     return (gsub(str,"^([\"\'])(.*)%1$","%2")) -- interesting pattern
 -- end
 
-local unquoted = patterns.squote * C(patterns.nosquote) * patterns.squote
-               + patterns.dquote * C(patterns.nodquote) * patterns.dquote
+do
 
-function string.unquoted(str)
-    return lpegmatch(unquoted,str) or str
+    local squote = patterns.squote
+    local dquote = patterns.dquote
+
+    local unquoted = squote * C(((1-squote) + squote * #P(1))^0) * squote
+                   + dquote * C(((1-dquote) + dquote * #P(1))^0) * dquote
+
+    function string.unquoted(str)
+        return lpegmatch(unquoted,str) or str
+    end
+
 end
 
 -- print(string.unquoted("test"))
@@ -208,7 +215,7 @@ end
 -- print(string.topattern     ("12+34*.tex",false,false))
 -- print(string.topattern     ("12+34*.tex",false,true))
 
-function string.valid(str,default)
+function string.valid(str,default) -- we can this one more often
     return (type(str) == "string" and str ~= "" and str) or default or nil
 end
 

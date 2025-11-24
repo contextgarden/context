@@ -102,6 +102,7 @@ local mapping = table.setmetatableindex ( {
     ["Placeholder1"]          = { "metadata", "pdfaid-placeholder",  true },
     ["Placeholder2"]          = { "metadata", "pdfuaid-placeholder", true },
     ["Placeholder3"]          = { "metadata", "wtpdf-placeholder",   true },
+    ["Placeholder4"]          = { "metadata", "user-placeholder",    true },
 }, function() return unknown end )
 
 
@@ -397,6 +398,35 @@ local function setupidentity()
     return metadata
 end
 
+local pdfaddusermetadata  do
+
+    local usermetadata   = { }
+    local usermetaprefix = "Private"
+
+    interfaces.implement {
+        name      = "setupusermetadata",
+        arguments = "hash",
+        public    = true,
+        protected = true,
+        actions   = function(t)
+                        table.merge(usermetadata,t)
+                    end,
+    }
+
+    pdfaddusermetadata = function()
+        if next(usermetadata) then
+            local t = { }
+            t[#t+1] = '<rdf:Description rdf:about="" xmlns:pdfx="http://ns.adobe.com/pdfx/1.3/">'
+            for k, v in table.sortedhash(usermetadata) do
+                t[#t+1] = string.formatters["      <pdfx:%s.%s>%s</pdfx:%1Z.%2Z>"](usermetaprefix,k,v)
+            end
+            t[#t+1] = '    </rdf:Description>'
+            lpdf.replacexmpinfo("user-placeholder",concat(t,"\n"))
+        end
+    end
+
+end
+
 local function flushxmpinfo()
     commands.pushrandomseed()
     commands.setrandomseed(ostime())
@@ -419,6 +449,8 @@ local function flushxmpinfo()
     pdfaddtoinfo("ModDate",modification)
 
     if add_xmp_blob then
+
+        if not xmp then xmp = valid_xmp() end
 
         pdfaddxmpinfo("DocumentID",documentid)
         pdfaddxmpinfo("InstanceID",instanceid)
@@ -451,8 +483,10 @@ local function flushxmpinfo()
             pdfaddxmpinfo("Author",pdfunicode(author),author)
         end
         if keywords and keywords ~= "" then
-            pdfaddxmpinfo("Keywords",pdfunicode(author),author)
+            pdfaddxmpinfo("Keywords",pdfunicode(keywords),keywords)
         end
+
+        pdfaddusermetadata()
 
         -- checks for empty:
 
@@ -465,7 +499,7 @@ local function flushxmpinfo()
             end
         end
 
-        local blob = xml.tostring(xml.first(xmp or valid_xmp(),"/x:xmpmeta"))
+        local blob = xml.tostring(xml.first(xmp,"/x:xmpmeta"))
         local md = pdfdictionary {
             Subtype = pdfconstant("XML"),
             Type    = pdfconstant("Metadata"),

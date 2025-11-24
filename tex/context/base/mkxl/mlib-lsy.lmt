@@ -1,0 +1,131 @@
+if not modules then modules = { } end modules ['mlib-msy'] = {
+    version   = 1.001,
+    comment   = "companion to mlib-lmt.mkxl",
+    author    = "Hans Hagen & Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- This is yet another playful exploration by Mikael Sundqvist and Hans Hagen. We
+-- started from just macros doing turtle graphics. From that we moved to wrappers
+-- and finally to a simple \LUA\ parser so that we could more easilly enter
+-- definitions. Of course we can do all calculations and path construction in \LUA,
+-- but we like to test and apply the relative path builder code. In addition it is a
+-- playground for the new \type {lastxy} primitive. Maybe we should test this hiding
+-- mechanism a bit more for performance.
+
+local P, R, S, C, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.match
+local find, formatters = string.find, string.formatters
+local concat = table.concat
+
+local getparameterset = metapost.getparameterset
+
+local isstart       = false
+
+local p_whitespace  = lpeg.patterns.whitespace^1
+local p_braces      = lpeg.patterns.argument
+local p_parentheses = lpeg.patterns.nestedparents -- todo: remove outer
+
+local f_wrapup      = formatters["  %s\n"]
+local f_call_s      = formatters["  mfun_lsystem_%s(iteration)\n"]
+local f_call_n      = formatters["  mfun_lsystem_%s(iteration-1)\n"]
+local f_options     = formatters["  mfun_lsystem_options(%s)\n"]
+local f_expression  = formatters["  mfun_lsystem_expression(%s)\n"]
+----- f_expression  = formatters["  hide(%s)\n"]
+local f_expression  = formatters["  hide%s\n"]
+
+----- trace  = false
+local report = logs.reporter("metapost")
+
+-- trackers.register("metapost.lsystems", function(v) trace = v end) -- file has to be loaded
+
+local function whatever(s)
+    return isstart and f_call_s(s) or f_call_n(s)
+end
+
+local function options(s)
+    return f_options(s)
+end
+
+local function expression(s)
+    return f_expression(s)
+end
+
+local parser = Cs( (
+      R("AZ","az")    / whatever
+      + P("+")        / "  mfun_lsystem_plus\n"
+      + P("-")        / "  mfun_lsystem_minus\n"
+      + P("?")        / "  mfun_lsystem_move\n"
+      + P("!")        / "  mfun_lsystem_draw\n"
+      + P("[")        / "  mfun_lsystem_push\n"
+      + P("]")        / "  mfun_lsystem_pop\n"
+      + P("*")        / "  mfun_lsystem_close\n"
+      + p_braces      / options
+      + p_parentheses / expression
+      + p_whitespace  / ""
+) ^1 )
+
+local definition = utilities.templates.replacer
+[[
+def mfun_lsystem_%name%(expr iteration) =
+ if iteration == 0 :
+%quit%
+ else :
+%step% fi
+enddef ;
+]]
+
+function mp.lsystem_prepare()
+    local parameters = getparameterset("lsystem")
+    local syntax     = parameters.syntax
+    local lsystem    = parameters.name or "unknown"
+    local result     = { }
+    local step       = nil
+    local quit       = ""
+    local isempty    = { }
+    local trace      = parameters.trace
+    parameters.isimage = false
+    for name, pattern in next, syntax do
+        if find(pattern,"{") then
+            parameters.isimage = true
+        end
+        if pattern == "" or pattern == "!" or pattern == "?" then
+            isempty[name] = pattern
+            syntax [name] = ""
+        end
+    end
+    for name, pattern in next, syntax do
+        isstart = name == "start"
+        step = lpegmatch(parser,pattern)
+        if not step then
+            step = "  mfun_lsystem_draw"
+        end
+        if isempty[name] then
+            if isempty[name] == "!" then
+                quit = "mfun_lsystem_draw"
+            elseif isempty[name] == "?" then
+                quit = "mfun_lsystem_move"
+            else
+                quit = ""
+            end
+        elseif next(isempty) then
+            quit = ""
+        else
+            quit = find(name,"^[a-z]") and "  mfun_lsystem_move" or "  mfun_lsystem_draw"
+        end
+        step = definition {
+            name = name,
+            quit = quit,
+            step = step,
+        }
+        result[#result+1] = step
+    end
+    result = concat(result,"\n")
+    if trace then
+        report("start l system %a\n\n%s",lsystem,result)
+        report("stop l system %a",lsystem)
+    end
+--     print(result)
+    return result
+end
+

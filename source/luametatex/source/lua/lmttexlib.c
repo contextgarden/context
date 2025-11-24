@@ -739,7 +739,7 @@ static int texlib_isprintable(lua_State* L)
 
 static int texlib_overloadpermitted(lua_State* L)
 {
-    return tex_overload_permitted(lua_tointeger(L, 1));
+    return tex_overload_permitted(lmt_tointeger(L, 1));
 }
 
 /*tex We actually don't need to copy and could read from the string. */
@@ -1356,7 +1356,7 @@ int lmt_check_for_flags(lua_State *L, int slot, int *flags, int prefixes, int nu
                         } else if (lua_key_eq(str, permanent)) {
                             slot += 1;
                             *flags = add_permanent_flag(*flags);
-                        } else if (lua_key_eq(str, protected)) {
+                        } else if (lua_key_eq(str, key_protected)) {
                             slot += 1;
                             *flags = add_protected_flag(*flags);
                         } else if (lua_key_eq(str, semiprotected)) {
@@ -1867,7 +1867,7 @@ static int texlib_getfloat(lua_State *L)
 static int texlib_trackedattribute(lua_State *L)
 {
     /*tex When we don't know we assume usage! */
-    halfword index = lua_tointeger(L, 1);
+    halfword index = lmt_tohalfword(L, 1);
     lua_pushboolean(L, 
          index >= 0 && index < max_attribute_register_index  
       ?  lmt_node_memory_state.attributes[index] > 0
@@ -1882,7 +1882,7 @@ static int texlib_attributetracking(lua_State *L)
     if (lua_gettop(L) == 0) {
         lua_pushinteger(L, lmt_node_memory_state.max_used_attribute);
     } else {
-        halfword index = lua_tointeger(L, 1);
+        halfword index = lmt_tohalfword(L, 1);
         if (index >= 0 && index < max_attribute_register_index) {
             lua_pushinteger(L, lmt_node_memory_state.attributes[index]);
         } else { 
@@ -5707,13 +5707,13 @@ static int texlib_getrunstate(lua_State *L)
 static int texlib_gethyphenationvalues(lua_State *L)
 {
     lua_createtable(L, 2, 18);
-    lua_push_key_at_index(L, normal,    normal_hyphenation_mode);
-    lua_push_key_at_index(L, automatic, automatic_hyphenation_mode);
-    lua_push_key_at_index(L, explicit,  explicit_hyphenation_mode);
-    lua_push_key_at_index(L, syllable,  syllable_hyphenation_mode);
-    lua_push_key_at_index(L, uppercase, uppercase_hyphenation_mode);
-    lua_push_key_at_index(L, compound,  compound_hyphenation_mode);
-    lua_push_key_at_index(L, collapse,  collapse_hyphenation_mode);
+    lua_push_key_at_index(L, normal,       normal_hyphenation_mode);
+    lua_push_key_at_index(L, automatic,    automatic_hyphenation_mode);
+    lua_push_key_at_index(L, key_explicit, explicit_hyphenation_mode);
+    lua_push_key_at_index(L, syllable,     syllable_hyphenation_mode);
+    lua_push_key_at_index(L, uppercase,    uppercase_hyphenation_mode);
+    lua_push_key_at_index(L, compound,     compound_hyphenation_mode);
+    lua_push_key_at_index(L, collapse,     collapse_hyphenation_mode);
 
     lua_set_string_by_index(L, strict_start_hyphenation_mode,        "strictstart");
     lua_set_string_by_index(L, strict_end_hyphenation_mode,          "strictend");
@@ -5852,10 +5852,10 @@ static int texlib_getnoadoptionvalues(lua_State *L)
     lua_push_key_at_index(L, left,     noad_option_left);
     lua_push_key_at_index(L, middle,   noad_option_middle);
     lua_push_key_at_index(L, right,    noad_option_right);
-    lua_push_key_at_index(L, void,     noad_option_void);
+    lua_push_key_at_index(L, key_void, noad_option_void);
     lua_push_key_at_index(L, phantom,  noad_option_phantom);
     lua_push_key_at_index(L, limits,   noad_option_limits);
-    lua_push_key_at_index(L, auto,     noad_option_auto);
+    lua_push_key_at_index(L, key_auto, noad_option_auto);
     lua_push_key_at_index(L, shrink,   noad_option_shrink);
     lua_push_key_at_index(L, stretch,  noad_option_stretch);
     lua_push_key_at_index(L, center,   noad_option_center);
@@ -6067,13 +6067,13 @@ static int texlib_getflagvalues(lua_State *L)
     lua_push_key_at_index(L, permanent,     permanent_flag_bit);
     lua_push_key_at_index(L, immutable,     immutable_flag_bit);
     lua_push_key_at_index(L, primitive,     primitive_flag_bit);
-    lua_push_key_at_index(L, mutable,       mutable_flag_bit);
+    lua_push_key_at_index(L, key_mutable,   mutable_flag_bit);
     lua_push_key_at_index(L, noaligned,     noaligned_flag_bit);
     lua_push_key_at_index(L, instance,      instance_flag_bit);
     lua_push_key_at_index(L, untraced,      untraced_flag_bit);
     lua_push_key_at_index(L, global,        global_flag_bit);
     lua_push_key_at_index(L, tolerant,      tolerant_flag_bit);
-    lua_push_key_at_index(L, protected,     protected_flag_bit);
+    lua_push_key_at_index(L, key_protected, protected_flag_bit);
     lua_push_key_at_index(L, overloaded,    overloaded_flag_bit);
     lua_push_key_at_index(L, aliased,       aliased_flag_bit);
     lua_push_key_at_index(L, immediate,     immediate_flag_bit);

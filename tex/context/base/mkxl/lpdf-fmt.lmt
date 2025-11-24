@@ -39,11 +39,6 @@ local pdfstring                = lpdf.string
 local pdfverbose               = lpdf.verbose
 local pdfflushstreamfileobject = lpdf.flushstreamfileobject
 
-local addtoinfo                = lpdf.addtoinfo
-local injectxmpinfo            = lpdf.injectxmpinfo
-local insertxmpinfo            = lpdf.insertxmpinfo
-local replacexmpinfo           = lpdf.replacexmpinfo
-
 local settings_to_array        = utilities.parsers.settings_to_array
 local settings_to_hash         = utilities.parsers.settings_to_hash
 

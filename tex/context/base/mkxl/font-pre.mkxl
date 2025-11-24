@@ -364,7 +364,7 @@
    init=yes,medi=yes,fina=yes,isol=yes,
    rlig=yes,rclt=yes,calt=yes,
   %dlig=yes,cswh=yes, % optional
-   mset]
+   mset=yes]
 
 % tibetan
 

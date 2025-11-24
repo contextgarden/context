@@ -535,7 +535,7 @@ static void mplib_aux_initialize_lua(lua_State *L)
     mplib_values_type[mp_stop_bounds_code]  = lua_key_index(stop_bounds);
 
     mplib_values_knot[mp_endpoint_knot]  = lua_key_index(endpoint);
-    mplib_values_knot[mp_explicit_knot]  = lua_key_index(explicit);
+    mplib_values_knot[mp_explicit_knot]  = lua_key_index(key_explicit);
     mplib_values_knot[mp_given_knot]     = lua_key_index(given);
     mplib_values_knot[mp_curl_knot]      = lua_key_index(curl);
     mplib_values_knot[mp_open_knot]      = lua_key_index(open);

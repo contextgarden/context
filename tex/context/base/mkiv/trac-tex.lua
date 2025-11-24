@@ -82,7 +82,7 @@ local function saveusedfilesintrees(format)
     if format == "lua" then
         io.savedata(filename,table.serialize(data,true))
     else
-        io.savedata(filename,table.toxml(data,"job"))
+        io.savedata(filename,table.toxml(data,{ name = "job" }))
     end
 end
 

@@ -1115,6 +1115,10 @@
    \hangafter-\c_page_sides_n_of_hang
    \global\c_page_sides_hangafter\hangafter}
 
+% feel free to test this: \settrue \c_page_sides_protect_shape
+
+\newconditional \c_page_sides_protect_shape
+
 \protected\def\page_sides_check_floats_set
   {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
    \ifconditional\c_page_sides_delayed
@@ -1142,6 +1146,11 @@
    \fi
    % indeed we can have a negative number of lines in which case we end up
    % here again later
+   \ifconditional\c_page_sides_protect_shape
+     \ifabsnum\lastlinecount<\c_page_sides_hangafter
+       \penalty\shapingpenalty
+     \fi
+   \fi
    \global\c_page_sides_hangafter\zerocount
    \ifnum\c_page_sides_n_of_hang>\zerocount
      \ifcase\c_page_sides_n_of_lines
@@ -1161,6 +1170,9 @@
      \else
        \page_sides_check_floats_set_hang
      \fi
+     \shapingpenalty\plustenthousand
+   \else
+     \shapingpenalty\plushundred
    \fi
    \global\advanceby\c_page_sides_checks_done \plusone
    \iftracesidefloats
@@ -1177,7 +1189,8 @@
      \fi
    % \global % no, otherwise a next hangindent won't work
      \c_page_sides_checks_done\zerocount
-   \fi}
+   \fi
+   \shapingpenalty\plushundred}
 
 \protected\def\page_sides_synchronize_floats
   {\ifinner \else

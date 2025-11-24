@@ -1587,20 +1587,20 @@ halfword tex_handle_glyphrun(halfword head, halfword group, halfword direction)
 {
     if (head) {
         int callback_id = lmt_callback_defined(glyph_run_callback);
-        if (callback_id) {
+        if (callback_id > 0) {
             return tex_aux_run_lua_ligkern_callback(lmt_lua_state.lua_instance, head, group, direction, callback_id);
         } else {
             callback_id = lmt_callback_defined(ligaturing_callback);
-            if (callback_id) {
+            if (callback_id > 0) {
                 head = tex_aux_run_lua_ligkern_callback(lmt_lua_state.lua_instance, head, group, direction, callback_id);
-            } else {
+            } else if (callback_id == 0) {
                 // what if disc at start 
                 tex_handle_ligaturing(head, null);
             }
             callback_id = lmt_callback_defined(kerning_callback);
-            if (callback_id) {
+            if (callback_id > 0) {
                 head = tex_aux_run_lua_ligkern_callback(lmt_lua_state.lua_instance, head, group, direction, callback_id);
-            } else {
+            } else if (callback_id == 0) {
                 halfword kern = tex_aux_do_handle_kerning(head, null, null);
                 if (kern) { 
                     head = kern; 

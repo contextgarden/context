@@ -211,7 +211,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_rule, normal_rule_subtype,        normal)
     set_value_entry_key(subtypes_rule, empty_rule_subtype,         empty)
     set_value_entry_key(subtypes_rule, strut_rule_subtype,         strut)
-    set_value_entry_key(subtypes_rule, virtual_rule_subtype,       virtual)
+    set_value_entry_key(subtypes_rule, virtual_rule_subtype,       key_virtual)
     set_value_entry_key(subtypes_rule, outline_rule_subtype,       outline)
     set_value_entry_key(subtypes_rule, user_rule_subtype,          user)
     set_value_entry_key(subtypes_rule, math_over_rule_subtype,     over)
@@ -230,7 +230,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_glyph, glyph_math_delimiter_subtype,   delimiter);
     set_value_entry_key(subtypes_glyph, glyph_math_extensible_subtype,  extensible);
     set_value_entry_key(subtypes_glyph, glyph_math_ordinary_subtype,    ordinary);
-    set_value_entry_key(subtypes_glyph, glyph_math_operator_subtype,    operator);
+    set_value_entry_key(subtypes_glyph, glyph_math_operator_subtype,    key_operator);
     set_value_entry_key(subtypes_glyph, glyph_math_binary_subtype,      binary);
     set_value_entry_key(subtypes_glyph, glyph_math_relation_subtype,    relation);
     set_value_entry_key(subtypes_glyph, glyph_math_open_subtype,        open);
@@ -250,7 +250,7 @@ void lmt_nodelib_initialize(void) {
     subtypes_disc = lmt_aux_allocate_value_info(syllable_discretionary_code);
 
     set_value_entry_key(subtypes_disc, normal_discretionary_code,      discretionary)
-    set_value_entry_key(subtypes_disc, explicit_discretionary_code,    explicit)
+    set_value_entry_key(subtypes_disc, explicit_discretionary_code,    key_explicit)
     set_value_entry_key(subtypes_disc, automatic_discretionary_code,   automatic)
     set_value_entry_key(subtypes_disc, mathematics_discretionary_code, math)
     set_value_entry_key(subtypes_disc, syllable_discretionary_code,    regular)
@@ -261,7 +261,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_fence, left_fence_side,     left)
     set_value_entry_key(subtypes_fence, middle_fence_side,   middle)
     set_value_entry_key(subtypes_fence, right_fence_side,    right)
-    set_value_entry_key(subtypes_fence, left_operator_side,  operator)
+    set_value_entry_key(subtypes_fence, left_operator_side,  key_operator)
     set_value_entry_key(subtypes_fence, no_fence_side,       no)
 
     subtypes_list = lmt_aux_allocate_value_info(spacing_list);
@@ -334,7 +334,7 @@ void lmt_nodelib_initialize(void) {
     subtypes_noad = lmt_aux_allocate_value_info(vcenter_noad_subtype); // last_noad_subtype
 
     set_value_entry_key(subtypes_noad, ordinary_noad_subtype,    ordinary)
-    set_value_entry_key(subtypes_noad, operator_noad_subtype,    operator)
+    set_value_entry_key(subtypes_noad, operator_noad_subtype,    key_operator)
     set_value_entry_key(subtypes_noad, binary_noad_subtype,      binary)
     set_value_entry_key(subtypes_noad, relation_noad_subtype,    relation)
     set_value_entry_key(subtypes_noad, open_noad_subtype,        open)
@@ -434,7 +434,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_choice, 2, node_list_field, text);
     set_value_entry_val(lmt_node_fields_choice, 3, node_list_field, script);
     set_value_entry_val(lmt_node_fields_choice, 4, node_list_field, scriptscript);
-    set_value_entry_val(lmt_node_fields_choice, 5, integer_field,   class);
+    set_value_entry_val(lmt_node_fields_choice, 5, integer_field,   key_class);
     set_value_entry_val(lmt_node_fields_choice, 6, node_list_field, pre);
     set_value_entry_val(lmt_node_fields_choice, 7, node_list_field, post);
     set_value_entry_val(lmt_node_fields_choice, 8, node_list_field, replace);
@@ -464,7 +464,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_disc, 3, node_list_field, replace);
     set_value_entry_val(lmt_node_fields_disc, 4, integer_field,   penalty);
     set_value_entry_val(lmt_node_fields_disc, 5, integer_field,   options);
-    set_value_entry_val(lmt_node_fields_disc, 6, integer_field,   class);
+    set_value_entry_val(lmt_node_fields_disc, 6, integer_field,   key_class);
 
     lmt_node_fields_fence = lmt_aux_allocate_value_info(8);
 
@@ -516,7 +516,7 @@ void lmt_nodelib_initialize(void) {
 
     set_value_entry_val(lmt_node_fields_glyph,  0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_glyph,  1, integer_field,   font);
-    set_value_entry_val(lmt_node_fields_glyph,  2, integer_field,   char);
+    set_value_entry_val(lmt_node_fields_glyph,  2, integer_field,   key_char);
     set_value_entry_val(lmt_node_fields_glyph,  3, dimension_field, xoffset);
     set_value_entry_val(lmt_node_fields_glyph,  4, dimension_field, yoffset);
     set_value_entry_val(lmt_node_fields_glyph,  5, integer_field,   data);
@@ -539,7 +539,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_glyph, 22, integer_field,   hyphenate);
     set_value_entry_val(lmt_node_fields_glyph, 23, integer_field,   options);
     set_value_entry_val(lmt_node_fields_glyph, 24, integer_field,   discpart);
-    set_value_entry_val(lmt_node_fields_glyph, 25, integer_field,   protected);
+    set_value_entry_val(lmt_node_fields_glyph, 25, integer_field,   key_protected);
     set_value_entry_val(lmt_node_fields_glyph, 26, integer_field,   properties);
     set_value_entry_val(lmt_node_fields_glyph, 27, integer_field,   group);
     set_value_entry_val(lmt_node_fields_glyph, 28, integer_field,   index);
@@ -677,7 +677,7 @@ void lmt_nodelib_initialize(void) {
     lmt_node_fields_mark = lmt_aux_allocate_value_info(3);
 
     set_value_entry_val(lmt_node_fields_mark, 0, attribute_field,  attr);
-    set_value_entry_val(lmt_node_fields_mark, 1, integer_field,    class);
+    set_value_entry_val(lmt_node_fields_mark, 1, integer_field,    key_class);
     set_value_entry_val(lmt_node_fields_mark, 2, token_list_field, mark);
 
     lmt_node_fields_math = lmt_aux_allocate_value_info(11);
@@ -698,7 +698,7 @@ void lmt_nodelib_initialize(void) {
 
     set_value_entry_val(lmt_node_fields_math_kernel, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_math_kernel, 1, integer_field,   fam);
-    set_value_entry_val(lmt_node_fields_math_kernel, 2, integer_field,   char);
+    set_value_entry_val(lmt_node_fields_math_kernel, 2, integer_field,   key_char);
     set_value_entry_val(lmt_node_fields_math_kernel, 3, integer_field,   options);
     set_value_entry_val(lmt_node_fields_math_kernel, 4, integer_field,   properties);
     set_value_entry_val(lmt_node_fields_math_kernel, 5, integer_field,   group);
@@ -769,7 +769,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_rule,  8, integer_field,   data);
     set_value_entry_val(lmt_node_fields_rule,  9, integer_field,   font);
     set_value_entry_val(lmt_node_fields_rule, 10, integer_field,   fam);
-    set_value_entry_val(lmt_node_fields_rule, 11, integer_field,   char);
+    set_value_entry_val(lmt_node_fields_rule, 11, integer_field,   key_char);
     set_value_entry_val(lmt_node_fields_rule, 12, integer_field,   options);
     set_value_entry_val(lmt_node_fields_rule, 13, integer_field,   on);
     set_value_entry_val(lmt_node_fields_rule, 14, integer_field,   off);
@@ -2773,7 +2773,7 @@ static void tex_aux_show_attr_list(halfword p)
         while (p) {
             halfword k = attribute_index(p);
             halfword v = attribute_value(p);
-            if (callback_id) {
+            if (callback_id > 0) {
                 strnumber u = tex_save_cur_string();
                 char *ks = NULL;
                 char *vs = NULL;
@@ -2834,7 +2834,7 @@ void tex_print_extended_subtype(halfword p, quarterword s)
         case math_char_node:
             {
                 int callback_id = lmt_callback_defined(get_noad_class_callback);
-                if (callback_id) {
+                if (callback_id > 0) {
                     strnumber u = tex_save_cur_string();
                     char *v = NULL;
                     lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "d->R", st, &v);
@@ -2942,7 +2942,7 @@ static void tex_print_specnode(halfword v, int unit) /* for now local */
 void tex_aux_show_dictionary(halfword p, halfword properties, halfword group, halfword index,halfword font, halfword character)
 {
     int callback_id = lmt_callback_defined(get_math_dictionary_callback);
-    if (callback_id) {
+    if (callback_id > 0) {
         strnumber u = tex_save_cur_string();
         char *s = NULL;
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Nddddd->R", p, properties, group, index, font, character, &s);
@@ -3315,7 +3315,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     {
                         int callback_id = lmt_callback_defined(show_whatsit_callback);
                         /*tex we always print this */
-                        if (callback_id) {
+                        if (callback_id > 0) {
                             strnumber u = tex_save_cur_string();
                             char *s = NULL;
                             lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Nd->S", p, 1, &s);

@@ -2481,7 +2481,7 @@ static void mp_do_initialize(MP mp)
     mp->char_class[':']  = 10;
     mp->char_class['|']  = 10;
     mp->char_class['`']  = 11;
-    mp->char_class['\''] = 11;
+    mp->char_class['\''] = mp_string_class; /* was 11 */
     mp->char_class['+']  = 12;
     mp->char_class['-']  = 12;
     mp->char_class['/']  = 13;
@@ -3624,6 +3624,9 @@ static const char *mp_op_string_names[] = {
     [mp_precontrol_operation]        = "precontrol",
     [mp_postcontrol_operation]       = "postcontrol",
     [mp_direction_operation]         = "direction",
+    [mp_last_xy_operation]           = "lastxy",
+    [mp_last_x_operation]            = "lastx",
+    [mp_last_y_operation]            = "lasty",
     [mp_path_point_operation]        = "pathpoint",
     [mp_path_precontrol_operation]   = "pathprecontrol",
     [mp_path_postcontrol_operation]  = "pathpostcontrol",
@@ -6067,7 +6070,7 @@ $$
 
 */
 
-void mp_make_choices(MP mp, mp_knot knots)
+static void mp_make_choices(MP mp, mp_knot knots)
 {
     mp_knot h;    /* the first breakpoint */
     mp_knot p, q; /* consecutive breakpoints being processed */
@@ -7150,8 +7153,8 @@ mp_knot mp_append_knot_xy(MP mp, mp_knot p, double x, double y, int type)
         return q;
     } else if (mp_link_knotpair_xy(mp, p, q)) {
         if (mp_valid_knot_type(type)) {
-            mp_right_type(p) = type;
-            mp_left_type(p) = type;
+            mp_right_type(p) = (unsigned char) type;
+            mp_left_type(p) = (unsigned char) type;
         }
         return q;
     } else {
@@ -15480,7 +15483,15 @@ void mp_get_next(MP mp)
                 if (mp->scanner_status == mp_tex_flushing_state) {
                     goto SWITCH;
                 } else {
-                    unsigned char cend = c == '"' ? '"' : 3 ; /* ASCII BTX ... ETX */
+                    /* We also accept ASCII BTX ... ETX here. */
+                    unsigned char cend = c == '"' ? '"' : c == '\'' ? '\'' : 3 ;
+                    if (c == '\'') {
+                        if (mp_number_to_boolean(internal_value(mp_single_quote_mode_internal)) == mp_true_operation) {
+                            /* okay */
+                        } else { 
+                            break;
+                        }
+                    }
                     if (mp->buffer[mp_input_location] == cend) {
                         set_cur_mod_str(mp_rts(mp,""));
                     } else {
@@ -19401,6 +19412,8 @@ the pair is part of a path. Here we convert a pair to a knot with two endpoints.
 
 */
 
+/* todo : mp->last_x and mp->last_y */
+
 static mp_knot mp_pair_to_knot(MP mp)
 {
     mp_knot q = mp_new_knot(mp);
@@ -19413,6 +19426,8 @@ static mp_knot mp_pair_to_knot(MP mp)
     mp_known_pair(mp);
     mp_number_clone(q->x_coord, mp->cur_x);
     mp_number_clone(q->y_coord, mp->cur_y);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19427,6 +19442,8 @@ static mp_knot mp_numeric_to_knot_no(MP mp, mp_number x, mp_number y)
     mp_next_knot(q) = q;
     mp_number_clone(q->x_coord, x);
     mp_number_clone(q->y_coord, y);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19436,6 +19453,8 @@ static mp_knot mp_pair_to_knot_xy(MP mp, mp_number x, mp_number y)
     mp_known_pair(mp);
     mp_number_add(q->x_coord, mp->cur_x);
     mp_number_add(q->y_coord, mp->cur_y);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19444,6 +19463,8 @@ static mp_knot mp_numeric_to_knot_xy(MP mp, mp_number x, mp_number y)
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->x_coord, cur_exp_value_number);
     mp_number_add(q->y_coord, cur_exp_value_number);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19451,6 +19472,8 @@ static mp_knot mp_numeric_to_knot_x(MP mp, mp_number x, mp_number y)
 {
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->x_coord, cur_exp_value_number);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19458,6 +19481,8 @@ static mp_knot mp_numeric_to_knot_y(MP mp, mp_number x, mp_number y)
 {
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->y_coord, cur_exp_value_number);
+    mp_number_clone(mp->last_x, q->x_coord);
+    mp_number_clone(mp->last_y, q->y_coord);
     return q;
 }
 
@@ -19874,6 +19899,18 @@ static void mp_do_command_nullary(MP mp, int c)
             } else {
                 mp_pair_value(mp, &mp_zero_t, &mp_zero_t);
             }
+            break;
+        case mp_last_xy_operation:
+            cur_exp_type = mp_undefined_type;
+            mp_pair_value(mp, &mp->last_x, &mp->last_y);
+            break;
+        case mp_last_x_operation:
+            cur_exp_type = mp_known_type;
+            mp_set_cur_exp_value_number(mp, &mp->last_x);
+            break;
+        case mp_last_y_operation:
+            cur_exp_type = mp_known_type;
+            mp_set_cur_exp_value_number(mp, &mp->last_y);
             break;
     }
     mp_check_arithmic(mp);
@@ -20749,6 +20786,12 @@ static int mp_get_cur_bbox(MP mp)
         case mp_pen_type:
         case mp_nep_type:
             mp_pen_bbox(mp, cur_exp_knot);
+            break;
+        case mp_pair_type:
+            mp_set_number_to_zero(mp_minx);
+            mp_set_number_to_zero(mp_maxx);
+            mp_set_number_to_zero(mp_miny);
+            mp_set_number_to_zero(mp_maxy);
             break;
         default:
             return 0;
@@ -31693,6 +31736,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "lessdigits",            mp_internal_command,         mp_less_digits_internal);
     mp_primitive(mp, "intersectionprecision", mp_internal_command,         mp_intersection_precision_internal);
     mp_primitive(mp, "jointolerance",         mp_internal_command,         mp_join_tolerance_internal);
+    mp_primitive(mp, "singlequotemode",       mp_internal_command,         mp_single_quote_mode_internal);
 
     mp_primitive(mp, "..",                    mp_path_join_command,        0);
     mp_primitive(mp, "--",                    mp_path_connect_command,     0);
@@ -31805,6 +31849,9 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "pathprecontrol",        mp_nullary_command,          mp_path_precontrol_operation);
     mp_primitive(mp, "pathpostcontrol",       mp_nullary_command,          mp_path_postcontrol_operation);
     mp_primitive(mp, "pathdirection",         mp_nullary_command,          mp_path_direction_operation);
+    mp_primitive(mp, "lastxy",                mp_nullary_command,          mp_last_xy_operation);
+    mp_primitive(mp, "lastx",                 mp_nullary_command,          mp_last_x_operation);
+    mp_primitive(mp, "lasty",                 mp_nullary_command,          mp_last_y_operation);
     mp_primitive(mp, "pathstate",             mp_nullary_command,          mp_path_state_operation);
     mp_primitive(mp, "pathindex",             mp_nullary_command,          mp_path_index_operation);
     mp_primitive(mp, "pathlastindex",         mp_nullary_command,          mp_path_lastindex_operation);
@@ -32074,6 +32121,9 @@ static void mp_initialize_tables(MP mp)
     mp_new_number(mp->cur_x);
     mp_new_number(mp->cur_y);
 
+    mp_new_number_clone(mp->last_x, mp_zero_t);
+    mp_new_number_clone(mp->last_y, mp_zero_t);
+
     mp_new_number(mp->cur_t);
     mp_new_number(mp->cur_tt);
     mp_new_number(mp->max_t);
@@ -32152,6 +32202,7 @@ static void mp_initialize_tables(MP mp)
     set_internal_name(mp_less_digits_internal,            mp_strdup("lessdigits"));
     set_internal_name(mp_intersection_precision_internal, mp_strdup("intersectionprecision"));
     set_internal_name(mp_join_tolerance_internal,         mp_strdup("jointolerance"));
+    set_internal_name(mp_single_quote_mode_internal,      mp_strdup("singlequotemode"));
 
     /*tex
         Relatively siumple initializations:
@@ -32335,6 +32386,7 @@ MP mp_initialize(MP_options *opt)
         set_internal_type(mp_number_system_internal, mp_string_type);
         set_internal_type(mp_job_name_internal, mp_string_type);
         set_internal_type(mp_less_digits_internal, mp_boolean_type);
+        set_internal_type(mp_single_quote_mode_internal, mp_boolean_type);
     }
 
     mp_bytemap_valid(mp, 0); /* forces an initial lot */

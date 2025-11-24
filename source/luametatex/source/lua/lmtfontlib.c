@@ -520,7 +520,7 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
                         }
                         if (lua_istable(L, -1)) {
                             /*tex Ligature: */
-                            set_numeric_field_by_index(r, char, -1);
+                            set_numeric_field_by_index(r, key_char, -1);
                         }
                         if (r != -1 && k != non_boundary_char) {
                             int ligtarget = 0;

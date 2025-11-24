@@ -210,31 +210,33 @@ dir.globpattern = globpattern
 local function collectpattern(path,patt,recurse,result)
     local ok, scanner
     result = result or { }
-    if path == "/" then
-        ok, scanner, first = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
-    else
-        ok, scanner, first = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
-    end
-    if ok and type(scanner) == "function" then
-        if not find(path,"/$") then
-            path = path .. '/'
+    if patt then
+        if path == "/" then
+            ok, scanner, first = xpcall(function() return walkdir(path..".") end, function() end) -- kepler safe
+        else
+            ok, scanner, first = xpcall(function() return walkdir(path)      end, function() end) -- kepler safe
         end
-        for name in scanner, first do -- can be optimized
-            if name == "." then
-                -- skip
-            elseif name == ".." then
-                -- skip
-            else
-                local full = path .. name
-                local attr = attributes(full)
-                local mode = attr.mode
-                if mode == 'file' then
-                    if find(full,patt) then
+        if ok and type(scanner) == "function" then
+            if not find(path,"/$") then
+                path = path .. '/'
+            end
+            for name in scanner, first do -- can be optimized
+                if name == "." then
+                    -- skip
+                elseif name == ".." then
+                    -- skip
+                else
+                    local full = path .. name
+                    local attr = attributes(full)
+                    local mode = attr.mode
+                    if mode == 'file' then
+                        if find(full,patt) then
+                            result[name] = attr
+                        end
+                    elseif recurse and mode == "directory" then
+                        attr.list = collectpattern(full,patt,recurse)
                         result[name] = attr
                     end
-                elseif recurse and mode == "directory" then
-                    attr.list = collectpattern(full,patt,recurse)
-                    result[name] = attr
                 end
             end
         end
@@ -410,7 +412,7 @@ dir.globdirs = globdirs
 -- print(dir.ls("*.tex"))
 
 function dir.ls(pattern)
-    return concat(glob(pattern),"\n")
+    return concat(glob(pattern or ""),"\n")
 end
 
 -- mkdirs("temp")

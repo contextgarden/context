@@ -3775,7 +3775,7 @@ halfword tex_vert_break(halfword current, scaled height, scaled depth, int callb
     /*tex For experiments: */
     int checks = callback ? vsplit_checks_par : 0;
     int callbackid = checks ? lmt_callback_defined(show_vsplit_callback) : 0;
-    if (callbackid) { 
+    if (callbackid > 0) { 
         tex_aux_vsplit_callback_initialize(callbackid, checks, current, height, depth, extra);
     }
     while (1) {

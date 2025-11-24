@@ -146,33 +146,39 @@ local escape = Cs(Cc('"') * ((P('"')/'""' + P(1))^0) * Cc('"'))
 
 function table.tocsv(t,specification)
     if t and #t > 0 then
-        local result = { }
-        local r = { }
-        specification = specification or { }
-        local fields = specification.fields
-        if type(fields) ~= "string" then
-            fields = sortedkeys(t[1])
-        end
+        specification = type(specification) == "table" and specification or { }
         local separator = specification.separator or ","
-        local noffields = #fields
-        if specification.preamble == true then
+        local preamble  = specification.preamble == true
+        local fields    = specification.fields
+        local ishash    = #t[1] == 0
+        local noffields = 0
+        if ishash then
+            noffields = fields and #fields or 0
+        else
+            noffields = fields and #fields or #t[1]
+        end
+        local result = { }
+        local row    = { }
+        local r      = 0
+        if preamble then
             for f=1,noffields do
-                r[f] = lpegmatch(escape,tostring(fields[f]))
+                row[f] = lpegmatch(escape,tostring(fields[f]))
             end
-            result[1] = concat(r,separator)
+            result[1] = concat(row,separator)
+            r = 1
         end
         for i=1,#t do
             local ti = t[i]
             for f=1,noffields do
-                local field = ti[fields[f]]
+                local field = ti[ishash and fields[f] or i]
                 if type(field) == "string" then
-                    r[f] = lpegmatch(escape,field)
+                    row[f] = lpegmatch(escape,field)
                 else
-                    r[f] = tostring(field)
+                    row[f] = tostring(field)
                 end
             end
-         -- result[#result+1] = concat(r,separator)
-            result[i+1] = concat(r,separator)
+            r = r + 1
+            result[r] = concat(row,separator)
         end
         return concat(result,"\n")
     else
@@ -214,7 +220,8 @@ end
 --
 -- much faster
 
-local nspaces = utilities.strings.newrepeater(" ")
+--    nspaces = utilities.strings.newrepeater(" ")
+local nspaces = string.hashes.spaces
 
 local function toxml(t,d,result,step)
     local r = #result
@@ -261,7 +268,12 @@ end
 -- end
 
 function table.toxml(t,specification)
-    specification = specification or { }
+    local kind = type(specification)
+    if kind == "string" then
+        specification = { name = specification }
+    elseif kind ~= "table" then
+        specification = { }
+    end
     local name   = specification.name
     local noroot = name == false
     local result = (specification.nobanner or noroot) and { } or { "<?xml version='1.0' standalone='yes' ?>" }
@@ -525,450 +537,282 @@ function table.save(filename,t,n,...)
     io.savedata(filename,table.serialize(t,n == nil and true or n,...)) -- no frozen table.serialize
 end
 
-local f_key_value    = formatters["%s=%q"]
-local f_add_table    = formatters[" {%t},\n"]
-local f_return_table = formatters["return {\n%t}"]
+do
 
-local function slowdrop(t) -- maybe less memory (intermediate concat)
-    local r = { }
-    local l = { }
-    for i=1,#t do
-        local ti = t[i]
-        local j = 0
-        for k, v in next, ti do
-            j = j + 1
-            l[j] = f_key_value(k,v)
+    -- The next version is somewhat faster, although in practice one will seldom
+    -- serialize a lot using this one. Often the above variants are more efficient.
+    -- If we would really need this a lot, we could hash q keys, or just not used
+    -- indented code.
+
+    -- char-def.lua : 0.53 -> 0.38
+    -- husayni.tma  : 0.28 -> 0.19
+
+    local f_start_key_idx     = formatters["%w{"]
+    local f_start_key_num     = JITSUPPORTED and formatters["%w[%s]={"] or formatters["%w[%q]={"]
+    local f_start_key_str     = formatters["%w[%q]={"]
+    local f_start_key_boo     = formatters["%w[%l]={"]
+    local f_start_key_nop     = formatters["%w{"]
+
+    local f_stop              = formatters["%w},"]
+
+    local f_key_num_value_num = JITSUPPORTED and formatters["%w[%s]=%s,"] or formatters["%w[%s]=%q,"]
+    local f_key_str_value_num = JITSUPPORTED and formatters["%w[%Q]=%s,"] or formatters["%w[%Q]=%q,"]
+    local f_key_boo_value_num = JITSUPPORTED and formatters["%w[%l]=%s,"] or formatters["%w[%l]=%q,"]
+
+    local f_key_num_value_str = JITSUPPORTED and formatters["%w[%s]=%Q,"] or formatters["%w[%q]=%Q,"]
+    local f_key_str_value_str = formatters["%w[%Q]=%Q,"]
+    local f_key_boo_value_str = formatters["%w[%l]=%Q,"]
+
+    local f_key_num_value_boo = JITSUPPORTED and formatters["%w[%s]=%l,"] or formatters["%w[%q]=%l,"]
+    local f_key_str_value_boo = formatters["%w[%Q]=%l,"]
+    local f_key_boo_value_boo = formatters["%w[%l]=%l,"]
+
+    local f_key_num_value_not = JITSUPPORTED and formatters["%w[%s]={},"] or formatters["%w[%q]={},"]
+    local f_key_str_value_not = formatters["%w[%Q]={},"]
+    local f_key_boo_value_not = formatters["%w[%l]={},"]
+
+    local f_key_num_value_seq = JITSUPPORTED and formatters["%w[%s]={ %, t },"] or formatters["%w[%q]={ %, t },"]
+    local f_key_str_value_seq = formatters["%w[%Q]={ %, t },"]
+    local f_key_boo_value_seq = formatters["%w[%l]={ %, t },"]
+
+    local f_val_num           = JITSUPPORTED and formatters["%w%s,"] or formatters["%w%q,"]
+    local f_val_str           = formatters["%w%Q,"]
+    local f_val_boo           = formatters["%w%l,"]
+    local f_val_not           = formatters["%w{},"]
+    local f_val_seq           = formatters["%w{ %, t },"]
+    local f_fin_seq           = formatters[" %, t }"]
+
+    local f_table_return      = formatters["return {"]
+    local f_table_name        = formatters["%s={"]
+    local f_table_direct      = formatters["{"]
+    local f_table_entry       = formatters["[%Q]={"]
+    local f_table_finish      = formatters["}"]
+
+    local spaces = utilities.strings.newrepeater(" ")
+
+    local original_serialize = table.serialize -- the extensive one, the one we started with
+
+    -- there is still room for optimization: index run, key run, but i need to check with the
+    -- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
+    -- indices / keys being sorted, so it will never be real fast
+
+    local is_simple_table = table.is_simple_table
+
+    -- In order to overcome the luajit (65K constant) limitation I tried a split approach,
+    -- i.e. outputting the first level tables as locals but that failed with large cjk
+    -- fonts too so I removed that ... just use luatex instead.
+
+    local function serialize(root,name,specification)
+
+        if type(specification) == "table" then
+            return original_serialize(root,name,specification) -- the original one
         end
-        r[i] = f_add_table(l)
-    end
-    return f_return_table(r)
-end
 
-local function fastdrop(t)
-    local r = { "return {\n" }
-    local m = 1
-    for i=1,#t do
-        local ti = t[i]
-        m = m + 1 r[m] = " {"
-        for k, v in next, ti do
-            m = m + 1 r[m] = f_key_value(k,v)
-        end
-        m = m + 1 r[m] = "},\n"
-    end
-    m = m + 1
-    r[m] = "}"
-    return concat(r)
-end
+        local t    -- = { }
+        local n       = 1
+     -- local m       = 0 -- no gain
+        local unknown = false
 
-function table.drop(t,slow) -- only { { a=2 }, {a=3} } -- for special cases
-    if #t == 0 then
-        return "return { }"
-    elseif slow == true then
-        return slowdrop(t) -- less memory
-    else
-        return fastdrop(t) -- some 15% faster
-    end
-end
-
--- inspect(table.drop({ { a=2 }, {a=3} }))
--- inspect(table.drop({ { a=2 }, {a=3} },true))
-
--- function table.autokey(t,k) -- replaced
---     local v = { }
---     t[k] = v
---     return v
--- end
-
-local selfmapper = { __index = function(t,k) t[k] = k return k end }
-
-function table.twowaymapper(t)    -- takes a 0/1 .. n indexed table and returns
-    if not t then                 -- it with  string-numbers as indices + reverse
-        t = { }                   -- mapping (all strings) .. used in cvs etc but
-    else                          -- typically a helper that one forgets about
-        local zero = rawget(t,0)  -- so it might move someplace else
-        for i=zero and 0 or 1,#t do
-            local ti = t[i]       -- t[1]     = "one"
-            if ti then
-                local i = tostring(i)
-                t[i]    = ti      -- t["1"]   = "one"
-                t[ti]   = i       -- t["one"] = "1"
-            end
-        end
-    end
- -- setmetatableindex(t,"key")
-    setmetatable(t,selfmapper)
-    return t
-end
-
--- The next version is somewhat faster, although in practice one will seldom
--- serialize a lot using this one. Often the above variants are more efficient.
--- If we would really need this a lot, we could hash q keys, or just not used
--- indented code.
-
--- char-def.lua : 0.53 -> 0.38
--- husayni.tma  : 0.28 -> 0.19
-
-local f_start_key_idx     = formatters["%w{"]
-local f_start_key_num     = JITSUPPORTED and formatters["%w[%s]={"] or formatters["%w[%q]={"]
-local f_start_key_str     = formatters["%w[%q]={"]
-local f_start_key_boo     = formatters["%w[%l]={"]
-local f_start_key_nop     = formatters["%w{"]
-
-local f_stop              = formatters["%w},"]
-
-local f_key_num_value_num = JITSUPPORTED and formatters["%w[%s]=%s,"] or formatters["%w[%s]=%q,"]
-local f_key_str_value_num = JITSUPPORTED and formatters["%w[%Q]=%s,"] or formatters["%w[%Q]=%q,"]
-local f_key_boo_value_num = JITSUPPORTED and formatters["%w[%l]=%s,"] or formatters["%w[%l]=%q,"]
-
-local f_key_num_value_str = JITSUPPORTED and formatters["%w[%s]=%Q,"] or formatters["%w[%q]=%Q,"]
-local f_key_str_value_str = formatters["%w[%Q]=%Q,"]
-local f_key_boo_value_str = formatters["%w[%l]=%Q,"]
-
-local f_key_num_value_boo = JITSUPPORTED and formatters["%w[%s]=%l,"] or formatters["%w[%q]=%l,"]
-local f_key_str_value_boo = formatters["%w[%Q]=%l,"]
-local f_key_boo_value_boo = formatters["%w[%l]=%l,"]
-
-local f_key_num_value_not = JITSUPPORTED and formatters["%w[%s]={},"] or formatters["%w[%q]={},"]
-local f_key_str_value_not = formatters["%w[%Q]={},"]
-local f_key_boo_value_not = formatters["%w[%l]={},"]
-
-local f_key_num_value_seq = JITSUPPORTED and formatters["%w[%s]={ %, t },"] or formatters["%w[%q]={ %, t },"]
-local f_key_str_value_seq = formatters["%w[%Q]={ %, t },"]
-local f_key_boo_value_seq = formatters["%w[%l]={ %, t },"]
-
-local f_val_num           = JITSUPPORTED and formatters["%w%s,"] or formatters["%w%q,"]
-local f_val_str           = formatters["%w%Q,"]
-local f_val_boo           = formatters["%w%l,"]
-local f_val_not           = formatters["%w{},"]
-local f_val_seq           = formatters["%w{ %, t },"]
-local f_fin_seq           = formatters[" %, t }"]
-
-local f_table_return      = formatters["return {"]
-local f_table_name        = formatters["%s={"]
-local f_table_direct      = formatters["{"]
-local f_table_entry       = formatters["[%Q]={"]
-local f_table_finish      = formatters["}"]
-
-local spaces = utilities.strings.newrepeater(" ")
-
-local original_serialize = table.serialize -- the extensive one, the one we started with
-
--- there is still room for optimization: index run, key run, but i need to check with the
--- latest lua for the value of #n (with holes) .. anyway for tracing purposes we want
--- indices / keys being sorted, so it will never be real fast
-
-local is_simple_table = table.is_simple_table
-
--- local function is_simple_table(t)
---     local nt = #t
---     if nt > 0 then
---         local n = 0
---         for _, v in next, t do
---             n = n + 1
---             if type(v) == "table" then
---                 return nil
---             end
---         end
---      -- local haszero = t[0]
---         local haszero = rawget(t,0) -- don't trigger meta
---         if n == nt then
---             local tt = { }
---             for i=1,nt do
---                 local v = t[i]
---                 local tv = type(v)
---                 if tv == "number" then
---                     tt[i] = v -- not needed tostring(v)
---                 elseif tv == "string" then
---                     tt[i] = format("%q",v) -- f_string(v)
---                 elseif tv == "boolean" then
---                     tt[i] = v and "true" or "false"
---                 else
---                     return nil
---                 end
---             end
---             return tt
---         elseif haszero and (n == nt + 1) then
---             local tt = { }
---             for i=0,nt do
---                 local v = t[i]
---                 local tv = type(v)
---                 if tv == "number" then
---                     tt[i+1] = v -- not needed tostring(v)
---                 elseif tv == "string" then
---                     tt[i+1] = format("%q",v) -- f_string(v)
---                 elseif tv == "boolean" then
---                     tt[i+1] = v and "true" or "false"
---                 else
---                     return nil
---                 end
---             end
---             tt[1] = "[0] = " .. tt[1]
---             return tt
---         end
---     end
---     return nil
--- end
-
--- In order to overcome the luajit (65K constant) limitation I tried a split approach,
--- i.e. outputting the first level tables as locals but that failed with large cjk
--- fonts too so I removed that ... just use luatex instead.
-
-local function serialize(root,name,specification)
-
-    if type(specification) == "table" then
-        return original_serialize(root,name,specification) -- the original one
-    end
-
-    local t    -- = { }
-    local n       = 1
- -- local m       = 0 -- no gain
-    local unknown = false
-
-    local function do_serialize(root,name,depth,level,indexed)
-        if level > 0 then
-            n = n + 1
-            if indexed then
-                t[n] = f_start_key_idx(depth)
-            else
-                local tn = type(name)
-                if tn == "number" then
-                    t[n] = f_start_key_num(depth,name)
-                elseif tn == "string" then
-                    t[n] = f_start_key_str(depth,name)
-                elseif tn == "boolean" then
-                    t[n] = f_start_key_boo(depth,name)
+        local function do_serialize(root,name,depth,level,indexed)
+            if level > 0 then
+                n = n + 1
+                if indexed then
+                    t[n] = f_start_key_idx(depth)
                 else
-                    t[n] = f_start_key_nop(depth)
-                end
-            end
-            depth = depth + 1
-        end
-        -- we could check for k (index) being number (cardinal)
-        if root and next(root) ~= nil then
-            local first = nil
-            local last  = #root
-            if last > 0 then
-                for k=1,last do
-                    if rawget(root,k) == nil then
-                 -- if root[k] == nil then
-                        last = k - 1
-                        break
+                    local tn = type(name)
+                    if tn == "number" then
+                        t[n] = f_start_key_num(depth,name)
+                    elseif tn == "string" then
+                        t[n] = f_start_key_str(depth,name)
+                    elseif tn == "boolean" then
+                        t[n] = f_start_key_boo(depth,name)
+                    else
+                        t[n] = f_start_key_nop(depth)
                     end
                 end
-                if last > 0 then
-                    first = 1
-                end
+                depth = depth + 1
             end
-            local sk = sortedkeys(root)
-            for i=1,#sk do
-                local k  = sk[i]
-                local v  = root[k]
-                local tv = type(v)
-                local tk = type(k)
-                if first and tk == "number" and k <= last and k >= first then
-                    if tv == "number" then
-                        n = n + 1 t[n] = f_val_num(depth,v)
+            -- we could check for k (index) being number (cardinal)
+            if root and next(root) ~= nil then
+                local first = nil
+                local last  = #root
+                if last > 0 then
+                    for k=1,last do
+                        if rawget(root,k) == nil then
+                     -- if root[k] == nil then
+                            last = k - 1
+                            break
+                        end
+                    end
+                    if last > 0 then
+                        first = 1
+                    end
+                end
+                local sk = sortedkeys(root)
+                for i=1,#sk do
+                    local k  = sk[i]
+                    local v  = root[k]
+                    local tv = type(v)
+                    local tk = type(k)
+                    if first and tk == "number" and k <= last and k >= first then
+                        if tv == "number" then
+                            n = n + 1 t[n] = f_val_num(depth,v)
+                        elseif tv == "string" then
+                            n = n + 1 t[n] = f_val_str(depth,v)
+                        elseif tv == "table" then
+                            if next(v) == nil then -- tricky as next is unpredictable in a hash
+                                n = n + 1 t[n] = f_val_not(depth)
+                            else
+                                local st = is_simple_table(v)
+                                if st then
+                                    n = n + 1 t[n] = f_val_seq(depth,st)
+                                else
+                                    do_serialize(v,k,depth,level+1,true)
+                                end
+                            end
+                        elseif tv == "boolean" then
+                            n = n + 1 t[n] = f_val_boo(depth,v)
+                        elseif unknown then
+                            n = n + 1 t[n] = f_val_str(depth,tostring(v))
+                        end
+                    elseif tv == "number" then
+                        if tk == "number" then
+                            n = n + 1 t[n] = f_key_num_value_num(depth,k,v)
+                        elseif tk == "string" then
+                            n = n + 1 t[n] = f_key_str_value_num(depth,k,v)
+                        elseif tk == "boolean" then
+                            n = n + 1 t[n] = f_key_boo_value_num(depth,k,v)
+                        elseif unknown then
+                            n = n + 1 t[n] = f_key_str_value_num(depth,tostring(k),v)
+                        end
                     elseif tv == "string" then
-                        n = n + 1 t[n] = f_val_str(depth,v)
+                        if tk == "number" then
+                            n = n + 1 t[n] = f_key_num_value_str(depth,k,v)
+                        elseif tk == "string" then
+                            n = n + 1 t[n] = f_key_str_value_str(depth,k,v)
+                        elseif tk == "boolean" then
+                            n = n + 1 t[n] = f_key_boo_value_str(depth,k,v)
+                        elseif unknown then
+                            n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),v)
+                        end
                     elseif tv == "table" then
-                        if next(v) == nil then -- tricky as next is unpredictable in a hash
-                            n = n + 1 t[n] = f_val_not(depth)
+                        if next(v) == nil then
+                            if tk == "number" then
+                                n = n + 1 t[n] = f_key_num_value_not(depth,k)
+                            elseif tk == "string" then
+                                n = n + 1 t[n] = f_key_str_value_not(depth,k)
+                            elseif tk == "boolean" then
+                                n = n + 1 t[n] = f_key_boo_value_not(depth,k)
+                            elseif unknown then
+                                n = n + 1 t[n] = f_key_str_value_not(depth,tostring(k))
+                            end
                         else
                             local st = is_simple_table(v)
-                            if st then
-                                n = n + 1 t[n] = f_val_seq(depth,st)
-                            else
-                                do_serialize(v,k,depth,level+1,true)
+                            if not st then
+                                do_serialize(v,k,depth,level+1)
+                            elseif tk == "number" then
+                                n = n + 1 t[n] = f_key_num_value_seq(depth,k,st)
+                            elseif tk == "string" then
+                                n = n + 1 t[n] = f_key_str_value_seq(depth,k,st)
+                            elseif tk == "boolean" then
+                                n = n + 1 t[n] = f_key_boo_value_seq(depth,k,st)
+                            elseif unknown then
+                                n = n + 1 t[n] = f_key_str_value_seq(depth,tostring(k),st)
                             end
                         end
                     elseif tv == "boolean" then
-                        n = n + 1 t[n] = f_val_boo(depth,v)
-                    elseif unknown then
-                        n = n + 1 t[n] = f_val_str(depth,tostring(v))
-                    end
-                elseif tv == "number" then
-                    if tk == "number" then
-                        n = n + 1 t[n] = f_key_num_value_num(depth,k,v)
-                    elseif tk == "string" then
-                        n = n + 1 t[n] = f_key_str_value_num(depth,k,v)
-                    elseif tk == "boolean" then
-                        n = n + 1 t[n] = f_key_boo_value_num(depth,k,v)
-                    elseif unknown then
-                        n = n + 1 t[n] = f_key_str_value_num(depth,tostring(k),v)
-                    end
-                elseif tv == "string" then
-                    if tk == "number" then
-                        n = n + 1 t[n] = f_key_num_value_str(depth,k,v)
-                    elseif tk == "string" then
-                        n = n + 1 t[n] = f_key_str_value_str(depth,k,v)
-                    elseif tk == "boolean" then
-                        n = n + 1 t[n] = f_key_boo_value_str(depth,k,v)
-                    elseif unknown then
-                        n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),v)
-                    end
-                elseif tv == "table" then
-                    if next(v) == nil then
                         if tk == "number" then
-                            n = n + 1 t[n] = f_key_num_value_not(depth,k)
+                            n = n + 1 t[n] = f_key_num_value_boo(depth,k,v)
                         elseif tk == "string" then
-                            n = n + 1 t[n] = f_key_str_value_not(depth,k)
+                            n = n + 1 t[n] = f_key_str_value_boo(depth,k,v)
                         elseif tk == "boolean" then
-                            n = n + 1 t[n] = f_key_boo_value_not(depth,k)
+                            n = n + 1 t[n] = f_key_boo_value_boo(depth,k,v)
                         elseif unknown then
-                            n = n + 1 t[n] = f_key_str_value_not(depth,tostring(k))
+                            n = n + 1 t[n] = f_key_str_value_boo(depth,tostring(k),v)
                         end
                     else
-                        local st = is_simple_table(v)
-                        if not st then
-                            do_serialize(v,k,depth,level+1)
-                        elseif tk == "number" then
-                            n = n + 1 t[n] = f_key_num_value_seq(depth,k,st)
+                        if tk == "number" then
+                            n = n + 1 t[n] = f_key_num_value_str(depth,k,tostring(v))
                         elseif tk == "string" then
-                            n = n + 1 t[n] = f_key_str_value_seq(depth,k,st)
+                            n = n + 1 t[n] = f_key_str_value_str(depth,k,tostring(v))
                         elseif tk == "boolean" then
-                            n = n + 1 t[n] = f_key_boo_value_seq(depth,k,st)
+                            n = n + 1 t[n] = f_key_boo_value_str(depth,k,tostring(v))
                         elseif unknown then
-                            n = n + 1 t[n] = f_key_str_value_seq(depth,tostring(k),st)
+                            n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),tostring(v))
                         end
                     end
-                elseif tv == "boolean" then
-                    if tk == "number" then
-                        n = n + 1 t[n] = f_key_num_value_boo(depth,k,v)
-                    elseif tk == "string" then
-                        n = n + 1 t[n] = f_key_str_value_boo(depth,k,v)
-                    elseif tk == "boolean" then
-                        n = n + 1 t[n] = f_key_boo_value_boo(depth,k,v)
-                    elseif unknown then
-                        n = n + 1 t[n] = f_key_str_value_boo(depth,tostring(k),v)
-                    end
-                else
-                    if tk == "number" then
-                        n = n + 1 t[n] = f_key_num_value_str(depth,k,tostring(v))
-                    elseif tk == "string" then
-                        n = n + 1 t[n] = f_key_str_value_str(depth,k,tostring(v))
-                    elseif tk == "boolean" then
-                        n = n + 1 t[n] = f_key_boo_value_str(depth,k,tostring(v))
-                    elseif unknown then
-                        n = n + 1 t[n] = f_key_str_value_str(depth,tostring(k),tostring(v))
-                    end
+                 -- if n > 100000 then -- no gain
+                 --     local k = m + 1
+                 --     t[k] = concat(t,"\n",k,n)
+                 --     n = k
+                 --     m = k
+                 -- end
                 end
-             -- if n > 100000 then -- no gain
-             --     local k = m + 1
-             --     t[k] = concat(t,"\n",k,n)
-             --     n = k
-             --     m = k
-             -- end
+            end
+            if level > 0 then
+                n = n + 1 t[n] = f_stop(depth-1)
             end
         end
-        if level > 0 then
-            n = n + 1 t[n] = f_stop(depth-1)
-        end
-    end
 
-    local tname = type(name)
+        local tname = type(name)
 
-    if tname == "string" then
-        if name == "return" then
-            t = { f_table_return() }
-        else
-            t = { f_table_name(name) }
-        end
-    elseif tname == "number" then
-        t = { f_table_entry(name) }
-    elseif tname == "boolean" then
-        if name then
-            t = { f_table_return() }
-        else
-            t = { f_table_direct() }
-        end
-    else
-        t = { f_table_name("t") }
-    end
-
-    if root then
-        -- The dummy access will initialize a table that has a delayed initialization
-        -- using a metatable. (maybe explicitly test for metatable). This can crash on
-        -- metatables that check the index against a number.
-        if getmetatable(root) then -- todo: make this an option, maybe even per subtable
-            local dummy = root._w_h_a_t_e_v_e_r_ -- needed
-            root._w_h_a_t_e_v_e_r_ = nil
-        end
-        -- Let's forget about empty tables.
-        if next(root) ~= nil then
-            local st = is_simple_table(root)
-            if st then
-                return t[1] .. f_fin_seq(st) -- todo: move up and in one go
+        if tname == "string" then
+            if name == "return" then
+                t = { f_table_return() }
             else
-                do_serialize(root,name,1,0)
+                t = { f_table_name(name) }
+            end
+        elseif tname == "number" then
+            t = { f_table_entry(name) }
+        elseif tname == "boolean" then
+            if name then
+                t = { f_table_return() }
+            else
+                t = { f_table_direct() }
+            end
+        else
+            t = { f_table_name("t") }
+        end
+
+        if root then
+            -- The dummy access will initialize a table that has a delayed initialization
+            -- using a metatable. (maybe explicitly test for metatable). This can crash on
+            -- metatables that check the index against a number.
+            if getmetatable(root) then -- todo: make this an option, maybe even per subtable
+                local dummy = root._w_h_a_t_e_v_e_r_ -- needed
+                root._w_h_a_t_e_v_e_r_ = nil
+            end
+            -- Let's forget about empty tables.
+            if next(root) ~= nil then
+                local st = is_simple_table(root)
+                if st then
+                    return t[1] .. f_fin_seq(st) -- todo: move up and in one go
+                else
+                    do_serialize(root,name,1,0)
+                end
             end
         end
+        n = n + 1
+        t[n] = f_table_finish()
+        return concat(t,"\n")
+     -- return concat(t,"\n",1,n) -- no gain
     end
-    n = n + 1
-    t[n] = f_table_finish()
-    return concat(t,"\n")
- -- return concat(t,"\n",1,n) -- no gain
+
+    table.serialize = serialize
+
 end
 
-table.serialize = serialize
-
 if setinspector then
+
+    local serialize = table.serialize
+
     setinspector("table",function(v)
         if type(v) == "table" then
             print(serialize(v,"table",{ metacheck = false }))
             return true
         end
     end)
-end
 
--- ordered hashes (for now here but in the table namespace):
-
--- local t = table.orderedhash()
---
--- t["1"]  = { "a", "b" }
--- t["2"]  = { }
--- t["2a"] = { "a", "c", "d" }
---
--- for k, v in table.ordered(t) do
---     ...
--- end
-
-local mt = {
-    __newindex = function(t,k,v)
-        local n = t.last + 1
-        t.last    = n
-        t.list[n] = k
-        t.hash[k] = v
-    end,
-    __index = function(t,k)
-        return t.hash[k]
-    end,
-    __len = function(t)
-        return t.last
-    end,
-}
-
-function table.orderedhash()
-    return setmetatable({ list = { }, hash = { }, last = 0 }, mt)
-end
-
-function table.ordered(t)
-    local n = t.last
-    if n > 0 then
-        local l = t.list
-        local i = 1
-        local h = t.hash
-        local f = function()
-            if i <= n then
-                local k = i
-                local v = h[l[k]]
-                i = i + 1
-                return k, v
-            end
-        end
-        return f, 1, h[l[1]]
-    else
-        return function() end
-    end
 end
 
 -- function table.randomremove(t,n)

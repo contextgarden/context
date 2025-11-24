@@ -695,23 +695,25 @@ There are a couple of more formats but these are not that relevant in the
 perspective of \CONTEXT.
 
 When a lookup takes place, spaces are ignored and formats are normalized to
-lowercase.
+lowercase. \footnote {Here the text might run off the page depending on where the
+files are located.}
 
-\ShowLuaExampleString{file.strip(resolvers.findfile("context.tex"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("context.mkiv"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("context"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("data-res.lua"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold.otf"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold","otf"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold","opentype"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold","opentypefonts"),"tex/")}
-\ShowLuaExampleString{file.strip(resolvers.findfile("lmsans10-bold","opentype fonts"),"tex/")}
+\ShowLuaExampleString{resolvers.findfile("context.tex")}
+\ShowLuaExampleString{resolvers.findfile("context.mkiv")}
+\ShowLuaExampleString{resolvers.findfile("context")}
+\ShowLuaExampleString{resolvers.findfile("data-res.lua")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold.otf")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold","otf")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold","opentype")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold","opentypefonts")}
+\ShowLuaExampleString{resolvers.findfile("lmsans10-bold","opentype fonts")}
 
-The plural variant of this function returns one or more matches.
+The plural variant of this function returns one or more matches. \footnote {Again
+we can run off the page.}
 
 \ShowLuaExampleTable{resolvers.findfiles("texmfcnf.lua","cnf")}
-\ShowLuaExampleTable{resolvers.findfiles("context.tex","")}
+\ShowLuaExampleTable{resolvers.findfiles("context.mkiv","")}
 
 % table.print(resolvers.instance.environment)
 % table.print(resolvers.instance.variables)
@@ -757,29 +759,29 @@ The plural variant of this function returns one or more matches.
 
 \stopsection
 
-\startsection[title={Mathematics (math)}]
-    {\em todo}
-\stopsection
+% \startsection[title={Mathematics (math)}]
+%     {\em todo}
+% \stopsection
 
-\startsection[title={Graphics (grph)}]
-    {\em is a separate chapter}
-\stopsection
+% \startsection[title={Graphics (grph)}]
+%     {\em is a separate chapter}
+% \stopsection
 
-\startsection[title={Languages (lang)}]
-    {\em todo}
-\stopsection
+% \startsection[title={Languages (lang)}]
+%     {\em todo}
+% \stopsection
 
-\startsection[title={MetaPost (mlib)}]
-    {\em todo}
-\stopsection
+% \startsection[title={MetaPost (mlib)}]
+%     {\em todo}
+% \stopsection
 
-\startsection[title={Lua\TeX\ (luat)}]
-    {\em todo}
-\stopsection
+% \startsection[title={Lua\TeX\ (luat)}]
+%     {\em todo}
+% \stopsection
 
-\startsection[title={Tracing (trac)}]
-    {\em todo}
-\stopsection
+% \startsection[title={Tracing (trac)}]
+%     {\em todo}
+% \stopsection
 
 \stopchapter
 

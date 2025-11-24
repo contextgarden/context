@@ -614,7 +614,7 @@ static void final_cleanup(int dump)
             badrun = 4;
         }
     }
-    if (lmt_callback_defined(stop_run_callback)) {
+    if (lmt_callback_defined(stop_run_callback) > 0) {
         /*
             We don't issue the error callback here (yet), mainly because we don't really know what
             bad things happened. This might evolve as currently it is not seen as fatal error.

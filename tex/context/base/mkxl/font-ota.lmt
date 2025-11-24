@@ -185,10 +185,11 @@ local function setstate_latn(head,font) -- latin
             if not getstate(current) then
              -- local d = descriptions[char]
              -- if d then
+                    local category = categories[char]
                  -- if d.class == "mark" or (useunicodemarks and categories[char] == "mn") then
-                    if is_mark[char] then
+                    if is_mark[category] then
                         setstate(current,s_mark)
-                    elseif is_letter[char] then
+                    elseif is_letter[category] then
                         if first then
                             setstate(current,s_medi)
                         else

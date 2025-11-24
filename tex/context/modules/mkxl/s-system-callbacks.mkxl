@@ -11,6 +11,79 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
+\startluacode
+
+moduledata.callbacks = moduledata.callbacks or { }
+
+local list       = callback.names()
+local states     = callback.getstatevalues()
+
+local getstates  = callbacks.getstates
+local getcomment = callbacks.getcomment
+
+local context = context
+local BC, NC, NR = context.BC, context.NC, context.NR
+
+function moduledata.callbacks.showstates()
+    local statekeys = table.sortedkeys(states)
+    context.starttabulate { "|T|" .. string.rep("Tc|",#statekeys) }
+        context.FL()
+        BC() context("name")
+        for i=1,#statekeys do
+            BC()
+            local k = statekeys[i]
+            context(states[k])
+        end
+        NC() NR()
+        context.ML()
+        for i=1,#list do
+            local state = callback.getstate(i)
+            NC() context(list[i])
+            for i=1,#statekeys do
+                NC()
+                local k = statekeys[i]
+                if (state & k) == k then
+                    context("+")
+                end
+            end
+            NC() NR()
+        end
+        context.LL()
+    context.stoptabulate()
+end
+
+function moduledata.callbacks.showdetails()
+    context.starttabulate { "|rT|lT|lT|" }
+        context.FL()
+        BC() context("id")
+        BC() context("name")
+        BC() context("[state] comment")
+        NC() NR()
+        context.ML()
+        for index, name in table.sortedhash(list) do
+            local states  = getstates(name)  or {}
+            local comment = getcomment(name) or ""
+            NC() context(index)
+            NC() context(name)
+            if #states > 0 then
+                NC() context("[% t]",states)
+                if comment ~= "" then
+                    NR() NC() NC() NC()
+                end
+            end
+            if comment ~= "" then
+                context(comment)
+            end
+            NC() NR()
+        end
+        context.LL()
+    context.stoptabulate()
+end
+
+commands.showcallbacks = moduledata.callbacks.showdetails -- mkiv compatible name
+
+\stopluacode
+
 \continueifinputfile{s-system-callbacks.mkxl}
 
 \usemodule[article-basic]
@@ -18,45 +91,6 @@
 \setuplayout[tight]
 
 \starttext
-
-\startluacode
-
-local list   = callback.names()
-local states = callback.getstatevalues()
-local keys   = table.sortedkeys(states)
-
-context.starttabulate { "|T|" .. string.rep("Tc|",#keys) }
-
-    context.FL()
-
-    context.NC() context("name")
-    for i=1,#keys do
-        context.NC()
-        local k = keys[i]
-        context(states[k])
-    end
-    context.NC() context.NR()
-
-    context.ML()
-
-    for i=1,#list do
-        local state = callback.getstate(i)
-     -- context.NC() context(i)
-        context.NC() context(list[i])
-        for i=1,#keys do
-            context.NC()
-            local k = keys[i]
-            if (state & k) == k then
-                context("+")
-            end
-        end
-        context.NC() context.NR()
-    end
-
-    context.LL()
-
-context.stoptabulate()
-
-\stopluacode
-
+    \ctxlua{moduledata.callbacks.showstates ()} \page
+    \ctxlua{moduledata.callbacks.showdetails()} \page
 \stoptext

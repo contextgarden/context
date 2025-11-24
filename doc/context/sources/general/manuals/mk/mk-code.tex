@@ -49,7 +49,7 @@ The main \LUA\ instance in \CONTEXT\ is accessible by: \footnote {Note
 
 \startbuffer
 \startluacode
-global.tex.print("lua")
+globals.tex.print("lua")
 \stopluacode
 \stopbuffer
 
@@ -63,14 +63,14 @@ is why we also provide:
 
 \startbuffer
 \startusercode
-global.tex.print("user 1")
-global.tex.print("user 2")
+globaldata.tex.print("user 1")
+globaldata.tex.print("user 2")
 if characters then
-    global.tex.print("access")
+    globaldata.tex.print("access")
 else
-    global.tex.print("no access")
+    globaldata.tex.print("no access")
 end
-global.tex.print(global.characters.data[0xA9].contextname)
+globaldata.tex.print(globaldata.characters.data[0xA9].contextname)
 \stopusercode
 \stopbuffer
 
@@ -92,7 +92,7 @@ Now we can say:
 \startbuffer
 \startmymodulecode
 help = { "help" }
-global.tex.print(help[1])
+globaldata.tex.print(help[1])
 \stopmymodulecode
 \stopbuffer
 
@@ -102,7 +102,7 @@ This gives: \quote {\getbuffer}. The information is remembered:
 
 \startbuffer
 \startmymodulecode
-global.tex.print(help[1])
+globaldata.tex.print(help[1])
 \stopmymodulecode
 \stopbuffer
 
@@ -114,7 +114,7 @@ Just to check the isolation we try:
 
 \startbuffer
 \startusercode
-global.tex.print(help and help[1] or "no help")
+globaldata.tex.print(help and help[1] or "no help")
 \stopusercode
 \stopbuffer
 
@@ -125,7 +125,7 @@ following we will get an error message:
 
 \startbuffer
 \startusercode
-global.tex.print(help[1])
+globaldata.tex.print(help[1])
 \stopusercode
 \stopbuffer
 
@@ -139,7 +139,7 @@ global.tex.print(help[1])
 stack traceback:
 	<private user instance>:2: in main chunk.
 <inserted text> ...userdata")
-global.tex.print(help[1])
+globaldata.tex.print(help[1])
 }
 \stoptyping
 
@@ -148,7 +148,7 @@ An even more isolated variant is:
 \startbuffer
 \startisolatedcode
 help = { "help" }
-global.tex.print(help and help[1] or "no help")
+globaldata.tex.print(help and help[1] or "no help")
 \stopisolatedcode
 \stopbuffer
 
@@ -159,7 +159,7 @@ We get: \quote {\getbuffer}, while
 
 \startbuffer
 \startisolatedcode
-global.tex.print(help and help[1] or "no help")
+globaldata.tex.print(help and help[1] or "no help")
 \stopisolatedcode
 \stopbuffer
 
@@ -174,7 +174,7 @@ access to the instances, but this time we append \type {data}, so
 
 \startbuffer
 \startmymodulecode
-global.userdata.whatever = "be careful!"
+globaldata.userdata.whatever = "be careful!"
 \stopmymodulecode
 \stopbuffer
 
@@ -191,7 +191,7 @@ extend these yourself (even if we do it in the core of \MKIV).
 % local demo = { }
 %
 % function demo.whow(str)
-%     global.tex.print("[" .. string.reverse(str) .. "]")
+%     globaldata.tex.print("[" .. string.reverse(str) .. "]")
 % end
 %
 % return demo
@@ -203,7 +203,7 @@ extend these yourself (even if we do it in the core of \MKIV).
 % \definenamedlua[demo][demo module example]
 %
 % \startdemocode
-% demo = global.require("demo.lua")
+% demo = globaldata.require("demo.lua")
 % \stopdemocode
 %
 % \def\whow#1{\democode{demo.whow("#1"}}

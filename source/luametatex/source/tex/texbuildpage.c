@@ -863,7 +863,7 @@ static void tex_process_mvl(halfword context, halfword boundary)
         halfword penalty = 0;
         int callback_id = lmt_callback_defined(show_build_callback);
         int tracing = tracing_pages_par;
-        if (callback_id) {
+        if (callback_id > 0) {
             tex_aux_initialize_show_build_node(callback_id);
         }
         do {
@@ -1204,7 +1204,7 @@ static void tex_aux_fire_up(halfword c)
             halfword n = tex_aux_get_last_penalty(lmt_page_builder_state.best_break);
             if (n) {
                 halfword penalty = tex_aux_used_penalty(lmt_page_builder_state.best_break);
-                if (callback_id) {
+                if (callback_id > 0) {
                     tex_aux_show_loner_penalty(callback_id, penalty_options(lmt_page_builder_state.best_break), penalty);
                 } else {
                     unsigned char state[5] = { '.', '.', '.', '.', '\0' };

@@ -1,4 +1,4 @@
-% language=us runpath=texruns:manuals/cld
+% language=us engine=luametatex runpath=texruns:manuals/cld
 
 % author    : Hans Hagen
 % copyright : ConTeXt Development Team
@@ -17,6 +17,8 @@
 %             Group journal or otherwise. Thanks to the editors for corrections. Also thanks
 %             to users for testing, feedback and corrections.
 
+\continuewhenlmtxmode % safeguard as per end 2025 assume processing with mkxl
+
 % \disabledirectives[paragraphs.normalize.global]
 % \disabledirectives[paragraphs.normalize.local]
 
@@ -34,6 +36,8 @@
 % \enabletrackers[export.comment]
 
 % \enablemode[export]
+
+\usemodule[system-callbacks]
 
 \startmode[export]
 

@@ -750,7 +750,7 @@ static void tex_aux_prim_cmd_chr(quarterword cmd, halfword idx, int is_chr)
 static void tex_aux_show_lua_call(const char *what, int slot)
 {
     int callback_id = lmt_callback_defined(show_lua_call_callback);
-    if (callback_id) {
+    if (callback_id > 0) {
         char *ss = NULL;
         int lua_retval = lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "Sd->S", what, slot, &ss);
         if (lua_retval && ss && strlen(ss) > 0) {

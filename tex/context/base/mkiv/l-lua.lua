@@ -259,3 +259,7 @@ end
 if status and os.setenv then
     os.setenv("engine",string.lower(status.luatex_engine or "unknown"))
 end
+
+if not lua.newindex then
+    function lua.newindex() return { } end
+end

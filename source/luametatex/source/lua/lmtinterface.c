@@ -205,7 +205,7 @@ void lmt_initialize_interface(void)
     set_break_context_value(stop_line_break_context,       stop);
     set_break_context_value(collect_line_break_context,    collect);
     set_break_context_value(line_line_break_context,       line);
-    set_break_context_value(delete_line_break_context,     delete);
+    set_break_context_value(delete_line_break_context,     key_delete);
     set_break_context_value(report_line_break_context,     report); 
     set_break_context_value(wrapup_line_break_context,     wrapup);
 
@@ -226,7 +226,7 @@ void lmt_initialize_interface(void)
     # define set_vsplit_context_value(n,k) lmt_interface.vsplit_context_values[n] = (value_info) { .lua = lua_key_index(k), .name = lua_key(k), .id = n }
 
     set_vsplit_context_value(initialize_show_vsplit_context, initialize);
-    set_vsplit_context_value(continue_show_vsplit_context,   continue);
+    set_vsplit_context_value(continue_show_vsplit_context,   key_continue);
     set_vsplit_context_value(check_show_vsplit_context,      check);
     set_vsplit_context_value(quit_show_vsplit_context,       quit);
     set_vsplit_context_value(wrapup_show_vsplit_context,     wrapup);
@@ -241,7 +241,7 @@ void lmt_initialize_interface(void)
     set_par_trigger_value(indent_par_trigger,       indent);
     set_par_trigger_value(no_indent_par_trigger,    noindent);
     set_par_trigger_value(math_char_par_trigger,    mathchar);
-    set_par_trigger_value(char_par_trigger,         char);
+    set_par_trigger_value(char_par_trigger,         key_char);
     set_par_trigger_value(boundary_par_trigger,     boundary);
     set_par_trigger_value(space_par_trigger,        space);
     set_par_trigger_value(math_par_trigger,         math);
@@ -282,7 +282,7 @@ void lmt_initialize_interface(void)
     set_math_style_variant_value(math_cramped_style_variant,      cramped);
     set_math_style_variant_value(math_subscript_style_variant,    subscript);
     set_math_style_variant_value(math_superscript_style_variant,  superscript);
-    set_math_style_variant_value(math_small_style_variant,        small);
+    set_math_style_variant_value(math_small_style_variant,        key_small);
     set_math_style_variant_value(math_smaller_style_variant,      smaller);
     set_math_style_variant_value(math_numerator_style_variant,    numerator);
     set_math_style_variant_value(math_denominator_style_variant,  denominator);
@@ -297,8 +297,8 @@ void lmt_initialize_interface(void)
     set_lua_function_value(lua_value_cardinal_code,    cardinal);
     set_lua_function_value(lua_value_dimension_code,   dimension);
     set_lua_function_value(lua_value_skip_code,        skip);
-    set_lua_function_value(lua_value_boolean_code,     boolean);
-    set_lua_function_value(lua_value_float_code,       float);
+    set_lua_function_value(lua_value_boolean_code,     key_boolean);
+    set_lua_function_value(lua_value_float_code,       key_float);
     set_lua_function_value(lua_value_string_code,      string);
     set_lua_function_value(lua_value_node_code,        node);
     set_lua_function_value(lua_value_direct_code,      direct);
@@ -321,7 +321,7 @@ void lmt_initialize_interface(void)
     set_field_type_value(glue_field,           glue);
     set_field_type_value(number_field,         number);
     set_field_type_value(string_field,         string);
-    set_field_type_value(boolean_field,        boolean);
+    set_field_type_value(boolean_field,        key_boolean);
     set_field_type_value(function_field,       function);
     set_field_type_value(node_field,           node);
     set_field_type_value(node_list_field,      nodelist);

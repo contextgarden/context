@@ -713,6 +713,9 @@ typedef enum mp_name_type_type {
     mp_precontrol_operation,        /* operation code for |precontrol| */
     mp_postcontrol_operation,       /* operation code for |postcontrol| */
     mp_direction_operation,         /* operation code for |direction| */
+    mp_last_xy_operation,       
+    mp_last_x_operation,       
+    mp_last_y_operation,       
     mp_path_point_operation,        /* operation code for |pathpoint| */
     mp_path_precontrol_operation,   /* operation code for |pathprecontrol| */
     mp_path_postcontrol_operation,  /* operation code for |pathpostcontrol| */
@@ -1203,9 +1206,10 @@ typedef enum mp_given_internal {
     mp_less_digits_internal,
     mp_intersection_precision_internal,
     mp_join_tolerance_internal,
+    mp_single_quote_mode_internal,
 } mp_given_internal;
 
-# define max_given_internal mp_join_tolerance_internal
+# define max_given_internal mp_single_quote_mode_internal
 
 typedef struct mp_internal {
     mp_value  v;
@@ -1793,8 +1797,11 @@ typedef struct MP_instance {
     mp_number           half_cos[8];            /* ${1\over2}\cos(45k)$ */
     mp_number           d_cos[8];               /* a magic constant times $\cos(45k)$ */
     /*  */
-    mp_number           cur_x;
-    mp_number           cur_y;                  /* all-purpose return value registers */
+    mp_number           cur_x;                  /* all-purpose return value registers */
+    mp_number           cur_y;
+    /*  */
+    mp_number           last_x;                 /* turle states */
+    mp_number           last_y;   
     /*  */
     int                 spec_offset;            /* number of pen edges between |h| and the initial offset */
     int                 spec_padding;           /* be nice */

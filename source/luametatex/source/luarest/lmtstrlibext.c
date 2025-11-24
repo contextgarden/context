@@ -668,11 +668,11 @@ static int strlib_format_toutf8(lua_State *L) /* could be integrated into utfcha
     return 0;
 }
 
-/*
 static int strlib_format_toutf16(lua_State* L) {
     if (lua_type(L, 1) == LUA_TTABLE) {
         lua_Integer n = lua_rawlen(L, 1);
         if (n > 0) {
+            int addzero = lua_toboolean(L, 2);
             luaL_Buffer b;
             luaL_buffinitsize(L, &b, (n + 2) * 4);
             for (lua_Integer i = 0; i <= n; i++) {
@@ -694,8 +694,10 @@ static int strlib_format_toutf16(lua_State* L) {
                 }
                 lua_pop(L, 1);
             }
-            luaL_addchar(&b, 0);
-            luaL_addchar(&b, 0);
+            if (addzero) { 
+                luaL_addchar(&b, 0);
+                luaL_addchar(&b, 0);
+            }
             luaL_pushresult(&b);
         } else {
             lua_pushliteral(L, "");
@@ -704,13 +706,13 @@ static int strlib_format_toutf16(lua_State* L) {
     }
     return 0;
 }
-*/
 
 static int strlib_format_toutf32(lua_State *L)
 {
     if (lua_type(L, 1) == LUA_TTABLE) {
         lua_Integer n = lua_rawlen(L, 1);
         if (n > 0) {
+            int addzero = lua_toboolean(L, 2);
             luaL_Buffer b;
             luaL_buffinitsize(L, &b, (n + 2) * 4);
             for (lua_Integer i = 0; i <= n; i++) {
@@ -731,8 +733,10 @@ static int strlib_format_toutf32(lua_State *L)
                 }
                 lua_pop(L, 1);
             }
-            for (int i = 0; i <= 3; i++) {
-                luaL_addchar(&b, 0);
+            if (addzero) { 
+                for (int i = 0; i <= 3; i++) {
+                    luaL_addchar(&b, 0);
+                }
             }
             luaL_pushresult(&b);
         } else {
@@ -1075,7 +1079,7 @@ static const luaL_Reg strlib_function_list[] = {
     { "f6",                strlib_format_f6          },
     { "tounicode16",       strlib_format_tounicode16 },
     { "toutf8",            strlib_format_toutf8      },
- /* { "toutf16",           strlib_format_toutf16     }, */ /* untested */
+    { "toutf16",           strlib_format_toutf16     }, /* untested */
     { "toutf32",           strlib_format_toutf32     },
     { "utf16toutf8",       strlib_utf16toutf8        },
     { "packrowscolumns",   strlib_pack_rows_columns  },

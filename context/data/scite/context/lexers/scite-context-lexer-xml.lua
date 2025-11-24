@@ -12,7 +12,7 @@ local info = {
 
 -- todo: parse entities in attributes
 
-local global, string, table, lpeg = _G, string, table, lpeg
+local string, table, lpeg = string, table, lpeg
 local P, R, S, C, Cmt, Cp = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cmt, lpeg.Cp
 local type = type
 local match, find = string.match, string.find

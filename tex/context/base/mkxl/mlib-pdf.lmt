@@ -185,6 +185,8 @@ local function flushrectangularlist(path,t)
     return t
 end
 
+local optimize_lines = false  experiments.register("metapost.optimizelines", function(v) optimize_lines = v end)
+
 local function flushnormalpath(path,t,open,tolerance,reduce)
     local pth, ith, nt
     local length = #path
@@ -212,18 +214,86 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             end
         end
     end
-    for i=1,length do
-        nt = nt + 1
-        pth = path[i]
-        if not ith or pth.state == 1 then
-            t[nt] = f_m(pth.x_coord,pth.y_coord)
-     -- elseif curved(ith,pth,tolerance) then
-        elseif pth.curved then
-            t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
-        else
-            t[nt] = f_l(pth.x_coord,pth.y_coord)
+    if optimize_lines then
+        -- todo : use direction so that we can also do slopes
+        local lastx  = false
+        local lasty  = false
+        local lastm  = false
+        local lastd  = false
+        local lastdx = false
+        local lastdy = false
+        for i=1,length do
+            pth = path[i]
+            local x = pth.x_coord
+            local y = pth.y_coord
+            if not ith or pth.state == 1 then
+                nt = nt + 1
+                t[nt] = f_m(x,y)
+                lastx = x
+                lasty = y
+                lastm = true
+                lastdx = "move"
+                lastdy = "move"
+         -- elseif curved(ith,pth,tolerance) then
+            elseif pth.curved then
+                nt = nt + 1
+                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
+                lastx = false
+                lasty = false
+                lastm = false
+            elseif lastm  then
+                local dx, dy
+                if x > lastx then
+                    dx = "right"
+                elseif x < lastx then
+                    dx = "left"
+                else
+                    dx = "stay"
+                end
+                if y > lasty then
+                    dy = "up"
+                elseif y < lasty then
+                    dy = "down"
+                else
+                    dy = "stay"
+                end
+                if dy == "stay" and lastdx == dx then
+                    t[nt] = f_l(x,y)
+                    lastx = x
+                elseif dx == "stay" and lasty == dy then
+                    t[nt] = f_l(x,y)
+                    lasty = y
+                else
+                    nt = nt + 1
+                    t[nt] = f_l(x,y)
+                    lastx = x
+                    lasty = y
+                end
+                lastdx = dx
+                lastdy = dy
+            else
+                nt = nt + 1
+                t[nt] = f_l(x,y)
+                lastx = x
+                lasty = y
+            end
+            ith = pth
         end
-        ith = pth
+        -- also below
+    else
+        for i=1,length do
+            nt = nt + 1
+            pth = path[i]
+            if not ith or pth.state == 1 then
+                t[nt] = f_m(pth.x_coord,pth.y_coord)
+         -- elseif curved(ith,pth,tolerance) then
+            elseif pth.curved then
+                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
+            else
+                t[nt] = f_l(pth.x_coord,pth.y_coord)
+            end
+            ith = pth
+        end
     end
     if not open then
         nt = nt + 1

@@ -486,7 +486,7 @@
 
 \defcsname\??scalenorm\v!max    \endcsname#1#-#-#2#-{\global#1{#2}}
 \defcsname\??scalenorm\v!fit    \endcsname#1#-#-#-#2{\global#1{#2}}
-\defcsname\??scalenorm\v!broad  \endcsname#1#-#-#-#2{\global#1{#2-(\externalfigureparameter\c!bodyfont\c!bodyfont)*4}} % todo
+\defcsname\??scalenorm\v!broad  \endcsname#1#-#-#-#2{\global#1{#2-(\externalfigureparameter\c!bodyfont)*4}} % todo
 \defcsname\??scalenorm\s!unknown\endcsname#1#2#-#-#-{\global#1{#2\dimexpr\externalfigureparameter\c!bodyfont/10\relax}} % brr ex
 \defcsname\??scalenorm\v!auto   \endcsname#1#-#2#-#-{\ifempty#2\else\global#1{#2}\fi}
 \defcsname\??scalenorm\empty    \endcsname#1#-#2#-#-{\ifempty#2\else\global#1{#2}\fi}

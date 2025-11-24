@@ -194,7 +194,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lua"] = package.loaded["l-lua"] or true
 
--- original size: 6546, stripped down to: 2909
+-- original size: 6619, stripped down to: 2977
 
 if not modules then modules={} end modules ['l-lua']={
  version=1.001,
@@ -313,6 +313,9 @@ if LUAVERSION>5.3 then
 end
 if status and os.setenv then
  os.setenv("engine",string.lower(status.luatex_engine or "unknown"))
+end
+if not lua.newindex then
+ function lua.newindex() return {} end
 end
 
 
@@ -577,7 +580,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-sandbox"] = package.loaded["l-sandbox"] or true
 
--- original size: 9700, stripped down to: 6452
+-- original size: 9680, stripped down to: 6436
 
 if not modules then modules={} end modules ['l-sandbox']={
  version=1.001,
@@ -586,7 +589,6 @@ if not modules then modules={} end modules ['l-sandbox']={
  copyright="PRAGMA ADE / ConTeXt Development Team",
  license="see context related readme files"
 }
-local global=_G
 local next=next
 local unpack=unpack or table.unpack
 local type=type
@@ -1205,7 +1207,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-lpeg"] = package.loaded["l-lpeg"] or true
 
--- original size: 38786, stripped down to: 19523
+-- original size: 38898, stripped down to: 19609
 
 if not modules then modules={} end modules ['l-lpeg']={
  version=1.001,
@@ -1961,11 +1963,15 @@ function string.todec(s)
   return lpegmatch(bytestodec,s)
  end
 end
-function string.tobytes(s)
- if not s or s=="" then
-  return s
- else
-  return lpegmatch(hextobytes,s)
+if string.hextocharacters then
+ string.tobytes=string.hextocharacters
+else
+ function string.tobytes(s)
+  if not s or s=="" then
+   return s
+  else
+   return lpegmatch(hextobytes,s)
+  end
  end
 end
 local patterns={} 
@@ -2010,7 +2016,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-string"] = package.loaded["l-string"] or true
 
--- original size: 6955, stripped down to: 3504
+-- original size: 7077, stripped down to: 3560
 
 if not modules then modules={} end modules ['l-string']={
  version=1.001,
@@ -2023,9 +2029,13 @@ local string=string
 local sub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
-local unquoted=patterns.squote*C(patterns.nosquote)*patterns.squote+patterns.dquote*C(patterns.nodquote)*patterns.dquote
-function string.unquoted(str)
- return lpegmatch(unquoted,str) or str
+do
+ local squote=patterns.squote
+ local dquote=patterns.dquote
+ local unquoted=squote*C(((1-squote)+squote*#P(1))^0)*squote+dquote*C(((1-dquote)+dquote*#P(1))^0)*dquote
+ function string.unquoted(str)
+  return lpegmatch(unquoted,str) or str
+ end
 end
 function string.quoted(str)
  return format("%q",str) 
@@ -2109,7 +2119,7 @@ function string.topattern(str,lowercase,strict)
   return str
  end
 end
-function string.valid(str,default)
+function string.valid(str,default) 
  return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
@@ -2147,7 +2157,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-table"] = package.loaded["l-table"] or true
 
--- original size: 44262, stripped down to: 24008
+-- original size: 42562, stripped down to: 22901
 
 if not modules then modules={} end modules ['l-table']={
  version=1.001,
@@ -2159,7 +2169,7 @@ if not modules then modules={} end modules ['l-table']={
 local type,next,tostring,tonumber,select,rawget=type,next,tostring,tonumber,select,rawget
 local table,string=table,string
 local concat,sort=table.concat,table.sort
-local format,lower,dump=string.format,string.lower,string.dump
+local format,lower,dump,find=string.format,string.lower,string.dump,string.find
 local getmetatable,setmetatable=getmetatable,setmetatable
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
@@ -2305,15 +2315,6 @@ local function sortedhashkeys(tab,cmp)
  else
   return {}
  end
-end
-function table.allkeys(t)
- local keys={}
- for k,v in next,t do
-  for k in next,v do
-   keys[k]=true
-  end
- end
- return sortedkeys(keys)
 end
 if lua.getcheckedkeys then
  local getcheckedkeys=lua.getcheckedkeys
@@ -2552,7 +2553,7 @@ local noquotes,hexify,handle,compact,inline,functions,metacheck,accurate
 local reserved=table.tohash { 
  'and','break','do','else','elseif','end','false','for','function','if',
  'in','local','nil','not','or','repeat','return','then','true','until','while',
- 'NaN','goto','const',
+ 'NaN','goto','const','global',
 }
 local function is_simple_table(t,hexify,accurate) 
  local nt=#t
@@ -3011,59 +3012,6 @@ local function flattened(t,f,depth)
  return f
 end
 table.flattened=flattened
-local function collapsed(t,f,h)
- if f==nil then
-  f={}
-  h={}
- end
- for k=1,#t do
-  local v=t[k]
-  if type(v)=="table" then
-   collapsed(v,f,h)
-  elseif not h[v] then
-   f[#f+1]=v
-   h[v]=true
-  end
- end
- return f
-end
-local function collapsedhash(t,h)
- if h==nil then
-  h={}
- end
- for k=1,#t do
-  local v=t[k]
-  if type(v)=="table" then
-   collapsedhash(v,h)
-  else
-   h[v]=true
-  end
- end
- return h
-end
-table.collapsed=collapsed  
-table.collapsedhash=collapsedhash
-local function unnest(t,f) 
- if not f then    
-  f={}   
- end
- for i=1,#t do
-  local v=t[i]
-  if type(v)=="table" then
-   if type(v[1])=="table" then
-    unnest(v,f)
-   else
-    f[#f+1]=v
-   end
-  else
-   f[#f+1]=v
-  end
- end
- return f
-end
-function table.unnest(t) 
- return unnest(t)
-end
 local function are_equal(a,b,n,m) 
  if a==b then
   return true
@@ -3255,9 +3203,6 @@ end
 if setinspector then
  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
-function table.sub(t,i,j)
- return { unpack(t,i,j) }
-end
 function table.is_empty(t)
  return not t or next(t)==nil
 end
@@ -3288,26 +3233,6 @@ end
 function table.sorted(t,...)
  sort(t,...)
  return t 
-end
-function table.values(t,s) 
- if t then
-  local values={}
-  local keys={}
-  local v=0
-  for key,value in next,t do
-   if not keys[value] then
-    v=v+1
-    values[v]=value
-    keys[k]=key
-   end
-  end
-  if s then
-   sort(values)
-  end
-  return values
- else
-  return {}
- end
 end
 function table.filtered(t,pattern,sort,cmp)
  if t and type(pattern)=="string" then
@@ -3347,8 +3272,9 @@ function table.filtered(t,pattern,sort,cmp)
   return nothing
  end
 end
-if not table.move then
- function table.move(a1,f,e,t,a2)
+local move=table.move
+if not move then
+ move=function(a1,f,e,t,a2)
   if a2 and a1~=a2 then
    for i=f,e do
     a2[t]=a1[i]
@@ -3364,6 +3290,10 @@ if not table.move then
    return a1
   end
  end
+  table.move=move
+end
+function table.sub(t,i,j)
+ return move(t,i or 1,j or #t,1,{})
 end
 
 
@@ -4386,7 +4316,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-file"] = package.loaded["l-file"] or true
 
--- original size: 22637, stripped down to: 10595
+-- original size: 22655, stripped down to: 10467
 
 if not modules then modules={} end modules ['l-file']={
  version=1.001,
@@ -4762,12 +4692,6 @@ end
 function file.is_rootbased_path(filename)
  return filename and lpegmatch(rootbased,filename)~=nil
 end
-function file.strip(name,dir)
- if name then
-  local b,a=match(name,"^(.-)"..dir.."(.*)$")
-  return a~="" and a or name
- end
-end
 function lfs.mkdirs(path)
  local full=""
  for sub in gmatch(path,"(/*[^\\/]+)") do 
@@ -4834,7 +4758,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-md5"] = package.loaded["l-md5"] or true
 
--- original size: 3414, stripped down to: 2307
+-- original size: 3394, stripped down to: 2286
 
 if not modules then modules={} end modules ['l-md5']={
  version=1.001,
@@ -4905,18 +4829,18 @@ local function checksum(name)
  return nil
 end
 file.checksum=checksum
+function file.savechecksum(name,sum)
+ if not sum then sum=checksum(name) end
+ if sum and savedata(name..".md5",sum) then
+  return sum
+ else
+  return nil
+ end
+end
 function file.loadchecksum(name)
  if md5 then
   local data=loaddata(name..".md5")
   return data and (gsub(data,"%s",""))
- end
- return nil
-end
-function file.savechecksum(name,checksum)
- if not checksum then checksum=checksum(name) end
- if checksum then
-  savedata(name..".md5",checksum)
-  return checksum
  end
  return nil
 end
@@ -5224,7 +5148,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-dir"] = package.loaded["l-dir"] or true
 
--- original size: 19379, stripped down to: 11553
+-- original size: 19526, stripped down to: 11605
 
 if not modules then modules={} end modules ['l-dir']={
  version=1.001,
@@ -5396,29 +5320,31 @@ dir.globpattern=globpattern
 local function collectpattern(path,patt,recurse,result)
  local ok,scanner
  result=result or {}
- if path=="/" then
-  ok,scanner,first=xpcall(function() return walkdir(path..".") end,function() end) 
- else
-  ok,scanner,first=xpcall(function() return walkdir(path)   end,function() end) 
- end
- if ok and type(scanner)=="function" then
-  if not find(path,"/$") then
-   path=path..'/'
+ if patt then
+  if path=="/" then
+   ok,scanner,first=xpcall(function() return walkdir(path..".") end,function() end) 
+  else
+   ok,scanner,first=xpcall(function() return walkdir(path)   end,function() end) 
   end
-  for name in scanner,first do 
-   if name=="." then
-   elseif name==".." then
-   else
-    local full=path..name
-    local attr=attributes(full)
-    local mode=attr.mode
-    if mode=='file' then
-     if find(full,patt) then
+  if ok and type(scanner)=="function" then
+   if not find(path,"/$") then
+    path=path..'/'
+   end
+   for name in scanner,first do 
+    if name=="." then
+    elseif name==".." then
+    else
+     local full=path..name
+     local attr=attributes(full)
+     local mode=attr.mode
+     if mode=='file' then
+      if find(full,patt) then
+       result[name]=attr
+      end
+     elseif recurse and mode=="directory" then
+      attr.list=collectpattern(full,patt,recurse)
       result[name]=attr
      end
-    elseif recurse and mode=="directory" then
-     attr.list=collectpattern(full,patt,recurse)
-     result[name]=attr
     end
    end
   end
@@ -5543,7 +5469,7 @@ local function globdirs(path,recurse,func,files)
 end
 dir.globdirs=globdirs
 function dir.ls(pattern)
- return concat(glob(pattern),"\n")
+ return concat(glob(pattern or ""),"\n")
 end
 local make_indeed=true 
 if onwindows then
@@ -5835,7 +5761,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-unicode"] = package.loaded["l-unicode"] or true
 
--- original size: 41303, stripped down to: 17277
+-- original size: 40872, stripped down to: 16997
 
 if not modules then modules={} end modules ['l-unicode']={
  version=1.001,
@@ -6493,25 +6419,6 @@ if bit32 then
   end
  end
 end
-local len=utf.len
-local rep=rep
-function string.utfpadd(s,n)
- if n and n~=0 then
-  local l=len(s)
-  if n>0 then
-   local d=n-l
-   if d>0 then
-    return rep(c or " ",d)..s
-   end
-  else
-   local d=- n-l
-   if d>0 then
-    return s..rep(c or " ",d)
-   end
-  end
- end
- return s
-end
 do
  local utfcharacters=utf.characters or string.utfcharacters
  local utfchar=utf.char    or string.utfcharacter
@@ -6698,7 +6605,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 47659, stripped down to: 25531
+-- original size: 49064, stripped down to: 25701
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6712,7 +6619,7 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
-local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
+local tonumber,type,tostring,next,setmetatable,rawset=tonumber,type,tostring,next,setmetatable,rawset
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
@@ -6726,6 +6633,8 @@ local loadstripped=function(str,shortcuts)
  end
 end
 if not number then number={} end 
+local hashes=string.hashes or {}
+string.hashes=hashes
 local stripzero=patterns.stripzero
 local stripzeros=patterns.stripzeros
 local newline=patterns.newline
@@ -6827,95 +6736,129 @@ function strings.newrepeater(str,offset)
   return t
  end
  t={}
- setmetatable(t,{ __index=function(t,k)
-  if not k then
-   return ""
-  end
-  local n=k+offset
-  local s=n>0 and rep(str,n) or ""
-  t[k]=s
-  return s
- end })
+ setmetatable(t,{
+  __index=function(t,k)
+    if not k then
+     return ""
+    end
+    local n=k+offset
+    local s=n>0 and rep(str,n) or ""
+    rawset(t,k,s)
+    return s
+   end,
+  __newindex=function()
+   end
+ })
  s[offset]=t
  return t
 end
-local extra,tab,start=0,0,4,0
-local nspaces=strings.newrepeater(" ")
-string.nspaces=nspaces
-local pattern=Carg(1)/function(t)
-  extra,tab,start=0,t or 7,1
- end*Cs((
-   Cp()*patterns.tab/function(position)
-    local current=(position-start+1)+extra
-    local spaces=tab-(current-1)%tab
-    if spaces>0 then
-     extra=extra+spaces-1
-     return nspaces[spaces] 
-    else
-     return ""
+do
+ local extra,tab,start=0,0,4,0
+ local nspaces=strings.newrepeater(" ")
+ local pattern=Carg(1)/function(t)
+   extra,tab,start=0,t or 7,1
+  end*Cs((
+    Cp()*patterns.tab/function(position)
+     local current=(position-start+1)+extra
+     local spaces=tab-(current-1)%tab
+     if spaces>0 then
+      extra=extra+spaces-1
+      return nspaces[spaces] 
+     else
+      return ""
+     end
+    end+newline*Cp()/function(position)
+     extra,start=0,position
+    end+anything
+   )^1)
+ function strings.tabtospace(str,tab)
+  return lpegmatch(pattern,str,1,tab or 7)
+ end
+ function string.utfpadding(s,n)
+  if not n or n==0 then
+   return ""
+  end
+  local l=utflen(s)
+  if n>0 then
+   return nspaces[n-l]
+  else
+   return nspaces[-n-l]
+  end
+ end
+ hashes.spaces=nspaces
+ function string.utfpadd(s,n,c)
+  if n and n~=0 then
+   local l=utflen(s)
+   if n>0 then
+    local d=n-l
+    if d>0 then
+     if c and c~=" " then
+      return rep(c,d)..s
+     else
+      return nspaces[d]..s
+     end
     end
-   end+newline*Cp()/function(position)
-    extra,start=0,position
-   end+anything
-  )^1)
-function strings.tabtospace(str,tab)
- return lpegmatch(pattern,str,1,tab or 7)
-end
-function string.utfpadding(s,n)
- if not n or n==0 then
-  return ""
- end
- local l=utflen(s)
- if n>0 then
-  return nspaces[n-l]
- else
-  return nspaces[-n-l]
+   else
+    local d=- n-l
+    if d>0 then
+     if c and c~=" " then
+      return s..rep(c,d)
+     else
+      return s..nspaces[d]
+     end
+    end
+   end
+  end
+  return s
  end
 end
-local optionalspace=spacer^0
-local nospace=optionalspace/""
-local endofline=nospace*newline
-local stripend=(whitespace^1*endofstring)/""
-local normalline=(nospace*((1-optionalspace*(newline+endofstring))^1)*nospace)
-local stripempty=endofline^1/""
-local normalempty=endofline^1
-local singleempty=endofline*(endofline^0/"")
-local doubleempty=endofline*endofline^-1*(endofline^0/"")
-local stripstart=stripempty^0
-local intospace=whitespace^1/" "
-local noleading=whitespace^1/""
-local notrailing=noleading*endofstring
-local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
-local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
-local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
-local p_prune_intospace=Cs (noleading*(notrailing+intospace+1     )^0 )
-local p_retain_normal=Cs ((normalline+normalempty )^0 )
-local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
-local p_retain_noempty=Cs ((normalline+singleempty )^0 )
-local p_collapse_all=Cs (stripstart*(stripend+((whitespace+newline)^1/" ")+1)^0 )
-local striplinepatterns={
- ["prune"]=p_prune_normal,
- ["prune and collapse"]=p_prune_collapse,
- ["prune and no empty"]=p_prune_noempty,
- ["prune and to space"]=p_prune_intospace,
- ["retain"]=p_retain_normal,
- ["retain and collapse"]=p_retain_collapse,
- ["retain and no empty"]=p_retain_noempty,
- ["collapse all"]=p_collapse_all,
- ["collapse"]=patterns.collapser,
-}
-setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })
-strings.striplinepatterns=striplinepatterns
-function strings.striplines(str,how)
- return str and lpegmatch(striplinepatterns[how],str) or str
-end
-function strings.collapse(str) 
- return str and lpegmatch(p_prune_intospace,str) or str
-end
-strings.striplong=strings.striplines
-function strings.nice(str)
- str=gsub(str,"[:%-+_]+"," ") 
- return str
+do
+ local optionalspace=spacer^0
+ local nospace=optionalspace/""
+ local endofline=nospace*newline
+ local stripend=(whitespace^1*endofstring)/""
+ local normalline=(nospace*((1-optionalspace*(newline+endofstring))^1)*nospace)
+ local stripempty=endofline^1/""
+ local normalempty=endofline^1
+ local singleempty=endofline*(endofline^0/"")
+ local doubleempty=endofline*endofline^-1*(endofline^0/"")
+ local stripstart=stripempty^0
+ local intospace=whitespace^1/" "
+ local noleading=whitespace^1/""
+ local notrailing=noleading*endofstring
+ local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
+ local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
+ local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
+ local p_prune_intospace=Cs (noleading^0*(notrailing+intospace+1     )^0 )
+ local p_retain_normal=Cs ((normalline+normalempty )^0 )
+ local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
+ local p_retain_noempty=Cs ((normalline+singleempty )^0 )
+ local p_collapse_all=Cs (stripstart*(stripend+((whitespace+newline)^1/" ")+1)^0 )
+ local striplinepatterns={
+  ["prune"]=p_prune_normal,
+  ["prune and collapse"]=p_prune_collapse,
+  ["prune and no empty"]=p_prune_noempty,
+  ["prune and to space"]=p_prune_intospace,
+  ["retain"]=p_retain_normal,
+  ["retain and collapse"]=p_retain_collapse,
+  ["retain and no empty"]=p_retain_noempty,
+  ["collapse all"]=p_collapse_all,
+  ["collapse"]=patterns.collapser,
+ }
+ setmetatable(striplinepatterns,{
+  __index=function(t,k)
+    return p_prune_collapse
+   end,
+  __newindex=function()
+   end
+ })
+ strings.striplinepatterns=striplinepatterns
+ function strings.striplines(str,how)
+  return str and lpegmatch(striplinepatterns[how],str) or str
+ end
+ function strings.collapse(str)
+  return str and lpegmatch(p_prune_intospace,str) or str
+ end
 end
 local n=0
 local sequenced=table.sequenced
@@ -6945,21 +6888,26 @@ function string.autosingle(s,sep)
  end
  return ("'"..tostring(s).."'")
 end
-local tracedchars={ [0]=
- "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
- "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
- "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
- "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
- "[space]",
-}
-string.tracedchars=tracedchars
-strings.tracers=tracedchars
-function string.tracedchar(b)
- if type(b)=="number" then
-  return tracedchars[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
- else
-  local c=utfbyte(b)
-  return tracedchars[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
+do
+ local X00={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+ }
+ setmetatable(X00,{
+  __newindex=function()
+      end,
+ })
+ hashes.X00=X00
+ function string.tracedchar(b)
+  if type(b)=="number" then
+   return X00[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
+  else
+   local c=utfbyte(b)
+   return X00[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
+  end
  end
 end
 function number.signed(i)
@@ -7041,16 +6989,20 @@ function number.sparseexponent(f,n)
 end
 local hf={}
 local hs={}
-setmetatable(hf,{ __index=function(t,k)
- local v="%."..k.."f"
- t[k]=v
- return v
-end } )
-setmetatable(hs,{ __index=function(t,k)
- local v="%"..k.."s"
- t[k]=v
- return v
-end } )
+setmetatable(hf,{
+ __index=function(t,k)
+   local v="%."..k.."f"
+   t[k]=v
+   return v
+  end
+} )
+setmetatable(hs,{
+ __index=function(t,k)
+   local v="%"..k.."s"
+   t[k]=v
+   return v
+  end
+} )
 function number.formattedfloat(n,b,a)
  local s=format(hf[a],n)
  local l=(b or 0)+(a or 0)+1
@@ -7083,6 +7035,8 @@ string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
 local preamble=""
 local environment={
  ["global"]=_G,
+ ["globals"]=_G,
+ ["globaldata"]=_G,
  lpeg=lpeg,
  type=type,
  tostring=tostring,
@@ -7097,7 +7051,6 @@ local environment={
  utfchar=utf.char,
  utfbyte=utf.byte,
  lpegmatch=lpeg.match,
- nspaces=string.nspaces,
  utfpadding=string.utfpadding,
  tracedchar=string.tracedchar,
  autosingle=string.autosingle,
@@ -7110,13 +7063,18 @@ local environment={
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
  FORMAT=string.f6,
+ nspaces=hashes.spaces,
+ X00=hashes.X00,
+ X02=false,
+ X04=false,
 }
 local arguments={ "a1" } 
-setmetatable(arguments,{ __index=function(t,k)
-  local v=t[k-1]..",a"..k
-  t[k]=v
-  return v
- end
+setmetatable(arguments,{
+ __index=function(t,k)
+   local v=t[k-1]..",a"..k
+   t[k]=v
+   return v
+  end
 })
 local prefix_any=C((sign+space+period+digit)^0)
 local prefix_sub=(C((sign+digit)^0)+Cc(0))*period*(C((sign+digit)^0)+Cc(0))
@@ -7233,46 +7191,45 @@ local format_X=function(f)
  return format("format('%%%sX',a%s)",f,n)
 end
 do
- if not string.hashes then
-  string.hashes={}
- end
- local X02=setmetatable({},{
-  __index=function(t,k)
-   if type(k)=="string" then
-    t[k]=t[byte(k)]
-   elseif k<0 then
-    return "00"
-   else
-    return "FF"
-   end
-   return t[k]
-  end
- })
+ local X02=lua.newindex(256)
+ local X04=lua.newindex(256)
  for i=0,255 do
   X02[i]=format("%02X",i)
+  X04[i]=format("%04X",i)
  end
- local X04=setmetatable({},{
+ setmetatable(X02,{
   __index=function(t,k)
-   if k<0 then
-    return "0000"
-   elseif k<256 then
-    for i=0,255 do
-     t[i]=format("%04X",i)
+    if type(k)=="string" then
+     rawset(t,k,t[byte(k)])
+    elseif k<0 then
+     return "00"
+    else
+     return "FF"
     end
     return t[k]
-   elseif k>0xFFFF then
-    return "FFFF"
-   else
-    local v=format("%04X",k)
-    t[k]=v
-    return v
-   end
-  end
+   end,
+  __newindex=function()
+   end,
  })
+ setmetatable(X04,{
+  __index=function(t,k)
+    if k<0 then
+     return "0000"
+    elseif k>0xFFFF then
+     return "FFFF"
+    else
+     local v=format("%04X",k)
+     rawset(t,k,v)
+     return v
+    end
+   end,
+  __newindex=function()
+   end,
+ })
+ hashes.X02=X02
+ hashes.X04=X04
  environment.X02=X02
  environment.X04=X04
- string.hashes.X02=X02
- string.hashes.X04=X04
  format_X=function(f)
   n=n+1
   if f=="02" then
@@ -7502,17 +7459,9 @@ local builder=Cs { "start",
    P("%")/""*(
     V("!") 
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
-+V("c")+V("C")+V("S") 
-+V("Q") 
-+V("n") 
-+V("N") 
-+V("k")
-+V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
-+V("W") 
-+V("a") 
-+V("A") 
-+V("j")+V("J") 
-+V("m")+V("M")
++V("c")+V("C")+V("S")+V("Q")+V("n")+V("N")+V("k")
++V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w")+V("W")+V("a")+V("A")+V("j")+V("J") 
++V("m")+V("M") 
 +V("z")+V("Z")
 +V(">") 
 +V("<")
@@ -7671,36 +7620,18 @@ local f_16_16=formatters["%0.5N"]
 function number.to16dot16(n)
  return f_16_16(n/65536.0)
 end
-if not string.explode then
- local p_utf=patterns.utf8character
- local p_check=C(p_utf)*(P("+")*Cc(true))^0
- local p_split=Ct(C(p_utf)^0)
- local p_space=Ct((C(1-P(" ")^1)+P(" ")^1)^0)
- function string.explode(str,symbol)
-  if symbol=="" then
-   return lpegmatch(p_split,str)
-  elseif symbol then
-   local a,b=lpegmatch(p_check,symbol)
-   if b then
-    return lpegmatch(tsplitat(P(a)^1),str)
-   else
-    return lpegmatch(tsplitat(a),str)
-   end
-  else
-   return lpegmatch(p_space,str)
-  end
- end
-end
 do
- local p_whitespace=patterns.whitespace^1
- local cache=setmetatable({},{ __index=function(t,k)
-  local p=tsplitat(p_whitespace*P(k)*p_whitespace)
-  local v=function(s)
-   return lpegmatch(p,s)
-  end
-  t[k]=v
-  return v
- end })
+ local p_whitespace=patterns.whitespace
+ local cache=setmetatable({},{
+  __index=function(t,k)
+    local p=Ct((C((1-p_whitespace-P(k))^1)+P(1))^1)
+    local v=function(s)
+     return lpegmatch(p,s)
+    end
+    t[k]=v
+    return v
+   end
+ })
  function string.wordsplitter(s)
   return cache[s]
  end
@@ -7727,7 +7658,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-tab"] = package.loaded["util-tab"] or true
 
--- original size: 35024, stripped down to: 18453
+-- original size: 31613, stripped down to: 17344
 
 if not modules then modules={} end modules ['util-tab']={
  version=1.001,
@@ -7858,39 +7789,46 @@ end
 local escape=Cs(Cc('"')*((P('"')/'""'+P(1))^0)*Cc('"'))
 function table.tocsv(t,specification)
  if t and #t>0 then
-  local result={}
-  local r={}
-  specification=specification or {}
-  local fields=specification.fields
-  if type(fields)~="string" then
-   fields=sortedkeys(t[1])
-  end
+  specification=type(specification)=="table" and specification or {}
   local separator=specification.separator or ","
-  local noffields=#fields
-  if specification.preamble==true then
+  local preamble=specification.preamble==true
+  local fields=specification.fields
+  local ishash=#t[1]==0
+  local noffields=0
+  if ishash then
+   noffields=fields and #fields or 0
+  else
+   noffields=fields and #fields or #t[1]
+  end
+  local result={}
+  local row={}
+  local r=0
+  if preamble then
    for f=1,noffields do
-    r[f]=lpegmatch(escape,tostring(fields[f]))
+    row[f]=lpegmatch(escape,tostring(fields[f]))
    end
-   result[1]=concat(r,separator)
+   result[1]=concat(row,separator)
+   r=1
   end
   for i=1,#t do
    local ti=t[i]
    for f=1,noffields do
-    local field=ti[fields[f]]
+    local field=ti[ishash and fields[f] or i]
     if type(field)=="string" then
-     r[f]=lpegmatch(escape,field)
+     row[f]=lpegmatch(escape,field)
     else
-     r[f]=tostring(field)
+     row[f]=tostring(field)
     end
    end
-   result[i+1]=concat(r,separator)
+   r=r+1
+   result[r]=concat(row,separator)
   end
   return concat(result,"\n")
  else
   return ""
  end
 end
-local nspaces=utilities.strings.newrepeater(" ")
+local nspaces=string.hashes.spaces
 local function toxml(t,d,result,step)
  local r=#result
  for k,v in sortedpairs(t) do
@@ -7922,7 +7860,12 @@ local function toxml(t,d,result,step)
  return r
 end
 function table.toxml(t,specification)
- specification=specification or {}
+ local kind=type(specification)
+ if kind=="string" then
+  specification={ name=specification }
+ elseif kind~="table" then
+  specification={}
+ end
  local name=specification.name
  local noroot=name==false
  local result=(specification.nobanner or noroot) and {} or { "<?xml version='1.0' standalone='yes' ?>" }
@@ -8149,319 +8092,227 @@ end
 function table.save(filename,t,n,...)
  io.savedata(filename,table.serialize(t,n==nil and true or n,...)) 
 end
-local f_key_value=formatters["%s=%q"]
-local f_add_table=formatters[" {%t},\n"]
-local f_return_table=formatters["return {\n%t}"]
-local function slowdrop(t) 
- local r={}
- local l={}
- for i=1,#t do
-  local ti=t[i]
-  local j=0
-  for k,v in next,ti do
-   j=j+1
-   l[j]=f_key_value(k,v)
+do
+ local f_start_key_idx=formatters["%w{"]
+ local f_start_key_num=JITSUPPORTED and formatters["%w[%s]={"] or formatters["%w[%q]={"]
+ local f_start_key_str=formatters["%w[%q]={"]
+ local f_start_key_boo=formatters["%w[%l]={"]
+ local f_start_key_nop=formatters["%w{"]
+ local f_stop=formatters["%w},"]
+ local f_key_num_value_num=JITSUPPORTED and formatters["%w[%s]=%s,"] or formatters["%w[%s]=%q,"]
+ local f_key_str_value_num=JITSUPPORTED and formatters["%w[%Q]=%s,"] or formatters["%w[%Q]=%q,"]
+ local f_key_boo_value_num=JITSUPPORTED and formatters["%w[%l]=%s,"] or formatters["%w[%l]=%q,"]
+ local f_key_num_value_str=JITSUPPORTED and formatters["%w[%s]=%Q,"] or formatters["%w[%q]=%Q,"]
+ local f_key_str_value_str=formatters["%w[%Q]=%Q,"]
+ local f_key_boo_value_str=formatters["%w[%l]=%Q,"]
+ local f_key_num_value_boo=JITSUPPORTED and formatters["%w[%s]=%l,"] or formatters["%w[%q]=%l,"]
+ local f_key_str_value_boo=formatters["%w[%Q]=%l,"]
+ local f_key_boo_value_boo=formatters["%w[%l]=%l,"]
+ local f_key_num_value_not=JITSUPPORTED and formatters["%w[%s]={},"] or formatters["%w[%q]={},"]
+ local f_key_str_value_not=formatters["%w[%Q]={},"]
+ local f_key_boo_value_not=formatters["%w[%l]={},"]
+ local f_key_num_value_seq=JITSUPPORTED and formatters["%w[%s]={ %, t },"] or formatters["%w[%q]={ %, t },"]
+ local f_key_str_value_seq=formatters["%w[%Q]={ %, t },"]
+ local f_key_boo_value_seq=formatters["%w[%l]={ %, t },"]
+ local f_val_num=JITSUPPORTED and formatters["%w%s,"] or formatters["%w%q,"]
+ local f_val_str=formatters["%w%Q,"]
+ local f_val_boo=formatters["%w%l,"]
+ local f_val_not=formatters["%w{},"]
+ local f_val_seq=formatters["%w{ %, t },"]
+ local f_fin_seq=formatters[" %, t }"]
+ local f_table_return=formatters["return {"]
+ local f_table_name=formatters["%s={"]
+ local f_table_direct=formatters["{"]
+ local f_table_entry=formatters["[%Q]={"]
+ local f_table_finish=formatters["}"]
+ local spaces=utilities.strings.newrepeater(" ")
+ local original_serialize=table.serialize
+ local is_simple_table=table.is_simple_table
+ local function serialize(root,name,specification)
+  if type(specification)=="table" then
+   return original_serialize(root,name,specification) 
   end
-  r[i]=f_add_table(l)
- end
- return f_return_table(r)
-end
-local function fastdrop(t)
- local r={ "return {\n" }
- local m=1
- for i=1,#t do
-  local ti=t[i]
-  m=m+1 r[m]=" {"
-  for k,v in next,ti do
-   m=m+1 r[m]=f_key_value(k,v)
-  end
-  m=m+1 r[m]="},\n"
- end
- m=m+1
- r[m]="}"
- return concat(r)
-end
-function table.drop(t,slow) 
- if #t==0 then
-  return "return { }"
- elseif slow==true then
-  return slowdrop(t) 
- else
-  return fastdrop(t) 
- end
-end
-local selfmapper={ __index=function(t,k) t[k]=k return k end }
-function table.twowaymapper(t) 
- if not t then     
-  t={}       
- else        
-  local zero=rawget(t,0)  
-  for i=zero and 0 or 1,#t do
-   local ti=t[i]    
-   if ti then
-    local i=tostring(i)
-    t[i]=ti   
-    t[ti]=i    
-   end
-  end
- end
- setmetatable(t,selfmapper)
- return t
-end
-local f_start_key_idx=formatters["%w{"]
-local f_start_key_num=JITSUPPORTED and formatters["%w[%s]={"] or formatters["%w[%q]={"]
-local f_start_key_str=formatters["%w[%q]={"]
-local f_start_key_boo=formatters["%w[%l]={"]
-local f_start_key_nop=formatters["%w{"]
-local f_stop=formatters["%w},"]
-local f_key_num_value_num=JITSUPPORTED and formatters["%w[%s]=%s,"] or formatters["%w[%s]=%q,"]
-local f_key_str_value_num=JITSUPPORTED and formatters["%w[%Q]=%s,"] or formatters["%w[%Q]=%q,"]
-local f_key_boo_value_num=JITSUPPORTED and formatters["%w[%l]=%s,"] or formatters["%w[%l]=%q,"]
-local f_key_num_value_str=JITSUPPORTED and formatters["%w[%s]=%Q,"] or formatters["%w[%q]=%Q,"]
-local f_key_str_value_str=formatters["%w[%Q]=%Q,"]
-local f_key_boo_value_str=formatters["%w[%l]=%Q,"]
-local f_key_num_value_boo=JITSUPPORTED and formatters["%w[%s]=%l,"] or formatters["%w[%q]=%l,"]
-local f_key_str_value_boo=formatters["%w[%Q]=%l,"]
-local f_key_boo_value_boo=formatters["%w[%l]=%l,"]
-local f_key_num_value_not=JITSUPPORTED and formatters["%w[%s]={},"] or formatters["%w[%q]={},"]
-local f_key_str_value_not=formatters["%w[%Q]={},"]
-local f_key_boo_value_not=formatters["%w[%l]={},"]
-local f_key_num_value_seq=JITSUPPORTED and formatters["%w[%s]={ %, t },"] or formatters["%w[%q]={ %, t },"]
-local f_key_str_value_seq=formatters["%w[%Q]={ %, t },"]
-local f_key_boo_value_seq=formatters["%w[%l]={ %, t },"]
-local f_val_num=JITSUPPORTED and formatters["%w%s,"] or formatters["%w%q,"]
-local f_val_str=formatters["%w%Q,"]
-local f_val_boo=formatters["%w%l,"]
-local f_val_not=formatters["%w{},"]
-local f_val_seq=formatters["%w{ %, t },"]
-local f_fin_seq=formatters[" %, t }"]
-local f_table_return=formatters["return {"]
-local f_table_name=formatters["%s={"]
-local f_table_direct=formatters["{"]
-local f_table_entry=formatters["[%Q]={"]
-local f_table_finish=formatters["}"]
-local spaces=utilities.strings.newrepeater(" ")
-local original_serialize=table.serialize
-local is_simple_table=table.is_simple_table
-local function serialize(root,name,specification)
- if type(specification)=="table" then
-  return original_serialize(root,name,specification) 
- end
- local t 
- local n=1
- local unknown=false
- local function do_serialize(root,name,depth,level,indexed)
-  if level>0 then
-   n=n+1
-   if indexed then
-    t[n]=f_start_key_idx(depth)
-   else
-    local tn=type(name)
-    if tn=="number" then
-     t[n]=f_start_key_num(depth,name)
-    elseif tn=="string" then
-     t[n]=f_start_key_str(depth,name)
-    elseif tn=="boolean" then
-     t[n]=f_start_key_boo(depth,name)
+  local t 
+  local n=1
+  local unknown=false
+  local function do_serialize(root,name,depth,level,indexed)
+   if level>0 then
+    n=n+1
+    if indexed then
+     t[n]=f_start_key_idx(depth)
     else
-     t[n]=f_start_key_nop(depth)
-    end
-   end
-   depth=depth+1
-  end
-  if root and next(root)~=nil then
-   local first=nil
-   local last=#root
-   if last>0 then
-    for k=1,last do
-     if rawget(root,k)==nil then
-      last=k-1
-      break
+     local tn=type(name)
+     if tn=="number" then
+      t[n]=f_start_key_num(depth,name)
+     elseif tn=="string" then
+      t[n]=f_start_key_str(depth,name)
+     elseif tn=="boolean" then
+      t[n]=f_start_key_boo(depth,name)
+     else
+      t[n]=f_start_key_nop(depth)
      end
     end
-    if last>0 then
-     first=1
-    end
+    depth=depth+1
    end
-   local sk=sortedkeys(root)
-   for i=1,#sk do
-    local k=sk[i]
-    local v=root[k]
-    local tv=type(v)
-    local tk=type(k)
-    if first and tk=="number" and k<=last and k>=first then
-     if tv=="number" then
-      n=n+1 t[n]=f_val_num(depth,v)
+   if root and next(root)~=nil then
+    local first=nil
+    local last=#root
+    if last>0 then
+     for k=1,last do
+      if rawget(root,k)==nil then
+       last=k-1
+       break
+      end
+     end
+     if last>0 then
+      first=1
+     end
+    end
+    local sk=sortedkeys(root)
+    for i=1,#sk do
+     local k=sk[i]
+     local v=root[k]
+     local tv=type(v)
+     local tk=type(k)
+     if first and tk=="number" and k<=last and k>=first then
+      if tv=="number" then
+       n=n+1 t[n]=f_val_num(depth,v)
+      elseif tv=="string" then
+       n=n+1 t[n]=f_val_str(depth,v)
+      elseif tv=="table" then
+       if next(v)==nil then 
+        n=n+1 t[n]=f_val_not(depth)
+       else
+        local st=is_simple_table(v)
+        if st then
+         n=n+1 t[n]=f_val_seq(depth,st)
+        else
+         do_serialize(v,k,depth,level+1,true)
+        end
+       end
+      elseif tv=="boolean" then
+       n=n+1 t[n]=f_val_boo(depth,v)
+      elseif unknown then
+       n=n+1 t[n]=f_val_str(depth,tostring(v))
+      end
+     elseif tv=="number" then
+      if tk=="number" then
+       n=n+1 t[n]=f_key_num_value_num(depth,k,v)
+      elseif tk=="string" then
+       n=n+1 t[n]=f_key_str_value_num(depth,k,v)
+      elseif tk=="boolean" then
+       n=n+1 t[n]=f_key_boo_value_num(depth,k,v)
+      elseif unknown then
+       n=n+1 t[n]=f_key_str_value_num(depth,tostring(k),v)
+      end
      elseif tv=="string" then
-      n=n+1 t[n]=f_val_str(depth,v)
+      if tk=="number" then
+       n=n+1 t[n]=f_key_num_value_str(depth,k,v)
+      elseif tk=="string" then
+       n=n+1 t[n]=f_key_str_value_str(depth,k,v)
+      elseif tk=="boolean" then
+       n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
+      elseif unknown then
+       n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),v)
+      end
      elseif tv=="table" then
-      if next(v)==nil then 
-       n=n+1 t[n]=f_val_not(depth)
+      if next(v)==nil then
+       if tk=="number" then
+        n=n+1 t[n]=f_key_num_value_not(depth,k)
+       elseif tk=="string" then
+        n=n+1 t[n]=f_key_str_value_not(depth,k)
+       elseif tk=="boolean" then
+        n=n+1 t[n]=f_key_boo_value_not(depth,k)
+       elseif unknown then
+        n=n+1 t[n]=f_key_str_value_not(depth,tostring(k))
+       end
       else
        local st=is_simple_table(v)
-       if st then
-        n=n+1 t[n]=f_val_seq(depth,st)
-       else
-        do_serialize(v,k,depth,level+1,true)
+       if not st then
+        do_serialize(v,k,depth,level+1)
+       elseif tk=="number" then
+        n=n+1 t[n]=f_key_num_value_seq(depth,k,st)
+       elseif tk=="string" then
+        n=n+1 t[n]=f_key_str_value_seq(depth,k,st)
+       elseif tk=="boolean" then
+        n=n+1 t[n]=f_key_boo_value_seq(depth,k,st)
+       elseif unknown then
+        n=n+1 t[n]=f_key_str_value_seq(depth,tostring(k),st)
        end
       end
      elseif tv=="boolean" then
-      n=n+1 t[n]=f_val_boo(depth,v)
-     elseif unknown then
-      n=n+1 t[n]=f_val_str(depth,tostring(v))
-     end
-    elseif tv=="number" then
-     if tk=="number" then
-      n=n+1 t[n]=f_key_num_value_num(depth,k,v)
-     elseif tk=="string" then
-      n=n+1 t[n]=f_key_str_value_num(depth,k,v)
-     elseif tk=="boolean" then
-      n=n+1 t[n]=f_key_boo_value_num(depth,k,v)
-     elseif unknown then
-      n=n+1 t[n]=f_key_str_value_num(depth,tostring(k),v)
-     end
-    elseif tv=="string" then
-     if tk=="number" then
-      n=n+1 t[n]=f_key_num_value_str(depth,k,v)
-     elseif tk=="string" then
-      n=n+1 t[n]=f_key_str_value_str(depth,k,v)
-     elseif tk=="boolean" then
-      n=n+1 t[n]=f_key_boo_value_str(depth,k,v)
-     elseif unknown then
-      n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),v)
-     end
-    elseif tv=="table" then
-     if next(v)==nil then
       if tk=="number" then
-       n=n+1 t[n]=f_key_num_value_not(depth,k)
+       n=n+1 t[n]=f_key_num_value_boo(depth,k,v)
       elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_not(depth,k)
+       n=n+1 t[n]=f_key_str_value_boo(depth,k,v)
       elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_not(depth,k)
+       n=n+1 t[n]=f_key_boo_value_boo(depth,k,v)
       elseif unknown then
-       n=n+1 t[n]=f_key_str_value_not(depth,tostring(k))
+       n=n+1 t[n]=f_key_str_value_boo(depth,tostring(k),v)
       end
      else
-      local st=is_simple_table(v)
-      if not st then
-       do_serialize(v,k,depth,level+1)
-      elseif tk=="number" then
-       n=n+1 t[n]=f_key_num_value_seq(depth,k,st)
+      if tk=="number" then
+       n=n+1 t[n]=f_key_num_value_str(depth,k,tostring(v))
       elseif tk=="string" then
-       n=n+1 t[n]=f_key_str_value_seq(depth,k,st)
+       n=n+1 t[n]=f_key_str_value_str(depth,k,tostring(v))
       elseif tk=="boolean" then
-       n=n+1 t[n]=f_key_boo_value_seq(depth,k,st)
+       n=n+1 t[n]=f_key_boo_value_str(depth,k,tostring(v))
       elseif unknown then
-       n=n+1 t[n]=f_key_str_value_seq(depth,tostring(k),st)
+       n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),tostring(v))
       end
-     end
-    elseif tv=="boolean" then
-     if tk=="number" then
-      n=n+1 t[n]=f_key_num_value_boo(depth,k,v)
-     elseif tk=="string" then
-      n=n+1 t[n]=f_key_str_value_boo(depth,k,v)
-     elseif tk=="boolean" then
-      n=n+1 t[n]=f_key_boo_value_boo(depth,k,v)
-     elseif unknown then
-      n=n+1 t[n]=f_key_str_value_boo(depth,tostring(k),v)
-     end
-    else
-     if tk=="number" then
-      n=n+1 t[n]=f_key_num_value_str(depth,k,tostring(v))
-     elseif tk=="string" then
-      n=n+1 t[n]=f_key_str_value_str(depth,k,tostring(v))
-     elseif tk=="boolean" then
-      n=n+1 t[n]=f_key_boo_value_str(depth,k,tostring(v))
-     elseif unknown then
-      n=n+1 t[n]=f_key_str_value_str(depth,tostring(k),tostring(v))
      end
     end
    end
-  end
-  if level>0 then
-   n=n+1 t[n]=f_stop(depth-1)
-  end
- end
- local tname=type(name)
- if tname=="string" then
-  if name=="return" then
-   t={ f_table_return() }
-  else
-   t={ f_table_name(name) }
-  end
- elseif tname=="number" then
-  t={ f_table_entry(name) }
- elseif tname=="boolean" then
-  if name then
-   t={ f_table_return() }
-  else
-   t={ f_table_direct() }
-  end
- else
-  t={ f_table_name("t") }
- end
- if root then
-  if getmetatable(root) then 
-   local dummy=root._w_h_a_t_e_v_e_r_ 
-   root._w_h_a_t_e_v_e_r_=nil
-  end
-  if next(root)~=nil then
-   local st=is_simple_table(root)
-   if st then
-    return t[1]..f_fin_seq(st) 
-   else
-    do_serialize(root,name,1,0)
+   if level>0 then
+    n=n+1 t[n]=f_stop(depth-1)
    end
   end
+  local tname=type(name)
+  if tname=="string" then
+   if name=="return" then
+    t={ f_table_return() }
+   else
+    t={ f_table_name(name) }
+   end
+  elseif tname=="number" then
+   t={ f_table_entry(name) }
+  elseif tname=="boolean" then
+   if name then
+    t={ f_table_return() }
+   else
+    t={ f_table_direct() }
+   end
+  else
+   t={ f_table_name("t") }
+  end
+  if root then
+   if getmetatable(root) then 
+    local dummy=root._w_h_a_t_e_v_e_r_ 
+    root._w_h_a_t_e_v_e_r_=nil
+   end
+   if next(root)~=nil then
+    local st=is_simple_table(root)
+    if st then
+     return t[1]..f_fin_seq(st) 
+    else
+     do_serialize(root,name,1,0)
+    end
+   end
+  end
+  n=n+1
+  t[n]=f_table_finish()
+  return concat(t,"\n")
  end
- n=n+1
- t[n]=f_table_finish()
- return concat(t,"\n")
+ table.serialize=serialize
 end
-table.serialize=serialize
 if setinspector then
+ local serialize=table.serialize
  setinspector("table",function(v)
   if type(v)=="table" then
    print(serialize(v,"table",{ metacheck=false }))
    return true
   end
  end)
-end
-local mt={
- __newindex=function(t,k,v)
-  local n=t.last+1
-  t.last=n
-  t.list[n]=k
-  t.hash[k]=v
- end,
- __index=function(t,k)
-  return t.hash[k]
- end,
- __len=function(t)
-  return t.last
- end,
-}
-function table.orderedhash()
- return setmetatable({ list={},hash={},last=0 },mt)
-end
-function table.ordered(t)
- local n=t.last
- if n>0 then
-  local l=t.list
-  local i=1
-  local h=t.hash
-  local f=function()
-   if i<=n then
-    local k=i
-    local v=h[l[k]]
-    i=i+1
-    return k,v
-   end
-  end
-  return f,1,h[l[1]]
- else
-  return function() end
- end
 end
 local function combine(target,source)
  if target then
@@ -9365,7 +9216,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sto"] = package.loaded["util-sto"] or true
 
--- original size: 6661, stripped down to: 3074
+-- original size: 6744, stripped down to: 2836
 
 if not modules then modules={} end modules ['util-sto']={
  version=1.001,
@@ -9502,19 +9353,6 @@ function table.setmetatableindices(t,f,n,c)
   })
  end
  return t
-end
-function table.setmetatablekey(t,key,value)
- local m=getmetatable(t)
- if not m then
-  m={}
-  setmetatable(t,m)
- end
- m[key]=value
- return t
-end
-function table.getmetatablekey(t,key,value)
- local m=getmetatable(t)
- return m and m[key]
 end
 function table.makeweak(t)
  if not t then
@@ -27022,8 +26860,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1080356
--- stripped bytes    : 431005
+-- original bytes    : 1076734
+-- stripped bytes    : 429850
 
 -- end library merge
 

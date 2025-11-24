@@ -1550,6 +1550,9 @@
 \unexpanded\def\btxmissing#1%
   {\dontleavehmode{\tttf<#1>}}
 
+\permanent\protected\def\currentbtxmissingreference
+  {\btxmissing{\currentbtxreference}}
+
 %D Compatibility:
 
 \let\hiddencitation\btxhiddencitation  \let\hiddencite\hiddencitation

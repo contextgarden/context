@@ -1,5 +1,10 @@
 % language=us runpath=texruns:manuals/cld
 
+% This is just a safeguard as per end 2025 assume processing with mkxl, not so much
+% for funcitonality but e.g. \unexpanded has been replaced by \protected below.
+
+\continuewhenlmtxmode
+
 \startenvironment cld-environment
 
 \usemodule[abr-04]
@@ -60,9 +65,17 @@
   [summary]
   [subsubsubsubject]
 
+% \starttexdefinition protected SummaryCommand #1
+%     \ifempty{\structureuservariable{category}}\else
+%       \ttbfa[\structureuservariable{category}]\space
+%     \fi
+%     #1
+% \stoptexdefinition
+
 \setuphead
   [summary]
   [style=,
+ % textcommand=\SummaryCommand,
    deeptextcommand=\boldtypebig,
    color=blue]
 
@@ -79,14 +92,14 @@
    command=\MySubSummaryHead,
    color=blue]
 
-\unexpanded\def\MySummaryHead#1#2%
+\protected\def\MySummaryHead#1#2%
   {\framed
      [frame=off,
       bottomframe=on,
       offset=0cm]
      {#2}}
 
-\unexpanded\def\MySubSummaryHead#1#2%
+\protected\def\MySubSummaryHead#1#2%
   {\framed
      [frame=off,
       bottomframe=on,
@@ -122,93 +135,139 @@
 
 % special functions
 
-\unexpanded\def\ShowLuaExampleOne#1#2#3%
-  {\bgroup
-   \obeyluatokens
-   \startsubsummary[title={#1.#2(#3)}]
-   \ctxlua{table.tocontext(#3)}
-   \stopsubsummary
-   \egroup}
+\startluacode
+    function context.whatevertocontext(result) -- can be used more below
+        if type(result) == "table" then
+            table.tocontext(result)
+        else
+            string.tocontext(result)
+        end
+    end
+\stopluacode
 
-\unexpanded\def\ShowLuaExampleTwo#1#2#3%
-  {\bgroup
-   \obeyluatokens
-   \startsubsummary[title={#1.#2(#3)}]
-   \ctxlua{table.tocontext(#1.#2(#3))}
-   \stopsubsummary
-   \egroup}
+\protected\def\StartShowLuaExample
+  {\begingroup
+ % \catcode\spaceasciicode     \othercatcode % I need to see how that comes out.
+   \catcode\percentasciicode   \othercatcode
+   \catcode\dollarasciicode    \othercatcode
+   \catcode\circumflexasciicode\othercatcode}
 
-\unexpanded\def\ShowLuaExampleThree#1#2#3%
-  {\bgroup
-   \obeyluatokens
-   \startsubsummary[title={#1.#2(#3)}]
-   \ctxlua{string.tocontext(tostring(#1.#2(#3)))}
-   \stopsubsummary
-   \egroup}
+\protected\def\StopShowLuaExample
+  {\endgroup}
 
-\unexpanded\def\ShowLuaExampleFour#1#2#3#4%
-  {\bgroup
-   \obeyluatokens
-   \startsubsummary[title={t=#3 #1.#2(t#4)}]
-   \ctxlua{local t = #3 #1.#2(t#4) table.tocontext(t)}
-   \stopsubsummary
-   \egroup}
+\protected\def\ShowLuaExampleZero    {\StartShowLuaExample\ShowLuaExampleZeroIndeed    }
+\protected\def\ShowLuaExampleOne     {\StartShowLuaExample\ShowLuaExampleOneIndeed     }
+\protected\def\ShowLuaExampleTwo     {\StartShowLuaExample\ShowLuaExampleTwoIndeed     }
+\protected\def\ShowLuaExampleThree   {\StartShowLuaExample\ShowLuaExampleThreeIndeed   }
+\protected\def\ShowLuaExampleFour    {\StartShowLuaExample\ShowLuaExampleFourIndeed    }
+\protected\def\ShowLuaExampleFive    {\StartShowLuaExample\ShowLuaExampleFiveIndeed    }
+\protected\def\ShowLuaExampleSix     {\StartShowLuaExample\ShowLuaExampleSixIndeed     }
+\protected\def\ShowLuaExampleSeven   {\StartShowLuaExample\ShowLuaExampleSevenIndeed   }
+\protected\def\ShowLuaExampleEight   {\StartShowLuaExample\ShowLuaExampleEightIndeed   }
+\protected\def\ShowLuaExampleNine    {\StartShowLuaExample\ShowLuaExampleNineIndeed    }
+\protected\def\ShowLuaExampleTable   {\StartShowLuaExample\ShowLuaExampleTableIndeed   }
+\protected\def\ShowLuaExampleTableHex{\StartShowLuaExample\ShowLuaExampleTableHexIndeed}
+\protected\def\ShowLuaExampleString  {\StartShowLuaExample\ShowLuaExampleStringIndeed  }
+\protected\def\ShowLuaExampleBoolean {\StartShowLuaExample\ShowLuaExampleBooleanIndeed }
 
-\unexpanded\def\ShowLuaExampleFive#1#2%
-  {\bgroup
-   \obeyluatokens
-   \startsubsummary[title={#1.#2}]
-   \ctxlua{string.tocontext(tostring(#1.#2))}
-   \stopsubsummary
-   \egroup}
-
-\unexpanded\def\ShowLuaExampleSix#1#2#3%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleZeroIndeed#1#2#3%
+  {\obeyluatokens
    \startsubsummary[title={#1.#2(#3)}]
    \ctxlua{string.tocontext(#1.#2(#3))}
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
-\unexpanded\def\ShowLuaExampleSeven#1#2#3%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleOneIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{table.tocontext(#3)}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleTwoIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{table.tocontext(#1.#2(#3))}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleThreeIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{string.tocontext(tostring(#1.#2(#3)))}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleFourIndeed#1#2#3#4%
+  {\obeyluatokens
+   \startsubsummary[title={t=#3 #1.#2(t#4)}]
+   \ctxlua{local t = #3 #1.#2(t#4) table.tocontext(t)}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleFiveIndeed#1#2%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2}]
+   \ctxlua{string.tocontext(tostring(#1.#2))}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleSixIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{string.tocontext(#1.#2(#3))}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleSevenIndeed#1#2#3%
+  {\obeyluatokens
    \startsubsummary[title={#1.#2(#3)}]
    \ctxlua{string.tocontext(table.concat({#1.#2(#3)}," "))}
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
-\unexpanded\def\ShowLuaExampleTable#1%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleEightIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2(#3)}]
+   \ctxlua{buffers.assign("temp",#1.#2(#3))}%
+   \typebuffer[temp]
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleNineIndeed#1#2#3%
+  {\obeyluatokens
+   \startsubsummary[title={#1.#2#3}]
+   \ctxlua{context.whatevertocontext(#1.#2#3)}
+   \stopsubsummary
+   \StopShowLuaExample}
+
+\protected\def\ShowLuaExampleTableIndeed#1%
+  {\obeyluatokens
    \startsubsummary[title={#1}]
    \ctxlua{table.tocontext(#1,false)}
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
-\unexpanded\def\ShowLuaExampleTableHex#1%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleTableHexIndeed#1%
+  {\obeyluatokens
    \startsubsummary[title={#1}]
    \ctxlua{table.tocontext(#1,false,false,true,true)} % name, reduce, noquotes, hex
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
-\unexpanded\def\ShowLuaExampleString#1%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleStringIndeed#1%
+  {\obeyluatokens
    \startsubsummary[title={#1}]
    \ctxlua{string.tocontext(#1)}
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
-\unexpanded\def\ShowLuaExampleBoolean#1%
-  {\bgroup
-   \obeyluatokens
+\protected\def\ShowLuaExampleBooleanIndeed#1%
+  {\obeyluatokens
    \startsubsummary[title={#1}]
    \ctxlua{boolean.tocontext(#1)}
    \stopsubsummary
-   \egroup}
+   \StopShowLuaExample}
 
 % interaction
 

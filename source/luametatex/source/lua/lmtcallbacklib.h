@@ -150,7 +150,7 @@ static inline int lmt_callback_defined(
     int i
 ) { 
      /*tex There is no need to check |callback_state_disabled| because value can be used. */
-     return (lmt_callback_state.items[i].state & callback_state_disabled) ? 0 : lmt_callback_state.items[i].value; 
+     return (lmt_callback_state.items[i].state & callback_state_disabled) ? -1 : lmt_callback_state.items[i].value; 
 }
 
 static inline int lmt_callback_call(

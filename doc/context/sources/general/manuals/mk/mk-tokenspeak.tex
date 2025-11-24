@@ -4,6 +4,32 @@
 
 \environment mk-environment
 
+\startluacode
+    local type = type
+
+    local function unnest(t,f) -- only used in mk, for old times sake
+        if not f then          -- and only relevant for token lists
+            f = { }            -- this one can become obsolete
+        end
+        local n = #f
+        for i=1,#t do
+            local v = t[i]
+            if type(v) == "table" then
+                if type(v[1]) == "table" then
+                    unnest(v,f)
+                else
+                    n = n + 1 ; f[n] = v
+                end
+            else
+                n = n + 1 ; f[n] = v
+            end
+        end
+        return f
+    end
+
+    table.unnest = unnest
+\stopluacode
+
 \chapter {Token speak}
 
 \subject{tokenization}

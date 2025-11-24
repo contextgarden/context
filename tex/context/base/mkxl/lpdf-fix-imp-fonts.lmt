@@ -237,36 +237,38 @@ local getstates, getindexstate_composite, getindexstate_simple  do
         return states
     end
 
-    local splitsixteen  do
+ -- local splitsixteen  do
+ --
+ --     local lpegmatch = lpeg.match
+ --
+ --     local more = 0
+ --
+ --  -- local pattern = lpeg.P(true) / function() more = 0 end * (
+ --     local pattern = (
+ --         lpeg.C(4) / function(s) -- needs checking !
+ --             local now = hextointeger(s)
+ --             if more > 0 then
+ --                 now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
+ --                 more = 0
+ --                 return now
+ --             elseif now >= 0xD800 and now <= 0xDBFF then
+ --                 more = now
+ --             else
+ --                 return now
+ --             end
+ --         end
+ --     )^0 -- todo: split ligatures has more than one
+ --
+ --     splitsixteen = function(str)
+ --         if str and str ~= "" then
+ --             more = 0
+ --             return lpegmatch(pattern,str)
+ --         end
+ --     end
+ --
+ -- end
 
-        local lpegmatch = lpeg.match
-
-        local more = 0
-
-     -- local pattern = lpeg.P(true) / function() more = 0 end * (
-        local pattern = (
-            lpeg.C(4) / function(s) -- needs checking !
-                local now = hextointeger(s)
-                if more > 0 then
-                    now = (more-0xD800)*0x400 + (now-0xDC00) + 0x10000
-                    more = 0
-                    return now
-                elseif now >= 0xD800 and now <= 0xDBFF then
-                    more = now
-                else
-                    return now
-                end
-            end
-        )^0
-
-        splitsixteen = function(str)
-            if str and str ~= "" then
-                more = 0
-                return lpegmatch(pattern,str)
-            end
-        end
-
-    end
+    local splitsixteen = lpdf.splitsixteen
 
     -- This could be an lpeg but there is not that much to gain here.
 
@@ -282,7 +284,7 @@ local getstates, getindexstate_composite, getindexstate_simple  do
 
     local function register2(pdfdoc,unicodes,index,uni,fontname)
         local old = unicodes[index]   -- unicode
-        local new, more = splitsixteen(uni) -- unicode16 or ligature
+        local new, more = splitsixteen(uni) -- unicode16 or ligature .. todo: more ligature components
         if more then
             if not old then
                 unicodes[index] = uni -- string
@@ -615,7 +617,7 @@ do
         )
     end
 
-    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+    local function plugin_Type0(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
         -- The v table is unique and can be shared
         local shared = sharedfonts[v]
         if type(shared) == "table" then
@@ -651,7 +653,7 @@ do
         end
     end
 
-    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+    local function plugin_TrueType(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
@@ -668,7 +670,7 @@ do
         end
     end
 
-    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+    local function plugin_Type1(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
         local shared = sharedfonts[v]
         if type(shared) == "table" then
             data[k] = shared
@@ -687,7 +689,7 @@ do
 
     local plugin -- defined after the next one
 
-    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+    local function plugin_Type3(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
         local charprocs = v.CharProcs
         if charprocs then
             local resources = v.Resources
@@ -699,7 +701,7 @@ do
                         if not object.__fonts_remapped__ then
                             local contents = object()
                             contents = parsecontent(contents,true)
-                            if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{}) then
+                            if plugin(pdfdoc,contents,fonts,xobjects,pagenumber,compactor,{},depth+1) then
                                 contents = contenttostring(contents)
                                 object.__raw__.Length = #contents -- nil
                                 object.__raw__.Filter = nil
@@ -710,7 +712,7 @@ do
                          -- resources.Font    = fonts
                          -- resources.XObject = xobjects
                             status.charprocs = status.charprocs + 1
-                            status.indices   = status.indices + indices
+                            status.indices   = status.indices + 1 -- was indices (kind of weird), needs checking
                         end
                     end
                 end
@@ -751,7 +753,7 @@ do
                     local subtype = v.Subtype
                     local handler = subtype and handlers[subtype]
                     if handler then
-                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
                     else
                         -- weird
                     end
@@ -1107,7 +1109,7 @@ do
                     local subtype = v.Subtype
                     local handler = subtype and handlers[subtype]
                     if handler then
-                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap)
+                        handler(pdfdoc,k,v,sharedfonts,data,compactor,pagenumber,remap,depth)
                     else
                         -- weird
                     end

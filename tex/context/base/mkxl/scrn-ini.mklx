@@ -299,11 +299,10 @@
     \clf_setautoprefix{\interactionparameter\c!prefix}%
 \to \everysetupinteraction
 
-
 %D This setter is global, contrary to the interaction setting which is local. The values of
 %D these keys are only looked at when we finalize the document.
 
-\def\syst_set_metatdata_from_dummy#1%
+\def\syst_set_metadata_from_dummy#1%
   {\ifempty{\dummyparameter#1}\else
      \global\expandafter\letinteractionparameter\expandafter#1\lastnamedcs
    \fi}
@@ -316,11 +315,11 @@
    \resetdummyparameter\c!keyword
    \resetdummyparameter\c!date
    \getdummyparameters[#1]%
-   \syst_set_metatdata_from_dummy\c!title
-   \syst_set_metatdata_from_dummy\c!subtitle
-   \syst_set_metatdata_from_dummy\c!author
-   \syst_set_metatdata_from_dummy\c!keyword
-   \syst_set_metatdata_from_dummy\c!date
+   \syst_set_metadata_from_dummy\c!title
+   \syst_set_metadata_from_dummy\c!subtitle
+   \syst_set_metadata_from_dummy\c!author
+   \syst_set_metadata_from_dummy\c!keyword
+   \syst_set_metadata_from_dummy\c!date
    \endgroup}
 
 \protect \endinput

@@ -1170,11 +1170,15 @@ function string.todec(s)
     end
 end
 
-function string.tobytes(s)
-    if not s or s == "" then
-        return s
-    else
-        return lpegmatch(hextobytes,s)
+if string.hextocharacters then
+    string.tobytes = string.hextocharacters
+else
+    function string.tobytes(s)
+        if not s or s == "" then
+            return s
+        else
+            return lpegmatch(hextobytes,s)
+        end
     end
 end
 

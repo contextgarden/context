@@ -99,7 +99,7 @@ local function initialize(tfmdata,key,value)
                 local depth  = newdepth  or olddepth  or 0
                 if oldwidth ~= width or oldheight ~= height or olddepth ~= depth then
                     character.width  = width
--- character.advance  = oldwidth
+                 -- character.advance  = oldwidth
                     character.height = height
                     character.depth  = depth
                     if oldwidth ~= width then
@@ -144,7 +144,7 @@ local function initialize(tfmdata,key,value)
         local factor     = parameters.size/655360
         local fixedwidth = (tonumber(value) or 1)*factor*655360
         parameters.space = 2*fixedwidth
--- parameters.space = fixedwidth * ceil(parameters.space/fixedwidth)
+     -- parameters.space = fixedwidth * ceil(parameters.space/fixedwidth)
         for unicode, character in next, characters do
             local oldwidth = character.width
             if oldwidth ~= 0 then
@@ -176,28 +176,107 @@ local specification = {
 registerotffeature(specification)
 registerafmfeature(specification)
 
--- local function initialize(tfmdata,key,value)
---     if value then
---         local resources = tfmdata.resources
---         if resources then
---             local marks = resources.marks -- markclasses marksets
---             if marks then
---                 local characters = tfmdata.characters
---                 for k, v in next, marks do
---                     characters[k].width = 0
---                 end
---             end
---         end
---     end
--- end
+-- -- \definefontfeature[fixedarabic][arabic][zeromarks=yes,mset=yes]
 
--- local specification = {
---     name         = "zeromarks",
---     description  = "zero width marks",
---     manipulators = {
---         base = initialize,
---         node = initialize,
---     }
--- }
+local categories = characters.categories
+local is_mark    = characters.is_mark
 
--- registerotffeature(specification)
+local well = false
+
+local function getwell()
+    local chardata = characters.data
+    local markdata = { }
+    local function crap(b)
+        for i=b.first,b.last do
+            local specials = chardata[i].specials
+            if specials then
+             -- local m = true
+                if specials[2] == 0x20 then
+                 -- for i=3,#specials do
+                 --     local s = specials[i]
+                 --     if not is_mark[categories[s]] then
+                 --         m = false
+                 --         break
+                 --     end
+                 -- end
+                 -- if m then
+                        markdata[i] = true
+                 -- end
+                end
+            end
+        end
+    end
+    crap(characters.blocks.arabicpresentationformsa)
+    crap(characters.blocks.arabicpresentationformsb)
+    return markdata
+end
+
+local function initialize(tfmdata,key,value)
+    if value then
+        local resources = tfmdata.resources
+        if resources then
+            local characters = tfmdata.characters
+            local marks = resources.marks -- markclasses marksets
+            if next(marks) then
+                for k, v in next, marks do
+                    local c = characters[v]
+                    if c then
+                        local w = v.width
+                        if w ~= 0 then
+                            c.advance = w
+                            c.width   = 0
+                        end
+                    end
+                end
+            else
+                if not well then
+                    well = getwell()
+                end
+                for k in next, well do
+                    local c = characters[k]
+                    if c then
+                        local w = c.width
+                        if w ~= 0 then
+                            c.advance = w
+                            c.width   = 0
+                        end
+                    end
+                end
+                for k, v in next, characters do
+                    local u = v.unicode
+                    if type(u) == "table" then
+                        for i=1,#u do
+                            if is_mark[categories[u[i]]] then
+                                local w = v.width
+                                if w ~= 0 then
+                                    v.advance = w
+                                    v.width   = 0
+                                    break
+                                end
+                            end
+                        end
+                    else
+                        if is_mark[categories[u]] then
+                            local w = v.width
+                            if w ~= 0 then
+                                v.advance = w
+                                v.width   = 0
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+local specification = {
+    name         = "zeromarks",
+    description  = "zero width marks",
+    manipulators = {
+     -- base = initialize,
+        node = initialize,
+    }
+}
+
+registerotffeature(specification)

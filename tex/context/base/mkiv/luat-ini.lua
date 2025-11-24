@@ -20,7 +20,9 @@ table.setmetatableindex(moduledata,"table")
 table.setmetatableindex(thirddata, "table")
 
 if not global then
-    global  = _G
+    global     = _G -- we keep this in mkiv for compatibility reasons
+    globals    = _G -- but in Lua 5.5+ we have global as keyword so ...
+    globaldata = _G -- .. we now have these
 end
 
 LUATEXVERSION       = status.luatex_version/100 + tonumber(status.luatex_revision)/10000

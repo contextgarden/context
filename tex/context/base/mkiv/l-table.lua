@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['l-table'] = {
 local type, next, tostring, tonumber, select, rawget = type, next, tostring, tonumber, select, rawget
 local table, string = table, string
 local concat, sort = table.concat, table.sort
-local format, lower, dump = string.format, string.lower, string.dump
+local format, lower, dump, find = string.format, string.lower, string.dump, string.find
 local getmetatable, setmetatable = getmetatable, setmetatable
 local lpegmatch, patterns = lpeg.match, lpeg.patterns
 local floor = math.floor
@@ -244,17 +244,6 @@ local function sortedhashkeys(tab,cmp) -- fast one
     end
 end
 
-function table.allkeys(t)
-    local keys = { }
-    for k, v in next, t do
-        for k in next, v do
-            keys[k] = true
-        end
-    end
-    return sortedkeys(keys)
-end
-
--- if false then
 if lua.getcheckedkeys then
 
     local getcheckedkeys = lua.getcheckedkeys
@@ -602,7 +591,7 @@ local noquotes, hexify, handle, compact, inline, functions, metacheck, accurate
 local reserved = table.tohash { -- intercept a language inconvenience: no reserved words as key
     'and', 'break', 'do', 'else', 'elseif', 'end', 'false', 'for', 'function', 'if',
     'in', 'local', 'nil', 'not', 'or', 'repeat', 'return', 'then', 'true', 'until', 'while',
-    'NaN', 'goto', 'const',
+    'NaN', 'goto', 'const', 'global',
 }
 
 local function is_simple_table(t,hexify,accurate) -- also used in util-tab so maybe public
@@ -1135,64 +1124,6 @@ end
 
 table.flattened = flattened
 
-local function collapsed(t,f,h)
-    if f == nil then
-        f = { }
-        h = { }
-    end
-    for k=1,#t do
-        local v = t[k]
-        if type(v) == "table" then
-            collapsed(v,f,h)
-        elseif not h[v] then
-            f[#f+1] = v
-            h[v] = true
-        end
-    end
-    return f
-end
-
-local function collapsedhash(t,h)
-    if h == nil then
-        h = { }
-    end
-    for k=1,#t do
-        local v = t[k]
-        if type(v) == "table" then
-            collapsedhash(v,h)
-        else
-            h[v] = true
-        end
-    end
-    return h
-end
-
-table.collapsed     = collapsed     -- 20% faster than unique(collapsed(t))
-table.collapsedhash = collapsedhash
-
-local function unnest(t,f) -- only used in mk, for old times sake
-    if not f then          -- and only relevant for token lists
-        f = { }            -- this one can become obsolete
-    end
-    for i=1,#t do
-        local v = t[i]
-        if type(v) == "table" then
-            if type(v[1]) == "table" then
-                unnest(v,f)
-            else
-                f[#f+1] = v
-            end
-        else
-            f[#f+1] = v
-        end
-    end
-    return f
-end
-
-function table.unnest(t) -- bad name
-    return unnest(t)
-end
-
 local function are_equal(a,b,n,m) -- indexed
     if a == b then
         return true
@@ -1205,7 +1136,7 @@ local function are_equal(a,b,n,m) -- indexed
         end
         for i=n,m do
             local ai, bi = a[i], b[i]
-            if ai==bi then
+            if ai == bi then
                 -- same
             elseif type(ai) == "table" and type(bi) == "table" then
                 if not are_equal(ai,bi) then
@@ -1409,12 +1340,6 @@ end
 
 -- -- -- obsolete but we keep them for a while and might comment them later -- -- --
 
--- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
-
-function table.sub(t,i,j)
-    return { unpack(t,i,j) }
-end
-
 -- slower than #t on indexed tables (#t only returns the size of the numerically indexed slice)
 
 function table.is_empty(t)
@@ -1457,30 +1382,7 @@ function table.sorted(t,...)
     return t -- still sorts in-place
 end
 
---
-
-function table.values(t,s) -- optional sort flag
-    if t then
-        local values = { }
-        local keys   = { }
-        local v      = 0
-        for key, value in next, t do
-            if not keys[value] then
-                v = v + 1
-                values[v] = value
-                keys[k]   = key
-            end
-        end
-        if s then
-            sort(values)
-        end
-        return values
-    else
-        return { }
-    end
-end
-
--- maybe this will move to util-tab.lua
+-- maybe this will move to util-tab.lua or become obsolete as it's not used
 
 -- for k, v in table.filtered(t,pattern)          do ... end
 -- for k, v in table.filtered(t,pattern,true)     do ... end
@@ -1528,9 +1430,11 @@ end
 
 -- lua 5.3:
 
-if not table.move then
+local move = table.move
 
-    function table.move(a1,f,e,t,a2)
+if not move then
+
+    move = function(a1,f,e,t,a2)
         if a2 and a1 ~= a2 then
             for i=f,e do
                 a2[t] = a1[i]
@@ -1547,4 +1451,16 @@ if not table.move then
         end
     end
 
+     table.move = move
+
+end
+
+-- roughly: copy-loop : unpack : sub == 0.9 : 0.4 : 0.45 (so in critical apps, use unpack)
+
+-- function table.sub(t,i,j)
+--     return { unpack(t,i,j) }
+-- end
+
+function table.sub(t,i,j)
+    return move(t,i or 1,j or #t,1,{})
 end

@@ -12,7 +12,7 @@ local strings     = utilities.strings
 
 local format, gsub, rep, sub, find, char, byte = string.format, string.gsub, string.rep, string.sub, string.find, string.char, string.byte
 local load, dump = load, string.dump
-local tonumber, type, tostring, next, setmetatable = tonumber, type, tostring, next, setmetatable
+local tonumber, type, tostring, next, setmetatable, rawset = tonumber, type, tostring, next, setmetatable, rawset
 local unpack, concat = table.unpack, table.concat
 local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg.R, lpeg.Ct, lpeg.Cs, lpeg.Cp, lpeg.Carg, lpeg.Cc
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
@@ -33,6 +33,9 @@ end
 -- todo: make a special namespace for the formatter
 
 if not number then number = { } end -- temp hack for luatex-fonts
+
+local hashes  = string.hashes or { }
+string.hashes = hashes
 
 local stripzero   = patterns.stripzero
 local stripzeros  = patterns.stripzeros
@@ -129,9 +132,6 @@ number.nupoints     = nupoints
 number.basepoints   = basepoints
 number.nubasepoints = nubasepoints
 
--- str = " \n \ntest  \n test\ntest "
--- print("["..string.gsub(string.collapsecrlf(str),"\n","+").."]")
-
 local rubish     = spaceortab^0 * newline
 local anyrubish  = spaceortab + newline
 local stripped   = (spaceortab^1 / "") * newline
@@ -161,15 +161,22 @@ function strings.newrepeater(str,offset)
         return t
     end
     t = { }
-    setmetatable(t, { __index = function(t,k)
-        if not k then
-            return ""
-        end
-        local n = k + offset
-        local s = n > 0 and rep(str,n) or ""
-        t[k] = s
-        return s
-    end })
+    setmetatable(t, {
+        __index =
+            function(t,k)
+                if not k then
+                    return ""
+                end
+                local n = k + offset
+                local s = n > 0 and rep(str,n) or ""
+                rawset(t,k,s)
+                return s
+            end,
+        __newindex =
+            function()
+                -- ignore
+            end
+    })
     s[offset] = t
     return t
 end
@@ -177,48 +184,80 @@ end
 -- local dashes = strings.newrepeater("--",-1)
 -- print(dashes[2],dashes[3],dashes[1])
 
-local extra, tab, start = 0, 0, 4, 0
+do
 
-local nspaces = strings.newrepeater(" ")
+    local extra, tab, start = 0, 0, 4, 0
 
-string.nspaces = nspaces
+    local nspaces = strings.newrepeater(" ")
 
-local pattern =
-    Carg(1) / function(t)
-        extra, tab, start = 0, t or 7, 1
-    end
-  * Cs((
-      Cp() * patterns.tab / function(position)
-          local current = (position - start + 1) + extra
-          local spaces = tab-(current-1) % tab
-          if spaces > 0 then
-              extra = extra + spaces - 1
-              return nspaces[spaces] -- rep(" ",spaces)
-          else
-              return ""
+ -- string.nspaces = nspaces
+
+    local pattern =
+        Carg(1) / function(t)
+            extra, tab, start = 0, t or 7, 1
+        end
+      * Cs((
+          Cp() * patterns.tab / function(position)
+              local current = (position - start + 1) + extra
+              local spaces = tab-(current-1) % tab
+              if spaces > 0 then
+                  extra = extra + spaces - 1
+                  return nspaces[spaces] -- rep(" ",spaces)
+              else
+                  return ""
+              end
           end
-      end
-    + newline * Cp() / function(position)
-          extra, start = 0, position
-      end
-    + anything
-  )^1)
+        + newline * Cp() / function(position)
+              extra, start = 0, position
+          end
+        + anything
+      )^1)
 
-function strings.tabtospace(str,tab)
-    -- no real gain in first checking if a \t is there
-    return lpegmatch(pattern,str,1,tab or 7)
-end
+    function strings.tabtospace(str,tab)
+        -- no real gain in first checking if a \t is there
+        return lpegmatch(pattern,str,1,tab or 7)
+    end
 
-function string.utfpadding(s,n)
-    if not n or n == 0 then
-        return ""
+    function string.utfpadding(s,n)
+        if not n or n == 0 then
+            return ""
+        end
+        local l = utflen(s)
+        if n > 0 then
+            return nspaces[n-l]
+        else
+            return nspaces[-n-l]
+        end
     end
-    local l = utflen(s)
-    if n > 0 then
-        return nspaces[n-l]
-    else
-        return nspaces[-n-l]
+
+    hashes.spaces = nspaces
+
+    function string.utfpadd(s,n,c)
+        if n and n ~= 0 then
+            local l = utflen(s)
+            if n > 0 then
+                local d = n - l
+                if d > 0 then
+                    if c and c ~= " " then
+                        return rep(c,d) .. s
+                    else
+                        return nspaces[d] .. s
+                    end
+                end
+            else
+                local d = - n - l
+                if d > 0 then
+                    if c and c ~= " " then
+                        return s .. rep(c,d)
+                    else
+                        return s .. nspaces[d]
+                    end
+                end
+            end
+        end
+        return s
     end
+
 end
 
 -- local t = {
@@ -244,84 +283,96 @@ end
 --     return str
 -- end
 
-local optionalspace = spacer^0
-local nospace       = optionalspace/""
-local endofline     = nospace * newline
+do
 
-local stripend      = (whitespace^1 * endofstring)/""
+    local optionalspace = spacer^0
+    local nospace       = optionalspace/""
+    local endofline     = nospace * newline
 
-local normalline    = (nospace * ((1-optionalspace*(newline+endofstring))^1) * nospace)
+    local stripend      = (whitespace^1 * endofstring)/""
 
-local stripempty    = endofline^1/""
-local normalempty   = endofline^1
-local singleempty   = endofline * (endofline^0/"")
-local doubleempty   = endofline * endofline^-1 * (endofline^0/"")
-local stripstart    = stripempty^0
+    local normalline    = (nospace * ((1-optionalspace*(newline+endofstring))^1) * nospace)
 
-local intospace     = whitespace^1/" "
-local noleading     = whitespace^1/""
-local notrailing    = noleading * endofstring
+    local stripempty    = endofline^1/""
+    local normalempty   = endofline^1
+    local singleempty   = endofline * (endofline^0/"")
+    local doubleempty   = endofline * endofline^-1 * (endofline^0/"")
+    local stripstart    = stripempty^0
 
-local p_prune_normal    = Cs ( stripstart * ( stripend   + normalline + normalempty )^0 )
-local p_prune_collapse  = Cs ( stripstart * ( stripend   + normalline + doubleempty )^0 )
-local p_prune_noempty   = Cs ( stripstart * ( stripend   + normalline + singleempty )^0 )
-local p_prune_intospace = Cs ( noleading  * ( notrailing + intospace  + 1           )^0 )
-local p_retain_normal   = Cs (              (              normalline + normalempty )^0 )
-local p_retain_collapse = Cs (              (              normalline + doubleempty )^0 )
-local p_retain_noempty  = Cs (              (              normalline + singleempty )^0 )
-local p_collapse_all    = Cs ( stripstart * ( stripend   + ((whitespace+newline)^1/" ") + 1)^0 )
+    local intospace     = whitespace^1/" "
+    local noleading     = whitespace^1/""
+    local notrailing    = noleading * endofstring
 
--- function striplines(str,prune,collapse,noempty)
---     if prune then
---         if noempty then
---             return lpegmatch(p_prune_noempty,str) or str
---         elseif collapse then
---             return lpegmatch(p_prune_collapse,str) or str
---         else
---             return lpegmatch(p_prune_normal,str) or str
---         end
---     else
---         if noempty then
---             return lpegmatch(p_retain_noempty,str) or str
---         elseif collapse then
---             return lpegmatch(p_retain_collapse,str) or str
---         else
---             return lpegmatch(p_retain_normal,str) or str
---         end
---     end
--- end
+    local p_prune_normal    = Cs ( stripstart  * ( stripend   + normalline + normalempty )^0 )
+    local p_prune_collapse  = Cs ( stripstart  * ( stripend   + normalline + doubleempty )^0 )
+    local p_prune_noempty   = Cs ( stripstart  * ( stripend   + normalline + singleempty )^0 )
+    local p_prune_intospace = Cs ( noleading^0 * ( notrailing + intospace  + 1           )^0 )
+    local p_retain_normal   = Cs (               (              normalline + normalempty )^0 )
+    local p_retain_collapse = Cs (               (              normalline + doubleempty )^0 )
+    local p_retain_noempty  = Cs (               (              normalline + singleempty )^0 )
+    local p_collapse_all    = Cs ( stripstart  * ( stripend   + ((whitespace+newline)^1/" ") + 1)^0 )
 
-local striplinepatterns = {
-    ["prune"]               = p_prune_normal,
-    ["prune and collapse"]  = p_prune_collapse, -- default
-    ["prune and no empty"]  = p_prune_noempty,
-    ["prune and to space"]  = p_prune_intospace,
-    ["retain"]              = p_retain_normal,
-    ["retain and collapse"] = p_retain_collapse,
-    ["retain and no empty"] = p_retain_noempty,
-    ["collapse all"]        = p_collapse_all,
-    ["collapse"]            = patterns.collapser,
-}
+    local striplinepatterns = {
+        ["prune"]               = p_prune_normal,
+        ["prune and collapse"]  = p_prune_collapse, -- default
+        ["prune and no empty"]  = p_prune_noempty,
+        ["prune and to space"]  = p_prune_intospace,
+        ["retain"]              = p_retain_normal,
+        ["retain and collapse"] = p_retain_collapse,
+        ["retain and no empty"] = p_retain_noempty,
+        ["collapse all"]        = p_collapse_all,
+        ["collapse"]            = patterns.collapser,
+    }
 
-setmetatable(striplinepatterns,{ __index = function(t,k) return p_prune_collapse end })
+    -- function striplines(str,prune,collapse,noempty)
+    --     if prune then
+    --         if noempty then
+    --             return lpegmatch(p_prune_noempty,str) or str
+    --         elseif collapse then
+    --             return lpegmatch(p_prune_collapse,str) or str
+    --         else
+    --             return lpegmatch(p_prune_normal,str) or str
+    --         end
+    --     else
+    --         if noempty then
+    --             return lpegmatch(p_retain_noempty,str) or str
+    --         elseif collapse then
+    --             return lpegmatch(p_retain_collapse,str) or str
+    --         else
+    --             return lpegmatch(p_retain_normal,str) or str
+    --         end
+    --     end
+    -- end
 
-strings.striplinepatterns = striplinepatterns
+    setmetatable(striplinepatterns,{
+        __index =
+            function(t,k)
+                return p_prune_collapse
+            end,
+        __newindex =
+            function()
+                -- ignore
+            end
+    })
 
-function strings.striplines(str,how)
-    return str and lpegmatch(striplinepatterns[how],str) or str
+    strings.striplinepatterns = striplinepatterns
+
+    function strings.striplines(str,how)
+        return str and lpegmatch(striplinepatterns[how],str) or str
+    end
+
+    function strings.collapse(str)
+        return str and lpegmatch(p_prune_intospace,str) or str
+    end
+
+    -- local s = " \naa\n\naa\na   a\n\n "
+    -- local s = [[ \naa\n\naa\na   a\n\n]]
+    -- print("["..strings.striplines(s,"collapse all").."]")
+    -- also see: string.collapsespaces
+
+ -- strings.striplong = strings.striplines
+
 end
-
-function strings.collapse(str) -- maybe also in strings
-    return str and lpegmatch(p_prune_intospace,str) or str
-end
-
--- local s = " \naa\n\naa\na   a\n\n "
--- local s = [[ \naa\n\naa\na   a\n\n]]
--- print("["..strings.striplines(s,"collapse all").."]")
-
--- also see: string.collapsespaces
-
-strings.striplong = strings.striplines -- for old times sake
 
 -- local str = table.concat( {
 -- "  ",
@@ -352,10 +403,11 @@ strings.striplong = strings.striplines -- for old times sake
 --   cccccc
 -- ]]))
 
-function strings.nice(str)
-    str = gsub(str,"[:%-+_]+"," ") -- maybe more
-    return str
-end
+-- -- This was only used in one place ... after all these years, so it's gone now:
+--
+-- function strings.nice(str)
+--     return (gsub(str,"[:%-+_]+"," ")) -- maybe more
+-- end
 
 -- Work in progress. Interesting is that compared to the built-in this is faster in
 -- luatex than in luajittex where we have a comparable speed. It only makes sense
@@ -389,9 +441,9 @@ end
 -- stripped E         %...J   number
 -- autofloat          %...g   number
 -- autofloat          %...G   number
--- utf character      %...c   number
 -- force tostring     %...S   any
 -- force tostring     %Q      any
+-- force tostring     %q      any
 -- force tonumber     %N      number (strip leading zeros)
 -- signed number      %I      number
 -- rounded number     %r      number
@@ -414,10 +466,13 @@ end
 -- automatic          %...a   'whatever' (string, table, ...)
 -- automatic          %...A   "whatever" (string, table, ...)
 -- zap                %...z   skip
+-- reference          %...Z   access arg N
 -- stripped  %...N    %...N
 -- comma/period real  %...m
 -- period/comma real  %...M
 -- formatted float    %...k   n.m
+-- left aligned       %...<
+-- right aligned      %...>
 
 local n = 0
 
@@ -457,27 +512,36 @@ function string.autosingle(s,sep)
     return ("'" .. tostring(s) .. "'")
 end
 
-local tracedchars  = { [0] =
-    -- the regular bunch
-    "[null]", "[soh]", "[stx]", "[etx]", "[eot]", "[enq]", "[ack]", "[bel]",
-    "[bs]",   "[ht]",  "[lf]",  "[vt]",  "[ff]",  "[cr]",  "[so]",  "[si]",
-    "[dle]",  "[dc1]", "[dc2]", "[dc3]", "[dc4]", "[nak]", "[syn]", "[etb]",
-    "[can]",  "[em]",  "[sub]", "[esc]", "[fs]",  "[gs]",  "[rs]",  "[us]",
-    -- plus space
-    "[space]", -- 0x20
-}
+do
 
-string.tracedchars = tracedchars
-strings.tracers    = tracedchars
+    local X00 = { [0] =
+        -- the regular bunch
+        "[null]", "[soh]", "[stx]", "[etx]", "[eot]", "[enq]", "[ack]", "[bel]",
+        "[bs]",   "[ht]",  "[lf]",  "[vt]",  "[ff]",  "[cr]",  "[so]",  "[si]",
+        "[dle]",  "[dc1]", "[dc2]", "[dc3]", "[dc4]", "[nak]", "[syn]", "[etb]",
+        "[can]",  "[em]",  "[sub]", "[esc]", "[fs]",  "[gs]",  "[rs]",  "[us]",
+        -- plus space
+        "[space]", -- 0x20
+    }
 
-function string.tracedchar(b)
+    setmetatable(X00, {
+        __newindex = function()
+                         -- ignore
+                     end,
+    })
+
+    hashes.X00 = X00
+
+    function string.tracedchar(b)
     -- todo: table
-    if type(b) == "number" then
-        return tracedchars[b] or (utfchar(b) .. " (U+" .. format("%05X",b) .. ")")
-    else
-        local c = utfbyte(b)
-        return tracedchars[c] or (b .. " (U+" .. (c and format("%05X",c) or "?????") .. ")")
+        if type(b) == "number" then
+            return X00[b] or (utfchar(b) .. " (U+" .. format("%05X",b) .. ")")
+        else
+            local c = utfbyte(b)
+            return X00[c] or (b .. " (U+" .. (c and format("%05X",c) or "?????") .. ")")
+        end
     end
+
 end
 
 function number.signed(i)
@@ -601,17 +665,23 @@ end
 local hf = { }
 local hs = { }
 
-setmetatable(hf, { __index = function(t,k)
-    local v = "%." .. k .. "f"
-    t[k] = v
-    return v
-end } )
+setmetatable(hf, {
+    __index =
+        function(t,k)
+            local v = "%." .. k .. "f"
+            t[k] = v
+            return v
+        end
+} )
 
-setmetatable(hs, { __index = function(t,k)
-    local v = "%" .. k .. "s"
-    t[k] = v
-    return v
-end } )
+setmetatable(hs, {
+    __index =
+        function(t,k)
+            local v = "%" .. k .. "s"
+            t[k] = v
+            return v
+        end
+} )
 
 function number.formattedfloat(n,b,a)
     local s = format(hf[a],n)
@@ -683,7 +753,10 @@ string.texnewlines = lpeg.replacer(patterns.newline,"\r",true)
 local preamble = ""
 
 local environment = {
-    ["global"]      = _G,
+    ["global"]      = _G, -- for old times sake
+    ["globals"]     = _G, -- avoids keyword clash
+    ["globaldata"]  = _G, -- consistent with other *data names
+
     lpeg            = lpeg,
     type            = type,
     tostring        = tostring,
@@ -698,7 +771,6 @@ local environment = {
     utfchar         = utf.char,
     utfbyte         = utf.byte,
     lpegmatch       = lpeg.match,
-    nspaces         = string.nspaces,
     utfpadding      = string.utfpadding,
     tracedchar      = string.tracedchar,
     autosingle      = string.autosingle,
@@ -712,18 +784,24 @@ local environment = {
     escapedquotes   = string.escapedquotes,
 
     FORMAT          = string.f6,
+
+    nspaces         = hashes.spaces,
+    X00             = hashes.X00,
+    X02             = false, -- set later
+    X04             = false, -- set later
 }
 
 -- -- --
 
 local arguments = { "a1" } -- faster than previously used (select(n,...))
 
-setmetatable(arguments, { __index =
-    function(t,k)
-        local v = t[k-1] .. ",a" .. k
-        t[k] = v
-        return v
-    end
+setmetatable(arguments, {
+    __index =
+        function(t,k)
+            local v = t[k-1] .. ",a" .. k
+            t[k] = v
+            return v
+        end
 })
 
 local prefix_any = C((sign + space + period + digit)^0)
@@ -893,53 +971,57 @@ end
 
 do
 
-    if not string.hashes then
-        string.hashes = { }
-    end
-
-    local X02 = setmetatable({ }, {
-        __index = function(t,k)
-            if type(k) == "string" then
-                t[k] = t[byte(k)]
-            elseif k < 0 then
-                return "00"
-            else
-                return "FF"
-            end
-            return t[k]
-        end
-    })
+    local X02 = lua.newindex(256)
+    local X04 = lua.newindex(256)
 
     for i=0,255 do
         X02[i] = format("%02X",i)
+        X04[i] = format("%04X",i)
     end
 
-    local X04 = setmetatable({ }, {
-        __index = function(t,k)
-            if k < 0 then
-              --report("fatal h_hex_4 error: %i",k)
-                return "0000"
-            elseif k < 256 then -- maybe 512
-                -- not sparse in this range
-                for i=0,255 do
-                    t[i] = format("%04X",i)
+    setmetatable(X02, {
+        __index =
+            function(t,k)
+                if type(k) == "string" then
+                    rawset(t,k,t[byte(k)])
+                elseif k < 0 then
+                    return "00"
+                else
+                    return "FF"
                 end
                 return t[k]
-            elseif k > 0xFFFF then
-                return "FFFF"
-            else
-                local v = format("%04X",k)
-                t[k] = v
-                return v
-            end
-        end
+            end,
+        __newindex =
+            function()
+                -- ignore
+            end,
     })
+
+    setmetatable(X04, {
+        __index =
+            function(t,k)
+                if k < 0 then
+                  --report("fatal h_hex_4 error: %i",k)
+                    return "0000"
+                elseif k > 0xFFFF then
+                    return "FFFF"
+                else
+                    local v = format("%04X",k)
+                    rawset(t,k,v)
+                    return v
+                end
+            end,
+        __newindex =
+            function()
+                -- ignore
+            end,
+    })
+
+    hashes.X02 = X02
+    hashes.X04 = X04
 
     environment.X02 = X02
     environment.X04 = X04
-
-    string.hashes.X02 = X02
-    string.hashes.X04 = X04
 
     format_X = function(f)
         n = n + 1
@@ -1272,11 +1354,11 @@ local builder = Cs { "start",
               --
               + V("c")
               + V("C")
-              + V("S") -- new
-              + V("Q") -- new
-              + V("n") -- new
-              + V("N") -- new
-              + V("k") -- new
+              + V("S")
+              + V("Q")
+              + V("n")
+              + V("N")
+              + V("k")
               --
               + V("r")
               + V("h") + V("H") + V("u") + V("U")
@@ -1284,13 +1366,12 @@ local builder = Cs { "start",
               + V("t") + V("T")
               + V("l") + V("L")
               + V("I")
-              + V("w") -- new
-              + V("W") -- new
-              + V("a") -- new
-              + V("A") -- new
+              + V("w")
+              + V("W")
+              + V("a")
+              + V("A")
               + V("j") + V("J") -- stripped e E
               + V("m") + V("M") -- new (formatted number)
-           -- + V("z") -- new
               + V("z") + V("Z")
               --
               + V(">") -- left padding
@@ -1350,7 +1431,6 @@ local builder = Cs { "start",
     ["M"] = (prefix_any * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
     --
     ["z"] = (prefix_any * P("z")) / format_z, -- %z => skip n arguments
- -- ["Z"] = (prefix_any * P("Z")) / format_Z, -- %Z => optionally strip zeros
     ["Z"] = (prefix_any * P("Z")) / format_Z, -- %Z => access argument N
     --
     ["a"] = (prefix_any * P("a")) / format_a, -- %a => '...' (forces tostring)
@@ -1544,47 +1624,21 @@ function number.to16dot16(n)
     return f_16_16(n/65536.0)
 end
 
---
-
-if not string.explode then
-
- -- local tsplitat = lpeg.tsplitat
-
-    local p_utf   = patterns.utf8character
-    local p_check = C(p_utf) * (P("+") * Cc(true))^0
-    local p_split = Ct(C(p_utf)^0)
-    local p_space = Ct((C(1-P(" ")^1) + P(" ")^1)^0)
-
-    function string.explode(str,symbol)
-        if symbol == "" then
-            return lpegmatch(p_split,str)
-        elseif symbol then
-            local a, b = lpegmatch(p_check,symbol)
-            if b then
-                return lpegmatch(tsplitat(P(a)^1),str)
-            else
-                return lpegmatch(tsplitat(a),str)
-            end
-        else
-            return lpegmatch(p_space,str)
-        end
-    end
-
-end
-
-
 do
 
-    local p_whitespace = patterns.whitespace^1
+    local p_whitespace = patterns.whitespace
 
-    local cache = setmetatable({ }, { __index = function(t,k)
-        local p = tsplitat(p_whitespace * P(k) * p_whitespace)
-        local v = function(s)
-            return lpegmatch(p,s)
-        end
-        t[k] = v
-        return v
-    end })
+    local cache = setmetatable({ }, {
+        __index =
+            function(t,k)
+                local p = Ct((C((1-p_whitespace-P(k))^1) + P(1))^1)
+                local v = function(s)
+                    return lpegmatch(p,s)
+                end
+                t[k] = v
+                return v
+            end
+    })
 
     function string.wordsplitter(s)
         return cache[s]

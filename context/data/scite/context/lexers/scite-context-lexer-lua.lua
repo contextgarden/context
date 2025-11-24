@@ -48,16 +48,18 @@ local constants = {
     "__pairs", "__ipairs",
     "__close",
     "NaN",
-   "<const>", "<toclose>",
-   -- special for context documentation
-   "<t:number>", "<t:string>", "<t:boolean>", "<t:function>", "<t:integer>", "<t:table>", "<t:userdata>", "<t:nil>",
-   "<t:direct>", "<t:node>", "<t:token>", "<t:instance>",
-   "<t:false>", "<t:true>",
-   "<t:file>",
-   "<t:posit>", "<t:complex>", "<t:decimal>",
-   "<t:mp>", "<t:mpobj>",
-   "<t:pdf>", "<t:pdfobj>",
-   "<t:hybrid>", "<t:whatever>"
+    "<const>", "<toclose>",
+    -- special for context documentation
+    "<t:number>", "<t:string>", "<t:boolean>", "<t:function>", "<t:integer>", "<t:table>", "<t:userdata>", "<t:nil>",
+    "<t:direct>", "<t:node>", "<t:token>", "<t:instance>",
+    "<t:false>", "<t:true>",
+    "<t:file>",
+    "<t:posit>", "<t:complex>", "<t:decimal>",
+    "<t:mp>", "<t:mpobj>",
+    "<t:pdf>", "<t:pdfobj>",
+    "<t:hybrid>", "<t:whatever>",
+    "globals",
+ -- "globaldata", "userdata", "documentdata", "thirddata", "moduledata",
 }
 
 local internals = { -- __

@@ -204,7 +204,7 @@ do
 
     function callbacks.report()
         for name, index in sortedhash(list) do
-            report_callbacks("%2i %-20s : [% t] %s",index,name,getstates(index),getcomment(com))
+            report_callbacks("%2i %-20s : [% t] %s",index,name,getstates(index),getcomment(name))
         end
     end
 

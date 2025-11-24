@@ -82,9 +82,10 @@ local report_objects    = logs.reporter("backend","objects")
 local report_fonts      = logs.reporter("backend","fonts")
 local report_encryption = logs.reporter("backend","encryption")
 
-local trace_objects     = false  trackers.register("backend.objects",       function(v) trace_objects = v end)
-local trace_details     = false  trackers.register("backend.details",       function(v) trace_details = v end)
-local trace_indices     = false  trackers.register("backend.fonts.details", function(v) trace_indices = v end)
+local trace_objects     = false  trackers.register("backend.objects",       function(v) trace_objects     = v end)
+local trace_details     = false  trackers.register("backend.details",       function(v) trace_details     = v end)
+local trace_indices     = false  trackers.register("backend.fonts.details", function(v) trace_indices     = v end)
+local trace_compression = false  trackers.register("backend.compression",   function(v) trace_compression = v end)
 
 -- These two tables used a font id as index and will be metatabled in lpdf-emb.lmt:
 
@@ -94,22 +95,39 @@ local usedfontobjects   = { }
 lpdf.usedfontnames      = usedfontnames
 lpdf.usedfontobjects    = usedfontobjects
 
--- experiment:
+-- What is actually the minimum size, we don't need to test when less than that. An
+-- empty string gives 8 bytes, we also need "/Length 123" plus some space and we
+-- likely have little to compress on small string, so say 60 bytes at least. With
+-- object compression we never hit the threshold.
+
+-- local threshold <const> = 64
 
 local function compressdata(data,size)
-    local guess = ((size // 4096) + 1) * 2048
-    local comp  = zlibcompresssize(data,guess,3)
- -- if comp then
- --     report()
- --     report("size %i, guess %i, result %i => %s",size,guess,#comp,guess>=#comp and "hit" or "miss")
- --     report()
+ -- if size > threshold then
+        local guess = ((size // 4096) + 1) * 2048
+        local comp  = zlibcompresssize(data,guess,3)
+        if trace_compression and comp then
+            local csize = #comp
+            report()
+            report("size %i, guess %i, result %i, guessed %a, needed %a",
+                size, guess, csize,
+                guess >= csize and "good" or "bad",
+                csize <  size  and "yes"  or "no"
+            )
+            report()
+        end
+        return comp
+ -- else
+ --     if trace_compression and comp then
+ --         report()
+ --         report("size %i, threshold %i, needed %a",
+ --             size, threshold, "no"
+ --         )
+ --         report()
+ --     end
+ --     return nil
  -- end
-    return comp
 end
-
--- local function compressdata(data,size)
---     return zlibcompress(data,3)
--- end
 
 -- we collect them:
 

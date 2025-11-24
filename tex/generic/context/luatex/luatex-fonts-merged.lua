@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-11-12 23:08
+-- merge date  : 2025-11-24 17:50
 
 do -- begin closure to overcome local limits and interference
 
@@ -121,6 +121,9 @@ if LUAVERSION>5.3 then
 end
 if status and os.setenv then
  os.setenv("engine",string.lower(status.luatex_engine or "unknown"))
+end
+if not lua.newindex then
+ function lua.newindex() return {} end
 end
 
 end -- closure
@@ -881,11 +884,15 @@ function string.todec(s)
   return lpegmatch(bytestodec,s)
  end
 end
-function string.tobytes(s)
- if not s or s=="" then
-  return s
- else
-  return lpegmatch(hextobytes,s)
+if string.hextocharacters then
+ string.tobytes=string.hextocharacters
+else
+ function string.tobytes(s)
+  if not s or s=="" then
+   return s
+  else
+   return lpegmatch(hextobytes,s)
+  end
  end
 end
 local patterns={} 
@@ -933,9 +940,13 @@ local string=string
 local sub,gmatch,format,char,byte,rep,lower,find=string.sub,string.gmatch,string.format,string.char,string.byte,string.rep,string.lower,string.find
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local P,S,C,Ct,Cc,Cs=lpeg.P,lpeg.S,lpeg.C,lpeg.Ct,lpeg.Cc,lpeg.Cs
-local unquoted=patterns.squote*C(patterns.nosquote)*patterns.squote+patterns.dquote*C(patterns.nodquote)*patterns.dquote
-function string.unquoted(str)
- return lpegmatch(unquoted,str) or str
+do
+ local squote=patterns.squote
+ local dquote=patterns.dquote
+ local unquoted=squote*C(((1-squote)+squote*#P(1))^0)*squote+dquote*C(((1-dquote)+dquote*#P(1))^0)*dquote
+ function string.unquoted(str)
+  return lpegmatch(unquoted,str) or str
+ end
 end
 function string.quoted(str)
  return format("%q",str) 
@@ -1019,7 +1030,7 @@ function string.topattern(str,lowercase,strict)
   return str
  end
 end
-function string.valid(str,default)
+function string.valid(str,default) 
  return (type(str)=="string" and str~="" and str) or default or nil
 end
 string.itself=function(s) return s end
@@ -1064,7 +1075,7 @@ if not modules then modules={} end modules ['l-table']={
 local type,next,tostring,tonumber,select,rawget=type,next,tostring,tonumber,select,rawget
 local table,string=table,string
 local concat,sort=table.concat,table.sort
-local format,lower,dump=string.format,string.lower,string.dump
+local format,lower,dump,find=string.format,string.lower,string.dump,string.find
 local getmetatable,setmetatable=getmetatable,setmetatable
 local lpegmatch,patterns=lpeg.match,lpeg.patterns
 local floor=math.floor
@@ -1210,15 +1221,6 @@ local function sortedhashkeys(tab,cmp)
  else
   return {}
  end
-end
-function table.allkeys(t)
- local keys={}
- for k,v in next,t do
-  for k in next,v do
-   keys[k]=true
-  end
- end
- return sortedkeys(keys)
 end
 if lua.getcheckedkeys then
  local getcheckedkeys=lua.getcheckedkeys
@@ -1457,7 +1459,7 @@ local noquotes,hexify,handle,compact,inline,functions,metacheck,accurate
 local reserved=table.tohash { 
  'and','break','do','else','elseif','end','false','for','function','if',
  'in','local','nil','not','or','repeat','return','then','true','until','while',
- 'NaN','goto','const',
+ 'NaN','goto','const','global',
 }
 local function is_simple_table(t,hexify,accurate) 
  local nt=#t
@@ -1916,59 +1918,6 @@ local function flattened(t,f,depth)
  return f
 end
 table.flattened=flattened
-local function collapsed(t,f,h)
- if f==nil then
-  f={}
-  h={}
- end
- for k=1,#t do
-  local v=t[k]
-  if type(v)=="table" then
-   collapsed(v,f,h)
-  elseif not h[v] then
-   f[#f+1]=v
-   h[v]=true
-  end
- end
- return f
-end
-local function collapsedhash(t,h)
- if h==nil then
-  h={}
- end
- for k=1,#t do
-  local v=t[k]
-  if type(v)=="table" then
-   collapsedhash(v,h)
-  else
-   h[v]=true
-  end
- end
- return h
-end
-table.collapsed=collapsed  
-table.collapsedhash=collapsedhash
-local function unnest(t,f) 
- if not f then    
-  f={}   
- end
- for i=1,#t do
-  local v=t[i]
-  if type(v)=="table" then
-   if type(v[1])=="table" then
-    unnest(v,f)
-   else
-    f[#f+1]=v
-   end
-  else
-   f[#f+1]=v
-  end
- end
- return f
-end
-function table.unnest(t) 
- return unnest(t)
-end
 local function are_equal(a,b,n,m) 
  if a==b then
   return true
@@ -2160,9 +2109,6 @@ end
 if setinspector then
  setinspector("table",function(v) if type(v)=="table" then serialize(print,v,"table") return true end end)
 end
-function table.sub(t,i,j)
- return { unpack(t,i,j) }
-end
 function table.is_empty(t)
  return not t or next(t)==nil
 end
@@ -2193,26 +2139,6 @@ end
 function table.sorted(t,...)
  sort(t,...)
  return t 
-end
-function table.values(t,s) 
- if t then
-  local values={}
-  local keys={}
-  local v=0
-  for key,value in next,t do
-   if not keys[value] then
-    v=v+1
-    values[v]=value
-    keys[k]=key
-   end
-  end
-  if s then
-   sort(values)
-  end
-  return values
- else
-  return {}
- end
 end
 function table.filtered(t,pattern,sort,cmp)
  if t and type(pattern)=="string" then
@@ -2252,8 +2178,9 @@ function table.filtered(t,pattern,sort,cmp)
   return nothing
  end
 end
-if not table.move then
- function table.move(a1,f,e,t,a2)
+local move=table.move
+if not move then
+ move=function(a1,f,e,t,a2)
   if a2 and a1~=a2 then
    for i=f,e do
     a2[t]=a1[i]
@@ -2269,6 +2196,10 @@ if not table.move then
    return a1
   end
  end
+  table.move=move
+end
+function table.sub(t,i,j)
+ return move(t,i or 1,j or #t,1,{})
 end
 
 end -- closure
@@ -2999,12 +2930,6 @@ end
 function file.is_rootbased_path(filename)
  return filename and lpegmatch(rootbased,filename)~=nil
 end
-function file.strip(name,dir)
- if name then
-  local b,a=match(name,"^(.-)"..dir.."(.*)$")
-  return a~="" and a or name
- end
-end
 function lfs.mkdirs(path)
  local full=""
  for sub in gmatch(path,"(/*[^\\/]+)") do 
@@ -3250,7 +3175,7 @@ utilities.strings=utilities.strings or {}
 local strings=utilities.strings
 local format,gsub,rep,sub,find,char,byte=string.format,string.gsub,string.rep,string.sub,string.find,string.char,string.byte
 local load,dump=load,string.dump
-local tonumber,type,tostring,next,setmetatable=tonumber,type,tostring,next,setmetatable
+local tonumber,type,tostring,next,setmetatable,rawset=tonumber,type,tostring,next,setmetatable,rawset
 local unpack,concat=table.unpack,table.concat
 local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg.Cs,lpeg.Cp,lpeg.Carg,lpeg.Cc
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
@@ -3264,6 +3189,8 @@ local loadstripped=function(str,shortcuts)
  end
 end
 if not number then number={} end 
+local hashes=string.hashes or {}
+string.hashes=hashes
 local stripzero=patterns.stripzero
 local stripzeros=patterns.stripzeros
 local newline=patterns.newline
@@ -3365,95 +3292,129 @@ function strings.newrepeater(str,offset)
   return t
  end
  t={}
- setmetatable(t,{ __index=function(t,k)
-  if not k then
-   return ""
-  end
-  local n=k+offset
-  local s=n>0 and rep(str,n) or ""
-  t[k]=s
-  return s
- end })
+ setmetatable(t,{
+  __index=function(t,k)
+    if not k then
+     return ""
+    end
+    local n=k+offset
+    local s=n>0 and rep(str,n) or ""
+    rawset(t,k,s)
+    return s
+   end,
+  __newindex=function()
+   end
+ })
  s[offset]=t
  return t
 end
-local extra,tab,start=0,0,4,0
-local nspaces=strings.newrepeater(" ")
-string.nspaces=nspaces
-local pattern=Carg(1)/function(t)
-  extra,tab,start=0,t or 7,1
- end*Cs((
-   Cp()*patterns.tab/function(position)
-    local current=(position-start+1)+extra
-    local spaces=tab-(current-1)%tab
-    if spaces>0 then
-     extra=extra+spaces-1
-     return nspaces[spaces] 
-    else
-     return ""
+do
+ local extra,tab,start=0,0,4,0
+ local nspaces=strings.newrepeater(" ")
+ local pattern=Carg(1)/function(t)
+   extra,tab,start=0,t or 7,1
+  end*Cs((
+    Cp()*patterns.tab/function(position)
+     local current=(position-start+1)+extra
+     local spaces=tab-(current-1)%tab
+     if spaces>0 then
+      extra=extra+spaces-1
+      return nspaces[spaces] 
+     else
+      return ""
+     end
+    end+newline*Cp()/function(position)
+     extra,start=0,position
+    end+anything
+   )^1)
+ function strings.tabtospace(str,tab)
+  return lpegmatch(pattern,str,1,tab or 7)
+ end
+ function string.utfpadding(s,n)
+  if not n or n==0 then
+   return ""
+  end
+  local l=utflen(s)
+  if n>0 then
+   return nspaces[n-l]
+  else
+   return nspaces[-n-l]
+  end
+ end
+ hashes.spaces=nspaces
+ function string.utfpadd(s,n,c)
+  if n and n~=0 then
+   local l=utflen(s)
+   if n>0 then
+    local d=n-l
+    if d>0 then
+     if c and c~=" " then
+      return rep(c,d)..s
+     else
+      return nspaces[d]..s
+     end
     end
-   end+newline*Cp()/function(position)
-    extra,start=0,position
-   end+anything
-  )^1)
-function strings.tabtospace(str,tab)
- return lpegmatch(pattern,str,1,tab or 7)
-end
-function string.utfpadding(s,n)
- if not n or n==0 then
-  return ""
- end
- local l=utflen(s)
- if n>0 then
-  return nspaces[n-l]
- else
-  return nspaces[-n-l]
+   else
+    local d=- n-l
+    if d>0 then
+     if c and c~=" " then
+      return s..rep(c,d)
+     else
+      return s..nspaces[d]
+     end
+    end
+   end
+  end
+  return s
  end
 end
-local optionalspace=spacer^0
-local nospace=optionalspace/""
-local endofline=nospace*newline
-local stripend=(whitespace^1*endofstring)/""
-local normalline=(nospace*((1-optionalspace*(newline+endofstring))^1)*nospace)
-local stripempty=endofline^1/""
-local normalempty=endofline^1
-local singleempty=endofline*(endofline^0/"")
-local doubleempty=endofline*endofline^-1*(endofline^0/"")
-local stripstart=stripempty^0
-local intospace=whitespace^1/" "
-local noleading=whitespace^1/""
-local notrailing=noleading*endofstring
-local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
-local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
-local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
-local p_prune_intospace=Cs (noleading*(notrailing+intospace+1     )^0 )
-local p_retain_normal=Cs ((normalline+normalempty )^0 )
-local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
-local p_retain_noempty=Cs ((normalline+singleempty )^0 )
-local p_collapse_all=Cs (stripstart*(stripend+((whitespace+newline)^1/" ")+1)^0 )
-local striplinepatterns={
- ["prune"]=p_prune_normal,
- ["prune and collapse"]=p_prune_collapse,
- ["prune and no empty"]=p_prune_noempty,
- ["prune and to space"]=p_prune_intospace,
- ["retain"]=p_retain_normal,
- ["retain and collapse"]=p_retain_collapse,
- ["retain and no empty"]=p_retain_noempty,
- ["collapse all"]=p_collapse_all,
- ["collapse"]=patterns.collapser,
-}
-setmetatable(striplinepatterns,{ __index=function(t,k) return p_prune_collapse end })
-strings.striplinepatterns=striplinepatterns
-function strings.striplines(str,how)
- return str and lpegmatch(striplinepatterns[how],str) or str
-end
-function strings.collapse(str) 
- return str and lpegmatch(p_prune_intospace,str) or str
-end
-strings.striplong=strings.striplines
-function strings.nice(str)
- str=gsub(str,"[:%-+_]+"," ") 
- return str
+do
+ local optionalspace=spacer^0
+ local nospace=optionalspace/""
+ local endofline=nospace*newline
+ local stripend=(whitespace^1*endofstring)/""
+ local normalline=(nospace*((1-optionalspace*(newline+endofstring))^1)*nospace)
+ local stripempty=endofline^1/""
+ local normalempty=endofline^1
+ local singleempty=endofline*(endofline^0/"")
+ local doubleempty=endofline*endofline^-1*(endofline^0/"")
+ local stripstart=stripempty^0
+ local intospace=whitespace^1/" "
+ local noleading=whitespace^1/""
+ local notrailing=noleading*endofstring
+ local p_prune_normal=Cs (stripstart*(stripend+normalline+normalempty )^0 )
+ local p_prune_collapse=Cs (stripstart*(stripend+normalline+doubleempty )^0 )
+ local p_prune_noempty=Cs (stripstart*(stripend+normalline+singleempty )^0 )
+ local p_prune_intospace=Cs (noleading^0*(notrailing+intospace+1     )^0 )
+ local p_retain_normal=Cs ((normalline+normalempty )^0 )
+ local p_retain_collapse=Cs ((normalline+doubleempty )^0 )
+ local p_retain_noempty=Cs ((normalline+singleempty )^0 )
+ local p_collapse_all=Cs (stripstart*(stripend+((whitespace+newline)^1/" ")+1)^0 )
+ local striplinepatterns={
+  ["prune"]=p_prune_normal,
+  ["prune and collapse"]=p_prune_collapse,
+  ["prune and no empty"]=p_prune_noempty,
+  ["prune and to space"]=p_prune_intospace,
+  ["retain"]=p_retain_normal,
+  ["retain and collapse"]=p_retain_collapse,
+  ["retain and no empty"]=p_retain_noempty,
+  ["collapse all"]=p_collapse_all,
+  ["collapse"]=patterns.collapser,
+ }
+ setmetatable(striplinepatterns,{
+  __index=function(t,k)
+    return p_prune_collapse
+   end,
+  __newindex=function()
+   end
+ })
+ strings.striplinepatterns=striplinepatterns
+ function strings.striplines(str,how)
+  return str and lpegmatch(striplinepatterns[how],str) or str
+ end
+ function strings.collapse(str)
+  return str and lpegmatch(p_prune_intospace,str) or str
+ end
 end
 local n=0
 local sequenced=table.sequenced
@@ -3483,21 +3444,26 @@ function string.autosingle(s,sep)
  end
  return ("'"..tostring(s).."'")
 end
-local tracedchars={ [0]=
- "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
- "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
- "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
- "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
- "[space]",
-}
-string.tracedchars=tracedchars
-strings.tracers=tracedchars
-function string.tracedchar(b)
- if type(b)=="number" then
-  return tracedchars[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
- else
-  local c=utfbyte(b)
-  return tracedchars[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
+do
+ local X00={ [0]=
+  "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
+  "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
+  "[dle]","[dc1]","[dc2]","[dc3]","[dc4]","[nak]","[syn]","[etb]",
+  "[can]","[em]","[sub]","[esc]","[fs]","[gs]","[rs]","[us]",
+  "[space]",
+ }
+ setmetatable(X00,{
+  __newindex=function()
+      end,
+ })
+ hashes.X00=X00
+ function string.tracedchar(b)
+  if type(b)=="number" then
+   return X00[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
+  else
+   local c=utfbyte(b)
+   return X00[c] or (b.." (U+"..(c and format("%05X",c) or "?????")..")")
+  end
  end
 end
 function number.signed(i)
@@ -3579,16 +3545,20 @@ function number.sparseexponent(f,n)
 end
 local hf={}
 local hs={}
-setmetatable(hf,{ __index=function(t,k)
- local v="%."..k.."f"
- t[k]=v
- return v
-end } )
-setmetatable(hs,{ __index=function(t,k)
- local v="%"..k.."s"
- t[k]=v
- return v
-end } )
+setmetatable(hf,{
+ __index=function(t,k)
+   local v="%."..k.."f"
+   t[k]=v
+   return v
+  end
+} )
+setmetatable(hs,{
+ __index=function(t,k)
+   local v="%"..k.."s"
+   t[k]=v
+   return v
+  end
+} )
 function number.formattedfloat(n,b,a)
  local s=format(hf[a],n)
  local l=(b or 0)+(a or 0)+1
@@ -3621,6 +3591,8 @@ string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
 local preamble=""
 local environment={
  ["global"]=_G,
+ ["globals"]=_G,
+ ["globaldata"]=_G,
  lpeg=lpeg,
  type=type,
  tostring=tostring,
@@ -3635,7 +3607,6 @@ local environment={
  utfchar=utf.char,
  utfbyte=utf.byte,
  lpegmatch=lpeg.match,
- nspaces=string.nspaces,
  utfpadding=string.utfpadding,
  tracedchar=string.tracedchar,
  autosingle=string.autosingle,
@@ -3648,13 +3619,18 @@ local environment={
  stripzeros=patterns.stripzeros,
  escapedquotes=string.escapedquotes,
  FORMAT=string.f6,
+ nspaces=hashes.spaces,
+ X00=hashes.X00,
+ X02=false,
+ X04=false,
 }
 local arguments={ "a1" } 
-setmetatable(arguments,{ __index=function(t,k)
-  local v=t[k-1]..",a"..k
-  t[k]=v
-  return v
- end
+setmetatable(arguments,{
+ __index=function(t,k)
+   local v=t[k-1]..",a"..k
+   t[k]=v
+   return v
+  end
 })
 local prefix_any=C((sign+space+period+digit)^0)
 local prefix_sub=(C((sign+digit)^0)+Cc(0))*period*(C((sign+digit)^0)+Cc(0))
@@ -3771,46 +3747,45 @@ local format_X=function(f)
  return format("format('%%%sX',a%s)",f,n)
 end
 do
- if not string.hashes then
-  string.hashes={}
- end
- local X02=setmetatable({},{
-  __index=function(t,k)
-   if type(k)=="string" then
-    t[k]=t[byte(k)]
-   elseif k<0 then
-    return "00"
-   else
-    return "FF"
-   end
-   return t[k]
-  end
- })
+ local X02=lua.newindex(256)
+ local X04=lua.newindex(256)
  for i=0,255 do
   X02[i]=format("%02X",i)
+  X04[i]=format("%04X",i)
  end
- local X04=setmetatable({},{
+ setmetatable(X02,{
   __index=function(t,k)
-   if k<0 then
-    return "0000"
-   elseif k<256 then
-    for i=0,255 do
-     t[i]=format("%04X",i)
+    if type(k)=="string" then
+     rawset(t,k,t[byte(k)])
+    elseif k<0 then
+     return "00"
+    else
+     return "FF"
     end
     return t[k]
-   elseif k>0xFFFF then
-    return "FFFF"
-   else
-    local v=format("%04X",k)
-    t[k]=v
-    return v
-   end
-  end
+   end,
+  __newindex=function()
+   end,
  })
+ setmetatable(X04,{
+  __index=function(t,k)
+    if k<0 then
+     return "0000"
+    elseif k>0xFFFF then
+     return "FFFF"
+    else
+     local v=format("%04X",k)
+     rawset(t,k,v)
+     return v
+    end
+   end,
+  __newindex=function()
+   end,
+ })
+ hashes.X02=X02
+ hashes.X04=X04
  environment.X02=X02
  environment.X04=X04
- string.hashes.X02=X02
- string.hashes.X04=X04
  format_X=function(f)
   n=n+1
   if f=="02" then
@@ -4040,17 +4015,9 @@ local builder=Cs { "start",
    P("%")/""*(
     V("!") 
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
-+V("c")+V("C")+V("S") 
-+V("Q") 
-+V("n") 
-+V("N") 
-+V("k")
-+V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w") 
-+V("W") 
-+V("a") 
-+V("A") 
-+V("j")+V("J") 
-+V("m")+V("M")
++V("c")+V("C")+V("S")+V("Q")+V("n")+V("N")+V("k")
++V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w")+V("W")+V("a")+V("A")+V("j")+V("J") 
++V("m")+V("M") 
 +V("z")+V("Z")
 +V(">") 
 +V("<")
@@ -4209,36 +4176,18 @@ local f_16_16=formatters["%0.5N"]
 function number.to16dot16(n)
  return f_16_16(n/65536.0)
 end
-if not string.explode then
- local p_utf=patterns.utf8character
- local p_check=C(p_utf)*(P("+")*Cc(true))^0
- local p_split=Ct(C(p_utf)^0)
- local p_space=Ct((C(1-P(" ")^1)+P(" ")^1)^0)
- function string.explode(str,symbol)
-  if symbol=="" then
-   return lpegmatch(p_split,str)
-  elseif symbol then
-   local a,b=lpegmatch(p_check,symbol)
-   if b then
-    return lpegmatch(tsplitat(P(a)^1),str)
-   else
-    return lpegmatch(tsplitat(a),str)
-   end
-  else
-   return lpegmatch(p_space,str)
-  end
- end
-end
 do
- local p_whitespace=patterns.whitespace^1
- local cache=setmetatable({},{ __index=function(t,k)
-  local p=tsplitat(p_whitespace*P(k)*p_whitespace)
-  local v=function(s)
-   return lpegmatch(p,s)
-  end
-  t[k]=v
-  return v
- end })
+ local p_whitespace=patterns.whitespace
+ local cache=setmetatable({},{
+  __index=function(t,k)
+    local p=Ct((C((1-p_whitespace-P(k))^1)+P(1))^1)
+    local v=function(s)
+     return lpegmatch(p,s)
+    end
+    t[k]=v
+    return v
+   end
+ })
  function string.wordsplitter(s)
   return cache[s]
  end

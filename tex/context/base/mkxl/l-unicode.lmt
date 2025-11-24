@@ -89,7 +89,7 @@ do
 
 end
 
-do
+do -- todo: check if we can use a helper (not used anyway)
 
     local one  = P(1)
     local two  = C(1) * C(1)
@@ -708,6 +708,8 @@ end
 -- end
 
 -- goodie:
+
+local rep = string.rep
 
 function string.utfpadd(s,n)
     if n and n ~= 0 then

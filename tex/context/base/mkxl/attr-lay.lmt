@@ -14,6 +14,7 @@ if not modules then modules = { } end modules ['attr-lay'] = {
 
 local type = type
 local insert, remove = table.insert, table.remove
+local gsub = string.gsub
 
 local attributes          = attributes
 local nodes               = nodes
@@ -253,7 +254,7 @@ end
 function viewerlayers.definedlayoutcomponent(tag)
     viewerlayers.define {
         tag       = tag,
-        title     = utilities.strings.nice(tag),
+        title     = gsub(tag,"[:%-+_]+"," "), -- was: utilities.strings.nice(tag),
         visible   = v_start,
         editable  = v_yes,
         printable = v_yes,

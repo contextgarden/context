@@ -187,7 +187,7 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[set_font_cmd]                         = (command_item) { .id = set_font_cmd,                       .lua = lua_key_index(set_font),                     .name = lua_key(set_font),                     .kind = data_command_item,      .min = 0,                         .max = max_font_size,                .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[define_font_cmd]                      = (command_item) { .id = define_font_cmd,                    .lua = lua_key_index(define_font),                  .name = lua_key(define_font),                  .kind = token_command_item,     .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[integer_cmd]                          = (command_item) { .id = integer_cmd,                        .lua = lua_key_index(integer),                      .name = lua_key(integer),                      .kind = data_command_item,      .min = min_integer,               .max = max_integer,                  .base = direct_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[posit_cmd]                            = (command_item) { .id = posit_cmd,                          .lua = lua_key_index(posit),                        .name = lua_key(posit),                        .kind = data_command_item,      .min = min_posit,                 .max = max_posit,                    .base = direct_entry,            .fixedvalue = 0            };
+    lmt_interface.command_names[posit_cmd]                            = (command_item) { .id = posit_cmd,                          .lua = lua_key_index(key_posit),                    .name = lua_key(key_posit),                    .kind = data_command_item,      .min = min_posit,                 .max = max_posit,                    .base = direct_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[dimension_cmd]                        = (command_item) { .id = dimension_cmd,                      .lua = lua_key_index(dimension),                    .name = lua_key(dimension),                    .kind = data_command_item,      .min = min_dimension,             .max = max_dimension,                .base = direct_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[gluespec_cmd]                         = (command_item) { .id = gluespec_cmd,                       .lua = lua_key_index(gluespec),                     .name = lua_key(gluespec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[mugluespec_cmd]                       = (command_item) { .id = mugluespec_cmd,                     .lua = lua_key_index(mugluespec),                   .name = lua_key(mugluespec),                   .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
@@ -195,7 +195,7 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[mathspec_cmd]                         = (command_item) { .id = mathspec_cmd,                       .lua = lua_key_index(mathspec),                     .name = lua_key(mathspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[fontspec_cmd]                         = (command_item) { .id = fontspec_cmd,                       .lua = lua_key_index(fontspec),                     .name = lua_key(fontspec),                     .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
     lmt_interface.command_names[specificationspec_cmd]                = (command_item) { .id = specificationspec_cmd,              .lua = lua_key_index(specificationspec),            .name = lua_key(specificationspec),            .kind = regular_command_item,   .min = ignore_entry,              .max = ignore_entry,                 .base = ignore_entry,            .fixedvalue = 0            };
-    lmt_interface.command_names[register_cmd]                         = (command_item) { .id = register_cmd,                       .lua = lua_key_index(register),                     .name = lua_key(register),                     .kind = regular_command_item,   .min = first_value_level,         .max = last_value_level,             .base = 0,                       .fixedvalue = 0            };
+    lmt_interface.command_names[register_cmd]                         = (command_item) { .id = register_cmd,                       .lua = lua_key_index(key_register),                 .name = lua_key(key_register),                 .kind = regular_command_item,   .min = first_value_level,         .max = last_value_level,             .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[combine_toks_cmd]                     = (command_item) { .id = combine_toks_cmd,                   .lua = lua_key_index(combine_toks),                 .name = lua_key(combine_toks),                 .kind = regular_command_item,   .min = 0,                         .max = last_combine_toks_code,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[arithmic_cmd]                         = (command_item) { .id = arithmic_cmd,                       .lua = lua_key_index(arithmic),                     .name = lua_key(arithmic),                     .kind = regular_command_item,   .min = 0,                         .max = last_arithmic_code,           .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[prefix_cmd]                           = (command_item) { .id = prefix_cmd,                         .lua = lua_key_index(prefix),                       .name = lua_key(prefix),                       .kind = regular_command_item,   .min = 0,                         .max = last_prefix_code,             .base = 0,                       .fixedvalue = 0            };
@@ -214,7 +214,7 @@ void lmt_tokenlib_initialize(void)
     lmt_interface.command_names[expand_after_cmd]                     = (command_item) { .id = expand_after_cmd,                   .lua = lua_key_index(expand_after),                 .name = lua_key(expand_after),                 .kind = regular_command_item,   .min = 0,                         .max = last_expand_after_code,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[no_expand_cmd]                        = (command_item) { .id = no_expand_cmd,                      .lua = lua_key_index(no_expand),                    .name = lua_key(no_expand),                    .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[input_cmd]                            = (command_item) { .id = input_cmd,                          .lua = lua_key_index(input),                        .name = lua_key(input),                        .kind = regular_command_item,   .min = 0,                         .max = last_input_code,              .base = 0,                       .fixedvalue = 0            };
-    lmt_interface.command_names[lua_call_cmd]                         = (command_item) { .id = lua_call_cmd,                       .lua = lua_key_index(lua_call),                     .name = lua_key(lua_call),                     .kind = reference_command_item, .min = 0,                         .max = max_function_reference,       .base = 0,                       .fixedvalue = 0            };
+    lmt_interface.command_names[lua_call_cmd]                         = (command_item) { .id = lua_call_cmd,                       .lua = lua_key_index(key_lua_call),                 .name = lua_key(key_lua_call),                 .kind = reference_command_item, .min = 0,                         .max = max_function_reference,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[lua_local_call_cmd]                   = (command_item) { .id = lua_local_call_cmd,                 .lua = lua_key_index(lua_local_call),               .name = lua_key(lua_local_call),               .kind = reference_command_item, .min = 0,                         .max = max_function_reference,       .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[begin_local_cmd]                      = (command_item) { .id = begin_local_cmd,                    .lua = lua_key_index(begin_local),                  .name = lua_key(begin_local),                  .kind = regular_command_item,   .min = 0,                         .max = 0,                            .base = 0,                       .fixedvalue = 0            };
     lmt_interface.command_names[if_test_cmd]                          = (command_item) { .id = if_test_cmd,                        .lua = lua_key_index(if_test),                      .name = lua_key(if_test),                      .kind = regular_command_item,   .min = first_if_test_code,        .max = last_if_test_code,            .base = 0,                       .fixedvalue = 0            };
@@ -2617,7 +2617,7 @@ static int tokenlib_inhibit(lua_State *L)
             }
             break;
         case LUA_TTABLE: 
-            for (int i = 1; i <= lua_rawlen(L, 1); i++) { 
+            for (int i = 1; i <= (int) lua_rawlen(L, 1); i++) { 
                 if (lua_rawgeti(L, -1, i) == LUA_TSTRING) { 
                     tokenlib_aux_inhibit(L, -1, permanent);
                 }
@@ -3155,7 +3155,7 @@ static int tokenlib_getfield(lua_State *L)
         return tokenlib_getactive(L);
     } else if (lua_key_eq(s, expandable)) {
         return tokenlib_getexpandable(L);
-    } else if (lua_key_eq(s, protected)) {
+    } else if (lua_key_eq(s, key_protected)) {
         return tokenlib_getprotected(L);
     } else if (lua_key_eq(s, semiprotected)) {
         return tokenlib_getsemiprotected(L);
@@ -3169,7 +3169,7 @@ static int tokenlib_getfield(lua_State *L)
         return tokenlib_getpermanent(L);
     } else if (lua_key_eq(s, immutable)) {
         return tokenlib_getimmutable(L);
-    } else if (lua_key_eq(s, mutable)) {
+    } else if (lua_key_eq(s, key_mutable)) {
         return tokenlib_getmutable(L);
     } else if (lua_key_eq(s, primitive)) {
         return tokenlib_getprimitive(L);
@@ -3177,7 +3177,7 @@ static int tokenlib_getfield(lua_State *L)
         return tokenlib_getinstance(L);
     } else if (lua_key_eq(s, untraced)) {
         return tokenlib_getuntraced(L);
-    } else if (lua_key_eq(s, flags)) {
+    } else if (lua_key_eq(s, key_flags)) {
         return tokenlib_getflags(L);
     } else if (lua_key_eq(s, parameters)) {
         return tokenlib_getparameters(L);
@@ -3262,12 +3262,12 @@ static int tokenlib_getfields(lua_State *L)
         if (is_noaligned(flags))   { lua_push_key(noaligned);     lua_pushboolean(L, 1);     lua_rawset(L, -3); }
         if (is_permanent(flags))   { lua_push_key(permanent);     lua_pushboolean(L, 1);     lua_rawset(L, -3); }
         if (is_immutable(flags))   { lua_push_key(immutable);     lua_pushboolean(L, 1);     lua_rawset(L, -3); }
-        if (is_mutable  (flags))   { lua_push_key(mutable);       lua_pushboolean(L, 1);     lua_rawset(L, -3); }
+        if (is_mutable  (flags))   { lua_push_key(key_mutable);   lua_pushboolean(L, 1);     lua_rawset(L, -3); }
         if (is_primitive(flags))   { lua_push_key(primitive);     lua_pushboolean(L, 1);     lua_rawset(L, -3); }
         if (is_instance (flags))   { lua_push_key(instance);      lua_pushboolean(L, 1);     lua_rawset(L, -3); }
         if (is_untraced (flags))   { lua_push_key(untraced);      lua_pushboolean(L, 1);     lua_rawset(L, -3); }
-        if (flags)                 { lua_push_key(flags);         lua_pushinteger(L, flags); lua_rawset(L, -3); }
-        if (is_protected(cmd))     { lua_push_key(protected);     lua_pushboolean(L, 1);     lua_rawset(L, -3); } else {
+        if (flags)                 { lua_push_key(key_flags);     lua_pushinteger(L, flags); lua_rawset(L, -3); }
+        if (is_protected(cmd))     { lua_push_key(key_protected); lua_pushboolean(L, 1);     lua_rawset(L, -3); } else {
         if (is_semiprotected(cmd)) { lua_push_key(semiprotected); lua_pushboolean(L, 1);     lua_rawset(L, -3); } }
         if (is_tolerant (cmd))     { lua_push_key(tolerant);      lua_pushboolean(L, 1);     lua_rawset(L, -3); }
     }

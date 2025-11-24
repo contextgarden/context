@@ -3,7 +3,7 @@
 # has a lot of dependencies - ssh related, compression, security, xml, etc), but maybe 
 # there is a lightweight version of CMake. 
 
-cmake_minimum_required(VERSION 3.9..3.28)
+cmake_minimum_required(VERSION 3.10..3.28)
 
 project(luametatex VERSION 2.11 LANGUAGES C)
 

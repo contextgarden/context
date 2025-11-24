@@ -204,5 +204,6 @@
       </pdfaExtension:schemas>
     </rdf:Description>
     <pdfaid-placeholder/>
+    <user-placeholder/>
   </rdf:RDF>
 </x:xmpmeta>

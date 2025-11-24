@@ -1477,6 +1477,11 @@
 %
 % \stopsetups
 
+%D We enable this (per 2025-11-13):
+
+% \shapingpenalty       \plushundred % mostly for tracing
+% \shapingpenaltiesmode "FF
+
 %D We need to to set the new ones to the old values (if set) and wipe the old ones so that
 %D they don't kick in.
 

@@ -483,7 +483,7 @@ void tex_normal_warning(const char *t, const char *p)
         int callback_id = lmt_callback_defined(intercept_lua_error_callback);
         int saved_new_line_char = new_line_char_par;
         new_line_char_par = 10;
-        if (lmt_lua_state.lua_instance && callback_id) {
+        if (lmt_lua_state.lua_instance && callback_id > 0) {
             (void) lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "->");
             /* error(); */
         } else {

@@ -599,6 +599,7 @@ local findallused do
                 registered[tag] = true
                 return tag
             end
+            --
             if reference == "*" then
                 tags = { }
                 for i=1,#ordered do
@@ -1870,7 +1871,6 @@ do
             if u then -- better check on metadata.kind == "btx"
                 local set = u.btxset or v_default
                 if set == dataset then
--- inspect(structures.references.internals[tonumber(u.btxint)])
                     local tag = u.btxref
                     if not tag then
                         -- problem
@@ -2349,7 +2349,7 @@ do
                 local bl = tonumber(userdata.btxint)
                 if bl then
                     ctx_btxsetbacklink(bl)
-                    bl = listtocite[bl]
+                    bl = listtocite[bl] -- where used
                 end
             end
             local authorsuffix = detail.authorsuffix
@@ -2768,7 +2768,7 @@ do
         local found, todo, list = findallused(dataset,reference,internal,method == v_text or method == v_always) -- also when not in list
         --
         if not found or #found == 0 then
---         if not list or #list == 0 then
+     -- if not list or #list == 0 then
             if not creported[dataset][reference] then
                 report("no entry %a found in dataset %a",reference,dataset)
                 creported[dataset][reference] = true
@@ -3297,7 +3297,7 @@ do
                     ctx_btxstartciteauthor()
                     ctx_btxsettag(tag)
                     ctx_btxsetbacklink(currentcitation)
-                    local bl = listtocite[tonumber(currentcitation)]
+                    local bl = listtocite[tonumber(currentcitation)] -- where used ?
                     if first then
                         ctx_btxsetfirst(first[key] or "") -- f_missing(first.tag))
                         local suffix = entry.suffix

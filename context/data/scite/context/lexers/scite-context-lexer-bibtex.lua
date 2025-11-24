@@ -6,7 +6,7 @@ local info = {
     license   = "see context related readme files",
 }
 
-local global, string, table, lpeg = _G, string, table, lpeg
+local string, table, lpeg = string, table, lpeg
 local P, R, S, V = lpeg.P, lpeg.R, lpeg.S, lpeg.V
 local type = type
 

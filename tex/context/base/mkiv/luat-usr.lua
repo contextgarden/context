@@ -118,6 +118,7 @@ local function registername(name,message)
     local proxy = {
         -- we can access all via:
         ["global"]   = _G, -- or maybe just a metatable
+        globaldata   = _G,
         -- some protected data
         moduledata   = setmetatableindex(moduledata),
         thirddata    = setmetatableindex(thirddata),

@@ -329,10 +329,10 @@ static void luaclib_aux_print_code(const Proto* f)
                 printf(COMMENT);
                 PrintConstant(f, c);
                 break;
-            case OP_SHRI:
+            case OP_SHLI:
                 printf("%d %d %d", a, b, sc);
                 break;
-            case OP_SHLI:
+            case OP_SHRI:
                 printf("%d %d %d", a, b, sc);
                 break;
             case OP_ADD:
@@ -521,8 +521,11 @@ static void luaclib_aux_print_code(const Proto* f)
                 }
                 break;
             case OP_GETVARG:
-                /* todo */
-                printf("%d",a);
+                printf("%d %d %d",a,b,c);
+                break;
+            case OP_ERRNNIL:
+                printf("%d %d",a,bx);
+                printf(COMMENT); PrintConstant(f,bx);
                 break;
             case OP_VARARGPREP:
                 printf("%d",a);

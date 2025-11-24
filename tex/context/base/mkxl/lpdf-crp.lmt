@@ -347,6 +347,8 @@ function lpdf.collectcontent(pdffile,options)
 
     local showkids -- defined later
 
+    local nspaces = string.hashes.spaces
+
     local function showkid(kid,level)
         if type(kid) == "table" then
             if kid.Type == "MCR" then
@@ -419,7 +421,7 @@ function lpdf.collectcontent(pdffile,options)
                     if addaltascomment and type(alternate) == "string" then
                         r = r + 1 ; result[r] = f_comment(level,xmlescaped(alternate))
                     end
-                    attached = gsub(attached,"[\r\n]+","\n" .. string.nspaces[level])
+                    attached = gsub(attached,"[\r\n]+","\n" .. nspaces[level])
                     if details then
                         r = r + 1 ; result[r] = f_comment_d {
                             level     = level,

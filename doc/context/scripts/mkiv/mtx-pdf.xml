@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtx-pdf</entry>
   <entry name="detail">ConTeXt PDF Helpers</entry>
-  <entry name="version">0.10</entry>
+  <entry name="version">0.20</entry>
  </metadata>
  <flags>
   <category name="basic">

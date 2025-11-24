@@ -13,7 +13,6 @@ if not modules then modules = { } end modules ['l-sandbox'] = {
 
 -- if sandbox then return end
 
-local global   = _G
 local next     = next
 local unpack   = unpack or table.unpack
 local type     = type

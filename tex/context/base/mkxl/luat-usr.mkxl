@@ -94,13 +94,13 @@
 %D \stopluacode
 %D
 %D \startusercode
-%D global.context("USER 1")
+%D globaldata.context("USER 1")
 %D context.par()
 %D context("USER 2")
 %D context.par()
 %D if characters then
 %D     context("ACCESS directly")
-%D elseif global.characters then
+%D elseif globaldata.characters then
 %D     context("ACCESS via global")
 %D else
 %D     context("NO ACCESS at all")
@@ -108,7 +108,7 @@
 %D context.par()
 %D if bogus then
 %D     context("ACCESS directly")
-%D elseif global.bogus then
+%D elseif globaldata.bogus then
 %D     context("ACCESS via global")
 %D else
 %D     context("NO ACCESS at all")

@@ -2786,16 +2786,29 @@
 
 \newbox\b_syst_boxes
 
+% \appendtoks
+%     \permanent\def\prerolltostring#1%
+%       {\beginlocalcontrol
+%        % hbox can fails when we have vskips (mail to list)
+%        \setbox\b_syst_boxes\vpack{\expand\everypreroll#1}%
+%        \expanded
+%          {\setbox\b_syst_boxes\emptybox
+%           \endlocalcontrol
+%           \boxtostring\b_syst_boxes}}
+% \to \everydump
+
+\permanent\def\syst_boxes_prerolltostring#1%
+  {\beginlocalcontrol
+   % hbox can fails when we have vskips (mail to list)
+   \setbox\b_syst_boxes\vpack{\expand\everypreroll#1}%
+   \expanded
+     {\setbox\b_syst_boxes\emptybox
+      \endlocalcontrol
+      \boxtostring\b_syst_boxes}}
+
 \appendtoks
-    \permanent\def\prerolltostring#1%
-      {\beginlocalcontrol
-       % hbox can fails when we have vskips (mail to list)
-       \setbox\b_syst_boxes\vpack{\expand\everypreroll#1}%
-       \expanded
-         {\setbox\b_syst_boxes\emptybox
-          \endlocalcontrol
-          \boxtostring\b_syst_boxes}}
-\to \everydump
+    \enforced\let\prerolltostring\syst_boxes_prerolltostring
+\to \everyjob
 
 % depricated:
 

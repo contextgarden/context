@@ -85,8 +85,6 @@ local info = {
 -- document lexing (under testing). In any case, the former slow loading many documents at startup delay is gone
 -- now (somehow it looked like all tabs were lexed when a document was opened).
 
-local global = _G
-
 local lpeg  = require("lpeg")
 
 if lpeg.setmaxstack then lpeg.setmaxstack(1000) end

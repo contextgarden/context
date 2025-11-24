@@ -337,7 +337,7 @@ local c_tightorderedlist = formatters[
 ]
 
 local c_looseorderedlist = formatters[
-    "\n" .. c_trigger .. "startmarkdownitemize[n]\n%s\n" .. c_trigger .. "stopmarkdownitemize>\n"
+    "\n" .. c_trigger .. "startmarkdownitemize[n]\n%s\n" .. c_trigger .. "stopmarkdownitemize\n"
 ]
 
 local f_inlinehtml = formatters[

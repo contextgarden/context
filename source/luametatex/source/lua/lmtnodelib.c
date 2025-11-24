@@ -8094,7 +8094,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                         case glyph_node:
                             if (lua_key_eq(s, font)) {
                                 lua_pushinteger(L, glyph_font(n));
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 lua_pushinteger(L, glyph_character(n));
                             } else if (lua_key_eq(s, xoffset)) {
                                 lua_pushinteger(L, glyph_x_offset(n));
@@ -8146,7 +8146,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, get_glyph_options(n));
                             } else if (lua_key_eq(s, discpart)) {
                                 lua_pushinteger(L, get_glyph_discpart(n));
-                            } else if (lua_key_eq(s, protected)) {
+                            } else if (lua_key_eq(s, key_protected)) {
                                 lua_pushinteger(L, glyph_protected(n));
                             } else if (lua_key_eq(s, properties)) {
                                 lua_pushinteger(L, glyph_properties(n));
@@ -8228,7 +8228,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, disc_penalty(n));
                             } else if (lua_key_eq(s, options)) {
                                 lua_pushinteger(L, disc_options(n));
-                            } else if (lua_key_eq(s, class)) {
+                            } else if (lua_key_eq(s, key_class)) {
                                 lua_pushinteger(L, disc_class(n));
                             } else {
                                 goto CANTGET;
@@ -8307,7 +8307,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
                             } else if (lua_key_eq(s, fam)) {
                                 lua_pushinteger(L, tex_get_rule_font(n, text_style));
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 lua_pushinteger(L, rule_strut_character(n));
                             } else {
                                 goto CANTGET;
@@ -8413,7 +8413,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                         case math_text_char_node:
                             if (lua_key_eq(s, fam)) {
                                 lua_pushinteger(L, kernel_math_family(n));
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 lua_pushinteger(L, kernel_math_character(n));
                             } else if (lua_key_eq(s, font)) {
                                 lua_pushinteger(L, tex_fam_fnt(kernel_math_family(n), 0));
@@ -8430,7 +8430,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             }
                             break;
                         case mark_node:
-                            if (lua_key_eq(s, index) || lua_key_eq(s, class)) {
+                            if (lua_key_eq(s, index) || lua_key_eq(s, key_class)) {
                                 lua_pushinteger(L, mark_index(n));
                             } else if (lua_key_eq(s, data) || lua_key_eq(s, mark)) {
                                 if (lua_toboolean(L, 3)) {
@@ -8538,7 +8538,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, noad_source(n));
                             } else if (lua_key_eq(s, scriptorder)) {
                                 lua_pushinteger(L, noad_script_order(n));
-                            } else if (lua_key_eq(s, class)) {
+                            } else if (lua_key_eq(s, key_class)) {
                                 lua_pushinteger(L, get_noad_main_class(n));
                                 lua_pushinteger(L, get_noad_left_class(n));
                                 lua_pushinteger(L, get_noad_right_class(n));
@@ -8697,7 +8697,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                         case adjust_node:
                             if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 nodelib_push_direct_or_node_node_prev(L, direct, adjust_list(n));
-                            } else if (lua_key_eq(s, index) || lua_key_eq(s, class)) {
+                            } else if (lua_key_eq(s, index) || lua_key_eq(s, key_class)) {
                                 lua_pushinteger(L, adjust_index(n));
                             } else {
                                 goto CANTGET;
@@ -8862,7 +8862,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                         case glyph_node:
                             if (lua_key_eq(s, font)) {
                                 glyph_font(n) = tex_checked_font(lmt_tohalfword(L, 3));
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 glyph_character(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, xoffset)) {
                                 glyph_x_offset(n) = (halfword) lmt_roundnumber(L, 3);
@@ -8913,7 +8913,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 set_glyph_options(n, lmt_tohalfword(L, 3) & glyph_option_valid);
                             } else if (lua_key_eq(s, discpart)) {
                                 set_glyph_discpart(n, lmt_tohalfword(L, 3));
-                            } else if (lua_key_eq(s, protected)) {
+                            } else if (lua_key_eq(s, key_protected)) {
                                 glyph_protected(n) = lmt_tosingleword(L, 3);
                             } else if (lua_key_eq(s, width)) {
                                 /* not yet */
@@ -9007,7 +9007,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 disc_penalty(n) = lmt_tohalfword(L, 3);
                              } else if (lua_key_eq(s, options)) {
                                 disc_options(n) = lmt_tohalfword(L, 3) & disc_option_valid;
-                             } else if (lua_key_eq(s, class)) {
+                             } else if (lua_key_eq(s, key_class)) {
                                 disc_class(n) = lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
@@ -9083,7 +9083,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 tex_set_rule_font(n, lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, fam)) {
                                 tex_set_rule_family(n, lmt_tohalfword(L, 3));
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 rule_strut_character(n) = lmt_tohalfword(L, 3);
                             } else {
                                 goto CANTSET;
@@ -9137,7 +9137,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                         case math_text_char_node:
                             if (lua_key_eq(s, fam)) {
                                 kernel_math_family(n) = lmt_tohalfword(L, 3);
-                            } else if (lua_key_eq(s, char)) {
+                            } else if (lua_key_eq(s, key_char)) {
                                 kernel_math_character(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, options)) {
                                 kernel_math_options(n) = lmt_tohalfword(L, 3);
@@ -9152,7 +9152,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             }
                             return 0;
                         case mark_node:
-                            if (lua_key_eq(s, index) || lua_key_eq(s, class)) {
+                            if (lua_key_eq(s, index) || lua_key_eq(s, key_class)) {
                                 halfword m = lmt_lua_state.ignore_node_error ? lmt_opthalfword(L, 3, 1) : lmt_tohalfword(L, 3);
                                 if (tex_valid_mark(m)) {
                                     mark_index(n) = m;
@@ -9260,7 +9260,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 noad_options(n) = lmt_tofullword(L, 3);
                             } else if (lua_key_eq(s, scriptorder)) {
                                 noad_script_order(n) = lmt_tosingleword(L, 3);
-                            } else if (lua_key_eq(s, class)) {
+                            } else if (lua_key_eq(s, key_class)) {
                                 halfword c = lmt_tohalfword(L, 3);
                                 set_noad_main_class(n, c);
                                 set_noad_left_class(n, lmt_opthalfword(L, 4, c));
@@ -12333,11 +12333,11 @@ static int nodelib_direct_getusage(lua_State *L)
 static int nodelib_direct_newfontcheck(lua_State *L)
 {
     halfword n = tex_new_node(font_spec_node, normal_code);
-    font_spec_identifier(n) = lua_tointeger(L, 1);
-    font_spec_data(n) =  lua_tointeger(L, 2);
-    font_spec_scale(n) = lua_tointeger(L, 3);
-    font_spec_x_scale(n) = lua_tointeger(L, 4);
-    font_spec_y_scale(n) = lua_tointeger(L, 5);
+    font_spec_identifier(n) = lmt_tohalfword(L, 1);
+    font_spec_data(n) =  lmt_tohalfword(L, 2);
+    font_spec_scale(n) = lmt_tohalfword(L, 3);
+    font_spec_x_scale(n) = lmt_tohalfword(L, 4);
+    font_spec_y_scale(n) = lmt_tohalfword(L, 5);
     font_spec_dummy(n) = 0;
     font_spec_slant(n) = 0;
     font_spec_weight(n) = 0;
@@ -12379,11 +12379,11 @@ static int nodelib_direct_setfontcheck(lua_State *L)
                     break;
             }
         } else {
-            font_spec_identifier(n) = lua_tointeger(L, 2);
-            font_spec_data(n) =  lua_tointeger(L, 3);
-            font_spec_scale(n) = lua_tointeger(L, 4);
-            font_spec_x_scale(n) = lua_tointeger(L, 5);
-            font_spec_y_scale(n) = lua_tointeger(L, 6);
+            font_spec_identifier(n) = lmt_tohalfword(L, 2);
+            font_spec_data(n) =  lmt_tohalfword(L, 3);
+            font_spec_scale(n) = lmt_tohalfword(L, 4);
+            font_spec_x_scale(n) = lmt_tohalfword(L, 5);
+            font_spec_y_scale(n) = lmt_tohalfword(L, 6);
         }
     }
     return 0;

@@ -86,7 +86,7 @@ end, you might want to avoid defining the macro itself and this is possible.
 
 \startbuffer
 \startluacode
-function test(opt_1, opt_2, arg_1)
+function document.test(opt_1, opt_2, arg_1)
     context.startnarrower()
     context("options 1: %s",interfaces.tolist(opt_1))
     context.par()
@@ -103,7 +103,7 @@ interfaces.definecommand {
         { "option", "hash" },
         { "content", "string" },
     },
-    macro = test,
+    macro = document.test,
 }
 \stopluacode
 
@@ -216,6 +216,206 @@ end
 Of course this assumes that you have some knowledge of the \CONTEXT\ internals.
 
 \getbuffer
+
+\stopsection
+
+\startsection[title=Deep down]
+
+Some commands in the previous sections use a more fundamental interfacing
+feature: implementers. These are used a lot deep down in \CONTEXT\ and use high
+performance scanners to pick up data from the \TEX\ end. As with other
+definitions you have to be careful using them and choose names wisely; you never
+know when we add something that will clash with your command name and what we
+define in the core wins.
+
+\starttyping
+\startluacode
+interfaces.implement {
+    name      = "foo",
+    arguments = { "string", "integer" },
+    actions   = function(s,i)
+        -- something
+    end,
+}
+\stopluacode
+\stoptyping
+
+This defines a command \type {\clf_foo} so it is hidden from the user due to the use of an
+underscore. You can instead say:
+
+\starttyping
+\startluacode
+interfaces.implement {
+    name      = "foo",
+    public    = true,
+    arguments = { "string", "integer" },
+    actions   = function(s,i)
+        -- something
+    end,
+}
+\stopluacode
+\stoptyping
+
+If you want a protected macro you say:
+
+\starttyping
+\startluacode
+interfaces.implement {
+    name      = "foo",
+    public    = true,
+    protected = true,
+    arguments = { "string", "integer" },
+    actions   = function(s,i)
+        -- something
+    end,
+}
+\stopluacode
+\stoptyping
+
+Other prefix keys are \type {untraced} and \type {noaligned}. The prefix
+{permanent} is always used so that implementers are protected against overloading
+what than mechanism is active. A special directive is \type {usage}:
+
+\starttyping
+\startluacode
+interfaces.implement {
+    name      = "iffoo",
+    public    = true,
+    usage     = "condition",
+    arguments = { "string", "integer" },
+    actions   = function(s,i)
+        -- return something
+    end,
+}
+\stopluacode
+\stoptyping
+
+which gives you a native \type {\if}-test. A \type {value} usage is also special and you
+can for instance use it after \type {\the} in which case the (here) \type {what} signals
+that some value has to be returned. Otherwise you can for instance scan for a value.
+
+\starttyping
+\startluacode
+interfaces.implement {
+    name      = "foo",
+    public    = true,
+    usage     = "value",
+    actions   = function(what)
+        if what == "value" then
+            -- return something
+        else
+            -- something
+        end
+    end,
+}
+\stopluacode
+\stoptyping
+
+When returning a value you need to specify the type (a number), and a value.
+Valid types are:
+
+\startluacode
+local NC, NR = context.NC, context.NR
+context.startcolumns { n = 4 }
+context.starttabulate { "|Tr|T|" }
+for k, v in table.sortedhash(tokens.values) do
+    if tonumber(k) then
+        NC() context(k)
+        NC() context(v)
+        NC() NR()
+    end
+end
+context.stoptabulate()
+context.stopcolumns()
+\stopluacode
+
+When scanning for something you have a lot of choice, like
+
+\starttyping
+\startluacode
+local i = tokens.scanners.integer()
+\stopluacode
+\stoptyping
+
+Valid scanners are:
+
+\startalign[flushleft]
+\tttf \ctxlua {context("\letterpercent, t",table.sortedkeys(tokens.scanners))}
+\stopalign
+
+but normally users will stick to \type {string}, \typ {integer} and \typ
+{dimension} if they use this interface at all, so for now we will not go into
+details about the less obvious ones. Here it is enough to know that the implement
+feature is the one we use to extend the repertoire of low level, sometimes
+primitive-like commands.
+
+Keep in mind that when you see these mechanisms in the code base that they are
+\CONTEXT\ specific. Right from the start we had such interfaces and they are
+the reason why we always had a well integrated system. But they are not generic!
+
+Here are some examples of \type {usage}:
+
+\startbuffer
+\startluacode
+interfaces.implement {
+    name      = "IfFoo",
+    public    = true,
+    usage     = "condition",
+    arguments = { "integer", "integer" },
+    actions   = function(what)
+        return tokens.values.boolean, one == two
+    end,
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+With:
+
+\startbuffer
+[\IfFoo {123 + 10} {789 / 3}  yes\else no\fi]
+[\IfFoo {123 + 10} {10 + 123} yes\else no\fi]
+\stopbuffer
+
+\typebuffer
+
+we get: \inlinebuffer. A value variant is:
+
+\startbuffer
+\startluacode
+local value = 123
+
+interfaces.implement {
+    name    = "MyFoo",
+    public  = true,
+    usage   = "value",
+    actions = function(what)
+        if what == "value" then
+            return tokens.values.integer, value
+        else
+            value = tokens.scanners.integer(true)
+        end
+    end,
+}
+\stopluacode
+\stopbuffer
+
+\typebuffer \getbuffer
+
+With:
+
+\startbuffer
+[\the\MyFoo]\MyFoo = 456
+[\the\MyFoo]\MyFoo = { 456 + 123 }%
+[\the\MyFoo]
+\stopbuffer
+
+\typebuffer
+
+we get: \inlinebuffer. The \type {true} in the scanner call makes that we can use a
+\type {=} in the assignment. When scanning for an integer or dimension you actually
+use the expression scanner.
 
 \stopsection
 

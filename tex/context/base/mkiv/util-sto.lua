@@ -181,22 +181,25 @@ function table.setmetatableindices(t,f,n,c)
     return t
 end
 
-function table.setmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    if not m then
-        m = { }
-        setmetatable(t,m)
-    end
-    m[key] = value
-    return t
-end
-
-function table.getmetatablekey(t,key,value)
-    local m = getmetatable(t)
-    return m and m[key]
-end
+-- not used
+--
+-- function table.setmetatablekey(t,key,value)
+--     local m = getmetatable(t)
+--     if not m then
+--         m = { }
+--         setmetatable(t,m)
+--     end
+--     m[key] = value
+--     return t
+-- end
+--
+-- function table.getmetatablekey(t,key)
+--     local m = getmetatable(t)
+--     return m and m[key]
+-- end
 
 function table.makeweak(t)
+    -- values have to be objects
     if not t then
         t = { }
     end
