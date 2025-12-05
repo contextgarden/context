@@ -36,7 +36,7 @@ local replacer        = lpeg.replacer
 
 local p_utftype       = patterns.utftype
 local p_utfstricttype = patterns.utfstricttype
-local p_utfoffset     = patterns.utfoffset
+----- p_utfoffset     = patterns.utfoffset
 local p_utf8character = patterns.utf8character
 local p_utf8char      = patterns.utf8char
 local p_utf8byte      = patterns.utf8byte
@@ -339,7 +339,7 @@ function utf.replacer(t) -- no precheck, always string builder
     end
 end
 
-function utf.subtituter(t) -- with precheck and no building if no match
+function utf.substituter(t) -- with precheck and no building if no match
     local f = finder  (t)
     local r = replacer(t,false,false,true)
     return function(str)
@@ -397,14 +397,14 @@ end
 --     [4] = 'utf-32-be'
 -- }
 
-function utf.magic(f) -- not used
-    local str = f:read(4) or ""
-    local off = lpegmatch(p_utfoffset,str)
-    if off < 4 then
-        f:seek('set',off)
-    end
-    return lpegmatch(p_utftype,str)
-end
+-- function utf.magic(f) -- not used
+--     local str = f:read(4) or ""
+--     local off = lpegmatch(p_utfoffset,str)
+--     if off < 4 then
+--         f:seek('set',off)
+--     end
+--     return lpegmatch(p_utftype,str)
+-- end
 
 local utf_16_be_getbom = patterns.utfbom_16_be^-1
 local utf_16_le_getbom = patterns.utfbom_16_le^-1

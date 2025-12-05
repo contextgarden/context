@@ -6,7 +6,14 @@
 
 \starttitle[title=Contents]
 
-    \placelist[chapter,section][criterium=text]
+%     \placelist[chapter,section][criterium=text]
+
+    \placelist
+      [chapter]
+      [before=\testpage[4]\blank,
+       criterium=text,
+       pagenumber=no,
+       after=\startcolumns[balance=yes,distance=3em]\placelist[section]\stopcolumns]
 
 \stoptitle
 

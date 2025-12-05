@@ -41,7 +41,7 @@ if not modules then modules = { } end modules ['back-exp'] = {
 -- watched the Presence video on YT.)
 
 local next, type, tonumber = next, type, tonumber
-local sub, gsub, match = string.sub, string.gsub, string.match
+local sub, gsub, match, find = string.sub, string.gsub, string.match, string.find
 local validstring = string.valid
 local lpegmatch = lpeg.match
 local utfchar, utfvalues, utflen = utf.char, utf.values, utf.len
@@ -228,6 +228,7 @@ local mathtags = {
 }
 
 local function attribute(key,value)
+    -- maybe cache
     if value and value ~= "" then
         return f_attribute(key,lpegmatch(p_attribute,value))
     else
@@ -239,6 +240,7 @@ end
 -- privates hackery (and forget one)
 
 local function setattribute(di,key,value,escaped)
+    -- maybe cache
     if value and value ~= "" then
         local a = di.attributes
         if escaped then
@@ -260,8 +262,7 @@ function wrapups.hashlistdata()
         local ci = c[i]
         local tag = ci.references.tag
         if tag then
-            local m = ci.metadata
-            local t = m.kind .. ">" .. tag -- todo: use internal (see strc-lst.lua where it's set)
+            local t = ci.metadata.kind .. ">" .. tag -- todo: use internal (see strc-lst.lua where it's set)
             listdata[t] = ci
         end
     end
@@ -739,23 +740,25 @@ do
 
     local function emptytag(result,element,nature,di) -- currently only break but at some point
         local a = di.attributes                       -- we might add detail etc
+        local s
         if a then -- happens seldom
             if nature == "display" then
-                result[#result+1] = f_empty_display_attr(depth,element,attributes(a))
+                s = f_empty_display_attr(depth,element,attributes(a))
             elseif nature == "mixed" then
-                result[#result+1] = f_empty_mixed_attr(depth,element,attributes(a))
+                s = f_empty_mixed_attr(depth,element,attributes(a))
             else
-                result[#result+1] = f_empty_inline_attr(element,attributes(a))
+                s = f_empty_inline_attr(element,attributes(a))
             end
         else
             if nature == "display" then
-                result[#result+1] = f_empty_display(depth,element)
+                s = f_empty_display(depth,element)
             elseif nature == "mixed" then
-                result[#result+1] = f_empty_mixed(depth,element)
+                s = f_empty_mixed(depth,element)
             else
-                result[#result+1] = f_empty_inline(element)
+                s = f_empty_inline(element)
             end
         end
+        result[#result+1] = s
     end
 
  -- local function stripspaces(di)
@@ -794,17 +797,19 @@ do
         local detail        = specification.detail
         if skip == "comment" then
             if show_comment then
+                local s
                 if nature == "inline" or inline > 0 then
-                    result[#result+1] = f_comment_begin_inline(element)
+                    s = f_comment_begin_inline(element)
                     inline = inline + 1
                 elseif nature == "mixed" then
-                    result[#result+1] = f_comment_begin_mixed(depth,element)
+                    s = f_comment_begin_mixed(depth,element)
                     depth = depth + 1
                     inline = 1
                 else
-                    result[#result+1] = f_comment_begin_display(depth,element)
+                    s = f_comment_begin_display(depth,element)
                     depth = depth + 1
                 end
+                result[#result+1] = s
             end
         elseif skip then
             -- ignore
@@ -863,54 +868,58 @@ do
                 r[n] = attributes { p = di.parnumber or 0 }
             end
             if n == 0 then
+                local s
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_inline_comment(comment,element)
+                        s = f_begin_inline_comment(comment,element)
                     else
-                        result[#result+1] = f_begin_inline(element)
+                        s = f_begin_inline(element)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_mixed_comment(depth,comment,element)
+                        s = f_begin_mixed_comment(depth,comment,element)
                     else
-                        result[#result+1] = f_begin_mixed(depth,element)
+                        s = f_begin_mixed(depth,element)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        result[#result+1] = f_begin_display_comment(depth,comment,depth,element)
+                        s = f_begin_display_comment(depth,comment,depth,element)
                     else
-                        result[#result+1] = f_begin_display(depth,element)
+                        s = f_begin_display(depth,element)
                     end
                     depth = depth + 1
                 end
+                result[#result+1] = s
             else
+                local s
                 r = concat(r,"",1,n)
                 if nature == "inline" or inline > 0 then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_inline_attr_comment(comment,element,r)
+                        s = f_begin_inline_attr_comment(comment,element,r)
                     else
-                        result[#result+1] = f_begin_inline_attr(element,r)
+                        s = f_begin_inline_attr(element,r)
                     end
                     inline = inline + 1
                 elseif nature == "mixed" then
                     if show_comment and comment then
-                        result[#result+1] = f_begin_mixed_attr_comment(depth,comment,element,r)
+                        s = f_begin_mixed_attr_comment(depth,comment,element,r)
                     else
-                        result[#result+1] = f_begin_mixed_attr(depth,element,r)
+                        s = f_begin_mixed_attr(depth,element,r)
                     end
                     depth = depth + 1
                     inline = 1
                 else
                     if show_comment and comment then
-                        result[#result+1] = f_begin_display_attr_comment(depth,comment,depth,element,r)
+                        s = f_begin_display_attr_comment(depth,comment,depth,element,r)
                     else
-                        result[#result+1] = f_begin_display_attr(depth,element,r)
+                        s = f_begin_display_attr(depth,element,r)
                     end
                     depth = depth + 1
                 end
+                result[#result+1] = s
             end
         end
         used[element][detail or ""] = { nature, specification.parents }  -- for template css
@@ -930,34 +939,38 @@ do
     local function endtag(result,element,nature,di,skip)
         if skip == "comment" then
             if show_comment then
+                local s
                 if nature == "display" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    result[#result+1] = f_comment_end_display(depth,element)
+                    s = f_comment_end_display(depth,element)
                     inline = 0
                 elseif nature == "mixed" and (inline == 0 or inline == 1) then
                     depth = depth - 1
-                    result[#result+1] = f_comment_end_mixed(element)
+                    s = f_comment_end_mixed(element)
                     inline = 0
                 else
                     inline = inline - 1
-                    result[#result+1] = f_comment_end_inline(element)
+                    s = f_comment_end_inline(element)
                 end
+                result[#result+1] = s
             end
         elseif skip then
             -- ignore
         else
+            local s
             if nature == "display" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                result[#result+1] = f_end_display(depth,element)
+                s = f_end_display(depth,element)
                 inline = 0
             elseif nature == "mixed" and (inline == 0 or inline == 1) then
                 depth = depth - 1
-                result[#result+1] = f_end_mixed(element)
+                s = f_end_mixed(element)
                 inline = 0
             else
                 inline = inline - 1
-                result[#result+1] = f_end_inline(element)
+                s = f_end_inline(element)
             end
+            result[#result+1] = s
         end
     end
 
@@ -1050,10 +1063,10 @@ do
                         end
                     end
                 else
---                     local element = di.element
---                     if element == "mspace" then -- todo: use empty flag
---                         emptytag(result,element,nature,di)
---                     end
+                 -- local element = di.element
+                 -- if element == "mspace" then -- todo: use empty flag
+                 --     emptytag(result,element,nature,di)
+                 -- end
                 end
             end
         end
@@ -1476,12 +1489,15 @@ local function pushcontent(oldparagraph,newparagraph)
             end
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
--- print(content,currentattribute)
+-- maybe a boolean that keeps track of this
+if not keephyphens and find(content,hyphen) then
+    content = gsub(content,hyphen,"")
+end
         if content == "" then
             -- omit; when oldparagraph we could push, remove spaces, pop
         elseif somespace[content] and oldparagraph then
             -- omit; when oldparagraph we could push, remove spaces, pop
--- elseif not tree or not tree.data then
+     -- elseif not tree or not tree.data then
         else
             local olddepth, newdepth
             local list = taglist[currentattribute]
@@ -1602,8 +1618,10 @@ local collectresults  do -- too many locals otherwise
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
 
-    local automatic_code   <const> = tex.glyphdisccodes.automatic
-    local syllable_code    <const> = tex.glyphdisccodes.syllable
+    local discpartcodes            = tex.discpartcodes
+    local glyphdisccodes           = tex.glyphdisccodes
+    local automatic_code   <const> = glyphdisccodes.automatic
+    local syllable_code    <const> = glyphdisccodes.syllable
 
     local function addtomaybe(maybewrong,c,paragraph,ap,case)
         if trace_export then
@@ -1641,7 +1659,6 @@ local collectresults  do -- too many locals otherwise
         local p
         local paragraph
         local maybewrong
-        local pid
         local isdisc = false
         for n, id, subtype in nextnode, head do
             if trace_details then
@@ -1737,11 +1754,20 @@ local collectresults  do -- too many locals otherwise
                         end
                         isdisc = false
                     else
+                        local dcode, dafter, dtype = getdiscpart(n)
                         local fc = fontchar[f]
                         if fc then
                             fc = fc and fc[c]
                             if fc then
-                                local dcode, dafter, dtype = getdiscpart(n)
+                                -- unset pre post replace always (glyph driven, collapsing)
+                                -- unset normal explicit automatic mathematrics syllable (disc driven, subtype + 1)
+                                -- unset normal explicit automatic mathematrics syllable (input, inject driven)
+--                                 local dcode, dafter, dtype = getdiscpart(n)
+                                if trace_export and (dcode ~= 0 or dafter ~= 0) then
+                                    report_export("%w<!-- discretionary point %a %a %a -->",currentdepth,
+                                        discpartcodes[dcode],glyphdisccodes[dafter],glyphdisccodes[dtype]
+                                    )
+                                end
                                 local u = fc.unicode
                                 if u == 0 or u == 0xFFFD then
                                     -- ignore (can make disappear)
@@ -1751,7 +1777,7 @@ local collectresults  do -- too many locals otherwise
                                     currentcontent[nofcurrentcontent] = "-"
                                     isdisc = dtype == automatic_code
                                 else
-                                    if keephyphens and dafter == syllable_code then
+                                    if dafter == syllable_code then
                                         nofcurrentcontent = nofcurrentcontent + 1
                                         currentcontent[nofcurrentcontent] = hyphen
                                     end
@@ -1890,14 +1916,9 @@ local collectresults  do -- too many locals otherwise
                     if nofcurrentcontent > 0 then
                         local r = currentcontent[nofcurrentcontent]
                         if r == hyphen then
-                            if not keephyphens then
-                                nofcurrentcontent = nofcurrentcontent - 1
-                                isdisc = false
-                            end
+                            -- keep it
                         elseif isdisc then
                             -- nasty
-                        elseif pid == disc_code then
-                            -- go on .. tricky: we should mark the glyhs as coming from a disc
                         elseif not somespace[r] then
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
@@ -1914,7 +1935,7 @@ local collectresults  do -- too many locals otherwise
                                 pushcontent()
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
-                                isdisc = false
+                                isdisc = false  -- is already false
                                 currentnesting = taglist[last]
                                 pushentry(currentnesting)
                                 currentattribute = last
@@ -2013,7 +2034,7 @@ local collectresults  do -- too many locals otherwise
                     end
                     pushentry(taglist[at])
                     if trace_export then
-                        report_export("%w<!-- processing anchor tagged %a",currentdepth,last)
+                        report_export("%w<!-- processing anchor tagged %a -->",currentdepth,last)
                     end
                     last = nil
                     currentparagraph = nil
@@ -2023,21 +2044,21 @@ local collectresults  do -- too many locals otherwise
                     paragraph = getattr(n,a_taggedpar)
                 end
             elseif id == disc_code then
+                report_export("%w<!-- error: disc node found, skipping -->",currentdepth)
                 -- very unlikely because we stripped them
-                local pre, post, replace = getdisc(n)
-                if keephyphens then
-                    if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
-                        nofcurrentcontent = nofcurrentcontent + 1
-                        currentcontent[nofcurrentcontent] = hyphen
-                        isdisc = false
-                    end
-                end
-                if replace then
-                    collectresults(replace,nil)
-                end
+             -- local pre, post, replace = getdisc(n)
+             -- if keephyphens then
+             --     if pre and not getnext(pre) and isglyph(pre) == 0xAD then -- hyphencode then
+             --         nofcurrentcontent = nofcurrentcontent + 1
+             --         currentcontent[nofcurrentcontent] = hyphen
+             --         isdisc = false
+             --     end
+             -- end
+             -- if replace then
+             --     collectresults(replace,nil)
+             -- end
             end
-            p   = n
-            pid = id
+            p = n
         end
         if maybewrong then
             showmaybe(maybewrong)
@@ -2284,9 +2305,9 @@ local htmltemplate <const> = [[
                 end
             end
         end
-if final then
-    -- maybe strip 2..#
-end
+     -- if final then
+     --     -- maybe strip 2..#
+     -- end
         flushtree(result,tree.data,"display") -- we need to collect images
         -- no need to lpeg .. fast enough
         local r = result[1]
@@ -2628,12 +2649,12 @@ end
         local saved_nofbreaks    = nofbreaks    ; nofbreaks    = 0
         local saved_show_comment = show_comment ; show_comment = false
 
-local saved_nofcurrentcontent = nofcurrentcontent ; nofcurrentcontent = 0
-local saved_currentcontent    = currentcontent    ; currentcontent    = { }
-local saved_currentnesting    = currentnesting    ; currentnesting    = nil
-local saved_currentattribute  = currentattribute  ; currentattribute  = nil
-local saved_last              = last              ; last              = nil
-local saved_currentparagraph  = currentparagraph  ; currentparagraph  = nil
+        local saved_nofcurrentcontent = nofcurrentcontent ; nofcurrentcontent = 0
+        local saved_currentcontent    = currentcontent    ; currentcontent    = { }
+        local saved_currentnesting    = currentnesting    ; currentnesting    = nil
+        local saved_currentattribute  = currentattribute  ; currentattribute  = nil
+        local saved_last              = last              ; last              = nil
+        local saved_currentparagraph  = currentparagraph  ; currentparagraph  = nil
 
         justexport(head)
         finishexport()

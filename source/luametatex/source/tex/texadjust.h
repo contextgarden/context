@@ -28,6 +28,6 @@ extern halfword tex_flush_adjust_append  (halfword adjust, halfword tail);
 extern halfword tex_flush_adjust_prepend (halfword adjust, halfword tail);
 
 extern void     tex_show_adjust_group    (void);
-extern int      tex_show_adjust_record   (void);
+extern bool     tex_show_adjust_record   (void);
 
 # endif

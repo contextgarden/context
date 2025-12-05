@@ -11,7 +11,7 @@ aristotle-grc.tex
 no comment
 
 ------------------------------------------------------------------------------------
-capek-cz.tex  capek-vlnka-cz.tex
+capek-cs.tex  capek-vlnka-cs.tex
 ------------------------------------------------------------------------------------
 
 no comment
@@ -137,7 +137,7 @@ Hans Alfredsson - En ond man
 falstaff-sv.tex
 ------------------------------------------------------------------------------------
 
-En hvar sin egen professor eller Allt menskligt vetande i sammandrag. Kortfattad 
+En hvar sin egen professor eller Allt menskligt vetande i sammandrag. Kortfattad
 encyklopedi af Falstaff Fakir
 
 ------------------------------------------------------------------------------------

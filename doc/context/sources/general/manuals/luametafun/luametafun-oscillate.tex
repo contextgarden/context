@@ -1,4 +1,3 @@
-
 % language=us runpath=texruns:manuals/luametafun
 
 \environment luametafun-style
@@ -149,7 +148,7 @@ and documentation.
 \stopMPcode
 \stopbuffer
 
-\typebuffer[option=TEX][a]
+\typebuffer[a][option=TEX]
 
 The result (also) shown in \in {figure} [fig:oscillate:5] is not a bug but a
 feature. The oscillator just follows the rules. Getting the right way to
@@ -172,7 +171,7 @@ feature is unlikely to be used in critical runs.
 \stopMPcode
 \stopbuffer
 
-\typebuffer[option=TEX][b]
+\typebuffer[b][option=TEX]
 
 \startplacefigure[reference=fig:oscillate:5]
     \switchtobodyfont[dejavu]
@@ -181,6 +180,45 @@ feature is unlikely to be used in critical runs.
         {\scale[width=.25tw]{\getbuffer[b]}} {b}
     \stopcombination
 \stopplacefigure
+
+When you don't want to let this macro scale the text to fit the curve, you can
+set \type {scale} to zero (the default value is one). See \in {figure} [fig:oscillate:scale]
+for an example.
+
+\startbuffer
+\definecharacterkerning
+  [mine]
+  [factor=0.05]
+
+\definecolor[ucolor][h=0057b7]
+\definecolor[kcolor][h=ffd700]
+
+\startMPcode
+    def Test (expr s, r) =
+        path p ; p := lmt_oscillated [
+            text  = "\setcharacterkerning[mine]\bf \samplefile {zelensky}",
+            path  = reverse fullcircle xyscaled (r,r),
+            scale = s,
+        ] ;
+        draw reverse fullcircle xyscaled (r-20,r-20)
+            withcolor "kcolor"
+            withpen pencircle scaled 10;
+        fill p
+            withcolor "ucolor" ;
+    enddef ;
+
+    Test(0, 400) ; Test(1, 300) ; Test(2, 200) ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:oscillate:scale]
+    \scale[height=.5th]{\getbuffer}
+\stopplacefigure
+
+\stoptext
+
 
 \stopchapter
 

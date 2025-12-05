@@ -35,9 +35,9 @@ return {
         "postscriptpart", "stackingpart", "pathpart", "penpart", "dashpart",
         "sqrt", "mexp", "mlog", "sind", "cosd", "floor", "uniformdeviate",
         "llcorner", "lrcorner", "ulcorner", "urcorner", "centerof",
-        "centerofmass", "corners", "xrange", "yrange", "deltapoint",
+        "centerofmass", "corners", "xrange", "yrange", "deltapoint", "deltaarclength",
         "deltaprecontrol", "deltapostcontrol", "deltadirection", "arclength",
-        "angle", "cycle", "nocycle", "stroked", "filled", "clipped", "grouped",
+        "angle", "cycle", "recycle", "nocycle", "stroked", "filled", "clipped", "grouped",
         "bounded", "or", "and", "substring", "subpath", "directiontime", "point",
         "deltapoint", "pathindex", "pathlastindex", "pathlength", "pathfirst", "pathlast",
         "pathstate", "precontrol", "postcontrol", "direction", "pathpoint", "pathprecontrol",
@@ -45,7 +45,7 @@ return {
         "arcpoint", "arcpointlist", "subarclength", "mpversion", "rotated", "slanted",
         "scaled", "shifted", "transformed", "xscaled", "yscaled", "zscaled", "xyscaled",
         "xrelative", "yrelative", "xyrelative", "xabsolute", "yabsolute", "xyabsolute",
-        "lastxy", "lastx", "lasty",
+        "lastxy", "lastx", "lasty", "previousxy", "previousx", "previousy",
         "intersectiontimes", "intersectiontimeslist", "envelope", "boundingpath",
         "numeric", "string", "boolean", "path", "pen", "nep", "picture",
         "transform", "color", "rgbcolor", "cmykcolor", "pair", "end", "dump",
@@ -65,6 +65,8 @@ return {
         "withbytemap", "bytevalue", "bytefound", "bytepath",
         "setbytemapoptions", "setbytemapoffset", "reducebytemap",
         "setbytemap", "bytemapbounds", "clipbytemap", "setbyte", "bytemapscaled",
+        --
+        "pruneoptions", "prunesingularities", "singularity",
         --
         -- aliased
         --
@@ -136,6 +138,8 @@ return {
         "crossprod",
         --
         "red", "green", "blue", "cyan", "magenta", "yellow", "black", "white", "background",
+        --
+        "partone", "parttwo", "partthree", "partfour", "partfive", "partsix",
         --
         "mm", "pt", "dd", "bp", "cm", "pc", "cc", "in", "dk", "es", "ts",
         --

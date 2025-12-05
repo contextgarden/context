@@ -706,7 +706,8 @@
 
 \def\page_sides_place_snap_to_grid#1%
   {\begingroup % todo: prevent snapping
-   \setbox\scratchbox\hpack{\vrule width 1mm #1}%
+%    \setbox\scratchbox\hpack{\vrule width 1mm #1}%
+   \setbox\scratchbox\hpack{#1}%
    \dp\scratchbox\strutdp
    \ht\scratchbox\dimexpr\d_page_sides_height-\strutdp\relax
    \boxyoffset\scratchbox-\strutdp
@@ -1170,7 +1171,11 @@
      \else
        \page_sides_check_floats_set_hang
      \fi
-     \shapingpenalty\plustenthousand
+     \ifconditional\c_page_sides_protect_shape
+       \shapingpenalty\plustwentythousand
+     \else
+       \shapingpenalty\plustenthousand
+     \fi
    \else
      \shapingpenalty\plushundred
    \fi

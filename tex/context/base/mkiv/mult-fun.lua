@@ -22,6 +22,7 @@ return {
         -- for the moment we put these here as they need to stand out
         --
         "getparameters",
+        "setparameters",
         "presetparameters",
         "hasparameter",
         "hasoption",
@@ -70,7 +71,7 @@ return {
         "tcircle", "bcircle", "lcircle", "rcircle",
         "lltriangle", "lrtriangle", "urtriangle", "ultriangle",
         "uptriangle", "downtriangle", "lefttriangle", "righttriangle", "triangle",
-        "smoothed", "cornered", "superellipsed", "randomized", "randomizedcontrols", "randomrotatedcontrols",
+        "smoothed", "cornered", "smoothcornered", "maxsmoothcornered", "superellipsed", "randomized", "randomizedcontrols", "randomrotatedcontrols",
         "squeezed", "enlonged", "shortened", "punked", "curved", "unspiked", "simplified", "blownup", "stretched",
         "enlarged", "leftenlarged", "topenlarged", "rightenlarged", "bottomenlarged",
         "crossed", "laddered", "randomshifted", "interpolated", "perpendicular", "paralleled", "cutends", "peepholed",

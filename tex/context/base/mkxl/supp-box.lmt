@@ -887,7 +887,7 @@ local function stripglue(list)
         end
     end
     if first and first ~= list then
-        -- we have discardables
+        -- we have discardables .. is this split okay? do we leak
         setsplit(getprev(first),first)
         flushlist(list)
         list = first

@@ -39,6 +39,11 @@ metapost.flushers.pdf   = pdfflusher
 
 metapost.n              = 0
 
+----- state_regular <const> = 0
+local state_begin   <const> = 1
+local state_end     <const> = 2
+local state_single  <const> = 3
+
 local mpsliteral        = nodes.pool.originliteral
 
 local f_f  = formatters["%.6N"]
@@ -214,7 +219,7 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             end
         end
     end
-    if optimize_lines then
+    if optimize_lines then -- unchecked for single
         -- todo : use direction so that we can also do slopes
         local lastx  = false
         local lasty  = false
@@ -226,16 +231,24 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
             pth = path[i]
             local x = pth.x_coord
             local y = pth.y_coord
-            if not ith or pth.state == 1 then
+            local state = pth.state
+            if not ith or state == state_begin or state == state_single then
                 nt = nt + 1
                 t[nt] = f_m(x,y)
                 lastx = x
                 lasty = y
-                lastm = true
-                lastdx = "move"
-                lastdy = "move"
-         -- elseif curved(ith,pth,tolerance) then
-            elseif pth.curved then
+                if state == state_single then
+                    nt = nt + 1
+                    t[nt] = f_l(x,y)
+                    lastm = true -- check this
+                    lastdx = "stay"
+                    lastdy = "stay"
+                else
+                    lastm = true
+                    lastdx = "move"
+                    lastdy = "move"
+                end
+            elseif pth.curved then -- curved(ith,pth,tolerance)
                 nt = nt + 1
                 t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
                 lastx = false
@@ -284,13 +297,19 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
         for i=1,length do
             nt = nt + 1
             pth = path[i]
-            if not ith or pth.state == 1 then
-                t[nt] = f_m(pth.x_coord,pth.y_coord)
-         -- elseif curved(ith,pth,tolerance) then
-            elseif pth.curved then
-                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,pth.x_coord,pth.y_coord)
+            local state = pth.state
+            local x     = pth.x_coord
+            local y     = pth.y_coord
+            if not ith or state == state_begin or state == state_single then
+                t[nt] = f_m(x,y)
+                if state == state_single then
+                    nt = nt + 1
+                    t[nt] = f_l(x,y)
+                end
+            elseif pth.curved then -- curved(ith,pth,tolerance)
+                t[nt] = f_c(ith.right_x,ith.right_y,pth.left_x,pth.left_y,x,y)
             else
-                t[nt] = f_l(pth.x_coord,pth.y_coord)
+                t[nt] = f_l(x,y)
             end
             ith = pth
         end
@@ -299,15 +318,23 @@ local function flushnormalpath(path,t,open,tolerance,reduce)
         nt = nt + 1
         local one = path[1]
         local len = path[length]
-        if len.state == 2 then
+        if len.state == state_end then
             -- special case (potrace-001.tex)
-        elseif one.state == 1 then
-            t[nt] = f_m(one.x_coord,one.y_coord)
-     -- elseif curved(pth,one,tolerance) then
-        elseif one.curved then
-            t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,one.x_coord,one.y_coord)
         else
-            t[nt] = f_l(one.x_coord,one.y_coord)
+            local state = one.state
+            local x = one.x_coord
+            local y = one.y_coord
+            if state == state_begin then
+                t[nt] = f_m(x,y)
+            elseif state == state_single then
+                t[nt] = f_m(x,y)
+                nt = nt + 1
+                t[nt] = f_l(x,y)
+            elseif one.curved then -- curved(pth,one,tolerance)
+                t[nt] = f_c(pth.right_x,pth.right_y,one.left_x,one.left_y,x,y)
+            else
+                t[nt] = f_l(x,y)
+            end
         end
     elseif length == 1 then
         -- special case .. draw point
@@ -348,33 +375,52 @@ local function flushconcatpath(path,t,open,tolerance,transform)
     for i=1,length do
         nt = nt + 1
         pth = path[i]
-        if not ith or pth.state == 1 then
-            t[nt] = f_m(mpconcat(pth.x_coord,pth.y_coord))
-     -- elseif curved(ith,pth,tolerance) then
-        elseif pth.curved then
+        local state = pth.state
+        -- here concat for all x y 
+        local x, y  = mpconcat(pth.x_coord,pth.y_coord)
+        if not ith or state == state_begin or state == state_single then
+            t[nt] = f_m(x,y)
+            if state == state_single then
+                nt = nt + 1
+                t[nt] = f_l(x,y)
+            end
+        elseif pth.curved then -- curved(ith,pth,tolerance)
             local a, b = mpconcat(ith.right_x,ith.right_y)
             local c, d = mpconcat(pth.left_x,pth.left_y)
-            t[nt] = f_c(a,b,c,d,mpconcat(pth.x_coord,pth.y_coord))
+            t[nt] = f_c(a,b,c,d,x,y)
         else
-           t[nt] = f_l(mpconcat(pth.x_coord, pth.y_coord))
+           t[nt] = f_l(x,y)
         end
         ith = pth
     end
     if not open then
         nt = nt + 1
-        local one = path[1]
         local len = path[length]
-        if len.state == 2 then
+        if len.state == state_end then
             -- special case (potrace-001.tex)
-        elseif one.state == 1 then
-            t[nt] = f_m(one.x_coord,one.y_coord)
-     -- elseif curved(pth,one,tolerance) then
-        elseif one.curved then
-            local a, b = mpconcat(pth.right_x,pth.right_y)
-            local c, d = mpconcat(one.left_x,one.left_y)
-            t[nt] = f_c(a,b,c,d,mpconcat(one.x_coord, one.y_coord))
         else
-            t[nt] = f_l(mpconcat(one.x_coord,one.y_coord))
+            local one   = path[1]
+            local state = one.state
+            local x     = one.x_coord
+            local y     = one.y_coord
+            -- here concat for some x y ... 
+            if state == state_begin then
+                t[nt] = f_m(x,y)
+            elseif state == state_single then
+                t[nt] = f_m(x,y)
+                nt = nt + 1
+                t[nt] = f_l(x,y)
+            else
+                -- ... like here:
+                x, y = mpconcat(x,y)
+                if one.curved then -- curved(pth,one,tolerance)
+                    local a, b = mpconcat(pth.right_x,pth.right_y)
+                    local c, d = mpconcat(one.left_x,one.left_y)
+                    t[nt] = f_c(a,b,c,d,x,y)
+                else
+                    t[nt] = f_l(x,y)
+                end
+            end
         end
     elseif length == 1 then
         -- special case .. draw point

@@ -105,17 +105,6 @@ concern \LUATEX\ have been removed from the agenda but some improvements in
 
 \startitemize
     \startitem
-        cleanup passive nodes in the par builder
-    \stopitem
-    \startitem
-        optimize some callback resolution (more direct) but there is not that
-        much to gain there
-    \stopitem
-    \startitem
-        remove local par in head of line when done with linebreak and maybe also
-        ensure leftskip and rightskip
-    \stopitem
-    \startitem
         only return nil in lua helpers when we expect multiple calls in in one
         line
     \stopitem
@@ -136,21 +125,9 @@ concern \LUATEX\ have been removed from the agenda but some improvements in
         optimize positions for columnareas and parpos (sequential)
     \stopitem
     \startitem
-        add flag to font for math engine
+        check consistency between footnotes and running text (main color, styles,
+        properties)
     \stopitem
-    \startitem
-        get rid of components in glyph nodes
-    \stopitem
-    \startitem
-        play with box attributes
-    \stopitem
-    \startitem
-        check consistency between footnotes and running text (main color,
-        styles, properties)
-    \stopitem
-    \startitem
-        freeze actions and tasks (by name or function), maybe a register
-        function that does that so no one can overload built-in features
     \startitem
         redo some of the spacing (adapt to improvements in engine)
     \stopitem
@@ -172,7 +149,6 @@ concern \LUATEX\ have been removed from the agenda but some improvements in
 % should be in lpdf namespace:
 %
 % ./grph-pat.lua     69:             local l = new_literal(lpdf.patternstream(p,width,height))
-
 
 \stopsubject
 

@@ -1523,8 +1523,6 @@ The token list begins with a reference count if and only if |token_type= macro|.
 # define file_state      (mp_input_index >  mp_macro_text)
 # define parameter_start mp_input_limit
 
-# define mp_if_line_field(A) ((mp_if_node) (A))->if_line_field
-
 /*tex
 
 In a construction like \quote {|if| |if| |true|: $0=1$: |foo| |else|: |bar| |fi|{'}, the first
@@ -2000,7 +1998,7 @@ static void                mp_do_max_knot_pool            (MP mp);
 static void                mp_do_random_seed              (MP mp);
 static void                mp_do_protection               (MP mp);
 static void                mp_do_property                 (MP mp);
-static void                mp_def_delims                  (MP mp);
+static void                mp_do_delimiters               (MP mp);
 static void                mp_do_statement                (MP mp);
 static void                mp_do_interim                  (MP mp);
 static void                mp_do_let                      (MP mp);
@@ -3471,184 +3469,191 @@ static void mp_print_type(MP mp, int t)
 /* This will change: just an array when we define primitives. */
 
 static const char *mp_op_string_names[] = {
-    [mp_root_operation]              = "root",
-    [mp_saved_root_operation]        = "saved root",
-    [mp_structured_root_operation]   = "structured root",
-    [mp_subscript_operation]         = "subscript",
-    [mp_attribute_operation]         = "attribute",
-    [mp_x_part_operation]            = "xpart",
-    [mp_y_part_operation]            = "ypart",
-    [mp_xx_part_operation]           = "xxpart",
-    [mp_xy_part_operation]           = "xypart",
-    [mp_yx_part_operation]           = "yxpart",
-    [mp_yy_part_operation]           = "yypart",
-    [mp_red_part_operation]          = "redpart",
-    [mp_green_part_operation]        = "greenpart",
-    [mp_blue_part_operation]         = "bluepart",
-    [mp_cyan_part_operation]         = "cyanpart",
-    [mp_magenta_part_operation]      = "magentapart",
-    [mp_yellow_part_operation]       = "yellowpart",
-    [mp_black_part_operation]        = "blackpart",
-    [mp_grey_part_operation]         = "greypart",
-    [mp_capsule_operation]           = "capsule",
-    [mp_token_operation]             = "token",
-    [mp_boolean_type_operation]      = "boolean",
-    [mp_string_type_operation]       = "string",
-    [mp_pen_type_operation]          = "pen",
-    [mp_nep_type_operation]          = "nep",
-    [mp_path_type_operation]         = "path",
-    [mp_picture_type_operation]      = "picture",
-    [mp_transform_type_operation]    = "transform",
-    [mp_color_type_operation]        = "color",
-    [mp_cmykcolor_type_operation]    = "cmykcolor",
-    [mp_pair_type_operation]         = "pair",
-    [mp_numeric_type_operation]      = "numeric",
-    [mp_normal_operation]            = "normal",
-    [mp_internal_operation]          = "internal",
-    [mp_macro_operation]             = "macro",
-    [mp_expr_operation]              = "expr",
-    [mp_suffix_operation]            = "suffix",
-    [mp_text_operation]              = "text",
-    [mp_true_operation]              = "true",
-    [mp_false_operation]             = "false",
-    [mp_null_picture_operation]      = "nullpicture",
-    [mp_null_pen_operation]          = "nullpen",
-    [mp_read_string_operation]       = "readstring",
-    [mp_pen_circle_operation]        = "pencircle",
-    [mp_normal_deviate_operation]    = "normaldeviate",
-    [mp_read_from_operation]         = "readfrom",
-    [mp_close_from_operation]        = "closefrom",
-    [mp_odd_operation]               = "odd",
-    [mp_known_operation]             = "known",
-    [mp_unknown_operation]           = "unknown",
-    [mp_not_operation]               = "not",
-    [mp_decimal_operation]           = "decimal",
-    [mp_reverse_operation]           = "reverse",
-    [mp_uncycle_operation]           = "uncycle",
-    [mp_make_path_operation]         = "makepath",
-    [mp_make_pen_operation]          = "makepen",
-    [mp_make_nep_operation]          = "makenep",
-    [mp_convexed_operation]          = "convexed",
-    [mp_uncontrolled_operation]      = "uncontrolled",
-    [mp_oct_operation]               = "oct",
-    [mp_hex_operation]               = "hex",
-    [mp_ASCII_operation]             = "ASCII",
-    [mp_char_operation]              = "char",
-    [mp_length_operation]            = "length",
-    [mp_no_length_operation]         = "nolength",
-    [mp_turning_operation]           = "turningnumber",
-    [mp_color_model_operation]       = "colormodel",
-    [mp_path_part_operation]         = "pathpart",
-    [mp_pen_part_operation]          = "penpart",
-    [mp_dash_part_operation]         = "dashpart",
-    [mp_prescript_part_operation]    = "prescriptpart",
-    [mp_postscript_part_operation]   = "postscriptpart",
-    [mp_stacking_part_operation]     = "stackingpart",
-    [mp_sqrt_operation]              = "sqrt",
-    [mp_norm_operation]              = "knownnorm",
-    [mp_m_exp_operation]             = "mexp",
-    [mp_m_log_operation]             = "mlog",
-    [mp_sin_d_operation]             = "sind",
-    [mp_cos_d_operation]             = "cosd",
-    [mp_floor_operation]             = "floor",
-    [mp_uniform_deviate_operation]   = "uniformdeviate",
-    [mp_ll_corner_operation]         = "llcorner",
-    [mp_lr_corner_operation]         = "lrcorner",
-    [mp_ul_corner_operation]         = "ulcorner",
-    [mp_ur_corner_operation]         = "urcorner",
-    [mp_corners_operation]           = "corners",
-    [mp_center_of_operation]         = "centerof",
-    [mp_center_of_mass_operation]    = "centerofmass",
-    [mp_x_range_operation]           = "xrange",
-    [mp_y_range_operation]           = "yrange",
-    [mp_delta_point_operation]       = "deltapoint",
-    [mp_delta_precontrol_operation]  = "deltaprecontrol",
-    [mp_delta_postcontrol_operation] = "deltapostcontrol",
-    [mp_delta_direction_operation]   = "deltadirection",
-    [mp_arc_length_operation]        = "arclength",
-    [mp_angle_operation]             = "angle",
-    [mp_cycle_operation]             = "cycle",
-    [mp_no_cycle_operation]          = "nocycle",
-    [mp_x_relative_operation]        = "xrelative",
-    [mp_y_relative_operation]        = "yrelative",
-    [mp_xy_relative_operation]       = "xyrelative",
-    [mp_x_absolute_operation]        = "xabsolute",
-    [mp_y_absolute_operation]        = "yabsolute",
-    [mp_xy_absolute_operation]       = "xyabsolute",
-    [mp_filled_operation]            = "filled",
-    [mp_stroked_operation]           = "stroked",
-    [mp_clipped_operation]           = "clipped",
-    [mp_grouped_operation]           = "grouped",
-    [mp_bounded_operation]           = "bounded",
-    [mp_plus_operation]              = "+",
-    [mp_minus_operation]             = "-",
-    [mp_times_operation]             = "*",
-    [mp_over_operation]              = "/",
-    [mp_power_operation]             = "^",
-    [mp_pythag_add_operation]        = "++",
-    [mp_pythag_sub_operation]        = "+-+",
-    [mp_dotprod_operation]           = "dotprod",
-    [mp_crossprod_operation]         = "crossprod",
-    [mp_div_operation]               = "div",
-    [mp_mod_operation]               = "mod",
-    [mp_or_operation]                = "or",
-    [mp_and_operation]               = "and",
-    [mp_less_than_operation]         = "<",
-    [mp_less_or_equal_operation]     = "<=",
-    [mp_greater_than_operation]      = ">",
-    [mp_greater_or_equal_operation]  = ">=",
-    [mp_equal_operation]             = "=",
-    [mp_unequal_operation]           = "<>",
-    [mp_concat_operation]            = "&",
-    [mp_just_append_operation]       = "&&",
-    [mp_tolerant_concat_operation]   = "&&&",
-    [mp_tolerant_append_operation]   = "&&&&",
-    [mp_rotated_operation]           = "rotated",
-    [mp_slanted_operation]           = "slanted",
-    [mp_scaled_operation]            = "scaled",
-    [mp_shifted_operation]           = "shifted",
-    [mp_transformed_operation]       = "transformed",
-    [mp_x_scaled_operation]          = "xscaled",
-    [mp_y_scaled_operation]          = "yscaled",
-    [mp_z_scaled_operation]          = "zscaled",
-    [mp_xy_scaled_operation]         = "xyscaled",
-    [mp_bytemap_scaled_operation]    = "bytemapscaled",
-    [mp_uncycled_operation]          = "uncycled",
-    [mp_intertimes_operation]        = "intersectiontimes",
-    [mp_intertimes_list_operation]   = "intersectiontimeslist",
-    [mp_double_dot_operation]        = "..",
-    [mp_substring_operation]         = "substring",
-    [mp_subpath_operation]           = "subpath",
-    [mp_direction_time_operation]    = "directiontime",
-    [mp_point_operation]             = "point",
-    [mp_precontrol_operation]        = "precontrol",
-    [mp_postcontrol_operation]       = "postcontrol",
-    [mp_direction_operation]         = "direction",
-    [mp_last_xy_operation]           = "lastxy",
-    [mp_last_x_operation]            = "lastx",
-    [mp_last_y_operation]            = "lasty",
-    [mp_path_point_operation]        = "pathpoint",
-    [mp_path_precontrol_operation]   = "pathprecontrol",
-    [mp_path_postcontrol_operation]  = "pathpostcontrol",
-    [mp_path_direction_operation]    = "pathdirection",
-    [mp_path_state_operation]        = "pathstate",
-    [mp_path_index_operation]        = "pathindex",
-    [mp_path_lastindex_operation]    = "pathlastindex",
-    [mp_path_length_operation]       = "pathlength",
-    [mp_path_first_operation]        = "pathfirst",
-    [mp_path_last_operation]         = "pathlast",
-    [mp_pen_offset_operation]        = "penoffset",
-    [mp_arc_time_operation]          = "arctime",
-    [mp_arc_point_operation]         = "arcpoint",
-    [mp_arc_point_list_operation]    = "arcpointlist",
-    [mp_subarc_length_operation]     = "subarclength",
-    [mp_version_operation]           = "mpversion",
-    [mp_envelope_operation]          = "envelope",
-    [mp_boundingpath_operation]      = "boundingpath",
-    [mp_bytemap_value_operation]     = "bytemapvalue",
-    [mp_bytemap_found_operation]     = "bytemapfound",
-    [mp_bytemap_path_operation]      = "bytemappath",
-    [mp_bytemap_bounds_operation]    = "bytemapbounds",
+    [mp_root_operation]                = "root",
+    [mp_saved_root_operation]          = "saved root",
+    [mp_structured_root_operation]     = "structured root",
+    [mp_subscript_operation]           = "subscript",
+    [mp_attribute_operation]           = "attribute",
+    [mp_x_part_operation]              = "xpart",
+    [mp_y_part_operation]              = "ypart",
+    [mp_xx_part_operation]             = "xxpart",
+    [mp_xy_part_operation]             = "xypart",
+    [mp_yx_part_operation]             = "yxpart",
+    [mp_yy_part_operation]             = "yypart",
+    [mp_red_part_operation]            = "redpart",
+    [mp_green_part_operation]          = "greenpart",
+    [mp_blue_part_operation]           = "bluepart",
+    [mp_cyan_part_operation]           = "cyanpart",
+    [mp_magenta_part_operation]        = "magentapart",
+    [mp_yellow_part_operation]         = "yellowpart",
+    [mp_black_part_operation]          = "blackpart",
+    [mp_grey_part_operation]           = "greypart",
+    [mp_capsule_operation]             = "capsule",
+    [mp_token_operation]               = "token",
+    [mp_boolean_type_operation]        = "boolean",
+    [mp_string_type_operation]         = "string",
+    [mp_pen_type_operation]            = "pen",
+    [mp_nep_type_operation]            = "nep",
+    [mp_path_type_operation]           = "path",
+    [mp_picture_type_operation]        = "picture",
+    [mp_transform_type_operation]      = "transform",
+    [mp_color_type_operation]          = "color",
+    [mp_cmykcolor_type_operation]      = "cmykcolor",
+    [mp_pair_type_operation]           = "pair",
+    [mp_numeric_type_operation]        = "numeric",
+    [mp_normal_operation]              = "normal",
+    [mp_internal_operation]            = "internal",
+    [mp_macro_operation]               = "macro",
+    [mp_expr_operation]                = "expr",
+    [mp_suffix_operation]              = "suffix",
+    [mp_text_operation]                = "text",
+    [mp_true_operation]                = "true",
+    [mp_false_operation]               = "false",
+    [mp_null_picture_operation]        = "nullpicture",
+    [mp_null_pen_operation]            = "nullpen",
+    [mp_read_string_operation]         = "readstring",
+    [mp_pen_circle_operation]          = "pencircle",
+    [mp_normal_deviate_operation]      = "normaldeviate",
+    [mp_read_from_operation]           = "readfrom",
+    [mp_close_from_operation]          = "closefrom",
+    [mp_odd_operation]                 = "odd",
+    [mp_known_operation]               = "known",
+    [mp_unknown_operation]             = "unknown",
+    [mp_not_operation]                 = "not",
+    [mp_decimal_operation]             = "decimal",
+    [mp_reverse_operation]             = "reverse",
+    [mp_uncycle_operation]             = "uncycle",
+    [mp_singularity_operation]         = "singularity",
+    [mp_make_path_operation]           = "makepath",
+    [mp_make_pen_operation]            = "makepen",
+    [mp_make_nep_operation]            = "makenep",
+    [mp_convexed_operation]            = "convexed",
+    [mp_uncontrolled_operation]        = "uncontrolled",
+    [mp_oct_operation]                 = "oct",
+    [mp_hex_operation]                 = "hex",
+    [mp_ASCII_operation]               = "ASCII",
+    [mp_char_operation]                = "char",
+    [mp_length_operation]              = "length",
+    [mp_prune_singularities_operation] = "prunesingularities",
+    [mp_no_length_operation]           = "nolength",
+    [mp_turning_operation]             = "turningnumber",
+    [mp_color_model_operation]         = "colormodel",
+    [mp_path_part_operation]           = "pathpart",
+    [mp_pen_part_operation]            = "penpart",
+    [mp_dash_part_operation]           = "dashpart",
+    [mp_prescript_part_operation]      = "prescriptpart",
+    [mp_postscript_part_operation]     = "postscriptpart",
+    [mp_stacking_part_operation]       = "stackingpart",
+    [mp_sqrt_operation]                = "sqrt",
+    [mp_norm_operation]                = "knownnorm",
+    [mp_m_exp_operation]               = "mexp",
+    [mp_m_log_operation]               = "mlog",
+    [mp_sin_d_operation]               = "sind",
+    [mp_cos_d_operation]               = "cosd",
+    [mp_floor_operation]               = "floor",
+    [mp_uniform_deviate_operation]     = "uniformdeviate",
+    [mp_ll_corner_operation]           = "llcorner",
+    [mp_lr_corner_operation]           = "lrcorner",
+    [mp_ul_corner_operation]           = "ulcorner",
+    [mp_ur_corner_operation]           = "urcorner",
+    [mp_corners_operation]             = "corners",
+    [mp_center_of_operation]           = "centerof",
+    [mp_center_of_mass_operation]      = "centerofmass",
+    [mp_x_range_operation]             = "xrange",
+    [mp_y_range_operation]             = "yrange",
+    [mp_delta_point_operation]         = "deltapoint",
+    [mp_delta_precontrol_operation]    = "deltaprecontrol",
+    [mp_delta_postcontrol_operation]   = "deltapostcontrol",
+    [mp_delta_direction_operation]     = "deltadirection",
+    [mp_delta_arclength_operation]     = "deltaarclength",
+    [mp_arc_length_operation]          = "arclength",
+    [mp_angle_operation]               = "angle",
+    [mp_cycle_operation]               = "cycle",
+    [mp_recycle_operation]             = "recycle",
+    [mp_no_cycle_operation]            = "nocycle",
+    [mp_x_relative_operation]          = "xrelative",
+    [mp_y_relative_operation]          = "yrelative",
+    [mp_xy_relative_operation]         = "xyrelative",
+    [mp_x_absolute_operation]          = "xabsolute",
+    [mp_y_absolute_operation]          = "yabsolute",
+    [mp_xy_absolute_operation]         = "xyabsolute",
+    [mp_filled_operation]              = "filled",
+    [mp_stroked_operation]             = "stroked",
+    [mp_clipped_operation]             = "clipped",
+    [mp_grouped_operation]             = "grouped",
+    [mp_bounded_operation]             = "bounded",
+    [mp_plus_operation]                = "+",
+    [mp_minus_operation]               = "-",
+    [mp_times_operation]               = "*",
+    [mp_over_operation]                = "/",
+    [mp_power_operation]               = "^",
+    [mp_pythag_add_operation]          = "++",
+    [mp_pythag_sub_operation]          = "+-+",
+    [mp_dotprod_operation]             = "dotprod",
+    [mp_crossprod_operation]           = "crossprod",
+    [mp_div_operation]                 = "div",
+    [mp_mod_operation]                 = "mod",
+    [mp_or_operation]                  = "or",
+    [mp_and_operation]                 = "and",
+    [mp_less_than_operation]           = "<",
+    [mp_less_or_equal_operation]       = "<=",
+    [mp_greater_than_operation]        = ">",
+    [mp_greater_or_equal_operation]    = ">=",
+    [mp_equal_operation]               = "=",
+    [mp_unequal_operation]             = "<>",
+    [mp_concat_operation]              = "&",
+    [mp_just_append_operation]         = "&&",
+    [mp_tolerant_concat_operation]     = "&&&",
+    [mp_tolerant_append_operation]     = "&&&&",
+    [mp_rotated_operation]             = "rotated",
+    [mp_slanted_operation]             = "slanted",
+    [mp_scaled_operation]              = "scaled",
+    [mp_shifted_operation]             = "shifted",
+    [mp_transformed_operation]         = "transformed",
+    [mp_x_scaled_operation]            = "xscaled",
+    [mp_y_scaled_operation]            = "yscaled",
+    [mp_z_scaled_operation]            = "zscaled",
+    [mp_xy_scaled_operation]           = "xyscaled",
+    [mp_bytemap_scaled_operation]      = "bytemapscaled",
+    [mp_uncycled_operation]            = "uncycled",
+    [mp_intertimes_operation]          = "intersectiontimes",
+    [mp_intertimes_list_operation]     = "intersectiontimeslist",
+    [mp_double_dot_operation]          = "..",
+    [mp_substring_operation]           = "substring",
+    [mp_subpath_operation]             = "subpath",
+    [mp_direction_time_operation]      = "directiontime",
+    [mp_point_operation]               = "point",
+    [mp_precontrol_operation]          = "precontrol",
+    [mp_postcontrol_operation]         = "postcontrol",
+    [mp_direction_operation]           = "direction",
+    [mp_last_xy_operation]             = "lastxy",
+    [mp_last_x_operation]              = "lastx",
+    [mp_last_y_operation]              = "lasty",
+    [mp_previous_xy_operation]         = "previousxy",
+    [mp_previous_x_operation]          = "previousx",
+    [mp_previous_y_operation]          = "previousy",
+    [mp_path_point_operation]          = "pathpoint",
+    [mp_path_precontrol_operation]     = "pathprecontrol",
+    [mp_path_postcontrol_operation]    = "pathpostcontrol",
+    [mp_path_direction_operation]      = "pathdirection",
+    [mp_path_state_operation]          = "pathstate",
+    [mp_path_index_operation]          = "pathindex",
+    [mp_path_lastindex_operation]      = "pathlastindex",
+    [mp_path_length_operation]         = "pathlength",
+    [mp_path_first_operation]          = "pathfirst",
+    [mp_path_last_operation]           = "pathlast",
+    [mp_pen_offset_operation]          = "penoffset",
+    [mp_arc_time_operation]            = "arctime",
+    [mp_arc_point_operation]           = "arcpoint",
+    [mp_arc_point_list_operation]      = "arcpointlist",
+    [mp_subarc_length_operation]       = "subarclength",
+    [mp_version_operation]             = "mpversion",
+    [mp_envelope_operation]            = "envelope",
+    [mp_boundingpath_operation]        = "boundingpath",
+    [mp_bytemap_value_operation]       = "bytemapvalue",
+    [mp_bytemap_found_operation]       = "bytemapfound",
+    [mp_bytemap_path_operation]        = "bytemappath",
+    [mp_bytemap_bounds_operation]      = "bytemapbounds",
 };
 
 static const char *mp_operator_string(int c)
@@ -5610,7 +5615,7 @@ static void mp_print_path_only(MP mp, mp_knot h) /* todo: spaces, just after thi
                 mp_valid_knot_type_string(mp_right_type(p)),
                 mp_valid_knot_state_string(mp_knotstate(p))
             );
-            /*tex pint information for adjacent knots |p| and |q| */
+            /*tex print information for adjacent knots |p| and |q| */
             mp_print_format(mp, "(%N,%N) ", p->x_coord, p->y_coord);
             switch (mp_right_type(p)) {
                 case mp_endpoint_knot:
@@ -6386,8 +6391,8 @@ void mp_solve_choices(MP mp, mp_knot p, mp_knot q, int n)
                         mp_reduce_angle(mp, &mp->vv[0]);
                         mp_set_number_to_zero(mp->uu[0]);
                         mp_set_number_to_zero(mp->ww[0]);
+                        break;
                     }
-                    break;
                 case mp_curl_knot:
                     if (mp_left_type(t) == mp_curl_knot) {
                         /*tex
@@ -14351,23 +14356,23 @@ the |get_next| procedure is not recursive.
 const char *mp_cmd_mod_string(MP mp, int c, int m)
 {
     switch (c) {
-        case mp_add_to_command:        return "addto";
-        case mp_assignment_command:    return ":=";
-        case mp_at_least_command:      return "atleast";
-        case mp_begin_group_command:   return "begingroup";
-        case mp_colon_command:         return ":";
-        case mp_comma_command:         return ",";
-        case mp_curl_command:          return "curl";
-        case mp_delimiters_command:    return "delimiters";
-        case mp_end_group_command:     return "endgroup";
-        case mp_every_job_command:     return "everyjob";
-        case mp_exit_test_command:     return "exitif";
-        case mp_expand_after_command:  return "expandafter";
-        case mp_interim_command:       return "interim";
-        case mp_left_brace_command:    return "{";
-        case mp_left_bracket_command:  return "[";
-        case mp_let_command:           return "let";
-        case mp_new_internal_command:  return "newinternal";
+        case mp_add_to_command:              return "addto";
+        case mp_assignment_command:          return ":=";
+        case mp_at_least_command:            return "atleast";
+        case mp_begin_group_command:         return "begingroup";
+        case mp_colon_command:               return ":";
+        case mp_comma_command:               return ",";
+        case mp_curl_command:                return "curl";
+        case mp_delimiters_command:          return "delimiters";
+        case mp_end_group_command:           return "endgroup";
+        case mp_every_job_command:           return "everyjob";
+        case mp_exit_test_command:           return "exitif";
+        case mp_expand_after_command:        return "expandafter";
+        case mp_interim_command:             return "interim";
+        case mp_left_brace_command:          return "{";
+        case mp_left_bracket_command:        return "[";
+        case mp_let_command:                 return "let";
+        case mp_new_internal_command:        return "newinternal";
         case mp_bytemap_command:
             switch (m) {
                 case mp_bytemap_set_byte_code   : return "setbyte";
@@ -17377,7 +17382,7 @@ static void mp_push_condition_stack(MP mp)
     p->link = mp->cond_ptr;
     p->type = (int) mp->if_limit;
     p->name_type = mp->cur_if;
-    mp_if_line_field(p) = mp->if_line;
+    p->if_line_field = mp->if_line;
     mp->cond_ptr = p;
     mp->if_limit = mp_if_code;
     mp->if_line = mp_true_line(mp);
@@ -17387,7 +17392,7 @@ static void mp_push_condition_stack(MP mp)
 static void mp_pop_condition_stack(MP mp)
 {
     mp_if_node p = mp->cond_ptr;
-    mp->if_line = mp_if_line_field(p);
+    mp->if_line = p->if_line_field;
     mp->cur_if = p->name_type;
     mp->if_limit = p->type;
     mp->cond_ptr = p->link;
@@ -19426,6 +19431,8 @@ static mp_knot mp_pair_to_knot(MP mp)
     mp_known_pair(mp);
     mp_number_clone(q->x_coord, mp->cur_x);
     mp_number_clone(q->y_coord, mp->cur_y);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19442,6 +19449,8 @@ static mp_knot mp_numeric_to_knot_no(MP mp, mp_number x, mp_number y)
     mp_next_knot(q) = q;
     mp_number_clone(q->x_coord, x);
     mp_number_clone(q->y_coord, y);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19453,6 +19462,8 @@ static mp_knot mp_pair_to_knot_xy(MP mp, mp_number x, mp_number y)
     mp_known_pair(mp);
     mp_number_add(q->x_coord, mp->cur_x);
     mp_number_add(q->y_coord, mp->cur_y);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19463,6 +19474,8 @@ static mp_knot mp_numeric_to_knot_xy(MP mp, mp_number x, mp_number y)
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->x_coord, cur_exp_value_number);
     mp_number_add(q->y_coord, cur_exp_value_number);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19472,6 +19485,8 @@ static mp_knot mp_numeric_to_knot_x(MP mp, mp_number x, mp_number y)
 {
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->x_coord, cur_exp_value_number);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19481,6 +19496,8 @@ static mp_knot mp_numeric_to_knot_y(MP mp, mp_number x, mp_number y)
 {
     mp_knot q = mp_numeric_to_knot_no(mp, x, y);
     mp_number_add(q->y_coord, cur_exp_value_number);
+    mp_number_clone(mp->previous_x, mp->last_x);
+    mp_number_clone(mp->previous_y, mp->last_y);
     mp_number_clone(mp->last_x, q->x_coord);
     mp_number_clone(mp->last_y, q->y_coord);
     return q;
@@ -19911,6 +19928,18 @@ static void mp_do_command_nullary(MP mp, int c)
         case mp_last_y_operation:
             cur_exp_type = mp_known_type;
             mp_set_cur_exp_value_number(mp, &mp->last_y);
+            break;
+        case mp_previous_xy_operation:
+            cur_exp_type = mp_undefined_type;
+            mp_pair_value(mp, &mp->previous_x, &mp->previous_y);
+            break;
+        case mp_previous_x_operation:
+            cur_exp_type = mp_known_type;
+            mp_set_cur_exp_value_number(mp, &mp->previous_x);
+            break;
+        case mp_previous_y_operation:
+            cur_exp_type = mp_known_type;
+            mp_set_cur_exp_value_number(mp, &mp->previous_y);
             break;
     }
     mp_check_arithmic(mp);
@@ -20471,7 +20500,7 @@ static void mp_path_segments(MP mp, mp_number *n)
     int l = 1;
     do {
         p = mp_next_knot(p);
-        if (mp_knotstate(p) == mp_begin_knot) {
+        if (mp_knotstate(p) == mp_begin_knot || mp_knotstate(p) == mp_single_knot) {
             ++l;
         }
     } while (p != cur_exp_knot);
@@ -20507,6 +20536,12 @@ static int mp_path_segment(MP mp, int n, int *first, int *last)
                     } else {
                         --n;
                         break;
+                    }
+                case mp_single_knot:
+                    {
+                        *first = f;
+                        *last = f;
+                        return 1;
                     }
             }
             ++c;
@@ -21383,6 +21418,292 @@ static void mp_set_up_type_3(MP mp, int c)
     cur_exp_type = mp_boolean_type;
 }
 
+static int mp_path_is_singularity(MP mp, mp_knot first)
+{
+    mp_knot current = first; 
+    while (1) { 
+        mp_knot next = mp_next_knot(current);
+        if (next == first) {  
+            break;
+        } else if (! mp_number_equal(current->x_coord, next->x_coord) || ! mp_number_equal(current->y_coord, next->y_coord)) {
+            return 0;
+        } else {
+            current = next; 
+        }
+    }
+    return 1; 
+}
+
+static void mp_set_up_singularity(MP mp, int c)
+{
+    mp_value expr;
+    int b = mp_false_operation;
+    (void) c;
+    memset(&expr, 0, sizeof(mp_value));
+    mp_new_number(expr.data.n);
+    switch (cur_exp_type) {
+        case mp_path_type:
+            b = mp_path_is_singularity(mp, cur_exp_knot) ? mp_true_operation : mp_false_operation;
+            break;
+        case mp_pair_type:
+            b = mp_true_operation;
+            break;
+        default: 
+            b = mp_false_operation;
+            break;
+    }
+    mp_set_number_from_boolean(expr.data.n, b);
+    mp_flush_cur_exp(mp, expr);
+    cur_exp_type = mp_boolean_type;
+}
+
+/*tex
+
+    Splitting the pruning is easier to trace. Later we can merge. Although pruning takes time, 
+    think of a 3000 point path, we eventually gain back on less overhead in the backend and smaller
+    results. 
+
+    \starttyping
+    (1,1) -- (2,2) -- (3,3) && % regular regular end      implicit begin 
+    (1,1) -- (2,2) -- (3,3) && % begin regular end
+    (1,1)                   && % single
+    (1,1) -- (1,1)          && % begin end
+    (1,1) -- (1,1) -- (1,1) ;  % begin regular regular    implicit end 
+    \stoptyping 
+
+*/
+
+static inline int mp_same_point(MP mp, mp_knot left, mp_knot right)
+{
+    return mp_number_equal(left->x_coord, right->x_coord) && mp_number_equal(left->y_coord, right->y_coord);
+}
+
+static void mp_set_up_prune_singularities_r_r(MP mp, mp_knot first)
+{
+    mp_knot current = first;
+    mp_knot previous = NULL;
+    int state = mp_begin_knot; 
+    while (1) { 
+        mp_knot next = mp_next_knot(current);
+        if (previous && state == mp_regular_knot && next != first && current->state == mp_regular_knot && mp_same_point(mp, previous, current)) { 
+            mp_knot wiped = current;
+            mp_next_knot(previous) = next;
+            mp_prev_knot(next) = previous;
+            mp_number_clone(previous->right_x, current->right_x);
+            mp_number_clone(previous->right_y, current->right_y);
+            current = next;
+            mp_free_knot(mp, wiped);
+            goto PICKUP; 
+        }
+        state = current->state;
+        previous = current;
+        current = next;
+      PICKUP:
+        if (current == first) { 
+            break;
+        }
+    }
+}
+
+static void mp_set_up_prune_singularities_b_r(MP mp, mp_knot first)
+{
+    mp_knot previous = first;
+    mp_knot current = mp_next_knot(first);
+    int state = mp_begin_knot; 
+    while (current != first) { 
+        mp_knot next = mp_next_knot(current);
+        if (state == mp_begin_knot && next != first && current->state == mp_regular_knot && mp_same_point(mp, previous, current)) { 
+            mp_knot wiped = current;
+            mp_next_knot(previous) = next;
+            mp_prev_knot(next) = previous;
+            mp_number_clone(previous->right_x, current->right_x);
+            mp_number_clone(previous->right_y, current->right_y);
+            current = next;
+            state = mp_regular_knot;
+            mp_free_knot(mp, wiped);
+            goto PICKUP; 
+        }
+        state = current->state;
+        previous = current;
+        current = next;
+      PICKUP:
+        if (current == first) { 
+            break;
+        }
+    }
+}
+
+static void mp_set_up_prune_singularities_r_e(MP mp, mp_knot first) /* todo : last is also end */
+{
+     mp_knot current = first;
+     mp_knot previous = NULL;
+     int state = mp_begin_knot; 
+     while (current != first) { 
+        mp_knot next = mp_next_knot(current);
+         if (previous && state == mp_regular_knot && (current->state == mp_end_knot || next == first ) && mp_same_point(mp, previous, current)) { 
+             mp_knot wiped = previous;
+             mp_knot prev = mp_prev_knot(previous);
+             mp_number_clone(current->left_x, previous->left_x);
+             mp_number_clone(current->left_y, previous->left_y);
+             mp_next_knot(prev) = current;
+             mp_prev_knot(current) = prev;
+             mp_free_knot(mp, wiped);
+         }
+         state = current->state;
+         previous = current;
+         current = next;
+         if (current == first) { 
+             break;
+         }
+     }
+}
+
+static void mp_set_up_prune_singularities_b_e(MP mp, mp_knot first) 
+{
+    mp_knot previous = first;
+    mp_knot current = mp_next_knot(first);
+    int state = mp_begin_knot; 
+    while (current != first) { 
+        mp_knot next = mp_next_knot(current);
+        if (state == mp_begin_knot && (current->state == mp_end_knot || next == first) && mp_same_point(mp, previous, current)) { 
+            mp_knot wiped = current;
+            mp_next_knot(previous) = next;
+            mp_prev_knot(next) = previous;
+            mp_number_clone(previous->right_x, previous->x_coord);
+            mp_number_clone(previous->right_y, previous->y_coord);
+            mp_number_clone(previous->left_x, previous->x_coord);
+            mp_number_clone(previous->left_y, previous->y_coord);
+            previous->state = mp_single_knot;
+            current = next;
+            state = mp_single_knot;
+            mp_free_knot(mp, wiped);
+            goto PICKUP; 
+        }
+        state = current->state;
+        previous = current;
+        current = next;
+      PICKUP:
+        if (current == first) { 
+            break;
+        }
+    }
+}
+
+static void mp_set_up_prune_singularities_w_s(MP mp, mp_knot first)
+{
+    mp_knot previous = first;
+    mp_knot current = mp_next_knot(first);
+    while (current != first) { 
+        mp_knot next = mp_next_knot(current);
+        if (current->state == mp_single_knot) { 
+            mp_knot wiped = current;
+            mp_next_knot(previous) = next;
+            mp_prev_knot(next) = previous;
+            mp_number_clone(previous->right_x, previous->x_coord);
+            mp_number_clone(previous->right_y, previous->y_coord);
+            mp_number_clone(next->left_x, next->x_coord);
+            mp_number_clone(next->left_y, next->y_coord);
+            mp_free_knot(mp, wiped);
+            current = next;
+            goto PICKUP; 
+        } else { 
+            previous = current;
+            current = next;
+        }
+      PICKUP:
+        if (current == first) { 
+            break;
+        }
+    }
+}
+
+static void mp_set_up_prune_singularities_c_s(MP mp, mp_knot first)
+{
+    mp_knot previous = first;
+    mp_knot current = mp_next_knot(first);
+    int state = mp_begin_knot; 
+    while (current != first) { 
+        mp_knot next = mp_next_knot(current);
+        if (state == mp_end_knot && current->state == mp_begin_knot && mp_same_point(mp, previous, current)) { 
+            mp_knot wiped = current;
+            mp_next_knot(previous) = next;
+            mp_prev_knot(next) = previous;
+            mp_number_clone(previous->right_x, current->right_x);
+            mp_number_clone(previous->right_y, current->right_y);
+            previous->state = mp_regular_knot;
+            current = next;
+            state = mp_regular_knot;
+            mp_free_knot(mp, wiped);
+            goto PICKUP; 
+        }
+        state = current->state;
+        previous = current;
+        current = next;
+      PICKUP:
+        if (current == first) { 
+            break;
+        }
+    }
+}
+
+static void mp_set_up_prune_singularities(MP mp, int c)
+{
+    switch (cur_exp_type) { 
+        case mp_path_type: /* we can use a interternal as bitset */
+            {
+                int prune = mp_round_unscaled(internal_value(mp_prune_options_internal));
+                if (prune & collapse_regular_regular_prune) {
+                    mp_set_up_prune_singularities_r_r(mp, cur_exp_knot);
+                }
+                if (prune & collapse_begin_regular_prune) {
+                    mp_set_up_prune_singularities_b_r(mp, cur_exp_knot);
+                }
+                if (prune & collapse_regular_end_prune) {
+                    mp_set_up_prune_singularities_r_e(mp, cur_exp_knot);
+                }
+                if (prune & collapse_begin_end_prune) {
+                    mp_set_up_prune_singularities_b_e(mp, cur_exp_knot);
+                }
+                if (prune & wipe_single_prune) {
+                    mp_set_up_prune_singularities_w_s(mp, cur_exp_knot);
+                }
+                if (prune & connect_segments_prune) {
+                    mp_set_up_prune_singularities_c_s(mp, cur_exp_knot);
+                }
+                break;
+            }
+        case mp_picture_type: 
+            {
+                mp_node current  = mp_edge_list(cur_exp_node)->link;
+                mp_node previous = NULL; 
+                while (current) { 
+                    if (mp_is_start_or_stop(current) && mp_skip_one_component(mp, current) == NULL) {
+                        /* skip over it */
+                    } else if (current->type == mp_fill_node_type || current->type == mp_stroked_node_type) { 
+                        if (mp_path_is_singularity(mp, mp_path_ptr((mp_shape_node) current))) {
+                            if (previous) { 
+                                previous->link = current->link; 
+                            } else {
+                                mp_edge_list(cur_exp_node)->link = current->link;
+                            }
+                            mp_free_shape_node(mp, (mp_shape_node) current);
+                            current = previous ? previous->link : NULL;
+                            continue;
+                        }
+                    }
+                    previous = current;
+                    current = current->link;
+                }
+             // mp_set_cur_exp_node(mp, mp_get_value_node(p));
+             // mp_add_edge_ref(mp, cur_exp_node);
+                break;
+            }
+        default: 
+            mp_bad_unary(mp, c);
+            break;
+    }
+}
+
 static void mp_set_up_known(MP mp, int c)
 {
     mp_value expr;
@@ -21432,18 +21753,20 @@ static void mp_set_up_arc_length(MP mp, int c)
 static void mp_set_up_group(MP mp, int c)
 {
     mp_value expr;
+    int b;
     (void) c;
     memset(&expr, 0, sizeof(mp_value));
     mp_new_number(expr.data.n);
     if (cur_exp_type != mp_picture_type) {
-        mp_set_number_from_boolean(expr.data.n, mp_false_operation);
+        b = mp_false_operation;
     } else if (mp_edge_list(cur_exp_node)->link == NULL) {
-        mp_set_number_from_boolean(expr.data.n, mp_false_operation);
+        b = mp_false_operation;
     } else {
         /* they are parallel: */
         int type = c - mp_filled_operation + mp_fill_node_type;
-        mp_set_number_from_boolean(expr.data.n, mp_edge_list(cur_exp_node)->link->type == type ? mp_true_operation: mp_false_operation);
+        b = mp_edge_list(cur_exp_node)->link->type == type ? mp_true_operation: mp_false_operation;
     }
+    mp_set_number_from_boolean(expr.data.n, b);
     mp_flush_cur_exp(mp, expr);
     cur_exp_type = mp_boolean_type;
 }
@@ -21536,24 +21859,45 @@ static void mp_set_up_center_of_mass(MP mp, int c)
 
 static void mp_set_up_delta(MP mp, int c)
 {
-    if (cur_exp_type == mp_known_type) {
-        mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
+    if (c == mp_delta_arclength_operation) {
+        mp_known_pair(mp);
         if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
+            mp_value new_expr;
+            mp_number count;
             mp_knot p = mp->loop_ptr->point;
-            int n = mp_round_unscaled(cur_exp_value_number);
-            if (n > 0) {
-                while (n--) {
-                    p = mp_next_knot(p);
-                }
-            } else if (n < 0) {
-                while (n++) {
-                    p = mp_prev_knot(p);
-                }
-            }
-            mp_push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
+            int f = mp_round_unscaled(mp->cur_x);
+            int l = mp_round_unscaled(mp->cur_y) - f;
+            if (f > 0) { while (f--) { p = mp_next_knot(p); } } else 
+            if (f < 0) { while (f++) { p = mp_prev_knot(p); } }
+            memset(&new_expr, 0, sizeof(mp_value));
+            mp_set_number_from_int(count, l);
+            mp_new_number(new_expr.data.n);
+            mp_get_subarc_length(mp, &new_expr.data.n, p, &mp_zero_t, &count);
+            mp_flush_cur_exp(mp, new_expr);
+            mp_free_number(count);
+        } else {
+            mp_bad_unary(mp, c);
         }
-    } else {
-        mp_bad_unary(mp, c);
+    } else { 
+        if (cur_exp_type == mp_known_type) {
+            mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
+            if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
+                mp_knot p = mp->loop_ptr->point;
+                int n = mp_round_unscaled(cur_exp_value_number);
+                if (n > 0) {
+                    while (n--) {
+                        p = mp_next_knot(p);
+                    }
+                } else if (n < 0) {
+                    while (n++) {
+                        p = mp_prev_knot(p);
+                    }
+                }
+                mp_push_of_path_result(mp, c - mp_delta_point_operation, p, mp->loop_ptr->value, mp->loop_ptr->final_value);
+            }
+        } else {
+            mp_bad_unary(mp, c);
+        }
     }
 }
 
@@ -21954,6 +22298,9 @@ static void mp_do_unary(MP mp, int c)
         case mp_segments_operation:
             mp_set_up_segments(mp, c);
             break;
+        case mp_prune_singularities_operation: 
+            mp_set_up_prune_singularities(mp, c);
+            break;
         case mp_length_operation:
             mp_set_up_length(mp, c);
             break;
@@ -21985,6 +22332,7 @@ static void mp_do_unary(MP mp, int c)
             mp_set_up_known(mp, c);
             break;
         case mp_cycle_operation:
+        case mp_recycle_operation:
         case mp_no_cycle_operation:
             mp_set_up_cycle(mp, c);
             break;
@@ -22019,6 +22367,9 @@ static void mp_do_unary(MP mp, int c)
         case mp_uncycle_operation:
             mp_set_up_uncycle(mp, c);
             break;
+        case mp_singularity_operation:
+            mp_set_up_singularity(mp, c);
+            break;
         case mp_ll_corner_operation:
         case mp_lr_corner_operation:
         case mp_ul_corner_operation:
@@ -22040,6 +22391,7 @@ static void mp_do_unary(MP mp, int c)
         case mp_delta_precontrol_operation:
         case mp_delta_postcontrol_operation:
         case mp_delta_direction_operation:
+        case mp_delta_arclength_operation:
             mp_set_up_delta(mp, c);
             break;
         case mp_read_from_operation:
@@ -25055,7 +25407,7 @@ void mp_do_statement(MP mp)
     } else {
         /*tex
             Do a statement that doesn't begin with an expression. If |do_statement| ends with
-            |cur_cmd = end_group|, we should have |cur_type=mp_vacuous| unless the statement was
+            |cur_cmd = end_group|, we should have |cur_type = mp_vacuous| unless the statement was
             simply an expression; in the latter case, |cur_type| and |cur_exp| should represent
             that expression.
         */
@@ -25102,7 +25454,7 @@ void mp_do_statement(MP mp)
                 mp_do_property(mp);
                 break;
             case mp_delimiters_command:
-                mp_def_delims(mp);
+                mp_do_delimiters(mp);
                 break;
             case mp_save_command:
                 do {
@@ -26425,7 +26777,7 @@ and |right_delimiter| to |)|; the |equiv| of each delimiter is the hash address 
 
 */
 
-void mp_def_delims(MP mp)
+void mp_do_delimiters(MP mp)
 {
     mp_symbol l_delim, r_delim; /* the new delimiter pair */
     mp_get_clear_symbol(mp);
@@ -31041,6 +31393,8 @@ static int mp_scan_path(MP mp)
         doesn't have a suitable type. Keep in mind that as we progress, cur_cmd can be ahead
         of the expression we just consumed.
     */
+mp_number_clone(mp->previous_x, mp_inf_t);
+mp_number_clone(mp->previous_y, mp_inf_t);
     switch (cur_exp_type) {
         case mp_pair_type:
             {
@@ -31274,13 +31628,40 @@ static int mp_scan_path(MP mp)
                         mp_set_number_to_unity(path_q->right_tension);
                         mp_set_number_to_unity(y);
                     }
+                    mp_number_clone(mp->previous_x, mp_inf_t);
+                    mp_number_clone(mp->previous_y, mp_inf_t);
                     break;
                 }
             case mp_no_cycle_operation:
                 {
                     mp_get_x_next(mp);
                     qq = pp;
+                    mp_number_clone(mp->previous_x, mp_inf_t);
+                    mp_number_clone(mp->previous_y, mp_inf_t);
                     goto FINISH_PATH;
+                }
+            case mp_recycle_operation:
+                {
+                    if (path_p != path_q) {
+                        mp_knot pq = mp_prev_knot(path_q); 
+                     // printf(">>> %i %i\n",mp_right_type(pq),mp_right_type(path_q));
+                        mp_free_knot(mp, path_q);
+                        path_q = pq; 
+                        mp_next_knot(path_q) = NULL;
+                        pq = mp_prev_knot(path_q); 
+                        mp_number_clone(mp->last_x, path_q->x_coord);
+                        mp_number_clone(mp->last_y, path_q->y_coord);
+                        if  (path_p == pq) {
+                            mp_number_clone(mp->previous_x, mp_inf_t);
+                            mp_number_clone(mp->previous_y, mp_inf_t);
+                        } else { 
+                            mp_number_clone(mp->previous_x, pq->x_coord);
+                            mp_number_clone(mp->previous_y, pq->y_coord);
+                        }
+                    }
+                    mp_get_x_next(mp);
+                    qq = path_q;
+                    goto CONTINUE_PATH;
                 }
             case mp_x_relative_operation:
                 mp_scan_tertiary(mp);
@@ -31352,6 +31733,8 @@ static int mp_scan_path(MP mp)
                 break;
         }
     } else {
+mp_number_clone(mp->previous_x, mp_inf_t);
+mp_number_clone(mp->previous_y, mp_inf_t);
         mp_scan_tertiary(mp);
         /*tex
             Convert the right operand, |cur_exp|, into a partial path from |pp| to~|qq|.
@@ -31453,8 +31836,8 @@ static int mp_scan_path(MP mp)
             Splice independent paths together.
         */
         switch (operation) {
-            case mp_concat_operation:
-            case mp_just_append_operation:
+            case mp_concat_operation:      // & 
+            case mp_just_append_operation: // &&
                 break;
             case mp_tolerant_concat_operation:
             case mp_tolerant_append_operation:
@@ -31508,8 +31891,8 @@ static int mp_scan_path(MP mp)
                     mp_number_clone(pp->left_y, path_q->y_coord);
                     mp_number_clone(path_q->right_x, pp->x_coord);
                     mp_number_clone(path_q->right_y, pp->y_coord);
+                    mp_knotstate(path_q) = mp_knotstate(path_q) == mp_begin_knot ? mp_single_knot : mp_end_knot;
                     mp_knotstate(pp) = mp_begin_knot;
-                    mp_knotstate(path_q) = mp_end_knot;
                     path_q = pp;
                     break;
                 }
@@ -31677,7 +32060,7 @@ void mp_final_cleanup(MP mp)
         } else {
             mp_print_format(mp, "(end occurred when %C was incomplete", mp_fi_or_else_command, mp->cur_if);
         }
-        mp->if_line = mp_if_line_field(mp->cond_ptr);
+        mp->if_line = mp->cond_ptr->if_line_field;
         mp->cur_if = mp->cond_ptr->name_type;
         mp->cond_ptr = mp->cond_ptr->link;
     }
@@ -31737,6 +32120,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "intersectionprecision", mp_internal_command,         mp_intersection_precision_internal);
     mp_primitive(mp, "jointolerance",         mp_internal_command,         mp_join_tolerance_internal);
     mp_primitive(mp, "singlequotemode",       mp_internal_command,         mp_single_quote_mode_internal);
+    mp_primitive(mp, "pruneoptions",          mp_internal_command,         mp_prune_options_internal);
 
     mp_primitive(mp, "..",                    mp_path_join_command,        0);
     mp_primitive(mp, "--",                    mp_path_connect_command,     0);
@@ -31751,18 +32135,15 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "\\",                    mp_relax_command,            0);
     mp_primitive(mp, "addto",                 mp_add_to_command,           0);
     mp_primitive(mp, "atleast",               mp_at_least_command,         0);
-    mp_primitive(mp, "begingroup",            mp_begin_group_command,      0);
-
-    mp->bg_loc = cur_sym;
 
     mp_primitive(mp, "controls",              mp_controls_command,         mp_both_controls_code);
     mp_primitive(mp, "firstcontrol",          mp_controls_command,         mp_first_control_code);
     mp_primitive(mp, "secondcontrol",         mp_controls_command,         mp_second_control_code);
     mp_primitive(mp, "curl",                  mp_curl_command,             0);
     mp_primitive(mp, "delimiters",            mp_delimiters_command,       0);
-    mp_primitive(mp, "endgroup",              mp_end_group_command,        0);
 
-    mp->eg_loc = cur_sym;
+    mp_primitive(mp, "begingroup",            mp_begin_group_command,      0); mp->bg_loc = cur_sym;
+    mp_primitive(mp, "endgroup",              mp_end_group_command,        0); mp->eg_loc = cur_sym;
 
     mp_primitive(mp, "everyjob",              mp_every_job_command,        0);
     mp_primitive(mp, "exitif",                mp_exit_test_command,        0);
@@ -31852,6 +32233,9 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "lastxy",                mp_nullary_command,          mp_last_xy_operation);
     mp_primitive(mp, "lastx",                 mp_nullary_command,          mp_last_x_operation);
     mp_primitive(mp, "lasty",                 mp_nullary_command,          mp_last_y_operation);
+    mp_primitive(mp, "previousxy",            mp_nullary_command,          mp_previous_xy_operation);
+    mp_primitive(mp, "previousx",             mp_nullary_command,          mp_previous_x_operation);
+    mp_primitive(mp, "previousy",             mp_nullary_command,          mp_previous_y_operation);
     mp_primitive(mp, "pathstate",             mp_nullary_command,          mp_path_state_operation);
     mp_primitive(mp, "pathindex",             mp_nullary_command,          mp_path_index_operation);
     mp_primitive(mp, "pathlastindex",         mp_nullary_command,          mp_path_lastindex_operation);
@@ -31871,6 +32255,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "decimal",               mp_unary_command,            mp_decimal_operation);
     mp_primitive(mp, "reverse",               mp_unary_command,            mp_reverse_operation);
     mp_primitive(mp, "uncycle",               mp_unary_command,            mp_uncycle_operation);
+    mp_primitive(mp, "singularity",           mp_unary_command,            mp_singularity_operation);
     mp_primitive(mp, "makepath",              mp_unary_command,            mp_make_path_operation);
     mp_primitive(mp, "makepen",               mp_unary_command,            mp_make_pen_operation);
     mp_primitive(mp, "makenep",               mp_unary_command,            mp_make_nep_operation);
@@ -31881,6 +32266,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "ASCII",                 mp_unary_command,            mp_ASCII_operation);
     mp_primitive(mp, "char",                  mp_unary_command,            mp_char_operation);
     mp_primitive(mp, "segments",              mp_unary_command,            mp_segments_operation);
+    mp_primitive(mp, "prunesingularities",    mp_unary_command,            mp_prune_singularities_operation);
     mp_primitive(mp, "length",                mp_unary_command,            mp_length_operation);
     mp_primitive(mp, "nolength",              mp_unary_command,            mp_no_length_operation);
     mp_primitive(mp, "turningnumber",         mp_unary_command,            mp_turning_operation);
@@ -31928,6 +32314,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "deltaprecontrol",       mp_unary_command,            mp_delta_precontrol_operation);
     mp_primitive(mp, "deltapostcontrol",      mp_unary_command,            mp_delta_postcontrol_operation);
     mp_primitive(mp, "deltadirection",        mp_unary_command,            mp_delta_direction_operation);
+    mp_primitive(mp, "deltaarclength",        mp_unary_command,            mp_delta_arclength_operation);
     mp_primitive(mp, "arclength",             mp_unary_command,            mp_arc_length_operation);
     mp_primitive(mp, "angle",                 mp_unary_command,            mp_angle_operation);
     mp_primitive(mp, "stroked",               mp_unary_command,            mp_stroked_operation);
@@ -31937,6 +32324,7 @@ static void mp_initialize_primitives(MP mp)
     mp_primitive(mp, "bounded",               mp_unary_command,            mp_bounded_operation);
 
     mp_primitive(mp, "cycle",                 mp_cycle_command,            mp_cycle_operation);
+    mp_primitive(mp, "recycle",               mp_cycle_command,            mp_recycle_operation);
     mp_primitive(mp, "nocycle",               mp_cycle_command,            mp_no_cycle_operation);
     mp_primitive(mp, "xrelative",             mp_cycle_command,            mp_x_relative_operation);
     mp_primitive(mp, "yrelative",             mp_cycle_command,            mp_y_relative_operation);
@@ -32123,6 +32511,8 @@ static void mp_initialize_tables(MP mp)
 
     mp_new_number_clone(mp->last_x, mp_zero_t);
     mp_new_number_clone(mp->last_y, mp_zero_t);
+    mp_new_number_clone(mp->previous_x, mp_zero_t);
+    mp_new_number_clone(mp->previous_y, mp_zero_t);
 
     mp_new_number(mp->cur_t);
     mp_new_number(mp->cur_tt);
@@ -32203,6 +32593,7 @@ static void mp_initialize_tables(MP mp)
     set_internal_name(mp_intersection_precision_internal, mp_strdup("intersectionprecision"));
     set_internal_name(mp_join_tolerance_internal,         mp_strdup("jointolerance"));
     set_internal_name(mp_single_quote_mode_internal,      mp_strdup("singlequotemode"));
+    set_internal_name(mp_prune_options_internal,          mp_strdup("pruneoptions"));
 
     /*tex
         Relatively siumple initializations:

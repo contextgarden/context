@@ -2259,8 +2259,27 @@ We used to have the \type {slunicode} library available but as most of it is not
 used and because it has a somewhat fuzzy state, we will no longer rely on it. In
 fact we only used a few functions in the \type {utf} namespace so as \CONTEXT\
 user you'd better stick to what is presented here. You don't have to worry how
-they are implemented. Depending on the version of \LUATEX\ it can be that a
-library, a native function, or \LPEG is used.
+they are implemented. Depending on the version of \LUATEX\ cq.\ \LUAMETATEX\ it
+can be that a library, a native function, or \LPEG is used.
+
+In \LUA\ 5.5 we have a \type {utf8} library with some helpers like \typ {char},
+\typ {charpattern}, \typ {codes}, \typ {codepoint}, \typ {len} and \typ {offset}.
+Here are a few examples:
+
+\starttyping[option=LUA]
+print(utf8.len("ãbcdêfgh"))
+print(utf8.len("ãbcdêfgh",3))
+print(utf8.len("ãbcdêfgh",3,4))
+print(utf8.codepoint("ãbcdêfgh",3,5))
+print(utf8.offset("ãbcdêfgh",3,4))
+print(utf8.codepoint("ãbcdêfgh",
+    utf8.offset("ãbcdêfgh",3,3),
+    utf8.offset("ãbcdefgh",3,4)))
+\stoptyping
+
+We don't use these in \CONTEXT, as we had our own helpers around un the \type
+{utf}, \typ {string}, \typ {table}, \typ {lpeg} and other namespaces already and
+these perform quite well.
 
 \startsummary[title={char byte}]
 
@@ -2305,7 +2324,7 @@ numbers. Negative numbers count from the end of the string.
 
 \stopsummary
 
-\startsummary[title={len}]
+\startsummary[title={len length chrlen}]
 
 There are probably not that many people that can instantly see how many bytes the
 string in the following example takes:
@@ -2322,6 +2341,74 @@ in less characters, effectively the source of a Latin or \CJK\ document will not
 differ that much.
 
 \ShowLuaExampleThree {utf} {len} {"ÒÓÔÕÖòóôõö"}
+\ShowLuaExampleThree {utf} {len} {"OOOOOooooo"}
+
+The \type {length} function is just an equivalent. The \type {chrlen}
+helper takes a \UNICODE\ slot:
+
+\ShowLuaExampleThree {utf} {chrlen} {utf.byte("e")}
+\ShowLuaExampleThree {utf} {chrlen} {utf.byte("ê")}
+
+\stopsummary
+
+\startsummary[title={count}]
+
+These two exmaples demonstrate that this function returns the number of
+occurrences:
+
+\ShowLuaExampleThree {utf} {count} {"eêêêêe","e"}
+\ShowLuaExampleThree {utf} {count} {"eêêêêe","ê"}
+
+It actually checks for a pattern:
+
+\ShowLuaExampleThree {utf} {count} {"eêêêêe","eê"}
+
+\stopsummary
+
+\startsummary[title={ustring xstring tocodes toentities}]
+
+For tracing purposes we have these helpers:
+
+\ShowLuaExampleThree {utf} {ustring}    {"ê"}
+\ShowLuaExampleThree {utf} {xstring}    {"ê"}
+\ShowLuaExampleThree {utf} {tocodes}    {"eêe"}
+\ShowLuaExampleThree {utf} {toentities} {"eêe"}
+
+\stopsummary
+
+\startsummary[title={split splitlines totable}]
+
+We have a few splitters. The \type {split} functions gives a table of characters,
+optionally without spaces:
+
+\ShowLuaExampleNine {utf} {split} {"e ê e"}
+\ShowLuaExampleNine {utf} {split} {"e ê e",true} % ignores spaces
+
+We can also split into lines:
+
+\ShowLuaExampleNine {utf} {splitlines} {"eê\010e\010ê"}
+
+This one also keeps the initial byte order marker:
+
+\ShowLuaExampleNine {utf} {totable}    {"eêe"}        % keeps bom
+
+\stopsummary
+
+\startsummary[title={sub}]
+
+Like \type {string.sub} we can slice of a substring:
+
+\ShowLuaExampleThree {utf} {sub}    {"eêêe",2,3}
+
+\stopsummary
+
+\startsummary[title={toeight filetype}]
+
+The first one returns a\ \UTF8\ string from a 8, 16 or 32 bit \UTF\ sequence. The
+second one returns the type of \UTF:
+
+\ShowLuaExampleThree {utf} {toeight}   {"eêêe"}
+\ShowLuaExampleThree {utf} {filetype}  {"eêêe"}
 
 \stopsummary
 
@@ -3258,6 +3345,31 @@ local locations = dir.collectpattern("t:/sources","*.lua",true) -- result
 
 \stopsection
 
+\startsection[title=lfs]
+
+In \LUATEX\ we have the so called \quotation {Lua File System} library but in
+\LUAMETATEX\ that has been replaced. However, we still have that namespace,
+mainly because there can be references to its functions all over the place. You
+only need these when the \type {file} and \type {dir} collections lack similar
+helpers. \footnote {Right from the start functions that deal with files and other
+operating system specifics have been written in a way so that \MSWINDOWS\ 16 bit
+\UNICODE\ deals with them properly. Users can use \UTF8\ as everywhere in the
+engine and translation back and forth happen automatically. This is different
+from \LUATEX, although that might of course change at some point.} This library
+is discussed in the \LUAMETATEX\ manual.
+
+% attributes modification
+% chdir mkdir mkdirs mkdirs rmdir
+% currentdir
+% walkdir dir
+% isdir isfile isfound
+% isreadabledir isreadablefile iswriteabledir iswriteablefile
+% setexecutable
+% link readlink symlink symlinktarget
+% touch
+
+\stopsection
+
 \startsection[title=URL]
 
 \startsummary[title={split hashed construct}]
@@ -3587,7 +3699,7 @@ Here we pass a day, month and year (in that order):
 This is just a checker:
 
 \starttyping
-local year, mnonth, day = os.validdate(year,month,day)
+local year, month, day = os.validdate(year,month,day)
 \stoptyping
 
 \stopsummary

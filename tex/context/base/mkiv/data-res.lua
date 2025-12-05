@@ -1987,7 +1987,6 @@ function resolvers.dowithfilesintree(pattern,handle,before,after) -- will move, 
         local blobtype = hash.type
         local blobpath = hash.name
         if blobtype and blobpath then
-            local total   = 0
             local checked = 0
             local done    = 0
             if before then

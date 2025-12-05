@@ -198,7 +198,7 @@ function node.usesfont           (n,f) return usesfont(todirect(n),f)          e
 function node.hasglyph           (n)   return hasglyph(todirect(n))            end
 function node.protrusionskippable(n)   return protrusionskippable(todirect(n)) end
 
-local makeextensible = direct.make_extensible
+local makeextensible = direct.makeextensible
 local lastnode       = direct.lastnode
 
 function node.makeextensible(...) local n = makeextensible(...) return n and tonode(n) or nil end

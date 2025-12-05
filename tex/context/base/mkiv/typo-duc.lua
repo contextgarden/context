@@ -15,6 +15,8 @@ if not modules then modules = { } end modules ['typo-duc'] = {
 -- support. However, in the meantime performance got a bit better and this third variant is again
 -- some 10% faster than the second variant.
 
+-- In 2025 Udi Fogiel cooked up a solution for unbalanced dir nodes. 
+
 -- todo (cf html):
 --
 -- normal            The element does not offer a additional level of embedding with respect to the bidirectional algorithm. For inline elements implicit reordering works across element boundaries.
@@ -31,7 +33,7 @@ if not modules then modules = { } end modules ['typo-duc'] = {
 -- todo: no need for a max check
 -- todo: collapse bound similar ranges (not ok yet)
 -- todo: combine some sweeps
--- todo: removing is not needed when we inject at the same spot (only chnage the dir property)
+-- todo: removing is not needed when we inject at the same spot (only change the dir property)
 -- todo: isolated runs (isolating runs are similar to bidi=local in the basic analyzer)
 
 -- todo: check unicode addenda (from the draft):
@@ -86,6 +88,7 @@ local new_direction        = nodepool.direction
 
 local nodecodes            = nodes.nodecodes
 local gluecodes            = nodes.gluecodes
+local dirvalues            = nodes.dirvalues
 
 local glyph_code           = nodecodes.glyph
 local glue_code            = nodecodes.glue
@@ -99,13 +102,12 @@ local penalty_code         = nodecodes.penalty
 local parfillskip_code     = gluecodes.parfillskip
 local parfillleftskip_code = gluecodes.parfillleftskip
 
-local dirvalues            = nodes.dirvalues
-local lefttoright_code     = dirvalues.lefttoright
-local righttoleft_code     = dirvalues.righttoleft
-
 local maximum_stack        = 0xFF
 
 local a_directions         = attributes.private('directions')
+
+local lefttoright_code     = dirvalues.lefttoright
+local righttoleft_code     = dirvalues.righttoleft
 
 local directions           = typesetters.directions
 local setcolor             = directions.setcolor
@@ -324,7 +326,7 @@ local function build_list(head,where)
             local skip = 0
             local last = id
             current    = getnext(current)
-            while n do
+            while current do
                 local id = getid(current)
                 if id ~= glyph_code and id ~= glue_code and id ~= dir_code then
                     skip    = skip + 1
@@ -640,7 +642,7 @@ local function resolve_weak(list,size,start,limit,orderbefore,orderafter)
                     break
                 end
             end
-            local rundirection = runstart == start and sor or list[runstart-1].direction
+            local rundirection = runstart == start and orderbefore or list[runstart-1].direction
             if rundirection ~= "en" then
                 rundirection = runlimit == limit and orderafter or list[runlimit+1].direction
             end
@@ -833,76 +835,65 @@ local function resolve_levels(list,size,baselevel,analyze_fences)
     end
 end
 
-local stack = { }
-
 local function insert_dir_points(list,size)
     -- L2, but no actual reversion is done, we simply annotate where
     -- begindir/endddir node will be inserted.
     local maxlevel = 0
-    local toggle   = true
     for i=1,size do
         local level = list[i].level
         if level > maxlevel then
             maxlevel = level
         end
     end
-    for level=0,maxlevel do
+    for level=1,maxlevel do
         local started  -- = false
-        local begindir -- = nil
-        local enddir   -- = nil
-        local prev     -- = nil
-        if toggle then
-            begindir = lefttoright_code
-            enddir   = lefttoright_code
-            toggle   = false
-        else
-            begindir = righttoleft_code
-            enddir   = righttoleft_code
-            toggle   = true
-        end
+        local runstart -- = nil
+        local runlast  -- = nil
+        local dircode     = (level % 2 == 1) and righttoleft_code or lefttoright_code
         for i=1,size do
             local entry = list[i]
             if entry.level >= level then
                 if not started then
-                    entry.begindir = begindir
-                    started        = true
+                    local b = entry.begindirs
+                    if b then
+                        b[#b+1] = dircode
+                    else
+                        entry.begindirs = { dircode }
+                    end
+                    runstart = i
+                    started = true
                 end
+                runlast = i
             else
-                if started then
-                    prev.enddir = enddir
-                    started     = false
+                if started and runlast then
+                    local l = list[runlast]
+                    local e = l.enddirs
+                    if e then
+                        e[#e+1] = dircode
+                    else
+                        l.enddirs = { dircode }
+                    end
+                    started = false
+                    runstart = nil
+                    runlast = nil
                 end
             end
-            prev = entry
         end
-    end
-    -- make sure to close the run at end of line
-    local last = list[size]
-    if not last.enddir then
-        local n = 0
-        for i=1,size do
-            local entry = list[i]
-            local e = entry.enddir
-            local b = entry.begindir
+     -- make sure to close the run at end of line
+        if started and runlast then
+            local l = list[runlast]
+            local e = l.enddirs
             if e then
-                n = n - 1
+                e[#e+1] = dircode
+            else
+                l.enddirs = { dircode }
             end
-            if b then
-                n = n + 1
-                stack[n] = b
-            end
-        end
-        if n > 0 then
-            if trace_list and n > 1 then
-                report_directions("unbalanced list")
-            end
-            last.enddir = stack[n]
         end
     end
 end
 
 -- We flag nodes that can be skipped when we see them again but because whatever
--- mechanism can injetc dir nodes that then are not flagged, we don't flag dir
+-- mechanism can inject dir nodes that then are not flagged, we don't flag dir
 -- nodes that we inject here.
 
 local function apply_to_list(list,size,head,pardir)
@@ -916,15 +907,28 @@ local function apply_to_list(list,size,head,pardir)
             report_directions("fatal error, size mismatch")
             break
         end
-        local id       = getid(current)
-        local entry    = list[index]
-        local begindir = entry.begindir
-        local enddir   = entry.enddir
-        local p = properties[current]
+        local id    = getid(current)
+        local entry = list[index]
+        local p     = properties[current]
         if p then
             p.directions = true
         else
             properties[current] = { directions = true }
+        end
+        local b = entry.begindirs
+        if b then
+            if id == par_code and startofpar(current) then
+                -- par should always be the 1st node, insert begindirs AFTER it
+                for i=1,#b do
+                    head, current = insertnodeafter(head,current,new_direction(b[i]))
+                end
+            else
+                -- insert begindirs before the current node
+                for i=1,#b do
+                    head = insertnodebefore(head,current,new_direction(b[i]))
+                end
+            end
+            entry.begindirs = nil
         end
         if id == glyph_code then
             local mirror = entry.mirror
@@ -948,31 +952,25 @@ local function apply_to_list(list,size,head,pardir)
         elseif id == hlist_code or id == vlist_code then
             setdirection(current,pardir) -- is this really needed?
         elseif id == glue_code then
-            -- Maybe I should also fix dua and dub but on the other hand ... why?
-            if enddir and getsubtype(current) == parfillskip_code then
-                -- insert the last enddir before \parfillskip glue
-                local c = current
-                local p = getprev(c)
-                if p and getid(p) == glue_code and getsubtype(p) == parfillleftskip_code then
-                    c = p
-                    p = getprev(c)
+            if getsubtype(current) == parfillskip_code then
+                local e = entry.enddirs
+                if e then
+                    -- insert the enddirs before \parfillskip glue
+                    local c = current
+                    local p = getprev(c)
+                    if p and getid(p) == glue_code and getsubtype(p) == parfillleftskip_code then
+                        c = p
+                        p = getprev(c)
+                    end
+                    if p and getid(p) == penalty_code then -- linepenalty
+                        c = p
+                    end
+                    for i=1,#e do
+                        head = insertnodebefore(head,c,new_direction(e[i],true))
+                    end
+                    entry.enddirs = nil
                 end
-                if p and getid(p) == penalty_code then -- linepenalty
-                    c = p
-                end
-                -- there is always a par nodes so head will stay
-                head = insertnodebefore(head,c,new_direction(enddir,true))
-                enddir = false
             end
-        elseif begindir then
-            if id == par_code and startofpar(current) then
-                -- par should always be the 1st node
-                head, current = insertnodeafter(head,current,new_direction(begindir))
-                begindir = nil
-            end
-        end
-        if begindir then
-            head = insertnodebefore(head,current,new_direction(begindir))
         end
         local skip = entry.skip
         if skip and skip > 0 then
@@ -986,8 +984,12 @@ local function apply_to_list(list,size,head,pardir)
                 end
             end
         end
-        if enddir then
-            head, current = insertnodeafter(head,current,new_direction(enddir,true))
+        -- insert all enddirs after the current node (in reverse order for proper nesting)
+        local e = entry.enddirs
+        if e then
+            for i = #e, 1, -1 do
+                head, current = insertnodeafter(head,current,new_direction(e[i],true))
+            end
         end
         if not entry.remove then
             current = getnext(current)

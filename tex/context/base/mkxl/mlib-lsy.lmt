@@ -15,7 +15,7 @@ if not modules then modules = { } end modules ['mlib-msy'] = {
 -- mechanism a bit more for performance.
 
 local P, R, S, C, Cs, lpegmatch = lpeg.P, lpeg.R, lpeg.S, lpeg.C, lpeg.Cs, lpeg.match
-local find, formatters = string.find, string.formatters
+local gsub, find, formatters = string.gsub, string.find, string.formatters
 local concat = table.concat
 
 local getparameterset = metapost.getparameterset
@@ -39,8 +39,14 @@ local report = logs.reporter("metapost")
 
 -- trackers.register("metapost.lsystems", function(v) trace = v end) -- file has to be loaded
 
+local valid = { }
+
 local function whatever(s)
-    return isstart and f_call_s(s) or f_call_n(s)
+    if valid[s] then
+        return isstart and f_call_s(s) or f_call_n(s)
+    else
+        return ""
+    end
 end
 
 local function options(s)
@@ -52,17 +58,17 @@ local function expression(s)
 end
 
 local parser = Cs( (
-      R("AZ","az")    / whatever
-      + P("+")        / "  mfun_lsystem_plus\n"
-      + P("-")        / "  mfun_lsystem_minus\n"
-      + P("?")        / "  mfun_lsystem_move\n"
-      + P("!")        / "  mfun_lsystem_draw\n"
-      + P("[")        / "  mfun_lsystem_push\n"
-      + P("]")        / "  mfun_lsystem_pop\n"
-      + P("*")        / "  mfun_lsystem_close\n"
-      + p_braces      / options
-      + p_parentheses / expression
-      + p_whitespace  / ""
+        R("AZ","az")      / whatever
+      + P("+")            / "  mfun_lsystem_plus\n"
+      + (P("-") + P("−")) / "  mfun_lsystem_minus\n" -- 0x2212
+      + P("?")            / "  mfun_lsystem_move\n"
+      + P("!")            / "  mfun_lsystem_draw\n"
+      + P("[")            / "  mfun_lsystem_push\n"
+      + P("]")            / "  mfun_lsystem_pop\n"
+      + P("*")            / "  mfun_lsystem_close\n"
+      + p_braces          / options
+      + p_parentheses     / expression
+      + p_whitespace      / ""
 ) ^1 )
 
 local definition = utilities.templates.replacer
@@ -85,7 +91,19 @@ function mp.lsystem_prepare()
     local isempty    = { }
     local trace      = parameters.trace
     parameters.isimage = false
+    valid = { }
+    if parameters.leftangle == parameters.rightangle then
+        for name, pattern in next, syntax do
+            local p = gsub(pattern,"%+%-","")
+            local p = gsub(p,"%-%+","")
+            if p ~= pattern then
+                report("l system %a can become %a",pattern,p)
+             -- syntax[name] = p
+            end
+        end
+    end
     for name, pattern in next, syntax do
+        valid[name] = true
         if find(pattern,"{") then
             parameters.isimage = true
         end
@@ -98,7 +116,8 @@ function mp.lsystem_prepare()
         isstart = name == "start"
         step = lpegmatch(parser,pattern)
         if not step then
-            step = "  mfun_lsystem_draw"
+            step = "  mfun_lsystem_draw\n"
+-- step = ""
         end
         if isempty[name] then
             if isempty[name] == "!" then
@@ -107,6 +126,7 @@ function mp.lsystem_prepare()
                 quit = "mfun_lsystem_move"
             else
                 quit = ""
+-- quit = "mfun_lsystem_draw"
             end
         elseif next(isempty) then
             quit = ""

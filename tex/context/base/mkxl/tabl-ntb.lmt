@@ -8,7 +8,6 @@ if not modules then modules = { } end modules ['tabl-ntb'] = {
 
 local context = context
 
-
 local nuts           = nodes.nuts
 local tonode         = nuts.tonode
 local getbox         = nuts.getbox

@@ -3342,6 +3342,7 @@ presetparameters "oscillated" [
   % method     =  2,
   % method     =  3,
     method     =  4,
+    scale      =  0,
 ] ;
 
 def lmt_oscillated = applyparameters "oscillated" "lmt_do_oscillated" enddef ;
@@ -3357,8 +3358,10 @@ vardef lmt_do_oscillated =
         mfun_oscillate_shape      := getparameter "path" ;
         mfun_oscillate_resolution := getparameter "resolution" ;
         mfun_oscillate_outline    := mfun_oscillate_outline xshifted - xpart llcorner mfun_oscillate_outline ;
-        mfun_oscillate_ratio      := arclength(mfun_oscillate_shape) / bbwidth(mfun_oscillate_outline) ;
-      % mfun_oscillate_ratio      := arclength(mfun_oscillate_shape) / xpart outlinedimensions ;
+        mfun_oscillate_ratio      := getparameter "scale" ;
+        if mfun_oscillate_ratio = 0 :
+          mfun_oscillate_ratio := arclength(mfun_oscillate_shape) / bbwidth(mfun_oscillate_outline) ;
+        fi
         mfun_oscillate_depth      := (zpart outlinedimensions) * mfun_oscillate_ratio - getparameter "yoffset" ;
         mfun_oscillate_stepsize   := getparameter "stepsize" ;
         if mfun_oscillate_stepsize = 0 :
@@ -3389,29 +3392,50 @@ vardef lmt_do_oscillated =
     )
 enddef ;
 
+%D For the moment here:
+
+newinternal defaultpruneoptions ;
+
+defaultpruneoptions := 0
+    +  1 % collapse_regular_regular_prune 0x01
+    +  2 % collapse_begin_regular_prune   0x02
+    +  4 % collapse_regular_end_prune     0x03
+    +  8 % collapse_begin_end_prune       0x04
+;
+
+permanent defaultpruneoptions ;
+
+pruneoptions := defaultpruneoptions ;
+
 %D Experimental l-system code (Mikael, Keith, Hans), don't use this yet!
 
 numeric mfun_lsystem_angle_p ;
 numeric mfun_lsystem_angle_m ;
 numeric mfun_lsystem_angle   ;
-numeric mfun_lsystem_size    ;
 
 boolean mfun_lsystem_busy    ; mfun_lsystem_busy  := false ;
 boolean mfun_lsystem_image   ; mfun_lsystem_image := false ;
 numeric mfun_lsystem_s_level ; mfun_lsystem_level := 0 ;
 
-numeric mfun_lsystem_x  ; mfun_lsystem_x  := 0 ;
-numeric mfun_lsystem_y  ; mfun_lsystem_y  := 0 ;
-boolean mfun_lsystem_b  ; mfun_lsystem_b  := false ;
+numeric mfun_lsystem_x ; mfun_lsystem_x := 0 ;
+numeric mfun_lsystem_y ; mfun_lsystem_y := 0 ;
+boolean mfun_lsystem_b ; mfun_lsystem_b := false ;
 
-pair    mfun_lsystem_s_point[];
-numeric mfun_lsystem_s_angle[];
-numeric mfun_lsystem_s_sx[];
-numeric mfun_lsystem_s_sy[];
+transform mfun_lsystem_s_cache[] ;
+transform mfun_lsystem_s_cache ;
 
+def mfun_lsystem_check_busy_no_l =
+%     if previousxy <> lastxy :
+%         -- lastxy
+%     fi
+enddef ;
+def mfun_lsystem_check_busy_no_c =
+    % curious :
+%     if previousxy <> lastxy : .. lastxy fi
+enddef ;
 def mfun_lsystem_check_busy_do =
     if not mfun_lsystem_busy :
-        hide(mfun_lsystem_busy := true ;)
+        hide(mfun_lsystem_busy := true)
         ;
         draw lastxy
     fi
@@ -3420,22 +3444,22 @@ enddef ;
 def mfun_lsystem_draw_l =
     mfun_lsystem_check_busy
     if mfun_lsystem_b :
-        hide(mfun_lsystem_b := false ;)
+        hide(mfun_lsystem_b := false)
         && xyrelative (
             mfun_lsystem_x,
             mfun_lsystem_y
         )
     fi
-    --
-    xyrelative (
-         cosd(mfun_lsystem_angle) * sx,
-       - sind(mfun_lsystem_angle) * sy
-    )
+        --
+        xyrelative (
+             cosd(mfun_lsystem_angle) * sx,
+           - sind(mfun_lsystem_angle) * sy
+        )
 enddef ;
 def mfun_lsystem_draw_c =
     mfun_lsystem_check_busy
     if mfun_lsystem_b :
-        hide(mfun_lsystem_b := false ;)
+        hide(mfun_lsystem_b := false)
         && xyrelative (
             mfun_lsystem_x,
             mfun_lsystem_y
@@ -3469,63 +3493,73 @@ def mfun_lsystem_move_do =
 enddef ;
 def mfun_lsystem_move  = hide(mfun_lsystem_move_do) enddef ;
 
-% todo : only dx dy when we have expressions
-
-def mfun_lsystem_push_do =
+vardef mfun_lsystem_push_do =
     mfun_lsystem_level := mfun_lsystem_level + 1 ;
-    mfun_lsystem_s_point[mfun_lsystem_level] := lastxy ;
-    mfun_lsystem_s_angle[mfun_lsystem_level] := mfun_lsystem_angle ;
-    mfun_lsystem_s_sx   [mfun_lsystem_level] := sx ;
-    mfun_lsystem_s_sy   [mfun_lsystem_level] := sy ;
+  % message("PUSH " & decimal mfun_lsystem_level);
+    mfun_lsystem_s_cache[mfun_lsystem_level] := ( sx, sy, mfun_lsystem_angle, lw, lastx, lasty ) ;
+    lastxy
 enddef ;
-def mfun_lsystem_pop_do =
-    sy := mfun_lsystem_s_sy[mfun_lsystem_level] ;
-    sx := mfun_lsystem_s_sx[mfun_lsystem_level] ;
-    mfun_lsystem_angle := mfun_lsystem_s_angle[mfun_lsystem_level] ;
+% vardef mfun_lsystem_pop_do =
+%     mfun_lsystem_s_cache := mfun_lsystem_s_cache[mfun_lsystem_level] ; % xx xy yx yy x y
+%     sx := xxpart mfun_lsystem_s_cache ;
+%     sy := xypart mfun_lsystem_s_cache ;
+%     mfun_lsystem_angle := yxpart mfun_lsystem_s_cache ;
+%     lw := yypart mfun_lsystem_s_cache ;
+%   % message("POP  " & decimal mfun_lsystem_level);
+%     mfun_lsystem_level := mfun_lsystem_level - 1 ;
+%     (xpart mfun_lsystem_s_cache, ypart mfun_lsystem_s_cache)
+% enddef ;
+vardef mfun_lsystem_pop_do =
+    mfun_lsystem_s_cache := mfun_lsystem_s_cache[mfun_lsystem_level] ;
+    sx := partone mfun_lsystem_s_cache ;
+    sy := parttwo mfun_lsystem_s_cache ;
+    mfun_lsystem_angle := partthree mfun_lsystem_s_cache ;
+    lw := partfour mfun_lsystem_s_cache ;
+  % message("POP  " & decimal mfun_lsystem_level);
     mfun_lsystem_level := mfun_lsystem_level - 1 ;
+    (partfive mfun_lsystem_s_cache, partsix mfun_lsystem_s_cache)
 enddef ;
 def mfun_lsystem_push =
     mfun_lsystem_check_busy
-    -- lastxy
-    hide(mfun_lsystem_push_do)
+    --
+    mfun_lsystem_push_do
 enddef ;
-def mfun_lsystem_pop  =
+def mfun_lsystem_pop =
     mfun_lsystem_check_busy
-%     -- lastxy
-    && mfun_lsystem_s_point[mfun_lsystem_level]
-    hide(mfun_lsystem_pop_do)
+if previousxy <> lastxy  :
+        -- lastxy
+fi
+    && mfun_lsystem_pop_do
 enddef ;
 
 def mfun_lsystem_close =
-    mfun_lsystem_check_busy
-    && cycle
+    mfun_lsystem_check_busy && cycle
 enddef ;
 
 def mfun_lsystem_options(text t) =
     if mfun_lsystem_busy :
         mfun_lsystem_draw_options
         ;
-        hide(mfun_lsystem_busy := false ;)
+        hide(def mfun_lsystem_draw_options = t enddef ; mfun_lsystem_busy := false)
+    else :
+        hide(def mfun_lsystem_draw_options = t enddef)
     fi
-    hide(
-        def mfun_lsystem_draw_options = t enddef
-    )
 enddef ;
 
 def mfun_lsystem_expression(text t) =
-    hide(
-        t ;
-    )
+    hide(t)
 enddef ;
 
 presetparameters "lsystem" [
     angle     = 0,
+    rotation  = -90,
     start     = "start",
     curved    = false,
     iteration = 2,
     scale     = 1,
     isimage   = false,
     linewidth = 0.1,
+    prune     = false,
     syntax    = [
         start = "R",
         R     = "L",
@@ -3541,7 +3575,7 @@ def lmt_load_mlib_lsy =
 enddef ;
 
 vardef lmt_do_lsystem =
-    save sx, sy, lw;
+    save sx, sy, lw, prune ; boolean prune ;
     lmt_load_mlib_lsy ;
     % ready
     pushparameters "lsystem" ;
@@ -3554,21 +3588,26 @@ vardef lmt_do_lsystem =
     sx := 1 ;
     sy := 1 ;
     lw := getparameter("linewidth") ;
+    prune := getparameter("prune") ;
+    if prune :
+        message("pruning lsystem") ;
+    fi
     mfun_lsystem_b       := false ;
     mfun_lsystem_busy    := false ;
     mfun_lsystem_image   := getparameter("isimage") ;
-    mfun_lsystem_angle_p := getparameter "angle" ;
-    mfun_lsystem_angle_m := -mfun_lsystem_angle_p ;
-    mfun_lsystem_angle   := if mfun_lsystem_angle_p <> 0 : -90  else : 0 fi ;
-    mfun_lsystem_minus ;
-    mfun_lsystem_plus ;
+    mfun_lsystem_angle_p := getparameterdefault "rightangle" (getparameterdefault "angle") ;
+    mfun_lsystem_angle_m := getparameterdefault "leftangle"  (-mfun_lsystem_angle_p) ;
+    mfun_lsystem_angle   := if mfun_lsystem_angle_p <> 0 : (getparameter "rotation") else : 0 fi ;
     if (getparameter("curved")) :
         let mfun_lsystem_draw = mfun_lsystem_draw_c ;
+        let mfun_lsystem_check_busy = mfun_lsystem_check_busy_no_c ;
     else :
         let mfun_lsystem_draw = mfun_lsystem_draw_l ;
+        let mfun_lsystem_check_busy = mfun_lsystem_check_busy_no_l ;
     fi ;
     if mfun_lsystem_image :
         let mfun_lsystem_check_busy = mfun_lsystem_check_busy_do ;
+if prune : prunesingularities fi
         image (
             def mfun_lsystem_draw_options = enddef ;
             mfun_lsystem_start(getparameter "iteration")
@@ -3579,10 +3618,12 @@ vardef lmt_do_lsystem =
         )
     else :
         let mfun_lsystem_check_busy = relax ;
+if prune : prunesingularities fi
         (origin mfun_lsystem_start(getparameter "iteration"))
+
     fi
     if (getparameter "scale") <> 1 :
         scaled (getparameter "scale")
     fi
-    hide(popparameters ;)
+    hide(popparameters)
 enddef ;

@@ -1154,20 +1154,25 @@ local function analyzefiles(olddata)
     -- problem .. this will not take care of duplicates
 
     local function withtree(suffix)
-        resolvers.dowithfilesintree(".*%." .. suffix .. "$", function(method,root,path,name)
-            if method == "file" or method == "tree" then
-                local completename = root .."/" .. path .. "/" .. name
-                completename = resolveprefix(completename) -- no shortcut
-                identify(completename,name,suffix,name)
-                return true
+        resolvers.dowithfilesintree(
+            ".*%." .. suffix .. "$",
+            function(method,root,path,name)
+                if method == "file" or method == "tree" then
+                    local completename = root .."/" .. path .. "/" .. name
+                    completename = resolveprefix(completename) -- no shortcut
+                    identify(completename,name,suffix,name)
+                    return true
+                end
+            end,
+            function(blobtype,blobpath,pattern)
+                blobpath = resolveprefix(blobpath) -- no shortcut
+                report_names("scanning path %a for %s files",blobpath,suffix)
+            end,
+            function(blobtype,blobpath,pattern,checked,done)
+                blobpath = resolveprefix(blobpath) -- no shortcut
+                report_names("%s %s files checked, %s okay",checked,suffix,done)
             end
-        end, function(blobtype,blobpath,pattern)
-            blobpath = resolveprefix(blobpath) -- no shortcut
-            report_names("scanning path %a for %s files",blobpath,suffix)
-        end, function(blobtype,blobpath,pattern,total,checked,done)
-            blobpath = resolveprefix(blobpath) -- no shortcut
-            report_names("%s %s files checked, %s okay",checked,suffix,done)
-        end)
+        )
     end
 
     local function withlsr(suffix) -- all trees

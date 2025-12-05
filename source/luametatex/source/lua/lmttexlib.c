@@ -6645,7 +6645,8 @@ static int texlib_getdiscpartvalues(lua_State *L)
 
 static int texlib_getglyphdiscvalues(lua_State *L)
 {
-    lua_createtable(L, 5, 0);
+    lua_createtable(L, 5, 1);
+    lua_set_string_by_index(L, glyph_disc_unset,       "unset");
     lua_set_string_by_index(L, glyph_disc_normal,      "normal");
     lua_set_string_by_index(L, glyph_disc_explicit,    "explicit");
     lua_set_string_by_index(L, glyph_disc_automatic,   "automatic");

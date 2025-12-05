@@ -553,30 +553,30 @@ typedef enum mp_variable_type {
 } mp_variable_type;
 
 typedef enum mp_name_type_type {
-    mp_root_operation,              /* |name_type| at the top level of a variable */
-    mp_saved_root_operation,        /* same, when the variable has been saved */
-    mp_structured_root_operation,   /* |name_type| where a |mp_structured| branch occurs */
-    mp_subscript_operation,         /* |name_type| in a subscript node */
-    mp_attribute_operation,         /* |name_type| in an attribute node */
-    mp_x_part_operation,            /* |name_type| in the |xpart| of a node */
-    mp_y_part_operation,            /* |name_type| in the |ypart| of a node */
-    mp_z_part_operation,            
-    mp_w_part_operation,            
-    mp_xx_part_operation,           /* |name_type| in the |xxpart| of a node */
-    mp_xy_part_operation,           /* |name_type| in the |xypart| of a node */
-    mp_yx_part_operation,           /* |name_type| in the |yxpart| of a node */
-    mp_yy_part_operation,           /* |name_type| in the |yypart| of a node */
-    mp_red_part_operation,          /* |name_type| in the |redpart| of a node */
-    mp_green_part_operation,        /* |name_type| in the |greenpart| of a node */
-    mp_blue_part_operation,         /* |name_type| in the |bluepart| of a node */
-    mp_cyan_part_operation,         /* |name_type| in the |redpart| of a node */
-    mp_magenta_part_operation,      /* |name_type| in the |greenpart| of a node */
-    mp_yellow_part_operation,       /* |name_type| in the |bluepart| of a node */
-    mp_black_part_operation,        /* |name_type| in the |greenpart| of a node */
-    mp_grey_part_operation,         /* |name_type| in the |greypart| of a node */
-    mp_capsule_operation,           /* |name_type| in stashed-away subexpressions */
-    mp_token_operation,             /* |name_type| in a numeric token or string token */
-    mp_boolean_type_operation,      /* the order needs to match the types (as we use deltas) ! */
+    mp_root_operation,                /* |name_type| at the top level of a variable */
+    mp_saved_root_operation,          /* same, when the variable has been saved */
+    mp_structured_root_operation,     /* |name_type| where a |mp_structured| branch occurs */
+    mp_subscript_operation,           /* |name_type| in a subscript node */
+    mp_attribute_operation,           /* |name_type| in an attribute node */
+    mp_x_part_operation,              /* |name_type| in the |xpart| of a node */
+    mp_y_part_operation,              /* |name_type| in the |ypart| of a node */
+    mp_z_part_operation,             
+    mp_w_part_operation,             
+    mp_xx_part_operation,             /* |name_type| in the |xxpart| of a node */
+    mp_xy_part_operation,             /* |name_type| in the |xypart| of a node */
+    mp_yx_part_operation,             /* |name_type| in the |yxpart| of a node */
+    mp_yy_part_operation,             /* |name_type| in the |yypart| of a node */
+    mp_red_part_operation,            /* |name_type| in the |redpart| of a node */
+    mp_green_part_operation,          /* |name_type| in the |greenpart| of a node */
+    mp_blue_part_operation,           /* |name_type| in the |bluepart| of a node */
+    mp_cyan_part_operation,           /* |name_type| in the |redpart| of a node */
+    mp_magenta_part_operation,        /* |name_type| in the |greenpart| of a node */
+    mp_yellow_part_operation,         /* |name_type| in the |bluepart| of a node */
+    mp_black_part_operation,          /* |name_type| in the |greenpart| of a node */
+    mp_grey_part_operation,           /* |name_type| in the |greypart| of a node */
+    mp_capsule_operation,             /* |name_type| in stashed-away subexpressions */
+    mp_token_operation,               /* |name_type| in a numeric token or string token */
+    mp_boolean_type_operation,        /* the order needs to match the types (as we use deltas) ! */
     mp_string_type_operation,
     mp_pen_type_operation,
     mp_nep_type_operation,
@@ -589,153 +589,160 @@ typedef enum mp_name_type_type {
     mp_numeric_type_operation,
     /* Symbolic nodes also have |name_type|, which is a different enumeration */
     mp_normal_operation,
-    mp_internal_operation,          /* for values of internals */
-    mp_macro_operation,             /* for macro names */
-    mp_expr_operation,              /* for macro parameters if type |expr| */
-    mp_suffix_operation,            /* for macro parameters if type |suffix| */
-    mp_text_operation,              /* for macro parameters if type |text| */
+    mp_internal_operation,            /* for values of internals */
+    mp_macro_operation,               /* for macro names */
+    mp_expr_operation,                /* for macro parameters if type |expr| */
+    mp_suffix_operation,              /* for macro parameters if type |suffix| */
+    mp_text_operation,                /* for macro parameters if type |text| */
     /* snippet: operation codes */
-    mp_true_operation,              /* operation code for |true| */
-    mp_false_operation,             /* operation code for |false| */
-    mp_null_picture_operation,      /* operation code for |nullpicture| */
-    mp_null_pen_operation,          /* operation code for |nullpen| */
-    mp_read_string_operation,       /* operation code for |readstring| */
-    mp_pen_circle_operation,        /* operation code for |pencircle| */
-    mp_normal_deviate_operation,    /* operation code for |normaldeviate| */
-    mp_read_from_operation,         /* operation code for |readfrom| */
-    mp_close_from_operation,        /* operation code for |closefrom| */
-    mp_odd_operation,               /* operation code for |odd| */
-    mp_known_operation,             /* operation code for |known| */
-    mp_unknown_operation,           /* operation code for |unknown| */
-    mp_not_operation,               /* operation code for |not| */
-    mp_decimal_operation,           /* operation code for |decimal| */
-    mp_reverse_operation,           /* operation code for |reverse| */
-    mp_uncycle_operation,           /* operation code for |uncycle| */
-    mp_make_path_operation,         /* operation code for |makepath| */
-    mp_make_pen_operation,          /* operation code for |makepen| */
-    mp_make_nep_operation,          /* operation code for |makenep| */
-    mp_convexed_operation,          /* operation code for |convexed| */
-    mp_uncontrolled_operation,      /* operation code for |uncontrolled| */
-    mp_oct_operation,               /* operation code for |oct| */
-    mp_hex_operation,               /* operation code for |hex| */
-    mp_ASCII_operation,             /* operation code for |ASCII| */
-    mp_char_operation,              /* operation code for |char| */
-    mp_segments_operation,          /* operation code for |segments| */
-    mp_length_operation,            /* operation code for |length| */
-    mp_no_length_operation,         /* operation code for |nolength| */
-    mp_turning_operation,           /* operation code for |turningnumber| */
-    mp_color_model_operation,       /* operation code for |colormodel| */
-    mp_path_part_operation,         /* operation code for |pathpart| */
-    mp_pen_part_operation,          /* operation code for |penpart| */
-    mp_dash_part_operation,         /* operation code for |dashpart| */
-    mp_prescript_part_operation,    /* operation code for |prescriptpart| */
-    mp_postscript_part_operation,   /* operation code for |postscriptpart| */
-    mp_stacking_part_operation,     /* operation code for |stackingpart| */
-    mp_sqrt_operation,              /* operation code for |sqrt| */
-    mp_norm_operation,              /* operation code for |knownnorm| */
-    mp_m_exp_operation,             /* operation code for |mexp| */
-    mp_m_log_operation,             /* operation code for |mlog| */
-    mp_sin_d_operation,             /* operation code for |sind| */
-    mp_cos_d_operation,             /* operation code for |cosd| */
-    mp_floor_operation,             /* operation code for |floor| */
-    mp_uniform_deviate_operation,   /* operation code for |uniformdeviate| */
-    mp_ll_corner_operation,         /* operation code for |llcorner| */
-    mp_lr_corner_operation,         /* operation code for |lrcorner| */
-    mp_ul_corner_operation,         /* operation code for |ulcorner| */
-    mp_ur_corner_operation,         /* operation code for |urcorner| */
-    mp_corners_operation,           /* operation code for |corners| */
-    mp_center_of_operation,         /* operation code for |centerof| */
-    mp_center_of_mass_operation,    /* operation code for |centerofmass| */
-    mp_x_range_operation,           /* operation code for |xrange| */
-    mp_y_range_operation,           /* operation code for |yrange| */
-    mp_delta_point_operation,       /* operation code for |deltapoint| */
-    mp_delta_precontrol_operation,  /* operation code for |deltaprecontrol| */
-    mp_delta_postcontrol_operation, /* operation code for |deltapostcontrol| */
-    mp_delta_direction_operation,   /* operation code for |deltadirection| */
-    mp_arc_length_operation,        /* operation code for |arclength| */
-    mp_angle_operation,             /* operation code for |angle| */
-    mp_cycle_operation,             /* operation code for |cycle| */
-    mp_no_cycle_operation,          /* operation code for |nocycle| */
-    mp_x_relative_operation,        /* operation code for |xrelative| */
-    mp_y_relative_operation,        /* operation code for |yrelative| */
-    mp_xy_relative_operation,       /* operation code for |xyrelative| */
-    mp_x_absolute_operation,        /* operation code for |xabsolute| */
-    mp_y_absolute_operation,        /* operation code for |yabsolute| */
-    mp_xy_absolute_operation,       /* operation code for |xyabsolute| */
-    mp_filled_operation,            /* operation code for |filled| */
-    mp_stroked_operation,           /* operation code for |stroked| */
-    mp_clipped_operation,           /* operation code for |clipped| */
-    mp_grouped_operation,           /* operation code for |bounded| */
-    mp_bounded_operation,           /* operation code for |grouped| */
-    mp_plus_operation,              /* operation code for \.+ */
-    mp_minus_operation,             /* operation code for \.- */
-    mp_times_operation,             /* operation code for \.* */
-    mp_over_operation,              /* operation code for \./ */
-    mp_power_operation,             /* operation code for \.^ */
-    mp_pythag_add_operation,        /* operation code for |++| */
-    mp_pythag_sub_operation,        /* operation code for |+-+| */
-    mp_dotprod_operation,           /* operation code for |knowndotprod| */
-    mp_crossprod_operation,         /* operation code for |knowncrossprod| */
-    mp_div_operation,               /* operation code for |knowndiv| */
-    mp_mod_operation,               /* operation code for |knownmod| */
-    mp_or_operation,                /* operation code for |or| */
-    mp_and_operation,               /* operation code for |and| */
-    mp_less_than_operation,         /* operation code for \.< */
-    mp_less_or_equal_operation,     /* operation code for |<=| */
-    mp_greater_than_operation,      /* operation code for \.> */
-    mp_greater_or_equal_operation,  /* operation code for |>=| */
-    mp_equal_operation,             /* operation code for \.= */
-    mp_unequal_operation,           /* operation code for |<>| */
-    mp_concat_operation,            /* operation code for \.\& */
-    mp_just_append_operation,       /* operation code for \.\&\& */
-    mp_tolerant_concat_operation,   /* operation code for \.\&\&\& */
-    mp_tolerant_append_operation,   /* operation code for \.\&\&\&\& */
-    mp_rotated_operation,           /* operation code for |rotated| */
-    mp_slanted_operation,           /* operation code for |slanted| */
-    mp_scaled_operation,            /* operation code for |scaled| */
-    mp_shifted_operation,           /* operation code for |shifted| */
-    mp_transformed_operation,       /* operation code for |transformed| */
-    mp_x_scaled_operation,          /* operation code for |xscaled| */
-    mp_y_scaled_operation,          /* operation code for |yscaled| */
-    mp_z_scaled_operation,          /* operation code for |zscaled| */
-    mp_xy_scaled_operation,         /* operation code for |xyscaled| */
+    mp_true_operation,                /* operation code for |true| */
+    mp_false_operation,               /* operation code for |false| */
+    mp_null_picture_operation,        /* operation code for |nullpicture| */
+    mp_null_pen_operation,            /* operation code for |nullpen| */
+    mp_read_string_operation,         /* operation code for |readstring| */
+    mp_pen_circle_operation,          /* operation code for |pencircle| */
+    mp_normal_deviate_operation,      /* operation code for |normaldeviate| */
+    mp_read_from_operation,           /* operation code for |readfrom| */
+    mp_close_from_operation,          /* operation code for |closefrom| */
+    mp_odd_operation,                 /* operation code for |odd| */
+    mp_known_operation,               /* operation code for |known| */
+    mp_unknown_operation,             /* operation code for |unknown| */
+    mp_not_operation,                 /* operation code for |not| */
+    mp_decimal_operation,             /* operation code for |decimal| */
+    mp_reverse_operation,             /* operation code for |reverse| */
+    mp_uncycle_operation,             /* operation code for |uncycle| */
+    mp_singularity_operation,         /* operation code for |singularity| */
+    mp_make_path_operation,           /* operation code for |makepath| */
+    mp_make_pen_operation,            /* operation code for |makepen| */
+    mp_make_nep_operation,            /* operation code for |makenep| */
+    mp_convexed_operation,            /* operation code for |convexed| */
+    mp_uncontrolled_operation,        /* operation code for |uncontrolled| */
+    mp_oct_operation,                 /* operation code for |oct| */
+    mp_hex_operation,                 /* operation code for |hex| */
+    mp_ASCII_operation,               /* operation code for |ASCII| */
+    mp_char_operation,                /* operation code for |char| */
+    mp_segments_operation,            /* operation code for |segments| */
+    mp_length_operation,              /* operation code for |length| */
+    mp_prune_singularities_operation,            
+    mp_no_length_operation,           /* operation code for |nolength| */
+    mp_turning_operation,             /* operation code for |turningnumber| */
+    mp_color_model_operation,         /* operation code for |colormodel| */
+    mp_path_part_operation,           /* operation code for |pathpart| */
+    mp_pen_part_operation,            /* operation code for |penpart| */
+    mp_dash_part_operation,           /* operation code for |dashpart| */
+    mp_prescript_part_operation,      /* operation code for |prescriptpart| */
+    mp_postscript_part_operation,     /* operation code for |postscriptpart| */
+    mp_stacking_part_operation,       /* operation code for |stackingpart| */
+    mp_sqrt_operation,                /* operation code for |sqrt| */
+    mp_norm_operation,                /* operation code for |knownnorm| */
+    mp_m_exp_operation,               /* operation code for |mexp| */
+    mp_m_log_operation,               /* operation code for |mlog| */
+    mp_sin_d_operation,               /* operation code for |sind| */
+    mp_cos_d_operation,               /* operation code for |cosd| */
+    mp_floor_operation,               /* operation code for |floor| */
+    mp_uniform_deviate_operation,     /* operation code for |uniformdeviate| */
+    mp_ll_corner_operation,           /* operation code for |llcorner| */
+    mp_lr_corner_operation,           /* operation code for |lrcorner| */
+    mp_ul_corner_operation,           /* operation code for |ulcorner| */
+    mp_ur_corner_operation,           /* operation code for |urcorner| */
+    mp_corners_operation,             /* operation code for |corners| */
+    mp_center_of_operation,           /* operation code for |centerof| */
+    mp_center_of_mass_operation,      /* operation code for |centerofmass| */
+    mp_x_range_operation,             /* operation code for |xrange| */
+    mp_y_range_operation,             /* operation code for |yrange| */
+    mp_delta_point_operation,         /* operation code for |deltapoint| */
+    mp_delta_precontrol_operation,    /* operation code for |deltaprecontrol| */
+    mp_delta_postcontrol_operation,   /* operation code for |deltapostcontrol| */
+    mp_delta_direction_operation,     /* operation code for |deltadirection| */
+    mp_delta_arclength_operation,     /* operation code for |deltaarclength| */
+    mp_arc_length_operation,          /* operation code for |arclength| */
+    mp_angle_operation,               /* operation code for |angle| */
+    mp_cycle_operation,               /* operation code for |cycle| */
+    mp_recycle_operation,             /* operation code for |cycle| */
+    mp_no_cycle_operation,            /* operation code for |nocycle| */
+    mp_x_relative_operation,          /* operation code for |xrelative| */
+    mp_y_relative_operation,          /* operation code for |yrelative| */
+    mp_xy_relative_operation,         /* operation code for |xyrelative| */
+    mp_x_absolute_operation,          /* operation code for |xabsolute| */
+    mp_y_absolute_operation,          /* operation code for |yabsolute| */
+    mp_xy_absolute_operation,         /* operation code for |xyabsolute| */
+    mp_filled_operation,              /* operation code for |filled| */
+    mp_stroked_operation,             /* operation code for |stroked| */
+    mp_clipped_operation,             /* operation code for |clipped| */
+    mp_grouped_operation,             /* operation code for |bounded| */
+    mp_bounded_operation,             /* operation code for |grouped| */
+    mp_plus_operation,                /* operation code for \.+ */
+    mp_minus_operation,               /* operation code for \.- */
+    mp_times_operation,               /* operation code for \.* */
+    mp_over_operation,                /* operation code for \./ */
+    mp_power_operation,               /* operation code for \.^ */
+    mp_pythag_add_operation,          /* operation code for |++| */
+    mp_pythag_sub_operation,          /* operation code for |+-+| */
+    mp_dotprod_operation,             /* operation code for |knowndotprod| */
+    mp_crossprod_operation,           /* operation code for |knowncrossprod| */
+    mp_div_operation,                 /* operation code for |knowndiv| */
+    mp_mod_operation,                 /* operation code for |knownmod| */
+    mp_or_operation,                  /* operation code for |or| */
+    mp_and_operation,                 /* operation code for |and| */
+    mp_less_than_operation,           /* operation code for \.< */
+    mp_less_or_equal_operation,       /* operation code for |<=| */
+    mp_greater_than_operation,        /* operation code for \.> */
+    mp_greater_or_equal_operation,    /* operation code for |>=| */
+    mp_equal_operation,               /* operation code for \.= */
+    mp_unequal_operation,             /* operation code for |<>| */
+    mp_concat_operation,              /* operation code for \.\& */
+    mp_just_append_operation,         /* operation code for \.\&\& */
+    mp_tolerant_concat_operation,     /* operation code for \.\&\&\& */
+    mp_tolerant_append_operation,     /* operation code for \.\&\&\&\& */
+    mp_rotated_operation,             /* operation code for |rotated| */
+    mp_slanted_operation,             /* operation code for |slanted| */
+    mp_scaled_operation,              /* operation code for |scaled| */
+    mp_shifted_operation,             /* operation code for |shifted| */
+    mp_transformed_operation,         /* operation code for |transformed| */
+    mp_x_scaled_operation,            /* operation code for |xscaled| */
+    mp_y_scaled_operation,            /* operation code for |yscaled| */
+    mp_z_scaled_operation,            /* operation code for |zscaled| */
+    mp_xy_scaled_operation,           /* operation code for |xyscaled| */
     mp_bytemap_scaled_operation,
-    mp_uncycled_operation,          /* operation code for |uncycled| */
-    mp_intertimes_operation,        /* operation code for |intersectiontimes| */
-    mp_intertimes_list_operation,   /* operation code for |intersectiontimeslist| */
-    mp_double_dot_operation,        /* operation code for improper |..| */
+    mp_uncycled_operation,            /* operation code for |uncycled| */
+    mp_intertimes_operation,          /* operation code for |intersectiontimes| */
+    mp_intertimes_list_operation,     /* operation code for |intersectiontimeslist| */
+    mp_double_dot_operation,          /* operation code for improper |..| */
     /* the |of| operations: */
-    mp_substring_operation,         /* operation code for |substring| */
-    mp_subpath_operation,           /* operation code for |subpath| */
-    mp_segment_operation,           /* operation code for |subpath| */
-    mp_direction_time_operation,    /* operation code for |directiontime| */
-    mp_point_operation,             /* operation code for |point| */
-    mp_precontrol_operation,        /* operation code for |precontrol| */
-    mp_postcontrol_operation,       /* operation code for |postcontrol| */
-    mp_direction_operation,         /* operation code for |direction| */
+    mp_substring_operation,           /* operation code for |substring| */
+    mp_subpath_operation,             /* operation code for |subpath| */
+    mp_segment_operation,             /* operation code for |subpath| */
+    mp_direction_time_operation,      /* operation code for |directiontime| */
+    mp_point_operation,               /* operation code for |point| */
+    mp_precontrol_operation,          /* operation code for |precontrol| */
+    mp_postcontrol_operation,         /* operation code for |postcontrol| */
+    mp_direction_operation,           /* operation code for |direction| */
     mp_last_xy_operation,       
     mp_last_x_operation,       
     mp_last_y_operation,       
-    mp_path_point_operation,        /* operation code for |pathpoint| */
-    mp_path_precontrol_operation,   /* operation code for |pathprecontrol| */
-    mp_path_postcontrol_operation,  /* operation code for |pathpostcontrol| */
-    mp_path_direction_operation,    /* operation code for |pathdirection| */
-    mp_path_state_operation,        /* operation code for |pathstate| */
-    mp_path_index_operation,        /* operation code for |pathindex| */
-    mp_path_lastindex_operation,    /* operation code for |pathlastindex| */
-    mp_path_length_operation,       /* operation code for |pathlength| */
-    mp_path_first_operation,        /* operation code for |pathfirst| */
-    mp_path_last_operation,         /* operation code for |pathlast| */
-    mp_path_xpart_operation,        /* operation code for |pathxpart| */
-    mp_path_ypart_operation,        /* operation code for |pathypart| */
-    mp_pen_offset_operation,        /* operation code for |penoffset| */
-    mp_arc_time_operation,          /* operation code for |arctime| */
-    mp_arc_point_operation,         /* operation code for |arcpoint| */
-    mp_arc_point_list_operation,    /* operation code for |arcpointlist| */
-    mp_subarc_length_operation,     /* operation code for |subarclength| */
-    mp_version_operation,           /* operation code for |mpversion| */
-    mp_envelope_operation,          /* operation code for |envelope| */
-    mp_boundingpath_operation,      /* operation code for |boundingpath| */
+    mp_previous_xy_operation,       
+    mp_previous_x_operation,       
+    mp_previous_y_operation,       
+    mp_path_point_operation,          /* operation code for |pathpoint| */
+    mp_path_precontrol_operation,     /* operation code for |pathprecontrol| */
+    mp_path_postcontrol_operation,    /* operation code for |pathpostcontrol| */
+    mp_path_direction_operation,      /* operation code for |pathdirection| */
+    mp_path_state_operation,          /* operation code for |pathstate| */
+    mp_path_index_operation,          /* operation code for |pathindex| */
+    mp_path_lastindex_operation,      /* operation code for |pathlastindex| */
+    mp_path_length_operation,         /* operation code for |pathlength| */
+    mp_path_first_operation,          /* operation code for |pathfirst| */
+    mp_path_last_operation,           /* operation code for |pathlast| */
+    mp_path_xpart_operation,          /* operation code for |pathxpart| */
+    mp_path_ypart_operation,          /* operation code for |pathypart| */
+    mp_pen_offset_operation,          /* operation code for |penoffset| */
+    mp_arc_time_operation,            /* operation code for |arctime| */
+    mp_arc_point_operation,           /* operation code for |arcpoint| */
+    mp_arc_point_list_operation,      /* operation code for |arcpointlist| */
+    mp_subarc_length_operation,       /* operation code for |subarclength| */
+    mp_version_operation,             /* operation code for |mpversion| */
+    mp_envelope_operation,            /* operation code for |envelope| */
+    mp_boundingpath_operation,        /* operation code for |boundingpath| */
     mp_bytemap_value_operation,
     mp_bytemap_found_operation,
     mp_bytemap_path_operation,
@@ -1207,9 +1214,10 @@ typedef enum mp_given_internal {
     mp_intersection_precision_internal,
     mp_join_tolerance_internal,
     mp_single_quote_mode_internal,
+    mp_prune_options_internal,
 } mp_given_internal;
 
-# define max_given_internal mp_single_quote_mode_internal
+# define max_given_internal mp_prune_options_internal
 
 typedef struct mp_internal {
     mp_value  v;
@@ -1217,6 +1225,15 @@ typedef struct mp_internal {
     int       run;
     int       padding;
 } mp_internal;
+
+typedef enum mp_prune_options {
+    collapse_regular_regular_prune = 0x01,
+    collapse_begin_regular_prune   = 0x02,
+    collapse_regular_end_prune     = 0x04,
+    collapse_begin_end_prune       = 0x08,
+    wipe_single_prune              = 0x10,
+    connect_segments_prune         = 0x20,
+} mp_prune_options;
 
 typedef struct mp_symbol_data {
     int        type;
@@ -1802,6 +1819,8 @@ typedef struct MP_instance {
     /*  */
     mp_number           last_x;                 /* turle states */
     mp_number           last_y;   
+    mp_number           previous_x;
+    mp_number           previous_y;   
     /*  */
     int                 spec_offset;            /* number of pen edges between |h| and the initial offset */
     int                 spec_padding;           /* be nice */

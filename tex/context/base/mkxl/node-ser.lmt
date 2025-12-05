@@ -182,7 +182,7 @@ local function totable(n,flat,verbose,noattributes) -- nicest: n,true,true,true
                 nt.prev = nil
                 n = n.next
             end
-            done = nil
+--          done = nil
             return t
         else
             local t = to_table(n,flat,verbose,noattributes,d)
@@ -201,7 +201,7 @@ nodes.totable = function(n,...) return totable(tonode(n),...) end
 nodes.totree  = function(n)     return totable(tonode(n),true,true,true) end -- no attributes, todo: attributes in k,v list
 
 local function key(k)
-    return ((type(k) == "number") and "["..k.."]") or k
+    return (type(k) == "number" and "["..k.."]") or k
 end
 
 function nodes.serialize(root,flat,verbose,noattributes,name)
@@ -216,34 +216,42 @@ function nodes.visualizebox(n,flat,verbose,noattributes,name)
     context.tocontext(totable(tex.box[n],flat,verbose,noattributes),name)
 end
 
-function nodes.list(head,n) -- name might change to nodes.type -- to be checked .. will move to module anyway
+local f_node = formatters["%w%S"]
+
+local function listnodes(head,n,t) -- name might change to nodes.type -- to be checked .. will move to module anyway
     head = tonode(head)
-    if not n then
-        context.starttyping(true)
-    end
     while head do
         local id = head.id
-        context(rep(" ",n or 0) .. tostring(head) .. "\n")
+        t[#t+1] = f_node(n,head)
         if id == hlist_code or id == vlist_code then
-            nodes.list(head.list,(n or 0)+1)
+            listnodes(head.list,n+1,t)
         end
         head = head.next
     end
-    if not n then
-        context.stoptyping(true)
+    return t
+end
+
+local function printnodes(head,n)
+    head = tonode(head)
+    while head do
+        local id = head.id
+        logs.writer(f_node(n,head))
+        if id == hlist_code or id == vlist_code then
+            printnodes(head.list,n+1)
+        end
+        head = head.next
     end
 end
 
-function nodes.print(head,n)
-    head = tonode(head)
-    while head do
-        local id = head.id
-        logs.writer(string.formatters["%w%S"],n or 0,head)
-        if id == hlist_code or id == vlist_code then
-            nodes.print(head.list,(n or 0)+1)
-        end
-        head = head.next
-    end
+function nodes.list(head)
+    local t = listnodes(head,0,{ })
+    buffers.assign("_n_l_",concat(t,"\n"))
+    context.typebuffer { "_n_l_" }
+    context(function() buffers.erase("_n_l_") end)
+end
+
+function nodes.print(head)
+    printnodes(head,0)
 end
 
 -- quick hack, nicer is to have a proper expand per node type already prepared

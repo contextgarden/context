@@ -681,30 +681,28 @@ void tex_engine_initialize(int ac, char **av)
     */
     if (lmt_engine_state.startup_filename) {
         lua_State *L = lmt_lua_state.lua_instance;
-        if (lmt_engine_state.lua_only) {
-            if (luaL_loadfile(L, lmt_engine_state.startup_filename)) {
-                tex_emergency_message("lua error", "startup file: %s", lmt_error_string(L, -1));
-                tex_emergency_exit();
-            } else if (lua_pcall(L, 0, 0, 0)) {
-                tex_emergency_message("lua error", "function call: %s", lmt_error_string(L, -1));
-                lmt_traceback(L);
-                tex_emergency_exit();
-            } else {
-                /*tex We're okay. */
-                exit(lmt_error_state.default_exit_code);
-            }
+        int stacktop = lua_gettop(L);
+        lua_pushcfunction(L, lmt_traceback);
+        /* No traceback could be a security option. */
+        if (luaL_loadfile(L, lmt_engine_state.startup_filename)) {
+            lua_remove(L, stacktop + 1);
+            tex_emergency_message("lua error", "startup file: %s", lmt_error_string(L, -1));
+            lmt_traceback(L);
+            tex_emergency_exit();
+        } else if (lua_pcall(L, 0, 0, stacktop + 1)) {
+            lua_remove(L, stacktop + 1);
+            tex_emergency_message("lua error", "function call: %s", lmt_error_string(L, -1));
+            lmt_traceback(L);
+            tex_emergency_exit();
         } else {
-            /*tex a normal tex run */
-            if (luaL_loadfile(L, lmt_engine_state.startup_filename)) {
-                tex_emergency_message("lua error", "startup file: %s", lmt_error_string(L, -1));
-                tex_emergency_exit();
-            } else if (lua_pcall(L, 0, 0, 0)) {
-                tex_emergency_message("lua error", "function call: %s", lmt_error_string(L, -1));
-                lmt_traceback(L);
-                tex_emergency_exit();
+            lua_remove(L, stacktop + 1);
+            lua_settop(L, stacktop);
+            if (lmt_engine_state.lua_only) {
+                exit(lmt_error_state.default_exit_code);
+            } else {
+                enginelib_update_options();
+                tex_check_fmt_name();
             }
-            enginelib_update_options();
-            tex_check_fmt_name();
         }
     } else if (lmt_engine_state.lua_init) {
         tex_emergency_message("startup error", "no valid startup file given, quitting");

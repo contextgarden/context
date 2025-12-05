@@ -305,6 +305,11 @@
    style=bold,
    before={\testpage[3]\blank}]
 
+\setuplist
+  [chapter,section]
+  [width=4em]
+
+
 % We use the next one because we want to check what has been done. In a document
 % like this using \type {\foo} makes more sense.
 
@@ -369,7 +374,13 @@
         end
     end
 
-    local ignore = { id = true }
+    local ignore = {
+        id   = true,
+        next = true,
+        prev = true,
+    }
+
+ -- local kindof = node.getnodeerrorvalues()
 
     function moduledata.showfieldsupport(name,what)
         local id = tonumber(name) or nodes.nodecodes[name]
@@ -381,13 +392,15 @@
             for k, v in table.sortedhash(fields) do
                 if not ignore[v] then
                     node[what](n,v)
-                    if node.getfielderror() ~= 0 then
+                    local e = node.getfielderror()
+                    if e == 2 or e == 3 then -- getfield or setfield
                         t[#t+1] = v
                     end
                 end
             end
             node.free(n)
-            if next(t) then
+            if #t > 0 then
+                table.sort(t)
                 report("")
                 report("%s %s : % t",name,what,t)
                 report("")

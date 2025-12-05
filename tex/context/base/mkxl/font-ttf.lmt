@@ -98,10 +98,10 @@ local function mergecomposites(glyphs,shapes)
         local offset      = 0
         local deltas      = shape.deltas
 
--- deltas = false
+        -- deltas = false
 
-local xcrap = 0
-local ycrap = 0
+        local xcrap = 0
+        local ycrap = 0
 
         for i=1,#components do
             local component   = components[i]
@@ -109,6 +109,7 @@ local ycrap = 0
             local subshape    = shapes[subindex]
             local subcontours = subshape.contours
             local subpoints   = subshape.points
+
             if not subcontours then
                 local subcomponents = subshape.components
                 if subcomponents then
@@ -125,45 +126,49 @@ local ycrap = 0
                 local yoffset = matrix[6]
                 local count   = #subpoints
 
-local xshift = 0
-local yshift = 0
+                local xshift = 0
+                local yshift = 0
 
-if deltas then
--- if component.usexyarg then -- needs testing
-    for d=1,#deltas do
-        local delta  = deltas[d]
-        local factor = delta.factor
-        if factor then
-            local xvalues = delta.xvalues
-            local yvalues = delta.yvalues
-            local dpoints = delta.points
-            local x -- = nil
-            local y -- = nil
---             if dpoints then
---                 local d = dpoints[i] -- i == component
---                 if d then
---                     if xvalues then x = xvalues[i] end
---                     if yvalues then y = yvalues[i] end
---                 end
---             else
-                if xvalues then x = xvalues[i] end
-                if yvalues then y = yvalues[i] end
---             end
-            if x then xshift = xshift + x * factor end
-            if y then yshift = yshift + y * factor end
-        end
-    end
+                ----------------------------------------------------
 
-    if i == 1 then
-        xcrap  = xshift
-        xshift = 0
-     -- yshift = 0
-    else
-        xshift = xshift - xcrap
-    end
-end
-xoffset = xoffset + xshift
-yoffset = yoffset + yshift
+                if deltas then
+                -- if component.usexyarg then -- needs testing
+                    for d=1,#deltas do
+                        local delta  = deltas[d]
+                        local factor = delta.factor
+                        if factor then
+                            local xvalues = delta.xvalues
+                            local yvalues = delta.yvalues
+                            local dpoints = delta.points
+                            local x -- = nil
+                            local y -- = nil
+                --             if dpoints then
+                --                 local d = dpoints[i] -- i == component
+                --                 if d then
+                --                     if xvalues then x = xvalues[i] end
+                --                     if yvalues then y = yvalues[i] end
+                --                 end
+                --             else
+                                if xvalues then x = xvalues[i] end
+                                if yvalues then y = yvalues[i] end
+                --             end
+                            if x then xshift = xshift + x * factor end
+                            if y then yshift = yshift + y * factor end
+                        end
+                    end
+
+                    if i == 1 then
+                        xcrap  = xshift
+                        xshift = 0
+                     -- yshift = 0
+                    else
+                        xshift = xshift - xcrap
+                    end
+                end
+                xoffset = xoffset + xshift
+                yoffset = yoffset + yshift
+
+                ----------------------------------------------------
 
                 if xscale == 1 and yscale == 1 and xrotate == 0 and yrotate == 0 then
                     for i=1,count do
@@ -203,6 +208,8 @@ yoffset = yoffset + yshift
                     end
                 end
                 offset = offset + count
+            elseif subshape.type== "nothing" then
+                -- weird but let's assume it's okay
             else
                 report("missing contours composite %s, component %s of %s, glyph %s",index,i,#components,subindex)
             end
@@ -519,7 +526,7 @@ local function contours2outlines_normal(glyphs,shapes) -- maybe accept the bbox 
                         local last = contours[i]
                         if last >= first then
                             local first_pt = points[first]
-                            local first_on = first_pt[3]
+                            local first_on = first_pt[3] -- also below
                             -- todo no new tables but reuse lineto and quadratic
                             if first == last then
                                 first_pt[3] = "m" -- "moveto"
@@ -857,6 +864,8 @@ end
 
 -- todo: we can reuse result, xpoints and ypoints
 
+-- todo: in string.hashes
+
 local chars = setmetatableindex(function(t,k)
     for i=0,255 do local v = char(i) t[i] = v end return t[k]
 end)
@@ -1002,6 +1011,15 @@ end
 
 local flags = { }
 
+-- local flag_on_curve       <const> = 0x01
+-- local flag_x_short        <const> = 0x02
+-- local flag_y_short        <const> = 0x04
+-- local flag_repeat         <const> = 0x08
+-- local flag_x_short_geq    <const> = 0x10
+-- local flag_y_short_geq    <const> = 0x20
+-- local flag_overlap_simple <const> = 0x40
+-- local flag_reserved       <const> = 0x80
+
 local function readglyph(f,nofcontours) -- read deltas here, saves space
     local points          = { }
  -- local instructions    = { }
@@ -1012,13 +1030,21 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local nofpoints       = contours[nofcontours]
     local nofinstructions = readushort(f)
     skipbytes(f,nofinstructions)
-    -- because flags can repeat we don't know the amount ... in fact this is
-    -- not that efficient (small files but more mem)
+    -- Because flags can repeat we don't know the amount ... in fact this is not
+    -- that efficient (small files but more mem). Why bother.
+    --
+    -- Overlap is mostly a rendering directive and e.g. gentium has overlap but
+    -- doesn't even set it. It only matters when we want an outline so we can
+    -- safely assume that in such case an outline is not intended. We could show
+    -- a diagnostic warning but why should we care if it's not set anyway.
+    --
+ -- local hasoverlap = false
+    --
     local i = 1
     while i <= nofpoints do
         local flag = readbyte(f)
         flags[i] = flag
-        if (flag & 0x08) ~= 0 then
+        if (flag & 0x08) ~= 0 then -- flag_repeat
             local n = readbyte(f)
             if n == 1 then
                 i = i + 1
@@ -1030,6 +1056,9 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
                 end
             end
         end
+     -- if not hasoverlap then
+     --     hasoverlap = (flag & 0x40) ~= 0 -- flag_overlap_simple
+     -- end
         i = i + 1
     end
     -- first come the x coordinates, and next the y coordinates and they
@@ -1037,33 +1066,29 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
     local x = 0
     for i=1,nofpoints do
         local flag = flags[i]
-     -- local short = (flag & 0x02) ~= 0
-     -- local same  = (flag & 0x10) ~= 0
-        if (flag & 0x02) ~= 0 then
-            if (flag & 0x10) ~= 0 then
+        if (flag & 0x02) ~= 0 then     -- flag_x_short
+            if (flag & 0x10) ~= 0 then -- flag_x_short_geq
                 x = x + readbyte(f)
             else
                 x = x - readbyte(f)
             end
-        elseif (flag & 0x10) ~= 0 then
+        elseif (flag & 0x10) ~= 0 then -- flag_x_short_geq
             -- copy
         else
             x = x + readshort(f)
         end
-        points[i] = { x, 0, (flag & 0x01) ~= 0 }
+        points[i] = { x, 0, (flag & 0x01) ~= 0 } -- flag_on_curve
     end
     local y = 0
     for i=1,nofpoints do
         local flag = flags[i]
-     -- local short = (flag & 0x04) ~= 0
-     -- local same  = (flag & 0x20) ~= 0
-        if (flag & 0x04) ~= 0 then
-            if (flag & 0x20) ~= 0 then
+        if (flag & 0x04) ~= 0 then     -- flag_y_short
+            if (flag & 0x20) ~= 0 then -- flag_y_short_geq
                 y = y + readbyte(f)
             else
                 y = y - readbyte(f)
             end
-        elseif (flag & 0x20) ~= 0 then
+        elseif (flag & 0x20) ~= 0 then -- flag_y_short_geq
          -- copy
         else
             y = y + readshort(f)
@@ -1075,6 +1100,7 @@ local function readglyph(f,nofcontours) -- read deltas here, saves space
         points    = points,
         contours  = contours,
         nofpoints = nofpoints,
+     -- overlap   = hasoverlap or nil
     }
 end
 
@@ -1268,6 +1294,7 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
                         contours2outlines_shaped(glyphs,shapes,specification.shapes)
                     end
                 elseif specification.shapes then
+-- table.save("crap.lua", shapes)
                     if specification.streams then
                         repackpoints(glyphs,shapes)
                     else
@@ -1279,6 +1306,7 @@ function readers.glyf(f,fontdata,specification) -- part goes to cff module
             end
         end
     end
+--     flags = { } -- to be checked
 end
 
 -- gvar is a bit crazy format and one can really wonder if the bit-jugling obscurity

@@ -851,7 +851,7 @@ static void mp_double_aux_ran_start(long seed)
 {
     int t, j;
     long x[KK + KK - 1]; /* the preparation buffer */
-    long ss = (seed+2) & (MM - 2);
+    long ss = (seed + 2) & (MM - 2);
     for (j = 0; j < KK; j++) {
         /* bootstrap the buffer */
         x[j] = ss;
@@ -875,7 +875,7 @@ static void mp_double_aux_ran_start(long seed)
         }
         if (is_odd(ss)) {
             /* "multiply by z" */
-            for (j = KK; j>0; j--) {
+            for (j = KK; j > 0; j--) {
                 x[j] = x[j-1];
             }
             x[0] = x[KK];

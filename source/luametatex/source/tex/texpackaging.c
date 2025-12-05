@@ -1703,25 +1703,30 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
                     }
                     if (is_leader(p)) {
                         halfword gl = glue_leader_ptr(p);
-                        scaled ht = 0;
-                        scaled dp = 0;
+                        scaledwhd whd;
                         switch (node_type(gl)) {
                             case hlist_node:
                             case vlist_node:
-                                ht = box_height(gl);
-                                dp = box_depth(gl);
+                                whd.ht = box_height(gl);
+                                whd.dp = box_depth(gl);
                                 break;
                             case rule_node:
-                                ht = rule_height(gl);
-                                dp = rule_depth(gl);
+                                whd.ht = rule_height(gl);
+                                whd.dp = rule_depth(gl);
                                 break;
-                            /* how about glyph_node */
+                            case glyph_node: 
+                                whd = tex_glyph_dimensions(gl);
+                                break;
+                            default:
+                                whd.ht = 0;
+                                whd.dp = 0;
+                                break;
                         }
-                        if (ht > height) {
-                            height = ht;
+                        if (whd.ht > height) {
+                            height = whd.ht;
                         }
-                        if (dp > depth) {
-                            depth = dp;
+                        if (whd.dp > depth) {
+                            depth = whd.dp;
                         }
                         if (node_subtype(p) == u_leaders) {
                             has_uleader = 1;
@@ -2176,25 +2181,30 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
                 }
                 if (is_leader(p)) {
                     halfword gl = glue_leader_ptr(p);
-                    halfword ht = 0;
-                    halfword dp = 0;
+                    scaledwhd whd;
                     switch (node_type(gl)) {
                         case hlist_node:
                         case vlist_node:
-                            ht = box_height(gl);
-                            dp = box_depth(gl);
+                            whd.ht = box_height(gl);
+                            whd.dp = box_depth(gl);
                             break;
                         case rule_node:
-                            ht = rule_height(gl);
-                            dp = rule_depth(gl);
+                            whd.ht = rule_height(gl);
+                            whd.dp = rule_depth(gl);
                             break;
-                        /* how about glyph_node */
+                        case glyph_node: 
+                            whd = tex_glyph_dimensions(gl);
+                            break;
+                        default:
+                            whd.ht = 0;
+                            whd.dp = 0;
+                            break;
                     }
-                    if (ht) {
-                        siz.ht = ht;
+                    if (whd.ht > siz.ht) {
+                        siz.ht = whd.ht;
                     }
-                    if (dp > siz.dp) {
-                        siz.dp = dp;
+                    if (whd.dp > siz.dp) {
+                        siz.dp = whd.dp;
                     }
                 }
                 break;
@@ -2327,25 +2337,31 @@ scaledwhd tex_natural_msizes(halfword p, int ignoreprime)
                 siz.wd += glue_amount(p);
                 if (is_leader(p)) {
                     halfword gl = glue_leader_ptr(p);
-                    halfword ht = 0;
-                    halfword dp = 0;
+                    scaledwhd whd;
                     switch (node_type(gl)) {
                         case hlist_node:
                         case vlist_node:
-                            ht = box_height(gl);
-                            dp = box_depth(gl);
+                            whd.ht = box_height(gl);
+                            whd.dp = box_depth(gl);
                             break;
                         case rule_node:
-                            ht = rule_height(gl);
-                            dp = rule_depth(gl);
+                            whd.ht = rule_height(gl);
+                            whd.dp = rule_depth(gl);
                             break;
-                        /* how about glyph_node */
+                        case glyph_node: 
+                            whd = tex_glyph_dimensions(gl);
+                            break;
+                        default:
+                            whd.ht = 0;
+                            whd.dp = 0;
+                            break;
+
                     }
-                    if (ht) {
-                        siz.ht = ht;
+                    if (whd.ht> siz.ht) {
+                        siz.ht = whd.ht;
                     }
-                    if (dp > siz.dp) {
-                        siz.dp = dp;
+                    if (whd.dp > siz.dp) {
+                        siz.dp = whd.dp;
                     }
                 }
                 break;
@@ -2753,6 +2769,9 @@ halfword tex_vpack(halfword p, scaled targetheight, int m, scaled targetdepth, s
                         case rule_node:
                             wd = rule_width(gl);
                             break;
+                     // case glyph_node:
+                     //     /* can't happen */
+                     //     break;
                     }
                     if (wd > width) {
                         width = wd;

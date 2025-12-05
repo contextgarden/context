@@ -387,7 +387,10 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_accent, fixedbottom_accent_subtype,  fixedbottom)
     set_value_entry_key(subtypes_accent, fixedboth_accent_subtype,    fixedboth)
 
-    /*tex The fields of nodes. I need to update these! */
+    /*tex 
+        The fields of nodes. I need to update these! Todo: maybe sort these lists, the order is 
+        now more or less historic. 
+    */
 
     lmt_node_fields_accent = lmt_aux_allocate_value_info(7);
 
@@ -411,16 +414,14 @@ void lmt_nodelib_initialize(void) {
 
     lmt_node_fields_attribute = lmt_aux_allocate_value_info(3);
 
-    set_value_entry_val(lmt_node_fields_attribute, 0, integer_field, data);
-    set_value_entry_val(lmt_node_fields_attribute, 1, integer_field, index);
-    set_value_entry_val(lmt_node_fields_attribute, 2, integer_field, value);
+    set_value_entry_val(lmt_node_fields_attribute, 0, integer_field, index);
+    set_value_entry_val(lmt_node_fields_attribute, 1, integer_field, data);  /* == value */
+    set_value_entry_val(lmt_node_fields_attribute, 2, integer_field, value); /* == data */
 
     lmt_node_fields_attribute_list = lmt_aux_allocate_value_info(2);
 
     set_value_entry_val(lmt_node_fields_attribute_list, 0, integer_field, count);
     set_value_entry_val(lmt_node_fields_attribute_list, 1, integer_field, data);
-
-    /* Nothing */
 
     lmt_node_fields_boundary = lmt_aux_allocate_value_info(2);
 
@@ -446,14 +447,14 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_delimiter, 2, integer_field,   smallchar);
     set_value_entry_val(lmt_node_fields_delimiter, 3, integer_field,   largefamily);
     set_value_entry_val(lmt_node_fields_delimiter, 4, integer_field,   largechar);
-    set_value_entry_val(lmt_node_fields_delimiter, 4, integer_field,   properties);
-    set_value_entry_val(lmt_node_fields_delimiter, 4, integer_field,   group);
-    set_value_entry_val(lmt_node_fields_delimiter, 4, integer_field,   index);
+    set_value_entry_val(lmt_node_fields_delimiter, 5, integer_field,   properties);
+    set_value_entry_val(lmt_node_fields_delimiter, 6, integer_field,   group);
+    set_value_entry_val(lmt_node_fields_delimiter, 7, integer_field,   index);
 
     lmt_node_fields_dir = lmt_aux_allocate_value_info(3);
 
     set_value_entry_val(lmt_node_fields_dir, 0, attribute_field, attr);
-    set_value_entry_val(lmt_node_fields_dir, 1, integer_field,   dir);
+    set_value_entry_val(lmt_node_fields_dir, 1, integer_field,   direction);
     set_value_entry_val(lmt_node_fields_dir, 2, integer_field,   level);
 
     lmt_node_fields_disc = lmt_aux_allocate_value_info(7);
@@ -545,7 +546,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_glyph, 28, integer_field,   index);
     set_value_entry_val(lmt_node_fields_glyph, 29, integer_field,   state);
     set_value_entry_val(lmt_node_fields_glyph, 30, integer_field,   control);
-    set_value_entry_val(lmt_node_fields_glyph, 31, dimension_field, raise);
+    set_value_entry_val(lmt_node_fields_glyph, 31, dimension_field, key_raise);
     set_value_entry_val(lmt_node_fields_glyph, 32, integer_field,   weight);
     set_value_entry_val(lmt_node_fields_glyph, 33, integer_field,   slant);
 
@@ -573,7 +574,7 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_kern, 1, dimension_field, kern);
     set_value_entry_val(lmt_node_fields_kern, 2, integer_field,   expansion);
 
-    lmt_node_fields_list = lmt_aux_allocate_value_info(30);
+    lmt_node_fields_list = lmt_aux_allocate_value_info(31);
 
     set_value_entry_val(lmt_node_fields_list,  0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_list,  1, node_list_field, list);
@@ -595,21 +596,21 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_list, 17, dimension_field, woffset);
     set_value_entry_val(lmt_node_fields_list, 18, dimension_field, hoffset);
     set_value_entry_val(lmt_node_fields_list, 19, dimension_field, doffset);
-    set_value_entry_val(lmt_node_fields_list, 20, node_list_field, pre);     /* migrated */
-    set_value_entry_val(lmt_node_fields_list, 21, node_list_field, post);    /* migrated */
+    set_value_entry_val(lmt_node_fields_list, 20, node_list_field, pre);  /* migrated */
+    set_value_entry_val(lmt_node_fields_list, 21, node_list_field, post); /* migrated */
     set_value_entry_val(lmt_node_fields_list, 22, integer_field,   state);
     set_value_entry_val(lmt_node_fields_list, 23, integer_field,   index);
     set_value_entry_val(lmt_node_fields_list, 24, node_list_field, preadjust);
     set_value_entry_val(lmt_node_fields_list, 25, node_list_field, postadjust);
-    set_value_entry_val(lmt_node_fields_list, 26, integer_field,   axis);
-    set_value_entry_val(lmt_node_fields_list, 27, node_list_field, except);
-    set_value_entry_val(lmt_node_fields_list, 28, integer_field,   exdepth);
-    set_value_entry_val(lmt_node_fields_list, 29, integer_field,   total);
+    set_value_entry_val(lmt_node_fields_list, 28, node_list_field, except);
+    set_value_entry_val(lmt_node_fields_list, 29, integer_field,   exdepth);
+    set_value_entry_val(lmt_node_fields_list, 30, integer_field,   total);
+ // set_value_entry_val(lmt_node_fields_list, 31, integer_field,   axis);
 
     lmt_node_fields_par = lmt_aux_allocate_value_info(65);
 
     set_value_entry_val(lmt_node_fields_par,  0, attribute_field,  attr);
-    set_value_entry_val(lmt_node_fields_par,  1, integer_field,    dir);
+    set_value_entry_val(lmt_node_fields_par,  1, integer_field,    direction);
     set_value_entry_val(lmt_node_fields_par,  2, node_field,       leftbox);
     set_value_entry_val(lmt_node_fields_par,  3, dimension_field,  leftboxwidth);
     set_value_entry_val(lmt_node_fields_par,  4, node_field,       rightbox);
@@ -792,13 +793,20 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_val(lmt_node_fields_math_sub, 0, attribute_field, attr);
     set_value_entry_val(lmt_node_fields_math_sub, 1, node_list_field, list);
 
-    lmt_node_fields_unset = lmt_aux_allocate_value_info(5);
+    lmt_node_fields_unset = lmt_aux_allocate_value_info(12);
 
-    set_value_entry_val(lmt_node_fields_unset, 0, attribute_field, attr);
-    set_value_entry_val(lmt_node_fields_unset, 1, dimension_field, shrink);
-    set_value_entry_val(lmt_node_fields_unset, 2, dimension_field, stretch);
-    set_value_entry_val(lmt_node_fields_unset, 3, integer_field,   count);
-    set_value_entry_val(lmt_node_fields_unset, 4, integer_field,   span);
+    set_value_entry_val(lmt_node_fields_unset,  0, attribute_field, attr);
+    set_value_entry_val(lmt_node_fields_unset,  1, integer_field,   direction);
+    set_value_entry_val(lmt_node_fields_unset,  2, dimension_field, width);
+    set_value_entry_val(lmt_node_fields_unset,  3, dimension_field, height);
+    set_value_entry_val(lmt_node_fields_unset,  4, dimension_field, depth);
+    set_value_entry_val(lmt_node_fields_unset,  5, node_list_field, list);
+    set_value_entry_val(lmt_node_fields_unset,  6, dimension_field, shrink);
+    set_value_entry_val(lmt_node_fields_unset,  7, dimension_field, stretch);
+    set_value_entry_val(lmt_node_fields_unset,  8, integer_field,   glueorder);
+    set_value_entry_val(lmt_node_fields_unset,  9, integer_field,   gluesign);
+    set_value_entry_val(lmt_node_fields_unset, 10, integer_field,   count);
+    set_value_entry_val(lmt_node_fields_unset, 11, integer_field,   span);
 
     lmt_node_fields_align_record = lmt_aux_allocate_value_info(3);
 

@@ -258,7 +258,9 @@ Over the last decades other engines showed up, most noticeably those for e.g.
 Japanese but I never looked into these. I'm not sure if \LUATEX\ can do the same
 with help from \LUA, but \LUAMETATEX\ has some more features so maybe it can.
 These engines serve a specific (language and script audience) but if Japanese
-\CONTEXT\ user need something more than we provide they can ask.
+\CONTEXT\ user need something more than we provide they can ask. One reason why
+we have for instance an orientation feature in boxes is that we can support
+vertical typesetting with rotated glyphs and boxes.
 
 In the end the extensions in \LUAMETATEX\ come from our own demands combined with
 trying to be complete but of course I might have missed something. It also means
@@ -277,6 +279,18 @@ original documentation describes what happens, the principles behind \TEX, so to
 say. More details will be added but can also found in numerous documents in the
 \CONTEXT\ distribution, articles and presentations. In the end we owe most to Don
 Knuth, who gave is the (very original) original that we can build upon.
+
+An important decision we made when we started with \LUATEX\ is that we don't lock
+ourselves in specific solutions: callbacks are the way to go. Of course in
+\LUAMETATEX\ we have some more helpers, and in the extended \METAPOST\ library we
+do implement some features in \CCODE\ after having prototyped them in \LUA, but
+there runtime performance was important. But in general \LUA\ solutions work out
+fine. Good examples are the font loading and processing code and the \METAPOST\
+backend. We can easily adapt, have complete control, can meet specific demands,
+and as with more plugins we just needed them right from the start. And that is an
+important consideration: we want to be able to experiment without constraints.
+There are always the other engines: \PDFTEX\ for eight bit speed and \XETEX\ for
+hard coded solutions and if they suit you, why not use them.
 
 \stopsection
 

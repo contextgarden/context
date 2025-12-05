@@ -7,30 +7,41 @@
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 
-% The file is derived from one by Thomas and Mojca (20130502).
+% The file is derived from one by Thomas and Mojca (20130502). In December 2025 we
+% updated to the 7.000 version. We prefer otf over ttf here so we distribute those
+% in the installer.
+%
+% 7.000
+%
+% Regular   Italic
+% Medium    MediumItalic
+% SemiBold  SemiBoldItalic
+% Bold      BoldItalic
+% ExtraBold ExtraBoldItalic
 
 \usetypescriptfile[dejavu]
 
-\starttypescript [serif] [gentium,gentiumplus]
-    \definefontsynonym [Gentium-Roman]       [file:GentiumPlus-Regular]    [features=default]
-    \definefontsynonym [Gentium-Italic]      [file:GentiumPlus-Italic]     [features=default]
-    \definefontsynonym [Gentium-Bold]        [file:GentiumPlus-Bold]       [features=default]
-    \definefontsynonym [Gentium-BoldItalic]  [file:GentiumPlus-BoldItalic] [features=default]
-    \definefontsynonym [Gentium-Slanted]     [file:GentiumPlus-Regular]    [features={default,slanted}]
-    \definefontsynonym [Gentium-BoldSlanted] [file:GentiumPlus-Bold]       [features={default,slanted}]
+\starttypescriptcollection[gentium]
+
+\starttypescript [serif] [gentium,gentiummedium,gentiumplus,gentiumbook,gentiumtest]
+    \definefontsynonym [Gentium-Regular]          [file:Gentium-Regular]        [features=default]        \definefontsynonym [Gentium-Italic]           [file:Gentium-Italic]         [features=default]
+    \definefontsynonym [Gentium-Medium]           [file:Gentium-Medium]         [features=default]
+    \definefontsynonym [Gentium-MediumItalic]     [file:Gentium-MediumItalic]   [features=default]
+    \definefontsynonym [Gentium-SemiBold]         [file:Gentium-SemiBold]       [features=default]
+    \definefontsynonym [Gentium-SemiBoldItalic]   [file:Gentium-SemiBoldItalic] [features=default]
+    \definefontsynonym [Gentium-Bold]             [file:Gentium-Bold]           [features=default]
+    \definefontsynonym [Gentium-BoldItalic]       [file:Gentium-BoldItalic]     [features=default]
+    \definefontsynonym [Gentium-ExtraBold]        [file:Gentium-ExtraBold]      [features=default]
+    \definefontsynonym [Gentium-ExtraBoldItalic]  [file:Gentium-ExtraBoldItalic][features=default]
+    %
+    \definefontsynonym [Gentium-Slanted]          [file:Gentium-Regular]        [features={default,slanted}]
+    \definefontsynonym [Gentium-BoldSlanted]      [file:Gentium-Bold]           [features={default,slanted}]
+    \definefontsynonym [Gentium-MediumSlanted]    [file:Gentium-Medium]         [features={default,slanted}]
+    \definefontsynonym [Gentium-MediumBoldSlanted][file:Gentium-ExtraBold]      [features={default,slanted}]
 \stoptypescript
 
-\starttypescript [serif] [gentiumbook]
-    \definefontsynonym [Gentium-Roman]       [file:GentiumBookPlus-Regular]    [features=default]
-    \definefontsynonym [Gentium-Italic]      [file:GentiumBookPlus-Italic]     [features=default]
-    \definefontsynonym [Gentium-Bold]        [file:GentiumBookPlus-Bold]       [features=default]
-    \definefontsynonym [Gentium-BoldItalic]  [file:GentiumBookPlus-BoldItalic] [features=default]
-    \definefontsynonym [Gentium-Slanted]     [file:GentiumBookPlus-Regular]    [features={default,slanted}]
-    \definefontsynonym [Gentium-BoldSlanted] [file:GentiumBookPlus-Bold]       [features={default,slanted}]
-\stoptypescript
-
-\starttypescript [serif] [gentium,gentiumplus,gentiumbook] [name]
-    \definefontsynonym [Serif]            [Gentium-Roman]
+\starttypescript [serif] [gentium,gentiumplus,gentiumtest] [name]
+    \definefontsynonym [Serif]            [Gentium-Regular]
     \definefontsynonym [SerifItalic]      [Gentium-Italic]
     \definefontsynonym [SerifBold]        [Gentium-Bold]
     \definefontsynonym [SerifBoldItalic]  [Gentium-BoldItalic]
@@ -38,44 +49,40 @@
     \definefontsynonym [SerifBoldSlanted] [Gentium-BoldSlanted]
 \stoptypescript
 
-% HH: we probably need to rscale dejavu here .. feel free to suggest
+\starttypescript [serif] [gentiummedium,gentiumbook] [name]
+    \definefontsynonym [Serif]            [Gentium-Medium]
+    \definefontsynonym [SerifItalic]      [Gentium-MediumItalic]
+    \definefontsynonym [SerifBold]        [Gentium-ExtraBold]
+    \definefontsynonym [SerifBoldItalic]  [Gentium-ExtraBoldItalic]
+    \definefontsynonym [SerifSlanted]     [Gentium-Medium]
+    \definefontsynonym [SerifBoldSlanted] [Gentium-ExtraBold]
+\stoptypescript
 
-\starttypescript [gentium,gentiumplus,gentiumbook]
+% The math font is far from finished, so let's wait a few years before we
+% enable that as option.
+
+\doifunknownfontfeature {gentium-math-bold} {\definefontfeature[gentium-math-bold][boldened]}
+
+\starttypescript [math] [gentiumtest] [name]
+    \loadfontgoodies[gentium-math]
+    \definefontsynonym [MathRoman]     [file:publiculum.ttf] [features={math\mathsizesuffix,gentium:mathextra,mathextra},goodies=gentium-math]
+    \definefontsynonym [MathRomanBold] [file:publiculum.ttf] [features={math\mathsizesuffix,gentium-math-bold,gentium:mathextra,mathextra},goodies=gentium-math]
+\stoptypescript
+
+% We probably need to rscale dejavu here .. feel free to suggest values.
+
+\starttypescript [gentium,gentiumplus,gentiummedium,gentiumbook]
     \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
     \definetypeface [\typescriptone] [ss] [sans]  [dejavu]         [default] [features=default]
     \definetypeface [\typescriptone] [tt] [mono]  [dejavu]         [default] [features=default]
     \definetypeface [\typescriptone] [mm] [math]  [dejavu]         [default]
 \stoptypescript
 
-\continueifinputfile{type-imp-gentium.mkiv}
+\starttypescript [gentiumtest]
+    \definetypeface [\typescriptone] [rm] [serif] [\typescriptone] [default] [features=default]
+    \definetypeface [\typescriptone] [ss] [sans]  [dejavu]         [default] [features=default]
+    \definetypeface [\typescriptone] [tt] [mono]  [dejavu]         [default] [features=default]
+    \definetypeface [\typescriptone] [mm] [math]  [\typescriptone] [default]
+\stoptypescript
 
-\usemodule[article-basic,scite]
-
-\setuplayout[tight]
-
-\usebodyfont  [gentiumbook]
-\setupbodyfont[gentiumplus]
-
-\starttext
-
-\protected\def\TestLine#1{%
-    \NC #1
-    \NC \switchtobodyfont[#1]\tf normal
-    \NC \switchtobodyfont[#1]\bf bold
-    \NC \switchtobodyfont[#1]\it italic
-    \NC \switchtobodyfont[#1]\bi bolditalic
-    \NC \switchtobodyfont[#1]\sl slanted
-    \NC \switchtobodyfont[#1]\bs boldslanted
-    \NC \NR
-}
-
-\starttabulate[|T|c|c|c|c|c|c|]
-    \TestLine{gentiumplus}
-    \TestLine{gentiumbook}
-\stoptabulate
-
-\switchtobodyfont[8pt]
-
-\typefile[option=TEX]{type-imp-gentium.mkiv}
-
-\stoptext
+\stoptypescriptcollection

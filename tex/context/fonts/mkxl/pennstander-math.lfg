@@ -10,7 +10,11 @@ return {
     copyright   = "ConTeXt development team",
     mathematics = {
         parameters = {
-            PrimeShiftUpCramped = "SuperscriptShiftUp",
+            PrimeShiftUpCramped            = "SuperscriptShiftUp",
+            -- RadicalKernBeforeExtensible     = 100,
+            -- RadicalDisplayStyleVerticalGap  = 0,
+            RadicalDegreeBottomRaisePercent = 55,
+            RadicalKernAfterDegree          = -300,
         },
         tweaks = {
             aftercopying = {

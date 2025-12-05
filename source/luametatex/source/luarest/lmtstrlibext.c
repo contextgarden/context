@@ -1061,6 +1061,50 @@ static int strlib_utftabletostring(lua_State *L)
     return 1;
 }
 
+static int strlib_splitintolines(lua_State *L)
+{
+    size_t l = 0;
+    const char *s = lua_tolstring(L, 1, &l);
+    lua_newtable(L);
+    if (l > 0) {
+        lua_Integer n = 0;
+        lua_Integer i = 0;
+        const char *f = s;
+        while (*s) {
+            if (*s == 13) { 
+                /* cr */
+                lua_pushlstring(L, f, n);
+                lua_rawseti(L, -2, ++i);
+                f = ++s; 
+                if (*f == 10) { 
+                    f = ++s; 
+                }
+                if (! *f) {
+                    return 1; 
+                }
+                n = 0;
+            } else if (*s == 10) { 
+                /* lf */
+                lua_pushlstring(L, f, n);
+                lua_rawseti(L, -2, ++i);
+                f = ++s; 
+                if (! *f) {
+                    return 1; 
+                }
+                n = 0;
+            } else {
+                ++n;
+                ++s;
+            }
+        }
+        if (f) {
+            lua_pushlstring(L, f, n);
+            lua_rawseti(L, -2, ++i);
+        }
+    }
+    return 1; 
+}
+
 static const luaL_Reg strlib_function_list[] = {
     { "characters",        strlib_characters         },
     { "characterpairs",    strlib_characterpairs     },
@@ -1088,6 +1132,7 @@ static const luaL_Reg strlib_function_list[] = {
     { "dectointeger",      strlib_dectointeger       },
     { "hextointeger",      strlib_hextointeger       },
     { "chrtointeger",      strlib_chrtointeger       },
+    { "splitintolines",    strlib_splitintolines     },
     { NULL,                NULL                      },
 };
 

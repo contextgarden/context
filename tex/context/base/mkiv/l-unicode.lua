@@ -632,7 +632,7 @@ function utf.replacer(t) -- no precheck, always string builder
     end
 end
 
-function utf.subtituter(t) -- with precheck and no building if no match
+function utf.substituter(t) -- with precheck and no building if no match
     local f = finder  (t)
     local r = replacer(t,false,false,true)
     return function(str)

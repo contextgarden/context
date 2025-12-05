@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-11-24 17:50
+-- merge date  : 2025-12-05 17:42
 
 do -- begin closure to overcome local limits and interference
 
@@ -14723,14 +14723,20 @@ end
    t[i]=char(28,band(rshift(i,8),0xFF),band(i,0xFF))
   end
   setmetatableindex(encode,function(t,k)
-   local r=round(k)
-   local v=rawget(t,r)
-   if v then
-    return v
+   local v
+   local r=k%1==0
+   if r then
+    v=rawget(t,k)
    end
-   local v1=floor(k)
-   local v2=floor((k-v1)*0x10000)
-   return char(255,extract(v1,8,8),extract(v1,0,8),extract(v2,8,8),extract(v2,0,8))
+   if not v then
+    local v1=floor(k)
+    local v2=floor((k-v1)*0x10000)
+    v=char(255,extract(v1,8,8),extract(v1,0,8),extract(v2,8,8),extract(v2,0,8))
+    if r then
+     t[k]=v
+    end
+   end
+   return v
   end)
   return t[i]
  end)
@@ -21493,7 +21499,7 @@ local trace_defining=false  registertracker("fonts.defining",function(v) trace_d
 local report_otf=logs.reporter("fonts","otf loading")
 local fonts=fonts
 local otf=fonts.handlers.otf
-otf.version=3.145 
+otf.version=3.150 
 otf.cache=containers.define("fonts","otl",otf.version,true)
 otf.svgcache=containers.define("fonts","svg",otf.version,true)
 otf.pngcache=containers.define("fonts","png",otf.version,true)
@@ -37328,7 +37334,7 @@ local afm=fonts.handlers.afm
 local pfb=fonts.handlers.pfb
 local hashes=fonts.hashes
 local identifiers=hashes.identifiers
-local version=otf.version or 0.015
+local version=otf.version or 0.030
 local shapescache=containers.define("fonts","shapes",version,true)
 local streamscache=containers.define("fonts","streams",version,true)
 local compact_streams=false

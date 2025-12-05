@@ -35,6 +35,10 @@ typedef enum lua_node_errors {
     lua_new_node_error,
     lua_set_field_error,
     lua_get_field_error,
+    lua_set_node_error,
+    lua_get_node_error,
+    lua_set_ignore_error,
+    lua_get_ignore_error,
 } lua_node_errors ;
 
 typedef struct lua_state_info {
@@ -1213,7 +1217,7 @@ make_lua_key(L, RadicalRuleThickness);\
 make_lua_key(L, radicalvariant);\
 make_lua_key(L, RadicalVerticalGap);\
 make_lua_key(L, radicalvgap);\
-make_lua_key(L, raise);\
+make_lua_key_alias(L, key_raise, "raise");\
 make_lua_key(L, reader);\
 make_lua_key_alias(L, key_register, "register");\
 make_lua_key(L, register_attribute);\

@@ -38,6 +38,17 @@ newinternal metapostversion ; metapostversion := 3.0 ; permanent metapostversion
 
 warningcheck := 0 ;
 
+%D In case we store in a transform: \type {xx xy yx yy x y}:
+
+let partone   = xxpart ;
+let parttwo   = xypart ;
+let partthree = yxpart ;
+let partfour  = yypart ;
+let partfive  = xpart  ;
+let partsix   = ypart  ;
+
+permanent partone, parttwo, partthree, partfour, partfive, partsix ;
+
 %D Handy:
 
 def nothing = enddef ;
@@ -2897,6 +2908,7 @@ permanent clearxy ;
 % show x0 ; z0 = (30,30) ;
 
 primarydef p smoothed d =
+    % calculate once
    (p llmoved (-xpart paired(d),0) -- p lrmoved (-xpart paired(d),0) {right} ..
     p lrmoved (0,-ypart paired(d)) -- p urmoved (0,-ypart paired(d)) {up}    ..
     p urmoved (-xpart paired(d),0) -- p ulmoved (-xpart paired(d),0) {left}  ..
@@ -2904,32 +2916,146 @@ primarydef p smoothed d =
 enddef ;
 
 primarydef p cornered c =
+    % use better loop
     ((point 0 of p) shifted (c*(unitvector(point 1 of p - point 0 of p))) --
     for i=1 upto length(p) :
         (point i-1 of p) shifted (c*(unitvector(point i   of p - point i-1 of p))) --
         (point i   of p) shifted (c*(unitvector(point i-1 of p - point i   of p))) ..
         controls point i of p ..
-    endfor cycle)
+    endfor if cycle p : cycle else : nocycle)
 enddef ;
 
 % Mikael Sundqvist came up with this one. We made it robust for points being too close
 % for smoothing.
 
-primarydef p smoothcornered c =
+% primarydef p smoothcornered c =
+%     ( begingroup ;
+%         save cc ;
+%         if not cycle p: (point 0 of p) -- fi
+%         for i=1 upto length(p) :
+%             hide (cc := min(c,arclength (subpath(i-1,i) of p)/2);)
+%             (point i-1 of p) shifted (cc*(unitvector(point i   of p - point i-1 of p))) --
+%             (point i   of p) shifted (cc*(unitvector(point i-1 of p - point i   of p))) ..
+%             controls point i of p ..
+%         endfor
+%         if cycle p : cycle else : point 1 along p fi
+%     endgroup )
+% enddef ;
+
+% primarydef p smoothcornered c = % 6.4
+% cc := min(c,(subarclength (i-1,i) of p)/2);
+% cc := min(c,deltaarclength(i-1,i)/2)
+% cc := (subarclength (1,2) of p)/2;
+
+% primarydef p smoothcornered c = % 0.55
+%     ( begingroup ;
+%         save uv ; pair uv ;
+%         if cycle p :
+%             for i within p :
+%                 hide (
+%                     uv := min(c,deltaarclength(-1,0)/2)
+%                         * unitvector(pathpoint - deltapoint -1) ;
+%                 )
+%                 deltapoint - 1 shifted  uv --
+%                 pathpoint      shifted -uv ..
+%                 controls pathpoint ..
+%             endfor
+%             cycle
+%         else :
+%             point 0 of p --
+%             for i within p :
+%                 if not pathfirst :
+%                     hide (
+%                         uv := min(c,deltaarclength(-1,0)/2)
+%                             * unitvector(pathpoint - deltapoint -1) ;
+%                     )
+%                     deltapoint - 1 shifted  uv --
+%                     pathpoint      shifted -uv ..
+%                     controls pathpoint ..
+%                 fi
+%             endfor
+%             point 1 along p
+%         fi
+%     endgroup )
+% enddef ;
+
+primarydef p smoothcornered c = % 0.55
     ( begingroup ;
-        save cc ;
-        if not cycle p: (point 0 of p) -- fi
-        for i=1 upto length(p) :
-            hide (cc := min(c,arclength (subpath(i-1,i) of p)/2);)
-            (point i-1 of p) shifted (cc*(unitvector(point i   of p - point i-1 of p))) --
-            (point i   of p) shifted (cc*(unitvector(point i-1 of p - point i   of p))) ..
-            controls point i of p ..
-        endfor
-        if cycle p : cycle else : point 1 along p fi
+        save uv ; pair uv ;
+        if cycle p :
+            for i within p :
+                hide (
+                    uv := min(c,deltaarclength(-1,0)/2)
+                        * unitvector(pathpoint - deltapoint -1) ;
+                )
+                deltapoint - 1 shifted  uv --
+                pathpoint      shifted -uv ..
+                controls pathpoint ..
+            endfor
+            cycle
+        else :
+            for i within p :
+                if i > 0 :
+                    % we work with previous and current point
+                    hide (
+                        uv := min(c,deltaarclength(-1,0)/2)
+                            * unitvector(pathpoint - deltapoint -1) ;
+                    )
+                    % this will add the previous point if i = 1 and
+                    % the previous point shifted c if not
+                    deltapoint - 1
+                    if i > 1 :
+                        shifted uv
+                    fi --
+                    % this will add path point if last point, else
+                    % it will add the pathpoint shifted c and connect
+                    % via .. and control points
+                    pathpoint
+                    if not pathlast :
+                        shifted -uv ..
+                        controls pathpoint ..
+                    fi
+                fi
+            endfor
+        fi
     endgroup )
 enddef ;
 
-permanent smoothed, cornered, smoothcornered ;
+primarydef p maxsmoothcornered c = % 0.55
+    ( begingroup ;
+        save uv ; pair uv ;
+        if cycle p :
+            for i within p :
+                hide (
+                    uv := deltaarclength(-1,0)/2
+                        * unitvector(pathpoint - deltapoint -1) ;
+                )
+                pathpoint shifted -uv ..
+                controls pathpoint ..
+            endfor
+            cycle
+        else :
+            for i within p :
+                if pathfirst :
+                    pathpoint .. controls deltapoint 1 ..
+                fi
+                if i > 1 :
+                    hide (
+                        uv := deltaarclength(-1,0)/2
+                            * unitvector(pathpoint - deltapoint -1) ;
+                    )
+                    pathpoint
+                    if not pathlast :
+                        shifted -uv ..
+                        controls pathpoint ..
+                    fi
+                fi
+            endfor
+        fi
+    endgroup )
+enddef ;
+
+permanent smoothed, cornered, smoothcornered, maxsmoothcornered ;
 
 % cmyk color support
 

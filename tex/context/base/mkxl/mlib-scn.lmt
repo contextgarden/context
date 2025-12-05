@@ -340,7 +340,7 @@ metapost.knownparameters = knownparameters
 
 local function presetparameters()
     local namespace = scanstring()
-    local parent = nil
+    local parent    = nil
     local t = scantoken(true)
     if t == string_code then
         parent = presets[scanstring()]
@@ -353,6 +353,20 @@ local function presetparameters()
         setmetatableindex(p,parent)
     end
     presets[namespace] = p
+end
+
+local function setparameters()
+    local namespace = scanstring()
+    local already   = presets[namespace]
+    local p         = get_parameters()
+    if already then
+        for k, v in next, p do
+            local a = rawget(already,k)
+            if a and type(v) == type(a) then
+                already[k] = v
+            end
+        end
+    end
 end
 
 local function collectnames()
@@ -781,6 +795,7 @@ registerdirect("getparameters",       getparameters)        -- nothing
 registertokens("applyparameters",     applyparameters)      -- action    : todo "token"
 registerdirect("mergeparameters",     mergeparameters)      -- nothing
 registerdirect("presetparameters",    presetparameters)     -- nothing
+registerdirect("setparameters",       setparameters)        -- nothing
 registerdirect("hasparameter",        hasparameter)         -- boolean
 registerdirect("hasoption",           hasoption)            -- boolean
 registerdirect("getparameter",        getparameter)         -- whatever

@@ -3810,7 +3810,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword source, halfwo
         accent_top_overshoot(target) = overshoot;
     }
     if (flags & (bot_accent_code)) {
-        accent_bot_overshoot(target) = overshoot;
+        accent_bottom_overshoot(target) = overshoot;
     }
     {
         halfword result = null;

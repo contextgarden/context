@@ -169,91 +169,91 @@ static const char *mplib_log_targets[] = {
 
 static const char *mplib_codes[] = {
     "undefined",
-    "btex",            /* mp_btex_command                */ /* btex verbatimtex */
-    "etex",            /* mp_etex_command                */ /* etex */
-    "if",              /* mp_if_test_command             */ /* if */
-    "fiorelse",        /* mp_fi_or_else_command          */ /* elseif else fi */
-    "input",           /* mp_input_command               */ /* input endinput */
-    "iteration",       /* mp_iteration_command           */ /* for forsuffixes forever endfor */
-    "repeatloop",      /* mp_repeat_loop_command         */ /* used in repeat loop (endfor) */
-    "exittest",        /* mp_exit_test_command           */ /* exitif */
-    "relax",           /* mp_relax_command               */ /* \\ */
-    "scantokens",      /* mp_scan_tokens_command         */ /* scantokens */
-    "runscript",       /* mp_runscript_command           */ /* runscript */
-    "maketext",        /* mp_maketext_command            */ /* maketext */
-    "expandafter",     /* mp_expand_after_command        */ /* expandafter */
-    "definedmacro",    /* mp_defined_macro_command       */ /* */
-    "save",            /* mp_save_command                */ /* save */
-    "interim",         /* mp_interim_command             */ /* interim */
-    "let",             /* mp_let_command                 */ /* let */
-    "newinternal",     /* mp_new_internal_command        */ /* newinternal */
+    "btex",               /* mp_btex_command                */ /* btex verbatimtex */
+    "etex",               /* mp_etex_command                */ /* etex */
+    "if",                 /* mp_if_test_command             */ /* if */
+    "fiorelse",           /* mp_fi_or_else_command          */ /* elseif else fi */
+    "input",              /* mp_input_command               */ /* input endinput */
+    "iteration",          /* mp_iteration_command           */ /* for forsuffixes forever endfor */
+    "repeatloop",         /* mp_repeat_loop_command         */ /* used in repeat loop (endfor) */
+    "exittest",           /* mp_exit_test_command           */ /* exitif */
+    "relax",              /* mp_relax_command               */ /* \\ */
+    "scantokens",         /* mp_scan_tokens_command         */ /* scantokens */
+    "runscript",          /* mp_runscript_command           */ /* runscript */
+    "maketext",           /* mp_maketext_command            */ /* maketext */
+    "expandafter",        /* mp_expand_after_command        */ /* expandafter */
+    "definedmacro",       /* mp_defined_macro_command       */ /* */
+    "save",               /* mp_save_command                */ /* save */
+    "interim",            /* mp_interim_command             */ /* interim */
+    "let",                /* mp_let_command                 */ /* let */
+    "newinternal",        /* mp_new_internal_command        */ /* newinternal */
     "newbytemap",  
-    "macrodef",        /* mp_macro_def_command           */ /* def vardef (etc) */
-    "shipout",         /* mp_ship_out_command            */ /* shipout */
-    "addto",           /* mp_add_to_command              */ /* addto */
-    "setbounds",       /* mp_bounds_command              */ /* setbounds clip group */
-    "protection",      /* mp_protection_command          */
-    "property",        /* mp_property_command            */
-    "show",            /* mp_show_command                */ /* show showvariable (etc) */
-    "mode",            /* mp_mode_command                */ /* batchmode (etc) */
-    "onlyset",         /* mp_only_set_command            */ /* randomseed, maxknotpool */
-    "message",         /* mp_message_command             */ /* message errmessage */
-    "everyjob",        /* mp_every_job_command           */ /* everyjob */
-    "delimiters",      /* mp_delimiters_command          */ /* delimiters */
-    "write",           /* mp_write_command               */ /* write */
-    "typename",        /* mp_type_name_command           */ /* (declare) numeric pair */
-    "leftdelimiter",   /* mp_left_delimiter_command      */ /* the left delimiter of a matching pair */
-    "begingroup",      /* mp_begin_group_command         */ /* begingroup */
-    "nullary",         /* mp_nullary_command             */ /* operator without arguments: normaldeviate (etc) */
-    "unary",           /* mp_unary_command               */ /* operator with one argument: sqrt (etc) */
-    "str",             /* mp_str_command                 */ /* convert a suffix to a string: str */
-    "void",            /* mp_void_command                */ /* convert a suffix to a boolean: void */
-    "cycle",           /* mp_cycle_command               */ /* cycle */
-    "ofbinary",        /* mp_of_binary_command           */ /* binary operation taking "of", like "point of" */
-    "capsule",         /* mp_capsule_command             */ /* */
-    "string",          /* mp_string_command              */ /* */
-    "internal",        /* mp_internal_quantity_command   */ /* */
-    "tag",             /* mp_tag_command                 */ /* a symbolic token without a primitive meaning */
-    "numeric",         /* mp_numeric_command             */ /* numeric constant */
-    "plusorminus",     /* mp_plus_or_minus_command       */ /* + - */
-    "secondarydef",    /* mp_secondary_def_command       */ /* secondarydef */
-    "tertiarybinary",  /* mp_tertiary_binary_command     */ /* an operator at the tertiary level: ++ (etc) */
-    "leftbrace",       /* mp_left_brace_command          */ /* { */
-    "pathjoin",        /* mp_path_join_command           */ /* .. */
-    "pathconnect",     /* mp_path_connect_command        */ /* -- */
-    "ampersand",       /* mp_ampersand_command           */ /* & */
-    "tertiarydef",     /* mp_tertiary_def_command        */ /* tertiarydef */
-    "primarybinary",   /* mp_primary_binary_command      */ /* < (etc) */
-    "equals",          /* mp_equals_command              */ /* = */
-    "and",             /* mp_and_command                 */ /* and */
-    "primarydef",      /* mp_primary_def_command         */ /* primarydef */
-    "slash",           /* mp_slash_command               */ /* / */
-    "secondarybinary", /* mp_secondary_binary_command    */ /* an operator at the binary level: shifted (etc) */
-    "parametertype",   /* mp_parameter_commmand          */ /* primary expr suffix (etc) */
-    "controls",        /* mp_controls_command            */ /* controls */
-    "tension",         /* mp_tension_command             */ /* tension */
-    "atleast",         /* mp_at_least_command            */ /* atleast */
-    "curl",            /* mp_curl_command                */ /* curl */
-    "macrospecial",    /* mp_macro_special_command       */ /* quote, #@ (etc) */
-    "rightdelimiter",  /* mp_right_delimiter_command     */ /* the right delimiter of a matching pair */
-    "leftbracket",     /* mp_left_bracket_command        */ /* [ */
-    "rightbracket",    /* mp_right_bracket_command       */ /* ] */
-    "rightbrace",      /* mp_right_brace_command         */ /* } */
-    "with",            /* mp_with_option_command         */ /* withpen (etc) */
-    "thingstoadd",     /* mp_thing_to_add_command        */ /* addto contour doublepath also */
-    "of",              /* mp_of_command                  */ /* of */
-    "to",              /* mp_to_command                  */ /* to */
-    "step",            /* mp_step_command                */ /* step */
-    "until",           /* mp_until_command               */ /* until */
-    "within",          /* mp_within_command              */ /* within */
-    "assignment",      /* mp_assignment_command          */ /* := */
-    "colon",           /* mp_colon_command               */ /* : */
-    "comma",           /* mp_comma_command               */ /* , */
-    "semicolon",       /* mp_semicolon_command           */ /* ; */
-    "endgroup",        /* mp_end_group_command           */ /* endgroup */
-    "stop",            /* mp_stop_command                */ /* end dump */
- // "outertag",        /* mp_outer_tag_command           */ /* protection code added to command code */
-    "undefinedcs",     /* mp_undefined_cs_command        */ /* protection code added to command code */
+    "macrodef",           /* mp_macro_def_command           */ /* def vardef (etc) */
+    "shipout",            /* mp_ship_out_command            */ /* shipout */
+    "addto",              /* mp_add_to_command              */ /* addto */
+    "setbounds",          /* mp_bounds_command              */ /* setbounds clip group */
+    "protection",         /* mp_protection_command          */
+    "property",           /* mp_property_command            */
+    "show",               /* mp_show_command                */ /* show showvariable (etc) */
+    "mode",               /* mp_mode_command                */ /* batchmode (etc) */
+    "onlyset",            /* mp_only_set_command            */ /* randomseed, maxknotpool */
+    "message",            /* mp_message_command             */ /* message errmessage */
+    "everyjob",           /* mp_every_job_command           */ /* everyjob */
+    "delimiters",         /* mp_delimiters_command          */ /* delimiters */
+    "write",              /* mp_write_command               */ /* write */
+    "typename",           /* mp_type_name_command           */ /* (declare) numeric pair */
+    "leftdelimiter",      /* mp_left_delimiter_command      */ /* the left delimiter of a matching pair */
+    "begingroup",         /* mp_begin_group_command         */ /* begingroup */
+    "nullary",            /* mp_nullary_command             */ /* operator without arguments: normaldeviate (etc) */
+    "unary",              /* mp_unary_command               */ /* operator with one argument: sqrt (etc) */
+    "str",                /* mp_str_command                 */ /* convert a suffix to a string: str */
+    "void",               /* mp_void_command                */ /* convert a suffix to a boolean: void */
+    "cycle",              /* mp_cycle_command               */ /* cycle */
+    "ofbinary",           /* mp_of_binary_command           */ /* binary operation taking "of", like "point of" */
+    "capsule",            /* mp_capsule_command             */ /* */
+    "string",             /* mp_string_command              */ /* */
+    "internal",           /* mp_internal_quantity_command   */ /* */
+    "tag",                /* mp_tag_command                 */ /* a symbolic token without a primitive meaning */
+    "numeric",            /* mp_numeric_command             */ /* numeric constant */
+    "plusorminus",        /* mp_plus_or_minus_command       */ /* + - */
+    "secondarydef",       /* mp_secondary_def_command       */ /* secondarydef */
+    "tertiarybinary",     /* mp_tertiary_binary_command     */ /* an operator at the tertiary level: ++ (etc) */
+    "leftbrace",          /* mp_left_brace_command          */ /* { */
+    "pathjoin",           /* mp_path_join_command           */ /* .. */
+    "pathconnect",        /* mp_path_connect_command        */ /* -- */
+    "ampersand",          /* mp_ampersand_command           */ /* & */
+    "tertiarydef",        /* mp_tertiary_def_command        */ /* tertiarydef */
+    "primarybinary",      /* mp_primary_binary_command      */ /* < (etc) */
+    "equals",             /* mp_equals_command              */ /* = */
+    "and",                /* mp_and_command                 */ /* and */
+    "primarydef",         /* mp_primary_def_command         */ /* primarydef */
+    "slash",              /* mp_slash_command               */ /* / */
+    "secondarybinary",    /* mp_secondary_binary_command    */ /* an operator at the binary level: shifted (etc) */
+    "parametertype",      /* mp_parameter_commmand          */ /* primary expr suffix (etc) */
+    "controls",           /* mp_controls_command            */ /* controls */
+    "tension",            /* mp_tension_command             */ /* tension */
+    "atleast",            /* mp_at_least_command            */ /* atleast */
+    "curl",               /* mp_curl_command                */ /* curl */
+    "macrospecial",       /* mp_macro_special_command       */ /* quote, #@ (etc) */
+    "rightdelimiter",     /* mp_right_delimiter_command     */ /* the right delimiter of a matching pair */
+    "leftbracket",        /* mp_left_bracket_command        */ /* [ */
+    "rightbracket",       /* mp_right_bracket_command       */ /* ] */
+    "rightbrace",         /* mp_right_brace_command         */ /* } */
+    "with",               /* mp_with_option_command         */ /* withpen (etc) */
+    "thingstoadd",        /* mp_thing_to_add_command        */ /* addto contour doublepath also */
+    "of",                 /* mp_of_command                  */ /* of */
+    "to",                 /* mp_to_command                  */ /* to */
+    "step",               /* mp_step_command                */ /* step */
+    "until",              /* mp_until_command               */ /* until */
+    "within",             /* mp_within_command              */ /* within */
+    "assignment",         /* mp_assignment_command          */ /* := */
+    "colon",              /* mp_colon_command               */ /* : */
+    "comma",              /* mp_comma_command               */ /* , */
+    "semicolon",          /* mp_semicolon_command           */ /* ; */
+    "endgroup",           /* mp_end_group_command           */ /* endgroup */
+    "stop",               /* mp_stop_command                */ /* end dump */
+ // "outertag",           /* mp_outer_tag_command           */ /* protection code added to command code */
+    "undefinedcs",        /* mp_undefined_cs_command        */ /* protection code added to command code */
     NULL
 };
 
@@ -3378,6 +3378,18 @@ static int mplib_getinternalactions(lua_State* L)
     return 1;
 }
 
+static int mplib_getpruneoptions(lua_State* L)
+{
+    lua_createtable(L, 2, 4);
+    lua_set_string_by_index(L, collapse_regular_regular_prune, "collapse_regular_regular");
+    lua_set_string_by_index(L, collapse_begin_regular_prune,   "collapse_begin_regular");
+    lua_set_string_by_index(L, collapse_regular_end_prune,     "collapse_regular_end");
+    lua_set_string_by_index(L, collapse_begin_end_prune,       "collapse_begin_end");
+    lua_set_string_by_index(L, wipe_single_prune,              "wipe_single");
+    lua_set_string_by_index(L, connect_segments_prune,         "connect_segments");
+    return 1; 
+} 
+
 // static int getinternalactions(lua_State* L)
 // {
 //     return mplib_push_values(L, mplib_internal_sction_codes);
@@ -4248,6 +4260,7 @@ static const struct luaL_Reg mplib_functions_list[] = {
     { "getscantypes",       mplib_getscantypes       },
     { "getlogtargets",      mplib_getlogtargets      },
     { "getinternalactions", mplib_getinternalactions },
+    { "getpruneoptions",    mplib_getpruneoptions    },
     { "getcallbackstate",   mplib_getcallbackstate   },
     { "getresultstatus",    mplib_getresultstates    },
     /* */                                            

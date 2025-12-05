@@ -320,8 +320,8 @@ process = function(start,what,n,parent)
             noad = getrightdelimiter(start)  if noad then process(noad,what,n,start) end -- delimiter
         elseif id == fence_code then
             noad = getdelimiter(start)       if noad then process(noad,what,n,start) end -- delimiter
-            noad = gettop(start)             if noad then process(noad,what,n,start) end -- list
-            noad = getbottom(start)          if noad then process(noad,what,n,start) end -- list
+            noad = gettopdelimiter(start)    if noad then process(noad,what,n,start) end -- list
+            noad = getbottomdelimiter(start) if noad then process(noad,what,n,start) end -- list
         elseif id == radical_code then
             noad = getnucleus(start)         if noad then process(noad,what,n,start) end -- list
             noad = getsup(start)             if noad then process(noad,what,n,start) end -- list
@@ -383,8 +383,8 @@ processnested = function(current,what,n)
         noad = getrightdelimiter(current)  if noad then process(noad,what,n,current) end -- delimiter
     elseif id == fence_code then
         noad = getdelimiter(current)       if noad then process(noad,what,n,current) end -- delimiter
-        noad = gettop(current)             if noad then process(noad,what,n,current) end -- list
-        noad = getbottom(current)          if noad then process(noad,what,n,current) end -- list
+        noad = gettopdelimiter(current)    if noad then process(noad,what,n,current) end -- list
+        noad = getbottomdelimiter(current) if noad then process(noad,what,n,current) end -- list
     elseif id == radical_code then
         noad = getnucleus(current)         if noad then process(noad,what,n,current) end -- list
         noad = getsup(current)             if noad then process(noad,what,n,current) end -- list
@@ -435,8 +435,8 @@ processstep = function(current,process,n,id)
         noad = getrightdelimiter(current)  if noad then process(noad,n,current) end -- delimiter
     elseif id == fence_code then
         noad = getdelimiter(current)       if noad then process(noad,n,current) end -- delimiter
-        noad = gettop(current)             if noad then process(noad,n,current) end -- list
-        noad = getbottom(current)          if noad then process(noad,n,current) end -- list
+        noad = gettopdelimiter(current)    if noad then process(noad,n,current) end -- list
+        noad = getbottomdelimiter(current) if noad then process(noad,n,current) end -- list
     elseif id == radical_code then
         noad = getnucleus(current)         if noad then process(noad,n,current) end -- list
         noad = getsup(current)             if noad then process(noad,n,current) end -- list

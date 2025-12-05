@@ -340,7 +340,7 @@ See \prm {Uover} for an introduction.
 
 \startnewprimitive[title={\prm {Udelimiterunder}}]
 
-{\em todo} \writestatus{TODO}{\string\Udelimiterundef}
+{\em todo} \writestatus{TODO}{\string\Udelimiterunder}
 
 \stopnewprimitive
 
@@ -5658,7 +5658,7 @@ an error.
 
 Leaders are glue with special property: a box, rule of (in \LUAMETATEX) glyph, like:
 
-\startlines
+\startbuffer
 x\leaders   \glyph `M \hfill  x
 xx\leaders  \glyph `M \hfill xx
 
@@ -5670,6 +5670,15 @@ xx\xleaders \glyph `M \hfill xx
 
 x\gleaders  \glyph `M \hfill x
 xx\gleaders \glyph `M \hfill xx
+\stopbuffer
+
+\typebuffer
+
+The various leaders differ in how they anchor and align the successive
+components:
+
+\startlines
+\getbuffer
 \stoplines
 
 Leaders fill the available space. The \prm {leaders} command starts at the left

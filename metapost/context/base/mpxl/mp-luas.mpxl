@@ -291,6 +291,7 @@ vardef utfsub(text t) = runscript mfid_utfsub t enddef ; % str, first, (optional
 permanent utfchr, utfnum, utflen, utfsub ;
 
 newscriptindex mfid_getparameters        ; mfid_getparameters        := scriptindex "getparameters" ;
+newscriptindex mfid_setparameters        ; mfid_setparameters        := scriptindex "setparameters" ;
 newscriptindex mfid_presetparameters     ; mfid_presetparameters     := scriptindex "presetparameters" ;
 newscriptindex mfid_hasparameter         ; mfid_hasparameter         := scriptindex "hasparameter" ;
 newscriptindex mfid_hasoption            ; mfid_hasoption            := scriptindex "hasoption" ;
@@ -310,6 +311,7 @@ newscriptindex mfid_setluaparameter      ; mfid_setluaparameter      := scriptin
 
 def getparameters        = runscript mfid_getparameters        enddef ;
 def presetparameters     = runscript mfid_presetparameters     enddef ;
+def setparameters        = runscript mfid_setparameters        enddef ;
 def hasparameter         = runscript mfid_hasparameter         enddef ;
 def hasoption            = runscript mfid_hasoption            enddef ;
 def getparameter         = runscript mfid_getparameter         enddef ;
@@ -326,7 +328,7 @@ def pushparameters       = runscript mfid_pushparameters       enddef ;
 def popparameters        = runscript mfid_popparameters        enddef ;
 def setluaparameter      = runscript mfid_setluaparameter      enddef ;
 
-permanent getparameters, presetparameters, hasparameter, hasoption, getparameter, getparameterdefault,
+permanent getparameters, presetparameters, setparameters, hasparameter, hasoption, getparameter, getparameterdefault,
     getparametercount, getmaxparametercount, getparameterpath, getparameterpen, getparametertext, % getparameteroption,
     applyparameters, mergeparameters, pushparameters, popparameters, setluaparameter ;
 

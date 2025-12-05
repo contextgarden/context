@@ -1737,16 +1737,33 @@ end
         for i=1132,2048 do
             t[i] = char(28,band(rshift(i,8),0xFF),band(i,0xFF))
         end
+--         setmetatableindex(encode,function(t,k)
+--             -- as we're cff2 we write 16.16-bit signed fixed value
+--             local r = round(k)
+--             local v = rawget(t,r)
+--             if v then
+--                 return v
+--             end
+--             local v1 = floor(k)
+--             local v2 = floor((k - v1) * 0x10000)
+--             return char(255,extract(v1,8,8),extract(v1,0,8),extract(v2,8,8),extract(v2,0,8))
+--         end)
         setmetatableindex(encode,function(t,k)
             -- as we're cff2 we write 16.16-bit signed fixed value
-            local r = round(k)
-            local v = rawget(t,r)
-            if v then
-                return v
+            local v
+            local r = k % 1 == 0
+            if r then
+                v = rawget(t,k)
             end
-            local v1 = floor(k)
-            local v2 = floor((k - v1) * 0x10000)
-            return char(255,extract(v1,8,8),extract(v1,0,8),extract(v2,8,8),extract(v2,0,8))
+            if not v then
+                local v1 = floor(k)
+                local v2 = floor((k - v1) * 0x10000)
+                v = char(255,extract(v1,8,8),extract(v1,0,8),extract(v2,8,8),extract(v2,0,8))
+                if r then
+                    t[k] = v
+                end
+            end
+            return v
         end)
         return t[i]
     end)

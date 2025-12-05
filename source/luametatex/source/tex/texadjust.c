@@ -68,7 +68,7 @@ void tex_show_adjust_group(void)
     }
 }
 
-int tex_show_adjust_record(void)
+bool tex_show_adjust_record(void)
 {
     tex_print_str("adjust ");
     switch (saved_type(0)) { 
@@ -82,9 +82,9 @@ int tex_show_adjust_record(void)
             tex_print_format("target %i", saved_value_1(0));
             break;
        default: 
-            return 0;
+            return false;
     }
-    return 1;
+    return true;
 }
 
 static void tex_scan_adjust_keys(adjust_properties *properties)

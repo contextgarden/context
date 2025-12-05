@@ -120,8 +120,8 @@ typedef enum node_types {
     sub_mlist_node,
     delimiter_node,
     glyph_node,
-    /*tex This was the last node with attributes, except unset nodes. */
     unset_node,
+    /*tex This was the last node with attributes. */
     specification_node,
     align_record_node,
     attribute_list_node,
@@ -1464,6 +1464,7 @@ typedef enum glyph_discpart_codes {
 } glyph_discpart_codes;
 
 typedef enum glyph_disc_codes {
+    glyph_disc_unset       = 0x0,
     glyph_disc_normal      = 0x1, /* disc subtype + 1 */
     glyph_disc_explicit    = 0x2,
     glyph_disc_automatic   = 0x3,
@@ -1680,7 +1681,7 @@ typedef enum split_subtypes {
 
 # define last_preceding_break_node whatsit_node
 # define last_non_discardable_node dir_node
-# define last_node_with_attributes glyph_node
+# define last_node_with_attributes unset_node
 # define last_complex_node         align_record_node
 # define max_node_type             passive_node
 
@@ -2405,7 +2406,7 @@ typedef enum math_modifier_types {
 # define accent_middle_character noad_extra_3 /*tex the |overlay_accent_chr| field of an accent noad */
 # define accent_fraction         noad_extra_4
 # define accent_top_overshoot    noad_extra_5
-# define accent_bot_overshoot    noad_extra_6
+# define accent_bottom_overshoot noad_extra_6
 
 typedef enum math_accent_subtypes {
     /* we can be more specific: todo fixedoverlay_accent_subtype */
