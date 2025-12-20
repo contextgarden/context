@@ -31,6 +31,26 @@
 \setupalign
   [tolerant,stretch]
 
+\startsetups sectioncontents
+
+    \start
+
+        \setuplist
+          [section]
+          [color=maincolor,
+           style=bold]
+
+        \placelist
+          [section]
+          [before=\testpage[4]\blank,
+           criterium=previous,
+           pagenumber=no,
+           after=\startcolumns[balance=yes,distance=3em]\placelist[subsection]\stopcolumns]
+
+    \stop
+
+\stopsetups
+
 \setupdocument
   [title=No Title,
    subtitle={in luametatex},
@@ -308,7 +328,6 @@
 \setuplist
   [chapter,section]
   [width=4em]
-
 
 % We use the next one because we want to check what has been done. In a document
 % like this using \type {\foo} makes more sense.

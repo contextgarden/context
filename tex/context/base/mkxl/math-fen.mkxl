@@ -375,15 +375,15 @@
 \ifdefined\and      \else \aliased\let\and     \relax \fi
 
 \startsetups math:fence:set:bar
-    \aliased\let\suchthat\math_fenced_middle_bar
-    \aliased\let\where   \math_fenced_middle_comma
-    \aliased\let\and     \math_fenced_middle_comma
+    \enforced\let\suchthat\math_fenced_middle_bar
+    \enforced\let\where   \math_fenced_middle_comma
+    \enforced\let\and     \math_fenced_middle_comma
 \stopsetups
 
 \startsetups math:fence:set:colon
-    \aliased\let\suchthat\math_fenced_middle_colon
-    \aliased\let\where   \math_fenced_middle_comma
-    \aliased\let\and     \math_fenced_middle_comma
+    \enforced\let\suchthat\math_fenced_middle_colon
+    \enforced\let\where   \math_fenced_middle_comma
+    \enforced\let\and     \math_fenced_middle_comma
 \stopsetups
 
 \startsetups math:fence:set

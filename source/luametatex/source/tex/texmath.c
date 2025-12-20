@@ -5569,6 +5569,14 @@ static int tex_aux_short_math(halfword m)
     return 0;
 }
 
+inline void tex_aux_set_math_option(halfword beginmath, halfword endmath, halfword option)
+{
+    if (math_options_par & option) {
+        math_options(beginmath) |= option;
+        math_options(endmath) |= option;
+    }
+}
+
 void tex_run_math_shift(void)
 {
     switch (cur_group) {
@@ -5637,18 +5645,9 @@ void tex_run_math_shift(void)
                     halfword beginmath = tex_new_node(math_node, begin_inline_math);
                     halfword endmath = tex_new_node(math_node, end_inline_math);
                     halfword shortmath = 0;
-                    if (math_options_par & math_option_no_snapping) {
-                        math_options(beginmath) |= math_option_no_snapping;
-                        math_options(endmath) |= math_option_no_snapping;
-                    }
-                    if (math_options_par & math_option_snapping) {
-                        math_options(beginmath) |= math_option_snapping;
-                        math_options(endmath) |= math_option_snapping;
-                    }
-// if (math_options_par & math_option_cramped) {
-//     math_options(beginmath) |= math_option_cramped;
-//     math_options(endmath) |= math_option_cramped;
-// }
+                    tex_aux_set_math_option(beginmath, endmath, math_option_no_snapping);
+                    tex_aux_set_math_option(beginmath, endmath, math_option_snapping);
+                    tex_aux_set_math_option(beginmath, endmath, math_option_text);
                     switch (cur_list.math_main_style) {
                         case display_style:
                         case cramped_display_style:

@@ -75,6 +75,16 @@ typedef struct break_passes {
     int n_of_right_twins; 
 } break_passes;
 
+typedef enum linebreak_trace_counters { 
+    linebreak_trace_going_active,
+    linebreak_trace_easy_line,
+    linebreak_trace_at_active,
+    linebreak_trace_got_lost,
+    linebreak_trace_getting_loose,
+    /* */
+    linebreak_n_of_trace_counters
+} linebreak_trace_counters;
+
 typedef struct linebreak_state_info {
     /*tex the |hlist_node| for the last line of the new paragraph */
     halfword     just_box;
@@ -114,10 +124,13 @@ typedef struct linebreak_state_info {
     halfword     minimum_demerits;
     halfword     easy_line;
     halfword     last_special_line;
+    int          getting_loose;
     scaled       first_width;
     scaled       second_width;
     scaled       first_indent;
     scaled       second_indent;
+ // scaled       width;
+ // scaled       indent;
     scaled       emergency_amount;
     halfword     emergency_percentage;
     halfword     emergency_unit;
@@ -152,6 +165,7 @@ typedef struct linebreak_state_info {
     int          current_line_number; 
     int          has_orphans;
     int          has_toddlers; /* < 0: not found, == 0: tobechecked, > 0: #found */
+    int          trace_counter[linebreak_n_of_trace_counters]; 
 } linebreak_state_info;
 
 extern linebreak_state_info lmt_linebreak_state;

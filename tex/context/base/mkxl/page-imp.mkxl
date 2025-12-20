@@ -1185,6 +1185,64 @@
        \poparrangedpages
    \fi}
 
+%D A new one by Wolfgang:
+
+%D \starttyping
+%D \setuppapersize[A8,landscape][A4]
+%D \setuppaper    [nx=2,ny=4]
+%D \setuparranging[FLASHCARD]
+%D \setuplayout   [page]
+%D \setuplayout   [location=middle,marking=on]
+%D
+%D \starttext
+%D     \dorecurse {8} {
+%D         \centerbox{\convertnumber  {word}{#1}}\page
+%D         \centerbox{\convertnumber{number}{#1}}\page
+%D     }
+%D \stoptext
+%D \stoptyping
+
+% one   two     2 1
+% three four    4 3
+
+\installpagearrangement FLASHCARD
+  {\dosetuparrangement
+     \v_page_target_nx
+     \v_page_target_ny
+     {\numexpr\v_page_target_ny*2\relax}%
+     {\numexpr\v_page_target_nx+\plusone\relax}%
+     {\numexpr\v_page_target_ny+\plusone\relax}%
+   \pusharrangedpageFLASHCARD\poparrangedpagesAB\relax}
+
+\newinteger\arrangedpageshiftX
+\newinteger\arrangedpageshiftY
+
+\def\dopusharrangedpageFLASHCARD#1%
+  {\ifnum\arrangedpageshiftX<\arrangedpageX
+     \ifodd\arrangedpageN
+       \handlearrangedpageXandY{#1}0\arrangedpageshiftX\arrangedpageshiftY\arrangedpageA
+     \else
+       \handlearrangedpageXandY{#1}0{\numexpr\v_page_target_nx-\arrangedpageshiftX-1\relax}\arrangedpageshiftY\arrangedpageB
+       \global\advanceby\arrangedpageshiftX\plusone
+     \fi
+   \fi
+   \ifnum\arrangedpageshiftX=\v_page_target_nx
+     \global\arrangedpageshiftX\zerocount
+     \global\advanceby\arrangedpageshiftY\plusone
+   \fi}
+
+\def\pusharrangedpageFLASHCARD#1%
+  {\advancearrangedpageN
+   \reportarrangedpage\arrangedpageN
+   \ifnum\arrangedpageN=\numexpr\v_page_target_xy*2\relax
+     \dopusharrangedpageFLASHCARD{#1}%
+     \global\arrangedpageshiftX\zerocount
+     \global\arrangedpageshiftY\zerocount
+     \poparrangedpages
+   \else
+     \dopusharrangedpageFLASHCARD{#1}%
+   \fi}
+
 % % From Wolfgang for Mari (mail on list) ... yes or no in core .. time for
 % % delayed loading ...
 % %

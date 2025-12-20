@@ -567,7 +567,7 @@ local kern_code  = nodes.nodecodes.kern
 local glue_code  = nodes.nodecodes.glue
 
 for n in nodes.traverse(list) do
-    local id == n.id
+    local id = n.id
     if id == glyph_code then
         ...
     elseif id == kern_code then
@@ -579,6 +579,18 @@ for n in nodes.traverse(list) do
     end
 end
 \stoptyping
+
+% \setbox0\hbox{Getting nuts!}
+% \startluacode
+%     local list = nodes.tonut(tex.box[0].list)
+%     for n, id, subtype in nodes.nuts.traversers.node, list do
+%         print(
+%             n,
+%             nodes.nodecodes[id],
+%             nodes.subtypes[id][subtype]
+%         )
+%     end
+% \stopluacode
 
 You only need to use such temporary variables in time critical code. In spite of
 what you might think, lists are not that long and given the speed of \LUA\ (and

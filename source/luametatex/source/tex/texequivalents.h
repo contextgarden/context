@@ -1415,7 +1415,6 @@ extern int  tex_overload_permitted (halfword flags);
 # define math_surround_par                dimension_parameter(math_surround_code)
 # define max_depth_par                    dimension_parameter(max_depth_code)
 # define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
-# define null_delimiter_space_par         dimension_parameter(null_delimiter_space_code)
 # define overfull_rule_par                dimension_parameter(overfull_rule_code)
 # define page_extra_goal_par              dimension_parameter(page_extra_goal_code)
 # define par_indent_par                   dimension_parameter(par_indent_code)

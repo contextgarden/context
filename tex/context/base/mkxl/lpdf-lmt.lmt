@@ -1205,7 +1205,17 @@ do
         b = b + 1 ; buffer[b] = "Q"
     end
 
-    --
+    flushers.pushgroup = function()
+        pdf_goto_pagemode()
+     -- b = b + 1 ; buffer[b] = "% push"
+        b = b + 1 ; buffer[b] = "q"
+    end
+
+    flushers.popgroup = function()
+        pdf_goto_pagemode()
+        b = b + 1 ; buffer[b] = "Q"
+     -- b = b + 1 ; buffer[b] = "% pop"
+    end
 
     flushers.startmatrix = function(current,pos_h,pos_v)
         flushsave(current,pos_h,pos_v)

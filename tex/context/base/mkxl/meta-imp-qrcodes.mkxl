@@ -35,7 +35,6 @@
 %D a poster with 30 codes so there we used 30 bytemaps and positioned them on a
 %D page.
 
-
 \startluacode
 local random = math.random
 local char   = string.char

@@ -287,6 +287,10 @@
     \ctxlua{moduledata.engine.codes(tex.getemptyparagraphmodevalues())}
 \stopbuffer
 
+\startbuffer[engine:syntax:nodeerror]
+    \ctxlua{moduledata.engine.codes(node.getnodeerrorvalues())}
+\stopbuffer
+
 \stopmodule
 
 \continueifinputfile{s-system-syntax.mkxl}

@@ -418,7 +418,8 @@
      \expandafter\page_mix_start_columns_b
    \or
      \expandafter\page_mix_start_columns_a
-   \fi[#1][#2]}
+   \fi[#1][#2]%
+   \ignorespaces}
 
 \def\page_mix_start_columns_checked#1#2%
   {\edef\currentmixedcolumnsmethod{\mixedcolumnsparameter\c!method}%
@@ -957,12 +958,17 @@
      \let\currentoutputroutine\s!mixedcolumn % makes \column work
      \forgetall
      \usegridparameter\mixedcolumnsparameter
+     \usealignparameter\mixedcolumnsparameter
    % \useprofileparameter\mixedcolumnsparameter
      \page_mix_command_set_hsize
+     \usealignparameter\mixedcolumnsparameter
+    %\usealignmentparameter\mixedcolumnsparameter
+     \useindentingparameter\mixedcolumnsparameter
      \ifx\p_page_mix_strut\v!yes
+       \removeunwantedspaces
        \begstrut
-       \ignorespaces
-     \fi}
+     \fi
+     \ignorespaces} % delayed
 
 \defcsname\??mixedcolumnsstop\s!box\endcsname
   {\ifx\p_page_mix_strut\v!yes

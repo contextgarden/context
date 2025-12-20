@@ -2129,6 +2129,7 @@ static halfword tex_aux_allocated_node(int s)
         if (new > lmt_node_memory_state.nodes_data.allocated) {
             tex_overflow_error("node memory size", lmt_node_memory_state.nodes_data.size);
         }
+     // printf("old=%i  size=%i  new=%i\n",old,s,new);
     }
     /* We allocate way larger than the maximum size. */
  // printf("old=%i  size=%i  new=%i\n",old,s,new);

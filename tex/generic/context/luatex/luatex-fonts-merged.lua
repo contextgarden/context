@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2025-12-05 17:42
+-- merge date  : 2025-12-20 23:11
 
 do -- begin closure to overcome local limits and interference
 
@@ -18527,7 +18527,7 @@ do
   end
   return features
  end
- local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
+ local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
   setposition(f,lookupoffset)
   local noflookups=readushort(f)
   local lookups=readcardinaltable(f,noflookups,ushort)
@@ -18547,7 +18547,7 @@ do
    if markclass==0 then
     local markset=band(flagbits,0x0010)~=0 
     if markset then
-     markclass=readushort(f)+1
+     markclass=readushort(f)+1+nofmarkclasses 
     else
      markclass=false
     end
@@ -18894,7 +18894,10 @@ do
    if not lookupstoo then
     return
    end
-   local lookups=readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
+   local markclasses=fontdata.markclasses
+   local marksets=fontdata.marksets
+   local nofmarkclasses=(markclasses and #markclasses or 0)-(marksets and #marksets or 0)
+   local lookups=readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
    if lookups then
     resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)
    end

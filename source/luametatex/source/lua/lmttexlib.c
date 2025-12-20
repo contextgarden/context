@@ -5787,7 +5787,7 @@ static int texlib_getkernoptionvalues(lua_State *L)
 
 static int texlib_getmathoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 6);
+    lua_createtable(L, 2, 7);
     lua_set_string_by_index(L, math_option_normal,      "normal");
     lua_set_string_by_index(L, math_option_short,       "short");
     lua_set_string_by_index(L, math_option_orphaned,    "orphaned");
@@ -5795,6 +5795,7 @@ static int texlib_getmathoptionvalues(lua_State *L)
     lua_set_string_by_index(L, math_option_cramped,     "cramped");
     lua_set_string_by_index(L, math_option_snapping,    "snapping");
     lua_set_string_by_index(L, math_option_no_snapping, "nosnapping");
+    lua_set_string_by_index(L, math_option_text,        "text");
     return 1;
 }
 

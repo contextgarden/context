@@ -654,6 +654,13 @@ end
 
     -- local hasglyph = nuts.hasglyph
 
+    local markglyphprocessing = node.direct.markglyphprocessing
+    local quickanddirty       = false
+
+    experiments.register("fonts.checkchardisc",function(v)
+        quickanddirty = v
+    end)
+
     function handlers.characters(head,groupcode,direction)
 
      -- no gain:
@@ -842,17 +849,23 @@ end
             protectglyphsnone(head)
         end
 
-if basedone then
-    local start = head
-    start = ligaturing(start)
-    start = kerning(start)
-    if head ~= start then
-        head = start
-    end
-    protectglyphsbase(head)
-end
+        if basedone then
+            local start = head
+            start = ligaturing(start)
+            start = kerning(start)
+            if head ~= start then
+                head = start
+            end
+            protectglyphsbase(head)
+        end
 
-if experiment then
+    if experiment then
+
+     -- if quickanddirty then
+     --     -- setting processing state to okay/skip happens in the processor calls
+     --     -- so we don't need to initialize the state here
+     --     markglyphprocessing(head,true) -- okay
+     -- end
 
         if d == 0 then
             -- skip
@@ -873,7 +886,13 @@ if experiment then
             end
         end
 
-else
+     -- if quickanddirty then
+     --     -- we need to set processing to okay/unset afterwards
+     --     markglyphprocessing(head) -- unset
+     -- end
+
+    else
+
         -- in context we always have at least 2 processors
         if u == 0 then
             -- skip
@@ -912,7 +931,7 @@ else
             end
         end
 
-end
+    end
 
 --         if basedone then
 --             local start = head

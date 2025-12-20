@@ -40,8 +40,8 @@ if not modules then modules = { } end modules ['phys-dim'] = {
 --  RevPerMin                   = [[RPM]],
 
 local rawset, next = rawset, next
-local V, P, S, R, C, Cc, Cs, matchlpeg = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match
-local format, lower, gsub = string.format, string.lower, string.gsub
+local V, P, S, R, C, Cc, Cs, matchlpeg, lpegpatterns = lpeg.V, lpeg.P, lpeg.S, lpeg.R, lpeg.C, lpeg.Cc, lpeg.Cs, lpeg.match, lpeg.patterns
+local lower, gsub = string.lower, string.gsub
 local appendlpeg = lpeg.append
 local utfchartabletopattern = lpeg.utfchartabletopattern
 local mergetable, mergedtable, keys, loweredkeys, sortedhash = table.merge, table.merged, table.keys, table.loweredkeys, table.sortedhash
@@ -771,6 +771,25 @@ end
 
 -- todo 0x -> rm
 
+local needsfixing = table.setmetatableindex("number")
+
+logs.registerfinalactions(function()
+    if next(needsfixing) then
+        local n = 0
+        logs.startfilelogging(report_units,"unknown units")
+     -- report_units("")
+        for k, v in table.sortedhash(needsfixing) do
+            report_units("  %03i : %s",v,k)
+            n = n + v
+        end
+     -- report_units("")
+        logs.stopfilelogging()
+        report_units("")
+        report_units("check log file for %i unknown unit(s)",n)
+        report_units("")
+    end
+end)
+
 local function update_parsers(keepcase) -- todo: don't remap utf sequences
 
     local all_long_prefixes   = { }
@@ -810,6 +829,12 @@ local function update_parsers(keepcase) -- todo: don't remap utf sequences
     for k, v in sortedhash(user_short_suffixes)  do all_short_suffixes [k] = v end
 
     local somespace        = P(" ")^0/""
+--     local p_unknown        = Cs(P(
+--                                 1
+--                               - lpegpatterns.digits
+--                               - lpegpatterns.whitespace
+--                               - S("+-:/*")
+--                             )^1)
 
     local p_long_prefix    = appendlpeg(all_long_prefixes,nil,true)
     local p_long_unit      = appendlpeg(all_long_units,nil,true)
@@ -851,7 +876,7 @@ local function update_parsers(keepcase) -- todo: don't remap utf sequences
         shortoperator = Cs(V("somespace") * p_short_operator),
         packaged      = Cs(V("somespace") * p_packaged),
         --
-specialsuffix = Cs(V("somespace") * P("^")/"" * lbrace * (1-rbrace)^1 * rbrace),
+        specialsuffix = Cs(V("somespace") * P("^")/"" * lbrace * (1-rbrace)^1 * rbrace),
         --
         nothing       = Cc(""),
         somespace     = somespace,
@@ -958,6 +983,13 @@ specialsuffix = Cs(V("somespace") * P("^")/"" * lbrace * (1-rbrace)^1 * rbrace),
                     * V("unit")
                     + V("number")
         }
+   -- * C(P(1)^0) / function(s)
+      * (P(1)^0) / function(s)
+                     if #s > 0 then
+                        needsfixing[s] = needsfixing[s] + 1
+                        report_units("unknown unit in %a",s)
+                     end
+                 end
     end
 
     return combine(p_c_dparser), combine(c_p_dparser)

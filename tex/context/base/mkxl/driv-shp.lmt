@@ -137,6 +137,8 @@ local flushsimplerule
 local flushspecialrule
 local pushleaderlevel
 local popleaderlevel
+local pushgroup
+local popgroup
 
 -- make local
 
@@ -733,11 +735,13 @@ local hlist_out, vlist_out  do
                     local box = si -- si[1]
                     -- tagging needs it to be earlier
                  -- finalize(box,false)
+pushgroup()
                     if getid(box) == vlist_code then
                         vlist_out(current,box)
                     else
                         hlist_out(current,box)
                     end
+popgroup()
                     flushnode(box)
                     s[i] = false
                 end
@@ -1748,6 +1752,9 @@ function drivers.converters.lmtx(driver,box,smode,objnum,specification)
     flushliteral      = flushers.literal
     flushwhatsit      = flushers.whatsit
     flushspace        = flushers.space
+
+    pushgroup         = flushers.pushgroup
+    popgroup          = flushers.popgroup
 
     reset_directions()
     reset_anchors()

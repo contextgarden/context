@@ -279,7 +279,7 @@ return {
         "constantspecificationoptioncode",
         --
         "shortmathoptioncode", "orphanedmathoptioncode", "displaymathoptioncode", "crampedmathoptioncode",
-        "nosnappingmathoptioncode",
+        "nosnappingmathoptioncode", "textmathoptioncode",
         --
      -- "noitaliccorrectionkerneloptioncode", "noleftpairkernkerneloptioncode", "norightpairkernkerneloptioncode",
      -- "autodiscretionarykerneloptioncode", "fulldiscretionarykerneloptioncode",

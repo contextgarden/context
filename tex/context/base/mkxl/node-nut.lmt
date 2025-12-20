@@ -199,6 +199,14 @@ local nuts = {
     isitalicglyph           = direct.isitalicglyph,
     isnext                  = direct.isnext,
     isnextchar              = direct.isnextchar,
+
+    ischarcheck             = direct.ischarcheck,
+    isnextcharcheck         = direct.isnextcharcheck,
+    isprevcharcheck         = direct.isprevcharcheck,
+    setfontcheck            = direct.setfontcheck,
+    getfontcheck            = direct.getfontcheck,
+    newfontcheck            = direct.newfontcheck,
+
     isnextglyph             = direct.isnextglyph,
     isnode                  = isnode,
     isnut                   = isdirect,

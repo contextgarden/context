@@ -60,7 +60,7 @@
        \setMPpositiongraphic
          {\boxanchorposone}%
          {\namedboxanchorcontentparameter{#1}\c!mp}%
-         {\anch_box_connect_parameters{#1}{#3}}%
+          {\anch_box_connect_parameters{#1}{#3}}%
     \stoppositionoverlay
    }%
    \ifcstok{\namedboxanchorcontentparameter{#1}\c!page}\v!yes

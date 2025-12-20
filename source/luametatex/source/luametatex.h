@@ -17,7 +17,7 @@
     making fonts and testing. Taco and I discussed, compiled, accepted and rejected ideas. These
     were interesting times! Over the years that we had used \TEX\ we could finally explore what we
     had been talking about for years (long trips to user group meetings are good for that). We
-    ame to the first version(s) of \LUATEX\ with \CONTEXT\ \MKIV\ providing a testbed and as we
+    came to the first version(s) of \LUATEX\ with \CONTEXT\ \MKIV\ providing a testbed and as we
     progressed we ended up with something we liked a lot.
 
     After half a decade, where in the meantime Taco also had turned MetaPost into a library, we
@@ -110,7 +110,7 @@
 # define luametatex_release          8
 # define luametatex_version_string   "2.11.08"
 # define luametatex_version_number   211.8
-# define luametatex_development_id   20251205
+# define luametatex_development_id   20251213
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -212,7 +212,7 @@ extern version_state_info lmt_version_state;
     The code in \LUAMETATEX\ is a follow up on \LUATEX\ which is itself a follow up on \PDFTEX\
     (and parts of \ALEPH). The original \PASCAL\ code has been converted \CCODE. Substantial amounts
     of code were added over a decade. Stepwise artifacts have been removed (for instance originating
-    in the transations from \PASCAL, or from integration in the infrastructure), parts of code has
+    in the translations from \PASCAL, or from integration in the infrastructure), parts of code has
     been rewritten. As much as possible we keep the old naming intact (so that most of the \TEX\
     documentation applies. However, as we now assume \CCODE, some things have changed. Among the
     changes are handling datatypes and certain checks. For instance, when |null| is used this is
@@ -232,13 +232,13 @@ extern version_state_info lmt_version_state;
     dependencies. Among the rationales for this is that we depend on \LUA, and whatever works for
     the \LUA\ codebase (which is quite portable) should also work for \LUATEX. But there are always
     some overloads because (especially in \LUATEX\ where one can use \KPSE) the integration in a
-    \TEX\ ecosystem expects some behaviour with respect to files and running subprocesses and such.
+    \TEX\ ecosystem expects some behavior with respect to files and running sub-processes and such.
     In \LUAMETATEX\ there is less of that because \CONTEXT\ does more of that itself.
 
     So, one of the biggest complications was the dependency on the \WEBC\ helpers and file system
     interface. However, because that was already kind of isolated, it could be removed. If needed
     we can always bring back \KPSE\ as an external library. In the process there can be some side
-    effects but in the end it gives a cleaner codebase and less depedencies. We suddenly don't need
+    effects but in the end it gives a cleaner codebase and less dependencies. We suddenly don't need
     all kind of tweaks to get the program compiled.
 
     The \TEX\ memory model is based on packing data in memory words, but that concept is somewhat
@@ -246,7 +246,7 @@ extern version_state_info lmt_version_state;
     internally \LUATEX\ will pack most of its node data in a multiples of 64 bits (called words). On
     the one hand there is more memory involved but on the other hand it suits the architectures
     well. In \LUAMETATEX\ we target 64 bit machines, but still provide binaries for 32 bit
-    architectures. The endianness related code has been dropped, simply because already for decades,
+    architectures. The endian related code has been dropped, simply because already for decades,
     format files are not shared between platforms either.
 
     Because \TEX\ efficiently implements its own memory management of nodes, the address of a node
@@ -373,7 +373,7 @@ extern version_state_info lmt_version_state;
     \stoptyping
 
     In fact, we don't use assert at all in \LUAMETATEX\ because if we need it we should do a decent
-    test and report an issue. In the \TEXLIVE\ eco system there can be assignments and function
+    test and report an issue. In the \TEXLIVE\ ecosystem there can be assignments and function
     calls in asserts which can disappear in case of e.g. compiling with msvc, so the above define
     is even wrong!
 

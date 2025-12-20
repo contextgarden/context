@@ -62,6 +62,15 @@ then
     cd       build/cygwin
     cmake $NINJA ../..
 
+elif [ "$1" = "aarch64" ] || [ "$1" = "--aarch64" ] || [ "$1" = "rpi" ] || [ "$1" = "--rpi" ]
+then
+
+    PLATFORM="aarch64"
+    SUFFIX="    "
+    mkdir -p build/aarch64
+    cd       build/aarch64
+    cmake $NINJA ../..
+
 elif [ "$1" = "osx-arm" ] || [ "$1" = "osxarm" ] || [ "$1" = "--osx-arm" ] || [ "$1" = "--osxarm" ]
 then
 
@@ -99,6 +108,7 @@ echo "mingw-64"
 echo "mingw-32"
 echo "mingw-64-ucrt"
 echo "cygwin"
+echo "aarch64"
 echo "osx-arm"
 echo "osx-intel"
 echo "osx-universal"

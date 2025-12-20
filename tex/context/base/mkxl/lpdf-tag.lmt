@@ -1025,7 +1025,7 @@ local function makeattribute(t)
 end
 
 local visualizetags       = nil
-local visualizespecial    = nil
+local visualizespecials   = nil
 local visualizeblobs      = nil
 local visualizesuspects   = nil
 local visualizeinternals  = nil
@@ -1038,7 +1038,6 @@ statistics.register("pdf tags", function()
         return formatters["suspects: % t"](collectedsuspects)
     end
 end)
-
 
 local function checkvisualize()
     if not visualizetags then
@@ -1210,7 +1209,6 @@ local makeelement  do
              -- end
 
             end
-
         end
 
         local blobdone = { }

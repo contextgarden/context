@@ -38,7 +38,7 @@ local helpinfo = [[
     <flag name="validate"><short>validate document (calls verapdf)</short></flag>
     <flag name="detail"><short>print detail to the console</short></flag>
     <flag name="userdata"><short>print userdata to the console</short></flag>
-    <flag name="structure"><short>check the (context speficic) structure of the content</short></flag>
+    <flag name="structure"><short>check the (context specific) structure of the content</short></flag>
    </subcategory>
    <subcategory>
     <example><command>mtxrun --script pdf --info foo.pdf</command></example>

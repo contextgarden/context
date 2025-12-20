@@ -1,0 +1,78 @@
+%D \module
+%D   [       file=s-physics-texunits,
+%D        version=2012-12-12,
+%D          title=\CONTEXT\ Modules,
+%D       subtitle=\TEX\ Units,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D I wanted to play with this in one of the manuals although it doesn't really us a
+%D real unit. So for now this is just some playground!
+
+\startmodule[physics-texunits]
+
+\defineunit
+  [tunit]
+  [style=mono]
+
+\registerunit
+   [unit]
+   [point=point,
+    basepoint=basepoint,
+    bigpoint=bigpoint,
+    scaledpoint=scaledpoint,
+    didot=didot,
+    cicero=cicero,
+    emwidth=emwidth,
+    exheight=exheight,
+    %
+    t:cm=cm,
+    t:mm=mm,
+    t:in=in,
+    t:pt=ps,
+    t:sp=sp,
+    t:bp=bp,
+    t:dd=dd,
+    t:cc=cc,
+    t:ex=ex,
+    t:em=em,
+   ]
+
+\setupunittext
+  [en]
+  [point=pt,
+   basepoint=bp,
+   bigpoint=bp,
+   scaledpoint=sp,
+   didot=dd,
+   cicero=cc,
+   emwidth=em,
+   exheight=ex,
+  ]
+
+\stopmodule
+
+\continueifinputfile{s-physics-texunits.mkxl}
+
+\usemodule[art-01]
+
+\starttext
+
+    \unit{10 whatever} % warning on console and in log
+
+    \unit{10.002 cicero}
+
+    \tunit{10 cicero}
+
+    \tunit{10 cm}
+
+    \tunit{10 t:cm}
+
+    \unit{10 emwidth}
+
+\stoptext

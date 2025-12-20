@@ -1666,7 +1666,7 @@
 
 \newuserunit \piunit pi
 \newuserunit \ftunit ft
-\newuserunit \uunit  uu
+\newuserunit \uunit  uu  % vu is we want to be Knuth's basic compatible
 
 %D We enable special escapes:
 

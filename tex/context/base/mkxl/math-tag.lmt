@@ -479,13 +479,20 @@ do
 
     -- todo: have a local list with local tags that then get appended
 
+    local mathcodes                    = nodes.mathcodes
+    local beginmath_code       <const> = mathcodes.beginmath
+    local endmath_code         <const> = mathcodes.endmath
+    local beginbrokenmath_code <const> = mathcodes.beginbrokenmath
+    local endbrokenmath_code   <const> = mathcodes.endbrokenmath
+
     local function runner(td,nd,text,list) -- quite inefficient
         local cache = { } -- we can have nested unboxed mess so best local to runner
         local keep = nil
      -- local keep = { } -- in case we might need to move keep outside
         for n, id, subtype in nextnode, list do
             local mth = id == math_code and subtype
-            if mth == 0 then -- begin in line / nested math box like stackers
+            if mth == beginmath_code or mth == beginbrokenmath_code then
+             -- begin in line / nested math box like stackers
              -- insert(keep,text)
                 keep = text
                 text = start_tagged("mrow")
@@ -544,7 +551,8 @@ do
                     runner(td,nd,text,replace)
                 end
             end
-            if mth == 1 then -- end in line
+            if mth == endmath_code or mth == endbrokenmath_code then
+                -- end in line
                 stop_tagged()
              -- text = remove(keep)
                 text = keep
@@ -1037,7 +1045,10 @@ local standalone  = false
 
 directives.register("structures.tags.math.standalone", function(v) standalone = v end)
 
-function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,mainstyle)
+local texgetattribute   = tex.getattribute
+----- text_code <const> = tex.mathoptioncodes.text
+
+function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,mainstyle,options)
     --
     -- The style state is sort of tricky because we have to set that at the \TEX\ end
     -- when we start the (in our case always) inlien mode. But it looks ok.
@@ -1052,9 +1063,10 @@ function noads.handlers.tags(head,style,penalties,beginclass,endclass,level,main
     local mode = noads.getmathmode(head)
 
     if not context.trialtypesetting() then
-        local a = tex.getattribute(a_mathfamily) -- brrr
+        local a = texgetattribute(a_mathfamily) -- brrr
         start_tagged("math", {
             mode       = mode,
+         -- text       = (options & text_code) == text_code,
             standalone = standalone,
             family     = mathematics.familyname(a),
             style      = mainstyle,

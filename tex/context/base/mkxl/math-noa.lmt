@@ -2375,7 +2375,7 @@ do
     local trace_snapping  = false  registertracker("math.snapping", function(v) trace_snapping = v end)
     local report_snapping = logreporter("mathematics","snapping")
 
-    -- head,style,penalties,beginclass,endclass,level,mainstyle
+    -- head,style,penalties,beginclass,endclass,level,mainstyle,options
 
     function handlers.snap(h,_,_,_,_,level)
      -- if not level or level == 0 then
@@ -2936,15 +2936,15 @@ local actions = tasks.actions("math") -- head, style, penalties
 
 local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 
--- local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style)
+-- local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style,options)
 --     starttiming(noads)
---     head = actions(head,style,penalties,beginclass,endclass,level,style)
+--     head = actions(head,style,penalties,beginclass,endclass,level,style,options)
 --     stoptiming(noads)
 --     return head
 -- end
 
-local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style)
-    return actions(head,style,penalties,beginclass,endclass,level,style)
+local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style,options)
+    return actions(head,style,penalties,beginclass,endclass,level,style,options)
 end
 
 callbacks.register {

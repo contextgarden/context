@@ -6,16 +6,9 @@
 
 % function node.direct.collapsing
 
-% function node.direct.copyonly
-
-% function node.direct.effectiveglue
-
-% function node.direct.exchange
+ % function node.direct.exchange
 
 % function node.direct.findattributerange
-% function node.direct.firstchar
-% function node.direct.firstglyph
-% function node.direct.firstitalicglyph
 
 % common : function node.direct.flushnode
 
@@ -37,27 +30,31 @@
 
 % general : function node.direct.getnodes
 
-% function node.direct.hasattribute
-% function node.direct.hasdimensions
-% function node.direct.hasdiscoption
-% function node.direct.hasgeometry
-% function node.direct.hasglyphoption
-
 % function node.direct.ignoremathskip
 
-% function node.direct.isboth
-% function node.direct.ischar
-% function node.direct.isdirect
-% function node.direct.isglyph
+% (unprotected)
+
+% function node.direct.ischar (n, font, data )
+% function node.direct.ischar (n, font, data, state )
+% function node.direct.ischar (n, font, scale, xscale, yscale )
+% function node.direct.ischar (n, font, data, scale, xscale, yscale )
+
+%     <nil when no node>
+%     <nil when no glyph> <id of node>
+%     <false when glyph and already marked as done or when not>
+%     <character code when font matches or when no font passed>
+
+% (always)
+
+% function node.direct.firstchar
+% function node.direct.firstglyph
+
 % function node.direct.isitalicglyph
-% function node.direct.isnext
-% function node.direct.isnextchar
-% function node.direct.isnextglyph
+% function node.direct.issimilarglyph   (a, b) font data scales slant weight
+% function node.direct.firstitalicglyph (n, checkkerntoo)
+
+% function node.direct.isdirect
 % function node.direct.isnode
-% function node.direct.isprev
-% function node.direct.isprevchar
-% function node.direct.isprevglyph
-% function node.direct.issimilarglyph
 % function node.direct.isspeciallist
 % function node.direct.isvalid
 
@@ -67,13 +64,7 @@
 
 % function node.direct.naturalhsize
 
-% function node.direct.newcontinuationatom
-
 % function node.direct.getwordrange
-
-% setfielderror
-% getfielderror
-% getnodeerrorvalues
 
 % function node.direct.getcurrenttail
 % function node.direct.setcurrenttail
@@ -97,8 +88,6 @@
 
 % function node.direct.serialized
 % function node.direct.setanchors
-
-% function node.direct.settotal
 
 % function node.direct.show
 
@@ -124,9 +113,6 @@
 % node.shared.getcachestate
 
 % node.hybrid.gluetostring
-
-% todo > helper getfielderror
-% todo > helper setfielderror
 
 % todo > noad getfield :
 %    hlist       : internal
@@ -202,9 +188,17 @@
 % \showenginevalues{uleaderlocationvalues}
 % \showenginevalues{unitclassvalues}
 
+% This one (end 2025) took a while to update so an occasional treat helps then,
+% like watching Keith Carlock FULL (!) 20 MIN SOLO ‪@theukdrumshow‬ 2024. More
+% fun than documenting functions.
+
 \environment luametatex-style
 
 \startdocument[title=Nodes]
+
+\startsubject[title=Contents]
+    \setups[sectioncontents]
+\stopsubject
 
 \startsection[title={Introduction}]
 
@@ -606,7 +600,6 @@ they are handled.
 \showengineusagepernode{whatsit}
 
 \stopsubsection
-
 
 \startsubsection[title={attributelist}]
 
@@ -1032,6 +1025,16 @@ function node.direct.copylist ( <t:direct> n, <t:direct> m )
 end
 \stoptyping
 
+We can also make a more direct copy of a node, which means that we don't make
+copy of for instance node lists assigned to a field. So you'd better know what
+you're doing.
+
+\starttyping[option=LUA]
+function node.direct.copyonly ( <t:direct> n )
+    return <t:direct> -- copy
+end
+\stoptyping
+
 Note that you cannot copy attribute lists this way. However, there is normally no
 need to copy attribute lists because when you do assignments to the \type {attr}
 field or make changes to specific attributes, the needed copying and freeing
@@ -1200,6 +1203,15 @@ we have \typ {setinputstatemode}, \typ {getinputstatemode}, \typ
 control what values get assigned. The engine itself has no knowledge of this
 synchronization feature, the macro package defines it.
 
+This function checks of a glyph, rule, box or leader content has a width, height
+and/or depth set to a non-zero value.
+
+\starttyping[option=LUA]
+function node.direct.hasdimensions ( <t:direct> )
+    return <t:boolean>
+end
+\stoptyping
+
 \stopsubsection
 
 \startsubsection[title={Geometry}]
@@ -1235,8 +1247,6 @@ end
 \stoptyping
 
 The setter sets these properties when a number is passed:
-
-% function node.direct.setoffsets
 
 \starttyping[option=LUA]
 function node.direct.setoffsets (
@@ -1446,13 +1456,141 @@ function node.direct.newtextglyph ( <t:integer> f, <t:integer> c ) end
 function node.direct.newmathglyph ( <t:integer> f, <t:integer> c ) end
 \stoptyping
 
+For now we keep this one for sentimental reasons, although its application is
+rather specific: in a sequence of pre- and postscripts to nuclei. The first
+variant creates a new one and optionally sets an attribute list. The second
+variant takes an existing node and tags it as continuation setting properties
+according the current math setup. This function was added for prototyping new
+functionally and lost its purpose; the engine knows better what to do.
+
+\starttyping[option=LUA]
+function node.direct.newcontinuationatom (
+    <t:boolean> new,
+    <t:direct>  attrlist
+)
+    return <t:direct>
+end
+
+function node.direct.newcontinuationatom (
+    <t:direct> existing
+)
+    -- no return value
+end
+\stoptyping
+
+We mentioned glyph options, so here is a test for that, using a option already
+mentioned in a previous section and that are normally set with \prm
+{glyphoptions}:
+
+\starttyping[option=LUA]
+function node.direct.hasglyphoption ( <t:direct> g, <t:integer> o )
+    return <t:boolean>
+end
+\stoptyping
+
 We now arrived at some rather special helpers. Although the engine is basically
 neutral with respect to macro packages and how they deal with fonts, we took the
 liberty to add some features that fit well in the way \CONTEXT\ deals with these
 matters; like it or not.
 
-First of all, we're talking of a special kind of node, one that
-stores a font related state.
+When we process the input characters in a node list according to the way a font
+likes it to be rendered, we have two states: unprotected and protected. We start
+out unprotected and when done set the protection flag on the glyph nodes so that
+later on we can check if processing already happened. In functions that basically
+do the same we use \type {char} for unprotected and \typ {glyph} otherwise.
+
+\starttyping[option=LUA]
+function node.direct.ischar (
+    <t:direct>  n, <t:integer> font,
+    <t:integer> data
+)
+    return
+        <t:nil>              -- no node
+      | <t:nil>, <t:integer> -- node id
+      | <t:false>            -- glyph already done
+      | <t:integer>          -- character code
+end
+
+function node.direct.ischar (
+    <t:direct>  n, <t:integer> font,
+    <t:integer> data,
+    <t:integer> state
+)
+    return -- see above
+end
+
+function node.direct.ischar (
+    <t:direct>  n, <t:integer> font,
+    <t:integer> scale, <t:integer> xscale, <t:integer> yscale
+)
+    return -- see above
+end
+
+function node.direct.ischar (
+    <t:direct>  n, <t:integer> font,
+    <t:integer> data,
+    <t:integer> scale, <t:integer> xscale, <t:integer> yscale
+)
+    return -- see above
+end
+\stoptyping
+
+The \type {isglyph} checker is simpler:
+
+\starttyping[option=LUA]
+function node.direct.isglyph ( <t:direct> n )
+    return
+        <t:nil>,
+        <t:nil>
+end
+function node.direct.isglyph ( <t:direct> n )
+    return
+        <t:false>,
+        <t:integer> -- node id
+end
+function node.direct.isglyph ( <t:direct> n )
+    return
+        <t:integer>, -- character code,
+        <t:integer>  -- font id
+end
+\stoptyping
+
+A variant returns the next or previous node, or nothing when there is no node
+passed.
+
+\starttyping[option=LUA]
+function node.direct.isnextglyph ( <t:direct> n )
+    return
+        <t:integer> | <t:nil>, -- next node
+        <t:false>,
+        <t:integer>            -- node id
+end
+
+function node.direct.isnextglyph ( <t:direct> n )
+    return
+        <t:integer> | <t:nil>, -- next node
+        <t:integer>,           -- character code,
+        <t:integer>            -- font id
+end
+
+function node.direct.isprevglyph ( <t:direct> n )
+    return
+        <t:integer> | <t:nil>, -- previous node
+        <t:false>,
+        <t:integer>            -- node id
+end
+
+function node.direct.isprevglyph ( <t:direct> n )
+    return
+        <t:integer> | <t:nil>, -- previous node
+        <t:integer>,           -- character code,
+        <t:integer>            -- font id
+end
+\stoptyping
+
+We now introduce a special kind of node, one that stores a font related state. This
+one was introduced when we switched to compact font mode in \CONTEXT, after a
+few year period of testing.
 
 \starttyping[option=LUA]
 function node.direct.newfontcheck (
@@ -1577,6 +1715,9 @@ function node.direct.isprevcharcheck (
       | <t:direct>, <t:nil>              -- no spec or node
 end
 \stoptyping
+
+{\em There are some extra helpers that one can consider to be experimental that
+we test in the node mode font handler. Just don't use them.}
 
 \stopsubsection
 
@@ -1865,7 +2006,7 @@ This is an iterator that loops over all the nodes in the list that starts at
 details. The change is in the local function \type {f}, which now does an extra
 while loop checking against the upvalue \type {id}, kind of like:
 
-\starttyping
+\starttyping[option=LUA]
 local function f(head,var)
     local t
     if var == nil then
@@ -1984,6 +2125,27 @@ function node.direct.traverse (
         <t:integer> subtype
 end
 \stoptyping
+
+You can look ahead and back with these three, you pass two arguments, a node and
+type to be checked:
+
+\starttyping[option=LUA]
+function node.direct.isnext ( <t:direct> n, <t:integer> type )
+    return <t:direct> | <t:nil>
+end
+function node.direct.isprev ( <t:direct> n, <t:integer> type )
+    return <t:direct> | <t:nil>
+end
+function node.direct.isboth ( <t:direct> n, <t:integer> type )
+    return
+        <t:direct> | <t:nil>, -- prev
+        <t:direct> | <t:nil>  -- next
+end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title=Dimensions]
 
 When working with nodes that have dimensions it can be that the effective
 width, height and depth are determined by for instance scaling (glyphs) or
@@ -2308,13 +2470,14 @@ more when you assign attributes (using \type {tex.setattribute}) or when control
 has been passed back to \TEX.
 
 \starttyping[option=LUA]
-<number> v = node.hasattribute ( <node> n, <number> id )
-<number> v = node.hasattribute ( <node> n, <number> id, <number> val )
+<number> v = node.hasattribute ( <t:node> n, <number> id )
+<number> v = node.hasattribute ( <t:node> n, <number> id, <number> val )
 \stoptyping
 
-Tests if a node has the attribute with number \type {id} set. If \type {val} is
-also supplied, also tests if the value matches \type {val}. It returns the value,
-or, if no match is found, \type {nil}.
+Of course this one is also available in the \typ {node.direct} namespace, as is
+the following one that tests if a node has the attribute with number \type {id}
+set. If \type {val} is also supplied, also tests if the value matches \type
+{val}. It returns the value, or, if no match is found, \type {nil}.
 
 \starttyping[option=LUA]
 function node.direct.getattribute ( <t:direct> n, <t:integer> id )
@@ -2815,6 +2978,19 @@ function node.direct.setpenalty ( <t:direct> d, <t:integer> penalty )
 end
 \stoptyping
 
+Discretionaries can have options set, which you then can checked with
+the following function:
+
+\starttyping[option=LUA]
+function node.direct.hasdiscoption ( <t:direct> d, <t:integer> option )
+    return <t:boolean> -- inbitset
+end
+\stoptyping
+
+A bitwise and is done on the field in the node where possible bits are:
+
+\showenginevalues{discoptionvalues}
+
 The next pair targets glyphs and normally you will not use the setter, because
 the engine takes care of setting that state.
 
@@ -2841,11 +3017,11 @@ The part and after properties relate to discretionary nodes that might have been
 flattened. The complication in (tracing) here is that information is lost so we
 store the states in the glyph node.
 
-\showenginevalues{discpartvalues}
+\showenginevalues[3]{discpartvalues}
 
 The code properties relate to where the (usually hyphen) character comes from:
 
-\showenginevalues{glyphdiscvalues}
+\showenginevalues[3]{glyphdiscvalues}
 
 When you fool around with disc nodes you need to be aware of the fact that they
 have a special internal data structure. As long as you reassign the fields when
@@ -2942,6 +3118,10 @@ function node.direct.hasgeometry (
     return <t:integer> | <t:boolean>
 end
 \stoptyping
+
+Possible bits in to be checked set are:
+
+\showenginevalues{listgeometryvalues}
 
 If an orientation is set, you can query several properties:
 
@@ -3055,6 +3235,22 @@ Because we have multiple sub fields we have a zero checker:
 \starttyping[option=LUA]
 function node.direct.iszeroglue ( <t:direct> node ) return <t:boolean> end
 \stoptyping
+
+Glue nodes and math nodes with a glue property have specifications that
+are adapted according to the width of the surrounding box. We can get the
+effective values with:
+
+\starttyping[option=LUA]
+function nodes.direct.effectiveglue (
+    <t:direct> node,
+    <t:direct> parent
+)
+    return <t:integer> amount
+end
+\stoptyping
+
+Here the parent node has to be a hlist or vlist node, otherwise we just get the
+set amount.
 
 \stopsubsection
 
@@ -3291,13 +3487,23 @@ function node.direct.getdepth ( <t:direct> n )
 end
 \stoptyping
 
-For \type {hlist}, \type {vlist}, \type {unset}, \type {rule}, \type
-{insert_node:}, \type {glyph} and \type {fence} we can get the total of height
-and depth:
+For \type {hlist}, \type {vlist}, \type {unset}, \type {rule}, \type {insert},
+\type {glyph} and \type {fence} we can get the total of height and depth:
 
 \starttyping[option=LUA]
 function node.direct.gettotal ( <t:direct> n )
     return <t:integer> -- height + depth
+end
+\stoptyping
+
+Only for insert nodes we can set a total, because they only carry a height:
+
+\starttyping[option=LUA]
+function node.direct.settotal (
+    <t:direct>  insert,
+    <t:integer> total
+)
+    -- no return value
 end
 \stoptyping
 
@@ -3385,6 +3591,50 @@ and these to set them, although they are unlikely candidates for that.
 \starttyping[option=LUA]
 function node.direct.setpost ( <t:direct> b, <t:direct> | <t:nil> ) end
 function node.direct.setpre  ( <t:direct> b, <t:direct> | <t:nil> ) end
+\stoptyping
+
+Anchors (source and targets) are just integer fields to some content nodes that
+we can set and get. They are experimental. They are set by either keywords or by
+\prm {boxanchor} and \prm {boxanchors}. The backend has to deal with these if
+used at all. (In \CONTEXT\ we use them for tracing math experiments and special
+trickery.)
+
+\starttyping[option=LUA]
+function node.direct.setanchors (
+    <t:direct>  list,   -- hlist or vlist
+    <t:integer> anchor,
+    <t:direct>  source, -- set, <t:true> keep, otherwise reset
+    <t:direct>  target  -- set, <t:true> keep, otherwise reset
+)
+    -- no return value
+end
+
+function node.direct.setanchors (
+    <t:direct> noad -- math
+    <t:direct> source -- set, <t:true> keep, otherwise reset
+)
+    -- no return value
+end
+\stoptyping
+
+\starttyping[option=LUA]
+function node.direct.getanchors (
+    <t:direct> list  -- hlist or vlist
+)
+    return
+        <t:integer>, -- anchor
+        <t:integer>, -- source
+        <t:integer>, -- target
+        <t:integer>, -- anchor slice .....XXX
+        <t:integer>  -- anchor slice .XXXX...
+end
+
+function node.direct.getanchors (
+    <t:direct> noad -- math
+)
+    return
+        <t:integer> -- source
+end
 \stoptyping
 
 \stopsubsection
@@ -4055,6 +4305,46 @@ node is freed. Also, the advantage of a more or less global properties table is
 that we stay at the \LUA\ end. An alternative is to store a reference in the node
 itself but that is complicated by the fact that the register has some limitations
 (no numeric keys) and we also don't want to mess with it too much.
+
+\stopsubsection
+
+\startsubsection[title=Private]
+
+When you look into the source or check what functions are in libraries, you might
+run into undocumented features. Of course there can be experimental code, and you
+should not use that but there are also features that for instance help documenting
+or checking. Take for instance this one. When we pass \type {true} there will be
+no error message when you use \type {setfield} or \type {getfield} but an error
+code will set instead.
+
+\starttyping[option=LUA]
+function node.setfielderror ( <t:boolean )
+    -- no return values
+end
+\stoptyping
+
+You can ask the last error with:
+
+\starttyping[option=LUA]
+function node.getfielderror ( )
+    return <t:integer> -- the last set error
+end
+\stoptyping
+
+Valid return values are available with:
+
+\starttyping[option=LUA]
+function node.getnodeerrorvalues ( )
+    return <t:table> -- the last set error
+end
+\stoptyping
+
+The table contains:
+
+\showenginevalues[4]{nodeerrorvalues}
+
+But \unknown\ these functions and values can change as we move forward so you
+should not use them, or at least, don't complain.
 
 \stopsubsection
 

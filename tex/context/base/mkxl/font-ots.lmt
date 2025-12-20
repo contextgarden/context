@@ -295,14 +295,14 @@ local factor             = 0
 local threshold          = 0
 local checkmarks         = false
 
-local ischck       = node.direct.ischarcheck
-local isnextchck   = node.direct.isnextcharcheck
-local isprevchck   = node.direct.isprevcharcheck
-local setfontcheck = node.direct.setfontcheck
-local getfontcheck = node.direct.getfontcheck
-local newfontcheck = node.direct.newfontcheck
+local ischck             = nuts.ischarcheck
+local isnextchck         = nuts.isnextcharcheck
+local isprevchck         = nuts.isprevcharcheck
+local setfontcheck       = nuts.setfontcheck
+local getfontcheck       = nuts.getfontcheck
+local newfontcheck       = nuts.newfontcheck
 
-local currentcheck = newfontcheck()
+local currentcheck       = newfontcheck()
 
 local spaces             = false
 
@@ -3888,12 +3888,22 @@ do
         return otfdataset(...)
     end
 
-    local getfastspace = { __index = function(t,k)
-        -- we don't pass the id so that one can overload isspace
-        local v = isspace(k,threshold) or false
-        t[k] = v
-        return v
-    end }
+    local getfastspace = {
+        __index = function(t,k)
+            -- we don't pass the id so that one can overload isspace
+            local v = isspace(k,threshold) or false
+            t[k] = v
+            return v
+        end
+    }
+
+    local ischardisc          = node.direct.ischardisc
+    local markglyphprocessing = node.direct.markglyphprocessing
+    local quickanddirty       = false
+
+    experiments.register("fonts.checkchardisc",function(v)
+        quickanddirty = v
+    end)
 
     function otf.featuresprocessor(head,font,dynamic,direction)
 
@@ -3953,6 +3963,10 @@ do
         -- We don't goto the next node when a disc node is created so that we can then treat
         -- the pre, post and replace. It's a bit of a hack but works out ok for most cases.
 
+     -- if not quickanddirty then
+     --     -- no need for action here, we are still unset
+     -- end
+
         for s=1,#datasets do -- todo: datasets.n
             local dataset      = datasets[s]
             local state        = dataset[2]
@@ -3966,6 +3980,12 @@ do
             local steps        = sequence.steps
             local nofsteps     = sequence.nofsteps
             local skiphash     = sequence.skiphash
+
+            if quickanddirty then
+                -- here we set the processing state okay or skip depending on ...
+                markglyphprocessing(head,font,dynamic,state)
+            end
+
             if not steps then
                 -- This permits injection, watch the different arguments. Watch out, the arguments passed
                 -- are not frozen as we might extend or change this. Is this used at all apart from some
@@ -4044,6 +4064,8 @@ do
                             -- a different font|state or glue (happens often)
                             start = nxt
                         elseif id == disc_code then
+-- if not quickanddirty or ischardisc(start) then
+if ischardisc(start) then
                             if not d then
                                 setfontcheck(currentcheck,start)
                                 d = true
@@ -4055,6 +4077,9 @@ do
                             else
                                 start = comprun(start,c_run_single,             lookupcache,step,dataset,sequence,rlmode,skiphash,handler)
                             end
+else
+    start = nxt
+end
                         elseif id == math_code then
                             start = getnext(endofmath(start))
                         elseif id == dir_code then
@@ -4109,10 +4134,12 @@ do
                             -- a different font|state or glue (happens often)
                             start = nxt
                         elseif id == disc_code then
-if not d then
-    setfontcheck(currentcheck,start)
-    d = true
-end
+-- if not quickanddirty or ischardisc(start) then
+if ischardisc(start) then
+                            if not d then
+                                setfontcheck(currentcheck,start)
+                                d = true
+                            end
                             if gpossing then
                                 start = kernrun(start,k_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                             elseif forcetestrun then
@@ -4120,6 +4147,9 @@ end
                             else
                                 start = comprun(start,c_run_multiple,               steps,nofsteps,dataset,sequence,rlmode,skiphash,handler)
                             end
+else
+    start = nxt
+end
                         elseif id == math_code then
                             start = getnext(endofmath(start))
                         elseif id == dir_code then
@@ -4133,13 +4163,24 @@ end
                         end
                     end
                 end
+
             end
+
+         -- if quickanddirty then
+         --     -- we set the processing state at the beginning of the loop
+         --     markglyphprocessing(head) -- unset
+         -- end
 
             if trace_steps then -- ?
                 registerstep(head)
             end
 
         end
+
+ if quickanddirty then
+     -- we reset the processing state in the caller
+     markglyphprocessing(head) -- unset
+ end
 
         nesting = nesting - 1
 

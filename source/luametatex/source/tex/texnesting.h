@@ -38,6 +38,8 @@ typedef struct nest_state_info {
     memory_data        nest_data;
     int                shown_mode; // singleword
     int                math_mode;  // singleword
+ // halfword           cur_list;   // todo: set when we push pop (more direct access)
+ // halfword           cur_mode;   // todo: set when we push pop (more direct access)
 } nest_state_info;
 
 extern nest_state_info lmt_nest_state;

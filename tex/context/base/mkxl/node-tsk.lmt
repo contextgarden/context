@@ -1066,7 +1066,7 @@ local tracked = tex.trackedattribute
 
 %localize%
 
-return function(head,style,penalties,beginclass,endclass,level,mainstyle)
+return function(head,style,penalties,beginclass,endclass,level,mainstyle,options)
 %actions%
     return head
 end
@@ -1074,25 +1074,25 @@ end
 
 step = [[
   %?attribute: if tracked(%attribute%) then ?%
-    head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)))
+    head = tonut((%action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle,options)))
   %?attribute: end ?%
 ]],
 
 nut  = [[
   %?attribute: if tracked(%attribute%) then ?%
-    head = %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
+    head = %action%(head,style,penalties,beginclass,endclass,level,mainstyle,options)
   %?attribute: end ?%
 ]],
 
 nohead = [[
   %?attribute: if tracked(%attribute%) then ?%
-    %action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle)
+    %action%(tonode(head),style,penalties,beginclass,endclass,level,mainstyle,options)
   %?attribute: end ?%
 ]],
 
 nonut = [[
   %?attribute: if tracked(%attribute%) then ?%
-    %action%(head,style,penalties,beginclass,endclass,level,mainstyle)
+    %action%(head,style,penalties,beginclass,endclass,level,mainstyle,options)
   %?attribute: end ?%
 ]],
 

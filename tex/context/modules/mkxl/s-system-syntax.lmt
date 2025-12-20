@@ -2429,7 +2429,7 @@ if context then
     local ctx_starttabulate, ctx_stoptabulate = context.starttabulate, context.stoptabulate
 
     function moduledata.engine.codes(name,...)
-        local t = (type(name) == "table" and name) or tex[name]
+        local t = (type(name) == "table" and name) or tex[name] or node[name] or token[name]
         if type(t) == "function" then
             t = t(...)
         end
@@ -2451,7 +2451,7 @@ if context then
             end
             ctx_stoptabulate()
         else
-            context("there is no function tex.%s",name)
+            context("there is no function %a in tex, node or token",name)
         end
     end
 

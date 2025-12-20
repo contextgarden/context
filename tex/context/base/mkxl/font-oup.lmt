@@ -3226,6 +3226,7 @@ function readers.expand(data)
                         if baseclasses then
                             local coverage = step.coverage
                             for k, v in next, coverage do
+-- print(k,v[1],baseclasses[v[1]])
                                 v[1] = baseclasses[v[1]] -- slot 1 is a placeholder
                             end
                         elseif kind == "gpos_cursive" then

@@ -2139,7 +2139,7 @@ do
         return features
     end
 
-    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
+    local function readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
         setposition(f,lookupoffset)
         local noflookups = readushort(f)
         local lookups    = readcardinaltable(f,noflookups,ushort)
@@ -2158,9 +2158,9 @@ do
             -- which one wins?
             local markclass = rshift(flagbits,8)
             if markclass == 0 then
-                local markset = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset	--KE
+                local markset = band(flagbits,0x0010) ~= 0 -- usemarkfilteringset
                 if markset then
-                    markclass = readushort(f) + 1
+                    markclass = readushort(f) + 1 + nofmarkclasses -- KE: also classes
                 else
                     markclass = false
                 end
@@ -2565,7 +2565,10 @@ do
                 return
             end
             --
-            local lookups = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder)
+            local markclasses    = fontdata.markclasses
+            local marksets       = fontdata.marksets
+            local nofmarkclasses = (markclasses and #markclasses or 0) - (marksets and #marksets or 0)
+            local lookups        = readlookups(f,lookupoffset,lookuptypes,featurehash,featureorder,nofmarkclasses)
             --
             if lookups then
                 resolvelookups(f,lookupoffset,fontdata,lookups,lookuptypes,lookuphandlers,what,tableoffset)

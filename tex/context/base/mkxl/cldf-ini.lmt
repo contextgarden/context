@@ -759,6 +759,14 @@ directives.register("context.sorthash",function(v)
     sortedhashindeed = v and table.sortedhash or nil
 end)
 
+-- performance:
+--
+-- ... with select : slowest (per 2025-12-05)
+-- ...name         : in between, closer to { ... }
+-- { ... }         : fastest
+--
+-- we could already pass { ... } instead of ...
+
 local function writer(parent,command,...) -- already optimized before call
     if type(command) == "string" then -- for now
         flush(currentcatcodes,command) -- todo: ctx|prt|texcatcodes
@@ -766,8 +774,12 @@ local function writer(parent,command,...) -- already optimized before call
         flush(command) -- todo: ctx|prt|texcatcodes
     end
     local direct = false
-    for i=1,select("#",...) do
-        local ti = select(i,...)
+ -- for i=1,select("#",...) do
+ --     local ti = select(i,...)
+    local t = { ... }
+    for i=1,#t do
+        local ti = t[i]
+
         if direct then
             local typ = type(ti)
             if typ == "string" or typ == "number" then

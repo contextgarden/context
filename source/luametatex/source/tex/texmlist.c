@@ -2223,7 +2223,8 @@ void tex_run_mlist_to_hlist(halfword mlist, halfword penalties, halfword style, 
                 lua_pushinteger(L, endclass);
                 lua_pushinteger(L, lmt_math_state.level);
                 lua_pushinteger(L, cur_list.math_main_style); /* brr */
-                i = lmt_callback_call(L, 7, 1, top);
+                lua_pushinteger(L, math_options_par);
+                i = lmt_callback_call(L, 8, 1, top);
                 if (i) {
                     lmt_callback_error(L, top, i);
                     node_next(temp_head) = null;

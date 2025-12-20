@@ -2,10 +2,11 @@
 
 \environment luametatex-style
 
-% callback.names
-% also numbers
-
 \startdocument[title=Callbacks]
+
+\startsubject[title=Contents]
+    \setups[sectioncontents]
+\stopsubject
 
 \startsection[title={Introduction}]
 
@@ -28,47 +29,169 @@ routine. Doing something else is possible but in the end might not give the user
 the expected outcome.
 
 In order for a callback to kick in you need register it. This can be permanent or
-temporarily.
+temporarily. One can use names as well as id's:
 
 \starttyping[option=LUA]
-id = callback.register(<t:string> callback_name, <function> func)
-id = callback.register(<t:string> callback_name, nil)
-id = callback.register(<t:string> callback_name, false)
+function callback.register (
+    <t:string>   name,
+    <t:function> action | <t:false> | <t:nil>
+)
+    return <t:integer> -- id
+end
+
+function callback.register (
+    <t:integer>  id,
+    <t:function> action | <t:false> | <t:nil>
+)
+    return <t:integer> -- id
+end
 \stoptyping
 
-Here the \type {callback_name} is a predefined callback name as discusses in
-following sections. The function returns the internal \type {id} of the callback
-or \type {nil}, if the callback could not be registered. \LUAMETATEX\
+Here the \type {name} is a predefined callback name as discussed in following
+sections. The function returns the internal \type {id} of the callback when
+registration succeeds or \type {nil} if the callback could not be registered.
+Callback assignments are always global. You can use the \type {nil} or \type
+{false} instead of a function for clearing the callback. \LUAMETATEX\
 internalizes the callback function in such a way that it does not matter if you
 redefine a function accidentally.
 
-Callback assignments are always global. You can use the special value \type {nil}
-instead of a function for clearing the callback.
-
-For some minor speed gain, you can assign the boolean \type {false} to the
-non|-|file related callbacks, doing so will prevent \LUATEX\ from executing
-whatever it would execute by default (when no callback function is registered at
-all). {\em This needs checking.}
+There are two ways to figure out what callbacks are available. The first one
+returns a hash with the names as key and the boolean value indicating of the
+callback is known.
 
 \starttyping[option=LUA]
-<table> info = callback.list()
+function callback.list ( )
+    return <t:hash> -- active
+end
 \stoptyping
 
-The keys in the table are the known callback names, the value is a boolean where
-\type {true} means that the callback is currently set (active).
+The list of available callbacks is:
+\startluacode
+    local t = callback.names()
+    local n = #t
+    for i=1,n do
+        if i == n then
+            context(" and ")
+        elseif i > 1 then
+            context(", ")
+        end
+        context.typ(t[i])
+    end
+\stopluacode .
 
 \starttyping[option=LUA]
-<function> f = callback.find(callback_name)
+function callback.names ( )
+    return <t:table> -- available
+end
+\stoptyping
+
+This list is in order of id but that order might change which us why using names might
+be better. A quick way to get the id is:
+
+\starttyping[option=LUA]
+function callback.getindex ( <t:string> name )
+    return <t:integer> -- id
+end
 \stoptyping
 
 If the callback is not set, \type {find} returns \type {nil}. The \type {known}
-function can be used to check if a callback is supported.
+function can be used to check if a callback is supported. That function can
+actually be used but changing it will of course not affect the callback that uses
+it.
+
+\starttyping[option=LUA]
+function callback.find (name) return
+    <t:function> | <t:nil>
+end
+\stoptyping
 
 \starttyping[option=LUA]
 if callback.known("foo") then
     -- do what is needed
 end
 \stoptyping
+
+If you use \CONTEXT\ you should use the interfaces that it provides. Some of the
+built-in \type {callback} functions are overloaded anyway.
+
+You can use the \type {callback.getoptionvalues} and \type {callback.getstatevalues}
+functions to get tables of some of the possible properties. The options are just for
+diagnostics: Currently we have only a few:
+
+\starttabulate[||||]
+\FL
+\NC value  \NC bit          \NC meaning \NC \NR
+\ML
+\NC direct \NC \type {0x01} \NC operates on a direct node \NC \NR
+\NC trace  \NC \type {0x02} \NC us used for tracing \NC \NR
+\LL
+\stoptabulate
+
+A callback has a state bitset where the following bits can be set. This feature
+is very much related to the way \CONTEXT\ wants to protect itself against users
+messing up the many callbacks it needs to function properly.
+
+\starttabulate[||||]
+\FL
+\NC value       \NC bit          \NC meaning \NC \NR
+\ML
+\NC set         \NC \type {0x01} \NC can be used \NC \NR
+\NC disabled    \NC \type {0x02} \NC temporarily disabled \NC \NR
+\NC frozen      \NC \type {0x04} \NC can never be set or changed again \NC \NR
+\NC private     \NC \type {0x08} \NC don't return the function \NC \NR
+\NC touched     \NC \type {0x10} \NC set (or unset) by the user \NC \NR
+\NC tracing     \NC \type {0x20} \NC only called when tracing \NC \NR
+\NC selective   \NC \type {0x40} \NC only called when there is a need \NC \NR
+\NC fundamental \NC \type {0x80} \NC need to be set and kick in on demand \NC \NR
+\LL
+\stoptabulate
+
+Both have a setter and getter. In the case op states, some set stated can inhibit
+changes.
+
+\starttyping[option=LUA]
+function callback.setstate (
+    <t:string> name | <t:integer> id,
+    <t:integer> state
+)
+    -- no return value
+end
+
+function callback.getstate (
+    <t:string> name | <t:integer> id
+)
+    return <t:integer> -- state
+end
+
+function callback.setoptions (
+    <t:string> name | <t:integer> id,
+    <t:integer> option
+)
+    -- no return value
+end
+
+function callback.getoptions (
+    <t:string> name | <t:integer> id
+)
+    return <t:integer> -- options
+end
+\stoptyping
+
+You can emulate a callback with:
+
+\starttyping[option=LUA]
+function callback.testonly ( )
+    return <t:boolean> -- success
+end
+\stoptyping
+
+but you need to register the \type {test_only} callback for that to work. The set
+function gets the state as first argument. When the function crashes, the \typ
+{callback.testonly} call will return \type {false}, otherwise you get back \type
+{true}.
+
+% We also have callback.usage() that we keep around but it's also in the status
+% library so there is no real need to discuss uit here.
 
 \stopsection
 
@@ -77,7 +200,7 @@ end
 \startsubsection[title=find_log_file]
 
 This is one of the callbacks that has to be set in order for the engine to work
-at all.
+at all. If it's not set, the run will abort with a message.
 
 \starttyping[option=LUA]
 function (
@@ -103,9 +226,12 @@ end
 
 A format file can be read from any valid location but is always written in the
 current directory. When written the number of bytes for each section is reported.
-When read all kind of checks take place ijn order to intercept corruption or
-incompatibilities. Contrary to \LUATEX, the \LUAMETATEX\ is not (zip) compressed so,
-in spite of more aggressive compression of data otherwise the file is a bit larger.
+When read all kind of checks take place in order to intercept corruption or
+incompatibilities. Contrary to \LUATEX, the \LUAMETATEX\ is not (zip) compressed
+so, in spite of more aggressive compression of data otherwise the file is a bit
+larger. \footnote {This is not that true for \CONTEXT\ because it is more
+efficient than \MKIV\ so the uncompressed \MKIV\ format file is much larger than
+\MKXL, although the later grows as we preload more functionality.}
 
 \stopsubsection
 
@@ -208,8 +334,8 @@ replace any internal code.
 \startsubsection[title=pre_dump]
 
 This function is called just before dumping to a format file starts. It does not
-replace any code and there are neither arguments nor return values. It can be used to do some
-cleanup and other housekeeping.
+replace any code and there are neither arguments nor return values. It can be
+used to do some cleanup and other housekeeping.
 
 \starttyping[option=LUA]
 function (
@@ -249,18 +375,17 @@ end
 
 This callback replaces the code that prints \LUATEX's statistics and \quote
 {output written to} messages. The engine can still do housekeeping and therefore
-you should not rely on this hook for postprocessing the \PDF\ or log file.
+you should not rely on this hook for post-processing the \PDF\ or log file.
 
 \stopsubsection
 
 \startsubsection[title=intercept_tex_error]
 
 This callback is run from inside the \TEX\ error function, and the idea is to
-allow you to do some extra reporting on top of what \TEX\ already does (none of
-the normal actions are removed). You may find some of the values in the \type
-{status} table useful. The \TEX\ related callback gets two arguments: the current
-processing mode and a boolean indicating if there was a runaway.
-
+allow you to do some extra reporting on top of what \TEX\ already does, for
+instance recovering. You may find some of the values in the \type {status} table
+useful. The \TEX\ related callback gets two arguments: the current processing
+mode and a boolean indicating if there was a runaway argument.
 
 \starttyping[option=LUA]
 function (
@@ -270,12 +395,19 @@ function (
 end
 \stoptyping
 
+When \TEX\ was written, when computers were slower, running a batch hob could
+involve a terminal, and startup-time mattered, it made sense to enter an edit
+mode and try to fix the error, for instance by inserting in or deleting from the
+input. In \LUAMETATEX\ we don't have these features. A quit, fix, restart cycle
+makes more sense that is what we do in \CONTEXT.
+
 \stopsubsection
 
 \startsubsection[title=intercept_lua_error]
 
 This callback is similar to the one discussed in the previous section but for
-\LUA. Of course we should in a recoverable state for this to work well.
+\LUA. Of course we should end up in a recoverable state for this to work well so
+in practice you could as well just quit the run.
 
 \starttyping[option=LUA]
 function (
@@ -289,9 +421,8 @@ end
 
 \startsubsection[title=show_error_message]
 
-This callback replaces the code that prints the error message. The usual
-interaction after the message is not affected but it is best to quit the run
-after reporting.
+This callback replaces the code that prints the error message. As mentioned before
+it probably makes sense to quit the run after reporting.
 
 \starttyping[option=LUA]
 function (
@@ -305,8 +436,8 @@ end
 
 \startsubsection[title=show_warning_message]
 
-This callback replaces the code that prints a (non fatal) warning message. The
-usual interaction after the message is not affected.
+This callback replaces the code that prints a (non fatal) warning message.
+Contrary to an error one will likely continue the run.
 
 \starttyping[option=LUA]
 function (
@@ -320,10 +451,9 @@ end
 
 \startsubsection[title=wrapup_run]
 
-
 This callback is called after the \PDF\ and log files are closed. Use it at your own
-risk. efine_f
-risk.
+risk because after all you need to make sure that the user is not surprised by for
+instance bad result.
 
 \starttyping[option=LUA]
 function (

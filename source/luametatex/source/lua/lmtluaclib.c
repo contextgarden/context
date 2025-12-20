@@ -563,7 +563,7 @@ static void luaclib_aux_print_header(const Proto* f)
     );
     printf("%d%s param%s, %d slot%s, %d upvalue%s, ",
 	    (int)(f->numparams),
-        (f->flag & PF_ISVARARG)?"+":"",
+        (f->flag & PF_VAHID)?"+":"", /* not ok yet, was PF_ISVARARG */
         SS(f->numparams),
     	S(f->maxstacksize),
         S(f->sizeupvalues)

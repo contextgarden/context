@@ -112,6 +112,7 @@ local pdf_n                   = pdfconstant("N") -- None Invert Outline Push
 local pdf_no_rect             = pdfarray { 0, 0, 0, 0 }
 
 local signature               = nil
+local signature_field         = nil
 
 local splitter = lpeg.splitat("=>")
 
@@ -936,6 +937,8 @@ local function finishfields()
         end
         if type == "signed" then
             signature = true
+        elseif type == "signature" then
+            signature_field = true
         end
     end
     for name, field in sortedhash(radios) do
@@ -955,10 +958,10 @@ local function finishfields()
         }
         if signature then
             acroform.SigFlags = 3
-        elseif pdfmajorversion() == 1 then
+        elseif pdfmajorversion() == 1 and not signature_field then
             acroform.NeedAppearances = true
         else
-            -- depricated
+            -- deprecated
         end
         if sometext or somefont then
             checkpdfdocencoding()
@@ -1120,22 +1123,23 @@ end
 -- copy of line ... probably also needs a /Lock
 
 local function makesignatureparent(field,specification)
-    local text   = pdfunicode(field.default)
-    local length = tonumber(specification.length or 0) or 0
-    local value  = lpdf.registersignature(field.values)
+ -- local text   = pdfunicode(field.default) -- not really needed here
+ -- local length = tonumber(specification.length or 0) or 0 -- not really needed here
+ -- local value  = lpdf.registersignature(field.values) -- not really needed here
     local d      = pdfdictionary {
-        Subtype  = pdf_widget,
+     -- Subtype  = pdf_widget,-- belongs to widget, not to field
         T        = pdfunicode(specification.title),
-        F        = fieldplus(specification),
-        Ff       = fieldflag(specification),
+     -- F        = fieldplus(specification), -- belongs to widget, not to field
+        Ff       = fieldflag(specification), -- not required for default value
         OC       = fieldlayer(specification),
         DA       = fieldsurrounding(specification),
         AA       = fieldactions(specification),
         FT       = pdf_sig,
         Q        = fieldalignment(specification),
-        MaxLen   = length == 0 and 1000 or length,
-        DV       = not value and text or nil,
-        V        = value or text,
+     -- MaxLen   = length == 0 and 1000 or length, -- only for text fields
+        MK      = fieldrendering(specification),
+     -- DV       = not value and text or nil, -- no default signature value
+     -- V        = value or text, -- signature value, when actually signed
     }
     save_parent(field,specification,d)
 end
@@ -1171,10 +1175,10 @@ local function makesignaturechild(name,specification)
         Parent  = pdfreference(parent.pobj),
         F       = fieldplus(specification),
         OC      = fieldlayer(specification),
-        DA      = fieldsurrounding(specification),
+     -- DA      = fieldsurrounding(specification), -- belongs to field, not widget
         AA      = fieldactions(specification),
         MK      = fieldrendering(specification),
-        Q       = fieldalignment(specification),
+     -- Q       = fieldalignment(specification), -- belongs to field, not widget
 -- AP = pdfdictionary {
 --     N = pdfreference(lpdf.flushstreamobject("q 0 0 100 100 re f Q"))
 -- }

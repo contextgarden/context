@@ -457,7 +457,7 @@
 \def\strc_counters_register_component_list#1#2#3#4%
   {\xdef\currentstructurecomponentname           {#2\s!name}%
    \xdef\currentstructurecomponentcounter        {#2\s!counter}%
-   \xdef\currentstructurecomponentlevel          {#2\s!haslevel}%
+   \xdef\currentstructurecomponentlevel          {#2\s!level}%
    \edef\currentstructurecomponentexpansion      {#2\c!expansion}%
    \xdef\currentstructurecomponentxmlsetup       {#2\c!xmlsetup}%
    \xdef\currentstructurecomponentcatcodes       {#2\s!catcodes}%

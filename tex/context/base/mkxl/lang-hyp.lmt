@@ -89,6 +89,7 @@ local remove     = table.remove
 local formatters = string.formatters
 local utfchar    = utf.char
 local utfbyte    = utf.byte
+local utfvalues  = utf.values
 
 if not characters then
     require("char-ini")
@@ -211,7 +212,7 @@ local p_exception = ((Carg(1)           * C(char^1)) / register_exception + 1)^1
 local p_split     = Ct(C(character)^1)
 
 function traditional.loadpatterns(language,filename)
-    local dictionary    = dictionaries[language]
+    local dictionary = dictionaries[language]
     if not dictionary.loaded then
         if not filename or filename == "" then
             filename = "lang-" .. language
@@ -601,6 +602,19 @@ do
     local r_pattern = (Carg(1) * Carg(2) * word * Carg(3) /   register_pattern + spaces)^1
     local e_pattern = (Carg(1)           * word           / register_exception + spaces)^1
 
+    -- We maintain an independent set so we need to register characters as we don't
+    -- go via hjcodes, at least not now. If we ever do that we also need to update
+    -- this \LUA\ variant to honor all the options that we have in the engine.
+
+    local function addunicodes(dictionary,str)
+        local u = dictionary.unicodes
+        for s in utfvalues(str) do
+            if not u[s] and s ~= "-" and s ~= " " then
+                u[s] = utfchar(s)
+            end
+        end
+    end
+
     function traditional.registerpattern(language,str,specification)
         local dictionary = dictionaries[language]
         if specification == false then
@@ -613,7 +627,9 @@ do
     end
 
     function traditional.registerexception(language,str)
-        lpegmatch(e_pattern,str,1,dictionaries[language].exceptions)
+        local dictionary = dictionaries[language]
+        lpegmatch(e_pattern,str,1,dictionary.exceptions)
+        addunicodes(dictionary,str)
     end
 
 end
@@ -701,7 +717,7 @@ if context then
     setmetatableindex(dictionaries,function(t,k)
         if type(k) == "string" then
             -- this will force a load if not yet loaded (we need a nicer way) for the moment
-            -- that will do (nneeded for examples that register a pattern specification
+            -- that will do (needed for examples that register a pattern specification
             languages.getnumber(k)
         end
         local specification = languages.getdata(k)

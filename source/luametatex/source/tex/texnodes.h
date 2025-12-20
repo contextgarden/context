@@ -655,6 +655,7 @@ typedef enum math_option_codes {
     /*tex These are public: taken from |math_options_par|. */
     math_option_snapping    = 0x0010,
     math_option_no_snapping = 0x0020,
+    math_option_text        = 0x0040,
 } math_option_codes;
 
 /*tex Here are some (inline) helpers. We need specific ones for math glue. */
@@ -859,7 +860,8 @@ typedef enum disc_option_codes {
 # define first_disc_option disc_option_prefer_break
 # define last_disc_option  disc_option_prefer_nobreak
 
-# define disc_node_size       13
+//define disc_node_size       13
+# define disc_node_size       14
 # define disc_no_break(a)     memtwo(a,2) /* beware: memone is used for type/subtype */
 # define disc_pre_break(a)    memtwo(a,3) /* beware: memone is used for type/subtype */
 # define disc_post_break(a)   memtwo(a,4) /* beware: memone is used for type/subtype */
@@ -870,11 +872,18 @@ typedef enum disc_option_codes {
 # define disc_options(a)      memtwo(a,11)
 # define disc_class(a)        memone(a,12)
 # define disc_orphaned(a)     memtwo(a,12)
+# define disc_unused(a)       memone(a,13)
+# define disc_processing(a)   memtwo00(a,13)
+# define disc_protected(a)    memtwo01(a,13)
+# define disc_unused_1(a)     memtwo02(a,13)
+# define disc_unused_2(a)     memtwo03(a,13)
 
-# define set_disc_penalty(a,b) disc_penalty(a) = b
-# define set_disc_class(a,b)   disc_class(a) = b
-# define set_disc_options(a,b) disc_options(a) = b
-# define set_disc_option(a,b)  disc_options(a) |= b
+# define set_disc_penalty(a,b)    disc_penalty(a) = b
+# define set_disc_class(a,b)      disc_class(a) = b
+# define set_disc_options(a,b)    disc_options(a) = b
+# define set_disc_option(a,b)     disc_options(a) |= b
+# define set_disc_processing(a,b) disc_processing(a) = (singleword) b
+# define set_disc_protected(a,b)  disc_protected(a) = (singleword) b
 
 # define has_disc_option(a,b) ((disc_options(a) & b) == b)
 
@@ -1361,7 +1370,7 @@ static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rul
 # define get_glyph_control(a)    ((quarterword) glyph_control(a))
 //define get_glyph_disccode(a)   ((quarterword) glyph_disccode(a))
 # define get_glyph_disccode(a)   ((singleword) glyph_disccode(a))
-# define get_glyph_processing(a) ((singleword) glyph_disccode(a))
+# define get_glyph_processing(a) ((singleword) glyph_processing(a))
 # define get_glyph_x_scale(a)    ((halfword) glyph_x_scale(a))
 # define get_glyph_y_scale(a)    ((halfword) glyph_y_scale(a))
 # define get_glyph_scale(a)      ((halfword) glyph_scale(a))
@@ -1448,9 +1457,9 @@ typedef enum glyph_subtypes {
 /* todo: set based on font but then also setfont(g,f) needs to check it */
 
 typedef enum glyph_processing_codes {
-    glyph_processing_none = 0x1,
-    glyph_processing_base = 0x2,
-    glyph_processing_node = 0x3,
+    glyph_processing_unset = 0x0,
+    glyph_processing_skip  = 0x1,
+    glyph_processing_okay  = 0x2,
 } glyph_processing_codes;
 
 /* todo: make this a bitset so that we can also register breakpoints */

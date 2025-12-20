@@ -143,7 +143,7 @@
 % $\Udelimiterunder 0 "2190{x}$ \par $\Udelimiterunder 0 "27F8{x}$\par
 
 % \defcsname\??mathextensiblefallbacks\endcsname
-%   {\hpack{\vrule\s!width\scratchwidth\s!height.1\mathexheight\s!depth\zeropoint}}
+%   {\hpack{\vrule\s!width\scratchwidth\s!height.1mx\s!depth\zeropoint}}
 
 %D We don't really need this because we can assume that fonts have the right
 %D extensibles. If needed I will make a general virtual extender for \OPENTYPE\
@@ -203,20 +203,21 @@
 
 \installcommandhandler \??mathstackers {mathstackers} \??mathstackers
 
+% ma (axis) mx (xheight) mq (quad)
+
 \setupmathstackers
   [%c!alternative=\v!text,    % text | mathematics
    \c!left=,
    \c!right=,
    \c!mathclass=\s!relation,
    \c!alternative=\v!normal,
-   \c!voffset=.25\mathexheight, % maybe less
+   \c!voffset=.25mx, % maybe less
    \c!hoffset=\zeropoint,
    \c!topoffset=\zeropoint, % for manual italic correction
    \c!distance=\mathstackersparameter\c!voffset, % distance between symbol and base (can be different from voffset)
-   \c!minheight=\mathexheight,
+   \c!minheight=1mx, % it has to be adaptive
    \c!mindepth=\zeropoint,
- % \c!minwidth=.5\mathemwidth,
-   \c!minwidth=.25\mathemwidth, % \iota
+   \c!minwidth=.25mq, % \iota
    \c!order=\v!normal,
    \c!strut=,
    \c!color=,
@@ -286,7 +287,7 @@
   [\c!mp=math:stacker:\the\scratchunicode,
    \c!mpheight=\mathcharht\scratchunicode,
    \c!mpdepth=\mathchardp\scratchunicode,
-   \c!mpoffset=.25\mathexheight]
+   \c!mpoffset=.25mx]
 
 % for now we do this:
 
@@ -302,13 +303,12 @@
      {\todimension{\mathstackersparameter\c!mpoffset}}%
      {\todimension{\triggeredmathstyleparameter\Umathfractionrule}}%
      {\todimension{\triggeredmathstyleparameter\Umathaxis}}%
-     {\todimension\mathexheight}%
-     {\todimension\mathemwidth}%
+     {\todimension1mx}% maybe also triggered?
+     {\todimension1mq}% maybe also triggered?
    }}
 
 \protected\def\math_stackers_mp_box#1#2#3#4#5#6#7%
   {\hpack\bgroup %  todo: add code key + tag
-   % we can speed up \mathexheight expansion a bit
    \d_overlay_width    \scratchwidth
    \d_overlay_height   {#1}%
    \d_overlay_depth    {#2}%
@@ -1122,10 +1122,10 @@
 %D Here come the new ones:
 
 \definemathstackers [\v!none]   [\v!mathematics] [\c!hoffset=\zeropoint]
-\definemathstackers [\v!normal] [\v!mathematics] [\c!hoffset=0.5\mathemwidth] % the default
-\definemathstackers [\v!small]  [\v!mathematics] [\c!hoffset=1\mathemwidth]
-\definemathstackers [\v!medium] [\v!mathematics] [\c!hoffset=1.5\mathemwidth]
-\definemathstackers [\v!big]    [\v!mathematics] [\c!hoffset=2\mathemwidth]
+\definemathstackers [\v!normal] [\v!mathematics] [\c!hoffset=0.5mq] % the default
+\definemathstackers [\v!small]  [\v!mathematics] [\c!hoffset=1mq]
+\definemathstackers [\v!medium] [\v!mathematics] [\c!hoffset=1.5mq]
+\definemathstackers [\v!big]    [\v!mathematics] [\c!hoffset=2mq]
 
 \definemathextensible [\v!reverse] [xrel]                ["2212] % ["002D]
 \definemathextensible [\v!reverse] [xequal]              ["003D]
@@ -1444,14 +1444,14 @@
 
 \definemathunstacked [\v!wide] [And]["0026] % \mathrel{\;&\;}
 
-% New (an example of using \mathexheight):
+% New (an example of using mx):
 
 \definemathstackers
   [\v!symbol]
-  [\c!voffset=-.3\mathexheight,
+  [\c!voffset=-.3mx,
    \c!hoffset=\zeropoint,
    \c!mathclass=\s!ordinary,
-   \c!topoffset=.4\mathemwidth, % poor man's italic correction
+   \c!topoffset=.4mq, % poor man's italic correction
    \c!middlecommand=\mathematics]
 
 \definemathover[\v!symbol][interiorset]["2218]

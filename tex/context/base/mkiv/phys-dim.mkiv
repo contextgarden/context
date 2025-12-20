@@ -761,75 +761,32 @@
 \def\phys_units_register[#1][#2]%
   {\clf_registerunit{#1}{#2}}
 
-%D You can generate a list as follows:
-%D
-%D \starttyping
-%D \usemodule[phy-01]
-%D
-%D \ShowUnitsTable % [prefixes]
-%D \stoptyping
-
-%D Now we define the standard units command:
+%D Generating an overview is now in \type {s_physics-units} that you can just
+%D process.
 
 \defineunit
   [unit]
 
-%D Example:
-%D
-%D \startbuffer[definitions]
-%D \startluacode
-%D     languages.data.labels.prefixes.whatever = {
-%D         Kilo = "olik"
-%D     }
-%D
-%D     languages.data.labels.units.whatever = {
-%D         Meter  = "retem",
-%D         Second = "dnoces",
-%D     }
-%D
-%D     languages.data.labels.operators.whatever = {
-%D         Solidus = " rep "
-%D     }
-%D \stopluacode
-%D \stopbuffer
-%D
-%D \startbuffer[sample]
-%D \startlines
-%D \lunit{10 km/s}
-%D \lunit{10 Kilo Meter/s}
-%D \lunit{10 kilo Meter/s}
-%D \lunit{10 Kilo m/s}
-%D \lunit{10 k Meter/s}
-%D \stoplines
-%D \stopbuffer
-%D
-%D \typebuffer[definitions] \getbuffer[definitions]
-%D
-%D \startbuffer
-%D \typebuffer[sample]
-%D
-%D \defineunits[lunit]                 \getbuffer[sample]
-%D \defineunits[lunit][label=test]     \getbuffer[sample]
-%D \defineunits[lunit][label=whatever] \getbuffer[sample]
-%D \stopbuffer
-%D
-%D \typebuffer \getbuffer
-%D
-%D Another example:
+%D We used to support patching the tables but already for a while that aspect of
+%D units has been moved to the language department so that \quote {team Tomas} can
+%D deal with translations comign from his multilingual courses.
 %D
 %D \starttyping
-%D \startluacode
-%D     languages.data.labels.units.foo = {
-%D         Liter = "l"
-%D     }
-%D     languages.data.labels.units.bar = {
-%D         Liter = "L"
-%D     }
-%D \stopluacode
+%D \setupunittext[en][second=vv]
+%D \setupunittext[nl][second=ww]
 %D
-%D \defineunits[lunit]            \lunit{10 l/s}\par
-%D \defineunits[funit][label=foo] \funit{10 l/s}\par
-%D \defineunits[bunit][label=bar] \bunit{10 l/s}\par
+%D \defineunit[bunit][style=bold]
+%D
+%D \startlines
+%D \bunit{10 km/s}
+%D {\nl \bunit{10 km/s}}
+%D \bunit{10 Kilo Meter/s}
+%D \bunit{10 kilo Meter/s}
+%D \bunit{10 Kilo m/s}
+%D \bunit{10 k Meter/s}
+%D \stoplines
 %D \stoptyping
+%D
+%D We can add more features but it will only happen in \MKXL.
 
 \protect \endinput

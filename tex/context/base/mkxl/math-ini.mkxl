@@ -1184,6 +1184,13 @@
      \Ustopmathmode
    \fi}
 
+\permanent\protected\def\nm#1%
+  {\dontleavehmode
+   \begingroup
+   \mathoptions\textmathoptioncode % we can at some point simplify tags here
+   \im{#1}%
+   \endgroup}
+
 % \aliased\let\m\mathematics % we keep the simple versions
 
 % e.g.: \definemathematics[i:mp][setups=i:tight,openup=yes]

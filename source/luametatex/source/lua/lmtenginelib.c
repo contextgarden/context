@@ -1222,6 +1222,7 @@ void lmt_initialize(void)
         lmt_lua_state.lua_instance = L;
         /* */
         lua_atpanic(L, &enginelib_aux_luapanic);
+        lua_warning(L, "@off", 0);
         /*tex Initialize the internalized strings. */
         lmt_initialize_shared_keys(L);
         lmt_initialize_metapost_keys(L);

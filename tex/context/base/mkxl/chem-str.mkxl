@@ -816,7 +816,7 @@
 %    \c!order=\v!reverse,
    \c!left=\enspace,
    \c!right=\enspace,
-   \c!hoffset=.5\mathemwidth]
+   \c!hoffset=.5mq]
 
 \definemathextensible [\v!chemistry] [creturns]          ["2190]
 \definemathextensible [\v!chemistry] [cgives]            ["2192]
