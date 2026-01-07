@@ -38,6 +38,7 @@ local getsubtype         = nuts.getsubtype
 local getwhd             = nuts.getwhd
 local getwidth           = nuts.getwidth
 local getprop            = nuts.getprop
+local getoptions         = nuts.getoptions
 
 local setattr            = nuts.setattr
 local setlink            = nuts.setlink
@@ -52,7 +53,6 @@ local nexthlist          = nuts.traversers.hlist
 local nextlist           = nuts.traversers.list
 
 local flushnodelist      = nuts.flushlist
-local flushnode          = nuts.flush
 
 local new_rule           = nodepool.rule
 local new_kern           = nodepool.kern
@@ -114,8 +114,9 @@ local function colored_b(current,list,template,id,indent)
     local width, height, depth = getwhd(current)
     local total = height + depth
     if width > 0 and total > 0 then
-        local fore = (indent ~= 0) and new_kern(indent)
+        local fore = indent ~= 0 and new_kern(indent) or nil
         local rule = nil
+        local back = nil
         --
         local a = getattr(template,a_linefiller)
         if a then
@@ -130,12 +131,14 @@ local function colored_b(current,list,template,id,indent)
             setattributelist(rule,template)
         end
         if overshoot == 0 then
-            local back = new_kern(-((id == vlist_code and total) or width))
+            -- needs checking
+            back = new_kern(-((id == vlist_code and total) or width))
             return setlink(fore,rule,back,list)
         else
+            back = indent ~= 0 and new_kern(-indent) or nil
             rule = new_hlist(rule)
-            return setlink(fore,rule,list)
         end
+        return setlink(fore,rule,back,list)
     end
 end
 
@@ -148,6 +151,15 @@ local alignments = false
 
 -- When we split these in a_alignbackground and a_background we can optimize with
 -- tracked attributes. But first I need an extensive test.
+
+local lasttemplate1 = false
+local lasttemplate2 = 0
+
+local alignsplit_code <const> = tex.boxoptioncodes.alignsplit
+
+local function issplitline(n)
+    return (getoptions(n) & alignsplit_code) == alignsplit_code
+end
 
 local function add_alignbackgrounds(head,list)
     for current, id, subtype, list in nextlist, list do
@@ -169,9 +181,23 @@ local function add_alignbackgrounds(head,list)
     -- we can store this differently now
     local template = getprop(head,"alignmentchecked")
     if template then
-        list = colored_b(head,list,template[1],hlist_code,template[2])
-        flushnodelist(template[1])
-        templates[currentrow] = false
+        local t1 = template[1] -- node
+        local t2 = template[2] -- indent
+        if t1 then
+            if lastttemplate1 then
+                flushnodelist(lasttemplate)
+            end
+            lasttemplate1 = t1
+            lasttemplate2 = t2
+            template[1] = false -- not needed
+            list = colored_b(head,list,lasttemplate1,hlist_code,lasttemplate2)
+            templates[currentrow] = false
+        end
+        return list
+    elseif issplitline(head) and lasttemplate1 then
+        -- the engine split .. we could also set that flag in the regular
+        -- 'p' option so that we emulate 'P'
+        list = colored_b(head,list,lasttemplate1,hlist_code,lasttemplate2)
         return list
     end
 end
@@ -216,12 +242,16 @@ function nodes.handlers.backgroundspage(head,where)
         for n in nexthlist, head do
             local p = getprop(n,"alignmentchecked")
             if not p and getsubtype(n) == alignmentlist_code then
+if issplitline(n) then
+    -- we have an engine copy
+else
                 currentrow = currentrow + 1
                 local template = templates[currentrow]
                 if trace_alignment then
                     report_alignment("%03i %s %s",currentrow,"page",template and "+" or "-")
                 end
                 setprop(n,"alignmentchecked",template)
+end
             end
         end
     end

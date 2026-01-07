@@ -1829,7 +1829,8 @@
    \fi}
 
 \def\page_mvl_break#1%
-  {\ifconditional\c_page_mvl_active
+  {\directcheckedvspacing\v!back
+   \ifconditional\c_page_mvl_active
      \begingroup
      \forgetall
      \par

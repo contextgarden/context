@@ -82,7 +82,7 @@ void lmt_nodelib_initialize(void) {
         *subtypes_dir, *subtypes_par, *subtypes_glue, *subtypes_boundary, *subtypes_penalty, *subtypes_kern,
         *subtypes_rule, *subtypes_glyph , *subtypes_disc, *subtypes_list, *subtypes_adjust, *subtypes_mark,
         *subtypes_math, *subtypes_noad, *subtypes_radical, *subtypes_choice, *subtypes_accent, *subtypes_fence,
-        *subtypes_fraction, *subtypes_split;
+        *subtypes_fraction, *subtypes_split, *subtypes_align_record;
 
     value_info
         *lmt_node_fields_accent, *lmt_node_fields_adjust, *lmt_node_fields_attribute, *lmt_node_fields_attribute_list,
@@ -386,6 +386,16 @@ void lmt_nodelib_initialize(void) {
     set_value_entry_key(subtypes_accent, fixedtop_accent_subtype,     fixedtop)
     set_value_entry_key(subtypes_accent, fixedbottom_accent_subtype,  fixedbottom)
     set_value_entry_key(subtypes_accent, fixedboth_accent_subtype,    fixedboth)
+
+    /*tex
+        These are only there for tracing.
+    */
+
+    subtypes_align_record = lmt_aux_allocate_value_info(extra_align_record_subtype);
+
+    set_value_entry_key(subtypes_align_record, normal_align_record_subtype, normal)
+    set_value_entry_key(subtypes_align_record, loop_align_record_subtype,   loop)
+    set_value_entry_key(subtypes_align_record, extra_align_record_subtype,  extra)
 
     /*tex 
         The fields of nodes. I need to update these! Todo: maybe sort these lists, the order is 
@@ -784,9 +794,9 @@ void lmt_nodelib_initialize(void) {
 
     lmt_node_fields_parameter = lmt_aux_allocate_value_info(3);
 
-    set_value_entry_val(lmt_node_fields_parameter, 0, integer_field,   style);
-    set_value_entry_val(lmt_node_fields_parameter, 1, integer_field,   name);
-    set_value_entry_val(lmt_node_fields_parameter, 2, integer_field,   value);
+    set_value_entry_val(lmt_node_fields_parameter, 0, integer_field, style);
+    set_value_entry_val(lmt_node_fields_parameter, 1, integer_field, name);
+    set_value_entry_val(lmt_node_fields_parameter, 2, integer_field, value);
 
     lmt_node_fields_math_sub = lmt_aux_allocate_value_info(2);
 
@@ -831,71 +841,71 @@ void lmt_nodelib_initialize(void) {
         that!
     */
 
-    lmt_interface.node_data[hlist_node]          = (node_info) { .id = hlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(hlist),          .lua = lua_key_index(hlist),           .visible = 1, .definable = 1 };
-    lmt_interface.node_data[vlist_node]          = (node_info) { .id = vlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,     .fields = lmt_node_fields_list,           .name = lua_key(vlist),          .lua = lua_key_index(vlist),           .visible = 1, .definable = 1 };
-    lmt_interface.node_data[rule_node]           = (node_info) { .id = rule_node,           .size = rule_node_size,           .first = 0, .last = last_rule_subtype,          .subtypes = subtypes_rule,     .fields = lmt_node_fields_rule,           .name = lua_key(rule),           .lua = lua_key_index(rule),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[insert_node]         = (node_info) { .id = insert_node,         .size = insert_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_insert,         .name = lua_key(insert),         .lua = lua_key_index(insert),          .visible = 1, .definable = 1 };
-    lmt_interface.node_data[mark_node]           = (node_info) { .id = mark_node,           .size = mark_node_size,           .first = 0, .last = last_mark_subtype,          .subtypes = subtypes_mark,     .fields = lmt_node_fields_mark,           .name = lua_key(mark),           .lua = lua_key_index(mark),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[adjust_node]         = (node_info) { .id = adjust_node,         .size = adjust_node_size,         .first = 0, .last = last_adjust_subtype,        .subtypes = subtypes_adjust,   .fields = lmt_node_fields_adjust,         .name = lua_key(adjust),         .lua = lua_key_index(adjust),          .visible = 1, .definable = 1 };
-    lmt_interface.node_data[boundary_node]       = (node_info) { .id = boundary_node,       .size = boundary_node_size,       .first = 0, .last = last_boundary_subtype,      .subtypes = subtypes_boundary, .fields = lmt_node_fields_boundary,       .name = lua_key(boundary),       .lua = lua_key_index(boundary),        .visible = 1, .definable = 1 };
-    lmt_interface.node_data[disc_node]           = (node_info) { .id = disc_node,           .size = disc_node_size,           .first = 0, .last = last_discretionary_subtype, .subtypes = subtypes_disc,     .fields = lmt_node_fields_disc,           .name = lua_key(disc),           .lua = lua_key_index(disc),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[whatsit_node]        = (node_info) { .id = whatsit_node,        .size = whatsit_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_whatsit,        .name = lua_key(whatsit),        .lua = lua_key_index(whatsit),         .visible = 1, .definable = 1 };
-    lmt_interface.node_data[par_node]            = (node_info) { .id = par_node,            .size = par_node_size,            .first = 0, .last = last_par_subtype,           .subtypes = subtypes_par,      .fields = lmt_node_fields_par,            .name = lua_key(par),            .lua = lua_key_index(par),             .visible = 1, .definable = 1 };
-    lmt_interface.node_data[dir_node]            = (node_info) { .id = dir_node,            .size = dir_node_size,            .first = 0, .last = last_dir_subtype,           .subtypes = subtypes_dir,      .fields = lmt_node_fields_dir,            .name = lua_key(dir),            .lua = lua_key_index(dir),             .visible = 1, .definable = 1 };
-    lmt_interface.node_data[math_node]           = (node_info) { .id = math_node,           .size = math_node_size,           .first = 0, .last = last_math_subtype,          .subtypes = subtypes_math,     .fields = lmt_node_fields_math,           .name = lua_key(math),           .lua = lua_key_index(math),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[glue_node]           = (node_info) { .id = glue_node,           .size = glue_node_size,           .first = 0, .last = last_glue_subtype,          .subtypes = subtypes_glue,     .fields = lmt_node_fields_glue,           .name = lua_key(glue),           .lua = lua_key_index(glue),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[kern_node]           = (node_info) { .id = kern_node,           .size = kern_node_size,           .first = 0, .last = last_kern_subtype,          .subtypes = subtypes_kern,     .fields = lmt_node_fields_kern,           .name = lua_key(kern),           .lua = lua_key_index(kern),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[penalty_node]        = (node_info) { .id = penalty_node,        .size = penalty_node_size,        .first = 0, .last = last_penalty_subtype,       .subtypes = subtypes_penalty,  .fields = lmt_node_fields_penalty,        .name = lua_key(penalty),        .lua = lua_key_index(penalty),         .visible = 1, .definable = 1 };
-    lmt_interface.node_data[style_node]          = (node_info) { .id = style_node,          .size = style_node_size,          .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_style,          .name = lua_key(style),          .lua = lua_key_index(style),           .visible = 1, .definable = 1 };
-    lmt_interface.node_data[choice_node]         = (node_info) { .id = choice_node,         .size = choice_node_size,         .first = 0, .last = last_choice_subtype,        .subtypes = subtypes_choice,   .fields = lmt_node_fields_choice,         .name = lua_key(choice),         .lua = lua_key_index(choice),          .visible = 1, .definable = 1 };
-    lmt_interface.node_data[parameter_node]      = (node_info) { .id = parameter_node,      .size = parameter_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_parameter,      .name = lua_key(parameter),      .lua = lua_key_index(parameter),       .visible = 1, .definable = 1 };
-    lmt_interface.node_data[simple_noad]         = (node_info) { .id = simple_noad,         .size = noad_size,                .first = 0, .last = last_noad_subtype,          .subtypes = subtypes_noad,     .fields = lmt_node_fields_noad,           .name = lua_key(noad),           .lua = lua_key_index(noad),            .visible = 1, .definable = 1 };
-    lmt_interface.node_data[radical_noad]        = (node_info) { .id = radical_noad,        .size = radical_noad_size,        .first = 0, .last = last_radical_subtype,       .subtypes = subtypes_radical,  .fields = lmt_node_fields_radical,        .name = lua_key(radical),        .lua = lua_key_index(radical),         .visible = 1, .definable = 1 };
-    lmt_interface.node_data[fraction_noad]       = (node_info) { .id = fraction_noad,       .size = fraction_noad_size,       .first = 0, .last = last_fraction_subtype,      .subtypes = subtypes_fraction, .fields = lmt_node_fields_fraction,       .name = lua_key(fraction),       .lua = lua_key_index(fraction),        .visible = 1, .definable = 1 };
-    lmt_interface.node_data[accent_noad]         = (node_info) { .id = accent_noad,         .size = accent_noad_size,         .first = 0, .last = last_accent_subtype,        .subtypes = subtypes_accent,   .fields = lmt_node_fields_accent,         .name = lua_key(accent),         .lua = lua_key_index(accent),          .visible = 1, .definable = 1 };
-    lmt_interface.node_data[fence_noad]          = (node_info) { .id = fence_noad,          .size = fence_noad_size,          .first = 0, .last = last_fence_subtype,         .subtypes = subtypes_fence,    .fields = lmt_node_fields_fence,          .name = lua_key(fence),          .lua = lua_key_index(fence),           .visible = 1, .definable = 1 };
-    lmt_interface.node_data[math_char_node]      = (node_info) { .id = math_char_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathchar),       .lua = lua_key_index(mathchar),        .visible = 1, .definable = 1 };
-    lmt_interface.node_data[math_text_char_node] = (node_info) { .id = math_text_char_node, .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathtextchar),   .lua = lua_key_index(mathtextchar),    .visible = 1, .definable = 1 };
-    lmt_interface.node_data[sub_box_node]        = (node_info) { .id = sub_box_node,        .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,        .name = lua_key(subbox),        .lua = lua_key_index(subbox),          .visible = 1, .definable = 1 };
-    lmt_interface.node_data[sub_mlist_node]      = (node_info) { .id = sub_mlist_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_math_sub,      .name = lua_key(submlist),        .lua = lua_key_index(submlist),        .visible = 1, .definable = 1 };
-    lmt_interface.node_data[delimiter_node]      = (node_info) { .id = delimiter_node,      .size = math_delimiter_node_size, .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_delimiter,      .name = lua_key(delimiter),      .lua = lua_key_index(delimiter),       .visible = 1, .definable = 1 };
-    lmt_interface.node_data[glyph_node]          = (node_info) { .id = glyph_node,          .size = glyph_node_size,          .first = 0, .last = last_glyph_subtype,         .subtypes = subtypes_glyph,    .fields = lmt_node_fields_glyph,          .name = lua_key(glyph),          .lua = lua_key_index(glyph),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[hlist_node]          = (node_info) { .id = hlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,         .fields = lmt_node_fields_list,           .name = lua_key(hlist),          .lua = lua_key_index(hlist),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[vlist_node]          = (node_info) { .id = vlist_node,          .size = box_node_size,            .first = 0, .last = last_list_subtype,          .subtypes = subtypes_list,         .fields = lmt_node_fields_list,           .name = lua_key(vlist),          .lua = lua_key_index(vlist),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[rule_node]           = (node_info) { .id = rule_node,           .size = rule_node_size,           .first = 0, .last = last_rule_subtype,          .subtypes = subtypes_rule,         .fields = lmt_node_fields_rule,           .name = lua_key(rule),           .lua = lua_key_index(rule),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[insert_node]         = (node_info) { .id = insert_node,         .size = insert_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_insert,         .name = lua_key(insert),         .lua = lua_key_index(insert),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[mark_node]           = (node_info) { .id = mark_node,           .size = mark_node_size,           .first = 0, .last = last_mark_subtype,          .subtypes = subtypes_mark,         .fields = lmt_node_fields_mark,           .name = lua_key(mark),           .lua = lua_key_index(mark),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[adjust_node]         = (node_info) { .id = adjust_node,         .size = adjust_node_size,         .first = 0, .last = last_adjust_subtype,        .subtypes = subtypes_adjust,       .fields = lmt_node_fields_adjust,         .name = lua_key(adjust),         .lua = lua_key_index(adjust),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[boundary_node]       = (node_info) { .id = boundary_node,       .size = boundary_node_size,       .first = 0, .last = last_boundary_subtype,      .subtypes = subtypes_boundary,     .fields = lmt_node_fields_boundary,       .name = lua_key(boundary),       .lua = lua_key_index(boundary),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[disc_node]           = (node_info) { .id = disc_node,           .size = disc_node_size,           .first = 0, .last = last_discretionary_subtype, .subtypes = subtypes_disc,         .fields = lmt_node_fields_disc,           .name = lua_key(disc),           .lua = lua_key_index(disc),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[whatsit_node]        = (node_info) { .id = whatsit_node,        .size = whatsit_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_whatsit,        .name = lua_key(whatsit),        .lua = lua_key_index(whatsit),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[par_node]            = (node_info) { .id = par_node,            .size = par_node_size,            .first = 0, .last = last_par_subtype,           .subtypes = subtypes_par,          .fields = lmt_node_fields_par,            .name = lua_key(par),            .lua = lua_key_index(par),             .visible = 1, .definable = 1 };
+    lmt_interface.node_data[dir_node]            = (node_info) { .id = dir_node,            .size = dir_node_size,            .first = 0, .last = last_dir_subtype,           .subtypes = subtypes_dir,          .fields = lmt_node_fields_dir,            .name = lua_key(dir),            .lua = lua_key_index(dir),             .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_node]           = (node_info) { .id = math_node,           .size = math_node_size,           .first = 0, .last = last_math_subtype,          .subtypes = subtypes_math,         .fields = lmt_node_fields_math,           .name = lua_key(math),           .lua = lua_key_index(math),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[glue_node]           = (node_info) { .id = glue_node,           .size = glue_node_size,           .first = 0, .last = last_glue_subtype,          .subtypes = subtypes_glue,         .fields = lmt_node_fields_glue,           .name = lua_key(glue),           .lua = lua_key_index(glue),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[kern_node]           = (node_info) { .id = kern_node,           .size = kern_node_size,           .first = 0, .last = last_kern_subtype,          .subtypes = subtypes_kern,         .fields = lmt_node_fields_kern,           .name = lua_key(kern),           .lua = lua_key_index(kern),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[penalty_node]        = (node_info) { .id = penalty_node,        .size = penalty_node_size,        .first = 0, .last = last_penalty_subtype,       .subtypes = subtypes_penalty,      .fields = lmt_node_fields_penalty,        .name = lua_key(penalty),        .lua = lua_key_index(penalty),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[style_node]          = (node_info) { .id = style_node,          .size = style_node_size,          .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_style,          .name = lua_key(style),          .lua = lua_key_index(style),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[choice_node]         = (node_info) { .id = choice_node,         .size = choice_node_size,         .first = 0, .last = last_choice_subtype,        .subtypes = subtypes_choice,       .fields = lmt_node_fields_choice,         .name = lua_key(choice),         .lua = lua_key_index(choice),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[parameter_node]      = (node_info) { .id = parameter_node,      .size = parameter_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_parameter,      .name = lua_key(parameter),      .lua = lua_key_index(parameter),       .visible = 1, .definable = 1 };
+    lmt_interface.node_data[simple_noad]         = (node_info) { .id = simple_noad,         .size = noad_size,                .first = 0, .last = last_noad_subtype,          .subtypes = subtypes_noad,         .fields = lmt_node_fields_noad,           .name = lua_key(noad),           .lua = lua_key_index(noad),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[radical_noad]        = (node_info) { .id = radical_noad,        .size = radical_noad_size,        .first = 0, .last = last_radical_subtype,       .subtypes = subtypes_radical,      .fields = lmt_node_fields_radical,        .name = lua_key(radical),        .lua = lua_key_index(radical),         .visible = 1, .definable = 1 };
+    lmt_interface.node_data[fraction_noad]       = (node_info) { .id = fraction_noad,       .size = fraction_noad_size,       .first = 0, .last = last_fraction_subtype,      .subtypes = subtypes_fraction,     .fields = lmt_node_fields_fraction,       .name = lua_key(fraction),       .lua = lua_key_index(fraction),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[accent_noad]         = (node_info) { .id = accent_noad,         .size = accent_noad_size,         .first = 0, .last = last_accent_subtype,        .subtypes = subtypes_accent,       .fields = lmt_node_fields_accent,         .name = lua_key(accent),         .lua = lua_key_index(accent),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[fence_noad]          = (node_info) { .id = fence_noad,          .size = fence_noad_size,          .first = 0, .last = last_fence_subtype,         .subtypes = subtypes_fence,        .fields = lmt_node_fields_fence,          .name = lua_key(fence),          .lua = lua_key_index(fence),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_char_node]      = (node_info) { .id = math_char_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathchar),       .lua = lua_key_index(mathchar),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[math_text_char_node] = (node_info) { .id = math_text_char_node, .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_math_kernel,    .name = lua_key(mathtextchar),   .lua = lua_key_index(mathtextchar),    .visible = 1, .definable = 1 };
+    lmt_interface.node_data[sub_box_node]        = (node_info) { .id = sub_box_node,        .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_math_sub,       .name = lua_key(subbox),        .lua = lua_key_index(subbox),          .visible = 1, .definable = 1 };
+    lmt_interface.node_data[sub_mlist_node]      = (node_info) { .id = sub_mlist_node,      .size = math_kernel_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_math_sub,       .name = lua_key(submlist),        .lua = lua_key_index(submlist),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[delimiter_node]      = (node_info) { .id = delimiter_node,      .size = math_delimiter_node_size, .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_delimiter,      .name = lua_key(delimiter),      .lua = lua_key_index(delimiter),       .visible = 1, .definable = 1 };
+    lmt_interface.node_data[glyph_node]          = (node_info) { .id = glyph_node,          .size = glyph_node_size,          .first = 0, .last = last_glyph_subtype,         .subtypes = subtypes_glyph,        .fields = lmt_node_fields_glyph,          .name = lua_key(glyph),          .lua = lua_key_index(glyph),           .visible = 1, .definable = 1 };
 
     /*tex
         Who knows when someone needs is, so for now we keep it exposed.
     */
 
-    lmt_interface.node_data[unset_node]          = (node_info) { .id = unset_node,          .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_unset,          .name = lua_key(unset),          .lua = lua_key_index(unset),           .visible = 1, .definable = 1 };
-    lmt_interface.node_data[specification_node]  = (node_info) { .id = specification_node,  .size = specification_node_size,  .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(specification),  .lua = lua_key_index(specification),   .visible = 0, .definable = 0 };
-    lmt_interface.node_data[align_record_node]   = (node_info) { .id = align_record_node,   .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_align_record,   .name = lua_key(alignrecord),    .lua = lua_key_index(alignrecord),     .visible = 1, .definable = 1 };
+    lmt_interface.node_data[unset_node]          = (node_info) { .id = unset_node,          .size = box_node_size,            .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_unset,          .name = lua_key(unset),          .lua = lua_key_index(unset),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[specification_node]  = (node_info) { .id = specification_node,  .size = specification_node_size,  .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(specification),  .lua = lua_key_index(specification),   .visible = 0, .definable = 0 };
+    lmt_interface.node_data[align_record_node]   = (node_info) { .id = align_record_node,   .size = box_node_size,            .first = 0, .last = last_align_record_subtype,  .subtypes = subtypes_align_record, .fields = lmt_node_fields_align_record,   .name = lua_key(alignrecord),    .lua = lua_key_index(alignrecord),     .visible = 1, .definable = 1 };
 
     /*tex
         These nodes never show up in node lists and are managed special. Messing with such nodes
         directly is not a good idea.
     */
 
-    lmt_interface.node_data[attribute_list_node] = (node_info) { .id = attribute_list_node, .size = attribute_list_node_size, .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_attribute_list, .name = lua_key(attributelist),  .lua = lua_key_index(attributelist),   .visible = 1, .definable = 0 };
-    lmt_interface.node_data[attribute_node]      = (node_info) { .id = attribute_node,      .size = attribute_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_attribute,      .name = lua_key(attribute),      .lua = lua_key_index(attribute),       .visible = 1, .definable = 0 };
+    lmt_interface.node_data[attribute_list_node] = (node_info) { .id = attribute_list_node, .size = attribute_list_node_size, .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_attribute_list, .name = lua_key(attributelist),  .lua = lua_key_index(attributelist),   .visible = 1, .definable = 0 };
+    lmt_interface.node_data[attribute_node]      = (node_info) { .id = attribute_node,      .size = attribute_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_attribute,      .name = lua_key(attribute),      .lua = lua_key_index(attribute),       .visible = 1, .definable = 0 };
 
     /*
         We still expose the glue spec as they are the containers for skip registers but there is no
         real need to use them at the user end.
     */
 
-    lmt_interface.node_data[glue_spec_node]      = (node_info) { .id = glue_spec_node,      .size = glue_spec_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = lmt_node_fields_glue_spec,      .name = lua_key(gluespec),       .lua = lua_key_index(gluespec),        .visible = 1, .definable = 1 };
+    lmt_interface.node_data[glue_spec_node]      = (node_info) { .id = glue_spec_node,      .size = glue_spec_size,           .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = lmt_node_fields_glue_spec,      .name = lua_key(gluespec),       .lua = lua_key_index(gluespec),        .visible = 1, .definable = 1 };
 
     /*tex
         This one sometimes shows up, especially when we temporarily need an alternative head pointer,
         simply because we want to retain some head in case the original head is replaced.
     */
 
-    lmt_interface.node_data[temp_node]           = (node_info) { .id = temp_node,           .size = temp_node_size,           .first = 0, .last = 0,                          .subtypes = NULL,              .fields = NULL,                           .name = lua_key(temp),           .lua = lua_key_index(temp),            .visible = 1, .definable = 1 };
+    lmt_interface.node_data[temp_node]           = (node_info) { .id = temp_node,           .size = temp_node_size,           .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(temp),           .lua = lua_key_index(temp),            .visible = 1, .definable = 1 };
 
     /*tex
         The split nodes are used for insertions.
     */
 
-    lmt_interface.node_data[split_node]          = (node_info) { .id = split_node,          .size = split_node_size,          .first = 0, .last = last_split_subtype,         .subtypes = subtypes_split,    .fields = lmt_node_fields_split,          .name = lua_key(split),          .lua = lua_key_index(split),           .visible = 1, .definable = 1 };
+    lmt_interface.node_data[split_node]          = (node_info) { .id = split_node,          .size = split_node_size,          .first = 0, .last = last_split_subtype,         .subtypes = subtypes_split,        .fields = lmt_node_fields_split,          .name = lua_key(split),          .lua = lua_key_index(split),           .visible = 1, .definable = 1 };
 
     /*tex
         The following nodes are not meant for users. They are used internally for different purposes
@@ -903,22 +913,22 @@ void lmt_nodelib_initialize(void) {
         allocated using fast methods so they never show up in the new, copy and flush handlers.
     */
 
-    lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0, .definable = 0 };
-    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(lmtxexpression), .lua = lua_key_index(lmtxexpression),  .visible = 0, .definable = 0 };
-    lmt_interface.node_data[rpn_expression_node] = (node_info) { .id = rpn_expression_node, .size = rpn_expression_node_size, .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(rpnexpression),  .lua = lua_key_index(rpnexpression),   .visible = 0, .definable = 0 };
-    lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0, .definable = 0 };
-    lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0, .definable = 0 };
-    lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0, .definable = 0 };
-    lmt_interface.node_data[nesting_node]        = (node_info) { .id = nesting_node,        .size = nesting_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(nestedlist),     .lua = lua_key_index(nestedlist),      .visible = 0, .definable = 0 };
-    lmt_interface.node_data[span_node]           = (node_info) { .id = span_node,           .size = span_node_size,           .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(span),           .lua = lua_key_index(span),            .visible = 0, .definable = 0 };
-    lmt_interface.node_data[align_stack_node]    = (node_info) { .id = align_stack_node,    .size = align_stack_node_size,    .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(alignstack),     .lua = lua_key_index(alignstack),      .visible = 0, .definable = 0 };
- // lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0, .definable = 0 };
-    lmt_interface.node_data[if_node]             = (node_info) { .id = if_node,             .size = if_node_size,             .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(ifstack),        .lua = lua_key_index(ifstack),         .visible = 0, .definable = 0 };
-    lmt_interface.node_data[unhyphenated_node]   = (node_info) { .id = unhyphenated_node,   .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(unhyphenated),   .lua = lua_key_index(unhyphenated),    .visible = 0, .definable = 0 };
-    lmt_interface.node_data[hyphenated_node]     = (node_info) { .id = hyphenated_node,     .size = active_node_size,         .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(hyphenated),     .lua = lua_key_index(hyphenated),      .visible = 0, .definable = 0 };
-    lmt_interface.node_data[delta_node]          = (node_info) { .id = delta_node,          .size = delta_node_size,          .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(delta),          .lua = lua_key_index(delta),           .visible = 0, .definable = 0 };
-    lmt_interface.node_data[passive_node]        = (node_info) { .id = passive_node,        .size = passive_node_size,        .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = lua_key(passive),        .lua = lua_key_index(passive),         .visible = 0, .definable = 0 };
-    lmt_interface.node_data[passive_node + 1]    = (node_info) { .id = -1,                  .size = -1,                       .first = 0, .last = 0,                         .subtypes = NULL,              .fields = NULL,                           .name = NULL,                    .lua = 0,                              .visible = 0, .definable = 0 };
+    lmt_interface.node_data[expression_node]     = (node_info) { .id = expression_node,     .size = expression_node_size,     .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(expression),     .lua = lua_key_index(expression),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[lmtx_expression_node]= (node_info) { .id = lmtx_expression_node,.size = lmtx_expression_node_size,.first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(lmtxexpression), .lua = lua_key_index(lmtxexpression),  .visible = 0, .definable = 0 };
+    lmt_interface.node_data[rpn_expression_node] = (node_info) { .id = rpn_expression_node, .size = rpn_expression_node_size, .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(rpnexpression),  .lua = lua_key_index(rpnexpression),   .visible = 0, .definable = 0 };
+    lmt_interface.node_data[loop_state_node]     = (node_info) { .id = loop_state_node,     .size = loop_state_node_size,     .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(loopstate),      .lua = lua_key_index(loopstate),       .visible = 0, .definable = 0 };
+    lmt_interface.node_data[math_spec_node]      = (node_info) { .id = math_spec_node,      .size = math_spec_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(mathspec),       .lua = lua_key_index(mathspec),        .visible = 0, .definable = 0 };
+    lmt_interface.node_data[font_spec_node]      = (node_info) { .id = font_spec_node,      .size = font_spec_node_size,      .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(fontspec),       .lua = lua_key_index(fontspec),        .visible = 0, .definable = 0 };
+    lmt_interface.node_data[nesting_node]        = (node_info) { .id = nesting_node,        .size = nesting_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(nestedlist),     .lua = lua_key_index(nestedlist),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[span_node]           = (node_info) { .id = span_node,           .size = span_node_size,           .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(span),           .lua = lua_key_index(span),            .visible = 0, .definable = 0 };
+    lmt_interface.node_data[align_stack_node]    = (node_info) { .id = align_stack_node,    .size = align_stack_node_size,    .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(alignstack),     .lua = lua_key_index(alignstack),      .visible = 0, .definable = 0 };
+ // lmt_interface.node_data[noad_state_node]     = (node_info) { .id = noad_state_node,     .size = noad_state_node_size,     .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(noadstate),      .lua = lua_key_index(noadstate),       .visible = 0, .definable = 0 };
+    lmt_interface.node_data[if_node]             = (node_info) { .id = if_node,             .size = if_node_size,             .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(ifstack),        .lua = lua_key_index(ifstack),         .visible = 0, .definable = 0 };
+    lmt_interface.node_data[unhyphenated_node]   = (node_info) { .id = unhyphenated_node,   .size = active_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(unhyphenated),   .lua = lua_key_index(unhyphenated),    .visible = 0, .definable = 0 };
+    lmt_interface.node_data[hyphenated_node]     = (node_info) { .id = hyphenated_node,     .size = active_node_size,         .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(hyphenated),     .lua = lua_key_index(hyphenated),      .visible = 0, .definable = 0 };
+    lmt_interface.node_data[delta_node]          = (node_info) { .id = delta_node,          .size = delta_node_size,          .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(delta),          .lua = lua_key_index(delta),           .visible = 0, .definable = 0 };
+    lmt_interface.node_data[passive_node]        = (node_info) { .id = passive_node,        .size = passive_node_size,        .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = lua_key(passive),        .lua = lua_key_index(passive),         .visible = 0, .definable = 0 };
+    lmt_interface.node_data[passive_node + 1]    = (node_info) { .id = -1,                  .size = -1,                       .first = 0, .last = 0,                          .subtypes = NULL,                  .fields = NULL,                           .name = NULL,                    .lua = 0,                              .visible = 0, .definable = 0 };
 
     lmt_interface.par_data = lmt_memory_malloc(par_n_of_codes * sizeof(par_info));
 
@@ -1107,10 +1117,17 @@ static inline void lmt_properties_copy(lua_State *L, halfword target, halfword s
 
 /*tex The public one: */
 
-void tex_reset_node_properties(halfword b)
+void tex_reset_node_properties(halfword target)
 {
-    if (b) {
-        lmt_properties_reset(lmt_lua_state.lua_instance, b);
+    if (target) {
+        lmt_properties_reset(lmt_lua_state.lua_instance, target);
+    }
+}
+
+void tex_copy_node_properties(halfword target, halfword source)
+{
+    if (target && source) {
+        lmt_properties_copy(lmt_lua_state.lua_instance, target, source);
     }
 }
 
@@ -1441,7 +1458,7 @@ halfword tex_copy_node(halfword original)
                     break;
                 case sub_box_node:
                 case sub_mlist_node:
-                    copy_sub_list(kernel_math_list(copy), kernel_math_list(original));
+                    copy_sub_list(math_kernel_list(copy), math_kernel_list(original));
                     break;
                 case par_node:
                     /* can also be copy_sub_node */
@@ -1681,7 +1698,7 @@ void tex_flush_node(halfword p)
                     break;
                 case sub_box_node:
                 case sub_mlist_node:
-                    tex_aux_free_sub_node_list(kernel_math_list(p));
+                    tex_aux_free_sub_node_list(math_kernel_list(p));
                     break;
                 /*tex That was the last math node. */
                 case specification_node:
@@ -4254,6 +4271,8 @@ halfword tex_new_par_node(quarterword subtype)
         tex_set_local_broken_penalty(par, local_broken_penalty_par);
         tex_set_local_tolerance(par, local_tolerance_par);
         tex_set_local_pre_tolerance(par, local_pre_tolerance_par);
+        tex_set_local_hang_indent(par, local_hang_indent_par);
+        tex_set_local_hang_after(par, local_hang_after_par);
     }
     par_direction(par) = (singleword) par_direction_par;
     par_options(par) = (singleword) par_options_par;
@@ -5550,8 +5569,12 @@ halfword tex_get_special_node_list(special_node_list_types list, halfword *tail)
         case split_discards_list_type:
             h = lmt_packaging_state.split_discards_head;
             break;
+        default:
+            break;
     }
-    node_prev(h) = null;
+    if (h) {
+        node_prev(h) = null;
+    }
     if (tail) {
         *tail = t ? t : (h ? tex_tail_of_node_list(h) : null);
     }
@@ -5661,6 +5684,8 @@ void tex_set_special_node_list(special_node_list_types list, halfword head)
             break;
         case split_discards_list_type:
             lmt_packaging_state.split_discards_head = head;
+            break;
+        default:
             break;
     }
 }

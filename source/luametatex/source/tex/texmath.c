@@ -448,16 +448,16 @@ static inline mathdictval tex_fake_math_dict(halfword chr)
 void tex_math_copy_char_data(halfword target, halfword source, int wipelist)
 {
     if (node_type(source) == math_char_node) {
-        kernel_math_family(target) = kernel_math_family(source);
-        kernel_math_character(target) = kernel_math_character(source);
-        kernel_math_options(target) = kernel_math_options(source);
-        kernel_math_properties(target) = kernel_math_properties(source);
-        kernel_math_group(target) = kernel_math_group(source);
-        kernel_math_index(target) = kernel_math_index(source);
+        math_kernel_family(target) = math_kernel_family(source);
+        math_kernel_character(target) = math_kernel_character(source);
+        math_kernel_options(target) = math_kernel_options(source);
+        math_kernel_properties(target) = math_kernel_properties(source);
+        math_kernel_group(target) = math_kernel_group(source);
+        math_kernel_index(target) = math_kernel_index(source);
     } else {
-        kernel_math_list(target) = kernel_math_list(source);
+        math_kernel_list(target) = math_kernel_list(source);
         if (wipelist) {
-           kernel_math_list(source) = null;
+           math_kernel_list(source) = null;
         }
     }
 }
@@ -1179,39 +1179,39 @@ halfword tex_new_sub_box(halfword curbox)
     halfword noad = tex_new_node(simple_noad, ordinary_noad_subtype);
     halfword sbox = tex_new_node(sub_box_node, 0);
     noad_nucleus(noad) = sbox;
-    kernel_math_list(sbox) = curbox;
+    math_kernel_list(sbox) = curbox;
     return noad;
 }
 
 static quarterword tex_aux_set_math_char(halfword target, mathcodeval *mval, mathdictval *dval)
 {
     halfword hmcode = tex_get_hm_code(mval->character_value);
-    kernel_math_character(target) = mval->character_value;
+    math_kernel_character(target) = mval->character_value;
     if (variable_family_par == -2) {
         /*tex For those (read: context) who want to use this variable class as intended. */
-        kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
+        math_kernel_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = mval->class_value;
     } else if (mval->class_value == math_use_current_family_code) {
         /*tex For CMS chairman MS, so that he can answer a ltx question someplace. */
-        kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
+        math_kernel_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = ordinary_noad_subtype;
     } else if (mval->family_value == variable_family_par) {
-        kernel_math_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
+        math_kernel_family(target) = cur_fam_par_in_range ? cur_fam_par : mval->family_value;
         node_subtype(target) = mval->class_value;
     } else {
-        kernel_math_family(target) = mval->family_value;
+        math_kernel_family(target) = mval->family_value;
         node_subtype(target) = mval->class_value;
     }
     if (dval) {
-        kernel_math_properties(target) = dval->properties;
-        kernel_math_group(target) = dval->group;
-        kernel_math_index(target) = dval->index;
+        math_kernel_properties(target) = dval->properties;
+        math_kernel_group(target) = dval->group;
+        math_kernel_index(target) = dval->index;
     }
     if ((hmcode & auto_discretionary_normal) == auto_discretionary_normal) { // has_discretionary_normal
-        math_kernel_node_set_option(target, math_kernel_auto_discretionary);
+        tex_add_math_kernel_option(target, math_kernel_auto_discretionary);
     }
     if ((hmcode & auto_discretionary_italic) == auto_discretionary_italic) {  // has_discretionary_italic
-        math_kernel_node_set_option(target, math_kernel_full_discretionary);
+        tex_add_math_kernel_option(target, math_kernel_full_discretionary);
     }
     return node_subtype(target);
 }
@@ -1308,8 +1308,8 @@ static void tex_aux_display_fraction_noad  (halfword n, int threshold, int max);
 
 static void tex_aux_print_fam_and_char(halfword n)
 {
-    tex_print_format(", family %x, character %x", kernel_math_family(n), kernel_math_character(n));
-    tex_aux_show_dictionary(n, kernel_math_properties(n), kernel_math_group(n), kernel_math_index(n), tex_fam_fnt(kernel_math_family(n), 0), kernel_math_character(n));
+    tex_print_format(", family %x, character %x", math_kernel_family(n), math_kernel_character(n));
+    tex_aux_show_dictionary(n, math_kernel_properties(n), math_kernel_group(n), math_kernel_index(n), tex_fam_fnt(math_kernel_family(n), 0), math_kernel_character(n));
 }
 
 int tex_show_math_node(halfword n, int threshold, int max)
@@ -1344,11 +1344,11 @@ int tex_show_math_node(halfword n, int threshold, int max)
             tex_aux_print_fam_and_char(n);
             break;
         case sub_box_node:
-            tex_print_node_list(kernel_math_list(n), NULL, threshold, max);
+            tex_print_node_list(math_kernel_list(n), NULL, threshold, max);
             break;
         case sub_mlist_node:
-            if (kernel_math_list(n)) {
-                tex_print_node_list(kernel_math_list(n), NULL, threshold, max);
+            if (math_kernel_list(n)) {
+                tex_print_node_list(math_kernel_list(n), NULL, threshold, max);
             } else {
                 tex_print_str(", empty");
             }
@@ -2339,13 +2339,13 @@ static int tex_aux_scan_math(halfword target, halfword style, int usetextfont, h
     }
     node_type(target) = math_char_node; /* The sizes can best match! */
     if (glyph_options_par & glyph_option_no_italic_correction) {
-        math_kernel_node_set_option(target, math_kernel_no_italic_correction);
+        tex_add_math_kernel_option(target, math_kernel_no_italic_correction);
     }
     if (glyph_options_par & glyph_option_no_left_kern) {
-        math_kernel_node_set_option(target, math_kernel_no_left_pair_kern);
+        tex_add_math_kernel_option(target, math_kernel_no_left_pair_kern);
     }
     if (glyph_options_par & glyph_option_no_right_kern) {
-        math_kernel_node_set_option(target, math_kernel_no_right_pair_kern);
+        tex_add_math_kernel_option(target, math_kernel_no_right_pair_kern);
     }
     tex_aux_set_math_char(target, &mval, &dval);
     return 0;
@@ -2404,7 +2404,7 @@ static void tex_aux_append_math_fence(halfword fence, quarterword mathclass)
                 node_subtype(fence) = right_fence_side;
                 noad_nucleus(n) = l;
                 noad_options(n) |= noad_option_unpack_list;
-                kernel_math_list(noad_nucleus(n)) = q;
+                math_kernel_list(noad_nucleus(n)) = q;
             }
             break;
         case middle_noad_subtype:
@@ -2534,7 +2534,7 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
                                 noad_nucleus(a) = noad_prime(tail);
                                 noad_nucleus(b) = q;
                                 tex_couple_nodes(a, b);
-                                kernel_math_list(n) = a;
+                                math_kernel_list(n) = a;
                                 noad_prime(tail) = n;
                                 break;
                             }
@@ -2542,7 +2542,7 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
                             {
                                 halfword n = tex_new_node(simple_noad, ordinary_noad_subtype);
                                 noad_nucleus(n) = q;
-                                tex_couple_nodes(tex_tail_of_node_list(kernel_math_list(noad_prime(tail))),n);
+                                tex_couple_nodes(tex_tail_of_node_list(math_kernel_list(noad_prime(tail))),n);
                                 break;
                             }
                         default:
@@ -2563,7 +2563,7 @@ static void tex_aux_append_math_char(mathcodeval mval, mathdictval dval, int aut
                 halfword p = tex_new_node(simple_noad, ordinary_noad_subtype);
                 noad_nucleus(p) = q;
                 if (glyph_options_par & glyph_option_no_italic_correction) {
-                    math_kernel_node_set_option(q, math_kernel_no_italic_correction);
+                    tex_add_math_kernel_option(q, math_kernel_no_italic_correction);
                 }
                 node_subtype(p) = tex_aux_set_math_char(q, &mval, &dval);
                 tex_math_set_scripts_options(p);
@@ -3034,7 +3034,7 @@ halfword tex_math_make_disc(halfword d)
 {
     halfword q = tex_new_node(sub_mlist_node, 0);
     halfword n = tex_new_node(simple_noad, (quarterword) disc_class(d));
-    kernel_math_list(q) = d;
+    math_kernel_list(q) = d;
     noad_nucleus(n) = q;
     noad_options(n) = noad_option_unpack_list;
     return n;
@@ -3528,7 +3528,7 @@ void tex_finish_math_radical(void)
         halfword whatever = tex_new_node(sub_mlist_node, 0);
         halfword content = tex_aux_finish_math_list(null);
         halfword radical = cur_list.tail;
-        kernel_math_list(whatever) = content;
+        math_kernel_list(whatever) = content;
         switch (saved_radical_current_component()) {
             case 0:
                 {
@@ -3948,10 +3948,10 @@ void tex_finish_math_fraction(void)
             set_noad_style(fraction, userstyle);
             switch (over) {
                 case math_numerator_above:
-                    kernel_math_list(fraction_numerator(fraction)) = content;
+                    math_kernel_list(fraction_numerator(fraction)) = content;
                     break;
                 case math_denominator_above:
-                    kernel_math_list(fraction_denominator(fraction)) = content;
+                    math_kernel_list(fraction_denominator(fraction)) = content;
                     lmt_save_state.save_stack_data.ptr -= saved_fraction_n_of_records;
                     return;
             }
@@ -3977,14 +3977,14 @@ void tex_finish_math_operator(void)
                     if (content) {
                         halfword top = tex_new_node(sub_mlist_node, 0);
                         fence_delimiter_top(fenced) = top;
-                        kernel_math_list(top) = content;
+                        math_kernel_list(top) = content;
                     }
                     break;
                 case math_limits_bottom:
                     if (content) {
                         halfword bottom = tex_new_node(sub_mlist_node, 0);
                         fence_delimiter_bottom(fenced) = bottom;
-                        kernel_math_list(bottom) = content;
+                        math_kernel_list(bottom) = content;
                     }
                     lmt_save_state.save_stack_data.ptr -= saved_operator_n_of_records;
                     return;
@@ -4314,7 +4314,7 @@ void tex_run_math_fraction(void)
                 {
                     cur_list.incomplete_noad = fraction;
                     fraction_numerator(fraction) = numerator;
-                    kernel_math_list(numerator) = node_next(cur_list.head);
+                    math_kernel_list(numerator) = node_next(cur_list.head);
                     node_next(cur_list.head) = null;
                     cur_list.tail = cur_list.head;
                     cur_list.math_style = autostyle;
@@ -4578,14 +4578,14 @@ static halfword tex_aux_finish_math_list(halfword p)
             fraction_denominator(cur_list.incomplete_noad) = denominator;
             q = denominator;
         }
-        kernel_math_list(denominator) = node_next(cur_list.head);
+        math_kernel_list(denominator) = node_next(cur_list.head);
         if (p) {
             halfword numerator = fraction_numerator(cur_list.incomplete_noad);
-            q = kernel_math_list(numerator);
+            q = math_kernel_list(numerator);
             if ((node_type(q) != fence_noad) || (node_subtype(q) != left_fence_side) || (! cur_list.delimiter)) {
                 tex_confusion("right fence");
             }
-            kernel_math_list(numerator) = node_next(cur_list.delimiter);
+            math_kernel_list(numerator) = node_next(cur_list.delimiter);
             node_next(cur_list.delimiter) = cur_list.incomplete_noad;
             node_next(cur_list.incomplete_noad) = p;
         } else {
@@ -4610,7 +4610,7 @@ static halfword tex_aux_finish_math_list(halfword p)
 
 static void tex_aux_flatten_math_list(halfword parent)
 {
-    halfword p = kernel_math_list(parent);
+    halfword p = math_kernel_list(parent);
     if (p && ! node_next(p)) {
         switch (node_type(p)) {
             case simple_noad:
@@ -4669,7 +4669,7 @@ void tex_finish_math_group(void)
     allclass = (quarterword) saved_math_group_all_class;
     node_type(parent) = sub_mlist_node; /* can be math_char_node */
     p = tex_aux_finish_math_list(null); /* this incomplete trickery */
-    kernel_math_list(parent) = p;
+    math_kernel_list(parent) = p;
     if (cur_list.math_flatten) {
         tex_aux_flatten_math_list(parent);
     }
@@ -5090,7 +5090,7 @@ void tex_run_math_fence(void)
                     tex_tail_append(n);
                     set_noad_main_class(n, mainclass); /*tex Really needed here! */
                     noad_nucleus(n) = l;
-                    kernel_math_list(noad_nucleus(n)) = fence;
+                    math_kernel_list(noad_nucleus(n)) = fence;
                 }
                 break;
             default:

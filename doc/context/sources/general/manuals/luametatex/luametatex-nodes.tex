@@ -1,112 +1,61 @@
 % language=us runpath=texruns:manuals/luametatex
 
-% function node.direct.appendaftertail
-% function node.direct.appendtocurrentlist
-% function node.direct.prependbeforehead
+% Some of these are late arrivals and I have to use them first before they get
+% documented, others are rarely used so I'll mentikon them when I'm in the mood.
+%
+% node.direct.appendaftertail
+% node.direct.appendtocurrentlist
+% node.direct.prependbeforehead
+% node.direct.getcurrenttail
+% node.direct.setcurrenttail
+% node.direct.appendcurrenttail
+% node.direct.prependcurrenttail
+% node.direct.insertcurrenthead
+%
+% node.direct.findattributerange
+% node.direct.ignoremathskip
+% node.direct.makeextensible
+% node.direct.collapsing
+% node.direct.exchange
+% node.direct.getnormalizedline
+% node.direct.migrate
+% node.direct.repack
+% node.direct.reverse
 
-% function node.direct.collapsing
-
- % function node.direct.exchange
-
-% function node.direct.findattributerange
-
-% common : function node.direct.flushnode
-
-% list : function node.direct.getanchors
-% list : function node.direct.getbox
-% list : function node.direct.setbox
-
-% list : function node.direct.getnormalizedline
-
-% attributes : function node.direct.unsetattributes
-% attributes : function node.direct.patchattributes
-% attributes : function node.direct.getusedattributes
-% attributes : function node.direct.currentattributes
-
-% function node.direct.getparstate
-% function node.direct.getspeciallist
-% function node.direct.setspeciallist
-% function node.direct.patchparshape
-
-% general : function node.direct.getnodes
-
-% function node.direct.ignoremathskip
-
-% (unprotected)
-
-% function node.direct.ischar (n, font, data )
-% function node.direct.ischar (n, font, data, state )
-% function node.direct.ischar (n, font, scale, xscale, yscale )
-% function node.direct.ischar (n, font, data, scale, xscale, yscale )
-
-%     <nil when no node>
-%     <nil when no glyph> <id of node>
-%     <false when glyph and already marked as done or when not>
-%     <character code when font matches or when no font passed>
-
-% (always)
-
-% function node.direct.firstchar
-% function node.direct.firstglyph
-
-% function node.direct.isitalicglyph
-% function node.direct.issimilarglyph   (a, b) font data scales slant weight
-% function node.direct.firstitalicglyph (n, checkkerntoo)
-
-% function node.direct.isdirect
-% function node.direct.isnode
-% function node.direct.isspeciallist
-% function node.direct.isvalid
-
-% function node.direct.lastnode
-
-% function node.direct.migrate
-
-% function node.direct.naturalhsize
-
-% function node.direct.getwordrange
-
-% function node.direct.getcurrenttail
-% function node.direct.setcurrenttail
-% function node.direct.appendcurrenttail
-% function node.direct.prependcurrenttail
-% function node.direct.insertcurrenthead
-
+% node.direct.getnodes
 % getusage
 % hasusage
-
 % getusedattributes
-
 % setattributesinlist
 
-% makeextensible
+% list : node.direct.getanchors
+% list : node.direct.getbox
+% list : node.direct.setbox
+%
+% attributes : node.direct.unsetattributes
+% attributes : node.direct.patchattributes
+% attributes : node.direct.getusedattributes
+% attributes : node.direct.currentattributes
+%
+% node.direct.isitalicglyph
+% node.direct.issimilarglyph   (a, b) font data scales slant weight
+% node.direct.firstitalicglyph (n, checkkerntoo)
 
-% function node.direct.removefromlist
-
-% function node.direct.repack
-% function node.direct.reverse
-
-% function node.direct.serialized
-% function node.direct.setanchors
-
-% function node.direct.show
-
-% function node.direct.softenhyphens
-
-% function node.direct.startofpar
-
-% function node.direct.tostring
-% function node.direct.tovaliddirect
-
-% function node.direct.usedlist
-% function node.direct.usesfont
-
-% function node.direct.verticalbreak
-
-% function node.direct.xscaled
-% function node.direct.yscaled
-
-% function node.direct.isloop -- undocumented
+% node.direct.lastnode
+% node.direct.naturalhsize
+% node.direct.getwordrange
+% node.direct.removefromlist
+% node.direct.serialized
+% node.direct.setanchors
+% node.direct.show
+% node.direct.softenhyphens
+%
+% node.direct.usedlist
+% node.direct.usesfont
+% node.direct.verticalbreak
+% node.direct.xscaled
+% node.direct.yscaled
+% node.direct.isloop -- undocumented
 
 % node.shared.size
 % node.shared.id
@@ -562,13 +511,39 @@ that determine what happens before and after them.
 
 \startsubsection[title={par}]
 
-This node is inserted at the start of a paragraph. You should not mess too much
-with this one. They are also inserted when \type {\local...} primitives are used
-that relate boxes to positions in the line and overload certain parameters that
-play a role in the line break routine. There are many fields!
+In a traditional engine a paragraph starts with an indentation box. This actually
+guarantees that there is always a start node. In \LUATEX\ and \LUAMETATEX\ a
+paragraph starts with a par node but you can also find them later in the list. In
+\LUATEX\ it has little information, the direction and optional left- and right
+boxes, but in \LUAMETATEX\ it keeps the state. A fundamental difference between
+the engines is that in \LUAMETATEX\ we remember the various variables involved
+and you can only change them in the middle of a paragraph per explicit request.
+There can still be an indentation box after it but in \CONTEXT\ we configure the
+engine to use a skip instead. The par node is a pretty large one which also means that
+initializing and consulting it adds some complexity (and runtime).
+
+Because this node is inserted at the start of a paragraph, and expected to be
+there, you should not mess too much with this one. Because we took the local left
+and right box feature from \OMEGA\ they can also be inserted when \type
+{\local...} primitives are used, these boxes plus a few variables are bound to
+positions in the line and overload certain parameters that play a role in the
+line break (and later packaging) routine. ={par}
 
 \showenginefields[2]{par}
 \showenginesubtypes {par}
+
+Some of the features are a playground. For instance, \prm {localbreakpar} will
+insert a break point in a paragraph that acts like a \prm {par} but doesn't end
+one. The parameter subtype indicates (probably rarely used, if at all) \prm
+{localinterlinepenalty}, \prm {localbrokenpenalty}, \prm {localtolerance} or \prm
+{localpretolerance}. The local box subtype is used for \prm {localleftbox}, \prm
+{localmiddlebox}, \prm {localrightbox} and \prm {resetlocalboxes}. Normally the
+initial par node gets a vmode subtype, but when it's found later it gets tagged
+as a hmode subtype and treated the same. This is mostly a diagnostic recovery
+feature so best not rely on that. The math subtype is for experiments and
+possible future use so you can forget about that one. In general one can just
+ignore most of this and only check for the direction, if that makes sense, as in
+\LUATEX.
 
 \showengineusagepernode{par}
 
@@ -886,11 +861,21 @@ The userdata node variant has accessors on that object but when we use the
 indexed variant we use functions. As a consequence there are more helpers for
 direct nodes that for userdata nodes and many of them accept more arguments or
 have multiple return values. When you use \CONTEXT\ you will notice that instead
-of the \typ {node.direct} namespace we use \type {nuts}. Among the reasons is
+of the \typ {node.direct} name space we use \type {nuts}. Among the reasons is
 that we had an intermediate variant in \CONTEXT\ \MKIV\ before we had these
 direct nodes. That variant was more efficient than the userdata accessors and
 triggered the introduction of direct nodes after which we dropped the
 intermediate variant. So, for \CONTEXT\ users direct nodes are nuts.
+
+What model you choose depends on your programming preferences. Using direct nodes
+is more efficient but if that pays back really depends on how frequently you
+access them. It is easy to blame a performance hit on \LUA\ (and interfacing to
+node lists) but don't underestimate the impact of inefficient macros or
+inefficient coding in general. Both models perform quite okay and in \LUAMETATEX\
+likely a bit better than in \LUATEX. \footnote {In the development history
+documents you can occasionally find explanations about how these mechanisms
+evolved. Already early in the development in \LUATEX\ we made sure that the
+overhead was acceptable.}
 
 \stopsubsection
 
@@ -983,7 +968,7 @@ The \type {free} function returns the next field of the freed node, while the
 \type {flushnode} alternative returns nothing.
 
 \starttyping[option=LUA]
-function node.direct.flush ( <t:direct> n )
+function node.direct.flushnode ( <t:direct> n )
     -- no return values
 end
 \stoptyping
@@ -1498,6 +1483,18 @@ likes it to be rendered, we have two states: unprotected and protected. We start
 out unprotected and when done set the protection flag on the glyph nodes so that
 later on we can check if processing already happened. In functions that basically
 do the same we use \type {char} for unprotected and \typ {glyph} otherwise.
+
+For instance, we have two helpers and their match depends on the protection set:
+
+\starttyping[option=LUA]
+function node.direct.firstchar  ( <t:direct> n ) return <t:direct> | <t:nil> end
+function node.direct.firstglyph ( <t:direct> n ) return <t:direct> | <t:nil> end
+\stoptyping
+
+In \CONTEXT\ once a node list has gone through the font handler, we have glyphs,
+so if one (at all) add some user pass over the list and use these helpers, one
+should also be aware of the moment it happens. So this is a typical case where
+macro packages differ and choose different approaches.
 
 \starttyping[option=LUA]
 function node.direct.ischar (
@@ -2474,7 +2471,7 @@ has been passed back to \TEX.
 <number> v = node.hasattribute ( <t:node> n, <number> id, <number> val )
 \stoptyping
 
-Of course this one is also available in the \typ {node.direct} namespace, as is
+Of course this one is also available in the \typ {node.direct} name space, as is
 the following one that tests if a node has the attribute with number \type {id}
 set. If \type {val} is also supplied, also tests if the value matches \type
 {val}. It returns the value, or, if no match is found, \type {nil}.
@@ -3639,6 +3636,58 @@ end
 
 \stopsubsection
 
+\startsubsection[title={Paragraphs}]
+
+In most usage scenarios the (initial) par node will only be used for checking the
+direction we start with, which then later will be updated by checking dir nodes. You can
+check if a node is the start of a paragraph with:
+
+\starttyping[option=LUA]
+function node.direct.startofpar ( <t:direct> n ) return <t:boolean> end
+\stoptyping
+
+Getting the state, that is a table of set fields, (currently) only makes sense
+for the initial par node. The table has more that 50 entries and some values
+(like the penalty arrays and shape) are tables themselves. You can get a limited
+version instead. We might add some more to small version when we feel the need.
+
+\starttyping[option=LUA]
+function node.direct.getparstate (
+    <t:direct> n
+)
+    return <t:table> -- a huge table (some 50 entries)
+end
+function node.direct.getparstate (
+    <t:direct>  n,
+    <t:boolean> limited
+)
+    return <t:table> -- a small table (some 10 entries)
+end
+\stoptyping
+
+A par shape is also a node, and it is copied into par node. You can patch the
+shape specification with new indentation and width values. When an existing shape
+is set, the options will be kept.
+
+\starttyping[option=LUA]
+function node.direct.getparstate ( <t:direct> par, <t:table> list) end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Specifications}]
+
+All nodes have a fixed size but some can have fields that are nodes themselves,
+which then are just \quote {pointers} to other nodes. These pointers are actually
+just indices into node memory. A specification node is different. Where in other
+engines these are nodes with a variable size, in \LUAMETATEX\ we just allocate
+memory for the variable part. This comes at a bit more overhead but pays back in
+less waste of fast accessible node memory.
+
+{\em maybe more here}
+
+\stopsubsection
+
 \startsubsection[title={Math}]
 
 We start with the function that runs the internal \quote {mlist to hlist}
@@ -4038,7 +4087,7 @@ but you can cast both models. So, multiplying a node number makes no sense.
 So our advice is: use the indexed (table) approach when possible and investigate
 the direct one when speed might be a real issue. For that reason \LUATEX\ also
 provide the \type {get*} and \type {set*} functions in the top level node
-namespace. There is a limited set of getters. When implementing this direct
+name space. There is a limited set of getters. When implementing this direct
 approach the regular index by key variant was also optimized, so direct access
 only makes sense when nodes are accessed millions of times (which happens in some
 font processing for instance).
@@ -4064,7 +4113,7 @@ in the lookup chain. However, in successive versions of \LUATEX\ these lookups
 have been optimized and the most frequently accessed nodes and fields have a
 higher priority.
 
-In the direct namespace there are more helpers and most of them are accompanied
+In the direct name space there are more helpers and most of them are accompanied
 by setters. The getters and setters are clever enough to see what node is meant.
 We don't deal with whatsit nodes: their fields are always accessed by name. It
 doesn't make sense to add getters for all fields, we just identifier the most
@@ -4073,7 +4122,7 @@ seen, or seen only a few times, but for instance glyphs are candidates for such
 optimization.
 
 In previous sections we only show the functions in the \type {node.direct}
-namespace. The following functions are available in both \type {node} and \type
+name space. The following functions are available in both \type {node} and \type
 {node.direct}:
 
 \startthreerows
@@ -4090,7 +4139,7 @@ namespace. The following functions are available in both \type {node} and \type
 \stopthreerows
 
 In \CONTEXT\ these are duplicated in \type {nodes.nuts} so that is the reference.
-Quite some functions gets mapped onto the \type {nodes} namespace. In addition we
+Quite some functions gets mapped onto the \type {nodes} name space. In addition we
 emulate some userdata functions and add some of our own. We show them here because
 this manual takes \CONTEXT\ as reference.
 
@@ -4118,7 +4167,7 @@ this manual takes \CONTEXT\ as reference.
 \stopluacode
 \stoptworows
 
-The following functions are in the \CONTEXT\ \type {nodes} namespace but don't
+The following functions are in the \CONTEXT\ \type {nodes} name space but don't
 come from the library. Again, we show them here because \CONTEXT\ is the
 reference.
 
@@ -4157,6 +4206,78 @@ repertoire:
     end
     context.stoptabulate()
 \stopluacode
+
+Here are some more helpers, they live in the \type {direct} name space but are
+user data aware too.
+
+\starttyping[option=LUA]
+function node.direct.isdirect       ( <t:node> | <t:direct> ) return <t:boolean> end
+function node.direct.isnode         ( <t:node> | <t:direct> ) return <t:boolean> end
+function node.direct.isvalid        ( <t:node> | <t:direct> ) return <t:boolean> end
+function node.direct.tostring       ( <t:node> | <t:direct> ) return <t:boolean> end
+function node.direct.tovaliddirect  ( <t:node> | <t:direct> ) return <t:direct> end
+\stoptyping
+
+\stopsubsection
+
+\startsubsection[title={Special lists}]
+
+There are various lists where content can be appended to. These can be global or
+local to the current situation at hand.
+
+\startcolumns[n=2]
+\starttabulate
+\NC \type {pageinserthead}    \NC page builder \NC \NR
+\NC \type {contributehead}    \NC current (vertical) list \NC \NR
+\NC \type {pagehead}          \NC page builder \NC \NR
+\NC \type {temphead}          \NC internal \NC \NR
+\NC \type {holdhead}          \NC internal \NC \NR
+\NC \type {postadjusthead}    \NC boxes \NC \NR
+\NC \type {preadjusthead}     \NC boxes \NC \NR
+\NC \type {postmigratehead}   \NC boxes \NC \NR
+\NC \type {premigratehead}    \NC boxes \NC \NR
+\NC \type {alignhead}         \NC alignments \NC \NR
+\NC \type {pagediscardshead}  \NC page builder \NC \NR
+\NC \type {splitdiscardshead} \NC vertical box splitter \NC \NR
+\stoptabulate
+\stopcolumns
+
+You can check is a node is a special list head with:
+
+\starttyping[option=LUA]
+function node.direct.isspeciallist (
+    <t:direct> n
+)
+    return <t:boolean>
+end
+\stoptyping
+
+Getting such a node is done with
+
+\starttyping[option=LUA]
+function node.direct.getspeciallist (
+    <t:string> | <t:integer> id
+)
+    return
+        <t:direct>, -- head
+        <t:direct>  -- tail (if relevant)
+end
+\stoptyping
+
+and setting with:
+
+\starttyping[option=LUA]
+function node.direct.setspeciallist (
+    <t:string> | <t:integer> id,
+    <t:direct>
+)
+    -- no return value
+end
+\stoptyping
+
+When messing with them, it is the user's responsibility to make sure that these
+lists remain valid, for instance horizontal and vertical lists have expectations
+with regards to the kind of nodes they contain.
 
 \stopsubsection
 

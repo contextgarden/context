@@ -193,8 +193,8 @@
    \fi
    \global\c_tabl_lines_step{\linetablecparameter\c!nx}%
    \ifcase\c_tabl_lines_step\or
-     \scratchdimen{\linetablecparameter\c!width}
-     \scratchskip{\linetablecparameter\c!distance}
+     \scratchdimen{\linetablecparameter\c!width}%
+     \scratchskip{\linetablecparameter\c!distance}%
    \else
      \scratchdimen  \zeropoint
      \scratchskip   \zeroskip
@@ -448,7 +448,11 @@
          \donetrue % collecting repeater
        \fi
      \fi
-     \ifdone
+     \ifnum\c_tabl_lines_head_state=\plusone
+       \ifdim\d_tabl_lines_width>\hsize
+         \llap{{\infofont[overflow]}\quad}%
+       \fi
+     \orelse\ifdone
        \scratchconditiononetrue
        % collecting repeater
      \orelse\ifdim\d_tabl_lines_width>\hsize
@@ -680,7 +684,7 @@
      {\edefcsname\??linetable r:##1x\c!height\endcsname{\csname\??linetableheight##1\endcsname}%
       \edefcsname\??linetable r:##1x\c!depth \endcsname{\csname\??linetabledepth ##1\endcsname}%
       \gletcsname\??linetableheight##1\endcsname\zeropoint
-      \gletcsname\??linetabledepth ##1\endcsname\zeropoint}
+      \gletcsname\??linetabledepth ##1\endcsname\zeropoint}%
    \dorecurse\c_tabl_lines_n_of_columns % global, from last run {\linetableparameter\c!n}
      {\edefcsname\??linetable c:##1\c!width\endcsname{\csname\??linetablewidth##1\endcsname}%
       \gletcsname\??linetablewidth##1\endcsname\zeropoint}} % init next table

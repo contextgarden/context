@@ -26,6 +26,12 @@ typedef lua_Number  (*numfunc)   (void);
 typedef int         (*intfunc)   (void);
 typedef int         (*luafunc)   (lua_State *L);
 
+static int statslib_memory_mode(lua_State* L)
+{
+    lua_push_integer(L, memory_mode);
+    return 1;
+}
+
 static int statslib_callbackstate(lua_State *L)
 {
     lmt_push_callback_usage(L);
@@ -220,6 +226,9 @@ static int statslib_enginestate(lua_State *L)
     lua_set_string_by_key (L, "copyright",       lmt_version_state.copyright);
     lua_set_integer_by_key(L, "format_id",       lmt_version_state.formatid);
     lua_set_integer_by_key(L, "tex_hash_size",   hash_size);
+ // lua_set_integer_by_key(L, "tex_hash_prime",  hash_prime);
+ // lua_set_integer_by_key(L, "tex_eqtb_size",   eqtb_size);
+    lua_set_integer_by_key(L, "tex_memory_mode", memory_mode);
     lua_set_string_by_key (L, "used_compiler",   lmt_version_state.compiler);
  // lua_set_string_by_key (L, "used_libc",       lmt_version_state.libc);
     lua_set_integer_by_key(L, "run_state",       lmt_main_state.run_state);
@@ -412,6 +421,7 @@ static int statslib_getconstants(lua_State *L)
     lua_set_integer_by_key(L, "tex_hash_size",                  hash_size);
     lua_set_integer_by_key(L, "tex_hash_prime",                 hash_prime);
     lua_set_integer_by_key(L, "tex_eqtb_size",                  eqtb_size);
+    lua_set_integer_by_key(L, "tex_memory_mode",                memory_mode);
                                                                 
     lua_set_integer_by_key(L, "math_first_user_class",          math_first_user_class);
     lua_set_integer_by_key(L, "math_last_user_class",           math_last_user_class);
@@ -512,10 +522,12 @@ static struct statistic_entry statslib_entries[] = {
     { .name = "luatex_release",     .value = (void *) &lmt_version_state.release,       .type = 'g' },
     { .name = "luatex_verbose",     .value = (void *) &lmt_version_state.verbose,       .type = 'c' },
     /* */
-    { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' },
+    { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' }, /* can be moved up */
     { .name = "run_state",          .value = (void *) &lmt_main_state.run_state,        .type = 'g' },
     { .name = "permit_loadlib",     .value = (void *) &lmt_engine_state.permit_loadlib, .type = 'b' },
-
+    /* */
+    { .name = "tex_memory_mode",    .value = &statslib_memory_mode,                     .type = 'f' }, /* can be moved up */
+    /* */
     { .name = NULL,                 .value = NULL,                                      .type = 0   },
 };
 

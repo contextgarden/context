@@ -46,6 +46,7 @@ local getlist           = nuts.getlist
 local takebox           = nuts.takebox
 local vpack             = nuts.vpack
 local getbox            = nuts.getbox
+local getprev           = nuts.getprev
 
 local texgetcount       = tex.getcount
 local texgetdimen       = tex.getdimen
@@ -85,8 +86,9 @@ local v_spread          <const> = variables.spread
 local integer_value     <const> = tokens.values.integer
 local dimension_value   <const> = tokens.values.dimension
 
-local hlist_code        <const> = nodes.nodecodes.hlist
-local vlist_code        <const> = nodes.nodecodes.vlist
+local nodecodes                 = nodes.nodecodes
+local hlist_code        <const> = nodecodes.hlist
+local vlist_code        <const> = nodecodes.vlist
 
 pagebuilders            = pagebuilders or { } -- todo: pages.builders
 local columnsets        = pagebuilders.columnsets or { }
@@ -2811,7 +2813,7 @@ do
     local trybreak_code  <const> = tex.balancecallbackcodes.trybreak
     local skipzeros_code <const> = tex.balancecallbackcodes.skipzeros
 
-    local function balance_boundary_callback(what,count,identifier,slot)
+    local function balance_boundary_callback(what,count,identifier,slot,activeheight,breakheight)
         local name    = nums[identifier]
         local action  = actions[what] or "unknown"
         local result  = skipzeros_code
@@ -2906,25 +2908,27 @@ do
                                 quit = #shape
                             else
                                 quit = slot
-local first = slot + 1
-local last  = #shape - 1
-if first > last then
-    -- We ran out of slots ... we could maybe just quit the test, let more slots be added
-    -- and go on then.
-    result  = trybreak_code
-    penalty = eject
-    goto FORCE
-else
-                                for i=first,last do
-                                    local c = shape[i].column
-                                    quit = quit + 1
-                                    if column == nofcolumns and c == 1 then
-                                        break
-                                    elseif c ~= column then
-                                        break
+                                -- relatively new
+                                local first = slot + 1
+                                local last  = #shape - 1
+                                if first > last then
+                                    -- We ran out of slots ... we could maybe just quit the test, let more slots be added
+                                    -- and go on then.
+                                    result  = trybreak_code
+                                    penalty = eject
+                                    goto FORCE
+                                else
+                                    for i=first,last do
+                                        local c = shape[i].column
+                                        quit = quit + 1
+                                        if column == nofcolumns and c == 1 then
+                                            break
+                                        elseif c ~= column then
+                                            break
+                                        end
                                     end
                                 end
-end
+                                -- till here
                             end
                             dataset.quit = quit
                         end
@@ -2932,7 +2936,7 @@ end
                             result  = trybreak_code
                             penalty = eject
                         end
-::FORCE::
+                      ::FORCE::
                     elseif action == "slot" then
                         if count > 0 then
                             quit = slot + count

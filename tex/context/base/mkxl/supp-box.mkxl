@@ -424,9 +424,11 @@
      \noflines\zerocount
    \orelse\ifdim\noflinesheight>\zeropoint
      \advanceby\noflinesheight-\roundingeps
+% \writestatus{n 1:}{\luaexpr{math.ceil(\number\noflinesheight/\number\openlineheight)}}%
      \divideby\noflinesheight\openlineheight
      \noflines\noflinesheight
      \advanceby\noflines\plusone
+% \writestatus{n 2:}{\number\noflines}%
    \else
      \advanceby\noflinesheight\roundingeps
      \divideby\noflinesheight\openlineheight

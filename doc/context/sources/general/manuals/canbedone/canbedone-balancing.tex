@@ -1,0 +1,121 @@
+% language=us runpath=texruns:manuals/canbedone
+
+\environment canbedone-style
+
+% \showframe
+
+\startdocument
+  [title=balancing,
+   color=darkmagenta]
+
+\startsectionlevel[title=Balancing]
+
+In the (new) column set implementation we use the balancing features of
+\LUAMETATEX. When we balance, we collect all the content and then run a break
+pass similar to the line break routine. It might not be obvious at first sight,
+but when we want to enforce a new column we face the problem that we don't know
+where we are yet, so we somehow need to communicate our wish to the builder.
+
+We actually have four cases to deal with: go to a next slot (in a column), go to
+a next column (in a page or spread), go to a next page (in a spread), and go to a
+next spread. We communicate to the builder using \typ {\balanceboundary} commands
+(that take two integers) and when the builder encounters these it will trigger a
+callback (that gets these integers passed). That callback then has to force
+moving on using a \typ {\penalty} of (at least) 10000. Of course the amount of
+moves depend on the case as well as where we are. For instance if we have 3 slots
+in a column and are in slot 2 we need to move two slot up when we want to go to a
+next column.
+
+When Mikael was converting lecture notes to use column sets, which for instance
+gives nice options for adding graphics in various places, a subtle problem
+surfaced. We could strip down the problematic case to this:
+
+\starttyping[option=TEX]
+\startcolumnset[example]
+    %dorecurse{3}{\samplefile{ward}\par}
+    \dorecurse{5}{\samplefile{ward}\par} Bla bla bla
+    \blank[line]
+    \startsection[title=Foo]
+        \samplefile{ward}
+    \stopsection
+\stopcolumnset
+\stoptyping
+
+The uncommented case have a full first column, then an empty one, and a section
+in the third. The commented case gave a half filled first column and a section in
+the second. Removing the \type {\blank} made the issue disappear. The easiest
+way to demonstrate what happens is using a similar situation in the par builder.
+
+\startbuffer
+{\darkred\dontleavehmode\vrule width \hsize height 3pt}%
+\break
+\dontleavehmode\vrule width \hsize height 2pt
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection[blank] \forgetall \getbuffer \stoplinecorrection
+
+\startbuffer
+{\darkblue\dontleavehmode\vrule width \hsize height 3pt}%
+\space\space\space\space\space
+\break
+\dontleavehmode\vrule width \hsize height 2pt
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection[blank] \forgetall \getbuffer \stoplinecorrection
+
+\startbuffer
+{\darkgreen\dontleavehmode\vrule width {\hsize - 1sp} height 3pt}
+\break
+\dontleavehmode\vrule width \hsize height 2pt
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection[blank] \forgetall \getbuffer \stoplinecorrection
+
+\startbuffer
+{\darkyellow\dontleavehmode\vrule width {\hsize - 2pt} height 3pt}
+\break
+\dontleavehmode\vrule width \hsize height 2pt
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection[blank] \forgetall \getbuffer \stoplinecorrection
+
+\startbuffer
+{\darkgray\dontleavehmode\vrule width {\hsize + 2pt} height 3pt}
+\break
+\dontleavehmode\vrule width \hsize height 2pt
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startlinecorrection[blank] \forgetall \getbuffer \stoplinecorrection
+
+When you compare these cases you can deduce that space is responsible for an
+additional line when we are filled up. This is also happening in the balancer:
+the \type {\blank} became glue that triggers a trial break and as we are filled
+up we go to the next slot in a balancing shape (similar to a line in a par
+shape). And because the par builder does that before we signal the column break
+we are ahead (already moved to a next column). One could imagine the boundary to
+remove the skips preceding it but we can only do that when we're sure that we are
+in vertical mode, and triggering that has the same side effects.
+
+When looking at this and experimenting a bit we came to the conclusion that
+dealing with this in the engine or callback was pretty unreliable. We then
+realized that as \CONTEXT\ users never \type {\vskip} but use \type {\blank}
+instead, we could actually just do \typ {\blank [back]} before inserting the
+signals. This is pretty safe because we don't want spacing there anyway. Because
+removal now happens in a predictable place at a moment before we start balancing
+it also works okay. After all, the macro package knows what it is dealing with
+while the engine just has to gamble. In the end the solution was rather trivial
+but sometimes wasting time on experiments is needed to come to that.
+
+\stopsectionlevel
+
+\stopdocument

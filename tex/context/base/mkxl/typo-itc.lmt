@@ -60,7 +60,6 @@ local getkern             = nuts.getkern
 local setglue             = nuts.setglue
 local getglue             = nuts.getglue
 local getheight           = nuts.getheight
-local getoptions          = nuts.getoptions
 local getslant            = nuts.getslant
 local getcornerkerns      = nuts.getcornerkerns
 local xscaled             = nuts.xscaled

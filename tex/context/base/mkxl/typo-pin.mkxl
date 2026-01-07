@@ -1,0 +1,127 @@
+
+%D \module
+%D   [       file=typo-pin,
+%D        version=2026.01.06,
+%D          title=\CONTEXT\ Typesetting Macros,
+%D       subtitle=Paragraph Inserts,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+\writestatus{loading}{ConTeXt Typesetting Macros / Paragraph inserts}
+
+%D An experiment turned feature by Mikael Sundqvist and Hans during cold and snowy
+%D winter days in the first weekl of 2026. A sort of follow up on our par builder
+%D experiments.
+
+%D \starttyping
+%D \setupexternalfigures
+%D   [location={global,local,default}]
+%D
+%D \enabletrackers[parinsert]
+%D
+%D \starttext
+%D
+%D \samplefile{tufte}%
+%D \space\leftparinsert[color=darkred]{An example.}\space
+%D \samplefile{ward}%
+%D \space\rightparinsert[color=darkgreen]{Another example.}\space
+%D \samplefile{tufte}
+%D
+%D \page
+%D
+%D \samplefile{tufte}%
+%D \space
+%D \leftparinsert
+%D   [lines=3]
+%D   {\externalfigure[cow.pdf][height=3lh,location=top]}%
+%D \rightparinsert
+%D   [lines=4]
+%D   {\mirror{\externalfigure[cow.pdf][height=4lh,location=top]}}%
+%D \space
+%D \samplefile{ward}%
+%D \space
+%D \rightparinsert
+%D   [distance=2em,lines=2]
+%D   {\mirror{\externalfigure[cow.pdf][height=2lh,location=top]}}%
+%D \space
+%D \samplefile{tufte}
+%D \stoptyping
+
+\unprotect
+
+\installcorenamespace{parinsert}
+
+\installcommandhandler \??parinsert {parinsert} \??parinsert
+
+\setupparinsert
+  [\c!location=\v!left,
+   \c!distance=\emwidth,
+   \c!xoffset=\zeropoint,
+   \c!yoffset=\zeropoint,
+   \c!lines=3]
+
+\permanent\tolerant\protected\def\typo_parinsert_handle#1#*[#2]#*#:#3%
+  {\begingroup
+   \cdef\currentparinsert{#1}%
+   \ifparameter#2\or
+      \setupcurrentparinsert[#2]%
+   \fi
+   \setbox\scratchbox\hbox
+      \s!xoffset {\parinsertparameter\c!xoffset}%
+      \s!yoffset {\parinsertparameter\c!yoffset}%
+   \bgroup
+      \useparinsertstyleandcolor\c!style\c!color
+      #3%
+   \egroup
+   \scratchdistance{\parinsertparameter\c!distance}%
+   \scratchwidth\wd\scratchbox
+   \scratchcounter{\parinsertparameter\c!lines}%
+   \ifzero\scratchcounter
+     \getnoflines{\htdp\scratchbox}%
+     \scratchcounter\noflines
+   \fi
+   \ifcstok{\parinsertparameter\c!location}\v!right
+     \atrightmargin{\llap{\box\scratchbox}}%
+     \scratchcounter-\scratchcounter
+   \else
+     \atleftmargin{\rlap{\box\scratchbox}}%
+   \fi
+   \localhangindent{\scratchwidth+\scratchdistance}%
+   \localhangafter \scratchcounter
+   \typo_par_insert_trace
+   \endgroup}
+
+\def\typo_par_insert_trace_indeed
+  {\begingroup
+     \darkgray
+     \scratchwidth.125\emwidth
+     \kern-\scratchwidth
+     \vrule \s!width 2\scratchwidth \s!pair \strutht \strutdp
+     \kern-\scratchwidth
+   \endgroup}
+
+\installtextracker
+  {parinsert}
+  {\let\typo_par_insert_trace\typo_par_insert_trace_indeed}
+  {\lettonothing\typo_par_insert_trace}
+
+\lettonothing\typo_par_insert_trace
+
+\appendtoks
+    \protected\instance\edefcsname\currentparinsert\endcsname{\typo_parinsert_handle{\currentparinsert}}
+\to \everydefineparinsert
+
+%D Not yet interfaced:
+
+\defineparinsert[leftparinsert]
+\defineparinsert[rightparinsert]
+
+\setupparinsert[leftparinsert] [\c!location=\v!left]
+\setupparinsert[rightparinsert][\c!location=\v!right]
+
+\protect \endinput

@@ -109,6 +109,7 @@ typedef enum saved_box_options {
     saved_box_snapping_option     = 0x080,
     saved_box_no_snapping_option  = 0x100,
     saved_box_no_profiling_option = 0x200,
+    saved_box_align_split_option  = 0x400,
 } saved_box_options;
 
 static inline void saved_box_initialize(void)
@@ -250,7 +251,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 }
                 break;
             case 'a': case 'A':
-                switch (tex_scan_character("dntxDNTX", 0, 0, 0)) {
+                switch (tex_scan_character("dlntxDLNTX", 0, 0, 0)) {
                     case 'd': case 'D':
                         if (tex_scan_mandate_keyword("adapt", 2)) {
                             spec_packing = packing_adapted;
@@ -274,13 +275,18 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             }
                         }
                         break;
+                    case 'l': case 'L':
+                        if (tex_scan_mandate_keyword("alignsplit", 2)) { /* or maybe just split */
+                            options |= saved_box_align_split_option;
+                        }
+                        break;
                     case 'x': case 'X':
                         if (tex_scan_mandate_keyword("axis", 2)) {
                             axis = tex_scan_box_axis();
                         }
                         break;
                     default:
-                        tex_aux_show_keyword_error("adapt|attr|anchor|axis");
+                        tex_aux_show_keyword_error("adapt|attr|anchor|axis|alignsplit");
                         goto DONE;
                 }
                 break;
@@ -2248,7 +2254,7 @@ scaledwhd tex_natural_hsizes(halfword p, halfword pp, glueratio g_mult, int g_si
             case sub_mlist_node:
                 {
                     /* hack */
-                    scaledwhd whd = tex_natural_hsizes(kernel_math_list(p), null, normal_glue_multiplier, normal_glue_sign, normal_glue_sign);
+                    scaledwhd whd = tex_natural_hsizes(math_kernel_list(p), null, normal_glue_multiplier, normal_glue_sign, normal_glue_sign);
                     siz.wd += whd.wd;
                     if (whd.ht > siz.ht) {
                         siz.ht = whd.ht;
@@ -2391,7 +2397,7 @@ scaledwhd tex_natural_msizes(halfword p, int ignoreprime)
                 break;
             case sub_mlist_node:
                 {
-                    scaledwhd whd = tex_natural_msizes(kernel_math_list(p), ignoreprime);
+                    scaledwhd whd = tex_natural_msizes(math_kernel_list(p), ignoreprime);
                     siz.wd += whd.wd;
                     if (whd.ht > siz.ht) {
                         siz.ht = whd.ht;
@@ -3258,6 +3264,9 @@ void tex_package(singleword nature)
         }
         if (options & saved_box_no_profiling_option) {
             box_options(boxnode) = box_option_no_profiling;
+        }
+        if (options & saved_box_align_split_option) {
+            box_options(boxnode) = box_option_align_split;
         }
         if (options & saved_box_swap_htdp_option) {
             halfword ht = box_height(boxnode);

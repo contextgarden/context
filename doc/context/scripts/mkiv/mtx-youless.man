@@ -1,4 +1,4 @@
-.TH "mtx-youless" "1" "01-01-2025" "version 1.100" "youless Fetcher"
+.TH "mtx-youless" "1" "01-01-2026" "version 1.100" "youless Fetcher"
 .SH NAME
  mtx-youless - youless Fetcher
 .SH SYNOPSIS

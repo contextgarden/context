@@ -6,7 +6,7 @@
 
 The \LUAMETATEX\ manual that is a variant of the \LUATEX\ manual provides an
 overview similar to its parent. Instead of adding more and more to that one, an
-alternative take is provided. Here we start less form a historic perspective and
+alternative take is provided. Here we start less from a historic perspective and
 treat the engine as independent development. The main reason for this is that we
 want to focus on \CONTEXT, if only because that is the macro package that uses it
 and also drives the development.
@@ -16,34 +16,34 @@ most subsystems and assume that the macro package adapts to that. Of course we
 are compatible as much as possible with predecessors but we also take the freedom
 to tune some default behavior. For instance, moving on with math rendering means
 that we can make assumptions with respect to fonts and because the math fonts
-have issues that never will be solved we assume that the macro package is not
-only to feed the engine with tweaked fonts that can use the engine to its maximum
-extend. The same is true for more mechanism, like for instance the par builder,
-where we introduce multiple paragraph line break passes using features not
-present in other engines. Although extensions like these are not discussed here we
-do have to describe the underlying mechanisms and interfaces and thereby assume
-usage as in \CONTEXT.
+have issues that never will be solved, in \CONTEXT\ we just tweak the fonts
+before we feed them to the engine so that we can achieve the best result possible
+(in our opinion of course). The same is true for more mechanism, like for
+instance the par builder, where we introduce multiple paragraph line break passes
+using features not present in other engines and \CONTEXT\ supports that. Although
+extensions like these are not discussed here we do have to describe the
+underlying mechanisms and interfaces and thereby assume usage as in \CONTEXT.
 
 A manual like this evolves over time and will take years to complete. These are
 volunteer efforts unless some project makes it possible to spend more time on it.
 In practice most work on \TEX\ development is unpaid for and therefore mostly
 driven by the joy of playing with typesetting and coming up with solutions for
 problems that users present us. Keep that in mind when reading and wondering why
-the focus is not on what you expect or what is best for marketing.
+the focus is not on what you expect or what is best for marketing. If you're
+annoyed by (the lack of) documentation, just don't waste time in \LUAMETATEX.
 
 This manual replaces the older \LUAMETATEX\ manual. It has some less and some
 more than its predecessor which was derived from the \LUATEX\ manual. It will
-take some time to \quote {complete}. Eventually I might add a few registers but
-it makes only sense when the manual is more stable and I have to be in the mood
-to spend time on it.
-
+take some time to \quote {complete}. Eventually I might add a few indices but it
+makes only sense when the manual is more stable and I have to be in the mood to
+spend time on it.
 Because many mechanisms have been extended we also have more parameters to
-control matters. Add to that additional font parameters (as in math) it will be
-clear that it's hard to be complete, especially when control features only kick
-in when needed. Often the names of primitives and options give a clue. But when
-you're in for a bit of trial and error, looking at visual results might bring you
-to options that can be of help to get it better. Just ignore what doesn't make
-sense till you need something.
+control matters. Add to that additional font parameters (as in math) and it will
+be clear that it's hard to be complete, especially when control features only
+kick in when needed. Often the names of primitives and options give a clue. But
+when you're in for a bit of trial and error, looking at visual results might
+bring you to options that can be of help to get it better. Just ignore what
+doesn't make sense till you need something.
 
 \start \switchtobodyfont[small] \setupinterlinespace
 

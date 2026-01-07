@@ -530,6 +530,7 @@ make_lua_key(L, afterdisplaypenalty);\
 make_lua_key(L, afteroutput);\
 make_lua_key(L, aliased);\
 make_lua_key(L, align);\
+make_lua_key(L, align_property);\
 make_lua_key(L, alignhead);\
 make_lua_key(L, alignment);\
 make_lua_key(L, alignment_tab);\
@@ -966,6 +967,7 @@ make_lua_key(L, localbox);\
 make_lua_key(L, localbreak);\
 make_lua_key(L, log);\
 make_lua_key(L, logfile);\
+make_lua_key(L, loop);\
 make_lua_key(L, loopstate);\
 make_lua_key(L, looseness);\
 make_lua_key(L, LowerLimitBaselineDropMin);\

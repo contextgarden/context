@@ -172,8 +172,10 @@ function statistics.show()
                 os.platform or "unknown",os.type or "unknown", environment.texos or "unknown")
         end)
         register("used engine", function()
-            return format("%s version: %s, functionality level: %s, format id: %s, compiler: %s",
-                LUATEXENGINE, LUATEXVERBOSE, LUATEXFUNCTIONALITY, LUATEXFORMATID, status.used_compiler)
+            return format("%s version: %s, functionality level: %s, format id: %s, memory mode: %i, compiler: %s",
+                LUATEXENGINE, LUATEXVERBOSE, LUATEXFUNCTIONALITY, LUATEXFORMATID,
+                status.tex_memory_mode,
+                status.used_compiler)
         end)
         register("tex properties", function()
             local t = status.gethashstate()

@@ -2219,8 +2219,13 @@ do
                     local pdf   = simplemprun(instance,mp,true)
                     local width = width * factor
                     if usecolor then
-                        return f_stream_c(width,pdf), width
+                     -- return f_stream_c(width,pdf), width
+                        -- Zeros are fine but not for okular 2025, which does colors wrong anyway.
+                        local height = (data.height or 0) * factor
+                        local depth  = (data.depth  or 0) * factor
+                        return f_stream_cc(width,-10,-depth-10,width+10,height+10,pdf), width
                     elseif fixdepth then
+                        -- The standard suggests that the offset is ignored but ...
                         local depth  = data.depth  or 0
                         local height = data.height or 0
                         if depth ~= 0 or height ~= 0 then

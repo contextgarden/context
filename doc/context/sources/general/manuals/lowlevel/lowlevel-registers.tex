@@ -487,6 +487,56 @@ Often the \type {mx} makes more sense than \type {ex}.
 
 \stopsectionlevel
 
+\startsectionlevel[title=How many]
+
+The original \TEX\ engine provides 256 registers for the various categories. The
+\ETEX\ extension bumped that to 32768 while \LUATEX\ offers 65536. But how many
+do we actually need? Just as we limit the number of languages and fonts to a
+reasonable amount, we can as well do that for the registers. In \LUAMETATEX\ we
+currently have this (the engine can have the 64K maxima but can also be compiled
+with much less.
+
+\starttabulate [|lT|lT|]
+\NC toks      \NC \cldcontext{tex.magicconstants.max_toks_register_index}      \NC \NR
+\NC box       \NC \cldcontext{tex.magicconstants.max_box_register_index}       \NC \NR
+\NC integer   \NC \cldcontext{tex.magicconstants.max_integer_register_index}   \NC \NR
+\NC float     \NC \cldcontext{tex.magicconstants.max_float_register_index}     \NC \NR
+\NC dimension \NC \cldcontext{tex.magicconstants.max_dimension_register_index} \NC \NR
+\NC attribute \NC \cldcontext{tex.magicconstants.max_attribute_register_index} \NC \NR
+\NC glue      \NC \cldcontext{tex.magicconstants.max_glue_register_index}      \NC \NR
+\NC muglue    \NC \cldcontext{tex.magicconstants.max_muglue_register_index}    \NC \NR
+\stoptabulate
+
+In \CONTEXT\ the maxima available to users are actually half that because we also
+support local register allocation. Maxima of 8K or even 4K work fine but for
+boxes one might like a bit more.
+
+%D \begingroup
+%D   \newlocaldimen\mydimena % \mydimena1\onepoint
+%D   \newlocaldimen\mydimenb % \mydimenb2\onepoint
+%D   \begingroup
+%D     \newlocaldimen\mydimena % \mydimena3\onepoint
+%D     \newlocaldimen\mydimenb % \mydimenb4\onepoint
+%D     \newlocaldimen\mydimenc % \mydimenc5\onepoint
+%D   \endgroup
+%D \endgroup
+
+%D \begingroup
+%D   \setlocaldimen\mydimena 1\onepoint
+%D   \setlocaldimen\mydimenb 2\onepoint
+%D   \begingrou
+%D     \setlocaldimen\mydimena 3\onepoint
+%D     \setlocaldimen\mydimenb 4\onepoint
+%D     \setlocaldimen\mydimenc 5\onepoint
+%D   \endgroup
+%D \endgroup
+%D \stoptyping
+
+\stopsectionlevel
+
 \page
 
 \stopdocument
+
+
+

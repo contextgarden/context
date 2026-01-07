@@ -2,7 +2,8 @@
 
 %definefontfeature[fixedwidth][fixedwidth=0.30]
 %definefontfeature[fixedwidth][fixedwidth=0.28]
-\definefontfeature[fixedwidth][fixedwidth=0.27]
+%definefontfeature[fixedwidth][fixedwidth=0.27]
+\definefontfeature[fixedwidth][dimensions={halfmono,scale}]
 
 % \definefontfallback
 %   [MonoMathMath]

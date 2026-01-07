@@ -1,0 +1,2026 @@
+% language=us runpath=texruns:manuals/musings
+
+% The basic format uses some funny symbols so we need to load:
+
+\usemodule[math-verbatim]
+
+% This is a stand-alone chapter of the musing series.
+
+\startcomponent musings-basic
+
+\environment musings-style
+
+\hyphenation{typo-graph-ers}
+\hyphenation{regis-ters}
+
+\startdocument
+
+% So we have a dedicated title page. This bit comes straight from the
+% \LUAMETAFUN\ manual, the chapter about Perlin noise (Keith McKay,
+% Mikael Sundqvist, Hans Hagen).
+
+\protected\frozen\instance\def\MyTeX
+  {\dontleavehmode
+   \begingroup
+   \scratchdimen\scaledfontcharwd\font`M%
+   T%
+   \kern-.1667\scratchdimen
+   \lower.415\exheight\hbox{E}% but on the average this looks better
+   \kern-.125\scratchdimen
+   X%
+   \endgroup}
+
+\startluacode
+    function MP.MyFunction1(v) return v/2, v, v/4 end
+    function MP.MyFunction2(v) return v, v/2, v/4 end
+    function MP.MyFunction3(v) return v/2, v/4, v end
+\stopluacode
+
+\startMPdefinitions
+vardef OneTeX (expr bmp, clrfnc, n, what) =
+    save p ; picture p, q ;
+    q := image ( draw
+        (
+            lmt_outline [
+                kind = "outline",
+                text = "\strut \bf \MyTeX",
+            ]
+        ) xsized .9PaperWidth
+        withpattern image (
+            draw lmt_noise [
+                bytemap       = bmp,
+                nx            = 500,
+                ny            = 500,
+                nz            = 3,
+                iterations    = 1,
+                frequency     = 0.01,
+                amplitude     = 1,
+                persistence   = 0.5,
+                lacunarity    = 2.0,
+                minimum       = 0,
+                maximum       = 255,
+                colorfunction = clrfnc,
+                method        = "angle",
+            ] xsized PaperWidth
+            ;
+        ) ;
+    ) ;
+    p := image (
+        draw
+            textext(what)
+            ysized .05PaperHeight
+            shifted lrcorner q
+            shifted (-0.075PaperWidth,0.02PaperHeight)
+            withcolor white ;
+        draw q ;
+    ) ;
+    setbounds p to boundingbox q ;
+    p
+        shifted - llcorner p
+        shifted (.05PaperWidth,0)
+        shifted (0,n*PaperHeight/3+.05PaperWidth)
+enddef ;
+\stopMPdefinitions
+
+% The main text is in Pagella about we do the title page in good old Latin
+% Modern as derived from Computer Modern.
+
+\start \setupbodyfont[modern,12pt]
+\startMPpage
+    StartPage ;
+        fill Page withcolor .5 ;
+        draw image (
+            draw OneTeX(1,"MyFunction1",0,"\tttf 89") ;
+            draw OneTeX(2,"MyFunction2",1,"\tttf 82") ;
+            draw OneTeX(3,"MyFunction3",2,"\tttf 78") ;
+        ) ;
+        setbounds currentpicture to Page ;
+    StopPage ;
+\stopMPpage
+\stop
+
+% A few acronyms:
+
+\logo[SAIL]{SAIL}
+\logo[MESA]{MESA}
+
+% And off we go!
+
+\starttitle[title={Back to the basics}] % Back-o-\TeX
+
+\startluacode
+-- primitive("lineskip",assign_glue,glue_base+line_skip_code);
+
+local gsub, gmatch = string.gsub, string.gmatch
+
+local version = 2
+
+local primitives = table.load("musings-basic-tmp.lua")
+
+if primitives and primitives.version == version then
+
+    context.writestatus("document","")
+    context.writestatus("document","using saved data file 'musings-basic-tmp.lua'")
+    context.writestatus("document","")
+
+else
+
+    function document.filterprimitives(filename)
+        local data = io.loaddata(resolvers.findfile(filename))
+        local list = { }
+        for primitive, cmd, chr in gmatch(data,"primitive%(\"([^\"]-)\",([^,]+),([^%)]+)") do
+            list[#list+1] = {
+                (gsub(primitive,"%s","")),
+                (gsub(cmd,      "%s","")),
+                (gsub(chr,      "%s","")),
+            }
+        end
+        return list
+    end
+
+    primitives = {
+        old     = document.filterprimitives("musings-basic-old.web"), -- version   0.25
+        new     = document.filterprimitives("musings-basic-new.web"),
+        version = version,
+    }
+
+end
+
+function document.showprimitives(what)
+    local list = primitives[what]
+    if list then
+        context.starttabulate { "|T|T|T|" }
+        local oldcmd = false
+        for i=1,#list do
+            local l = list[i]
+            local prm = l[1]
+            local cmd = l[2]
+            local chr = l[3]
+            if oldcmd and oldcmd ~= cmd then
+--                context.TB()
+            end
+            oldcmd = cmd
+            context.NC() context.tex(prm)
+            context.NC() context(cmd)
+            context.NC() context(chr)
+            context.NC() context.NR()
+        end
+        context.stoptabulate()
+    end
+end
+
+function document.showcommands(what)
+    local list = primitives[what]
+    if list then
+        local result = table.setmetatableindex("number")
+        for i=1,#list do
+            local l = list[i]
+            local cmd = l[2]
+            result[cmd] = result[cmd] + 1
+        end
+        context.starttabulate { "|T|r|" }
+        for cmd, n in table.sortedhash(result) do
+            context.NC() context(cmd)
+            context.NC() context(tostring(n))
+            context.NC() context.NR()
+        end
+        context.stoptabulate()
+    end
+end
+
+function document.showcombined()
+    local both = table.setmetatableindex("table")
+    for k, v in next, primitives.old do
+        local b = both[v[2]]
+        b.old = (b and b.old or 0) + 1
+    end
+    for k, v in next, primitives.new do
+        local b = both[v[2]]
+        b.new = (b and b.new or 0) + 1
+    end
+    context.starttabulate { "|T|c|c|" }
+    for cmd, n in table.sortedhash(both) do
+        context.NC() if n.old and n.new then context.bold(cmd) else context(cmd) end
+        context.NC() if n.old then context(n.old) end
+        context.NC() if n.new then context(n.new) end
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+end
+
+table.save("musings-basic-tmp.lua",primitives)
+
+local commandnames = tokens and tokens.commands
+local primitives   = token.getprimitives()
+
+-- inspect(commandcount)
+-- inspect(commandhash)
+
+function document.showluametatex()
+    local commandhash  = { }
+    local commandcount = { }
+    for k, v in next, token.getcommandvalues() do
+        commandcount[v] = 0
+    end
+    for i=1,#primitives do
+        local p = primitives[i]
+        local cmd = commandnames[p[1]]
+        commandcount[cmd] = commandcount[cmd] + 1
+     -- commandhash[p[3]] = p
+    end
+    context.starttabulate { "|T|r|" }
+    for cmd, n in table.sortedhash(commandcount) do
+        context.NC() context(cmd)
+        context.NC() if n ~= 0 then context(tostring(n)) end
+        context.NC() context.NR()
+    end
+    context.stoptabulate()
+end
+
+\stopluacode
+
+\startsection[title=Introduction]
+
+When Mikael told me that there were enhanced lectures by Don Knuth, pushed
+on-line at Stanford, I decided to have a look at it. \footnote {He got the link
+to the upgraded videos from Barbara Beeton who was present at one or more of
+these lectures.} We're talking of two series: \quotation {Advanced \TEX arcana}
+(1981, so between the \SAIL \footnote {\SAIL\ refers to the \quotation {Stanford
+Artificial Intelligende Laboratory}, and references to this acronym refer to the
+mainframe at that place and its operating system variant. On Wikipedia search for
+\type {WAITS} as it also refers to early days media usage.} and \TEX82 version)
+and \quotation {The Internal Details of \TEX82} (during early \TEX82\
+development). After all, it's a nice distraction when one is supposed to be in
+documentation mode. It is also a good retrospective on the period around the 80's
+when \TEX\ was actively developed, tested on real documents, and when more people
+became interested in using it, evolved. So I sat down (or walked around),
+listened, and took some notes. \footnote {This wrapup is part of the musing
+series but rendered independently because of its length.}
+
+When watching these videos one has to keep in mind that the version of \TEX\ and
+its default format plain \TEX\ were not yet finalized, even if there's mentioning
+of the books being released any time (next year). Rather soon one starts to
+notice that there are references to primitives and macros that predate the
+standard \TEX\ engine and plain format. For instance instead of \quote {plain}
+there is \quote {basic}. Some examples and concepts assume a different \TEX\ than
+one knows today and it's interesting to where all we know and use now came from.
+These lectures are part of the development cycle of many years and also a clear
+demonstration of how software development took place: in an academic setting
+without commercial pressure. With user feedback, discussions, and no problems
+going back to the drawing board. It all resulted in \TEX\ as we know it today,
+and although there have been extensions (enhancements) the principles remain the
+same. \footnote {The \LUA\ project has a similar vibe which is among the reasons
+that we've chosen it as the extension language for \LUATEX.}
+
+Before we continue, let's guess about the timeline here; please correct me if I'm
+wrong.
+
+\startitemize[packed,loose]
+\startitem
+    In the late 70's Don Knuth started working on what became \TEX. The reasons
+    for this (quality) are explained in various places but of course making sure
+    that his books look great was the main objective.
+\stopitem
+\startitem
+    The program was written in \SAIL, running on a Digital Equipment
+    infrastructure, but later \PASCAL\ was used. There are references to other
+    hardware setups (at other universities) and in one talk SUN workstations are
+    mentioned which illustrates the move from terminals to more integrated high
+    resolution setups.
+\stopitem
+\startitem
+    The program was of course initially meant for producing books, and with that
+    in mind it started out as a production tool. Much was hard-coded but some was
+    implemented in a macro package called \quote {basic}. In these years we see
+    the language evolve to be more flexible: there came additional programming
+    related features and hard coded assumptions became configurable.
+\stopitem
+\startitem
+    At some point a reimplementation was started, this time in \PASCAL, generated
+    from \WEB\ files. A more detailed documentation of how things work
+    conceptually are part of the process and stepwise building up the program
+    paradigm. The mature \WEB\ suite is part of the outcomes of the \TEX\ and
+    \METAFONT\ project. \footnote {Because \PASCAL\ became less popular and was
+    not available on all platforms, at least not in compatible ways, Knuth later
+    switched to \CCODE\ and therefore \CWEB. The \WEBC\ conversion introduced later
+    converts \PASCAL\ code into \CCODE\ which then compiles into the programs
+    distributed in for instance \TEXLIVE.}
+\stopitem
+\startitem
+    The arcana presentations took place around that time, so they cover the
+    prototype(s) as well as the early \TEX82\ versions. Between 1983 and 1989
+    \TEX\ became more and more stable and eventually it was declared finished and
+    frozen, except for bugs periodically being fixed.
+\stopitem
+\startitem
+    Then \TEX82\ started being used and a period of development, documentation and
+    experimenting started. Various students were involved in subsystems.
+\stopitem
+\startitem
+    The presentations about the internal details happen in the middle of this
+    evolution, or maybe a better term is transition. There is still talk of a
+    basic format, some primitives will later change, the book we mention here
+    dates from that time, the books mentioned being written are the multi-column
+    set about \TEX, \METAFONT\ and the fonts. \footnote {This first book,
+    discussing digital typography, basic \TEX\ and infant \METAFONT, has header
+    lines wrapped in a frame. In those days it was actually quite common (in
+    educational documents) to put rules around things, maybe just because it
+    could be done. It might have been a left-over from the typewriter days when
+    little was possible and with upcoming systems suddenly one could draw rules.
+    The later \TEX book series looks way better! But still, quite often
+    extensively framed tables show up in documents produced by \TEX. Maybe
+    because the core \TEX\ engine is pretty much limited to glyphs and rules out
+    of the box.}
+\stopitem
+\startitem
+    From 1982 to 1989 the versions evolve and in the tape dumps of the
+    by then retired \SAIL\ machines we see less and less changes. We also
+    see macro packages pop up and evolve. The fonts mature as well.
+\stopitem
+\stopitemize
+
+The above is more or less noticeable in the presentations. For instance, the many
+references to \quotation {loading basic} made me curious to what this prehistoric
+\TEX\ format actually looked like, if only to figure out what references to \type
+{\jpar} actually mean (given the context one can guess here). The macros,
+actually a relative small set compared to plain, and tiny compared to for
+instance \CONTEXT\ \MKXL, can be found in \quotation {\TEX\ and \METAFONT, New
+Directions in Typesetting}, published by the now defunct Digital Equipment, the
+company that made the main frame and mini computers that \TEX\ was developed on
+and that also are mentioned (and used) in the presentations.
+
+Watching all that comes with some nostalgic feelings, because I grew up with
+those machines too (DEC 10 and 20, as well as VAX), did quite a bit of \PASCAL\
+and \MODULA2 programming, used the line printers, slow tube terminals, went from
+300 to 1200 baud modems, and even played with these GIGI terminals. Being totally
+unaware of something \TEX\ running on these machines I even wrote some programs
+that made pages from \ASCII\ input, including generating tables of contents,
+doing some itemization, move around some space for glued in images, and page
+numbering.
+
+So, a lot of bells ring when seeing the black and white videos, filmed just
+before color video entered academia, eventually to be replaced by the Internet.
+And yes, the first personal computers also showed up, but again, no \TEX.
+Anyways, looking back it is amazing that something \TEX\ took off so well,
+especially given what users nowadays take for granted with respect to
+performance, editing and previewing, and are sometimes willing to complain about.
+
+But, let's move beyond the sentimental reflections and have a look at this basic
+format because that kind of pictures the landscape. This is not a tutorial
+so no details will be explained but I'll revive some of what can be read in this
+first \TEX\ manual because it's not something you can pick up in a bookshop.
+The book actually is a nice read, with plenty of humor sprinkled in.
+
+\stopsection
+
+\startsection[title=Some observations]
+
+We will use the basic format to explain a bit what this first version was about
+but before we come to that it might be fun to filter out some distinctive
+differences with today's \TEX. Let's start with a quote: \footnote {There is a
+list of named characters in the manual but they are not defined in the basic
+format, so I guess that there is an extra file that defines them.}
+
+\startquotation
+    Those of you who wish to define control sequences should know that \TEX\ has
+    further rules about them, namely that many different spellings of the same
+    control sequence may be possible. This fact allows \TEX\ to handle control
+    sequences quite efficiently; and \TEX's usefulness is not seriously affected,
+    because new control sequences aren't needed very often. A control sequence of
+    the first kind (i.e., one consisting of letters only) may involve both upper
+    case and lower case letters, but the distinction between cases is ignored
+    after the first letter. Thus \type {\TEX} could also be typed \quotation
+    {\type {\TEx}} or \quotation {\type {\TeX}} or \quotation {\type {\Tex}}
+    \emdash\ these four have the same meaning and the same effect. But
+    \quotation {\type {\tex}} would not be the same, because there is a case
+    distinction on the first letter. (Typing \quotation {\type {\gamma}} results
+    in \gamma, but \quotation {\type {\Gamma}} or \quotation {\type {\GAMMA}}
+    results in \Gamma.)
+\stopquotation
+
+In one presentation Knuth explains that \PASCAL\ has some limitations on the
+length of an identifier: eight, and therefore he played safe by limiting them to
+seven unique initial characters in his code. Maybe that inspired him to come up
+with the feature mentioned here. The question is why it was done this way. I
+assume that efficiency here refers to hashing and resolving control sequences
+because normalizing takes runtime too. Once stored in the format (or memory) the
+control sequence is a token and therefore just a number, so any length or case
+property is gone. It is one of the reasons why \TEX\ is fast and efficient!
+However, keep in mind that tokens as concept were not in the first
+implementation, there it was about sequences of characters (which then is
+slower).
+
+But more interesting is the assumption that not that many new control sequences
+are needed. Tell that to a 2025 \TEX\ user or macro package writer: it just
+wouldn't work out today. Of course this became clear pretty soon so this feature
+was dropped in the follow up. It was mentioned in a dangerous bend section that
+when a reader dared reading that, lead to a next bend:
+
+\startquotation
+    Another rule takes over when there are seven or more letters after the
+    escape: all letters after the seventh are replaced by \quotation {x}, and
+    then groups of eight letters are removed if necessary until at most 14
+    letters are left. Thus \type {\underline} is the same as \type {\underlixx};
+    and it is also the same as \type {\underlinedsymbols} or any other control
+    sequence that starts with \type {\u} followed by n or N, then d or D, then e
+    or E, then r or R, then l or L, then i or I, then 2 or 10 or 18 or 26 or
+    \cdots\ letters. But \type {\underline} is not the same as \type
+    {\underlines}, because these two control sequences don't have the same length
+    modulo 8.
+\stopquotation
+
+I'm sure you \quotation {get this} in one read, but try to explain that to a
+confused user who defined a ton of macros after having managed to bump \TEX's
+memory to the extremes of those days. \footnote {Just imagine explaining \type
+{\big}, \type {\Big}, \type {\bigg} and \type {\Bigg} versus the impossible \type
+{\Big}, \type {\BIg} and \type {\BIG} when only the first capital is
+distinctive.} But, as usual, Don's wit kicks in when he makes us go into the next
+dangerous bend:
+
+\startquotation
+    \unknown\ Thus the total number of distinct control sequences available is exactly
+
+    \startformula
+        128 + 52 • 26 + 52 • 26^2 + 52 • 26^3 + 52 • 26^4 + 52 • 26^5 + 8 •
+        52 • 26^6 = 129151507704
+    \stopformula
+
+    that should be enough \unknown
+\stopquotation
+
+In the \WEB\ file we can read this (and best keep this in mind when we progress
+in this wrap-up):
+
+\startquotation
+    The present implementation has a long ancestry, beginning in the summer
+    of~1977, when Michael~F. Plass and Frank~M. Liang designed and coded a
+    prototype based on some specifications that the author had made in May of
+    that year. This original proto\TeX\ included macro definitions and elementary
+    manipulations on boxes and glue, but it did not have line-breaking,
+    page-breaking, mathematical formulas, alignment routines, error recovery, or
+    the present semantic nest; furthermore, it used character lists instead of
+    token lists, so that a control sequence like \type {\halign} was represented
+    by a list of seven characters.
+\stopquotation
+
+Watch the fact that there was no token list (as we know it now) yet but a
+sequence of characters. So storing a macro name was costly. Of course a list of
+records with two numbers (the token and the pointer to the next token) also takes
+space. This might be the reason why we have the collapsing of names mentioned
+above: it had to fit into memory (and format files, which are kind of memory
+dumps) efficient.
+
+\startquotation
+    A complete version of \TeX\ was designed and coded by the author in late 1977
+    and early 1978; that program, like its prototype, was written in the \SAIL\
+    language, for which an excellent debugging system was available. Preliminary
+    plans to convert the \SAIL\ code into a form somewhat like the present
+    \quotation {web} were developed by Luis Trabb~Pardo and the author at the
+    beginning of 1979, and a complete implementation was created by Ignacio~A.
+    Zabala in 1979 and 1980.
+\stopquotation
+
+It's here the transition from basic to plain happened. The old book discusses the
+basic format, but the final \TEX\ reference talks plain.
+
+\startquotation
+    The \TeX82 program, which was written by the author during the latter part of
+    1981 and the early part of 1982, also incorporates ideas from the 1979
+    implementation of \TeX\ in \MESA\ that was written by Leonidas Guibas, Robert
+    Sedgewick, and Douglas Wyatt at the Xerox Palo Alto Research Center. Several
+    hundred refinements were introduced into \TeX82 based on the experiences
+    gained with the original implementations, so that essentially every part of
+    the system has been substantially improved. After the appearance of
+    \quotation {Version 0} in September 1982, this program benefited greatly from
+    the comments of many other people, notably David~R. Fuchs and Howard~W.
+    Trickey. A final revision in September 1989 extended the input character set
+    to eight-bit codes and introduced the ability to hyphenate words from
+    different languages, based on some ideas of Michael~J. Ferguson.
+\stopquotation
+
+By 1989 the program was pretty stable, and we see little changes in for instance
+plain \TEX\ in the archives. When listening to the talks, especially from session
+9 onward, where files are discussed, you will notice that on the one hand there
+is this 127 characters \quote {limitation} imposed, very likely a side effect of
+the Computer Modern fonts having at most that many glyphs, although on the other
+hand the \TFM\ and \DVI\ formats are capable of more. So, going 256 was no big
+deal here, and it's the European user groups that took the opportunity to use the
+extended repertoire for enhanced versions of the fonts, which in turn resulted in
+different encoding schemes, that itself in turn had consequences for e.g.\
+hyphenation patterns.
+
+Another interesting remark in the book is the following.
+
+\startquotation
+    When a space comes after a control sequence (of either kind), it is ignored
+    by \TEX; i.e., it is not considered to be a \quote {real} space belonging to
+    the manuscript being typeset. Thus, the example above could have been typed
+    as \type {George P\' olya and Gabor Szeg\" o.} \TeX\ will treat both examples
+    the same way; it always discards spaces after control sequences.
+\stopquotation
+
+This is something that changed over time, these hundreds of refinements, which
+shows that this multi-year project was driven by perfection, user feedback and
+practical thinking. A simple example shows what happens today:
+
+\startbuffer
+\def\`{!} \` \` \`
+\def\f{!} \f \f \f
+\stopbuffer
+
+\typebuffer
+
+It will give you: \start \pushoverloadmode \inlinebuffer \stop, so the
+explanation in the book (and presentations) of how spaces are handled when a
+control sequence is read nowadays adapts to the assigned catcodes. You have to
+keep in mind that a control sequence normally was only made from letters, the
+single character ones that use a non-letter were primitives.
+
+This quote definitely demonstrates how the constraints of those days were dealt
+with, and just as watching an old SciFi movie with tubes as displays makes one
+wonder why if flat panels were not predicted, it's clear that foreseeing
+computers to become 1000 or more times faster and memory going gigabytes was not
+easy.
+
+\startquotation
+    When you do use the \type {\:} instruction to change fonts, here are the
+    rules you need to know. \TEX\ can handle up to 32 different fonts in any
+    particular job (counting different sizes of the same style). These 32 fonts
+    are distinguished by the least significant five bits of the 7-bit ascii
+    character code you type following \quotation {\type {\:}}; if you don't
+    understand what this means, use the following code names for your fonts: {\em
+    table omitted}. You never refer to a font by its number, always by its code.
+    Code \type {A} is treated the same as \type {a}, etc.; but a wise typist will
+    consistently use the same codes in any particular manuscript, because later
+    \TEX s may allow more than 32 fonts.
+\stopquotation
+
+Indeed, today's \TEX\ implementations go way over 32 fonts, use multi-byte names,
+ship macro packages that provide complex font setups, and what more. This of course
+already had changed in the final version of \TEX.
+
+\startquotation
+    Groups within groups will happen only in rather complicated situations, but
+    in such cases it is extremely important that you don't leave out a {\tttf
+    \letterleftbrace} or {\tttf \letterrightbrace} lest \TEX\ gets hopelessly
+    confused.
+\stopquotation
+
+It is these (dangerous bend) comments that makes reading this old document
+worthwhile! Although nesting groups 300 deep is not something that happens often,
+but processing this document in \CONTEXT\ brings us up to 11 levels, while for
+instance the \LUAMETATEX\ manual tops at 25. Maybe in the end macro packages
+indeed became too complex.
+
+The way a horizontal list becomes a paragraph of lines remained conceptually
+mostly the same. The formulas changed a bit and some more features were added. In
+a way this is also how macro packages later evolved: driven by demand. In one
+presentation, when explaining some exercises and answering questions, Knuth
+mentions that solutions to problems can interfere with each other in a larger
+setup and indeed this is where writing a large macro package puts some stress on
+the authors: integration. The par builder is an example of where (maybe
+conflicting) demands meet as we found out when we extended the builder in
+\LUAMETATEX. We felt better after hearing him express in one talk that some parts
+of the par builder took some iterations to become perfect and that the first
+prototype version had a (what could be considered) a bug that no one had noticed
+as on the average the results were fine (so today one would just say it was a
+feature later to be improved). It's no surprise that when we extended the code we
+had to do some hard thinking. There's a reason why the original (reference)
+source has some warnings against changes.
+
+The first version of \TEX\ already had the basic algorithms but more was hard
+coded. There is a \typ {\tolerance} like parameter but as far as I can see no
+\typ {\pretolerance} and \typ {\emergencystretch} but there are a few integer
+parameters that drive the process. Justification is basically limited to flush
+right with a parameter that determines the raggedness. There are no \typ
+{\leftskip} and \typ {\rightskip} yet and likely for a good reason: typesetting
+books is the target. He demonstrates that by messing around with glue in special
+ways one can achieve left and right ragged effects. In one talk Knuth answers a
+question about stretch between characters in a word with the remark that this is
+not what typographers want. If you look at \PDFTEX\ or macro packages on top of
+\LUATEX\ you might encounter additional inter-character kerning, something that
+sometimes makes sense in titling, but so far the urge to add inter-character glue
+had been suppressed. \footnote {Implementing this is actually rather easy but as
+it won't get used it only adds overhead and we don't feel the need to prove that
+it can be done.}
+
+An interesting difference with final \TEX\ is that spaces after the right brace
+that ends the body of a definition (\type {\def}) are ignored. That for sure
+got rid of what we call spurious spaces but the final \TEX\ is more consistent
+in no longer doing that. I think that dealing with spaces and line endings has
+always been somewhat tricky so it is no wonder this evolved.
+
+There are of course dimensions, and they have the usual units. However, there is
+no \type {ex} yet, nor \type {sp}. The mentioned repertoire is: \type {pt}, \type
+{pc}, \type {in}, \type {cm}, \type {mm}, \type {dd} and \type {em}. Do you see
+what more is missing? \footnote {There are in places references to \type {sp} so
+it must have been there at some point.} At the start there were no dimension
+registers, only some counters, but when registers showed up it also came with
+some changes in primitives that expect dimensions.
+
+Space factors are discussed in a way that suggests that they are hard coded which
+is likely due to the fact that the focus is on Latin scripts with well known
+punctuation code points. Later that became configurable but the approach remained
+the same.
+
+In fact quite a bit is still hard coded like the way hyphenation hooks into the
+par builder. However, in appendix H the book suggests that there are built-in
+rules while the \WEB\ file shows the ability to load pattern files efficiently.
+So here we are in some middle ground between old and new I guess; both identify
+themselves in the web files as \TEX 82 anyway. \footnote {When you look at (or
+listen to) the way hyphenation patterns are made and applied, and when you
+realize that we're at the Artificial Intelligence lab, you can actually consider
+this to be an an example of machine learning. After all we have lookups driven by
+weights stored in a compact form.}
+
+A substantial bit of the book and talks is about error message and interacting
+with the system, which is understandable given the systems used at that time. We
+have \CONTEXT\ configured to just quit at an error, report the location, and
+users can then fix the issue and run again. Hitting a button in the editor
+triggering a few seconds run makes more sense. But I do remember the times when it
+was better to note down the issue and hit return to see if \TEX\ could catch up.
+\footnote {In this perspective I like to notice that when we moved from \PDFTEX\
+to \LUATEX\ (and later \LUAMETATEX) processing the \METAFUN\ manual with
+thousands of graphics, color, etc.\ went down from 15 minutes to below 20
+seconds. Compiling a 250 page book from \XML\ input (also combined with multiple
+\METAPOST\ graphics per page) that could take 4 runs and accumulated to 45
+minutes, went below a minute. Typesetting a 300 page complex educational math
+book with some three thousand formulas takes 6 seconds on a 2025 Chromebook.
+Nowadays processing the \TEX\ book takes less than a second so imagine what it
+took in those days. It anyway demonstrates that the efficient original
+implementation still pays off.}
+
+Actually, one nowadays needs ways to inform the user about issues because reading
+the \quote {transcript} is often not done. In this context it was interesting to
+hear on one presentation Don mentioning that a \type {.tex} file produces a \type
+{.dvi} and \type {.err} file. I made a mental note to mention this \quote
+{interesting} and somewhat depressing suffix here, but then was amused by the
+fact that in a next presentation that had become \type {.log} because of user
+feedback. Today the problem is that the (progress, diagnostic, warning) messages
+scroll by so fast that users probably don't notice them. Do they go to the log
+file? \footnote {It is why in \CONTEXT\ we explore the possibilities to visual
+feedback via a connected device.}
+
+I tried to locate where the single character primitives were defined and ended up
+at the interesting section that describes the magic look up trickery of
+inter-math element spacing. As the comments mention \type {\thinmskip} (later to
+become \type {\thinmuskip}) and such, it looks like the shortcuts are already
+gone, although \type {\quad} is still hard coded. So that manual predates the web
+version that has the comment \quotation {\TEX\ version 0.25 as it existed when I
+gave twelve lectures on the internal details of \TEX82 in July 1982}, the videos
+that is. Although \quote {basic} still fits the talks, and that is what Knuth
+refers to, progress was made real time in 1982!
+
+% \startquotation
+%     The inter-element spacing in math formulas depends on a $8 \times 8$ table
+%     that \TEX\ preloads as a 64-digit string. The elements of this string have
+%     the following significance:
+%
+%     \starttabulate[|||]
+%     \NC 0 \NC means no space                   \NC \NR
+%     \NC 1 \NC means a conditional thin space   \NC \NR
+%     \NC 2 \NC means a thin space               \NC \NR
+%     \NC 3 \NC means a conditional medium space \NC \NR
+%     \NC 4 \NC means a thick space              \NC \NR
+%     \NC * \NC means an impossible case         \NC \NR
+%     \stoptabulate
+%
+%     This is all pretty cryptic, but the \TEX\ manual explains what is supposed to
+%     happen, and the string makes it happen.
+%
+%     A global variable \type {magic_offset} is computed so that if \type {a} and
+%     \type {b} are in the range \type {ord_noad .. inner_noad}, then \type
+%     {str_pool [ a * 8 + b + magic_offset ]} is the digit for spacing between noad
+%     types \type {a} and \type {b}.
+%
+%     If \PASCAL\ had provided a good way to preload constant arrays, this part of
+%     the program would not have been so strange.
+%
+%     \type {"0234000022*4000033**3**344*0400400*000000234000011*4111102340000"}
+% \stopquotation
+%
+% Then there is some code explained, like \typ {magic_offset = str_start
+% [math_spacing] - 9 * ord_noad} that is used for a lookup, in the (a bit
+% reformatted \PASCAL\ nostalgia for me) code snippet:
+%
+% \starttyping
+% if r_type>0 then {not the first noad} begin
+%     case str_pool[r_type * 8 + t + magic_offset] of
+%         "0":
+%             x = 0;
+%         "1":
+%             if cur_style < script_style then
+%                 x = thin_mskip_code
+%             else
+%                 x=0;
+%         "2":
+%             x = thin_mskip_code;
+%         "3":
+%             if cur_style < script_style then
+%                 x = med_mskip_code
+%             else
+%                 x = 0;
+%         "4":
+%             x = thick_mskip_code;
+%         othercases
+%             confusion("mlist4")
+%     endcases;
+%     if x <> 0 then begin
+%         y = math_glue(glue_par(x),cur_mu);
+%         z = new_glue(y);
+%         glue_ref_count(y) = null;
+%         link(p) = z;
+%         p = z;
+%         subtype(z) = x + 1;
+%     end;
+% end
+% \stoptyping
+%
+% There is no need to understand this magic but see how we lookup something
+% in that string.
+
+\stopsection
+
+\startsection[title=The basic format]
+
+One thing that you will notice, also in the presentations, is that in addition to
+\ASCII, which is mentioned explicitly, Don loved to use some special symbols,
+like \type {←} for an assignment instead of an \type {=}. In plain \TEX\ that is
+gone although the file starts with some mappings of Don's favorite keyboard,
+using the pre-space range of characters. Watch the use of octal here:
+
+\starttyping
+\chcode'173←1 \chcode'176←2 \chcode'44←3 \chcode'26←4
+\chcode'45←5 \chcode'43←6 \chcode'136←7 \chcode 1←8
+\stoptyping
+
+The comment sign is the same so we need a macro to typeset it:
+
+\starttyping
+\def\%{\char'45 } % Note, the space after 45 is needed! (e.g.\%0)
+\stoptyping
+
+Commands often have short names although nowadays one will not see these:
+
+\starttyping
+\def\lft#1{#1\hfill}
+\def\ctr#1{\hfill#1\hfill}
+\def\rt#1{\hfill#1}
+\stoptyping
+
+Here we see a feature not present in \TEX, the size keyword, which stands for the
+current horizontal size. Another interesting observation is the extreme value of
+\type {1000cm}, something not possible today. But at least it's metric.
+
+\starttyping
+\def\rjustline#1{\hbox to size{ % newline therefore space
+    \hskip0pt plus1000cm minus1000cm #1}}
+\def\ctrline#1<\hbox to size{\hskip0pt plus1000cm minus100Ocm
+    #1\hskip0pt plus100Ocm minus100Ocm}}
+\stoptyping
+
+There is not yet a repertoire of \type {\tracing...} parameters but a single
+reference to an internal parameter zero. In one talk you see an (octal) value
+assigned to it, we're talking bits and bytes here. The first integer variable
+reflects the tolerance and number eight does something with raggedness. An
+example in the book uses a value of 1000 as example but we can't test what that
+does.
+
+\starttyping
+\def\trace{\chpar0←} \def\jpar{\chpar1←} \def\ragged{\chpar8←}
+\stoptyping
+
+although we won't go into much detail, it is nice to know how it all started out.
+The \quote {tolerance} is set by a multiplier:
+
+\startquotation
+    The number $200$ used to determine feasibility can be changed to $100 n$ for
+    any integer $n > 1$ by typing \quotation {\type {\jpar <number>}}, where $n$
+    is the specified number. A large value of $n$ will cause \TEX\ to run more
+    slowly, but it makes more line breaks feasible in cases where lines are so
+    narrow that $n = 2$ finds no solutions.
+\stopquotation
+
+Watch how we can make a paragraph more ragged by changing a parameter:
+
+\startquotation
+    The instruction \type {\ragged <number>} specifies a degree of \quotation
+    {raggedness} for the right-hand margins. If this number is $r$, the line width
+    changes towards its natural width by the ratio $r/(100 - r)$. Thus, \type
+    {\ragged 0} (the normal setting) gives no raggedness; \type {\ragged 100}
+    causes the width of each line to be midway between \type {\hsize} and its
+    natural width; and \typ {\ragged 1000000} almost completely suppresses any
+    stretching or shrinking of the glue. Some people like to use this \quotation
+    {ragged right margin} feature in order to make the output look less formal,
+    as if it hadn't actually been typeset by an inhuman computer. (Some people
+    also think that \quotation {ragged right} typesetting saves money. On
+    traditional typesetting equipment, this was true, but computer typesetting
+    has changed the situation completely: the most expensive part of the
+    computation is now the breaking of lines, while the setting of glue costs
+    almost nothing.)
+\stopquotation
+
+Currently this is done by a combination of tolerance and left and/or right skips,
+in upto three passes (in \LUAMETATEX\ we can specify a sequence of passes so that
+can be seen as a \quote {many years later} follow up then).
+
+Of course there are some math definitions, watch the way characters are defined:
+by value. The \type {\limitsswitch} is what later became \type {\limits}.
+
+\starttyping
+\def\log{\mathop{\char'154\char'157\char'147}\limitswitch}
+\def\lg{\mathop{\char'154\char'147}\limitswitch}
+\def\ln{\mathop{\char'154\char'156}\limitswitch}
+\def\lim{\mathop{\char'154\char'151\char'155}}
+\def\limsup{\mathop{\char'154\char'151\char'155
+    \,\char'163\char'165\char'160}}
+\def\liminf{\mathop{\char'154\char'151\char'155
+    \,\char'151\char'156\char'146}}
+\def\sin{\mathop{\char'163\char'151\char'156}\limitswitch}
+\def\cos{\mathop{\char'143\char'157\char'163}\limitswitch}
+\def\tan{\mathop{\char'164\char-141\char'156}\limitswitch}
+\def\cot{\mathop{\char'143\char'157\char'164}\limitswitch}
+\def\sec{\mathop{\char'163\char'145\char'143}\limitswitch}
+\def\csc{\mathop{\char'143\char'163\char'143}\limitswitch}
+\def\max{\mathop{\char'155\char'141\char'170}}
+\def\min{\mathop{\char'155\char'151\char'156}}
+\def\sup{\mathop{\char'163\char'165\char'160}}
+\def\inf{\mathop{\char'151\char'156\char'146}}
+\def\det<\mathop{\char'144\char'145\char'164}}
+\def\exp{\mathop{\char'145\char'170\char'160}\limitswitch}
+\def\Pr{\mathop{\char'120\char'162}}
+\def\gcd{\mathop{\char'147\char'143\char'144}}
+\def\choose{\comb()}
+\def\leftset{\mathopen{\{\,}}
+\def\rightset{\mathclose{\,\}}}
+\def\modop{\<\,\mathbin{\char'155\char'157\char'144>\penalty900\<\,}
+\def\mod#1{\penalty0\;(\char'155\char'157\char'144\,\,#1)}
+\def\eqv{\mathrel\char'421 }
+\def\neqv{\mathrel{\not\eqv}}
+\stoptyping
+
+I think that talking in octal was quite popular in those days, just like
+hexadecimal is in our times. In later versions of basic we see this:
+
+\starttyping
+\def\sin{\mathop{\char s\char i\char n}\limitswitch}
+\stoptyping
+
+In plain we eventually got to this: \footnote {In \LUAMETATEX\ we have more
+built-in classes and one can add even more, so there we use a dedicated function
+class so that we can tune spacing better. So there is a different way to define
+functions, also because we can set more properties.}
+
+\starttyping
+\def\sin{\mathop{\rm sin}\nolimits}
+\stoptyping
+
+This definitions calls for \type {\quad} which is not defined, so it's still a
+primitive.
+
+\starttyping
+\def\qquad{\quad\quad}
+\stoptyping
+
+The \type {\≥} is likely some spacing directive and uses a symbol that even today
+is not on keyboards:
+
+\starttyping
+\def\ldots{{.\≥.\≥.}}
+\def\cdots{{\char'401\≥\char'401\≥\char'401}}
+\def\ldotss{{.\≥.\≥.\≥}}
+\def\cdotss{\cdots\≥}
+\def\ldotsm{{\≥.\≥.\≥.\≥}}
+\def\vdots{\vbox{\baselineskip 4pt\vskip 6pt
+    \hbox{.}\hbox{.}\hbox{.}}}
+\stoptyping
+
+These definitions, related to alignments, are not that different from what they
+later became. Again we have rather large plus and minus values. The short \type
+{\dispstyle} later became more verbose, so it is not a typo. Does anyone today
+use these pile commands, a two-line helper (meant for splitting a long math line
+in display mode), chops and/or sposes? The \type {\spose} definitely is invalid
+on later \TEX\ engines as they have put a limit on the size of dimensions.
+
+The \type {\!} is a hard coded primitive that basically ends a line
+without adding a space. To quote the manual:
+
+\startquotation
+    First, a (carriage-return) always counts as a space, even when it follows a
+    hyphen. If you want to end a line with a (carriage-return) but no space, you
+    can do this by typing the control sequence \quotation {\type {\!}} just
+    before the (carriage-return).
+\stopquotation
+
+In various places the complications of spacing in the input is discussed and even
+today this is something to pay attention to. The \type {\!} is one of the
+primitives, the future \type {\ignorespaces}.
+
+\starttyping
+\def\eqalign#1{\vcenter{\halign{\hfill$\dispstyle{##}$\!
+      ⨂$\dispstyle{\null##}$\hfill\cr#1}}}
+\def\eqalignno#1{\vbox{\tabskip0pt plus1000pt minus100Opt
+    \halign to size{\hfill$\dispstyle{##}$\tabskip 0pt
+      ⨂$\dispstyle{\null##}$\hfill
+      \tabskip0pt plus1000pt minus100Opt
+      ⨂$\hfill##$\tabskip 0pt\cr#1}}}
+\def\cpile#1{\vcenter{\halign{$\hfill##\hfill$\cr#1}}}
+\def\lpile#1{\vcenter{\halign{$##\hfill$\cr#1}}}
+\def\rpile#1{\vcenter{\halign{$\hfill##$\cr#1}}}
+\def\null{\hbox{}}
+\def\twoline#1#2#3{\halign{\hbox to size{##}\cr$\quad\dispstyle
+    {#1}$\hfill\cr\noalign{\penalty1000\vskip#2}
+    \hfill$\dispstyle{#3}\quad$\cr}}
+\def\chop to#1pt#2{\hbox{\lower#1pt\null\vbox{\hbox{\lower99pt
+    \hbox{\raise99pt\hbox{$\dispstyle{#2}$}}}\vskip-99pt}}}
+\def\spose#l{\hbox to 0pt{#1\hskip0pt minus10000000pt}}
+\stoptyping
+
+We now arrive at fonts. Given memory constraints the number of fonts that can be
+used is small. The names start with \type {\:} and the reference is a character.
+These are the precursors of computer modern with predefined sizes, no scaling.
+
+\starttyping
+\:@←cmathx
+\:a←mr10 \:d←mr7 \:f←mr5
+\:g←mi10 \:j←mi7 \:l←mi5
+\:n←ms10
+\:q←mb10
+\:u←msy10 \:x←msy7 \:z←msy5
+\:?←mti10
+\stoptyping
+
+In later versions of the basic file (dating from after the book) we see that
+a\type {c} has been being prepended to the font names. The $10 \rightarrow 7
+\rightarrow 5$ steps didn't change over time. These are familiar shortcuts and we
+kept them in \CONTEXT, although with a different macro body:
+
+\starttyping
+\def\rm{\:a} \def\sl{\:n} \def\bf{\:q} \def\it{\:?}
+\stoptyping
+
+There are a few names here that were replaced: \type {\topbaseline} became \type
+{\topskip} and the three display skips became four more verbose ones.
+
+\starttyping
+\parindent 20pt \maxdepth 2pt \topbaseline 10pt
+\parskip 0pt plus 1 pt \baselineskip 12pt \lineskip 1pt
+\dispskip 12pt plus 3pt minus 9pt
+\dispaskip 0pt plus 3pt \dispbskip 7pt plus 3pt minus 4pt
+\stoptyping
+
+Here we see a font switch to an extensible font:
+
+\starttyping
+\def\biglp{\mathopen{\vcenter{\hbox{\:@\char'0}}}}
+\def\bigrp{\mathclose{\vcenter{\hbox{\:@\char'1}}}}
+\def\bigglp{\mathopen{\vcenter{\hbox{\:@\char'22}}}}
+\def\biggrp{\mathclose{\vcenter{\hbox{\:@\char'23}}}}
+\def\biggglp{\mathopen{\vcenter<\hbox<\:@\char'40}}}}}
+\def\bigggrp{\mathclose{\vcenter{\hbox{\:@\char'41}}}}
+\stoptyping
+
+Without reading documentation one can guess what this does: we set the
+three families:
+
+\starttyping
+\mathrm adf \mathit gj1 \mathsy uxz \mathex @
+\stoptyping
+
+Eventually \TEX\ got the \type {\textfont} (and script) definition primitives
+which gave macro packages the opportunity to use these as macro names.
+
+We're nearly done, here is the basic output routine. It assumes a meaningful
+\type {\page}. A page gets the top inserts, followed by the skip, then the
+content, then the other skip and finally the bottom inserts. Of course that
+became different in \TEX86\ when we got a more generalized approach to inserts.
+
+The baseline skip is quite extreme here, as if it's meant for proofing. Also
+watch the page counter: the \type {\count} command is not what we're accustomed
+to: it expands, like \type {\the \count} and \type {\number \count} do today.
+Some videos refer to \type {\the} so when you watch them and hear a reference to
+\quote {sail} or an older \TEX, we're talking this one, otherwise a successor.
+The \type {\setcount} does the assignment.
+
+\starttyping
+\output{\baselineskip20pt\page\ctrline'{\:a\count0}\advcount0}
+
+\setcount0 1
+\stoptyping
+
+Well, why not end the basic file with:
+
+\starttyping
+\rm
+\null\vskip-12pt % allow glue at top of first page
+\stoptyping
+
+This format is small and for a real book more is needed. The assumption was that
+there is only a very basic setup with then an additional book specific style. One
+could also copy basic and use a patched version. But because those involved were
+programmers, or at least aware of what computers could mean for them, it is no
+surprise that larger macro packages started showing up. When looking in more
+detail at what is provided, in the next sections we will see that some parameters
+that went away, others came along, and a couple of concepts changed. That made
+writing more general purpose macro packages easier.
+
+\stopsection
+
+\startsection[title=Sail]
+
+The first version was written in \SAIL, and when we fetch the sources from Don
+Knuths website we can identify what become primitives and how they are grouped.
+Contrary to the next sections, where we can parse the \type {.web} files for
+\type {primitive} and use that as trigger for (runtime) filtering, here we show
+some more manually filtered sections. If you're not familiar with how \TEX\ is
+coded, you have to take what is said below for granted and just try to get the
+idea. Seeing the variables and definitions involved can give an impression of how
+it all relates to for instance primitives and functionality that you run into.
+
+In \TEX\ we need to distinguish primitives and the way that is done is by
+relating them with two numbers: \type {cmd} and \type {chr}. The first 12
+commands are single character commands. For instance a backslash \type {chr} is
+an escape \type {cmd}. When \type {\something} is encountered in the source,
+normally the backslash will trigger reading letters and when done lookup the name
+assembled from them. Unless one made an error, that name (it could be a primitive
+or user defined macro) is looked up and resolved to a \type {cmd} and \type {chr}
+where the latter can be a number representing a value or a pointer to a token
+list. We will not go into details here.
+
+An interesting revelation in the presentations is that when you start up \TEX\ in
+interaction mode, and no escape character has been setup, the first character
+entered will be defined as such, something that of course gets unnoticed when you
+start with a command, because then the backslash becomes the escape character.
+
+\starttyping
+escape      0 # escape delimiter (\ in TEX manual);
+lbrace      1 # begin block symbol ({);
+rbrace      2 # end block symbol (});
+mathbr      3 # math break ($);
+tabmrk      4 # tab mark (ⓧ);
+carret      5 # carriage return and comment mark (%);
+comment carret is also used as the command code for \cr;
+macprm      6 # macro parameter (#);
+supmrk      7 # superscript (^);
+submrk      8 # subscript (↓);
+ignore      9 # chars to ignore;
+spacer     10 # chars treated as blank space;
+letter     11 # chars treated as letters;
+otherchar  12 # none of the above character types;
+\stoptyping
+
+These were basically what later became catcode categories, here we have 12, a
+modern \TEX\ has 16. It might be a bit out of place, but here is how \CONTEXT\
+defines these constants in \MKIX\ using \LUAMETATEX: \footnote {For the record:
+the prefixes freezes these definitions (permanent can be overruled by changing an
+overload protection flag, the immutable property inhibits even that.)}
+
+\starttyping
+\permanent\immutable\integerdef\escapecatcode       0
+\permanent\immutable\integerdef\begingroupcatcode   1
+\permanent\immutable\integerdef\endgroupcatcode     2
+\permanent\immutable\integerdef\mathshiftcatcode    3
+\permanent\immutable\integerdef\alignmentcatcode    4
+\permanent\immutable\integerdef\endoflinecatcode    5
+\permanent\immutable\integerdef\parametercatcode    6
+\permanent\immutable\integerdef\superscriptcatcode  7
+\permanent\immutable\integerdef\subscriptcatcode    8
+\permanent\immutable\integerdef\ignorecatcode       9
+\permanent\immutable\integerdef\spacecatcode       10
+\permanent\immutable\integerdef\lettercatcode      11
+\permanent\immutable\integerdef\othercatcode       12
+\permanent\immutable\integerdef\activecatcode      13
+\permanent\immutable\integerdef\commentcatcode     14
+\permanent\immutable\integerdef\invalidcatcode     15
+\stoptyping
+
+Watch the change in terminology: \emphasize {block symbol} is now \emphasize
+{group}, \emphasize {math break} became \emphasize {math shift}, and some other
+minor renames. But we also got active characters, a configurable comment and, just
+to complete the hexadecimal range, an \quote {invalid} category code.
+
+We will go over the rest of the range and comment when we see something
+interesting and in most cases the comment explains what we encounter.
+
+\starttyping
+parend      13 # end of paragraph;
+match       14 # macro parameter matching;
+outpar  ignore # output a macro parameter;
+endv        15 # end of vlist in halign or valign template;
+call        16 # call a user-defined macro;
+\stoptyping
+
+In the presentations Don frequently refers to extensions. In current \TEX\
+examples of extensions are opening and closing files, reading and writing to
+them, and specials. They are nowadays called whatsits but were always part of the
+game and lucky us: they made \TEX\ survive decades to come because it could
+adapt. For instance \PDFTEX\ uses extensions a lot, for instance for hyperlinks.
+\footnote {The original extensions didn't really assume that for instance whatsit
+nodes have dimensions, because if that were the case one has to also patch the
+various places where dimensions kick in, like in the par builder. In \PDFTEX\
+(and therefore \LUATEX) some whatsits do have dimensions so there indeed some
+mechanisms have to be aware of that. In \LUAMETATEX\ we treat whatsits as
+invisible because, after all, one can wrap into a box to communicate dimensions.}
+
+\starttyping
+xt  17 # extensions to basic TEX (\x)
+\stoptyping
+
+Here we see dedicated assignment classes for glue and (indeed) reals. In later
+versions we talk about (16.16) dimensions and only use \quote {real} for
+a field in the box that stored the to be applied glue factor: the only
+officially system specific difference across platforms.
+
+\starttyping
+assignglue  18 # user-defined glue
+font        19 # user-defined current font
+assignreal  20 # user-defined length
+\stoptyping
+
+We see that the output routine is an independent command:
+
+\starttyping
+def     21 # macro definition (\def,\gdef)
+output  22 # output routine definition (\output)
+innput  23 # required input file (\input)
+\stoptyping
+
+There are all kind of parameters but less than we will later get. They don't have
+primitive names, and in the basic format we saw \type {\jpar} and \type {\trace}
+being defined as shortcuts for numeric references:
+
+\starttyping
+setpar  24 # set TEX control parameter (\trace,\jpar)
+\stoptyping
+
+In the presentations we also see some tracing that later changed, and debugging
+is mentioned too, although it's seen as an emergency measure.
+
+\starttyping
+stop  25 # end of input (\end)
+ddt   26 # emergency debugging (\ddt)
+\stoptyping
+
+This \type {chartype} later became \type {catcode} but what is this \type
+{ascii}?
+
+\starttyping
+ascii   27 # code for possibly untypeable character (\char)
+chcode  28 # change chartype table (\chcode)
+\stoptyping
+
+The \type {\char} primitives behave different in text and math mode and later we
+got a split between \type {\char} and \type {\mathchar}. The concept of families
+is there:
+
+\starttyping
+fntfam  29 # declare font family (\mathrm,etc.)
+\stoptyping
+
+Here we see a difference with later versions. We have an explicit set and advance
+primitives and a serializer. In modern \TEX\ \type {\count} got a different
+meaning (setter and getter in one) and \type {\advance} got shared.
+
+\starttyping
+setcount  30 # set current page number (\setcount)
+advcount  31 # increase current page number (\advcount)
+count     32 # insert current page number (\count)
+\stoptyping
+
+We're sure that there have been good reasons to change \type {\ifeven} into \type
+{\ifodd} even when that introduced an incompatibility, but I guess that given the
+pace of development, that was the least of ones worries. The name \quote
+{delimiter} for \type {\else} makes me smile. Watch how we have two conditional
+command classes. There are no \type {\iftrue} and \type {\iffalse} so here is a
+state check example given:
+
+\starttyping
+\def\firsttime{T}
+... \if T \firsttime{\gdef\firstime{F}}\else{...}\fi ...
+\stoptyping
+
+The braces are mandate and also prevent look-ahead expansion as they end the
+test. I couldn't find \type {\ifT}, sorry.
+
+\starttyping
+ifeven    33 # conditional on count even (\ifeven)
+ifT       34 # conditional on character T (\ifT)
+elsecode  35 # delimiter for conditionals (\else)
+\stoptyping
+
+We still have a split between setter and getter but instead of \type {\save} we
+now use \type {\setbox}; we also can make copies. It is worth noticing that we
+have a \type {\shipout} called \type {\page} and dedicates justification commands
+(\type {\hbox} and \type {\vbox}):
+
+\starttyping
+box    36 # saved box (\box,\page) or justification (\hjust,\vjust)
+hmove  37 # horizontal motion of box (\moveleft,\moveright)
+vmove  38 # vertical motion of box (\raise,\lower)
+save   39 # save a box (\save)
+\stoptyping
+
+So these were always available:
+
+\starttyping
+leaders  40 # define leaders (\leaders)
+\stoptyping
+
+These are also familiar:
+
+\starttyping
+halign   41 # horizontal table alignment (\halign)
+valign   42 # vertical table alignment (\valign)
+noalign  43 # insertion into halign or valign (\noalign)
+vskip    44 # vertical glue (\vskip,\vfill)
+hskip    45 # horizontal glue (\hskip,\hfill)
+vrule    46 # vertical rule (\vrule)
+hrule    47 # horizontal rule (\hrule)
+\stoptyping
+
+However, inserts were hard coded. I think that in these days graphics were still
+glued in so basically only footnotes were in demand.
+
+\starttyping
+topbotins  48 # inserted vlist (\topinsert or \botinsert)
+\stoptyping
+
+In the book style example in the basic \TEX book we see this definition:
+
+\starttyping
+\def\footnote#1#2{\botinsert{\hrule width5pc \vskip3pt
+  \baselineskip9pt\hbox par size{\eightpoint#1#2}}}
+\stoptyping
+
+So we use the bottom insert, which eventually will be separated by a \type
+{\botskip} and it will have a rule on top (question: what will happen with
+multiple notes? We didn't mention specifying boxes yet but here is the possible
+syntax:
+
+\starttyping
+\hbox {} \hbox to size {} \hbox to <dimen> {} \hbox expand <dimen> {}
+\hbox par size {} \hbox par <dimen> {}
+\vbox {} \vbox to size {} \vbox to <dimen> {} \vbox expand <dimen> {}
+\stoptyping
+
+This \type {par} is used in the footnote definition, we basically get a \type
+{\vbox} disguised as \type {\hbox}. Later these box definitions became:
+
+\starttyping
+\hbox {} \hbox to <dimen> {} \hbox spread <dimen> {}
+\vbox {} \vbox to <dimen> {} \vbox spread <dimen> {}
+\stoptyping
+
+At that point we also got \type {\vsplit}, multiple inserts, inserts that could
+be split over pages, properties like skips bound to inserts, etc.
+
+The, also migrating, marks look familiar and two command categories are used.
+Here \type {\firstmark} is not mentioned:
+
+\starttyping
+topbotmark  49 # insert mark (\topmark,\botmark)
+mark        50 # define a mark (\mark)
+\stoptyping
+
+For sure we have:
+
+\starttyping
+penalty  51 # specify badness of break (\penalty)
+\stoptyping
+
+And:
+
+\starttyping
+noindent  52 # begin nonindented paragraph (\noindent)
+\stoptyping
+
+Eh \unknown\ we now have triggers like \type {\outputpenalty} and the concept of
+push back in the output routine. The old \TEX\ engine has an explicit \type
+{\eject} that can be invoked in horizontal mode (middle of a paragraph) or
+vertical mode. In new \TEX\ this became a plain macro. Another interesting
+primitive is \type {\page} that inserts the collected content, box number 255 in
+new \TEX.
+
+\starttyping
+eject  53 # eject page here (\eject)
+\stoptyping
+
+The next command deals with the hyphen related primitives. The \type {\*}
+primitive is for math where it will insert a \im {\times} with a possible line break
+after it. This is an interesting observation: this native feature was removed in
+the final version of \TEX, but at some point in \LUAMETATEX\ discretionaries came
+back, for repeated operators (at the end of a line and the start of a next line)
+as well as specific (three part) breakpoints.
+
+\starttyping
+discr  54 # discretionary hyphen (\-,\*)
+\stoptyping
+
+Interesting, as later we only had an accent placement, seldom seen in the running
+text, possibly used in macros, if at all, because at some point \TEX\ went eight
+bit.
+
+\starttyping
+accent     55 # attach accent to character (\+)
+newaccent  56 # define nonstandard accent (\accent)
+\stoptyping
+
+Only one side of the (centered) equation is covered:
+
+\starttyping
+eqno  57 # insert equation number (\eqno)
+\stoptyping
+
+Hm, apart from that space, we don't have it like this any longer:
+
+\starttyping
+mathonly       58 # character or token allowed in mathmode only
+exspace        59 # explicit space (\ )
+nonmathletter  60 # letter except in mmode
+\stoptyping
+
+In modern \TEX\ these became fences:
+
+\starttyping
+leftright  61 # variable delimiter (\left, \right)
+              # comment there is no code 62 today
+\stoptyping
+
+These are atoms (a nucleus with a superscript or subscript):
+
+\starttyping
+mathinput  63 # component of math formula (\mathop,\mathbin, etc.)
+\stoptyping
+
+We still have this modifier, a primitive that adapts the last added math atom (if
+it makes sense): \footnote {The node list is forward linked only in traditional
+\TEX\ so this only works on what is called the tail of the current (math) list. In
+\LUATEX\ we are dual linked so in principle one can look further back but there
+is no real reason to do this. It is one of the few cases where the engine looks
+back anyway.}
+
+\starttyping
+limsw  64 # modify limit conventions (\limitswitch)
+\stoptyping
+
+Math again, but the \type {\comb} is gone. We have the \type {\..withdelim}
+variants now:
+
+\starttyping
+above  65 # numerator-denominator separator(\above,\atop,\over,\comb)
+\stoptyping
+
+Watch how for instance the text style is referred as:
+
+\starttyping
+mathstyle  66 # style or space specification (\dispstyle,\,,etc.)
+\stoptyping
+
+We still have that, it's a typical \TEX\ concept, not present in modern fonts:
+
+\starttyping
+italcorr  67 # italic correction (\/)
+\stoptyping
+
+Yes, another adjust. In traditional \TEX\ this is a math mode command, but in
+\LUAMETATEX\ we made it valid in text mode too.
+
+\starttyping
+vcenter  68 # vjust centered on axis (\vcenter)
+\stoptyping
+
+This next command is peculiar because it is not a parameter as the other integer
+ones but it has it's own command category. There is in this list of commands no
+mentioning of more advanced paragraph properties, not even \type {\everypar}
+because that will show up in \TEX82.
+
+\starttyping
+hangindent  69 # specifies hanging indentation (\hangindent)
+\stoptyping
+
+So where is \type {\hangafter}? It actually is the reason why we have a dedicated
+command class because a special scanner is needed:
+
+\starttyping
+\hangafter 20pt for   1
+\hangafter 20pt after 2
+\stoptyping
+
+A negative dimension hangs right, the \type {for} and \type {after} options
+determine the number of lines.
+
+Next we see some of the parameters mapped to memory. We challenge you to translate
+these to modern \TEX's parameters:
+
+\starttyping
+define tracing = eqtb[hashsize+268] # controls diagnostics
+define jpar    = eqtb[hashsize+269] # controls justification
+define hpen    = eqtb[hashsize+270] # hyphenation penalty
+define penpen  = eqtb[hashsize+271] # penultimate penalty
+define wpen    = eqtb[hashsize+272] # widow-line penalty
+define bpen    = eqtb[hashsize+273] # broken-line penalty
+define mbpen   = eqtb[hashsize+274] # binary-op-break penalty
+define mrpen   = eqtb[hashsize+275] # relation-break penalty
+define ragged  = eqtb[hashsize+276] # raggedness
+\stoptyping
+
+The par builder can be configured a bit but some criteria are hard coded. Watch
+how we don't have a club penalty here. The widow penalty is used for that as well
+as display math.
+
+Because skips are more than just a single integer, they are actually nodes, so
+here we need to refer to node memory:
+
+\starttyping
+define lineskiploc     = locs[0]
+define baselineskiploc = locs[1]
+define parskiploc      = locs[2]
+define dispskiploc     = locs[3]
+define topskiploc      = locs[4]
+define botskiploc      = locs[5]
+define tabskiploc      = locs[6]
+define dispaskiploc    = locs[7]
+define dispbskiploc    = locs[8]
+\stoptyping
+
+Just to show you that the math concepts are there:
+
+\starttyping
+define dispstyle         = 0
+define textstyle         = 1
+define scriptstyle       = 2
+define scriptscriptstyle = 3
+\stoptyping
+
+Nowadays we still have these noads, intermediate nodes, here are the atoms:
+
+\starttyping
+define boxnoad   = 0
+define opnoad    = 1
+define binnoad   = 2
+define relnoad   = 3
+define opennoad  = 4
+define closenoad = 5
+define punctnoad = 6
+\stoptyping
+
+Do you recognize the fraction?
+
+\starttyping
+define sqrtnoad   =  7
+define overnoad   =  8
+define undernoad  =  9
+define accentnoad = 10
+define abovenoad  = 11
+\stoptyping
+
+The square root has no degree but other roots have. Eventually \UNICODE\ engines
+using \OPENTYPE\ math fonts got a variant that handles the degree option but here
+it still has to be done manually via a macro that overlays the degree.
+
+Nowadays we have a fence noad to which \ETEX\ added a middle variant (subtype):
+
+\starttyping
+define leftnoad  = 12
+define rightnoad = 13
+\stoptyping
+
+The simple noad and style are there too but we can assume that the way the noads
+map onto memory changed a bit over time (I didn't check it).
+
+\starttyping
+define nodenoad  = 14
+define stylenoad = 15
+\stoptyping
+
+These look more hard coded than in the final version of \TEX, where we can define
+and set glue and muglue registers.
+
+\starttyping
+define thinspace     =  8
+define thickspace    =  9
+define quadspace     = 10
+define negthinspace  = 11
+define negthickspace = 12
+define negopspace    = 13
+define userspace     = 14
+define nospace       =  6
+define opspace       =  7
+define thspace       = 15
+define negthspace    = 16
+\stoptyping
+
+This was just an impression and likely one that has errors. We don't have (access
+to) many details but even if we're wrong in aspects it is clear using this \SAIL\
+prototype gave plenty of input to the project so when the rewrite to \PASCAL\
+took place, mixed with \WEB\ documentation, these concepts evolved. Let's now
+move to the next iteration but before we do that we zoom in on the transition
+between the prototype and what became the final version.
+
+\stopsection
+
+\startsection[title=The intermezzo]
+
+The book has an appendix \type {<X>} titled \quotation {Recent extensions to
+\TEX} that describes additions to the engine done right before the mentioned book
+was published. These were likely driven by usage, macro packages showing up, and
+users demanding more from macros and manipulations. In the videos Knuth makes
+clear that \TEX82 will converge to a stable version. He announces the \TEX\ book,
+the \METAFONT\ book and a book about the fonts. He also mentions that, while \TEX\
+underwent rather fundamental changes and upgrades, \METAFONT\ will be less
+different. But when you look at the \METAFONT\ section in the book, it's hard to
+see the similarities. Of course I look at it from the perspective of \METAPOST\
+being used for graphics other that glyph shapes, but if we look at the bitmap
+generation bits, the language, variables, path construction, macros \unknown\ one
+really has to rewrite the older code, but most ideas behind it remain. References
+to built-in variables, hard coded pens, control point features, subroutines and
+calls, it looks somewhat less meta than today.
+
+But when it comes to \TEX, in a way you can recognize the upcoming \TEX 82 in
+that because when extensions like that get added, later changes are natural. So,
+let's reflect a bit on what we can read about it. Take for instance how we
+stepwise came to \type {\advance}. There are ten counters and you can do the
+following
+
+\starttyping
+\setcount 4 = 10  \advcount 4  \advcount 4  \count 4
+\stoptyping
+
+And because \type {\count} expands you get a typeset 12 here because \type
+{\advcount} increments by one. In the appendix an extension is introduced:
+
+\starttyping
+\setcount 4 = 10  \advcount 4 by 2  \count 4
+\stoptyping
+
+This comes in handy when we need to increment by 50 which otherwise would demand
+a recursive loop. However, in \TEX82 the \type {\advcount} got companions like
+\type {\advdimen} and code was shared between, made possible by (internally)
+assigning a property that signals what is dealt with. But, soon an incompatible
+change was introduced:
+
+\starttyping
+\count 4 = 10  \advance\count 4 by 2  \the\count 4
+\stoptyping
+
+From that time on each register uses the same \type {\advance} and the now
+unexpandable register references have to use \type {\the} as serializer. This
+transition was rather natural and made it easier to program more complex
+solutions.
+
+We didn't mention yet that the conditional primitives were also syntactically
+different. It started with:
+
+\starttyping
+do \ifeven \count4 {this}\else{that}
+\stoptyping
+
+so mandate braces, a mandate (redundant?) \type {\else} and no \type {\fi}. That later
+became:
+
+\starttyping
+do   \ifodd \count4 this\else that\fi % if it has to be clear
+do th\ifodd \count4   is\else   at\fi % if you want to impress
+\stoptyping
+
+When the appendix introduces the \type {\ifpos} test, the next example is given:
+
+\starttyping
+\def\neg#1{\setcount#1-\count#1}
+\def\ifzero#1#2\else#3{\ifpos#1{#3}\else{\neg#1
+    \ifpos#1{\neg#1 #3}\else{\neg#1 #2}}}
+\stoptyping
+
+Apart from \type {\neg} later being a math related command, this looks like a lot
+of work for a test on a number being positive. It is not fully expandable (but one
+can wonder if that mattered much in those early days), it negates the counter
+because it can only test for positive and then has to convert the counter back to
+its original value. How much more convenient will this become:
+
+\starttyping
+\ifnum#1>0 ... \else ... \fi % replaces \ifpos
+\ifnum#1=0 ... \else ... \fi % replaces \ifzero
+\ifcase#1  ... \else ... \fi % alternative
+\stoptyping
+
+It is revealing to read about the development of (conditionals in) early \TEX, in
+particular regarding recent choices I made in \CONTEXT\ when extending the
+repertoire. As a \LUAMETATEX\ extension \type {\orelse} is one of my favorites
+because it makes for less nesting of conditionals. These types of simple
+constructions are the core of the language and of immediate use as soon as a user
+needs to go a bit low level. As part of the soul of the \TEX\ language we are
+happy to expose our users to them.
+
+Let's just mention that \typ {\ifvmode}, \typ {\ifhmode}, \typ {\ifmmode} were
+added as well as \typ {\lineskiplimit} and \typ {\mathsurround} and more would
+follow.
+
+Yet another extension holds some promise for the future \TEX82: a user dimensions
+(there are no dimen registers yet). The \type {\varunit} variable can be set to
+some value and the \type {vu} dimension can then use that. In order to be able to
+work with the dimensions of boxes there were also \type {wd}, \type {ht} and
+\type {dp} units each to be followed by some box number.
+
+The fact that one could say \type {12.3vu} or \type {2wd3} actually makes me feel
+less guilty for adding the \type {dk} unit (as a demonstration of extension), the
+\type {ts} and \type {es} units (in order to celebrate the fact that teenagers
+are willing to accompany parents to \TEX\ conferences) and \type {eu} for what
+actually is a bit like the var unit, in this case a multiplier for \type {es},
+and therefore European thumb based (to counter the inch). But aside from these
+semi-serious extensions, in \LUAMETATEX\ we also have installable units, so we
+could do this if we like to:
+
+\starttyping
+\newdimen\varunit \varunit 10pt
+\associateunit\varunit{(`v-`a)*26+(`u-`a)}
+\varunit 10pt \dimen0=10vu \the\dimen0
+\stoptyping
+
+It happens that we already have \type {uu} as \quote {user unit} but if I'd known
+that there had been a \type {vu} \unknown\ who knows. We could discuss it at an
+upcoming \CONTEXT\ meeting.
+
+But there is another guilt diminishing feature: this box dimension unit. It
+demands not just a keyword check but also picking up a number. Later we got \type
+{\wd} etc.\ that are a but more natural in accessing these properties, but the
+fact that we have a kind of a sub-expression makes that adding plenty more such
+specific burdens on the parser seems quite okay. So where in the above snippet
+you will notice that we scan an expression, you can be sure that more is possible
+between these braces and it's not that unnatural to \TEX\ after all.
+
+In today's \TEX\ there are ways to set up characters to be of a certain math
+class. In the intermezzo between \SAIL\ \TEX\ and \TEX82 that could be done via
+the what was then the catcode setter: \type {\chcode}, using values beyond the
+catcode range. Later math got its own setters for that. At the same time the
+\type {\char} primitive got the option to pass a letter as alternative for a
+number. That was later changed, because we got \type {`} as numeric prefix to
+characters, like \type {`a}. I suppose some users had to change their format
+files and styles a few times. It might also have been one of the reasons why
+later \TEX\ got frozen, not only because of the rendering but also because of
+setting it up to do just that. \footnote {There is this active character class in
+math mode so in some sense we still have a special relationship between character
+codes and math classes.}
+
+The somewhat weird, large \type {plus} and \type {minus} values in some basic
+macros are so large that later they became invalid. In the intermezzo period
+we see \type {\hfil}, \type {\hfilneg}, \type {\hss} and their vertical
+counterparts replace them: no more \typ {plus 100000pt} and such are needed. The
+argument is actually that it saves memory, which is due to the fact that instead
+of variables (of glue nodes) one has references to fixed nodes. Of course one can
+wonder if in practice it really saved much memory. A similar optimization, namely
+sharing space glue by referencing glue nodes fits in here too but isn't mentioned.
+
+The introduction of \type {\xdef} was needed because there was no \type {\global}
+prefix yet. Introducing the \type {\lowercase} and \type {\uppercase} primitives
+made sense but later usage demonstrated that as they operate on their argument
+and not the node list it is not always trivial to use them in situations where
+expansion can interfere.
+
+A final remark in the appendix mentions that control sequences are from then on
+remembered in full, that is: the seven character limit is gone! It probably also
+made for less code. That said, we now move on to the first \TEX82\ implementation
+that figures in the presentations.
+
+\stopsection
+
+\startsection[title=Old \TEX82]
+
+When we talk about \quote {old \TEX}, we mean the early '82 version. The sources
+can be downloaded from Don Knuths website but they are just that: sources. There
+is nothing you can run so your mind is the computer. For that reason we will only
+look at the commands, and comment a bit on those. We are of course talking of a
+working program but when you compare it with what we will call \quote {new \TEX82}
+you will notice some differences that indicate that the latter is more mature
+and that decisions were made that really made sense for the program to succeed
+and prosper. We start with the primitives and present the list as filtered from
+the source(s). Bear in mind that we could have missed something. The idea is that
+you go over the list and try to identify commands that are gone or changed. The
+first column mentions the primitive, the second column the so called command
+category it fits in. You can think a bit of the primitives being interpreted by a
+virtual machine that interprets an operator and operand.
+
+It is a long list but we like you to try to locate the primitives that are not in
+today's \TEX, that have been renamed, or have become different.
+
+% \definetypeface
+%   [narrowtt] [tt]
+%   [mono] [modern-condensed] [default] [features=none]
+%
+% \start \narrowtt \setuptype[style=narrowtt]
+
+\start \small
+    \ctxlua{document.showprimitives("old")}
+\stop
+
+The list of commands that the primitives are grouped in:
+
+\startcolumns[n=3]
+    \ctxlua{document.showcommands("old")}
+\stopcolumns
+
+So what are the most significant differences with the \SAIL\ version? We see many
+more primitives and quite some are for setting and getting parameters. These are
+now organized into integers, dimensions, glue, muglue and token lists.
+
+A noticeable difference with today's \TEX\ is the \type {set_font} that uses this
+\type {\:} shortcut. It's good to know that we still have limited memory.
+Machines got more powerful but even a DEC 10 (or 20) had to serve more than one
+user and given that each seemingly had 500~kB running \TEX\ puts some strain
+on the system (swapping memory and such). It is why there were two versions, one
+that could dump a format and another that just loaded it and therefore could drop
+some code in favor of using more memory for processing. But fonts, although small
+by today's standards took space so the number was limited. On the other hand, we
+got away from the short (sometimes cryptic) names and have way more primitives.
+It feels good.
+
+Watch commands like \type {\texinfo}, \type {\groupend} and \type {\groupbegin},
+\type {\hangindent} with its own command class, \type {\xoverx}. But also look at
+the various \type {\adv...} commands and \type {\minus}. Conditionals have this
+\type {\ifeven} the future negated \type {\ifodd}; the \type {\ifabsent} check
+will at some point become \type {\ifvoid} and \type {\case} will migrate to \type
+{\ifcase}. Also consider \type {\varunit} and \type {\:} as we will see these
+change later.
+
+We see the concept of mu glue show up, and we see \type {\thinmskip} pop up.
+Interestingly that one became \type {\thinmuskip}, probably because \type
+{\mskip} is a more general skipper and therefore we need to avoid confusion. It's
+in the details. Going from \typ {disp} to \type {display} also feels natural. We
+see \type {\xabovex} and companions, \type {\chcode}, quite some \type {\set...},
+\type {\adv...}, \type {\mult...} and \type {\div...}. Maybe if there had't been
+so many we'd have ended up with \type {\add} and \type {\subtract} instead of
+just \type {\advance}.
+
+Watch how the \type {\shipout} is treated as a leader. The operands (\type {chr})
+now use more symbolic names but not all of them. Interaction internally uses a
+variable with four values but each got its primitive. The tracing options were
+split into independent parameters.
+
+\stopsection
+
+\startsection[title=New \TEX82\endash89]
+
+The current version of \TEX\ has the next list of primitives. There are some
+differences in names but more significant is that we have a different grouping in
+commands. As with the previous versions, not all operands have symbolic names.
+
+\start \small
+    \ctxlua{document.showprimitives("new")}
+\stop
+
+Again we show the list of commands. It's about as large as the previous one
+although we got rid of some. Looking at the list is a test of how well you know
+the current set of official \TEX\ primitives.
+
+\startcolumns[n=3]
+    \start \small
+        \ctxlua{document.showcommands("new")}
+    \stop
+\stopcolumns
+
+We will make it easier to see the changes in organizing the commands. The second
+column shows the number of primitives in the older version, the third column
+refers to the current version. The bold entries are unchanged names.
+
+\startcolumns[n=2]
+    \start \tx
+        \ctxlua{document.showcombined()}
+    \stop
+\stopcolumns
+
+It is interesting to see how \TEX\ evolved and got more organized with each
+iteration. It also made me feel a bit less for reorganizing these commands a bit
+more. In \LUATEX\ we added primitives, just like for instance \ETEX\ and \PDFTEX\
+had done. In \LUAMETATEX\ we added even more. In one of the presentations Don
+shows a trick to add two dimensions: do two \type {\hskip}'s in a \type {\hbox}
+and use the width as sum. He then explains that one can also subtract, multiply
+and divide using such trickery. However, in the final version of \TEX\ we got
+\type {\advance}, \type {\divide} and \type {\multiply}, and \ETEX\ later added
+simple expressions. So in the end, the fact that \LUAMETATEX\ got a more powerful
+expression mechanism and additional data types feels kind of natural. So, why not
+show the \LUAMETATEX\ command grouping here? This is what we have 25 years later:
+
+\startcolumns[n=2]
+    \start \tx
+        \ctxlua{document.showluametatex()}
+    \stop
+\stopcolumns
+
+Some are renames, others regrouping, but there are also new ones. For instance
+the command group \type {association} deals with user defined units (bound to a
+register, macro or some \LUA\ call). The \type {begin_local} relates to \type
+{\localcontrol} and friends, a way to exercise the main loop inside a macro and
+avoid side effects; a bit similar to \type {vardef} in \METAPOST. Boundaries are
+new and have a \type {boundary} command group. The various parameters (variables)
+are split into internal and register (user) ones.
+
+Not all commands have a primitive (this is also true for the predecessors where
+we didn't show them) but here we just show them with no primitive count. We have
+registers (way more than original \TEX) but also have additional pseudo registers
+that are basically (efficient) macros. This means that we can generate a version
+with less registers which, even with a decent set, saves about the same amount of
+memory that good old \TEX\ has available for processing documents, including its
+own binary. \footnote {The \ETEX\ extension pushed \TEX\ from 256 to 32.786 and
+\LUATEX\ doubled that but it makes no sense to have that many: who needs that
+many muskips or attributes? Some 8K seems more than enough for each with probably
+4K for the glue and muglue.} Anyway, some of the codes with no number have
+similar command codes in old and new \TEX, we didn't invent all those wheels.
+
+It makes no sense to show the new primitives but we have for instance iterators
+that have a command category but primitives that are in other groups. This has to
+do with the way they behave. Of course we have a bunch of \LUA\ related ones too.
+The \type {\..._call} commands are fast accessors to specific definitions, like
+\type {\protected} or \type {\tolerant} ones. Command groups like \type
+{active_char} and \type {letter} are also present in the reference \TEX\ engine,
+as they relate to the catcodes, but characters are not primitives. The fact that
+we have \UNICODE\ and therefore huge slices of potential entries in \TEX's
+equivalents space already makes for different internals anyway. But looking at
+the tables of various engines can at least give an idea of how the engines
+evolved. It definitely made watching these 40 year old videos so much more
+interesting and fun.
+
+\stopsection
+
+\startsection[title=The timeline]
+
+We started with a rough timeline but there is a very good source for detective
+work: the \type {errorlog.tex} file also typeset in Knuths Digital Typography. I
+wish I had the discipline to come up with something like that but I can use the
+fact that I write intermediate wrap-ups as a lame excuse. From 1978 onward you
+can read what bugs were solved, what renames happened, what got introduced, etc.
+Let's mention a few entries that relate to things discussed earlier in this
+document, especially in the intermezzo section.
+
+At 19 May 1978 we note \quotation {G249. Add a \type {\topbaseline} feature
+[later called \type {\topskip}]. @1001}. Before that we had some skips after top
+inserts and before bottom inserts but these became skip registers eventually. On
+5 Aug 1978 we read \quotation {G336. Generalize \type {\pageno} to \type {\count
+<digit>}. @236} but \type {\pageno} later became the de-facto standard for \typ
+{\the \count 0} so it never really went away. From mid 1979 it becomes clear
+that the new par-builder is being worked on, we also see the mentioned fillers
+show up on 23 Jul 1979: \quotation {E409. Introduce new primitives \type
+{\hfil}, \type {\vfil}, \type {\hfilneg}, \type {\vfilneg}. @1058}
+
+Not mentioned in the book as upcoming are active characters. These are mentioned
+25 Jan 1980: \quotation {G427. Introduce active characters (one-stroke control
+sequences). [I don't yet go all the way: The meanings of \type {x} and \type {\x}
+have to be identical.] @344} Actually, active characters are an interesting concept
+although in today's usage (think \UNICODE) they make less sense.
+
+We already saw \type {\def} and variants being in the \SAIL\ version but in 1980
+we also got \quotation {G444. Add a new \type {\newname} feature (soon changed to
+\type {\let}). @1221}.
+
+A milestone is 13 Jun 1980: \quotation {Today I'm beginning to overhaul the
+line-breaking routine, and I'll also install miscellaneous goodies.} There is
+also a new feature: \quotation {G459. Add a new parameter \type {\loose} [later
+\type {\looseness}]; now parameters are allowed to take negative values. @875}. A
+day later 14 Jun 1980 we read \quotation {Q461. Install new line-breaking
+routines, including \type {\parshape}. (These major changes are introduced as
+Michael Plass and I write our article.) @813}.
+
+The inserts are maturing: \quotation {G482. Add new \type {\topsep} and \type
+{\botsep} features. [These are \TEX78's way to put space at the edge of inserts,
+replaced in \TEX82 by the \type {\skip} register corresponding to an \type
+{\insert} class.] @1009}. These changes happen when Don is also writing the
+upcoming books, and I think it demonstrates his valid point that writing a manual
+is a great way to improve the code, for instance with respect to consistency.
+Implementation, documenting and using go hand-in-hand.
+
+Here's one for us: \quotation{G490. Add the dimension \type {cc} for European
+users. @458}. I never used it as I prefer \type {cm}, \type {mm} and \type {pt},
+as silent protest against the American \type {in} and \type {bp}.
+
+This is a nice one: \quotation {C491. Make \type {scan_keyword} match uppercase
+letters as alternatives to lowercase ones (suggested by Barbara Beeton's
+experiments with \type {\uppercase}). @407}.
+
+Then there is the comment \quotation {Am freezing current program as version
+$-0.25$; a week of \TUG\ lectures begins tomorrow.} Are these the ones from the
+video? Was that something \TUG ? In one of those videos the 5 Aug 1982 change
+\quotation {IX158. The \type {.err} file should be \type {.log} instead. @534} is
+announced, a decision driven by user input during a break in the course.
+
+Around that time there is also the optimistic \quotation {I believe the \type
+{line_break} routine has passed its test perfectly.} and then \quotation {FX247.
+Initialize \type {second_indent} in the easy case. @848}. \footnote {Mikael and I
+still try to understand what this easy case refers to, other than that it relates
+to looseness in the current version. Thanks to \quotation {IX334 X199. Introduce
+serial numbers in line-break records, improving readability and independence.
+@846} we can indeed see how many passive nodes get set.}
+
+The class related character definitions show up: \quotation {GX260. Introduce new
+primitive \type {\mathchardef}, to save space and time. @1224} which is nicer
+that a mix with character catcodes. In this perspective it's good to remind the
+reader that we have at most 256 characters in a font. In a modern \UNICODE\ font
+we have way more which also means that we have character codes that need a 32 bit
+integer. Some of the original \TEX\ approaches in \LUATEX\ got a different
+implementation, for instance by using sparse arrays. \footnote {In \type
+{musing-neat.tex} I explore a bit how characters are stored in a node list, the
+suggested way to handle large fonts and why we do it differently.}
+
+Relatively late we see \type {\:} being replaced; the videos indeed still use
+that short command: \quotation {G545. Install a major change: Fonts now have
+identifiers instead of code letters. Eliminate the \type {\:} primitive, and give
+corresponding new features to \type {\the}. @209}.
+
+The par builder gets an update: \quotation {A554. Compute demerits more suitably
+by adding a penalty squared, instead of adding penalties before squaring. @859}
+and \quotation {Previously a slightly loose hyphenated line followed by a decent
+line was considered worse than a decent hyphenated line followed by a quite loose
+line.} Also \quotation {E566. Omit the \quote {first pass} and try hyphenations
+immediately, if \type {\pretolerance} is negative (suggested by DRF). @863}. How
+many users do the latter? We mentioned this already but it happens late 1982:
+\quotation {C578. Change \type {\hangindent} to a normal dimension parameter. [It
+had been a combination of \type {\hangindent} and \type {\hangafter}, with
+special syntax.] @247}.
+
+We also mentioned the \type {\ifeven} to \type {\ifodd} change; the new one is
+mentioned: \quotation {S591 564. Make \type {\ifodd 1\else} legal by introducing
+\type {if_code}. @489}.
+
+The beginning of 1983 also marks the beginning of new grouping names: \quotation
+{C597. Rename \type {\groupbegin} and \type {\groupend} as \type {\begingroup}
+and \type {\endgroup}. @265}.
+
+Documenting likely lead to: \quotation {C639 607. Remove the kludgy math codes
+introduced earlier; make \type {\fam} a normal integer parameter and allow \type
+{\mathcode} to equal $2^{15}$. @1233}. We saw in basic that octal was popular but
+\quotation {I641 639. Replace octal output (\type {print_octal}) by hexadecimal
+(\type {print_hex}) so that math codes are clearer. @67}.
+
+At 22 Feb 1979 we could read \quotation {G387. Add \type {vu} and \type
+{\varunit}. [\TEX82 will eventually allow arbitrary internal dimensions as units
+of measure.] @453} and that announcement between square brackets lead to 25 May
+1983 mentioning \quotation {G695 X231. Remove \type {dm} and \type {vu}; allow
+the more general \type {.5\hsize}}. We also read \quotation {@455. C696. Change
+\type {\texinfo <f> <n>} to \type {\fontdimen <n> <f>}. @578}.
+
+We also mentioned the introduction of units to access box dimensions but the 27
+May 1983 entry tells \quotation {G703 695. Replace (and generalize) the previous
+uses of \type {ht}, \type {wd}, and \type {dp} in dimensions by introducing the
+new control sequences \type {\ht}, \type {\wd}, and \type {\dp}. @1247}.
+
+If you're interested how software development went in the years 1978 to 1983 this
+error log is a must-read because it actually is a development log. Between the
+lines you can read about compilation and compiler issues, access to computers
+during day and night, and evolving features. It makes one who is only accustomed
+to fast personal computers, screen editors, maybe code specific features in
+editors, seemingly unlimited memory and disc space a bit more humble. It also
+makes clear that thinking beforehand as well as printing and reading a source was
+part of a skill-set, if only because trial-and-error or just trial-after-coding
+was less of an option.
+
+\stopsection
+
+\startsection[title=Conclusion]
+
+It was interesting to compare the \SAIL/\TEX82 lectures, and \TEX82 as-of-now
+with each other, especially because I spent a few decades with \CONTEXT\ friends
+on extending \LUATEX\ and later \LUAMETATEX. I had of course browsed the error
+log but checking it again in this perspective is nice. Looking at how it all
+evolved also gives some clues why things are as they are now; to some extent it
+all makes even more sense: limitations and possibilities. It also matters (for
+me) that in the meantime, for quite some years, I have been involved in and have
+been playing around with extending (core features of) the engine, also in the
+perspective of developing \CONTEXT, which has its demands and stresses the
+machinery.
+
+One has to go back in time and watch the development process, the teamwork, and
+the inspiring leadership, working towards quality, that made it possible. The
+success of \TEX\ and friends very much related to the way Don Knuth interacted
+with the community, and the effort he put in all this, often setting aside his
+main priority, the art books. The result is still pretty valid, and those who
+claim otherwise can take a lesson from that. After all, in software development
+illogical arguments, sometimes ridiculing (the past), bragging about trivial
+achievements, quick and dirty finalizing, lack of quality control and what more,
+are quite common in these commercially driven developments. And we're not even
+talking of using generative artificial intelligence to come up with new code,
+based on old code, presented as original. But watching these videos confirms why
+I like \TEX, and why I got attracted to it, seeing the books, understanding
+little without the ability to run the programs, picking up on that, and ending up
+in the \CONTEXT\ community. Figuring out solutions using a framework for
+typesetting, one that had been designed with a future usage in mind, can be fun.
+It's pretty hard to beat!
+
+An important lesson is that coming up with a (original) solution (for your
+problem) that is also future proof takes time. One needs to play with it and be
+willing to look at it from a different angle. It makes little sense to work in
+isolation because constructive user input helps. To that I personally add that if
+you don't like some development, just ignore it; there is no need to waste time
+on competition and claiming that this is better than that and that everyone
+should use whatever you like. Just think of this: \TEX\ has been around for
+decades for good reasons.
+
+\blank[2*big]
+
+\startlines
+Hans Hagen
+December 2025
+Hasselt NL
+\stoplines
+
+\stopsection
+
+\stoptitle
+
+\stopdocument

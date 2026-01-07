@@ -611,7 +611,7 @@ static int texlib_mprint(lua_State *L)
         tex_local_control_message("entering local control via mprint");
     }
     tex_local_control(1);
-// tex_cleanup_input_state();
+ // tex_cleanup_input_state();
     return 0;
 }
 
@@ -637,7 +637,7 @@ static int texlib_poplocal(lua_State *L)
         tex_local_control_message("entering local control via pop");
     }
     tex_local_control(1);
-// tex_cleanup_input_state();
+ // tex_cleanup_input_state();
     return 0;
 }
 
@@ -3030,6 +3030,9 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                         default:
                             return 0;
                     }
+                case align_property_cmd:
+                    /*tex Makes no sense here */
+                    return 0;
                 case box_property_cmd:
                     /*tex This could be |set_box_property_value| instead. */
                     return 0;
@@ -3252,6 +3255,26 @@ static int texlib_getfontoffamily(lua_State *L)
     int f = lmt_checkinteger(L, 1);
     int s = lmt_optinteger(L, 2, 0);
     lua_pushinteger(L, tex_fam_fnt(f, s));
+    return 1;
+}
+
+static int texlib_getfontdimension(lua_State *L)
+{
+    halfword code = lmt_tohalfword(L, 1);
+    halfword font = lmt_optinteger(L, 2, cur_font_par);
+    int v = 0;
+    switch (code + scaled_slant_per_point_code - 1) {
+        case scaled_slant_per_point_code:
+        case scaled_interword_space_code:
+        case scaled_interword_stretch_code:
+        case scaled_interword_shrink_code:
+        case scaled_ex_height_code:
+        case scaled_em_width_code:
+        case scaled_extra_space_code:
+            v =  tex_get_scaled_parameter(font, code);
+            break;
+    }
+    lua_pushinteger(L, v);
     return 1;
 }
 
@@ -3531,21 +3554,41 @@ static int texlib_index(lua_State *L)
     }
 }
 
+// static int texlib_getspeciallistnames(lua_State *L)
+// {
+//     lua_createtable(L, 12, 0);
+//  /* lua_push_key_at_index(L, none,              no_special_list_type); */
+//     lua_push_key_at_index(L, pageinserthead,    page_insert_list_type);
+//     lua_push_key_at_index(L, contributehead,    contribute_list_type);
+//     lua_push_key_at_index(L, pagehead,          page_list_type);
+//     lua_push_key_at_index(L, temphead,          temp_list_type);
+//     lua_push_key_at_index(L, holdhead,          hold_list_type);
+//     lua_push_key_at_index(L, postadjusthead,    post_adjust_list_type);
+//     lua_push_key_at_index(L, preadjusthead,     pre_adjust_list_type);
+//     lua_push_key_at_index(L, postmigratehead,   post_migrate_list_type);
+//     lua_push_key_at_index(L, premigratehead,    pre_migrate_list_type);
+//     lua_push_key_at_index(L, alignhead,         align_list_type;
+//     lua_push_key_at_index(L, pagediscardshead,  page_discards_list_type);
+//     lua_push_key_at_index(L, splitdiscardshead, split_discards_list_type);
+//     return 1;
+// }
+
 static int texlib_getlistfields(lua_State *L)
 {
     lua_createtable(L, 17, 0);
-    lua_push_key_at_index(L, pageinserthead,     1);
-    lua_push_key_at_index(L, contributehead,     2);
-    lua_push_key_at_index(L, pagehead,           3);
-    lua_push_key_at_index(L, temphead,           4);
-    lua_push_key_at_index(L, holdhead,           5);
-    lua_push_key_at_index(L, postadjusthead,     6);
-    lua_push_key_at_index(L, preadjusthead,      7);
-    lua_push_key_at_index(L, postmigratehead,    8);
-    lua_push_key_at_index(L, premigratehead,     9);
-    lua_push_key_at_index(L, alignhead,         10);
-    lua_push_key_at_index(L, pagediscardshead,  11);
-    lua_push_key_at_index(L, splitdiscardshead, 12);
+    lua_push_key_at_index(L, pageinserthead,     1); /* page_insert_list_type */
+    lua_push_key_at_index(L, contributehead,     2); /* contribute_list_type */
+    lua_push_key_at_index(L, pagehead,           3); /* page_list_type */
+    lua_push_key_at_index(L, temphead,           4); /* temp_list_type */
+    lua_push_key_at_index(L, holdhead,           5); /* hold_list_type */
+    lua_push_key_at_index(L, postadjusthead,     6); /* post_adjust_list_type */
+    lua_push_key_at_index(L, preadjusthead,      7); /* pre_adjust_list_type */
+    lua_push_key_at_index(L, postmigratehead,    8); /* post_migrate_list_type */
+    lua_push_key_at_index(L, premigratehead,     9); /* pre_migrate_list_type */
+    lua_push_key_at_index(L, alignhead,         10); /* align_list_type */
+    lua_push_key_at_index(L, pagediscardshead,  11); /* page_discards_list_type */
+    lua_push_key_at_index(L, splitdiscardshead, 12); /* split_discards_list_type */
+    /* */
     lua_push_key_at_index(L, bestpagebreak,     13);
     lua_push_key_at_index(L, leastpagecost,     14);
     lua_push_key_at_index(L, bestsize,          15);
@@ -3583,6 +3626,7 @@ static int texlib_getlist(lua_State *L)
         lmt_push_node_fast(L, tex_get_special_node_list(page_discards_list_type, NULL));
     } else if (lua_key_eq(s, splitdiscardshead)) {
         lmt_push_node_fast(L, tex_get_special_node_list(split_discards_list_type, NULL));
+    /* */
     } else if (lua_key_eq(s, bestpagebreak)) {
         lmt_push_node_fast(L, lmt_page_builder_state.best_break);
     } else if (lua_key_eq(s, leastpagecost)) {
@@ -4917,8 +4961,9 @@ static int texlib_runlocal(lua_State *L)
                     tex_local_control_message("entering token scanner via function");
                 }
                 tex_local_control(obeymode);
+                /*tex This prevents nesting build-up but it adds a bit runtime: */
+                tex_cleanup_input_state();
                 luaL_unref(L, LUA_REGISTRYINDEX, reference);
-// tex_cleanup_input_state();
                 return 0;
             }
         case LUA_TNUMBER:
@@ -5003,7 +5048,8 @@ static int texlib_runlocal(lua_State *L)
             }
         }
         tex_local_control(obeymode);
-// tex_cleanup_input_state();
+        /*tex This prevents nesting build-up but it adds a bit runtime: */
+        tex_cleanup_input_state();
     } else if (ismacro) {
         tex_back_input(token);
     } else {
@@ -5156,7 +5202,7 @@ static int texlib_runstring(lua_State *L)
                     tex_local_control_message("entering token scanner via register");
                 }
                 tex_local_control(obeymode);
-tex_cleanup_input_state();
+                tex_cleanup_input_state();
             } else {
                 tex_begin_inserted_list(h);
             }
@@ -5951,13 +5997,14 @@ static int texlib_getruleoptionvalues(lua_State *L)
 
 static int texlib_getboxoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 4);
+    lua_createtable(L, 2, 5);
     lua_set_string_by_index(L, box_option_no_math_axis, "nomathaxis");
     lua_set_string_by_index(L, box_option_discardable,  "discardable");
     lua_set_string_by_index(L, box_option_keep_spacing, "keepspacing");
     lua_set_string_by_index(L, box_option_snapping,     "snapping");
     lua_set_string_by_index(L, box_option_no_snapping,  "nosnapping");
     lua_set_string_by_index(L, box_option_no_profiling, "noprofiling");
+    lua_set_string_by_index(L, box_option_align_split,  "alignsplit");
     return 1;
 }
 
@@ -7134,6 +7181,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "setlist",                      texlib_setlist                        },
     { "getlist",                      texlib_getlist                        },
     { "getlistfields",                texlib_getlistfields                  },
+ /* { "getspeciallistnames",          texlib_getspeciallistnames            }, */
     { "setnest",                      texlib_setnest                        }, /* only a message */
     { "getnest",                      texlib_getnest                        },
     { "getnestlevel",                 texlib_getnestlevel                   },
@@ -7168,6 +7216,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "fontname",                     texlib_getfontname                    },
     { "fontidentifier",               texlib_getfontidentifier              },
     { "getfontoffamily",              texlib_getfontoffamily                },
+    { "getfontdimension",             texlib_getfontdimension               },
     { "number",                       texlib_getnumber                      },
  // { "dimension",                    texlib_getdimension                   },
     { "romannumeral",                 texlib_getromannumeral                },

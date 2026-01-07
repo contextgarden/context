@@ -1609,9 +1609,10 @@
 \tolerant\permanent\def\math_matrix_HF[#1]#*[#2]% [n] [name] | [name] | [n]
   {\expandedloop
      \plusone
-     {\ifchknumber#1\or\lastchknumber\else(\c_math_matrix_columns+\minusone)\fi*\plustwo}%
+     {\ifchknumber#1\or\lastchknumber\else(\c_math_matrix_columns+\minusone)\fi}%
      \plusone
    {\omit\span}%
+   \kern-.25\d_math_eqalign_distance % bah but needed
    \expanded{\filler[%
      \ifcsname\??filleralternative matrix:#1\endcsname matrix:#1\orelse
      \ifcsname\??filleralternative matrix:#2\endcsname matrix:#2\orelse
@@ -1712,7 +1713,8 @@
      \expandafter\math_matrix_NC_yes
    \else
      \expandafter\math_matrix_NC_nop
-   \fi}
+   \fi
+   \grph_line_inject_VL_space} % see later
 
 \permanent\protected\def\math_matrix_pickup{\global\c_math_matrix_first\conditionaltrue}
 \permanent\protected\def\math_matrix_NC_yes{\global\c_math_matrix_first\conditionalfalse}
@@ -1935,13 +1937,13 @@
    \enforced\let\SL\math_matrix_SL
    \enforced\let\NR\math_matrix_NL_NR}
 
-\def\math_matrix_VL_indeed#1#2%%
+\def\math_matrix_VL_indeed#1#2%
   {\aligntab
    \math_matrix_vertical_rule_yes{#2}%
    \localcontrolledloop\plustwo#1\plusone
      {\kern.125\d_math_eqalign_distance
       \math_matrix_vertical_rule_yes{#2}}%
-   \kern.5\d_math_eqalign_distance
+%    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \boundary\c_math_matrix_vl_boundary
@@ -1958,12 +1960,12 @@
 \permanent\tolerant\protected\def\math_matrix_VLVL[#1]#*{\math_matrix_VL_indeed\plustwo{#1}}
 
 \permanent\tolerant\protected\def\math_matrix_NL[#1]#*%
-  {\span\omit
-   \ifconditional\c_math_matrix_first\else
-     \kern.5\d_math_eqalign_distance
-   \fi
+  {\aligntab % \span\omit
+%    \ifconditional\c_math_matrix_first\else
+%      \kern.5\d_   math_eqalign_distance
+%    \fi
    \math_matrix_vertical_rule_nop{#1}%
-   \kern.5\d_math_eqalign_distance
+%    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \boundary\c_math_matrix_vl_boundary
@@ -2457,6 +2459,40 @@
 %D         \NC 1 \NC 2 \VLB 3 \VLB 4 \NR
 %D     \stopmatrix
 %D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket,rulecolor=red]
+%D         \NC 1 \NC 2 \VLT 3 \VLT[2pt,blue] 4 \NR
+%D         \NC 1 \NC 2 \NC  3 \NC            4 \NR
+%D         \NC 1 \NC 2 \VLB 3 \VLB           4 \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket]
+%D         \NC 11 \NC 12 \NC 13 \VL 14 \NR
+%D         \NC 21 \NC 22 \NC 23 \NL 24 \NR
+%D         \NC 31 \NC 32 \NC 33 \VL 34 \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket]
+%D         \NC 11 \NC 12 \NC 13 \VL 14 \NR
+%D         \NC 21 \NC 22 \NC 23 \VL 24 \NR
+%D         \NC 31 \NC 32 \NC 33 \VL 34 \NR
+%D     \stopmatrix
+%D \stopformula
+%D
+%D \startformula
+%D     \startmatrix[fences=bracket]
+%D         \NC A \VL  B \NR
+%D         \HL
+%D         \NC C \VL  D \NR
+%D     \stopmatrix
+%D \stopformula
+
 %D \stoptyping
 
 \installcorenamespace{matrixvl}
@@ -2470,20 +2506,34 @@
 \tolerant\permanent\protected\def\grph_line_inject_VLT[#1]%
   {\aligntab
    \grph_line_inject[\??matrixvl:\number\c_math_eqalign_column][T,#1]%
-   \kern.5\d_math_eqalign_distance
+   \global\expandafter\integerdef\csname\??matrixvl::\number\c_math_eqalign_column\endcsname\plusone
+%    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \enforced\let\NR\math_matrix_NL_NR
-   \boundary\c_math_matrix_vlx_boundary}
+   \boundary\c_math_matrix_vlx_boundary
+   }
 
 \tolerant\permanent\protected\def\grph_line_inject_VLB[#1]%
   {\aligntab
    \grph_line_inject[\??matrixvl:\number\c_math_eqalign_column][B,#1]%
-   \kern.5\d_math_eqalign_distance
+   \global\expandafter\integerdef\csname\??matrixvl::\number\c_math_eqalign_column\endcsname\zerocount
+%    \kern.5\d_math_eqalign_distance
    \global\c_math_matrix_first\conditionalfalse
    \aligntab
    \enforced\let\NR\math_matrix_NL_NR
-   \boundary\c_math_matrix_vlx_boundary}
+   \boundary\c_math_matrix_vlx_boundary
+   }
+
+\def\grph_line_inject_VL_tab{\aligntab}
+
+\permanent\protected\def\grph_line_inject_VL_space
+  {\ifcsname\??matrixvl::\number\c_math_eqalign_column\endcsname
+     \ifcase\lastnamedcs\else
+%       \kern.5\d_math_eqalign_distance
+        \expandafter\expandafter\expandafter\grph_line_inject_VL_tab
+     \fi
+   \fi}
 
 \appendtoks
     \enforced\let\VLT\grph_line_inject_VLT

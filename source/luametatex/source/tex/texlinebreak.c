@@ -238,6 +238,12 @@ linebreak_state_info lmt_linebreak_state = {
     .current_line_number          = 0,
     .has_orphans                  = 0,
     .has_toddlers                 = 0,
+    .local_hang_l_indent          = 0,
+    .local_hang_l_after           = 0,
+    .local_hang_l_index           = 0,
+    .local_hang_r_indent          = 0,
+    .local_hang_r_after           = 0,
+    .local_hang_r_index           = 0,
     .trace_counter                = { 0 },
 };
 
@@ -2195,47 +2201,47 @@ static int tex_aux_same_snippet(int snippetone[], int snippettwo[], int nsone, i
 
 # if (linebreak_trace)
 
-static void tex_aux_reset_linebreak_trace(void) 
-{
-    for (int i = 0; i < linebreak_n_of_trace_counters; i++) {
-        lmt_linebreak_state.trace_counter[i] = 0;
+    static void tex_aux_reset_linebreak_trace(void)
+    {
+        for (int i = 0; i < linebreak_n_of_trace_counters; i++) {
+            lmt_linebreak_state.trace_counter[i] = 0;
+        }
     }
-}
 
-static void tex_aux_update_linebreak_trace(int old_line, halfword current) 
-{
-    ++lmt_linebreak_state.trace_counter[linebreak_trace_going_active];
-    if (old_line != lmt_linebreak_state.easy_line) { 
-        ++lmt_linebreak_state.trace_counter[linebreak_trace_easy_line];
+    static void tex_aux_update_linebreak_trace(int old_line, halfword current)
+    {
+        ++lmt_linebreak_state.trace_counter[linebreak_trace_going_active];
+        if (old_line != lmt_linebreak_state.easy_line) {
+            ++lmt_linebreak_state.trace_counter[linebreak_trace_easy_line];
+        }
+        if (current == active_head) {
+            ++lmt_linebreak_state.trace_counter[linebreak_trace_at_active];
+        }
+        if (lmt_linebreak_state.getting_loose) {
+            ++lmt_linebreak_state.trace_counter[linebreak_trace_getting_loose];
+        }
     }
-    if (current == active_head) { 
-        ++lmt_linebreak_state.trace_counter[linebreak_trace_at_active];
-    }
-    if (lmt_linebreak_state.getting_loose) {
-        ++lmt_linebreak_state.trace_counter[linebreak_trace_getting_loose];
-    }
-}
 
-static void tex_aux_check_linebreak_trace(int old_line, halfword current) 
-{
-    if (lmt_linebreak_state.getting_loose && ((old_line != lmt_linebreak_state.easy_line) || (current == active_head))) { 
-        ++lmt_linebreak_state.trace_counter[linebreak_trace_got_lost];
+    static void tex_aux_check_linebreak_trace(int old_line, halfword current)
+    {
+        if (lmt_linebreak_state.getting_loose && ((old_line != lmt_linebreak_state.easy_line) || (current == active_head))) {
+            ++lmt_linebreak_state.trace_counter[linebreak_trace_got_lost];
+        }
     }
-}
 
-static void tex_aux_report_linebreak_trace(int pass, int subpass) 
-{
-    tex_begin_diagnostic();
-    tex_print_format("[linebreak: pass %i, active counts %i, easy line %i, at active %i, got lost %i, loose %i]\n", 
-        pass,
-        lmt_linebreak_state.trace_counter[linebreak_trace_going_active],
-        lmt_linebreak_state.trace_counter[linebreak_trace_easy_line],    
-        lmt_linebreak_state.trace_counter[linebreak_trace_at_active],
-        lmt_linebreak_state.trace_counter[linebreak_trace_got_lost],
-        lmt_linebreak_state.trace_counter[linebreak_trace_getting_loose]
-    );
-    tex_end_diagnostic();
-}
+    static void tex_aux_report_linebreak_trace(int pass, int subpass)
+    {
+        tex_begin_diagnostic();
+        tex_print_format("[linebreak: pass %i, active counts %i, easy line %i, at active %i, got lost %i, loose %i]\n",
+            pass,
+            lmt_linebreak_state.trace_counter[linebreak_trace_going_active],
+            lmt_linebreak_state.trace_counter[linebreak_trace_easy_line],
+            lmt_linebreak_state.trace_counter[linebreak_trace_at_active],
+            lmt_linebreak_state.trace_counter[linebreak_trace_got_lost],
+            lmt_linebreak_state.trace_counter[linebreak_trace_getting_loose]
+        );
+        tex_end_diagnostic();
+    }
 
 # endif 
 
@@ -2293,6 +2299,140 @@ static void tex_aux_trace_special_break(const line_break_properties *properties,
     tex_end_diagnostic();
     tracing_online_par = old;
 }
+
+/*tex
+
+    In the first week of 2026 Mikael and Hans wondered if a local hanging feature could be added
+    without messing up the code too much. Although one can play a bit around with breaks, checking
+    a last line width, and then jumping back, overlaying a follow up paragraph etc. that is neither
+    pretty nor optimal so a native solution makes sense. We did some experiments and settled on the
+    current solution, one that supports left and right hang, even combined, but due to the way the
+    builder works, we only accept positive indentation, so we stay within the already set bounds;
+    the triggering par node should not end up beyond the edge anyway, if only because we don't see
+    how it would be used wrt the content. If we would permit going into the right margin we kind of
+    invalidate the active nodes in the currently handled line so we're testing our luck.
+
+    So, we clip the indent to a positive value and also limit the hang to [-0x7FFF,0x7FFF] and also
+    maximize the number of such hangs to 0xFFFF. That way we don't need to enlarge the passive node
+    even more; we could and maybe should go smaller: [-0x7F,0x7F] and 0xFF.
+
+*/
+
+# if (0)
+
+    static scaled xtex_aux_hang_l_indent(halfword active)
+    {
+     halfword passive = active_break_node(active);
+     if (passive) {
+         halfword previous = passive;
+         halfword delta = 2; // skip over self
+         halfword last = null;
+         halfword index = active_hang_l_index(active);
+         while (previous) {
+             if (passive_hang_l_index(previous) == index && passive_hang_l_after(previous)) {
+                 if (delta > passive_hang_l_after(previous)) {
+                     return 0;
+                 } else {
+                     delta++;
+                     last = previous;
+                     previous = passive_prev_break(previous);
+                 }
+             } else {
+                 break;
+             }
+         }
+         if (last) {
+             return passive_hang_l_indent(last);
+         }
+     }
+     return 0;
+    }
+
+    static scaled xtex_aux_hang_r_indent(halfword active)
+    {
+     halfword passive = active_break_node(active);
+     if (passive) {
+         halfword previous = passive;
+         halfword delta = 2; // skip over self
+         halfword last = null;
+         halfword index = active_hang_r_index(active);
+         while (previous) {
+             if (passive_hang_r_index(previous) == index && passive_hang_r_after(previous)) {
+                 if (delta > passive_hang_r_after(previous)) {
+                     return 0;
+                 } else {
+                     delta++;
+                     last = previous;
+                     previous = passive_prev_break(previous);
+                 }
+             } else {
+                 break;
+             }
+         }
+         if (last) {
+             return passive_hang_r_indent(last);
+         }
+     }
+     return 0;
+    }
+
+# else
+
+    static scaled tex_aux_hang_l_indent(halfword active)
+    {
+        halfword passive = active_break_node(active);
+        if (passive) {
+            halfword previous = passive;
+            halfword index = active_hang_l_index(active);
+            halfword line = active_line_number(active) + 1;
+            halfword last = null;
+            while (previous) {
+                if (passive_hang_l_index(previous) == index) {
+                    if ((line - passive_line_number(previous)) >= passive_hang_l_after(previous)) {
+                        return 0;
+                    } else {
+                        last = previous;
+                        previous = passive_prev_break(previous);
+                    }
+                } else {
+                    break;
+                }
+            }
+            if (last) {
+                return passive_hang_l_indent(last);
+            }
+        }
+        return 0;
+    }
+
+    static scaled tex_aux_hang_r_indent(halfword active)
+    {
+        halfword passive = active_break_node(active);
+        if (passive) {
+            halfword previous = passive;
+            halfword index = active_hang_r_index(active);
+            halfword line = active_line_number(active) + 1;
+            halfword last = null;
+            while (previous) {
+                if (passive_hang_r_index(previous) == index) {
+                    if ((line - passive_line_number(previous)) >= passive_hang_r_after(previous)) {
+                        return 0;
+                    } else {
+                        last = previous;
+                        previous = passive_prev_break(previous);
+                    }
+                } else {
+                    break;
+                }
+            }
+            if (last) {
+                return passive_hang_r_indent(last);
+            }
+        }
+        return 0;
+    }
+
+# endif
 
 static scaled tex_aux_try_break(
     const line_break_properties *properties,
@@ -2412,12 +2552,12 @@ static scaled tex_aux_try_break(
                         consideration.
 
                     */
-if (properties->tracing_paragraphs == -1) {
-    tex_aux_trace_special_break(properties, 0, line, old_line); 
-}
-# if (linebreak_trace)
-                    tex_aux_update_linebreak_trace(old_line, current); 
-# endif 
+                    if (properties->tracing_paragraphs == -1) {
+                        tex_aux_trace_special_break(properties, 0, line, old_line);
+                    }
+                    # if (linebreak_trace)
+                        tex_aux_update_linebreak_trace(old_line, current);
+                    # endif
                     /* These first two branches are not in luatex: */
                     if (line > lmt_linebreak_state.easy_line) {
                         line_width = lmt_linebreak_state.second_width;
@@ -2427,6 +2567,12 @@ if (properties->tracing_paragraphs == -1) {
                         line_width = tex_get_specification_width(properties->par_shape, line);
                     } else {
                         line_width = lmt_linebreak_state.first_width;
+                    }
+                    if (lmt_linebreak_state.local_hang_l_index) {
+                        line_width -= tex_aux_hang_l_indent(current);
+                    }
+                    if (lmt_linebreak_state.local_hang_r_index) {
+                        line_width -= tex_aux_hang_r_indent(current);
                     }
                     if (no_break_yet) {
                         /*tex
@@ -2525,9 +2671,18 @@ if (properties->tracing_paragraphs == -1) {
                             passive_right_box(passive) = lmt_linebreak_state.internal_right_box;
                             passive_right_box_width(passive) = lmt_linebreak_state.internal_right_box_width;
                             passive_middle_box(passive) = lmt_linebreak_state.internal_middle_box;
+                            passive_hang_l_index(passive) = (quarterword) lmt_linebreak_state.local_hang_l_index;
+                            passive_hang_l_after(passive) = (quarterword) lmt_linebreak_state.local_hang_l_after;
+                            passive_hang_l_indent(passive) = lmt_linebreak_state.local_hang_l_indent;
+                            passive_hang_r_index(passive) = (quarterword) lmt_linebreak_state.local_hang_r_index;
+                            passive_hang_r_after(passive) = (quarterword) lmt_linebreak_state.local_hang_r_after;
+                            passive_hang_r_indent(passive) = lmt_linebreak_state.local_hang_r_indent;
                             /*tex Initialize the active node: */
                             active_break_node(active) = passive;
                             active_line_number(active) = best_place_line[fit_class] + 1;
+                            passive_line_number(passive) = active_line_number(active);
+                            active_hang_l_index(active) = (quarterword) lmt_linebreak_state.local_hang_l_index;
+                            active_hang_r_index(active) = (quarterword) lmt_linebreak_state.local_hang_r_index;
                             active_total_demerits(active) = lmt_linebreak_state.minimal_demerits[fit_class];
                             /*tex Store additional data in the new active node. */
                             tex_aux_set_quality(active, passive, best_place_short[fit_class], best_place_glue[fit_class], line_width, prev_badness);
@@ -2623,16 +2778,16 @@ if (properties->tracing_paragraphs == -1) {
                         previous = delta;
                     }
                 } else { 
-if (properties->tracing_paragraphs == -1) {
-    if (lmt_linebreak_state.getting_loose || (old_line == lmt_linebreak_state.easy_line)) { 
-        tex_aux_trace_special_break(properties, 1, line, old_line); 
-    } else { 
-        tex_aux_trace_special_break(properties, 2, line, old_line); 
-    }
-}
-# if (linebreak_trace)
-                    tex_aux_check_linebreak_trace(old_line, current); 
-# endif
+                    if (properties->tracing_paragraphs == -1) {
+                        if (lmt_linebreak_state.getting_loose || (old_line == lmt_linebreak_state.easy_line)) {
+                            tex_aux_trace_special_break(properties, 1, line, old_line);
+                        } else {
+                            tex_aux_trace_special_break(properties, 2, line, old_line);
+                        }
+                    }
+                    # if (linebreak_trace)
+                        tex_aux_check_linebreak_trace(old_line, current);
+                    # endif
                 }
             }
             /*tex
@@ -2657,6 +2812,12 @@ if (properties->tracing_paragraphs == -1) {
                 } else {
                     line_width = lmt_linebreak_state.first_width;
                 }
+            }
+            if (lmt_linebreak_state.local_hang_l_index) {
+                line_width -= tex_aux_hang_l_indent(current);
+            }
+            if (lmt_linebreak_state.local_hang_r_index) {
+                line_width -= tex_aux_hang_r_indent(current);
             }
             if (current == active_head) {
                 shortfall = line_width - current_active_width[total_advance_amount];
@@ -3948,6 +4109,10 @@ static int tex_aux_set_sub_pass_parameters(
     }
     lmt_linebreak_state.threshold = properties->tolerance;
     lmt_linebreak_state.global_threshold = lmt_linebreak_state.threshold;
+    lmt_linebreak_state.local_hang_l_indent = 0;
+    lmt_linebreak_state.local_hang_l_after = 0;
+    lmt_linebreak_state.local_hang_r_indent = 0;
+    lmt_linebreak_state.local_hang_r_after = 0;
     /*tex
         The basics: tolerance, hyphenation and emergencystretch.
     */
@@ -4555,6 +4720,12 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
     halfword checks = properties->line_break_checks;
     halfword sf_factor = properties->sf_factor;
     halfword sf_stretch_factor = properties->sf_stretch_factor;
+    lmt_linebreak_state.local_hang_l_indent = 0;
+    lmt_linebreak_state.local_hang_l_after = 0;
+    lmt_linebreak_state.local_hang_l_index = 0;
+    lmt_linebreak_state.local_hang_r_indent = 0;
+    lmt_linebreak_state.local_hang_r_after = 0;
+    lmt_linebreak_state.local_hang_r_index = 0;
     while (current && (node_next(active_head) != active_head)) { /* we check the cycle */
         switch (node_type(current)) {
             case glyph_node:
@@ -4597,6 +4768,27 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                             } else {
                                 if (properties->tracing_paragraphs > 1) {
                                     tex_aux_show_threshold("local", t);
+                                }
+                            }
+                            if (normalize_line_mode_par && tex_get_local_hang_after(current)) {
+                                if (tex_get_local_hang_after(current) > 0) {
+                                    if (lmt_linebreak_state.local_hang_l_index < max_local_hang_index) {
+                                        lmt_linebreak_state.local_hang_l_index++;
+                                        lmt_linebreak_state.local_hang_l_indent = tex_get_local_hang_indent(current);
+                                        lmt_linebreak_state.local_hang_l_after = tex_get_local_hang_after(current);
+                                        lmt_linebreak_state.active_width[total_advance_amount] += lmt_linebreak_state.local_hang_l_indent;
+                                    } else {
+                                        /*tex Silently ignore. */
+                                    }
+                                } else {
+                                    if (lmt_linebreak_state.local_hang_r_index < max_local_hang_index) {
+                                        lmt_linebreak_state.local_hang_r_index++;
+                                        lmt_linebreak_state.local_hang_r_indent = tex_get_local_hang_indent(current);
+                                        lmt_linebreak_state.local_hang_r_after = - tex_get_local_hang_after(current);
+                                        lmt_linebreak_state.active_width[total_advance_amount] += lmt_linebreak_state.local_hang_r_indent;
+                                    } else {
+                                        /*tex Silently ignore. */
+                                    }
                                 }
                             }
                             lmt_linebreak_state.threshold = t;
@@ -5300,6 +5492,12 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.has_toddlers = 0;
     lmt_linebreak_state.last_line_width = 0;
     lmt_linebreak_state.last_line_count = 0;
+    lmt_linebreak_state.local_hang_l_indent = 0,
+    lmt_linebreak_state.local_hang_l_after = 0,
+    lmt_linebreak_state.local_hang_l_index = 0,
+    lmt_linebreak_state.local_hang_r_indent = 0,
+    lmt_linebreak_state.local_hang_r_after = 0,
+    lmt_linebreak_state.local_hang_r_index = 0,
 
  // for (int i = 0; i < n_of_glue_amounts; i++) {
  //     lmt_linebreak_state.active_width[i] = 0;
@@ -5389,9 +5587,9 @@ void tex_do_line_break(line_break_properties *properties)
     while (1) {
         halfword current = first;
         int artificial = 0;
-# if (linebreak_trace)
-        tex_aux_reset_linebreak_trace();
-# endif 
+        # if (linebreak_trace)
+            tex_aux_reset_linebreak_trace();
+        # endif
         switch (pass) {
             case linebreak_no_pass:
                 goto DONE;
@@ -5618,9 +5816,9 @@ void tex_do_line_break(line_break_properties *properties)
             tex_end_diagnostic(); // see above
         }
         /*tex Clean up the memory by removing the break nodes. */
-# if (linebreak_trace)
-    tex_aux_report_linebreak_trace(pass, subpass);
-# endif 
+        # if (linebreak_trace)
+            tex_aux_report_linebreak_trace(pass, subpass);
+        # endif
         tex_aux_clean_up_the_memory();
         switch (pass) {
             case linebreak_no_pass:
@@ -5700,9 +5898,9 @@ void tex_do_line_break(line_break_properties *properties)
         tex_flush_node(lmt_linebreak_state.emergency_right_skip);
      // lmt_linebreak_state.emergency_right_skip = null;
     }
-# if (linebreak_trace)
-    tex_aux_report_linebreak_trace(pass, subpass);
-# endif 
+    # if (linebreak_trace)
+        tex_aux_report_linebreak_trace(pass, subpass);
+    # endif
     tex_aux_clean_up_the_memory();
     if (lmt_linebreak_state.callback_id) {
         tex_aux_line_break_callback_wrapup(lmt_linebreak_state.callback_id, properties->line_break_checks);
@@ -5836,6 +6034,10 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     int math_nesting = 0;
     int math_attr = null;
     int math_opts = 0;
+    halfword local_hang_l_after = 0;
+    halfword local_hang_l_index = 0;
+    halfword local_hang_r_after = 0;
+    halfword local_hang_r_index = 0;
     /*tex the current direction: */
     lmt_linebreak_state.dir_ptr = cur_list.direction_stack;
     /*tex
@@ -6425,6 +6627,30 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     }
                 }
             }
+            if (lmt_linebreak_state.local_hang_l_index  && passive_hang_l_index(cur_p)) {
+                if (passive_hang_l_index(cur_p) != local_hang_l_index) {
+                    local_hang_l_after = 1;
+                    local_hang_l_index = passive_hang_l_index(cur_p);
+                } else {
+                    local_hang_l_after += 1;
+                }
+                if (local_hang_l_after <= passive_hang_l_after(cur_p)) {
+                    lefthang += passive_hang_l_indent(cur_p);
+                    cur_width -= passive_hang_l_indent(cur_p);
+                }
+            }
+            if (lmt_linebreak_state.local_hang_r_index  && passive_hang_r_index(cur_p)) {
+                if (passive_hang_r_index(cur_p) != local_hang_r_index) {
+                    local_hang_r_after = 1;
+                    local_hang_r_index = passive_hang_r_index(cur_p);
+                } else {
+                    local_hang_r_after += 1;
+                }
+                if (local_hang_r_after <= passive_hang_r_after(cur_p)) {
+                    righthang += passive_hang_r_indent(cur_p);
+                    cur_width -= passive_hang_r_indent(cur_p);
+                }
+            }
             shaping = (lefthang || righthang);
             lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
@@ -6567,7 +6793,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */
             lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
-         // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
+         // attach_attribute_list_copy(lmt_linebreak_state.just_box, properties->initial_par);
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }
         /*tex Call the packaging subroutine, setting |just_box| to the justified box. */

@@ -10,7 +10,7 @@
 
 \startsection[title={Introduction}]
 
-There are good reasons why we started the \LUATEX\ and later \LUAMETATEX\
+There are good reasons why we initialized the \LUATEX\ and later \LUAMETATEX\
 projects. Here I will go into some of them. It is just short wrap up of how it
 started, how other engines influenced the process and how we see usage. There are
 plenty of documents out there that go into more detail. The main objective of
@@ -24,7 +24,7 @@ When we started with \CONTEXT, hardware was rather limited compared to what we
 have today. A personal computer had some 640kB memory, possibly bumped to 1MB
 with help from a memory extender. This put some restrictions to how macro
 packages could be defined, also because that memory had to be shared with the
-baseline operating system. However, over time memory and runtime became less of
+baseline operating system. However, over time, memory and runtime became less of
 an issue and the \TEX\ engine could be configured to use whatever was available.
 Extending the program other than increasing the available memory became more
 feasible.
@@ -89,7 +89,7 @@ are a few more deviations, like dropping some system specific features (terminal
 related) and in former times practical features like outer and long macros that
 no longer made sense and complicated integrating new features unnecessarily.
 
-As mentioned in the introduction \PDFTEX\ is the basis for \LUATEX\ and \LUATEX\ is
+As mentioned in the introduction, \PDFTEX\ is the basis for \LUATEX\ and \LUATEX\ is
 where we started with \LUAMETATEX. If we compare \PDFTEX\ with traditional \TEX\
 the main additions are:
 
@@ -170,7 +170,7 @@ If we combine these lists, we see font expansion and protrusion coming back in
 \LUAMETATEX. However, already in \LUATEX\ expansion and protrusion were dealt
 with a bit differently and even more so in \LUAMETATEX, while protection in
 \LUAMETATEX\ is implemented differently. We also kept injection of vertical
-material but in \LUAMETATEX\ that done quite differently. Most if \ETEX\ is there
+material but in \LUAMETATEX\ that done quite differently. Most of \ETEX\ is there
 but not right to left typesetting and the register approach. Of course we kept
 the additional conditionals but implemented them a bit different.
 
@@ -182,9 +182,11 @@ from the other engines which also means that one cannot take the manuals that
 come with these engines and simply assume that it is there.
 
 We should of course mention \METAPOST. That graphical subsystem was integrated in
-\LUATEX\ and on the one hand stripped down (less backend) and extended (remove
-bottlenecks and add some functionality) in \LUAMETATEX. With respect to \LUA\
-we moved to more recent versions and dropped support for just in time compilation.
+\LUATEX\ and on the one hand stripped down (less backend) and on the other
+extended (remove bottlenecks and add some functionality) in \LUAMETATEX. With
+respect to \LUA\ we moved to more recent versions and dropped support for just in
+time compilation. This also means that in \CONTEXT\ \MKXL\ we have more \METAFUN\
+and therefore talk \LUAMETAFUN.
 
 There is of course a lot in \LUATEX\ that can be found also in \LUAMETATEX\ but
 the later one goes way beyond its predecessor. It actually provides what we always
@@ -195,10 +197,10 @@ topic.
 
 \startsection[title=Reflections]
 
-The previous section, derived from the \LUATEX\ manual, might suggest that
-\LUATEX\ and therefore \LUAMETATEX\ provides most of what \PDFTEX, \ETEX, \XETEX\
-and \OMEGA\ provide but here I must disappoint the reader. So in addition to or
-variation on the above here are some reflections.
+The previous section, somewhat derived from the \LUATEX\ manual, might suggest
+that \LUATEX\ and therefore \LUAMETATEX\ provides most of what \PDFTEX, \ETEX,
+\XETEX\ and \OMEGA\ provide but here I must disappoint the reader. So in addition
+to or variation on the above here are some reflections.
 
 We were quite involved in the early days of \PDFTEX\ development, so some
 features of that program we kept in \LUATEX, like expansion, protrusion, basic
@@ -214,13 +216,14 @@ handle in \LUA\ so even those were dropped. We never used the features that were
 introduced for other macro packages, like color stacks and (un)escaping because
 we already did that otherwise. We also didn't want to burden the evolving
 \LUATEX\ engine with the other kerning features because they lacked control
-anyway.
+anyway. Even the mentioned adjust and insert extensions were redone and much more
+was added in those departments.
 
-As we started in 2005 (with a first release in 2006) the \PDFTEX\ of that time is
-of course not the same as of today. I'm not sure what the last version is that
-\CONTEXT\ \MKII\ is targeting at because the version numbering changed a bit (at
-some point versions like \type {14e} became \type {140.XX}, so it might be
-around\type {140.17} or so). It might even be that recent versions break \MKII\
+Because we started in 2005 (with a first release in 2006) the \PDFTEX\ of that
+time is of course not the same as of today. I'm not sure what the last version is
+that \CONTEXT\ \MKII\ is targeting at because the version numbering changed a bit;
+at some point versions like \type {14e} became \type {140.XX}, so it might be
+around\type {140.17} or so. It might even be that recent versions break \MKII\
 without us noticing. For \LUATEX\ we basically only took what we needed for
 \CONTEXT\ at that time and assumed that \LUA\ could fill in the gaps. Because
 \CONTEXT\ didn't really use much of the \LUATEX\ backend in the end what we kept
@@ -236,19 +239,22 @@ because before we started with \LUATEX\ we already had plans for extensions
 (flagged \type {eetex}) but those never came to fruit, just as we had some ideas
 about extending \DVI\ which were superseded by the arrival of \PDF. The token
 prepend and append primitives actually were examples of that. The \ETEX\ project
-demonstrated that extending \TEX\ was an option.
+demonstrated that extending \TEX\ was an option. In that sense, \LUATEX\ and
+\LUAMETATEX\ were very much unavoidable from the perspective of those involved in
+\CONTEXT.
 
 Then there is \XETEX. It is supported by \MKII\ but only the font mechanism was
-extended to handle \OPENTYPE\ fonts. For a while \LUATEX\ has some compatible
+extended to handle \OPENTYPE\ fonts. For a while \LUATEX\ had some compatible
 math character definition primitives but none of its features. We can assume that
 its internals are quite different when it comes to fonts from \LUATEX\ because
 \LUATEX\ basically provides support for traditional fonts and delegates
 everything \OPENTYPE\ to \LUA. In \LUATEX\ we used font loader code from
 \FONTFORGE\ and some backend code from \DVIPDFMX, although \CONTEXT\ eventually
-did all loading in \LUA .But anyway this program demonstrated that a \UNICODE\
+did all loading in \LUA. But anyway this program demonstrated that a \UNICODE\
 engine supporting publicly available (fancy) fonts was possible by adapting \TEX\
 so \XETEX\ introduced \TEX ies to the at that point still evolving world of
-\OPENTYPE.
+\OPENTYPE. And if someone is a happy \XETEX\ user, there is no need to switch to
+\LUATEX.
 
 In \OMEGA\ there were input translation mechanisms that some \CONTEXT\ users used
 but that I never looked into myself. These are of course not present in \LUATEX\
@@ -256,9 +262,10 @@ because we can use \LUA\ for input processing. In the end a bit of the
 directionality is all that we kept, most noticeably the initial \type {parnode}
 and \type {dirnode} but we made them first class nodes instead of whatsits and in
 \LUAMETATEX\ the first one serves different purposes. It got us started with
-directions.
+directions. Comparing the paragraph nodes of \LUATEX\ and \LUAMETATEX\ makes
+little sense: they are too different.
 
-Over the last decades other engines showed up, most noticeably those for e.g.
+Over the last decades other engines showed up, most noticeably those for e.g.\
 Japanese but I never looked into these. I'm not sure if \LUATEX\ can do the same
 with help from \LUA, but \LUAMETATEX\ has some more features so maybe it can.
 These engines serve a specific (language and script audience) but if Japanese
@@ -276,8 +283,10 @@ similar but then we need details and examples and not some reference to a manual
 or macros that we are unaware of, have never seen, never used or haven't catched
 up with.
 
-Of course \LUAMETATEX\ has plenty of what \LUATEX\ has and the core of \LUATEX\
-is pretty much original \TEX. However, in \LUAMETATEX\ nearly all mechanism have
+There is very little overlap and common ground to cover between macro packages so
+if someone thinks that \LUAMETATEX\ is a \CONTEXT\ thing, they might be right. Of
+course \LUAMETATEX\ has plenty of what \LUATEX\ has and the core of \LUATEX\ is
+pretty much original \TEX. However, in \LUAMETATEX\ nearly all mechanism have
 been extended, optimized, and in the process made a bit more \CCODE-ish. The
 original documentation describes what happens, the principles behind \TEX, so to
 say. More details will be added but can also found in numerous documents in the
@@ -294,7 +303,8 @@ backend. We can easily adapt, have complete control, can meet specific demands,
 and as with more plugins we just needed them right from the start. And that is an
 important consideration: we want to be able to experiment without constraints.
 There are always the other engines: \PDFTEX\ for eight bit speed and \XETEX\ for
-hard coded solutions and if they suit you, why not use them.
+hard coded solutions and if they suit you, why not use them. We don't have to
+cover every niche out there.
 
 \stopsection
 
@@ -327,7 +337,11 @@ handling of alignments, inserts, adjusts, marks, par and page building, etc.\
 Basically all mechanism got extended and opened up. In order to profit from this
 you have to be able to throw away existing solution and use these extensions to
 come up with better ones. If one can put sentiments aside, this also takes quite
-some time.
+some time. This also means that where \LUAMETATEX\ is fine for the current
+\CONTEXT, it might be less so for other macro packages. For instance, a font
+frontend and \PDF\ backend in \LUA\ comes at a performance penalty. Some can be
+gained back elsewhere, and actually the engine itself is more efficient too, but
+there are no guarantees that it also works out for others.
 
 A very important aspect (at least for me) is that I want the macro code to look
 nice and in that respect stick to the \TEX\ syntax as much as possible. That
@@ -341,11 +355,11 @@ average \CONTEXT\ with \LUAMETATEX\ performs better than with \LUATEX\ or even
 (like the backend \PDF\ generation) we gain and often can compete performance
 wise well with the faster eight bit \PDFTEX\ engine.
 
-The fact that one has to make (and cannot make) drastic choices has a consequence
+The fact that one has to make (and/or cannot make) drastic choices has a consequence
 for documentation. Most of what is new and interesting is discussed in articles
 and low level manuals. However, it is often discussed in the perspective of
 \CONTEXT. Although we do discuss and show generic solutions it makes little sense
-to go into details there simply because in the end only \CONTEXT\ will use them
+to go into details there, simply because in the end only \CONTEXT\ might use them
 as intended. It's just a waste of time to implement variants that are more
 generic because they will never be used elsewhere, especially in situations where
 the solutions are considered \quote {standard} and will not change. In \CONTEXT\
@@ -360,8 +374,67 @@ at usage, fonts, etc. A wider discussion would not have brought better solutions
 if at all. If that were the case, there would already have been successors. The
 same is true for most extensions: there was little need for them outside the
 \CONTEXT\ community. So in the end that's what those interested should look at:
-how is \LUAMETATEX\ used in \CONTEXT. It is the combined development together with
-acceptance by users that makes this possible,
+how is \LUAMETATEX\ used in \CONTEXT. It is the combined development together
+with acceptance by users that makes this possible.
+
+\stopsection
+
+\startsection[title=Dependencies]
+
+When we started using \LUATEX\ in \CONTEXT\ we needed to add support for locating
+and reading files as well as for \OPENTYPE\ processing. We also had to provide a
+backend driver especially when we diverted from the \PDFTEX\ approach. In \MKII\
+locating files is delegated to \KPSE\ but we already had code in the runners that
+made it more efficient because nested lookup calls (as we have for starting up
+and running \METAPOST) have quite some overhead. In a full blown \TEXLIVE\
+installation we could measure multiple seconds overhead. So, we carried these
+optimizations into the \MKIV\ code base and replaced \KPSE\ completely. This why
+we could remove it from \LUAMETATEX, which also removed a complex dependency.
+When a \KPSE\ library is present you can, at your own risk, use the optional
+library which (as with any optional) provides a minimal set of runtime bindings.
+
+When it comes to fonts, in \LUATEX\ we also had to test plain \TEX, so we made
+the font loader and processing code generic, which also is the reason why Kai
+Eigner is involved in maintaining it. We are aware of usage in \LATEX\ but as far
+as we know it is a patched version (likely with limited functionality) and there
+using a library is the recommended way anyway. The font loader and processor in
+\MKXL\ is extended and tuned for \LUAMETATEX\ and because we have no reason to
+support plain (it can if needed be emulated in \CONTEXT) we don't need to make
+that variant generic. We could implement the base mode (native) font engine in
+\LUA\ but the built-in one is fine and we see no reason to cripple \TEX\ too
+much, but you need to load the font via \LUA.
+
+The same is true for the (\PDF) backend. We already did most in \LUA\ and
+prototyped in \MKIV\ before we moved on to \LUAMETATEX. A disadvantage of not
+having a hard coded backend is that it increases runtime. The first versions of
+\LUAMETATEX\ took between 10 and 20 percent more runtime and partly that was due
+to the backend. Because the engine became faster and a few more primitive
+features were added we could gain back performance and currently \MKXL\ is
+outperforming \MKIV, for various reasons. A backend is only partially doing pure
+textual output. There are images to be dealt with, fonts to be embedded (which
+can also involve virtual fonts), specific features involved (like color or
+hyperlinks), etc. Most of that is actually macro package specific. One could
+argue that a generic backend makes sense, but there is little use in that when it
+is only used by \CONTEXT. I could code a \LUATEX\ compatible backend but I would
+not be able to test it, unless I made a setup for it, which is a waste of time.
+
+So, these three components, although we could provide them, are currently very
+\CONTEXT\ specific so if you want to use \LUAMETATEX\ elsewhere you need to come
+up with something like that. Given history, changes are slim that any agreement
+can be reached on a generic approach. \footnote {We also have to be realistic.
+Apart maybe from fonts and hyphenation patterns there is little that macro
+packages have in common. The only package that from the perspective of \CONTEXT\
+qualifies as \quote {generic} is TikZ as that was designed with multiple macro
+packages in mind. We therefore try to keep supporting it in the \CONTEXT\
+ecosystem.} This is no real problem because in order to use \LUAMETATEX\ to its
+full potential you probably need to rewrite a lot and therefore likely end up in
+the \CONTEXT\ mindset. If someone needs specific features that \LUAMETATEX\ seems
+to offer, just give \CONTEXT\ a try. \footnote {This is why we have no
+\LUAMETATEX\ specific mailing list, we use the \CONTEXT\ mailing list(s) for
+that. The official source distribution is the \CONTEXT\ distribution where it is
+included in order to enable users to compile binaries if needed. This also fits
+into the open source \quote {source included} paradigm. If your \CONTEXT\
+installation doesn't ship with sources it is likely not an official one!}
 
 \stopsection
 

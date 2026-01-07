@@ -190,9 +190,13 @@
     \stoptypescript
 
     \starttypescript [pagella,pagella-nt,palatino]
+        %
+%         \definefontfallback[pagellamonofallback] [\s!name:dejavusansmono*none][0x0000-0x1FFFF][rscale=0.82] % [force=yes]
+%         \definefontfallback[pagellamonofallback] [\s!file:concretemath.otf*none][0x0000-0x1FFFF][rscale=0.82] % [force=yes]
+        %
         \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [modern]         [\s!default] [\s!rscale=1.075]
-        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]
+        \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [modern]         [\s!default] [\s!rscale=1.075]% ,\s!fallbacks=pagellamonofallback]
     \stoptypescript
     \starttypescript [pagella,palatino]
         \definetypeface [\typescriptone] [\s!mm] [\s!math]  [pagella]        [\s!default]

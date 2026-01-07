@@ -294,13 +294,17 @@ halfword tex_get_local_interline_penalty (halfword p) { return par_inter_line_pe
 halfword tex_get_local_broken_penalty    (halfword p) { return par_broken_penalty(p); }
 halfword tex_get_local_tolerance         (halfword p) { return par_tolerance(p); }
 halfword tex_get_local_pre_tolerance     (halfword p) { return par_pre_tolerance(p); }
+scaled   tex_get_local_hang_indent       (halfword p) { return par_hang_indent(p); }
+halfword tex_get_local_hang_after        (halfword p) { return par_hang_after(p); }
 
-void     tex_set_local_left_width        (halfword p, scaled   width    ) { par_box_left_width(p) = width; }
-void     tex_set_local_right_width       (halfword p, scaled   width    ) { par_box_right_width(p) = width; }
-void     tex_set_local_interline_penalty (halfword p, halfword penalty  ) { par_inter_line_penalty(p) = penalty; }
-void     tex_set_local_broken_penalty    (halfword p, halfword penalty  ) { par_broken_penalty(p) = penalty; }
-void     tex_set_local_tolerance         (halfword p, halfword tolerance) { par_tolerance(p) = tolerance; }
-void     tex_set_local_pre_tolerance     (halfword p, halfword tolerance) { par_pre_tolerance(p) = tolerance; }
+void     tex_set_local_left_width        (halfword p, scaled   width    )  { par_box_left_width(p) = width; }
+void     tex_set_local_right_width       (halfword p, scaled   width    )  { par_box_right_width(p) = width; }
+void     tex_set_local_interline_penalty (halfword p, halfword penalty  )  { par_inter_line_penalty(p) = penalty; }
+void     tex_set_local_broken_penalty    (halfword p, halfword penalty  )  { par_broken_penalty(p) = penalty; }
+void     tex_set_local_tolerance         (halfword p, halfword tolerance)  { par_tolerance(p) = tolerance; }
+void     tex_set_local_pre_tolerance     (halfword p, halfword tolerance)  { par_pre_tolerance(p) = tolerance; }
+void     tex_set_local_hang_indent       (halfword p, halfword amount)     { par_hang_indent(p) = amount; }
+void     tex_set_local_hang_after        (halfword p, halfword amount)     { par_hang_after(p) = amount; }
 
 typedef enum saved_localbox_entries {
     saved_localbox_location_entry = 0,

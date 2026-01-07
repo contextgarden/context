@@ -111,6 +111,7 @@ balance_state_info lmt_balance_state = {
     .artificial_encountered   = 0, 
     .current_slot_number      = 0,
     .default_fitness_classes  = 0,
+    .balancing                = 0,
 };
 
 typedef enum fill_orders {
@@ -978,6 +979,7 @@ static scaled tex_aux_try_balance(
                 tex_free_node(current, delta_node_size); // less overhead & testing
             }
         } else { 
+            /* What else. */
         }
     }
     /* We never end up here. */
@@ -1428,7 +1430,7 @@ static void tex_aux_trace_kern(halfword current, const char *action)
 static void tex_aux_trace_penalty(halfword current, const char *action)
 {
     tex_begin_diagnostic();
-    tex_print_format("[balance: penalty, slot %i, amount %p, total %p, %s]", 
+    tex_print_format("[balance: penalty, slot %i, amount %i, total %p, %s]",
         lmt_balance_state.current_slot_number, 
         penalty_amount(current),
         lmt_balance_state.active_height[total_advance_amount],
@@ -1437,12 +1439,18 @@ static void tex_aux_trace_penalty(halfword current, const char *action)
     tex_end_diagnostic();
 }
 
+// halfword tex_get_balance_currentheight(void)
+// {
+//     return lmt_balance_state.balancing ? lmt_balance_state.active_height[total_advance_amount] : 0;
+// }
+
 static inline halfword tex_aux_balance_list(const balance_properties *properties, halfword pass, halfword subpass, halfword current, halfword first, int artificial)
 {
     halfword callback_id = lmt_balance_state.callback_id;
     halfword checks = properties->checks;
     int line = 0;
     int tracing = properties->tracing_balancing > 2; 
+    lmt_balance_state.balancing = 1;
     while (current && (node_next(active_head) != active_head)) { /* we check the cycle */
         switch (node_type(current)) {
             case hlist_node:
@@ -1461,7 +1469,6 @@ static inline halfword tex_aux_balance_list(const balance_properties *properties
                 }
                 break;
             case glue_node:
-                /*tex Checks for temp_head! */
                 if (tex_aux_valid_glue_break(current)) {
                     if (tracing) {
                         tex_aux_trace_glue(current, "trying");
@@ -1505,11 +1512,13 @@ static inline halfword tex_aux_balance_list(const balance_properties *properties
                             halfword penalty = 0;
                             halfword extra = 0;
                             halfword trybreak = 0;
-                            lmt_run_callback(lmt_lua_state.lua_instance, callback, "dddd->drr", // r: optional 
+                            lmt_run_callback(lmt_lua_state.lua_instance, callback, "dddddd->drr", // r: optional
                                 boundary_data(current),
                                 boundary_reserved(current),
                                 balance_shape_identifier(properties->shape),
                                 lmt_balance_state.current_slot_number,
+                                lmt_balance_state.active_height[total_advance_amount],
+                                lmt_balance_state.break_height[total_advance_amount],
                                 &trybreak,
                                 &penalty,
                                 &extra
@@ -1567,6 +1576,7 @@ static inline halfword tex_aux_balance_list(const balance_properties *properties
         }
         current = node_next(current);
     }
+    lmt_balance_state.balancing = 0;
     return current;
 }
 

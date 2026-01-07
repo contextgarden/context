@@ -1,0 +1,380 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-sideeffects
+
+\environment musings-style
+
+\startchapter[title={Side effects}]
+
+In the process of extending \TEX\ into \LUAMETATEX\ I occasionally run into what
+I consider side effects. Some might argue that we're seeing a bug but personally
+I never consider what I observe as \quotation {interestingly weird} to be a bug.
+After all, if it really was an issue Don Knuth would already have run into it and
+dealt with it accordingly.
+
+Mid|-|2023 Mikael Sundqvist and I were reviewing the upgraded multi|-|line display
+math mechanism and in particular we were looking at how it behaves with for
+instance side floats. At some point we wondered if such a formula should follow
+the shape. This is not that trivial because where regular text is in most cases
+sort of grid|-|based and therefore has well|-|defined line heights, display math is
+way less predictable. This means that setting up hanging indentation based on
+lines will often lead to bad results. I did actually check if the par builder
+could be adapted to work with a height specification but this is not trivial, if
+only because one then needs to keep track of (intermediate) line heights while at
+the same time one doesn't know if the interline spacing changes, which actually
+is something a user can set up in \CONTEXT\ display math. Setting the hang or
+shape comes before the content so we also have an out|-|of|-|order situation to
+deal with. Of course placing a formula number in the margin or below a formula
+also interferes.
+
+Because formulas following a shape looked weird anyway (think for a moment what
+mid|-|aligned display math should look like) in the end we decided that a display
+formula in a side float situation is just an unbroken vertical box that if needed
+will extend below the allotted hang space. This is not that different from what
+\TEX\ does when we would use display math (which we don't in \CONTEXT, where we
+follow a different approach) because \TEX\ just assumes that a display formula
+counts as three lines progression in a hanging (or par shape) continuation.
+
+\startbuffer
+\dontleavehmode
+\hbox{\strut one}
+\break
+\hbox{\strut two}
+\par
+\the\prevgraf
+\stopbuffer
+
+\typebuffer
+
+This example shows two boxes making a single paragraph and the number of lines
+reported is two:
+
+\dbox{\forgetall \showmakeup[line] \getbuffer}
+
+That number is not always reliable as we can see from:
+
+\startbuffer
+\dontleavehmode
+\hbox{\strut one}
+\break
+\vbox{\strut two\par \strut three}
+\par
+\the\prevgraf
+\stopbuffer
+
+\typebuffer
+
+Again we get two, which indicates that a line is a box and not a text line which
+is why for standard \TEX\ display math a value of three is added, assuming simple
+single line formulas of not that much height and with spacing around it that make
+it somewhat similar to three lines.
+
+\dbox{\forgetall \showmakeup[line] \getbuffer}
+
+The way these three lines are communicated is via \type {\prevgraf} which is a
+property of the currently worked on list. When the par builder kicks in, its
+current value is taking as starting point for the first line number and line
+numbers are used to pick up the right indentation (from hang or shape). This
+means that when the hang or shape parameters are not reset, as in the case of a
+mid paragraph display formula in \TEX, we pick up where we left. So, that made me
+wonder what happens if we set the \type {\prevgraf} ourselves? As with \type
+{\prevdepth}, which has its own interesting side effects, we can get some
+surprising outcomes. For showing this we use the following macro:
+
+\def\Test#1#2%
+  {\begingroup
+   \darkblue
+   \blank
+   \hsize      9cm
+   \hangafter -3
+   \hangindent 1cm
+   \begstrut
+   \ifcase#1\relax
+     \samplefile{knuthmath}
+   \or
+     \splitsamplefile{knuthmath}{4}{3}{...}
+   \or
+     \splitsamplefile{knuthmath}{10}{5}{...}
+   \or
+     \splitsamplefile{knuthmath}{20}{5}{...}
+   \fi
+   \endstrut
+   \prevgraf   #2
+   [\number\prevgraf]
+   \blank
+   \endgroup}
+
+\starttyping
+\def\Test#1#2%
+  {\begingroup
+   \hsize      9cm
+   \hangafter -3
+   \hangindent 1cm
+   sample data % from a sample file
+   \prevgraf   #2
+   [\number\prevgraf]
+   \par % not needed in ctx
+   \endgroup}
+\stoptyping
+
+\start \bitwiseflip \normalizeparmode -\limitprevgrafnormalizeparcode % begin of flip
+
+So let's start with the zero case. We use a quote from Mathematical Writing, a
+course by Don Knuth that Mikael and I agree we would have failed to pass:
+
+\Test{0}{0}
+
+The output is as we expect: we get three indented lines. So what happens when we
+set the \type {\prevgraf} to one?
+
+\Test{0}{1}
+
+We're good, so let's try two:
+
+\Test{0}{2}
+
+Going up from there we see that values larger than three seemingly get ignored,
+so a safe thousand produces:
+
+\Test{0}{1000}
+
+I then became curious what happens with effectively zero values but that is hard
+because when you set \type {\prevgraf} negative assignments give an error. That
+made me wonder what would happen with the maximum positive value, given that I'd
+seen the code involved doing additions:
+
+\Test{1}{2147483647} % {\maxcount}
+
+Okay, that looks interesting! So what if we go a bit below that?
+
+\Test{3}{2147483645}
+
+\stop % end of flip
+
+We now come to the question: \quotation {Is this really what Don Knuth had in
+mind?} For sure the answer is \quotation {yes} if we can come up with a use
+case. However, because once a user knows that this feature is there, and because
+we cannot be sure (without examining the code) if a wrap around can make \TEX\
+fail, it is best to just catch this case. In order to remain compatible we do this
+via an option: we set the third bit in \type {\normalizeparmode}. In \CONTEXT\
+speak:
+
+\startbuffer[flip]
+\bitwiseflip \normalizeparmode \limitprevgrafnormalizeparcode
+\stopbuffer
+
+\typebuffer[flip]
+
+\start % begin of flip
+
+\getbuffer[flip]
+
+As you can see below, we're fine now.
+
+\Test{0}{2147483647} % {\maxcount}
+
+\stop % end of flip
+
+Can we come up with a use case? Sure. In plain \TEX\ there is a macro that
+will show the word snippets on the console:
+
+% \hangafter 1 \samplefile{knuthmath} \prevgraf 2147483647
+
+\startbuffer
+\def\showhyphens#1%
+  {\setbox0\vbox
+     {\parfillskip  0pt
+      \hsize        \maxdimen
+    % \tenrm
+      \pretolerance-1
+      \tolerance   -1
+      \hbadness     0
+      \showboxdepth 0
+    % \
+      #1}}
+\stopbuffer
+
+\typebuffer
+
+\pushoverloadmode \getbuffer \popoverloadmode
+
+Now watch the extreme \type {\hsize} here. We clip the one line result to the
+text width. One would expect a reasonable sample text to fit on that line and
+indeed it does but the tolerance values combined with the lack of a final filler
+will lead to underfull box messages.
+
+\startlinecorrection
+\showhyphens{\samplefile{knuthmath}}
+\ruledhbox{\clip[width=\textwidth,height=\lineheight]{\strut\box0}}
+\stoplinecorrection
+
+If we use \type {.2\maxdimen} instead we see this:
+
+\startlinecorrection
+\pushoverloadmode \divide \maxdimen by 5 \popoverloadmode
+\showhyphens{\samplefile{knuthmath}}
+\ruledhbox{\clip[width=\textwidth,height=\lineheight]{\strut\box0}}
+\stoplinecorrection
+
+Here comes our use case. We limit the text because here we get multiple lines.
+Interestingly, we don't even need to set \type {\hangindent} to some value.
+
+\startbuffer
+\def\showhyphens#1%
+  {\setbox0\vbox
+     {#1
+      \prevgraf 2147483647
+     %\showboxdepth 0
+      }}
+\stopbuffer
+
+\typebuffer
+
+or in \CONTEXT\ speak:
+
+\starttyping
+\def\showhyphens#1{\setbox\scratchbox\vbox{#1\prevgraf\maxcount}}
+\stoptyping
+
+\pushoverloadmode \getbuffer \popoverloadmode
+
+\showhyphens{\splitsamplefile{knuthmath}{4}{3}{...}}
+
+So one can argue that letting \type {\prevgraf} wrap around is a feature
+that permits efficient trickery.
+
+\startlinecorrection
+\dontleavehmode \box0 \vskip-\lineheight
+\stoplinecorrection
+
+It is this particular neat use case that turn this \quote {wrap around} side
+effect into a proper feature, although in \CONTEXT\ \LMTX\ we will likely enable
+the catch. But the fact that on the one hand setting \type {\prevgraf} has a
+check for a negative value, while on the other hand the par builder permits
+\quote {wrapping around} might be an argument for some \quotation {grunt­ing
+noise}.
+
+\subsubject{post scriptum}
+
+In \TEX\ there is a difference between these two cases:
+
+\starttyping
+some text     \par
+$$ formula $$ \par
+some text     \par
+\stoptyping
+
+and
+
+\starttyping
+some text     % stay in par
+$$ formula $$ % stay in par
+some text     \par
+\stoptyping
+
+In the first case we have three paragraphs and if we use some hanging indentation
+or par shape it only covers the current paragraph. In the second case we stay
+in the paragraph and therefore the hang or shape applies to all three. Now here comes
+the interesting bit.
+
+\def\Test#1#2%
+  {\begingroup
+   \showmakeup[line]
+   \everypar           {}
+   \mathdisplaymode    0
+   \mathdisplayskipmode0
+   \abovedisplayskip   #1\lineheight
+   \belowdisplayskip   #1\lineheight
+   \hangindent         1cm
+   \hangafter          -7
+   \input {knuthmath} % 3 lines
+   $$ x = 1 $$        % 3 lines
+   \prevgraf\numexpr\prevgraf+#2\relax
+   \input {knuthmath} % 3 lines
+   \par
+   \endgroup}
+
+Compare
+
+\Test{0}{0}
+
+With
+
+\Test{1}{0}
+
+and
+
+\Test{2}{0}
+
+As I mentioned before, a display formula counts as three lines and that is
+communicated to the par builder by adapting \type {\prevgraf}. This is actually
+independent of the amount of spacing we add so you can take it into account when
+setting up such a hang. It is one of these cases where more clever automatism
+makes little sense.
+
+Because spacing around formulas can be tricky in \CONTEXT\ we always managed it
+differently. For that reason in \LUATEX\ we added some more engine control over
+the scenarios, for instance in relation to \type {\baselineskip} related catches.
+We just default to no spacing at all. In \LMTX\ we emulate display mode even
+more different and also use the \LUAMETATEX\ option to make the dollar driven
+display mode equal to inline, in order to force users to use the proper
+mechanisms. In \CONTEXT\ we also have some plugins into \type {\everypar} that
+(re)set the shapes so in order to produce the above I had to bypass that. I can't
+speak for other macro packages but in plain a test looks like this:
+
+\starttyping
+\abovedisplayskip 0pt
+\belowdisplayskip 0pt
+\hangindent       1cm
+\hangafter        -7
+\input {knuthmath} % 3 lines (@12pt)
+$$ x = 1 $$        % 3 lines
+\input {knuthmath} % 3 lines
+\stoptyping
+
+In this document I cheated by adding:
+
+\starttyping
+\everypar            {}
+\mathdisplaymode     0
+\mathdisplayskipmode 0
+\stoptyping
+
+So now we know one reason why \type {\prevgraf} is really there and why wraparound
+is not important. Of course one can wonder why that (current list) property
+can be set at all by a user. Here's one:
+
+\Test{0}{-2}
+
+How did we get this? The par builder kicks in when we handle display math but
+it retains the shape. That means that after the formula is done we have a
+positive value of \type {\prevgraf} and that means we can subtract from it
+without going negative (and triggering an error):
+
+\starttyping
+\input {knuthmath}
+$$ x = 1 $$
+\prevgraf\numexpr\prevgraf-2\relax % etex
+\input {knuthmath}
+\stoptyping
+
+As it is not a (engine or user) register we can't advance and because it operates
+on the current list grouping is irrelevant, so for pure \TEX\ one has to do
+something:
+
+\starttyping
+{\count2=\prevgraf \advance\count2 by -2 \prevgraf=\count2} % tex
+\stoptyping
+
+So, if really needed one can typeset the formula and from its dimensions and
+spacing above and below derive the correction. Here we just subtract two. There
+is no way that Mikael can convince me to add a fragile feature like this to
+\CONTEXT, and I know he won't. We anyway have different nuts (or nut math) to
+crack. Also, we promote a more spacy source setup so users will definitely add
+empty lines (\type {\par} equivalents) before and after formulas, which makes all
+the above fail. But out of curiosity, maybe we should get the latest TAOCP
+collection and check where display math is used in a hang or shape context.
+
+\stopchapter
+
+\stopcomponent

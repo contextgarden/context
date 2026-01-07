@@ -25,6 +25,7 @@ local registerotffeature = otf.features.register
 local registerafmfeature = afm.features.register
 
 local settings_to_array  = utilities.parsers.settings_to_array
+local settings_to_hash   = utilities.parsers.settings_to_hash
 local gettexdimen        = tex.getdimen
 
 -- For Wolfgang Schuster:
@@ -34,6 +35,10 @@ local gettexdimen        = tex.getdimen
 
 local function initialize(tfmdata,key,value)
     if type(value) == "string" and value ~= "" then
+        --
+        local hash  = settings_to_hash(value)
+        local array = settings_to_array(value)
+        --
         local characters = tfmdata.characters
         local parameters = tfmdata.parameters
         local emwidth    = parameters.quad
@@ -42,20 +47,20 @@ local function initialize(tfmdata,key,value)
         local newheight  = false
         local newdepth   = false
         local newshift   = false
-        if value == "strut" then
+        local scaletoo   = hash.scale
+        if hash.strut then
             newheight = gettexdimen("strutht")
             newdepth  = gettexdimen("strutdp")
-        elseif value == "mono" then
+        elseif hash.mono then
             newwidth  = emwidth
-        elseif value == "halfmono" then
+        elseif hash.halfmono then
             newwidth  = emwidth / 2
         else
             -- there are fonts out there with no x_height ...
-            local spec = settings_to_array(value)
-            newwidth  = spec[1]
-            newheight = spec[2]
-            newdepth  = spec[3]
-            newshift  = spec[4]
+            newwidth  = array[1]
+            newheight = array[2]
+            newdepth  = array[3]
+            newshift  = array[4]
             local quad      = parameters.quad      or 0
             local ascender  = parameters.ascender  or 0
             local descender = parameters.descender or 0
@@ -104,19 +109,28 @@ local function initialize(tfmdata,key,value)
                     character.depth  = depth
                     if oldwidth ~= width then
                         -- todo: see below
-                        local commands = character.commands
-                        local hshift   = rightcommand[newshift or ((width - oldwidth) / 2)]
-                        if commands then
-                            character.commands = prependcommands (
-                                commands,
-                                hshift
-                            )
-                        else
-                            character.commands = {
-                                hshift,
-                                charcommand[unicode],
-                            }
-                        end
+--                         local commands = character.commands
+--                         local hshift   = rightcommand[newshift or ((width - oldwidth) / 2)]
+--                         if commands then
+--                             character.commands = prependcommands (
+--                                 commands,
+--                                 hshift
+--                             )
+--                         else
+--                             character.commands = {
+--                                 hshift,
+--                                 charcommand[unicode],
+--                             }
+--                         end
+                    character.width   = newwidth
+                    character.advance = oldwidth
+if scaletoo then
+    local extend = newwidth/oldwidth
+    character.effect  = { extend = extend }
+    character.xoffset = (newwidth - extend * oldwidth)/2
+else
+                    character.xoffset = (newwidth - oldwidth)/2
+end
                     end
                 end
             end

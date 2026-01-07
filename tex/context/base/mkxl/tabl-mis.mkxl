@@ -173,7 +173,6 @@
 \permanent\protected\def\startparagraphs[#1]% quite slow
   {\bgroup % (1)
    \cdef\currentparagraphs{#1}%
- % \paragraphsparameter\c!before
    \edef\p_width{\paragraphsparameter\c!width}%
    \ifempty\p_width
      \d_typo_paragraphs_width\availablehsize
@@ -202,8 +201,13 @@
    \parindent\zeropoint
    \c_typo_paragraphs_n\zerocount
    \enforced\let\\\nextparagraphs % downward compatible
-  %\scratchoffset\ifchkdimension\paragraphsparameter\c!offset\or\lastchkdimension\else\zeropoint\fi
    \setbox\scratchbox\hpack
+     \s!direction
+       \ifcstok{\paragraphsparameter\c!direction}\v!reverse
+         \directionrighttoleft
+       \else
+         \directionlefttoright
+       \fi
    \bgroup % (2)
    \forgetall
   %\advanceby\hsize-2\scratchoffset

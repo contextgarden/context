@@ -34,7 +34,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
 {
     /*tex |width|, |depth|, and |height| all equal |null_flag| now */
     halfword rule = tex_new_rule_node((quarterword) code); /* here code == subtype */
-    halfword attr = node_attr(rule);
+    halfword attrlist = null;
     if (code == strut_rule_code) { 
         rule_width(rule) = 0;
         switch (type) {
@@ -69,7 +69,7 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
                 goto DONE;
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("attr", 1)) {
-                    attr = tex_scan_attribute(attr);
+                    attrlist = tex_scan_attribute(attrlist);
                 }
                 break;
             case 'w': case 'W':
@@ -256,11 +256,12 @@ halfword tex_aux_scan_rule_spec(rule_types type, halfword code)
         }
     }
   DONE:
-  //  if (! attr) {
-    if (attr) {
-        /* Also bumps reference and replaces the one set. */
-        tex_attach_attribute_list_attribute(rule, attr);
-    }    
+    if (! attrlist) {
+        /* this alse sets the reference when not yet set */
+        attrlist = tex_current_attribute_list();
+    }
+    add_attribute_reference(attrlist);
+    node_attr(rule) = attrlist;
     switch (code) {
         case strut_rule_code:
             if (type == v_rule_type) {

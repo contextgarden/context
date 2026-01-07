@@ -923,7 +923,7 @@ end
 --                                         -- check this on bonum and antykwa
 --                                         setoptions(pointer,0)
 --                                     end
---                                     setoptions(pointer,getoptions(pointer)| tex.noadoptioncodes.scale                        )
+--                                     setoptions(pointer,tex.noadoptioncodes.scale                        )
 --                                     if trace_fences then
 --                                         report_fences("replacing %C using method %a, size %a and template %C",newchar,method,size,template)
 --                                     end
@@ -1355,7 +1355,7 @@ do
                 else
                     a = 0
                 end
-                setoptions(pointer,getoptions(pointer) | a)
+                setoptions(pointer,a)
             end
         end
     end
@@ -1811,7 +1811,7 @@ do
     end
 
     local function followbyspace(n)
-        setoptions(n,getoptions(n) | followedbyspace_code)
+        setoptions(n,followedbyspace_code)
     end
 
     numbers[mathchar_code] = function(pointer,what,n,parent)

@@ -31,11 +31,15 @@ extern halfword   tex_get_local_interline_penalty (halfword p);
 extern halfword   tex_get_local_broken_penalty    (halfword p);
 extern halfword   tex_get_local_tolerance         (halfword p);
 extern halfword   tex_get_local_pre_tolerance     (halfword p);
+extern scaled     tex_get_local_hang_indent       (halfword p);
+extern halfword   tex_get_local_hang_after        (halfword p);
 
 extern void       tex_set_local_interline_penalty (halfword p, halfword penalty);
 extern void       tex_set_local_broken_penalty    (halfword p, halfword penalty);
-extern void       tex_set_local_tolerance         (halfword p, halfword penalty);
-extern void       tex_set_local_pre_tolerance     (halfword p, halfword penalty);
+extern void       tex_set_local_tolerance         (halfword p, halfword tolerance);
+extern void       tex_set_local_pre_tolerance     (halfword p, halfword tolerance);
+extern void       tex_set_local_hang_indent       (halfword p, halfword amount);
+extern void       tex_set_local_hang_after        (halfword p, halfword amount);
 
 extern void       tex_aux_scan_local_box          (int code);
 extern void       tex_aux_finish_local_box        (void);

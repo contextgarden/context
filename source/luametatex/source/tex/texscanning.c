@@ -1002,6 +1002,10 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                 cur_val_level = dimension_val_level;
                 break;
             }
+     // case balance_current_height_code:
+     //     cur_val = tex_get_balance_currentheight();
+     //     cur_val_level = dimension_val_level;
+     //     break;
         case glue_stretch_code:
         case glue_shrink_code:
             {
@@ -1136,6 +1140,26 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case last_line_count_code:
             cur_val_level = integer_val_level;
             cur_val = lmt_linebreak_state.last_line_count;
+            return 1;
+        case current_alignment_row_code:
+            cur_val_level = integer_val_level;
+            cur_val = tex_alignment_row_number();
+            return 1;
+        case current_alignment_column_code:
+            cur_val_level = integer_val_level;
+            cur_val = tex_alignment_column_number();
+            return 1;
+        case current_alignment_last_row_code:
+            cur_val_level = integer_val_level;
+            cur_val = tex_alignment_last_row_number();
+            return 1;
+        case current_alignment_last_column_code:
+            cur_val_level = integer_val_level;
+            cur_val = tex_alignment_last_column_number();
+            return 1;
+        case current_alignment_tabskip_code:
+            cur_val_level = dimension_val_level;
+            cur_val = tex_alignment_tabskip_amount();
             return 1;
         case math_atom_glue_code:
             {
@@ -1372,6 +1396,16 @@ static void tex_aux_set_cur_val_by_page_property_cmd(int code)
             break;
         default:
             tex_confusion("page property");
+            break;
+    }
+}
+
+static void tex_aux_set_cur_val_by_align_property_cmd(int code)
+{
+    switch (code) {
+        case align_option_code:
+            cur_val = tex_alignment_get_options();
+            cur_val_level = integer_val_level;
             break;
     }
 }
@@ -2040,6 +2074,9 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             break;
         case page_property_cmd:
             tex_aux_set_cur_val_by_page_property_cmd(chr);
+            break;
+        case align_property_cmd:
+            tex_aux_set_cur_val_by_align_property_cmd(chr);
             break;
         case define_char_code_cmd:
             tex_aux_set_cur_val_by_define_char_cmd(chr);
@@ -4076,7 +4113,7 @@ halfword tex_the_toks(int code, halfword *tail)
         case the_without_unit_code:
             return tex_the_value_toks(code, tail, 0);
      /* case the_with_property_code: */
-     /*     return tex_the_value_toks(code, tail, tex_scan_integer(0, 0)); */
+     /*     return tex_the_value_toks(code, tail, tex_scan_integer(0, NULL, NULL)); */
         case unexpanded_code:
             return tex_scan_general_text(tail);
         case detokenize_code:

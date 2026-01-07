@@ -566,6 +566,11 @@ static void tex_aux_run_space(void)
                 }
                 glue_font(p) = cur_font_par;
                 tex_tail_append(p);
+                if (space_skip_factor_par != scaling_factor) {
+                    glue_amount(p) = tex_xn_over_d(glue_amount(p), space_skip_factor_par, scaling_factor);
+                    glue_stretch(p) = tex_xn_over_d(glue_stretch(p), space_skip_factor_par, scaling_factor);
+                    glue_shrink(p) = tex_xn_over_d(glue_shrink(p), space_skip_factor_par, scaling_factor);
+                }
             }
             break;
         }
@@ -2121,7 +2126,7 @@ void tex_begin_local_control(void)
  // tex_cleanup_input_state(); /*tex Yes or no? */
 }
 
-void tex_end_local_control(void )
+void tex_end_local_control(void)
 {
     if (lmt_main_control_state.local_level > 0) {
         lmt_main_control_state.local_level -= 1;
@@ -3199,8 +3204,9 @@ static void tex_aux_run_remove_item(void)
     halfword tail = cur_list.tail;
     if (cur_list.mode == vmode && tail == head) {
         /*tex
-            Apologize for inability to do the operation now, unless |\unskip|
-            follows non-glue. It's a bit weird test.
+            Apologize for inability to do the operation now, unless |\unskip| follows non-glue.
+            It's a bit weird test. We can't change this without loosing compatibility so for
+            balancing etc we need to do something different.
         */
         if ((code != skip_item_code) || (lmt_page_builder_state.last_glue != max_halfword)) {
             switch (code) {
@@ -4207,6 +4213,18 @@ static void tex_aux_set_page_property(void)
             break;
         default:
             tex_confusion("page property");
+            break;
+    }
+}
+
+static void tex_aux_set_align_property(void)
+{
+    switch (cur_chr) {
+        case align_option_code:
+            tex_alignment_scan_options();
+            break;
+        default:
+            tex_confusion("align property");
             break;
     }
 }
@@ -6012,6 +6030,9 @@ static void tex_run_prefixed_command(void)
         case page_property_cmd:
             tex_aux_set_page_property();
             break;
+        case align_property_cmd:
+            tex_aux_set_align_property();
+            break;
         case box_property_cmd:
             tex_aux_set_box_property();
             break;
@@ -6238,6 +6259,17 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             }
             tex_word_define(a, p, val);
             break;
+        case space_skip_factor_code:
+            if (val < min_space_skip_factor || val > max_space_skip_factor) {
+                tex_handle_error(
+                    normal_error_type,
+                    "Invalid \\spaceskipfactor",
+                    "The value for \\spaceskipfactor has to be between " LMT_TOSTRING(min_space_skip_factor) " and " LMT_TOSTRING(max_space_skip_factor) "."
+                );
+                val = max_limited_scale;
+            }
+            tex_word_define(a, p, val);
+            break;
         case math_begin_class_code:
         case math_end_class_code:
         case math_left_class_code:
@@ -6324,6 +6356,14 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             val = val ? set_hyphenation_mode(hyphenation_mode_par, uppercase_hyphenation_mode) : unset_hyphenation_mode(hyphenation_mode_par, uppercase_hyphenation_mode);
             tex_word_define(a, internal_integer_location(hyphenation_mode_code), val);
             break;
+        case local_hang_after_code:
+             /*tex We silently recover. */
+             if (val < min_local_hang_after) {
+                val = min_local_hang_after;
+             } else if (val > max_local_hang_after) {
+                val = max_local_hang_after;
+             }
+             /* fall through */
         case local_interline_penalty_code:
         case local_broken_penalty_code:
         case local_tolerance_code:
@@ -6438,6 +6478,18 @@ void tex_assign_internal_posit_value(int a, halfword p, int val)
 
 void tex_assign_internal_dimension_value(int a, halfword p, int val)
 {
+    switch (internal_dimension_number(p)) {
+        case local_hang_indent_code:
+             /*tex We silently recover. */
+             if (val < min_local_hang_indent) {
+                val = min_local_hang_indent;
+             } else if (val > max_local_hang_indent) {
+                val = max_local_hang_indent;
+             }
+             /* fall through */
+        default:
+            break;
+    }
     tex_word_define(a, p, val);
     if (is_frozen(a) && cur_mode == hmode) {
         tex_update_par_par(internal_dimension_cmd, internal_dimension_number(p));
@@ -6908,11 +6960,12 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         case register_cmd: 
         case auxiliary_cmd: 
         case set_box_cmd: 
-        case box_property_cmd: 
         case set_font_cmd: 
         case interaction_cmd: 
         case math_parameter_cmd: 
         case page_property_cmd: 
+        case align_property_cmd:
+        case box_property_cmd:
         case specification_cmd: 
         case shorthand_def_cmd: 
         case association_cmd: 
@@ -7163,6 +7216,7 @@ void tex_initialize_variables(void)
         adjust_spacing_step_par = -1;
         adjust_spacing_stretch_par = -1;
         adjust_spacing_shrink_par = -1;
+        space_skip_factor_par = scaling_factor;
         math_double_script_mode_par = -1, 
         math_glue_mode_par = default_math_glue_mode; 
         hyphenation_mode_par = default_hyphenation_mode;

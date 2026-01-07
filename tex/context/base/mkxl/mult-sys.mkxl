@@ -68,6 +68,7 @@
 \definesystemconstant {farsi}          \definesystemconstant {fa} % just persian
 \definesystemconstant {finnish}        \definesystemconstant {fi}
 \definesystemconstant {french}         \definesystemconstant {fr}
+\definesystemconstant {gaelic}         \definesystemconstant {ga}
 \definesystemconstant {gbenglish}      \definesystemconstant {gb}
 \definesystemconstant {german}         \definesystemconstant {de}
 \definesystemconstant {greek}          \definesystemconstant {gr}

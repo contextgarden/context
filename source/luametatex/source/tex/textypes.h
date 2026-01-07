@@ -269,9 +269,38 @@ extern halfword tex_badness(
     At some point we might actually drop these maxima indeed as we really don't need that many 
     if these registers and if (say) 16K is not enough, then nothing is. 
 
+    The next define might become a compiler directive in which case it probably has to be more
+    verbose. We might set more constants to lower values using this directive. It's an experiment,
+    so don't depend on these values too much. I'll adapt them if \CONTEXT\ users complain. It does
+    not really influence performance but it's more about using a bit less memory which might be
+    nicer when a (shared) cache is small (or not). I enabled this early 2026 when I (and some
+    users) played with a RPI 5+ setup.
+
 */
 
-# if 1
+# ifndef memory_mode
+
+    # define memory_mode 1
+
+# endif
+
+# if (memory_mode == 1)
+
+    /*tex
+        For \CONTEXT\ we need to keep in mind that we can use half these maxima because we also
+        provide local allocation, a proof of concept that stuck around.
+    */
+
+    # define max_toks_register_index      0x1FFF //  8K
+    # define max_box_register_index       0x7FFF // 32K /* less of we use a lua stack */
+    # define max_integer_register_index   0x1FFF //  8k
+    # define max_dimension_register_index 0x1FFF //  8k
+    # define max_posit_register_index     0x1FFF //  8k
+    # define max_attribute_register_index 0x1FFF //  8k
+    # define max_glue_register_index      0x0FFF //  4k
+    # define max_muglue_register_index    0x0FFF //  4k
+
+# else
 
     # define max_toks_register_index      0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 16 */
     # define max_box_register_index       0xFFFF /* 0xFFFF 0xFFFF 0x7FFF */ /* 64 64 16 */
@@ -281,17 +310,6 @@ extern halfword tex_badness(
     # define max_attribute_register_index 0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_glue_register_index      0xFFFF /* 0xFFFF 0x7FFF 0x1FFF */ /* 64 32  8 */
     # define max_muglue_register_index    0xFFFF /* 0xFFFF 0x3FFF 0x1FFF */ /* 64 16  8 */
-
-# else
-
-    # define max_toks_register_index      0x1FFF //  8K
-    # define max_box_register_index       0x7FFF // 32K /* less of we use a lua stack */
-    # define max_integer_register_index   0x1FFF //  8k
-    # define max_dimension_register_index 0x1FFF //  8k  
-    # define max_posit_register_index     0x1FFF //  8k 
-    # define max_attribute_register_index 0x1FFF //  8k 
-    # define max_glue_register_index      0x0FFF //  4k 
-    # define max_muglue_register_index    0x0FFF //  4k 
 
 # endif
 
@@ -334,6 +352,8 @@ extern halfword tex_badness(
 # define min_math_style_scale                     0 /*tex Zero is a signal too. */
 # define max_math_style_scale                  2000
 # define max_parameter_index                     15
+# define min_space_skip_factor                    0
+# define max_space_skip_factor                 5000 /*tex Maybe less */
 
 # define clipped_scale_factor(f) (f < min_scale_factor ? min_scale_factor : f > max_scale_factor ? max_scale_factor : f)
 
@@ -358,6 +378,13 @@ extern halfword tex_badness(
 
 # define default_space_factor 1000
 # define special_space_factor  999
+
+# define min_local_hang_indent  0
+# define max_local_hang_indent  max_dimension
+# define min_local_hang_after  -0x7FFF
+# define max_local_hang_after   0x7FFF
+# define min_local_hang_index   0
+# define max_local_hang_index   0x7FFF
 
 /*tex 
     We started out with 32 but it makes no sense to initialize that many every time we need to do

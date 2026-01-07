@@ -114,7 +114,7 @@ scripts.patterns.list = {
  -- { mnemonic = "fa",  name = "hyph-fa",            comment = "farsi" },
     { mnemonic = "fi",  name = "hyph-fi",            comment = "finnish" },
     { mnemonic = "fr",  name = "hyph-fr",            comment = "french", ignored = ignored_french },
- -- { mnemonic = "??",  name = "hyph-ga",            comment = "irish" },
+    { mnemonic = "ga",  name = "hyph-ga",            comment = "irish" },
  -- { mnemonic = "??",  name = "hyph-gl",            comment = "galician" },
     { mnemonic = "gu",  name = "hyph-gu",            comment = "gujarati" },
     { mnemonic = "hi",  name = "hyph-hi",            comment = "hindi" },

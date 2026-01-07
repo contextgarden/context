@@ -233,6 +233,7 @@ typedef enum tex_command_code {
     auxiliary_cmd,                    /*tex state info (|\spacefactor|, |\prevdepth|) */
     hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
     page_property_cmd,                /*tex page info (|\pagegoal|, etc.) */
+    align_property_cmd,
     box_property_cmd,                 /*tex change property of box (|\wd|, |\ht|, |\dp|) */
     specification_cmd,                /*tex specifications (|\parshape|, |\interlinepenalties|, etc.) */
     define_char_code_cmd,             /*tex define a character code (|\catcode|, etc.) */
@@ -631,6 +632,7 @@ typedef enum some_item_codes {
     balance_shape_vsize_code,
     balance_shape_top_space_code,
     balance_shape_bottom_space_code,
+ /* balance_current_height_code, */
     glue_stretch_code,             /*tex |\gluestretch| */
     glue_shrink_code,              /*tex |\glueshrink| */
     mu_to_glue_code,               /*tex |\mutoglue| */
@@ -666,9 +668,14 @@ typedef enum some_item_codes {
     last_page_extra_code,
     last_line_width_code,          /*tex |\lastlinewidth| */
     last_line_count_code,          /*tex |\lastlinecount| */
+    current_alignment_row_code,
+    current_alignment_column_code,
+    current_alignment_last_row_code,
+    current_alignment_last_column_code,
+    current_alignment_tabskip_code,
 } some_item_codes;
 
-extern const unsigned char some_item_classification[last_line_count_code + 1];
+extern const unsigned char some_item_classification[current_alignment_tabskip_code + 1];
 
 # define last_some_item_code last_line_count_code
 

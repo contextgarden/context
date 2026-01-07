@@ -51,6 +51,7 @@ local setscale          = nuts.setscale
 local setwhd            = nuts.setwhd
 local setkern           = nuts.setkern
 local setoffsets        = nuts.setoffsets
+local setoptions        = nuts.setoptions
 local getdirection      = nuts.getdirection
 local setdirection      = nuts.setdirection
 local setglyphdata      = nuts.setglyphdata
@@ -101,7 +102,10 @@ local busyactions       = { }
 initials.actions        = actions
 initials.busyactions    = actions
 
-local a_initial         <const> = attributes.private("initial")
+local a_initial <const> = attributes.private("initial")
+
+local options   <const> = tex.glyphoptioncodes.noexpansion
+                        | tex.glyphoptioncodes.noprotrusion
 
 local category          = characters.category
 
@@ -216,6 +220,8 @@ actions[v_default] = function(head,settings)
         local length    = tonumber(settings.m) or 1
         --
         -- 1 char | n chars | skip first quote | ignore punct | keep punct
+        --
+        setoptions(first,options)
         --
         if getattr(first,a_initial) then
             for current in nextnode, getnext(first) do

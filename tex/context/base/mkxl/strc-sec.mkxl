@@ -1266,7 +1266,6 @@
    \fi
    \glet\previoushead\currenthead}
 
-
 \def\strc_sectioning_handle_page_yes
   {\ifconditional\c_strc_sectioning_ignore_page
      \c_strc_sectioning_ignore_page\conditionalfalse

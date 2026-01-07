@@ -737,6 +737,8 @@ do
     ----- force_both   <const> = 3 -- ht + dp
     local force_depth  <const> = 4 -- dp
 
+    -- ht mid dp
+
     local function vrule_pass(head,attr,preamble)
         for row, id, subtype, list in nextlist, head do
             if id == hlist_code and subtype == row_code then
@@ -803,8 +805,8 @@ do
     --                                         nxt = nil
     --                                     end
                                     end
-                                    d = prv and -getdepth (prv) or 0
-                                    h = nxt and -getheight(nxt) or 0
+                                    d = prv and -(getdepth (prv) or 0) or 0
+                                    h = nxt and -(getheight(nxt) or 0) or 0
                                     d = d - (getattr(prv,a_mathalignmentmid) or 0)
                                 end
                                 setoffsets(n,nil,nil,d,h)
@@ -895,7 +897,7 @@ end
                                 left = w
                             end
                             setwidth(cell,0)
-                            cells[c+1] = true
+--                             cells[c+1] = true
                             cells[c] = true
                             found = true
                             lefts[#lefts+1] = cell
@@ -907,7 +909,7 @@ end
                                 right = w
                             end
                             setwidth(cell,0)
-                            cells[c-1] = true
+--                             cells[c-1] = true
                             cells[c] = true
                             found = true
                             rights[#rights+1] = cell

@@ -823,10 +823,10 @@
 %D
 %D We could do this in \LUA\ \unknown
 
-% seet top: \newif     \iflocation
-% seet top: \newinteger\locationcount
-% seet top: \newinteger\locationorder
-% seet top: \newbox    \locationbox
+% set top: \newif     \iflocation
+% set top: \newinteger\locationcount
+% set top: \newinteger\locationorder
+% set top: \newbox    \locationbox
 
 \appendtoks
     \locationfalse

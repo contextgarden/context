@@ -328,7 +328,7 @@ local function build_list(head,where)
             current    = getnext(current)
             while current do
                 local id = getid(current)
-                if id ~= glyph_code and id ~= glue_code and id ~= dir_code then
+                if id ~= glyph_code and id ~= glue_code and id ~= dir_code and id ~= math_code then
                     skip    = skip + 1
                     last    = id
                     current = getnext(current)

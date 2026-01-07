@@ -89,6 +89,19 @@ character properties like \type {width}, \type {height} and \type {depth} we als
 \NC         \NC weight  \NC pen stroke width             \NC \NR
 \stoptabulate
 
+Originally virtual fonts were \quote {a way out} and the official commands ensure
+that we can assemble from existing fonts. However, once we opened up that feature
+in \LUATEX\ it also opened up more possibilities. And with \LUAMETATEX\ we
+basically can do whatever we like. So, apart from the standard set we have top
+assume that what \CONTEXT\ adds to that is not generic! This is no problem
+because there are no virtual font resources using those extras in the \TEX\
+ecosystem other that those shipped with \CONTEXT\ and most are runtime features
+anyway. This also means that we can extend what we have without the need to
+bother about other usage: virtual fonts are really virtual, there is nothing in
+the engine that reflects it, contrary to \LUATEX, where command definitions need
+to be passed to the backend code and are also can be loaded from \VF\ files when
+you use the helpers that load \TFM\ files.
+
 \stopsection
 
 \stopdocument

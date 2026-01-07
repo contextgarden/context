@@ -835,6 +835,59 @@
      \advanceby\d_page_sides_progress-\pagetotal
    \fi}
 
+% MS test case
+%
+% \starttext
+%     \dorecurse{12}{
+%         \startsubject[title=#1]
+%             \startplacefloat[figure][location={left,none}]
+%                 \startMPcode
+%                     fill unitsquare xyscaled (4cm,3cm) withcolor darkred ;
+%                 \stopMPcode
+%             \stopplacefloat
+%             \dorecurse{2}{\samplefile {tufte}\par}
+%         \stopsubject
+%     }
+% \stoptext
+
+% \starttext
+%     \dorecurse{12}{
+%         \startsubject[title=#1]
+%             \startplacefloat[figure][location={left,none}]
+%                 \startMPcode
+%                     fill unitsquare xyscaled (4cm,3cm) withcolor darkred ;
+%                 \stopMPcode
+%             \stopplacefloat
+%             \dorecurse{2}{\samplefile {tufte}\par}
+%         \stopsubject
+%     }
+% \stoptext
+%
+% This catches a weird situation ... it's not the real solution but right now
+% I don't see it. Some tricky weird overflow.
+%
+% Do no patch for \page_sides_analyse_progress but instead ...
+
+\protected\def\page_sides_check_floats_set_hang
+  {\global\let\page_sides_analyse_catch_up\page_sides_analyse_catch_up_indeed
+   \hangindent \ifnum\c_page_sides_float_type>\plusfour -\fi\d_page_sides_width
+   \hangafter-\c_page_sides_n_of_hang
+   \global\c_page_sides_hangafter\hangafter}
+
+\lettonothing\page_sides_analyse_catch_up
+\lettonothing\page_sides_analyse_catch_up_indeed
+
+\appendtoks
+    \page_sides_analyse_catch_up
+\to \everyshipout
+
+\protected\def\page_sides_analyse_catch_up_indeed % how robust is this
+  {\global\lettonothing\page_sides_analyse_catch_up
+   \global\d_page_sides_vsize\d_page_sides_vsize_reset
+   \global\c_page_sides_n_of_lines\zerocount}
+
+% ... till here.
+
 \def\page_sides_analyse_space_stage_one
   {\global\c_page_sides_flag\conditionaltrue
    % \ifdim\pagegoal=\maxdimen
@@ -1121,7 +1174,7 @@
 \newconditional \c_page_sides_protect_shape
 
 \protected\def\page_sides_check_floats_set
-  {\edef\p_sidethreshold{\floatparameter\c!sidethreshold}%
+  {\edef\p_sidethreshold{\rootfloatparameter\c!sidethreshold}%
    \ifconditional\c_page_sides_delayed
      % For Alan's hanging right float that moved to the next page.
      \d_page_sides_progress\zeropoint

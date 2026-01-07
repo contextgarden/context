@@ -481,6 +481,7 @@ extern void     tex_undump_specification_data   (dumpstream f);
 # define penalty_belongs_to(a) memtwo(a,4) /* used internally */
 # define penalty_reserved(a)   memone(a,4) /* used internally */
 
+static inline void tex_set_penalty_option    (halfword a, halfword r) { penalty_options(a) = r; }
 static inline void tex_add_penalty_option    (halfword a, halfword r) { penalty_options(a) |= r; }
 static inline void tex_remove_penalty_option (halfword a, halfword r) { penalty_options(a) &= ~r; }
 static inline int  tex_has_penalty_option    (halfword a, halfword r) { return (penalty_options(a) & r) == r; }
@@ -612,6 +613,7 @@ typedef enum glue_option_codes {
     glue_option_in_insert         = 0x0100,
 } glue_option_codes;
 
+static inline void tex_set_glue_option    (halfword a, halfword r) { glue_options(a) = r; }
 static inline void tex_add_glue_option    (halfword a, halfword r) { glue_options(a) |= r; }
 static inline void tex_remove_glue_option (halfword a, halfword r) { glue_options(a) &= ~r; }
 static inline int  tex_has_glue_option    (halfword a, halfword r) { return (glue_options(a) & r) == r; }
@@ -641,6 +643,7 @@ typedef enum math_subtypes {
 # define math_tolerance(a)     memone(a,6)
 # define math_pre_tolerance(a) memtwo(a,6)
 
+static inline void tex_set_math_option    (halfword a, halfword r) { math_options(a) = r; }
 static inline void tex_add_math_option    (halfword a, halfword r) { math_options(a) |= r; }
 static inline void tex_remove_math_option (halfword a, halfword r) { math_options(a) &= ~r; }
 static inline int  tex_has_math_option    (halfword a, halfword r) { return (math_options(a) & r) == r; }
@@ -860,7 +863,6 @@ typedef enum disc_option_codes {
 # define first_disc_option disc_option_prefer_break
 # define last_disc_option  disc_option_prefer_nobreak
 
-//define disc_node_size       13
 # define disc_node_size       14
 # define disc_no_break(a)     memtwo(a,2) /* beware: memone is used for type/subtype */
 # define disc_pre_break(a)    memtwo(a,3) /* beware: memone is used for type/subtype */
@@ -889,6 +891,7 @@ typedef enum disc_option_codes {
 
 # define unset_disc_class -1
 
+static inline void tex_set_disc_option    (halfword a, halfword r) { disc_options(a) = r; }
 static inline void tex_add_disc_option    (halfword a, halfword r) { disc_options(a) |= r; }
 static inline void tex_remove_disc_option (halfword a, halfword r) { disc_options(a) &= ~r; }
 static inline int  tex_has_disc_option    (halfword a, halfword r) { return (disc_options(a) & r) == r; }
@@ -931,7 +934,8 @@ extern halfword tex_harden_spaces           (halfword head, halfword tolerance, 
     side effect that when we access the alternates from \LUA\ that they can have weird values
     unless we reset them. Even then, it can be that we actually want to use those other fields
     somehow. For that reason it's better to waste a few more slots and play safe. We can now
-    actually explore table cells with offsets if we want.
+    actually explore table cells with offsets if we want. At some point we might decide to come
+    up with a dedicated align_record node (and even unset qualifies).
 
     Beware: in alignments
 
@@ -1046,7 +1050,7 @@ typedef enum list_balance_states {
 # define box_balance_state(a) memone01(a,6)
 # define box_content_state(a) memone02(a,6)
 # define box_reserved_2(a)    memone03(a,6) /* can be used */
-# define box_glue_set(a)      dvalue(a,7)  /* So we reserve a whole memory word! */
+# define box_glue_set(a)      dvalue(a,7)   /* So we reserve a whole memory word! */
 # define box_direction(a)     memtwo00(a,8) /* We could encode it as geometry but not now. */
 # define box_package_state(a) memtwo01(a,8)
 # define box_options(a)       memtwo02(a,8)
@@ -1065,9 +1069,11 @@ typedef enum list_balance_states {
 # define box_except(a)        memtwo(a,14)
 # define box_exdepth(a)       memone(a,14)
 # define box_discardable(a)   memtwo(a,15)  /* internal usage */
-# define box_reserved(a)      memone(a,15)  /* can be used */
-# define box_input_file(a)    memtwo(a,16)  /* can be used */
+# define box_reserved(a)      memone(a,15)  /* internal usage */
+# define box_input_file(a)    memtwo(a,16)
 # define box_input_line(a)    memone(a,16)
+
+# define box_tail(a)          box_reserved(a) /* see alignments */
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */
 
@@ -1134,10 +1140,11 @@ typedef enum box_option_flags {
     box_option_snapping     = 0x08,
     box_option_no_snapping  = 0x10,
     box_option_no_profiling = 0x20,
- // box_option_has_math     = 0x40,
+    box_option_align_split  = 0x40,
  // box_option_synchronize  = 0x80,
 } box_option_flags;
 
+static inline void tex_set_box_option    (halfword a, halfword r) { box_options(a) = r; }
 static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |= r; }
 static inline void tex_remove_box_option (halfword a, halfword r) { box_options(a) &= ~r; }
 static inline int  tex_has_box_option    (halfword a, halfword r) { return (box_options(a) & r) == r; }
@@ -1257,6 +1264,7 @@ typedef enum rule_option_codes {
 
 # define set_rule_options(a,b)  rule_options(a) |= b
 
+static inline void tex_set_rule_option    (halfword a, halfword r) { rule_options(a) = r; }
 static inline void tex_add_rule_option    (halfword a, halfword r) { rule_options(a) |= r; }
 static inline void tex_remove_rule_option (halfword a, halfword r) { rule_options(a) &= ~r; }
 static inline int  tex_has_rule_option    (halfword a, halfword r) { return (rule_options(a) & r) == r; }
@@ -1568,6 +1576,7 @@ typedef enum auto_discretionary_codes {
     auto_discretionary_italic = 0x0002, /* also include italic correction when present */
 } auto_discretionary_codes;
 
+static inline void tex_set_glyph_option    (halfword a, halfword r) { glyph_options(a) = r; }
 static inline void tex_add_glyph_option    (halfword a, halfword r) { glyph_options(a) |= r; }
 static inline void tex_remove_glyph_option (halfword a, halfword r) { glyph_options(a) &= ~r; }
 static inline int  tex_has_glyph_option    (halfword a, halfword r) { return (glyph_options(a) & r) == r; }
@@ -1682,6 +1691,14 @@ typedef enum split_subtypes {
 } split_subtypes;
 
 # define last_split_subtype insert_split_subtype
+
+typedef enum align_record_subtypes {
+    normal_align_record_subtype,
+    loop_align_record_subtype,
+    extra_align_record_subtype,
+} align_record_subtypes;
+
+# define last_align_record_subtype extra_align_record_subtype
 
 /*tex
     It's now time for some handy shortcuts. These are used when determining proper break points
@@ -1866,7 +1883,7 @@ static inline int tex_same_mathspec(halfword a, halfword b)
     Here are some more stack related nodes.
 */
 
-# define align_stack_node_size                16
+# define align_stack_node_size                19
 # define align_stack_align_ptr(a)             memone(a,1)
 # define align_stack_cur_align(a)             memtwo(a,1)
 # define align_stack_preamble(a)              memone(a,2)
@@ -1886,18 +1903,24 @@ static inline int tex_same_mathspec(halfword a, halfword b)
 # define align_stack_options(a)               memone(a,9)
 # define align_stack_attr_list(a)             memtwo(a,9)
 # define align_stack_callback(a)              memone(a,10)
-# define align_stack_data(a)                  memtwo(a,10) /* maybe */
+# define align_stack_min_height(a)            memone(a,10)
+# define align_stack_min_depth(a)             memone(a,11)
+# define align_stack_tabskip_amount(a)        memtwo(a,11)
+# define align_stack_row_number(a)            memone(a,12)
+# define align_stack_column_number(a)         memtwo(a,12)
+# define align_stack_last_row_number(a)       memone(a,13)
+# define align_stack_last_column_number(a)    memtwo(a,13)
 
-# define align_stack_row_attrlist(a)          memone(a,11)
-# define align_stack_row_orientation(a)       memtwo(a,11)
-# define align_stack_row_yoffset(a)           memone(a,12)
-# define align_stack_row_xoffset(a)           memtwo(a,12)
-# define align_stack_row_ymove(a)             memone(a,13)
-# define align_stack_row_xmove(a)             memtwo(a,13)
-# define align_stack_row_shift(a)             memone(a,14)
-# define align_stack_row_source(a)            memtwo(a,14)
-# define align_stack_row_target(a)            memone(a,15)
-# define align_stack_row_anchor(a)            memtwo(a,15)
+# define align_stack_row_attrlist(a)          memone(a,14)
+# define align_stack_row_orientation(a)       memtwo(a,14)
+# define align_stack_row_yoffset(a)           memone(a,15)
+# define align_stack_row_xoffset(a)           memtwo(a,15)
+# define align_stack_row_ymove(a)             memone(a,16)
+# define align_stack_row_xmove(a)             memtwo(a,16)
+# define align_stack_row_shift(a)             memone(a,17)
+# define align_stack_row_source(a)            memtwo(a,17)
+# define align_stack_row_target(a)            memone(a,18)
+# define align_stack_row_anchor(a)            memtwo(a,18)
 
 /*tex
     If nodes are for nesting conditionals. We have more state information that in (for instance)
@@ -2243,6 +2266,7 @@ typedef enum noad_options {
 # define has_option(a,b)   (((a) & (b)) == (b))
 # define unset_option(a,b) ((a) & ~(b))
 
+static inline void tex_set_noad_option    (halfword a, uint64_t r) { noad_options(a) = r; }
 static inline void tex_add_noad_option    (halfword a, uint64_t r) { noad_options(a) |= r; }
 static inline void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~r; }
 static inline int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
@@ -2542,23 +2566,25 @@ typedef enum math_kernel_options {
 } math_kernel_options;
 
 # define math_kernel_node_size     5
-# define kernel_math_family(a)     memone(a,2)   /* can be memone00 */
-# define kernel_math_character(a)  memtwo(a,2)
-# define kernel_math_options(a)    memone(a,3)
-# define kernel_math_list(a)       memtwo(a,3)
-# define kernel_math_properties(a) memone0(a,4)  /* for characters */
-# define kernel_math_group(a)      memone1(a,4)  /* for characters */
-# define kernel_math_index(a)      memtwo(a,4)   /* for characters */
+# define math_kernel_family(a)     memone(a,2)   /* can be memone00 */
+# define math_kernel_character(a)  memtwo(a,2)
+# define math_kernel_options(a)    memone(a,3)
+# define math_kernel_list(a)       memtwo(a,3)
+# define math_kernel_properties(a) memone0(a,4)  /* for characters */
+# define math_kernel_group(a)      memone1(a,4)  /* for characters */
+# define math_kernel_index(a)      memtwo(a,4)   /* for characters */
+
+static inline void tex_set_math_kernel_option    (halfword a, halfword r) { math_kernel_options(a) = r; }
+static inline void tex_add_math_kernel_option    (halfword a, halfword r) { math_kernel_options(a) |= r; }
+static inline void tex_remove_math_kernel_option (halfword a, halfword r) { math_kernel_options(a) &= ~r; }
+static inline int  tex_has_math_kernel_option    (halfword a, halfword r) { return (math_kernel_options(a) & r) == r; }
 
 /* delimiters can be old and new as type */
 
-# define kernel_math_small_family     memone00(a,2)
-# define kernel_math_large_family     memone01(a,2)
-# define kernel_math_small_character  memtwo(a,2)
-# define kernel_math_large_character  memone02(a,2)
-
-# define math_kernel_node_has_option(a,b) ((kernel_math_options(a) & b) == b)
-# define math_kernel_node_set_option(a,b) kernel_math_options(a) = (kernel_math_options(a) | b)
+# define math_kernel_small_family     memone00(a,2)
+# define math_kernel_large_family     memone01(a,2)
+# define math_kernel_small_character  memtwo(a,2)
+# define math_kernel_large_character  memone02(a,2)
 
 /*tex
     This is also a subnode, this time for a delimiter field. The large family field is only used
@@ -2979,12 +3005,14 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define active_deficiency(a)              memone(a,4)   /* last line related, normally we can use the passive one */
 # define active_quality(a)                 memtwo(a,4)   /* last line related, normally we can use the passive one */
 # define active_n_of_fitness_classes(a)    memone(a,5)
-# define active_reserved(a)                memtwo(a,5)
+# define active_hang_l_index(a)            memtwo0(a,5)
+# define active_hang_r_index(a)            memtwo1(a,5)
 
 # define active_page_number(a)             memone(a,1)
 # define active_page_height(a)             memone(a,2)
 
-# define passive_node_size                 12
+//define passive_node_size                 13
+# define passive_node_size                 14
 # define passive_fitness(a)                memone1(a,0)
 # define passive_prev_break(a)             memone(a,1)   /*tex points to passive node that should precede this one */
 # define passive_cur_break(a)              memtwo(a,1)   /*tex in passive node, points to position of this breakpoint */
@@ -3004,9 +3032,16 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_demerits(a)               memtwo(a,8)
 # define passive_n_of_fitness_classes(a)   memone(a,9)
 # define passive_badness(a)                memtwo(a,9)
-# define passive_reserved(a)               memone(a,10)
-# define passive_ref_count(a)              memtwo(a,10)
-# define passive_factor(a)                 dvalue(a,11)
+# define passive_factor(a)                 dvalue(a,10)
+# define passive_ref_count(a)              memone(a,11)
+# define passive_line_number(a)            memtwo(a,11) /* mainly for double checking hang */
+
+# define passive_hang_l_indent(a)          memone(a,12)
+# define passive_hang_r_indent(a)          memtwo(a,12)
+# define passive_hang_l_after(a)           memone0(a,13)
+# define passive_hang_r_after(a)           memone1(a,13)
+# define passive_hang_l_index(a)           memtwo0(a,13)
+# define passive_hang_r_index(a)           memtwo1(a,13)
 
 # define delta_node_size                   6
 # define delta_field_total_glue(d)         memone(d,1)
@@ -3092,7 +3127,8 @@ extern void     tex_unset_attributes              (halfword first, halfword last
 extern void     tex_set_attribute                 (halfword target, int index, int value);
 extern int      tex_has_attribute                 (halfword target, int index, int value);
 
-extern void     tex_reset_node_properties (halfword target);
+extern void     tex_reset_node_properties         (halfword target);
+extern void     tex_copy_node_properties          (halfword target, halfword source);
 
 # define get_attribute_list(target) \
     node_attr(target)
@@ -3379,6 +3415,7 @@ static inline int tex_math_skip_boundary(halfword n)
 }
 
 typedef enum special_node_list_types { /* not in sycn with the above .. maybe add bogus ones */
+    no_special_list_type,
     page_insert_list_type,
     contribute_list_type,
     page_list_type,

@@ -2006,7 +2006,7 @@ void tex_unsave(void)
             tex_local_control_message("entering token scanner via endgroup");
         }
         tex_local_control(1);
-// tex_cleanup_input_state();
+     // tex_cleanup_input_state();
     }
     delete_attribute_reference(current_attribute_state);
     tex_unsave_math_codes(cur_level);

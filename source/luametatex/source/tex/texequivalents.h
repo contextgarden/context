@@ -416,6 +416,15 @@ typedef enum specification_codes {
 # define first_specification_list_code  integer_list_code
 # define last_specification_list_code   posit_list_code
 
+/*tex Relatively new, more might follow: */
+
+typedef enum align_properties_code {
+    align_option_code,
+} align_properties_code;
+
+# define first_align_property_code align_option_code
+# define last_align_property_code  align_option_code
+
 /*tex Beware: these are indices into |page_builder_state.page_so_far| array! */
 
 typedef enum page_property_codes {
@@ -505,6 +514,7 @@ typedef enum int_codes {
     local_broken_penalty_code,
     local_tolerance_code,
     local_pre_tolerance_code,
+    local_hang_after_code,
     adjust_spacing_code,
     protrude_chars_code,
     glyph_options_code,
@@ -719,6 +729,7 @@ typedef enum int_codes {
     space_factor_shrink_limit_code,
     space_factor_stretch_limit_code,
     space_factor_overload_code,
+    space_skip_factor_code,
     box_limit_mode_code,
     script_space_before_factor_code,
     script_space_between_factor_code,
@@ -790,12 +801,13 @@ typedef enum dimension_codes {
     balance_emergency_shrink_code,
     balance_vsize_code,
     balance_line_height_code,
+    local_hang_indent_code,
     /*tex total number of dimension parameters */
     number_dimension_pars,
 } dimension_codes;
 
 # define first_dimension_code par_indent_code
-# define last_dimension_code  balance_line_height_code
+# define last_dimension_code  local_hang_indent_code
 
 typedef enum attribute_codes {
     /*tex total number of attribute parameters */
@@ -928,6 +940,7 @@ typedef enum align_codes  {
     re_align_code,
     cr_code,
     cr_cr_code,
+    align_loop_code,
 } align_codes;
 
 /*
@@ -1427,6 +1440,7 @@ extern int  tex_overload_permitted (halfword flags);
 # define tab_size_par                     dimension_parameter(tab_size_code)
 # define vfuzz_par                        dimension_parameter(vfuzz_code)
 # define vsize_par                        dimension_parameter(vsize_code)
+# define local_hang_indent_par            dimension_parameter(local_hang_indent_code)
 
 # define additional_page_skip_par         glue_parameter(additional_page_skip_code)
 # define balance_bottom_skip_par          glue_parameter(balance_bottom_skip_code)
@@ -1535,6 +1549,7 @@ extern int  tex_overload_permitted (halfword flags);
 # define local_interline_penalty_par      integer_parameter(local_interline_penalty_code)
 # define local_pre_tolerance_par          integer_parameter(local_pre_tolerance_code)
 # define local_tolerance_par              integer_parameter(local_tolerance_code)
+# define local_hang_after_par             integer_parameter(local_hang_after_code)
 # define looseness_par                    integer_parameter(looseness_code)
 # define math_begin_class_par             integer_parameter(math_begin_class_code)
 # define math_check_fences_par            integer_parameter(math_check_fences_mode_code)
@@ -1607,6 +1622,7 @@ extern int  tex_overload_permitted (halfword flags);
 # define space_factor_overload_par        integer_parameter(space_factor_overload_code)
 # define space_factor_shrink_limit_par    integer_parameter(space_factor_shrink_limit_code)
 # define space_factor_stretch_limit_par   integer_parameter(space_factor_stretch_limit_code)
+# define space_skip_factor_par            integer_parameter(space_skip_factor_code)
 # define sup_mark_mode_par                integer_parameter(sup_mark_mode_code)
 /*       comment_mode_par                 integer_parameter(comment_mode_code) */ /* experiment */
 # define text_direction_par               integer_parameter(text_direction_code)
@@ -1989,6 +2005,9 @@ extern halfword tex_explicit_disc_penalty  (halfword mode);
 # define update_tex_local_broken_penalty(v)     tex_eq_word_define(internal_integer_location(local_broken_penalty_code), v);
 # define update_tex_local_tolerance(v)          tex_eq_word_define(internal_integer_location(local_tolerance_code), v);
 # define update_tex_local_pre_tolerance(v)      tex_eq_word_define(internal_integer_location(local_pre_tolerance_code), v);
+# define update_tex_local_hang_after(v)         tex_eq_word_define(internal_integer_location(local_hang_after_code), v);
+
+# define update_tex_local_hang_indent(v)        tex_eq_word_define(internal_dimension_location(local_hang_indent_code), v);
 
 # define box_limit_mode_hlist ((box_limit_mode_par & box_limit_hlist) == box_limit_hlist)
 # define box_limit_mode_vlist ((box_limit_mode_par & box_limit_vlist) == box_limit_vlist)

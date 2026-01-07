@@ -51,6 +51,7 @@ typedef struct balance_state_info {
     int          artificial_encountered; 
     int          current_slot_number;   
     halfword     default_fitness_classes;
+    int          balancing;
 } balance_state_info;
 
 extern balance_state_info lmt_balance_state; /* can be private */
@@ -132,5 +133,9 @@ extern void tex_vbalanced_reinsert (
     halfword n,
     halfword options
 );
+
+// extern halfword tex_get_balance_currentheight (
+//     void
+// );
 
 # endif

@@ -658,6 +658,27 @@
 
 % Celtic: Breton, Welsh, Irish, Manx, Scottish Gaelic
 
+\installlanguage
+  [\s!ga]
+  [\c!define=\v!no,
+   % these ate from english
+   \c!spacing=\v!broad,
+   \c!leftsentence=\emdash,
+   \c!rightsentence=\emdash,
+   \c!leftsubsentence=\emdash,
+   \c!rightsubsentence=\emdash,
+   \c!leftquote=\upperleftsinglesixquote,
+   \c!rightquote=\upperrightsingleninequote,
+   \c!leftquotation=\upperleftdoublesixquote,
+   \c!rightquotation=\upperrightdoubleninequote,
+   \c!date={\v!month,\space,\v!day,{,\space},\v!year},
+   %
+   \s!patterns=\s!ga,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
+
+\installlanguage [\s!gaelic] [\s!ga]
+
 % CJK: Chinese, Japanese, Korean
 
 \installlanguage

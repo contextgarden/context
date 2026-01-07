@@ -3478,7 +3478,7 @@ strnumber tex_the_convert_string(halfword c, int i)
         case to_sparse_dimension_code:
             tex_print_sparse_dimension(i, pt_unit);
             break;
-       case to_limited_float_code:
+        case to_limited_float_code:
             tex_print_posit_5(i);
             break;
         case roman_numeral_code:

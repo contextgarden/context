@@ -224,6 +224,18 @@
   [\s!itemgroupcolumns]
   [\c!grid=\itemgroupparameter\c!grid]
 
+%D New, per-column backgrounds, as suggested by Wolfgang (per 2025-12-29). Beware:
+%D itemgroup columns defined above don't do this per-column because there \type {n}
+%D is yet unknown (dynamic).
+
+\appendtoks
+    \localcontrolledrepeat \mixedcolumnsparameter\c!n
+      {\expanded
+         {\setupmixedcolumns
+            [\currentmixedcolumns:\the\currentloopiterator]%
+            [\s!parent=\??mixedcolumns\currentmixedcolumns]}}%
+\to \everydefinemixedcolumns
+
 % the fast hooks:
 
 \protected\def\strc_itemgroups_start_columns
@@ -756,6 +768,7 @@
    % the framed needs a reset of strut, align, setups etc
    \mixedcolumnseparatorheight\ht\scratchbox
    \mixedcolumnseparatordepth \dp\scratchbox
+   \cdef\currentmixedcolumns{\currentparentmixedcolumns:\recurselevel}% wolfgang
    \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox}
 
 \def\page_mix_routine_package_separate
@@ -780,6 +793,7 @@
      \fi
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
+       \let\currentparentmixedcolumns\currentmixedcolumns% wolfgang
        \edef\p_separator{\mixedcolumnsparameter\c!separator}%
        \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
        \ifcstok{\mixedcolumnsparameter\c!direction}\v!reverse
