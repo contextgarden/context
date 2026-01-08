@@ -63,6 +63,7 @@
    \c!distance=\emwidth,
    \c!xoffset=\zeropoint,
    \c!yoffset=\zeropoint,
+   \c!option=,
    \c!lines=3]
 
 \permanent\tolerant\protected\def\typo_parinsert_handle#1#*[#2]#*#:#3%
@@ -94,6 +95,9 @@
    \localhangindent{\scratchwidth+\scratchdistance}%
    \localhangafter \scratchcounter
    \typo_par_insert_trace
+   \ifcstok{\parinsertparameter\c!option}\v!depth
+     \paroptions\plusone % todo: symbolic
+   \fi
    \endgroup}
 
 \def\typo_par_insert_trace_indeed
@@ -115,6 +119,36 @@
 \appendtoks
     \protected\instance\edefcsname\currentparinsert\endcsname{\typo_parinsert_handle{\currentparinsert}}
 \to \everydefineparinsert
+
+%D In case we ended a paragraph and want to continue:
+
+\permanent\protected\def\pickupparinsert
+  {\expanded{%
+     \ifcase{\breaklasthangleftslack+\breaklasthangrightslack}\else
+       \strut
+       \ifcase\breaklasthangleftslack\else
+         \localhangindent\the\breaklasthangleftindent
+         \localhangafter \the\breaklasthangleftslack
+       \fi
+       \ifcase\breaklasthangrightslack\else
+         \localhangindent  \the\breaklasthangrightindent
+         \localhangafter  -\the\breaklasthangrightslack
+       \fi
+     \fi}}
+
+\permanent\protected\def\wrapupparinsert
+  {\ifvmode
+     \ifcase{\breaklasthangleftslack+\breaklasthangrightslack}\else
+       \vskip
+         \ifnum\breaklasthangleftslack>\breaklasthangrightslack
+           \breaklasthangleftslack
+         \else
+           \breaklasthangrightslack
+         \fi
+         \lineheight
+       \relax
+     \fi
+   \fi}
 
 %D Not yet interfaced:
 

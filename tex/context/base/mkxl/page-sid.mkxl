@@ -1201,7 +1201,8 @@
    % indeed we can have a negative number of lines in which case we end up
    % here again later
    \ifconditional\c_page_sides_protect_shape
-     \ifabsnum\lastlinecount<\c_page_sides_hangafter
+   % \ifabsnum\lastlinecount<\c_page_sides_hangafter
+     \ifabsnum\breaklastlinecount<\c_page_sides_hangafter
        \penalty\shapingpenalty
      \fi
    \fi

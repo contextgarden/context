@@ -425,6 +425,20 @@ typedef enum align_properties_code {
 # define first_align_property_code align_option_code
 # define last_align_property_code  align_option_code
 
+typedef enum break_properties_code {
+    break_line_width_code,
+    break_line_count_code,
+    break_hang_slack_code,
+    break_hang_indent_code,
+    break_hang_left_slack_code,
+    break_hang_left_indent_code,
+    break_hang_right_slack_code,
+    break_hang_right_indent_code,
+} break_properties_code;
+
+# define first_break_property_code break_line_width_code
+# define last_break_property_code  break_hang_right_slack_code
+
 /*tex Beware: these are indices into |page_builder_state.page_so_far| array! */
 
 typedef enum page_property_codes {

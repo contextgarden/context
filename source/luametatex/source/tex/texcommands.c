@@ -154,8 +154,8 @@ const unsigned char some_item_classification[] = {
     [last_loop_iterator_code]            = classification_no_arguments,
     [last_par_context_code]              = classification_no_arguments,
     [last_page_extra_code]               = classification_no_arguments,
-    [last_line_width_code]               = classification_no_arguments,
-    [last_line_count_code]               = classification_no_arguments,
+ // [last_line_width_code]               = classification_no_arguments,
+ // [last_line_count_code]               = classification_no_arguments,
     [current_alignment_row_code]         = classification_no_arguments,
     [current_alignment_column_code]      = classification_no_arguments,
     [current_alignment_last_row_code]    = classification_no_arguments,
@@ -835,6 +835,17 @@ void tex_initialize_commands(void)
 
         tex_primitive(luametatex_command, no_legacy,       "alignoption",                    align_property_cmd,     align_option_code,                        0);
 
+        tex_primitive(luametatex_command, no_legacy,       "alignoption",                    break_property_cmd,     align_option_code,                        0);
+
+        tex_primitive(luametatex_command, no_legacy,       "breaklastlinewidth",             break_property_cmd,     break_line_width_code,                    0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklastlinecount",             break_property_cmd,     break_line_count_code,                    0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangslack",             break_property_cmd,     break_hang_slack_code,                    0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangindent",            break_property_cmd,     break_hang_indent_code,                   0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangleftslack",         break_property_cmd,     break_hang_left_slack_code,               0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangleftindent",        break_property_cmd,     break_hang_left_indent_code,              0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangrightslack",        break_property_cmd,     break_hang_right_slack_code,              0);
+        tex_primitive(luametatex_command, no_legacy,       "breaklasthangrightindent",       break_property_cmd,     break_hang_right_indent_code,             0);
+
         tex_primitive(luametatex_command, no_legacy,       "boxadapt",                       box_property_cmd,       box_adapt_code,                           0);
         tex_primitive(luametatex_command, no_legacy,       "boxanchor",                      box_property_cmd,       box_anchor_code,                          0);
         tex_primitive(luametatex_command, no_legacy,       "boxanchors",                     box_property_cmd,       box_anchors_code,                         0);
@@ -927,8 +938,8 @@ void tex_initialize_commands(void)
         tex_primitive(luametatex_command, no_legacy,       "lastnodesubtype",                some_item_cmd,          last_node_subtype_code,                   0);
         tex_primitive(etex_command,       no_legacy,       "lastnodetype",                   some_item_cmd,          last_node_type_code,                      0);
         tex_primitive(luametatex_command, no_legacy,       "lastpageextra",                  some_item_cmd,          last_page_extra_code,                     0);
-        tex_primitive(luametatex_command, no_legacy,       "lastlinewidth",                  some_item_cmd,          last_line_width_code,                     0);
-        tex_primitive(luametatex_command, no_legacy,       "lastlinecount",                  some_item_cmd,          last_line_count_code,                     0);
+     // tex_primitive(luametatex_command, no_legacy,       "lastlinewidth",                  some_item_cmd,          last_line_width_code,                     0);
+     // tex_primitive(luametatex_command, no_legacy,       "lastlinecount",                  some_item_cmd,          last_line_count_code,                     0);
         tex_primitive(luametatex_command, no_legacy,       "currentalignmentrow",            some_item_cmd,          current_alignment_row_code,               0);
         tex_primitive(luametatex_command, no_legacy,       "currentalignmentcolumn",         some_item_cmd,          current_alignment_column_code,            0);
         tex_primitive(luametatex_command, no_legacy,       "lastalignmentrow",               some_item_cmd,          current_alignment_last_row_code,          0);

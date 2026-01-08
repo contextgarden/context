@@ -1784,6 +1784,15 @@
 %     \immutable\voidbox\scratchcounter % fixed index of the used register
 % \popoverloadmode
 
+% These were "internal counters" and are now "break properties" and also are
+% bound to nesting levels. We might replace them with a backtrack over the list
+% variant (because they get reset when a new list is entered). The main problem
+% is that things can happen between the previous and current paragraph so these
+% states are sort of unreliable.
+
+\aliased\let\lastlinewidth\breaklastlinewidth
+\aliased\let\lastlinecount\breaklastlinecount
+
 \protect \endinput
 
 % performance experiment:

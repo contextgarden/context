@@ -1133,14 +1133,14 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
             cur_val_level = integer_val_level;
             cur_val = lmt_page_builder_state.last_extra_used;
             return 1;
-        case last_line_width_code:
-            cur_val_level = dimension_val_level;
-            cur_val = lmt_linebreak_state.last_line_width;
-            return 1;
-        case last_line_count_code:
-            cur_val_level = integer_val_level;
-            cur_val = lmt_linebreak_state.last_line_count;
-            return 1;
+    //  case last_line_width_code:
+    //      cur_val_level = dimension_val_level;
+    //      cur_val = lmt_linebreak_state.last_line_width;
+    //      return 1;
+    //  case last_line_count_code:
+    //      cur_val_level = integer_val_level;
+    //      cur_val = lmt_linebreak_state.last_line_count;
+    //      return 1;
         case current_alignment_row_code:
             cur_val_level = integer_val_level;
             cur_val = tex_alignment_row_number();
@@ -1406,6 +1406,44 @@ static void tex_aux_set_cur_val_by_align_property_cmd(int code)
         case align_option_code:
             cur_val = tex_alignment_get_options();
             cur_val_level = integer_val_level;
+            break;
+    }
+}
+
+static void tex_aux_set_cur_val_by_break_property_cmd(int code)
+{
+    switch (code) {
+        case break_line_width_code:
+            cur_val = cur_list.last_state.line_width;
+            cur_val_level = dimension_val_level;
+            break;
+        case break_line_count_code:
+            cur_val = cur_list.last_state.line_count;
+            cur_val_level = integer_val_level;
+            break;
+        case break_hang_slack_code:
+            cur_val = cur_list.last_state.hang_slack;
+            cur_val_level = integer_val_level;
+            break;
+        case break_hang_indent_code:
+            cur_val = cur_list.last_state.hang_indent;
+            cur_val_level = dimension_val_level;
+            break;
+        case break_hang_left_slack_code:
+            cur_val = cur_list.last_state.hang_left_slack;
+            cur_val_level = integer_val_level;
+            break;
+        case break_hang_left_indent_code:
+            cur_val = cur_list.last_state.hang_left_indent;
+            cur_val_level = dimension_val_level;
+            break;
+        case break_hang_right_slack_code:
+            cur_val = cur_list.last_state.hang_right_slack;
+            cur_val_level = integer_val_level;
+            break;
+        case break_hang_right_indent_code:
+            cur_val = cur_list.last_state.hang_right_indent;
+            cur_val_level = dimension_val_level;
             break;
     }
 }
@@ -2077,6 +2115,9 @@ static halfword tex_aux_scan_something_internal(halfword cmd, halfword chr, int 
             break;
         case align_property_cmd:
             tex_aux_set_cur_val_by_align_property_cmd(chr);
+            break;
+        case break_property_cmd:
+            tex_aux_set_cur_val_by_break_property_cmd(chr);
             break;
         case define_char_code_cmd:
             tex_aux_set_cur_val_by_define_char_cmd(chr);

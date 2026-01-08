@@ -3033,6 +3033,9 @@ static int texlib_set_item(lua_State* L, int index, int prefixes)
                 case align_property_cmd:
                     /*tex Makes no sense here */
                     return 0;
+                case break_property_cmd:
+                    /*tex Makes no sense here */
+                    return 0;
                 case box_property_cmd:
                     /*tex This could be |set_box_property_value| instead. */
                     return 0;
@@ -5965,6 +5968,15 @@ static int texlib_getbalancestepoptionvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getparagraphoptionvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 1);
+    lua_set_string_by_index(L, par_hang_depth_option,  "hangdepth");
+    lua_set_string_by_index(L, par_synchronize_option, "synchronize");
+    lua_set_string_by_index(L, par_snap_option,        "snap");
+    return 1;
+}
+
 static int texlib_getdiscoptionvalues(lua_State *L)
 {
     lua_createtable(L, 2, 7);
@@ -7302,6 +7314,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getuleaderlocationvalues",     texlib_getuleaderlocationvalues       },
     { "getnoadoptionvalues",          texlib_getnoadoptionvalues            },
     { "getbalancestepoptionvalues",   texlib_getbalancestepoptionvalues     },
+    { "getparagraphoptionvalues",     texlib_getparagraphoptionvalues       },
     { "getdiscoptionvalues",          texlib_getdiscoptionvalues            },
     { "getruleoptionvalues",          texlib_getruleoptionvalues            },
     { "getboxoptionvalues",           texlib_getboxoptionvalues             },

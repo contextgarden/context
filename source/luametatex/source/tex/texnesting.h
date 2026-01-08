@@ -10,6 +10,17 @@
     end up with the same size. We also end up with plenty of casts elsewhere. 
 */
 
+typedef struct last_state_record {
+    scaled   line_width;
+    halfword line_count;
+    scaled   hang_indent;
+    scaled   hang_left_indent;
+    scaled   hang_right_indent;
+    halfword hang_slack;
+    halfword hang_left_slack;
+    halfword hang_right_slack;
+} last_state_record;
+
 typedef struct list_state_record {
     int      mode;                 // singleword 
     halfword head;                 
@@ -18,7 +29,10 @@ typedef struct list_state_record {
     int      mode_line;            
     halfword prev_depth;           // scaled
     halfword space_factor;         
-    halfword direction_stack;      
+    halfword direction_stack;
+    /* this could become:
+    math_state_record math_state;
+    */
     int      math_dir;             // singleword 
     int      math_style;           // singleword 
     int      math_main_style;      // singleword 
@@ -28,9 +42,12 @@ typedef struct list_state_record {
     halfword math_begin;           // singleword 
     halfword math_end;             // singleword 
     halfword math_mode;            // singleword 
+    /* */
     halfword delimiter;            // todo: get rid of these and use the stack 
     halfword incomplete_noad;      // todo: get rid of these and use the stack 
     int      options; 
+    /* */
+    last_state_record last_state;
 } list_state_record;
 
 typedef struct nest_state_info {

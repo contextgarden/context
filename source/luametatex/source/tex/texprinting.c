@@ -1262,7 +1262,7 @@ const char *tex_print_format_args(const char *format, va_list args)
                                 unsigned char s[6] = { 0 };
                                 unsigned char *b = s;
                                 b = aux_uni2str(va_arg(args, int));
-                                tex_print_format(", %s", b);
+                                tex_print_format("%s", b);
                                 break;
                             }                       
                         case 'B': /* badness */

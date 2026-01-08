@@ -217,55 +217,70 @@ static int tex_aux_room_on_nest_stack(void) /* quite similar to save_stack check
     We start out with the page, that is, the main vertical list. 
 */
 
+static inline void tex_aux_nesting_reset_state(void)
+{
+ // cur_list.last_state.line_width        = 0;
+ // cur_list.last_state.line_count        = 0;
+ // cur_list.last_state.hang_indent       = 0;
+ // cur_list.last_state.hang_left_indent  = 0;
+ // cur_list.last_state.hang_right_indent = 0;
+ // cur_list.last_state.hang_slack        = 0;
+ // cur_list.last_state.hang_left_slack   = 0;
+ // cur_list.last_state.hang_right_slack  = 0;
+    memset(&cur_list.last_state, 0, sizeof(cur_list.last_state));
+}
+
 void tex_initialize_nesting(void)
 {
+    /*tex |ignore_depth_criterion_par| is not yet available! */
     lmt_nest_state.nest_data.ptr = 0;
     lmt_nest_state.nest_data.top = 0;
+    lmt_nest_state.shown_mode    = 0;
+    lmt_nest_state.math_mode     = 0;
 # if 1
-    lmt_nest_state.shown_mode = 0;
-    lmt_nest_state.math_mode = 0;
-    cur_list.mode = vmode;
-    cur_list.head = contribute_head;
-    cur_list.tail = contribute_head;
-    cur_list.delimiter = null;
-    cur_list.prev_graf = 0;
-    cur_list.mode_line = 0;
-    cur_list.prev_depth = ignore_depth; /*tex |ignore_depth_criterion_par| is not yet available! */
-    cur_list.space_factor = default_space_factor;
-    cur_list.incomplete_noad = null;
-    cur_list.direction_stack = null;
-    cur_list.math_dir = 0;
-    cur_list.math_style = -1;
-    cur_list.math_main_style = -1;
-    cur_list.math_parent_style = -1;
-    cur_list.math_flatten = 1;
-    cur_list.math_begin = unset_noad_class;
-    cur_list.math_end = unset_noad_class;
-    cur_list.math_mode = 0;
-    cur_list.options = 0;
+    cur_list.mode               = vmode;
+    cur_list.head               = contribute_head;
+    cur_list.tail               = contribute_head;
+    cur_list.delimiter          = null;
+    cur_list.prev_graf          = 0;
+    cur_list.mode_line          = 0;
+    cur_list.prev_depth         = ignore_depth;
+    cur_list.space_factor       = default_space_factor;
+    cur_list.incomplete_noad    = null;
+    cur_list.direction_stack    = null;
+    cur_list.math_dir           = 0;
+    cur_list.math_style         = -1;
+    cur_list.math_main_style    = -1;
+    cur_list.math_parent_style  = -1;
+    cur_list.math_flatten       = 1;
+    cur_list.math_begin         = unset_noad_class;
+    cur_list.math_end           = unset_noad_class;
+    cur_list.math_mode          = 0;
+    cur_list.options            = 0;
 # else 
     cur_list = (list_state_record) {
-        .mode              = vmode,
-        .head              = contribute_head,
-        .tail              = contribute_head,
-        .delimiter         = null,
-        .prev_graf         = 0,
-        .mode_line         = 0,
-        .prev_depth        = ignore_depth, /*tex |ignore_depth_criterion_par| is not yet available! */
-        .space_factor      = default_space_factor,
-        .incomplete_noad   = null,
-        .direction_stack   = null,
-        .math_dir          = 0,
-        .math_style        = -1,
-        .math_main_style   = -1,
-        .math_parent_style = -1,
-        .math_flatten      = 1,
-        .math_begin        = unset_noad_class,
-        .math_end          = unset_noad_class,
-        .math_mode         = 0,
-        .options           = 0,
+        .mode               = vmode,
+        .head               = contribute_head,
+        .tail               = contribute_head,
+        .delimiter          = null,
+        .prev_graf          = 0,
+        .mode_line          = 0,
+        .prev_depth         = ignore_depth,
+        .space_factor       = default_space_factor,
+        .incomplete_noad    = null,
+        .direction_stack    = null,
+        .math_dir           = 0,
+        .math_style         = -1,
+        .math_main_style    = -1,
+        .math_parent_style  = -1,
+        .math_flatten       = 1,
+        .math_begin         = unset_noad_class,
+        .math_end           = unset_noad_class,
+        .math_mode          = 0,
+        .options            = 0,
     };
 # endif 
+    tex_aux_nesting_reset_state();
 }
 
 halfword tex_pop_tail(void)
@@ -304,55 +319,55 @@ void tex_push_nest(void)
     lmt_nest_state.math_mode = 0;
     if (tex_aux_room_on_nest_stack()) {
 # if 1
-            cur_list.mode = top->mode;
-            cur_list.head = tex_new_temp_node();
-            cur_list.tail = cur_list.head;
-            cur_list.delimiter = null;
-            cur_list.prev_graf = 0;
-            cur_list.mode_line = lmt_input_state.input_line;
-            cur_list.prev_depth = top->prev_depth;
-            cur_list.space_factor = top->space_factor;
-            cur_list.incomplete_noad = top->incomplete_noad;
-            cur_list.direction_stack = null;
-            cur_list.math_dir = 0;
-            cur_list.math_style = -1;
-            cur_list.math_main_style = top->math_main_style;
-            cur_list.math_parent_style = top->math_parent_style;
-            cur_list.math_flatten = 1;
-            cur_list.math_begin = unset_noad_class;
-            cur_list.math_end = unset_noad_class;
-         // cur_list.math_begin = top->math_begin;
-         // cur_list.math_end = top->math_end;
-            cur_list.math_mode = 0;
-            cur_list.options = 0;
+        cur_list.mode              = top->mode;
+        cur_list.head              = tex_new_temp_node();
+        cur_list.tail              = cur_list.head;
+        cur_list.delimiter         = null;
+        cur_list.prev_graf         = 0;
+        cur_list.mode_line         = lmt_input_state.input_line;
+        cur_list.prev_depth        = top->prev_depth;
+        cur_list.space_factor      = top->space_factor;
+        cur_list.incomplete_noad   = top->incomplete_noad;
+        cur_list.direction_stack   = null;
+        cur_list.math_dir          = 0;
+        cur_list.math_style        = -1;
+        cur_list.math_main_style   = top->math_main_style;
+        cur_list.math_parent_style = top->math_parent_style;
+        cur_list.math_flatten      = 1;
+        cur_list.math_begin        = unset_noad_class;
+        cur_list.math_end          = unset_noad_class;
+     // cur_list.math_begin        = top->math_begin;
+     // cur_list.math_end          = top->math_end;
+        cur_list.math_mode         = 0;
+        cur_list.options           = 0;
 # else
-            cur_list = (list_state_record) {
-                .mode              = top->mode,
-                .head              = null,
-                .tail              = null,
-                .delimiter         = null,
-                .prev_graf         = 0,
-                .mode_line         = lmt_input_state.input_line,
-                .prev_depth        = top->prev_depth,
-                .space_factor      = top->space_factor,
-                .incomplete_noad   = top->incomplete_noad,
-                .direction_stack   = null,
-                .math_dir          = 0,
-                .math_style        = -1,
-                .math_main_style   = top->math_main_style,
-                .math_parent_style = top->math_parent_style,
-                .math_flatten      = 1,
-                .math_begin        = unset_noad_class,
-                .math_end          = unset_noad_class,
-             // .math_begin        = top->math_begin,
-             // .math_end          = top->math_end,
-                .math_mode         = 0,
-                .options           = 0,
-            };
-            cur_list.head = tex_new_temp_node(),
-            cur_list.tail = cur_list.head;
+        cur_list = (list_state_record) {
+            .mode              = top->mode,
+            .head              = null,
+            .tail              = null,
+            .delimiter         = null,
+            .prev_graf         = 0,
+            .mode_line         = lmt_input_state.input_line,
+            .prev_depth        = top->prev_depth,
+            .space_factor      = top->space_factor,
+            .incomplete_noad   = top->incomplete_noad,
+            .direction_stack   = null,
+            .math_dir          = 0,
+            .math_style        = -1,
+            .math_main_style   = top->math_main_style,
+            .math_parent_style = top->math_parent_style,
+            .math_flatten      = 1,
+            .math_begin        = unset_noad_class,
+            .math_end          = unset_noad_class,
+         // .math_begin        = top->math_begin,
+         // .math_end          = top->math_end,
+            .math_mode         = 0,
+            .options           = 0,
+        };
+        cur_list.head = tex_new_temp_node(),
+        cur_list.tail = cur_list.head;
 # endif
-
+    tex_aux_nesting_reset_state();
     } else {
         tex_overflow_error("semantic nest size", lmt_nest_state.nest_data.size);
     }

@@ -588,6 +588,7 @@ make_lua_key(L, bottomskip);\
 make_lua_key(L, boundary);\
 make_lua_key(L, box);\
 make_lua_key(L, box_property);\
+make_lua_key(L, break_property);\
 make_lua_key(L, broken);\
 make_lua_key(L, brokeninsert);\
 make_lua_key(L, brokenpenalty);\

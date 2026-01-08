@@ -2897,8 +2897,8 @@
 
 %D This is now a primitive:
 
-% \lastlinewidth % minus [|parinit|parfil][left|right]skip
-% \lastlinecount % can be used to compensate for above
+% \breaklastlinewidth % minus [|parinit|parfil][left|right]skip
+% \breaklastlinecount % can be used to compensate for above
 
 %D Keep as reference:
 

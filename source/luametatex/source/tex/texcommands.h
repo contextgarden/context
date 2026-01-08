@@ -234,6 +234,7 @@ typedef enum tex_command_code {
     hyphenation_cmd,                  /*tex hyphenation data (|\hyphenation|, |\patterns|) */
     page_property_cmd,                /*tex page info (|\pagegoal|, etc.) */
     align_property_cmd,
+    break_property_cmd,
     box_property_cmd,                 /*tex change property of box (|\wd|, |\ht|, |\dp|) */
     specification_cmd,                /*tex specifications (|\parshape|, |\interlinepenalties|, etc.) */
     define_char_code_cmd,             /*tex define a character code (|\catcode|, etc.) */
@@ -462,14 +463,20 @@ typedef enum math_fraction_codes {
 
 /*tex
     These don't fit into the internal register model because they are for instance global or
-    bound to the current list.
+    bound to the current list. The first three could go to the |break_properties| class but
+    as they are historic we keep them here. The |\prevgraf| has a variant in the |\break...|
+    namespace, but keep in mind that that one is not adapted occasionally in the process of
+    breaking lines.
 */
 
 typedef enum auxiliary_codes {
+    /*tex These are traditional state commands: */
     space_factor_code,
     prev_depth_code,
     prev_graf_code,
+    /*tex Introduced were by \ETEX: */
     interaction_mode_code,
+    /*tex Added in \LUAMETATEX: */
     insert_mode_code,
 } auxiliary_codes;
 
@@ -666,8 +673,8 @@ typedef enum some_item_codes {
     last_par_trigger_code,
     last_par_context_code,
     last_page_extra_code,
-    last_line_width_code,          /*tex |\lastlinewidth| */
-    last_line_count_code,          /*tex |\lastlinecount| */
+ // last_line_width_code,          /*tex |\lastlinewidth| */
+ // last_line_count_code,          /*tex |\lastlinecount| */
     current_alignment_row_code,
     current_alignment_column_code,
     current_alignment_last_row_code,
@@ -677,7 +684,7 @@ typedef enum some_item_codes {
 
 extern const unsigned char some_item_classification[current_alignment_tabskip_code + 1];
 
-# define last_some_item_code last_line_count_code
+# define last_some_item_code last_page_extra_code
 
 typedef enum catcode_table_codes {
     save_cat_code_table_code,

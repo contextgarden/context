@@ -224,18 +224,6 @@
   [\s!itemgroupcolumns]
   [\c!grid=\itemgroupparameter\c!grid]
 
-%D New, per-column backgrounds, as suggested by Wolfgang (per 2025-12-29). Beware:
-%D itemgroup columns defined above don't do this per-column because there \type {n}
-%D is yet unknown (dynamic).
-
-\appendtoks
-    \localcontrolledrepeat \mixedcolumnsparameter\c!n
-      {\expanded
-         {\setupmixedcolumns
-            [\currentmixedcolumns:\the\currentloopiterator]%
-            [\s!parent=\??mixedcolumns\currentmixedcolumns]}}%
-\to \everydefinemixedcolumns
-
 % the fast hooks:
 
 \protected\def\strc_itemgroups_start_columns
@@ -265,6 +253,16 @@
 
 %D The interceptor is quite simple, at least for the moment.
 
+% \starttext
+% \samplefile{tufte}
+% \startcolumns
+%     \samplefile{tufte}
+% \stopcolumns
+% \samplefile{tufte}
+% \stoptext
+
+\newconditional\c_page_mix_snap_preceding % test per 2026-01
+
 \def\page_mix_routine_intercept
   {\ifdim\pagetotal>\pagegoal
      % testcase: preceding-001 ... if we don't do this, text can disappear as
@@ -278,7 +276,13 @@
         \writestatus\m!columns{preceding error}%
         \unvbox\b_page_mix_preceding
       \fi
-      \unvbox\normalpagebox}}
+      \unvbox\normalpagebox}%
+      \ifconditional\c_page_mix_grid_snapping
+        % probably ok anyway
+      \orelse\ifconditional\c_page_mix_snap_preceding % see (x)
+        \global\ht\b_page_mix_preceding{\ht\b_page_mix_preceding-\strutdp+\topskip-\lineheight}%
+        \global\dp\b_page_mix_preceding\strutdp
+      \fi}
 
 %D The error routine is there but unlikely to be called. It is a left-over from
 %D the traditional routine that might come in handy some day.
@@ -768,7 +772,8 @@
    % the framed needs a reset of strut, align, setups etc
    \mixedcolumnseparatorheight\ht\scratchbox
    \mixedcolumnseparatordepth \dp\scratchbox
-   \cdef\currentmixedcolumns{\currentparentmixedcolumns:\recurselevel}% wolfgang
+   \cdef\currentmixedcolumns{\currentparentmixedcolumns:\recurselevel}%
+   \setmixedcolumnsparameter\s!parent{\??mixedcolumns\currentparentmixedcolumns}%
    \inheritedmixedcolumnsframedbox\currentmixedcolumns\scratchbox}
 
 \def\page_mix_routine_package_separate
@@ -783,7 +788,8 @@
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
      % \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding % already done
-       \vpack\bgroup
+       \dontleavehmode\hpack\bgroup % see (x)
+      %\vpack\bgroup
          \box\b_page_mix_preceding
        \egroup
        \global\d_page_mix_preceding_height\zeropoint
@@ -793,7 +799,7 @@
      \fi
      \hskip\d_page_mix_leftskip
      \page_mix_hbox to \d_page_mix_max_width \bgroup
-       \let\currentparentmixedcolumns\currentmixedcolumns% wolfgang
+       \let\currentparentmixedcolumns\currentmixedcolumns
        \edef\p_separator{\mixedcolumnsparameter\c!separator}%
        \mixedcolumnseparatorwidth\d_page_mix_distance % \mixedcolumnsparameter\c!rulethickness\relax
        \ifcstok{\mixedcolumnsparameter\c!direction}\v!reverse

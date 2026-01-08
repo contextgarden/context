@@ -4229,6 +4229,39 @@ static void tex_aux_set_align_property(void)
     }
 }
 
+static void tex_aux_set_break_property(void)
+{
+    switch (cur_chr) {
+        case break_line_width_code:
+            cur_list.last_state.line_width = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+            break;
+        case break_line_count_code:
+            cur_list.last_state.line_count = tex_scan_integer(1, NULL, NULL);
+            break;
+        case break_hang_slack_code:
+            cur_list.last_state.hang_slack = tex_scan_integer(1, NULL, NULL);
+            break;
+        case break_hang_indent_code:
+            cur_list.last_state.hang_indent = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+            break;
+        case break_hang_left_slack_code:
+            cur_list.last_state.hang_left_slack = tex_scan_integer(1, NULL, NULL);
+            break;
+        case break_hang_left_indent_code:
+            cur_list.last_state.hang_left_indent = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+            break;
+        case break_hang_right_slack_code:
+            cur_list.last_state.hang_right_slack = tex_scan_integer(1, NULL, NULL);
+            break;
+        case break_hang_right_indent_code:
+            cur_list.last_state.hang_right_indent = tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
+            break;
+        default:
+            tex_confusion("break property");
+            break;
+    }
+}
+
 /*tex
     The |space_factor| or |prev_depth| settings are changed when a |set_aux| command is sensed.
     Similarly, |prev_graf| is changed in the presence of |set_prev_graf|, and |dead_cycles| or
@@ -6033,6 +6066,9 @@ static void tex_run_prefixed_command(void)
         case align_property_cmd:
             tex_aux_set_align_property();
             break;
+        case break_property_cmd:
+            tex_aux_set_break_property();
+            break;
         case box_property_cmd:
             tex_aux_set_box_property();
             break;
@@ -6965,6 +7001,7 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         case math_parameter_cmd: 
         case page_property_cmd: 
         case align_property_cmd:
+        case break_property_cmd:
         case box_property_cmd:
         case specification_cmd: 
         case shorthand_def_cmd: 

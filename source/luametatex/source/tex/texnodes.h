@@ -30,7 +30,7 @@
     or stock \LUATEX. For instance margin nodes are now just kern nodes, some whatits are first
     class nodes and we have only one generic whatsit left. We also have more subtypes which makes
     a more detailed tracking of where nodes come from possible. Other nodes, like the |inserting|
-    and |split_up| nodes are ot both |inserting| but with a subtype because the register index is
+    and |split_up| nodes are both |inserting| but with a subtype because the register index is
     no longer the subtype.
 
     Not all nodes can end up in a node list. Some are used for housekeeping (stack, expressions,
@@ -2835,8 +2835,9 @@ static int par_category_to_codes[par_n_of_codes] = { /* explicit size is check *
 };
 
 typedef enum par_options {
-    par_option_synchronize = 0x01,
-    par_option_snapping    = 0x02,
+    par_hang_depth_option  = 0x01,
+    par_synchronize_option = 0x02,
+    par_snap_option        = 0x03,
 } par_options;
 
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */
