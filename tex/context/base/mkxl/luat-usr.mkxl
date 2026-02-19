@@ -39,11 +39,11 @@
 %D We provide an interface for defining instances. We don't have the definers yet
 %D so we do it low level:
 
-\def\s!lua  {lua}
-\def\s!code {code}
-\def\s!data {data}
-\def\s!start{start}
-\def\s!stop {stop}
+\cdef\s!lua  {lua}
+\cdef\s!code {code}
+\cdef\s!data {data}
+\cdef\s!start{start}
+\cdef\s!stop {stop}
 
 %D Beware: because \type {\expanded} is een convert command, the error message will
 %D show \type{<inserted text>} as part of the message.

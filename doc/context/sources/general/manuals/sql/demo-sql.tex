@@ -1,0 +1,335 @@
+% Welcome,
+%
+% This is just a test file. You have to make sure that the library can be found.
+% Best is to put it in (or below) the <texroot>/texmf-<platform>/bin/lib/ directory
+% and make sure to update the file database. We define:
+%
+%   local libfile = "sqlite3" -- on linux: symlink to libsqlite3.so.0 or so
+%
+% If needed you can enable some tracing with:
+%
+%   \enabletrackers[sql*]
+%   \enabletrackers[*lib*]
+%
+% The bad news is that there are differences over time in operating systems, the
+% good news is that ones it works it often keeps working. Support for SQL is rather
+% old and hasn't changed much in \CONTEXT. It also performs quite well.
+%
+% HH
+
+\registerctxluafile{libs-imp-sqlite}{autosuffix}
+
+\starttext
+
+\startluacode
+
+    local sql = require("util-sql")
+
+    document.sqlconverter = sql.makeconverter {
+        { name = "id",      type = "number" },
+        { name = "name",    type = "string" },
+        { name = "location",type = "string" },
+        { name = "data",    type = "deserialize" },
+        { name = "json",    type = "fromjson" },
+    }
+
+ -- local method = "ffi"
+    local method = "sqlite"
+
+    sql.setmethod(method) -- library | client | lmxsql | swiglib | ffi | sqlite
+
+    document.sqlpresets = {
+        host      = "localhost",
+        username  = "root",
+        password  = "secret",
+        database  = "test",
+        id        = "test"
+    }
+
+    local common_template = [[
+        CREATE DATABASE IF NOT EXISTS `test` ;
+
+        CREATE TABLE IF NOT EXISTS `test`.`test` (
+            `id`       int(11)     NOT NULL AUTO_INCREMENT,
+            `name`     varchar(50) NOT NULL,
+            `location` varchar(50) NOT NULL,
+            `data`     longtext    NOT NULL,
+            `json`     longtext    NOT NULL,
+
+            PRIMARY KEY                    (`id`),
+            UNIQUE INDEX `id_unique_index` (`id` ASC)
+        )
+
+        DEFAULT CHARSET = utf8 ;
+    ]]
+
+    local sqlite_template = [[
+        CREATE TABLE IF NOT EXISTS `test` (
+            `id`       INTEGER PRIMARY KEY AUTOINCREMENT,
+            `name`     TEXT NOT NULL,
+            `location` TEXT NOT NULL,
+            `data`     TEXT NOT NULL,
+            `json`     TEXT NOT NULL
+        )
+    ]]
+
+    local results = utilities.sql.execute {
+        presets   = document.sqlpresets,
+        template  = sql.getmethod() == "sqlite" and sqlite_template or common_template,
+    }
+
+ -- inspect(results)
+
+\stopluacode
+
+\startluacode
+    local template = [[
+        INSERT INTO `test` (
+            `name`,
+            `location`,
+            `data`,
+            `json`
+        ) VALUES (
+            '%[name]%',
+            '%[location]%',
+            '%[data]%',
+            '%[json]%'
+        ) ;
+    ]]
+
+    local function add(t)
+        local data    = type(t.data) == "table" and utilities.sql.serialize(t.data,"return") or ""
+        local json    = type(t.json) == "table" and utilities.sql.tojson   (t.data,"return") or ""
+        local results = utilities.sql.execute {
+            presets   = document.sqlpresets,
+            template  = template,
+            variables = {
+                name     = t.name,
+                location = t.location,
+                data     = data,
+                json     = json,
+            },
+        }
+        if results then
+--            inspect(results)
+        end
+    end
+
+    add { name = "Hans Hagen", location = "Hasselt" }
+    add { name = "Ton Otten",  location = "Zwolle" }
+\stopluacode
+
+\startluacode
+    local replace = lpeg.replacer(lpeg.patterns.newline,"\r",true)
+
+    local function update(t)
+        local data = {
+            author = t.author,
+            quote  = string.texnewlines(io.loaddata(resolvers.findfile(t.filename)) or ""),
+        }
+        local results, x, y = utilities.sql.execute {
+            presets   = document.sqlpresets,
+            template  = "update `test` set `data` = '%[data]%' where `name` = '%[name]%' ;"
+                     .. "update `test` set `json` = '%[json]%' where `name` = '%[name]%' ;",
+            variables = {
+                name = t.name,
+                data = utilities.sql.serialize(data),
+                json = utilities.sql.tojson   (data),
+            },
+        }
+        if results then
+--            inspect(results)
+        end
+    end
+
+    update { name = "Hans Hagen", author = "Hermann Zapf",    filename = "zapf.tex" }
+    update { name = "Ton Otten",  author = "Robert Sapolsky", filename = "sapolsky.tex" }
+\stopluacode
+
+\setupbodyfont[dejavu]
+
+\setuppapersize[S6]
+
+\startluacode
+
+    context.starttitle { title = "Who's in there" }
+
+    local results = utilities.sql.execute {
+        presets   = document.sqlpresets,
+        template  = "select * from `test` ;",
+        converter = document.sqlconverter,
+    }
+
+    context.starttabulate { "|||" }
+    context.HL()
+    context.NC() context.bold("name")
+    context.NC() context.bold("location")
+    context.NC() context.NR()
+    context.HL()
+    for i=1,#results do
+        local result = results[i]
+        context.NC() context(result.name)
+        context.NC() context(result.location)
+        context.NC() context.NR()
+    end
+    context.HL()
+    context.stoptabulate()
+
+    context.stoptitle()
+
+\stopluacode
+
+\startluacode
+
+    context.starttitle { title = "Who's from Zwolle" }
+
+    local results = utilities.sql.execute {
+        presets   = document.sqlpresets,
+        template  = "select * from `test` where `location` = 'Zwolle' ;",
+        variables = { },
+        converter = document.sqlconverter,
+    }
+
+    context.starttabulate { "|||" }
+    context.HL()
+    context.NC() context.bold("name")
+    context.NC() context.bold("location")
+    context.NC() context.NR()
+    context.HL()
+    for i=1,#results do
+        local result = results[i]
+        context.NC() context(result.name)
+        context.NC() context(result.location)
+        context.NC() context.NR()
+    end
+    context.HL()
+    context.stoptabulate()
+
+    context.stoptitle()
+
+\stopluacode
+
+\startluacode
+
+    context.starttitle { title = "Who's from Hasselt" }
+
+    local results = utilities.sql.execute {
+        presets   = document.sqlpresets,
+        template  = "select * from `test` where `location` = '%location%' ;",
+        variables = { location = "Hasselt" },
+        converter = document.sqlconverter,
+    }
+
+    context.starttabulate { "|||" }
+    context.HL()
+    context.NC() context.bold("name")
+    context.NC() context.bold("location")
+    context.NC() context.NR()
+    context.HL()
+    for i=1,#results do
+        local result = results[i]
+        context.NC() context(result.name)
+        context.NC() context(result.location)
+        context.NC() context.NR()
+    end
+    context.HL()
+    context.stoptabulate()
+
+    context.stoptitle()
+
+\stopluacode
+
+\startluacode
+
+    local template = [[
+        select
+            *
+        from
+            `test`
+        where
+            `location` = '%location%'
+        order by
+            `name` ;
+    ]]
+
+    function document.GetDataByLocation(location)
+
+        local results = utilities.sql.execute {
+            presets   = document.sqlpresets,
+            template  = template,
+            variables = { location = location },
+            converter = document.sqlconverter,
+        }
+
+        context.starttabulate { "|||" }
+            context.HL()
+            context.NC() context.bold("name")
+            context.NC() context.bold("location")
+            context.NC() context.NR()
+            context.HL()
+            for i=1,#results do
+                local result = results[i]
+                context.NC() context(result.name)
+                context.NC() context(result.location)
+                context.NC() context.NR()
+            end
+            context.HL()
+        context.stoptabulate()
+
+    end
+
+\stopluacode
+
+\starttitle[title=Who's from where]
+
+    \startsubject[title=Who's from the Zwolle]
+        \ctxlua{document.GetDataByLocation("Zwolle")}
+    \stopsubject
+
+    \startsubject[title=Who's from Zwolle]
+        \ctxlua{document.GetDataByLocation("Zwolle")}
+    \stopsubject
+
+\stoptitle
+
+\starttitle[title=Some text]
+
+    \startluacode
+
+        local results = utilities.sql.execute {
+            presets   = document.sqlpresets,
+            template  = "select * from `test` where `name` = 'Hans Hagen' ;",
+            template  = "select * from `test` where `name` = 'Ton Otten' ;",
+            converter = document.sqlconverter,
+        }
+     -- local used = results and results[1]
+        local used = results and results[#results]
+
+        if used and used.data then
+
+-- inspect(used.data)
+-- inspect(used.json)
+
+            context.starttitle { title = used.data.author or "Nothing" }
+
+                context(used.data.quote)
+
+                context.blank()
+
+                context("(%s likes this quote.)",used.name)
+
+            context.stoptitle()
+
+        else
+
+            context.starttitle { title = "Nothing" }
+
+            context.stoptitle()
+
+        end
+
+    \stopluacode
+
+\stoptitle
+
+\stoptext

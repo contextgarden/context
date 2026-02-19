@@ -386,6 +386,15 @@
    \dousecolorparameter{\linetablerparameter\c!color}%
    \ignorespaces}
 
+\def\d_tabl_lines_stretch
+  {\ifcstok{\linetableparameter\c!stretch}\v!no
+     \maxdimen  % no stretch
+   \orelse\iflastnamedcs\v!yes
+     \zeropoint % max stretch
+   \else
+     \lastnamedcs
+   \fi}
+
 \def\tabl_lines_stop_part
   {\ifnum\c_tabl_lines_part>\zerocount
      \unskip \unskip % remove last intercolumn skip (distance+fill)
@@ -394,7 +403,7 @@
    \ifconditional\c_tabl_lines_preroll
    \orelse\ifcase\c_tabl_lines_part
      % we're collecting the repeater
-   \orelse\ifdim{\hsize-\wd\scratchbox}>{\linetableparameter\c!stretch}%
+   \orelse\ifdim{\hsize-\wd\scratchbox}>{\d_tabl_lines_stretch}%
    \else
      \setbox\scratchbox\hpack to \hsize{\unhbox\scratchbox}%
    \fi}
@@ -505,10 +514,7 @@
    \ifcstok{\linetableparameter\c!maxwidth}\v!fit
      \setuplinetable[\c!maxwidth=\zeropoint]%
    \fi
-   \processaction
-     [\linetableparameter\c!stretch]
-     [ \v!no=>{\setuplinetable[\c!stretch=\maxdimen]},% no stretch
-      \v!yes=>{\setuplinetable[\c!stretch=\zeropoint]}]% max stretch
+%    \c_tabl_lines_set_stretch
    \c_tabl_lines_repeat{\linetableparameter\c!nleft}%
    \c_tabl_lines_split_state % =
      \ifdim{\linetableparameter\c!maxwidth}>\zeropoint

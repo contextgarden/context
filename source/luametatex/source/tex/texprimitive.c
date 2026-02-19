@@ -542,11 +542,12 @@ halfword tex_id_locate(int j, int l, int create)
             } else if (create) {
                 return tex_aux_insert_id(p, (lmt_fileio_state.io_buffer + j), (unsigned) l);
             } else {
-                break;
+                return undefined_control_sequence;
+             // break;
             }
         }
     }
-    return undefined_control_sequence;
+ // return undefined_control_sequence;
 }
 
 halfword tex_id_locate_only(int j, int l)
@@ -608,11 +609,12 @@ halfword tex_string_locate(const char *s, size_t l, int create)
             } else if (create) {
                 return tex_aux_insert_id(p, (const unsigned char *) s, (unsigned) l);
             } else {
-                break;
+             // break;
+                return undefined_control_sequence;
             }
         }
     }
-    return undefined_control_sequence;
+ // return undefined_control_sequence;
 }
 
 halfword tex_string_locate_only(const char *s, size_t l)

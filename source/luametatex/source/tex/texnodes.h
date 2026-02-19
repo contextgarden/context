@@ -3091,15 +3091,25 @@ static inline void tex_couple_nodes(int a, int b)
     node_prev(b) = a;
 }
 
+// static inline void tex_try_couple_nodes(int a, int b)
+// {
+//     if (b) {
+//         if (a) {
+//             node_next(a) = b;
+//         }
+//         node_prev(b) = a;
+//     } else if (a) {
+//         node_next(a) = null;
+//    }
+// }
+
 static inline void tex_try_couple_nodes(int a, int b)
 {
+    if (a) {
+        node_next(a) = b;
+    }
     if (b) {
-        if (a) {
-            node_next(a) = b;
-        }
         node_prev(b) = a;
-    } else if (a) {
-        node_next(a) = null;
    }
 }
 
@@ -3170,7 +3180,8 @@ extern void     tex_copy_node_properties          (halfword target, halfword sou
 
 static inline void add_attribute_reference(halfword a)
 {
-    if (a && a != attribute_cache_disabled) {
+ // if (a && a != attribute_cache_disabled) {
+    if (a != attribute_cache_disabled && a) {
         ++attribute_list_count(a);
     }
 }
@@ -3185,7 +3196,8 @@ static inline void add_attribute_reference(halfword a)
 
 static inline void delete_attribute_reference(halfword a)
 {
-    if (a && a != attribute_cache_disabled) {
+ // if (a && a != attribute_cache_disabled) {
+    if (a != attribute_cache_disabled && a) {
         tex_dereference_attribute_list(a);
     }
 }

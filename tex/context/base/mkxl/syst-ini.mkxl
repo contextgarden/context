@@ -886,50 +886,72 @@
 
 % no longer \errorstopmode cf. plain tex 3.141592653
 
-\permanent\protected\def\tracingall
-  {\tracingcommands  \plusfour  % > 3: show mode change independent
-   \tracingmacros    \plusthree % > 2: obey \untraced
-   \tracingoutput    \plusone
-   \tracingpages     \plusone
-   \tracingparagraphs\plustwo
-   \tracingrestores  \plusone
-   \tracinggroups    \plusone
-   \tracingifs       \plusone
-   \tracingnesting   \plusthree
-   \tracingassigns   \plustwo
-   \tracingmath      \plusone
-   \tracingalignments\plustwo   % > 1: also show preamble
-   \showboxbreadth   \maxcount
-   \showboxdepth     \maxcount
-   \tracingonline    \plusone}
+%D We have more tracers in \LUAMETATEX\ so we make two categories and are
+%D generous when one wants them all. In the end only very few users will
+%D do this kind of tracing and if you don't know the internals of \TEX\ or
+%D how \CONTEXT\ works, it makes little sense anyway. This kind of tracing
+%D might evolve over time.
 
-\permanent\protected\def\tracingless
-  {\tracingall
-   \tracingoutput    \zerocount
-   \showboxbreadth   \maxcount
-   \showboxdepth     \plusten}
+% group:input:catcodes: ......
+%
+% \nodetype<nodeindex>[subtype]<attrindex>#count[name=value,...]
 
-\permanent\protected\def\loggingall
-  {\tracingall
-   \tracingonline    \zerocount}
+\untraced\permanent\protected\def\syst_tracingprocess#1%
+  {\tracingassigns    #1%
+   \tracingcommands   #1%
+   \tracingexpressions#1%
+   \tracinggroups     #1%
+   \tracingifs        #1%
+   \tracinglevels     #1%
+   \tracingmacros     #1%
+   \tracingnesting    #1%
+   \tracingnodes      #1%
+   \tracingrestores   #1%
+   \tracingstats      #1}
 
-\permanent\protected\def\tracingnone
-  {\tracingonline    \zerocount
-   \showboxdepth     \plusfive % lessboxtracing
-   \showboxbreadth   \plusten
-   \tracingalignments\zerocount
-   \tracingmath      \zerocount
-   \tracingassigns   \zerocount
-   \tracingnesting   \zerocount
-   \tracingifs       \zerocount
-   \tracinggroups    \zerocount
-   \tracingrestores  \zerocount
-   \tracingparagraphs\zerocount
-   \tracingpages     \zerocount
-   \tracingoutput    \zerocount
-   \tracingmacros    \zerocount
-   \tracingcommands  \zerocount
-   \tracingonline    \zerocount}
+\untraced\permanent\protected\def\syst_tracingtypesetting#1%
+  {\tracingadjusts    #1%
+   \tracingalignments #1%
+   \tracingbalancing  #1%
+   \tracingfitness    #1%
+   \tracingfullboxes  #1%
+   \tracinghyphenation#1%
+   \tracinginserts    #1%
+   \tracinglists      #1%
+   \tracingloners     #1%
+   \tracinglostchars  #1%
+   \tracingmarks      #1%
+   \tracingmath       #1%
+   \tracingmvl        #1%
+   \tracingorphans    #1%
+   \tracingoutput     #1%
+   \tracingpages      #1%
+   \tracingparagraphs #1%
+   \tracingpasses     #1%
+   \tracingpenalties  #1%
+   \tracinglooseness  #1%
+   \tracingsnapping   #1%
+   \tracingtoddlers   #1}
+
+\untraced\permanent\protected\def\syst_tracingall
+  {\syst_tracingprocess    \maxcount
+   \syst_tracingtypesetting\maxcount
+   \showboxbreadth         \maxcount
+   \showboxdepth           \plushundred}
+
+\untraced\permanent\protected\def\syst_tracingnone
+  {\syst_tracingprocess    \zerocount
+   \syst_tracingtypesetting\zerocount
+   \showboxdepth           \plusfive
+   \showboxbreadth         \plusten}
+
+\untraced\permanent\protected\def\tracingprocess    {\syst_tracingprocess    \maxcount\tracingonline\plusone}
+\untraced\permanent\protected\def\tracingtypesetting{\syst_tracingtypesetting\maxcount\tracingonline\plusone}
+
+\untraced\permanent\protected\def\tracingall {\syst_tracingall \tracingonline\plusone  }
+\untraced\permanent\protected\def\loggingall {\syst_tracingall \tracingonline\zerocount}
+\untraced\permanent\protected\def\tracingnone{\syst_tracingnone\tracingonline\zerocount}
+%untraced\permanent\protected\def\loggingnone{\syst_tracingnone\tracingonline\zerocount}
 
 %D When we want to see a box we can as well show all of it.
 

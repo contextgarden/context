@@ -1,0 +1,133 @@
+% language=us runpath=texruns:manuals/musings
+
+\startcomponent musings-rpi
+
+\abbreviation[FLAC]    {flac}    {}
+\abbreviation[RPI]     {rpi}     {Raspberry Pi}
+\abbreviation[WSL]     {wsl}     {Windows Subsystem for Linux}
+\logo        [OKULAR]  {Okular}
+\logo        [MUPDF]   {MuPDF}
+\logo        [UBUNTU]  {Ubuntu}
+\abbreviation[SUMATRA] {Sumatra} {Sumatra \PDF}
+\abbreviation[SUBLIME] {Sublime} {Sublime Text}
+
+\environment musings-style
+
+\startchapter[title={Changing platform}]
+
+\startsection[title={Introduction}]
+
+In 2025 it became clear that it was unlikely that the world as we came to know it
+would come back any time soon. The dependency of software controlled by big tech
+as well as the \USA\ government became a liability. The enforced use of so called
+artificial intelligence interfering with human intelligence also didn't help. Add
+to that the hardware vendors and \CPU\ producers bowing to the new emperors and
+bribing their way into power and we could start making contingency plans. So, end
+2025 my college and I decided to buy a few \infull{RPI} 500+ devices, just in
+time to not be hurt by memory becoming unaffordable. At the same time Willy Egger
+also moved to this computer as his old apple started to fail him. So that made
+three users with an interest in running \CONTEXT\ on this little British machine
+with the \ARM\ architecture.
+
+\stopsection
+
+\startsection[title={What is needed}]
+
+When I look at my computer usage, actually not that much is needed in terms of
+software: an all-round editor suitable for \CONTEXT\ and \LUA: \SCITE, a decent
+viewer like \OKULAR\ (unfortunately there is no interfaced \MUPDF\ viewer like
+\SUMATRA\ on \LINUX), a code editor without excessive bloat in case of
+development, like \SUBLIME, a compiler, a web browser, a mail client, maybe some
+stuff related to music, if needed something for bitmap and vector graphics, and
+of course a running \CONTEXT. All of these are available on \MSWINDOWS\ and
+\LINUX\ and as we use the \RPI\ with \UBUNTU\ we're fine.
+
+Because it is the reference \TEX\ editor, and because the default version doesn't
+come with \LPEG, I need to compile \SCITE\ using a few small patches. With that
+out of the way we can now discuss \CONTEXT. When we started with the \LMTX\
+installer, we also packaged an (at that time 32 bit) version for the Raspberry.
+In the meantime we went 64 bit. This means that not much is needed to get
+\CONTEXT\ up and running. If you want to compile the binary you also need \GCC\ and
+\CMAKE. From mails on the \CONTEXT\ mailing list I know that this is quite doable.
+
+\stopsection
+
+\startsection[title={How does it perform}]
+
+When going from a 2018 Intel XEON driven laptop to a ARM 76 small computer hidden
+in a keyboard, you might expect a degrading performance and indeed that is true.
+Using Ubuntu, it takes 3.3 seconds to generate a format file, assuming the file
+cache is hot (so do it once to reach that state). When the console is piped to a
+log file we need 3.1 seconds. On the windows box it takes 2.6 seconds or with
+piped output 2.1 seconds. A \WSL\ session needs 1.7 seconds (or 1.5
+seconds when piped. of course a modern 2026 machine would go below one second,
+but given that we don't have such a machine, we can conclude that on the average,
+downscaling hardware has some consequences, but these are manageable. It also
+reminds me to make sure that we don't degrade performance.
+
+\starttabulate[||c|c|c|]
+\BC the \LUAMETATEX\ manual  \BC \RPI \BC laptop \BC \WSL \BC \NR
+\ML
+\NC the regular console      \NC 3.3 \NC 2.6    \NC 1.7 \NC \NR
+\NC output piped to log file \NC 3.1 \NC 2.1    \NC 1.5 \NC \NR
+\stoptabulate
+
+But \unknown\ making a format is not what determines performance in general.
+There are some documents in the distribution that discuss performance and
+occasionally we add some more. However, the most important issue here is
+perception. If we edit a document, we often just key-in something and only when
+we want to check the result we need a run. In that case staying within a few
+seconds is nice. Processing a document like this won't even use more seconds. Of
+course, when you use some on-line service, a lot depends on the implementation:
+how fast is a sandboxed virtual machine or container revived, how well does it
+interface with the file system and changes, how efficiently is the result
+displayed. The bottleneck is likely not in \TEX\ but when it is, we have to
+distinguish between (in the case of \CONTEXT) the runner script, launching the
+\LUAMETATEX\ binary, loading the format file, which included various \LUA\
+initializations, and getting ready for the run. All that can stay below half a
+second on the systems mentioned. Next we process pages which, depending on the
+complexity, happens in the 20-50 pages per second. For the first page some fonts
+need to be loaded but after that processing a page drops below 0.01 seconds.
+
+A good example of a document of average complexity with text, lots of tabulate
+tables, either or not generated from \LUA, plenty font switches because of all
+the inline and display verbatim, is the \LUAMETATEX\ manual. Here we have a
+typical example of \quote {slow} with some 20 pages per second processing speed.
+The February 2026 version fo 728 pages compiles as follows (a single run in
+seconds):
+
+\starttabulate[||c|c|]
+\BC the \LUAMETATEX\ manual       \BC \RPI \BC laptop \BC \NR
+\ML
+\NC the regular console           \NC 24   \NC 21     \NC \NR
+\NC output piped to log file      \NC 22   \NC 16     \NC \NR
+\NC from \SCITE\ with output pane \NC 30   \NC 17     \NC \NR
+\stoptabulate
+
+The \RPI\ has a 1920x1200 screen attached, the laptop connects to a huge 4K screen.
+The \MSWINDOWS\ console normally is slower than \LINUX\ but here we win on the
+dedicated graphic card. Because I normally run from \SCITE, the laptop is about
+twice as fast. Maybe there are ways to speed up the \SCITE\ console on the
+\RPI\ a bit.
+
+Normally one works on a chapter or just a small document and processing a few
+dozen pages takes little runtime so the above run-times are kind of exceptional
+and worst-case.
+
+\stopsection
+
+\startsection[title={What comes next}]
+
+Various experiments showed that replacing fast, politically compromised hard- and
+software by (in this case) a presumed slower \RPI\ doesn't come with a too high
+penalty. One might have to say goodbye to a few application but for ripping \CD's
+to \FLAC\ using my favorite program I can still use a windows machine. Of course
+we will try to make \LUAMETATEX\ and \CONTEXT\ run more efficient when possible
+but we're already quite okay.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

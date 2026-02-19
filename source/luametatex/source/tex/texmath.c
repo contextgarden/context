@@ -708,8 +708,7 @@ void tex_flush_math(void)
 static void tex_aux_print_parameter(const char *what, halfword style, halfword param, halfword indirect, halfword value)
 {
     tex_begin_diagnostic();
-    tex_print_levels();
-    tex_print_format("{%s ", what);
+    tex_print_format("%l{%s ", what);
     if (indirect >= 0 && indirect <= last_math_indirect) {
         tex_print_str(lmt_interface.math_indirect_values[indirect].name);
         tex_print_char(' ');
@@ -743,8 +742,7 @@ static void tex_aux_print_parameter(const char *what, halfword style, halfword p
 static void tex_aux_print_fam(const char *what, halfword size, halfword fam)
 {
     tex_begin_diagnostic();
-    tex_print_levels();
-    tex_print_format("{%s %C family %i: %F}", what, define_family_cmd, size, fam, tex_fam_fnt(fam, size));
+    tex_print_format("%l{%s %C family %i: %F}", what, define_family_cmd, size, fam, tex_fam_fnt(fam, size));
     tex_end_diagnostic();
 }
 
@@ -1833,8 +1831,9 @@ static void tex_aux_enter_display_math(halfword cmd, int where)
             size = - max_dimension;
         } else {
             tex_line_break(math_display_group, math_par_context, 1);
-         // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n(tex_get_font_em_width(cur_font_par), scaling_factor) * math_pre_display_gap_factor_par);
-            size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround((tex_get_font_em_width(cur_font_par) / scaling_factor_double) * math_pre_display_gap_factor_par));
+         // size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_x_over_n_factor(tex_get_font_em_width(cur_font_par)) * math_pre_display_gap_factor_par);
+            size = tex_actual_box_width(lmt_linebreak_state.just_box, tex_get_font_em_width(cur_font_par) * math_pre_display_gap_factor_par / scaling_factor);
+         // size = tex_actual_box_width(lmt_linebreak_state.just_box, scaledround(tex_get_font_em_width(cur_font_par) * math_pre_display_gap_factor_par / scaling_factor_double));
         }
         /*tex
             Now we are in vertical mode, working on the list that will contain the display. A displayed

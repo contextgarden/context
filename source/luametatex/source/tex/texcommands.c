@@ -554,8 +554,10 @@ void tex_initialize_commands(void)
 
         tex_primitive(tex_command,        no_legacy,       "advance",                        arithmic_cmd,           advance_code,                             0);
         tex_primitive(luametatex_command, no_legacy,       "advanceby",                      arithmic_cmd,           advance_by_code,                          0);
-     /* tex_primitive(luametatex_command, no_legacy,       "advancebyminusone",              arithmic_cmd,           advance_by_minus_one_code,                0); */
-     /* tex_primitive(luametatex_command, no_legacy,       "advancebyplusone",               arithmic_cmd,           advance_by_plus_one_code,                 0); */
+# if (experiment_advance_by)
+        tex_primitive(luametatex_command, no_legacy,       "advancebyminusone",              arithmic_cmd,           advance_by_minus_one_code,                0);
+        tex_primitive(luametatex_command, no_legacy,       "advancebyplusone",               arithmic_cmd,           advance_by_plus_one_code,                 0);
+# endif
         tex_primitive(tex_command,        no_legacy,       "divide",                         arithmic_cmd,           divide_code,                              0);
         tex_primitive(luametatex_command, no_legacy,       "divideby",                       arithmic_cmd,           divide_by_code,                           0);
         tex_primitive(luametatex_command, no_legacy,       "rdivide",                        arithmic_cmd,           r_divide_code,                            0);
@@ -1067,7 +1069,9 @@ void tex_initialize_commands(void)
         tex_primitive(luatex_command,     no_legacy,       "ifabsnum",                       if_test_cmd,            if_abs_int_code,                          0);
         tex_primitive(luametatex_command, no_legacy,       "ifarguments",                    if_test_cmd,            if_arguments_code,                        0);
         tex_primitive(luametatex_command, no_legacy,       "ifspecification",                if_test_cmd,            if_specification_code,                    0);
-     /* tex_primitive(luametatex_command, no_legacy,       "ifbitwiseand",                   if_test_cmd,            if_bitwise_and_code,                      0); */
+# if (experiment_if_bitwise)
+        tex_primitive(luametatex_command, no_legacy,       "ifbitwiseand",                   if_test_cmd,            if_bitwise_and_code,                      0);
+# endif
         tex_primitive(luametatex_command, no_legacy,       "ifboolean",                      if_test_cmd,            if_boolean_code,                          0);
         tex_primitive(tex_command,        no_legacy,       "ifcase",                         if_test_cmd,            if_case_code,                             0);
         tex_primitive(tex_command,        no_legacy,       "ifcat",                          if_test_cmd,            if_cat_code,                              0);

@@ -3475,8 +3475,7 @@ void tex_show_node_list(halfword p, int threshold, int max)
                     break;
                 case align_record_node:
                     tex_print_token_list(NULL, align_record_pre_part(p)); /*tex No ref count token here. */
-                    tex_print_levels();
-                    tex_print_str("..<content>");
+                    tex_print_format("%l..<content>");
                     tex_print_token_list(NULL, align_record_post_part(p)); /*tex No ref count token here. */
                     break;
                 case temp_node:

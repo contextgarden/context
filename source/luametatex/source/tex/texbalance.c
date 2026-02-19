@@ -712,7 +712,7 @@ static scaled tex_aux_try_balance(
                 if (no_break_yet) {
                     no_break_yet = false;
                     if (lmt_balance_state.emergency_percentage) {
-                        scaled stretch = tex_xn_over_d(page_height, lmt_balance_state.emergency_percentage, scaling_factor);
+                        scaled stretch = tex_xn_over_d_factor(page_height, lmt_balance_state.emergency_percentage);
                         lmt_balance_state.background[total_stretch_amount] -= lmt_balance_state.emergency_amount;
                         lmt_balance_state.background[total_stretch_amount] += stretch;
                         lmt_balance_state.emergency_amount = stretch;
@@ -1157,7 +1157,7 @@ static int tex_aux_set_sub_pass_parameters(
         properties->emergency_stretch = properties->original_stretch;
     }
     if (lmt_balance_state.emergency_factor) {
-        properties->emergency_stretch = tex_xn_over_d(properties->original_stretch, lmt_balance_state.emergency_factor, scaling_factor);
+        properties->emergency_stretch = tex_xn_over_d_factor(properties->original_stretch, lmt_balance_state.emergency_factor);
     } else {
         properties->emergency_stretch = 0;
     }
@@ -1177,7 +1177,7 @@ static int tex_aux_set_sub_pass_parameters(
  //     properties->emergency_shrink = properties->original_shrink;
  // }
  // if (lmt_balance_state.emergency_factor) {
- //     properties->emergency_shrink = tex_xn_over_d(properties->original_shrink, lmt_balance_state.emergency_factor, scaling_factor);
+ //     properties->emergency_shrink = tex_xn_over_d_factor(properties->original_shrink, lmt_balance_state.emergency_factor);
  // } else {
  //     properties->emergency_shrink = 0;
  // }
@@ -1969,7 +1969,7 @@ void tex_balance(balance_properties *properties, halfword head)
             tex_aux_update_height(properties, page, &page_height);
             lmt_balance_state.background[total_stretch_amount] -= lmt_balance_state.emergency_amount;
             if (lmt_balance_state.emergency_percentage) {
-                scaled stretch = tex_xn_over_d(page_height, lmt_balance_state.emergency_percentage, scaling_factor);
+                scaled stretch = tex_xn_over_d_factor(page_height, lmt_balance_state.emergency_percentage);
                 lmt_balance_state.background[total_stretch_amount] += stretch;
                 lmt_balance_state.emergency_amount = stretch;
             } else {

@@ -99,6 +99,8 @@ unsigned char *aux_uni2str(unsigned unic)
             buf[2] = (unsigned char) (0x80 | ((unic & 0xFC0) >> 6));
             buf[3] = (unsigned char) (0x80 | (unic & 0x3F));
             buf[4] = '\0';
+        } else {
+            buf[0] = '\0';
         }
     }
     return buf;

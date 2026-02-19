@@ -1,0 +1,126 @@
+%D \module
+%D   [      file=s-present-sheikah,
+%D        version=2025.08.23,
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Presentation Environment Simple,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\startmodule [present-nyctography]
+
+% font settings
+
+\useMPlibrary [nyctographic]
+\useMPlibrary [sheikah]
+
+\usebodyfont [nyctographic]
+\usebodyfont [sheikah]
+
+\setupbodyfont
+  [pagella,14.4pt]
+
+\setupbodyfontenvironment
+  [default]
+  [em=italic]
+
+% page layout
+
+\setuppapersize
+  [S6]
+
+\setuplayout
+  [header=0pt,
+   backspace=2cm,
+   width=middle]
+
+% titles
+
+\setuplabeltext [en] [part=Part ]
+
+\definehead [SlidePart]  [part]
+\definehead [SlideTitle] [title]
+
+\setuphead
+  [SlidePart]
+  [placehead=yes,
+   bodypartlabel=part,
+   conversion=Romannumerals,
+   alternative=middle,
+   style=\tfd,
+   before={\startframedtext[frame=off,width=max,height=max,align=lohi]},
+   after=\stopframedtext]
+
+\setuphead
+  [SlideTitle]
+  [align=middle,
+   after=\blank]
+
+\setuptyping
+  [bodyfont=11.5pt]
+
+\setupitemize
+  [each]
+  [square]
+  [color=darkgray,
+   inbetween={\blank[quarterline]}]
+
+\setupwhitespace
+  [halfline]
+
+\setupalign
+  [flushleft,broad,nothyphenated]
+
+\frenchspacing
+
+% footer / page numbering
+
+\setuppagenumbering
+  [location=none]
+
+\setupfooter
+  [style={\switchtobodyfont[sheikah,ss]}]
+
+\setupfootertexts
+  [\twodigits{\pagenumber}\narrownobreakspace-\narrownobreakspace\twodigits{\lastpagenumber}]
+
+% page background
+
+\startuseMPgraphic{border}
+
+numeric r_color ; r_color := (uniformdeviate(9) + 1) / 10 ;
+numeric g_color ; g_color := (uniformdeviate(9) + 1) / 10 ;
+numeric b_color ; b_color := (uniformdeviate(9) + 1) / 10 ;
+
+color rgb_color ; rgb_color := (r_color,g_color,b_color) ;
+
+fill fullsquare xyscaled(OverlayWidth,OverlayHeight) withcolor rgb_color ;
+fill fullsquare xyscaled(0.95*OverlayWidth,0.95*OverlayHeight) superellipsed 0.85 withcolor 0.75[rgb_color,white] ;
+
+\stopuseMPgraphic
+
+\defineoverlay[border][\useMPgraphic{border}]
+
+\setupbackgrounds[page][background={color,border}]
+
+\stopmodule
+
+\continueifinputfile{s-present-sheikah.mkxl}
+
+\usemodule[visual]
+
+\startdocument
+
+\SlidePart{\fakewords{5}{10}}
+
+\SlideTitle{\fakewords{5}{10}}
+
+\fakewords{50}{100}
+
+\SlideTitle{\fakewords{5}{10}}
+
+\startitemize
+\dorecurse{\randomnumber{5}{10}}{\startitem \fakewords{5}{10} \stopitem}
+\stopitemize
+
+\stopdocument

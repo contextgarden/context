@@ -2156,11 +2156,16 @@ do
     function columnsets.registersheet(name,sheet,option)
         local dataset = data[name]
         if dataset then
-            local s = buffers.raw(s_page_mvl_temp)
+            local content = buffers.raw(s_page_mvl_temp)
+            if option == "_sht_" then
+                -- This is a bit of a hack for good enough for now.
+                content = [[\startsetcolumnsetsht ]] .. content ..  [[\stopsetcolumnsetsht ]]
+                option  = ""
+            end
             if option == v_page then
                 stepper(sheet,1,function(n)
                     local d = dataset.delayed[n]
-                    d[#d+1] = s
+                    d[#d+1] = content
                     report("sheet %i, registering entry %i, delayed",n,#d)
                     if n > dataset.nofdelayed then
                         dataset.nofdelayed = n
@@ -2169,7 +2174,7 @@ do
             else
                 stepper(sheet,1,function(n)
                     local d = dataset.sheets[n]
-                    d[#d+1] = s
+                    d[#d+1] = content
                     report("sheet %i, registering entry %i, immediate",n,#d)
                     if n > dataset.nofsheets then
                         dataset.nofsheets = n

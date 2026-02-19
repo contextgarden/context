@@ -49,9 +49,9 @@ static inline int tex_aux_same_font_properties(halfword a, halfword b) // also i
 {
     return node_type(a) == glyph_node && node_type(b) == glyph_node 
      && glyph_font(a)    == glyph_font(b)
+     && glyph_scale(a)   == glyph_scale(b)
      && glyph_x_scale(a) == glyph_x_scale(b)
-     && glyph_y_scale(a) == glyph_y_scale(b)
-     && glyph_scale(a)   == glyph_scale(b);
+     && glyph_y_scale(a) == glyph_y_scale(b);
 }
 
 static inline int tex_aux_apply_base_kerning(halfword n)

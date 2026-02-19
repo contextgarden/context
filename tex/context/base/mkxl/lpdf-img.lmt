@@ -54,6 +54,7 @@ local pdfarray             = lpdf.array
 local pdfconstant          = lpdf.constant
 local pdfreference         = lpdf.reference
 local pdfverbose           = lpdf.verbose
+local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 local pdfmajorversion      = lpdf.majorversion
 local pdfminorversion      = lpdf.minorversion
@@ -305,6 +306,7 @@ do
     local pngtomask      = pngdecode.tomask
     local pngmakemask    = pngdecode.makemask
     local frompalette    = pngdecode.frompalette
+    local palettemask    = pngdecode.palettemask
 
     local createmask, filtermask, decodemask, decodestrip, transpose, expand, tocmyk
 
@@ -1035,6 +1037,7 @@ do
 
     local alwaysdecode  = false -- trucky with palettes
     local compresslevel = 3
+    local expandpalette = false
 
     directives.register("graphics.png.recompress", function(v)
         alwaysdecode = v
@@ -1044,7 +1047,13 @@ do
         v = tonumber(v)
         if compresslevel >= 0 or compresslevel <= 9 then
             compresslevel = v
+        else
+         -- compresslevel = 3
         end
+    end)
+
+    directives.register("graphics.png.expandpalette", function(v)
+        expandpalette = v
     end)
 
     function injectors.png(specification,method) -- todo: method in specification
@@ -1087,6 +1096,10 @@ do
      --     report_png("ignoring gamma correction")
      -- end
         --
+        local lmtxcmyk = false
+        local lmtxmask = false
+        local lmtxcomp = false
+        --
         local xsize       = specification.xsize
         local ysize       = specification.ysize
         local colordepth  = specification.colordepth or 8
@@ -1096,6 +1109,12 @@ do
         local palette     = false
         local enforcecmyk = specification.enforcecmyk
         local colors      = 1
+        local lmtxdata = pdfdictionary {
+            Format = pdfconstant("PNG"),
+            Colors = colors,
+            XSize  = xsize,
+            YSize  = ysize,
+        }
         if     colorspace == 0 then    -- gray | image b
             devicespace = "DeviceGray"
             colorspace  = "DeviceGray"
@@ -1135,6 +1154,9 @@ do
             else
                 transparent = false
             end
+            if transparent then
+                lmtxdata.Transparent = true
+            end
         end
         --
         local decode = alwaysdecode -- tricky, might go away
@@ -1154,6 +1176,9 @@ do
             return
          -- decode = true
         end
+        if decode then
+            lmtxdata.Decoded = true
+        end
         --
         -- todo: compresslevel (or delegate)
         --
@@ -1168,6 +1193,9 @@ do
             else
                 palette = false
             end
+            if palette then
+                lmtxdata.Palette = true
+            end
         end
         --
         local newmask   = specification.newmask
@@ -1175,13 +1203,16 @@ do
         --
         if newranges then
             newranges = todecode(newranges,colors)
+            lmtxdata.Remapped = true
         end
         --
+-- print(interlace,colordepth,transparent and true or false,palette and true or false,mask and true or false)
         if interlace then
             local r, p = deinterlace(content,xsize,ysize,colordepth,devicespace,palette,mask)
             if not r then
                 return
             end
+            lmtxdata.Deinterlaced = true
             if p then
                 colordepth = p
             end
@@ -1195,27 +1226,43 @@ do
                 if devicespace == "DeviceRGB" and colordepth == 8 then
                     local bytes = 3 -- index -> mapped -> r g b
                     local parts = 1 -- whole byte
-                    local c, m = frompalette(r,palette,bytes,parts,transparent)
-                    if c and m then
-                        content = c
-                        mask    = m
-                        palette = false
+                    if expandpalette then
+                        local c, m = frompalette(r,palette,bytes,parts,transparent)
+                        if c and m then
+                            content  = c
+                            palette  = false
+                            mask     = m
+                            lmtxmask = "Expanded"
+                        else
+                            report_png("mask can't be split from the image (%s)","error")
+                            content = convert(r) -- can be in deinterlace if needed
+                            lmtxmask = "Discarded"
+                        end
                     else
-                        report_png("mask can't be split from the image (%s)","error")
+                        mask = palettemask(r,bytes,parts,transparent)
+                        if mask then
+                            lmtxmask = "Separated"
+                        else
+                            report_png("mask can't be split from the image (%s)","error")
+                            lmtxmask = "Discarded"
+                        end
                         content = convert(r) -- can be in deinterlace if needed
                     end
                 else
                     report_png("mask can't be split from the image (%s)","colorspace")
                     content = convert(r) -- can be in deinterlace if needed
+                    lmtxmask = "Discarded"
                 end
             else
                 content = convert(r) -- can be in deinterlace if needed
             end
             if enforcecmyk then
                 content, devicespace = converttocmyk(content,devicespace,colordepth)
+                lmtxcmyk = true
             end
             if compresslevel > 0 then
                 content = zlibcompress(content,compresslevel)
+                lmtxcomp = true
             else
                 filter = nil
             end
@@ -1229,20 +1276,25 @@ do
             content, mask = decodemask(content,xsize,ysize,colordepth,devicespace)
             if enforcecmyk and not palette then
                 content, devicespace = converttocmyk(content,devicespace,colordepth)
+                lmtxcmyk = true
             end
             if compresslevel > 0 then
-                content = zlibcompress(content,compresslevel)
+                content  = zlibcompress(content,compresslevel)
+                lmtxcomp = true
             else
                 filter = nil
             end
+            lmtxmask = "Decoded"
             decode  = true -- we don't copy the filter byte
         elseif transparent then
             -- in test suite
             -- how about decode/recompress here
             if palette then
                 mask = createmask(content,palette,transparent,xsize,ysize,colordepth,devicespace)
+                lmtxmask = "Created"
             else
-                pallette = false
+                -- maybe a todo
+                lmtxmask = "Ignored"
             end
         elseif decode or (enforcecmyk and not palette) then
             -- this one needs checking
@@ -1252,9 +1304,11 @@ do
                 content = decodestrip(openstring(content),xsize,ysize,bytes)
                 if enforcecmyk and not palette then
                     content, devicespace = converttocmyk(content,devicespace,colordepth)
+                    lmtxcmyk = true
                 end
                 if compresslevel > 0 then
-                    content = zlibcompress(content,compresslevel)
+                    content  = zlibcompress(content,compresslevel)
+                    lmtxcomp = compresslevel
                 else
                     filter = nil
                 end
@@ -1269,10 +1323,12 @@ do
                 content = decodestrip(openstring(content),xsize,ysize,bytes)
                 mask = pngmakemask(content,newmask)
                 if compresslevel > 0 then
-                    content = zlibcompress(content,compresslevel)
+                    content  = zlibcompress(content,compresslevel)
+                    lmtxcomp = compresslevel
                 else
                     filter = nil
                 end
+                lmtxmask = "Created"
             else
                 return
             end
@@ -1284,9 +1340,10 @@ do
             local devicespace = "DeviceRGB"
             local nofbytes    = 3
             if enforcecmyk then
-                palette     = converttocmyk(palette,devicespace,8)
-                devicespace = "DeviceCMYK"
-                nofbytes    = 4
+                palette       = converttocmyk(palette,devicespace,8)
+                devicespace   = "DeviceCMYK"
+                nofbytes      = 4
+                lmtxcmyk = true
             end
             palette = pdfarray {
                 pdfconstant("Indexed"),
@@ -1294,6 +1351,15 @@ do
                 #palette // nofbytes,
                 pdfreference(pdfflushstreamobject(palette)),
             }
+        end
+        if lmtxcmyk then
+            lmtxdata.CMYK = true
+        end
+        if lmtxmask then
+            lmtxdata.Mask = pdfconstant(lmtxmask)
+        end
+        if lmtxcomp then
+            lmtxdata.Compresslevel = compresslevel
         end
         pngfile:close()
         local xobject = pdfdictionary {
@@ -1307,6 +1373,7 @@ do
             ColorSpace       = palette or pdfconstant(devicespace),
             Length           = #content,
             Decode           = newranges and pdfarray(newranges) or nil,
+            LMTX_Graphicdata = pdfreference(pdfflushobject(lmtxdata)),
         } + specification.attr
         if mask then
             local d = pdfdictionary {

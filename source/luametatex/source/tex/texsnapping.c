@@ -235,10 +235,10 @@ static inline scaled tex_aux_snap_dimen(scaled amount, halfword local_factor, ha
             go for an interval, then we can go double.
         */
         if (global_factor != scaling_factor) {
-            amount = tex_xn_over_d(amount, global_factor, scaling_factor);
+            amount = tex_xn_over_d_factor(amount, global_factor);
         }
         if (local_factor != scaling_factor) {
-            amount = tex_xn_over_d(amount, local_factor, scaling_factor);
+            amount = tex_xn_over_d_factor(amount, local_factor);
         }
     }
     return amount;

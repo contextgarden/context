@@ -418,8 +418,7 @@ void tex_finish_discretionary(void)
                         "Discretionary lists must contain only glyphs, boxes, rules and kerns."
                     );
                     tex_begin_diagnostic();
-                    tex_print_levels();
-                    tex_print_str("The following discretionary sublist has been deleted:");
+                    tex_print_format("%lThe following discretionary sublist has been deleted:");
                     tex_print_levels();
                     tex_show_box(next);
                     tex_end_diagnostic();

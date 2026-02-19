@@ -1299,8 +1299,7 @@ void tex_run_alignment_initialize(void)
     }
     if (tracing_alignments_par > 1) {
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_str(lmt_alignment_state.cur_loop ? "<alignment preamble: initial>" : "<alignment preamble>");
+        tex_print_format(lmt_alignment_state.cur_loop ? "%l<alignment preamble: initial>" : "%l<alignment preamble>");
         tex_show_node_list(preamble, max_integer, max_integer);
         tex_end_diagnostic();
     }
@@ -2478,8 +2477,7 @@ static void tex_aux_finish_align(void)
     */
     if (tracing_alignments_par > 1 && lmt_alignment_state.cur_loop) {
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_str("<alignment preamble: extended>");
+        tex_print_format("%l<alignment preamble: extended>");
         tex_show_node_list(preamble, max_integer, max_integer);
         tex_end_diagnostic();
     }

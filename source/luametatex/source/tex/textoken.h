@@ -41,11 +41,13 @@
     that deal with managing that. Most was already hidden in a few files anyway.
 */
 
+# define token_sequenced_test 0
+
 typedef struct token_memory_state_info {
     memoryword  *tokens;      /*tex |memoryword *volatile fixmem;| */
     memory_data  tokens_data;
     halfword     available;
-    int          padding;
+    int          sequenced;
 } token_memory_state_info;
 
 extern token_memory_state_info lmt_token_memory_state;

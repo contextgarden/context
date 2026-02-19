@@ -94,6 +94,16 @@
     Comment: experimental |string_cmd| has been removed, as we now have |\constant| flagged macros.
 */
 
+/*tex
+
+    We occasionally do some experiments, for instance on less powerful devices and often results
+    can be found in wrap-ups (in the \CONTEXT\ distribution).
+
+*/
+
+# define experiment_advance_by 0
+# define experiment_bitwise    0
+# define experiment_if_bitwise 0
 
 /*tex
     In the future we can add classifications that tell what to pick up in which case we can also
@@ -254,8 +264,8 @@ typedef enum tex_command_code {
     specificationspec_cmd,
     association_cmd,
 # if (match_experiment)
-integer_reference_cmd,
-dimension_reference_cmd,
+    integer_reference_cmd,
+    dimension_reference_cmd,
 # endif
     interaction_cmd,                  /*tex define level of interaction (|\batchmode|, etc.) */ /* valid after |\the|, see ** */
     register_cmd,                     /*tex internal register (|\count|, |\dimen|, etc.) */
@@ -407,12 +417,16 @@ typedef enum arithmic_codes {
     divide_by_code,
     e_divide_by_code,
     r_divide_by_code,
- /* bitwise_and_code, */
- /* bitwise_xor_code, */
- /* bitwise_or_code,  */
- /* bitwise_not_code, */
- /* advance_by_plus_one_code,  */
- /* advance_by_minus_one_code, */
+# if (experiment_bitwise)
+    bitwise_and_code,
+    bitwise_xor_code,
+    bitwise_or_code,
+    bitwise_not_code,
+# endif
+# if (experiment_advance_by)
+    advance_by_plus_one_code,
+    advance_by_minus_one_code,
+# endif
 } arithmic_codes;
 
 # define last_arithmic_code r_divide_code

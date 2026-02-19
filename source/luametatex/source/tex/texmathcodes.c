@@ -125,8 +125,7 @@ static void tex_aux_unsave_mathcode(int level)
                 sa_rawset_item_4(lmt_mathcode_state.mathcode_head, item.code, item.value_1);
                 if (tracing_restores_par > 1) {
                     tex_begin_diagnostic();
-                    tex_print_levels();
-                    tex_print_str("{restoring ");
+                    tex_print_format("%l{restoring ");
                     tex_aux_show_mathcode(item.code);
                     tex_print_char('}');
                     tex_end_diagnostic();
@@ -158,8 +157,7 @@ void tex_set_math_code(int n, mathcodeval v, int level)
     sa_set_item_4(lmt_mathcode_state.mathcode_head, n, item, level);
     if (tracing_assigns_par > 1) {
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_str("{assigning ");
+        tex_print_format("%l{assigning ");
         tex_aux_show_mathcode(n);
         tex_print_char('}');
         tex_end_diagnostic();
@@ -229,8 +227,7 @@ static void tex_aux_unsave_delcode(int level)
                 sa_rawset_item_8(lmt_mathcode_state.delcode_head, item.code, item.value_1, item.value_2);
                 if (tracing_restores_par > 1) {
                     tex_begin_diagnostic();
-                    tex_print_levels();
-                    tex_print_str("{restoring ");
+                    tex_print_format("%l{restoring ");
                     tex_aux_show_delcode(item.code);
                     tex_print_char('}');
                     tex_end_diagnostic();
@@ -254,8 +251,7 @@ void tex_set_del_code(int n, delcodeval v, int level)
     sa_set_item_8(lmt_mathcode_state.delcode_head, n, v1, v2, level);
     if (tracing_assigns_par > 1) {
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_str("{assigning ");
+        tex_print_format("%l{assigning ");
         tex_aux_show_delcode(n);
         tex_print_char('}');
         tex_end_diagnostic();

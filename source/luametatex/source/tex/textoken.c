@@ -67,7 +67,7 @@ token_memory_state_info lmt_token_memory_state = {
         .extra     = 0, 
     },
     .available  = 0,
-    .padding    = 0,
+    .sequenced  = 0,
 };
 
 /*tex
@@ -261,11 +261,20 @@ void tex_compact_tokens(void)
     occasionally kicks in but it doesn't pay off. Normally definitions (in the format) are in sequence
     but a normal run \unknown\ it would be interesting to know if this impacts the cache.
 
+    Experiment: when we sequence we allocate from the (still sorted) pool which in theory could be a
+    bit faster as the slice is more likely to be in the CPU cache. However, tests didn't show a gain
+    in performance so it remains an experiment. Also, it's not like we have cases where can control
+    this, like more complex and large macro definitions, but these happen seldom.
+
 */
 
 halfword tex_get_available_token(halfword t)
 {
+# if token_sequenced_test
+    halfword p = lmt_token_memory_state.sequenced ? null : lmt_token_memory_state.available;
+# else
     halfword p = lmt_token_memory_state.available;
+# endif
     if (p) {
         lmt_token_memory_state.available = token_link(p);
     } else if (lmt_token_memory_state.tokens_data.top < lmt_token_memory_state.tokens_data.allocated) {

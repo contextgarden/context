@@ -8459,9 +8459,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
             }
             if (state->penalties && node_type(last) != penalty_node && pre_penalty <= infinite_penalty && (! boundarylevel || (boundaryfactor != scaling_factor || nestingfactor != scaling_factor))) {
                 if (boundaryfactor != scaling_factor) {
-                    pre_penalty = tex_xn_over_d(pre_penalty, boundaryfactor, scaling_factor);
+                    pre_penalty = tex_xn_over_d_factor(pre_penalty, boundaryfactor);
                 } else if (nestingfactor != scaling_factor && tex_math_has_class_option(current_subtype, obey_nesting_class_option)) {
-                    pre_penalty = tex_xn_over_d(pre_penalty, nestingfactor, scaling_factor);
+                    pre_penalty = tex_xn_over_d_factor(pre_penalty, nestingfactor);
                 }
                 if (pre_penalty < infinite_penalty) {
                     /*tex no checking of prev node type */
@@ -8561,9 +8561,9 @@ static void tex_mlist_to_hlist_finalize_list(mliststate *state)
         */
         if (state->penalties && node_next(current) && post_penalty <= infinite_penalty && (! boundarylevel || (boundaryfactor != scaling_factor || nestingfactor != scaling_factor))) {
             if (boundaryfactor != scaling_factor) {
-                post_penalty = tex_xn_over_d(post_penalty, boundaryfactor, scaling_factor);
+                post_penalty = tex_xn_over_d_factor(post_penalty, boundaryfactor);
             } else if (nestingfactor != scaling_factor && tex_math_has_class_option(current_subtype, obey_nesting_class_option)) {
-                post_penalty = tex_xn_over_d(post_penalty, nestingfactor, scaling_factor);
+                post_penalty = tex_xn_over_d_factor(post_penalty, nestingfactor);
             }
             if (post_penalty < infinite_penalty) {
                 halfword recent = node_next(current);

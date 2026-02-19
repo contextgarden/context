@@ -161,12 +161,22 @@ scaled tex_x_over_n(scaled x, int n)
 
 scaled tex_x_over_n(scaled x, int n)
 {
-     if (n == 0) {
+    if (n == 0) {
         lmt_scanner_state.arithmetic_error = 1;
         return 0;
     } else {
-        return x/n;
+        return x / n;
     }
+}
+
+scaled tex_x_over_n_unity(scaled x)
+{
+    return x / unity;
+}
+
+scaled tex_x_over_n_factor(scaled x)
+{
+    return x / scaling_factor;
 }
 
 /*tex
@@ -262,15 +272,35 @@ scaled tex_xn_over_d(scaled x, int n, int d)
 }
 */
 
-scaled tex_xn_over_d(scaled x, int n, int d)
-{
-    if (x == 0) {
-        return 0;
-    } else {
-        long long v = (long long) x * (long long) n;
-        return (scaled) (v / d); 
-    }
-}
+// scaled tex_xn_over_d(scaled x, int n, int d)
+// {
+//     if (x == 0) {
+//         return 0;
+//     } else {
+//         long long v = (long long) x * (long long) n;
+//         return (scaled) (v / d);
+//     }
+// }
+//
+// scaled tex_xn_over_d_unity(scaled x, int n)
+// {
+//     if (x == 0) {
+//         return 0;
+//     } else {
+//         long long v = (long long) x * (long long) n;
+//         return (scaled) (v / unity);
+//     }
+// }
+
+// scaled tex_xn_over_d_factor(scaled x, int n)
+// {
+//     if (x == 0) {
+//         return 0;
+//     } else {
+//         long long v = (long long) x * (long long) n;
+//         return (scaled) (v / scaling_factor);
+//     }
+// }
 
 /*tex
 
@@ -430,4 +460,20 @@ scaled tex_ext_xn_over_d(scaled x, scaled n, scaled d)
         tex_normal_warning("internal", "arithmetic number too big");
     }
     return scaledround(r);
+}
+
+scaled tex_nx_plus_y_posit(halfword p, scaled x, scaled y)
+{
+    if (p == 0) {
+        return y;
+    } else {
+        double d = tex_posit_to_double(p) * x + y;
+        long long r = llround(d);
+        if (r < -0x3FFFFFFF || r > 0x3FFFFFFF) {
+            lmt_scanner_state.arithmetic_error = 1;
+            return 0;
+        } else {
+            return (halfword) r;
+            }
+    }
 }

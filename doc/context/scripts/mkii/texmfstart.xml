@@ -71,6 +71,7 @@
     <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
     <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
     <flag name="show-path"><short>show path expansion of ...</short></flag>
+    <flag name="show-details"><short>show details of configuration</short></flag>
     <flag name="var-value"><short>report value of variable</short></flag>
     <flag name="find-file"><short>report file location</short></flag>
     <flag name="find-path"><short>report path of file</short></flag>
@@ -88,7 +89,7 @@
    <subcategory>
    </subcategory>
     <flag name="help" value="string"><short>show help info</short></flag>
-    <flag name="help" value="string"><short>show version info</short></flag>
+    <flag name="version" value="string"><short>show version info</short></flag>
     <flag name="gethelp" value="string"><short>launch the given help info (<ref name="url"/>)</short></flag>
    </subcategory>
   </category>

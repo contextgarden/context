@@ -606,6 +606,7 @@ return {
                 ["jñ"] = "ज्ञ्",
                 -- yogavaahas (always with phonetic)
                 ["ṁ"] = "ं",
+                ["ṃ"] = "ं",
                 ["ḥ"] = "ः",
                 ["ँ"] = "ँ",
                 -- punctuations
@@ -613,6 +614,8 @@ return {
                 ["."] = "।",
                 ["|"] = "।",
                 ["||"] = "॥",
+                -- avagraha 
+                ["'"] = "ऽ",  
             },
         },
         ["itrans to deva"] = {

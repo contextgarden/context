@@ -808,14 +808,13 @@ local comment   = P("%") * (1 - lpegpatterns.newline)^0
 -- not nested yet .. combine with comment:
 
 local mpsgroup  = Ct (
-                    Cc("verbose") *
                     Cs (
                         P("% mps ") * (
                             P("group: begin")
                           * (1 - P("% mps group: end") - P("BT"))^0 -- or Tm
                           * P("% mps group: end")
                           + P("graphic ") * (1 - lpegpatterns.newline)^0
-                        ) * lpegpatterns.newline
+                        ) * (lpegpatterns.newline / "")
                     )
                 )
 
@@ -830,7 +829,7 @@ local keyword   = Ct(Cc("name") * key)
 local operator  = C((R("AZ","az")+P("*")+P("'")+P('"'))^1)
 
 local grammar = P { "start",
-    start      = (mpsgroup + comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    start      = (keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = optspaces * keyword * optspaces * V("start"),
     dictionary = Ct(Cc("dict")  * P("<<") *  Ct(V("keyvalue") ^0) * P(">>")),
  -- dictionary = Ct(Cc("dict")  * P("<<") * (Ct(V("keyvalue"))^0) * P(">>")),
@@ -840,12 +839,12 @@ local grammar = P { "start",
 }
 
 local operation = Ct(grammar^1 * operator + operator)
-local parser    = Ct((operation + P(1))^1)
+local parser    = Ct((mpsgroup + operation + P(1))^1)
 
 local number = C(lpegpatterns.number)
 
 local fastgrammar = P { "start",
-    start      = (mpsgroup + comment + keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
+    start      = (keyword + number + V("dictionary") + V("array") + V("hexstring") + V("decstring") + spaces)^1,
     keyvalue   = optspaces * keyword * optspaces * V("start"),
     dictionary = Ct(Cc("dict")  * P("<<") *  Ct(V("keyvalue") ^0) * P(">>")),
  -- dictionary = Ct(Cc("dict")  * P("<<") * (Ct(V("keyvalue"))^0) * P(">>")),
@@ -855,7 +854,7 @@ local fastgrammar = P { "start",
 }
 
 local fastoperation = Ct(fastgrammar^1 * operator + operator)
-local fastparser    = Ct((fastoperation + P(1))^1)
+local fastparser    = Ct((mpsgroup + fastoperation + P(1))^1)
 
 function lpdf_epdf.parsecontent(str,fast)
     return lpegmatch(fast and fastparser or parser,str)
@@ -1498,7 +1497,14 @@ if images then do
                 local xref      = pdfdoc.__xrefs__
                 local copied    = pdfdoc.__copied__
                 local resources = page.Resources
-                if compact and resources and lpdf_epdf.pageplugin then
+--                 if compact and resources and lpdf_epdf.pageplugin then
+                if compact and lpdf_epdf.pageplugin then
+if not resources then
+    resources = {
+        __type__ = dictionary_object_code,
+        __raw__  = { },
+    }
+end
                     lpdf_epdf.pageplugin(pdfdoc,page,pagenumber,resources,compact)
                     contents = page.Contents -- can now be a string
                 end

@@ -81,7 +81,7 @@
      \page
    \fi
    \dorecurse\c_page_selectors_n
-     {\page_selectors_filter_alternative{#filename}\recurselevel
+     {\page_selectors_filter_alternative{#filename}{##1}
       \ifinset{\recurselevel}{#emptylist}%
         \emptyhbox
         \page
@@ -122,16 +122,16 @@
    \fi
    \ifx\p_selection\v!all
      \dorecurse\c_page_selectors_n
-       {\page_selectors_filter_alternative{#filename}\recurselevel}%
+       {\page_selectors_filter_alternative{#filename}{##1}}%
    \orelse\ifx\p_selection\v!even
      \dorecurse\c_page_selectors_n
-       {\ifodd\recurselevel\else
-          \page_selectors_filter_alternative{#filename}\recurselevel
+       {\ifodd##1\else
+          \page_selectors_filter_alternative{#filename}{##1}%
         \fi}%
    \orelse\ifx\p_selection\v!odd
      \dorecurse\c_page_selectors_n
-       {\ifodd\recurselevel\relax
-          \page_selectors_filter_alternative{#filename}\recurselevel
+       {\ifodd##1\relax
+          \page_selectors_filter_alternative{#filename}{##1}%
         \fi}%
    \else
      \def\page_selectors_filter_step_indeed#page%
@@ -203,9 +203,9 @@
               {\ifdim\scratchoffset>\zeropoint\relax
                  \advanceby\vsize -2\scratchoffset
                  \advanceby\hsize -2\scratchoffset
-                 \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!scale=,\c!factor=\v!max,\c!offset=\v!overlay]%
+                 \externalfigure[#filename][\c!page=##1,#figuresettings,\c!scale=,\c!factor=\v!max,\c!offset=\v!overlay]%
                \else
-                 \externalfigure[#filename][\c!page=\recurselevel,#figuresettings,\c!offset=\v!overlay]%
+                 \externalfigure[#filename][\c!page=##1,#figuresettings,\c!offset=\v!overlay]%
                \fi}}}%
       \page}%
    \egroup}

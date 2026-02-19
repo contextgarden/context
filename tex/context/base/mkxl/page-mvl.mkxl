@@ -31,8 +31,8 @@
 \ifdefined\v!columnsetsheet        \else \cdef\v!columnsetsheet       {columnsetsheet}        \fi
 \ifdefined\v!columnsetsheetdelayed \else \cdef\v!columnsetsheetdelayed{columnsetsheetdelayed} \fi
 \ifdefined\v!columnsetspreadsheets \else \cdef\v!columnsetspreadsheets{columnsetspreadsheets} \fi
+\ifdefined\v!setcolumnsetsheet     \else \cdef\v!setcolumnsetsheet    {setcolumnsetsheet}     \fi
 \ifdefined\v!slot                  \else \cdef\v!slot                 {slot}                  \fi
-\ifdefined\s!index                 \else \cdef\s!index                {index}                 \fi
 
 \newdimension\d_page_mvl_column_width
 \newdimension\d_page_mvl_max_height
@@ -349,10 +349,14 @@
 \permanent\protected\def\stopcolumnset
   {\page_mvl_stop}
 
+% maybe use a dedicated setter:
+
 \def\page_mvl_common_dummy_preset % [#1]
   {\c_page_floats_ignore_method\conditionaltrue
    \letdummyparameter\c!c      \zerocount
    \letdummyparameter\c!r      \zerocount
+   \letdummyparameter\c!nc     \plusone
+   \letdummyparameter\c!nr     \zerocount
    \letdummyparameter\c!method \v!here
    \letdummyparameter\c!option \v!none
    \letdummyparameter\c!height \lineheight % convenient
@@ -2040,5 +2044,32 @@
  % \s!page_otr_command_flush_margin_blocks    =\page_mvl_command_flush_margin_blocks, % not used
    \s!page_otr_command_test_column            =\page_mvl_command_test_column,
   ]
+
+%D Additional wrappers:
+
+\permanent\tolerant\protected\defcsname\e!start\v!setcolumnsetsheet\endcsname[#1]#*%
+  {\begingroup
+   \obeylines
+   \cdef\askedsheet{#1}%
+   \grabbufferdatadirect{page:mvl:temp}{\e!start\v!setcolumnsetsheet}{\e!stop\v!setcolumnsetsheet}}
+
+\permanent\protected\defcsname\e!stop\v!setcolumnsetsheet\endcsname
+  {\clf_registercolumnsetsheet{\currentcolumnset}{\askedsheet}{_sht_}\relax
+   \endgroup}
+
+\tolerant\protected\def\startsetcolumnsetsht[#S#1]%
+  {\begingroup
+   \page_mvl_common_dummy_preset[#1]%
+   \setbox\nextbox\hbox\bgroup
+   \hsize{\columnsethspan{1}{\dummyparameter\c!nc}}%
+   \ifnum{\dummyparameter\c!nc}>\zerocount
+     \vsize{(\dummyparameter\c!nr)*\lineheight}%
+   \fi
+   \ignorespaces}
+
+\permanent\protected\def\stopsetcolumnsetsht
+  {\removeunwantedspaces
+   \egroup
+   \page_mvl_set_indeed}
 
 \protect \endinput

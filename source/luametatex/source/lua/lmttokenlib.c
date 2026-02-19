@@ -4145,6 +4145,16 @@ static int tokenlib_getfunctionvalues(lua_State *L)
     return lmt_push_info_values(L, lmt_interface.lua_function_values);
 }
 
+# if token_sequenced_test
+
+    static int tokenlib_setsequenced(lua_State *L)
+    {
+        lmt_token_memory_state.sequenced = lua_toboolean(L, 1);
+        return 0;
+    }
+
+# endif
+
 static const struct luaL_Reg tokenlib_function_list[] = {
     { "type",                  tokenlib_type                  },
     { "create",                tokenlib_create                },
@@ -4272,6 +4282,10 @@ static const struct luaL_Reg tokenlib_function_list[] = {
     { "getcommandvalues",      tokenlib_getcommandvalues      },
  // { "getcommandid",          tokenlib_getcommandid          },
     { "getprimitives",         tokenlib_getprimitives         },
+    /* */
+# if token_sequenced_test
+    { "setsequenced",          tokenlib_setsequenced          }, /* undocumented, just an experiment */
+# endif
     /* */
     { NULL,                    NULL                           },
 };

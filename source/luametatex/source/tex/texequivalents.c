@@ -389,10 +389,17 @@ static void tex_undump_equivalents_mem_registers(dumpstream f) /* the old unpack
         if (different) {
             undump_things(f, lmt_hash_state.eqtb[index], different);
         }
+     // if (equivalent > 0) {
+     //     int last = index + different - 1;
+     //     for (int i = 1; i <= equivalent; i++) {
+     //         lmt_hash_state.eqtb[last + i] = lmt_hash_state.eqtb[last];
+     //     }
+     // }
         if (equivalent > 0) {
             int last = index + different - 1;
+            memoryword m = lmt_hash_state.eqtb[last];
             for (int i = 1; i <= equivalent; i++) {
-                lmt_hash_state.eqtb[last + i] = lmt_hash_state.eqtb[last];
+                lmt_hash_state.eqtb[++last] = m;
             }
         }
         index = index + different + equivalent;
@@ -529,8 +536,7 @@ void tex_save_halfword_on_stack(quarterword t, halfword v) /* todo: also value_2
 static void tex_aux_group_trace(int g)
 {
     tex_begin_diagnostic();
-    tex_print_levels();
-    tex_print_format(g ? "{leaving %G}" : "{entering %G}", g);
+    tex_print_format(g ? "%l{leaving %G}" : "%l{entering %G}", g);
     tex_end_diagnostic();
 }
 
@@ -881,8 +887,7 @@ void tex_show_save_stack(void)
     while (lmt_save_state.save_stack_data.ptr) {
         --lmt_save_state.save_stack_data.ptr;
         tex_print_nlp();
-        tex_print_levels();
-        tex_print_format("[%i: ", lmt_save_state.save_stack_data.ptr);
+        tex_print_format("%l[%i: ", lmt_save_state.save_stack_data.ptr);
         if (save_type(lmt_save_state.save_stack_data.ptr) >= saved_record_0 && save_type(lmt_save_state.save_stack_data.ptr) <= saved_record_9) {
             tex_print_format("save record %i, ", save_type(lmt_save_state.save_stack_data.ptr) - saved_record_0 + 1, save_record(lmt_save_state.save_stack_data.ptr));
             /* these have to be provided in the modules */
@@ -2197,8 +2202,12 @@ void tex_unsave(void)
     none found. The |cur_tok| variable contains the packed representative of |cur_cmd| and |cur_chr|
     and like the other ones is global.
 
-    Here is a procedure that displays the current command. The variable |n| holds the level of |\if ...
-    \fi| nesting and |l| the line where |\if| started.
+    Here is a procedure that displays the current command. The variable |n| holds the level of |\if
+    ... \fi| nesting and |l| the line where |\if| started.
+
+    We used to have a |tracing_commands_par >= 4| for the more verbose mode reporting but in the end
+    just removed the \ETEX\ |{mode:...}| reportinmg inm favor of our variant. We're not compatible
+    with \ETEX\ anyway.
 
 */
 
@@ -2206,20 +2215,11 @@ void tex_show_cmd_chr(halfword cmd, halfword chr)
 {
     tex_begin_diagnostic();
     if (cur_list.mode != lmt_nest_state.shown_mode) {
-        if (tracing_commands_par >= 4) {
-            /*tex So, larger than \ETEX's extra info 3 value. We might just always do this. */
-            tex_print_format("%l[mode: entering %M]", cur_list.mode);
-            tex_print_nlp();
-            tex_print_levels();
-            tex_print_str("{");
-        } else {
-            tex_print_format("{%M: ", cur_list.mode);
-        }
+        tex_print_format("%l[mode: entering %M]", cur_list.mode);
+     // tex_print_nlp(); /* Probably this can go. */
         lmt_nest_state.shown_mode = cur_list.mode;
-    } else {
-        tex_print_str("{");
     }
-    tex_print_cmd_chr((singleword) cmd, chr);
+    tex_print_format("%l{%C", (singleword) cmd, chr);
     if (cmd == if_test_cmd && tracing_ifs_par > 0) {
         halfword p;
         int n, l;

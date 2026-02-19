@@ -520,7 +520,7 @@ static void tex_aux_append_insert(halfword current)
         if (multiplier == scaling_factor) {
             advance += box_height(location);
         } else {
-            advance += tex_x_over_n(box_height(location), scaling_factor) * multiplier;
+            advance += tex_x_over_n_factor(box_height(location)) * multiplier;
         }
         where = 1;
     }
@@ -568,7 +568,9 @@ static void tex_aux_append_insert(halfword current)
         /*tex This much room is left if we shrink the maximum. */
         if (multiplier != scaling_factor) {
             /*tex This much room is needed. */
-            needed = tex_x_over_n(needed, scaling_factor) * multiplier;
+         /* needed = needed * multiplier / scaling_factor; */ /* can overflow */
+         /* needed = scaledround(needed * multiplier / scaling_factor_double); */
+            needed = tex_x_over_n_factor(needed) * multiplier;
         }
         /*tex Somehow with multiple notes we overflow. */
         if ((needed <= 0 || needed <= delta) && (insert_total_height(current) + box_height(location) <= limit)) {
@@ -658,7 +660,9 @@ static void tex_aux_append_insert(halfword current)
                 tex_aux_display_insertion_split_cost(index, height, best_height_plus_depth, penalty);
             }
             if (multiplier != scaling_factor) {
-                best_height_plus_depth = tex_x_over_n(best_height_plus_depth, scaling_factor) * multiplier;
+             // best_height_plus_depth = tex_x_over_n_factor(best_height_plus_depth) * multiplier;
+             // best_height_plus_depth = scaledround(best_height_plus_depth * multiplier / scaling_factor_double)
+                best_height_plus_depth = best_height_plus_depth * multiplier / scaling_factor;
             }
             /*tex No need to update when no room or ignore. */
             update_page_goal("split", index, best_height_plus_depth, best_height_plus_depth);
@@ -1814,8 +1818,7 @@ void tex_resume_after_output(void)
     }
     if (lmt_insert_state.storing == insert_storage_delay && tex_insert_stored()) {
         if (tracing_inserts_par > 0) {
-            tex_print_levels();
-            tex_print_str(lmt_insert_state.head ? "<delaying inserts>" : "<no inserts to delay>");
+            tex_print_format(lmt_insert_state.head ? "%l<delaying inserts>" : "%l<no inserts to delay>");
             if (lmt_insert_state.head && tracing_inserts_par > 1) {
                 tex_show_node_list(lmt_insert_state.head, max_integer, max_integer);
             }
@@ -1851,8 +1854,7 @@ void tex_resume_after_output(void)
             h = n;
         }
         if (tracing_inserts_par > 0) {
-            tex_print_levels();
-            tex_print_str(lmt_insert_state.head ? "<storing inserts>" : "<no inserts to store>");
+            tex_print_format(lmt_insert_state.head ? "%l<storing inserts>" : "%l<no inserts to store>");
             if (lmt_insert_state.head && tracing_inserts_par > 1) {
                 tex_show_node_list(lmt_insert_state.head, max_integer, max_integer);
             }

@@ -29,7 +29,7 @@ set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi
 
 # This triggers link time optimization, which adds to compile time and gains (at most) a few 
 # percent on runtime. When set, because we're sparse, we also strip the binary. On the manual
-# we gain 2 percent, so not that much. 
+# we gain 2-4 percent, so not that much.
 
 # set(LMT_OPTIMIZE 1)
 

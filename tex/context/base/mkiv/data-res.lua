@@ -305,6 +305,7 @@ local expandedvariable, resolvedvariable  do
             pattern        = nil, -- lists
             force_suffixes = true,
             pathstack      = { },
+            details        = { },
         }
 
         setmetatableindex(variables,function(t,k)
@@ -466,6 +467,7 @@ local function load_configuration_files()
     local specification = instance.specification
     local setups        = instance.setups
     local order         = instance.order
+    local details       = instance.details
     if #specification > 0 then
         local luacnfname = resolvers.luacnfname
         for i=1,#specification do
@@ -488,6 +490,9 @@ local function load_configuration_files()
                             data = mergedtable(parentdata,data)
                         end
                     end
+                end
+                if data then
+                    table.merge(details, data.details or { })
                 end
                 data = data and data.content
                 if data then
@@ -1919,6 +1924,21 @@ end
 
 function resolvers.showpath(str)     -- output search path for file type NAME
     return joinpath(expandedpathlist(resolvers.formatofvariable(str)))
+end
+
+function resolvers.showdetails()
+    local details = instance and instance.details
+    if details then
+        for k, v in table.sortedhash(details) do
+            if type(v) == "string" then
+                report_resolving("detail %s : %s",k,v)
+            end
+        end
+    end
+end
+
+function resolvers.getdetails()
+    return table.setmetatableindex(instance and instance.details)
 end
 
 function resolvers.registerfile(files, name, path)

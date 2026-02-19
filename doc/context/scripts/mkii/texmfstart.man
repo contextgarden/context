@@ -137,6 +137,9 @@ expand variable (resolve references)
 .B --show-path
 show path expansion of ...
 .TP
+.B --show-details
+show details of configuration
+.TP
 .B --var-value
 report value of variable
 .TP
@@ -170,7 +173,7 @@ move to bin path (maintainance)
 .B --help=string
 show help info
 .TP
-.B --help=string
+.B --version=string
 show version info
 .TP
 .B --gethelp=string

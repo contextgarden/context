@@ -264,6 +264,9 @@
         </category>
         <category name="special">
             <subcategory>
+                <flag name="luatex">
+                    <short>process file with luatex instead of luametatex</short>
+                </flag>
                 <flag name="pdftex">
                     <short>process file with texexec using pdftex</short>
                 </flag>

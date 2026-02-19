@@ -407,7 +407,7 @@ function splitters.split(head) -- best also pass the direction
         local next = getnext(current)
         local id = getid(current)
         if id == glyph_code then
-            if getsubtype(current) < 256 then
+            if getsubtype(current) < 256 then -- yet unprocessed, we can use is_char here
                 local a = getattr(current,a_split)
                 if not a then
                     start, stop = nil, nil

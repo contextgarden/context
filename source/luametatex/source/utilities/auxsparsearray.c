@@ -525,6 +525,7 @@ void sa_restore_stack(const sa_tree head, int gl)
         }
     }
 }
+
 void sa_reinit_stack(const sa_tree head, int level)
 {
     if (head->stack) {

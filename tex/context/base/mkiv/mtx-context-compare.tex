@@ -20,6 +20,8 @@
 %
 % end help
 
+\nopdfcompression
+
 \input mtx-context-common.tex
 
 \starttext
@@ -29,31 +31,58 @@
 
 % \showmakeup
 
-\definecolor[colorred]    [r=1,a=1,t=.5]
-\definecolor[colorgreen]  [g=1,a=1,t=.5]
-\definecolor[colorblue]   [b=1,a=1,t=.5]
-\definecolor[colorgray]   [s=0,a=1,t=.5]
-\definecolor[colorcyan]   [g=1,b=1,a=1,t=.5]
-\definecolor[colormagenta][r=1,b=1,a=1,t=.5]
-\definecolor[coloryellow] [r=1,g=1,a=1,t=.5]
+\lettonothing\colorone
+\lettonothing\colortwo
 
-% \definecolor[colorone][black] % no, keep undefined !
-% \definecolor[colortwo][black] % no, keep undefined !
-
-% \defineviewerlayer[one] % we use filename as title
-% \defineviewerlayer[two] % we use filename as title
+\startluacode
+    local identify = {
+        content   = true,
+        resources = true,
+        page      = true,
+    }
+    graphics.registerpdfcompactor ( "color:red", {
+        identify = identify,
+        strip    = { color = { 1, 0, 0 } },
+    } )
+    graphics.registerpdfcompactor ( "color:green", {
+        identify = identify,
+        strip    = { color = { 0, 1, 0 } },
+    } )
+    graphics.registerpdfcompactor ( "color:blue", {
+        identify = identify,
+        strip    = { color = { 0, 0, 1 } },
+    } )
+    graphics.registerpdfcompactor ( "color:cyan", {
+        identify = identify,
+        strip    = { color = { 0, 1, 1 } },
+    } )
+    graphics.registerpdfcompactor ( "color:magenta", {
+        identify = identify,
+        strip    = { color = { 1, 0, 1 } },
+    } )
+    graphics.registerpdfcompactor ( "color:yellow", {
+        identify = identify,
+        strip    = { color = { 1, 1, 0 } },
+    } )
+    graphics.registerpdfcompactor ( "color:gray", {
+        identify = identify,
+        strip    = { color = 0 },
+    } )
+\stopluacode
 
 \starttexdefinition unexpanded ShowBoth #1#2#3
     \startTEXpage[width=21cm]
         \startoverlay
             {
                 \startviewerlayer[one]
-                    \signalcharacter\externalfigure[#1][page=#3,width=21cm,foregroundcolor=colorone]
+                    \signalcharacter
+                    \externalfigure[#1][page=#3,width=21cm,compact=\colorone]
                 \stopviewerlayer
             }
             {
                 \startviewerlayer[two]
-                    \signalcharacter\externalfigure[#2][page=#3,width=21cm,foregroundcolor=colortwo]
+                    \signalcharacter
+                    \externalfigure[#2][page=#3,width=21cm,compact=\colortwo]
                 \stopviewerlayer
             }
         \stopoverlay
@@ -64,7 +93,7 @@
     \startTEXpage[width=21cm]
         \startviewerlayer[one]
             \signalcharacter
-            \externalfigure[#1][page=#2,width=21cm,foregroundcolor=colorone]
+            \externalfigure[#1][page=#2,width=21cm,compact=\colorone]
         \stopviewerlayer
     \stopTEXpage
 \stoptexdefinition
@@ -73,7 +102,7 @@
     \startTEXpage[width=21cm]
         \startviewerlayer[two]
             \signalcharacter
-            \externalfigure[#1][page=#2,width=21cm,foregroundcolor=colortwo]
+            \externalfigure[#1][page=#2,width=21cm,compact=\colortwo]
         \stopviewerlayer
     \stopTEXpage
 \stoptexdefinition
@@ -95,14 +124,14 @@ if colors then
 end
 
 local valid = {
-    red     = "colorred",
-    green   = "colorgreen",
-    blue    = "colorblue",
-    cyan    = "colorcyan",
-    magenta = "colormagenta",
-    yellow  = "coloryellow",
-    gray    = "colorgray",
-    grey    = "colorgray",
+    red     = "color:red",
+    green   = "color:green",
+    blue    = "color:blue",
+    cyan    = "color:cyan",
+    magenta = "color:magenta",
+    yellow  = "color:yellow",
+    gray    = "color:gray",
+    grey    = "color:gray",
 }
 
 if fileone == "" or filetwo == "" then
@@ -121,8 +150,8 @@ if not lfs.isfile(filetwo) then
 end
 
 if valid[colorone] and valid[colortwo] then
-    context.definecolor({ "colorone" }, { valid[colorone] })
-    context.definecolor({ "colortwo" }, { valid[colortwo] })
+    token.setmacro("colorone", valid[colorone])
+    token.setmacro("colortwo", valid[colortwo])
 end
 
 context.defineviewerlayer({ "one" }, { state = "start", title = file.nameonly(fileone) })

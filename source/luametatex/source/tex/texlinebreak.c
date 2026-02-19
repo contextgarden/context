@@ -1179,12 +1179,12 @@ static inline void tex_aux_add_delta_from_difference(halfword adjust_spacing, ha
 
 static inline scaled tex_aux_applied_amount(halfword n, halfword factor)
 {
-    return factor && glue_amount(n) ? tex_xn_over_d(glue_amount(n), factor, scaling_factor) : glue_amount(n);
+    return factor && glue_amount(n) ? tex_xn_over_d_factor(glue_amount(n), factor) : glue_amount(n);
 }
 
 static inline scaled tex_aux_applied_stretch(halfword n, halfword factor)
 {
-    return factor && glue_stretch(n) ? tex_xn_over_d(glue_stretch(n), factor, scaling_factor) : glue_stretch(n);
+    return factor && glue_stretch(n) ? tex_xn_over_d_factor(glue_stretch(n), factor) : glue_stretch(n);
 }
 
 static void tex_aux_add_to_widths(halfword s, int adjust_spacing, int adjust_spacing_step, halfword sf_factor, halfword sf_stretch_factor, scaled widths[])
@@ -2587,25 +2587,25 @@ static scaled tex_aux_try_break(
                         */
                         no_break_yet = false;
                         if (lmt_linebreak_state.emergency_percentage) {
-                            scaled stretch = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_percentage, scaling_factor);
+                            scaled stretch = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_percentage);
                             lmt_linebreak_state.background[total_stretch_amount] -= lmt_linebreak_state.emergency_amount;
                             lmt_linebreak_state.background[total_stretch_amount] += stretch;
                             lmt_linebreak_state.emergency_amount = stretch;
                         }
                         if (lmt_linebreak_state.emergency_width_extra) {
-                            scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_width_extra, scaling_factor);
+                            scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_width_extra);
                             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_width_amount;
                             lmt_linebreak_state.background[total_advance_amount] += extra;
                             lmt_linebreak_state.emergency_width_amount = extra;
                         }
                         if (lmt_linebreak_state.emergency_left_extra) {
-                            scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_left_extra, scaling_factor);
+                            scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_left_extra);
                             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_left_amount;
                             lmt_linebreak_state.background[total_advance_amount] += extra;
                             lmt_linebreak_state.emergency_left_amount = extra;
                         }
                         if (lmt_linebreak_state.emergency_right_extra) {
-                            scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_right_extra, scaling_factor);
+                            scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_right_extra);
                             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_right_amount;
                             lmt_linebreak_state.background[total_advance_amount] += extra;
                             lmt_linebreak_state.emergency_right_amount = extra;
@@ -3271,7 +3271,7 @@ static inline int tex_aux_valid_glue_break(halfword p)
 static inline halfword tex_aux_upcoming_math_penalty(halfword p, halfword factor) {
     halfword n = node_next(p);
     if (n && node_type(n) == math_node && node_subtype(n) == begin_inline_math) {
-        return factor ? tex_xn_over_d(math_penalty(n), factor, scaling_factor) : math_penalty(n);
+        return factor ? tex_xn_over_d_factor(math_penalty(n), factor) : math_penalty(n);
     } else {
         return 0;
     }
@@ -3518,7 +3518,7 @@ static void tex_aux_apply_special_penalties(const line_break_properties *propert
                             case math_pre_penalty_subtype:
                             case math_post_penalty_subtype:
                                 if (penalty_amount(current)) {
-                                    penalty_amount(current) = tex_xn_over_d(penalty_amount(current), factor, scaling_factor);
+                                    penalty_amount(current) = tex_xn_over_d_factor(penalty_amount(current), factor);
                                 }
                                 break;
                             case orphan_penalty_subtype:
@@ -3531,7 +3531,7 @@ static void tex_aux_apply_special_penalties(const line_break_properties *propert
                         break;
                     case math_node:
                         if (math_penalty(current)) {
-                            math_penalty(current) = tex_xn_over_d(math_penalty(current), factor, scaling_factor);
+                            math_penalty(current) = tex_xn_over_d_factor(math_penalty(current), factor);
                         }
                         break;
                 }
@@ -4171,7 +4171,7 @@ static int tex_aux_set_sub_pass_parameters(
         }
     }
     if (lmt_linebreak_state.emergency_factor) {
-        properties->emergency_stretch = tex_xn_over_d(properties->emergency_original, lmt_linebreak_state.emergency_factor, scaling_factor);
+        properties->emergency_stretch = tex_xn_over_d_factor(properties->emergency_original, lmt_linebreak_state.emergency_factor);
     } else {
         properties->emergency_stretch = 0;
     }
@@ -5011,7 +5011,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                         case math_pre_penalty_subtype:
                         case math_post_penalty_subtype:
                             if (properties->math_penalty_factor) {
-                                penalty = tex_xn_over_d(penalty, properties->math_penalty_factor, scaling_factor);
+                                penalty = tex_xn_over_d_factor(penalty, properties->math_penalty_factor);
                             }
                             break;
                     }
@@ -5021,7 +5021,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                         } else {
                             int factor = tex_get_specification_penalty(properties->orphan_line_factors, lmt_linebreak_state.current_line_number);
                             /* todo tracing */
-                            penalty = tex_xn_over_d(penalty, factor, scaling_factor);
+                            penalty = tex_xn_over_d_factor(penalty, factor);
                         }
                     }
                     tex_add_penalty_option(current, penalty_option_factor_used);
@@ -5079,7 +5079,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                                     halfword penalty = math_penalty(current);
                                     if (node_type(node_next(current)) == glue_node) {
                                         if (properties->math_penalty_factor) {
-                                            penalty = tex_xn_over_d(penalty, properties->math_penalty_factor, scaling_factor);
+                                            penalty = tex_xn_over_d_factor(penalty, properties->math_penalty_factor);
                                         }
                                         tex_aux_try_break(properties, penalty, unhyphenated_node, first, current, callback_id, checks, pass, subpass, artificial);
                                     }
@@ -5100,7 +5100,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                                     halfword penalty = math_penalty(current);
                                     if (tex_aux_valid_glue_break(current)) {
                                         if (properties->math_penalty_factor) {
-                                            penalty = tex_xn_over_d(penalty, properties->math_penalty_factor, scaling_factor);
+                                            penalty = tex_xn_over_d_factor(penalty, properties->math_penalty_factor);
                                         }
                                         tex_aux_try_break(properties, penalty, unhyphenated_node, first, current, callback_id, checks, pass, subpass, artificial);
                                     }
@@ -5713,7 +5713,7 @@ void tex_do_line_break(line_break_properties *properties)
             }
             lmt_linebreak_state.background[total_stretch_amount] -= lmt_linebreak_state.emergency_amount;
             if (lmt_linebreak_state.emergency_percentage) {
-                scaled stretch = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_percentage, scaling_factor);
+                scaled stretch = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_percentage);
                 lmt_linebreak_state.background[total_stretch_amount] += stretch;
                 lmt_linebreak_state.emergency_amount = stretch;
             } else {
@@ -5721,7 +5721,7 @@ void tex_do_line_break(line_break_properties *properties)
             }
             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_width_amount;
             if (lmt_linebreak_state.emergency_width_extra) {
-                scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_width_extra, scaling_factor);
+                scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_width_extra);
                 lmt_linebreak_state.background[total_advance_amount] += extra;
                 lmt_linebreak_state.emergency_width_amount = extra;
             } else {
@@ -5730,7 +5730,7 @@ void tex_do_line_break(line_break_properties *properties)
 
             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_left_amount;
             if (lmt_linebreak_state.emergency_left_extra) {
-                scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_left_extra, scaling_factor);
+                scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_left_extra);
                 lmt_linebreak_state.background[total_advance_amount] += extra;
                 lmt_linebreak_state.emergency_left_amount = extra;
             } else {
@@ -5738,7 +5738,7 @@ void tex_do_line_break(line_break_properties *properties)
             }
             lmt_linebreak_state.background[total_advance_amount] -= lmt_linebreak_state.emergency_right_amount;
             if (lmt_linebreak_state.emergency_right_extra) {
-                scaled extra = tex_xn_over_d(line_width, lmt_linebreak_state.emergency_right_extra, scaling_factor);
+                scaled extra = tex_xn_over_d_factor(line_width, lmt_linebreak_state.emergency_right_extra);
                 lmt_linebreak_state.background[total_advance_amount] += extra;
                 lmt_linebreak_state.emergency_right_amount = extra;
             } else {

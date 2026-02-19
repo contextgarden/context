@@ -86,7 +86,7 @@ else
         metapost.lastlog = ""
     end
 
-    local mplibone = tonumber(mplib.version()) <= 1.50
+    local mplibone = (tonumber(mplib.version()) or 3) <= 1.50
 
     if mplibone then
 

@@ -801,7 +801,9 @@ scaled tex_insert_height(halfword node)
         halfword multiplier = tex_get_insert_multiplier(insert_index(node));
         halfword needed = insert_total_height(node);
         if (multiplier > 0 && needed > 0) {
-            return tex_x_over_n(needed, scaling_factor) * multiplier;
+         // return tex_x_over_n_factor(needed) * multiplier;
+         // return scaledround(needed * multiplier / scaling_factor_double)
+            return needed * multiplier / scaling_factor;
         }
     }
     return 0;

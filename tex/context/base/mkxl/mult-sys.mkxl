@@ -269,6 +269,7 @@
 \definesystemconstant {identity}
 \definesystemconstant {implication}
 \definesystemconstant {indeed}
+\definesystemconstant {index}
 \definesystemconstant {initializations}
 \definesystemconstant {insert} % maybe insertclass
 \definesystemconstant {integral}

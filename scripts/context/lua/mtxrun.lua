@@ -22601,7 +22601,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-res"] = package.loaded["data-res"] or true
 
--- original size: 70669, stripped down to: 45002
+-- original size: 71248, stripped down to: 45449
 
 if not modules then modules={} end modules ['data-res']={
  version=1.001,
@@ -22781,6 +22781,7 @@ local expandedvariable,resolvedvariable  do
    pattern=nil,
    force_suffixes=true,
    pathstack={},
+   details={},
   }
   setmetatableindex(variables,function(t,k)
    local v
@@ -22916,6 +22917,7 @@ local function load_configuration_files()
  local specification=instance.specification
  local setups=instance.setups
  local order=instance.order
+ local details=instance.details
  if #specification>0 then
   local luacnfname=resolvers.luacnfname
   for i=1,#specification do
@@ -22938,6 +22940,9 @@ local function load_configuration_files()
        data=mergedtable(parentdata,data)
       end
      end
+    end
+    if data then
+     table.merge(details,data.details or {})
     end
     data=data and data.content
     if data then
@@ -24166,6 +24171,19 @@ function resolvers.dowithfilesandreport(command,files,...)
 end
 function resolvers.showpath(str)  
  return joinpath(expandedpathlist(resolvers.formatofvariable(str)))
+end
+function resolvers.showdetails()
+ local details=instance and instance.details
+ if details then
+  for k,v in table.sortedhash(details) do
+   if type(v)=="string" then
+    report_resolving("detail %s : %s",k,v)
+   end
+  end
+ end
+end
+function resolvers.getdetails()
+ return table.setmetatableindex(instance and instance.details)
 end
 function resolvers.registerfile(files,name,path)
  if files[name] then
@@ -26861,8 +26879,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1076856
--- stripped bytes    : 429881
+-- original bytes    : 1077435
+-- stripped bytes    : 430013
 
 -- end library merge
 
@@ -27191,6 +27209,7 @@ local helpinfo = [[
     <flag name="expand-path"><short>expand variable (resolve paths)</short></flag>
     <flag name="expand-var"><short>expand variable (resolve references)</short></flag>
     <flag name="show-path"><short>show path expansion of ...</short></flag>
+    <flag name="show-details"><short>show details of configuration</short></flag>
     <flag name="var-value"><short>report value of variable</short></flag>
     <flag name="find-file"><short>report file location</short></flag>
     <flag name="find-path"><short>report path of file</short></flag>
@@ -27208,7 +27227,7 @@ local helpinfo = [[
    <subcategory>
    </subcategory>
     <flag name="help" value="string"><short>show help info</short></flag>
-    <flag name="help" value="string"><short>show version info</short></flag>
+    <flag name="version" value="string"><short>show version info</short></flag>
     <flag name="gethelp" value="string"><short>launch the given help info (<ref name="url"/>)</short></flag>
    </subcategory>
   </category>
@@ -28240,6 +28259,11 @@ elseif e_argument("show-path") or e_argument("path-value") then
     runners.register_arguments(filename)
     environment.initializearguments(environment.arguments_after)
     resolvers.dowithfilesandreport(resolvers.showpath, environment.files)
+
+elseif e_argument("show-details") then
+
+    resolvers.load("nofiles")
+    resolvers.showdetails()
 
 elseif e_argument("var-value") or e_argument("show-value") then
 

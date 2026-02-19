@@ -9,7 +9,7 @@ if not modules then modules = { } end modules ['libs-imp-sqlite'] = {
 -- c:/data/develop/tex-context/tex/texmf-win64/bin/lib/luametatex/lua/copies/sqlite/sqlite3.dll
 
 local libname = "sqlite"
-local libfile = "sqlite3"
+local libfile = "sqlite3" -- on linux: symlink to libsqlite3.so.0 or so
 
 local sqlitelib = resolvers.libraries.validoptional(libname)
 

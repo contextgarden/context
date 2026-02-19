@@ -436,6 +436,43 @@ static int pnglib_expand(lua_State *L)
      For now we only expand indexed rgba. I'll do the rest when we have one.
 */
 
+static int pnglib_palettemask(lua_State *L)
+{
+    size_t csize, tsize;
+    const char *content = luaL_checklstring(L, 1, &csize);
+    const char *transparent = lua_gettop(L) > 3 ? luaL_checklstring(L, 4, &tsize) : NULL;
+    if (csize > 0 && tsize > 0 && tsize <= 256) {
+        int bytes = lua_tointeger(L, 2);
+        int paths = lua_tointeger(L, 3);
+        switch (bytes) {
+            case 3:
+                switch (paths) {
+                    case 4:
+                        break;
+                    case 2:
+                        break;
+                    default:
+                        {
+                            char *mask = lmt_memory_malloc(csize);
+                            if (mask) {
+                                unsigned char alphamap[256] = { 0x00 };
+                                memcpy(alphamap, transparent, tsize);
+                                for (size_t i = 0; i < csize; i++) {
+                                    mask[i] = alphamap[(unsigned char) content[i]];
+                                }
+                                lua_pushlstring(L, mask, csize);
+                                lmt_memory_free(mask);
+                                return 1;
+                            }
+                        }
+                        break;
+                }
+                break;
+        }
+    }
+    return 0;
+}
+
 static int pnglib_frompalette(lua_State *L)
 {
     size_t csize, psize;
@@ -770,6 +807,7 @@ static const struct luaL_Reg pngdecodelib_function_list[] = {
     { "makemask",    pnglib_makemask    },
     { "reduce",      pnglib_reduce      },
     { "frompalette", pnglib_frompalette },
+    { "palettemask", pnglib_palettemask },
     { NULL,          NULL               },
 };
 

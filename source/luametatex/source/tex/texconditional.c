@@ -147,8 +147,7 @@ static int tex_aux_pass_text_x(int tracing_ifs, int tracing_commands)
                         int unless = cur_chr == or_unless_code;
                         if (tracing_commands > 1) {
                             tex_begin_diagnostic();
-                            tex_print_levels();
-                            tex_print_str(unless ? "{orunless}" : "{orelse}");
+                            tex_print_format(unless ? "%l{orunless}" : "%l{orelse}");
                             tex_end_diagnostic();
                         } else if (tracing_ifs) {
                             tex_show_cmd_chr(cur_cmd, cur_chr);
@@ -1465,8 +1464,7 @@ void tex_conditional_if(halfword code, int unless)
         halfword online = tracing_online_par;
         tracing_online_par = 1;
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_format( "ignoring \\unless in %C test", if_test_cmd, code);
+        tex_print_format("%lignoring \\unless in %C test", if_test_cmd, code);
         tex_end_diagnostic();
         tracing_online_par = online;
     }
@@ -1513,8 +1511,7 @@ void tex_conditional_if(halfword code, int unless)
     if (tracing_commands > 1) {
         /*tex Display the value of |b|. */
         tex_begin_diagnostic();
-        tex_print_levels();
-        tex_print_str(result ? "{true}" : "{false}");
+        tex_print_format(result ? "%l{true}" : "%l{false}");
         tex_end_diagnostic();
     }
     if (result) {

@@ -521,20 +521,20 @@ static void tex_aux_run_space(void)
                         } else if (tex_aux_use_space_factor_overload(cur_list.tail, cur_list.space_factor)) {
                             /* what with stretch and shrink */
                             cur_list.space_factor = tex_aux_used_space_factor_overload(cur_list.space_factor);
-                            glue_amount(p) = tex_xn_over_d(glue_amount(p), cur_list.space_factor, scaling_factor);
+                            glue_amount(p) = tex_xn_over_d_factor(glue_amount(p), cur_list.space_factor);
                         }
                         glue_options(p) |= glue_option_has_factor;
                         if (space_factor_stretch_limit_par >= scaling_factor && cur_list.space_factor > scaling_factor) {
                             glue_options(p) |= glue_option_is_limited;
-                            glue_stretch(p) = tex_xn_over_d(glue_stretch(p), space_factor_stretch_limit_par, scaling_factor);
+                            glue_stretch(p) = tex_xn_over_d_factor(glue_stretch(p), space_factor_stretch_limit_par);
                         } else {                   
-                            glue_stretch(p) = tex_xn_over_d(glue_stretch(p), cur_list.space_factor, scaling_factor);
+                            glue_stretch(p) = tex_xn_over_d_factor(glue_stretch(p), cur_list.space_factor);
                         }
                         if (space_factor_shrink_limit_par >= scaling_factor && cur_list.space_factor > scaling_factor) {
                             glue_options(p) |= glue_option_is_limited;
                             switch (space_factor_mode_par) { 
                                 case 1: 
-                                    glue_shrink(p) = tex_xn_over_d(glue_shrink(p), space_factor_shrink_limit_par, scaling_factor);
+                                    glue_shrink(p) = tex_xn_over_d_factor(glue_shrink(p), space_factor_shrink_limit_par);
                                     break;
                                 case 2 :
                                     glue_shrink(p) = tex_xn_over_d(glue_shrink(p), 2*scaling_factor, space_factor_shrink_limit_par);
@@ -546,7 +546,7 @@ static void tex_aux_run_space(void)
                         } else {                   
                             switch (space_factor_mode_par) { 
                                 case 1: 
-                                    glue_shrink(p) = tex_xn_over_d(glue_shrink(p), cur_list.space_factor, scaling_factor);
+                                    glue_shrink(p) = tex_xn_over_d_factor(glue_shrink(p), cur_list.space_factor);
                                     break;
                                 case 2 :
                                     glue_shrink(p) = tex_xn_over_d(glue_shrink(p), 2*scaling_factor, cur_list.space_factor);
@@ -567,9 +567,9 @@ static void tex_aux_run_space(void)
                 glue_font(p) = cur_font_par;
                 tex_tail_append(p);
                 if (space_skip_factor_par != scaling_factor) {
-                    glue_amount(p) = tex_xn_over_d(glue_amount(p), space_skip_factor_par, scaling_factor);
-                    glue_stretch(p) = tex_xn_over_d(glue_stretch(p), space_skip_factor_par, scaling_factor);
-                    glue_shrink(p) = tex_xn_over_d(glue_shrink(p), space_skip_factor_par, scaling_factor);
+                    glue_amount(p) = tex_xn_over_d_factor(glue_amount(p), space_skip_factor_par);
+                    glue_stretch(p) = tex_xn_over_d_factor(glue_stretch(p), space_skip_factor_par);
+                    glue_shrink(p) = tex_xn_over_d_factor(glue_shrink(p), space_skip_factor_par);
                 }
             }
             break;
@@ -4036,7 +4036,7 @@ static void tex_aux_arithmic_register(int a, int code)
                             return;
                         }
                     }
-                /*
+# if (experiment_advance_by)
                 case advance_by_plus_one_code:
                 case advance_by_minus_one_code:
                     {
@@ -4053,7 +4053,7 @@ static void tex_aux_arithmic_register(int a, int code)
                         }
                         break;
                     }
-                */
+# endif
             }
         }
     }
@@ -5009,14 +5009,17 @@ static void tex_aux_set_def(int flags, int force)
         flags = global_defs_par > 0 ? add_global_flag(flags) : remove_global_flag(flags);
     }
 # else
-    /*tex Tracing discussed @ tex-implementors but differently. It makes not that sense anyway. */
+    /*tex
+        This additonal tracing features was discussed @ tex-implementors but if we do it, then a
+        bit different. But it makes not that much sense anyway.
+    */
     if (global_defs_par) {
         if (global_defs_par < 0) {
             if (is_global(flags)) {
                 remove_global_flag(flags);
                 if (tracing_commands_par) {
                     begin_diagnostic();
-                    tprint_nl("{\global canceled}");
+                    tex_print_format("%l[global canceled]");
                     end_diagnostic();
                 }
             }
@@ -5025,7 +5028,7 @@ static void tex_aux_set_def(int flags, int force)
                 add_global_flag(flags);
                 if (tracing_commands_par) {
                     begin_diagnostic();
-                    tprint_nl("{\global enforced}");
+                    tex_print_format("%l[global enforced]");
                     end_diagnostic();
                 }
             }

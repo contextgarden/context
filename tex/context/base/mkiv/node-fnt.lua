@@ -542,3 +542,6 @@ end
 
 handlers.protectglyphs   = protectglyphs
 handlers.unprotectglyphs = unprotectglyphs
+
+function handlers.protectglyphs  (h) return protectglyphs  (h) end -- no alias, otherwise weird second argument
+function handlers.unprotectglyphs(h) return unprotectglyphs(h) end -- no alias, otherwise weird second argument

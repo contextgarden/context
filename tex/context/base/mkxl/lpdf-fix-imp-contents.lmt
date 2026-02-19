@@ -697,6 +697,16 @@ do
         --  passone.EMC = removetags -- marked content sequence end, handled in BMC BDC
             passtwo.BT  = checkbt    -- with matching ET
         end
+if strip.color then
+    passone.k  = removestate
+    passone.K  = removestate
+    passone.rg = removestate
+    passone.RG = removestate
+    passone.g  = removestate
+    passone.G  = removestate
+    reduce     = { }
+    convert    = { }
+end
         if strip.extgstate then
             passone.gs = removestate
             passone.GS = removestate
@@ -1058,10 +1068,26 @@ do
                 local xobjects = resources.XObject
                 useactions(compactor)
                 if g1 then
-                    insert(contents,1, { 0, "G" })
-                    insert(contents,1, { 0, "g" })
+                    insert(contents,1,{ 0, "G" })
+                    insert(contents,1,{ 0, "g" })
                 end
                 contents = strip_content(pdfdoc,contents,fonts,xobjects,pagenumber,compactor)
+local strip = compactor.strip
+if strip then
+    local color= strip.color
+    if type(color) == "table" then
+        local c1 = color[1]
+        local c2 = color[2]
+        local c3 = color[3]
+        if c3 then
+            insert(contents,1,{ c1, c2, c3, "RG" })
+            insert(contents,1,{ c1, c2, c3, "rg" })
+        elseif c1 then
+            insert(contents,1,{ c1, "G" })
+            insert(contents,1,{ c1, "g" })
+        end
+    end
+end
                 resources.Font = fonts -- really needed (or maybe not here)
                 pdfdoc.setcontents(contents)
             end

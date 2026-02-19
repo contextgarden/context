@@ -220,6 +220,9 @@ list of: print, modify, extract, add, fillin, assemble, quality
 add an wtpdf conformance blob but best check first if it applies
 .SH OPTIONS: SPECIAL
 .TP
+.B --luatex
+process file with luatex instead of luametatex
+.TP
 .B --pdftex
 process file with texexec using pdftex
 .TP
