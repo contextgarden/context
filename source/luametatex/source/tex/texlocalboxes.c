@@ -141,7 +141,7 @@ static halfword tex_aux_update_boxes(halfword head, halfword b, halfword index)
         while (current) {
             halfword next = node_next(current);
             if (node_type(current) == hlist_node && box_index(current) == index) {
-                tex_try_couple_nodes(b, node_next(current));
+                tex_try_couple_nodes(b, next);
                 if (current == head) {
                     head = b;
                 } else {
@@ -161,7 +161,7 @@ static halfword tex_aux_update_boxes(halfword head, halfword b, halfword index)
     return b;
 }
 
-void tex_update_local_boxes(halfword b, halfword index, halfword location) /* todo: avoid copying */
+void tex_update_local_boxes(halfword b, halfword index, halfword location, int retain) /* todo: avoid copying */
 {
     switch (location) {
         case local_left_box_code:
@@ -192,7 +192,12 @@ void tex_update_local_boxes(halfword b, halfword index, halfword location) /* to
                 halfword c = local_middle_box_par ? tex_copy_node_list(local_middle_box_par, null) : null;
                 b = tex_aux_reset_boxes(c, index);
             }
-            update_tex_local_middle_box(b);
+            if (retain) {
+                /*tex We could have copied to much without need for doing so. Not wel testes yet! */
+                set_eq_value(internal_box_location(local_middle_box_code), b);
+            } else {
+                update_tex_local_middle_box(b);
+            }
             break;
     }
 }
@@ -239,7 +244,7 @@ void tex_replace_local_boxes(halfword par, halfword b, halfword index, halfword 
 halfword tex_use_local_boxes(halfword p, halfword location)
 {
     if (p) {
-        p = tex_hpack(tex_copy_node_list(p, null), 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+        p = tex_hpack(tex_copy_node_list(p, null), 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
         switch (location) {
             case local_left_box_code  : node_subtype(p) = local_left_list  ; break;
             case local_right_box_code : node_subtype(p) = local_right_list ; break;
@@ -256,7 +261,7 @@ void tex_scan_local_boxes_keys(quarterword *options, halfword *index)
     *options = 0;
     *index = 0;
     while (1) {
-        switch (tex_scan_character("aiklmpAIKLMP", 0, 1, 0)) {
+        switch (tex_scan_character("aiklmprAIKLMPR", 0, 1, 0)) {
             case 'a': case 'A':
                 if (tex_scan_mandate_keyword("always", 1)) {
                     *options |= local_box_always_option;
@@ -285,6 +290,12 @@ void tex_scan_local_boxes_keys(quarterword *options, halfword *index)
             case 'm': case 'M':
                 if (tex_scan_mandate_keyword("move", 1)) {
                     *options |= local_box_move_option;
+                }
+                break;
+            case 'r': case 'R':
+                /* This is undocumented and only for testing (jump over group)! */
+                if (tex_scan_mandate_keyword("retain", 1)) {
+                    *options |= local_box_retain_option;
                 }
                 break;
             default:
@@ -369,6 +380,7 @@ void tex_aux_scan_local_box(int code) {
     tex_push_nest();
     cur_list.mode = restricted_hmode;
     cur_list.space_factor = default_space_factor;
+    cur_list.space_penalty = 0;
 }
 
 void tex_aux_finish_local_box(void)
@@ -385,6 +397,7 @@ void tex_aux_finish_local_box(void)
         int move = (options & local_box_move_option) == local_box_move_option;
         int atpar = (options & local_box_par_option) == local_box_par_option;
         int always = (options & local_box_always_option) == local_box_always_option;
+        int retain = (options & local_box_retain_option) == local_box_retain_option;
         halfword p = node_next(cur_list.head);
         tex_pop_nest();
         if (p) {
@@ -401,7 +414,7 @@ void tex_aux_finish_local_box(void)
                 We really need something packed so we play safe! This feature is inherited but could
                 have been delegated to a callback anyway.
             */
-            p = tex_hpack(p, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+            p = tex_hpack(p, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
             node_subtype(p) = local_list;
             box_index(p) = index;
             if (always) {
@@ -413,7 +426,7 @@ void tex_aux_finish_local_box(void)
         }
         if (always) {
             if (cur_mode == hmode || cur_mode == mmode) {
-                halfword h = tex_hpack(p, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                halfword h = tex_hpack(p, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                 node_subtype(h) = local_list;
                 box_width(h) = 0;
                 box_height(h) = 0;
@@ -438,7 +451,7 @@ void tex_aux_finish_local_box(void)
             if (islocal) {
                 /*tex There no copy needed either! */
             } else {
-                tex_update_local_boxes(p, index, location);
+                tex_update_local_boxes(p, index, location, retain);
             }
             if (cur_mode == hmode || cur_mode == mmode) {
                 if (atpar) {
@@ -454,8 +467,8 @@ void tex_aux_finish_local_box(void)
                         We had a null check here but we also want to be able to reset these boxes so we
                         no longer check.
                     */
-                    halfword p = tex_new_par_node(local_box_par_subtype);
-                    tex_tail_append(p);
+                    halfword par = tex_new_par_node(local_box_par_subtype);
+                    tex_tail_append(par);
                     if (! keep) {
                         /*tex So we can group and keep it. */
                         update_tex_internal_par_state(internal_par_state_par + 1);

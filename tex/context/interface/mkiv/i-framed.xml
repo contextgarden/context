@@ -462,7 +462,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineformulaframed" level="style" category="rules" keywords="background mathematics" file="math-for.mkiv">
+    <cd:command name="defineformulaframed" level="style" category="rules" keywords="background mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -472,7 +472,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupformulaframed" level="style" category="rules" keywords="background mathematics" file="math-for.mkiv">
+    <cd:command name="setupformulaframed" level="style" category="rules" keywords="background mathematics" file="math-for.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -626,28 +626,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installleftframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkiv">
+    <cd:command name="installleftframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installrightframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkiv">
+    <cd:command name="installrightframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installtopframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkiv">
+    <cd:command name="installtopframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installbottomframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkiv">
+    <cd:command name="installbottomframerenderer" level="system" category="rules" keywords="background" file="pack-fen.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
@@ -662,7 +662,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="clipframed" type="environment" file="pack-rul.mkxl">
+    <cd:command name="clipframed" type="environment" level="style" category="rules" file="pack-rul.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupframed"/>

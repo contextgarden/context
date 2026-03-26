@@ -1134,6 +1134,7 @@ make_lua_key(L, parameter);\
 make_lua_key(L, parameter_reference);\
 make_lua_key(L, parameters);\
 make_lua_key(L, parfillleftskip);\
+make_lua_key(L, parfillmode);\
 make_lua_key(L, parfillrightskip);\
 make_lua_key(L, parfillskip);\
 make_lua_key(L, parindent);\
@@ -1471,6 +1472,7 @@ make_lua_key(L, total);\
 make_lua_key(L, tracingbalancing);\
 make_lua_key(L, tracingparagraphs);\
 make_lua_key(L, tracingpasses);\
+make_lua_key(L, tracingraggedness);\
 make_lua_key(L, tracingfitness);\
 make_lua_key(L, trace);\
 make_lua_key(L, trailer);\

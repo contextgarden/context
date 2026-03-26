@@ -64,95 +64,95 @@
 
     <cd:command name="letterexclamationmark" level="document" category="characters" file="catc-sym.mkxl"/>
 
-    <cd:command name="chr" file="char-tex.lmt">
+    <cd:command name="chr" level="document" category="characters" file="char-tex.lmt">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="utfchar" level="document" category="characters" keywords="fonts" file="char-ini.mkiv">
+    <cd:command name="utfchar" level="document" category="characters" keywords="fonts" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="safechar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
+    <cd:command name="safechar" level="style" category="characters" keywords="fonts" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkedchar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
+    <cd:command name="checkedchar" level="style" category="characters" keywords="fonts" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textormathchar" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
+    <cd:command name="textormathchar" level="style" category="characters" keywords="fonts" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-  <cd:command name="textormathchars" level="style" category="characters" keywords="fonts" file="char-ini.mkiv">
+  <cd:command name="textormathchars" level="style" category="characters" keywords="fonts" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chardescription" level="style" category="characters" file="char-ini.mkiv">
+    <cd:command name="chardescription" level="style" category="characters" file="char-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="percent" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="percent" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="procent" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="procent" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="ampersand" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="ampersand" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="dollar" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="dollar" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="hash" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="hash" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="hyphen" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="hyphen" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="lowerleftsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="lowerleftsingleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="lowerleftdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="lowerleftdoubleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="lowerrightsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="lowerrightsingleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="lowerrightdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="lowerrightdoubleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperleftsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftsingleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperleftdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftdoubleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperrightsingleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightsingleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperrightdoubleninequote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightdoubleninequote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperleftsinglesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftsinglesixquote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperleftdoublesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperleftdoublesixquote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperrightsinglesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightsinglesixquote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="upperrightdoublesixquote" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="upperrightdoublesixquote" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="leftsubguillemot" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="leftsubguillemot" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="rightsubguillemot" level="style" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="rightsubguillemot" level="style" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="textcontrolspace" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="textcontrolspace" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="textvisiblespace" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="textvisiblespace" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="textminus" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="textminus" level="document" category="characters" file="enco-ini.mkxl"/>
 
-    <cd:command name="textplus" level="document" category="characters" file="enco-ini.mkiv"/>
+    <cd:command name="textplus" level="document" category="characters" file="enco-ini.mkxl"/>
 
 </cd:interface>

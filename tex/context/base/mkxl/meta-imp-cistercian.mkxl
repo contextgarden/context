@@ -1,0 +1,233 @@
+%D \module
+%D   [       file=meta-imp-cistercian,
+%D        version=2026.03.12,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Cistercian Numbers,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% For Hraban ... there was a talk at the dante meeting. Some info:
+%
+% https://en.wikipedia.org/wiki/Cistercian_numerals
+% https://en.wikipedia.org/wiki/ConScript_Unicode_Registry#Under-ConScript_Unicode_Registry
+
+\startMPcalculation{simplefun}
+
+    numeric cisterianbase ; cisterianbase := 60320 ; % 0xEBA0 .. 0xEBDF
+
+    path cistercian_glyphs[] ;
+
+    def InitializeCistercian =
+
+        save p, d, u ;
+
+        pair p[] ; numeric d ; d := .1 ; numeric u ; u := .15 ;
+
+        cistercian_glyphs[1] := (0,0) -- (0,5) -- (2,5) ;
+        cistercian_glyphs[2] := (0,0) -- (0,5) && (0,3) -- (2,3) ;
+        cistercian_glyphs[3] := (0,0) -- (0,5) -- (2,3) ;
+        cistercian_glyphs[4] := (0,0) -- (0,5) && (0,3) -- (2,5) ;
+        cistercian_glyphs[5] := (0,0) -- (0,5) -- (2,3) -- (0,3) ;
+        cistercian_glyphs[6] := (0,0) -- (0,5) && (2,5) -- (2,3) ;
+        cistercian_glyphs[7] := (0,0) -- (0,5) -- (2,5) -- (2,3) ;
+        cistercian_glyphs[8] := (0,0) -- (0,5) && (0,3) -- (2,3) -- (2,5);
+        cistercian_glyphs[9] := (0,0) -- (0,5) -- (2,5) -- (2,3) -- (0,3);
+
+        for i=1 upto 9 :
+            cistercian_glyphs[i*  10] := cistercian_glyphs[i]              xscaled -1 ;
+            cistercian_glyphs[i* 100] := cistercian_glyphs[i] rotated 180  xscaled -1 shifted (0,5) ;
+            cistercian_glyphs[i*1000] := cistercian_glyphs[i] rotated 180             shifted (0,5) ;
+        endfor ;
+
+    enddef ;
+
+    vardef Cistercian(expr i) =
+        draw image (
+            draw cistercian_glyphs[i]
+                xscaled (2/5 - 1/20)
+                yscaled (2/5 - 2/20)
+                withpen pencircle scaled 1/10
+%                 withpen pencircle xscaled 1/10 yscaled 2/10 rotated 25
+            ;
+        ) shifted (1,0)
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "cistercian",
+        units    = 2,
+        usecolor = true,
+        width    = 2,
+        height   = 3/2,
+        depth    = 0,
+        preamble = "InitializeCistercian"
+    ] ;
+
+    for i=1 upto 9 :
+        lmt_registerglyph [
+            category = "cistercian",
+            unicode  = cisterianbase + i,
+            tounicode = (ASCII "0") + (i mod 10),
+            code     = "Cistercian(" & decimal i & ")"
+        ] ;
+        lmt_registerglyph [
+            category = "cistercian",
+            unicode  = cisterianbase + i + 16,
+            tounicode = (ASCII "0") + (i mod 10),
+            code     = "Cistercian(" & decimal (i*10) & ")"
+        ] ;
+        lmt_registerglyph [
+            category = "cistercian",
+            unicode  = cisterianbase + i + 32,
+            tounicode = (ASCII "0") + (i mod 10),
+            code     = "Cistercian(" & decimal (i*100) & ")"
+        ] ;
+        lmt_registerglyph [
+            category  = "cistercian",
+            unicode   = cisterianbase + i + 48,
+            tounicode = (ASCII "0") + (i mod 10),
+            code      = "Cistercian(" & decimal (i*1000) & ")"
+        ] ;
+    endfor ;
+
+\stopMPcalculation
+
+\startluacode
+    local cistercian      = moduledata.cistercian or { }
+    moduledata.cistercian = cistercian
+
+    local tonumber  = tonumber
+    local reverse   = table.reverse
+    local utfchar   = utf.char
+    local gsub      = string.gsub
+    local concat    = table.concat
+    local lpegmatch = lpeg.match
+
+    local f = string.formatters["%N"]
+
+    local cisterianbase = 60320 -- 0xEBA0 .. 0xEBDF
+
+    function cistercian.tostring(n)
+        if n >= 1 and n <= 9999 then
+            -- no need to optimize
+            local result = gsub(f(n),"(%d+)",function(s)
+                local digits = { }
+                local count  = 1
+                local n      = tonumber(s)
+                local u      = cisterianbase
+                while true do
+                    local un = n % 10
+                    if un > 0 then
+                        digits[count] = utfchar(u + un)
+                        count = count + 1
+                    end
+                    n = n // 10
+                    if n == 0 then
+                        break;
+                    end
+                    u = u + 16
+                end
+                return concat(reverse(digits),"\\kern-12pt")
+            end)
+            return result
+        else
+            return ""
+        end
+    end
+
+    interfaces.implement {
+        name      = "cisterciannumerals",
+        arguments = "integer",
+        actions   = { cistercian.tostring, context }
+    }
+\stopluacode
+
+\unprotect
+
+\permanent\def\cisterciannumerals#1{\clf_cisterciannumerals\numexpr#1\relax}
+
+\defineconversion [cisterciannumerals] [\cisterciannumerals]
+\defineconversion [C]                  [\cisterciannumerals]
+
+\definefontfeature
+  [cistercian]
+  [metapost=cistercian]
+
+\protect
+
+\continueifinputfile{meta-imp-cistercian.mkxl}
+
+\startbuffer
+
+\definefontfeature
+  [default]
+  [default]
+  [metapost=cistercian]
+
+\setupbodyfont[dejavu]
+
+\start
+    \showglyphs
+    CISTERCIAN\par
+    \dostepwiserecurse   {1}   {9}   {1}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse  {10}  {90}  {10}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse {100} {900} {100}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse{1000}{9000}{1000}{\cisterciannumerals{#1}\space }\par
+\stop
+
+cistercian \start
+    \red\glyphxscale 700 \par
+    \dostepwiserecurse   {1}   {9}   {1}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse  {10}  {90}  {10}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse {100} {900} {100}{\cisterciannumerals{#1}\space }\par
+    \dostepwiserecurse{1000}{9000}{1000}{\cisterciannumerals{#1}\space }\par
+\stop
+
+\startitemize[packed,C][color=orange,stopper=]
+    \startitem first  \stopitem
+    \startitem second \stopitem
+    \startitem third  \stopitem
+\stopitemize
+
+CISTERCIAN \start
+          \cisterciannumerals{1234}
+    \red  \cisterciannumerals{2023} --
+    \green\cisterciannumerals{4}    --
+    \blue \cisterciannumerals{18}
+\stop
+
+\definetransparency[MyTransparent][a=1,t=.45]
+
+\blank
+
+\startlinecorrection
+\starttransparent[MyTransparent]
+    \dontleavehmode\darkgray
+    \scale[height=1cm]{\cisterciannumerals{1234}}
+    \scale[height=1cm]{\cisterciannumerals{2023}}
+    \scale[height=1cm]{\cisterciannumerals   {4}}
+    \scale[height=1cm]{\cisterciannumerals  {18}}
+\stoptransparent
+\stoplinecorrection
+
+\stopbuffer
+
+\starttext
+
+\startTEXpage[offset=2ts,width=4es]
+  % \externalfigure[cistercian.png][width=3.5es]
+    \getbuffer
+\stopTEXpage
+
+\setuplayout[tight]
+
+\usemodule[scite]
+
+\typebuffer[option=TEX]
+
+\stoptext
+

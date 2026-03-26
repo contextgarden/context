@@ -653,6 +653,7 @@
 
 %permanent\immutable\integerdef\minusone                  -1
 \permanent\immutable\integerdef\minustwo                  -2
+%permanent\immutable\integerdef\minusfifty                -50
 %permanent\immutable\integerdef\zerocount                  0
 %permanent\immutable\integerdef\plusone                    1
 \permanent\immutable\integerdef\plustwo                    2  % also fitness value

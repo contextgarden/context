@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecomment" level="style" category="pdf" file="scrn-wid.mkvi">
+    <cd:command name="definecomment" level="style" category="pdf" file="scrn-wid.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcomment" level="style" category="pdf" file="scrn-wid.mkvi">
+    <cd:command name="setupcomment" level="style" category="pdf" file="scrn-wid.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -97,7 +97,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="comment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mkvi">
+    <cd:command name="comment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mklx">
         <cd:sequence>
             <cd:instance value="comment"/>
         </cd:sequence>
@@ -113,7 +113,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="comment" type="environment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mkvi">
+    <cd:command name="comment" type="environment" generated="yes" variant="instance" level="document" category="pdf" file="scrn-wid.mklx">
         <cd:sequence>
             <cd:instance value="comment"/>
         </cd:sequence>
@@ -128,6 +128,6 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="placecomments" level="document" category="pdf" file="scrn-wid.mkvi"/>
+    <cd:command name="placecomments" level="document" category="pdf" file="scrn-wid.mklx"/>
 
 </cd:interface>

@@ -10,7 +10,7 @@
 extern halfword   tex_get_local_boxes             (halfword location);
 extern void       tex_set_local_boxes             (halfword b, halfword location);
 extern halfword   tex_use_local_boxes             (halfword p, halfword location);
-extern void       tex_update_local_boxes          (halfword b, halfword index, halfword location);
+extern void       tex_update_local_boxes          (halfword b, halfword index, halfword location, int retain);
 extern void       tex_replace_local_boxes         (halfword par, halfword b, halfword index, halfword location);
 extern void       tex_reset_local_boxes           (halfword index, halfword location);
 extern void       tex_reset_local_box             (halfword location); 

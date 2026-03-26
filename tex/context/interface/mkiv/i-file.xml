@@ -4,41 +4,33 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="input" level="document" category="structure" file="file-ini.mkvi">
+    <cd:command name="input" level="document" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="input" variant="string" level="document" category="structure" file="file-ini.mkvi">
+    <cd:command name="input" variant="string" level="document" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="string-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doiffile" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotfile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifnotfile" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doiffileelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsefile" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -46,33 +38,41 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="jobfilename" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="doiffileelse" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="jobfilesuffix" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="jobfilename" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="inputfilebarename" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="jobfilesuffix" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="inputfilerealsuffix" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="inputfilebarename" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="inputfilesuffix" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="inputfilerealsuffix" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="inputfilename" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="inputfilesuffix" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="outputfilename" level="system" category="structure" file="core-sys.mkiv"/>
+    <cd:command name="inputfilename" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="readingfile" type="environment" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="outputfilename" level="system" category="structure" file="core-sys.mkxl"/>
 
-    <cd:command name="endofline" type="environment" begin="push" end="pop" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="readingfile" type="environment" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="restoreendofline" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="endofline" type="environment" begin="push" end="pop" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="inputgivenfile" level="system" category="structure" file="file-ini.mkvi">
+    <cd:command name="restoreendofline" level="system" category="structure" file="file-ini.mklx"/>
+
+    <cd:command name="inputgivenfile" level="system" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepath" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsepath" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -80,7 +80,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifpathelse" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -88,7 +88,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsefileexists" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsefileexists" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -96,7 +96,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiffileexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doiffileexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -104,7 +104,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsepathexists" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifelsepathexists" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -112,7 +112,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifpathexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifpathexistselse" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-path"/>
             <cd:resolve name="argument-true"/>
@@ -120,7 +120,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelseparentfile" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifelseparentfile" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifparentfileelse" level="system" category="structure" keywords="conditional" file="file-ini.mkvi">
+    <cd:command name="doifparentfileelse" level="system" category="structure" keywords="conditional" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -136,35 +136,27 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitfilename" level="system" category="structure" file="file-ini.mkvi">
+    <cd:command name="splitfilename" level="system" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitofffull" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitofffull" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitoffpath" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitoffpath" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitoffbase" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitoffbase" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitoffname" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitoffname" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitofftype" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitofftype" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitoffkind" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitoffkind" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="splitoffroot" level="system" category="structure" file="file-ini.mkvi"/>
+    <cd:command name="splitoffroot" level="system" category="structure" file="file-ini.mklx"/>
 
-    <cd:command name="doifelseinputfile" level="system" category="structure" keywords="conditional" file="file-job.mkvi">
-        <cd:arguments>
-            <cd:resolve name="argument-file"/>
-            <cd:resolve name="argument-true"/>
-            <cd:resolve name="argument-false"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="doifinputfileelse" level="system" category="structure" keywords="conditional" file="file-job.mkvi">
+    <cd:command name="doifelseinputfile" level="system" category="structure" keywords="conditional" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
             <cd:resolve name="argument-true"/>
@@ -172,122 +164,130 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfile" level="system" category="structure" file="file-ini.mkvi">
+    <cd:command name="doifinputfileelse" level="system" category="structure" keywords="conditional" file="file-job.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-file"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="processfile" level="system" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usepath" level="style" category="structure" file="file-job.mkvi">
+    <cd:command name="usepath" level="style" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usesubpath" level="style" category="structure" file="file-job.mkvi">
+    <cd:command name="usesubpath" level="style" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-path-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="path" type="environment" begin="push" end="pop" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="path" type="environment" begin="push" end="pop" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-path"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetpath" level="style" category="structure" file="file-job.mkvi"/>
+    <cd:command name="resetpath" level="style" category="structure" file="file-job.mklx"/>
 
-    <cd:command name="allinputpaths" level="system" category="structure" file="file-job.mkvi"/>
+    <cd:command name="allinputpaths" level="system" category="structure" file="file-job.mklx"/>
 
-    <cd:command name="locatefilepath" level="system" category="structure" file="file-ini.mkvi">
+    <cd:command name="locatefilepath" level="system" category="structure" file="file-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="locatedfilepath" level="system" category="structure" file="file-job.mkvi"/>
+    <cd:command name="locatedfilepath" level="system" category="structure" file="file-job.mklx"/>
 
-    <cd:command name="usezipfile" level="style" category="structure" file="file-job.mkvi">
+    <cd:command name="usezipfile" level="style" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:resolve name="keyword-file-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfilemany" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="processfilemany" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfileonce" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="processfileonce" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processfilenone" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="processfilenone" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadtexfile" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="loadtexfile" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadluafile" level="system" category="structure" keywords="lua" file="file-job.mkvi">
+    <cd:command name="loadluafile" level="system" category="structure" keywords="lua" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadcldfile" level="system" category="structure" keywords="lua" file="file-job.mkvi">
+    <cd:command name="loadcldfile" level="system" category="structure" keywords="lua" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadanyfile" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="loadanyfile" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadtexfileonce" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="loadtexfileonce" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadluafileonce" level="system" category="structure" keywords="lua" file="file-job.mkvi">
+    <cd:command name="loadluafileonce" level="system" category="structure" keywords="lua" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadcldfileonce" level="system" category="structure" keywords="lua" file="file-job.mkvi">
+    <cd:command name="loadcldfileonce" level="system" category="structure" keywords="lua" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="loadanyfileonce" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="loadanyfileonce" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="continueifinputfile" level="system" category="structure" file="file-job.mkvi">
+    <cd:command name="continueifinputfile" level="system" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="samplefile" level="document" category="structure" file="file-job.mkvi">
+    <cd:command name="samplefile" level="document" category="structure" file="file-job.mklx">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>

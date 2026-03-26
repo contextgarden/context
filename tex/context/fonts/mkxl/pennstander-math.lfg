@@ -37,6 +37,19 @@ return {
                 presets.moveitalics          { correct = true, letters = true },
                 presets.moveintegrals        { },
                 presets.wipeitalics          { },
+
+{
+    tweak = "fixvariants",
+    list  = {
+        -- we also need to set the unicodes
+        [0x0028] = { template = 0x005B, index = 1 },
+        [0x0029] = { template = 0x005D, index = 1 },
+        [0x007C] = { template = 0x005B, index = 1 },
+        [0x2016] = { template = 0x005B, index = 1 },
+        [0x2980] = { template = 0x005B, index = 1 },
+    }
+},
+
                 {
                     -- needed for stupid corner kerns
                     tweak = "simplifykerns",
@@ -103,6 +116,10 @@ return {
      --     feature            = "pennstanderscale",
      --     scriptweight       =  80,
      --     scriptscriptweight = 140,
-     -- },    
+     -- },
+        alternates = {
+        sstyrandom = { feature = "ssty", value = "selfrandom", comment = "Experiment" },
+            random = { feature = "rand", value = "selfrandom", comment = "Experiment" },
+        },
      },
 }

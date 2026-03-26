@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="showrivers" type="environment" level="document" file="trac-riv.mkxl">
+    <cd:command name="showrivers" type="environment" level="document" category="fonts" file="trac-riv.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="margin">
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="addriverstobox" level="style" file="trac-riv.mkxl">
+    <cd:command name="addriverstobox" level="style" category="fonts" file="trac-riv.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="margin">
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showrivers" level="style" file="trac-riv.mkxl">
+    <cd:command name="showrivers" level="style" category="fonts" file="trac-riv.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="addriverstobox"/>

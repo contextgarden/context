@@ -732,6 +732,7 @@ do
         if index then
             index = setmetatableindex(pixel)
         end
+        -- compression ?
         local specification = {
             xsize      = xsize,
             ysize      = ysize,

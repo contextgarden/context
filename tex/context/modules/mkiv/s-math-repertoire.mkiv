@@ -13,7 +13,7 @@
 
 \enabletrackers[pages.timing]
 
-\enableexperiments[fonts.compact]
+% \enableexperiments[fonts.compact]
 
 \usemodule[s][math-characters]
 
@@ -541,11 +541,25 @@
 % \enabledirectives[math.nogoodies]
 
 % \showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
-\showmathcharacterssetbodyfonts{lucida,cambria,stixtwo,modern,pagella,termes,bonum,schola,ebgaramond,dejavu}% ,modernlatin}
+% \showmathcharacterssetbodyfonts{lucida,cambria,stixtwo,modern,pagella,termes,bonum,schola,ebgaramond,dejavu}% ,modernlatin}
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
 % \showmathcharacterssetbodyfonts{modernlatin,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
+
+\usetypescriptfile[pennstander]
+
+\showmathcharacterssetbodyfonts{
+    pennstander-regular,%
+    pennstander-thin,%
+    pennstander-extralight,%
+    pennstander-light,%
+    pennstander-medium,%
+    pennstander-semibold,%
+    pennstander-bold,%
+    pennstander-extrabold,%
+    pennstander-black%
+}
 
 \starttext
 
@@ -566,8 +580,18 @@
       % \setupbodyfont[bonum,                  12pt]
       % \setupbodyfont[schola,                 12pt]
       % \setupbodyfont[dejavu,                 12pt]
-        \setupbodyfont[lucida,                 12pt]
+      % \setupbodyfont[lucida,                 12pt]
       % \setupbodyfont[newcomputermodern-book, 12pt]
+
+      % \setupbodyfont[pennstander-regular,    12pt]
+      \setupbodyfont[pennstander-thin,         12pt]
+      % \setupbodyfont[pennstander-extralight, 12pt]
+      % \setupbodyfont[pennstander-light,      12pt]
+      % \setupbodyfont[pennstander-medium,     12pt]
+      % \setupbodyfont[pennstander-semibold,   12pt]
+      % \setupbodyfont[pennstander-bold,       12pt]
+      % \setupbodyfont[pennstander-extrabold,  12pt]
+      % \setupbodyfont[pennstander-black,      12pt]
 
     } {
 

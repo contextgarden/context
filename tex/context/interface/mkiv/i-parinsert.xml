@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineparinsert" file="typo-pin.mkxl">
+    <cd:command name="defineparinsert" level="style" category="layout" file="typo-pin.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupparinsert" file="typo-pin.mkxl">
+    <cd:command name="setupparinsert" level="style" category="layout" file="typo-pin.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="parinsert" generated="yes" variant="instance" file="typo-pin.mkxl">
+    <cd:command name="parinsert" generated="yes" variant="instance" level="document" category="layout" file="typo-pin.mkxl">
         <cd:sequence>
             <cd:instance value="parinsert"/>
         </cd:sequence>
@@ -62,8 +62,8 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="pickupparinsert" file="typo-pin.mkxl"/>
+    <cd:command name="pickupparinsert" level="style" category="layout" file="typo-pin.mkxl"/>
 
-    <cd:command name="wrapupparinsert" file="typo-pin.mkxl"/>
+    <cd:command name="wrapupparinsert" level="style" category="layout" file="typo-pin.mkxl"/>
 
 </cd:interface>

@@ -47,6 +47,7 @@ When we bump the space around formulas to \type {big} we get this:
 
 \start
     \setupformulas[spacebefore=big,spaceafter=big]
+    \pushoverloadmode
     \appendtoks\showmakeup[reset]\to\everymath
     \showboxes
     \getbuffer

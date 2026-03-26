@@ -473,7 +473,7 @@
 
     <cd:command name="utilityregisterlength" level="system" category="structure" file="strc-reg.mkxl"/>
 
-    <cd:command name="placeregister" level="document" file="strc-reg.mkxl">
+    <cd:command name="placeregister" level="document" category="structure" file="strc-reg.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

@@ -202,6 +202,7 @@ void tex_initialize_buildpage(void)
 
 static int tex_aux_count_only_inserts(void)
 {
+    /* Normally this is the same as an earlier |\insertpenalties|.*/
     return (page_head != page_tail) ? tex_insert_get_only_count(node_next(page_head)) : 0;
 }
 
@@ -1007,11 +1008,12 @@ static inline halfword tex_aux_used_penalty(halfword p)
 static void tex_process_mvl(halfword context, halfword boundary)
 {
 
-    if (node_type(contribute_tail) == glue_node && (glue_options(contribute_tail) & glue_option_delay)) {
-        return;
-    }
-    tex_delayed_glue_check(delayed_glue_target_mvl, delayed_glue_location_build);
-
+ // if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
+ //       if (node_type(contribute_tail) == glue_node && (glue_options(contribute_tail) & glue_option_delay)) {
+ //           return;
+ //       }
+ //       tex_delayed_glue_check(delayed_glue_target_mvl, delayed_glue_location_build);
+ // }
     if (node_next(contribute_head) && ! lmt_page_builder_state.output_active) {
  // if (! lmt_page_builder_state.output_active) {
         lmt_buildpage_callback(context, boundary);
@@ -1132,6 +1134,9 @@ static void tex_process_mvl(halfword context, halfword boundary)
                     lmt_page_builder_state.last_glue = tex_new_glue_node(current, subtype);
                     if (lmt_page_builder_state.contents < contribute_box) {
                         goto DISCARD;
+                    } else if (tex_has_glue_option(current, glue_option_has_penalty) && glue_penalty(current)) {
+                        penalty = glue_penalty(current);
+                        goto UPDATEHEIGHTS;
                     } else if (precedes_break(lmt_page_builder_state.tail)) {
                         penalty = 0;
                         break;

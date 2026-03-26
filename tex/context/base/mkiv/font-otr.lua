@@ -2056,13 +2056,21 @@ local function loadtables(f,specification,offset)
         local checksum = readushort(f) * 0x10000 + readushort(f)
         local offset   = readulong(f)
         local length   = readulong(f)
-        if offset + length > filesize then
-            report("bad %a table in file %a",tag,basename)
+        local error    = nil
+        if offset > filesize then
+            error = "bad offset"
+        elseif offset + length > filesize then
+            error = "bad length"
+        end
+        if error then
+            report("corrupt %a table in file %a, %s, offset %i, length %i, filesize %i",
+                tag,basename,error,offset,length,filesize)
         end
         tables[tag] = {
             checksum = checksum,
             offset   = offset,
             length   = length,
+            error    = error,
         }
     end
 -- inspect(tables)

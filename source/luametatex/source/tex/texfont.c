@@ -683,12 +683,23 @@ void tex_add_charinfo_math_kern(charinfo *ci, int id, scaled ht, scaled krn)
     \stoptyping
 */
 
-/*tex why not just preallocate for all math otf parameters */
+/*tex
+    We could just preallocate for all math otf parameters, some 100 in \CONTEXT, so we
+    could start out that high. Assignments don't happen in order so often we start with
+    say index 80 anyway, We always assume some 100 now, which saves some 10 reallocations
+    per font (so 40 on a standard pagella bodyfont load).
+*/
+
+# define default_math_parameters_size 100
 
 void tex_set_font_math_parameters(halfword f, int b)
 {
     int i = font_math_parameter_count(f);
+    if (i == 0) {
+        b = default_math_parameters_size;
+    }
     if (i < b) {
+        /* We add two anyway, as safeguard. */
         size_t size = ((size_t) b + 2) * sizeof(scaled);
         scaled *data = lmt_memory_realloc(font_math_parameter_base(f), size);
         if (data) {

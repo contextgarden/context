@@ -95,6 +95,9 @@
                     <cd:constant type="yes" default="yes"/>
                     <cd:constant type="no"/>
                 </cd:parameter>
+                <cd:parameter name="command">
+                    <cd:constant type="cd:threearguments"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -209,6 +212,41 @@
         </cd:arguments>
     </cd:command>
 
+    <cd:command name="synonymname" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synonymmeaning" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synonympages" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synonymuserpages" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="synonymfirstuserpage" file="strc-syn.mkxl">
+        <cd:arguments>
+            <cd:resolve name="keyword-name"/>
+            <cd:resolve name="keyword-name"/>
+        </cd:arguments>
+    </cd:command>
+
     <cd:command name="placelistofsynonyms" level="document" category="symbols" file="strc-syn.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-singular"/>
@@ -232,5 +270,15 @@
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
+
+    <cd:command name="currentsynonymname" file="strc-syn.mkxl"/>
+
+    <cd:command name="currentsynonymmeaning" file="strc-syn.mkxl"/>
+
+    <cd:command name="currentsynonympages" file="strc-syn.mkxl"/>
+
+    <cd:command name="currentsynonymuserpages" file="strc-syn.mkxl"/>
+
+    <cd:command name="currentsynonymfirstuserpage" file="strc-syn.mkxl"/>
 
 </cd:interface>

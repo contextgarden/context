@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="installtextracker" level="system" category="tracker" file="trac-ctx.mkiv">
+    <cd:command name="installtextracker" level="system" category="tracker" file="trac-ctx.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
@@ -12,7 +12,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installtexdirective" level="system" category="tracker" file="trac-ctx.mkiv">
+    <cd:command name="installtexdirective" level="system" category="tracker" file="trac-ctx.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-command"/>
@@ -70,6 +70,6 @@
 
     <cd:command name="showlogcategories" level="system" category="tracker" file="trac-deb.mkiv"/>
 
-    <cd:command name="showjustification" level="system" category="tracker" file="trac-jus.mkiv"/>
+    <cd:command name="showjustification" level="system" category="tracker" file="trac-jus.mkxl"/>
 
 </cd:interface>

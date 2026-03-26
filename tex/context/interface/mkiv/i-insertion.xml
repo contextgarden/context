@@ -32,13 +32,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcurrentinsertion" file="page-ins.mkxl">
+    <cd:command name="setcurrentinsertion" level="system" category="structure" file="page-ins.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="processinsertions" file="page-ins.mkxl"/>
+    <cd:command name="processinsertions" level="system" category="structure" file="page-ins.mkxl"/>
 
     <cd:command name="doifelseinsertion" level="system" category="structure" keywords="conditional" file="page-ins.mkxl">
         <cd:arguments>
@@ -56,32 +56,32 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="detachinsertions" file="page-ins.lmt">
+    <cd:command name="detachinsertions" level="system" category="structure" file="page-ins.lmt">
         <cd:arguments>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachinsertions" file="page-ins.lmt">
+    <cd:command name="attachinsertions" level="system" category="structure" file="page-ins.lmt">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachinsertion" file="page-ins.lmt">
+    <cd:command name="attachinsertion" level="system" category="structure" file="page-ins.lmt">
         <cd:arguments>
             <cd:resolve name="string-number"/>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nofdetachedinsertions" file="page-ins.lmt">
+    <cd:command name="nofdetachedinsertions" level="system" category="structure" file="page-ins.lmt">
         <cd:arguments>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="attachinsert" file="page-ins.mkxl">
+    <cd:command name="attachinsert" level="system" category="structure" file="page-ins.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>

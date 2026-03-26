@@ -211,7 +211,7 @@
 \stopluacode
 
 %D The code that overloads \type {\sin} to behave as function (prefixed by \type
-%D {\the}) has been removed because it add overhead to its nromal usage that we
+%D {\the}) has been removed because it add overhead to its normal usage that we
 %D don't want (think: \im {\sin (x) = \the \sin {pi/2}}. .
 
 \continueifinputfile{m-mathfun.mkxl}

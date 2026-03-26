@@ -49,11 +49,12 @@ local fontkern_code       = kerncodes.fontkern
 
 local insertbefore        = nuts.insertbefore
 local insertafter         = nuts.insertafter
+local findtail            = nuts.tail
 
 local nodepool            = nuts.pool
 local new_latelua         = nodepool.latelua
-local new_rule            = nodepool.rule
 local new_kern            = nodepool.kern
+local new_rule            = nodepool.rule
 
 local getdimensions       = nuts.dimensions
 local getrangedimensions  = nuts.rangedimensions
@@ -69,8 +70,6 @@ local foundintree         = resolvers.foundintree
 local getpagedimensions   = nil --defined later
 
 local eol                 = "\010"
-local z_hlist             = "[0,0:0,0:0,0,0\010"
-local s_hlist             = "]\010"
 local f_hvoid             = formatters["h%i,%i:%i,%i:%i,%i,%i\010"]
 local f_hlist             = formatters["(%i,%i:%i,%i:%i,%i,%i\010"]
 local s_hlist             = ")\010"
@@ -185,12 +184,14 @@ end
 
 -- the node stuff
 
-local filehandle = nil
-local nofsheets  = 0
-local nofobjects = 0
-local last       = 0
-local filesdone  = 0
-local sncfile    = false
+local filehandle  = nil
+local nofsheets   = 0
+local nofobjects  = 0
+local last        = 0
+local filesdone   = 0
+local usedsncfile = false
+local tempsncfile = false
+local gzipsncfile = false
 
 local function writeanchor()
     local size = filehandle:seek("end")
@@ -209,12 +210,16 @@ local function writefiles()
 end
 
 local function makenames()
-    sncfile = replacesuffix(tex.jobname,"synctex")
+    local jobname = tex.jobname
+    usedsncfile = replacesuffix(jobname,"synctex")
+    tempsncfile = replacesuffix(jobname,"synctmp")
+    gzipsncfile = replacesuffix(jobname,"synctex.gz")
 end
 
 local function flushpreamble()
     makenames()
-    filehandle = openfile(sncfile,"wb")
+    removefile(usedsncfile)
+    filehandle = openfile(tempsncfile,"wb")
     if filehandle then
         filehandle:write("SyncTeX Version:1",eol)
         writefiles()
@@ -235,7 +240,14 @@ local function flushpreamble()
 end
 
 function synctex.wrapup()
-    sncfile = nil
+    if usedsncfile and tempsncfile then
+        removefile(usedsncfile)
+        removefile(gzipsncfile)
+        renamefile(tempsncfile,usedsncfile)
+    end
+    usedsncfile = nil
+    tempsncfile = nil
+    gzipsncfile = nil
 end
 
 local function flushpostamble()
@@ -310,7 +322,11 @@ local collect_min  do
             d = depth
         end
         if trace then
-            head = insertbefore(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+            if fulltrace then
+                head = insertbefore(head,first,new_rule(w,h,d))
+            else
+                head = insertbefore(head,first,new_rule(w,traceheight,tracedepth))
+            end
             head = insertbefore(head,first,new_kern(-w))
         end
         head = x_hlist(head,first,tag,line,w,h,d)
@@ -381,7 +397,11 @@ local collect_max  do
             d = depth
         end
         if trace then
-            head = insertbefore(head,first,new_rule(w,fulltrace and h or traceheight,fulltrace and d or tracedepth))
+            if fulltrace then
+                head = insertbefore(head,first,new_rule(w,h,d))
+            else
+                head = insertbefore(head,first,new_rule(w,traceheight,tracedepth))
+            end
             head = insertbefore(head,first,new_kern(-w))
         end
         head = x_hlist(head,first,tag,line,w,h,d)
@@ -426,24 +446,6 @@ local collect_max  do
                             last = current
                         end
                     elseif id == glue_code then
-                     -- if tag > 0 then
-                     --     local tc, lc = getinputfields(current)
-                     --     if tc and tc > 0 then
-                     --         if tag ~= tc or line ~= lc then
-                     --             head = inject(parent,head,first,last,tag,line)
-                     --             tag  = 0
-                     --             break
-                     --         end
-                     --     else
-                     --         head = inject(parent,head,first,last,tag,line)
-                     --         tag  = 0
-                     --         break
-                     --     end
-                     -- else
-                     --     tag = 0
-                     --     break
-                     -- end
-                     -- id = nil -- so no test later on
                     elseif id == penalty_code then
                         -- go on (and be nice for math)
                     else
@@ -483,30 +485,20 @@ end
 
 collect = collect_max
 
-function synctex.collect(head,where)
-    if enabled and where ~= "object" then
-        return collect(head,head)
-    else
-        return head
-    end
-end
+-- In mkiv we have no control over the shipout so we need to use nodes inside the
+-- the node list.
 
--- also no solution for bad first file resolving in sumatra
-
-function synctex.start()
+local function start()
     if enabled then
-        nofsheets = nofsheets + 1 -- could be realpageno
-        if flushpreamble() then
-            writeanchor()
-            filehandle:write("{",nofsheets,eol)
-            -- this seems to work:
-         -- local pagewidth, pageheight = getpagedimensions()
-            filehandle:write(f_plist(1,0,0,0,0,0,0))
-        end
+        writeanchor()
+        filehandle:write("{",nofsheets,eol)
+        -- this seems to work:
+     -- local pagewidth, pageheight = getpagedimensions()
+        filehandle:write(f_plist(1,0,0,0,0,0,0))
     end
 end
 
-function synctex.stop()
+local function stop()
     if enabled then
         filehandle:write(s_plist)
         writeanchor()
@@ -514,6 +506,27 @@ function synctex.stop()
         nofobjects = nofobjects + 2
     end
 end
+
+synctex.start = function() end
+synctex.stop  = function() end
+
+function synctex.collect(head,where)
+    if enabled and where ~= "object" then
+        nofsheets = nofsheets + 1 -- could be realpageno
+        if flushpreamble() then
+            local list = getlist(head)
+            if list then
+                list = insertbefore(list,list,new_latelua(start))
+                insertafter(list,findtail(list),new_latelua(stop))
+                setlist(head,list)
+                head = collect(head,head)
+            end
+        end
+    end
+    return head
+end
+
+-- also no solution for bad first file resolving in sumatra
 
 local enablers  = { }
 local disablers = { }
@@ -558,7 +571,9 @@ function synctex.finish()
         flushpostamble()
     else
         makenames()
-        removefile(sncfile)
+        removefile(usedsncfile)
+        removefile(tempsncfile)
+        removefile(gzipsncfile)
     end
 end
 
@@ -585,7 +600,7 @@ luatex.registerstopactions(synctex.finish)
 statistics.register("synctex tracing",function()
     if used then
         return string.format("%i referenced files, %i files ignored, %i objects flushed, logfile: %s",
-            noftags,nofblocked,nofobjects,sncfile)
+            noftags,nofblocked,nofobjects,usedsncfile)
     end
 end)
 

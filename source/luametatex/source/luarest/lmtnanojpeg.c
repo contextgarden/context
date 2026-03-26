@@ -42,9 +42,11 @@ static int nanojpeglib_decode(lua_State *L)
                 lua_pushinteger(L, width);
                 lua_pushinteger(L, height);
                 lua_pushinteger(L, depth);
+                /* If we push an external string here ... */
                 lua_pushlstring(L, (char *) bytes, nofbytes);
                 done = 4;
             }
+            /* ... we need to patch the next one. No need now. */
             njDone();
         }
 	}

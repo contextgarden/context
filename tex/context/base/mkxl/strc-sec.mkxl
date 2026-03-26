@@ -1319,7 +1319,7 @@
   {\sectionlevel{\sectionheadsection{\sectionheadcoupling{#1}}}}
 
 \permanent\tolerant\protected\def\setupheadnumber[#1]#*[#2]% todo: reset if at other level
-  {\setstructurenumber{\thenamedheadlevel{#1}}{\number#2}}
+  {\setstructurenumber{\thenamedheadlevel{#1}}{#2}} % #2 should be a string as it intercepts + -
 
 \permanent\protected\def\determineheadnumber[#1]%
   {\xdef\currentheadnumber{\getstructurenumber{\thenamedheadlevel{#1}}}}

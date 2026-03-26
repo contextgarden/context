@@ -274,9 +274,10 @@ function checkers.png(data) -- same as jpg (for now)
             t.colorref = used.colorref -- this is a bit of a hack
             if found then
                 found = false
-                local ok, result = pcall(backends.codeinjections.png,t)
---                 local ok, result = backends.codeinjections.png(t)
-                if ok then
+                local result = backends.codeinjections.png(t)
+                if result then
+--                 local ok, result = pcall(backends.codeinjections.png,t)
+--                 if ok then
                     return result
                 else
                     report_inclusion("bad bitmap image")

@@ -490,7 +490,7 @@
 % \preshortinlinepenalty 300
 % \getbuffer[1]
 % \egroup
-% \bgroup
+% \bgroup % don't use (x)spaceskip like this ... we just demo here
 % \xspaceskip\interwordspace plus \interwordstretch minus 2\interwordshrink
 % \spaceskip \interwordspace plus \interwordstretch minus 2\interwordshrink
 % \preshortinlinepenalty 300
@@ -2057,7 +2057,9 @@
 %definemathcommand [joinrel]                 {\mathrel{\mkern-3mu}}
 %definemathcommand [joinrel]   [\s!relation] {\mkern-3mu}
 
-\permanent\chardef\c_math_strut"28
+\permanent\integerdef\c_math_strut_default "28
+
+\permanent\chardef\c_math_strut\c_math_strut_default
 
 %D For the evolution of these struts see the git repositories and older code in
 %D \MKIV\ and \MKI\ (commented code removed end April 2022).
@@ -2075,8 +2077,8 @@
     \Umathruledepth \allscriptscriptstyles\strutdepthfactor \fontspecifiedsize\scriptscriptfont\zerocount
 \to \everybodyfont
 
-% The unset height and depth default to this sig    nal that then tells
-% the engine what to apply from the char dimensions.
+% The unset height and depth default to this sig nal that then tells the engine
+% what to apply from the char dimensions.
 
 \protected\def\math_strut
   {\normalsrule
@@ -2100,6 +2102,10 @@
      \s!fam   \fam
      \s!char  \c_math_strut
    \relax}
+
+\appendtoks
+    \enforced\chardef\c_math_strut\mathstrutcode\c_math_strut_default
+\to \everymathematics
 
 \permanent\protected\def\showmathstruts % let's not overload \math_strut_normal
   {\showmakeup[strut]}

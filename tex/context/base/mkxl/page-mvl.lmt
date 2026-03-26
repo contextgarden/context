@@ -118,6 +118,7 @@ local c_page_mvl_last_column         <const> = texiscount("c_page_mvl_last_colum
 local c_page_mvl_current_sheet       <const> = texiscount("c_page_mvl_current_sheet")
 local c_page_mvl_current_spreadsheet <const> = texiscount("c_page_mvl_current_spreadsheet")
 local c_page_mvl_max_used_cells      <const> = texiscount("c_page_mvl_max_used_cells")
+local c_page_mvl_last_overflow       <const> = texiscount("c_page_mvl_last_overflow")
 
 local d_page_mvl_reserved_height <const> = texisdimen("d_page_mvl_reserved_height")
 local d_page_mvl_reserved_width  <const> = texisdimen("d_page_mvl_reserved_width")
@@ -367,11 +368,13 @@ local function updatespreads(dataset)
 end
 
 local function emptycells(dataset)
-    local cells = { }
+    local cells   = { }
+    local nofrows = dataset.nofrows
     for c=1,dataset.nofleft + dataset.nofright do
-        cells[c] = { }
-        for r=1,dataset.nofrows do
-            cells[c][r] = false
+        local cc = { }
+        cells[c] = cc
+        for r=1,nofrows do
+            cc[r] = false
         end
     end
     return cells
@@ -760,7 +763,24 @@ do
                     used = r
                 end
             end
-            for r=1,nofrows-1 do
+            local count = nofrows
+            local last  = nofrows + 1
+            while true do
+                if column[last] == nil then
+                    break
+                elseif column[last] == true then
+                    if trace_cells then
+                        column[last] = new_trace_rule(65536*2,lineheight,linedepth)
+                    else
+                        column[last] = new_empty_rule(0,lineheight,linedepth)
+                    end
+                end
+                count = last
+                last  = last + 1
+            end
+            -- setlink(unpack(column))
+--             for r=1,nofrows-1 do
+            for r=1,count-1 do
                 setlink(column[r],column[r+1])
             end
             columns[c] = new_vlist(column[1],widths[c],height,0) -- linedepth
@@ -1449,18 +1469,44 @@ end
 
 do
 
-    function columnsets.addmvl(name,box,slot,reduce,balance)
+    function columnsets.checkmvl(name,box,slot)
         local dataset       = data[name]
         local cells         = dataset.cells
         local currentrow    = dataset.currentrow
         local currentcolumn = dataset.currentcolumn
         local currentcells  = dataset.currentcells
+        local nofrows       = dataset.nofrows
+        local lineheight    = dataset.lineheight
+        local linedepth     = dataset.linedepth
+        --
+        local w, h, d = getwhd(getbox(box))
+        local usedcells = ceil((h+d)/(lineheight+linedepth))
+        local column = cells[currentcolumn]
+        for i=currentrow,currentrow+usedcells-2 do
+            if not column[i] then
+                column[i] = true
+            end
+        end
+        local anchor   = currentrow + usedcells - 1
+        local overflow = 0
+        if anchor > nofrows then
+            overflow = anchor - nofrows
+        end
+        texsetcount(c_page_mvl_last_overflow,overflow)
+    end
+
+    function columnsets.addmvl(name,box,slot,reduce,balance,already)
+        local dataset       = data[name]
+        local cells         = dataset.cells
+        local currentrow    = dataset.currentrow
+        local currentcolumn = dataset.currentcolumn
+        local currentcells  = dataset.currentcells
+        local nofrows       = dataset.nofrows
         local lineheight    = dataset.lineheight
         local linedepth     = dataset.linedepth
         local widths        = dataset.widths
         --
-        local b = takebox(box)
--- print(getwhd(b))
+        local b = already or takebox(box)
         nofcolumngaps = nofcolumngaps + 1
         -- getmetatable(v).columngap = nofcolumngaps
         properties[b] = { columngap = nofcolumngaps }
@@ -1477,8 +1523,20 @@ do
                 column[i] = true
             end
         end
-        local anchor = currentrow + currentcells - 1
+        local anchor   = currentrow + currentcells - 1
+        local overflow = 0
+     -- dataset.lc = column
+     -- dataset.la = anchor
         if anchor > 0 then
+            if anchor > nofrows then
+                -- we overflow
+                for i=nofrows,anchor-1 do
+                    if column[i] == nil then
+                        column[i] = false
+                    end
+                end
+                overflow = anchor - nofrows
+            end
             column[anchor] = b or true
             dataset.currentrow = anchor + 1
             if balance then
@@ -1491,6 +1549,7 @@ do
                 columnsets.gotoslot(name,slot)
             end
         end
+        texsetcount(c_page_mvl_last_overflow,overflow)
     end
 
     function columnsets.submvl(name,box,slot)
@@ -1500,6 +1559,20 @@ do
     function columnsets.submvlbalance(name,box,slot)
         columnsets.addmvl(name,box,slot,true,true)
     end
+
+ -- function columnsets.moveoverflow(name,slot)
+ --     local dataset  = data[name]
+ --     local lc       = dataset.lc
+ --     local la       = dataset.la
+ --     local cells    = dataset.cells
+ --     if lc and la and la > 0 then
+ --         local box  = lc[la]
+ --         lc[la]     = false
+ --         dataset.lc = false
+ --         dataset.la = 0
+ --         columnsets.addmvl(name,nil,slot,true,false,box)
+ --     end
+ -- end
 
     function columnsets.gotoslot(name,slot)
         local dataset = data[name]
@@ -1639,6 +1712,12 @@ do
     }
 
     implement {
+        name      = "checkcolumnsetmvl",
+        actions   = columnsets.checkmvl,
+        arguments = { "argument", "integer", "integer" },
+    }
+
+    implement {
         name      = "subtocolumnsetmvl",
         actions   = columnsets.submvl,
         arguments = { "argument", "integer", "integer" },
@@ -1661,6 +1740,12 @@ do
         actions   = columnsets.setmvl,
         arguments = { "argument", "integer" },
     }
+
+ -- implement {
+ --     name      = "movecolumnsetoverflow",
+ --     actions   = columnsets.moveoverflow,
+ --     arguments = { "argument", "integer" },
+ -- }
 
     implement {
         name      = "gotocolumnsetslot",

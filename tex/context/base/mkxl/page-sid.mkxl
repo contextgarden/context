@@ -614,13 +614,13 @@
      \page_sides_inject_dummy_line_normal
    \fi
    \par
+   \vpenalty\plustenthousand % replaces the samepage
+   \vskip\zeropoint          % below .. what a mess
    % on an empty page we have topskip, say 12pt
    \ignoreparskip
-   % this can be 18.5pt
-   \kern-{\lineheight+\strutdp}%
-   % so we can actually have a -2.5pt skip on top
+   \vkern-{\lineheight+\strutdp}%
    \ignoreparskip
-   \blank[\v!samepage]
+  %\blank[\v!samepage] % gives bad spacing, goes too high
    \blank[\v!disable]
    % now say we are negative now
    \ifdim\pagetotal<\zeropoint

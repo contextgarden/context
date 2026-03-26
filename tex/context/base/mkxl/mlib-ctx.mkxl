@@ -41,7 +41,7 @@
 \registerctxluafile{mlib-int}{autosuffix}
 \registerctxluafile{mlib-lmt}{autosuffix}
 \registerctxluafile{mlib-pos}{autosuffix}
-\registerctxluafile{mlib-cnt}{autosuffix}
+%registerctxluafile{mlib-cnt}{autosuffix}
 \registerctxluafile{mlib-svg}{autosuffix}
 \registerctxluafile{mlib-fnt}{autosuffix} % outline fun
 \registerctxluafile{mlib-ptr}{autosuffix}

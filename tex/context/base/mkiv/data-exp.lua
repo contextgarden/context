@@ -513,12 +513,11 @@ function resolvers.get_from_content(content,path,name) -- or (content,name)
     local remap = content.remap
     if not remap then
         return
-    end
-    if name then
+    elseif name then
         -- this one resolves a remapped name
         local used = lower(name)
         return path, remap[used] or used
-    else
+    elseif path then
         -- this one does a lookup and resolves a remapped name
         local name = path
 --         if addcasecraptoo then

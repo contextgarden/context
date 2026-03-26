@@ -2066,7 +2066,11 @@ do
         end
         -- script list -> language system info
         local languagesystems = setmetatableindex("table")
+-- local c = table.count(scripts)
+-- local s = 0
+-- local n = 0
         for script, offset in next, scripts do
+-- s = s + 1
             setposition(f,offset)
             local defaultoffset = readushort(f)
             local noflanguages  = readushort(f)
@@ -2074,6 +2078,8 @@ do
             if defaultoffset > 0 then
                 languages.dflt = languagesystems[offset + defaultoffset]
             end
+-- n = n + noflanguages
+-- print("STEP",s,c,script,noflanguages,n) io.flush()
             for i=1,noflanguages do
                 local language      = readtag(f)
                 local offset        = offset + readushort(f)
@@ -2081,6 +2087,7 @@ do
             end
             scripts[script] = languages
         end
+-- print("DONE") io.flush()
         -- script list -> language system info -> feature list
         for offset, usedfeatures in next, languagesystems do
             if offset > 0 then
@@ -2544,7 +2551,7 @@ do
             local scriptoffset     = tableoffset + readushort(f)
             local featureoffset    = tableoffset + readushort(f)
             local lookupoffset     = tableoffset + readushort(f)
-            -- MFK : Rubik-Regular.ttf : we need to delay adding the offset
+--             -- MFK : Rubik-Regular.ttf : we need to delay adding the offset
          -- local variationsoffset = version > 0x00010000 and (tableoffset + readulong(f)) or 0
             local variationsoffset = version > 0x00010000 and readulong(f) or 0
             if not scriptoffset then
@@ -2564,7 +2571,7 @@ do
             if not lookupstoo then
                 return
             end
-            --
+--             --
             local markclasses    = fontdata.markclasses
             local marksets       = fontdata.marksets
             local nofmarkclasses = (markclasses and #markclasses or 0) - (marksets and #marksets or 0)

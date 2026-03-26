@@ -17,52 +17,56 @@ if not modules then modules = { } end modules ['scrp-cjk'] = {
 -- endofline turned into spaces (would not make sense either because otherwise a
 -- wanted space at the end of a line would have to be a hard coded ones.
 
-local nuts              = nodes.nuts
+local nuts               = nodes.nuts
 
-local copy_node        = nuts.copy
-local remove_node      = nuts.remove
-local nextglyph        = nuts.traversers.glyph
+local copy_node          = nuts.copy
+local remove_node        = nuts.remove
+local nextglyph          = nuts.traversers.glyph
 
-local getnext          = nuts.getnext
-local getprev          = nuts.getprev
-local getfont          = nuts.getfont
-local getchar          = nuts.getchar
-local getid            = nuts.getid
-local getsubtype       = nuts.getsubtype
-local getwidth         = nuts.getwidth
+local getnext            = nuts.getnext
+local getprev            = nuts.getprev
+local getfont            = nuts.getfont
+local getchar            = nuts.getchar
+local getid              = nuts.getid
+local getsubtype         = nuts.getsubtype
+local getwidth           = nuts.getwidth
 
-local setchar          = nuts.setchar
+local setchar            = nuts.setchar
+local setsubtype         = nuts.setsubtype
 
-local nodepool         = nuts.pool
-local new_glue         = nodepool.glue
-local new_kern         = nodepool.kern
-local new_penalty      = nodepool.penalty
+local nodepool           = nuts.pool
+local new_glue           = nodepool.glue
+local new_kern           = nodepool.kern
+local new_penalty        = nodepool.penalty
+local new_penalizedglue  = nodepool.penalizedglue
 
-local nodecodes        = nodes.nodecodes
-local gluecodes        = nodes.gluecodes
+local nodecodes          = nodes.nodecodes
+local gluecodes          = nodes.gluecodes
 
-local glyph_code       = nodecodes.glyph
-local glue_code        = nodecodes.glue
+local glyph_code         = nodecodes.glyph
+local glue_code          = nodecodes.glue
 
-local userskip_code    = gluecodes.userskip
-local spaceskip_code   = gluecodes.spaceskip
-local xspaceskip_code  = gluecodes.xspaceskip
+local userskip_code      = gluecodes.userskip
+local spaceskip_code     = gluecodes.spaceskip
+local xspaceskip_code    = gluecodes.xspaceskip
 
-local hash             = characters.scripthash
+local hash               = characters.scripthash
 
-local getscriptstatus  = scripts.getstatus
-local getscriptdata    = scripts.getdata
-local scriptcolors     = scripts.colors
+local getscriptstatus    = scripts.getstatus
+local getscriptdata      = scripts.getdata
+local scriptcolors       = scripts.colors
 
-local fonthashes       = fonts.hashes
-local quaddata         = fonthashes.quads
-local spacedata        = fonthashes.spaces
+local fonthashes         = fonts.hashes
+local quaddata           = fonthashes.quads
+local spacedata          = fonthashes.spaces
 
-local decomposed       = characters.hangul.decomposed
+local decomposed         = characters.hangul.decomposed
 
-local trace_details    = false  trackers.register("scripts.details", function(v) trace_details = v end)
+local trace_details      = false  trackers.register("scripts.details", function(v) trace_details = v end)
 
-local report_details   = logs.reporter("scripts","detail")
+local report_details     = logs.reporter("scripts","detail")
+
+local penalized          = false  experiments.register("scripts.penalized", function(v) penalized = v end)
 
 -- raggedleft is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
@@ -155,8 +159,12 @@ local function nobreak_stretch(head,current)
     if trace_details then
         trace_detail(current,"no break stretch")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function korean_break(head,current)
@@ -170,85 +178,126 @@ local function nobreak_shrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak shrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_autoshrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak autoshrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_stretch_nobreak_shrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak stretch nobreak shrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_stretch_nobreak_autoshrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak stretch nobreak autoshrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_shrink_nobreak_stretch(head,current)
     if trace_details then
         trace_detail(current,"nobreak shrink nobreak stretch")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function nobreak_autoshrink_nobreak_stretch(head,current)
     if trace_details then
         trace_detail(current,"nobreak autoshrink nobreak stretch")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function nobreak_shrink_break_stretch(head,current)
     if trace_details then
         trace_detail(current,"nobreak shrink break stretch")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function nobreak_autoshrink_break_stretch(head,current)
     if trace_details then
         trace_detail(current,"nobreak autoshrink break stretch")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function nobreak_shrink_break_stretch_nobreak_shrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak shrink break stretch nobreak shrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function japanese_between_full_close_open(head,current) -- todo: check width
@@ -272,8 +321,12 @@ local function japanese_before_full_width_punct(head,current) -- todo: check wid
     if trace_details then
         trace_detail(current,"japanese before full width punct")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(quarter_char_width,0,inter_char_quarter_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,quarter_char_width,0,inter_char_quarter_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(quarter_char_width,0,inter_char_quarter_shrink))
+    end
     insertnodebefore(head,current,new_kern(-quarter_char_width))
 end
 
@@ -289,51 +342,74 @@ local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak autoshrink break stretch nobreak autoshrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_autoshrink_break_stretch_nobreak_shrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak autoshrink break stretch nobreak shrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_shrink_break_stretch_nobreak_autoshrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak shrink break stretch nobreak autoshrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function nobreak_stretch_break_shrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak stretch break shrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_stretch_break_autoshrink(head,current)
     if trace_details then
         trace_detail(current,"nobreak stretch break autoshrink")
     end
-    insertnodebefore(head,current,new_penalty(10000))
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_penalizedglue(10000,0,inter_char_stretch,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_penalty(10000))
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 -- Korean: hangul

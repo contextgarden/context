@@ -634,14 +634,14 @@
 
     <cd:command name="referencesymbol" level="style" category="references" file="strc-ref.mklx"/>
 
-    <cd:command name="referencewildcard" file="strc-ref.mklx"/>
+    <cd:command name="referencewildcard" level="style" category="references" file="strc-ref.mklx"/>
 
-    <cd:command name="autoreferencelabeltext" file="strc-ref.mklx"/>
+    <cd:command name="autoreferencelabeltext" level="style" category="references" file="strc-ref.mklx"/>
 
-    <cd:command name="autoreferencenametext" file="strc-ref.mklx"/>
+    <cd:command name="autoreferencenametext" level="style" category="references" file="strc-ref.mklx"/>
 
-    <cd:command name="autoreferencekindtext" file="strc-ref.mklx"/>
+    <cd:command name="autoreferencekindtext" level="style" category="references" file="strc-ref.mklx"/>
 
-    <cd:command name="autoreferencedetailtext" file="strc-ref.mklx"/>
+    <cd:command name="autoreferencedetailtext" level="style" category="references" file="strc-ref.mklx"/>
 
 </cd:interface>

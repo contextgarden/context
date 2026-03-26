@@ -25,7 +25,7 @@
 
     <cd:command name="digitsbreak" level="document" category="symbols" keywords="fonts" file="phys-dim.mkxl"/>
 
-    <cd:command name="hyphenateddigits" file="phys-dim.lmt">
+    <cd:command name="hyphenateddigits" level="document" category="symbols" file="phys-dim.lmt">
         <cd:arguments>
             <cd:resolve name="keyword-csname-optional"/>
             <cd:resolve name="argument-number"/>

@@ -189,7 +189,7 @@
 
     <cd:command name="resetvisualizers" level="system" category="fonts" file="trac-vis.mkxl"/>
 
-    <cd:command name="showpageprogress" level="style" file="trac-bld.mkxl">
+    <cd:command name="showpageprogress" level="style" category="layout" file="trac-bld.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="yes" default="yes"/>
@@ -199,7 +199,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbreakpoints" type="environment" level="document" file="trac-brk.mkxl">
+    <cd:command name="showbreakpoints" type="environment" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="option">
@@ -220,7 +220,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbreakpoints" level="document" file="trac-brk.mkxl">
+    <cd:command name="showbreakpoints" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcolumns"/>
@@ -228,7 +228,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="drawbreakpoints" level="document" file="trac-brk.mkxl">
+    <cd:command name="drawbreakpoints" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="dx">
@@ -250,7 +250,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbalancepoints" type="environment" level="document" file="trac-brk.mkxl">
+    <cd:command name="showbalancepoints" type="environment" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="option">
@@ -271,7 +271,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showbalancepoints" level="document" file="trac-brk.mkxl">
+    <cd:command name="showbalancepoints" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupcolumns"/>
@@ -279,7 +279,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="drawbalancepoints" level="document" file="trac-brk.mkxl">
+    <cd:command name="drawbalancepoints" level="document" category="layout" file="trac-brk.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="dx">
@@ -303,7 +303,7 @@
 
     <!--
 
-        <cd:command name="showsplitpoints" type="environment" file="trac-vsp.mkxl">
+        <cd:command name="showsplitpoints" type="environment" level="document" category="layout" file="trac-vsp.mkxl">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="option">
@@ -319,7 +319,7 @@
             </cd:arguments>
         </cd:command>
 
-        <cd:command name="showsplitpoints" file="trac-vsp.mkxl">
+        <cd:command name="showsplitpoints" level="document" category="layout" file="trac-vsp.mkxl">
             <cd:arguments>
                 <cd:assignments list="yes" optional="yes">
                     <cd:parameter name="option">

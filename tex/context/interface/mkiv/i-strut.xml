@@ -4,15 +4,15 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="strutdp" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
+    <cd:command name="strutdp" level="system" category="fonts" keywords="whitespace" file="supp-box.mkxl"/>
 
-    <cd:command name="strutht" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
+    <cd:command name="strutht" level="system" category="fonts" keywords="whitespace" file="supp-box.mkxl"/>
 
-    <cd:command name="strutwd" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
+    <cd:command name="strutwd" level="system" category="fonts" keywords="whitespace" file="supp-box.mkxl"/>
 
-    <cd:command name="struthtdp" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
+    <cd:command name="struthtdp" level="system" category="fonts" keywords="whitespace" file="supp-box.mkxl"/>
 
-    <cd:command name="strutgap" level="system" category="fonts" keywords="whitespace" file="supp-box.mkiv"/>
+    <cd:command name="strutgap" level="system" category="fonts" keywords="whitespace" file="supp-box.mkxl"/>
 
     <cd:command name="setupstrut" level="style" category="fonts" keywords="whitespace" file="spac-ver.mkxl">
         <cd:arguments>

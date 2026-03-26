@@ -275,13 +275,26 @@
 
 %D So far.
 
+% \starttext
+%     test \dorecurse{100}{\footnote{note #1}}
+% \stoptext
+%
+%  with this:
+%
+% \def\page_otr_force_another_page
+%   {% we should actually remove the dummy line in the otr
+%    \hpack to \hsize{}%
+%    \kern-\topskip
+%    \nobreak
+%    \vfill
+%    \penalty\c_page_otr_super_penalty
+%    \resetpagebreak}
+%
+% gives empty pages so let's try this, which triggers the page builder but
+% doesn't add something:
+
 \def\page_otr_force_another_page
-  {% we should actually remove the dummy line in the otr
-   \hpack to \hsize{}%
-   \kern-\topskip
-   \nobreak
-   \vfill
-   \penalty\c_page_otr_super_penalty
+  {\pageboundary\zerocount\c_page_otr_super_penalty
    \resetpagebreak}
 
 %D For those who've read the plain \TEX\ book, we provide the next macro:

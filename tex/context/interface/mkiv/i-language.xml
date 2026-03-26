@@ -147,25 +147,25 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="keephyphensequences" file="lang-ini.mkxl"/>
+    <cd:command name="keephyphensequences" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="collapsehyphensequences" file="lang-ini.mkxl"/>
+    <cd:command name="collapsehyphensequences" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="dohyphens" file="lang-ini.mkxl"/>
+    <cd:command name="dohyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="nohyphens" file="lang-ini.mkxl"/>
+    <cd:command name="nohyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="doapostrophes" file="lang-ini.mkxl"/>
+    <cd:command name="doapostrophes" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noapostrophes" file="lang-ini.mkxl"/>
+    <cd:command name="noapostrophes" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="dohyphencollapsing" file="lang-ini.mkxl"/>
+    <cd:command name="dohyphencollapsing" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="nohyphencollapsing" file="lang-ini.mkxl"/>
+    <cd:command name="nohyphencollapsing" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="doexplicithyphens" file="lang-ini.mkxl"/>
+    <cd:command name="doexplicithyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noexplicithyphens" file="lang-ini.mkxl"/>
+    <cd:command name="noexplicithyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
     <cd:command name="usehyphensparameter" level="system" category="language" file="lang-ini.mkxl">
         <cd:arguments>
@@ -173,9 +173,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="lesshyphens" file="lang-ini.mkxl"/>
+    <cd:command name="lesshyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="morehyphens" file="lang-ini.mkxl"/>
+    <cd:command name="morehyphens" level="style" category="language" file="lang-ini.mkxl"/>
 
     <cd:command name="doifelselanguage" level="system" category="language" keywords="conditional" file="lang-ini.mkxl">
         <cd:arguments>
@@ -257,7 +257,7 @@
 
     <cd:command name="currentmainlanguage" level="system" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="commalistsentence" level="document" category="language" file="lang-lab.mkiv">
+    <cd:command name="commalistsentence" level="document" category="language" file="lang-lab.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="cd:text"/>
@@ -268,7 +268,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitsequence" file="lang-ini.mkxl">
+    <cd:command name="splitsequence" level="document" category="language" file="lang-ini.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="yes"/>
@@ -279,7 +279,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="splitsymbol" file="lang-ini.mkxl">
+    <cd:command name="splitsymbol" level="document" category="language" file="lang-ini.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="yes"/>
@@ -295,21 +295,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="nokerning" file="lang-ini.mkxl"/>
+    <cd:command name="nokerning" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noligaturing" file="lang-ini.mkxl"/>
+    <cd:command name="noligaturing" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noitaliccorrection" file="lang-ini.mkxl"/>
+    <cd:command name="noitaliccorrection" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noleftkerning" file="lang-ini.mkxl"/>
+    <cd:command name="noleftkerning" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noleftligaturing" file="lang-ini.mkxl"/>
+    <cd:command name="noleftligaturing" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="norightkerning" file="lang-ini.mkxl"/>
+    <cd:command name="norightkerning" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="norightligaturing" file="lang-ini.mkxl"/>
+    <cd:command name="norightligaturing" level="style" category="language" file="lang-ini.mkxl"/>
 
-    <cd:command name="noitaliccorrection" file="lang-ini.mkxl"/>
+    <cd:command name="noitaliccorrection" level="style" category="language" file="lang-ini.mkxl"/>
 
     <cd:command name="languageoptions" type="environment" level="style" category="language" file="lang-ini.mkxl">
         <cd:arguments>

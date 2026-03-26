@@ -4,14 +4,14 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="signalcharacteralign" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="signalcharacteralign" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcharacteralign" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="setcharacteralign" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:keywords delimiters="braces">
@@ -22,11 +22,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+    <cd:command name="resetcharacteralign" level="system" category="alignment" file="typo-tal.mkxl"/>
 
-    <cd:command name="nocharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+    <cd:command name="nocharacteralign" level="system" category="alignment" file="typo-tal.mkxl"/>
 
-    <cd:command name="setcharacteraligndetail" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="setcharacteraligndetail" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:keywords delimiters="braces">
@@ -39,9 +39,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alignmentcharacter" level="system" category="alignment" file="typo-tal.mkiv"/>
+    <cd:command name="alignmentcharacter" level="system" category="alignment" file="typo-tal.mkxl"/>
 
-    <cd:command name="characteralign" type="environment" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="characteralign" type="environment" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupcharacteralign"/>
@@ -49,7 +49,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="characteralign" type="environment" variant="argument" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="characteralign" type="environment" variant="argument" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>
@@ -59,13 +59,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkcharacteralign" level="system" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="checkcharacteralign" level="system" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcharacteralign" level="style" category="alignment" file="typo-tal.mkiv">
+    <cd:command name="setupcharacteralign" level="style" category="alignment" file="typo-tal.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="leftwidth">
@@ -89,9 +89,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setfirstpasscharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+    <cd:command name="setfirstpasscharacteralign" level="system" category="alignment" file="typo-tal.mkxl"/>
 
-    <cd:command name="setsecondpasscharacteralign" level="system" category="alignment" file="typo-tal.mkiv"/>
+    <cd:command name="setsecondpasscharacteralign" level="system" category="alignment" file="typo-tal.mkxl"/>
 
     <cd:command name="setalignmentcharacter" level="system" category="alignment" file="tabl-com.mkxl">
         <cd:arguments>

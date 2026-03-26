@@ -411,7 +411,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setdate" file="core-con.mkxl">
+    <cd:command name="setdate" level="style" category="counter" keywords="language" file="core-con.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="d">
@@ -816,11 +816,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="actualyear" level="style" category="counter" file="core-con.lua"/>
+    <cd:command name="actualyear" level="style" category="counter" file="core-con.lmt"/>
 
-    <cd:command name="actualmonth" level="style" category="counter" file="core-con.lua"/>
+    <cd:command name="actualmonth" level="style" category="counter" file="core-con.lmt"/>
 
-    <cd:command name="actualday" level="style" category="counter" file="core-con.lua"/>
+    <cd:command name="actualday" level="style" category="counter" file="core-con.lmt"/>
 
     <cd:command name="lchexnumber" level="style" category="counter" file="syst-con.mkxl">
         <cd:arguments>

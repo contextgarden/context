@@ -256,15 +256,18 @@ strnumber tex_push_string(const unsigned char *s, int l)
     return get_nullstr();
 }
 
-char *tex_take_string(int *len)
+char * tex_take_string(int *len)
 {
-    char* ptr = NULL;
+    char * ptr = NULL;
     if (tex_aux_room_in_string(1)) {
         lmt_string_pool_state.string_temp[lmt_string_pool_state.string_temp_top] = '\0';
-        if (len) {
-            *len = lmt_string_pool_state.string_temp_top;
-        }
+//        if (len) {
+//            *len = lmt_string_pool_state.string_temp_top;
+//        }
         ptr = (char *) lmt_string_pool_state.string_temp;
+        if (len) {
+            *len = strlen(ptr);
+        }
         tex_reset_cur_string();
     }
     return ptr;

@@ -884,15 +884,42 @@ end
 
 otf.getgsub = getgsub -- returns value, gsub_kind
 
-function otf.getsubstitution(tfmdata,k,kind,value,script,language)
+local getrandom = utilities.randomizer.get
+
+function otf.getsubstitution(tfmdata,k,kind,value,script,language,choicetoo)
     local found, kind = getgsub(tfmdata,k,kind,value,script,language)
     if not found then
         --
     elseif kind == "gsub_single" then
         return found
     elseif kind == "gsub_alternate" then
-        local choice = tonumber(value) or 1 -- no random here (yet)
-        return found[choice] or found[1] or k
+        local choice
+        if value == "selfrandom" then
+            choice = getrandom("glyph",0,#found)
+        elseif value == "random" then
+            choice = getrandom("glyph",1,#found)
+        else
+            choice = tonumber(value) or 1
+        end
+        if choice == 0 then
+            choice = false
+        else
+            local c = found[choice]
+            if c then
+                k = c
+            else
+                c = found[1]
+                if c then
+                    choice = 1
+                    k      = c
+                end
+            end
+        end
+        if choicetoo then
+            return k, choice
+        else
+            return k
+        end
     end
     return k
 end

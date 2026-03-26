@@ -407,7 +407,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="taggedcite" type="environment" begin="btxstart" end="btxstop" file="publ-ini.mkxl"/>
+    <cd:command name="taggedcite" type="environment" begin="btxstart" end="btxstop" level="system" category="bibliography" file="publ-ini.mkxl"/>
 
     <cd:command name="btxlistcitation" level="system" category="bibliography" file="publ-ini.mkxl">
         <cd:arguments>

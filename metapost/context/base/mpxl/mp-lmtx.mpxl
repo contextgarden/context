@@ -1486,6 +1486,11 @@ vardef lmt_do_shade =
             if numeric getparameter "radius" :
                 radius_a := 0 ;
                 radius_b := getparameter "radius" ;
+            elseif string getparameter "radius" :
+                if (getparameter "radius") = "auto" :
+                    radius_a := 0 ;
+                    radius_b := (max(bbwidth(mfun_shade_path),bbheight(mfun_shade_path))/2)/sqrt(2) ;
+                fi
             else :
                 radius_a := getparameter "radius" 1 ;
                 radius_b := getparameter "radius" 2 ;
@@ -1551,6 +1556,7 @@ vardef lmt_do_shade =
                 cx := getparameter "center" 1 ;
                 cy := getparameter "center" 2 ;
             fi
+            % we can use a bbox instead and save a calculation
             center_a := center mfun_shade_path shifted (
                 cx * bbwidth (mfun_shade_path)/2,
                 cy * bbheight(mfun_shade_path)/2

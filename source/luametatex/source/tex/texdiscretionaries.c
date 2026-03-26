@@ -301,6 +301,7 @@ void tex_run_discretionary(void)
                 tex_push_nest();
                 cur_list.mode = restricted_hmode;
                 cur_list.space_factor = default_space_factor; /* hm, quite hard coded */
+                cur_list.space_penalty = 0;
             }
             break;
         case explicit_discretionary_code:
@@ -510,5 +511,6 @@ void tex_finish_discretionary(void)
         tex_push_nest();
         cur_list.mode = restricted_hmode;
         cur_list.space_factor = default_space_factor;
+        cur_list.space_penalty = 0;
     }
 }

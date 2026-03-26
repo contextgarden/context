@@ -115,7 +115,7 @@
 
     <cd:command name="usedadaptivetotal" level="style" category="boxes" file="typo-ada.mkxl"/>
 
-    <cd:command name="setexcept" file="typo-ada.mkxl">
+    <cd:command name="setexcept" level="document" category="boxes" file="typo-ada.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="left" default="yes"/>

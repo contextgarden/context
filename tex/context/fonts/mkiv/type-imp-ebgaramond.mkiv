@@ -3,7 +3,7 @@
 %D        version=2013.06.22,
 %D          title=\CONTEXT\ Typescript Macros,
 %D       subtitle=EB Garamond,
-%D         author=Hans Hagen,
+%D         author=Mikael Sundqvist & Hans Hagen,
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -11,7 +11,8 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% Why so many features ... dead slow too
+% Why so many features ... dead slow too. Anyway, we support it but also keep
+% supporting the two design sizes.
 
 % renewed:
 %
@@ -73,10 +74,28 @@
 
     \doifunknownfontfeature {ebgaramond-math-bold} {\definefontfeature[ebgaramond-math-bold][boldened]}
 
-    \starttypescript [\s!serif] [ebgaramond]
+    \starttypescript [\s!serif] [ebgaramond,ebgaramond-nt]
         \setups[font:fallback:serif]
         \definefontsynonym [\s!Serif]          [\s!file:ebgaramond-regular]   [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
         \definefontsynonym [\s!SerifItalic]    [\s!file:ebgaramond-italic]    [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifBold]      [\s!file:ebgaramond-bold]      [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifBoldItalic][\s!file:ebgaramond-bolditalic][\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [ebgaramond-eight]
+        \setups[font:fallback:serif]
+        \definefontsynonym [\s!Serif]          [\s!file:ebgaramond08-regular] [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifItalic]    [\s!file:ebgaramond08-italic]  [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifBold]      [\s!file:ebgaramond-bold]      [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifBoldItalic][\s!file:ebgaramond-bolditalic][\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
+    \stoptypescript
+
+    \starttypescript [\s!serif] [ebgaramond-twelve]
+        \setups[font:fallback:serif]
+        \definefontsynonym [\s!Serif]          [\s!file:ebgaramond12-regular] [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
+        \definefontsynonym [\s!SerifItalic]    [\s!file:ebgaramond12-italic]  [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
         \definefontsynonym [\s!SerifBold]      [\s!file:ebgaramond-bold]      [\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
         \definefontsynonym [\s!SerifBoldItalic][\s!file:ebgaramond-bolditalic][\s!features=eb-garamond-normal,\s!goodies=ebgaramond-text]
         \definefontsynonym [\s!SerifCaps]      [\s!Serif]                     [\s!features=eb-garamond-smallcaps]
@@ -91,12 +110,12 @@
         \definefontsynonym [\s!SansCaps]      [\s!Sans]                       [\s!features=ysabeau-smallcaps]
      \stoptypescript
 
-    \starttypescript [\s!math] [ebgaramond,ebgaramond-nt]
+    \starttypescript [\s!math] [ebgaramond,ebgaramond-nt,ebgaramond-eight,ebgaramond-twelve]
         \checkedmapfontsize[\typescripttwo][\s!script]      [.70]
         \checkedmapfontsize[\typescripttwo][\s!scriptscript][.50]
     \stoptypescript
 
-    \starttypescript [\s!math] [ebgaramond] [\s!name]
+    \starttypescript [\s!math] [ebgaramond,ebgaramond-eight,ebgaramond-twelve] [\s!name]
         \definefontsynonym [\s!MathRoman]     [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond:mathextra,mathextra},\s!goodies=ebgaramond-math]
         \definefontsynonym [\s!MathRomanBold] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond-math-bold,ebgaramond:mathextra,mathextra},\s!goodies=ebgaramond-math]
     \stoptypescript
@@ -106,8 +125,8 @@
         \definefontsynonym [\s!MathRomanBold] [\s!file:garamond-math.otf] [\s!features={\s!math\mathsizesuffix,ebgaramond-math-bold,ebgaramond:mathextra,mathextra}]
     \stoptypescript
 
-    \starttypescript[ebgaramond,ebgaramond-nt]
-        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [ebgaramond]     [\s!default]
+    \starttypescript[ebgaramond,ebgaramond-nt,ebgaramond-eight,ebgaramond-twelve]
+        \definetypeface [\typescriptone] [\s!rm] [\s!serif] [\typescriptone] [\s!default]
         \definetypeface [\typescriptone] [\s!ss] [\s!sans]  [ysabeau]        [\s!default]
         \definetypeface [\typescriptone] [\s!tt] [\s!mono]  [dejavu]         [\s!default] [\s!rscale=0.8]
       % \definetypeface [\typescriptone] [\s!mm] [\s!math]  [bonum]          [\s!default] [\s!rscale=0.8]

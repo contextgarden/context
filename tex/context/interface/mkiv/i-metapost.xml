@@ -108,7 +108,7 @@
 
     <cd:command name="getMPdrawing" level="document" category="graphics" keywords="metapost" file="meta-ini.mkxl"/>
 
-    <cd:command name="MPdrawing" level="system" type="environment" begin="push" end="pop" category="graphics" keywords="metapost" file="meta-ini.mkxl"/>
+    <cd:command name="MPdrawing" type="environment" begin="push" end="pop" level="system" category="graphics" keywords="metapost" file="meta-ini.mkxl"/>
 
     <cd:command name="MPdrawing" level="document" category="graphics" keywords="metapost" file="meta-ini.mkxl">
         <cd:arguments>
@@ -318,17 +318,17 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayMPgraphic" type="environment" file="meta-ini.mkxl">
+    <cd:command name="overlayMPgraphic" type="environment" level="style" category="graphics" file="meta-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPoverlaydata" type="environment" file="meta-ini.mkxl"/>
+    <cd:command name="MPoverlaydata" type="environment" level="style" category="graphics" file="meta-ini.mkxl"/>
 
-    <cd:command name="includeMPoverlaydata" file="meta-ini.mkxl"/>
+    <cd:command name="includeMPoverlaydata" level="style" category="graphics" file="meta-ini.mkxl"/>
 
-    <cd:command name="resetMPoverlaydata" file="meta-ini.mkxl"/>
+    <cd:command name="resetMPoverlaydata" level="style" category="graphics" file="meta-ini.mkxl"/>
 
     <cd:command name="uniqueMPpagegraphic" type="environment" level="style" category="graphics" keywords="metapost" file="meta-ini.mkxl">
         <cd:arguments>
@@ -508,31 +508,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getMPdata" file="meta-ini.lmt"/>
+    <cd:command name="getMPdata" level="style" category="graphics" file="meta-ini.lmt"/>
 
-    <cd:command name="rawMPdata" file="meta-ini.lmt"/>
+    <cd:command name="rawMPdata" level="style" category="graphics" file="meta-ini.lmt"/>
 
-    <cd:command name="MPdpar" file="meta-ini.mkxl">
+    <cd:command name="MPdpar" level="style" category="graphics" file="meta-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPnpar" file="meta-ini.mkxl">
+    <cd:command name="MPnpar" level="style" category="graphics" file="meta-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPspar" file="meta-ini.mkxl">
+    <cd:command name="MPspar" level="style" category="graphics" file="meta-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="argument-key"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tx" type="environment" begin="b" end="e" file="mlib-ctx.mkxl"/>
+    <cd:command name="tx" type="environment" begin="b" end="e" level="style" category="graphics" file="mlib-ctx.mkxl"/>
 
 </cd:interface>

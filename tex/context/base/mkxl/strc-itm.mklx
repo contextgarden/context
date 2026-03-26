@@ -1238,7 +1238,7 @@
        \strc_itemgroups_before_command
      \or
       %\ifempty\strc_itemgroups_before_command % should possibly expand to empty
-      \ifempty{\directitemgroupparameter\c!before}%
+       \ifempty{\directitemgroupparameter\c!before}%
          \strc_itemgroups_inbetween_command
        \else
          \strc_itemgroups_before_command
@@ -1441,9 +1441,10 @@
 \protected\def\strc_itemgroups_start_edge#text%
   {\strc_itemgroups_start_symbol
      {\strc_itemgroups_calculate_list_width\c_strc_itemgroups_nesting
+      \scratchskip\itemgroupparameter\c!distance\relax
       \dostarttaggednodetail\t!ignore % for the moment, maybe an attribute
       \hbox to \d_strc_itemgroups_list_width
-        {#text\hskip{\itemgroupparameter\c!distance}}%
+        {\begingroup#text\endgroup\hskip\scratchskip}%
       \dostoptagged}}
 
 \protected\def\strc_itemgroups_start_margin#text%

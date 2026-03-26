@@ -74,11 +74,11 @@
                             r = r + 1 ; result[r] = someline
                         else
                             if indefinition then
-                                r = r + 1 ; result[r] = "\\stopdefinition"
+                                r = r + 1 ; result[r] = "\\stopdefinition\r"
                                 indefinition = false
                             end
                             if not indocument then
-                                r = r + 1 ; result[r] = "\\startdocumentation"
+                                r = r + 1 ; result[r] = "\r\\startdocumentation"
                             end
                             r = r + 1 ; result[r] = someline
                             indocument = true
@@ -100,18 +100,18 @@
                     inlocaldocument = false
                     local someline = line
                     if indocument then
-                        r = r + 1 ; result[r] = "\\stopdocumentation"
+                        r = r + 1 ; result[r] = "\\stopdocumentation\r"
                         indocument = false
                     end
                     if indefinition then
                         if is_empty(someline) then
-                            r = r + 1 ; result[r] = "\\stopdefinition"
+                            r = r + 1 ; result[r] = "\\stopdefinition\r"
                             indefinition = false
                         else
                             r = r + 1 ; result[r] = someline
                         end
                     elseif not is_empty(someline) then
-                        r = r + 1 ; result[r] = "\\startdefinition"
+                        r = r + 1 ; result[r] = "\r\\startdefinition"
                         indefinition = true
                         if inlocaldocument then
                             -- nothing
@@ -122,14 +122,15 @@
                 end
             end
             if indocument then
-                r = r + 1 ; result[r] = "\\stopdocumentation"
+                r = r + 1 ; result[r] = "\\stopdocumentation\r"
             end
             if indefinition then
-                r = r + 1 ; result[r] = "\\stopdefinition"
+                r = r + 1 ; result[r] = "\\stopdefinition\r"
             end
-            r = r + 1 ; result[r] = "\\stopmoduledocumentation"
+            r = r + 1 ; result[r] = "\\stopmoduledocumentation\r"
             result = table.concat(result,"\r")
             buffers.assign("module",result)
+         -- io.savedata("temp.tex",result)
             context.getbuffer { "module" }
         end
     end

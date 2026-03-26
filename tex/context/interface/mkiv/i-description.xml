@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedescription" level="style" category="structure" file="strc-des.mkvi">
+    <cd:command name="definedescription" level="style" category="structure" file="strc-des.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdescription" level="style" category="structure" file="strc-des.mkvi">
+    <cd:command name="setupdescription" level="style" category="structure" file="strc-des.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -150,7 +150,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdescriptions" level="style" category="structure" file="strc-des.mkvi">
+    <cd:command name="setupdescriptions" level="style" category="structure" file="strc-des.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -159,7 +159,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="description" type="environment" generated="yes" variant="example" level="document" category="structure" file="strc-des.mkvi">
+    <cd:command name="description" type="environment" generated="yes" variant="example" level="document" category="structure" file="strc-des.mklx">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>
@@ -168,7 +168,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="description" type="environment" generated="yes" variant="example:title" level="document" category="structure" file="strc-des.mkvi">
+    <cd:command name="description" type="environment" generated="yes" variant="example:title" level="document" category="structure" file="strc-des.mklx">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>
@@ -178,7 +178,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="description" generated="yes" variant="example" level="document" category="structure" file="strc-des.mkvi">
+    <cd:command name="description" generated="yes" variant="example" level="document" category="structure" file="strc-des.mklx">
         <cd:sequence>
             <cd:variable value="description"/>
         </cd:sequence>

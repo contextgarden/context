@@ -175,6 +175,7 @@
         <cd:constant type="start"/>
         <cd:constant type="stop"/>
         <cd:constant type="xy"/>
+        <cd:constant type="note"/>
     </cd:define>
 
     <!-- columnbreak = ... -->
@@ -1762,6 +1763,24 @@
         <cd:constant type="middle,bottom"/>
         <cd:constant type="middle,left"/>
         <cd:constant type="middle,right"/>
+    </cd:define>
+
+    <!-- snapping -->
+
+    <cd:define name="value-snapping">
+        <cd:constant type="yes"/>
+        <cd:constant type="normal"/>
+        <cd:constant type="0"/>
+        <cd:constant type="1"/>
+        <cd:constant type="2"/>
+        <cd:constant type="0:10"/>
+        <cd:constant type="1:10"/>
+        <cd:constant type="2:10"/>
+        <cd:constant type="2:20"/>
+        <cd:constant type="1:top"/>
+        <cd:constant type="1:bottom"/>
+        <cd:constant type="2:top"/>
+        <cd:constant type="2:bottom"/>
     </cd:define>
 
 </cd:interface>

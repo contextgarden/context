@@ -317,7 +317,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="TABLEsection" type="environment" begin="b" end="e" level="document" file="tabl-ntb.mkxl">
+    <cd:command name="TABLEsection" type="environment" begin="b" end="e" level="document" category="tables" file="tabl-ntb.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="repeat">

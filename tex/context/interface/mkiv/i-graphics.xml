@@ -579,7 +579,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundimage" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="backgroundimage" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-dimension"/>
@@ -588,7 +588,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="backgroundimagefill" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="backgroundimagefill" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-dimension"/>
@@ -597,13 +597,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayimage" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="overlayimage" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="clippedoverlayimage" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="clippedoverlayimage" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-file"/>
         </cd:arguments>
@@ -639,7 +639,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="image" type="environment" file="grph-exp.mkxl">
+    <cd:command name="image" type="environment" level="document" category="graphics" file="grph-exp.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="descriptiontext">
@@ -652,7 +652,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="MPimage" type="environment" file="grph-exp.mkxl">
+    <cd:command name="MPimage" type="environment" level="document" category="graphics" file="grph-exp.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="descriptiontext">
@@ -665,26 +665,26 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="collectexported" file="grph-exp.mkxl"/>
+    <cd:command name="collectexported" level="style" category="graphics" file="grph-exp.mkxl"/>
 
-    <cd:command name="justimages" file="grph-exp.mkxl"/>
+    <cd:command name="justimages" level="style" category="graphics" file="grph-exp.mkxl"/>
 
-    <cd:command name="registerfiguremask" file="grph-inc.lmt">
+    <cd:command name="registerfiguremask" level="style" category="graphics" file="grph-inc.lmt">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerfigurerange" file="grph-inc.lmt">
+    <cd:command name="registerfigurerange" level="style" category="graphics" file="grph-inc.lmt">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="graphicgroup" type="environment" file="grph-trf.mkxl"/>
+    <cd:command name="graphicgroup" type="environment" level="style" category="graphics" file="grph-trf.mkxl"/>
 
-    <cd:command name="clipeffect" type="environment" file="grph-trf.mkxl"/>
+    <cd:command name="clipeffect" type="environment" level="style" category="graphics" file="grph-trf.mkxl"/>
 
 </cd:interface>

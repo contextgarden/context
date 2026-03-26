@@ -695,7 +695,7 @@ static void tex_aux_get_preamble_token(void)
             }
         case internal_glue_cmd:
             if (cur_chr == internal_glue_location(tab_skip_code)) {
-                halfword v = tex_scan_glue(glue_val_level, 1, 0);
+                halfword v = tex_scan_glue(glue_val_level, 1, 0, NULL);
                 if (global_defs_par > 0) {
                     update_tex_tab_skip_global(v);
                 } else {
@@ -1339,6 +1339,7 @@ static void tex_aux_initialize_span(halfword p)
     tex_push_nest();
     if (cur_list.mode == restricted_hmode) {
         cur_list.space_factor = default_space_factor;
+        cur_list.space_penalty = 0;
     } else {
         cur_list.prev_depth = ignore_depth_criterion_par;
         tex_normal_paragraph(span_par_context);
@@ -1360,7 +1361,8 @@ static void tex_aux_initialize_row(void)
     tex_push_nest();
     cur_list.mode = (- hmode - vmode) - cur_list.mode; /* weird code : - 3 - cur_list.mode : so a buogus line */
     if (cur_list.mode == restricted_hmode) {                     
-        cur_list.space_factor = 0;
+        cur_list.space_factor = 0; /* why not default */
+        cur_list.space_penalty = 0;
     } else {
         cur_list.prev_depth = 0;
     }
@@ -1820,6 +1822,7 @@ static void tex_aux_finish_row(void)
         tex_pop_nest();
         tex_tail_append(row);
         cur_list.space_factor = default_space_factor;
+        cur_list.space_penalty = 0;
     }
     /*tex 
         Currently this one can be overloaded by the one set on the row via the noalign trickery
@@ -2623,7 +2626,7 @@ static void tex_aux_finish_align(void)
         halfword rule_save = overfull_rule_par;
         /*tex Prevent the rule from being packaged. */
         overfull_rule_par = 0; 
-        preroll = tex_hpack(preamble, amount, mode, direction_unknown, holding_none_option, box_limit_none);
+        preroll = tex_hpack(preamble, amount, mode, direction_unknown, holding_none_option, box_limit_none, null, null);
         overfull_rule_par = rule_save;
     } else {
         halfword unset = node_next(preamble);
@@ -2870,7 +2873,7 @@ static void tex_aux_finish_align(void)
                             halfword box = null;
                             node_prev(rowptr) = null;
                             node_next(rowptr) = null;
-                            box = tex_hpack(rowptr, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                            box = tex_hpack(rowptr, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                             tex_attach_attribute_list_attribute(box, rowptr);
                             box_shift_amount(box) = offset;
                             node_subtype(box) = align_cell_list; /*tex This is not really a cell. */

@@ -156,6 +156,7 @@ local lefthangskip      = register_nut(new_nut(glue_code,gluecodes.lefthangskip)
 local righthangskip     = register_nut(new_nut(glue_code,gluecodes.righthangskip))
 local indentskip        = register_nut(new_nut(glue_code,gluecodes.indentskip))
 local correctionskip    = register_nut(new_nut(glue_code,gluecodes.correctionskip))
+local spaceskip         = register_nut(new_nut(glue_code,gluecodes.spaceskip))
 
 local temp              = register_nut(new_nut(nodecodes.temp,0))
 
@@ -307,6 +308,18 @@ end
 
 function nutpool.glue(width,stretch,shrink,stretch_order,shrink_order)
     return someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
+end
+
+function nutpool.penalizedglue(penalty,width,stretch,shrink,stretch_order,shrink_order)
+    local g = someskip(glue,width,stretch,shrink,stretch_order,shrink_order)
+    setpenalty(g,penalty)
+    return g
+end
+
+function nutpool.penalizedspace(penalty,width,stretch,shrink)
+    local g = someskip(spaceskip,width,stretch,shrink)
+    setpenalty(g,penalty)
+    return g
 end
 
 function nutpool.negatedglue(glue)

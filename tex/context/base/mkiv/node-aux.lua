@@ -52,6 +52,7 @@ local setattrlist        = nuts.setattrlist
 local traversers         = nuts.traversers
 local nextnode           = traversers.node
 local nextglyph          = traversers.glyph
+local findtail           = nuts.tail
 
 local flushnode          = nuts.flush
 local flushlist          = nuts.flushlist

@@ -7,39 +7,19 @@ if not modules then modules = { } end modules ['spac-ver'] = {
     license   = "see context related readme files"
 }
 
--- todo: move locals to helpers subtable to get around 200 problem
-
--- we also need to call the spacer for inserts!
-
--- somehow lists still don't always have proper prev nodes so i need to
--- check all of the luatex code some day .. maybe i should replece the
--- whole mvl handler by lua code .. why not
-
--- needs to be redone, too many calls and tests now ... still within some
--- luatex limitations
-
--- this code dates from the beginning and is kind of experimental; it
--- will be optimized and improved soon .. it's way too complex now but
--- dates from less possibilities
---
--- the collapser will be redone with user nodes; also, we might get make
--- parskip into an attribute and appy it explicitly thereby getting rid
--- of automated injections; eventually i want to get rid of the currently
--- still needed tex -> lua -> tex > lua chain (needed because we can have
--- expandable settings at the tex end
-
--- todo: strip baselineskip around display math
+-- This code dates from the beginning (just after 2005) and and need a bit of a
+-- rewrite: smaller blobs, less hassle with the 200 locals limit, maybe use some
+-- more luametatex magic. But it being critial code we have to be careful so this
+-- will be done stepwise.
 
 local next, type, tonumber = next, type, tonumber
 local gmatch = string.gmatch
-local allocate = utilities.storage.allocate
-local todimen = string.todimen
 local formatters = string.formatters
 
 local nodes        =  nodes
 local trackers     =  trackers
 local attributes   =  attributes
-local context      =  context
+----- context      =  context
 local tex          =  tex
 
 local texget       = tex.get
@@ -60,7 +40,6 @@ local variables    = interfaces.variables
 local v_local      <const> = variables["local"]
 local v_global     <const> = variables["global"]
 local v_box        <const> = variables.box
------ v_page       <const> = variables.page -- reserved for future use
 local v_split      <const> = variables.split
 local v_min        <const> = variables.min
 local v_max        <const> = variables.max
@@ -217,6 +196,8 @@ vspacingdata.snapmethods  = snapmethods
 storage.register("builders/vspacing/data/snapmethods", snapmethods, "builders.vspacing.data.snapmethods")
 
 do
+
+    local todimen       = string.todimen
 
     local lpegmatch     = lpeg.match
     local colonsplitter = lpeg.splitat(":")
@@ -790,7 +771,7 @@ local categories = { [0] =
     "keep", -- 12
 }
 
-categories          = allocate(table.swapped(categories,categories))
+categories          =  utilities.storage.allocate(table.swapped(categories,categories))
 vspacing.categories = categories
 
 function vspacing.tocategories(str)
@@ -820,7 +801,7 @@ vspacingdata.skip = vspacingdata.skip or { } -- allocate ?
 storage.register("builders/vspacing/data/map",  vspacingdata.map,  "builders.vspacing.data.map")
 storage.register("builders/vspacing/data/skip", vspacingdata.skip, "builders.vspacing.data.skip")
 
-local delay = false  experiments.register("vspacing.delay", function(v) delay = v end)
+----- delay = false  experiments.register("vspacing.delay", function(v) delay = v end)
 
 -- todo: also isspecification
 
@@ -957,42 +938,6 @@ elseif method == 5 then
     local getdata = nuts.getdata
     local setdata = nuts.setdata
 
-    -- maybe start with an identification token nibble or byte
-
---     setspecification = function(n,category,penalty,order)
---         if not category or category > 0x0F then
---             category = 0x0F
---         end
---         local penaltyflag = penalty and 0xF0 or 0
---         if not order or order > 0xFFFF then
---             order = 0xFFFF00
---         else
---             order = order << 8
---         end
---         setdata(n, order + penaltyflag + category, penalty or nil)
---     end
-
---     getspecification = function(n)
---         local data, penalty = getdata(n)
---         if data and data ~= 0 then
---             local category    =  data        & 0x0F
---             local penaltyflag =  data        & 0xF0
---             local order       = (data >>  8) & 0xFFFF
---             if category == 0xF then
---                 category = nil
---             end
---             if order == 0xFFFF then
---                 order = nil
---             end
---             if penaltyflag ~= 0xF0 then
---                 penalty = false
---             end
---             return category, penalty, order
---         else
---             return nil, nil, nil
---         end
---     end
-
     local id <const> = 0x01
 
     setspecification = function(n,category,penalty,order)
@@ -1125,23 +1070,23 @@ do
     local inject  do
 
         local limit_code <const> = tex.glueoptioncodes.limit
-        local delay_code <const> = tex.glueoptioncodes.delay
+     -- local delay_code <const> = tex.glueoptioncodes.delay
 
         inject = function()
             local n = new_glue(b_amount,b_stretch,b_shrink)
             setspecification(n,b_category,b_penalty,b_order or 1)
             setvisual(n)
-            if delay then
-                if b_limit then
-                    setoptions(n,limit_code | delay_code)
-                else
-                    setoptions(n,delay_code)
-                end
-            else
+         -- if delay then
+         --     if b_limit then
+         --         setoptions(n,limit_code | delay_code)
+         --     else
+         --         setoptions(n,delay_code)
+         --     end
+         -- else
                 if b_limit then
                     setoptions(n,limit_code)
                 end
-            end
+         -- end
             write_node(n)
             -- todo: inject via value
         end
@@ -1530,6 +1475,7 @@ do
         end
         while current do
             local id = getid(current)
+-- if id == penalty_code or id == glue_code then -- see (!!)
             if id == penalty_code then
                 local p = properties[current]
                 if p then
@@ -1745,6 +1691,194 @@ do
     local setdiscardable   <const> = tex.glueoptioncodes.setdiscardable
     local resetdiscardable <const> = tex.glueoptioncodes.resetdiscardable
 
+    -- We used to have these helpers local in the function but in the end moved
+    -- them out. Such local definitions also cost time and passing parameters
+    -- is in the end cheaper (but maybe also more messy. However we can now use
+    -- (experimental) variants easier.
+
+    local function getpagelist(pagehead,pagetail)
+        if not pagehead then
+            pagehead, pagetail = nuts.getmvllist()
+        end
+        return pagehead, pagetail
+    end
+
+    local function compensate(n)
+        local g = 0
+        while n and getid(n) == glue_code do
+            g = g + getwidth(n)
+            n = getnext(n)
+        end
+        if n then
+            local p = getprop(n,"snapper")
+            if p then
+                local extra = p.extra
+                if extra and extra < 0 then -- hm, extra can be unset ... needs checking
+                    local h = p.ch -- getheight(n)
+                    -- maybe an extra check
+                 -- if h - extra < g then
+                        setheight(n,h-2*extra)
+                        p.extra = 0
+                        if trace_vsnapping then
+                            report_snapper("removed extra space at top: %p",extra)
+                        end
+                 -- end
+                end
+            end
+            return n
+        end
+    end
+
+    local function checkoptions(n,where,dont_discard)
+        if getid(n) ~= glue_code then
+            -- something is wrong
+         -- print("IGNORE OPTION",where)
+        elseif dont_discard then
+         -- print("SET OPTION")
+            setoptions(n,setdiscardable)
+        else
+         -- print("RESET OPTION")
+            setoptions(n,resetdiscardable)
+        end
+    end
+
+    -- todo: make this nicer in the engine
+
+    local function removetopsnap(head,pagehead,pagetail)
+        pagehead, pagetail = getpagelist(pagehead,pagetail)
+        if pagehead then
+            local n = pagehead and compensate(pagehead)
+            if n and n ~= pagetail then
+                local p = getprop(pagetail,"snapper")
+                if p then
+                    local e = p.extra
+                    if e and e < 0 then
+                        -- what if mvl's ...
+                        local t = texget("pagetotal")
+                        if t > 0 then
+                            local g = texget("pagegoal") -- 1073741823 is signal
+                            local d = g - t
+                            if d < -e then
+                                local penalty = new_penalty(1000000)
+                                setvisual(penalty)
+                                setlink(penalty,head)
+                                head = penalty
+                                report_snapper("force pagebreak due to extra space at bottom: %p",e)
+                            end
+                        end
+                    end
+                end
+            end
+        elseif head then
+            compensate(head)
+        end
+        return head, pagehead, pagetail
+    end
+
+    local function wrapup(head,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+        local tail = find_node_tail(head)
+        if penalty_data then
+            local p = new_penalty(penalty_data)
+            setvisual(p)
+            if trace then
+                trace_done("result",p)
+            end
+            setlink(tail,p)
+            tail = p
+            local props = properties[p] -- (!!)
+            if props then
+                props.special_penalty = special_penalty or penalty_data
+            else
+                properties[p] = {
+                    special_penalty = special_penalty or penalty_data
+                }
+            end
+        end
+        if glue_data then
+            if trace then
+                trace_done("result",glue_data)
+            end
+            if force_glue then
+                checkoptions(head,4,dont_discard)
+                head, tail = forced_skip(head,tail,getwidth(glue_data),"after",trace)
+                flushnode(glue_data)
+                glue_data = nil
+            elseif tail then
+                setlink(tail,glue_data)
+                setnext(glue_data)
+                checkoptions(glue_data,5,dont_discard)
+            else
+                head = glue_data
+                checkoptions(glue_data,6,dont_discard)
+            end
+            -- appending to the list bypasses tex's prevdepth handler
+            texnest[texnest.ptr].prevdepth = 0
+        end
+        return head, glue_data
+    end
+
+    local function flush(why,head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+        if penalty_data then
+            local p = new_penalty(penalty_data)
+            setvisual(p)
+            if trace then
+                trace_done("flushed due to " .. why,p)
+            end
+            if penalty_data >= 10000 then -- or whatever threshold?
+                local prev = getprev(current)
+                if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
+                        -- tricky case: spacing/grid-007.tex: glue penalty glue
+                    head = insertnodebefore(head,prev,p)
+                else
+                    head = insertnodebefore(head,current,p)
+                end
+            else
+                head = insertnodebefore(head,current,p)
+            end
+            local props = properties[p] -- (!!)
+            if props then
+                props.special_penalty = special_penalty or penalty_data
+            else
+                properties[p] = {
+                    special_penalty = special_penalty or penalty_data
+                }
+            end
+        end
+        if glue_data then
+            if force_glue then
+                if trace then
+                    trace_done("flushed due to forced " .. why,glue_data)
+                end
+                checkoptions(head,1,dont_discard)
+                head = forced_skip(head,current,getwidth(glue_data,width),"before",trace)
+                flushnode(glue_data)
+             -- glue_data = nil -- we reset anyway
+            else
+                local width, stretch, shrink = getglue(glue_data)
+                if width ~= 0 then
+                    if trace then
+                        trace_done("flushed due to non zero " .. why,glue_data)
+                    end
+                    checkoptions(glue_data,2,dont_discard)
+                    head = insertnodebefore(head,current,glue_data)
+                elseif stretch ~= 0 or shrink ~= 0 then
+                    if trace then
+                        trace_done("flushed due to stretch/shrink in" .. why,glue_data)
+                    end
+                    head = insertnodebefore(head,current,glue_data)
+                else
+                 -- report_vspacing("needs checking (%s): %p",gluecodes[getsubtype(glue_data)],w)
+                    checkoptions(glue_data,3,dont_discard)
+                    flushnode(glue_data)
+                end
+            end
+        end
+        if trace then
+            trace_node(current)
+        end
+        return head
+    end
+
     local function collapser(head,where,what,trace,snap,a_snapmethod) -- maybe also pass tail
         if trace then
             reset_tracing(head)
@@ -1768,157 +1902,7 @@ do
         local pagehead
         local pagetail
         --
-        -- todo: keep_together: between headers
-        -- todo: make this nicer in the engine
-        local function getpagelist()
-            if not pagehead then
-                pagehead, pagetail = nuts.getmvllist()
-            end
-        end
-        --
-        local function checkoptions(n,where)
-            if getid(n) ~= glue_code then
-                -- something is wrong
-            -- print("IGNORE OPTION",where)
-            elseif dont_discard then
-            -- print("SET OPTION")
-                setoptions(n,setdiscardable)
-            else
-            -- print("RESET OPTION")
-                setoptions(n,resetdiscardable)
-            end
-        end
-        --
-        local function compensate(n)
-            local g = 0
-            while n and getid(n) == glue_code do
-                g = g + getwidth(n)
-                n = getnext(n)
-            end
-            if n then
-                local p = getprop(n,"snapper")
-                if p then
-                    local extra = p.extra
-                    if extra and extra < 0 then -- hm, extra can be unset ... needs checking
-                        local h = p.ch -- getheight(n)
-                        -- maybe an extra check
-                     -- if h - extra < g then
-                            setheight(n,h-2*extra)
-                            p.extra = 0
-                            if trace_vsnapping then
-                                report_snapper("removed extra space at top: %p",extra)
-                            end
-                     -- end
-                    end
-                end
-                return n
-            end
-        end
-        --
-        local function removetopsnap()
-            getpagelist()
-            if pagehead then
-                local n = pagehead and compensate(pagehead)
-                if n and n ~= pagetail then
-                    local p = getprop(pagetail,"snapper")
-                    if p then
-                        local e = p.extra
-                        if e and e < 0 then
--- What if mvl's
-                            local t = texget("pagetotal")
-                            if t > 0 then
-                                local g = texget("pagegoal") -- 1073741823 is signal
-                                local d = g - t
-                                if d < -e then
-                                    local penalty = new_penalty(1000000)
-                                    setvisual(penalty)
-                                    setlink(penalty,head)
-                                    head = penalty
-                                    report_snapper("force pagebreak due to extra space at bottom: %p",e)
-                                end
-                            end
-                        end
-                    end
-                end
-            elseif head then
-                compensate(head)
-            end
-        end
-        --
-        local function getavailable()
-            getpagelist()
-            if pagehead then
-             -- What if mvl's?
-                local t = texget("pagetotal")
-                if t > 0 then
-                    local g = texget("pagegoal")
-                    return g - t
-                end
-            end
-            return false
-        end
-        --
-        local function flush(why)
-            if penalty_data then
-                local p = new_penalty(penalty_data)
-                setvisual(p)
-                if trace then
-                    trace_done("flushed due to " .. why,p)
-                end
-                if penalty_data >= 10000 then -- or whatever threshold?
-                    local prev = getprev(current)
-                    if getid(prev) == glue_code then -- maybe go back more, or maybe even push back before any glue
-                            -- tricky case: spacing/grid-007.tex: glue penalty glue
-                        head = insertnodebefore(head,prev,p)
-                    else
-                        head = insertnodebefore(head,current,p)
-                    end
-                else
-                    head = insertnodebefore(head,current,p)
-                end
-             -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-                local props = properties[p]
-                if props then
-                    props.special_penalty = special_penalty or penalty_data
-                else
-                    properties[p] = {
-                        special_penalty = special_penalty or penalty_data
-                    }
-                end
-             -- end
-            end
-            if glue_data then
-                if force_glue then
-                    if trace then
-                        trace_done("flushed due to forced " .. why,glue_data)
-                    end
-                    checkoptions(head,1)
-                    head = forced_skip(head,current,getwidth(glue_data,width),"before",trace)
-                    flushnode(glue_data)
-                else
-                    local width, stretch, shrink = getglue(glue_data)
-                    if width ~= 0 then
-                        if trace then
-                            trace_done("flushed due to non zero " .. why,glue_data)
-                        end
-                        checkoptions(glue_data,2)
-                        head = insertnodebefore(head,current,glue_data)
-                    elseif stretch ~= 0 or shrink ~= 0 then
-                        if trace then
-                            trace_done("flushed due to stretch/shrink in" .. why,glue_data)
-                        end
-                        head = insertnodebefore(head,current,glue_data)
-                    else
-                     -- report_vspacing("needs checking (%s): %p",gluecodes[getsubtype(glue_data)],w)
-                        checkoptions(glue_data,3)
-                        flushnode(glue_data)
-                    end
-                end
-            end
-
-            if trace then
-                trace_node(current)
-            end
+        local function reset()
             glue_order        = 0
             glue_data         = nil
             force_glue        = false
@@ -1944,22 +1928,19 @@ do
             trace_info("start analyzing",where,what)
         end
         if snap and where == "page" then
-            removetopsnap()
+            head, pagehead, pagetail = removetopsnap(head,pagehead,pagetail)
         end
         if checkslide then
             checkslide(head,where,what)
         end
-
-        -- In the case of delay we only have glue nodes with a user or parskip subtype
-        -- so prioritize these. We could have a stripped down variant but that doesn't
-        -- save much.
-
+     -- -- In the case of delay we only have glue nodes with a user or parskip subtype
+     -- -- so prioritize these. We could have a stripped down variant but that doesn't
+     -- -- save much.
         while current do
             local id = getid(current)
             if id == glue_code then
                 local subtype = getsubtype(current)
                 if subtype == userskip_code then
-                 -- local sc, so, sp = getattrs(current,a_skipcategory,a_skiporder,a_skippenalty)
                     local sc, sp, so = getspecification(current)
                     if not so then
                         so = 1 -- the others have no default value
@@ -1967,7 +1948,7 @@ do
                     if sp and sc == penalty then
                         -- what with delay ...
                         if where == "page" then
-                            getpagelist()
+                            pagehead, pagetail = getpagelist(pagehead,pagetail)
                             local p = specialmethods[specialmethod](pagehead,pagetail,current,sp)
                             if p then
                              -- todo: other tracer
@@ -2208,13 +2189,15 @@ do
                             if trace then
                                 trace_skip("baselineskip",sc,so,sp,current)
                             end
-                            flush("baselineskip")
+                            head = flush("baselineskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                            reset()
                         end
                     else
                         if trace then
                             trace_skip("baselineskip",sc,so,sp,current)
                         end
-                        flush("baselineskip")
+                        head = flush("baselineskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                        reset()
                     end
                     current = getnext(current)
                 elseif subtype == lineskip_code then
@@ -2230,13 +2213,15 @@ do
                             if trace then
                                 trace_skip("lineskip",sc,so,sp,current)
                             end
-                            flush("lineskip")
+                            head = flush("lineskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                            reset()
                         end
                     else
                         if trace then
                             trace_skip("lineskip",sc,so,sp,current)
                         end
-                        flush("lineskip")
+                        head = flush("lineskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                        reset()
                     end
                     current = getnext(current)
                 elseif subtype == topskip_code or subtype == splittopskip_code then
@@ -2258,13 +2243,15 @@ do
                             if trace then
                                 trace_skip("topskip",sc,so,sp,current)
                             end
-                            flush("topskip")
+                            head = flush("topskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                            reset()
                         end
                     else
                         if trace then
                             trace_skip("topskip",sc,so,sp,current)
                         end
-                        flush("topskip")
+                        head = flush("topskip",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                        reset()
                     end
                     current = getnext(current)
              -- elseif subtype == abovedisplayskip_code and remove_math_skips then
@@ -2272,7 +2259,8 @@ do
              --     if trace then
              --         trace_skip("above display skip (normal)",sc,so,sp,current)
              --     end
-             --     flush("above display skip (normal)")
+             --     head = flush("above display skip (normal)",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+             --     reset()
              --     current = getnext(current)
              --     --
              -- elseif subtype == belowdisplayskip_code and remove_math_skips then
@@ -2280,7 +2268,8 @@ do
              --     if trace then
              --         trace_skip("below display skip (normal)",sc,so,sp,current)
              --     end
-             --     flush("below display skip (normal)")
+             --     head = flush("below display skip (normal)",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+             --     reset()
              --     current = getnext(current)
              --    --
              -- elseif subtype == abovedisplayshortskip_code and remove_math_skips then
@@ -2288,7 +2277,8 @@ do
              --     if trace then
              --         trace_skip("above display skip (short)",sc,so,sp,current)
              --     end
-             --     flush("above display skip (short)")
+             --     head = flush("above display skip (short)",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+             --     reset()
              --     current = getnext(current)
              --     --
              -- elseif subtype == belowdisplayshortskip_code and remove_math_skips then
@@ -2296,7 +2286,8 @@ do
              --     if trace then
              --         trace_skip("below display skip (short)",sc,so,sp,current)
              --     end
-             --     flush("below display skip (short)")
+             --     head = flush("below display skip (short)",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+             --     reset()
              --     current = getnext(current)
                 else -- other glue
                     if snap and trace_vsnapping then
@@ -2308,7 +2299,8 @@ do
                     if trace then
                         trace_skip(formatters["glue of type %a"](subtype),sc,so,sp,current)
                     end
-                    flush("some glue")
+                    head = flush("some glue",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                    reset()
                     current = getnext(current)
                 end
             elseif id == hlist_code or id == vlist_code then
@@ -2361,7 +2353,8 @@ do
                 else
                     --
                 end
-                flush("list")
+                head = flush("list",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                reset()
                 current = getnext(current)
             elseif id == penalty_code then
              -- natural_penalty = getpenalty(current)
@@ -2377,10 +2370,12 @@ do
                 if snap and trace_vsnapping and getkern(current) ~= 0 then
                     report_snapper("kern of %p kept",getkern(current))
                 end
-                flush("kern")
+                head = flush("kern",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                reset()
                 current = getnext(current)
             else
-                flush(trace and formatters["node with id %a"](id) or "other node")
+                head = flush(trace and formatters["node with id %a"](id) or "other node",head,current,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
+                reset()
                 current = getnext(current)
             end
         end
@@ -2390,56 +2385,16 @@ do
      -- if natural_penalty and (not penalty_data or natural_penalty > penalty_data) then
      --     penalty_data = natural_penalty
      -- end
-        if trace and (glue_data or penalty_data) then
-            trace_info("start flushing",where,what)
-        end
-        local tail
-        if penalty_data then
-            tail = find_node_tail(head)
-            local p = new_penalty(penalty_data)
-            setvisual(p)
+        if glue_data or penalty_data then
             if trace then
-                trace_done("result",p)
+                trace_info("start flushing",where,what)
             end
-            setlink(tail,p)
-         -- if penalty_data > special_penalty_min and penalty_data < special_penalty_max then
-                local props = properties[p]
-                if props then
-                    props.special_penalty = special_penalty or penalty_data
-                else
-                    properties[p] = {
-                        special_penalty = special_penalty or penalty_data
-                    }
-                end
-         -- end
-        end
-        if glue_data then
-            if not tail then tail = find_node_tail(head) end
+            head, glue_data = wrapup(head,penalty_data,glue_data,trace,force_glue,dont_discard,special_penalty)
             if trace then
-                trace_done("result",glue_data)
-            end
-            if force_glue then
-                checkoptions(head,4)
-                head, tail = forced_skip(head,tail,getwidth(glue_data),"after",trace)
-                flushnode(glue_data)
-                glue_data = nil
-            elseif tail then
-                setlink(tail,glue_data)
-                setnext(glue_data)
-                checkoptions(glue_data,5)
-            else
-                head = glue_data
-                checkoptions(glue_data,6)
-            end
-            if not delay then
-                -- appending to the list bypasses tex's prevdepth handler
-                texnest[texnest.ptr].prevdepth = 0
+                trace_info("stop flushing",where,what)
             end
         end
         if trace then
-            if glue_data or penalty_data then
-                trace_info("stop flushing",where,what)
-            end
             show_tracing(head)
             if oldhead ~= head then
                 trace_info("head has been changed from %a to %a",nodecodes[getid(oldhead)],nodecodes[getid(head)])
@@ -2473,10 +2428,13 @@ do
         end
     end
 
+    local getcurrentmvl = tex.getcurrentmvl
+
     function vspacing.pagehandler(newhead,where)
+
         if newhead then
             --
-            local mvl = tex.getcurrentmvl()
+            local mvl = getcurrentmvl()
             if mvl ~= stackmvl then
                 if stackhead[stackmvl] then
                     report_vspacing("pending stack entries for mvl %i, changing to %i",stackmvl,mvl)
@@ -2567,7 +2525,7 @@ do
     local ignored = table.tohash {
         "splitkeep",
         "splitoff",
---        "insert",
+     -- "insert",
     }
 
     function vspacing.vboxhandler(head,where)
@@ -3170,66 +3128,77 @@ do
 
  -- local trace = false
 
-    local function delayed_glue_callback(target,location,head,tail)
-     -- if not trace then
-     --     --
-     -- elseif location == 1 then
-     --     print("delayed glue: parskip")
-     -- end
-        head = vboxhandler(head,"vbox") -- not page
-        return head
-    end
+--     local function delayed_glue_callback(target,location,head,tail)
+-- --         if delaying and location == 0 and target == 2 then -- build and page
+-- --             head = vboxhandler(head,"page")
+-- --         end
+--         if delay then
+-- --             head = vboxhandler(head,location == 0 and "page" or "vbox")
+--             head = vboxhandler(head,"vbox")
+--         end
+--         return head
+--     end
 
-    callbacks.register {
-        name    = "delayed_glue",
-        action  = delayed_glue_callback,
-        comment = "vspace processing",
-        frozen  = true,
-    }
+--     callbacks.register {
+--         name    = "delayed_glue",
+--         action  = delayed_glue_callback,
+--         comment = "vspace processing",
+--         frozen  = true,
+--     }
 
-    local enableaction  = nodes.tasks.enableaction
-    local disableaction = nodes.tasks.disableaction
+--     local enableaction  = nodes.tasks.enableaction
+--     local disableaction = nodes.tasks.disableaction
 
-    experiments.register("vspacing.delay",function(v)
-        if v then
-            disableaction("vboxbuilders", "builders.vspacing.vboxhandler")
-            disableaction("mvlbuilders",  "builders.vspacing.pagehandler")
-            context.sprint(tex.prtcatcodes,"\\global\\c_spac_delay\\conditionaltrue") -- for now
-        else
-            enableaction("vboxbuilders", "builders.vspacing.vboxhandler")
-            enableaction("mvlbuilders",  "builders.vspacing.pagehandler")
-            context.sprint(tex.prtcatcodes,"\\global\\c_spac_delay\\conditionalfalse") -- for now
-        end
-    end)
+ -- experiments.register("vspacing.delay",function(v)
+ --     if delay then
+ --      -- disableaction("vboxbuilders", "builders.vspacing.vboxhandler")
+ --      -- disableaction("mvlbuilders",  "builders.vspacing.pagehandler")
+ --         context.sprint(tex.prtcatcodes,"\\global\\c_spac_delay\\conditionaltrue") -- for now
+ --     else
+ --      -- enableaction("vboxbuilders", "builders.vspacing.vboxhandler")
+ --      -- enableaction("mvlbuilders",  "builders.vspacing.pagehandler")
+ --         context.sprint(tex.prtcatcodes,"\\global\\c_spac_delay\\conditionalfalse") -- for now
+ --     end
+ -- end)
 
-    local checkdelayedglue = tex.checkdelayedglue
+ -- local checkdelayedglue = tex.checkdelayedglue
     local triggerbuildpage = tex.triggerbuildpage
 
-    interfaces.implement {
-        name      = "checkspacingbeforepar",
-        public    = true,
-        protected = true,
-        actions   = function()
-            if delay then
-                checkdelayedglue(0, true)
-            else
-            end
-            triggerbuildpage()
-        end
-    }
+ -- interfaces.implement {
+ --     name      = "checkspacingbeforepar",
+ --     public    = true,
+ --     protected = true,
+ --     actions   = function()
+ --      -- if delay then
+ --      --     checkdelayedglue(0, true)
+ --      -- end
+ --         triggerbuildpage()
+ --     end
+ -- }
 
     local d_spac_total <const> = tex.isdimen("d_spac_total")
+
+ -- interfaces.implement {
+ --     name      = "checkspacingavailable",
+ --     public    = true,
+ --     protected = true,
+ --     actions   = function()
+ --      -- if delay then
+ --      --     checkdelayedglue(0, true)
+ --      -- end
+ --         triggerbuildpage()
+ --      -- texsetdimen(d_spac_total,(delay and 0 or texget("parskip",true)) + texget("pagetotal"))
+ --         texsetdimen(d_spac_total,texget("parskip",true) + texget("pagetotal"))
+ --     end
+ -- }
 
     interfaces.implement {
         name      = "checkspacingavailable",
         public    = true,
         protected = true,
         actions   = function()
-            if delay then
-                checkdelayedglue(0, true)
-            end
             triggerbuildpage()
-            texsetdimen(d_spac_total,(delay and 0 or texget("parskip",true)) + texget("pagetotal"))
+            texsetdimen(d_spac_total,texget("parskip",true) + texget("pagetotal"))
         end
     }
 

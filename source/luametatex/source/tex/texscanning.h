@@ -88,7 +88,7 @@ extern halfword    tex_scan_clipped_scale_factor      (int optional_equal);
 extern halfword    tex_scan_posit                     (int optional_equal);
 extern halfword    tex_scan_dimension                 (int mu, int inf, int shortcut, int optional_equal, halfword *order, int *grouped);
 extern void        tex_scan_dimension_validate        (void);
-extern halfword    tex_scan_glue                      (int level, int optional_equal, int options_too);
+extern halfword    tex_scan_glue                      (int level, int optional_equal, int options_too, halfword *penalty);
 extern halfword    tex_scan_font                      (int optional_equal);
 extern halfword    tex_scan_general_text              (halfword *tail);
 /*     halfword    tex_scan_toks                      (int macrodef, int xpand, int left_brace_found); */

@@ -5237,7 +5237,7 @@ void mp_flush_below_variable(MP mp, mp_node p)
     } else {
         mp_node r;
         mp_node q = mp_get_subscr_head(p);
-        while (q->name_type == mp_subscript_operation) {
+        while (q && q->name_type == mp_subscript_operation) {
             mp_flush_below_variable(mp, q);
             r = q;
             q = q->link;

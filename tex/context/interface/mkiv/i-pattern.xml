@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="registerpattern" file="grph-pat.mkxl">
+    <cd:command name="registerpattern" level="document" category="graphics" file="grph-pat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -34,7 +34,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="applypattern" file="grph-pat.mkxl">
+    <cd:command name="applypattern" level="document" category="graphics" file="grph-pat.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">

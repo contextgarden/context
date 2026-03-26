@@ -70,7 +70,10 @@ local editors = {
 }
 
 local function validfile(filename)
-    if not filename or not isfile(filename) then
+    if not filename then
+        report("no synctex log file given")
+        return false
+    elseif not isfile(filename) then
         report("invalid synctex log file %a",filename)
         return false
     else
@@ -326,6 +329,7 @@ local function showlocation(filename,sourcename,linenumber,direct)
         sourcename = file.collapsepath(sourcename)
     end
     for line in io.lines(filename) do
+-- print(found,line)
         if found then
             if find(line,"^}") then
                 found = false
@@ -334,6 +338,7 @@ local function showlocation(filename,sourcename,linenumber,direct)
                 end
             else
                 local f, l, x, y, w, h, d = match(line,"^[hr](.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
+-- print(f, l, x, y, w, h, d)
                 if f then
                     x = tonumber(x)
                     y = tonumber(y)
@@ -353,6 +358,7 @@ local function showlocation(filename,sourcename,linenumber,direct)
                 end
             end
         elseif find(line,"^{(%d+)") then
+-- print("!")
             page  = tonumber(match(line,"^{(%d+)"))
             found = true
             if not sourcename then

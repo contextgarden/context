@@ -220,6 +220,7 @@ local blocks = allocate {
     ["bassavah"]                                    = { first = 0x16AD0, last = 0x16AFF,              description = "Bassa Vah" },
     ["batak"]                                       = { first = 0x01BC0, last = 0x01BFF,              description = "Batak" },
     ["bengali"]                                     = { first = 0x00980, last = 0x009FF, otf="beng",  description = "Bengali" },
+    ["beriaerfe"]                                   = { first = 0x16EA0, last = 0x16EDF,              description = "Beria Erfe" },
     ["bhaiksuki"]                                   = { first = 0x11C00, last = 0x11C6F,              description = "Bhaiksuki" },
     ["blockelements"]                               = { first = 0x02580, last = 0x0259F, otf="bopo",  description = "Block Elements" },
     ["bopomofo"]                                    = { first = 0x03100, last = 0x0312F, otf="bopo",  description = "Bopomofo" },
@@ -255,6 +256,7 @@ local blocks = allocate {
     ["cjkunifiedideographsextensiong"]              = { first = 0x30000, last = 0x3134F,              description = "CJK Unified Ideographs Extension G" },
     ["cjkunifiedideographsextensionh"]              = { first = 0x31350, last = 0x323AF,              description = "CJK Unified Ideographs Extension H" },
     ["cjkunifiedideographsextensioni"]              = { first = 0x2EBF0, last = 0x2EE5F,              description = "CJK Unified Ideographs Extension I" },
+    ["cjkunifiedideographsextensionj"]              = { first = 0x323B0, last = 0x3347F,              description = "CJK Unified Ideographs Extension J" },
     ["combiningdiacriticalmarks"]                   = { first = 0x00300, last = 0x0036F,              description = "Combining Diacritical Marks" },
     ["combiningdiacriticalmarksextended"]           = { first = 0x01AB0, last = 0x01AFF,              description = "Combining Diacritical Marks Extended" },
     ["combiningdiacriticalmarksforsymbols"]         = { first = 0x020D0, last = 0x020FF,              description = "Combining Diacritical Marks for Symbols" },
@@ -374,8 +376,8 @@ local blocks = allocate {
     ["kannada"]                                     = { first = 0x00C80, last = 0x00CFF, otf="knda",  description = "Kannada" },
     ["katakana"]                                    = { first = 0x030A0, last = 0x030FF, otf="kana",  description = "Katakana" },
     ["katakanaphoneticextensions"]                  = { first = 0x031F0, last = 0x031FF, otf="kana",  description = "Katakana Phonetic Extensions" },
-    ["kayahli"]                                     = { first = 0x0A900, last = 0x0A92F,              description = "Kayah Li" },
     ["kawi"]                                        = { first = 0x11F00, last = 0x11F5F,              description = "Kawi" },
+    ["kayahli"]                                     = { first = 0x0A900, last = 0x0A92F,              description = "Kayah Li" },
     ["kharoshthi"]                                  = { first = 0x10A00, last = 0x10A5F, otf="khar",  description = "Kharoshthi" },
     ["khitansmallscript"]                           = { first = 0x18B00, last = 0x18CFF,              description = "Khitan Small Script" },
     ["khmer"]                                       = { first = 0x01780, last = 0x017FF, otf="khmr",  description = "Khmer" },
@@ -447,6 +449,7 @@ local blocks = allocate {
     ["miscellaneoussymbols"]                        = { first = 0x02600, last = 0x026FF, math = true, description = "Miscellaneous Symbols" },
     ["miscellaneoussymbolsandarrows"]               = { first = 0x02B00, last = 0x02BFF, math = true, description = "Miscellaneous Symbols and Arrows" },
     ["miscellaneoussymbolsandpictographs"]          = { first = 0x1F300, last = 0x1F5FF,              description = "Miscellaneous Symbols and Pictographs" },
+    ["miscellaneoussymbolssupplement"]              = { first = 0x1CEC0, last = 0x1CEFF,              description = "Miscellaneous Symbols Supplement" },
     ["miscellaneoustechnical"]                      = { first = 0x02300, last = 0x023FF, math = true, description = "Miscellaneous Technical" },
     ["modi"]                                        = { first = 0x11600, last = 0x1165F,              description = "Modi" },
     ["modifiertoneletters"]                         = { first = 0x0A700, last = 0x0A71F,              description = "Modifier Tone Letters" },
@@ -503,9 +506,11 @@ local blocks = allocate {
     ["samaritan"]                                   = { first = 0x00800, last = 0x0083F,              description = "Samaritan" },
     ["saurashtra"]                                  = { first = 0x0A880, last = 0x0A8DF,              description = "Saurashtra" },
     ["sharada"]                                     = { first = 0x11180, last = 0x111DF,              description = "Sharada" },
+    ["sharadasupplement"]                           = { first = 0x11B60, last = 0x11B7F,              description = "Sharada Supplement" },
     ["shavian"]                                     = { first = 0x10450, last = 0x1047F, otf="shaw",  description = "Shavian" },
     ["shorthandformatcontrols"]                     = { first = 0x1BCA0, last = 0x1BCAF,              description = "Shorthand Format Controls" },
     ["siddham"]                                     = { first = 0x11580, last = 0x115FF,              description = "Siddham" },
+    ["sidetic"]                                     = { first = 0x10940, last = 0x1095F,              description = "Sidetic" },
     ["sinhala"]                                     = { first = 0x00D80, last = 0x00DFF, otf="sinh",  description = "Sinhala" },
     ["sinhalaarchaicnumbers"]                       = { first = 0x111E0, last = 0x111FF,              description = "Sinhala Archaic Numbers" },
     ["smallformvariants"]                           = { first = 0x0FE50, last = 0x0FE6F,              description = "Small Form Variants" },
@@ -541,13 +546,15 @@ local blocks = allocate {
     ["taitham"]                                     = { first = 0x01A20, last = 0x01AAF,              description = "Tai Tham" },
     ["taiviet"]                                     = { first = 0x0AA80, last = 0x0AADF,              description = "Tai Viet" },
     ["taixuanjingsymbols"]                          = { first = 0x1D300, last = 0x1D35F,              description = "Tai Xuan Jing Symbols" },
+    ["taiyo"]                                       = { first = 0x1E6C0, last = 0x1E6FF,              description = "Tai Yo" },
     ["takri"]                                       = { first = 0x11680, last = 0x116CF,              description = "Takri" },
     ["tamil"]                                       = { first = 0x00B80, last = 0x00BFF, otf="taml",  description = "Tamil" },
     ["tamilsupplement"]                             = { first = 0x11FC0, last = 0x11FFF,              description = "Tamil Supplement" },
-    ["tangut"]                                      = { first = 0x17000, last = 0x187FF,              description = "Tangut" },
-    ["tangutsupplement"]                            = { first = 0x18D00, last = 0x18D7F,              description = "Tangut Supplement" },
-    ["tangutcomponents"]                            = { first = 0x18800, last = 0x18AFF,              description = "Tangut Components" },
     ["tangsa"]                                      = { first = 0x16A70, last = 0x16ACF,              description = "Tangsa" },
+    ["tangut"]                                      = { first = 0x17000, last = 0x187FF,              description = "Tangut" },
+    ["tangutcomponents"]                            = { first = 0x18800, last = 0x18AFF,              description = "Tangut Components" },
+    ["tangutcomponentssupplement"]                  = { first = 0x18D80, last = 0x18DFF,              description = "Tangut Components Supplement" },
+    ["tangutsupplement"]                            = { first = 0x18D00, last = 0x18D7F,              description = "Tangut Supplement" },
     ["telugu"]                                      = { first = 0x00C00, last = 0x00C7F, otf="telu",  description = "Telugu" },
     ["thaana"]                                      = { first = 0x00780, last = 0x007BF, otf="thaa",  description = "Thaana" },
     ["thai"]                                        = { first = 0x00E00, last = 0x00E7F, otf="thai",  description = "Thai" },
@@ -555,6 +562,7 @@ local blocks = allocate {
     ["tifinagh"]                                    = { first = 0x02D30, last = 0x02D7F, otf="tfng",  description = "Tifinagh" },
     ["tirhuta"]                                     = { first = 0x11480, last = 0x114DF,              description = "Tirhuta" },
     ["todhri"]                                      = { first = 0x105C0, last = 0x105FF,              description = "Todhri" },
+    ["tolongsiki"]                                  = { first = 0x11DB0, last = 0x11DEF,              description = "Tolong Siki" },
     ["toto"]                                        = { first = 0x1E290, last = 0x1E2BF,              description = "Toto" },
     ["transportandmapsymbols"]                      = { first = 0x1F680, last = 0x1F6FF,              description = "Transport and Map Symbols" },
     ["tulutigalari"]                                = { first = 0x11380, last = 0x113FF,              description = "Tulu-Tigalari" },
@@ -1738,12 +1746,22 @@ do
     local emoji      = { }
     characters.emoji = emoji
 
-local cache = setmetatable({ }, { __mode = "k" } )
+    local cache = setmetatable({ }, { __mode = "k" } )
+
+    local crap    = lpeg.P("e") * lpeg.R("09","..","09")^1 * lpeg.P(" ")^1
+    local replace = lpeg.replacer {
+        [crap] = "",
+        ["#"]  = "hash",
+        ["*"]  = "asterisk",
+        ["“"]  = "",
+        ["”"]  = "",
+    }
 
     function emoji.resolve(name)
         if not hash then
             data, hash = load()
         end
+        name = lpegmatch(replace,name) or name
         local h = hash[name]
         if h then
             return h

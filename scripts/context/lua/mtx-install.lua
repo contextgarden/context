@@ -27,7 +27,7 @@ local helpinfo = [[
     <flag name="install"><short>install context</short></flag>
     <flag name="update"><short>update context</short></flag>
     <flag name="erase"><short>wipe the cache</short></flag>
-    <flag name="identify"><short>create list of files</short></flag>
+    <flag name="identify"><short>create list of files (be in tex root)</short></flag>
     <flag name="secure"><short>use curl for https</short></flag>
    </subcategory>
   </category>
@@ -641,7 +641,7 @@ function install.update()
 
     report("")
     for i=1,#status do
-        report("%-20s : %4i files with %9i bytes installed",unpack(status[i]))
+        report("%-25s : %4i files with %9i bytes installed",unpack(status[i]))
     end
     report("")
     disclaimer()

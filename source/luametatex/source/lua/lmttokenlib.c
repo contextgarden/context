@@ -1415,7 +1415,7 @@ static int tokenlib_scanskip(lua_State *L)
     saved_tex_scanner texstate = tokenlib_aux_save_tex_scanner();
     int mu = lua_toboolean(L, 1) ? muglue_val_level : glue_val_level;
     int eq = lua_toboolean(L, 2);
-    halfword v = tex_scan_glue(mu, eq, 0);
+    halfword v = tex_scan_glue(mu, eq, 0, NULL);
     lmt_push_node_fast(L, v);
     tokenlib_aux_unsave_tex_scanner(texstate);
     return 1;
@@ -1427,7 +1427,7 @@ static int tokenlib_scanglue(lua_State *L)
     int mu = lua_toboolean(L, 1) ? muglue_val_level : glue_val_level;
     int eq = lua_toboolean(L, 2);
     int t  = lua_toboolean(L, 3);
-    halfword v = tex_scan_glue(mu, eq, 0);
+    halfword v = tex_scan_glue(mu, eq, 0, NULL);
     tokenlib_aux_unsave_tex_scanner(texstate);
     if (t) {
         lua_createtable(L, 5, 0);

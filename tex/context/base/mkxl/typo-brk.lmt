@@ -73,6 +73,7 @@ local new_penalty        = nodepool.penalty
 local new_glue           = nodepool.glue
 local new_disc           = nodepool.disc
 local new_wordboundary   = nodepool.wordboundary
+local new_penalizedglue  = nodepool.penalizedglue
 
 local nodecodes          = nodes.nodecodes
 local kerncodes          = nodes.kerncodes
@@ -114,21 +115,32 @@ end
 
 -- todo: use boundaries
 
+local penalized = false  experiments.register("typesetters.breakpoints.penalized", function(v) penalized = v end)
+
 local function insert_break(head,start,stop,before,after,kern)
     if not kern then
-        local p = new_penalty(before)
-        local g = new_glue()
-        setattrlist(p,start)
-        setattrlist(g,start)
-        insertnodebefore(head,start,p)
-        insertnodebefore(head,start,g)
+        if penalized then
+            local b = new_penalizedglue(before)
+            local a = new_penalizedglue(after)
+            setattrlist(b,start)
+            setattrlist(a,start)
+            insertnodebefore(head,start,b)
+            insertnodeafter(head,stop,a)
+        else
+            local p = new_penalty(before)
+            local g = new_glue()
+            setattrlist(p,start)
+            setattrlist(g,start)
+            insertnodebefore(head,start,p)
+            insertnodebefore(head,start,g)
+            p = new_penalty(after)
+            g = new_glue()
+            setattrlist(p,start)
+            setattrlist(g,start)
+            insertnodeafter(head,stop,g)
+            insertnodeafter(head,stop,p)
+        end
     end
-    local p = new_penalty(after)
-    local g = new_glue()
-    setattrlist(p,start)
-    setattrlist(g,start)
-    insertnodeafter(head,stop,g)
-    insertnodeafter(head,stop,p)
 end
 
 methods[1] = function(head,start,stop,settings,kern)

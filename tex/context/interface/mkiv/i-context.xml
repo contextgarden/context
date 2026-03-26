@@ -102,6 +102,7 @@
     <cd:interfacefile filename="i-help.xml"/>
     <cd:interfacefile filename="i-hiding.xml"/>
     <cd:interfacefile filename="i-highlight.xml"/>
+    <cd:interfacefile filename="i-horizontalbox.xml"/>
     <cd:interfacefile filename="i-hspace.xml"/>
     <cd:interfacefile filename="i-hyphenation.xml"/>
     <cd:interfacefile filename="i-imposition.xml"/>
@@ -278,6 +279,7 @@
     <cd:interfacefile filename="i-variables.xml"/>
     <cd:interfacefile filename="i-verbatim.xml"/>
     <cd:interfacefile filename="i-version.xml"/>
+    <cd:interfacefile filename="i-verticalbox.xml"/>
     <cd:interfacefile filename="i-viewerlayer.xml"/>
     <cd:interfacefile filename="i-visualizer.xml"/>
     <cd:interfacefile filename="i-vspace.xml"/>

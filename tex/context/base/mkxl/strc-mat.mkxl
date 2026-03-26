@@ -853,13 +853,13 @@
      \fi
    \fi}
 
-\permanent\tolerant\protected\def\qedhere[#1]%
+\permanent\tolerant\protected\def\strc_math_qed_here[#1]%
   {\ifconditional\csname\??constructionclosesymbol\currentconstruction\endcsname
      \global\csname\??constructionclosesymbol\currentconstruction\endcsname\conditionalfalse
      \edef\p_strc_constructions_closesymbol{\constructionparameter\c!closesymbol}%
      \ifempty\p_strc_constructions_closesymbol \else
        \expanded
-         {\texthere[\ifparameter#1\or#1\else\v!right\fi]}%
+         {\strc_math_text_here[\ifparameter#1\or#1\else\v!right\fi]}%
          {\p_strc_constructions_closesymbol}%
      \fi
    \fi}
@@ -1302,16 +1302,20 @@
      \strc_math_pickup_again
    \fi}
 
-\ifdefined\alignhere \else \aliased\let\alignhere\relax \fi
-\ifdefined\texthere  \else \aliased\let\texthere \relax \fi
-\ifdefined\skiphere  \else \aliased\let\skiphere \relax \fi
-\ifdefined\breakhere \else \aliased\let\breakhere\relax \fi
+\ifdefined\alignhere \else \aliased\let\alignhere \relax \fi
+\ifdefined\texthere  \else \aliased\let\texthere  \relax \fi
+\ifdefined\skiphere  \else \aliased\let\skiphere  \relax \fi
+\ifdefined\breakhere \else \aliased\let\breakhere \relax \fi
+\ifdefined\numberhere\else \aliased\let\numberhere\relax \fi
+\ifdefined\qedhere   \else \aliased\let\qedhere   \relax \fi
 
 \appendtoks % must move to alignment
-    \enforced\let\alignhere\strc_math_align_here
-    \enforced\let\breakhere\strc_math_break_here
-    \enforced\let\skiphere \strc_math_skip_here
-    \enforced\let\texthere \strc_math_text_here
+    \enforced\let\alignhere \strc_math_align_here
+    \enforced\let\breakhere \strc_math_break_here
+    \enforced\let\skiphere  \strc_math_skip_here
+    \enforced\let\texthere  \strc_math_text_here
+    \enforced\let\numberhere\strc_math_number_here
+    \enforced\let\qedhere   \strc_math_qed_here
   % \global\c_strc_math_aligned_here\conditionalfalse
 \to \everymathematics
 
@@ -2051,7 +2055,9 @@
   {\c_strc_formulas_in_sub\conditionalfalse
    \endgroup}
 
-\permanent\tolerant\protected\def\numberhere[#1]%
+%D Watch out, here grouping can backfire on us!
+
+\permanent\tolerant\protected\def\strc_math_number_here[#1]%
   {\begingroup
    \attribute\mathblobattribute\attributeunsetvalue
    \dostarttaggednodetail\t!formulacaption
@@ -2062,7 +2068,6 @@
    %
    \glettonothing\currentplaceformulareference
    \glettonothing\currentplaceformulasuffix
-   %
    \ifparameter#1\orelse\ifhastok={#1}%
      \strc_formulas_set_place_parameters{#1}%
    \else
@@ -2079,15 +2084,41 @@
        \c_strc_formulas_place_number_mode
        \currentplaceformulareference
    \fi
-   \texthere
-     [\ifcstok{\formulaparameter\c!location}\v!left\v!left\else\v!right\fi]%
-     {\ifconditional\c_strc_formulas_in_sub
-        \strc_formulas_handle_sub_numbering
-      \else
-        \strc_formulas_handle_numbering
-      \fi}%
+   %
+   % Grouping interferes with appending the middle:
+   %
+   %  \texthere[left]{YES}\numberhere % works
+   %  \numberhere\texthere[left]{NOP} % fails
+   %
+ % \strc_math_text_here
+ %   [\ifcstok{\formulaparameter\c!location}\v!left\v!left\else\v!right\fi]%
+ %   {\ifconditional\c_strc_formulas_in_sub
+ %      \strc_formulas_handle_sub_numbering
+ %    \else
+ %      \strc_formulas_handle_numbering
+ %    \fi}%
+ % \dostoptagged
+ % \endgroup
+   %
+   % So instead we do this (maybe we need a key to \local..box for it):
+   %
+   \global\setbox\globalscratchbox\hbox\bgroup
+     \ifconditional\c_strc_formulas_in_sub
+       \strc_formulas_handle_sub_numbering
+     \else
+       \strc_formulas_handle_numbering
+     \fi
+   \egroup
    \dostoptagged
-   \endgroup}
+   \endgroup
+   \strc_math_text_here
+      [\ifcstok{\formulaparameter\c!location}\v!left\v!left\else\v!right\fi]%
+      {\unhbox\globalscratchbox}%
+   %
+   % We're done. We actually can \s!retain but that needs to be integrated
+   % as an option in typo-lbx.mkxl first.
+   %
+   }
 
 % to be checked
 

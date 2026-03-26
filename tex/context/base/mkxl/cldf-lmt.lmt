@@ -246,8 +246,78 @@ implement {
     end,
 }
 
+local function somevalue(b,what)
+    local name = scanstring()
+    if name then
+        local a = arrays[name]
+        if a then
+            local nx = a.nx
+            local ny = a.ny
+            local d  = a
+            if ny then
+                d = d[scaninteger()]
+            end
+            local x = scaninteger()
+            if b == "value" then
+                local code = a.code
+                if code == float_code then
+                    context("%.99g",d[x])
+                else
+                    return code, d[x]
+                end
+            else
+                local v = a.scanner()
+                if what == 0 then
+                    d[x] = v
+                elseif what == 1 then
+                    local dx = d[x]
+                    if not dx then
+                        d[x] = v
+                    elseif v > dx then
+                        d[x] = v
+                    end
+                elseif what == 2 then
+                    local dx = d[x]
+                    if not dx then
+                        d[x] = v
+                    elseif v < dx then
+                        d[x] = v
+                    end
+                end
+            end
+        end
+    end
+end
+
 implement {
     name    = "arrayvalue",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
+        return somevalue(b,0)
+    end
+}
+
+implement {
+    name    = "arraymaxvalue",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
+        return somevalue(b,1)
+    end
+}
+
+implement {
+    name    = "arrayminvalue",
+    public  = true,
+    usage   = "value",
+    actions = function(b)
+        return somevalue(b,2)
+    end
+}
+
+implement {
+    name    = "arraysize",
     public  = true,
     usage   = "value",
     actions = function(b)
@@ -261,20 +331,10 @@ implement {
                 if ny then
                     d = d[scaninteger()]
                 end
-                local x = scaninteger()
-                if b == "value" then
-                    local code = a.code
-                    if code == float_code then
-                        context("%.99g",d[x])
-                    else
-                        return code, d[x]
-                    end
-                else
-                    d[x] = a.scanner()
-                end
+                return code, #d
             end
         end
-    end,
+    end
 }
 
 implement {

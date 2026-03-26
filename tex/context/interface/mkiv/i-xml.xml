@@ -688,7 +688,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xmlflush" level="style" category="xml" file="lxml-ini.mkiv">
+    <cd:command name="xmlflush" level="style" category="xml" file="lxml-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-node"/>
         </cd:arguments>
@@ -1044,7 +1044,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="xmltofile" level="style" category="xml" file="lxml-ini.mkiv">
+    <cd:command name="xmltofile" level="style" category="xml" file="lxml-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-node"/>
             <cd:resolve name="argument-lpath"/>
@@ -1212,7 +1212,7 @@
 
     <!-- general setup -->
 
-    <cd:command name="setupxml" level="style" category="xml" file="lxml-ini.mkiv">
+    <cd:command name="setupxml" level="style" category="xml" file="lxml-ini.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="default">

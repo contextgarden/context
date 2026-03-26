@@ -887,7 +887,7 @@ static halfword tex_aux_fraction_rule(scaled width, scaled height, halfword att,
     if (callback_id > 0) {
         lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "ddddN->N", math_rules_mode_par ? ruletype : normal_rule_subtype, tex_fam_fnt(fam, size), width, height, att, &rule);
         if (rule && node_type(rule) != hlist_node) {
-            rule = tex_hpack(rule, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+            rule = tex_hpack(rule, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
             node_subtype(rule) = math_rule_list;
             tex_attach_attribute_list_attribute(rule, att);
          }
@@ -1474,7 +1474,7 @@ halfword tex_make_extensible(halfword fnt, halfword chr, scaled target, scaled m
      // if (1) {
      //     halfword b;
      //     if (horizontal) {
-     //         b = tex_hpack(box_list(box), target, packing_exactly, (singleword) math_direction_par, holding_none_option);
+     //         b = tex_hpack(box_list(box), target, packing_exactly, (singleword) math_direction_par, holding_none_option, null, null);
      //     } else {
      //         b = tex_vpack(box_list(box), target, packing_exactly, max_dimension, (singleword) math_direction_par, holding_none_option);
      //     }
@@ -1569,6 +1569,8 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
     int isscaled = 0;
     int shrink = flat && has_noad_option_shrink(target);
     int stretch = flat && has_noad_option_stretch(target);
+    int large_attempt = 0;
+    int count = 0;
     /*tex to save the current attribute list */
     halfword att = null;
     if (extremes) {
@@ -1612,11 +1614,11 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         } else {
             /*tex largest height-plus-depth so far */
             scaled besttarget = 0;
-            int large_attempt = 0;
+         // int large_attempt = 0;
             /*tex |z| runs through font family members */
             int curfam = delimiter_small_family(delimiter);
             int curchr = 0;
-            int count = 0;
+         // int count = 0;
             int prvfnt = null_font;
             int prvchr = 0;
             nxtchr = delimiter_small_character(delimiter);
@@ -1757,7 +1759,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
                     goto FOUND;
                 } else {
                     /*tex
-                        We can out of variants in the small fam so let's consult the larger fam
+                        We ran out of variants in the small fam so let's consult the larger fam
                         now instead.
                     */
                     large_attempt = 1;
@@ -1768,6 +1770,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
         }
     }
   FOUND:
+ // printf(">> %i %i\n", large_attempt, count);
     if (delimiter) {
         /*tex
             The builder below sets the list if needed and we dereference later because otherwise
@@ -1944,7 +1947,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
         /*tex When the next two are not seen we can wipe att so we reserve by bump! */
         add_attribute_reference(att);
         if (node_type(box) == vlist_node) {
-            box = tex_hpack(box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+            box = tex_hpack(box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
             node_subtype(box) = subtype;
             tex_attach_attribute_list_attribute(box, att);
             head = box_list(box);
@@ -1979,7 +1982,7 @@ static halfword tex_aux_rebox(halfword box, scaled width, halfword size)
             tex_attach_attribute_list_attribute(right, att);
             tex_couple_nodes(left, head);
             tex_couple_nodes(tex_tail_of_node_list(head), right);
-            box = tex_hpack(left, width, packing_exactly, direction_unknown, holding_none_option, box_limit_none);
+            box = tex_hpack(left, width, packing_exactly, direction_unknown, holding_none_option, box_limit_none, null, null);
             tex_attach_attribute_list_attribute(box, att);
             node_subtype(box) = subtype;
         }
@@ -2406,13 +2409,13 @@ static halfword tex_aux_clean_box(halfword n, int main_style, int style, quarter
         }
     }
     if (! list || node_type(list) == glyph_node) {
-        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
         tex_attach_attribute_list_copy(result, n);
     } else if (! node_next(list) && (node_type(list) == hlist_node || node_type(list) == vlist_node) && (box_shift_amount(list) == 0)) {
         /*tex It's already clean. */
         result = list;
     } else {
-        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+        result = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
         tex_attach_attribute_list_copy(result, n);
     }
     node_subtype(result) = subtype;
@@ -2660,7 +2663,7 @@ static void tex_aux_make_hextension(halfword target, int style, int size)
             delimiterwidth = radicalwidth;
         }
     }
-    delimiter = tex_hpack(delimiter, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    delimiter = tex_hpack(delimiter, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
     box_width(delimiter) = delimiterwidth;
     tex_attach_attribute_list_copy(delimiter, extensible);
     math_kernel_list(noad_nucleus(target)) = delimiter;
@@ -2696,7 +2699,7 @@ static halfword tex_aux_link_radical(halfword nucleus, halfword delimiter, halfw
 
 static void tex_aux_assign_radical(halfword target, halfword radical)
 {
-    halfword result = tex_hpack(radical, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    halfword result = tex_hpack(radical, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
     node_subtype(result) = math_radical_list;
     tex_attach_attribute_list_copy(result, target);
     math_kernel_list(noad_nucleus(target)) = result;
@@ -3110,7 +3113,7 @@ static inline halfword tex_aux_check_radical(halfword target, int stack, halfwor
                 } else {
                     return r;
                 }
-                r = tex_hpack(r, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                r = tex_hpack(r, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                 box_width(r) = noad_width(target);
                 tex_attach_attribute_list_copy(r, target);
             }
@@ -3760,7 +3763,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword source, halfwo
                 halfword kern = tex_new_kern_node(leftkern, horizontal_math_kern_subtype);
                 tex_attach_attribute_list_copy(kern, target);
                 tex_try_couple_nodes(kern, base);
-                base = tex_hpack(kern, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                base = tex_hpack(kern, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                 tex_attach_attribute_list_copy(base, target); /* needs checking */
                 basewidth = accentwidth;
                 box_width(base) = accentwidth;
@@ -3857,7 +3860,7 @@ static void tex_aux_do_make_math_accent(halfword target, halfword source, halfwo
         }
         box_width(result) += overshoot;
         if (node_type(result) == vlist_node) {
-            result = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+            result = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
             tex_attach_attribute_list_copy(result, target);
             node_subtype(result) = math_accent_list;
         }
@@ -4008,7 +4011,7 @@ static void tex_aux_wrap_fraction_result(halfword target, int style, int size, h
         tex_couple_nodes(fraction, right);
         fraction = left;
     }
-    result = tex_hpack(fraction, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    result = tex_hpack(fraction, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
     tex_attach_attribute_list_copy(result, target); /* needs checking */
     /*tex There can also be a nested one: */
     node_subtype(result) = math_fraction_list;
@@ -5264,7 +5267,7 @@ static halfword tex_aux_combine_script(halfword target, halfword width, halfword
     if (post) {
         tex_couple_nodes(*k2, post);
     }
-    post = tex_hpack(*k1, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+    post = tex_hpack(*k1, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
     tex_attach_attribute_list_copy(*k1, target);
     tex_attach_attribute_list_copy(*k2, target);
     tex_attach_attribute_list_copy(post, target);
@@ -6134,7 +6137,7 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
         if (list) {
             /*tex We want to keep the size for tracing! */
             halfword overshoot = box_width(primedata.box) - box_width(postsubdata.box);
-            halfword primebox = tex_hpack(primedata.box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+            halfword primebox = tex_hpack(primedata.box, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
             tex_attach_attribute_list_copy(primebox, primedata.box);
             box_width(primebox) = 0;
             tex_couple_nodes(tex_tail_of_node_list(list), primebox);
@@ -6962,7 +6965,7 @@ static halfword tex_aux_check_nucleus_complexity(halfword target, scaled *italic
                     int unpack = tex_math_has_class_option(node_subtype(target), unpack_class_option) || has_noad_option_unpacklist(target);
                     halfword result = tex_mlist_to_hlist(list, unpack, style, unset_noad_class, unset_noad_class, kerns, m_to_h_sublist); /*tex Here we're nesting. */
                     tex_aux_set_current_math_size(style);
-                    package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                    package = tex_hpack(result, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                     if (ghost) {
                         noad_class_left(target) = (singleword) cur_list.math_begin;
                         noad_class_right(target) = (singleword) cur_list.math_end;
@@ -7351,7 +7354,7 @@ static halfword tex_aux_check_source(halfword current, halfword list, int repack
                         tex_print_format("%l[math: packing due to source field %D]", noad_source(current));
                         tex_end_diagnostic();
                     }
-                    list = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none);
+                    list = tex_hpack(list, 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                     tex_attach_attribute_list_copy(list, current);
                     box_source_anchor(list) = noad_source(current);
                     noad_source(current) = 0;

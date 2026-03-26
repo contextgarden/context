@@ -116,6 +116,7 @@
    \c!compact        =preset:\s!default,
    \c!metadata       =\v!page, % page | document | yes | no
    \c!cmyk           =,
+   \c!gray           =,
    \c!crop           =\v!yes,
    \c!descriptiontext={\externalfigureparameter\c!alternativetext},
    \c!alternativetext=,
@@ -339,6 +340,7 @@
         resolution   {\externalfigureparameter\c!resolution}%
         color        {\externalfigureparameter\c!color}% unprocessed raw key
         cmyk         {\externalfigureparameter\c!cmyk}% kind of special
+        gray         {\externalfigureparameter\c!gray}% kind of special
         arguments    {\externalfigureparameter\c!arguments}% used for converters
         repeat       {\externalfigureparameter\c!repeat}%
         transform    {\externalfigureparameter\c!transform}%

@@ -82,17 +82,23 @@ local function stop_run()
     end
 end
 
-local function start_shipout_page()
-    synctex.start()
+-- watch out for synctex here:
+
+local function start_page_number()
+end
+
+local function stop_page_number()
+end
+
+function callbacks.functions.start_page_number()
     logs.start_page_number()
 end
 
-local function stop_shipout_page()
+function callbacks.functions.stop_page_number()
     logs.stop_page_number()
     for i=1,#pageactions do
         pageactions[i]()
     end
-    synctex.stop()
 end
 
 local function report_output_pages()
@@ -160,32 +166,19 @@ appendaction(wrapupactions,"system",synctex.wrapup)
 callbacks.register('start_run',               start_run,           "actions performed at the beginning of a run")
 callbacks.register('stop_run',                stop_run,            "actions performed at the end of a run")
 
----------.register('show_open',               show_open,           "actions performed when opening a file")
----------.register('show_close',              show_close,          "actions performed when closing a file")
-
 callbacks.register('report_output_pages',     report_output_pages, "actions performed when reporting pages")
 callbacks.register('report_output_log',       report_output_log,   "actions performed when reporting log file")
 
----------.register('start_page_number',       start_shipout_page,  "actions performed at the beginning of a shipout")
----------.register('stop_page_number',        stop_shipout_page,   "actions performed at the end of a shipout")
-
-callbacks.register('start_page_number',       function() end,      "actions performed at the beginning of a shipout")
-callbacks.register('stop_page_number',        function() end,      "actions performed at the end of a shipout")
+callbacks.register('start_page_number',       start_page_number,   "actions performed at the beginning of a shipout")
+callbacks.register('stop_page_number',        stop_page_number,    "actions performed at the end of a shipout")
 
 callbacks.register('process_input_buffer',    false,               "actions performed when reading data")
 callbacks.register('process_output_buffer',   false,               "actions performed when writing data")
 
 callbacks.register("pre_dump",                pre_dump_actions,    "lua related finalizers called before we dump the format") -- comes after \everydump
 
--- finish_synctex might go away (move to wrapup_run)
-
 callbacks.register("finish_synctex",          wrapup_synctex,      "rename temporary synctex file")
 callbacks.register('wrapup_run',              wrapup_run,          "actions performed after closing files")
-
--- temp hack for testing:
-
-callbacks.functions.start_page_number = start_shipout_page
-callbacks.functions.stop_page_number  = stop_shipout_page
 
 -- an example:
 

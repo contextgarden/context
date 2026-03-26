@@ -607,6 +607,7 @@
                 <cd:constant type="sym"/>
                 <cd:constant type="ran"/>
                 <cd:constant type="mar"/>
+                <cd:constant type="txt"/>
             </cd:keywords>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
@@ -640,7 +641,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="upcomingnofitems" file="strc-itm.mklx">
+    <cd:command name="upcomingnofitems" level="system" category="structure" file="strc-itm.mklx">
         <cd:arguments>
             <cd:resolve name="argument-name"/>>
         </cd:arguments>

@@ -181,7 +181,7 @@ static void enginelib_show_help(void)
         "   or: " luametatex_name_lowercase " --lua=FILE [OPTION]... \\FIRST-LINE\n"
         "   or: " luametatex_name_lowercase " --lua=FILE [OPTION]... &FMT ARGS\n"
         "\n"
-        "Run " luametatex_name_camelcase " on TEXNAME, usually creating TEXNAME.pdf. Any remaining COMMANDS"
+        "Run " luametatex_name_camelcase " on TEXNAME, usually creating TEXNAME.pdf. Any remaining COMMANDS\n"
         "are processed as luatex input, after TEXNAME is read.\n"
         "\n"
         "Alternatively, if the first non-option argument begins with a backslash,\n"

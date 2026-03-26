@@ -404,10 +404,7 @@ typedef enum boundarychar_codes {
 /*tex
     These font parameters could be adapted at runtime but one should really wonder if that is such
     a good idea nowadays.
- */
-
-//define set_font_parameter(f,n,b)         { if (font_parameter_count(f)      < n) { tex_set_font_parameters(f, n);      } font_parameter(f, n)      = b; }
-// # define set_font_math_parameter(f,n,b)    { if (font_math_parameter_count(f) < n) { tex_set_font_math_parameters(f, n); } font_math_parameter(f, n) = b; }
+*/
 
 extern void tex_set_font_parameters      (halfword f, int b);
 extern void tex_set_font_math_parameters (halfword f, int b);

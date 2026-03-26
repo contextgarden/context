@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupmetadata" file="scrn-ini.mkxl">
+    <cd:command name="setupmetadata" file="document" category="structure" file="scrn-ini.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="title">

@@ -96,7 +96,7 @@
 
 \let\pack_backgrounds_stop\relax
 
-\protected\def\pack_backgrounds_stop_indeed % we shoul duse the fast background variant of framed
+\protected\def\pack_backgrounds_stop_indeed % we should use the fast background variant of framed
   {\endgraf
    \removelastskip
    \strut
@@ -119,15 +119,16 @@
      \hskip\scratchdistance
      \inheritedbackgroundframed{\box\scratchboxone}%
    \else
-     \splitmaxdepth\boxmaxdepth
+     \splitmaxdepth\maxdepth
      \splittopskip\topskip
+     \clf_stripinserts\scratchboxone % no inserts in splits so ...
      \doloop
        {\ifzeropt\pagetotal % empty page
           \scratchdimen\textheight
           \backgroundsplitmode\plusone % split to max height
         \else
-          \setbox\scratchdimentwo\vbox{\backgroundparameter\c!before}%
-          \scratchdimen{\pagegoal-\ht\scratchdimentwo-\pagetotal}%
+          \setbox\scratchboxtwo\vbox{\backgroundparameter\c!before}%
+          \scratchdimen{\pagegoal-\ht\scratchboxtwo-\pagetotal}%
           \backgroundsplitmode\plustwo % split to partial height
         \fi
         \ifdim\scratchdimen<\zeropoint
@@ -136,15 +137,19 @@
         \advanceby\scratchdimen{-\backgroundparameter\c!topoffset-\backgroundparameter\c!bottomoffset}%
         \ifdim\scratchdimen>2\lineheight\relax % reasonable, will be configurable
           \ifdim\ht\scratchboxone>\scratchdimen % larger than page
-            \setbox\scratchdimentwo\vsplit\scratchboxone to \scratchdimen
+            \setbox\scratchboxtwo\vsplit\scratchboxone to \scratchdimen
           \else
-            \setbox\scratchdimentwo\box\scratchboxone
+            \setbox\scratchboxtwo\box\scratchboxone
             \backgroundsplitmode\zerocount % no split
           \fi
-          \setbox\scratchdimentwo\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
+          \setbox\scratchboxtwo\vbox \ifcase\backgroundsplitmode\or to \textheight \fi % max split
             {\vskip{\backgroundparameter\c!topoffset}% or \vkern
-             \unvcopy\scratchdimentwo
-             \prevdepth\dp\scratchdimentwo
+             %\unvcopy\scratchboxtwo
+             %\prevdepth\dp\scratchboxtwo
+             \scratchdepth\dp\scratchboxtwo
+             \unvbox\scratchboxtwo
+             \prevdepth\scratchdepth
+             %
              \obeydepth
              \vskip{\backgroundparameter\c!bottomoffset}% or \vkern
              \vfill}
@@ -158,7 +163,7 @@
             \ifnum\backgroundsplitmode=\plusthree
               \hskip\scratchdistance % new ** % or \hkern
             \fi
-            \inheritedbackgroundframed{\box\scratchdimentwo}%
+            \inheritedbackgroundframed{\box\scratchboxtwo}%
           \stoplinecorrection
           \ifcase\backgroundsplitmode % no split
             \backgroundparameter\c!after
@@ -171,9 +176,11 @@
         \ifdim\ht\scratchboxone>\zeropoint \else
           \exitloop
         \fi}%
+        \clf_unstripinserts % ... we flush them afterwards
    \fi
    \endgroup
    \endgraf}
+
 
 \protected\def\pack_backgrounds_stop_ignore
   {\endgroup

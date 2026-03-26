@@ -222,6 +222,7 @@ extern halfword tex_badness(
 # define min_scale_factor                           0 
 # define max_scale_factor                      100000  /*tex for now */
 # define default_space_factor                    1000
+# define default_space_penalty                      0
 # define space_factor_threshold                  2000
 # define default_tolerance                      10000
 # define default_hangafter                          1
@@ -831,6 +832,7 @@ typedef struct line_break_properties {
     halfword tracing_toddlers;
     halfword tracing_orphans;
     halfword tracing_passes;
+    halfword tracing_raggedness;
     halfword paragraph_direction;
     halfword paragraph_options;
     halfword parfill_left_skip;
@@ -897,12 +899,16 @@ typedef struct line_break_properties {
     halfword math_penalty_factor;
     halfword sf_factor;
     halfword sf_stretch_factor;
+    /* */
+    halfword raggedness;
+    halfword par_fill_mode;
 } line_break_properties;
 
 typedef struct balance_properties {
     halfword tracing_balancing;
     halfword tracing_fitness;
     halfword tracing_passes;
+    halfword tracing_raggedness;
     halfword pretolerance;
     halfword tolerance;
     halfword emergency_stretch;

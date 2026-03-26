@@ -181,6 +181,7 @@
                 <cd:parameter name="grid">
                     <cd:constant type="yes"/>
                     <cd:constant type="no" default="yes"/>
+                    <cd:constant type="snapping"/>
                     <cd:constant type="off"/>
                 </cd:parameter>
                 <cd:parameter name="textdistance">
@@ -229,6 +230,9 @@
                 </cd:parameter>
                 <cd:parameter name="rowdistance">
                     <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="snapping">
+                    <cd:resolve name="value-snapping"/>
                 </cd:parameter>
             </cd:assignments>
         </cd:arguments>
@@ -392,16 +396,16 @@
 
     <cd:command name="showmargins" level="document" category="layout" file="page-run.mkiv"/>
 
-    <cd:command name="spread" type="environment" level="document" category="layout" file="page-spr.mkiv"/>
+    <cd:command name="spread" type="environment" level="document" category="layout" file="page-spr.mkxl"/>
 
-    <cd:command name="doifelsetopofpage" level="system" category="layout" keywords="conditional" file="page-ini.mkiv">
+    <cd:command name="doifelsetopofpage" level="system" category="layout" keywords="conditional" file="page-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiftopofpageelse" level="system" category="layout" keywords="conditional" file="page-ini.mkiv">
+    <cd:command name="doiftopofpageelse" level="system" category="layout" keywords="conditional" file="page-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

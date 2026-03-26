@@ -168,6 +168,8 @@
 \definefilesynonym [type-imp-lato-nt.mkiv]                [type-imp-lato.mkiv]
 \definefilesynonym [type-imp-libertinus-nt.mkiv]          [type-imp-libertinus.mkiv]
 \definefilesynonym [type-imp-ebgaramond-nt.mkiv]          [type-imp-ebgaramond.mkiv]
+\definefilesynonym [type-imp-ebgaramond-eight.mkiv]       [type-imp-ebgaramond.mkiv]
+\definefilesynonym [type-imp-ebgaramond-twelve.mkiv]      [type-imp-ebgaramond.mkiv]
 \definefilesynonym [type-imp-erewhon-nt.mkiv]             [type-imp-erewhon.mkiv]
 \definefilesynonym [type-imp-kpfonts-nt.mkiv]             [type-imp-kpfonts.mkiv]
 \definefilesynonym [type-imp-concrete-nt.mkiv]            [type-imp-concrete.mkiv]

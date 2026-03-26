@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineinteraction" level="style" category="pdf" file="scrn-ini.mkvi">
+    <cd:command name="defineinteraction" level="style" category="pdf" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" level="style" category="pdf" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" level="style" category="pdf" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -122,13 +122,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupinteraction" variant="name" level="style" category="pdf" file="scrn-ini.mkvi">
+    <cd:command name="setupinteraction" variant="name" level="style" category="pdf" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="interaction" type="environment" level="system" category="pdf" file="scrn-ini.mkvi">
+    <cd:command name="interaction" type="environment" level="system" category="pdf" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="hidden"/>
@@ -137,7 +137,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setinteraction" level="system" category="pdf" file="scrn-ini.mkvi">
+    <cd:command name="setinteraction" level="system" category="pdf" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="hidden"/>
@@ -146,14 +146,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelselocation" level="system" category="pdf" keywords="conditional" file="scrn-ini.mkvi">
+    <cd:command name="doifelselocation" level="system" category="pdf" keywords="conditional" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doiflocationelse" level="system" category="pdf" keywords="conditional" file="scrn-ini.mkvi">
+    <cd:command name="doiflocationelse" level="system" category="pdf" keywords="conditional" file="scrn-ini.mklx">
         <cd:arguments>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>

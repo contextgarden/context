@@ -58,7 +58,7 @@
 
     <cd:command name="subparagraph" level="document" category="structure" file="strc-tag.mkxl"/>
 
-    <cd:command name="setupparagraphintro" level="style" category="structure" file="spac-par.mkiv">
+    <cd:command name="setupparagraphintro" level="style" category="structure" file="spac-par.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="reset"/>

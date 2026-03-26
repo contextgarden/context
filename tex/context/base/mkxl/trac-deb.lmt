@@ -122,7 +122,7 @@ function tracers.showlines(filename,linenumber,offset,luaerrorline)
                 return concat(result,"\n")
             end
         else
-            return "<empty file>"
+            return "<empty file or maybe a buffer>"
         end
     end
 end
@@ -199,6 +199,7 @@ function tracers.printerror(specification)
         local offset       = specification.offset or erroroffset
         local endoffile    = specification.endoffile
         local report       = errorreporter(luaerrorline)
+-- lastcontext = gsub(lastcontext,"\r","\n")
         if errortype == errorvalues.warning then
             report("warning error: %s",lasttexerror or "-")
             busy = false;
@@ -241,9 +242,14 @@ function tracers.printerror(specification)
             else
                 report("tex error on line %s in file %s: %s",linenumber,filename,lasttexerror)
                 if lastcontext then
+                    local lines = string.splitlines(lastcontext)
                     report_nl()
-                    report_str(lastcontext)
-                    report_nl()
+                    if lines and #lines > 0 then
+                        for i=1,#lines do
+                            report_str(lines[i]) -- ensures a proper crlf
+                        end
+                        report_nl()
+                    end
                 else
                     report_nl()
                  -- tex.showcontext()

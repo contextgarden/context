@@ -4,18 +4,18 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setoverloads" level="style" file="typo-ovl.mkxl">
+    <cd:command name="setoverloads" level="style" category="fonts" file="typo-ovl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registeroverloads" level="style" file="typo-ovl.mkxl">
+    <cd:command name="registeroverloads" level="style" category="fonts" file="typo-ovl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetoverloads" level="style" file="typo-ovl.mkxl"/>
+    <cd:command name="resetoverloads" level="style" category="fonts" file="typo-ovl.mkxl"/>
 
 </cd:interface>

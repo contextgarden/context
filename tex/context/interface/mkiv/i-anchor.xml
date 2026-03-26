@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineanchor" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="defineanchor" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -18,7 +18,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="anchor" level="document" category="graphics" file="pack-box.mkiv">
+    <cd:command name="anchor" level="document" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="syncanchor" file="anch-loc.mkxl">
+    <cd:command name="syncanchor" level="document" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -40,7 +40,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alignanchor" file="anch-loc.mkxl">
+    <cd:command name="alignanchor" level="document" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -55,7 +55,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="markanchor" file="anch-loc.mkxl">
+    <cd:command name="markanchor" level="document" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
@@ -63,62 +63,62 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlocalanchoring" file="anch-loc.mkxl"/>
+    <cd:command name="setlocalanchoring" level="document" category="graphics" file="anch-loc.mkxl"/>
 
-    <cd:command name="anchoring" type="environment" file="anch-loc.mkxl"/>
+    <cd:command name="anchoring" type="environment" level="document" category="graphics" file="anch-loc.mkxl"/>
 
-    <cd:command name="synchronizing" type="environment" file="anch-loc.mkxl"/>
+    <cd:command name="synchronizing" type="environment" level="document" category="graphics" file="anch-loc.mkxl"/>
 
-    <cd:command name="autosync" file="anch-loc.mkxl">
+    <cd:command name="autosync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathsync" file="anch-loc.mkxl">
+    <cd:command name="mathsync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mordsync" file="anch-loc.mkxl">
+    <cd:command name="mordsync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mrelsync" file="anch-loc.mkxl">
+    <cd:command name="mrelsync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mbinsync" file="anch-loc.mkxl">
+    <cd:command name="mbinsync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localanchors" type="environment" begin="push" end="pop" file="anch-loc.lmt"/>
+    <cd:command name="localanchors" type="environment" begin="push" end="pop" level="system" category="graphics" file="anch-loc.lmt"/>
 
-    <cd:command name="analyzelocalanchors" file="anch-loc.mkxl">
+    <cd:command name="analyzelocalanchors" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="synchronizelocalanchors" file="anch-loc.mkxl">
+    <cd:command name="synchronizelocalanchors" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlocalsyncanchor" file="anch-loc.mkxl">
+    <cd:command name="setlocalsyncanchor" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
@@ -126,7 +126,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlocalalignanchor" file="anch-loc.mkxl">
+    <cd:command name="setlocalalignanchor" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
@@ -141,7 +141,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setlocalmarkanchor" file="anch-loc.mkxl">
+    <cd:command name="setlocalmarkanchor" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
@@ -149,7 +149,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localanchorx" file="anch-loc.mkxl">
+    <cd:command name="localanchorx" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
@@ -157,7 +157,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localanchory" file="anch-loc.mkxl">
+    <cd:command name="localanchory" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
@@ -165,14 +165,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sync" file="anch-loc.mkxl">
+    <cd:command name="sync" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="async" file="anch-loc.mkxl">
+    <cd:command name="async" level="system" category="graphics" file="anch-loc.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="string-number"/>

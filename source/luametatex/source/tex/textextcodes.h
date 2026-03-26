@@ -26,6 +26,8 @@ extern void     tex_set_uc_code                (int n, halfword v, int gl);
 extern halfword tex_get_uc_code                (int n);
 extern void     tex_set_sf_code                (int n, halfword v, int gl);
 extern halfword tex_get_sf_code                (int n);
+extern void     tex_set_sp_code                (int n, halfword v, int gl);
+extern halfword tex_get_sp_code                (int n);
 extern void     tex_set_hc_code                (int n, halfword v, int gl);
 extern halfword tex_get_hc_code                (int n);
 extern void     tex_set_hm_code                (int n, halfword v, int gl);
@@ -36,6 +38,10 @@ extern void     tex_set_hj_code                (int l, int n, halfword v, int gl
 extern halfword tex_get_hj_code                (int l, int n);
 extern void     tex_set_cc_code                (int n, halfword v, int gl); /* can be always global */
 extern halfword tex_get_cc_code                (int n);
+
+extern halfword tex_get_sp_sf_code             (halfword chr);
+extern halfword tex_get_sp_sp_code             (halfword chr);
+void            tex_get_sp_codes               (halfword chr, halfword *sf, halfword *sp);
 
 extern void     tex_initialize_xx_codes        (void);
 

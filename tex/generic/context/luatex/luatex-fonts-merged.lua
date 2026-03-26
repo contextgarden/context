@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-02-19 11:44
+-- merge date  : 2026-03-25 17:49
 
 do -- begin closure to overcome local limits and interference
 
@@ -12841,13 +12841,21 @@ local function loadtables(f,specification,offset)
   local checksum=readushort(f)*0x10000+readushort(f)
   local offset=readulong(f)
   local length=readulong(f)
-  if offset+length>filesize then
-   report("bad %a table in file %a",tag,basename)
+  local error=nil
+  if offset>filesize then
+   error="bad offset"
+  elseif offset+length>filesize then
+   error="bad length"
+  end
+  if error then
+   report("corrupt %a table in file %a, %s, offset %i, length %i, filesize %i",
+    tag,basename,error,offset,length,filesize)
   end
   tables[tag]={
    checksum=checksum,
    offset=offset,
    length=length,
+   error=error,
   }
  end
  fontdata.foundtables=sortedkeys(tables)

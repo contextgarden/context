@@ -96,7 +96,7 @@
 %    \localhangafter \scratchcounter
 %    \typo_par_insert_trace
 %    \ifcstok{\parinsertparameter\c!option}\v!depth
-%      \paroptions\plusone % todo: symbolic
+%      \optionspar\plusone % todo: symbolic
 %    \fi
 %    \endgroup}
 
@@ -132,7 +132,7 @@
 %       \localhangafter \scratchcounter
 %       \typo_par_insert_trace
 %       \ifcstok{\parinsertparameter\c!option}\v!depth
-%         \paroptions\plusone % todo: symbolic
+%         \optionspar\plusone % todo: symbolic
 %       \fi
 %       \endgroup}\hbox}
 
@@ -171,7 +171,7 @@
       \localhangafter \scratchcounter
       \typo_par_insert_trace
       \ifcstok{\parinsertparameter\c!option}\v!depth
-        \paroptions\plusone % todo: symbolic
+        \optionspar\plusone % todo: symbolic
       \fi
       % We use an "always" local par node that gets injected after and before
       % the hang related anchors. Par nodes flagged as such are ignored by the

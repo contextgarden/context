@@ -32,7 +32,7 @@
 \newdimension\d_spac_total
 \newinteger  \c_spac_vspacing_ignore_parskip
 
-\newconditional \c_spac_delay
+%newconditional \c_spac_delay
 
 % \enableexperiments[vspacing.delay]
 
@@ -140,16 +140,18 @@
    \edef\m_spac_vertical_baseline_shrink_factor {\interlinespaceparameter\c!shrink }%
    % often topskip does more bad than good, so:
    \ifx\topskipfactor\v!height
+     \checkbodyfontstate
      \let\topskipfactor\strutheightfactor
      \c_space_topskip_by_line\conditionaltrue
    \else
      \c_space_topskip_by_line\conditionalfalse
    \fi
    \ifx\maxdepthfactor\v!depth
+     \checkbodyfontstate
      \let\maxdepthfactor\strutdepthfactor
-     \c_space_maxdepth_by_line\conditionalfalse
-   \else
      \c_space_maxdepth_by_line\conditionaltrue
+   \else
+     \c_space_maxdepth_by_line\conditionalfalse
    \fi
    \updatelinesnapping
    \setfontparameters % redundant, can be \setstrut, test first
@@ -370,23 +372,27 @@
 \permanent\protected\def\hglue  {\afterassignment\spac_helpers_hglue_indeed\s_spac_lastskip=}
 \permanent\protected\def\topglue{\par\ifvmode\nointerlineskip\vglue-\topskip\vglue\fi}
 
-\def\spac_helpers_vglue_indeed
+\def\spac_helpers_vglue_indeed % never used, something plain tex
   {\par
    \ifvmode
+     \begingroup
      \d_spac_prevdepth\prevdepth
      \hrule\s!height\zeropoint
      \nobreak
      \vskip\s_spac_lastskip
      \prevdepth\d_spac_prevdepth
+     \endgroup
    \fi}
 
-\def\spac_helpers_hglue_indeed
+\def\spac_helpers_hglue_indeed % never used, something plain tex
   {\dontleavehmode
+   \begingroup
    \c_spac_spacefactor\spacefactor
    \vrule\s!width\zeropoint
    \nobreak
    \hskip\s_spac_lastskip
-   \spacefactor\c_spac_spacefactor}
+   \spacefactor\c_spac_spacefactor
+   \endgroup}
 
 %D We adapt plain's \type {\removelastskip} a bit:
 
@@ -631,12 +637,15 @@
 % \permanent\protected\def\spac_trigger_page_builder
 %   {\pageboundary\zerocount\plustenthousand} % becomes a penalty (after triggering the callback) (experimental!)
 
+% \permanent\protected\def\spac_trigger_page_builder
+%   {\ifconditional\c_spac_delay
+%      \checkspacingbeforepar
+%    \else
+%      \pageboundary\zerocount\plustenthousand
+%    \fi}
+
 \permanent\protected\def\spac_trigger_page_builder
-  {\ifconditional\c_spac_delay
-     \checkspacingbeforepar
-   \else
-     \pageboundary\zerocount\plustenthousand
-   \fi}
+  {\pageboundary\zerocount\plustenthousand}
 
 \permanent\protected\def\spac_lines_stop_correction_normal
   {\spac_lines_stop_correction_box
@@ -854,25 +863,26 @@
      \ifdim\topskip<\minimumstrutheight
        \topskip\minimumstrutheight\relax
      \fi
-   \else
-     \ifdim\topskip<\strutheightfactor\openlineheight
-       \topskip\strutheightfactor\openlineheight\relax
-     \fi
+   \orelse\ifdim\topskip<\strutheightfactor\openlineheight
+     \topskip\strutheightfactor\openlineheight\relax
    \fi}
 
 % \permanent\protected\def\setmaxdepth
 %   {\maxdepth\systemmaxdepthfactor\globalbodyfontsize}
 
 \permanent\protected\def\setmaxdepth
-  {\maxdepth\systemmaxdepthfactor\globalbodyfontsize
+  {\maxdepth\systemmaxdepthfactor
+     \ifconditional\c_space_maxdepth_by_line
+       \openlineheight
+     \else
+       \globalbodyfontsize
+     \fi
    \ifdim\minimumstrutdepth>\zeropoint
      \ifdim\maxdepth<\minimumstrutdepth
-       \maxdepth\minimumstrutdepth\relax
+       \maxdepth\minimumstrutdepth
      \fi
-  \else
-     \ifdim\maxdepth<\strutdepthfactor\openlineheight
-       \maxdepth\strutdepthfactor\openlineheight\relax
-     \fi
+   \orelse\ifdim\maxdepth<\strutdepthfactor\openlineheight
+     \maxdepth\strutdepthfactor\openlineheight
    \fi}
 
 \newgluespec \usedbaselineskip  % These used to be \normal... but that isn't pretty

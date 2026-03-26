@@ -596,7 +596,7 @@ typedef enum skip_glue_codes_alias {
 # define glue_leader_ptr(a)    memone(a,5) /* not in spec */
 # define glue_font(a)          memtwo(a,5) /* not in spec */ /* when inter_math_skip_glue: parameter */
 # define glue_data(a)          memone(a,6) /* not in spec */ /* user field */
-# define glue_reserved(a)      memtwo(a,6) /* not in spec */ /* user field */
+# define glue_penalty(a)       memtwo(a,6) /* not in spec */
 # define glue_callback(a)      memone(a,7) /* not in spec */ /* flatten leaders */
 # define glue_belongs_to(a)    memtwo(a,7) /* not in spec */ /* balancing */
 
@@ -611,8 +611,10 @@ typedef enum glue_option_codes {
     glue_option_reset_discardable = 0x0040,
     glue_option_non_discardable   = 0x0080,
     glue_option_in_insert         = 0x0100,
-    glue_option_delay             = 0x0200,
+    glue_option_has_penalty       = 0x0200,
     glue_option_has_parskip       = 0x0400,
+    glue_option_ragged_done       = 0x0800,
+//  glue_option_delay             = 0x1000,
 } glue_option_codes;
 
 static inline void tex_set_glue_option    (halfword a, halfword r) { glue_options(a) = r; }
@@ -1040,46 +1042,49 @@ typedef enum list_balance_states {
 
 // todo: reorder memone and memtwo (but also check adjust then)
 
-# define box_node_size         18
-# define box_width(a)          memtwo(a,2)
-# define box_w_offset(a)       memone(a,2)
-# define box_depth(a)          memtwo(a,3)
-# define box_d_offset(a)       memone(a,3)
-# define box_height(a)         memtwo(a,4)
-# define box_h_offset(a)       memone(a,4)
-# define box_list(a)           memtwo(a,5)   /* 5 = list_offset */
-# define box_shift_amount(a)   memone(a,5)
-# define box_glue_order(a)     memtwo(a,6)
-# define box_glue_sign(a)      memone00(a,6)
-# define box_balance_state(a)  memone01(a,6)
-# define box_content_state(a)  memone02(a,6)
-# define box_anchoring(a)      memone03(a,6)
-# define box_glue_set(a)       dvalue(a,7)   /* So we reserve a whole memory word! */
-# define box_direction(a)      memtwo00(a,8) /* We could encode it as geometry but not now. */
-# define box_package_state(a)  memtwo01(a,8)
-# define box_options(a)        memtwo02(a,8)
-# define box_geometry(a)       memtwo03(a,8)
-# define box_orientation(a)    memone(a,8)   /* Also used for size in alignments. */
-# define box_x_offset(a)       memtwo(a,9)
-# define box_y_offset(a)       memone(a,9)
-# define box_pre_migrated(a)   memtwo(a,10)
-# define box_post_migrated(a)  memone(a,10)
-# define box_pre_adjusted(a)   memtwo(a,11)
-# define box_post_adjusted(a)  memone(a,11)
-# define box_source_anchor(a)  memtwo(a,12)
-# define box_target_anchor(a)  memone(a,12)
-# define box_anchor(a)         memtwo(a,13)
-# define box_index(a)          memone(a,13)
-# define box_except(a)         memtwo(a,14)
-# define box_exdepth(a)        memone(a,14)
-# define box_discardable(a)    memtwo(a,15)  /* internal usage */
-# define box_reserved(a)       memone(a,15)  /* internal usage */
-# define box_natural_height(a) memtwo(a,16)
-# define box_natural_depth(a)  memone(a,16)
-# define box_input_file(a)     memtwo(a,17)
-# define box_input_line(a)     memone(a,17)
-
-# define box_tail(a)          box_reserved(a) /* see alignments */
+# define box_node_size          19
+# define box_width(a)           memtwo(a,2)
+# define box_w_offset(a)        memone(a,2)
+# define box_depth(a)           memtwo(a,3)
+# define box_d_offset(a)        memone(a,3)
+# define box_height(a)          memtwo(a,4)
+# define box_h_offset(a)        memone(a,4)
+# define box_list(a)            memtwo(a,5)    /* 5 = list_offset */
+# define box_shift_amount(a)    memone(a,5)
+# define box_glue_order(a)      memtwo(a,6)
+# define box_glue_sign(a)       memone00(a,6)
+# define box_balance_state(a)   memone01(a,6)
+# define box_content_state(a)   memone02(a,6)
+# define box_anchoring(a)       memone03(a,6)
+# define box_glue_set(a)        dvalue(a,7)    /* So we reserve a whole memory word! */
+# define box_direction(a)       memtwo00(a,8)  /* We could encode it as geometry but not now. */
+# define box_package_state(a)   memtwo01(a,8)
+# define box_options(a)         memtwo02(a,8)
+# define box_geometry(a)        memtwo03(a,8)
+# define box_orientation(a)     memone(a,8)    /* Also used for size in alignments. */
+# define box_x_offset(a)        memtwo(a,9)
+# define box_y_offset(a)        memone(a,9)
+# define box_pre_migrated(a)    memtwo(a,10)
+# define box_post_migrated(a)   memone(a,10)
+# define box_pre_adjusted(a)    memtwo(a,11)
+# define box_post_adjusted(a)   memone(a,11)
+# define box_source_anchor(a)   memtwo(a,12)
+# define box_target_anchor(a)   memone(a,12)
+# define box_anchor(a)          memtwo(a,13)
+# define box_index(a)           memone(a,13)
+# define box_except(a)          memtwo(a,14)
+# define box_exdepth(a)         memone(a,14)
+# define box_discardable(a)     memtwo(a,15)   /* internal usage */
+# define box_tail(a)            memone(a,15)   /* internal usage, alignment */
+# define box_natural_height(a)  memtwo(a,16)
+# define box_natural_depth(a)   memone(a,16)
+# define box_input_file(a)      memtwo(a,17)
+# define box_input_line(a)      memone(a,17)
+# define box_short(a)           memtwo(a,18)   /* depends on subtype, here line */
+# define box_dimension_state(a) memone00(a,18) /* todo */
+# define box_leader_state(a)    memone01(a,18) /* todo */
+# define box_reserved_1(a)      memone02(a,18)
+# define box_reserved_2(a)      memone03(a,18)
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */
 
@@ -1120,12 +1125,12 @@ typedef enum package_states {
     /* maybe vcenter */
 } package_states;
 
-typedef enum package_dimension_states {
+typedef enum package_dimension_states { /* todo: own field */
     package_dimension_not_set  = 0x00,
-    package_dimension_size_set = 0x10, /* used in alignments */
+    package_dimension_size_set = 0x10,  /* used in alignments */
 } package_dimension_states;
 
-typedef enum package_leader_states { /* we can use one of the reserved */
+typedef enum package_leader_states {    /* todo: own field */
     package_u_leader_not_set = 0x00,
     package_u_leader_set     = 0x20,
     package_u_leader_delayed = 0x40,
@@ -2793,6 +2798,7 @@ typedef enum par_codes {                   /* extrahyphenpenalty : in parpass   
     par_single_line_penalty_code,
     par_hyphen_penalty_code,
     par_ex_hyphen_penalty_code,
+    par_par_fill_mode_code,
     par_n_of_codes,
 } par_codes;
 
@@ -2855,6 +2861,7 @@ static int par_category_to_codes[par_n_of_codes] = { /* explicit size is check *
     par_single_line_penalty_category, // par_single_line_penalty_code
     par_hyphen_penalty_category,      // par_hyphen_penalty_code
     par_hyphen_penalty_category,      // par_ex_hyphen_penalty_code
+    par_skip_category,                // par_fill_mode_code
 };
 
 typedef enum par_options {
@@ -2863,6 +2870,12 @@ typedef enum par_options {
     par_snap_option        = 0x04,
     par_always_option      = 0x08,
 } par_options;
+
+typedef enum par_fillmodes {
+    par_left_fill_mode  = 0x01,
+    par_right_fill_mode = 0x02,
+    par_both_fill_mode  = 0x03,
+} par_fillmodes;
 
 /*tex Make sure that |max_chain_size| is large enough to have this huge node! */
 
@@ -2939,7 +2952,7 @@ typedef enum par_options {
 # define par_right_twin_demerits(a)      memtwo(a,34)
 # define par_orphan_line_factors(a)      memone(a,34)
 # define par_line_snapping(a)            memtwo(a,35)
-# define par_reserved(a)                 memone(a,35)
+# define par_par_fill_mode(a)            memone(a,35) /* can be single */
 
 /*
     At some point we will have this (array with double values), depends on the outcome of an
@@ -3029,8 +3042,8 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define active_total_demerits(a)          memtwo(a,2)   /*tex the quantity that \TEX\ minimizes */
 # define active_short(a)                   memone(a,3)   /*tex |shortfall| of this line */
 # define active_glue(a)                    memtwo(a,3)   /*tex corresponding glue stretch or shrink */
-# define active_deficiency(a)              memone(a,4)   /* last line related, normally we can use the passive one */
-# define active_quality(a)                 memtwo(a,4)   /* last line related, normally we can use the passive one */
+# define active_deficiency(a)              memone(a,4)   /*tex last line related, normally we can use the passive one */
+# define active_quality(a)                 memtwo(a,4)   /*tex last line related, normally we can use the passive one */
 # define active_n_of_fitness_classes(a)    memone(a,5)
 # define active_hang_l_index(a)            memtwo0(a,5)
 # define active_hang_r_index(a)            memtwo1(a,5)
@@ -3038,8 +3051,7 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define active_page_number(a)             memone(a,1)
 # define active_page_height(a)             memone(a,2)
 
-//define passive_node_size                 13
-# define passive_node_size                 14
+# define passive_node_size                 15
 # define passive_fitness(a)                memone1(a,0)
 # define passive_prev_break(a)             memone(a,1)   /*tex points to passive node that should precede this one */
 # define passive_cur_break(a)              memtwo(a,1)   /*tex in passive node, points to position of this breakpoint */
@@ -3069,6 +3081,9 @@ static inline int  tex_par_to_be_set        (halfword state, halfword what) { re
 # define passive_hang_r_after(a)           memone1(a,13)
 # define passive_hang_l_index(a)           memtwo0(a,13)
 # define passive_hang_r_index(a)           memtwo1(a,13)
+
+# define passive_short(a)                  memone(a,14)
+# define passive_line_width(a)             memtwo(a,14)
 
 # define delta_node_size                   6
 # define delta_field_total_glue(d)         memone(d,1)

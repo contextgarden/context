@@ -144,6 +144,7 @@
      \edef\currentlocalboxeslocation{#1}%
      \typo_localboxes_localbox
         \s!index \c_typo_localboxes_index
+        % todo: use \s!retain so that we work over a group
         \bgroup
           \hpack
             \ifcstok{\localboxesparameter\c!repeat}\v!no
@@ -188,7 +189,6 @@
       \else
         \csname\??localboxeslocations\v!left\expandafter\endcsname
       \fi{#1}{\unhbox\nextbox}}}
-
 
 \permanent\tolerant\protected\def\localbox[#1]%
   {\typo_localboxes_box{#1}\hbox}

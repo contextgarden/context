@@ -156,24 +156,31 @@ local modes = {
     hkern         = 0x0000008,
     vglue         = 0x0000010,
     hglue         = 0x0000010,
+    sglue         = 0x0000010,
+    pglue         = 0x0000010,
     vpenalty      = 0x0000020,
     hpenalty      = 0x0000020,
 
     toddler       = 0x0000200,
+
+    short         = 0x0020000,
 }
 
 local filters = {
-    vglue        = 0x0001,
-    hglue        = 0x0002,
- -- mglue        = 0x0004,
-    vkern        = 0x0010,
-    hkern        = 0x0020,
- -- mkern        = 0x0040,
-    vpenalty     = 0x0100,
-    hpenalty     = 0x0200,
- -- mpenalty     = 0x0400,
-    toddler      = 0x1000,
-    continuation = 0x2000,
+    vglue        = 0x00001,
+    hglue        = 0x00002,
+ -- mglue        = 0x00004,
+    vkern        = 0x00010,
+    hkern        = 0x00020,
+ -- mkern        = 0x00040,
+    vpenalty     = 0x00100,
+    hpenalty     = 0x00200,
+ -- mpenalty     = 0x00400,
+    toddler      = 0x01000,
+    continuation = 0x02000,
+    short        = 0x04000,
+    sglue        = 0x08000,
+    pglue        = 0x10000,
 }
 
 visualizers.modes   = modes
@@ -869,14 +876,20 @@ local ruledpar do
 
     local p_cache         = caches["par"]
 
-    local getdirection    = nuts.getdirection
+    local getdirection        = nuts.getdirection
+    local getlocalparboxstate = nuts.getlocalparboxstate
 
     ruledpar = function(head,current,subtype)
         local what
         if subtype == hmodepar_code or subtype == vmodepar_code then
             what = getdirection(current) == r2l_code and "RLP" or "LRP"
         elseif subtype == localbox_code then
-            what = "BOX"
+            local l, m, r = getlocalparboxstate(current)
+            if l or m or r then
+                what = (l and "L" or "-") .. (m and "M" or "-") .. (r and "R" or "-")
+            else
+                what = "BOX"
+            end
         elseif subtype == parameter_code then
             what = "LOC"
         elseif subtype == localbreak_code then
@@ -986,6 +999,7 @@ local ruledbox do
 
     local b_cache = caches["box"]
     local o_cache = caches["origin"]
+    local s_cache = caches["short"]
 
     local getshift       = nuts.getshift
     local getorientation = nuts.getorientation
@@ -1008,7 +1022,7 @@ local ruledbox do
         return origin
     end)
 
-    ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent)
+    ruledbox = function(head,current,vertical,layer,what,simple,previous,trace_origin,parent,short)
         local wd, ht, dp = getwhd(current)
      -- local wd, ht, dp, shift, list = nuts.getlistdimensions(current) -- MAYBE
         local force_origin = wd == 0 or (dp + ht) == 0
@@ -1041,7 +1055,7 @@ local ruledbox do
                 b_cache[what] = this
             end
         end
-        local rest, more
+        local rest, less, more, oeps
         if force_origin then
             rest = emptyrule(wd,ht,dp) -- we accept some overhead
         elseif what == "_D_" then
@@ -1079,7 +1093,36 @@ local ruledbox do
 --     setattr(rest,a_tagged,0)
 -- end
         --
-        local info = setlink(this and copylist(this) or nil,rest,more)
+        if short then
+            local s = nuts.getshort(current)
+            if s and s ~= 0 and wd ~= 0 then
+                less = new_kern(-s)
+                more = userrule {
+                    width  = s,
+                    height = ht,
+                    depth  = dp,
+                    line   = 5*linewidth,
+                    type   = "box",
+            --                 dashed = 3*size,
+                }
+                local what = formatters[" %0.1f"](100 * (s < 0 and -s or s) / wd)
+                oeps = s_cache[what]
+                if not oeps then
+--                         local text = hpack_string(what,usedfont)
+                    oeps = hpack_string(what,usedfont)
+--                         oeps = setlink(new_kern(-getwidth(text)),text)
+                    setlisttransparency(oeps,"trace:s")
+--                         oeps = new_hlist(oeps)
+                    if crappytaggingmode then
+                        setattr(oeps,a_tagged,0)
+                    end
+                    s_cache[what] = oeps
+                end
+                oeps = copylist(oeps)
+            end
+        end
+        --
+        local info = setlink(this and copylist(this) or nil,rest,less,more,oeps)
         --
         setlisttransparency(info,"trace:s")
         info = new_hlist(info) -- important
@@ -1333,6 +1376,10 @@ local ruledglue, ruledmathglue, ruledspace do
                      or (vertical and g_cache_v)
                      or g_cache_h
         local amount  = f_amount(nobreak and "NB" or tags[subtype] or (vertical and "VS") or "HS",width*ptfactor)
+        local penalty = getpenalty(current)
+        if penalty then
+            amount = amount .. " " .. penalty
+        end
         local info    = cache[amount]
         if subtype == intermathskip_code then
             head = ruledmathglue(head,current)
@@ -2016,6 +2063,9 @@ do
         local hpenalty_code      <const> = filters.hpenalty
         local toddler_code       <const> = filters.toddler
         local continuation_code  <const> = filters.continuation
+        local short_code         <const> = filters.short
+        local sglue_code         <const> = filters.sglue
+        local pglue_code         <const> = filters.pglue
 
         local spaceskip_code     <const> = nodes.skipcodes.spaceskip
         local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
@@ -2208,12 +2258,29 @@ do
             elseif trace_glue then
                 local f = getattr(current,a_filter)
                 if f then
-                    if vertical then
-                        if (f & hglue_code) == hglue_code then
+--                     if vertical then
+--                         if (f & hglue_code) == hglue_code then
+--                             goto next
+--                         end
+--                     else
+--                         if (f & vglue_code) == vglue_code then
+--                             goto next
+--                         end
+--                     end
+                    if (f & hglue_code) == hglue_code then
+                        if vertical then
                             goto next
                         end
-                    else
-                        if (f & vglue_code) == vglue_code then
+                    elseif (f & vglue_code) == vglue_code then
+                        if not vertical then
+                            goto next
+                        end
+                    elseif (f & sglue_code) == sglue_code then
+                        if subtype ~= spaceskip_code and subtype ~= xspaceskip_code then
+                            goto next
+                        end
+                    elseif (f & pglue_code) == pglue_code then
+                        if not getpenalty(current) then
                             goto next
                         end
                     end
@@ -2295,7 +2362,9 @@ do
                     ruleddepth(current)
                 end
                 if trace_line and (subtype == linelist_code or subtype == rowlist_code) then
-                    head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent)
+                    local f = getattr(current,a_filter)
+                    local s = f and (f & short_code) == short_code
+                    head, current = ruledbox(head,current,false,l_line,"L__",trace_simple,previous,trace_origin,parent,s)
                 elseif trace_hbox then
                     head, current = ruledbox(head,current,false,l_hbox,"H__",trace_simple,previous,trace_origin,parent)
                 end

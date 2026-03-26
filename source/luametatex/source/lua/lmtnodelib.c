@@ -1283,7 +1283,7 @@ static int nodelib_direct_setattributelist(lua_State *L)
 /* node.direct.getpenalty */
 /* node.direct.setpenalty */
 
-# define getpenalty_usage (penalty_usage | disc_usage | math_node)
+# define getpenalty_usage (penalty_usage | disc_usage | math_node | glue_node)
 # define setpenalty_usage getpenalty_usage
 
 static int nodelib_direct_getpenalty(lua_State *L)
@@ -1300,6 +1300,13 @@ static int nodelib_direct_getpenalty(lua_State *L)
             case math_node:
                 lua_pushinteger(L, math_penalty(n));
                 break;
+            case glue_node:
+                if (tex_has_glue_option(n, glue_option_has_penalty)) {
+                    lua_pushinteger(L, glue_penalty(n));
+                    break;
+                } else {
+                    /* fall through */
+                }
             default:
                 lua_pushnil(L);
                 break;
@@ -1323,6 +1330,10 @@ static int nodelib_direct_setpenalty(lua_State *L)
                 break;
             case math_node:
                 math_penalty(n) = (halfword) luaL_optinteger(L, 2, 0);
+                break;
+            case glue_node:
+                glue_penalty(n) =  (halfword) luaL_optinteger(L, 2, 0);
+                glue_options(n) |= glue_option_has_penalty;
                 break;
         }
     }
@@ -2672,6 +2683,7 @@ static int nodelib_direct_setreplace(lua_State *L)
 /* split ifs for clarity .. compiler will optimize */
 
 # define getwidth_usage (hlist_usage | vlist_usage | unset_usage | align_record_usage | rule_usage | glue_usage | glue_spec_usage | glyph_usage | kern_usage | math_usage)
+# define getshort_usage hlist_usage
 
 static int nodelib_direct_getwidth(lua_State *L)
 {
@@ -2730,6 +2742,17 @@ static int nodelib_direct_getwidth(lua_State *L)
                 lua_pushnil(L);
                 break;
         }
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int nodelib_direct_getshort(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n && node_type(n) == hlist_node && node_subtype(n) == line_list) {
+        lua_pushinteger(L, box_short(n));
     } else {
         lua_pushnil(L);
     }
@@ -3900,7 +3923,7 @@ static int nodelib_direct_getdata(lua_State *L)
                 return 1;
             case glue_node:
                 lua_pushinteger(L, glue_data(n));
-                lua_pushinteger(L, glue_reserved(n));
+                lua_pushinteger(L, glue_penalty(n));
                 return 2;
             case boundary_node:
                 lua_pushinteger(L, boundary_data(n));
@@ -3943,7 +3966,7 @@ static int nodelib_direct_setdata(lua_State *L) /* data and value */
                 break;
             case glue_node:
                 glue_data(n) = lmt_tohalfword(L, 2);
-                glue_reserved(n) = lmt_opthalfword(L, 3, 0);
+                glue_penalty(n) = lmt_opthalfword(L, 3, 0);
                 break;
             case boundary_node:
                 boundary_data(n) = lmt_tohalfword(L, 2);
@@ -4789,6 +4812,7 @@ static int nodelib_direct_getparstate(lua_State *L)
                           lua_push_integer_at_key(L, shapingpenalty,                 tex_get_par_par(p, par_shaping_penalty_code));
                           lua_push_integer_at_key(L, emergencyextrastretch,          tex_get_par_par(p, par_emergency_extra_stretch_code));
                           lua_push_integer_at_key(L, linebreakchecks,                tex_get_par_par(p, par_line_break_checks_code));
+                          lua_push_integer_at_key(L, parfillmode,                    tex_get_par_par(p, par_par_fill_mode_code));
                     }
                     lua_push_specification_at_key(L, parshape,                       tex_get_par_par(p, par_par_shape_code));
                     if (! limited) {
@@ -5730,7 +5754,7 @@ static int nodelib_direct_hpack(lua_State *L)
     } else {
         n = null;
     }
-    p = tex_hpack(n, w, m, d, holding_none_option, box_limit_none);
+    p = tex_hpack(n, w, m, d, holding_none_option, box_limit_none, null, null);
     lua_pushinteger(L, p);
     lua_pushinteger(L, lmt_packaging_state.last_badness);
     lua_pushinteger(L, lmt_packaging_state.last_overshoot);
@@ -8471,8 +8495,8 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                                 lua_pushinteger(L, glue_font(n));
                             } else if (lua_key_eq(s, data)) {
                                 lua_pushinteger(L, glue_data(n));
-                            } else if (lua_key_eq(s, reserved)) {
-                                lua_pushinteger(L, glue_reserved(n));
+                            } else if (lua_key_eq(s, penalty)) {
+                                lua_pushinteger(L, glue_penalty(n));
                             } else if (lua_key_eq(s, options)) {
                                 lua_pushinteger(L, glue_options(n));
                             } else if (lua_key_eq(s, callback)) {
@@ -8608,6 +8632,7 @@ static int nodelib_common_getfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, shapingpenalty))        { lua_push_integer(L,             tex_get_par_par(n, par_shaping_penalty_code));
                          // } else if (lua_key_eq(s, emergencyextrastretch)) { lua_push_integer(L,             tex_get_par_par(n, par_emergency_extra_stretch_code));
                          // } else if (lua_key_eq(s, linebreakchecks))       { lua_push_integer(L,             tex_get_par_par(n, par_line_break_checks_code));
+                         // } else if (lua_key_eq(s, parfillmode))           { lua_push_integer(L,             tex_get_par_par(n, par_fill_mode_code));
                             /*tex 
                                 Here start the specification nodes. Some can actually replace the 
                                 singulars so a macro package has to adapt to that when this is 
@@ -9323,8 +9348,8 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                                 glue_font(n) = tex_checked_font(lmt_tohalfword(L, 3));
                             } else if (lua_key_eq(s, data)) {
                                 glue_data(n) = (halfword) lmt_roundnumber(L, 3);
-                            } else if (lua_key_eq(s, reserved)) {
-                                glue_reserved(n) = (halfword) lmt_roundnumber(L, 3);
+                            } else if (lua_key_eq(s, penalty)) {
+                                glue_penalty(n) = (halfword) lmt_roundnumber(L, 3);
                             } else if (lua_key_eq(s, options)) {
                                 glue_options(n) |= lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, callback)) {
@@ -12370,6 +12395,22 @@ static int nodelib_hybrid_gluetostring(lua_State *L)
 
 /* not yet documented */
 
+# define getlocalparboxstate_usage common_usage
+
+static int nodelib_direct_getlocalparboxstate(lua_State *L)
+{
+    halfword p = nodelib_valid_direct_from_index(L, 1);
+    if (p && node_type(p) == par_node)  {
+        lua_pushboolean(L, par_box_left(p)   ? 1 : 0);
+        lua_pushboolean(L, par_box_middle(p) ? 1 : 0);
+        lua_pushboolean(L, par_box_right(p)  ? 1 : 0);
+        return 3;
+    }
+    return 0;
+}
+
+/* not yet documented */
+
 # define getcurrenttail_usage     common_usage
 # define setcurrenttail_usage     common_usage
 # define appendcurrenttail_usage  common_usage
@@ -12801,6 +12842,7 @@ static const usage_record usage_data[] = {
     { .name = "getlanguage",             .target = direct_usage_target,   .usage = getlanguage_usage             },
     { .name = "getleader",               .target = direct_usage_target,   .usage = getleader_usage               },
     { .name = "getleftdelimiter",        .target = direct_usage_target,   .usage = getleftdelimiter_usage        },
+    { .name = "getlocalparboxstate",     .target = direct_usage_target,   .usage = getlocalparboxstate_usage     },
     { .name = "getlist",                 .target = direct_usage_target,   .usage = getlist_usage                 },
     { .name = "getlistdimensions",       .target = direct_usage_target,   .usage = getlistdimensions_usage       },
     { .name = "getmvllist",              .target = direct_usage_target,   .usage = getmvllist_usage              },
@@ -12844,6 +12886,7 @@ static const usage_record usage_data[] = {
     { .name = "getwhd",                  .target = direct_usage_target,   .usage = getwhd_usage                  },
     { .name = "getnaturalwhd",           .target = direct_usage_target,   .usage = getnaturalwhd_usage           },
     { .name = "getwidth",                .target = direct_usage_target,   .usage = getwidth_usage                },
+    { .name = "getshort",                .target = direct_usage_target,   .usage = getshort_usage                },
     { .name = "getwordrange",            .target = direct_usage_target,   .usage = getwordrange_usage            },
     { .name = "getxscale",               .target = direct_usage_target,   .usage = getxscale_usage               },
     { .name = "getxyscales",             .target = direct_usage_target,   .usage = getxyscales_usage             },
@@ -13208,6 +13251,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getleftdelimiter",        nodelib_direct_getleftdelimiter        },
     { "getlist",                 nodelib_direct_getlist                 },
     { "getlistdimensions",       nodelib_direct_getlistdimensions       },
+    { "getlocalparboxstate",     nodelib_direct_getlocalparboxstate      },
     { "getnext",                 nodelib_direct_getnext                 },
     { "getmvllist",              nodelib_direct_getmvllist              },
     { "getnodes",                nodelib_direct_getnodes                },
@@ -13250,6 +13294,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getwhd",                  nodelib_direct_getwhd                  },
     { "getnaturalwhd",           nodelib_direct_getnaturalwhd           },
     { "getwidth",                nodelib_direct_getwidth                },
+    { "getshort",                nodelib_direct_getshort                },
     { "getwordrange",            nodelib_direct_getwordrange            },
     { "getxscale",               nodelib_direct_getxscale               },
     { "getxyscales",             nodelib_direct_getxyscales             },

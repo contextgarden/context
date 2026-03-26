@@ -99,6 +99,16 @@
     \setuevalue{\currentmathradical}{\math_radical_handle{\currentmathradical}}
 \to \everydefinemathradical
 
+\appendtoks
+   \Umathradicaldegreebefore\displaystyle            \zeropoint
+   \Umathradicaldegreebefore\textstyle               \zeropoint
+   \Umathradicaldegreebefore\scriptstyle             \zeropoint
+   \Umathradicaldegreebefore\scriptscriptstyle       \zeropoint
+   \Umathradicaldegreebefore\crampedtextstyle        \zeropoint
+   \Umathradicaldegreebefore\crampedscriptstyle      \zeropoint
+   \Umathradicaldegreebefore\crampedscriptscriptstyle\zeropoint
+\to \everymathematics
+
 \unexpanded\def\math_radical_handle#tag%
   {\begingroup
    \edef\currentmathradical{#tag}%

@@ -1150,7 +1150,7 @@ void tex_repack(halfword p, scaled w, int m)
         halfword tmp; 
         switch (node_type(p)) { 
             case hlist_node:
-                tmp = tex_hpack(box_list(p), w, m, box_direction(p), holding_none_option, box_limit_none);
+                tmp = tex_hpack(box_list(p), w, m, box_direction(p), holding_none_option, box_limit_none, null, null);
                 break;
             case vlist_node: 
                 tmp = tex_vpack(box_list(p), w, m > packing_additional ? packing_additional : m, max_dimension, box_direction(p), holding_none_option, NULL);
@@ -1548,7 +1548,34 @@ scaled tex_shrink(halfword p)
     return shrink;
 }
 
-halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direction, int retain, int limit)
+static void tex_aux_adapt_just_skip(halfword target)
+{
+    halfword source = justification_skip_par;
+    if (tex_glue_is_zero(source)) {
+        glue_stretch(target) = unity;
+        glue_stretch_order(target) = filll_glue_order;
+    } else {
+        glue_stretch(target) = glue_stretch(source);
+        glue_shrink(target) = glue_shrink(source);
+        glue_stretch_order(target) = glue_stretch_order(source);
+        glue_shrink_order(target) = glue_shrink_order(source);
+        glue_amount(target) += glue_amount(source);
+    }
+}
+
+static void tex_aux_adapt_just_skips(halfword ls, halfword rs)
+{
+    if (ls && ! (glue_options(ls) & glue_option_ragged_done)) {
+        tex_aux_adapt_just_skip(ls);
+        glue_options(ls) |= glue_option_ragged_done;
+    }
+    if (rs && ! (glue_options(rs) & glue_option_ragged_done)) {
+        tex_aux_adapt_just_skip(rs);
+        glue_options(rs) |= glue_option_ragged_done;
+    }
+}
+
+halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direction, int retain, int limit, halfword ls, halfword rs)
 {
     halfword tail = null;
     scaled height = 0;
@@ -1601,6 +1628,11 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
             } else if (target < -scaling_factor) { 
                 target = -scaling_factor;
             }
+    }
+    if (adjust_spacing) {
+        /*tex We need to set expansion */
+    } else {
+        tex_aux_adapt_just_skips(ls, rs);
     }
     for (int i = normal_glue_order; i <= filll_glue_order; i++) {
         lmt_packaging_state.total_stretch[i] = 0;
@@ -2082,13 +2114,14 @@ halfword tex_hpack(halfword p, scaled target, int method, singleword pack_direct
         show_node_details_par = detail;
     }
   EXIT:
+    tex_aux_adapt_just_skips(ls, rs);
     if ((method == packing_expanded) && (lmt_packaging_state.font_expansion_ratio != 0)) {
         halfword list = box_list(result);
         box_list(result) = null;
         tex_flush_node(result);
         lmt_packaging_state.font_expansion_ratio = fix_int(lmt_packaging_state.font_expansion_ratio, -scaling_factor, scaling_factor);
         /*tex This nested call uses the more or less global font_expand_ratio. */
-        result = tex_hpack(list, target, packing_substitute, hpack_dir, holding_none_option, box_limit_none);
+        result = tex_hpack(list, target, packing_substitute, hpack_dir, holding_none_option, box_limit_none, ls, rs);
     } else { 
         if (has_uleader) { 
            set_box_package_state(result, package_u_leader_found);
@@ -2125,7 +2158,7 @@ halfword tex_filtered_hpack(halfword p, halfword qt, scaled w, int m, int grp, h
             }
         }
     }
-    head = tex_hpack(head, w, m, direction, retain, box_limit_none);
+    head = tex_hpack(head, w, m, direction, retain, box_limit_none, null, null);
     if (has_box_package_state(head, package_u_leader_found)) {
         if (head && normalize_line_mode_option(flatten_h_leaders_mode)) { 
             if (! is_box_package_state(state, package_u_leader_delayed)) {
@@ -3076,6 +3109,7 @@ static void tex_aux_set_vnature(halfword boxnode, int nature)
      // case vbalanced_unsert_code: 
      // case vbalanced_reinsert_code:
         case flush_mvl_box_code: 
+        case preroll_mvl_box_code:
             box_package_state(boxnode) = vbox_package_state;
             break;
         case dbox_code: 
@@ -3883,7 +3917,11 @@ halfword tex_vert_break(halfword current, scaled height, scaled depth, int callb
                 case whatsit_node:
                     goto NOT_FOUND;
                 case glue_node:
-                    if (precedes_break(previous)) {
+                    if (tex_has_glue_option(current, glue_option_has_penalty) && glue_penalty(current)) {
+                        /* to be checked */
+                        penalty = glue_penalty(current);
+                        goto UPDATE_HEIGHTS;
+                    } else if (precedes_break(previous)) {
                  /* if (precedes_break(node_prev(current)) { */ /* also ok */
                         penalty = 0;
                         break;
@@ -4386,6 +4424,13 @@ void tex_begin_box(int boxcontext, scaled shift, halfword slot, halfword callbac
                 /*tex Scanning might move to the flush routine. */
                 halfword index = tex_scan_integer(0, NULL, NULL);
                 boxnode = tex_flush_mvl(index);
+            }
+            break;
+        case preroll_mvl_box_code:
+            {
+                /*tex Scanning might move to the flush routine. */
+                halfword index = tex_scan_integer(0, NULL, NULL);
+                boxnode = tex_preroll_mvl(index);
             }
             break;
         case insert_box_code:

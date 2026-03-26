@@ -10,21 +10,21 @@
 
     <cd:command name="contextdefinitioncode" type="environment" level="system" category="catcode" file="catc-ctx.mkiv"/>
 
-    <cd:command name="protect" type="environment" begin="un" end="​" level="system" category="catcode" file="catc-def.mkiv"/><!-- end="zero width space" -->
+    <cd:command name="protect" type="environment" begin="un" end="​" level="system" category="catcode" file="catc-def.mkxl"/><!-- end="zero width space" -->
 
-    <cd:command name="newcatcodetable" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="newcatcodetable" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="catcodetable" type="environment" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="catcodetable" type="environment" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="extendedcatcodetable" type="environment" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="extendedcatcodetable" type="environment" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
@@ -56,11 +56,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="permitcircumflexescape" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="permitcircumflexescape" level="system" category="catcode" file="catc-ini.mkxl"/>
 
-    <cd:command name="permitcaretescape" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="permitcaretescape" level="system" category="catcode" file="catc-ini.mkxl"/>
 
-    <cd:command name="letcatcodecommand" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="letcatcodecommand" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
             <cd:keywords delimiters="none">
@@ -71,18 +71,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defcatcodecommand" level="system" category="catcode" file="catc-ini.mkiv">
-        <cd:arguments>
-            <cd:csname/>
-            <cd:keywords delimiters="none">
-                <cd:constant type="cd:character"/>
-                <cd:constant type="cd:number"/>
-            </cd:keywords>
-            <cd:resolve name="argument-command"/>
-        </cd:arguments>
-    </cd:command>
-
-    <cd:command name="uedcatcodecommand" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="defcatcodecommand" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
             <cd:keywords delimiters="none">
@@ -93,27 +82,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="catcodetable" type="environment" begin="push" end="pop" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="uedcatcodecommand" level="system" category="catcode" file="catc-ini.mkxl">
+        <cd:arguments>
+            <cd:csname/>
+            <cd:keywords delimiters="none">
+                <cd:constant type="cd:character"/>
+                <cd:constant type="cd:number"/>
+            </cd:keywords>
+            <cd:resolve name="argument-command"/>
+        </cd:arguments>
+    </cd:command>
 
-    <cd:command name="restorecatcodes" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="catcodetable" type="environment" begin="push" end="pop" level="system" category="catcode" file="catc-ini.mkxl"/>
 
-    <cd:command name="setcatcodetable" level="system" category="catcode" file="catc-ini.mkiv">
+    <cd:command name="restorecatcodes" level="system" category="catcode" file="catc-ini.mkxl"/>
+
+    <cd:command name="setcatcodetable" level="system" category="catcode" file="catc-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tracecatcodetables" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="tracecatcodetables" level="system" category="catcode" file="catc-ini.mkxl"/>
 
-    <cd:command name="catcodetablename" level="system" category="catcode" file="catc-ini.mkiv"/>
+    <cd:command name="catcodetablename" level="system" category="catcode" file="catc-ini.mkxl"/>
 
-    <cd:command name="rescan" level="system" category="catcode" file="catc-sym.mkiv">
+    <cd:command name="rescan" level="system" category="catcode" file="catc-sym.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rescanwithsetup" level="system" category="catcode" file="catc-sym.mkiv">
+    <cd:command name="rescanwithsetup" level="system" category="catcode" file="catc-sym.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
@@ -126,6 +126,6 @@
 
     <cd:command name="asciimode" type="environment" level="document" category="catcode" file="math-ini.mkxl"/>
 
-    <cd:command name="literalmode" level="document" category="catcode" file="buff-ver.mkiv"/>
+    <cd:command name="literalmode" level="document" category="catcode" file="buff-ver.mkxl"/>
 
 </cd:interface>

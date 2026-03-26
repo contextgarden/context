@@ -189,7 +189,20 @@
        \setbox\b_page_one_bottom_notes\hpack
          {\hsize\d_page_col_column_width
           \setupnotes[\c!width=\textwidth]%
-          \lower{\scratchoffset-\initialpageskip}\vbox{\placebottomnotes\par\kern\zeropoint}}%
+          \lower{\scratchoffset-\initialpageskip}\vbox\bgroup
+            \placebottomnotes
+           %\kern\zeropoint
+            \vkern
+             %
+             % needs testing:
+             %
+             % \ifgridlinesnapping
+             %   -% indeed
+             % \orelse\ifgridsnapping
+             %   -% indeed
+             % \fi
+              \d_strc_notes_bottom_depth
+          \egroup}%
        \ht\b_page_one_contents    \zeropoint
        \wd\b_page_one_contents    \zeropoint
        \ht\b_page_one_bottom_notes\zeropoint

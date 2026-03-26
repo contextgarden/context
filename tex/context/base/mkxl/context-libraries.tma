@@ -216,6 +216,7 @@ return {
   ["mdput-math.lfg"]=true,
   ["mdugm-math.lfg"]=true,
   ["meta-imp-bitmaps.mkxl"]=true,
+  ["meta-imp-cistercian.mkxl"]=true,
   ["meta-imp-clock.mkxl"]=true,
   ["meta-imp-clp.mkiv"]=true,
   ["meta-imp-demo.mkxl"]=true,

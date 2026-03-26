@@ -25,10 +25,32 @@
 \setupinteraction
   [state=start]
 
-\definepapersize
-  [phone]
-  [width=108.0pt,
-   height=192.0pt]
+\startsetups phone:ff4
+    \definepapersize
+      [phone]
+      [width=108.0pt,
+       height=234.0pt]
+\stopsetups
+
+\startsetups phone:ff4-
+    \definepapersize
+      [phone]
+      [width=108.0pt,
+       height=212.0pt]
+\stopsetups
+
+\startsetups phone:default
+    \definepapersize
+      [phone]
+      [width=108.0pt,
+       height=192.0pt]
+\stopsetups
+
+\doifelsesetups {phone:\moduleparameter{present-phone}{phone}} {
+    \setups{phone:\moduleparameter{present-phone}{phone}}
+} {
+    \setups{phone:default}
+}
 
 \definelayout
   [phone]

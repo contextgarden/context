@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemargindata" level="style" category="structure" file="typo-mar.mkiv">
+    <cd:command name="definemargindata" level="style" category="structure" file="typo-mar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmargindata" level="style" category="structure" file="typo-mar.mkiv">
+    <cd:command name="setupmargindata" level="style" category="structure" file="typo-mar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -107,7 +107,7 @@
 
     <!--
 
-        <cd:command name="definemarginframed" level="system" category="structure" file="typo-mar.mkiv">
+        <cd:command name="definemarginframed" level="system" category="structure" file="typo-mar.mkxl">
             <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -119,7 +119,7 @@
 
     -->
 
-    <cd:command name="setupmarginframed" level="style" category="structure" file="typo-mar.mkiv">
+    <cd:command name="setupmarginframed" level="style" category="structure" file="typo-mar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -128,7 +128,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="margindata" generated="yes" variant="instance" level="document" category="structure" file="typo-mar.mkiv">
+    <cd:command name="margindata" generated="yes" variant="instance" level="document" category="structure" file="typo-mar.mkxl">
         <cd:sequence>
             <cd:instance value="margindata"/>
         </cd:sequence>
@@ -149,7 +149,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="margindata" level="document" category="structure" file="typo-mar.mkiv">
+    <cd:command name="margindata" level="document" category="structure" file="typo-mar.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">

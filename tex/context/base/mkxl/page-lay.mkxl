@@ -834,6 +834,9 @@
    %
    \global\layoutlines\ifchknumexpr\layoutparameter\c!lines\or\lastchknumber\else\zerocount\fi
    %
+   \ifcase\layoutlines\else
+     \checkbodyfontstate
+   \fi
    \page_layouts_set_dimensions
    \synchronizegridsnapping
    \usesetupsparameter\layoutparameter % depends on gridsnapping !

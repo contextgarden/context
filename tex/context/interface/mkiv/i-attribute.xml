@@ -4,25 +4,25 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="pushattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="pushattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="popattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="popattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installattributestack" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="installattributestack" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="defineattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -35,7 +35,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesystemattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="definesystemattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords list="yes" optional="yes">
@@ -48,51 +48,51 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="newattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="newattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dosetattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="dosetattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doresetattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="doresetattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogetattribute" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="dogetattribute" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="dogetattributeid" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="dogetattributeid" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetallattributes" level="system" category="attribute" file="attr-ini.mkiv"/>
+    <cd:command name="resetallattributes" level="system" category="attribute" file="attr-ini.mkxl"/>
 
-    <cd:command name="savecurrentattributes" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="savecurrentattributes" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="restorecurrentattributes" level="system" category="attribute" file="attr-ini.mkiv">
+    <cd:command name="restorecurrentattributes" level="system" category="attribute" file="attr-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showattributes" level="document" category="attribute" file="attr-ini.mkiv"/>
+    <cd:command name="showattributes" level="document" category="attribute" file="attr-ini.mkxl"/>
 
 </cd:interface>

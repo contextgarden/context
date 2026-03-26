@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineaccent" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="defineaccent" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-character"/>
@@ -12,64 +12,64 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecharacter" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="definecharacter" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecommand" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="definecommand" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-command"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextaccent" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextaccent" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextmacron" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextmacron" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextbottomdot" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextbottomdot" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextcedilla" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextcedilla" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextognek" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextognek" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextbottomcomma" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextbottomcomma" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="d" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="d" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="buildtextgrave" level="style" category="language" file="enco-ini.mkiv">
+    <cd:command name="buildtextgrave" level="style" category="language" file="enco-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-character"/>
         </cd:arguments>
@@ -77,101 +77,101 @@
 
     <!--
 
-        <cd:command name="AA" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="AA" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="aa" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="aa" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="AE" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="AE" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="ae" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="ae" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="CC" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="CC" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="cc" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="cc" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="L" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="L" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="l" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="l" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="O" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="O" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="o" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="o" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="OE" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="OE" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="oe" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="oe" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="SZ" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="SZ" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="sz" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="sz" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="SS" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="SS" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="IJ" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="IJ" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="ij" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="ij" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="i" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="i" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="j" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="j" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="eszett" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="eszett" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Eszett" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Eszett" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Ssharp" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Ssharp" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="lslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="lslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Lslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Lslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="dslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="dslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Dslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Dslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="oslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="oslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Oslash" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Oslash" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="dcroat" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="dcroat" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Dcroat" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Dcroat" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="kcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="kcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Kcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Kcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="lcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="lcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Lcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Lcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="ncedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="ncedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Ncedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Ncedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="rcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="rcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Rcedilla" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Rcedilla" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="aumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="aumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Aumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Aumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="eumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="eumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Eumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Eumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="iumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="iumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Iumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Iumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="oumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="oumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Oumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Oumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="uumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="uumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
-        <cd:command name="Uumlaut" level="document" category="language" file="enco-ini.mkiv"/>
+        <cd:command name="Uumlaut" level="document" category="language" file="enco-ini.mkxl"/>
 
     -->
 

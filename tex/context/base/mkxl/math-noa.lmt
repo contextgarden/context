@@ -100,6 +100,7 @@ local isprev             = nuts.isprev
 local isboth             = nuts.isboth
 local getid              = nuts.getid
 local getsubtype         = nuts.getsubtype
+local getclass           = nuts.getclass
 local getchar            = nuts.getchar
 local getfont            = nuts.getfont
 local getfam             = nuts.getfam
@@ -1420,6 +1421,7 @@ end
 do
 
     local trace_alternates  = false  registertracker("math.alternates", function(v) trace_alternates = v end)
+    local trace_random      = false  registertracker("math.random",     function(v) trace_random     = v end)
     local report_alternates = logreporter("mathematics","alternates")
 
     local last = 0
@@ -1598,7 +1600,35 @@ do
         end,
     }
 
-    alternate[mathchar_code] = function(pointer) -- slow
+    local colors  = {
+    [false] = "trace:dy",
+        [1] = "trace:dr",
+        [2] = "trace:db",
+        [3] = "trace:dg",
+        [4] = "trace:dc",
+        [5] = "trace:dm",
+        [6] = "trace:dy",
+        [7] = "trace:ds",
+    }
+
+    local setcolor   = colortracers.set
+    local resetcolor = colortracers.reset
+
+    local cache = { }
+    local top   = 0
+
+ -- local delmap = {
+ --     "open",   -- left_fence_side,
+ --     "middle", -- middle_fence_side,
+ --     "close",  -- right_fence_side,
+ --     false,    -- left_operator_side,
+ --     false,    -- no_fence_side,
+ --     "open",   -- extended_left_fence_side,
+ --     "middle", -- extended_middle_fence_side,
+ --     "close",  -- extended_right_fence_side,
+ -- }
+
+    alternate[mathchar_code] = function(pointer,what,n,parent) -- slow
         local a = getattr(pointer,a_mathalternate)
         if a and a > 0 then
             setattr(pointer,a_mathalternate,0)
@@ -1620,11 +1650,78 @@ do
                                 local what = attributes[r]
                                 local list = what.list
                                 if not list or list[char] then
-                                alt = otf.getalternate(fontdata[fontid],char,what.feature,what.value) or false
+                                    local value   = what.value
+                                    local feature = what.feature
+                                    local choice  = false
+                                    local random  = value == "random" or value == "selfrandom"
+                                    if random then
+                                        local cdata = chardata[char]
+                                        local class = cdata and cdata.mathclass or false -- use helper
+                                        -- inspect(cdata)
+                                        if class == "open" then
+                                            top = top + 1
+                                        elseif class == "close" then
+                                            value = cache[top]
+-- report_alternates("random fence, top %a, class %a, value %a",top,class,value)
+                                            cache[top] = false
+                                            top = top - 1
+                                        elseif class == "middle" then
+                                            value = cache[top]
+-- report_alternates("random fence, top %a, class %a, value %a",top,class,value)
+                                        else
+                                            -- keep value as it is
+                                        end
+                                        alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                        if choice == nil then
+                                            choice = false
+                                        end
+                                        if class == "open" then
+                                            cache[top] = choice
+-- report_alternates("random fence, top %a, class %a, value %a",top,class,choice)
+                                        end
+                                     --
+                                     -- local cdata  = chardata[char]
+                                     -- -- inspect(cdata)
+                                     -- class = cdata and cdata.mathclass or false -- use helper
+                                     -- if class == "open" then
+                                     --     top = top + 1
+                                     --     value = top
+                                     -- elseif class == "close" then
+                                     --     value = top
+                                     --     top = top - 1
+                                     -- elseif class == "middle" then
+                                     --     value = top
+                                     -- end
+                                     -- alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                     --
+                                    else
+                                        alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                    end
                                     if alt == char then
                                         alt = false
+                                    else
+--     fontdata[fontid].characters[alt].unicode = fontdata[fontid].characters[char].unicode
                                     end
-                                    hashes[i][char] = alt
+                                    if not random then
+                                        hashes[i][char] = alt
+                                    elseif trace_random then
+                                        local what = attributes[r]
+                                        if alt then
+                                            report_alternates("random %a, value %a, replacing glyph %U by glyph %U",
+                                                tostring(feature),value,char,alt)
+                                            if trace_random == "color" then
+                                                setcolor(pointer,colors[choice] or colors[#colors])
+                                             -- setcolor(parent,colors[choice] or colors[#colors])
+                                            end
+                                        else
+                                            report_alternates("random %a, value %a, keeping glyph %U",
+                                                tostring(feature),value,char)
+                                            if trace_random == "color" then
+                                                resetcolor(pointer)
+-- resetcolor(parent)
+                                            end
+                                        end
+                                    end
                                 end
                             end
                             if alt then
@@ -1650,6 +1747,7 @@ do
     alternate[delimiter_code] = alternate[mathchar_code]
 
     function handlers.alternates(head)
+        top = 0
         processnoads(head,alternate,"alternate")
     end
 

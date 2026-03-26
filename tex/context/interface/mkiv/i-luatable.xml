@@ -16,28 +16,28 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="disposeluatable" level="system" category="lua" file="cldf-lmt.lua">
+    <cd:command name="disposeluatable" level="system" category="lua" file="cldf-lmt.lmt">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inspectluatable" level="system" category="lua" file="cldf-lmt.lua">
+    <cd:command name="inspectluatable" level="system" category="lua" file="cldf-lmt.lmt">
         <cd:arguments>
             <cd:csname/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="showluatables" level="system" category="lua" file="cldf-lmt.lua"/>
+    <cd:command name="showluatables" level="system" category="lua" file="cldf-lmt.lmt"/>
 
-    <cd:command name="setluatable" level="system" category="lua" file="cldf-lmt.lua">
+    <cd:command name="setluatable" level="system" category="lua" file="cldf-lmt.lmt">
         <cd:arguments>
             <cd:csname/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="getfromluatable" level="system" category="lua" file="cldf-lmt.lua">
+    <cd:command name="getfromluatable" level="system" category="lua" file="cldf-lmt.lmt">
         <cd:arguments>
             <cd:csname/>
             <cd:keywords delimiters="braces">
@@ -47,7 +47,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="idxfromluatable" level="system" category="lua" file="cldf-lmt.lua">
+    <cd:command name="idxfromluatable" level="system" category="lua" file="cldf-lmt.lmt">
         <cd:arguments>
             <cd:csname/>
             <cd:resolve name="string-number"/>

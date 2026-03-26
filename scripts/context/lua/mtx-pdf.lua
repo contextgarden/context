@@ -661,8 +661,6 @@ local function getfonts(pdffile)
     return usedfonts
 end
 
-local splitsixteen = lpdf.splitsixteen
-
 local function getunicodes(font)
     local cid = font.ToUnicode
     if cid then
@@ -688,6 +686,7 @@ local function getunicodes(font)
                 end
             end
         end
+        local splitsixteen = lpdf.splitsixteen
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
             for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
                 indices[tonumber(old,16)] = true

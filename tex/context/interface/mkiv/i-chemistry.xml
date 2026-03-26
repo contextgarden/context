@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definechemistry" file="chem-str.mkxl">
+    <cd:command name="definechemistry" level="style" category="symbols" file="chem-str.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupchemistry" file="chem-str.mkxl">
+    <cd:command name="setupchemistry" level="style" category="symbols" file="chem-str.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -32,7 +32,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="chemistry" type="environment" file="chem-str.mkxl">
+    <cd:command name="chemistry" type="environment" level="document" category="symbols" file="chem-str.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setupchemistry"/>

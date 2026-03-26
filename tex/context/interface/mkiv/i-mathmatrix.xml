@@ -144,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setmathmatrixanchoring" file="math-ali.mkxl">
+    <cd:command name="setmathmatrixanchoring" level="document" category="mathematics" keywords="tables" file="math-ali.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="yes"/>
@@ -177,21 +177,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv">
+    <cd:command name="bordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bbordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv">
+    <cd:command name="bbordermatrix" level="document" category="mathematics" keywords="tables" file="math-pln.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv"/>
+    <cd:command name="bordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkxl"/>
 
-    <cd:command name="bbordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkiv"/>
+    <cd:command name="bbordermatrix" type="environment" level="document" category="mathematics" keywords="tables" file="math-pln.mkxl"/>
 
     <cd:command name="graphicline" file="node-rul.mkxl">
         <cd:arguments>

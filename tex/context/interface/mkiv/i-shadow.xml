@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="defineshadow" file="node-rul.mkxl">
+    <cd:command name="defineshadow" level="style" category="graphics" file="node-rul.mkxl">
         <cd:arguments>
                 <cd:resolve name="keyword-name"/>
                 <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupshadow" file="node-rul.mkxl">
+    <cd:command name="setupshadow" level="style" category="graphics" file="node-rul.mkxl">
         <cd:arguments>
                 <cd:resolve name="keyword-name-list-optional"/>
                 <cd:assignments list="yes">
@@ -59,13 +59,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shadow" type="environment" file="node-rul.mkxl">
+    <cd:command name="shadow" type="environment" level="document" category="graphics" file="node-rul.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shadow" type="environment" variant="assignment" file="node-rul.mkxl">
+    <cd:command name="shadow" type="environment" variant="assignment" level="document" category="graphics" file="node-rul.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupshadow"/>
@@ -73,7 +73,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="shadow" generated="yes" variant="instance" file="node-rul.mkxl">
+    <cd:command name="shadow" generated="yes" variant="instance" level="document" category="graphics" file="node-rul.mkxl">
         <cd:sequence>
             <cd:instance value="shadow"/>
         </cd:sequence>

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definewrows" file="typo-swp.mkxl">
+    <cd:command name="definewrows" level="style" category="layout" file="typo-swp.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuprows" file="typo-swp.mkxl">
+    <cd:command name="setuprows" level="style" category="layout" file="typo-swp.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -59,7 +59,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rows" type="environment" file="typo-swp.mkxl">
+    <cd:command name="rows" type="environment" level="document" category="layout" file="typo-swp.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -68,7 +68,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rows" type="environment" generated="yes" variant="example" file="typo-swp.mkxl">
+    <cd:command name="rows" type="environment" generated="yes" variant="example" level="document" category="layout" file="typo-swp.mkxl">
         <cd:sequence>
             <cd:variable value="rows"/>
         </cd:sequence>

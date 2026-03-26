@@ -391,25 +391,89 @@
 \sfcode\rightbracketasciicode\zerocount % hm hm
 \sfcode\singlequoteasciicode \zerocount % hm hm hm
 
-\def\spac_spacecodes_set_fixed#1%
-  {\sfcode\periodasciicode         #1%
-   \sfcode\commaasciicode          #1%
-   \sfcode\questionmarkasciicode   #1%
-   \sfcode\exclamationmarkasciicode#1%
-   \sfcode\colonasciicode          #1%
-   \sfcode\semicolonasciicode      #1}
+%D We always had:
 
-\def\spac_spacecodes_set_stretch
-  {\sfcode\periodasciicode         \plusthreethousand
-   \sfcode\commaasciicode          \plustwelvehundredfifty
-   \sfcode\questionmarkasciicode   \plusthreethousand
-   \sfcode\exclamationmarkasciicode\plusthreethousand
-   \sfcode\colonasciicode          \plustwothousand
-   \sfcode\semicolonasciicode      \plusfifteenhundred }
+% \def\spac_spacecodes_set_fixed#1%
+%   {\sfcode\periodasciicode         #1%
+%    \sfcode\commaasciicode          #1%
+%    \sfcode\questionmarkasciicode   #1%
+%    \sfcode\exclamationmarkasciicode#1%
+%    \sfcode\colonasciicode          #1%
+%    \sfcode\semicolonasciicode      #1}
 
-\permanent\protected\def\frenchspacing   {\spac_spacecodes_set_fixed\plusthousand}
-\permanent\protected\def\newfrenchspacing{\spac_spacecodes_set_fixed\plusthousandfifty}
-\permanent\protected\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
+% \def\spac_spacecodes_set_stretch
+%   {\sfcode\periodasciicode         \plusthreethousand
+%    \sfcode\commaasciicode          \plustwelvehundredfifty
+%    \sfcode\questionmarkasciicode   \plusthreethousand
+%    \sfcode\exclamationmarkasciicode\plusthreethousand
+%    \sfcode\colonasciicode          \plustwothousand
+%    \sfcode\semicolonasciicode      \plusfifteenhundred}
+
+% \permanent\protected\def\frenchspacing   {\spac_spacecodes_set_fixed\plusthousand}
+% \permanent\protected\def\newfrenchspacing{\spac_spacecodes_set_fixed\plusthousandfifty}
+% \permanent\protected\def\nonfrenchspacing{\spac_spacecodes_set_stretch}
+
+%D Instead we now use:
+
+% Musical timestamp: Archive – Full Orchestral FM4 Radio Session (2026,
+% released end Feb / begin Mar, eqNYOHrbSoM). So good!
+
+\spcode\periodasciicode          1 % 3000
+\spcode\commaasciicode           2 % 1250
+\spcode\questionmarkasciicode    3 % 3000
+\spcode\exclamationmarkasciicode 3 % 3000
+\spcode\colonasciicode           4 % 2000
+\spcode\semicolonasciicode       5 % 1500
+
+% frenchspacing == fixed
+
+% options \constantspecificationoptioncode
+
+\specificationdef \nospacingmap \textspacing 0
+
+\specificationdef \nonfrenchspacingmap \textspacing 5 constant
+    \plusthreethousand      \zerocount % .
+    \plustwelvehundredfifty \zerocount % ,
+    \plusthreethousand      \zerocount % ! ?
+    \plustwothousand        \zerocount % :
+    \plusfifteenhundred     \zerocount % ;
+\relax
+
+\specificationdef \frenchspacingmap \textspacing 1 constant
+    \plusthousand \zerocount
+\relax
+
+\specificationdef \newfrenchspacingmap \textspacing 1 constant
+    \plusthousandfifty \zerocount
+\relax
+
+\specificationdef \penalizedspacingmap \textspacing 5 constant
+    \plusthousand -\plusfifty % .
+    \plusthousand -\plusfifty % ,
+    \plusthousand -\plusfifty % ! ?
+    \plusthousand -\plusfifty % :
+    \plusthousand -\plusfifty % ;
+\relax
+
+\specificationdef \nonpenalizedspacingmap \textspacing 5 constant
+    \plusthreethousand      -\plusfifty % .
+    \plustwelvehundredfifty -\plusfifty % ,
+    \plusthreethousand      -\plusfifty % ! ?
+    \plustwothousand        -\plusfifty % :
+    \plusfifteenhundred     -\plusfifty % ;
+\relax
+
+\permanent\protected\def\nonfrenchspacing   {\textspacing\nonfrenchspacingmap   }
+\permanent\protected\def\frenchspacing      {\textspacing\frenchspacingmap      }
+\permanent\protected\def\newfrenchspacing   {\textspacing\newfrenchspacingmap   }
+\permanent\protected\def\nonpenalizedspacing{\textspacing\nonpenalizedspacingmap}
+\permanent\protected\def\penalizedspacing   {\textspacing\penalizedspacingmap   }
+
+\newinteger \pbsppenalty \pbsppenalty\plusfifty
+
+\permanent\protected\def\pbsp{\hskip\interwordspace penalty \pbsppenalty\relax}
+
+%D The installer:
 
 \permanent\protected\def\installspacingmethod#1#2{\defcsname\??spacecodemethod#1\endcsname{#2}}
 
@@ -417,6 +481,9 @@
 \installspacingmethod \v!fixed  {\frenchspacing   } % equal spaces everywhere
 \installspacingmethod \v!packed {\newfrenchspacing} % slighly more after punctuation
 \installspacingmethod \v!broad  {\nonfrenchspacing} % more depending on what punctuation
+
+\installspacingmethod {\v!fixed:\v!small} {\penalizedspacing}
+\installspacingmethod {\v!broad:\v!small} {\nonpenalizedspacing}
 
 \permanent\tolerant\protected\def\setupspacing[#1]%
   {\ifarguments\or
@@ -564,17 +631,11 @@
 
 \letcatcodecommand \ctxcatcodes \tildeasciicode \nonbreakablespace % overloaded later
 
-%                   \def\space          { }
 \permanent\protected\def\removelastspace{\ifhmode\unskip\fi}
 \permanent\protected\def\nospace        {\removelastspace\ignorespaces}
 
-\ifdefined\nospaces
-    \permanent\protected\def\nospacing{\normalnospaces\plusone}
-    \permanent\protected\def\dospacing{\normalnospaces\zerocount}
-\else
-    \permanent\protected\def\nospacing{\spaceskip\scaledpoint     \xspaceskip\zeroskip}
-    \permanent\protected\def\dospacing{\spaceskip\currentspaceskip\xspaceskip\zeroskip} % what
-\fi
+\permanent\protected\def\nospacing{\normalnospaces\plusone}
+\permanent\protected\def\dospacing{\normalnospaces\zerocount}
 
 \ifdefined\softhyphen \else
     \let\softhyphen\explicitdiscretionary

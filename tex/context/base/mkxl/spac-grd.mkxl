@@ -446,11 +446,26 @@
      \installaligncommand{\v!snapping:#1}{#2}%
    \fi}
 
+% \permanent\protected\def\douseinstalledsnapping#1%
+%   {\ifcsname\??snapping#1\endcsname
+%      \lastnamedcs
+%    \orelse\ifgridlinesnapping
+%      % use the default
+%    \else
+%      \linesnappingone
+%    \fi}
+
+
 \permanent\protected\def\douseinstalledsnapping#1%
   {\ifcsname\??snapping#1\endcsname
      \lastnamedcs
-   \orelse\ifgridlinesnapping
-     % use the default
+   \orelse\ifempty{#1}%
+     \ifcsname\??snapping\currentlayoutsnapping\endcsname
+       \lastnamedcs
+     \else
+        % use the default
+        \linesnappingone
+     \fi
    \else
      \linesnappingone
    \fi}
@@ -530,6 +545,7 @@
    \ifx\p_grid\v!no
      % already done
    \orelse\ifx\p_grid\v!snapping
+     \checkbodyfontstate
      \gridlinesnappingtrue
      \setsystemmode\v!snapping
      \cdef\currentlayoutsnapping{\rootlayoutparameter\c!snapping}%
@@ -538,6 +554,7 @@
         \lastnamedcs
      \fi
    \orelse\ifcsname\??gridsnappers\p_grid\endcsname
+     \checkbodyfontstate
      \gridsnappingtrue
      \setsystemmode\v!grid
      \spac_grids_snap_value_set\p_grid

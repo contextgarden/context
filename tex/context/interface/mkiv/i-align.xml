@@ -122,6 +122,21 @@
                 <cd:constant type="strictmath"/>
                 <cd:constant type="nonstrictmath"/>
                 <cd:constant type="default"/>
+                <cd:constant type="snapping"/>
+                <cd:constant type="nosnapping"/>
+                <cd:constant type="snapping:yes"/>
+                <cd:constant type="snapping:normal"/>
+                <cd:constant type="snapping:0"/>
+                <cd:constant type="snapping:1"/>
+                <cd:constant type="snapping:2"/>
+                <cd:constant type="snapping:0:10"/>
+                <cd:constant type="snapping:1:10"/>
+                <cd:constant type="snapping:2:10"/>
+                <cd:constant type="snapping:2:20"/>
+                <cd:constant type="snapping:1:top"/>
+                <cd:constant type="snapping:1:bottom"/>
+                <cd:constant type="snapping:2:top"/>
+                <cd:constant type="snapping:2:bottom"/>
                 <!--
                     <cd:constant type="cd:name"/>
                 -->
@@ -135,30 +150,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installaligncommand" type="environment" file="spac-ali.mkxl">
+    <cd:command name="installaligncommand" type="environment" level="system" category="alignment" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installaligncommand" file="spac-ali.mkxl">
+    <cd:command name="installaligncommand" level="system" category="alignment" file="spac-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="noorphans" file="spac-ali.mkxl"/>
+    <cd:command name="noorphans" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="notoddlers" file="spac-ali.mkxl"/>
+    <cd:command name="notoddlers" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="notwins" file="spac-ali.mkxl"/>
+    <cd:command name="notwins" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="keeporphans" file="spac-ali.mkxl"/>
+    <cd:command name="keeporphans" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="keeptoddlers" file="spac-ali.mkxl"/>
+    <cd:command name="keeptoddlers" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="keeptwins" file="spac-ali.mkxl"/>
+    <cd:command name="keeptwins" level="style" category="alignment" file="spac-ali.mkxl"/>
 
     <cd:command name="alignment" type="environment" level="document" category="alignment" file="spac-ali.mkxl">
         <cd:arguments>
@@ -287,7 +302,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="alignedbox" level="system" category="alignment" keywords="boxes" file="pack-box.mkiv">
+    <cd:command name="alignedbox" level="system" category="alignment" keywords="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:resolve name="value-aligned"/>
@@ -297,7 +312,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="aligned" level="system" category="alignment" file="pack-box.mkiv">
+    <cd:command name="aligned" level="system" category="alignment" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:resolve name="value-aligned"/>
@@ -368,7 +383,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuphanging" file="spac-ver.mkxl">
+    <cd:command name="setuphanging" level="style" category="alignment" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="distance">
@@ -456,12 +471,16 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="optional" level="document" category="alignment" file="spac-pas.mkxl">
-        <cd:arguments>
-            <cd:resolve name="argument-number"/>
-            <cd:resolve name="argument-text"/>
-        </cd:arguments>
-    </cd:command>
+    <!--
+
+        <cd:command name="optional" level="document" category="alignment" file="spac-pas.mkxl">
+            <cd:arguments>
+                <cd:resolve name="argument-number"/>
+                <cd:resolve name="argument-text"/>
+            </cd:arguments>
+        </cd:command>
+
+    -->
 
     <cd:command name="rtltext" level="document" category="alignment" keywords="direction" file="spac-ali.mkxl">
         <cd:arguments>
@@ -475,10 +494,10 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="hangrange" type="environment" file="spac-ali.mkxl"/>
+    <cd:command name="hangrange" type="environment" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="hangrangestep" type="environment" file="spac-ali.mkxl"/>
+    <cd:command name="hangrangestep" type="environment" level="style" category="alignment" file="spac-ali.mkxl"/>
 
-    <cd:command name="emptyhangrangestep" file="spac-ali.mkxl"/>
+    <cd:command name="emptyhangrangestep" level="style" category="alignment" file="spac-ali.mkxl"/>
 
 </cd:interface>

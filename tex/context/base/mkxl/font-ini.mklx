@@ -2554,6 +2554,17 @@
     \font_scale_defined
 \to \everyswitchtobodyfont
 
+\permanent\protected\def\checkbodyfontstate
+  {\writeline
+   \writestatus\m!fonts{!! Font dimensions are used while no bodyfont has been set, you can}%
+   \writestatus\m!fonts{!! expect an inconsistent layout setup.}%
+   \writeline
+   \enforced\lettonothing\checkbodyfontstate}
+
+\prependtoks
+    \enforced\lettonothing\checkbodyfontstate
+\to \everysetupbodyfont
+
 \def\font_helpers_set_current_font_xxx_alternative#alternative#xsize#scriptstyle%
   {\ifmmode
      #scriptstyle%

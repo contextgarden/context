@@ -1,9 +1,9 @@
 %D \module
 %D   [       file=pack-box,
-%D        version=2002.04.12,
+%D        version=2026-03-16, % 2002.04.12
 %D          title=\CONTEXT\ Packaging Macros,
 %D       subtitle=Boxes,
-%D         author=Hans Hagen,
+%D         author={Hans Hagen & Wolfgang Schuster},
 %D           date=\currentdate,
 %D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
 %C
@@ -1468,5 +1468,358 @@
 % \negatexlistsigncode
 % \negateylistsigncode
 % \negatelistsigncode
+
+%D Per 2026 we have two more box interfaces, one for horizontal and one for vertical. We
+%D can if needed add abit more checking (for dimensions) but then also will do that in
+%D other places.
+%D
+%D \start
+%D
+%D \startbuffer
+%D \setuphorizontalbox [strut=yes]
+%D
+%D \definehorizontalbox [max] [width=max]
+%D
+%D \definehorizontalbox [left]   [max] [right=\hss]
+%D \definehorizontalbox [middle] [max] [left=\hss,right=\hss]
+%D \definehorizontalbox [right]  [max] [left=\hss]
+%D
+%D \definehorizontalbox [rlap] [left]  [width=\zeropoint]
+%D \definehorizontalbox [llap] [right] [width=\zeropoint]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \horizontalbox[left]  {left}
+%D \horizontalbox[middle]{middle}
+%D \horizontalbox[right] {right}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \horizontalbox[left][style=bold,color=red]{text}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \horizontalbox[middle][stretch=\emwidth]{text}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \starthorizontalbox[max]
+%D \horizontalbox[rlap]  {left}%
+%D \horizontalbox[middle]{middle}%
+%D \horizontalbox[llap]  {right}%
+%D \stophorizontalbox
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startalignment[lefttoright]
+%D \dontleavehmode\horizontalbox[left]                       {left}\par
+%D \dontleavehmode\horizontalbox[left][direction=lefttoright]{left}\par
+%D \dontleavehmode\horizontalbox[left][direction=righttoleft]{left}\par
+%D \dontleavehmode\horizontalbox[left][direction=reverse]    {left}\par
+%D \stopalignment
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startalignment[righttoleft]
+%D \dontleavehmode\horizontalbox[left]                       {left}\par
+%D \dontleavehmode\horizontalbox[left][direction=lefttoright]{left}\par
+%D \dontleavehmode\horizontalbox[left][direction=righttoleft]{left}\par
+%D \dontleavehmode\horizontalbox[left][direction=reverse]    {left}\par
+%D \stopalignment
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startnarrower[middle]
+%D \dontleavehmode\horizontalbox[left][width=local]{left}
+%D \stopnarrower
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \dontleavehmode
+%D \horizontalbox{one}
+%D \horizontalbox[yoffset=1sh]{one}
+%D \horizontalbox{one}
+%D \horizontalbox[xoffset=\spaceamount]{one}
+%D \horizontalbox{one}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[hbox] \getbuffer \stoplinecorrection
+%D
+%D \stop
+
+\installcorenamespace                   {horizontalbox}
+\installcommandhandler \??horizontalbox {horizontalbox} \??horizontalbox
+
+\tolerant\permanent\protected\def\horizontalbox[#1]#*[#2]%
+  {\hpack\bgroup
+   \ifarguments
+     \lettonothing\currenthorizontalbox
+   \or
+     \ifhastok={#1}%
+       \lettonothing\currenthorizontalbox
+       \setupcurrenthorizontalbox[#1]%
+     \else
+       \cdef\currenthorizontalbox{#1}%
+     \fi
+   \or
+     \cdef\currenthorizontalbox{#1}%
+     \setupcurrenthorizontalbox[#2]%
+   \fi
+   \horizontalbox_indeed}
+
+\tolerant\permanent\protected\def\starthorizontalbox[#1]#*[#2]%
+  {\hpack\bgroup
+   \ifarguments
+     \lettonothing\currenthorizontalbox
+   \or
+     \ifhastok={#1}%
+       \lettonothing\currenthorizontalbox
+       \setupcurrenthorizontalbox[#1]%
+     \else
+       \cdef\currenthorizontalbox{#1}%
+     \fi
+   \or
+     \cdef\currenthorizontalbox{#1}%
+     \setupcurrenthorizontalbox[#2]%
+   \fi
+   \horizontalbox_indeed\bgroup\ignorespaces}
+
+\protected\def\stophorizontalbox
+  {\removeunwantedspaces\egroup}
+
+\def\horizontalbox_indeed
+  {\forgetall
+   \hbox
+     % width parameter
+     \ifcstok{\horizontalboxparameter\c!width}\v!max
+       \s!to \hsize
+     \orelse\iflastnamedcs\v!local
+       \s!to \localhsize
+     \orunless\ifempty\lastnamedcs
+       \s!to {\lastnamedcs}%
+     \fi
+     % stretch parameter
+     \ifempty{\horizontalboxparameter\c!stretch}\else
+       \s!spread {\lastnamedcs}%
+     \fi
+   % \ifchkdimension\horizontalboxparameter\c!stretch\or
+   %   \s!spread \lastchkdimension
+   % \fi
+     % direction parameter
+     \ifcstok{\horizontalboxparameter\c!direction}\v!reverse
+       \s!reverse
+     \orelse\iflastnamedcs\v!lefttoright
+       \s!direction \directionlefttoright
+     \orelse\iflastnamedcs\v!righttoleft
+       \s!direction \directionrighttoleft
+     \fi
+     % xoffset parameter
+     \ifempty{\horizontalboxparameter\c!xoffset}\else
+       \s!xoffset {\lastnamedcs}%
+     \fi
+   % \ifchkdimension\horizontalboxparameter\c!xoffset\or
+   %   \s!xoffset \lastchkdimension
+   % \fi
+     % yoffset parameter
+     \ifempty{\horizontalboxparameter\c!yoffset}\else
+       \s!yoffset {\lastnamedcs}%
+     \fi
+   % \ifchkdimension\horizontalboxparameter\c!yoffset\or
+   %   \s!yoffset \lastchkdimension
+   % \fi
+     \bgroup
+       \usehorizontalboxstyleandcolor\c!style\c!color
+     % \aftergrouped  {\egroup}%
+       \aftergroup     \egroup
+       \atendofgrouped{\horizontalboxparameter\c!right\relax}%
+       \horizontalboxparameter\c!left\relax
+       \ifcstok{\horizontalboxparameter\c!strut}\v!yes \strut \fi
+       \let\next=}
+
+\installcorenamespace                 {verticalbox}
+\installcommandhandler \??verticalbox {verticalbox} \??verticalbox
+
+\tolerant\permanent\protected\def\verticalbox[#1]#*[#2]%
+  {\vpack\bgroup
+   \ifarguments
+     \lettonothing\currentverticalbox
+   \or
+     \ifhastok={#1}%
+       \lettonothing\currentverticalbox
+       \setupcurrentverticalbox[#1]%
+     \else
+       \cdef\currentverticalbox{#1}%
+     \fi
+   \or
+     \cdef\currentverticalbox{#1}%
+     \setupcurrentverticalbox[#2]%
+   \fi
+   \verticalbox_indeed}
+
+\tolerant\permanent\protected\def\startverticalbox[#1]#*[#2]%
+  {\vpack\bgroup
+   \ifarguments
+     \lettonothing\currentverticalbox
+   \or
+     \ifhastok={#1}%
+       \lettonothing\currentverticalbox
+       \setupcurrentverticalbox[#1]%
+     \else
+       \cdef\currentverticalbox{#1}%
+     \fi
+   \or
+     \cdef\currentverticalbox{#1}%
+     \setupcurrentverticalbox[#2]%
+   \fi
+   \verticalbox_indeed\bgroup\ignorespaces}
+
+\protected\def\stopverticalbox
+  {\removeunwantedspaces\egroup}
+
+\def\verticalbox_indeed
+  {\forgetall
+   \ifcstok{\verticalboxparameter\c!alternative}\v!top\vtop\else\vbox\fi
+     % height parameter
+     \ifcstok{\verticalboxparameter\c!height}\v!max
+       \s!to \vsize
+     \orunless\ifempty\lastnamedcs
+       \s!to {\lastnamedcs}%
+     \fi
+     % direction parameter
+     \ifcstok{\verticalboxparameter\c!direction}\v!reverse
+       \s!reverse
+     \orelse\iflastnamedcs\v!lefttoright
+       \s!direction \directionlefttoright
+     \orelse\iflastnamedcs\v!righttoleft
+       \s!direction \directionrighttoleft
+     \fi
+     % xoffset parameter
+     \ifempty{\verticalboxparameter\c!xoffset}\else
+       \s!xoffset {\lastnamedcs}%
+     \fi
+   % \ifchkdimension\verticalboxparameter\c!xoffset\or
+   %   \s!xoffset \lastchkdimension
+   % \fi
+     % yoffset parameter
+     \ifempty{\verticalboxparameter\c!yoffset}\else
+       \s!yoffset {\lastnamedcs}%
+     \fi
+   % \ifchkdimension\verticalboxparameter\c!yoffset\or
+   %   \s!yoffset \lastchkdimension
+   % \fi
+     \bgroup
+       \usealignparameter    \verticalboxparameter
+       \useindentingparameter\verticalboxparameter
+       \useverticalboxstyleandcolor\c!style\c!color
+     % \aftergrouped  {\egroup}%
+       \aftergroup     \egroup
+       \atendofgrouped{\ifcstok{\verticalboxparameter\c!strut}\v!yes \endstrut \fi}%
+       \atendofgrouped{\verticalboxparameter\c!bottom\relax}%
+       % width parameter
+       \ifcstok{\verticalboxparameter\c!width}\v!local
+         \hsize\localhsize\relax
+       \orunless\ifempty\lastnamedcs
+         \hsize{\lastnamedcs}\relax
+       \fi
+       \verticalboxparameter\c!top\relax
+       \ifcstok{\verticalboxparameter\c!strut}\v!yes \begstrut \fi
+       \let\next=}
+
+%D \start
+%D
+%D \startbuffer
+%D \setupverticalbox [strut=yes]
+%D \stopbuffer
+%D
+%D \typebuffer \getbuffer
+%D
+%D \startbuffer
+%D \verticalbox[width=.75tw]{\samplefile{lorem}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \dontleavehmode
+%D \verticalbox[width=2cm]                      {line 1\\line 2\\line 3}
+%D \verticalbox[width=2cm,alternative=top]      {line 1\\line 2\\line 3}
+%D \verticalbox[width=2cm,alternative=bottom]   {line 1\\line 2\\line 3}
+%D \verticalbox[width=2cm,yoffset={-1sh-1sd}]   {line 1\\line 2\\line 3}
+%D \verticalbox[width=2cm,xoffset=-\spaceamount]{line 1\\line 2\\line 3}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startnarrower[middle]
+%D \dontleavehmode\verticalbox[width=local]{\samplefile{lorem}}
+%D \stopnarrower
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \verticalbox[align={middle,broad,nothyphenated}]{\samplefile{lorem}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \verticalbox[indenting={yes,big}]{\samplefile{lorem}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \verticalbox[style=italic,color=green]{\samplefile{lorem}}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \verticalbox[height=max,top=\vss,bottom=\vss,align=middle]{text}
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startalignment[lefttoright]
+%D \dontleavehmode\verticalbox                       {text}\par
+%D \dontleavehmode\verticalbox[direction=lefttoright]{text}\par
+%D \dontleavehmode\verticalbox[direction=righttoleft]{text}\par
+%D \dontleavehmode\verticalbox[direction=reverse]    {text}\par
+%D \stopalignment
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \startbuffer
+%D \startalignment[righttoleft]
+%D \dontleavehmode\verticalbox                       {text}\par
+%D \dontleavehmode\verticalbox[direction=lefttoright]{text}\par
+%D \dontleavehmode\verticalbox[direction=righttoleft]{text}\par
+%D \dontleavehmode\verticalbox[direction=reverse]    {text}\par
+%D \stopalignment
+%D \stopbuffer
+%D
+%D \typebuffer \startlinecorrection \showmakeup[vbox,vtop] \getbuffer \stoplinecorrection
+%D
+%D \stop
 
 \protect \endinput

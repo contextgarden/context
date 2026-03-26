@@ -31,7 +31,7 @@
    \spac_crlf_placeholder % box
    \ifcase\raggedstatus\hfil\or\or\or\hfil\fi
    % in bad usage this can lead to: [break -10000] [wordboundary] [line(break)penalty] [glue (filler)]
-   \break
+   \localbreakpar % was \break .. needs testing on e.g. m-bibles
    \begingroup
    \c_attr_crlf\plusone
    \wordboundary

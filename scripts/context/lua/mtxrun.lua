@@ -21352,7 +21352,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["data-exp"] = package.loaded["data-exp"] or true
 
--- original size: 18571, stripped down to: 10558
+-- original size: 18579, stripped down to: 10569
 
 if not modules then modules={} end modules ['data-exp']={
  version=1.001,
@@ -21717,11 +21717,10 @@ function resolvers.get_from_content(content,path,name)
  local remap=content.remap
  if not remap then
   return
- end
- if name then
+ elseif name then
   local used=lower(name)
   return path,remap[used] or used
- else
+ elseif path then
   local name=path
   local used=lower(name)
   local path=files[used]
@@ -26879,8 +26878,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1077435
--- stripped bytes    : 430013
+-- original bytes    : 1077443
+-- stripped bytes    : 430010
 
 -- end library merge
 
@@ -27710,6 +27709,8 @@ function runners.register_arguments(...)
     end
 end
 
+local autogenerate = false
+
 function runners.execute_ctx_script(filename,...)
     runners.register_arguments(...)
     local arguments = environment.arguments_after
@@ -27722,7 +27723,7 @@ function runners.execute_ctx_script(filename,...)
         fullname = runners.find_mtx_script("context") or ""
     end
     -- retry after generate but only if --autogenerate
-    if fullname == "" and environment.argument("autogenerate") then -- might become the default
+    if fullname == "" and (autogenerate or environment.argument("autogenerate") or os.getenv("mtxrun.autogenerate")) then -- might become the default
         resolvers.renewcache()
         trackers.enable("resolvers.locating")
         resolvers.load()

@@ -4,13 +4,13 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="negatecolorbox" level="system" category="colors" file="colo-ext.mkiv">
+    <cd:command name="negatecolorbox" level="system" category="colors" file="colo-ext.mkxl">
         <cd:arguments>
             <cd:resolve name="string-box"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="colorintent" type="environment" level="document" category="colors" file="colo-ext.mkiv">
+    <cd:command name="colorintent" type="environment" level="document" category="colors" file="colo-ext.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="knockout"/>
@@ -20,13 +20,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overprint" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="overprint" type="environment" level="document" category="colors" file="colo-ext.mkxl"/>
 
-    <cd:command name="knockout" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="knockout" type="environment" level="document" category="colors" file="colo-ext.mkxl"/>
 
-    <cd:command name="textcolorintent" type="environment" level="document" category="colors" file="colo-ext.mkiv"/>
+    <cd:command name="textcolorintent" type="environment" level="document" category="colors" file="colo-ext.mkxl"/>
 
-    <cd:command name="definecolorgroup" level="style" category="colors" file="colo-grp.mkiv">
+    <cd:command name="definecolorgroup" level="style" category="colors" file="colo-grp.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:keywords optional="yes">
@@ -492,7 +492,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifelsecolor" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
+    <cd:command name="doifelsecolor" level="system" category="colors" keywords="conditional" file="colo-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -500,7 +500,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolorelse" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
+    <cd:command name="doifcolorelse" level="system" category="colors" keywords="conditional" file="colo-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>
@@ -508,7 +508,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifcolor" level="system" category="colors" keywords="conditional" file="color-ini.mkiv">
+    <cd:command name="doifcolor" level="system" category="colors" keywords="conditional" file="colo-ini.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-color"/>
             <cd:resolve name="argument-true"/>

@@ -758,7 +758,6 @@ lpdf_epdf.expanded = expanded
 -- We normalize to hex because when strings move through lua we sometimes get escaping
 -- (ff) that I can't figure out.
 
-
 local h_hex_2 = lpdf.h_hex_2
 
 local remapper = {

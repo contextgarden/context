@@ -659,7 +659,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commalistelement" level="system" file="syst-aux.mkxl"/>
+    <cd:command name="commalistelement" level="system" category="system" file="syst-aux.mkxl"/>
 
     <cd:command name="firstcharacter" level="system" category="strings" file="syst-aux.mkxl"/>
 
@@ -3694,7 +3694,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3703,7 +3703,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoif" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoif" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3711,7 +3711,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifnot" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifnot" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3719,7 +3719,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expandeddoif" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expandeddoif" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3727,7 +3727,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expandeddoifnot" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expandeddoifnot" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3735,7 +3735,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expandeddoifelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expandeddoifelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:content/>
             <cd:content/>
@@ -3744,7 +3744,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifelsecommon" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifelsecommon" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-text-list"/>
@@ -3753,7 +3753,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifcommonelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifcommonelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text-list"/>
             <cd:resolve name="argument-text-list"/>
@@ -3762,7 +3762,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifelseinset" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifelseinset" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text-list"/>
@@ -3771,7 +3771,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="expdoifinsetelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkiv">
+    <cd:command name="expdoifinsetelse" level="system" category="strings" keywords="conditional" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-text"/>
             <cd:resolve name="argument-text-list"/>
@@ -3780,7 +3780,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="luaexpr" level="system" category="strings" file="syst-lua.mkiv">
+    <cd:command name="luaexpr" level="system" category="strings" file="syst-lua.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="cd:text"/>
@@ -3809,7 +3809,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetmacros" level="system" file="syst-aux.mkxl">
+    <cd:command name="resetmacros" level="system" category="system" file="syst-aux.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:constant type="cd:name"/>

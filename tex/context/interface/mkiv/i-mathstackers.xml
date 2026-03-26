@@ -153,7 +153,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathextensible" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathextensible" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="reverse"/>
@@ -283,7 +283,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="definemathunderextensible" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathunderextensible" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bottom"/>
@@ -309,7 +309,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="definemathdoubleextensible" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathdoubleextensible" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="both"/>
@@ -446,7 +446,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathovertextextensible" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathovertextextensible" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -479,7 +479,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathundertextextensible" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathundertextextensible" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bothtext"/>
@@ -512,7 +512,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathtriplet" level="system" category="mathematics" file="math-sty.mkvi">
+    <cd:command name="definemathtriplet" level="style" category="mathematics" file="math-sty.mkvi">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-name"/>
@@ -541,20 +541,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathfiller" file="math-stc.mklx">
+    <cd:command name="mathfiller" level="document" category="mathematics" file="math-stc.mklx">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineextensiblefiller" file="math-stc.mklx">
+    <cd:command name="defineextensiblefiller" level="style" category="mathematics" file="math-stc.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathfiller" generated="yes" variant="instance" file="math-stc.mklx">
+    <cd:command name="mathfiller" generated="yes" variant="instance" level="document" category="mathematics" file="math-stc.mklx">
         <cd:sequence>
             <cd:instance value="mathfiller"/>
         </cd:sequence>

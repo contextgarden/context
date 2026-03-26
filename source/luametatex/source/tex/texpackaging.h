@@ -44,6 +44,7 @@ typedef enum box_codes {
     vbalanced_deinsert_code,
     vbalanced_reinsert_code,
     flush_mvl_box_code,
+    preroll_mvl_box_code,
     insert_box_code,
     insert_copy_code,
     local_left_box_box_code,
@@ -145,7 +146,7 @@ extern halfword  tex_natural_width         (halfword p, halfword pp, glueratio g
 extern halfword  tex_natural_hsize         (halfword p, halfword *correction);
 extern halfword  tex_natural_vsize         (halfword p);
                                            
-extern halfword  tex_hpack                 (halfword p, scaled w, int m, singleword d, int retain, int limit);
+extern halfword  tex_hpack                 (halfword p, scaled w, int m, singleword d, int retain, int limit, halfword ls, halfword rs);
 extern halfword  tex_vpack                 (halfword p, scaled h, int m, scaled l, singleword d, int retain, int *excess);
                                            
 extern void      tex_repack                (halfword p, scaled w, int m);

@@ -9,6 +9,7 @@ if not modules then modules = { } end modules ['strc-not'] = {
 local format = string.format
 local next, tonumber = next, tonumber
 local sortedhash = table.sortedhash
+local insert, remove = table.insert, table.remove
 
 local trace_notes         = false  trackers.register("structures.notes",            function(v) trace_notes      = v end)
 local trace_references    = false  trackers.register("structures.notes.references", function(v) trace_references = v end)
@@ -782,3 +783,35 @@ implement {
     actions   = structures.notes.flushrange,
 }
 
+-- bonus: used in backgrounds (for AFO)
+
+local getbox  = nuts.getbox
+local getpost = nuts.getpost
+local setpost = nuts.setpost
+
+local stack = { }
+
+implement {
+    name      = "stripinserts",
+    arguments = "integer",
+    actions   = function(box)
+        local b = getbox(box)
+        local p = false
+        if b then
+            -- todo: filter inserts and maybe wipe marks
+            p = getpost(b) or false
+            setpost(b)
+        end
+        insert(stack,p)
+    end
+}
+
+implement {
+    name    = "unstripinserts",
+    actions = function()
+        local p = remove(stack)
+        if p then
+            context(tonode(p))
+        end
+    end
+}

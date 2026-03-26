@@ -33,6 +33,7 @@ return {
         "binaryshiftedten", "binaryshiftedtwenty", "binaryshiftedthirty",
         "thickermuskip", "continuationmuskip", "fencemuskip", "mathinterwordmuskip",
         "zerofloat",
+        "pbsppenalty",
         --
         "directionlefttoright", "directionrighttoleft",
         --
@@ -96,6 +97,8 @@ return {
         "hyphenpenaltyfrozenparcode", "linesnappingfrozenparcode", "linebreakchecksfrozenparcode",
         "twindemeritsfrozenparcode", "fitnessclassesfrozenparcode", "allfrozenparcode",
         --
+        "leftparagraphfillmodecode", "rightparagraphfillmodecode", "bothparagraphfillmodecode",
+        --
         "activemathcharcode",
         --
         "activetabtoken", "activeformfeedtoken", "activeendoflinetoken",
@@ -128,6 +131,14 @@ return {
         "analyzescriptnucleuscharmathcontrolcode", "analyzescriptnucleuslistmathcontrolcode", "analyzescriptnucleusboxmathcontrolcode",
         "accenttopskewwithoffsetmathcontrolcode", "ignorekerndimensionsmathcontrolcode", "ignoreflataccentsmathcontrolcode",
         "extendaccentsmathcontrolcode", "extenddelimitersmathcontrolcode",
+        --
+        "discardnospacesmodecode", "zeronospacesmodecode", "characternospacesmodecode",
+        "fontnospacesmodecode", "fontfixednospacesmodecode", "characterwidthnospacesmodecode",
+        --
+        "noamountspaceskipcode", "noshrinkspaceskipcode", "nostretchspaceskipcode", "nogluespaceskipcode",
+        --
+        "factoroverlimitspacefactorcode", "limitoverfactorspacefactorcode", "factoroverlimithalfspacefactorcode",
+        "fixedspacefactorcode", "ignoredspacefactorcode",
         --
         "normalparcontextcode", "vmodeparcontextcode", "vboxparcontextcode", "vtopparcontextcode", "vcenterparcontextcode",
         "vadjustparcontextcode", "insertparcontextcode", "outputparcontextcode", "alignparcontextcode",
@@ -515,6 +526,7 @@ return {
         "obeyspaces", "obeylines", "obeytabs", "obeypages", "obeyedspace", "obeyedline", "obeyedtab", "obeyedpage",
         "normalspace", "naturalspace", "controlspace", "normalspaces",
         "ignoretabs", "ignorelines", "ignorepages", "ignoreeofs", "setcontrolspaces",
+        "pbsp",
         --
         "executeifdefined",
         --

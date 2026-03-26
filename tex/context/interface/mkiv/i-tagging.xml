@@ -35,7 +35,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="forgettagging" file="strc-tag.mkxl"/>
+    <cd:command name="forgettagging" level="system" category="xml" file="strc-tag.mkxl"/>
 
     <cd:command name="tagged" type="environment" begin="dostart" end="dostop" level="system" category="xml" file="strc-tag.mkxl">
         <cd:arguments>

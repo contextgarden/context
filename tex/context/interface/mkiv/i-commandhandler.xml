@@ -22,7 +22,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="instanceparameter" variant="parameterhandler" file="mult-aux.mkxl">
+    <cd:command name="instanceparameter" variant="parameterhandler" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:variable value="instance"/>
             <cd:string value="parameter"/>
@@ -434,7 +434,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="commandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:variable value="command"/>
             <cd:string value="parameter"/>
@@ -444,7 +444,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="namedcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="named"/>
             <cd:variable value="command"/>
@@ -456,7 +456,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="detokenizedcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="detokenizedcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="detokenized"/>
             <cd:variable value="command"/>
@@ -467,7 +467,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="directcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="directcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="direct"/>
             <cd:variable value="command"/>
@@ -478,7 +478,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letfromcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="letfromcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="letfrom"/>
             <cd:variable value="command"/>
@@ -490,7 +490,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="rootcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="rootcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="root"/>
             <cd:variable value="command"/>
@@ -501,7 +501,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="detokenizedrootcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="detokenizedrootcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="detokenizedroot"/>
             <cd:variable value="command"/>
@@ -512,14 +512,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commandnamespace" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="commandnamespace" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:variable value="command"/>
             <cd:string value="namespace"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="commandparameterhash" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="commandparameterhash" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:variable value="command"/>
             <cd:string value="parameterhash"/>
@@ -529,7 +529,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="currentcommandhash" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="currentcommandhash" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="current"/>
             <cd:variable value="command"/>
@@ -537,7 +537,7 @@
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="namedcommandhash" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="namedcommandhash" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="named"/>
             <cd:variable value="command"/>
@@ -548,7 +548,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="checkcommandparent" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="checkcommandparent" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="check"/>
             <cd:variable value="command"/>
@@ -556,7 +556,7 @@
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="chaintocurrentcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="chaintocurrentcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="chaintocurrent"/>
             <cd:variable value="command"/>
@@ -566,7 +566,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="setcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="set"/>
             <cd:variable value="command"/>
@@ -578,7 +578,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setexpandedcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="setexpandedcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="setexpanded"/>
             <cd:variable value="command"/>
@@ -590,7 +590,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="letcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="letcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="let"/>
             <cd:variable value="command"/>
@@ -602,7 +602,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="resetcommandparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="resetcommandparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="reset"/>
             <cd:variable value="command"/>
@@ -613,7 +613,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usecommandstyleandcolor" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="usecommandstyleandcolor" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="use"/>
             <cd:variable value="command"/>
@@ -625,7 +625,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usecommandstyleparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="usecommandstyleparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="use"/>
             <cd:variable value="command"/>
@@ -636,7 +636,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="usecommandcolorparameter" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="usecommandcolorparameter" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="use"/>
             <cd:variable value="command"/>
@@ -647,7 +647,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="definecommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="define"/>
             <cd:variable value="command"/>
@@ -659,7 +659,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="setupcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="setup"/>
             <cd:variable value="command"/>
@@ -670,7 +670,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcurrentcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="setupcurrentcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="setupcurrent"/>
             <cd:variable value="command"/>
@@ -680,21 +680,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="commandsetupmode" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="commandsetupmode" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:variable value="command"/>
             <cd:string value="setupmode"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="currentcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="currentcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="current"/>
             <cd:variable value="command"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="currentcommandparent" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="currentcommandparent" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="current"/>
             <cd:variable value="command"/>
@@ -702,7 +702,7 @@
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="previouscommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="previouscommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="previous"/>
             <cd:variable value="command"/>
@@ -710,28 +710,28 @@
     </cd:command>
 
 
-    <cd:command name="everypresetcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="everypresetcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="everypreset"/>
             <cd:variable value="command"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="everydefinecommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="everydefinecommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="everydefine"/>
             <cd:variable value="command"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="everysetupcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="everysetupcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="everysetup"/>
             <cd:variable value="command"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="everysetupcommandroot" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="everysetupcommandroot" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="everysetup"/>
             <cd:variable value="command"/>
@@ -739,14 +739,14 @@
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="everyswitchcommand" generated="yes" file="mult-aux.mkxl">
+    <cd:command name="everyswitchcommand" generated="yes" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:sequence>
             <cd:string value="everyswitch"/>
             <cd:variable value="command"/>
         </cd:sequence>
     </cd:command>
 
-    <cd:command name="inheritedcommandframed" generated="yes" file="pack-rul.mkxl">
+    <cd:command name="inheritedcommandframed" generated="yes" level="system" category="commandhandler" file="pack-rul.mkxl">
         <cd:sequence>
             <cd:string value="inherited"/>
             <cd:variable value="command"/>
@@ -757,7 +757,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="inheritedcommandframedbox" generated="yes" file="pack-rul.mkxl">
+    <cd:command name="inheritedcommandframedbox" generated="yes" level="system" category="commandhandler" file="pack-rul.mkxl">
         <cd:sequence>
             <cd:string value="inherited"/>
             <cd:variable value="command"/>
@@ -769,9 +769,30 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="installcommalistprocessor" file="mult-aux.mkxl">
+    <cd:command name="installcommalistprocessor" level="system" category="commandhandler" file="mult-aux.mkxl">
         <cd:arguments>
-        
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installcommalistprocessor" level="system" category="commandhandler" file="mult-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="installcommalistprocessorcommand" level="system" category="commandhandler" file="mult-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:csname/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="commalistprocessor" level="system" category="commandhandler" file="mult-aux.mkxl">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 

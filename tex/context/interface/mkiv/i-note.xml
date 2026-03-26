@@ -85,6 +85,9 @@
                 <cd:parameter name="headcommand">
                     <cd:constant type="cd:oneargument"/>
                 </cd:parameter>
+                <cd:parameter name="deeptextcommand">
+                    <cd:constant type="cd:oneargument"/>
+                </cd:parameter>
                 <cd:parameter name="before">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
@@ -359,6 +362,12 @@
                 <cd:parameter name="rulethickness">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="rulewidth">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
+                <cd:parameter name="ruledistance">
+                    <cd:constant type="cd:dimension"/>
+                </cd:parameter>
                 <cd:parameter name="setups">
                     <cd:constant type="cd:name"/>
                 </cd:parameter>
@@ -506,7 +515,7 @@
 
     <cd:command name="postponingnotes" type="environment" category="structure" keywords="notes" file="strc-not.mklx"/>
 
-    <cd:command name="doifelsenoteonsamepage" level="system" category="structure" keywords="notes conditional" file="strc-not.mklx">
+    <cd:command name="doifelsenoteonsamepage" level="system" category="structure" keywords="notes conditional" file="strc-not.lmt">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
@@ -516,6 +525,24 @@
 
     <cd:command name="doifnoteonsamepageelse" level="system" category="structure" keywords="notes conditional" file="strc-not.mklx">
         <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doifelsetaggednoteonsamepage" level="system" category="structure" keywords="notes conditional" file="strc-not.lmt">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-name"/>
+            <cd:resolve name="argument-true"/>
+            <cd:resolve name="argument-false"/>
+        </cd:arguments>
+    </cd:command>
+
+    <cd:command name="doiftaggednoteonsamepageelse" level="system" category="structure" keywords="notes conditional" file="strc-not.mklx">
+        <cd:arguments>
+            <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
             <cd:resolve name="argument-false"/>
@@ -574,7 +601,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definelinenote" level="style" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="definelinenote" level="style" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -584,7 +611,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuplinenote" level="style" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="setuplinenote" level="style" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -611,7 +638,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="linenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="linenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:sequence>
             <cd:instance value="linenote"/>
         </cd:sequence>
@@ -623,7 +650,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="startlinenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="startlinenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:sequence>
             <cd:string value="start"/>
             <cd:instance value="linenote"/>
@@ -637,7 +664,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="stoplinenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="stoplinenote" generated="yes" variant="instance" level="document" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:sequence>
             <cd:string value="stop"/>
             <cd:instance value="linenote"/>
@@ -650,20 +677,20 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="fromlinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="fromlinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
             <cd:resolve name="argument-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="tolinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mkvi">
+    <cd:command name="tolinenote" level="document" category="structure" keywords="notes" file="strc-lnt.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-reference"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definetextnote" level="style" category="structure" keywords="notes" file="strc-tnt.mkiv">
+    <cd:command name="definetextnote" level="style" category="structure" keywords="notes" file="strc-tnt.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -673,7 +700,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setuptextnote" level="style" category="structure" keywords="notes" file="strc-tnt.mkiv">
+    <cd:command name="setuptextnote" level="style" category="structure" keywords="notes" file="strc-tnt.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -697,7 +724,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="textnote" generated="yes" variant="example" level="document" category="structure" keywords="notes" file="strc-tnt.mkiv">
+    <cd:command name="textnote" generated="yes" variant="example" level="document" category="structure" keywords="notes" file="strc-tnt.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:inherit name="setuptextnote"/>

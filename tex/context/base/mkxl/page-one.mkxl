@@ -210,12 +210,19 @@
    %
    \page_layouts_check_stretch#2%
    %
-%    \ifconditional\c_notes_bottom_present\else
-%       \doifmarkedpage\v!stretch\page_one_check_stretch_lines
-%    \fi
+  %\ifconditional\c_notes_bottom_present\else
+  %   \doifmarkedpage\v!stretch\page_one_check_stretch_lines
+  %\fi
    \ifconditional\c_notes_bottom_present
       \setbox\b_page_one_bottom_notes\vpack\bgroup
         \placebottomnotes
+        \vkern % \vskip
+          \ifgridlinesnapping
+            -% indeed
+          \orelse\ifgridsnapping
+            -% indeed
+          \fi
+          \d_strc_notes_bottom_depth
       \egroup
    \fi
    \setbox\b_page_one_contents\vbox \ifcase\c_page_one_stretch to \textheight\fi \bgroup% probably no pack
@@ -287,11 +294,10 @@
      \else
        \scratchoffset\ht\b_page_one_contents
      \fi
+     % the scratchoffset doesn't include the depth
      \setbox\b_page_one_bottom_notes\hpack\bgroup
-        \lower\scratchoffset\vbox\bgroup
+       \lower\scratchoffset\vpack\bgroup
           \box\b_page_one_bottom_notes
-          \par
-          \kern\zeropoint % kerns makes notes sit on bottom % pack ?
         \egroup
      \egroup
      \smashbox\b_page_one_bottom_notes
@@ -319,7 +325,6 @@
        {\box\b_page_one_contents}%
    \fi
    \egroup}
-
 \protected\def\page_one_command_side_float_output
   {\page_otr_construct_and_shipout\unvbox\normalpagebox\plusone} % three arguments, we need to be in the output group
 

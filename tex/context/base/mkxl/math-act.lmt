@@ -850,7 +850,7 @@ do
     function mathtweaks.fixvariants(target,original,parameters)
         local list = parameters.list
         if list then
-            local targetcharacters   = target.characters
+            local targetcharacters = target.characters
             local done  = false
             for k, v in sortedhash(list) do
                 local tmp = v.template
@@ -1268,7 +1268,6 @@ do
     end
 
 end
-
 
 -- In TeX The Program we find in section 543 a remark about the second use of math
 -- italic: it is always added to the width except with respect to the position of
@@ -4753,51 +4752,80 @@ interfaces.implement {
     end
 }
 
-function mathematics.variantcode(unicode,variant)
-    local data = fontcharacters[getfontoffamily(texget("fam"))]
-    local char = data and data[unicode]
-    if char then
-        for i=1,variant do
-            local next = char.next
-            if next then
-                unicode = next
-                char = data[next]
-            else
-                break
+do
+
+    local function variantcode(unicode,variant,characters)
+        local data = characters or fontcharacters[getfontoffamily(texget("fam"))]
+        local char = data and data[unicode]
+        if char then
+            for i=1,variant do
+                local next = char.next
+                if next then
+                    unicode = next
+                    char = data[next]
+                else
+                    break
+                end
             end
         end
+        return unicode
     end
-    return unicode
-end
 
-function mathematics.variantcount(unicode)
-    local data  = fontcharacters[getfontoffamily(texget("fam"))]
-    local char  = data and data[unicode]
-    local count = 0
-    if char then
-        while true do
-            local next = char.next
-            if next then
-                count = count + 1
-                char = data[next]
-            else
-                break
+    local function variantcount(unicode,characters)
+        local data  = characters or fontcharacters[getfontoffamily(texget("fam"))]
+        local char  = data and data[unicode]
+        local count = 0
+        if char then
+            while true do
+                local next = char.next
+                if next then
+                    count = count + 1
+                    char = data[next]
+                else
+                    break
+                end
             end
         end
+        return count
     end
-    return count
+
+    function mathtweaks.strut(target,original,parameters)
+        if parameters.unicode then
+            target.properties.mathstrut = variantcode(parameters.unicode,parameters.variant or 0,original.characters)
+        end
+    end
+
+    local fontproperties = fonts.hashes.properties
+
+    local function strutcode(unicode)
+        local data = fontproperties[getfontoffamily(texget("fam"))]
+        local code = data and data.mathstrut or unicode
+        return code
+    end
+
+    mathematics.variantcode  = variantcode
+    mathematics.variantcount = variantcount
+    mathematics.strutcode    = strutcode
+
+    interfaces.implement {
+        name      = "mathvariantcode",
+        public    = true,
+        arguments = "2 integers",
+        actions   = { variantcode, context },
+    }
+
+    interfaces.implement {
+        name      = "mathvariantcount",
+        public    = true,
+        arguments = "integer",
+        actions   = { variantcount, context },
+    }
+
+    interfaces.implement {
+        name      = "mathstrutcode",
+        public    = true,
+        arguments = "integer",
+        actions   = { strutcode, context },
+    }
+
 end
-
-interfaces.implement {
-    name      = "mathvariantcode",
-    public    = true,
-    arguments = "2 integers",
-    actions   = { mathematics.variantcode, context },
-}
-
-interfaces.implement {
-    name      = "mathvariantcount",
-    public    = true,
-    arguments = "integer",
-    actions   = { mathematics.variantcount, context },
-}

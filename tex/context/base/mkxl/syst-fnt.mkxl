@@ -48,6 +48,8 @@
 \aliased\let\emwidth             \scaledemwidth
 \aliased\let\extraspace          \scaledextraspace
 
+%D not \type {\spaceskip} but the real font related space:
+
 \permanent\def\currentspaceskip{\interwordspace\s!plus\interwordstretch\s!minus\interwordshrink\relax}
 
 \permanent\def\currentspacevalue{\the\interwordspace

@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definemathaccent" file="math-acc.mklx">
+    <cd:command name="definemathaccent" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathaccent" file="math-acc.mklx">
+    <cd:command name="setupmathaccent" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -23,7 +23,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathaccents" file="math-acc.mklx">
+    <cd:command name="setupmathaccents" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -78,7 +78,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathtopaccent" file="math-acc.mklx">
+    <cd:command name="definemathtopaccent" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="top"/>
@@ -91,7 +91,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathbottomaccent" file="math-acc.mklx">
+    <cd:command name="definemathbottomaccent" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="bottom"/>
@@ -103,7 +103,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definemathdoubleaccent" file="math-acc.mklx">
+    <cd:command name="definemathdoubleaccent" level="style" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="both"/>
@@ -116,7 +116,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathaccent" generated="yes" variant="instance" file="math-acc.mklx">
+    <cd:command name="mathaccent" generated="yes" variant="instance" level="document" category="mathematics" file="math-acc.mklx">
         <cd:sequence>
             <cd:instance value="mathaccent"/>
         </cd:sequence>
@@ -131,7 +131,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="slashed" file="math-acc.mklx">
+    <cd:command name="slashed" level="document" category="mathematics" file="math-acc.mklx">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:resolve name="value-mathclass"/>

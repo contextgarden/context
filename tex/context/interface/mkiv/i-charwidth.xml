@@ -14,35 +14,35 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="charactertable" type="environment" file="lang-frq.mkxl">
+    <cd:command name="charactertable" type="environment" level="style" category="language" file="lang-frq.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="charfreq" file="lang-frq.mkxl">
+    <cd:command name="charfreq" level="style" category="language" file="lang-frq.mkxl">
         <cd:arguments>
             <cd:resolve name="string-character"/>
             <cd:resolve name="string-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="charactertable" file="lang-frq.mkxl">
+    <cd:command name="charactertable" level="style" category="language" file="lang-frq.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="charactertsize" file="lang-frq.mkxl">
+    <cd:command name="charactertsize" level="style" category="language" file="lang-frq.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="averagecharwidth" file="lang-frq.mkxl"/>
+    <cd:command name="averagecharwidth" level="style" category="language" file="lang-frq.mkxl"/>
 
-    <cd:command name="showcharfreq" file="lang-frq.mkxl"/>
+    <cd:command name="showcharfreq" level="document" category="language" file="lang-frq.mkxl"/>
 
-    <cd:command name="freezeaveragecharacterwidth" file="lang-frq.mkxl"/>
+    <cd:command name="freezeaveragecharacterwidth" level="style" category="language" file="lang-frq.mkxl"/>
 
 </cd:interface>

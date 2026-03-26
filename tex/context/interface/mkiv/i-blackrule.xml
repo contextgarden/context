@@ -58,6 +58,9 @@
                 <cd:parameter name="off">
                     <cd:constant type="cd:dimension"/>
                 </cd:parameter>
+                <cd:parameter name="snapping">
+                    <cd:resolve name="value-snapping"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -90,7 +93,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="somekindoftab" level="style" category="rules" file="tabl-mis.mkiv">
+    <cd:command name="somekindoftab" level="style" category="rules" file="tabl-mis.mkxl">
         <cd:arguments>
             <cd:assignments list="yes" optional="yes">
                 <cd:parameter name="alternative">
@@ -113,7 +116,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="frule" level="style" category="rules" file="grph-rul.mkiv">
+    <cd:command name="frule" level="style" category="rules" file="grph-rul.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="none" list="yes">
                 <cd:constant type="cd:dimension" prefix="width␣" method="none"/>
@@ -132,7 +135,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="autorule" level="style" category="rules" file="node-rul.mkiv">
+    <cd:command name="autorule" level="style" category="rules" file="node-rul.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="none" list="yes">
                 <cd:constant type="cd:dimension" prefix="width␣" method="none"/>

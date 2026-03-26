@@ -28,12 +28,14 @@ if not modules then modules = { } end modules ['lpdf-img'] = {
 -- there ended up some code here that was needed for font related png too (and I'd
 -- already forgotten about: I need to document that).
 
+-- The \LUA\ code is now gone and can be found in the archives. We still prototype
+-- in \LUA\ but carrying around that code makes no sense. In the end it's also a
+-- bit entertaining to go from the standard to this mix of helpers and \LUA.
+
 local type = type
 local concat, move = table.concat, table.move
 local ceil, min = math.ceil, math.min
-local char, byte, find, gmatch = string.char, string.byte, string.find, string.gmatch
------ idiv = number.idiv
------ band, rshift = bit32.band, bit32.rshift
+local char, byte = string.char, string.byte
 
 local loaddata             = io.loaddata
 local setmetatableindex    = table.setmetatableindex
@@ -71,22 +73,14 @@ local cleanvirtual         = resolvers.cleaners.virtual -- false -- for now
 
 local report_jpg           = logs.reporter("graphics","jpg")
 local report_jp2           = logs.reporter("graphics","jp2")
-local report_pngpng           = logs.reporter("graphics","png")
+local report_png           = logs.reporter("graphics","png")
 
-trackers.register("graphics.backend", function(v) trace = v end)
+trackers.register("graphics.backend", function(v) trace     = v end)
 
 directives.register("graphics.cleanvirtuals", function(v) cleanvirtual = v and resolvers.cleaners.virtual or false end)
 
 local injectors = { }
 lpdf.injectors  = injectors
-
--- local function loadcontent(filename,method)
---     return method == "string" and filename or loaddata(filename)
--- end
-
--- local function newcontent(filename,method)
---     return newreader(filename,method)
--- end
 
 local function loadcontent(filename,method,wipe)
     if method == "string" then
@@ -112,7 +106,7 @@ local function newcontent(filename,method,wipe)
     end
 end
 
---
+-- this likely is never needed (see convert)
 
 local chars = setmetatableindex(function(t,k) -- share this one
     local v = (k <= 0 and "\000") or (k >= 255 and "\255") or char(k)
@@ -182,6 +176,9 @@ end
 
 do
 
+    local compresslevel = 3
+    local pngtogray     = pngdecode.togray
+
     function injectors.jpg(specification,method)
         if specification.error then
             return
@@ -214,18 +211,50 @@ do
         local ysize      = specification.ysize
         local colordepth = specification.colordepth
         local content    = loadcontent(filename,method,true)
-        local xobject    = pdfdictionary {
-            Type             = pdfconstant("XObject"),
-            Subtype          = pdfconstant("Image"),
-         -- BBox             = pdfarray { 0, 0, xsize, ysize },
-            Width            = xsize,
-            Height           = ysize,
-            BitsPerComponent = colordepth,
-            Filter           = pdfconstant("DCTDecode"),
-            ColorSpace       = pdfconstant(colorspace),
-            Decode           = decodearray,
-            Length           = #content, -- specification.length
-        } + specification.attr
+        local xobject    = nil
+        if specification.enforcegray and colors == 3 then
+            local w, h, d
+            local filter = compresslevel > 0 and pdfconstant("FlateDecode") or nil
+            w, h, d, content = nanojpeg.decode(content)
+            content = pngtogray(content,colordepth)
+            if filter then
+                content = zlibcompress(content,compresslevel)
+            end
+            local lmtxdata = pdfdictionary {
+                Format        = pdfconstant("PNG"),
+                XSize         = xsize,
+                YSize         = ysize,
+                Compresslevel = compresslevel,
+                Original      = pdfdictionary {
+                    Format = pdfconstant("JPEG"),
+                    Colors = colors,
+                }
+            }
+            xobject = pdfdictionary {
+                Type             = pdfconstant("XObject"),
+                Subtype          = pdfconstant("Image"),
+                Width            = xsize,
+                Height           = ysize,
+                BitsPerComponent = colordepth,
+                ColorSpace       = pdfconstant("DeviceGray"),
+                Filter           = filter,
+                Length           = #content,
+                LMTX_Graphicdata = pdfreference(pdfflushobject(lmtxdata)),
+            } + specification.attr
+        else
+            xobject = pdfdictionary {
+                Type             = pdfconstant("XObject"),
+                Subtype          = pdfconstant("Image"),
+             -- BBox             = pdfarray { 0, 0, xsize, ysize },
+                Width            = xsize,
+                Height           = ysize,
+                BitsPerComponent = colordepth,
+                Filter           = pdfconstant("DCTDecode"),
+                ColorSpace       = pdfconstant(colorspace),
+                Decode           = decodearray,
+                Length           = #content, -- specification.length
+            } + specification.attr
+        end
         if trace then
             report_jpg("%s: width %i, height %i, colordepth %i, size %i",filename,xsize,ysize,colordepth,#content)
         end
@@ -296,22 +325,30 @@ do
     -- The amount of code is larger that I like and looks somewhat redundant but we sort of
     -- optimize a few combinations that happen often.
 
-    -- This will go to its own module as we also want to do bytemaps.
+    -- Per 2026 we started experimenting with \LUA's 5.5 feature to use external string which
+    -- for this kind of graphics is more efficient (we can gain some 10 percent). The same is
+    -- true for bytesmaps etc.
 
-    local pngapplyfilter = pngdecode.applyfilter
-    local pngsplitmask   = pngdecode.splitmask
-    local pnginterlace   = pngdecode.interlace
-    local pngexpand      = pngdecode.expand
-    local pngtocmyk      = pngdecode.tocmyk
-    local pngtomask      = pngdecode.tomask
-    local pngmakemask    = pngdecode.makemask
-    local frompalette    = pngdecode.frompalette
-    local palettemask    = pngdecode.palettemask
+    pngdecode.setexperiment(1)
 
-    local createmask, filtermask, decodemask, decodestrip, transpose, expand, tocmyk
+    local pngapplyfilter  = pngdecode.applyfilter
+    local pngsplitmask    = pngdecode.splitmask
+    local pnginterlace    = pngdecode.interlace
+    local pngexpand       = pngdecode.expand
+    local pngtocmyk       = pngdecode.tocmyk
+    local pngtogray       = pngdecode.togray
+    local pngtomask       = pngdecode.tomask
+    local pngmakemask     = pngdecode.makemask
+    local pngfrompalette  = pngdecode.frompalette
+    local pngpalettemask  = pngdecode.palettemask
+    local transparentmask = pngdecode.transparentmask
 
     local newindex = lua.newindex
     local newtable = lua.newtable
+
+    local trace_png = false
+
+    trackers.register("graphics.png", function(v) trace_png = v end)
 
     local function newoutput(size)
         if newindex then
@@ -326,6 +363,7 @@ do
 
     local function convert(t)
         if type(t) == "table" then
+            -- this likely never happens
             for i=1,#t do
                 local ti = t[i]
                 if ti ~= "" then -- soon gone
@@ -338,157 +376,13 @@ do
         end
     end
 
-    local function zero(t,k)
-        return 0
-    end
-
-    local function applyfilter(t,xsize,ysize,bpp)
-        local len = xsize * bpp + 1
-        local n   = 1
-        local m   = len - 1
-        for i=1,ysize do
-            local filter = t[n]
-            t[n] = ""
-            if filter == 0 then
-            elseif filter == 1 then
-                for j=n+bpp+1,n+m do
-                    t[j] = (t[j] + t[j-bpp]) % 256
-                end
-            elseif filter == 2 then
-                for j=n+1,n+m do
-                    t[j] = (t[j] + t[j-len]) % 256
-                end
-            elseif filter == 3 then
-                for j=n+1,n+bpp do
-                    t[j] = (t[j] + (t[j-len] // 2)) % 256
-                end
-                for j=n+bpp+1,n+m do
-                    t[j] = (t[j] + (t[j-bpp] + t[j-len]) // 2) % 256
-                end
-            elseif filter == 4 then
-                for j=n+1,n+bpp do
-                    local p = j - len
-                    local b = t[p]
-                    if b > 0 then
-                        t[j] = (t[j] + b) % 256
-                    end
-                end
-                for j=n+bpp+1,n+m do
-                    local p = j - len
-                    local a = t[j-bpp]
-                    local b = t[p]
-                    local c = t[p-bpp]
-                    local pa = b - c
-                    local pb = a - c
-                    local pc = pa + pb
-                    if pa < 0 then pa = - pa end
-                    if pb < 0 then pb = - pb end
-                    if pc < 0 then pc = - pc end
-                    t[j] = (t[j] + ((pa <= pb and pa <= pc and a) or (pb <= pc and b) or c)) % 256
-                end
-            end
-            n = n + len
-        end
-        return t
-    end
-
- -- local filtermask_l = function (content,xsize,ysize,colordepth,colorspace,hasfilter)
- --     local mask   = { }
- --     local bytes  = colordepth == 16 and 2 or 1
- --     local bpp    = colorspace == "DeviceRGB" and 3 or 1
- --     local length = #content
- --     local size   = ysize * xsize * ((bpp+1)*bytes + (hasfilter and 1 or 0))
- --     local n     = 1
- --     local l     = 1
- --     if bytes == 2 then
- --         if bpp == 1 then
- --             for i=1,ysize do
- --                 if hasfilter then
- --                     content[n] = "" ; n = n + 1
- --                 end
- --                 for j=1,xsize do
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                 end
- --             end
- --         elseif bpp == 3 then
- --             for i=1,ysize do
- --                 if hasfilter then
- --                     content[n] = "" ; n = n + 1
- --                 end
- --                 for j=1,xsize do
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                 end
- --             end
- --         else
- --             return "", ""
- --         end
- --     else
- --         if bpp == 1 then
- --             for i=1,ysize do
- --                 if hasfilter then
- --                     content[n] = "" ; n = n + 1
- --                 end
- --                 for j=1,xsize do
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                 end
- --             end
- --         elseif bpp == 3 then
- --             for i=1,ysize do
- --                 if hasfilter then
- --                     content[n] = "" ; n = n + 1
- --                 end
- --                 for j=1,xsize do
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     content[n] = chars[content[n]] ; n = n + 1
- --                     mask[l]    = chars[content[n]] ; l = l + 1
- --                     content[n] = ""                ; n = n + 1
- --                 end
- --             end
- --         else
- --             return "", ""
- --         end
- --     end
- --     return concat(content), concat(mask)
- -- end
-
- -- local decodemask_l = function(content,xsize,ysize,colordepth,colorspace)
- --     local bytes  = colordepth == 16 and 2 or 1
- --     local bpp    = colorspace == "DeviceRGB" and 3 or 1
- --     local slice  = bytes*(bpp+1)
- --     local length = #content
- --     local size   = ysize * xsize * ((bpp+1)*bytes + 1) -- assume filter
- --     content = openstring(content)
- --     content = readbytetable(content,length)
- --     setmetatableindex(content,zero)
- --     applyfilter(content,xsize,ysize,slice)
- --     content, mask = filtermask(content,xsize,ysize,colordepth,colorspace,true)
- --     return content, mask
- -- end
-
-    local filtermask_c = function(content,xsize,ysize,colordepth,colorspace)
+    local function filtermask(content,xsize,ysize,colordepth,colorspace)
         local bytes = colordepth == 16 and 2 or 1
         local bpp   = colorspace == "DeviceRGB" and 3 or 1
         return pngsplitmask(content,xsize,ysize,bpp,bytes)
     end
 
-    local decodemask_c = function(content,xsize,ysize,colordepth,colorspace)
+    local function decodemask(content,xsize,ysize,colordepth,colorspace)
         local mask   = true
         local filter = false
         local bytes  = colordepth == 16 and 2 or 1
@@ -498,15 +392,12 @@ do
         return pngsplitmask(content,xsize,ysize,bpp,bytes,mask,filter)
     end
 
- -- local function decodestrip_l(s,nx,ny,slice)
- --     local input = readbytetable(s,ny*(nx*slice+1))
- --     setmetatableindex(input,zero)
- --     applyfilter(input,nx,ny,slice)
- --     return input, true
- -- end
-
-    local function decodestrip_c(s,nx,ny,slice)
-        local input = readstring(s,ny*(nx*slice+1))
+    local function decodestrip(s,nx,ny,slice,parts)
+        local length = ny * (nx * slice + 1)
+        local input  = readstring(s,length)
+        if parts then
+            nx = ceil(nx*parts/8)
+        end
         input = pngapplyfilter(input,nx,ny,slice)
         return input, false
     end
@@ -518,207 +409,6 @@ do
 
     local xblock = { 8, 4, 4, 2, 2, 1, 1 }
     local yblock = { 8, 8, 4, 4, 2, 2, 1 }
-
- -- local function transpose_l(xsize,ysize,slice,pass,input,output,filter)
- --     local xstart = xstart[pass]
- --     local xstep  = xstep[pass]
- --     local ystart = ystart[pass]
- --     local ystep  = ystep[pass]
- --     local nx     = idiv(xsize + xstep - xstart - 1,xstep)
- --     local ny     = idiv(ysize + ystep - ystart - 1,ystep)
- --     local offset = filter and 1 or 0
- --     local xstep  = xstep * slice
- --     local xstart = xstart * slice
- --     local xsize  = xsize * slice
- --     local target = ystart * xsize + xstart + 1
- --     local ystep  = ystep * xsize
- --     local start  = 1
- --     local plus   = nx * xstep
- --     local step   = plus - xstep
- --     if not output then
- --         output = newoutput(xsize*(parts or slice)*ysize)
- --     end
- --     if slice == 1 then
- --         for j=0,ny-1 do
- --             start = start + offset
- --             local target = target + j * ystep
- --             for target=target,target+step,xstep do
- --                 output[target] = input[start]
- --                 start = start + slice
- --             end
- --         end
- --     elseif slice == 2 then
- --         for j=0,ny-1 do
- --             start = start + offset
- --             local target = target + j * ystep
- --             for target=target,target+step,xstep do
- --                 output[target]   = input[start]
- --                 output[target+1] = input[start+1]
- --                 start = start + slice
- --             end
- --         end
- --     elseif slice == 3 then
- --         for j=0,ny-1 do
- --             start = start + offset
- --             local target = target + j * ystep
- --             for target=target,target+step,xstep do
- --                 output[target]   = input[start]
- --                 output[target+1] = input[start+1]
- --                 output[target+2] = input[start+2]
- --                 start = start + slice
- --             end
- --         end
- --     elseif slice == 4 then
- --         for j=0,ny-1 do
- --             start = start + offset
- --             local target = target + j * ystep
- --             for target=target,target+step,xstep do
- --                 output[target]   = input[start]
- --                 output[target+1] = input[start+1]
- --                 output[target+2] = input[start+2]
- --                 output[target+3] = input[start+3]
- --                 start = start + slice
- --             end
- --         end
- --     else
- --         local delta = slice - 1
- --         for j=0,ny-1 do
- --             start = start + offset
- --             local target = target + j * ystep
- --             for target=target,target+step,xstep do
- --                 move(input,start,start+delta,target,output)
- --                 start = start + slice
- --             end
- --         end
- --     end
- --     return output;
- -- end
-
-    local transpose_c = pnginterlace
-
- -- print(band(rshift(v,4),0x03),extract(v,4,2))
- -- print(band(rshift(v,6),0x03),extract(v,6,2))
-
- -- local function expand_l(t,xsize,ysize,parts,run,factor,filter)
- --     local size  = ysize * xsize + 1 -- a bit of overshoot, needs testing, probably a few bytes us ok
- --     local xline = filter and (run+1) or run
- --     local f     = filter and 1 or 0
- --     local l     = xline - 1
- --     local n     = 1
- --     local o     = newoutput(size)
- --     local k     = 0
- --     if factor then
- --         if parts == 4 then
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 2
- --                     else
- --                         k = k + 1 ; o[k] = extract4(v,4) * 0x11
- --                         k = k + 1 ; o[k] = extract4(v,0) * 0x11
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         elseif parts == 2 then
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 4
- --                     else
- --                         k = k + 1 ; o[k] = extract2(v,6) * 0x55
- --                         k = k + 1 ; o[k] = extract2(v,4) * 0x55
- --                         k = k + 1 ; o[k] = extract2(v,2) * 0x55
- --                         k = k + 1 ; o[k] = extract2(v,0) * 0x55
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         else
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 8
- --                     else
- --                         k = k + 1 ; if band(v,0x80) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,7) * 0xFF
- --                         k = k + 1 ; if band(v,0x40) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,6) * 0xFF
- --                         k = k + 1 ; if band(v,0x20) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,5) * 0xFF
- --                         k = k + 1 ; if band(v,0x10) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,4) * 0xFF
- --                         k = k + 1 ; if band(v,0x08) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,3) * 0xFF
- --                         k = k + 1 ; if band(v,0x04) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,2) * 0xFF
- --                         k = k + 1 ; if band(v,0x02) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,1) * 0xFF
- --                         k = k + 1 ; if band(v,0x01) ~= 0 then o[k] = 0xFF end -- o[k] = extract1(v,0) * 0xFF
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         end
- --     else
- --         if parts == 4 then
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 2
- --                     else
- --                         k = k + 1 ; o[k] = extract4(v,4)
- --                         k = k + 1 ; o[k] = extract4(v,0)
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         elseif parts == 2 then
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 4
- --                     else
- --                         k = k + 1 ; o[k] = extract2(v,6)
- --                         k = k + 1 ; o[k] = extract2(v,4)
- --                         k = k + 1 ; o[k] = extract2(v,2)
- --                         k = k + 1 ; o[k] = extract2(v,0)
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         else
- --             for i=1,ysize do
- --                 for j=n+f,n+l do
- --                     local v = t[j]
- --                     if v == 0 then
- --                         k = k + 8
- --                     else
- --                         k = k + 1 ; if band(v,0x80) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,7)
- --                         k = k + 1 ; if band(v,0x40) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,6)
- --                         k = k + 1 ; if band(v,0x20) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,5)
- --                         k = k + 1 ; if band(v,0x10) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,4)
- --                         k = k + 1 ; if band(v,0x08) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,3)
- --                         k = k + 1 ; if band(v,0x04) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,2)
- --                         k = k + 1 ; if band(v,0x02) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,1)
- --                         k = k + 1 ; if band(v,0x01) ~= 0 then o[k] = 1 end -- o[k] = extract1(v,0)
- --                     end
- --                 end
- --                 k = i * xsize
- --                 n = n + xline
- --             end
- --         end
- --     end
- --     for i=size,xsize * ysize +1,-1 do
- --         o[i] = nil
- --     end
- --     return o, false
- -- end
-
-    local expand_c = pngexpand
 
     local function analyze(colordepth,colorspace,palette,mask)
      -- return bytes, parts, factor
@@ -789,11 +479,11 @@ do
                     if parts then
                         local nxx = ceil(nx*parts/8)
                         input, filter = decodestrip(content,nxx,ny,slice)
-                        input, filter = expand(input,nx,ny,parts,nxx,factor,filter)
+                        input, filter = pngexpand(input,nx,ny,parts,nxx,factor,filter)
                     else
                         input, filter = decodestrip(content,nx,ny,slice)
                     end
-                    output = transpose(xsize,ysize,slice,pass,input,output,filter)
+                    output = pnginterlace(xsize,ysize,slice,pass,input,output,filter)
                 end
              -- if pass == 3 then
              --     break -- still looks ok, could be nice for a preroll
@@ -812,194 +502,9 @@ do
     -- pb = abs(p - b) => a + b - c - b => a - c
     -- pc = abs(p - c) => a + b - c - c => a + b - c - c => a - c + b - c => pa + pb
 
-    local function full(t,k) local v = "\xFF" t[k] = v return v end
-
-    local function expandvector(transparent)
-        local s = openstring(transparent)
-        local n = #transparent
-        local r = { }
-        for i=0,n-1 do
-            r[i] = readstring(s,1) -- readchar
-        end
-        setmetatableindex(r,full)
-        return r
-    end
-
- -- local function createmask_l(content,palette,transparent,xsize,ysize,colordepth,colorspace)
- --     if palette then
- --         local r    = expandvector(transparent)
- --         local size = xsize*ysize
- --         local len  = ceil(xsize*colordepth/8) + 1
- --         local o    = newoutput(xsize*ysize)
- --         local u    = setmetatableindex(zero)
- --         content    = zlibdecompress(content)
- --         content    = openstring(content)
- --         for i=0,ysize-1 do
- --             local t = readbytetable(content,len)
- --             local k = i * xsize
- --             local filter = t[1]
- --             if filter == 0 then
- --             elseif filter == 1 then
- --                 for j=3,len do
- --                     t[j] = (t[j] + t[j-1]) % 256
- --                 end
- --             elseif filter == 2 then
- --                 for j=2,len do
- --                     t[j] = (t[j] + u[j]) % 256
- --                 end
- --             elseif filter == 3 then
- --                 local j = 2
- --                 t[j] = (t[j] + idiv(u[j],2)) % 256
- --                 for j=3,len do
- --                     t[j] = (t[j] + idiv(t[j-1] + u[j],2)) % 256
- --                 end
- --             elseif filter == 4 then
- --                 local j = 2
- --                 local p = j - len
- --                 local b = t[p]
- --                 if b < 0 then
- --                     b = - b
- --                 end
- --                 if b > 0 then
- --                     t[j] = (t[j] + b) % 256
- --                 end
- --                 for j=3,len do
- --                     local p = j - len
- --                     local a = t[j-1]
- --                     local b = t[p]
- --                     local c = t[p-1]
- --                     local pa = b - c
- --                     local pb = a - c
- --                     local pc = pa + pb
- --                     if pa < 0 then pa = - pa end
- --                     if pb < 0 then pb = - pb end
- --                     if pc < 0 then pc = - pc end
- --                     t[j] = (t[j] + ((pa <= pb and pa <= pc and a) or (pb <= pc and b) or c)) % 256
- --                 end
- --             end
- --             if colordepth == 8 then
- --                 for j=2,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[v]
- --                 end
- --             elseif colordepth == 4 then
- --                 for j=2,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[extract4(v,4)]
- --                     k = k + 1 ; o[k] = r[extract4(v,0)]
- --                 end
- --             elseif colordepth == 2 then
- --                 for j=2,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[extract2(v,6)]
- --                     k = k + 1 ; o[k] = r[extract2(v,4)]
- --                     k = k + 1 ; o[k] = r[extract2(v,2)]
- --                     k = k + 1 ; o[k] = r[extract2(v,0)]
- --                 end
- --             else
- --                 for j=2,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[extract1(v,7)]
- --                     k = k + 1 ; o[k] = r[extract1(v,6)]
- --                     k = k + 1 ; o[k] = r[extract1(v,5)]
- --                     k = k + 1 ; o[k] = r[extract1(v,4)]
- --                     k = k + 1 ; o[k] = r[extract1(v,3)]
- --                     k = k + 1 ; o[k] = r[extract1(v,2)]
- --                     k = k + 1 ; o[k] = r[extract1(v,1)]
- --                     k = k + 1 ; o[k] = r[extract1(v,0)]
- --                 end
- --             end
- --             u = t
- --         end
- --         return concat(o,"",1,size)
- --     end
- -- end
-
- -- We had this for a while (the reference now):
- --
- -- local function createmask_c(content,palette,transparent,xsize,ysize,colordepth,colorspace)
- --     if palette then
- --         local r    = expandvector(transparent)
- --         local size = xsize*ysize
- --         local len  = ceil(xsize*colordepth/8)
- --         local o    = newoutput(size)
- --         content    = zlibdecompress(content)
- --         content    = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
- --         content    = openstring(content)
- --         for i=0,ysize-1 do
- --             local t = readbytetable(content,len)
- --             local k = i * xsize
- --             if colordepth == 8 then
- --                 for j=1,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[v]
- --                 end
- --             elseif colordepth == 4 then
- --                 for j=1,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x0F] -- r[extract4(v,4)]
- --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x0F] -- r[extract4(v,0)]
- --                 end
- --             elseif colordepth == 2 then
- --                 for j=1,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[(v >> 6) & 0x03] -- r[extract2(v,6)]
- --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x03] -- r[extract2(v,4)]
- --                     k = k + 1 ; o[k] = r[(v >> 2) & 0x03] -- r[extract2(v,2)]
- --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x03] -- r[extract2(v,0)]
- --                 end
- --             else
- --                 for j=1,len do
- --                     local v = t[j]
- --                     k = k + 1 ; o[k] = r[(v >> 7) & 0x01] -- r[extract1(v,7)]
- --                     k = k + 1 ; o[k] = r[(v >> 6) & 0x01] -- r[extract1(v,6)]
- --                     k = k + 1 ; o[k] = r[(v >> 5) & 0x01] -- r[extract1(v,5)]
- --                     k = k + 1 ; o[k] = r[(v >> 4) & 0x01] -- r[extract1(v,4)]
- --                     k = k + 1 ; o[k] = r[(v >> 3) & 0x01] -- r[extract1(v,3)]
- --                     k = k + 1 ; o[k] = r[(v >> 2) & 0x01] -- r[extract1(v,2)]
- --                     k = k + 1 ; o[k] = r[(v >> 1) & 0x01] -- r[extract1(v,1)]
- --                     k = k + 1 ; o[k] = r[(v >> 0) & 0x01] -- r[extract1(v,0)]
- --                 end
- --             end
- --         end
- --         return concat(o,"",1,size)
- --     end
- -- end
- --
- -- But this is nicer for memory usage:
-
-    local function createmask_c(content,palette,transparent,xsize,ysize,colordepth,colorspace)
-        if palette then
-            local len = ceil(xsize*colordepth/8)
-            content = zlibdecompress(content)
-            content = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
-            return pngtomask(content,transparent,xsize,ysize,colordepth)
-        end
-    end
-
- -- local function tocmyk_l(content,colordepth)
- --     local l = #content
- --     local t = { }
- --     local n = 0
- --     if colordepth == 8 then
- --         for i=1,l,3 do
- --             local r, g, b = byte(content,i,i+2)
- --             n = n + 1 ; t[n] = char(255-r,255-g,255-b,0) -- a tad faster than chars[...]
- --         end
- --     else
- --         for i=1,l,6 do
- --             local r1, r2, g1, g2, b1, b2 = byte(content,i,i+5)
- --             n = n + 1 ; t[n] = char(255-r1,255-r2,255-g1,255-g2,255-b1,255-b2,0,0)
- --         end
- --     end
- --     return concat(t)
- -- end
-
-    local tocmyk_c = pngtocmyk
-
     local function converttocmyk(content,colorspace,colordepth)
-        if colorspace == "DeviceRGB" and colordepth == 8 or colordepth == 16 then
-            local done = tocmyk(content,colordepth)
+        if colorspace == "DeviceRGB" and (colordepth == 8 or colordepth == 16) then
+            local done = pngtocmyk(content,colordepth)
             if done then
                 content    = done
                 colorspace = "DeviceCMYK"
@@ -1008,34 +513,18 @@ do
         return content, colorspace
     end
 
- -- local function switch(v)
- --     if v then
- --         filtermask  = filtermask_l
- --         decodemask  = decodemask_l
- --         decodestrip = decodestrip_l
- --         transpose   = transpose_l
- --         expand      = expand_l
- --         createmask  = createmask_l
- --         tocmyk      = tocmyk_l
- --     else
-            filtermask  = filtermask_c
-            decodemask  = decodemask_c
-            decodestrip = decodestrip_c
-            transpose   = transpose_c
-            expand      = expand_c
-            createmask  = createmask_c
-            tocmyk      = tocmyk_c
- --     end
- -- end
+    local function converttogray(content,colorspace,colordepth,average)
+        if colorspace == "DeviceRGB" and (colordepth == 8 or colordepth == 16) then
+            local done = pngtogray(content,colordepth,average)
+            if done then
+                content    = done
+                colorspace = "DeviceGray"
+            end
+        end
+        return content, colorspace
+    end
 
- -- if pngapplyfilter then
- --     switch(false)
- --     directives.register("graphics.png.purelua",switch)
- -- else
- --     switch(true)
- -- end
-
-    local alwaysdecode  = false -- trucky with palettes
+    local alwaysdecode  = false -- tricky with palettes
     local compresslevel = 3
     local expandpalette = false
 
@@ -1056,6 +545,60 @@ do
         expandpalette = v
     end)
 
+    -- can be combined
+
+    local function extractmask_from_transparent_0(
+        content,colordepth,xsize,ysize,devicespace,transparent
+    )
+        local content = zlibdecompress(content)
+        if type(transparent) == "string" and #transparent == 2 then
+            local bytes, parts = analyze(colordepth,devicespace)
+            local xxsize = xsize
+            if parts then
+                xxsize = ceil(xsize*parts/8)
+            end
+            content = decodestrip(openstring(content),xxsize,ysize,bytes)
+            local mask, maskdepth = transparentmask(content,bytes,colordepth,transparent)
+            if mask then
+                return mask, maskdepth, content
+            end
+        end
+        return false, 0, content
+    end
+
+    local function extractmask_from_transparent_2(
+        content,colordepth,xsize,ysize,devicespace,transparent
+    )
+        local content = zlibdecompress(content)
+        if type(transparent) == "string" and #transparent == 6 then
+            local bytes = analyze(colordepth,devicespace)
+            if bytes then
+                content = decodestrip(openstring(content),xsize,ysize,bytes)
+            end
+            local mask, maskdepth = transparentmask(content,bytes,colordepth,transparent)
+            if mask then
+                return mask, maskdepth, content
+            end
+        end
+        return false, 0, content
+    end
+
+    local function extractmask_from_transparent_3(
+        content,colordepth,xsize,ysize,devicespace,transparent,palette
+    )
+        content = zlibdecompress(content)
+        if type(transparent) == "string" then
+            -- decodestrip
+            local len = ceil(xsize*colordepth/8)
+            content = pngapplyfilter(content,len,ysize,1) -- nostrip (saves copy)
+            local mask = pngtomask(content,transparent,xsize,ysize,colordepth)
+            if mask then
+                return mask, 8, content
+            end
+        end
+        return false, 0, content
+    end
+
     function injectors.png(specification,method) -- todo: method in specification
         if specification.error then
             return
@@ -1064,8 +607,8 @@ do
         if not filename then
             return
         end
-        local colorspace = specification.colorspace
-        if not colorspace then
+        local colortype = specification.colorspace -- actually more colortype
+        if not colortype then
             return
         end
         local interlace = specification.interlace or 0
@@ -1096,50 +639,59 @@ do
      --     report_png("ignoring gamma correction")
      -- end
         --
-        local lmtxcmyk = false
-        local lmtxmask = false
-        local lmtxcomp = false
-        --
         local xsize       = specification.xsize
         local ysize       = specification.ysize
         local colordepth  = specification.colordepth or 8
         local devicespace = false
+        local colorspace  = false
         local mask        = false
         local transparent = false
         local palette     = false
         local enforcecmyk = specification.enforcecmyk
+        local enforcegray = specification.enforcegray
+        local averagegray = false
+     -- local averagegray = true
         local colors      = 1
+        local zipcontent  = false
+        --
+        local lmtxcmyk = false
+        local lmtxgray = false
+        local lmtxmask = false
+        local lmtxcomp = false
         local lmtxdata = pdfdictionary {
             Format = pdfconstant("PNG"),
             Colors = colors,
             XSize  = xsize,
             YSize  = ysize,
         }
-        if     colorspace == 0 then    -- gray | image b
+        if     colortype == 0 then    -- gray | image b
             devicespace = "DeviceGray"
             colorspace  = "DeviceGray"
+         -- colors      = 1
             transparent = true
-        elseif colorspace == 2 then    -- rgb | image c
+        elseif colortype == 2 then    -- rgb | image c
             devicespace = "DeviceRGB"
             colorspace  = "DeviceRGB"
             colors      = 3
             transparent = true
-        elseif colorspace == 3 then    -- palette | image c+i
+        elseif colortype == 3 then    -- palette | image c+i
             devicespace = "DeviceRGB"
-            devicespace = "DeviceRGB"
+            colorspace  = "DeviceRGB"
+         -- colors      = 1
             palette     = true
             transparent = true
-        elseif colorspace == 4 then    -- gray | alpha | image b
-            colorspace  = "DeviceGray"
+        elseif colortype == 4 then    -- gray | alpha | image b
             devicespace = "DeviceGray"
+            colorspace  = "DeviceGray"
+         -- colors      = 1
             mask        = true
-        elseif colorspace == 6 then    -- rgb | alpha | image c
+        elseif colortype == 6 then    -- rgb | alpha | image c
             devicespace = "DeviceRGB"
             colorspace  = "DeviceRGB"
             colors      = 3
             mask        = true
         else
-            report_png("unknown colorspace %i",colorspace)
+            report_png("unknown colorspace, type %i",colortype)
             return
         end
         --
@@ -1176,9 +728,6 @@ do
             return
          -- decode = true
         end
-        if decode then
-            lmtxdata.Decoded = true
-        end
         --
         -- todo: compresslevel (or delegate)
         --
@@ -1206,7 +755,27 @@ do
             lmtxdata.Remapped = true
         end
         --
--- print(interlace,colordepth,transparent and true or false,palette and true or false,mask and true or false)
+        local maskdepth = 0
+        local keepbytes = enforcecmyk or enforcegray
+        --
+     -- local statictics = {
+     --     filename    = filename,
+     --     colortype   = colortype,
+     --     interlace   = interlace   and true or false,
+     --     mask        = mask        and true or false,
+     --     transparent = transparent and true or false,
+     --     colorspace  = colorspace,
+     --     colors      = colors,
+     -- }
+        if trace_png then
+            report_png("filename      : %s",filename)
+            report_png("  colortype   : %s",colortype)
+            report_png("  interlace   : %s",interlace   and "yes" or "no")
+            report_png("  mask        : %s",mask        and "yes" or "no")
+            report_png("  transparent : %s",transparent and "yes" or "no")
+            report_png("  colorspace  : %s",colorspace)
+            report_png("  colors      : %s",colors)
+        end
         if interlace then
             local r, p = deinterlace(content,xsize,ysize,colordepth,devicespace,palette,mask)
             if not r then
@@ -1216,18 +785,20 @@ do
             if p then
                 colordepth = p
             end
+            -- We are now unzipped and have much in common with the other
+            -- branches so we can share ... todo.
             if mask then
                 if not (colordepth == 8 or colordepth == 16) then
                     report_png("mask can't be split from the image (%s)","depth")
                     return
                 end -- get rid of bpp:
                 content, mask = filtermask(r,xsize,ysize,colordepth,devicespace,false)
-            elseif frompalette and transparent and palette then
+            elseif transparent and palette then
                 if devicespace == "DeviceRGB" and colordepth == 8 then
                     local bytes = 3 -- index -> mapped -> r g b
                     local parts = 1 -- whole byte
                     if expandpalette then
-                        local c, m = frompalette(r,palette,bytes,parts,transparent)
+                        local c, m = pngfrompalette(r,palette,bytes,parts,transparent)
                         if c and m then
                             content  = c
                             palette  = false
@@ -1239,7 +810,7 @@ do
                             lmtxmask = "Discarded"
                         end
                     else
-                        mask = palettemask(r,bytes,parts,transparent)
+                        mask = pngpalettemask(r,bytes,parts,transparent)
                         if mask then
                             lmtxmask = "Separated"
                         else
@@ -1250,7 +821,7 @@ do
                     end
                 else
                     report_png("mask can't be split from the image (%s)","colorspace")
-                    content = convert(r) -- can be in deinterlace if needed
+                    content  = convert(r) -- can be in deinterlace if needed
                     lmtxmask = "Discarded"
                 end
             else
@@ -1258,15 +829,17 @@ do
             end
             if enforcecmyk then
                 content, devicespace = converttocmyk(content,devicespace,colordepth)
-                lmtxcmyk = true
+                lmtxcmyk = devicespace == "DeviceCMYK"
+            elseif enforcegray and colors == 3 then
+                content, devicespace = converttogray(content,devicespace,colordepth,averagegray)
+                lmtxgray = devicespace == "DeviceGray"
+                if lmtxgray then
+                    colors = 1
+                end
             end
-            if compresslevel > 0 then
-                content = zlibcompress(content,compresslevel)
-                lmtxcomp = true
-            else
-                filter = nil
-            end
-            decode = true
+            zipcontent = true
+            decode     = true
+            maskdepth  = palette and 8 or colordepth
         elseif mask then
             if not (colordepth == 8 or colordepth == 16) then
                 report_png("mask can't be split from the image")
@@ -1274,76 +847,127 @@ do
             end
             content = zlibdecompress(content)
             content, mask = decodemask(content,xsize,ysize,colordepth,devicespace)
-            if enforcecmyk and not palette then
-                content, devicespace = converttocmyk(content,devicespace,colordepth)
-                lmtxcmyk = true
-            end
-            if compresslevel > 0 then
-                content  = zlibcompress(content,compresslevel)
-                lmtxcomp = true
-            else
-                filter = nil
-            end
-            lmtxmask = "Decoded"
-            decode  = true -- we don't copy the filter byte
-        elseif transparent then
-            -- in test suite
-            -- how about decode/recompress here
             if palette then
-                mask = createmask(content,palette,transparent,xsize,ysize,colordepth,devicespace)
-                lmtxmask = "Created"
-            else
-                -- maybe a todo
-                lmtxmask = "Ignored"
+                -- ignore
+            elseif enforcecmyk then
+                content, devicespace = converttocmyk(content,devicespace,colordepth)
+                lmtxcmyk = devicespace == "DeviceCMYK"
+            elseif enforcegray and colors == 3 then
+                content, devicespace = converttogray(content,devicespace,colordepth,averagegray)
+                lmtxgray = devicespace == "DeviceGray"
+                if lmtxgray then
+                    colors = 1
+                end
             end
-        elseif decode or (enforcecmyk and not palette) then
+            lmtxmask   = "Decoded"
+            decode     = true -- we don't copy the filter byte
+            zipcontent = true
+            maskdepth  = palette and 8 or colordepth
+        elseif transparent then
+            local c = false
+            if palette then
+                mask, maskdepth, c = extractmask_from_transparent_3(
+                    content,colordepth,xsize,ysize,devicespace,transparent,palette
+                )
+            elseif colortype == 0 then
+                mask, maskdepth, c = extractmask_from_transparent_0(
+                    content,colordepth,xsize,ysize,devicespace,transparent
+                )
+            elseif colortype == 2 then
+                mask, maskdepth, c = extractmask_from_transparent_2(
+                    content,colordepth,xsize,ysize,devicespace,transparent
+                )
+            end
+            if keepbytes and c then
+                content    = c
+                decode     = true
+                zipcontent = true
+            end
+            if enforcecmyk then
+                content, devicespace = converttocmyk(content,devicespace,colordepth)
+                lmtxcmyk = devicespace == "DeviceCMYK"
+            elseif enforcegray and colors == 3 then
+                content, devicespace = converttogray(content,devicespace,colordepth,averagegray)
+                lmtxgray = devicespace == "DeviceGray"
+                if lmtxgray then
+                    colors = 1
+                end
+            end
+            lmtxmask = mask and "Created" or "Ignored"
+        elseif decode or (keepbytes and not palette) then
             -- this one needs checking
-            local bytes = analyze(colordepth,devicespace)
+            local bytes, parts = analyze(colordepth,devicespace)
             if bytes then
                 content = zlibdecompress(content)
-                content = decodestrip(openstring(content),xsize,ysize,bytes)
-                if enforcecmyk and not palette then
+                content = decodestrip(openstring(content),xsize,ysize,bytes,parts)
+                if palette then
+                    -- ignore
+                elseif enforcecmyk then
                     content, devicespace = converttocmyk(content,devicespace,colordepth)
-                    lmtxcmyk = true
+                    lmtxcmyk = devicespace == "DeviceCMYK"
+                elseif enforcegray and colors == 3 then
+                    content, devicespace = converttogray(content,devicespace,colordepth,averagegray)
+                    lmtxgray = devicespace == "DeviceGray"
+                    if lmtxgray then
+                        colors = 1
+                    end
                 end
-                if compresslevel > 0 then
-                    content  = zlibcompress(content,compresslevel)
-                    lmtxcomp = compresslevel
-                else
-                    filter = nil
-                end
+                zipcontent = true
+                decode     = true -- due to enforcecmyk
             else
                 return
             end
-            decode = true -- due to enforcecmyk
         elseif newmask and colordepth == 8 and devicespace == "DeviceGray" then
             local bytes = analyze(colordepth,devicespace)
             if bytes then
-                content = zlibdecompress(content)
-                content = decodestrip(openstring(content),xsize,ysize,bytes)
-                mask = pngmakemask(content,newmask)
-                if compresslevel > 0 then
-                    content  = zlibcompress(content,compresslevel)
-                    lmtxcomp = compresslevel
-                else
-                    filter = nil
-                end
-                lmtxmask = "Created"
+                content    = zlibdecompress(content)
+                content    = decodestrip(openstring(content),xsize,ysize,bytes)
+                mask       = pngmakemask(content,newmask)
+                zipcontent = true
+                lmtxmask   = "Created"
+                decode     = true -- due to enforcecmyk
             else
                 return
             end
-            decode = true -- due to enforcecmyk
+            maskdepth = colordepth -- to be checked
         else
          -- print("PASS ON")
+        end
+        if enforcecmyk then
+            content, devicespace = converttocmyk(content,devicespace,colordepth)
+            lmtxcmyk = devicespace == "DeviceCMYK"
+        elseif enforcegray and colors == 3 then
+            content, devicespace = converttogray(content,devicespace,colordepth,averagegray)
+            lmtxgray = devicespace == "DeviceGray"
+            if lmtxgray then
+                colors = 1
+            end
+        end
+        if not zipcontent then
+            -- we're fine
+        elseif compresslevel > 0 then
+            content  = zlibcompress(content,compresslevel)
+            lmtxcomp = compresslevel
+        else
+            filter = nil
+        end
+        if decode then
+            lmtxdata.Decoded = true
         end
         if palette then
             local devicespace = "DeviceRGB"
             local nofbytes    = 3
             if enforcecmyk then
-                palette       = converttocmyk(palette,devicespace,8)
+                palette       = converttocmyk(palette,devicespace,8,averagegray)
                 devicespace   = "DeviceCMYK"
                 nofbytes      = 4
-                lmtxcmyk = true
+                lmtxcmyk      = true
+            elseif enforcegray then
+                -- todo
+                palette       = converttogray(palette,devicespace,8,averagegray)
+                devicespace   = "DeviceGray"
+                nofbytes      = 1
+                lmtxgray      = false
             end
             palette = pdfarray {
                 pdfconstant("Indexed"),
@@ -1354,6 +978,8 @@ do
         end
         if lmtxcmyk then
             lmtxdata.CMYK = true
+        elseif lmtxgray then
+            lmtxdata.Gray = true
         end
         if lmtxmask then
             lmtxdata.Mask = pdfconstant(lmtxmask)
@@ -1381,7 +1007,7 @@ do
                 Subtype          = pdfconstant("Image"),
                 Width            = xsize,
                 Height           = ysize,
-                BitsPerComponent = palette and 8 or colordepth,
+                BitsPerComponent = maskdepth,
                 ColorSpace       = pdfconstant("DeviceGray"),
                 Decode           = newranges and pdfarray(newranges) or nil,
             }
@@ -1441,41 +1067,7 @@ do
             s = - s
         end
         if s > 0 then
-         -- if true then
-                return string.packrowscolumns(d)
-         -- end
-         -- if s == 1 then
-         --     for i=1,y do
-         --         local r = d[i]
-         --         for j=1,x do
-         --             n = n + 1 ; t[n] = chars[r[j]]
-         --         end
-         --     end
-         -- elseif s == 2 then
-         --     for i=1,y do
-         --         local r = d[i]
-         --         for j=1,x do
-         --             local c = r[j]
-         --             n = n + 1 ; t[n] = chars[c[1]]
-         --             n = n + 1 ; t[n] = chars[c[2]]
-         --             n = n + 1 ; t[n] = chars[c[3]]
-         --          -- n = n + 1 ; t[n] = char(c[1],c[2],c[3]) -- test this
-         --         end
-         --     end
-         -- elseif s == 3 then
-         --     for i=1,y do
-         --         local r = d[i]
-         --         for j=1,x do
-         --             local c = r[j]
-         --             n = n + 1 ; t[n] = chars[c[1]]
-         --             n = n + 1 ; t[n] = chars[c[2]]
-         --             n = n + 1 ; t[n] = chars[c[3]]
-         --             n = n + 1 ; t[n] = chars[c[4]]
-         --          -- n = n + 1 ; t[n] = char(c[1],c[2],c[3],c[4]) -- test this
-         --         end
-         --     end
-         -- end
-         -- return concat(t)
+            return string.packrowscolumns(d)
         else
             local z = d[0] and 0 or 1
             if s == -1 then
@@ -1568,29 +1160,6 @@ do
     codeinjections.bitmap = injectors.bitmap
 
 end
-
--- local function validcompression(data)
---     local d  = utilities.streams.openstring(data)
---     local b1 = utilities.streams.readbyte(d)
---     local b2 = utilities.streams.readbyte(d)
---     print(b1,b2)
---     if (b1 * 256 + b2) % 31 ~= 0 then
---         return false, "no zlib compressed file"
---     end
---     local method = band(b1,15)
---     if method ~= 8 then
---         return false, "method 8 expected"
---     end
---     local detail = band(rshift(b1,4),15)
---     if detail > 7 then
---         return false, "window 32 expected"
---     end
---     local preset = band(rshift(b2,5),1)
---     if preset ~= 0 then
---         return false, "unexpected preset dictionary"
---     end
---     return true
--- end
 
 codeinjections.jpg = lpdf.injectors.jpg
 codeinjections.jp2 = lpdf.injectors.jp2

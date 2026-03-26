@@ -234,17 +234,10 @@
 \permanent\def\nextuserpagenumber {\directconvertedcounter\s!userpage\v!next}
 \permanent\def\nextsubpagenumber  {\directconvertedcounter\s!subpage \v!next}
 
-% \protected\def\strc_pagenumbers_decrement_counters % only at the end
-%    {\strc_counters_decrement\s!realpage
-%     \strc_counters_decrement\s!userpage
-%     \strc_counters_decrement\s!subpage}
-
 \protected\def\strc_pagenumbers_decrement_counters % only at the end
-   {\ifcase\insertonlycount\else
-      \strc_counters_decrement\s!realpage
-      \strc_counters_decrement\s!userpage
-      \strc_counters_decrement\s!subpage
-    \fi}
+   {\strc_counters_decrement\s!realpage
+    \strc_counters_decrement\s!userpage
+    \strc_counters_decrement\s!subpage}
 
 \protected\def\strc_pagenumbers_increment_counters
   {\incrementpagenumber

@@ -231,9 +231,6 @@ function scripts.unicode.update()
                     end
                 end
                 --
--- if specials and specials[1] == "font" then
---     specials = nil
--- end
                 if not char then
                     report("%U : adding entry %a",unicode,description)
                     char = {
@@ -351,7 +348,6 @@ function scripts.unicode.update()
                     else
                         local specials = char.specials
                         if specials then
--- if specials and specials[1] ~= "font" then
                             local t = { } for i=2,#specials do t[i] = formatters["%U"](specials[i]) end
                             if false then
                                 char.comment = nil
@@ -503,7 +499,6 @@ function scripts.unicode.update()
         if first then
             local d = characterdata[first]
             if d then
-             -- local v = d.variants
                 local v = rawget(d,"variants")
                 if not v then
                     v = { }
@@ -518,7 +513,7 @@ function scripts.unicode.update()
     end
     for unicode, ud in table.sortedpairs(characterdata) do
         if not rawget(ud,"category") and rawget(ud,"variants") then
-         -- report("stripping %U (variant, takes from metacharacter)",unicode)
+            report("stripping %U (variant, takes from metacharacter)",unicode)
             characterdata[unicode] = nil
         end
     end
@@ -605,7 +600,7 @@ function scripts.unicode.load()
         report("using: %s",fullname)
         dofile(fullname)
         --
-        preamble = gsub(data,"characters%.data%s*=%s*%{.*","")
+        preamble = match(data,"^(.-%-%-%[%[%s*end of preamble%s*%]%]%-%-)")
         --
         textfiles = {
             unicodedata          = resolvers.findfile("unicodedata.txt")          or "",
@@ -649,58 +644,6 @@ function scripts.unicode.load()
     end
 end
 
--- local variants_emoji={
---   [0xFE0E]="text style",
---   [0xFE0F]="emoji style",
--- }
---
--- local variants_forms={
---    [0xFE00]="corner-justified form",
---    [0xFE01]="centered form",
--- }
-
--- local variants_style={
---    [0xFE00]="chancery style",
---    [0xFE01]="roundhand style",
--- }
-
--- local variants_90={
---    [0xFE00]="rotated 90 degrees",
--- }
---
--- local variants_180={
---    [0xFE01]="rotated 180 degrees",
--- }
---
--- local variants_270={
---    [0xFE02]="rotated 270 degrees",
--- }
---
--- local variants_expanded={
---    [0xFE00]="expanded",
--- }
---
--- local variants_90_180={
---    [0xFE00]="rotated 90 degrees",
---    [0xFE01]="rotated 180 degrees",
--- }
---
--- local variants_90_180_270={
---    [0xFE00]="rotated 90 degrees",
---    [0xFE01]="rotated 180 degrees",
---    [0xFE02]="rotated 270 degrees",
--- }
---
--- local variants_180_270={
---    [0xFE01]="rotated 180 degrees",
---    [0xFE02]="rotated 270 degrees",
--- }
---
--- local variants_90_270={
---    [0xFE00]="rotated 90 degrees",
---    [0xFE02]="rotated 270 degrees",
--- }
-
 function scripts.unicode.save(filename)
     if preamble then
      -- for k, v in next, characters.data do
@@ -711,48 +654,38 @@ function scripts.unicode.save(filename)
         characters.data[0x1FD3].uccode={ 0x3B9, 0x308, 0x301 }
         characters.data[0x00DF].uccode={ 0x53, 0x53 }
         --
-        local data = table.serialize(characters.data,"characters.data", {
+        local serialize= table.serialize
+        --
+        local variants = { }
+        local hashes   = { }
+        local current  = 0
+        for k, d in table.sortedhash(characters.data) do
+            local v = d.variants
+            if v then
+                local k = serialize(v)
+                local h = hashes[k]
+                if not h then
+                    current = current + 1
+                    h = "variants_" .. current
+                    hashes[k] = h
+                    variants[current] = serialize(v,"local " .. h,{
+                        hexify   = true,
+                        noquotes = true,
+                    })
+                end
+                d.variants = h
+            end
+        end
+        variants = table.concat(variants,"\n\n")
+        --
+        local data = serialize(characters.data,"characters.data", {
             hexify   = true,
             noquotes = true,
         })
-        data = gsub(data,
-            "%{%s+%[0xFE0E%]=\"text style\",%s+%[0xFE0F%]=\"emoji style\",%s+%}",
-            "variants_emoji"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE00%]=\"corner%-justified form\",%s+%[0xFE01%]=\"centered form\",%s+%}",
-            "variants_forms"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE00%]=\"chancery style\",%s+%[0xFE01%]=\"roundhand style\",%s+%}",
-            "variants_style"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE00%]=\"dotted form\",%s+%}",
-            "variants_dotted"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE00%]=\"expanded\",%s+%}",
-            "variants_expanded"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\",%s+%}",
-            "variants_%1"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
-              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
-              "%s+%}",
-            "variants_%1_%2"
-        )
-        data = gsub(data,
-            "%{%s+%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
-              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
-              "%s*%[0xFE0%d%]=\"rotated (%d+) degrees\"," ..
-              "%s+%}",
-            "variants_%1_%2_%3"
-        )
-        io.savedata(filename,preamble .. data)
+        --
+        data = string.gsub(data,"variants=\"(variants_%d+)\"","variants=%1")
+        --
+        io.savedata(filename,preamble .. "\n\n" .. variants .. "\n\n" .. data)
     end
 end
 
@@ -816,10 +749,6 @@ function scripts.unicode.extras() -- old code
             index[k] = nil
         end
     end
- -- for k, v in next, data do
- --     v.synonym  = nil
- --     v.synonyms = nil
- -- end
     for k, v in sortedhash(index) do
         local d = data[v]
         if d and d.description ~= upper(k) then
@@ -844,52 +773,6 @@ function scripts.unicode.extras() -- old code
             end
         end
     end
---     --
---     for name, block in sortedhash(characters.blocks) do
---         if block.math then
---             local isalphabet = find(name,"lowercase") or find(name,"uppercase") or find(name,"letterlike")
---             for unicode=block.first,block.last do
---                 local c = data[unicode]
--- if c.mathspec and #c.mathspec == 0 then
---     c.mathspec = { c.mathspec }
--- end
---                 if c.mathclass then
---                     if isalphabet and c.mathclass ~= "variable" then
---                         report("CHECK %C : %s",unicode,c.description)
---                     end
---                 elseif c.mathspec then
---                     -- skip
---                 else
---                     report("%s : %C : %s",name,unicode,c.description)
---                     if isalphabet then
---                         c.mathclass = "variable"
---                     end
---                 end
---             end
---             local gaps = block.gaps
---             if gaps then
---                 for gap, unicode in sortedhash(gaps) do
---                     local c = data[u]
--- if c.mathspec and #c.mathspec == 0 then
---     c.mathspec = { c.mathspec }
--- end
---                     if c.mathclass then
---                         if isalphabet and c.mathclass ~= "variable" then
---                             report("CHECK %C : %s",gap,c.description)
---                         end
---                         -- skip
---                     elseif c.mathspec then
---                         -- skip
---                     else
---                         report("%s : %U -> %C : %s",name,gap,unicode,c.description)
---                         if isalphabet then
---                             c.mathclass = "variable"
---                         end
---                     end
---                 end
---             end
---         end
---     end
 
 end
 
@@ -904,25 +787,6 @@ do
     local unicode     = Cs(R("09","AF")^1)/function(n) return tonumber(n,16) end
                       * spaces
     local components  = Ct (unicode^1)
-
- -- local rubish_a    = semicolon
- --                   * spaces
- --                   * P("Emoji_ZWJ_Sequence")
- --                   * spaces
- --                   * semicolon
- --                   * spaces
- -- local description = C((1 - (spaces * (hash+newline)))^1)
- -- local rubish_b    = (1-newline)^0
- --                   * newline^1
- --
- -- local pattern_1   = Ct ( (
- --     Cf ( Ct("") *
- --         Cg (Cc("components") * components)
- --       * rubish_a
- --       * Cg (Cc("description") * description )
- --       * rubish_b
- --     , rawset)
- --     + P(1) )^1 )
 
     local rubish_a    = semicolon
                       * spaces
@@ -963,6 +827,8 @@ do
             [crap] = "",
             ["#"]  = "hash",
             ["*"]  = "asterisk",
+            ["“"]  = "",
+            ["”"]  = "",
         }
 
         for i=1,#t do

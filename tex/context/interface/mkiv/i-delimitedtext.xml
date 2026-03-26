@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definedelimitedtext" level="style" category="language" file="typo-del.mkiv">
+    <cd:command name="definedelimitedtext" level="style" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupdelimitedtext" level="style" category="language" file="typo-del.mkiv">
+    <cd:command name="setupdelimitedtext" level="style" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:keywords list="yes" optional="yes">
                 <cd:constant type="cd:name"/>
@@ -98,7 +98,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="delimitedtext" generated="yes" variant="instance" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimitedtext" generated="yes" variant="instance" level="document" category="language" file="typo-del.mkxl">
         <cd:sequence>
             <cd:instance value="delimitedtext"/>
         </cd:sequence>
@@ -111,7 +111,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="delimitedtext" type="environment" generated="yes" variant="instance" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimitedtext" type="environment" generated="yes" variant="instance" level="document" category="language" file="typo-del.mkxl">
         <cd:sequence>
             <cd:instance value="delimitedtext"/>
         </cd:sequence>
@@ -126,7 +126,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="delimitedtext" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimitedtext" level="document" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language-optional"/>
@@ -134,7 +134,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="delimitedtext" type="environment" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimitedtext" type="environment" level="document" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language-optional"/>
@@ -144,7 +144,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="delimited" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimited" level="document" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language-optional"/>
@@ -152,7 +152,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="delimited" type="environment" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="delimited" type="environment" level="document" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-language-optional"/>
@@ -162,7 +162,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupquotation" level="style" category="language" file="typo-del.mkiv">
+    <cd:command name="setupquotation" level="style" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupdelimitedtext"/>
@@ -170,7 +170,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupquote" level="style" category="language" file="typo-del.mkiv">
+    <cd:command name="setupquote" level="style" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:inherit name="setupdelimitedtext"/>
@@ -178,14 +178,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subsentence" level="document" category="language" file="typo-del.mkiv">
+    <cd:command name="subsentence" level="document" category="language" file="typo-del.mkxl">
         <cd:arguments>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subsentence" type="environment" level="document" category="language" file="typo-del.mkiv"/>
+    <cd:command name="subsentence" type="environment" level="document" category="language" file="typo-del.mkxl"/>
 
-    <cd:command name="midsubsentence" level="document" category="language" file="typo-del.mkiv"/>
+    <cd:command name="midsubsentence" level="document" category="language" file="typo-del.mkxl"/>
 
 </cd:interface>

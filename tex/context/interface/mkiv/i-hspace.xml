@@ -51,7 +51,7 @@
 
     <cd:command name="autoinsertnextspace" level="style" category="whitespace" file="spac-hor.mkxl"/>
 
-    <cd:command name="hglue" level="system" category="whitespace" file="spac-ver.mkiv">
+    <cd:command name="hglue" level="system" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:resolve name="string-dimension"/>
         </cd:arguments>

@@ -260,6 +260,9 @@
                 <cd:parameter name="extradata">
                     <cd:constant type="cd:command"/>
                 </cd:parameter>
+                <cd:parameter name="snapping">
+                    <cd:resolve name="value-snapping"/>
+                </cd:parameter>
             </cd:assignments>
         </cd:arguments>
     </cd:command>
@@ -473,14 +476,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesectionlevels" level="style" category="structure" file="strc-lev.mkvi">
+    <cd:command name="definesectionlevels" level="style" category="structure" file="strc-lev.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-section-list"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="sectionlevel" type="environment" level="document" category="structure" file="strc-lev.mkvi">
+    <cd:command name="sectionlevel" type="environment" level="document" category="structure" file="strc-lev.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
@@ -488,7 +491,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subjectlevel" type="environment" level="document" category="structure" file="strc-lev.mkvi">
+    <cd:command name="subjectlevel" type="environment" level="document" category="structure" file="strc-lev.mklx">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="assignment-sectiondata-list-optional"/>
@@ -496,7 +499,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineheadalternative" level="style" category="structure" file="strc-ren.mkiv">
+    <cd:command name="defineheadalternative" level="style" category="structure" file="strc-red.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -506,7 +509,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupheadalternative" level="style" category="structure" file="strc-ren.mkiv">
+    <cd:command name="setupheadalternative" level="style" category="structure" file="strc-red.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -522,38 +525,38 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="localheadsetup" type="environment" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="localheadsetup" type="environment" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headhbox" level="system" category="structure" file="strc-ren.mkiv">
+    <cd:command name="headhbox" level="system" category="structure" file="strc-red.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="headvbox" level="system" category="structure" file="strc-ren.mkiv">
+    <cd:command name="headvbox" level="system" category="structure" file="strc-red.mkxl">
         <cd:arguments>
             <cd:resolve name="string-boxoptions"/>
             <cd:content/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="headreferenceattributes" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headreferenceattributes" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headnumbercontent" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headnumbercontent" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headtextcontent" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headtextcontent" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headwidth" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headwidth" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headtextwidth" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headtextwidth" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headnumberwidth" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headnumberwidth" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headnumberdistance" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headnumberdistance" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headtextdistance" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headtextdistance" level="system" category="structure" file="strc-red.mkxl"/>
 
-    <cd:command name="headsetupspacing" level="system" category="structure" file="strc-ren.mkiv"/>
+    <cd:command name="headsetupspacing" level="system" category="structure" file="strc-red.mkxl"/>
 
 </cd:interface>

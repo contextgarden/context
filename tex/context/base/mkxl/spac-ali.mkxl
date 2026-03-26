@@ -304,21 +304,81 @@
 \newconstant\c_spac_align_state_broad
 \newconstant\c_spac_align_state_par_fill
 
-\def\v_spac_align_fill_amount          {\plusone  fil}
-\def\v_spac_align_fill_amount_hard     {\plusone fill}
+\def\v_spac_align_fill_amount          {\plusone            fil}
+\def\v_spac_align_fill_amount_hard     {\plusone           fill}
 \def\v_spac_align_fill_amount_extreme  {\plustenthousand  filll}
-\def\v_spac_align_fill_amount_negative {\minusone fil}
-\def\v_spac_align_fill_amount_double   {\plustwo  fil}
-\def\v_spac_align_fill_amount_space    {\plustwo  fil} % can be added to xspace if we have a key
-\def\v_spac_align_fill_amount_half             {.5fil}
-\let\v_spac_align_space_amount        \interwordspace
-\def\v_spac_align_space_amount_x          {.5\emwidth}
+\def\v_spac_align_fill_amount_negative {\minusone           fil}
+\def\v_spac_align_fill_amount_double   {\plustwo            fil}
+\def\v_spac_align_fill_amount_space    {\plustwo            fil} % can be added to xspace if we have a key
+\def\v_spac_align_fill_amount_half                       {.5fil}
 
-\newgluespec\s_zero_plus_one_fil  \s_zero_plus_one_fil  = 0pt plus 1fil
-\newgluespec\s_zero_plus_one_fill \s_zero_plus_one_fill = 0pt plus 1fill
-\newgluespec\s_zero_plus_zero     \s_zero_plus_zero     = 0pt plus 0pt
+\newgluespec\s_zero_plus_one_fil  \s_zero_plus_one_fil  = 0pt plus 1fil  \relax
+\newgluespec\s_zero_plus_one_fill \s_zero_plus_one_fill = 0pt plus 1fill \relax
+\newgluespec\s_zero_plus_zero     \s_zero_plus_zero     = 0pt plus 0pt   \relax
 
-% \s!plus ... slower than inline
+%D In the past we used \type {\spaceskip} and \type {\xspaceskip} in ragged modes,
+%D just like plain \TEX\ does, although with different values. However, freezing the
+%D space doesn't work well if we change the font after the alignment setting.
+%D Therefore we now discard the stretch and shrink of the regular space which then
+%D automatically adapts spacing to the current font. Actually, the comment in TBT
+%D \quotation {Note that, if \type {\spaceskip} and \type {\xspaceskip} are defined
+%D in terms of em, they change with the font.} is not true, becuase first of all
+%D we're talking skips so even if \TEX\ would bind to a font parameter is would be a
+%D dimen to skip binding, and there is no way to involve a multiplier in that. It's
+%D really something that the engine has to do. An alternative for us is to set the
+%D \type {\spaceskipfactor} every font switch but even that is not robust in mixed
+%D font scenarios; we keep it around for experiments.
+
+% musical timestamp: Tori Amos, Stronger Together, February 2026
+
+% using spaceskip
+%
+% \let\v_spac_align_space_amount    \interwordspace
+% \def\v_spac_align_space_amount_x  {.5\emwidth}
+% \let\v_spac_align_space_mode      \zerocount
+%
+% using regular space with mode, the indirectness will go.
+%
+% \let\v_spac_align_space_amount  \zeropoint
+% \let\v_spac_align_space_amount_x\zeropoint
+% \let\v_spac_align_space_mode    \nogluespaceskipcode
+%
+% with
+%
+%  \spaceskipmode    \nogluespaceskipcode % \v_spac_align_space_mode
+%  \spaceskip        \zeropoint           % \v_spac_align_space_amount
+%  \xspaceskip       \zeropoint           % \v_spac_align_space_amount_x
+
+%D In the end we nowhere want to use the \type {spaceskip} and \type {\xspaceskip}
+%D variables. We can gain some by not setting them at all or even aliasing them to
+%D dummies.
+%D
+%D \starttyping
+%D \startTEXpage
+%D     \showglyphs \showmakeup[glue]
+%D     \bfa\setupinterlinespace
+%D     \raggedright
+%D     \samplefile{tufte} \par
+%D     \bfb\setupinterlinespace
+%D     \samplefile{tufte} \par
+%D \stopTEXpage
+%D
+%D \startTEXpage
+%D     \showglyphs \showmakeup[glue]
+%D     \raggedright
+%D     \bfa\setupinterlinespace
+%D     \samplefile{tufte} \par
+%D     \bfb\setupinterlinespace
+%D     \samplefile{tufte} \par
+%D \stopTEXpage
+%D \stoptyping
+
+\appendtoks
+    \spaceskipmode\zerocount
+  % \spaceskip    \zeroskip
+  % \xspaceskip   \zeroskip
+    \parfillmode  \zerocount
+\to \everyforgetall
 
 \permanent\protected\def\spac_align_set_horizontal_none % should also relax \updateraggedskips
   {\raggedstatus     \zerocount
@@ -326,8 +386,10 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip
    \rightskip        \plusone\rightskip
+   \spaceskipmode    \zerocount
    \spaceskip        \zeroskip
    \xspaceskip       \zeroskip
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -335,20 +397,43 @@
    \raggedonelinerstate\conditionalfalse % now here
    \enforced\aliased\let\updateraggedskips\relax}          % no need for adaption
 
+% Musical timestamp: more advanced ragging was implemented around Archive's
+% release of Glass Minds (February 2026).
+
+\permanent\protected\def\spac_align_set_horizontal_none_sense % should also relax \updateraggedskips
+  {\raggedstatus     \zerocount
+   \raggedhangstatus \zerocount
+   \c_attr_alignstate\attributeunsetvalue
+   \leftskip         \plusone\leftskip
+   \rightskip        \plusone\rightskip
+   \spaceskipmode    \noshrinkspaceskipcode
+   \spaceskip        \zeroskip
+   \xspaceskip       \zeroskip
+  %\parfillmode      \zerocount
+   \parinitleftskip  \zeroskip
+   \parinitrightskip \zeroskip
+   \parfillleftskip  \zeroskip % no \s_zero_plus_one_fil else no expansion
+   \parfillrightskip\zeropoint % to be checked
+   \raggedonelinerstate\conditionalfalse % now here
+   \enforced\aliased\let\updateraggedskips\relax}
+
+\permanent\protected\def\spac_align_set_horizontal_none_left  {\spac_align_set_horizontal_none_sense\parfillmode\leftparagraphfillmodecode }
+\permanent\protected\def\spac_align_set_horizontal_none_right {\spac_align_set_horizontal_none_sense\parfillmode\rightparagraphfillmodecode}
+\permanent\protected\def\spac_align_set_horizontal_none_center{\spac_align_set_horizontal_none_sense\parfillmode\bothparagraphfillmodecode }
+
 \permanent\protected\def\spac_align_set_horizontal_left
   {\setraggedness    \spac_align_set_raggedness_left
    \raggedstatus     \plusone
    \raggedhangstatus \zerocount
    \c_attr_alignstate\plusone
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_left
-   \rightskip        \plusone\rightskip\s!plus\zeropoint
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \rightskip        \plusone\rightskip % \s!plus\zeropoint % why plus
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
- % \parfillleftskip  \zeroskip
- % \parfillrightskip \s_zero_plus_zero
- % needs testing:
    \parfillleftskip  \s_zero_plus_one_fil
    \parfillrightskip \zeroskip
    \parindent        \zeropoint
@@ -361,8 +446,10 @@
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -375,10 +462,12 @@
    \raggedstatus     \plusthree
    \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
-   \leftskip         \plusone\leftskip \s!plus\zeropoint
+   \leftskip         \plusone\leftskip % \s!plus\zeropoint
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -391,14 +480,13 @@
    \raggedhangstatus \zerocount
    \c_attr_alignstate\plusone
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
-   \rightskip        \plusone\rightskip\s!plus\zeropoint
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \rightskip        \plusone\rightskip % \s!plus\zeropoint
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
- % \parfillleftskip  \zeroskip
- % \parfillrightskip \s_zero_plus_zero
- % needs testing:
    \parfillleftskip  \s_zero_plus_zero
    \parfillrightskip \zeroskip
    \parindent        \zeropoint
@@ -410,8 +498,10 @@
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -423,10 +513,12 @@
   {\raggedstatus     \plusthree
    \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
-   \leftskip         \plusone\leftskip \s!plus\zeropoint
+   \leftskip         \plusone\leftskip % \s!plus\zeropoint
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -441,8 +533,10 @@
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount_half
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_half
-   \spaceskip        \v_spac_align_space_amount
-   \xspaceskip       \v_spac_align_space_amount_x
+   \spaceskipmode    \nogluespaceskipcode
+   \spaceskip        \zeropoint
+   \xspaceskip       \zeropoint
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -456,8 +550,10 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
+   \spaceskipmode    \zerocount
    \spaceskip        \zeroskip
    \xspaceskip       \zeroskip
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -471,8 +567,10 @@
    \c_attr_alignstate\attributeunsetvalue
    \leftskip         \plusone\leftskip \s!plus\v_spac_align_fill_amount\relax
    \rightskip        \plusone\rightskip\s!plus\v_spac_align_fill_amount_negative\relax
+   \spaceskipmode    \zerocount
    \spaceskip        \zeroskip
    \xspaceskip       \zeroskip
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
@@ -485,10 +583,12 @@
    \raggedstatus     \plusthree
    \raggedhangstatus \zerocount
    \c_attr_alignstate\plusthree
-   \leftskip         \plusone\leftskip \s!plus\zeropoint\relax
+   \leftskip         \plusone\leftskip % \s!plus\zeropoint\relax
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_right\relax
+   \spaceskipmode    \zerocount
    \spaceskip        \zeroskip
    \xspaceskip       \zeroskip
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeroskip
    \parfillleftskip  \zeroskip
@@ -503,17 +603,16 @@
    \c_attr_alignstate\plustwo
    \leftskip         \plusone\leftskip \s!plus\spac_align_set_raggedness_middle
    \rightskip        \plusone\rightskip\s!plus\spac_align_set_raggedness_middle
+   \spaceskipmode    \zerocount
    \spaceskip        \zeroskip
    \xspaceskip       \zeroskip
+   \parfillmode      \zerocount
    \parinitleftskip  \zeroskip
    \parinitrightskip \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
    \parfillleftskip  \zeropoint\s!plus\v_spac_align_fill_amount_extreme\relax
    \parfillrightskip \zeroskip
    \parindent        \zeropoint
    \relax}
-
-\permanent\protected\def\spac_align_set_horizontal_extra
-  {\xspaceskip\zeropoint\s!plus\v_spac_align_fill_amount_space\relax}
 
 \def\spac_align_flush_horizontal
   {\ifcase\c_spac_align_state_horizontal
@@ -527,6 +626,8 @@
        \spac_align_set_horizontal_very_center
      \or
        \spac_align_set_horizontal_wide_center
+     \or
+       \spac_align_set_horizontal_none_center
      \fi
    \or
      % 2 flush left
@@ -537,8 +638,12 @@
          \spac_align_set_horizontal_center
          \leftskip1\leftskip
        \fi
-     \else
+     \or
        \spac_align_set_horizontal_very_right
+     \or
+       \spac_align_set_horizontal_very_right
+     \or
+       \spac_align_set_horizontal_none_right
      \fi
    \or
      % 3 flush right
@@ -549,8 +654,12 @@
          \spac_align_set_horizontal_center
          \rightskip1\rightskip
        \fi
-     \else
+     \or
        \spac_align_set_horizontal_very_left
+     \or
+       \spac_align_set_horizontal_very_left
+     \or
+       \spac_align_set_horizontal_none_left
      \fi
    \or
      % 4 inner
@@ -611,25 +720,30 @@
 
 \permanent\protected\def\raggedbottom
   {\bottomraggednessmode\zerocount
-   \settopskip}
+   \settopskip
+   \setmaxdepth}
 
 \permanent\protected\def\alignbottom
   {\bottomraggednessmode\plusone
-   \settopskip}
+   \settopskip
+   \setmaxdepth}
 
 \permanent\protected\def\baselinebottom
   {\bottomraggednessmode\plustwo
-   \settopskip}
+   \settopskip
+   \setmaxdepth}
 
 \permanent\protected\def\depthlinebottom
   {\bottomraggednessmode\plusthree
-   \settopskip}
+   \settopskip
+   \setmaxdepth}
 
 \aliased\let\normalbottom\alignbottom % downward compatible
 
 \permanent\protected\def\setbottomalignmode#1%
   {\bottomraggednessmode#1%
-   \settopskip}
+   \settopskip
+   \setmaxdepth}
 
 \def\spac_align_flush_page
   {\ifcase\c_spac_align_state_page
@@ -809,6 +923,7 @@
 \letcsname\??aligncommand\empty            \endcsname\empty
 \defcsname\??aligncommand\v!broad          \endcsname{\c_spac_align_state_broad     \plusone  }
 \defcsname\??aligncommand\v!wide           \endcsname{\c_spac_align_state_broad     \plustwo  }
+\defcsname\??aligncommand\v!squeeze        \endcsname{\c_spac_align_state_broad     \plusthree}
 
 \defcsname\??aligncommand\v!bottom         \endcsname{\c_spac_align_state_page      \plusone  }
 \defcsname\??aligncommand\v!height         \endcsname{\c_spac_align_state_page      \plustwo  }
@@ -1137,6 +1252,10 @@
 \aliased\let\forgetragged        \spac_align_set_horizontal_none
 \aliased\let\raggedslanted       \spac_align_set_horizontal_slanted
 
+\aliased\let\riggedleft          \spac_align_set_horizontal_none_left
+\aliased\let\riggedcenter        \spac_align_set_horizontal_none_center
+\aliased\let\riggedright         \spac_align_set_horizontal_none_right
+
 \appendtoks
     \spac_align_set_horizontal_none
 \to \everyforgetall
@@ -1218,23 +1337,6 @@
 \defcsname\??alignhorizontal\v!flushleft \endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushleft}
 \defcsname\??alignhorizontal\v!flushright\endcsname{\enforced\let\raggedbox\spac_align_horizontal_flushright}
 \defcsname\??alignhorizontal\v!center    \endcsname{\enforced\let\raggedbox\spac_align_horizontal_center}
-
-% The next one can be in use so we keep it around but one should be aware of
-% possible interference. But it will be removed at some point!
-
-\permanent\protected\def\setraggedskips#1#2#3#4#5#6#7% never change this name (todo: inline this one .. less tracingall)
-  {\enforced\permanent\protected\def\updateraggedskips{\dosetraggedskips{#1}{#2}{#3}{#4}{#5}{#6}{#7}}%
-   \updateraggedskips}
-
-\permanent\protected\def\dosetraggedskips#1#2#3#4#5#6#7%
-  {\raggedstatus                 #1\relax
-   \leftskip   1\leftskip \s!plus#2\relax
-   \rightskip  1\rightskip\s!plus#3\relax
-   \spaceskip                    #4\relax
-   \xspaceskip                   #5\relax
-   \parfillskip \zeropoint\s!plus#6\relax
-   \parindent                    #7\relax
-   \c_attr_alignstate\ifcase\raggedstatus\attributeunsetvalue\else\raggedstatus\fi}
 
 % older (context) names:
 
@@ -1558,5 +1660,16 @@
 %D     {\hsize 8cm \input tufte \par} \page
 %D \stoptext
 %D \stoptyping
+
+%D Bonus (for testing only):
+
+\permanent\protected\def\showraggedrules#1% 1000 == 100 percent
+  {\atrightmargin
+     {\kern-\linewidth
+      \darkblue
+      \virtualvrule height 1sh depth 4lh width 2\linewidth \relax
+      \kern{-(\textwidth/\plusthousand)*#1-\linewidth}%
+      \darkred
+      \virtualvrule height 1sh depth 4lh width 2\linewidth \relax}}
 
 \protect \endinput

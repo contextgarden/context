@@ -131,11 +131,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="negative" type="environment" level="document" category="pdf" file="attr-neg.mkiv"/>
+    <cd:command name="negative" type="environment" level="document" category="pdf" file="attr-neg.mkxl"/>
 
-    <cd:command name="positive" type="environment" level="document" category="pdf" file="attr-neg.mkiv"/>
+    <cd:command name="positive" type="environment" level="document" category="pdf" file="attr-neg.mkxl"/>
 
-    <cd:command name="setuppagetransitions" level="style" category="pdf" file="scrn-pag.mkvi">
+    <cd:command name="setuppagetransitions" level="style" category="pdf" file="scrn-pag.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="reset" default="yes"/>
@@ -147,14 +147,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PDFhighlight" type="environment" file="scrn-hlt.mkxl">
+    <cd:command name="PDFhighlight" type="environment" level="document" category="pdf" file="scrn-hlt.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text-optional"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="PDFhighlight" file="scrn-hlt.mkxl">
+    <cd:command name="PDFhighlight" level="document" category="pdf" file="scrn-hlt.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text-optional"/>

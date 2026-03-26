@@ -196,7 +196,7 @@
 
     <cd:command name="tightfitcompensation" level="document" category="whitespace" file="typo-wrp.lmt"/>
 
-    <cd:command name="insertblankbefore" level="document" file="typo-adj.mkxl">
+    <cd:command name="insertblankbefore" level="document" category="whitespace" file="typo-adj.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>
@@ -204,7 +204,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="insertblankafter" level="document" file="typo-adj.mkxl">
+    <cd:command name="insertblankafter" level="document" category="whitespace" file="typo-adj.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>
@@ -212,7 +212,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blankbefore" level="document" file="spac-ver.mkxl">
+    <cd:command name="blankbefore" level="document" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>
@@ -220,7 +220,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blankafter" level="document" file="spac-ver.mkxl">
+    <cd:command name="blankafter" level="document" category="whitespace" file="spac-ver.mkxl">
         <cd:arguments>
             <cd:keywords list="yes">
                 <cd:inherit name="blank"/>

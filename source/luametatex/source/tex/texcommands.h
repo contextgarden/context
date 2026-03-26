@@ -616,6 +616,8 @@ typedef enum some_item_codes {
     font_size_code,                /*tex |\fontsize| */
     font_math_control_code,        /*tex |\fontmathcontrol| */
     font_text_control_code,        /*tex |\fonttextcontrol| */
+    text_spacing_factor_code,      /*tex |\textspacingfactor| */
+    text_spacing_penalty_code,     /*tex |\textspacingpenalty| */
     math_scale_code,               /*tex |\mathscale| */
     math_style_code,               /*tex |\mathstyle| */
     math_main_style_code,          /*tex |\mathmainstyle| */
@@ -1209,6 +1211,7 @@ typedef enum local_box_options {
     local_box_keep_option   = 0x04,
     local_box_always_option = 0x08,
     local_box_move_option   = 0x10,
+    local_box_retain_option = 0x20,
 } local_box_options;
 
 typedef enum skip_codes {
@@ -1230,6 +1233,7 @@ typedef enum charcode_codes {
     lccode_charcode,
     uccode_charcode,
     sfcode_charcode,
+    spcode_charcode,
     hccode_charcode,
     hmcode_charcode,
     amcode_charcode,

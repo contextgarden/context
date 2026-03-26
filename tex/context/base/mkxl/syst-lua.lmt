@@ -315,7 +315,7 @@ do
         arguments = "string",
         actions   = function(s)
             local c = load("return(" .. s .. ")")
-            return boolean_code, (c and c()) and true or false
+            return boolean_value, (c and c()) and true or false
         end,
     }
 

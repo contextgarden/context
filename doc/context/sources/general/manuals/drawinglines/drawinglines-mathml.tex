@@ -1,0 +1,435 @@
+% language=us
+
+\environment drawinglines-style
+
+\startcomponent drawinglines-mathml
+
+\startchapter[title=MathML][when=2024-06] % HH/MS
+
+{\em This is a preprint for the 2024 \CONTEXT\ meeting. We hope to have some
+discussion about where to go with tagging \PDF\ and export to \HTML. This is part
+of the upcoming \quotation {Drawing lines} document. \blank Mikael Sundqvist &
+Hans Hagen}
+
+\startsubject[title=Introduction]
+
+After we (mostly) finished upgrading math in \CONTEXT\ and \LUAMETATEX, we sat
+down to look at tagging and exporting. Tagging (in \PDF) needed some attention
+because it looked like there was some activity, and because \MATHML\ was
+(re)introduced in browsers we also had to check that. Both had to be done in the
+perspective of reimplementing some mechanism. We're not talking of drastic
+changes in low level tagging and export code here. But it could be nice if some
+hacks could now be avoided, and maybe better choices can be made. Below is not a
+complete wrapup, it just highlights some aspects that caught our attention. It
+also shows why we are not going to bother much about details in \MATHML: it is
+just too unreliable and unpredictable so the more we tweak the worse it can get.
+We draw a line.
+
+\stopsubject
+
+\startsubject[title=Namespaces]
+
+Standards are not really standards when they are not downward compatible. Dealing
+with math is an example: \MATHML\ support comes and goes in browsers. Right from
+the start \CONTEXT\ handled presentation and content \MATHML, later also
+\OPENMATH, which was not really a success and kind of morphed into \MATHML. Due to
+dropped or absent native support in browsers for \MATHML, the \JAVASCRIPT\ driven
+\MATHJAX\ could come to rescue.
+
+Mid 2024 \MATHML\ has gotten more complex on the one hand and got simplified on
+the other by going \quote {core}. The \type {<math>} element is now a top level
+\HTML\ element without the need for a namespace and therefore per 2024 we are
+advised not to use a namespace prefix because browsers and tools can have issues
+with it, just like they seem to have issues with \type {mfenced} that
+disappeared. It means that in a document with many formulas one gets larger files
+by delegating the namespace to the element itself, which doesn't hurt \HTML\ and
+is still needed for \XHTML, which is what we prefer. This change is likely to
+break older browsers but one can wonder how many old ones are still around.
+Alas, Amaya is no longer maintained as reference.
+
+\stopsubject
+
+\startsubject[title=Accessibility]
+
+Unfortunately we cannot put the \quote {meaning} on a math element and given the
+constant transition of math it is hard to predict if it ever will be possible.
+There is no \type {<annotation>} available for spoken math and the standard is
+bit puzzling about the location of the main \MATHML\ blob in the \type
+{<semantics>} wrapper: supposedly it has to come first but there is no rule so we
+play safe in the related \CSS\ file. So, for now we draw a line here: we set what
+is possible even if it's not used so that one can patch the result once an formal
+attribute or feature becomes available.
+
+\stopsubject
+
+\startsubject[title=Fonts]
+
+There has been a gradual evolution with respect to fonts in \HTML. There is a
+model that includes \type {serif}, \type {sans-serif}, \type {monospaced} on one
+axis and \type {normal} and \type {italic} on another plus \type {bold} on yet
+another. Then there is the so called font family and that one can be bound to
+font names (using operating system features) or via \CSS\ lookups to a set of
+filenames, optionally with properties like weight and width, although that cannot
+be used reliable. We realize that it is not trivial to evolve and also handle the
+old methods.
+
+In order to see if we could get various math fonts working with the \type
+{<math>} top level element, we tried several approaches but ran into problems
+when using the same file name several times. There are possibilities to have a
+main family with style and weight fields set but as of today we didn't get
+reliable \type {Serif} plus \typ {bold} etc working so we had to settle for \typ
+{SerifBold}. Because we have an independent setup this works okay. So, we now
+predefine \type {Serif*}, \type {Sans*}, \type {Mono*} and \type {Math*} sets as
+well as \type {Text*} aliases for the main text font. Users can define a proper
+body font (likely related to the real one) that suits the \HTML\ representation.
+We also assume fonts to be part of the package.
+
+It must be noted that contrary to \CONTEXT\ producing \PDF, we cannot get the
+same quality in \HTML. This because we can't tweak the fonts, can't use the
+additional constructs, have little influence on the spacing model, and have to
+map high level structure onto low level presentation. Fonts are an important
+factor but not the only one.
+
+We might pass|/|set some more in the future when it comes to font features but
+that also depends a bit on how \CSS\ fonts evolve. There is plenty that can be
+supported, if only because we have much at the \TEX\ end already, but much makes
+no sense in the kind of documents in play. Again we have to draw a line.
+
+With respect to math fonts: we set them up as good as possible. On \MSWINDOWS\
+often Cambria is the default, but in Linux it depends. When we were testing, some
+browsers used Noto Sans with serif regular shapes, although it looks like there
+will be a switch to sans shapes instead, so it is kind of unpredictable what one
+gets. We also noticed \STIX\ kicking in. Cambria, which is also the reference
+font, is a reasonable default but instead of Noto \footnote {The default can be
+serif or sans, where sans for math is a bad choice for a default.} one can better
+configure the browser to default for instance to \STIX\ if a match for a Times
+like serif is wished for.
+
+But \unknown\ even better is to be explicit in choosing a font. We started with
+just \type {Math} and \type {MathBold} abstractions but then found that Firefox
+can handle the first, and Chrome can't so we went for \type {MathNormal} instead.
+For bold we have to put a higher weight on the element in the \CSS, because a
+font face rule doesn't work here. The max permitted weight is 900 which is not
+enough but we have to take what we can get here. Full bold math is anyway only
+needed in section headings and such and then often is relatively simple.
+
+\startplacefigure[location=page,title={Hard to predict fallback fonts and side effects.},reference=mathml:fallbacks]
+    \startcombination[1*3]
+        {\externalfigure[2024-07-02-003-firefox-10pt-100pct][width=\measure{combination}]}{10pt @ 100\percent}
+        {\externalfigure[2024-07-02-003-firefox-10pt-200pct][width=\measure{combination}]}{10pt @ 200\percent}
+        {\externalfigure[2024-07-02-003-firefox-20pt-200pct][width=\measure{combination}]}{20pt @ 200\percent}
+    \stopcombination
+\stopplacefigure
+
+In \in {Figure} [mathml:fallbacks] we see a reason for not enriching the \MATHML\
+too much with respect to fonts, styles and dimensions. It took us a while to
+accept this as a side effect in Firefox: the chosen variant depends on a
+combination of font size and scaling. The large \im {\sum} is taken from (in our
+case) the configured Bonum font but as we scale in the browser it can come
+from (on our systems) Cambria. There is some heuristic kicking in that is
+platform dependent as well as depends on what fonts are installed. There is
+no way to control this. Other subtle shape changes are in the substack
+rendering and it looks like sometimes some scaling happens in one dimension
+only. However, at least there is no character width (vs.\ italic correction)
+mix up here.
+
+\stopsubject
+
+\startsubject[title=Spacing]
+
+We did play a bit with \type {lspace} and \type {rspace} to see if our more
+advanced spacing model could be supported but lack of preceding sibling as well
+as not really working backward rules made us decide to also draw a line here, at
+least for now. Think of:
+
+\starttyping
+/* https://developer.mozilla.org/en-US/docs/Web/CSS/:has */
+
+.digit:has( + .relation) {
+ 	color        : rgb(60%,60%,0%) ; /* works   */
+ 	margin-right : .2em ;            /* doesn't */
+}
+
+.relation:has( + .radical) {
+ 	color        : rgb(0%,60%,60%) ; /* works   */
+ 	margin-right : .2em ;            /* doesn't */
+}
+\stoptyping
+
+with:
+
+\starttyping
+<math xmlns="http://www.w3.org/1998/Math/MathML">
+    <mrow>
+        <mn class="digit">1</mn>
+        <mo class="relation">=</mo>
+        <msqrt class="radical">2</msqrt>
+    </mrow>
+</math>
+\stoptyping
+
+Default spacing between for instance binary operators and integrals is rather bad
+and there is not much we can do about that. Of course using \type {<mspace>} is
+an option but that's kind of ugly. So we settled for \quotation {One gets what
+one deserves.} here. We're decades from when this all started and it is telling
+that we're still not there.
+
+\stopsubject
+
+\startsubject[title=Accuracy]
+
+Accuracy is another aspect. In the process of improving math rendering in
+\CONTEXT\ we paid a lot of attention to detail. Not all fonts are perfect and
+tweaks are needed and we understand that this is not an option in browsers.
+However, some things are easy to fix, like making sure that the pieces that make
+a radical align at least as good as possible: being one rule thickness off
+definitely suggests a fix. And when rules are used (instead of characters) it is
+no problem to get the width right. In \in {Figure} [mathml:spacing] some nested
+radicals are shown. The right blob in the top corner is part of a choice to
+translate from Japanese, so somehow this page with math is seen as such, on
+\MSWINDOWS\ as well as \LINUX. If one peeks into the reported bugs it looks like
+spacing in radicals is a persistent problem and not really gets solved. In \in
+{Figure} [mathml:variants] one can also observe that mixing radicals gives an
+inconsistent look and feel, something that we always paid a lot of attention to
+in \CONTEXT\ but can't really control reliable here.
+
+\startplacefigure[location=page,title={Browsers differ in the quality spacing.},reference=mathml:spacing]
+\startcombination[1*2]
+    {\externalfigure[2024-07-02-002-firefox.png][width=\measure{combination}]}{firefox}
+    {\externalfigure[2024-07-02-002-chrome.png] [width=\measure{combination}]}{chrome}
+\stopcombination
+\stopplacefigure
+
+When look a bit longer at this figure you also start to notice the spacing
+between atoms, scripts and individual characters. Much probably goes unnoticed
+when scrolling on a display, or watching at a smaller size. It makes one wonder
+how quality control happens today, because the large tech organizations behind
+this technology for sure have (money for) testing capabilities. Of course it can
+be that the expectations are low so maybe the \TEX\ community should educate the
+online world a bit better on the quality they expect.
+
+\stopsubject
+
+\startsubject[title=Extensibles]
+
+A nasty thing in \MATHML\ is the application of \type {stretchy}, \type
+{symmetric} and \type {largeop} for instance applied to integrals and fences.
+This is pretty much database driven although there are also some heuristics
+involved. Firefox (mid 2024) is happy when one sets the first one, and a
+controlled setting is really needed due to these somewhat unfortunate dictionary
+driven defaults. Here the lack of \type {<mfenced>} shows. At this time Chrome
+can't handle integrals that grow (as in Bonum): they stay small and are below the
+axis but we expect this to be fixed. So far an attempt to get more consistent
+spacing in radicals and fractions failed because here Chrome can be tuned using
+the dimensions of \type {<mspace>} while Firefox ignores these. Also setting
+\type {minheight} on large operators is not applicable because here Firefox works
+sort of expected but Chrome goes wild. Maybe the right larger variant is chosen
+(dimension wise) but the wrong glyph is referenced.
+
+Another observation is that the choice for a size variant in Chrome can be absent
+completely and that in display mode the second size of the smaller or maybe the
+larger integral is chosen and then positioned wrong. There are plenty of reasons
+to use Firefox as the reference implementation. Side note: Edge of course behaves
+like Chrome.
+
+% <math xmlns="http://www.w3.org/1998/Math/MathML"><mrow>
+% <mover displaystyle="true" scriptlevel="1"><mrow><mi>𝑥</mi><mn>1</mn></mrow>
+% <mover displaystyle="true" scriptlevel="1"><mrow><mi>𝑥</mi><mn>2</mn></mrow>
+% <mover displaystyle="true" scriptlevel="1"><mrow><mi>𝑥</mi><mn>3</mn></mrow>
+% <mover displaystyle="true" scriptlevel="1"><mrow><mi>𝑥</mi><mn>4</mn></mrow>
+% </mover></mover></mover></mover></mrow></math>
+
+Nested \type {<mover>} scale down per nesting in Chrome but not in Firefox, so
+control with \type {displaystyle} and \type {scriptlevel} are disappointing, as
+shown in \in {Figure} [mathml:scripts]. It looks like Chrome has more than three
+sizes. Here are some examples where we set the script level on fraction. Setting
+the level on the numerator and denominator has a similar result. This means that
+one can best {\em not} try to optimize the rendering by setting the styles: it
+can only get worse.
+
+% <math display="inline" displaystyle="true" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="0"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="true" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="1"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="true" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="2"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="true" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="3"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="0"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="1"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="2"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac scriptlevel="3"><mn>1</mn><mi>𝑥</mi></mfrac>
+% </math>
+
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac ><mn scriptlevel="0">1</mn><mi scriptlevel="0">𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac ><mn scriptlevel="1">1</mn><mi scriptlevel="1">𝑥</mi></mfrac>
+% </math>
+% <math display="inline" displaystyle="false" xmlns="http://www.w3.org/1998/Math/MathML">
+%     <mfrac ><mn scriptlevel="2">1</mn><mi scriptlevel="2">𝑥</mi></mfrac>
+% </math>
+
+\startplacefigure[title={Different interpretations of \type {scriptlevel}.},reference=mathml:scripts]
+\startcombination[2*1]
+    {\externalfigure[2024-07-02-001-firefox.png][width=\measure{combination}]}{firefox}
+    {\externalfigure[2024-07-02-001-chrome.png] [width=\measure{combination}]} {chrome}
+\stopcombination
+\stopplacefigure
+
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+%<math data-lmtx-blob="2" data-lmtx-meaning="integral with upper limit 𝑎 , of the fraction of 1 and 𝑥" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+%    <mrow>
+%        <mi>x</mi>
+%        <mo>+</mo>
+%        <msup>
+%            <mo stretchy="true">∫</mo>
+%            <mi>𝑎</mi>
+%        </msup>
+%        <mfrac>
+%            <mn>1</mn>
+%            <mi>𝑥</mi>
+%        </mfrac>
+%    </mrow>
+%</math>
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+%
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+%<math data-lmtx-blob="2" data-lmtx-meaning="integral with upper limit 𝑎 , of the fraction of 1 and 𝑥" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+%    <mrow>
+%        <mi>x</mi>
+%        <mo>+</mo>
+%        <msup>
+%            <mo stretchy="true">∫</mo>
+%            <mi>𝑎</mi>
+%        </msup>
+%    </mrow>
+%</math>
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+%
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+%<math data-lmtx-blob="2" data-lmtx-meaning="integral with upper limit 𝑎 , of the fraction of 1 and 𝑥" display="inline" xmlns="http://www.w3.org/1998/Math/MathML">
+%    <mrow>
+%        <mi>x</mi>
+%        <mo>+</mo>
+%        <msup>
+%            <mo minsize="4em" stretchy="true" symmetric="true" largeop="true">∫</mo>
+%            <mi>𝑎</mi>
+%        </msup>
+%        <msubsup>
+%            <!-- mo stretchy="true" symmetric="true" largeop="true">∫</mo --> <-- centres buty no stretch -->
+%            <mo stretchy="true" symmetric="true" largeop="true">∫</mo>
+%            <mn>0</mn>
+%            <mn>1</mn>
+%        </msubsup>
+%        <mfrac>
+%            <msqrt><mn>1</mn></msqrt>
+%            <msqrt><mi>x</mi></msqrt>
+%        </mfrac>
+%
+%    </mrow>
+%</math>
+%xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+\startplacefigure[title={Variants and extensibles.},reference=mathml:variants]
+\startcombination[2*1]
+    {\externalfigure[2024-07-01-001-firefox.png][width=\measure{combination}]}{firefox}
+    {\externalfigure[2024-07-01-001-chrome.png] [width=\measure{combination}]}{chrome}
+\stopcombination
+\stopplacefigure
+
+In \in {Figure} [mathml:variants] we see some bad variant choices, wrong
+positioning and support for minimum height. Here we set \type {minheight} to
+\type {4em} (we often use \type {em} as measure for as it often relates to the
+design size). Notice again that the spacing of scripts in Chrome also needs work.
+
+\stopsubject
+
+\startsubject[title=Scaling]
+
+After converting some math extensive documents we've come to the conclusion that
+although a lot is possible today it can differ per browser and version. When we
+want to show formulas properly rendered as \SVG\ we have to deal with scaling and
+in the end we decided to just use the same bodyfont and line width in the browser
+as in the original document. Our test main test document however used a 8.5 point
+body font which is pretty small for a browser. However, we can set the \type
+{zoom} in the outer element to for instance \im {8.5/12} to get our preferred
+scaling up to 12 points. When testing that we found that on Mikaels machine
+Firefox didn't support that while on my machine it worked. Upgrading Firefox on
+the chromebook resulted in a massive replacement of libraries, a broken Okular,
+and eventually a non functioning virtual machine. Of course in the end trying out
+several different variant worked out (there's always some solution) but it also
+learns that long term stability is a dream, especially when you come from a \TEX\
+ecosystem where a single binary with no dependencies (\LUAMETATEX) does the job.
+Nevertheless we decided to go the \quotation {original font size and width
+combined with zoom in browser} route because it frees us from messing with scales
+in the images.
+
+When testing how scaling works out, we also noticed that inline math has its own
+problems with scaling because linebreaks in math formulas are not supported which
+can result in overflowing lines as well as badly adjusted lines. A peculiar side
+effect is shown in \in {figure} [mathml:periodbreak] where the mid 2024 browsers
+happily break a line between a math formula and a period. We just assume that
+this will be addressed and will not waste time on solutions.
+
+\startplacefigure[title={Linebreaks before periods.},reference=mathml:periodbreak]
+    \externalfigure[2024-07-15-001-firefox.png][width=\textwidth]
+\stopplacefigure
+
+\stopsubject
+
+\startsubject[title=Notes]
+
+Given the focus on \MATHML\ core one can wonder if the rest of the standard is
+wishful thinking, or a historic overview. It would have been nice if some more
+specific features had been added, like native matrix rendering with appropriate
+spacing. The example of typesetting a matrix using grid styling is somewhat
+pathetic and if we go the same route with \MATHML\ as with \SVG, that is more and
+more style and \CSS\ trickery, we're getting away from structure even more. Of
+course one can argue that a matrix is a grid but putting style attributes on the
+element in order to control the columns and rows contradicts otherwise present
+attributes. One cannot delegate this to a separate style unless each matrix
+wrapping \type {<mrow>} gets its own class, which of course makes cut'n'paste no
+longer an option. Now, a user agent that interprets the \MATHML\ also has to
+support \CSS .
+
+We like to use a decent coded \XML\ file because it's cleaner but while browsers
+and \CSS\ are very powerful some \quote {trivial} features are not supported,
+like hyperlinks that assume the \type {<a>} element being used in a regular
+\HTML\ file. One can conveniently format an \XML\ file with \CSS\ but as of now
+we can't use for instance \type {xlink:*} attributes; these are only supported
+for \SVG\ and \MATHML. So it's a disappointment that in 2024 we still have to
+bloat to a \type {<div>} for everything variant as we strongly object to using a
+using a curious mix of \HTML\ for main element and \type {<div>} for structure
+elements that we miss.
+
+\stopsubject
+
+\startsubject[title=Conclusion]
+
+So from this subset of examples these cases we decided to draw a line and not
+spend too much time on optimizing the look and feel of an export. After all, its
+main purpose is to have a variant of the result that can reflow and be used for
+(e.g.) accessibility purposes. For that the quality of the rendering in whatever
+form can be delegated to the web client anyway. We can only hope that bugs,
+some of which are long standing, gets resolved. Of course solving our own bugs as
+soon as they are reported remains our priority.
+
+\stopsubject
+
+\stopchapter
+
+\stopcomponent

@@ -355,7 +355,10 @@ local function getaxisscale(segments,minimum,default,maximum,user)
     -- returns the right values cf example in standard
     --
     if not minimum or not default or not maximum then
-        return false
+        return 0
+    end
+    if type(user) ~= "number" then
+        return 0
     end
     if user < minimum then
         user = minimum

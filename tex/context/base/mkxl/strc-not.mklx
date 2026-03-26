@@ -1637,9 +1637,9 @@
  % \ifzeropt\insertheight\currentnoteinsertionnumber\else
      \strc_notes_place_inserts_indeed_before
      \begingroup
-\resetgridsnapping
-\gridsnappingfalse
-\strc_notes_set_bodyfont
+     \resetgridsnapping
+     \gridsnappingfalse
+     \strc_notes_set_bodyfont
      \setbox\b_strc_notes_inserts\hbox
        {\strc_notes_flush_inserts}%
      \page_postprocessors_linenumbers_deepbox\b_strc_notes_inserts
@@ -1696,8 +1696,8 @@
 \def\strc_notes_place_inserts_very_indeed#1%
   {\strc_notes_place_inserts_indeed_before
    \bgroup
-\resetgridsnapping
-\gridsnappingfalse
+   \resetgridsnapping
+   \gridsnappingfalse
    \strc_notes_set_bodyfont
    #1% set the box here
    \page_postprocessors_linenumbers_deepbox\b_strc_notes_inserts
@@ -1940,10 +1940,23 @@
 % \permanent\protected\def\placebottomnotes
 %   {\strc_notes_process\strc_notes_place_inserts}
 
+% \permanent\protected\def\placebottomnotes
+%   {\vbox \s!yoffset -\usedlineskip \bgroup % TODO (normally 1pt), \lineskip is zero at this moment
+%      \strc_notes_process\strc_notes_place_inserts
+%      \vskip\strutdp
+%    \egroup}
+
+% \permanent\protected\def\placebottomnotes
+%   {\vbox \s!yoffset -\usedlineskip \bgroup
+%      \strc_notes_process\strc_notes_place_inserts
+%    \egroup}
+
+\newdimension \d_strc_notes_bottom_depth
+
 \permanent\protected\def\placebottomnotes
   {\vbox \s!yoffset -\usedlineskip \bgroup % TODO (normally 1pt), \lineskip is zero at this moment
      \strc_notes_process\strc_notes_place_inserts
-     \vskip\strutdp
+     \global\d_strc_notes_bottom_depth\strutdp
    \egroup}
 
 \permanent\tolerant\protected\def\placenotes[#list]#spacer[#S#settings]%

@@ -336,7 +336,7 @@ void tex_aux_run_vrule(void)
 
 void tex_aux_run_hrule(void)
 {
-    tex_delayed_glue_check(delayed_glue_target_current, delayed_glue_location_rule);
+ // tex_delayed_glue_check(delayed_glue_target_current, delayed_glue_location_rule);
     tex_tail_append(tex_aux_scan_rule_spec(h_rule_type, cur_chr, 1));
     cur_list.prev_depth = ignore_depth_criterion_par;
 }

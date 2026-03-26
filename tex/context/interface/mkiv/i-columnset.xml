@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definecolumnset" file="page-mvl.mkxl">
+    <cd:command name="definecolumnset" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnset" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnset" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -74,7 +74,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnsetlines" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnsetlines" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
@@ -83,7 +83,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnsetstart" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnsetstart" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-number"/>
@@ -92,7 +92,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnset" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnset" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -101,7 +101,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnset" type="environment" generated="yes" variant="example" file="page-mvl.mkxl">
+    <cd:command name="columnset" type="environment" generated="yes" variant="example" level="document" category="columns" file="page-mvl.mkxl">
         <cd:sequence>
             <cd:variable value="columnset"/>
         </cd:sequence>
@@ -112,9 +112,9 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="reservecolumnset" file="page-mvl.mkxl"/>
+    <cd:command name="reservecolumnset" level="style" category="columns" file="page-mvl.mkxl"/>
 
-    <cd:command name="setcolumnset" file="page-mvl.mkxl">
+    <cd:command name="setcolumnset" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="c">
@@ -159,7 +159,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setcolumnset" type="environment" file="page-mvl.mkxl">
+    <cd:command name="setcolumnset" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="c">
@@ -203,7 +203,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="emptycolumnset" file="page-mvl.mkxl">
+    <cd:command name="emptycolumnset" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="width">
@@ -247,13 +247,13 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetgridlines" file="page-mvl.mkxl">
+    <cd:command name="columnsetgridlines" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolumnsetspan" file="page-mvl.mkxl">
+    <cd:command name="definecolumnsetspan" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -263,7 +263,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnsetspan" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnsetspan" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -287,7 +287,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetspan" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsetspan" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -296,20 +296,20 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsethspan" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsethspan" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetspanwidth" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsetspanwidth" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definecolumnsetarea" file="page-mvl.mkxl">
+    <cd:command name="definecolumnsetarea" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -319,7 +319,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnsetarea" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnsetarea" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -374,14 +374,14 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupcolumnsetareatext" file="page-mvl.mkxl">
+    <cd:command name="setupcolumnsetareatext" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-text"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetsheet" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsetsheet" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-number"/>
@@ -391,21 +391,21 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetsheetdelayed" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsetsheetdelayed" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="columnsetspreadsheets" type="environment" file="page-mvl.mkxl">
+    <cd:command name="columnsetspreadsheets" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:resolve name="keyword-number"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="definesubcolumnset" file="page-mvl.mkxl">
+    <cd:command name="definesubcolumnset" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -413,7 +413,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupsubcolumnset" file="page-mvl.mkxl">
+    <cd:command name="setupsubcolumnset" level="style" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -451,7 +451,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="subcolumnset" type="environment" file="page-mvl.mkxl">
+    <cd:command name="subcolumnset" type="environment" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-optional"/>
             <cd:assignments list="yes" optional="yes">
@@ -460,11 +460,11 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushcolumnset" file="page-mvl.mkxl"/>
+    <cd:command name="flushcolumnset" level="document" category="columns" file="page-mvl.mkxl"/>
 
-    <cd:command name="processcolumnset" file="page-mvl.mkxl"/>
+    <cd:command name="processcolumnset" level="document" category="columns" file="page-mvl.mkxl"/>
 
-    <cd:command name="balancesubcolumnsets" file="page-mvl.mkxl">
+    <cd:command name="balancesubcolumnsets" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="spread"/>
@@ -472,7 +472,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="flushsubcolumnsets" file="page-mvl.mkxl">
+    <cd:command name="flushsubcolumnsets" level="document" category="columns" file="page-mvl.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="spread"/>
@@ -480,6 +480,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="blockcolumnsetrows" file="page-mvl.mkxl"/>
+    <cd:command name="blockcolumnsetrows" level="document" category="columns" file="page-mvl.mkxl"/>
 
 </cd:interface>

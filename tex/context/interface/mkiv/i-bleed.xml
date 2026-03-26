@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="definebleeding" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="definebleeding" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-name-optional"/>
@@ -14,7 +14,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupbleeding" level="style" category="graphics" file="pack-box.mkiv">
+    <cd:command name="setupbleeding" level="style" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name-list-optional"/>
             <cd:assignments list="yes">
@@ -63,7 +63,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bleed" generated="yes" variant="instance" level="document" category="graphics" file="pack-box.mkiv">
+    <cd:command name="bleed" generated="yes" variant="instance" level="document" category="graphics" file="pack-box.mkxl">
         <cd:sequence>
             <cd:instance value="bleed"/>
         </cd:sequence>
@@ -78,7 +78,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="bleeding" type="environment" level="document" category="graphics" file="pack-box.mkiv">
+    <cd:command name="bleeding" type="environment" level="document" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -87,7 +87,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bleeding" level="document" category="graphics" file="pack-box.mkiv">
+    <cd:command name="bleeding" level="document" category="graphics" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -97,8 +97,8 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="bleedwidth" level="style" category="graphics" file="pack-box.mkiv"/>
+    <cd:command name="bleedwidth" level="style" category="graphics" file="pack-box.mkxl"/>
 
-    <cd:command name="bleedheight" level="style" category="graphics" file="pack-box.mkiv"/>
+    <cd:command name="bleedheight" level="style" category="graphics" file="pack-box.mkxl"/>
 
 </cd:interface>

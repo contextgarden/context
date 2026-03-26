@@ -36,7 +36,7 @@ update context
 wipe the cache
 .TP
 .B --identify
-create list of files
+create list of files (be in tex root)
 .TP
 .B --secure
 use curl for https

@@ -109,6 +109,9 @@ static void tex_aux_set_last_error_context(void)
     tex_show_context();
     lmt_memory_free(lmt_error_state.last_error_context);
     lmt_error_state.last_error_context = tex_take_string(NULL);
+    if (lmt_error_state.last_error_context) {
+        lmt_error_state.last_error_context = lmt_memory_strdup(lmt_error_state.last_error_context);
+    }
     lmt_print_state.selector = saved_selector;
     new_line_char_par = saved_new_line_char;
     lmt_print_state.new_string_line = saved_new_string_line;
@@ -120,6 +123,9 @@ static void tex_aux_flush_error(void)
         lmt_print_state.selector = lmt_error_state.saved_selector;
         lmt_memory_free(lmt_error_state.last_error);
         lmt_error_state.last_error = tex_take_string(NULL);
+        if (lmt_error_state.last_error) {
+            lmt_error_state.last_error = lmt_memory_strdup(lmt_error_state.last_error);
+        }
         if (lmt_error_state.last_error) {
             int callback_id = lmt_callback_defined(show_error_message_callback);
             if (callback_id > 0) {

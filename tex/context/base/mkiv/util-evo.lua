@@ -24,6 +24,8 @@ if not modules then modules = { } end modules ['util-evo'] = {
 --
 --   https://developer.honeywell.com/api-methods?field_smart_method_tags_tid=All
 --
+-- In the meantime resideo is hosts the service so url's changed.
+--
 -- Details like the application id can be found in several places. There are snippets
 -- of (often partial or old) code on the web but still one needs to experiment and
 -- combine information. We assume unique zone names and ids across gateways; I only
@@ -33,6 +35,15 @@ if not modules then modules = { } end modules ['util-evo'] = {
 -- statistics but in the meantime I also use this code to add additional functionality
 -- to the system, for instance switching between rooms (office, living room, attic) and
 -- absence for one or more rooms.
+--
+-- This script is not really something texnic but I use its data for testing, like:
+--
+-- (1) Long term stability, i.e. running lua(meta)tex for many months unattended, and
+--     till now that works out well (already for many years over long periods).
+-- (2) Testing mp graphics, there are also some other data gathering scripts, as well
+--     as saving and storing huge tables with historic data.
+-- (3) To test features like templates and sockets (a webserver running on a local port
+--     behind an nginx proxy) which stresses the garbage collector over a longer period.
 
 -- todo: %path% in filenames
 
@@ -50,7 +61,7 @@ local replacer = utilities.templates.replacer
 local lower = string.lower -- no utf support yet (encoding needs checking in evohome)
 
 local applicationid = "b013aa26-9724-4dbd-8897-048b9aada249"
------ applicationid = "91db1612-73fd-4500-91b2-e63b069b185c"
+----- applicationid = "91db1612-73fd-4500-91b2-e63b069b185c" -- generic and shared
 
 local report = logs.reporter("evohome")
 local trace  = false
@@ -73,6 +84,7 @@ local defaultpresets = {
       -- accesstoken = "unset",
       -- userid      = "unset",
     },
+    url = "tccna.resideo.com"
 }
 
 local validzonetypes = {
@@ -153,6 +165,9 @@ local function validpresets(presets)
     setmetatableindex(presets,defaultpresets)
     setmetatableindex(credentials,defaultpresets.credentials)
     setmetatableindex(files,defaultpresets.files)
+    if not presets.url then
+        presets.url = defaultpresets.url -- in case something got messed up
+    end
     return presets
 end
 
@@ -211,7 +226,11 @@ local function loadlatest(filename)
 end
 
 local function result(t,fmt,a,b,c)
+inspect(t)
     if t then
+        if type(t) == "table" and t.error then
+            report("result error %a",t.error)
+        end
         report(fmt,a or "done",b or "done",c or "done","done")
         return t
     else
@@ -219,9 +238,11 @@ local function result(t,fmt,a,b,c)
     end
 end
 
--- the token is kind of generic and shared
-
--- 91db1612-73fd-4500-91b2-e63b069b185c
+-- -- the v2 authorization does something like this:
+--
+-- local apikey = "4050ffbb-4667-ba79-3c27-3a705cbe2109"
+-- local secret = "c6c4c44f-4d67-ae40-863c-70c6befa6b56"
+-- local basic  = basexx.encode64(apikey .. ":" .. secret)
 
 local f = replacer (
     [[curl ]] ..
@@ -239,8 +260,16 @@ local f = replacer (
     [[-d "Username=%username%" ]] ..
     [[-d "Password=%password%" ]] ..
     [[-d "Connection=Keep-Alive" ]] ..
-    [["https://tccna.honeywell.com/Auth/OAuth/Token"]]
+    [["https://%url%/Auth/OAuth/Token"]]
 )
+
+-- table = {
+--      ["access_token"]  = "...",
+--      ["expires_in"]    = 3599,
+--      ["refresh_token"] = "...",
+--      ["scope"]         = "EMEA-V1-Basic EMEA-V1-Anonymous",
+--      ["token_type"]    = "bearer",
+-- }
 
 local function getaccesstoken(presets)
     if validpresets(presets) then
@@ -249,8 +278,8 @@ local function getaccesstoken(presets)
             username      = c.username,
             password      = c.password,
             applicationid = applicationid,
+            url           = presets.url,
         }
- print(s)
         local r = s and resultof(s)
         local t = r and jsontolua(r)
         return result(t,"getting access token %a")
@@ -264,7 +293,7 @@ local f = replacer (
     [[-H "Authorization: bearer %accesstoken%" ]] ..
     [[-H "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml" ]] ..
     [[-H "applicationId: %applicationid%" ]] ..
-    [["https://tccna.honeywell.com/WebAPI/emea/api/v1/userAccount"]]
+    [["https://tccna.resideo.com/WebAPI/emea/api/v1/userAccount"]]
 )
 
 local function getuserinfo(presets)
@@ -273,6 +302,7 @@ local function getuserinfo(presets)
         local s = c and f {
             accesstoken   = c.accesstoken,
             applicationid = c.applicationid,
+            url           = presets.url,
         }
         local r = s and resultof(s)
         local t = r and jsontolua(r)
@@ -287,7 +317,7 @@ local f = replacer (
     [[-H "Authorization: bearer %accesstoken%" ]] ..
     [[-H "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml" ]] ..
     [[-H "applicationId: %applicationid%" ]] ..
-    [["https://tccna.honeywell.com/WebAPI/emea/api/v1/location/installationInfo?userId=%userid%&includeTemperatureControlSystems=True"]]
+    [["https://%url%/WebAPI/emea/api/v1/location/installationInfo?userId=%userid%&includeTemperatureControlSystems=True"]]
 )
 
 local function getlocationinfo(presets)
@@ -297,6 +327,7 @@ local function getlocationinfo(presets)
             accesstoken   = c.accesstoken,
             applicationid = applicationid,
             userid        = c.userid,
+            url           = presets.url,
         }
         local r = s and resultof(s)
         local t = r and jsontolua(r)
@@ -311,7 +342,7 @@ local f = replacer (
     [[-H "Authorization: bearer %accesstoken%" ]] ..
     [[-H "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml" ]] ..
     [[-H "applicationId: %applicationid%" ]] ..
-    [["https://tccna.honeywell.com/WebAPI/emea/api/v1/temperatureZone/%zoneid%/schedule"]]
+    [["https://%url%/WebAPI/emea/api/v1/temperatureZone/%zoneid%/schedule"]]
 )
 
 local function getschedule(presets,zonename)
@@ -323,6 +354,7 @@ local function getschedule(presets,zonename)
                 accesstoken   = c.accesstoken,
                 applicationid = applicationid,
                 zoneid        = zoneid,
+                url           = presets.url,
             }
             local r = s and resultof(s)
             local t = r and jsontolua(r)
@@ -338,7 +370,7 @@ local f = replacer (
     [[-H "Authorization: bearer %accesstoken%" ]] ..
     [[-H "Accept: application/json, application/xml, text/json, text/x-json, text/javascript, text/xml" ]] ..
     [[-H "applicationId: %applicationid%" ]] ..
-    [["https://tccna.honeywell.com/WebAPI/emea/api/v1/location/%locationid%/status?includeTemperatureControlSystems=True" ]]
+    [["https://%url%/WebAPI/emea/api/v1/location/%locationid%/status?includeTemperatureControlSystems=True" ]]
 )
 
 local function getstatus(presets,locationid,locationname)
@@ -348,6 +380,7 @@ local function getstatus(presets,locationid,locationname)
             accesstoken   = c.accesstoken,
             applicationid = applicationid,
             locationid    = locationid,
+            url           = presets.url,
         }
         local r = s and resultof(s)
         local t = r and jsontolua(r)
@@ -434,8 +467,11 @@ local function updatezone(presets,name,zone)
     end
     if zone then
         local oldtarget = presets.data.states[name]
-        local min = zone.heatSetpointCapabilities.minHeatSetpoint or  5
-        local max = zone.heatSetpointCapabilities.maxHeatSetpoint or 12
+        local heatcaps  = zone.heatSetpointCapabilities
+        local heattemp  = zone.temperatureStatus
+        local heatstat  = zone.heatSetpointStatus
+        local min = heatcaps and heatcaps.minHeatSetpoint or  5
+        local max = heatcaps and heatcaps.maxHeatSetpoint or 12
         local mintarget, maxtarget = gettargets(zone)
         -- todo: maybe get these from presets
         if mintarget == false then
@@ -454,9 +490,9 @@ local function updatezone(presets,name,zone)
                 maxtarget = max
             end
         end
-        local current = zone.temperatureStatus.temperature or 0
-        local target  = zone.heatSetpointStatus.targetTemperature
-        local mode    = zone.heatSetpointStatus.setpointMode
+        local current = heattemp and heattemp.temperature or 0
+        local target  = heatstat and heatstat.targetTemperature
+        local mode    = heatstat and heatstat.setpointMode
         local state   = (mode == "FollowSchedule"                            and "schedule" ) or
                         (mode == "PermanentOverride" and target <= mintarget and "permanent") or
                         (mode == "TemporaryOverride" and target <= mintarget and "off"      ) or
@@ -718,7 +754,7 @@ local f = replacer (
     [[-H "applicationId: %applicationid%" ]] ..
     [[-H "Content-Type: application/json" ]] ..
     [[-d "%[settings]%" ]] ..
-    [["https://tccna.honeywell.com/WebAPI/emea/api/v1/temperatureZone/%zoneid%/heatSetpoint"]]
+    [["https://%url%/WebAPI/emea/api/v1/temperatureZone/%zoneid%/heatSetpoint"]]
 )
 
 local function untilmidnight()

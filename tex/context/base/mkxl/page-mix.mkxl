@@ -261,7 +261,7 @@
 % \samplefile{tufte}
 % \stoptext
 
-\newconditional\c_page_mix_snap_preceding % test per 2026-01
+\newconditional\c_page_mix_snap_preceding % test per 2026-01 .. not ok (itemize, after sections etc)
 
 \def\page_mix_routine_intercept
   {\ifdim\pagetotal>\pagegoal
@@ -279,9 +279,9 @@
       \unvbox\normalpagebox}%
    \ifconditional\c_page_mix_grid_snapping
      % probably ok anyway
-   \orelse\ifconditional\c_page_mix_snap_preceding % see (x)
-     \global\ht\b_page_mix_preceding{\ht\b_page_mix_preceding-\strutdp+\topskip-\lineheight}%
-     \global\dp\b_page_mix_preceding\strutdp
+%    \orelse\ifconditional\c_page_mix_snap_preceding % see (x)
+%      \global\ht\b_page_mix_preceding{\ht\b_page_mix_preceding-\strutdp+\topskip-\lineheight}%
+%      \global\dp\b_page_mix_preceding\strutdp
    \fi}
 
 %D The error routine is there but unlikely to be called. It is a left-over from
@@ -800,8 +800,9 @@
    \setbox\b_page_mix_collected\vbox \bgroup
      \ifvoid\b_page_mix_preceding \else
      % \page_postprocessors_linenumbers_deepbox\b_page_mix_preceding % already done
-       \dontleavehmode\hpack\bgroup % see (x)
-      %\vpack\bgroup
+     % bad spacing after titles and in itemizem so no:
+     % \dontleavehmode\hpack\bgroup % see (x)
+       \vpack\bgroup
          \box\b_page_mix_preceding
        \egroup
        \global\d_page_mix_preceding_height\zeropoint

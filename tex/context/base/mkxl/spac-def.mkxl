@@ -54,6 +54,10 @@
     \synchronizespacecodes
 \to \everydefinedfont    % not needed, frozen factors
 
+%D Per 2026 we upgraded the top and bottom setters and when we set top to
+%D height, we also set bottom to depth, but one can change it. The setting
+%D here assumes that topskipfactor is set.
+
 \setupinterlinespace
   [\c!minheight=\zeropoint, % only special purpose
    \c!mindepth=\zeropoint,  % only special purpose
@@ -63,7 +67,8 @@
   %\c!ntop=\minusone,       % >= 0 : times lineheight, otherwise 5
   %\c!ntop=\plusfive,       % long time default
    \c!ntop=\plustwo,        % more reasonable, if at all
-   \c!bottom=0.4,
+ % \c!bottom=0.4,
+   \c!bottom=\ifx\topskipfactor\v!height\v!depth\else0.4\fi,
    \c!distance=\onepoint,   % \dimexpr\openlineheight/10\relax
    \c!line=2.8\exheight,
    \c!stretch=\zerocount,

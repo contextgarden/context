@@ -284,6 +284,11 @@ tex.mvloptioncodes           = getthem(tex.getmvloptionvalues,"mvloptioncode")
 tex.balancecallbackcodes     = getthem(tex.getbalancecallbackvalues)
 tex.badnessmodecodes         = getthem(tex.getbadnessmodevalues,"badnessmodecode")
 tex.insertsplitcodes         = getthem(tex.getinsertsplitvalues) -- ,"insertsplitcode")
+tex.nospacesmodecodes        = getthem(tex.getnospacesmodevalues,"nospacesmodecode")
+tex.spaceskipcodes           = getthem(tex.getspaceskipvalues,"spaceskipcode")
+tex.spacefactorcodes         = getthem(tex.getspacefactorvalues,"spacefactorcode")
+tex.paragraphoptioncodes     = getthem(tex.getparagraphoptionvalues,"paragraphoptioncode")
+tex.paragraphfillmodecodes   = getthem(tex.getparagraphfillmodevalues,"paragraphfillmodecode")
 
 local linebreakstatecodes    = getthem(tex.getlinebreakstatevalues)
 tex.linebreakstatecodes      = linebreakstatecodes

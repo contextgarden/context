@@ -43,6 +43,11 @@ return {
                     factor  = 0.8,
                 },
                 {
+                    tweak   = "strut",
+                    unicode = 0x28,
+                    variant = 1,
+                },
+                {
                     tweak    = "replacealphabets",
                     feature  = "euleroverpagella",
                     filename = "euler-math.otf",
@@ -265,6 +270,9 @@ return {
                     tweak   = "addfourier",
                     variant = 1,
                 },
+-- {
+--     tweak   = "simplifykerns",
+-- },
 --                 {
 --                     tweak   = "addprimed",
 --                 },

@@ -182,15 +182,19 @@ local getsubtype          = nuts.getsubtype
 
 local nodecodes           = nodes.nodecodes
 local kerncodes           = nodes.kerncodes
+local gluecodes           = nodes.gluecodes
 
 local glyph_code          <const> = nodecodes.glyph
 local disc_code           <const> = nodecodes.disc
 local glue_code           <const> = nodecodes.glue
 local penalty_code        <const> = nodecodes.penalty
+local boundary_code       <const> = nodecodes.boundary
 local kern_code           <const> = nodecodes.kern
 local hlist_code          <const> = nodecodes.hlist
 local vlist_code          <const> = nodecodes.vlist
 local fontkern_code       <const> = kerncodes.fontkern
+local spaceskip_code      <const> = gluecodes.spaceskip
+local xspaceskip_code     <const> = gluecodes.xspaceskip
 
 local insertbefore        = nuts.insertbefore
 local insertafter         = nuts.insertafter
@@ -199,9 +203,9 @@ local nextnode            = nuts.traversers.node
 
 local nodepool            = nuts.pool
 local new_latelua         = nodepool.latelua
+local new_kern            = nodepool.kern
 local new_rule            = nodepool.rule
 local new_outline_rule    = nodepool.outlinerule
-local new_kern            = nodepool.kern
 
 local getdimensions       = nuts.dimensions
 local getrangedimensions  = nuts.rangedimensions
@@ -217,8 +221,6 @@ local foundintree         = resolvers.foundintree
 local getpagedimensions   = layouts.getpagedimensions
 
 local eol        <const>  = "\010"
-local z_hlist    <const>  = "[0,0:0,0:0,0,0\010"
-local s_hlist    <const>  = "]\010"
 local f_hvoid             = formatters["h%i,%i:%i,%i:%i,%i,%i\010"]
 local f_hlist             = formatters["(%i,%i:%i,%i:%i,%i,%i\010"]
 local s_hlist    <const>  = ")\010"
@@ -331,12 +333,12 @@ end
 
 -- the node stuff
 
-local filehandle = nil
-local nofsheets  = 0
-local nofobjects = 0
-local last       = 0
-local filesdone  = 0
-local sncfile    = false
+local filehandle  = nil
+local nofsheets   = 0
+local nofobjects  = 0
+local last        = 0
+local filesdone   = 0
+local usedsncfile = false
 
 local function writeanchor()
     local size = filehandle:seek("end")
@@ -355,12 +357,12 @@ local function writefiles()
 end
 
 local function makenames()
-    sncfile = replacesuffix(tex.jobname,"synctex")
+    usedsncfile = replacesuffix(tex.jobname,"synctex")
 end
 
 local function flushpreamble()
     makenames()
-    filehandle = openfile(sncfile,"wb")
+    filehandle = openfile(usedsncfile,"wb")
     if filehandle then
         filehandle:setvbuf("full",64*1024)
         filehandle:write("SyncTeX Version:1",eol)
@@ -382,7 +384,7 @@ local function flushpreamble()
 end
 
 function synctex.wrapup()
-    sncfile = nil
+    usedsncfile = nil
 end
 
 local function flushpostamble()
@@ -577,14 +579,17 @@ local collect_max  do
                             first = current
                         end
                         last = current
-                    elseif id == kern_code and getsubtype(current) == fontkern_code then
+                 -- elseif id == glue_code and getsubtype(current) == spaceskip_code then -- xspaceskip
+                    elseif id == glue_code then
+                    elseif id == penalty_code then
+                    elseif id == boundary_code then
+                    elseif id == kern_code and getsubtype(current) == fontkern_code then -- maybe italic too
                         if first then
                             last = current
                         end
-                    elseif id == glue_code then
-                    elseif id == penalty_code then
-                        -- go on (and be nice for math)
-                    else
+                    else -- which whatsits can we skip
+                        -- rule whatsit
+--                     print(nodecodes[id])
                         if tag > 0 then
                             head = inject(parent,head,first,last,tag,line)
                             tag  = 0
@@ -621,15 +626,8 @@ end
 
 collect = collect_max
 
-function synctex.collect(head,where)
-    if enabled and where ~= "object" then
-        return collect(head,head)
-    else
-        return head
-    end
-end
-
--- also no solution for bad first file resolving in sumatra
+-- In mkxl we have control over the shipout so we can comfortably start and stop
+-- outside the node list.
 
 function synctex.start()
     if enabled then
@@ -652,6 +650,58 @@ function synctex.stop()
         nofobjects = nofobjects + 2
     end
 end
+
+function synctex.collect(head,where)
+    if enabled and where ~= "object" then
+        return collect(head,head)
+    else
+        return head
+    end
+end
+
+-- do
+--
+--    local function start()
+--        if enabled then
+--            writeanchor()
+--            filehandle:write("{",nofsheets,eol)
+--            -- this seems to work:
+--         -- local pagewidth, pageheight = getpagedimensions()
+--            filehandle:write(f_plist(1,0,0,0,0,0,0))
+--        end
+--    end
+--
+--    local function stop()
+--        if enabled then
+--            filehandle:write(s_plist)
+--            writeanchor()
+--            filehandle:write("}",nofsheets,eol)
+--            nofobjects = nofobjects + 2
+--        end
+--    end
+--
+--    synctex.start = function() end
+--    synctex.stop  = function() end
+--
+--    local findtail = nuts.tail
+--
+--    function synctex.collect(head,where)
+--        if enabled and where ~= "object" then
+--            nofsheets = nofsheets + 1 -- could be realpageno
+--            if flushpreamble() then
+--                local list = getlist(head)
+--                if list then
+--                    list = insertbefore(list,list,new_latelua(start))
+--                    insertafter(list,findtail(list),new_latelua(stop))
+--                    setlist(head,list)
+--                    head = collect(head,head)
+--                end
+--            end
+--        end
+--        return head
+--    end
+--
+--end
 
 local enablers  = { }
 local disablers = { }
@@ -703,7 +753,7 @@ function synctex.finish()
         flushpostamble()
     else
         makenames()
-        removefile(sncfile)
+        removefile(usedsncfile)
     end
 end
 
@@ -734,7 +784,7 @@ luatex.registerstopactions(synctex.finish)
 statistics.register("synctex tracing",function()
     if used then
         return string.format("%i referenced files, %i files ignored, %i objects flushed, logfile: %s",
-            noftags,nofblocked,nofobjects,sncfile)
+            noftags,nofblocked,nofobjects,usedsncfile)
     end
 end)
 

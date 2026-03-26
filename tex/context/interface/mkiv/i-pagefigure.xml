@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="pagefigure" level="document" category="graphics" file="page-app.mkiv">
+    <cd:command name="pagefigure" level="document" category="graphics" file="page-app.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">
@@ -18,7 +18,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="pagefigure" type="environment" level="document" category="graphics" file="page-app.mkiv">
+    <cd:command name="pagefigure" type="environment" level="document" category="graphics" file="page-app.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-file"/>
             <cd:assignments list="yes" optional="yes">

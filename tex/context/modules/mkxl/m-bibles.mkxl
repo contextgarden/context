@@ -1,4 +1,14 @@
-% signal=runner
+% signal=squid
+
+%D This is an experimental module: we can have patches in here.
+
+% \enabletrackers[columnsets.noisy]
+
+% \globaldeadcycles2000 % \plusonethousand
+% \localdeadcycles 1000 % \plushundred
+
+% \unprotect \pushoverloadmode
+% \protect
 
 %D \module
 %D   [       file=m-bibles,
@@ -24,41 +34,22 @@
 
 % todo: use labeltext
 
-% \enablemode[balance-verses] % too late
+\enablemode[balance-verses] % too late
+\enableexperiments[vspacing.delay]
 
 \startmodule [bibles]
 
 % \enabletrackers[vspacing.collect]
 % \enabletrackers[vspacing.snapping]
 
-% \showmakeup[line]
+\showmakeup[line]
 % \enabletrackers[system.usage=summary]
 % \showframe
-% \showgrid
+\showgrid
 
 \registerctxluafile{m-bibles}{}
 
-% \enableexperiments[fonts.compact]
-
 \dontcomplain
-
-\setuplayout
-  [topspace=.05ph,
-   bottomspace=.05ph,
-   backspace=.05ph,
-   header=.05ph,
-   grid=yes,
-   footer=0pt,
-   width=middle,
-   height=middle]
-
-% \setupinteraction
-%   [state=start,
-%    color=,
-%    contrastcolor=]
-%
-% \setuplist
-%   [interaction=all]
 
 % hlig rlig dlig ccmp
 
@@ -81,24 +72,45 @@
   [hz=quality,
    protrusion=quality]
 
-\setupinterlinespace
-  [top=.72]
-
 % \setupbodyfont[unifraktur,10pt] \setupinterlinespace[line=2.25ex]
 
 % \setupbodyfont[lucida,9pt]
 \setupbodyfont[pagella,9pt]
 % \setupbodyfont[pagella,7pt]
 
+\setuplayout
+  [topspace=.05ph,
+   bottomspace=.05ph,
+   backspace=.05ph,
+   header=.05ph,
+%    grid=yes,
+   grid=snapping,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\enabletrackers[line]
+
+% \setupinteraction
+%   [state=start,
+%    color=,
+%    contrastcolor=]
+%
+% \setuplist
+%   [interaction=all]
+
+\setupinterlinespace
+  [top=height]
+
 % \showmakeup[expansion]
 % \enabletrackers[paragraphs.passes=summary]
 
 \startsetups balance:example
-  \balancetopskip          \strutht
-  \balancebottomskip       \strutdp
-  \balanceemergencystretch 0pt
-  \balanceadjdemerits      0
-  \balancetolerance        10
+    \balancetopskip          \strutht
+    \balancebottomskip       \strutdp
+    \balanceemergencystretch 0pt
+    \balanceadjdemerits      0
+    \balancetolerance        10
 \stopsetups
 
 \setupwhitespace
@@ -175,7 +187,15 @@
 \definecolumnset
   [bible]
   [n=2,
-   align={lesswidows,lessclubs,lessbroken,lessorphans}]
+   align={snapping:1,lessorphans:2}]
+
+% \startnotmode[balance-verses]
+
+    \setupcolumnset
+      [bible]
+      [align={snapping:1,strictwidows:4,strictclubs:4,strictbroken,lessorphans:2}]
+
+% \stopnotmode
 
 \definesubcolumnset[bible][1][1]
 \definesubcolumnset[bible][2][2]
@@ -188,6 +208,10 @@
 \setupalign
 %   [tolerant,depth,granular]
   [tolerant,granular]
+%   [tolerant,granular,strictwidows:4,strictclubs:4] % we loose 189/6
+
+
+% \showmakeup[vpenalty]
 
 % \enabletrackers[paragraphs.passes=summary]
 
@@ -242,6 +266,8 @@
   [chapter,section,subsection]
   [number=no,
    page=,
+%    align=snapping:1,
+%    snapping=1,
    continue=no,
    expansion=yes]
 
@@ -249,7 +275,8 @@
   [chapter]
   [before=,
 %    after=\blank[2*line,force]]
-   after=\blank[2*line]]
+%    after=\blank[2*line]]
+   after=\blank[line]]
 
 \setuphead
   [section]
@@ -431,13 +458,6 @@
         \flushsubcolumnsets[spread]
     \stopxmlsetups
 
-%     \startxmlsetups xml:verse
-%         {\glyphweight140\relax \xmlatt{#1}{number}}
-%         \hskip\VerseSkip
-%         \xmlflush{#1}
-%         \par
-%     \stopxmlsetups
-
     \startxmlsetups xml:verse
         {\lefttoright\glyphweight140\relax \xmlatt{#1}{number}}
         \hskip\VerseSkip
@@ -447,29 +467,100 @@
 
 \stopnotmode
 
+% We could use #1 as hash in a single array.
+
 \startmode[balance-verses]
 
-    \startxmlsetups xml:chapter
-        \xdef\BibleChapter{\xmlatt{#1}{number}}
-        \localcontrolledloop 1 4 1 {
-            \startsubcolumnset[#I]\relax
-                \namedsection
-                  [subsection:#I]
-                  [title={\BibleChapterName{\number#I} \BibleChapter}]
-            \stopsubcolumnset
-        }
-        \flushsubcolumnsets[spread]
-        \xmlflush{#1}
-    \stopxmlsetups
+    % maybe store lines, or make an array nx ny
+
+    \newinteger \BookIndex
+    \newinteger \BibleVerses
+    \newbox     \VerseBox
+
+    \localcontrolledloop 1 4 1 {
+        \newarray
+            name {v:#I}
+            type {integer}
+            n    1
+        \relax
+    }
 
     \startxmlsetups xml:verse
-        \xdef\BibleVerse{\xmlatt{#1}{number}}%
+
+        \global\BibleVerses\xmlatt{#1}{number}\relax
+
+        \setbox\VerseBox\vbox\bgroup
+            \settrialtypesetting
+            \startsubcolumnsetgroup[#I]
+                \dontleavehmode
+                \bgroup
+                    \lefttoright\glyphweight140\relax \the\BibleVerses
+                \egroup
+                \hskip\VerseSkip
+                \xmlfilter
+                  {bible:\the\BookIndex}
+                  {/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/verse[@number="\the\BibleVerses"]/text()}
+                \removeunwantedspaces
+                \par
+            \stopsubcolumnsetgroup
+        \egroup
+
+        \noflines\boxlines\VerseBox
+
+        \arraymaxvalue {v:n} \BibleVerses \noflines
+
+        \arrayvalue {v:\the\BookIndex} \BibleVerses \noflines
+
+    \stopxmlsetups
+
+    \startxmlsetups xml:chapter
+
+        \newarray
+            name {v:n}
+            type {integer}
+            n    1
+        \relax
+
+        \xdef\BibleChapter{\xmlatt{#1}{number}}
+
+        \localcontrolledloop 1 4 1 {
+            \BookIndex\currentloopiterator
+            \xmlfilter{bible:#I}{/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/text()}
+        }
+% \showstruts
         \localcontrolledloop 1 4 1 {
             \startsubcolumnset[#I]\relax
-                {\lefttoright\glyphweight140\relax \BibleVerse}
-                \hskip\VerseSkip
-                \xmlfilter{bible:#I}{/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/verse[@number="\BibleVerse"]/text()}
-                \par
+                \startnamedsection[subsection:#I][title={\BibleChapterName{\number#I} \BibleChapter}]
+
+                    \BookIndex\currentloopiterator
+
+                    \localcontrolledloop 1 \BibleVerses 1 {
+
+                        \edef\BibleVerse{\the\currentloopiterator}
+
+                        \noflines\arrayvalue {v:\the\BookIndex} \BibleVerse
+
+                        \scratchcounterone \arrayvalue {v:n} \BibleVerse\relax
+
+                        \dontleavehmode
+% \llap{\infofont[\the\scratchcounterone\vl\the\noflines] }
+                        \bgroup
+                            \lefttoright\glyphweight140\relax \BibleVerse
+                        \egroup
+                        \hskip\VerseSkip
+                        \xmlfilter
+                          {bible:\the\BookIndex}
+                          {/bible/testament/book[@number="\BibleBook"]/chapter[@number="\BibleChapter"]/verse[@number="\BibleVerse"]/text()}
+                        \removeunwantedspaces
+
+                        \localcontrolledloop \noflines {\scratchcounterone-1} \plusone {
+                            \crlf %
+%                             \hfill\localbreakpar
+                        }
+                        \par
+                    }
+
+                \stopnamedsection
             \stopsubcolumnset
         }
         \flushsubcolumnsets[spread]

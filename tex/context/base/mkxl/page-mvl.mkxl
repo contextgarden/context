@@ -51,6 +51,7 @@
 \newinteger\c_page_mvl_n_of_rows
 \newinteger\c_page_mvl_first_column
 \newinteger\c_page_mvl_last_column
+\newinteger\c_page_mvl_last_overflow
 \newinteger\c_page_mvl_current_sheet
 \newinteger\c_page_mvl_current_spreadsheet
 \newinteger\c_page_mvl_level
@@ -1226,6 +1227,31 @@
 %    \fi}
 
 \lettonothing\currentsubcolumnsetname
+
+\permanent\tolerant\protected\def\startsubcolumnsetgroup[#1]#*[#2]% #,[#1]#,#*[#2]
+  {\begingroup
+   \advanceby\c_page_mvl_level\plusone
+   \ifnum\c_page_mvl_level=\plusone
+     \ifhastok={#1}%
+       \cdef\currentsubcolumnset{\currentcolumnset:}%
+       \lettonothing\currentsubcolumnsetname
+       \setupcurrentsubcolumnset[#1]%
+     \else
+       \cdef\currentsubcolumnset{\currentcolumnset:#1}%
+       \cdef\currentsubcolumnsetname{#1}%
+       \ifparameter#2\or
+         \setupcurrentsubcolumnset[#2]%
+       \fi
+     \fi
+     \uselanguageparameter\subcolumnsetparameter
+     \usesubcolumnsetstyleandcolor\c!style\c!color
+     \usealignparameter\subcolumnsetparameter
+    %\hsize\clf_columnsetcolumnwidth\currentcolumnset{#1}%
+     \hsize\clf_columnsetcolumnwidth\currentcolumnset\currentsubcolumnsetname % adapted
+   \fi}
+
+\permanent\protected\def\stopsubcolumnsetgroup
+  {\endgroup}
 
 \permanent\tolerant\protected\def\startsubcolumnset[#1]#*[#2]% #,[#1]#,#*[#2]
   {\unless\ifconditional\c_page_mvl_active

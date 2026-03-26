@@ -393,7 +393,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineresetset" level="style" category="counter" file="strc-ini.mkvi">
+    <cd:command name="defineresetset" level="style" category="counter" file="strc-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -406,7 +406,7 @@
 
     <!--
 
-        <cd:command name="definestructureresetset" level="style" category="counter" file="strc-ini.mkvi">
+        <cd:command name="definestructureresetset" level="style" category="counter" file="strc-ini.mklx">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -419,7 +419,7 @@
 
     -->
 
-    <cd:command name="defineseparatorset" level="style" category="counter" file="strc-ini.mkvi">
+    <cd:command name="defineseparatorset" level="style" category="counter" file="strc-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -436,7 +436,7 @@
 
     <!--
 
-        <cd:command name="definestructureseparatorset" level="style" category="counter" file="strc-ini.mkvi">
+        <cd:command name="definestructureseparatorset" level="style" category="counter" file="strc-ini.mklx">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -453,7 +453,7 @@
 
     -->
 
-    <cd:command name="defineconversionset" level="style" category="counter" file="strc-ini.mkvi">
+    <cd:command name="defineconversionset" level="style" category="counter" file="strc-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -472,7 +472,7 @@
 
     <!--
 
-        <cd:command name="definestructureconversionset" level="style" category="counter" file="strc-ini.mkvi">
+        <cd:command name="definestructureconversionset" level="style" category="counter" file="strc-ini.mklx">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>
@@ -491,7 +491,7 @@
 
     -->
 
-    <cd:command name="defineprefixset" level="style" category="counter" file="strc-ini.mkvi">
+    <cd:command name="defineprefixset" level="style" category="counter" file="strc-ini.mklx">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="cd:name"/>
@@ -504,7 +504,7 @@
 
     <!--
 
-        <cd:command name="definestructureprefixset" level="style" category="counter" file="strc-ini.mkvi">
+        <cd:command name="definestructureprefixset" level="style" category="counter" file="strc-ini.mklx">
             <cd:arguments>
                 <cd:keywords>
                     <cd:constant type="cd:name"/>

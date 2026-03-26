@@ -346,11 +346,20 @@ do
 
     local toregime   = regimes and regimes.toregime
     local fromregime = regimes and regimes.fromregime
+
     local escaped    = Cs(
         Cc("(")
       * (
-            S("()\n\r\t\b\f")/"\\%0"
-          + P("\\")/"\\\\"
+            S("()\n\r\t\b\f\\") / {
+                ["("]  = "\\(",
+                [")"]  = "\\)",
+                ["\n"] = "\\n",
+                ["\r"] = "\\r",
+                ["\t"] = "\\t",
+                ["\b"] = "\\b",
+                ["\f"] = "\\f",
+                ["\\"] = "\\\\",
+            }
           + P(1)
         )^0
       * Cc(")")

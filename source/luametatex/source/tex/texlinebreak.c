@@ -432,6 +432,7 @@ void tex_line_break(int group_context, int par_context, int display_math)
                     .tracing_paragraphs      = tracing_paragraphs_par,
                     .tracing_fitness         = tracing_fitness_par,
                     .tracing_passes          = tracing_passes_par,
+                    .tracing_raggedness      = tracing_raggedness_par,
                     .tracing_toddlers        = tracing_toddlers_par,
                     .tracing_orphans         = tracing_orphans_par,
                     .paragraph_direction     = par_direction(par),
@@ -499,6 +500,8 @@ void tex_line_break(int group_context, int par_context, int display_math)
                     .sf_factor               = 0,
                     .sf_stretch_factor       = 0,
                     .max_adj_demerits        = 0,
+                    .raggedness              = 0,
+                    .par_fill_mode           = tex_get_par_par(par, par_par_fill_mode_code),
                 };
              /* properties.emergency_original = properties.emergency_stretch; */
                 tex_do_line_break(&properties);
@@ -992,25 +995,75 @@ void tex_initialize_active(void)
 
 */
 
+static int tex_aux_analyze_raggedness(const line_break_properties *properties, int subpass)
+{
+    /*tex Collect some statistics. */
+    halfword q = active_break_node(lmt_linebreak_state.best_bet);
+    if (q) {
+        halfword min = 0;
+        halfword max = 0;
+        halfword lines = 0;
+        halfword overfull = 0;
+        while (q) {
+            scaled width = passive_line_width(q);
+            if (width > 0) {
+                halfword shrt = tex_round_xn_over_d(scaling_factor, passive_short(q), width);
+                if (shrt > max) {
+                    max = shrt;
+                }
+                if (shrt < min) {
+                    min = shrt;
+                }
+                ++lines;
+                if (passive_quality(q) == par_is_overfull) {
+                    ++overfull;
+                }
+            }
+            q = passive_prev_break(q);
+        }
+        lmt_linebreak_state.raggedness = max - min;
+        if (properties->tracing_raggedness > 0) {
+            tex_begin_diagnostic();
+            tex_print_format("%l[linebreak: subpass %i, raggedness, min %i, max %i, effective %i, overfull %i, lines %i, %s]\n",
+                    subpass, min, max, lmt_linebreak_state.raggedness, overfull, lines,
+                    overfull ? "overfull, quit" : "underfull, check"
+            );
+            tex_end_diagnostic();
+        }
+        return overfull ? 1 : 0;
+    } else {
+        /* shouldn't happen */
+        lmt_linebreak_state.raggedness = 0;
+        return 1;
+    }
+}
+
+
 static void tex_aux_clean_up_the_memory(void)
 {
-    halfword q = node_next(active_head);
-    while (q != active_head) {
-        halfword p = node_next(q);
-     // tex_flush_node(q);
-        tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
-        q = p;
+    /*tex Wipe active nodes. */
+    {
+        halfword q = node_next(active_head);
+        while (q != active_head) {
+            halfword p = node_next(q);
+         // tex_flush_node(q);
+            tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
+            q = p;
+        }
+        node_next(active_head) = null;
     }
-    node_next(active_head) = null;
-    q = lmt_linebreak_state.passive;
-    while (q) {
-        halfword p = node_next(q);
-     // tex_flush_node(q);
-     // tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
-        tex_free_node(q, passive_node_size); // less overhead & testing
-        q = p;
+    /*tex Wipe passive nodes. */
+    {
+        halfword q = lmt_linebreak_state.passive;
+        while (q) {
+            halfword p = node_next(q);
+         // tex_flush_node(q);
+         // tex_free_node(q, get_node_size(node_type(q))); // less overhead & testing
+            tex_free_node(q, passive_node_size); // less overhead & testing
+            q = p;
+        }
+        lmt_linebreak_state.passive = null;
     }
-    lmt_linebreak_state.passive = null;
 }
 
 /*tex
@@ -1876,6 +1929,8 @@ static void tex_aux_set_quality(halfword active, halfword passive, scaled shrt, 
     active_short(active) = shrt;
     active_glue(active) = glue;
     active_line_width(active) = width;
+    passive_line_width(passive) = width;
+    passive_short(passive) = shrt;
     if (shrt < 0) {
         shrt = -shrt;
         if (shrt > glue) {
@@ -2322,7 +2377,7 @@ static void tex_aux_trace_special_break(const line_break_properties *properties,
 
 # if (0)
 
-    static scaled xtex_aux_hang_l_indent(halfword active)
+    static scaled tex_aux_hang_l_indent(halfword active)
     {
      halfword passive = active_break_node(active);
      if (passive) {
@@ -2350,7 +2405,7 @@ static void tex_aux_trace_special_break(const line_break_properties *properties,
      return 0;
     }
 
-    static scaled xtex_aux_hang_r_indent(halfword active)
+    static scaled tex_aux_hang_r_indent(halfword active)
     {
      halfword passive = active_break_node(active);
      if (passive) {
@@ -4092,6 +4147,10 @@ static inline void tex_aux_set_adjacent_demerits(line_break_properties *properti
     }
 }
 
+// static inline void tex_aux_set_short(const line_break_properties *properties)
+// {
+// }
+
 static int tex_aux_set_sub_pass_parameters(
     line_break_properties *properties,
     halfword               passes,
@@ -4225,6 +4284,9 @@ static int tex_aux_set_sub_pass_parameters(
         if (okay & passes_linebreakoptional_okay) {
             properties->line_break_optional = tex_get_passes_linebreakoptional(passes, subpass);
         }
+        if (okay & passes_raggedness_okay) {
+            properties->raggedness = tex_get_passes_raggedness(passes, subpass);
+        }
     }
     /*tex
         This one is kind of special (the values are checked in maincontrol):
@@ -4303,10 +4365,10 @@ static int tex_aux_set_sub_pass_parameters(
 
         tex_begin_diagnostic();
         tex_print_format("%l[linebreak: values used in subpass %i]\n", subpass);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("  use criteria          %s\n", subpass >= passes_first_final(passes) ? "true" : "false");
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("  use criteria           %s\n", subpass >= passes_first_final(passes) ? "true" : "false");
         if (features & passes_test_set) {
-            tex_print_str("  --------------------------------\n");
+            tex_print_str("  ----------------------------------\n");
             if (features & passes_if_text)              { tex_print_str("  if text              true\n"); }
             if (features & passes_if_math)              { tex_print_str("  if math              true\n"); }
             if (features & passes_if_glue)              { tex_print_str("  if glue              true\n"); }
@@ -4316,17 +4378,19 @@ static int tex_aux_set_sub_pass_parameters(
             if (features & passes_if_looseness)         { tex_print_str("  if looseness         true\n"); }
             if (features & passes_unless_math)          { tex_print_str("  unless math          true\n"); }
         }
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s threshold            %p\n", is_okay(passes_threshold_okay), tex_get_passes_threshold(passes, subpass));
-        tex_print_format("%s demerits             %i\n", is_okay(passes_demerits_okay), tex_get_passes_demerits(passes, subpass));
-        tex_print_format("%s classes              %X\n", is_okay(passes_classes_okay), tex_get_passes_classes(passes, subpass));
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s tolerance            %i\n", is_okay(passes_tolerance_okay), properties->tolerance);
-        tex_print_format("%s hyphenation          %s\n", is_okay(passes_hyphenation_okay), lmt_linebreak_state.force_check_hyphenation ? "true": "false");
-        tex_print_format("%s looseness            %i\n", is_okay(passes_looseness_okay), properties->looseness);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s adjdemerits          %i\n", is_okay(passes_adjdemerits_okay), properties->adj_demerits);
-        tex_print_format("%s adjacentdemerits     %i",   is_okay(passes_adjdemerits_okay), tex_get_specification_count(properties->adjacent_demerits));
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s threshold              %p\n", is_okay(passes_threshold_okay), tex_get_passes_threshold(passes, subpass));
+        tex_print_format("%s demerits               %i\n", is_okay(passes_demerits_okay), tex_get_passes_demerits(passes, subpass));
+        tex_print_format("%s classes                %X\n", is_okay(passes_classes_okay), tex_get_passes_classes(passes, subpass));
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s tolerance              %i\n", is_okay(passes_tolerance_okay), properties->tolerance);
+        tex_print_format("%s hyphenation            %s\n", is_okay(passes_hyphenation_okay), lmt_linebreak_state.force_check_hyphenation ? "true": "false");
+        tex_print_format("%s looseness              %i\n", is_okay(passes_looseness_okay), properties->looseness);
+     // tex_print_format("%s raggedness             %i\n", is_okay(passes_raggedness_okay), tex_get_passes_raggedness(passes, subpass));
+        tex_print_format("%s raggedness             %i\n", is_okay(passes_raggedness_okay),  properties->raggedness);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s adjdemerits            %i\n", is_okay(passes_adjdemerits_okay), properties->adj_demerits);
+        tex_print_format("%s adjacentdemerits       %i",   is_okay(passes_adjdemerits_okay), tex_get_specification_count(properties->adjacent_demerits));
         if (tex_get_specification_count(properties->adjacent_demerits) > 0) {
             if (specification_size(properties->adjacent_demerits)) {
                 for (halfword c = 1; c <= tex_get_specification_count(properties->adjacent_demerits); c++) {
@@ -4346,7 +4410,7 @@ static int tex_aux_set_sub_pass_parameters(
             );
         }
         tex_print_str("\n");
-        tex_print_format("%s fitnessclasses       %i",   is_okay(passes_fitnessclasses_okay), tex_get_specification_count(properties->fitness_classes));
+        tex_print_format("%s fitnessclasses         %i",   is_okay(passes_fitnessclasses_okay), tex_get_specification_count(properties->fitness_classes));
         if (tex_get_specification_count(properties->fitness_classes) > 0) {
             tex_print_str(" [");
             for (halfword c = 1; c <= tex_get_specification_count(properties->fitness_classes); c++) {
@@ -4356,33 +4420,33 @@ static int tex_aux_set_sub_pass_parameters(
             }
             tex_print_str(" ]\n");
         }
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s emergencyoriginal    %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_original);
-        tex_print_format("%s emergencystretch     %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_stretch);
-        tex_print_format("%s emergencyunit        %i\n", is_okay(passes_emergencyunit_okay), tex_get_passes_emergencyunit(passes, subpass));
-        tex_print_format("%s emergencyfactor      %i\n", is_okay(passes_emergencyfactor_okay), tex_get_passes_emergencyfactor(passes, subpass));
-        tex_print_format("%s emergencypercentage  %i\n", is_okay(passes_emergencypercentage_okay), lmt_linebreak_state.emergency_percentage);
-        tex_print_format("%s emergencyleftextra   %i\n", is_okay(passes_emergencyleftextra_okay), lmt_linebreak_state.emergency_left_extra);
-        tex_print_format("%s emergencyrightextra  %i\n", is_okay(passes_emergencyrightextra_okay), lmt_linebreak_state.emergency_right_extra);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s mathpenaltyfactor    %i\n", is_okay(passes_mathpenaltyfactor_okay),    properties->math_penalty_factor);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s sffactor             %i\n", is_okay(passes_sffactor_okay), properties->sf_factor);
-        tex_print_format("%s sfstretchfactor      %i\n", is_okay(passes_sfstretchfactor_okay), properties->sf_stretch_factor);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s adjustspacingstep    %i\n", is_okay(passes_adjustspacingstep_okay), properties->adjust_spacing_step);
-        tex_print_format("%s adjustspacingshrink  %i\n", is_okay(passes_adjustspacingshrink_okay), properties->adjust_spacing_shrink);
-        tex_print_format("%s adjustspacingstretch %i\n", is_okay(passes_adjustspacingstretch_okay), properties->adjust_spacing_stretch);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s doublehyphendemerits %i\n", is_okay(passes_doublehyphendemerits_okay), properties->double_hyphen_demerits);
-        tex_print_format("%s finalhyphendemerits  %i\n", is_okay(passes_finalhyphendemerits_okay), properties->final_hyphen_demerits);
-        tex_print_format("%s lefttwindemerits     %i\n", is_okay(passes_lefttwindemerits_okay), properties->left_twin_demerits);
-        tex_print_format("%s righttwindemerits    %i\n", is_okay(passes_righttwindemerits_okay), properties->right_twin_demerits);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s linepenalty          %i\n", is_okay(passes_linepenalty_okay), properties->line_penalty);
-        tex_print_format("%s extrahyphenpenalty   %i\n", is_okay(passes_extrahyphenpenalty_okay),properties->extra_hyphen_penalty);
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s toddlerpenalties     %i", is_okay(passes_toddlerpenalties_okay), tex_get_specification_count(properties->toddler_penalties));
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s emergencyoriginal      %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_original);
+        tex_print_format("%s emergencystretch       %p\n", is_okay(passes_emergencystretch_okay), properties->emergency_stretch);
+        tex_print_format("%s emergencyunit          %i\n", is_okay(passes_emergencyunit_okay), tex_get_passes_emergencyunit(passes, subpass));
+        tex_print_format("%s emergencyfactor        %i\n", is_okay(passes_emergencyfactor_okay), tex_get_passes_emergencyfactor(passes, subpass));
+        tex_print_format("%s emergencypercentage    %i\n", is_okay(passes_emergencypercentage_okay), lmt_linebreak_state.emergency_percentage);
+        tex_print_format("%s emergencyleftextra     %i\n", is_okay(passes_emergencyleftextra_okay), lmt_linebreak_state.emergency_left_extra);
+        tex_print_format("%s emergencyrightextra    %i\n", is_okay(passes_emergencyrightextra_okay), lmt_linebreak_state.emergency_right_extra);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s mathpenaltyfactor      %i\n", is_okay(passes_mathpenaltyfactor_okay), properties->math_penalty_factor);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s sffactor               %i\n", is_okay(passes_sffactor_okay), properties->sf_factor);
+        tex_print_format("%s sfstretchfactor        %i\n", is_okay(passes_sfstretchfactor_okay), properties->sf_stretch_factor);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s adjustspacingstep      %i\n", is_okay(passes_adjustspacingstep_okay), properties->adjust_spacing_step);
+        tex_print_format("%s adjustspacingshrink    %i\n", is_okay(passes_adjustspacingshrink_okay), properties->adjust_spacing_shrink);
+        tex_print_format("%s adjustspacingstretch   %i\n", is_okay(passes_adjustspacingstretch_okay), properties->adjust_spacing_stretch);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s doublehyphendemerits   %i\n", is_okay(passes_doublehyphendemerits_okay), properties->double_hyphen_demerits);
+        tex_print_format("%s finalhyphendemerits    %i\n", is_okay(passes_finalhyphendemerits_okay), properties->final_hyphen_demerits);
+        tex_print_format("%s lefttwindemerits       %i\n", is_okay(passes_lefttwindemerits_okay), properties->left_twin_demerits);
+        tex_print_format("%s righttwindemerits      %i\n", is_okay(passes_righttwindemerits_okay), properties->right_twin_demerits);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s linepenalty            %i\n", is_okay(passes_linepenalty_okay), properties->line_penalty);
+        tex_print_format("%s extrahyphenpenalty     %i\n", is_okay(passes_extrahyphenpenalty_okay),properties->extra_hyphen_penalty);
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s toddlerpenalties       %i", is_okay(passes_toddlerpenalties_okay), tex_get_specification_count(properties->toddler_penalties));
         if (tex_get_specification_count(properties->toddler_penalties) > 0) {
             tex_print_str(" [");
             for (halfword c = 1; c <= tex_get_specification_count(properties->toddler_penalties); c++) {
@@ -4393,8 +4457,8 @@ static int tex_aux_set_sub_pass_parameters(
             tex_print_str(" ]");
         }
         tex_print_str("\n");
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s orphanpenalties      %i", is_okay(passes_orphanpenalties_okay), tex_get_specification_count(properties->orphan_penalties));
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s orphanpenalties        %i", is_okay(passes_orphanpenalties_okay), tex_get_specification_count(properties->orphan_penalties));
         if (tex_get_specification_count(properties->orphan_penalties) > 0) {
             tex_print_str(" [");
             for (halfword c = 1; c <= tex_get_specification_count(properties->orphan_penalties); c++) {
@@ -4405,7 +4469,7 @@ static int tex_aux_set_sub_pass_parameters(
             tex_print_str(" ]");
         }
         tex_print_str("\n");
-        tex_print_format("%s orphanlinefactors    %i",   is_okay(passes_orphanlinefactors_okay), tex_get_specification_count(properties->orphan_line_factors));
+        tex_print_format("%s orphanlinefactors      %i",   is_okay(passes_orphanlinefactors_okay), tex_get_specification_count(properties->orphan_line_factors));
         if (tex_get_specification_count(properties->orphan_line_factors) > 0) {
             tex_print_str(" [");
             for (halfword c = 1; c <= tex_get_specification_count(properties->orphan_line_factors); c++) {
@@ -4416,10 +4480,10 @@ static int tex_aux_set_sub_pass_parameters(
             tex_print_str(" ]");
         }
         tex_print_str("\n");
-        tex_print_str("  --------------------------------\n");
-        tex_print_format("%s linebreakchecks      %i\n", is_okay(passes_linebreakchecks_okay), properties->line_break_checks);
-        tex_print_format("%s linebreakoptional    %i\n", is_okay(passes_linebreakoptional_okay), properties->line_break_optional);
-        tex_print_str("  --------------------------------\n");
+        tex_print_str("  ----------------------------------\n");
+        tex_print_format("%s linebreakchecks        %i\n", is_okay(passes_linebreakchecks_okay), properties->line_break_checks);
+        tex_print_format("%s linebreakoptional      %i\n", is_okay(passes_linebreakoptional_okay), properties->line_break_optional);
+        tex_print_str("  ----------------------------------\n");
         tex_end_diagnostic();
     }
     return success;
@@ -4536,13 +4600,47 @@ static inline int tex_aux_check_sub_pass(line_break_properties *properties, half
                 } else if (features & passes_skip_pass) {
                     continue;
                 } else {
+                    /* those are explicit criteria */
                     scaled threshold = tex_get_passes_threshold(passes, subpass);
                     halfword demerits = tex_get_passes_demerits(passes, subpass);
                     halfword classes = tex_get_passes_classes(passes, subpass);
+                    /* */
                     int callback = features & passes_callback_set;
                     int success = 0;
+                    uint64_t okay = tex_get_passes_okay(passes, subpass);
                     int details = properties->tracing_passes > 1;
-                    int retry = callback ? 1 : overfull > threshold || verdict > demerits || (classes && (classes & classified) != 0);
+                    int retry = callback
+                              ? 1
+                              : ((okay & passes_threshold_okay ) && (overfull > threshold))
+                             || ((okay & passes_demerits_okay  ) && (verdict  > demerits))
+                             || ((okay & passes_classes_okay   ) && (classes && (classes & classified) != 0))
+                    ;
+                    if (properties->tracing_passes > 1) {
+                        int id = passes_identifier(passes);
+                        tex_begin_diagnostic();
+                        tex_print_format("%l[linebreak: id %i, criteria for entering subpass %i of %i: test]\n",
+                            id, subpass, nofsubpasses
+                        );
+                        if (okay & passes_threshold_okay) {
+                            tex_print_format("%l[linebreak:   %i : overfull > threshold   : %p > %p]\n",
+                                overfull > threshold, overfull, threshold
+                            );
+                        }
+                        if (okay & passes_demerits_okay) {
+                            tex_print_format("%l[linebreak:   %i : verdict  > demerits    : %i > %i]\n",
+                                verdict > demerits, verdict, demerits
+                            );
+                        }
+                        if (classes && (okay & passes_classes_okay)) {
+                            tex_print_format("%l[linebreak:   %i : classes  & classified  : %X & %X]\n",
+                                 (classes & classified) != 0, classes, classified
+                            );
+                        }
+                        tex_print_format("%l[linebreak: > %i : %s subpass %i]\n",
+                            retry, retry ? "check" : "skip", subpass
+                        );
+                        tex_end_diagnostic();
+                    }
                     if (tracing) {
                         int id = passes_identifier(passes);
                         tex_begin_diagnostic();
@@ -4582,7 +4680,8 @@ static inline int tex_aux_check_sub_pass(line_break_properties *properties, half
                         success = tex_aux_set_sub_pass_parameters(
                             properties, passes, subpass, first,
                             details,
-                            features, overfull, underfull, verdict, classified, threshold, demerits, classes
+                            features,
+                            overfull, underfull, verdict, classified, threshold, demerits, classes
                         );
                     }
                     if (tracing) {
@@ -4595,7 +4694,7 @@ static inline int tex_aux_check_sub_pass(line_break_properties *properties, half
             }
         }
     } else {
-        /*tex We have a few hits in our test files. */
+        /*tex This can't happen, result is 1 or 2. */
     }
     return 0;
 }
@@ -4839,6 +4938,10 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                     /*tex Glue in math is not a valid breakpoint, unless we permit it. */
                 } else if (tex_is_par_init_glue(current)) {
                     /*tex Of course we don't break here. */
+                } else if (tex_has_glue_option(current, glue_option_has_penalty) && glue_penalty(current)) {
+                    halfword penalty = glue_penalty(current);
+                    /* maybe also apply factor */
+                    tex_aux_try_break(properties, penalty, unhyphenated_node, first, current, callback_id, checks, pass, subpass, artificial);
                 } else if (tex_aux_valid_glue_break(current)) {
                     tex_aux_try_break(properties, tex_aux_upcoming_math_penalty(current, properties->math_penalty_factor), unhyphenated_node, first, current, callback_id, checks, pass, subpass, artificial);
                 }
@@ -4964,7 +5067,7 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                                                         if (properties->tracing_paragraphs > 1) {
                                                             tex_begin_diagnostic();
                                                             tex_print_format("%l[linebreak: favour final prepost over replace, widths %p %p]", wpre + wpost, wreplace);
-                                                            tex_print_str("%l[linebreak: stripe] ");
+                                                            tex_print_format("%l[linebreak: stripe] ");
                                                             tex_short_display(node_next(temp_head));
                                                             tex_end_diagnostic();
                                                         }
@@ -4975,8 +5078,8 @@ static inline halfword tex_aux_break_list(const line_break_properties *propertie
                                                     if (wreplace < wpre) {
                                                         if (properties->tracing_paragraphs > 1) {
                                                             tex_begin_diagnostic();
-                                                            tex_print_format("[linebreak: favour final replace over pre, widths %p %p]", wreplace, wpre);
-                                                            tex_print_str("%l[linebreak: stripe] ");
+                                                            tex_print_format("%l[linebreak: favour final replace over pre, widths %p %p]", wreplace, wpre);
+                                                            tex_print_format("%l[linebreak: stripe] ");
                                                             tex_short_display(node_next(temp_head));
                                                             tex_end_diagnostic();
                                                         }
@@ -5510,6 +5613,7 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.local_hang_r_indent = 0,
     lmt_linebreak_state.local_hang_r_after = 0,
     lmt_linebreak_state.local_hang_r_index = 0,
+    lmt_linebreak_state.raggedness = 0;
 
  // for (int i = 0; i < n_of_glue_amounts; i++) {
  //     lmt_linebreak_state.active_width[i] = 0;
@@ -5550,6 +5654,7 @@ void tex_do_line_break(line_break_properties *properties)
     tex_aux_set_both_skips(properties);
     tex_aux_set_adjust_spacing_state();
     tex_aux_set_last_line_fit(properties);
+//  tex_aux_set_short(properties);
     /*tex
         Here we start doing the real work: find optimal breakpoints. We have an initial pass
         (pretolerance), when needed a second one (tolerance) and when we're still not done we
@@ -5563,7 +5668,7 @@ void tex_do_line_break(line_break_properties *properties)
     lmt_linebreak_state.threshold = properties->pretolerance;
     if (properties->tracing_paragraphs > 1) {
         tex_begin_diagnostic();
-        tex_print_str("%l[linebreak: original] ");
+        tex_print_format("%l[linebreak: original] ");
         tex_short_display(first);
         tex_end_diagnostic();
     }
@@ -5573,7 +5678,7 @@ void tex_do_line_break(line_break_properties *properties)
         if (properties->tracing_paragraphs > 0 || properties->tracing_passes > 0) {
             if (specification_presets(passes)) {
                 tex_begin_diagnostic();
-                tex_print_str("%l[linebreak: specification presets]");
+                tex_print_format("%l[linebreak: specification presets]");
                 tex_end_diagnostic();
             }
         }
@@ -5596,6 +5701,11 @@ void tex_do_line_break(line_break_properties *properties)
         routine returns either |null| or some place in the list that needs attention.
     */
  /* state = tex_aux_analyze_list(first); */
+    if (subpasses && properties->tracing_raggedness > 0) {
+        tex_begin_diagnostic();
+        tex_print_format("%l[linebreak: first final %i in %i]", passes_first_final(passes), subpasses);
+        tex_end_diagnostic();
+    }
     while (1) {
         halfword current = first;
         int artificial = 0;
@@ -5646,6 +5756,9 @@ void tex_do_line_break(line_break_properties *properties)
                             first,
                             properties->tracing_passes > 1,
                             tex_get_passes_features(passes,subpass),
+                            /* here not: */
+                            /* overfull, underfull, verdict, classified, threshold, demerits, classes */
+                            /* but instead: */
                             0, 0, 0, 0, 0, 0, 0
                         );
                         lmt_linebreak_state.passes[properties->par_context].n_of_specification_passes++;
@@ -5764,16 +5877,20 @@ void tex_do_line_break(line_break_properties *properties)
             that represents real width as opposed to glue.
 
         */
-        switch (pass) {
-            case linebreak_final_pass:
-                artificial = 1;
-                break;
-            case linebreak_specification_pass:
-                artificial = (subpass >= passes_first_final(passes)) || (subpass == subpasses);
-                break;
-            default:
-                artificial = 0;
-                break;
+        if (passes && tex_get_passes_raggedness(passes, subpass)) {
+            artificial = 1;
+        } else {
+            switch (pass) {
+                case linebreak_final_pass:
+                    artificial = 1;
+                    break;
+                case linebreak_specification_pass:
+                    artificial = (subpass >= passes_first_final(passes)) || (subpass == subpasses);
+                    break;
+                default:
+                    artificial = 0;
+                    break;
+            }
         }
         current = tex_aux_break_list(properties, pass, subpass, current, first, &state, artificial);
         if (! current) {
@@ -5797,7 +5914,25 @@ void tex_do_line_break(line_break_properties *properties)
             if (node_next(active_head) != active_head) {
                 /*tex Find an active node with fewest demerits. */
                 tex_aux_find_best_bet();
+                lmt_linebreak_state.raggedness = 0;
                 if (pass == linebreak_specification_pass) {
+                    if (passes) {
+                        halfword raggedness = tex_get_passes_raggedness(passes, subpass); // properties->raggedness
+                        if (raggedness) {
+                            int force = tex_aux_analyze_raggedness(properties, subpass);
+                            if (force || lmt_linebreak_state.raggedness >= raggedness) {
+                                if (subpass < passes_first_final(passes)) {
+                                    subpass += 1;
+                                    if (! force && (properties->tracing_paragraphs > 0 || properties->tracing_passes > 0)) {
+                                        tex_begin_diagnostic();
+                                        tex_print_format("%l[linebreak: subpass %i, raggedness %i >= %i]\n", subpass, lmt_linebreak_state.raggedness, raggedness);
+                                        tex_begin_diagnostic();
+                                    }
+                                    goto HERE;
+                                }
+                            }
+                        }
+                    }
                     /*tex This is where sub passes differ: we do a check. */
                     if (subpass < 0) {
                         goto HERE;
@@ -6086,7 +6221,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     if (properties->tracing_passes > 0) {
         halfword passive = cur_p;
         tex_begin_diagnostic();
-        tex_print_str("%l[linebreak: (class demerits deficiency)");
+        tex_print_format("%l[linebreak: (class demerits deficiency)");
         while (passive) {
             tex_print_format(" (%i %B %i %p)", (1 << passive_fitness(passive)),  passive_badness(passive), passive_demerits(passive), passive_deficiency(passive));
             passive = passive_prev_break(passive);
@@ -6680,7 +6815,18 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                 local_hang_r_slack  = passive_hang_r_after(prv_p) - local_hang_r_after;
             }
             shaping = (lefthang || righthang);
-            lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
+            {
+                halfword l_s = null;
+                halfword r_s = null;
+                if (ls && (properties->par_fill_mode & par_left_fill_mode) && normalize_line_mode_option(normalize_line_mode)) {
+                    l_s = ls;
+                }
+                if (rs && (properties->par_fill_mode & par_right_fill_mode) && normalize_line_mode_option(normalize_line_mode)) {
+                    r_s = rs;
+                }
+                lmt_linebreak_state.just_box = tex_hpack(head, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line, l_s, r_s);
+                box_short(lmt_linebreak_state.just_box) = passive_short(cur_p);
+            }
          // attach_attribute_list_copy(linebreak_state.just_box, properties->initial_par);
          // if (cur_line == 1 && (properties->paragraph_options & par_option_synchronize)) {
          //     tex_add_box_option(lmt_linebreak_state.just_box, box_option_synchronize);
@@ -6826,7 +6972,7 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
             }
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */
-            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line);
+            lmt_linebreak_state.just_box = tex_hpack(q, cur_width, properties->adjust_spacing ? packing_linebreak : packing_exactly, (singleword) properties->paragraph_direction, holding_none_option, box_limit_line, null, null);
          // attach_attribute_list_copy(lmt_linebreak_state.just_box, properties->initial_par);
             box_shift_amount(lmt_linebreak_state.just_box) = cur_indent;
         }

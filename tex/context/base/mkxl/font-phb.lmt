@@ -60,6 +60,16 @@ if not modules then modules = { } end modules ['font-phb'] = {
 -- understand non context users beef with that macro package doing things its own
 -- way. Also, a standard (opentype, pdf, html, etc) is not a real standard if there
 -- are not multiple implementations using it.
+--
+-- In 2026 we can safely argue that past (sometimes strongly expresses) arguments
+-- like hb is more stable than the font loader are wrong. The library is one of the
+-- most updated in the tl code tree and given the sentitive dependency on fonts of
+-- tex engines I wonder who checks changes, or maybe it doesn't matter any longer.
+-- It anyways means that we could expect different results over time so anything I
+-- say about it might be wrong. But is is not the kind of dependencies we want in
+-- luametatex, so it will stay an external component forever. Of course the font
+-- loader also evolves and get fixes but not that frequently and it in a few files.
+-- As with everything fonts, we keep our fingers crossed.
 
 local next, tonumber, pcall, rawget = next, tonumber, pcall, rawget
 

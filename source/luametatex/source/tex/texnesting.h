@@ -29,6 +29,7 @@ typedef struct list_state_record {
     int      mode_line;            
     halfword prev_depth;           // scaled
     halfword space_factor;         
+    halfword space_penalty;
     halfword direction_stack;
     /* this could become:
     math_state_record math_state;
@@ -118,6 +119,7 @@ extern void     tex_initialize_mvl_state (void);
 extern void     tex_start_mvl            (void); /* includes scanning */
 extern void     tex_stop_mvl             (void);
 extern halfword tex_flush_mvl            (halfword n);
+extern halfword tex_preroll_mvl          (halfword n);
 extern int      tex_appended_mvl         (halfword context, halfword boundary);
 extern int      tex_current_mvl          (halfword *head, halfword *tail);
 
@@ -135,8 +137,7 @@ typedef enum delayed_glue_locations {
     delayed_glue_location_lua       = 0x4,
 } delayed_glue_locations;
 
-extern void tex_delayed_glue_check       (int target, int location);
-extern int  tex_delayed_glue_par_skipped (void);
-
+// extern void tex_delayed_glue_check       (int target, int location);
+// extern int  tex_delayed_glue_par_skipped (void);
 
 # endif

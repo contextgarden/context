@@ -19258,6 +19258,9 @@ return {
    ["pe"]="تطابق",
    ["ro"]="synchronize",
   },
+  ["squeeze"]={
+   ["en"]="squeeze",
+  },
   ["synonym"]={
    ["en"]="synonym",
    ["fr"]="synonyme",

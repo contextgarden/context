@@ -642,10 +642,12 @@
 
 \defineinterfaceconstant {rgb}  {rgb}
 \defineinterfaceconstant {cmyk} {cmyk}
+\defineinterfaceconstant {gray} {gray}
 \defineinterfaceconstant {mp}   {mp}
 
 \defineinterfacevariable {rgb}  {rgb}
 \defineinterfacevariable {cmyk} {cmyk}
+\defineinterfacevariable {gray} {gray}
 \defineinterfacevariable {mp}   {mp}
 
 \defineinterfacevariable {s} {s}

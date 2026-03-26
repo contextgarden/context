@@ -4,7 +4,7 @@
 
 <cd:interface xmlns:cd="http://www.pragma-ade.com/commands">
 
-    <cd:command name="setupboxanchor" file="pack-box.mkxl">
+    <cd:command name="setupboxanchor" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:assignments list="yes">
                 <cd:parameter name="xoffset">
@@ -23,31 +23,31 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineanchorbox" file="pack-box.mkxl">
+    <cd:command name="defineanchorbox" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineanchorboxoverlay" file="pack-box.mkxl">
+    <cd:command name="defineanchorboxoverlay" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedanchorbox" file="pack-box.mkxl">
+    <cd:command name="namedanchorbox" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="overlayanchorbox" file="pack-box.mkxl">
+    <cd:command name="overlayanchorbox" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setanchorbox" file="pack-box.mkxl">
+    <cd:command name="setanchorbox" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -58,7 +58,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxanchorpresetcode" file="pack-box.mkxl">
+    <cd:command name="boxanchorpresetcode" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:resolve name="value-boxpreset"/>
@@ -66,7 +66,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="boxanchoring" type="environment" file="pack-box.mkxl">
+    <cd:command name="boxanchoring" type="environment" level="document" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords>
                 <cd:constant type="+"/>
@@ -75,22 +75,22 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="registerboxanchor" file="pack-box.mkxl"/>
+    <cd:command name="registerboxanchor" level="system" category="boxes" file="pack-box.mkxl"/>
 
-    <cd:command name="defineboxanchor" file="pack-box.mkxl">
+    <cd:command name="defineboxanchor" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="doifnotanchorbox" file="pack-box.mkxl">
+    <cd:command name="doifnotanchorbox" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="argument-name"/>
             <cd:resolve name="argument-true"/>
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namedboxanchor" file="pack-box.mkxl">
+    <cd:command name="namedboxanchor" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:name"/>
@@ -99,7 +99,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="namespacedboxanchor" file="pack-box.mkxl">
+    <cd:command name="namespacedboxanchor" level="system" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:name"/>
@@ -108,7 +108,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupboxanchorcontent" file="pack-box.mkxl">
+    <cd:command name="setupboxanchorcontent" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -163,7 +163,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="defineboxanchorcontent" file="pack-box.mkxl">
+    <cd:command name="defineboxanchorcontent" level="style" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:assignments list="yes" optional="yes">
@@ -172,7 +172,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setboxanchor" file="pack-box.mkxl">
+    <cd:command name="setboxanchor" level="document" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -183,7 +183,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathrowanchored" file="pack-box.mkxl">
+    <cd:command name="mathrowanchored" level="document" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:name"/>
@@ -192,7 +192,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathcellanchored" file="pack-box.mkxl">
+    <cd:command name="mathcellanchored" level="document" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords delimiters="braces">
                 <cd:constant type="cd:name"/>
@@ -201,7 +201,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathboxanchored" file="pack-box.mkxl">
+    <cd:command name="mathboxanchored" level="document" category="boxes" file="pack-box.mkxl">
         <cd:arguments>
             <cd:keywords optional="yes">
                 <cd:constant type="nucleus"/>
@@ -214,7 +214,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="connectboxanchors" file="anch-box.mkxl">
+    <cd:command name="connectboxanchors" level="document" category="boxes" file="anch-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -229,7 +229,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="connectmatrixanchors" file="anch-box.mkxl">
+    <cd:command name="connectmatrixanchors" level="document" category="boxes" file="anch-box.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name"/>
@@ -244,6 +244,6 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="matrixanchors" type="environment" file="anch-box.mkxl"/>
+    <cd:command name="matrixanchors" type="environment" level="document" category="boxes" file="anch-box.mkxl"/>
 
 </cd:interface>

@@ -380,10 +380,10 @@ do
                 local mathkern = c.mathkern
                 local bl, br, tl, tr
                 if mathkern then
-                    bl = mathkern.bottom_left
-                    br = mathkern.bottom_right
-                    tl = mathkern.top_left
-                    tr = mathkern.top_right
+                    bl = mathkern.bottomleft  or mathkern.bottom_left
+                    br = mathkern.bottomright or mathkern.bottom_right
+                    tl = mathkern.topleft     or mathkern.top_left
+                    tr = mathkern.topright    or mathkern.top_right
                     if bl then bl = bl[1].kern end
                     if br then br = br[1].kern end
                     if tl then tl = tl[#tl].kern end

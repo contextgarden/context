@@ -172,6 +172,7 @@ typedef struct linebreak_state_info {
     int          local_n_of_always;
     int          has_orphans;
     int          has_toddlers; /* < 0: not found, == 0: tobechecked, > 0: #found */
+    halfword     raggedness;
     int          trace_counter[linebreak_n_of_trace_counters]; 
 } linebreak_state_info;
 

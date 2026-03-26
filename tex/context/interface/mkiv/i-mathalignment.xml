@@ -139,7 +139,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="definemathsimplealign" file="math-ali.mkxl">
+    <cd:command name="definemathsimplealign" level="style" category="mathematics" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name"/>
             <cd:resolve name="keyword-name-optional"/>
@@ -149,7 +149,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="setupmathsimplealign" file="math-ali.mkxl">
+    <cd:command name="setupmathsimplealign" level="style" category="mathematics" file="math-ali.mkxl">
         <cd:arguments>
             <cd:resolve name="keyword-name-list-optional"/>
             <cd:assignments list="yes">
@@ -224,7 +224,7 @@
         </cd:arguments>
     </cd:command>
 
-    <cd:command name="mathsimplealign" type="environment" generated="yes" variant="instance" file="math-ali.mkxl">
+    <cd:command name="mathsimplealign" type="environment" generated="yes" variant="instance" level="document" category="mathematics" file="math-ali.mkxl">
         <cd:sequence>
             <cd:instance value="mathsimplealign"/>
         </cd:sequence>
@@ -238,7 +238,7 @@
         </cd:instances>
     </cd:command>
 
-    <cd:command name="mathsimplealign" generated="yes" variant="instance" file="math-ali.mkxl">
+    <cd:command name="mathsimplealign" generated="yes" variant="instance" level="document" category="mathematics" file="math-ali.mkxl">
         <cd:sequence>
             <cd:instance value="mathsimplealign"/>
         </cd:sequence>

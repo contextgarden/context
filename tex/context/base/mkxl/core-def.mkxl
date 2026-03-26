@@ -107,6 +107,7 @@
     \clf_setdocumentfilenames
     \font_preloads_at_every_job
     \settopskip                           % brrr
+    \setmaxdepth                          % brrr
     \initializemainlanguage
     \initializepagebackgrounds
     \initializepagecounters
