@@ -113,6 +113,8 @@ local platforms = {
     ["windows-64"]     = "win64",
     ["win64"]          = "win64",
     --
+    ["windows-arm64"]  = "windows-arm64",
+    --
     ["linux"]          = "linux",
     ["linux-32"]       = "linux",
     ["linux32"]        = "linux",

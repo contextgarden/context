@@ -192,4 +192,16 @@
 \definefilesynonym [type-imp-antykwa-cond.mkiv]           [type-imp-antykwa.mkiv]
 \definefilesynonym [type-imp-antykwa-light-cond.mkiv]     [type-imp-antykwa.mkiv]
 
+\definefilesynonym [type-imp-pennstander-regular.mkxl]    [type-imp-pennstander.mkxl]
+\definefilesynonym [type-imp-pennstander-thin.mkxl]       [type-imp-pennstander.mkxl]
+\definefilesynonym [type-imp-pennstander-light.mkxl]      [type-imp-pennstander.mkxl]
+
+%definefilesynonym [type-imp-pennstander-medium.mkxl]     [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-extralight.mkxl] [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-semibold.mkxl]   [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-bold.mkxl]       [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-extrabold.mkxl]  [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-black.mkxl]      [type-imp-pennstander.mkxl]
+%definefilesynonym [type-imp-pennstander-variable.mkxl]   [type-imp-pennstander.mkxl]
+
 \protect \endinput

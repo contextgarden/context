@@ -34,8 +34,8 @@ static int qrcodegenlib_generate(lua_State *L)
             qrcodegen_Mask_AUTO, true
         );
 		if (ok) {
-            unsigned yes = lmt_optinteger(L, 2, 0);
-            unsigned nop = lmt_optinteger(L, 3, yes ? 0 : 255);
+            unsigned char yes = (unsigned char) lmt_optinteger(L, 2, 0);
+            unsigned char nop = (unsigned char) lmt_optinteger(L, 3, yes ? 0 : 255);
             unsigned nln = lua_toboolean(L, 4);
             int size = qrcodegen_getSize(qrcode);
             int length = (nln ? size + 1 : size) * size;
@@ -49,7 +49,7 @@ static int qrcodegenlib_generate(lua_State *L)
             }
 	        for (int y = 0; y < size; y++) {
 		        for (int x = 0; x < size; x++) {
-			        *p++ = (unsigned char) qrcodegen_getModule(qrcode, x, y) ? yes : nop;
+			        *p++ = qrcodegen_getModule(qrcode, x, y) ? yes : nop;
         		}
                 if (nln) { 
                     *p++ = '\n';

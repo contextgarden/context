@@ -219,6 +219,8 @@ extern halfword tex_badness(
 
 # define min_space_factor                           0  /*tex watch out: |\spacefactor| cannot be zero but the sf code can!*/
 # define max_space_factor                      0x7FFF  /*tex |077777| */
+# define min_space_penalty                   (-0x7FFF)
+# define max_space_penalty                     0x7FFF
 # define min_scale_factor                           0 
 # define max_scale_factor                      100000  /*tex for now */
 # define default_space_factor                    1000
@@ -773,17 +775,17 @@ typedef union tokenword {
 # define memory_data_unset        (-1)
 
 typedef struct memory_data {
-    int ptr;       /* the current pointer */
-    int top;       /* the maximum used pointer */
-    int size;      /* the used (optionally user asked) value */
-    int allocated; /* the currently allocated amount */
-    int step;      /* the step used for growing */
-    int minimum;   /* the default mininum allocated, also the step */
-    int maximum;   /* the maximum possible */
-    int itemsize;  /* the itemsize */
-    int initial;
-    int offset;    /* offset of ptr and top */
-    int extra; 
+    int    ptr;       /* the current pointer */
+    int    top;       /* the maximum used pointer */
+    int    size;      /* the used (optionally user asked) value */
+    int    allocated; /* the currently allocated amount */
+    int    step;      /* the step used for growing */
+    int    minimum;   /* the default mininum allocated, also the step */
+    int    maximum;   /* the maximum possible */
+    int    itemsize;  /* the itemsize */
+    int    initial;
+    int    offset;    /* offset of ptr and top */
+    size_t extra;
 } memory_data;
 
 typedef struct limits_data {
@@ -1151,6 +1153,12 @@ typedef enum tex_character_control_codes {
 # define default_character_control 0
 
 # define has_character_control(a,b) ((a & b) != 0) 
+
+typedef enum eq_equal_states {
+    eq_state_different    = 0,
+    eq_state_same_pointer = 1,
+    eq_state_same_value   = 2,
+} eq_equal_states;
 
 # endif
 

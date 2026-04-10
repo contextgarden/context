@@ -266,7 +266,7 @@ char * tex_take_string(int *len)
 //        }
         ptr = (char *) lmt_string_pool_state.string_temp;
         if (len) {
-            *len = strlen(ptr);
+            *len = (int) strlen(ptr);
         }
         tex_reset_cur_string();
     }

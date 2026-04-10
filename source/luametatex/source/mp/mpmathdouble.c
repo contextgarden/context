@@ -49,7 +49,7 @@
 # define  negative_one_eighty_deg (-180.0 * angle_multiplier)
 # define  three_sixty_deg         ( 360.0 * angle_multiplier)
 
-# define  odd(A)                  (labs(A) % 2 == 1)
+# define  odd(A)                  (llabs(A) % 2 == 1)
 # define  two_to_the(A)           (1 << (unsigned)(A))
 # define  set_cur_cmd(A)          mp->cur_mod_->command = (A)
 # define  set_cur_mod(A)          mp->cur_mod_->data.n.data.dval = (A)

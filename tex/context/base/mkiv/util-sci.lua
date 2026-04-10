@@ -25,6 +25,7 @@ do
         package.extraluapath(lexerroot.."/themes")
         package.extraluapath(lexerroot.."/data")
         report("using lexer root %a",lexerroot)
+        scite.lexerroot = lexerroot
     else
         report("no valid lexer root")
     end

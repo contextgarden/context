@@ -1177,8 +1177,8 @@ static void tex_process_mvl(halfword context, halfword boundary)
                         NULL
                     );
                     goto DISCARD;
-                    // tex_formatted_error("pagebuilder", "invalid %N node in vertical mode", current);
-                    break;
+                 // tex_formatted_error("pagebuilder", "invalid %N node in vertical mode", current);
+                 // break;
             }
             /*tex
                 Check if node |p| is a new champion breakpoint; then if it is time for a page break,

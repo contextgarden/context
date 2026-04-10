@@ -977,10 +977,10 @@ void tex_print_char_identifier(halfword c) // todo: use string_print_format
         char b[10];
         if ( (c >= 0x00E000 && c <= 0x00F8FF) || (c >= 0x0F0000 && c <= 0x0FFFFF) ||
              (c >= 0x100000 && c <= 0x10FFFF) || (c >= 0x00D800 && c <= 0x00DFFF) ) {
-            sprintf(b, "0x%06X", c);
+            sprintf(b, "0x%06X", (unsigned) c);
             tex_print_str(b);
         } else {
-            sprintf(b, "U+%06X", c);
+            sprintf(b, "U+%06X", (unsigned) c);
             tex_print_str(b);
             tex_print_char(' ');
             tex_print_tex_str(c);

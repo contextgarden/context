@@ -1836,7 +1836,8 @@
    \ignorespaces}
 
 \def\strc_floats_stop_text_indeed % todo
-  {\egroup
+  {% unskip ?
+   \egroup
    \ifinset\v!tall\floatlocation\else
      \floattextheight\ifdim\ht\floattext<\floatheight\floatheight\else\ht\floattext\fi
    \fi

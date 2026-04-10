@@ -209,211 +209,199 @@ function moduledata.math.characters.showlist(specification)
 
         local alllookups = collectalllookups(tfmdata,"math","dflt")
 
-        local luametatex = LUATEXENGINE == "luametatex"
-
         -- todo: first create sparser table so no test needed
 
-if method == "manual" then
+        if method == "manual" then
 
-        context.starttabulate { "|T||||pl|" }
-        for _, unicode in next, sorted do
-            if not limited or unicode < upperlimit then
-                local code = gaps[unicode] or unicode -- move up
-                local char = characters[code]
-                local desc = descriptions[code]
-                local info = chardata[unicode] or chardata[code]
-                if char then
-                    local mathclass   = info.mathclass
-                    local mathspec    = info.mathspec
-                    local mathsymbol  = info.mathsymbol
-                    local description = lower(info.description or no_description)
-                    local names       = { }
-                    if mathclass or mathspec then
-                        if mathclass then
-                            names[info.mathname or ""] = mathclass
-                        end
-                        if mathspec then
-                            for i=1,#mathspec do
-                                local mi = mathspec[i]
-                                names[mi.name or ""] = mi.class
-                            end
-                        end
-                    end
---                     print(description,fakename(description))
-                    if next(names) then
-                        local doit = true
-                        for k, v in sortedhash(names) do
-                            context.NC() if doit then context("%U",unicode) end
-                            context.NC() if doit then context.char(unicode) end
-                            context.NC() if k ~= "" then context.tex(k) end
-                            context.NC() context.ex(v)
-                            context.NC() if doit then context(description) end
-                            context.NC() context.NR()
-                            doit = false
-                        end
-                    else
-                        local mathname = info.mathname
-                        context.NC() context("%U",unicode)
-                        context.NC() context.char(unicode)
-                        context.NC() if mathname then context.tex(mathname) end
-                        context.NC() context("ordinary")
-                        context.NC() context(lower(description))
-                        context.NC() context.NR()
-                    end
-                end
-            end
-        end
-        context.stoptabulate()
-
-else
-
-        context.showmathcharactersstart()
-        for _, unicode in next, sorted do
-            if not limited or unicode < upperlimit then
-                local code = gaps[unicode] or unicode -- move up
-                local char = characters[code]
-                local desc = descriptions[code]
-                local info = chardata[code]
-                if char then
--- context(utf.char(char.smaller))
-                    local commands = char.commands
-                    if commands and not showvirtual then
-                        -- skip
-                    else
-                        local next_sizes  = char.next
-                        local vparts      = char.vparts or char.vert_variants
-                        local hparts      = char.hparts or char.horiz_variants
+            context.starttabulate { "|T||||pl|" }
+            for _, unicode in next, sorted do
+                if not limited or unicode < upperlimit then
+                    local code = gaps[unicode] or unicode -- move up
+                    local char = characters[code]
+                    local desc = descriptions[code]
+                    local info = chardata[unicode] or chardata[code]
+                    if char then
                         local mathclass   = info.mathclass
                         local mathspec    = info.mathspec
                         local mathsymbol  = info.mathsymbol
-                        local description = info.description or no_description
-                        context.showmathcharactersstartentry(
-                        )
-                        context.showmathcharactersreference(
-                            f_unicode(unicode)
-                        )
-                        context.showmathcharactersentryhexdectit(
-                            f_unicode(code),
-                            code,
-                            lower(description)
-                        )
-                        if luametatex then
-                            context.showmathcharactersentrywdhtdpicta(
-                                code
-                            )
-                        else
-                            context.showmathcharactersentrywdhtdpicta(
-                                round(char.width     or 0),
-                                round(char.height    or 0),
-                                round(char.depth     or 0),
-                                round(char.italic    or 0),
-                                round(char.topanchor or char.topaccent or 0)
-                            )
-                        end
-                        if virtual and commands then
-                            local t = { }
-                            for i=1,#commands do
-                                local ci = commands[i]
-                                if ci[1] == "slot" then
-                                    local fnt, idx = ci[2], ci[3]
-                                    t[#t+1] = f_slot(names[fnt] or fnt,idx)
-                                end
-                            end
-                            if #t > 0 then
-                                context.showmathcharactersentryresource(concat(t,", "))
-                            end
-                        end
+                        local description = lower(info.description or no_description)
+                        local names       = { }
                         if mathclass or mathspec then
-                            context.showmathcharactersstartentryclassspec()
                             if mathclass then
-                                context.showmathcharactersentryclassname(mathclass,info.mathname or "no name")
+                                names[info.mathname or ""] = mathclass
                             end
                             if mathspec then
                                 for i=1,#mathspec do
                                     local mi = mathspec[i]
-                                    context.showmathcharactersentryclassname(mi.class,mi.name or "no name")
+                                    names[mi.name or ""] = mi.class
                                 end
                             end
-                            context.showmathcharactersstopentryclassspec()
                         end
-                        if mathsymbol then
-                            context.showmathcharactersentrysymbol(f_unicode(mathsymbol),mathsymbol)
+    --                     print(description,fakename(description))
+                        if next(names) then
+                            local doit = true
+                            for k, v in sortedhash(names) do
+                                context.NC() if doit then context("%U",unicode) end
+                                context.NC() if doit then context.char(unicode) end
+                                context.NC() if k ~= "" then context.tex(k) end
+                                context.NC() context.ex(v)
+                                context.NC() if doit then context(description) end
+                                context.NC() context.NR()
+                                doit = false
+                            end
+                        else
+                            local mathname = info.mathname
+                            context.NC() context("%U",unicode)
+                            context.NC() context.char(unicode)
+                            context.NC() if mathname then context.tex(mathname) end
+                            context.NC() context("ordinary")
+                            context.NC() context(lower(description))
+                            context.NC() context.NR()
                         end
-                        if next_sizes then
-                            local n, done = 0, { }
-                            context.showmathcharactersstartnext()
-                            while next_sizes do
-                                n = n + 1
-                                if done[next_sizes] then
-                                    context.showmathcharactersnextcycle(n)
-                                    break
-                                else
-                                    done[next_sizes] = true
-                                    context.showmathcharactersnextentry(n,f_unicode(next_sizes),next_sizes)
-                                    next_sizes = characters[next_sizes]
-                                    vparts = next_sizes.vparts or next_sizes.vert_variants  or vparts
-                                    hparts = next_sizes.hparts or next_sizes.horiz_variants or hparts
-                                    if next_sizes then
-                                        next_sizes = next_sizes.next
-                                    end
-                                end
-                            end
-                            context.showmathcharactersstopnext()
-                            if vparts or hparts then
-                                context.showmathcharactersbetweennextandvariants()
-                            end
-                        end
-                        if vparts then
-                            context.showmathcharactersstartvparts()
-                            for i=1,#vparts do -- we might go top-down in the original
-                                local vi = vparts[i]
-                                context.showmathcharactersvpartsentry(i,f_unicode(vi.glyph),vi.glyph)
-                            end
-                            context.showmathcharactersstopvparts()
-                        end
-                        if hparts then
-                            context.showmathcharactersstarthparts()
-                            for i=1,#hparts do
-                                local hi = hparts[#hparts-i+1]
-                                context.showmathcharactershpartsentry(i,f_unicode(hi.glyph),hi.glyph)
-                            end
-                            context.showmathcharactersstophparts()
-                        end
-                        local lookups = alllookups[unicode]
-                        if lookups then
-                            local variants   = { }
-                            local singles    = lookups.gsub_single
-                            local alternates = lookups.gsub_alternate
-                            if singles then
-                                for lookupname, code in next, singles do
-                                    variants[code] = lookupname
-                                end
-                            end
-                            if singles then
-                                for lookupname, codes in next, alternates do
-                                    for i=1,#codes do
-                                        variants[codes[i]] = lookupname .. " : " .. i
-                                    end
-                                end
-                            end
-                            if next(variants) then
-                                context.showmathcharactersstartlookupvariants()
-                                local i = 0
-                                for variant, lookuptype in sortedhash(variants) do
-                                    i = i + 1
-                                    context.showmathcharacterslookupvariant(i,f_unicode(variant),variant,lookuptype)
-                                end
-                                context.showmathcharactersstoplookupvariants()
-                            end
-                        end
-                        context.showmathcharactersstopentry()
                     end
                 end
             end
-        end
-        context.showmathcharactersstop()
+            context.stoptabulate()
 
-end
+        else
+
+            context.showmathcharactersstart()
+            for _, unicode in next, sorted do
+                if not limited or unicode < upperlimit then
+                    local code = gaps[unicode] or unicode -- move up
+                    local char = characters[code]
+                    local desc = descriptions[code]
+                    local info = chardata[code]
+                    if char then
+-- context(utf.char(char.smaller))
+                        local commands = char.commands
+                        if commands and not showvirtual then
+                            -- skip
+                        else
+                            local next_sizes  = char.next
+                            local vparts      = char.vparts or char.vert_variants
+                            local hparts      = char.hparts or char.horiz_variants
+                            local mathclass   = info.mathclass
+                            local mathspec    = info.mathspec
+                            local mathsymbol  = info.mathsymbol
+                            local description = info.description or no_description
+                            context.showmathcharactersstartentry(
+                            )
+                            context.showmathcharactersreference(
+                                f_unicode(unicode)
+                            )
+                            context.showmathcharactersentryhexdectit(
+                                f_unicode(code),
+                                code,
+                                lower(description)
+                            )
+                            context.showmathcharactersentrywdhtdpicta(
+                                code
+                            )
+                            if virtual and commands then
+                                local t = { }
+                                for i=1,#commands do
+                                    local ci = commands[i]
+                                    if ci[1] == "slot" then
+                                        local fnt, idx = ci[2], ci[3]
+                                        t[#t+1] = f_slot(names[fnt] or fnt,idx)
+                                    end
+                                end
+                                if #t > 0 then
+                                    context.showmathcharactersentryresource(concat(t,", "))
+                                end
+                            end
+                            if mathclass or mathspec then
+                                context.showmathcharactersstartentryclassspec()
+                                if mathclass then
+                                    context.showmathcharactersentryclassname(mathclass,info.mathname or "no name")
+                                end
+                                if mathspec then
+                                    for i=1,#mathspec do
+                                        local mi = mathspec[i]
+                                        context.showmathcharactersentryclassname(mi.class,mi.name or "no name")
+                                    end
+                                end
+                                context.showmathcharactersstopentryclassspec()
+                            end
+                            if mathsymbol then
+                                context.showmathcharactersentrysymbol(f_unicode(mathsymbol),mathsymbol)
+                            end
+                            if next_sizes then
+                                local n, done = 0, { }
+                                context.showmathcharactersstartnext()
+                                while next_sizes do
+                                    n = n + 1
+                                    if done[next_sizes] then
+                                        context.showmathcharactersnextcycle(n)
+                                        break
+                                    else
+                                        done[next_sizes] = true
+                                        context.showmathcharactersnextentry(n,f_unicode(next_sizes),next_sizes)
+                                        next_sizes = characters[next_sizes]
+                                        vparts = next_sizes.vparts or next_sizes.vert_variants  or vparts
+                                        hparts = next_sizes.hparts or next_sizes.horiz_variants or hparts
+                                        if next_sizes then
+                                            next_sizes = next_sizes.next
+                                        end
+                                    end
+                                end
+                                context.showmathcharactersstopnext()
+                                if vparts or hparts then
+                                    context.showmathcharactersbetweennextandvariants()
+                                end
+                            end
+                            if vparts then
+                                context.showmathcharactersstartvparts()
+                                for i=1,#vparts do -- we might go top-down in the original
+                                    local vi = vparts[i]
+                                    context.showmathcharactersvpartsentry(i,f_unicode(vi.glyph),vi.glyph)
+                                end
+                                context.showmathcharactersstopvparts()
+                            end
+                            if hparts then
+                                context.showmathcharactersstarthparts()
+                                for i=1,#hparts do
+                                    local hi = hparts[#hparts-i+1]
+                                    context.showmathcharactershpartsentry(i,f_unicode(hi.glyph),hi.glyph)
+                                end
+                                context.showmathcharactersstophparts()
+                            end
+                            local lookups = alllookups[unicode]
+                            if lookups then
+                                local variants   = { }
+                                local singles    = lookups.gsub_single
+                                local alternates = lookups.gsub_alternate
+                                if singles then
+                                    for lookupname, code in next, singles do
+                                        variants[code] = lookupname
+                                    end
+                                end
+                                if singles then
+                                    for lookupname, codes in next, alternates do
+                                        for i=1,#codes do
+                                            variants[codes[i]] = lookupname .. " : " .. i
+                                        end
+                                    end
+                                end
+                                if next(variants) then
+                                    context.showmathcharactersstartlookupvariants()
+                                    local i = 0
+                                    for variant, lookuptype in sortedhash(variants) do
+                                        i = i + 1
+                                        context.showmathcharacterslookupvariant(i,f_unicode(variant),variant,lookuptype)
+                                    end
+                                    context.showmathcharactersstoplookupvariants()
+                                end
+                            end
+                            context.showmathcharactersstopentry()
+                        end
+                    end
+                end
+            end
+            context.showmathcharactersstop()
+
+        end
 
     end
 end

@@ -138,6 +138,7 @@ extern halfword    tex_scan_math_discretionary_number (int optional_equal);
 extern halfword    tex_scan_category_code             (int optional_equal);
 extern halfword    tex_scan_classification_code       (int optional_equal);
 extern halfword    tex_scan_space_factor              (int optional_equal);
+extern halfword    tex_scan_space_penalty             (int optional_equal);
 extern singleword  tex_scan_box_index                 (void); /*tex For local boxes: small for now! */
 extern singleword  tex_scan_box_axis                  (void);
 extern halfword    tex_scan_function_reference        (int optional_equal);

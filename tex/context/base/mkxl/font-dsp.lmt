@@ -3762,7 +3762,7 @@ layeroffset = tableoffset + layerlistoffset
                     layers[i] = readulong(f) -- offsets to painttable
                 end
                 --
-                glyphoffset = tableoffset + glyphlistoffset
+                local glyphoffset = tableoffset + glyphlistoffset
                 setposition(f,glyphoffset)
                 local glyphcount = readulong(f)
                 for i=1,glyphcount do

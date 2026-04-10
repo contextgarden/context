@@ -319,7 +319,7 @@ do
                     stopspacing  = false
                 else
                     if start and size > 0 then
-                        head = handle(startspacing)
+                        handle(startspacing)
                     end
                     startspacing = false
                     stopspacing  = false

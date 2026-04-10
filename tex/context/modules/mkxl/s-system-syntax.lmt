@@ -592,7 +592,9 @@ syntax.hskip = newsyntax {
     hskip   = sequence(
         s_dimension,
         optional(sequence(keyword("plus"),choice(s_dimension,s_filler))),
-        optional(sequence(keyword("minus"),choice(s_dimension,s_filler)))
+        optional(sequence(keyword("minus"),choice(s_dimension,s_filler))),
+     -- optional(keyword("fixed")),
+        optional(sequence(keyword("penalty"),s_integer))
     ),
     hss     = false,
 }
@@ -1134,6 +1136,7 @@ do
         optional(keyword("keepspacing")),
         optional(sequence(keyword("class"),s_integer)),
         optional(keyword("swap")),
+        optional(keyword("prune")),
         s_tokens
     )
 

@@ -1924,14 +1924,7 @@ do
             local counts     = 0
             local totals     = 0
             local problem    = false
---             local squid      = environment.arguments.squid and require("util-sig-imp-segment.lua")
-local squid      = environment.arguments.squid and require("util-sig-imp-parallel.lua")
--- if type(signal) == "string" then
---     signalled = utilities.signals.initialize(signal)
--- end
--- if signalled then
---     signalled("reset",0)
--- end
+            local squid      = environment.arguments.squid and require("util-sig-imp-parallel.lua")
             -- a hack
             local passthese = environment.arguments_after
             for i=1,#passthese do
@@ -1942,13 +1935,9 @@ local squid      = environment.arguments.squid and require("util-sig-imp-paralle
             end
             passthese = table.unique(passthese)
             -- end of hack
-if squid then
-    squid.stepper("reset")
---     squid.signal("reset")
---     for i=1,runners do
---         squid.stepper("busy",i)
---     end
-end
+            if squid then
+                squid.stepper("reset")
+            end
             --
             local arguments = environment.reconstructcommandline(passthese)
             for set=1,#lists do
@@ -1999,17 +1988,17 @@ end
                                 end
                                 process[i] = false
                                 results[pi.count] = pi
-if squid and not problem and pi.result == "error"  then
-    problem = true
-    squid.stepper("error") -- ,i,steps[i],true)
-    for i=1,runners do
-        if process[i] then
---             squid.stepper("busy",i,steps[i],true)
---             squid.stepper("step",i,steps[i],true)
-            squid.stepper("step",i,0,true)
-        end
-    end
-end
+                                if squid and not problem and pi.result == "error"  then
+                                    problem = true
+                                    squid.stepper("error") -- ,i,steps[i],true)
+                                    for i=1,runners do
+                                        if process[i] then
+                                         -- squid.stepper("busy",i,steps[i],true)
+                                         -- squid.stepper("step",i,steps[i],true)
+                                            squid.stepper("step",i,0,true)
+                                        end
+                                    end
+                                end
                             end
                         end
                         count  = count + 1
@@ -2027,15 +2016,9 @@ end
                             local command  = whattodo == "command" and f_command(basename,arguments) or f_runner(arguments,basename)
                             resettiming(timer)
                             starttiming(timer)
--- steps[i] = steps[i] + 1
-if squid then
---     squid.stepper("step",i,steps[i],problem)
--- print(timer)
-    squid.stepper("step",i,0,problem)
--- if i == 8 then
---     os.exit()
--- end
-end
+                            if squid then
+                                squid.stepper("step",i,0,problem)
+                            end
                             local result  = popen(command)
                             if dirname ~= "." then
                                 dir.pop()

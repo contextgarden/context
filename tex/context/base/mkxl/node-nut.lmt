@@ -142,6 +142,7 @@ local nuts = {
     getnumerator            = direct.getnumerator,
     getoffsets              = direct.getoffsets,
     getoptions              = direct.getoptions,
+    hasoptions              = direct.hasoptions,
     getorientation          = direct.getorientation,
     getparstate             = direct.getparstate,
     getpenalty              = direct.getpenalty,

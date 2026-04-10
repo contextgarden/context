@@ -1285,31 +1285,66 @@ static inline int tex_aux_equal_eq(halfword p, singleword cmd, singleword flag, 
             case gluespec_cmd:
             case mugluespec_cmd:
                 /*tex We compare the pointer as well as the record. */
-                if (tex_same_glue(eq_value(p), chr)) {
-                    if (chr) {
-                        tex_flush_node(chr);
+                if (eq_type(p) == cmd) {
+                  // printf("GLUESPEC %i : OLD %i NEW %i\n",tex_same_glue(eq_value(p), chr),eq_value(p),chr);
+                    switch (tex_same_glue(eq_value(p), chr)) {
+                        case eq_state_different:
+                            return 0;
+                        case eq_state_same_pointer:
+                            return 1;
+                        case eq_state_same_value:
+                            if (chr) {
+                                tex_flush_node(chr);
+                            }
+                            return 1;
+                        default:
+                            return 0;
                     }
-                    return 1;
                 } else {
                     return 0;
                 }
             case mathspec_cmd:
                 /*tex Idem here. */
-                if (tex_same_mathspec(eq_value(p), chr)) {
-                    if (chr) {
-                        tex_flush_node(chr);
+                if (eq_type(p) == cmd) {
+                 // printf("MATHSPEC %i : OLD %i NEW %i\n",tex_same_mathspec(eq_value(p), chr),eq_value(p),chr);
+                    switch (tex_same_mathspec(eq_value(p), chr)) {
+                        case eq_state_different:
+                            return 0;
+                        case eq_state_same_pointer:
+                            return 1;
+                        case eq_state_same_value:
+                            if (chr) {
+                                tex_flush_node(chr);
+                            }
+                            return 1;
+                        default:
+                            return 0;
                     }
-                    return 1;
                 } else {
                     return 0;
                 }
+            /*tex
+                We probably loose more than we gain here, performance wise, due to the fact that in
+                \CONTEXT\ we first have |\foo| as |font_cmd| and replace it by |fontspec_cmd| so we
+                are always different. So I might eventually comment the next blob.
+            */
             case fontspec_cmd:
                 /*tex And here. */
-                if (tex_same_fontspec(eq_value(p), chr)) {
-                    if (chr) {
-                        tex_flush_node(chr);
+                if (eq_type(p) == cmd) {
+                 // printf("FONTSPEC %i : OLD %i NEW %i\n",tex_same_fontspec(eq_value(p), chr),eq_value(p),chr);
+                    switch (tex_same_fontspec(eq_value(p), chr)) {
+                        case eq_state_different:
+                            return 0;
+                        case eq_state_same_pointer:
+                            return 1;
+                        case eq_state_same_value:
+                            if (chr) {
+                                tex_flush_node(chr);
+                            }
+                            return 1;
+                        default:
+                            return 0;
                     }
-                    return 1;
                 } else {
                     return 0;
                 }

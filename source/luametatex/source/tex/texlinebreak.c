@@ -3251,8 +3251,7 @@ static scaled tex_aux_try_break(
            }
         }
     }
-    /* We never end up here. */
-    return shortfall;
+    return shortfall; /* We never end up here. */
 }
 
 static halfword tex_aux_inject_orphan_penalty(const line_break_properties *properties, halfword current, halfword amount, int orphaned)
@@ -5989,7 +5988,7 @@ void tex_do_line_break(line_break_properties *properties)
             tex_aux_line_break_callback_stop(lmt_linebreak_state.callback_id, properties->line_break_checks);
         }
     }
-    goto INDEED;
+    goto INDEED; /* We never end up here. */
   DONE:
     if (lmt_linebreak_state.callback_id) {
         tex_aux_line_break_callback_stop(lmt_linebreak_state.callback_id, properties->line_break_checks);

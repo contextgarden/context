@@ -225,7 +225,7 @@
 
 \unexpanded\def\showmathcharacterschr#1#2%
   {\iffontchar\font#2\relax
-     \scale
+     \scale % can't we use a more efficient one here
        [sx=#1,sy=#1]
        {\dontleavehmode\hbox\bgroup
         \setbox\scratchbox\hbox\bgroup
@@ -547,55 +547,60 @@
 % \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
 % \showmathcharacterssetbodyfonts{modernlatin,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
 
-\usetypescriptfile[pennstander]
+% \usetypescriptfile[pennstander]
 
-\showmathcharacterssetbodyfonts{
-    pennstander-regular,%
-    pennstander-thin,%
-    pennstander-extralight,%
-    pennstander-light,%
-    pennstander-medium,%
-    pennstander-semibold,%
-    pennstander-bold,%
-    pennstander-extrabold,%
-    pennstander-black%
-}
+% \showmathcharacterssetbodyfonts{
+%     pennstander-regular,%
+%     pennstander-thin,%
+%     pennstander-extralight,%
+%     pennstander-light,%
+%     pennstander-medium,%
+%     pennstander-semibold,%
+%     pennstander-bold,%
+%     pennstander-extrabold,%
+%     pennstander-black%
+% }
 
 \starttext
 
-    \doifelse {\getdocumentargument{bodyfont}} {} {
+    \doifelse {\getdocumentargument{bodyfont}} {demo} {
 
-      % \setupbodyfont[cambria,                12pt]
-      % \setupbodyfont[modern,                 12pt]
-      % \setupbodyfont[lmvirtual,              12pt]
-      % \setupbodyfont[pxvirtual,              12pt]
-      % \setupbodyfont[txvirtual,              12pt]
-      % \setupbodyfont[palatino,               10pt]
-      % \setupbodyfont[mathtimes,              12pt]
-      % \setupbodyfont[stix,                   12pt]
-      % \setupbodyfont[xits,                   12pt]
-      % \setupbodyfont[lucida,                 12pt]
-      % \setupbodyfont[lucidaot,               12pt]
-      % \setupbodyfont[pagella,                12pt]
-      % \setupbodyfont[bonum,                  12pt]
-      % \setupbodyfont[schola,                 12pt]
-      % \setupbodyfont[dejavu,                 12pt]
-      % \setupbodyfont[lucida,                 12pt]
-      % \setupbodyfont[newcomputermodern-book, 12pt]
-
-      % \setupbodyfont[pennstander-regular,    12pt]
-      \setupbodyfont[pennstander-thin,         12pt]
-      % \setupbodyfont[pennstander-extralight, 12pt]
-      % \setupbodyfont[pennstander-light,      12pt]
-      % \setupbodyfont[pennstander-medium,     12pt]
-      % \setupbodyfont[pennstander-semibold,   12pt]
-      % \setupbodyfont[pennstander-bold,       12pt]
-      % \setupbodyfont[pennstander-extrabold,  12pt]
-      % \setupbodyfont[pennstander-black,      12pt]
+        \showmathcharacterssetbodyfonts{cambria,modern,pagella,termes,bonum,schola,dejavu,lucidaot}
 
     } {
 
-        \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+        \doifelse {\getdocumentargument{bodyfont}} {} {
+
+          % \setupbodyfont[cambria,                12pt]
+          % \setupbodyfont[modern,                 12pt]
+          % \setupbodyfont[lmvirtual,              12pt]
+          % \setupbodyfont[pxvirtual,              12pt]
+          % \setupbodyfont[txvirtual,              12pt]
+          % \setupbodyfont[mathtimes,              12pt]
+          % \setupbodyfont[stix,                   12pt]
+          % \setupbodyfont[xits,                   12pt]
+          % \setupbodyfont[lucida,                 12pt]
+          % \setupbodyfont[lucidaot,               12pt]
+          % \setupbodyfont[pagella,                12pt]
+          % \setupbodyfont[bonum,                  12pt]
+          % \setupbodyfont[schola,                 12pt]
+          % \setupbodyfont[dejavu,                 12pt]
+          % \setupbodyfont[lucida,                 12pt]
+          % \setupbodyfont[newcomputermodern-book, 12pt]
+
+          % \setupbodyfont[pennstander-regular,    12pt]
+          % \setupbodyfont[pennstander-thin,       12pt]
+          % \setupbodyfont[pennstander-extralight, 12pt]
+          % \setupbodyfont[pennstander-light,      12pt]
+          % \setupbodyfont[pennstander-medium,     12pt]
+          % \setupbodyfont[pennstander-semibold,   12pt]
+          % \setupbodyfont[pennstander-bold,       12pt]
+          % \setupbodyfont[pennstander-extrabold,  12pt]
+          % \setupbodyfont[pennstander-black,      12pt]
+
+        } {
+            \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+        }
 
     }
 

@@ -59,7 +59,7 @@ static int lzolib_decompresssize(lua_State *L)
     if (lzolib_state.initialized) {
         size_t sourcesize = 0;
         const char *source = luaL_checklstring(L, 1, &sourcesize);
-        size_t targetsize = luaL_checkinteger(L, 2);
+        size_t targetsize = (size_t) luaL_checkinteger(L, 2);
         if (source && targetsize > 0) {
             luaL_Buffer buffer;
             char *target = luaL_buffinitsize(L, &buffer, targetsize);

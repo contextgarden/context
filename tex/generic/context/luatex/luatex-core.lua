@@ -75,13 +75,13 @@ if kpseused == 1 then
         return handle
     end
 
-    local function luatex_io_open_readonly(name,how)
-        local handle = validinput(name,how)
-        if handle then
-            kpse_recordinputfile(name,"r")
-        end
-        return handle
-    end
+ -- local function luatex_io_open_readonly(name,how)
+ --     local handle = validinput(name,how)
+ --     if handle then
+ --         kpse_recordinputfile(name,"r")
+ --     end
+ --     return handle
+ -- end
 
  -- local function luatex_io_popen(name,...)
  --     local okay, found = kpse_checkpermission(name)
@@ -164,10 +164,11 @@ if saferoption == 1 then
     os.spawn     = installdummy("os.spawn")
     os.exec      = installdummy("os.exec")
     os.setenv    = installdummy("os.setenv")
-    os.tempdir   = installdummy("os.tempdir")
+    os.tempdir   = installdummy("os.tmpdir")
 
     io.popen     = installdummy("io.popen")
-    io.open      = installdummy("io.open",luatex_io_open_readonly)
+ -- io.open      = installdummy("io.open",luatex_io_open_readonly)
+    io.open      = installdummy("io.open")
 
     os.kpsepopen = io.popen -- because it's in the os namespace ... brr
 

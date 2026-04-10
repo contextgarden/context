@@ -484,7 +484,7 @@ static int foreignlib_type_found(lua_State *L, int slot, int dflt)
     switch (lua_type(L, slot)) {
         case LUA_TNUMBER:
             {
-                int i = (int) lua_tointeger(L, slot);
+                int i = lmt_tointeger(L, slot);
                 if (i >= 0 && i < foreign_type_max) {
                     return i;
                 }
@@ -509,7 +509,7 @@ static int foreignlib_abi_found(lua_State *L, int slot, int dflt)
     switch (lua_type(L, slot)) {
         case LUA_TNUMBER:
             {
-                int i = (int) lua_tointeger(L, slot);
+                int i = lmt_tointeger(L, slot);
                 if (i >= 0 && i < foreign_abi_max) {
                     return foreign_abi_map[i].abi;
                 }
@@ -866,7 +866,7 @@ static int foreignlib_function_call(lua_State *L)
                             argument = lmt_memory_malloc(sizeof(int *));
                             if (argument) {
                                 *((int **) argument) = lmt_memory_malloc(sizeof(int));
-                                **((int **) argument) = (int) lua_tointeger(L, slot);
+                                **((int **) argument) = lmt_tointeger(L, slot);
                                 nofreturnvalues++;
                                 break;
                             } else {
@@ -992,7 +992,7 @@ static int foreignlib_function_gc(lua_State *L)
 
 static int foreignlib_newbuffer(lua_State *L)
 {
-    size_t size = lua_tointeger(L, 1);
+    size_t size = lmt_tosizet(L, 1);
     foreign_pointer *pointer = (foreign_pointer *) lua_newuserdatauv(L, sizeof(foreign_pointer), 0);
     luaL_getmetatable(L, FOREIGN_METATABLE_POINTER);
     lua_setmetatable(L, -2);
@@ -1005,7 +1005,7 @@ static int foreignlib_getbuffer(lua_State *L)
 {
     foreign_pointer *pointer = foreignlib_pointer_check(L, 1);
     if (pointer && pointer->state == foreign_pointer_state_buffer && pointer->ptr) {
-        size_t size = lua_tointeger(L, 2);
+        size_t size = lmt_tosizet(L, 2);
         if (size > 0) {
             lua_pushlstring(L, pointer->ptr, size);
         } else {

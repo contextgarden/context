@@ -39,11 +39,12 @@
 
 \permanent\protected\def\setupsynctex[#1]%
   {\begingroup
-   \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,#1]%
+   \getdummyparameters[\c!state=\v!stop,\c!method=\v!max,\c!compress=,#1]%
    \edef\p_state{\dummyparameter\c!state}%
    \clf_setupsynctex
-      state  {\p_state}%
-      method {\dummyparameter\c!method}%
+      state    {\p_state}%
+      method   {\dummyparameter\c!method}%
+      compress {\dummyparameter\c!compress}%
    \relax
    \ifx\p_state\v!repeat
      \let\p_state\v!start

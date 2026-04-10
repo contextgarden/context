@@ -132,7 +132,7 @@ static int lzmalib_compress(lua_State *L)
                 }
                 while (1) {
                     char *target = luaL_prepbuffsize(&buffer, targetsize);
-                    size_t produced = strm.total_out;
+                    size_t produced = (size_t) strm.total_out;
                     strm.next_out = (uint8_t *) target;
                     strm.avail_out = targetsize;
                     errorcode = lzmalib_state.lzma_code(&strm, LZMA_FINISH);
@@ -173,7 +173,7 @@ static int lzmalib_decompress(lua_State *L)
                 }
                 while (1) {
                     char *target = luaL_prepbuffsize(&buffer, targetsize);
-                    size_t produced = strm.total_out;
+                    size_t produced = (size_t) strm.total_out;
                     strm.next_out = (uint8_t *) target;
                     strm.avail_out = targetsize;
                     errorcode = lzmalib_state.lzma_code(&strm, LZMA_RUN);

@@ -169,7 +169,7 @@
    \c!spacing=\v!packed,
    \c!default=\s!de]
 
-%D And some alternative (but very real) english patterns.
+%D And some alternative (but very real) english patterns:
 
 \installlanguage
   [en-gb]
@@ -178,6 +178,7 @@
    \s!patterns=\s!gb,
    \s!lefthyphenmin=3,
    \s!righthyphenmin=3,
+   \c!date={\v!day,\space,\v!month,\space,\v!year},
    % the reverse of american (or maybe the american did it the reverse)
    \c!leftquote=\upperleftdoublesixquote,
    \c!rightquote=\upperrightdoubleninequote,
@@ -686,25 +687,20 @@
 % Celtic: Breton, Welsh, Irish, Manx, Scottish Gaelic
 
 \installlanguage
-  [\s!ga]
-  [\c!define=\v!no,
-   % these ate from english
-   \c!spacing=\v!broad,
-   \c!leftsentence=\emdash,
-   \c!rightsentence=\emdash,
-   \c!leftsubsentence=\emdash,
-   \c!rightsubsentence=\emdash,
-   \c!leftquote=\upperleftsinglesixquote,
-   \c!rightquote=\upperrightsingleninequote,
-   \c!leftquotation=\upperleftdoublesixquote,
-   \c!rightquotation=\upperrightdoubleninequote,
-   \c!date={\v!month,\space,\v!day,{,\space},\v!year},
-   %
-   \s!patterns=\s!ga,
+  [\s!gd]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperleftdoublesixquote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\upperleftsinglesixquote,
+   \c!rightquotation=\upperrightsingleninequote,
+   \c!date={\v!day,\space,\v!month,\space,\v!year},
+%   \s!patterns=\s!gd,
    \s!lefthyphenmin=2,
    \s!righthyphenmin=3]
-
-\installlanguage [\s!gaelic] [\s!ga]
 
 % CJK: Chinese, Japanese, Korean
 
@@ -919,8 +915,7 @@
 \installlanguage [\s!latin]       [\s!la]
 \installlanguage [\s!portuguese]  [\s!pt]
 \installlanguage [\s!romanian]    [\s!ro]
-\installlanguage [\s!moldovan]    [\s!mo]
-%installlanguage [\s!moldavian]   [\s!mo]
+\installlanguage [\s!moldavian]   [\s!mo]
 
 % Vietnamese Language
 

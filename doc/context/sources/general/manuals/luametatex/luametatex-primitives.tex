@@ -1,7 +1,7 @@
 % language=us runpath=texruns:manuals/luametatex
 
 % run locally!
-\enablemode[checktodo]
+% \enablemode[checktodo]
 
 \environment luametatex-style
 
@@ -126,7 +126,7 @@ between this macro language and other languages you might be familiar with.
 \startcolumns
     \setuplist
       [newprimitive,oldprimitive]
-      [width=4.5em]
+      [width=5.5em]
     \placelist
       [newprimitive,oldprimitive]
       [alternative=c,criterium=text]
@@ -1279,18 +1279,23 @@ fraction, without rule but with for instance parentheses.
 Here we show the six more or less traditional vertically stacked variants of
 fractions. Watch how we have a syntax where we take two arguments instead of the
 more operator like approach that \prm {over} and friends use. The \type {atop}
-variants have no rule.
+variants have no rule. So we have:
 
-\starttabulate[|l|lT|lT|lT|lT|i1l|i2l|lT|lT|lT|lT|i1l|]
-    \NC \type{\Uabove}               \NC   \NC    \NC 1pt \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uabove                  1pt{1}{2+x}}
+\starttabulate[|l|lT|lT|lT|l|]
+    \NC \type{\Uabove}     \NC   \NC 1pt \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uabove       1pt{1}{2+x}}
+    \NC \type{\Uatop}      \NC   \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uatop           {1}{2+x}}
+    \NC \type{\Uover}      \NC   \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uover           {1}{2+x}}
+    \NC \type{\Uskewed}    \NC / \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uskewed    /    {1}{2+x}}
+    \NC \type{\Ustretched} \NC = \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Ustretched =    {1}{2+x}}
+\stoptabulate
+
+versus:
+
+\starttabulate[|l|lT|lT|lT|lT|l|]
     \NC \type{\Uabovewithdelims}     \NC   \NC () \NC 1pt \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uabovewithdelims      ()1pt{1}{2+x}} \NC \NR \TB[medium]
-    \NC \type{\Uatop}                \NC   \NC    \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uatop                      {1}{2+x}}
     \NC \type{\Uatopwithdelims}      \NC   \NC () \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uatopwithdelims       ()   {1}{2+x}} \NC \NR \TB[medium]
-    \NC \type{\Uover}                \NC   \NC    \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uover                      {1}{2+x}}
     \NC \type{\Uoverwithdelims}      \NC   \NC () \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uoverwithdelims       ()   {1}{2+x}} \NC \NR \TB[medium]
-    \NC \type{\Uskewed}              \NC / \NC    \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uskewed              /     {1}{2+x}}
     \NC \type{\Uskewedwithdelims}    \NC / \NC () \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Uskewedwithdelims    /()   {1}{2+x}} \NC \NR \TB[medium]
-    \NC \type{\Ustretched}           \NC = \NC    \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Ustretched           =     {1}{2+x}}
     \NC \type{\Ustretchedwithdelims} \NC = \NC () \NC     \NC \type {{1} {2+x}} \NC \im{\showglyphs \Ustretchedwithdelims =()   {1}{2+x}} \NC \NR
 \stoptabulate
 
@@ -1754,6 +1759,13 @@ This is an experimental feature that accepts some of the keywords that one can
 pass to the alignment command: \typ {firstskip}, \typ {lastskip}, \typ
 {nofirstskip}, \typ {nolastskip} and \type {prune}. When given in a cell they
 will overload the already set options.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {alignsnapping}}]
+
+This primitive is part of the experimental line snapping mechanism and when set
+determines how rows get snapped.
 
 \stopnewprimitive
 
@@ -7473,8 +7485,12 @@ this one is (as with some others) to get less tracing.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {ifspecification}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {ifspecification}}]
+
+This test expects a specification (more extensive data structures) and goes
+\quote {true} when it is a valid one. This primitive might evolved a bit.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {iftok}}]
 
@@ -8292,6 +8308,14 @@ This gives the current job name without suffix: {\tttf \jobname}.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {justificationskip}}]
+
+When set, the amount is added to the left- and/or right skip values and the
+stretch and shrink properties then replace the corresponding fields in those
+skips. This feature relates to experimental support for ragged paragraphs.
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {kern}}]
 
 A kern is injected with the given dimension. For variants that switch to a mode
@@ -8833,18 +8857,44 @@ so we get two times a 3pt glue injected.
 \startnewprimitive[title={\prm {linesnapping}}]
 
 This is an experimental feature what we occasionally come back to, so it's
-currently undocumented.
+currently undocumented. Here is an example definition:
+
+\starttyping
+\linesnappinghtfactor 720
+\linesnappingdpfactor 280
+
+\specificationdef \LineSnappingA \linesnapping 1 factors global
+    step           2
+    height      1000
+    depth       1000
+    httolerance  100
+    dptolerance  100
+\relax
+\stoptyping
+
+Here the height and depth are multipliers then themselves get multiplied by \prm
+{linesnappinghtfactor} and \prm {linesnappingdpfactor} and applied to the \prm
+{baselineskip}. More details can be found in the \CONTEXT\ documentation.
 
 \stopnewprimitive
 
-% \startnewprimitive[title={\prm {linesnappingdpfactor}}]
-% \stopnewprimitive
+\startnewprimitive[title={\prm {linesnappingdpfactor}}]
 
-% \startnewprimitive[title={\prm {linesnappinghtfactor}}]
-% \stopnewprimitive
+See \prm {linesnapping}.
 
-% \startnewprimitive[title={\prm {linesnappingtolerance}}]
-% \stopnewprimitive
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {linesnappinghtfactor}}]
+
+See \prm {linesnapping}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {linesnappingtolerance}}]
+
+See \prm {linesnapping}.
+
+\stopnewprimitive
 
 \startnewprimitive[title={\prm {localbreakpar}}]
 
@@ -10112,6 +10162,12 @@ there is no reason to add it.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {mathsnapping}}]
+
+This parameter relates to \prm {linesnapping} and is applied to (inline) math.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {mathspacingmode}}]
 
 Zero inter|-|class glue is not injected but setting this parameter to a positive
@@ -10951,6 +11007,9 @@ enables it as part of its recipe.
 
 \stopnewprimitive
 
+% \startnewprimitive[title={\prm {optionspar}}]
+% \stopnewprimitive
+
 \startoldprimitive[title={\prm {or}}]
 
 This traditional primitive is part of the condition testing mechanism and relates
@@ -11535,6 +11594,13 @@ The glue inserted at the start of the last line.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {parfillmode}}]
+
+This mode configures native ragged left and right justification: left 1, right 2,
+middle 3.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {parfillrightskip}}]
 
 The glue inserted at the end of the last line (aka \prm {parfillskip}).
@@ -11804,6 +11870,9 @@ the inter atom spacing variables.
 
 \stopnewprimitive
 
+% \startnewprimitive[title={\prm {prerollmvl}}]
+% \stopnewprimitive
+
 \startnewprimitive[title={\prm {preshortinlinepenalty}}]
 
 When set this penalty is inserted before a short inline formula. The criterium is
@@ -11945,7 +12014,8 @@ at the spot.
 \startnewprimitive[title={\prm {quitvmode}}]
 
 This primitive forces horizontal mode but has no side effects when we're already
-in that mode.
+in that mode. Characters (glyphs) and rules force horizontal mode but for
+instance boxes will take a whole line when they start a paragraph.
 
 \stopnewprimitive
 
@@ -13251,12 +13321,51 @@ optimal results.
 
 \stopnewprimitive
 
+\startnewprimitive[title={\prm {spaceskipmode}}]
+
+Space skip refers to specific spacing after for instance punctuation. A bitset
+determines what components of the glue are ignored: amount (1), stretch (2),
+shrink (4).
+
+\stopnewprimitive
+
 \startoldprimitive[title={\prm {span}}]
 
 This primitive combined two upcoming cells into one. Often it is used in
 combination with \prm {omit}. However, in the preamble it forces the next token
 to be expanded, which means that nested \prm {tabskips} and align content markers
 are seen.
+
+\stopoldprimitive
+
+\startoldprimitive[title={\prm {spcode}}]
+
+This is a variation on \prm {sfcode} and it works in combination with the \prm {textspacing}
+feature. The code relates a character to a category, like:
+
+\starttyping
+\spcode\periodasciicode          1
+\spcode\commaasciicode           2
+\spcode\questionmarkasciicode    3
+\spcode\exclamationmarkasciicode 3
+\spcode\colonasciicode           4
+\spcode\semicolonasciicode       5
+\stoptyping
+
+These categories can get a space factor assigned as well as a penalty:
+
+\starttyping
+\specificationdef \nonpenalizedspacingmap \textspacing 5
+    3000 -50 % .
+    1250 -50 % ,
+    3000 -50 % ! ?
+    2000 -50 % :
+    1500 -50 % ;
+\relax
+\stoptyping
+
+After this \typ {\textspacing \nonpenalizedspacingmap} will enable this mapping.
+When not set the usual \prm {sfcode}'s will be used.
 
 \stopoldprimitive
 
@@ -13604,6 +13713,25 @@ so it is specific for math. It is the largest one of the three family members; i
 relatives are \prm {scriptfont} and \prm {scriptscriptfont}.
 
 \stopoldprimitive
+
+\startnewprimitive[title={\prm {textspacing}}]
+
+This sets a text spacing vectors that determine space factors and penalties per
+category; see \prm {spcode}.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {textspacingfactor}}]
+
+This primitive reports the spacing factor of the given character code.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {textspacingpenalty}}]
+
+This primitive reports the spacing penalty of the given character code.
+
+\stopnewprimitive
 
 \startoldprimitive[title={\prm {textstyle}}]
 
@@ -14224,6 +14352,9 @@ This setting triggers reporting of actions due to special penalties in the
 page builder.
 
 \stopnewprimitive
+
+% \startnewprimitive[title={\prm {tracingraggedness}}]
+% \stopnewprimitive
 
 \startoldprimitive[title={\prm {tracingrestores}}]
 

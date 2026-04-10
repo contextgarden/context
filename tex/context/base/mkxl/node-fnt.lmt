@@ -46,6 +46,7 @@ local nuts              = nodes.nuts
 local getid             = nuts.getid
 ----- getsubtype        = nuts.getsubtype
 local getreplace        = nuts.getreplace
+local getdisc           = nuts.getdisc
 local getnext           = nuts.getnext
 local getprev           = nuts.getprev
 local getboth           = nuts.getboth
@@ -83,6 +84,11 @@ local setmetatableindex = table.setmetatableindex
 -- that there was nothing to gain (unless we also optimize other parts)
 --
 -- maybe getting rid of the intermediate shared can save some time
+
+local trace_fontmodes = false  trackers.register("fonts.modes", function(v) trace_fontmodes = v end)
+
+local tracers  = nodes.tracers
+local setcolor = tracers.colors.set
 
 local run = 0
 
@@ -652,7 +658,20 @@ else
 
 end
 
-    -- local hasglyph = nuts.hasglyph
+    local function tracemode(head)
+        for n, char, font in nextchar, head do
+            local fontmode = fontmodes[font]
+            if fontmode == "node" then
+                setcolor(n,"trace:g")
+            elseif fontmode == "base" then
+                setcolor(n,"trace:b")
+            elseif fontmode == "plug" then
+                setcolor(n,"trace:r")
+            else
+                setcolor(n,"trace:s")
+            end
+        end
+    end
 
     local markglyphprocessing = node.direct.markglyphprocessing
     local quickanddirty       = false
@@ -946,6 +965,24 @@ end
 
         if trace_characters then
             nodes.report(head)
+        end
+
+        if trace_fontmodes then
+            tracemode(head)
+            if force_discrun then
+                for disc in nextdisc, head do
+                    local pre, post, replace = getdisc(disc)
+                    if pre then
+                        tracemode(pre)
+                    end
+                    if post then
+                        tracemode(post)
+                    end
+                    if replace then
+                        tracemode(replace)
+                    end
+                end
+            end
         end
 
         return head

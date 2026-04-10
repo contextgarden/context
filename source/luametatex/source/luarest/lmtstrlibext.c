@@ -816,7 +816,7 @@ static int strlib_pack_rows_columns(lua_State* L)
             switch (lua_rawgeti(L, -1, 1)) {
                 case LUA_TNUMBER:
                     {
-                        lua_Integer size = rows * columns;
+                        size_t size = rows * columns;
                         unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
                         if (result) {
@@ -841,8 +841,8 @@ static int strlib_pack_rows_columns(lua_State* L)
                     }
                 case LUA_TTABLE:
                     {
-                        lua_Integer mode = lua_rawlen(L, -1);
-                        lua_Integer size = rows * columns * mode;
+                        int mode = (int) lua_rawlen(L, -1);
+                        size_t size = rows * columns * mode;
                         unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
                         if (result) {
@@ -852,7 +852,7 @@ static int strlib_pack_rows_columns(lua_State* L)
                                     for (lua_Integer c = 1; c <= columns; c++) {
                                         if (lua_rawgeti(L, -1, c) == LUA_TTABLE) {
                                             for (int i = 1; i <= mode; i++) {
-                                                if (lua_rawgeti(L, -1, i) == LUA_TNUMBER) {
+                                                    if (lua_rawgeti(L, -1, i) == LUA_TNUMBER) {
                                                     lua_Integer v = lua_tointeger(L, -1);
                                                     *result++ = v < 0 ? 0 : v > 255 ? 255 : (unsigned char) v;
                                                 } else { 
@@ -1067,7 +1067,7 @@ static int strlib_splitintolines(lua_State *L)
     const char *s = lua_tolstring(L, 1, &l);
     lua_newtable(L);
     if (l > 0) {
-        lua_Integer n = 0;
+        size_t n = 0;
         lua_Integer i = 0;
         const char *f = s;
         while (*s) {

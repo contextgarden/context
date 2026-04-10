@@ -1784,6 +1784,8 @@ do
             local options    = getoptions(current)
             local horizontal = (options & horizontal_rule) ~= 0
             local vertical   = (options & vertical_rule  ) ~= 0
+-- local horizontal = hasoptions(current,horizontal_rule)
+-- local vertical   = hasoptions(current,vertical_rule)
             if not horizontal and not vertical then
                 horizontal = true -- and no check for running, see autorule in tabulate
             elseif not running then

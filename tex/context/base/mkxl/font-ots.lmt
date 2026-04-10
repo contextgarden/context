@@ -4349,10 +4349,9 @@ do
             if trace_plugins then
                 report_process("applying plugin %a",p[1])
             end
-            return p[2](head,font,dynamic,direction)
-        else
-            return head, false
+            head = p[2](head,font,dynamic,direction)
         end
+        return head
     end
 
 end

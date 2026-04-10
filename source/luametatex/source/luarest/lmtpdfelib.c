@@ -973,7 +973,7 @@ static int pdfelib_new(lua_State *L)
             tex_normal_warning("pdfe lib", "string or lightuserdata expected");
             return 0;
     }
-    streamsize = luaL_optinteger(L, 2, streamsize);
+    streamsize = lmt_optsizet(L, 2, streamsize);
     if (streamsize > 0) {
         char *memstream = lmt_generic_malloc((unsigned) (streamsize + 1)); /* we have no hook into pdfe free */
         if (memstream) {
@@ -1293,7 +1293,7 @@ static int pdfelib_getfromobject(lua_State *L)
 {
     pdfe_document *p = pdfelib_aux_check_isdocument(L, 1, get_from_error);
     if (p) {
-        ppref *rr = ppxref_find(p->document->xref, lua_tointeger(L, 2));
+        ppref *rr = ppxref_find(p->document->xref, lmt_tointeger(L, 2));
         if (rr) {
              ppobj *o = ppref_obj(rr);
              if (o) {
@@ -1309,7 +1309,7 @@ static int pdfelib_getobjectrange(lua_State *L)
 {
     pdfe_document *p = pdfelib_aux_check_isdocument(L, 1, get_from_error);
     if (p) {
-        ppref *rr = ppxref_find(p->document->xref, lua_tointeger(L, 2));
+        ppref *rr = ppxref_find(p->document->xref, lmt_tointeger(L, 2));
         if (rr) {
              lua_pushinteger(L, (lua_Integer) rr->offset);
              lua_pushinteger(L, (lua_Integer) rr->length);
@@ -1413,7 +1413,7 @@ static int pdfelib_get_value_direct(lua_State *L, void **value, pp_d_direct get_
                 break;
             case LUA_TNUMBER:
                 {
-                    size_t index = lua_tointeger(L, 2);
+                    size_t index = lmt_tosizet(L, 2);
                     lua_get_metatablelua(pdfe_array_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         *value = get_a(((pdfe_array *) p)->array, index);
@@ -1464,7 +1464,7 @@ static int pdfelib_get_value_indirect(lua_State *L, void **value, pp_d_indirect 
                 break;
             case LUA_TNUMBER:
                 {
-                    size_t index = lua_tointeger(L, 2);
+                    size_t index = lmt_tosizet(L, 2);
                     lua_get_metatablelua(pdfe_array_instance);
                     if (lua_rawequal(L, -1, -2)) {
                         return get_a(((pdfe_array *) p)->array, index, value);
@@ -1687,7 +1687,7 @@ static int pdfelib_array_access(lua_State *L)
 {
     if (lua_type(L, 2) == LUA_TNUMBER) {
         pdfe_array *p = (pdfe_array *) lua_touserdata(L, 1);
-        ppint index = lua_tointeger(L, 2) - 1;
+        ppint index = lmt_tointeger(L, 2) - 1;
         ppobj *o = pparray_rget_obj(p->array, index);
         if (o) {
             return pdfelib_pushvalue(L, o);

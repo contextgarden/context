@@ -43,6 +43,8 @@ local getglue            = nuts.getglue
 local getkern            = nuts.getkern
 local getglyphdata       = nuts.getglyphdata
 
+local hasoptions         = nuts.hasoptions
+
 local isglyph            = nuts.isglyph
 
 local setfield           = nuts.setfield
@@ -63,7 +65,7 @@ local texsetattribute    = tex.setattribute
 
 local unsetvalue         <const> = attributes.unsetvalue
 
-local new_kern           = nodepool.kern -- fontkern
+local new_kern           = nodepool.characterkern -- fontkern
 local new_glue           = nodepool.glue
 
 local nodecodes          = nodes.nodecodes
@@ -82,6 +84,8 @@ local math_code          <const> = nodecodes.math
 
 local boxlist_code       <const> = listcodes.box
 local unknownlist_code   <const> = listcodes.unknown
+
+local no_kerning_code    <const> = tex.boxoptioncodes.nokerning
 
 local discretionarydisc_code <const> = disccodes.discretionary
 local automaticdisc_code     <const> = disccodes.automatic
@@ -256,10 +260,10 @@ local function inject_begin(boundary,prev,keeptogether,krn,ok,scale) -- prev is 
             end
             if inject then
                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-if not getprop(boundary,"lspkern") then
-                setkern(boundary,getkern(boundary) + scale*quaddata[getfont(prev)]*krn) -- ,userkern_code)
-    setprop(boundary,"lspkern",true)
-end
+                if not getprop(boundary,"lspkern") then
+                    setkern(boundary,getkern(boundary) + scale*quaddata[getfont(prev)]*krn) -- ,userkern_code)
+                    setprop(boundary,"lspkern",true)
+                end
                 return boundary, true
             end
         end
@@ -296,10 +300,10 @@ local function inject_end(boundary,next,keeptogether,krn,ok,scale)
            end
            if inject then
                -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-if not getprop(tail,"lspkern") then
-               setkern(tail,getkern(tail) + scale*quaddata[getfont(next)]*krn) -- ,userkern_code)
-    setprop(tail,"lspkern",true)
-end
+                if not getprop(tail,"lspkern") then
+                    setkern(tail,getkern(tail) + scale*quaddata[getfont(next)]*krn) -- ,userkern_code)
+                    setprop(tail,"lspkern",true)
+                end
                return boundary, true
            end
        end
@@ -337,10 +341,10 @@ local function process_list(head,keeptogether,krn,font,okay)
                         end
                         if inject then
                             -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-if not getprop(prev,"lspkern") then
-                            setkern(prev,getkern(prev) + scale*kern) -- ,userkern_code)
-    setprop(prev,"lspkern",true)
-end
+                            if not getprop(prev,"lspkern") then
+                                setkern(prev,getkern(prev) + scale*kern) -- ,userkern_code)
+                                setprop(prev,"lspkern",true)
+                            end
                             okay = true
                         end
                     end
@@ -373,17 +377,26 @@ end
 
 local function closest_bound(b,get)
     b = get(b)
-    if b and getid(b) ~= glue_code then
-        while b do
-            if not getattr(b,a_kerns) then
-                break
+    if not b then
+        return
+    end
+    if getid(b) == glue_code then
+        local subtype = getsubtype(b)
+        if subtype == xspaceskip_code or subtype == spaceskip_code then
+            -- we're okay (could be an option)
+        else
+            return
+        end
+    end
+    while b do
+        if not getattr(b,a_kerns) then
+            break
+        else
+            local c, f = isglyph(b)
+            if c then
+                return b, f
             else
-                local c, f = isglyph(b)
-                if c then
-                    return b, f
-                else
-                    b = get(b)
-                end
+                b = get(b)
             end
         end
     end
@@ -461,10 +474,10 @@ function kerns.handler(head)
                             end
                             if inject then
                                 -- not yet ok, as injected kerns can be overlays (from node-inj.lua)
-if not getprop(prev,"lspkern") then
-    setprop(prev,"lspkern",true)
-                               setkern(prev,getkern(prev) + scale*quaddata[font]*krn) -- ,userkern_code)
-end
+                                if not getprop(prev,"lspkern") then
+                                    setprop(prev,"lspkern",true)
+                                    setkern(prev,getkern(prev) + scale*quaddata[font]*krn) -- ,userkern_code)
+                                end
                             end
                         end
                     elseif previd == glyph_code then
@@ -574,7 +587,7 @@ end
                             local w = width + gluefactor * width * krn
                             stretch = stretch * w / width
                             shrink  = shrink  * w / width
-                            if fillup then
+                            if fillup and (stretch ~= 0 or shrink ~= 0) then
                                 stretch = 2 * stretch
                                 shrink  = 2 * shrink
                                 stretchorder = 1
@@ -587,6 +600,9 @@ end
                 elseif id == hlist_code or id == vlist_code then
                     local subtype = getsubtype(start)
                     if subtype == unknownlist_code or subtype == boxlist_code then
+if hasoptions(start,no_kerning_code) then
+    -- kind of explicit ... messy (see heads)
+else
                         -- special case
                         local b, f = closest_bound(start,getprev)
                         if b then
@@ -596,6 +612,7 @@ end
                         if b then
                             insertnodeafter(head,start,kern_injector(fillup,scale*quaddata[f]*krn,start))
                         end
+end
                     end
                     bound = false
                 elseif id == math_code then

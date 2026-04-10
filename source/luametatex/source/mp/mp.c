@@ -237,7 +237,7 @@ definitions as these are in the header file.
 
 */
 
-# define odd(A) (labs(A) % 2 == 1)
+# define odd(A) (llabs(A) % 2 == 1)
 
 /*tex
 
@@ -852,7 +852,7 @@ The first set of numerical values goes into the header
 # define mp_floor_scaled(A)                         mp->math->md_floor_scaled(&(A))
 # define mp_fraction_to_round_scaled(A)             mp->math->md_fraction_to_round_scaled(&(A))
 # define mp_number_to_int(A)                        mp->math->md_to_int(&(A))
-# define mp_number_to_boolean(A)                    mp->math->md_to_boolean(&(A))
+# define mp_number_to_boolean(A)              (int) mp->math->md_to_boolean(&(A))
 # define mp_number_to_scaled(A)                     mp->math->md_to_scaled(&(A))
 # define mp_number_to_double(A)                     mp->math->md_to_double(&(A))
 # define mp_number_negate(A)                        mp->math->md_negate(&(A))
@@ -1348,10 +1348,10 @@ can be recognized by testing that the returned list pointer is equal to |dep_fin
 
 */
 
-# define two_to_the(A) (1<<(unsigned)(A))
+# define two_to_the(A) (mp_scaled_t) (1 << (unsigned) (A))
 
 # define cur_cmd               mp->cur_mod_->command
-# define cur_mod               mp_number_to_scaled(mp->cur_mod_->data.n)
+# define cur_mod               (int) mp_number_to_scaled(mp->cur_mod_->data.n)
 # define cur_mod_number        mp->cur_mod_->data.n
 # define cur_mod_node          mp->cur_mod_->data.node
 # define cur_mod_str           mp->cur_mod_->data.str
@@ -2677,7 +2677,7 @@ static void mp_check_overload(MP mp, mp_symbol p)
 {
     /* not the fastest check */
     if (mp_number_nonzero(internal_value(mp_overloadmode_internal))) {
-        if (mp->run_overload(mp, p->property, (const char *) p->text->str, mp_number_to_int(internal_value(mp_overloadmode_internal)))) {
+        if (mp->run_overload(mp, p->property, (const char *) p->text->str, (int) mp_number_to_int(internal_value(mp_overloadmode_internal)))) {
             p->property = 0;
         } else {
             /* we keep the property */
@@ -9245,7 +9245,7 @@ static mp_node mp_new_shape_node(MP mp, mp_knot p, int type)
     } else {
         t->linejoin = mp_mitered_linejoin_code;
     }
-    t->stacking = mp_round_unscaled(internal_value(mp_stacking_internal));
+    t->stacking = (int) mp_round_unscaled(internal_value(mp_stacking_internal));
     if (mp_number_less(internal_value(mp_miterlimit_internal), mp_unity_t)) {
         mp_set_number_to_unity(t->miterlimit);
     } else {
@@ -9550,7 +9550,7 @@ static mp_node mp_new_bounds_node(MP mp, mp_knot p, int c)
                 mp_start_node t = mp_new_start_node(mp);
                 t->type = c;
                 t->path = p;
-                t->stacking = mp_round_unscaled(internal_value(mp_stacking_internal));
+                t->stacking = (int) mp_round_unscaled(internal_value(mp_stacking_internal));
                 mp_pre_script(t) = NULL;
                 mp_post_script(t) = NULL;
                 return (mp_node) t;
@@ -9562,7 +9562,7 @@ static mp_node mp_new_bounds_node(MP mp, mp_knot p, int c)
             {
                 mp_stop_node t = mp_new_stop_node(mp);;
                 t->type = c;
-                t->stacking = mp_round_unscaled(internal_value(mp_stacking_internal));
+                t->stacking = (int) mp_round_unscaled(internal_value(mp_stacking_internal));
                 return (mp_node) t;
             }
             break;
@@ -12881,9 +12881,9 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
                     mp->three_l -= (int) mp->tol_step;
                     mp_number_clone(mp->delx, stack_dx);
                     mp_number_clone(mp->dely, stack_dy);
-                    mp->tol = mp_number_to_scaled(stack_tol);
-                    mp->uv = mp_number_to_scaled(stack_uv);
-                    mp->xy = mp_number_to_scaled(stack_xy);
+                    mp->tol = (int) mp_number_to_scaled(stack_tol);
+                    mp->uv = (int) mp_number_to_scaled(stack_uv);
+                    mp->xy = (int) mp_number_to_scaled(stack_xy);
                     goto NOT_FOUND;
                 }
             } else {
@@ -12924,10 +12924,10 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
 
 static mp_knot mp_path_intersection_add(MP mp, mp_knot list, mp_knot *last, mp_number *t, mp_number *tt)
 {
-    int a = mp_number_to_scaled(*t) >> mp_intersection_run_shift;
-    int aa = mp_number_to_scaled(*tt) >> mp_intersection_run_shift;
-    int b =  (list ? mp_number_to_scaled((*last)->x_coord) : -1) >> mp_intersection_run_shift ;
-    int bb = (list ? mp_number_to_scaled((*last)->y_coord) : -1) >> mp_intersection_run_shift ;
+    int a = (int) mp_number_to_scaled(*t) >> mp_intersection_run_shift;
+    int aa = (int) mp_number_to_scaled(*tt) >> mp_intersection_run_shift;
+    int b =  (list ? (int) mp_number_to_scaled((*last)->x_coord) : -1) >> mp_intersection_run_shift ;
+    int bb = (list ? (int) mp_number_to_scaled((*last)->y_coord) : -1) >> mp_intersection_run_shift ;
     if (a == b && aa == bb) {
         /* ignore */
     } else {
@@ -12959,7 +12959,7 @@ static mp_knot mp_path_intersection(MP mp, mp_knot h, mp_knot hh, int path, mp_k
     mp_knot list = NULL;
     mp_knot l = NULL;
     mp_knot ll = NULL;
-    int precision = mp_number_to_int(internal_value(mp_intersection_precision_internal));
+    int precision = (int) mp_number_to_int(internal_value(mp_intersection_precision_internal));
     if (precision < 1) {
         precision = 1;
     } else if (precision > 4) {
@@ -13025,8 +13025,8 @@ static mp_knot mp_path_intersection(MP mp, mp_knot h, mp_knot hh, int path, mp_k
                                     }
                                 } else {
                                     retrials = 0;
-                                    t = mp_number_to_scaled(mp->cur_t);
-                                    tt = mp_number_to_scaled(mp->cur_tt);
+                                    t = (int) mp_number_to_scaled(mp->cur_t);
+                                    tt = (int) mp_number_to_scaled(mp->cur_tt);
                                     goto RETRY;
                                 }
                             } else {
@@ -13898,7 +13898,7 @@ static mp_value_node mp_single_dependency(MP mp, mp_node p)
         q = mp_get_dep_node(mp, 5);
  // cf mfont q->type = 0;
         mp_set_dep_value(q, mp_zero_t);
-        mp_set_number_from_scaled(mp_get_dep_value(q), (int) two_to_the(28 - m));
+        mp_set_number_from_scaled(mp_get_dep_value(q), two_to_the(28 - m));
         mp_set_dep_info(q, p);
         {
             /* We append a kind of dummy term: |x = x + 0|. */
@@ -15751,7 +15751,7 @@ static void mp_get_t_next(MP mp)
         int slin = mp_input_line;
         int size = 0;
         int done = 0;
-        int mode = mp_round_unscaled(internal_value(mp_texscriptmode_internal)) ; /* default: 1 */
+        int mode = (int) mp_round_unscaled(internal_value(mp_texscriptmode_internal)) ; /* default: 1 */
         int verb = cur_mod == mp_verbatim_code;
         int first;
         /*tex We had a (mandate) trailing space. */
@@ -16504,7 +16504,7 @@ static void mp_expand(MP mp)
                 mp_do_boolean_error(mp);
             }
             if (mp_number_greater(internal_value(mp_tracing_commands_internal), mp_unity_t)) {
-                mp_show_cmd_mod(mp, mp_nullary_command, cur_exp_value_boolean);
+                mp_show_cmd_mod(mp, mp_nullary_command, (int) cur_exp_value_boolean);
             }
             if (cur_exp_value_boolean == mp_true_operation) {
                 if (mp->loop_ptr != NULL) {
@@ -21158,12 +21158,12 @@ static void mp_set_up_char(MP mp, int c)
     if (cur_exp_type != mp_known_type) {
         mp_bad_unary(mp, c);
     } else {
-        int n = mp_round_unscaled(cur_exp_value_number) % 256;
+        int n = (int) mp_round_unscaled(cur_exp_value_number) % 256;
         unsigned char s[2];
         mp_set_cur_exp_value_scaled(mp, n);
         cur_exp_type = mp_string_type;
         if (mp_number_negative(cur_exp_value_number)) {
-            n = mp_number_to_scaled(cur_exp_value_number) + 256;
+            n = (int) mp_number_to_scaled(cur_exp_value_number) + 256;
             mp_set_cur_exp_value_scaled(mp, n);
         }
         s[0] = (unsigned char) mp_number_to_scaled(cur_exp_value_number);
@@ -21652,7 +21652,7 @@ static void mp_set_up_prune_singularities(MP mp, int c)
     switch (cur_exp_type) {
         case mp_path_type: /* we can use a interternal as bitset */
             {
-                int prune = mp_round_unscaled(internal_value(mp_prune_options_internal));
+                int prune = (int) mp_round_unscaled(internal_value(mp_prune_options_internal));
                 if (prune & collapse_regular_regular_prune) {
                     mp_set_up_prune_singularities_r_r(mp, cur_exp_knot);
                 }
@@ -21866,8 +21866,8 @@ static void mp_set_up_delta(MP mp, int c)
             mp_value new_expr;
             mp_number count;
             mp_knot p = mp->loop_ptr->point;
-            int f = mp_round_unscaled(mp->cur_x);
-            int l = mp_round_unscaled(mp->cur_y) - f;
+            int f = (int) mp_round_unscaled(mp->cur_x);
+            int l = (int) mp_round_unscaled(mp->cur_y) - f;
             if (f > 0) { while (f--) { p = mp_next_knot(p); } } else
             if (f < 0) { while (f++) { p = mp_prev_knot(p); } }
             memset(&new_expr, 0, sizeof(mp_value));
@@ -21884,7 +21884,7 @@ static void mp_set_up_delta(MP mp, int c)
             mp_set_cur_exp_value_number(mp, &cur_exp_value_number);
             if (mp->loop_ptr && mp->loop_ptr->point != NULL) {
                 mp_knot p = mp->loop_ptr->point;
-                int n = mp_round_unscaled(cur_exp_value_number);
+                int n = (int) mp_round_unscaled(cur_exp_value_number);
                 if (n > 0) {
                     while (n--) {
                         p = mp_next_knot(p);
@@ -23078,7 +23078,7 @@ static void mp_set_up_trans(MP mp, int c)
                 break;
             case mp_bytemap_scaled_operation:
                 if (p->type == mp_known_type) {
-                    int index = mp_round_unscaled(mp_get_value_number(p));
+                    int index = (int) mp_round_unscaled(mp_get_value_number(p));
                     int nx = 1;
                     int ny = 1;
                     mp_number sx, sy;
@@ -24785,9 +24785,9 @@ static void mp_set_up_substring(MP mp, mp_node p, int c)
     if (mp_nice_pair(mp, p, p->type) && (cur_exp_type == mp_string_type)) {
         mp_string str = mp_chop_string (mp,
             cur_exp_str,
-            mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
-            mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
-            );
+            (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
+            (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
+        );
         mp_delete_string_reference(mp, cur_exp_str) ;
         mp_set_cur_exp_str(mp, str);
     } else {
@@ -24812,7 +24812,7 @@ static void mp_set_up_subpath(MP mp, mp_node p, int c)
                 {
                     int first = -1;
                     int last = -1;
-                    if (mp_path_segment(mp, mp_round_unscaled(mp_get_value_number(p)), &first, &last)) {
+                    if (mp_path_segment(mp, (int) mp_round_unscaled(mp_get_value_number(p)), &first, &last)) {
                         mp_new_number(a);
                         mp_new_number(b);
                         mp_set_number_from_int(a, first);
@@ -24969,7 +24969,7 @@ static void mp_set_up_segment(MP mp, mp_node p, int c)
                 {
                     int first = -1;
                     int last = -1;
-                    if (mp_path_segment(mp, mp_round_unscaled(mp_get_value_number(p)), &first, &last)) {
+                    if (mp_path_segment(mp, (int) mp_round_unscaled(mp_get_value_number(p)), &first, &last)) {
                         mp_number a, b;
                         mp_new_number(a);
                         mp_new_number(b);
@@ -26561,8 +26561,10 @@ int mp_execute(MP mp, const char *s, size_t l)
                 mp->scanner_status = mp_normal_state;
                 mp_fix_date_and_time(mp);
                 if (mp->random_seed == 0) {
-                    mp->random_seed = (mp_number_to_scaled(internal_value(mp_time_internal))/mp_number_to_scaled(mp_unity_t))
-                        + mp_number_to_scaled(internal_value(mp_day_internal));
+                    mp->random_seed = (
+                        (int) mp_number_to_scaled(internal_value(mp_time_internal)) / (int) mp_number_to_scaled(mp_unity_t))
+                      + (int) mp_number_to_scaled(internal_value(mp_day_internal)
+                    );
                 }
                 mp_init_randoms(mp->random_seed);
                 mp->selector = mp->interaction == mp_batch_mode ? mp_no_print_selector : mp_term_only_selector;
@@ -26695,7 +26697,7 @@ void mp_do_random_seed(MP mp)
         /*tex
             Initialize the random seed to |cur_exp|.
         */
-        mp_init_randoms(mp_number_to_scaled(cur_exp_value_number));
+        mp_init_randoms((int) mp_number_to_scaled(cur_exp_value_number));
         if (mp->interaction < mp_silent_mode && (mp->selector == mp_log_only_selector || mp->selector == mp_term_and_log_selector)) {
             int selector = mp->selector;
             mp->selector = mp_log_only_selector;
@@ -27168,14 +27170,14 @@ static void mp_bytemap_copy(MP mp) /* done */
         case mp_numeric_type:
         case mp_known_type:
             if (cur_cmd == mp_to_command) {
-                int oldindex = mp_round_unscaled(cur_exp_value_number);
+                int oldindex = (int) mp_round_unscaled(cur_exp_value_number);
                 mp_get_x_next(mp);
                 mp_scan_primary(mp);
                 switch (cur_exp_type) {
                     case mp_numeric_type:
                     case mp_known_type:
                         {
-                            int newindex = mp_round_unscaled(cur_exp_value_number);
+                            int newindex = (int) mp_round_unscaled(cur_exp_value_number);
                             if (mp_bytemap_valid(mp, oldindex) && mp_bytemap_valid(mp, newindex)) {
                                 bytemap_copy(&(mp->bytemaps[oldindex]), &(mp->bytemaps[newindex]), &(mp->memory_pool[mp_bytemap_data_pool].count));
                             }
@@ -27200,14 +27202,14 @@ static void mp_bytemap_clip(MP mp) /* done */
         case mp_numeric_type:
         case mp_known_type:
             if (cur_cmd == mp_to_command) {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 mp_get_x_next(mp);
                 mp_scan_primary(mp);
                 switch (cur_exp_type) {
                     case mp_numeric_type:
                     case mp_known_type:
                         {
-                         // int value = mp_round_unscaled(cur_exp_value_number);
+                         // int value = (int) mp_round_unscaled(cur_exp_value_number);
                             if (mp_bytemap_valid_data(mp, index)) {
                                 bytemap_data *b = &mp->bytemaps[index];
                                 int value = mp_aux_bytemap_get_byte(mp, b, &(cur_exp_value_number));
@@ -27234,7 +27236,7 @@ static void mp_bytemap_new(MP mp) /* todo */
         case mp_numeric_type:
         case mp_known_type:
             if (cur_cmd == mp_of_command) {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 int nx = 0;
                 int ny = 0;
                 int nz = 1;
@@ -27244,24 +27246,24 @@ static void mp_bytemap_new(MP mp) /* todo */
                     case mp_numeric_type:
                     case mp_known_type:
                         if (mp_bytemap_valid(mp, index)) {
-                            nx = mp_round_unscaled(cur_exp_value_number);
+                            nx = (int) mp_round_unscaled(cur_exp_value_number);
                             ny = 1;
                         }
                         break;
                     case mp_pair_type:
                         if (mp_bytemap_valid(mp, index)) {
                             if (mp_pair_is_known(mp_get_value_node(cur_exp_node))) {
-                                nx = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
-                                ny = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                                nx = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                                ny = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
                             }
                         }
                         break;
                     case mp_color_type:
                         if (mp_bytemap_valid(mp, index)) {
                             if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
-                                nx = mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
-                                ny = mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
-                                nz = mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
+                                nx = (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
+                                ny = (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
+                                nz = (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
                                 if (nz < 0) {
                                     nz = 1;
                                 } else if (nz > 3) {
@@ -27293,12 +27295,12 @@ static void mp_bytemap_reduce(MP mp) /* done */
         case mp_numeric_type:
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 int method = 0;
                 if (cur_cmd == mp_to_command) {
                     mp_get_x_next(mp);
                     mp_scan_primary(mp);
-                    method = mp_round_unscaled(cur_exp_value_number);
+                    method = (int) mp_round_unscaled(cur_exp_value_number);
                 }
                 if (mp_bytemap_valid_data(mp, index)) {
                     bytemap_reduce(&(mp->bytemaps[index]), method, &(mp->memory_pool[mp_bytemap_data_pool].count));
@@ -27317,7 +27319,7 @@ static void mp_bytemap_value(MP mp, mp_node p, int c) /* done */
         case mp_numeric_type:  /* needed ? */
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 int x = 0;
                 int y = 0;
                 int z = 0;
@@ -27325,15 +27327,15 @@ static void mp_bytemap_value(MP mp, mp_node p, int c) /* done */
                 switch (p->type) {
                     case mp_pair_type:
                         if (mp_pair_is_known(mp_get_value_node(p))) {
-                            x = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
-                            y = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
+                            x = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
+                            y = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
                         }
                         break;
                     case mp_color_type:
                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
-                            x = mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p))));
-                            y = mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p))));
-                            z = mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
+                            x = (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p))));
+                            y = (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p))));
+                            z = (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
                         }
                         break;
                     default:
@@ -27360,7 +27362,7 @@ static void mp_bytemap_found(MP mp, mp_node p, int c) /* done */ /* todo */
         case mp_numeric_type:  /* needed ? */
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 int found = 0;
                 switch (p->type) {
                     case mp_numeric_type:  /* needed ? */
@@ -27368,8 +27370,8 @@ static void mp_bytemap_found(MP mp, mp_node p, int c) /* done */ /* todo */
                          /* here posit */
                          if (mp_bytemap_valid_data(mp, index)) {
                              found = bytemap_has_byte_gray(&mp->bytemaps[index],
-                                // mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)))
-                                // mp_round_unscaled(mp_get_value_number(p))
+                                // (int) mp_round_unscaled(mp_get_value_number(mp_get_value_node(p)))
+                                // (int) mp_round_unscaled(mp_get_value_number(p))
                                 mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)))
                             );
                          }
@@ -27379,8 +27381,8 @@ static void mp_bytemap_found(MP mp, mp_node p, int c) /* done */ /* todo */
                             /* here posit */
                             if (mp_bytemap_valid_data(mp, index)) {
                                 found = bytemap_has_byte_range(&mp->bytemaps[index],
-                                // mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
-                                // mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
+                                // (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p)))),
+                                // (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))))
                                    mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p))))),
                                    mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))))
                                 );
@@ -27392,9 +27394,9 @@ static void mp_bytemap_found(MP mp, mp_node p, int c) /* done */ /* todo */
                             /* here posit */
                             if (mp_bytemap_valid_data(mp, index)) {
                                 found = bytemap_has_byte_rgb(&mp->bytemaps[index],
-                                    mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
-                                    mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
-                                    mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
                                 );
                             }
                         }
@@ -27420,7 +27422,7 @@ static void mp_bytemap_path(MP mp, mp_node p, int c) /* no need */
         case mp_numeric_type:  /* needed ? */
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 mp_knot head = NULL;
                 mp_knot tail = NULL;
                 if (mp_bytemap_valid_data(mp, index)) {
@@ -27435,13 +27437,13 @@ static void mp_bytemap_path(MP mp, mp_node p, int c) /* no need */
                                 switch (p->type) {
                                     case mp_numeric_type:  /* needed ? */
                                     case mp_known_type:
-                                     // value = mp_round_unscaled(mp_get_value_number(p));
+                                     // value = (int) mp_round_unscaled(mp_get_value_number(p));
                                         value = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p)));
                                         break;
                                     case mp_pair_type:
                                         if (mp_pair_is_known(mp_get_value_node(p))) {
-                                         // value = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
-                                         // range = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
+                                         // value = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(p))));
+                                         // range = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(p))));
                                             value = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_x_part(mp_get_value_node(p)))));
                                             range = mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(mp_y_part(mp_get_value_node(p)))));
                                         }
@@ -27450,9 +27452,9 @@ static void mp_bytemap_path(MP mp, mp_node p, int c) /* no need */
                                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
                                             /* here posit */
                                             value = mp_aux_weighted(
-                                                mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
-                                                mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
-                                                mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
+                                                (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p)))),
+                                                (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p)))),
+                                                (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))))
                                             );
                                         }
                                         break;
@@ -27511,15 +27513,15 @@ static void mp_bytemap_path(MP mp, mp_node p, int c) /* no need */
                                 switch (p->type) {
                                     case mp_numeric_type:  /* needed ? */
                                     case mp_known_type:
-                                        r = mp_round_unscaled(mp_get_value_number(p));
+                                        r = (int) mp_round_unscaled(mp_get_value_number(p));
                                         g = r;
                                         b = r;
                                         break;
                                     case mp_color_type:
                                         if (mp_rgb_color_is_known(mp_get_value_node(p))) {
-                                            r = mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p))));
-                                            g = mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p))));
-                                            b = mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
+                                            r = (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(p))));
+                                            g = (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(p))));
+                                            b = (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
                                         }
                                         break;
                                     default:
@@ -27574,7 +27576,7 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip) /* done */
         case mp_numeric_type:
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 if (mp_bytemap_valid_data(mp, index)) {
                     bytemap_data b = mp->bytemaps[index];
                     int llx, lly, urx, ury;
@@ -27582,7 +27584,7 @@ static void mp_bytemap_bounds(MP mp, mp_node p, int c, int clip) /* done */
                     switch (p->type) {
                         case mp_numeric_type:  /* needed ? */
                         case mp_known_type:
-                         // value = mp_valid_byte(mp_round_unscaled(mp_get_value_number(p)));
+                         // value = mp_valid_byte((int) mp_round_unscaled(mp_get_value_number(p)));
                             value = mp_valid_byte(mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(mp_get_value_number(p))));
                             break;
                         default:
@@ -27611,12 +27613,12 @@ static void mp_bytemap_set_options(MP mp) /* no need */
         case mp_numeric_type:
         case mp_known_type:
             {
-                int index   = mp_round_unscaled(cur_exp_value_number);
+                int index   = (int) mp_round_unscaled(cur_exp_value_number);
                 int options = 0;
                 if (cur_cmd == mp_to_command) {
                     mp_get_x_next(mp);
                     mp_scan_primary(mp);
-                    options = mp_round_unscaled(cur_exp_value_number);
+                    options = (int) mp_round_unscaled(cur_exp_value_number);
                 }
                 if (mp_bytemap_valid_data(mp, index)) {
                     /* here posit */
@@ -27638,7 +27640,7 @@ static void mp_bytemap_set(MP mp) /* done */
         case mp_numeric_type:
         case mp_known_type:
             if (cur_cmd == mp_to_command) {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 mp_get_x_next(mp);
                 mp_scan_primary(mp);
                 switch (cur_exp_type) {
@@ -27649,7 +27651,7 @@ static void mp_bytemap_set(MP mp) /* done */
                             bytemap_slice_gray(
                                 &(mp->bytemaps[index]),
                                 0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
-                             // mp_round_unscaled(cur_exp_value_number)
+                             // (int) mp_round_unscaled(cur_exp_value_number)
                                 mp_aux_bytemap_get_byte(mp, &(mp->bytemaps[index]), &(cur_exp_value_number))
                             );
                         }
@@ -27661,9 +27663,9 @@ static void mp_bytemap_set(MP mp) /* done */
                                 bytemap_slice_rgb(
                                     &(mp->bytemaps[index]),
                                     0, 0, mp->bytemaps[index].nx, mp->bytemaps[index].ny,
-                                    mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
-                                    mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
-                                    mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))))
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
+                                    (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))))
                                 );
                             }
                         }
@@ -27710,7 +27712,7 @@ static void mp_bytemap_reset(MP mp) /* todo */
         case mp_numeric_type:
         case mp_known_type:
             {
-                int index = mp_round_unscaled(cur_exp_value_number);
+                int index = (int) mp_round_unscaled(cur_exp_value_number);
                 if (mp_bytemap_valid_data(mp, index)) {
                     mp_aux_reset_bytemap(mp, index);
                   // printf("[bitmap: reset, index %i\n", index);
@@ -27737,15 +27739,15 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
         case mp_pair_type:
             if (cur_cmd == mp_of_command) {
                 if (mp_pair_is_known(mp_get_value_node(cur_exp_node))) {
-                    int x = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
-                    int y = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                    int x = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                    int y = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
                     mp_get_x_next(mp);
                     mp_scan_primary(mp);
                     switch (cur_exp_type) {
                         case mp_numeric_type:
                         case mp_known_type:
                             if (cur_cmd == mp_to_command) {
-                                int index = mp_round_unscaled(cur_exp_value_number);
+                                int index = (int) mp_round_unscaled(cur_exp_value_number);
                                 mp_get_x_next(mp);
                                 mp_scan_primary(mp);
                                 switch (cur_exp_type) {
@@ -27771,9 +27773,9 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
                                                 bytemap_set_rgb(
                                                     &(mp->bytemaps[index]),
                                                     x, y,
-                                                    mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
-                                                    mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
-                                                    mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))))
+                                                    (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node)))),
+                                                    (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
+                                                    (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))))
                                                 );
                                             }
                                         }
@@ -27802,16 +27804,16 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
         case mp_color_type:
             if (cur_cmd == mp_of_command) {
                 if (mp_rgb_color_is_known(mp_get_value_node(cur_exp_node))) {
-                    int x = mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
-                    int y = mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
-                    int z = mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
+                    int x = (int) mp_round_unscaled(mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))));
+                    int y = (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))));
+                    int z = (int) mp_round_unscaled(mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))));
                     mp_get_x_next(mp);
                     mp_scan_primary(mp);
                     switch (cur_exp_type) {
                         case mp_numeric_type:
                         case mp_known_type:
                             if (cur_cmd == mp_to_command) {
-                                int index = mp_round_unscaled(cur_exp_value_number);
+                                int index = (int) mp_round_unscaled(cur_exp_value_number);
                                 mp_get_x_next(mp);
                                 mp_scan_primary(mp);
                                 switch (cur_exp_type) {
@@ -27851,17 +27853,17 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
         case mp_cmykcolor_type:
             if (cur_cmd == mp_of_command) {
                 if (mp_cmyk_color_is_known(mp_get_value_node(cur_exp_node))) {
-                    int x = mp_round_unscaled(mp_get_value_number(mp_cyan_part(mp_get_value_node(cur_exp_node))));
-                    int y = mp_round_unscaled(mp_get_value_number(mp_magenta_part(mp_get_value_node(cur_exp_node))));
-                    int dx = mp_round_unscaled(mp_get_value_number(mp_yellow_part(mp_get_value_node(cur_exp_node))));
-                    int dy = mp_round_unscaled(mp_get_value_number(mp_black_part(mp_get_value_node(cur_exp_node))));
+                    int x = (int) mp_round_unscaled(mp_get_value_number(mp_cyan_part(mp_get_value_node(cur_exp_node))));
+                    int y = (int) mp_round_unscaled(mp_get_value_number(mp_magenta_part(mp_get_value_node(cur_exp_node))));
+                    int dx = (int) mp_round_unscaled(mp_get_value_number(mp_yellow_part(mp_get_value_node(cur_exp_node))));
+                    int dy = (int) mp_round_unscaled(mp_get_value_number(mp_black_part(mp_get_value_node(cur_exp_node))));
                     mp_get_x_next(mp);
                     mp_scan_primary(mp);
                     switch (cur_exp_type) {
                         case mp_numeric_type:
                         case mp_known_type:
                             if (cur_cmd == mp_to_command) {
-                                int index = mp_round_unscaled(cur_exp_value_number);
+                                int index = (int) mp_round_unscaled(cur_exp_value_number);
                                 mp_get_x_next(mp);
                                 mp_scan_primary(mp);
                                 if (mp_bytemap_valid_data(mp, index)) {
@@ -27882,8 +27884,8 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
                                                     bytemap_slice_range(
                                                         &(mp->bytemaps[index]),
                                                         x, y, dx, dy,
-                                                        mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node)))),
-                                                        mp_round_unscaled(mp_get_value_number(mp_y_part (mp_get_value_node(cur_exp_node))))
+                                                        (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node)))),
+                                                        (int) mp_round_unscaled(mp_get_value_number(mp_y_part (mp_get_value_node(cur_exp_node))))
                                                     );
                                                 }
                                                 break;
@@ -27893,9 +27895,9 @@ static void mp_bytemap_set_byte(MP mp) /* done */ /* todo */
                                                     bytemap_slice_rgb(
                                                         &(mp->bytemaps[index]),
                                                         x, y, dx, dy,
-                                                        mp_round_unscaled(mp_get_value_number(mp_red_part  (mp_get_value_node(cur_exp_node)))),
-                                                        mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
-                                                        mp_round_unscaled(mp_get_value_number(mp_blue_part (mp_get_value_node(cur_exp_node))))
+                                                        (int) mp_round_unscaled(mp_get_value_number(mp_red_part  (mp_get_value_node(cur_exp_node)))),
+                                                        (int) mp_round_unscaled(mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node)))),
+                                                        (int) mp_round_unscaled(mp_get_value_number(mp_blue_part (mp_get_value_node(cur_exp_node))))
                                                     );
                                                 }
                                                 break;
@@ -27935,15 +27937,15 @@ static void mp_bytemap_set_offset(MP mp) /* todo */
     if (cur_exp_type == mp_pair_type) {
         if (cur_cmd == mp_of_command) {
             if (mp_pair_is_known(mp_get_value_node(cur_exp_node))) {
-                int x = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
-                int y = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                int x = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                int y = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
                 mp_get_x_next(mp);
                 mp_scan_primary(mp);
                 switch (cur_exp_type) {
                     case mp_numeric_type:
                     case mp_known_type:
                         {
-                            int index = mp_round_unscaled(cur_exp_value_number);
+                            int index = (int) mp_round_unscaled(cur_exp_value_number);
                             if (mp_bytemap_valid_data(mp, index)) {
                                 mp->bytemaps[index].ox = x;
                                 mp->bytemaps[index].oy = y;
@@ -28650,10 +28652,10 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                                 spstop = pstop;
                             }
                             if (sp != NULL) {
-                                mp_stacking(sp) = mp_round_unscaled(cur_exp_value_number);
+                                mp_stacking(sp) = (int) mp_round_unscaled(cur_exp_value_number);
                             }
                             if (pp && spstop != NULL) {
-                                mp_stacking(spstop) = mp_round_unscaled(cur_exp_value_number);
+                                mp_stacking(spstop) = (int) mp_round_unscaled(cur_exp_value_number);
                             }
                             /* free ? */
                             cur_exp_type = mp_vacuous_type;
@@ -28669,10 +28671,10 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                                     spstop = pstop;
                                 }
                                 if (sp != NULL) {
-                                    mp_stacking(sp) = mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
+                                    mp_stacking(sp) = (int) mp_round_unscaled(mp_get_value_number(mp_x_part(mp_get_value_node(cur_exp_node))));
                                 }
                                 if (spstop != NULL) {
-                                    mp_stacking(spstop) = mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
+                                    mp_stacking(spstop) = (int) mp_round_unscaled(mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node))));
                                 }
                                 /* free ? */
                                 cur_exp_type = mp_vacuous_type;
@@ -28693,7 +28695,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 switch (cur_exp_type) {
                     case mp_known_type:
                         {
-                            linecap = mp_round_unscaled(cur_exp_value_number);
+                            linecap = (int) mp_round_unscaled(cur_exp_value_number);
                             cur_exp_type = mp_vacuous_type;
                             break;
                         }
@@ -28708,7 +28710,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 switch (cur_exp_type) {
                     case mp_known_type:
                         {
-                            linejoin = mp_round_unscaled(cur_exp_value_number);
+                            linejoin = (int) mp_round_unscaled(cur_exp_value_number);
                             cur_exp_type = mp_vacuous_type;
                             break;
                         }
@@ -28739,7 +28741,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 switch (cur_exp_type) {
                     case mp_known_type:
                         {
-                            curvature = mp_round_unscaled(cur_exp_value_number);
+                            curvature = (int) mp_round_unscaled(cur_exp_value_number);
                             cur_exp_type = mp_vacuous_type;
                             break;
                         }
@@ -28754,7 +28756,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 switch (cur_exp_type) {
                     case mp_known_type:
                         {
-                            mesh = mp_round_unscaled(cur_exp_value_number);
+                            mesh = (int) mp_round_unscaled(cur_exp_value_number);
                             cur_exp_type = mp_vacuous_type;
                             break;
                         }
@@ -28769,7 +28771,7 @@ void mp_scan_with_list(MP mp, mp_node p, mp_node pstop)
                 switch (cur_exp_type) {
                     case mp_known_type:
                         {
-                            bytemap = mp_round_unscaled(cur_exp_value_number);
+                            bytemap = (int) mp_round_unscaled(cur_exp_value_number);
                             cur_exp_type = mp_vacuous_type;
                             break;
                         }
@@ -29862,7 +29864,7 @@ static mp_edge_object_node mp_graphic_export(MP mp, mp_edge_header_node h)
     hh->maxx = fabs(hh->maxx) < 0.00001 ? 0 : hh->maxx;
     hh->maxy = mp_number_to_double(h->maxy);
     hh->maxy = fabs(hh->maxy) < 0.00001 ? 0 : hh->maxy;
-    hh->charcode = mp_round_unscaled(internal_value(mp_char_code_internal));
+    hh->charcode = (int) mp_round_unscaled(internal_value(mp_char_code_internal));
     hh->width = mp_number_to_double(internal_value(mp_char_wd_internal));
     hh->height = mp_number_to_double(internal_value(mp_char_ht_internal));
     hh->depth = mp_number_to_double(internal_value(mp_char_dp_internal));

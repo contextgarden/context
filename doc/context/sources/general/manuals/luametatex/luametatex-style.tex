@@ -31,6 +31,20 @@
 \setupalign
   [tolerant,stretch]
 
+\startsetups subsectioncontents
+
+    \determinelistcharacteristics[subsection]
+
+    \ifnum\listlength>\zerocount
+        \blank
+        \startcolumns[balance=yes,distance=3em]
+            \placelist[subsection]
+        \stopcolumns
+        \blank
+    \fi
+
+\stopsetups
+
 \startsetups sectioncontents
 
     \start
@@ -40,12 +54,14 @@
           [color=maincolor,
            style=bold]
 
+        % only blank when subcolumns
+
         \placelist
           [section]
-          [before=\testpage[4]\blank,
+          [before=\testpage[4],
            criterium=previous,
-           pagenumber=no,
-           after=\startcolumns[balance=yes,distance=3em]\placelist[subsection]\stopcolumns]
+         % pagenumber=no,
+           after=\setups{subsectioncontents}]
 
     \stop
 

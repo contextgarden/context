@@ -175,9 +175,10 @@ glyphcodes.glyph           = glyphcodes.character
 
 gluecodes.parfillrightskip = gluecodes.parfillrightskip or gluecodes.parfillskip
 gluecodes.parfillskip      = gluecodes.parfillskip      or gluecodes.parfillrightskip
+gluecodes.intercharskip    = gluecodes.intercharacterskip
 
 listcodes.row              = listcodes.alignment
-listcodes.column           = listcodes.alignment
+listcodes.column           = listcodes.cell
 
 kerncodes.italiccorrection = kerncodes.italiccorrection
 kerncodes.italickern       = kerncodes.italiccorrection -- compatibility

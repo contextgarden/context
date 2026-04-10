@@ -601,12 +601,20 @@ typedef enum some_item_codes {
     font_char_ic_code,             /*tex |\fontcharic| */
     font_char_ta_code,             /*tex |\fontcharta| */
     font_char_ba_code,             /*tex |\fontcharba| */
+    font_char_rt_code,             /*tex |\fontcharrt| */
+    font_char_rb_code,             /*tex |\fontcharrb| */
+    font_char_lt_code,             /*tex |\fontcharlt| */
+    font_char_lb_code,             /*tex |\fontcharlb| */
     scaled_font_char_wd_code,      /*tex |\scaledfontcharwd| */
     scaled_font_char_ht_code,      /*tex |\scaledfontcharht| */
     scaled_font_char_dp_code,      /*tex |\scaledfontchardp| */
     scaled_font_char_ic_code,      /*tex |\scaledfontcharic| */
     scaled_font_char_ta_code,      /*tex |\scaledfontcharta| */
     scaled_font_char_ba_code,      /*tex |\scaledfontcharba| */
+    scaled_font_char_rt_code,      /*tex |\scaledfontcharrt| */
+    scaled_font_char_rb_code,      /*tex |\scaledfontcharrb| */
+    scaled_font_char_lt_code,      /*tex |\scaledfontcharlt| */
+    scaled_font_char_lb_code,      /*tex |\scaledfontcharlb| */
     font_spec_id_code,             /*tex |\fontspecid| */
     font_spec_scale_code,          /*tex |\fontspecscale| */
     font_spec_xscale_code,         /*tex |\fontspecxscale| */

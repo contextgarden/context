@@ -133,66 +133,68 @@ nutpool.register  = register_node -- could be register_nut
 
 -- so far
 
-local disc              = register_nut(new_nut(nodecodes.disc))
-local kern              = register_nut(new_nut(kern_code,kerncodes.userkern))
-local fontkern          = register_nut(new_nut(kern_code,kerncodes.fontkern))
-local italiccorrection  = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
-local spacefontkern     = register_nut(new_nut(kern_code,kerncodes.spacefontkern))
-local penalty           = register_nut(new_nut(nodecodes.penalty))
-local glue              = register_nut(new_nut(glue_code))
-local gluespec          = register_nut(new_nut(gluespec_code))
-local glyph             = register_nut(new_nut(glyph_code,0))
+local disc               = register_nut(new_nut(nodecodes.disc))
+local kern               = register_nut(new_nut(kern_code,kerncodes.userkern))
+local fontkern           = register_nut(new_nut(kern_code,kerncodes.fontkern))
+local italiccorrection   = register_nut(new_nut(kern_code,kerncodes.italiccorrection))
+local spacefontkern      = register_nut(new_nut(kern_code,kerncodes.spacefontkern))
+local characterkern      = register_nut(new_nut(kern_code,kerncodes.characterkern))
+local penalty            = register_nut(new_nut(nodecodes.penalty))
+local glue               = register_nut(new_nut(glue_code))
+local gluespec           = register_nut(new_nut(gluespec_code))
+local glyph              = register_nut(new_nut(glyph_code,0))
 
-local textdir           = register_nut(new_nut(nodecodes.dir))
+local textdir            = register_nut(new_nut(nodecodes.dir))
 
-local left_margin_kern  = register_nut(new_nut(kern_code,kerncodes.leftmargincode))
-local right_margin_kern = register_nut(new_nut(kern_code,kerncodes.rightmargincode))
+local left_margin_kern   = register_nut(new_nut(kern_code,kerncodes.leftmargincode))
+local right_margin_kern  = register_nut(new_nut(kern_code,kerncodes.rightmargincode))
 
-local lineskip          = register_nut(new_nut(glue_code,gluecodes.lineskip))
-local baselineskip      = register_nut(new_nut(glue_code,gluecodes.baselineskip))
-local leftskip          = register_nut(new_nut(glue_code,gluecodes.leftskip))
-local rightskip         = register_nut(new_nut(glue_code,gluecodes.rightskip))
-local lefthangskip      = register_nut(new_nut(glue_code,gluecodes.lefthangskip))
-local righthangskip     = register_nut(new_nut(glue_code,gluecodes.righthangskip))
-local indentskip        = register_nut(new_nut(glue_code,gluecodes.indentskip))
-local correctionskip    = register_nut(new_nut(glue_code,gluecodes.correctionskip))
-local spaceskip         = register_nut(new_nut(glue_code,gluecodes.spaceskip))
+local lineskip           = register_nut(new_nut(glue_code,gluecodes.lineskip))
+local baselineskip       = register_nut(new_nut(glue_code,gluecodes.baselineskip))
+local leftskip           = register_nut(new_nut(glue_code,gluecodes.leftskip))
+local rightskip          = register_nut(new_nut(glue_code,gluecodes.rightskip))
+local lefthangskip       = register_nut(new_nut(glue_code,gluecodes.lefthangskip))
+local righthangskip      = register_nut(new_nut(glue_code,gluecodes.righthangskip))
+local indentskip         = register_nut(new_nut(glue_code,gluecodes.indentskip))
+local correctionskip     = register_nut(new_nut(glue_code,gluecodes.correctionskip))
+local spaceskip          = register_nut(new_nut(glue_code,gluecodes.spaceskip))
+local intercharacterskip = register_nut(new_nut(glue_code,gluecodes.intercharacterskip))
 
-local temp              = register_nut(new_nut(nodecodes.temp,0))
+local temp               = register_nut(new_nut(nodecodes.temp,0))
 
-local noad              = register_nut(new_nut(nodecodes.noad))
-local delimiter         = register_nut(new_nut(nodecodes.delimiter))
-local fence             = register_nut(new_nut(nodecodes.fence))
-local submlist          = register_nut(new_nut(nodecodes.submlist))
-local accent            = register_nut(new_nut(nodecodes.accent))
-local radical           = register_nut(new_nut(nodecodes.radical))
-local fraction          = register_nut(new_nut(nodecodes.fraction))
-local subbox            = register_nut(new_nut(nodecodes.subbox))
-local mathchar          = register_nut(new_nut(nodecodes.mathchar))
-local mathtextchar      = register_nut(new_nut(nodecodes.mathtextchar))
-local choice            = register_nut(new_nut(nodecodes.choice))
+local noad               = register_nut(new_nut(nodecodes.noad))
+local delimiter          = register_nut(new_nut(nodecodes.delimiter))
+local fence              = register_nut(new_nut(nodecodes.fence))
+local submlist           = register_nut(new_nut(nodecodes.submlist))
+local accent             = register_nut(new_nut(nodecodes.accent))
+local radical            = register_nut(new_nut(nodecodes.radical))
+local fraction           = register_nut(new_nut(nodecodes.fraction))
+local subbox             = register_nut(new_nut(nodecodes.subbox))
+local mathchar           = register_nut(new_nut(nodecodes.mathchar))
+local mathtextchar       = register_nut(new_nut(nodecodes.mathtextchar))
+local choice             = register_nut(new_nut(nodecodes.choice))
 
-local boundary          = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
-local wordboundary      = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
-local luaboundary       = register_nut(new_nut(nodecodes.boundary,boundarycodes.lua))
+local boundary           = register_nut(new_nut(nodecodes.boundary,boundarycodes.user))
+local wordboundary       = register_nut(new_nut(nodecodes.boundary,boundarycodes.word))
+local luaboundary        = register_nut(new_nut(nodecodes.boundary,boundarycodes.lua))
 
-local cleader           = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
+local cleader            = register_nut(copy_nut(glue)) setsubtype(cleader,gluecodes.cleaders) setglue(cleader,0,65536,0,2,0)
 
 -- the dir field needs to be set otherwise crash:
 
-local lefttoright_code  <const> = tex.directioncodes.lefttoright
+local lefttoright_code <const> = tex.directioncodes.lefttoright
 
-local rule              = register_nut(new_nut(rule_code))                   -- setdirection(rule, lefttoright_code)
-local emptyrule         = register_nut(new_nut(rule_code,rulecodes.empty))   -- setdirection(rule, lefttoright_code)
-local strutrule         = register_nut(new_nut(rule_code,rulecodes.strut))   -- setdirection(rule, lefttoright_code)
-local userrule          = register_nut(new_nut(rule_code,rulecodes.user))    -- setdirection(rule, lefttoright_code)
-local outlinerule       = register_nut(new_nut(rule_code,rulecodes.outline)) -- setdirection(rule, lefttoright_code)
-local imagerule         = register_nut(new_nut(rule_code,rulecodes.image))   -- setdirection(rule, lefttoright_code)
-local boxrule           = register_nut(new_nut(rule_code,rulecodes.box))     -- setdirection(rule, lefttoright_code)
-local virtualrule       = register_nut(new_nut(rule_code,rulecodes.virtual)) -- setdirection(rule, lefttoright_code)
-local spacingrule       = register_nut(new_nut(rule_code,rulecodes.spacing)) -- setdirection(rule, lefttoright_code)
-local hlist             = register_nut(new_nut(nodecodes.hlist))                setdirection(hlist,lefttoright_code)
-local vlist             = register_nut(new_nut(nodecodes.vlist))                setdirection(vlist,lefttoright_code)
+local rule        = register_nut(new_nut(rule_code))                   -- setdirection(rule, lefttoright_code)
+local emptyrule   = register_nut(new_nut(rule_code,rulecodes.empty))   -- setdirection(rule, lefttoright_code)
+local strutrule   = register_nut(new_nut(rule_code,rulecodes.strut))   -- setdirection(rule, lefttoright_code)
+local userrule    = register_nut(new_nut(rule_code,rulecodes.user))    -- setdirection(rule, lefttoright_code)
+local outlinerule = register_nut(new_nut(rule_code,rulecodes.outline)) -- setdirection(rule, lefttoright_code)
+local imagerule   = register_nut(new_nut(rule_code,rulecodes.image))   -- setdirection(rule, lefttoright_code)
+local boxrule     = register_nut(new_nut(rule_code,rulecodes.box))     -- setdirection(rule, lefttoright_code)
+local virtualrule = register_nut(new_nut(rule_code,rulecodes.virtual)) -- setdirection(rule, lefttoright_code)
+local spacingrule = register_nut(new_nut(rule_code,rulecodes.spacing)) -- setdirection(rule, lefttoright_code)
+local hlist       = register_nut(new_nut(nodecodes.hlist))                setdirection(hlist,lefttoright_code)
+local vlist       = register_nut(new_nut(nodecodes.vlist))                setdirection(vlist,lefttoright_code)
 
 function nutpool.glyph(fnt,chr)
     local n = copy_nut(glyph)
@@ -270,6 +272,14 @@ function nutpool.spacefontkern(k)
     return n
 end
 
+function nutpool.characterkern(k)
+    local n = copy_nut(characterkern)
+    if k and k ~= 0 then
+        setkern(n,k)
+    end
+    return n
+end
+
 function nutpool.gluespec(width,stretch,shrink,stretch_order,shrink_order)
     local n = copy_nut(gluespec)
     if width or stretch or shrink or stretch_order or shrink_order then
@@ -318,6 +328,12 @@ end
 
 function nutpool.penalizedspace(penalty,width,stretch,shrink)
     local g = someskip(spaceskip,width,stretch,shrink)
+    setpenalty(g,penalty)
+    return g
+end
+
+function nutpool.intercharacterglue(penalty,width,stretch,shrink,stretch_order,shrink_order)
+    local g = someskip(intercharacterskip,width,stretch,shrink,stretch_order,shrink_order)
     setpenalty(g,penalty)
     return g
 end

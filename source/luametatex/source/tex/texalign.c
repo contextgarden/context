@@ -6,6 +6,13 @@
 
 /*tex
 
+    \startremark
+        The way alignments ar eimplemented in \LUAMETATEX\ is mostly the same as in traditional
+        \TEX, but we extended it. This means that the following explanation (from the oriinal
+        source) still mostly applies, apart from the way we store in nodes and such, so here we
+        go.
+    \stopremark
+
     It's sort of a miracle whenever |halign and |valign| work, because they cut across so many of
     the control structures of \TEX. Therefore the present page is probably not the best place for
     a beginner to start reading this program; it is better to master everything else first.
@@ -407,14 +414,13 @@ void tex_alignment_scan_options(void)
                             break;
                         default:
                             goto SKIPERROR;
-                        }
-                        break;
+                    }
+                    break;
                 } else {
                   SKIPERROR:
                     tex_aux_show_keyword_error("nofirstskip|nolastskip");
                     goto DONE;
                 }
-                break;
             case 'f': case 'F':
                 if (tex_scan_mandate_keyword("firstskip", 1)) {
                     options &= ~align_option_nofirstskip;
@@ -625,6 +631,13 @@ static void tex_aux_pop_alignment(void)
 
 /*tex
 
+    \startremark
+        The code has been split up in more functional parts and we added features like more sparse
+        |\tabskip| usage, callbacks, splitting paragraphs, etc. The names of functions are somewhat
+        different but the following description still applies. We've added but not replaced the
+        discussed funcitonality.
+    \stopremark
+
     \TEX\ has eight procedures that govern alignments: |initialize_align| and |finish_align| are
     used at the very beginning and the very end; |initialize_row| and |finish_row| are used at
     the beginning and end of individual rows; |initialize_span| is used at the beginning of a
@@ -656,6 +669,7 @@ static void tex_aux_pop_alignment(void)
 
     The |cr_code| is distinct from |span_code| and from any character and |\crcr| differs from
     |\cr|.
+
 */
 
 /*
@@ -831,7 +845,6 @@ static void tex_aux_scan_align_spec(quarterword c)
                     tex_aux_show_keyword_error("noskips|nofirstskip|nolastskip");
                     goto DONE;
                 }
-                break;
             case 'p': case 'P':
                 if (tex_scan_mandate_keyword("prune", 1)) {
                     if (options & align_option_prune) {
@@ -916,6 +929,12 @@ static void tex_aux_scan_align_spec(quarterword c)
     |\noalign| or by the right brace that terminates the alignment. The |align_peek| routine is
     used to look ahead and do the right thing; it either gets a new row started, or gets a
     |\noalign} started, or finishes off the alignment.
+
+    \startremark
+        We have grouped the so called |cmd| and |chr| codes a bit, also because we have more
+        primitives and can control parsing in places. Nothing has been dropped. As everywhere in
+        \LUAMETATEX, we have much more (detailed) tracing. We can also set options usign keywords.
+    \stopremark
 
 */
 
@@ -1085,13 +1104,6 @@ static int tex_aux_nested_no_align(void)
 {
     int state = lmt_alignment_state.no_align_level > 0;
     if (state) {
-//        tex_scan_left_brace();
-//        tex_new_save_level(no_align_group);
-//        ++lmt_alignment_state.no_align_level;
-//        tex_aux_trace_no_align("entering");
-//        if (cur_list.mode == internal_vmode) {
-//            tex_normal_paragraph(no_align_par_context);
-//        }
         tex_aux_run_no_align();
     }
     return state;
@@ -1348,6 +1360,12 @@ static void tex_aux_initialize_span(halfword p)
 }
 
 /*tex
+
+    \startremark
+        In addition to the following: keep in mind that in \TEX\ we have three states: content
+        (text), math, and alignments. The parser keeps track of this and in various places you will
+        find |align| trickery. It shows that alignments are considered a real important feature.
+    \stopremark
 
     To start a row (i.e., a \quote {row} that rhymes with \quote {dough} but not with \quote
     {bough}), we enter a new semantic level, copy the first tabskip glue, and change from internal
@@ -1978,11 +1996,8 @@ static void tex_aux_strip_zero_tab_skips(halfword q)
 
 /*tex 
     We currently have a mix of states but maybe some day we will exposer the save stack and then it
-    is handy to have the state values there. So for now I keep this (as reminder). 
-*/
-
-/*
-    Setting the current tabskip_amount is a bit pointless here, apart maybe from diagnostics.
+    is handy to have the state values there. So for now I keep this (as reminder). Setting the
+    current tabskip_amount is a bit pointless here, apart maybe from diagnostics.
 */
 
 static void tex_aux_prune_align_one(void)
@@ -2023,7 +2038,6 @@ static void tex_aux_prune_align_one(void)
     }
 }
 
-
 static void tex_aux_prune_align_two(void)
 {
     int emptyfirst = 1;
@@ -2061,8 +2075,6 @@ static void tex_aux_prune_align_two(void)
         );
     }
 }
-
-/* Begin experimental code. */
 
 /*
 
@@ -2111,6 +2123,7 @@ static int tex_aux_get_maxlines(alignment_split_state *state, halfword rowptr)
 {
     int maxlines = 0;
     halfword row = box_list(rowptr);
+    (void) *state;
     while (row) {
         if (node_type(row) == hlist_node) {
             halfword list = box_list(row);
@@ -2147,7 +2160,6 @@ static int tex_aux_get_maxlines(alignment_split_state *state, halfword rowptr)
     return maxlines;
 }
 
-
 static halfword tex_aux_get_line(alignment_split_state *state, halfword *head, int n)
 {
     halfword current = *head;
@@ -2158,15 +2170,11 @@ static halfword tex_aux_get_line(alignment_split_state *state, halfword *head, i
             case hlist_node:
             case vlist_node:
                 if (n == 1) {
+                    halfword nxt = node_next(current);
                     state->glueused = 0;
-{
-    halfword nxt = node_next(current);
-    if (nxt && node_type(nxt) == penalty_node) {
-        if (penalty_amount(nxt) > 0) {
-            state->penalty = penalty_amount(nxt);
-        }
-    }
-}
+                    if (nxt && node_type(nxt) == penalty_node && penalty_amount(nxt) > 0) {
+                        state->penalty = penalty_amount(nxt);
+                    }
                     goto DONE;
                 } else {
                     --n;
@@ -2212,6 +2220,7 @@ static halfword tex_aux_get_line(alignment_split_state *state, halfword *head, i
 
 static void tex_aux_split_snap(alignment_split_state *state, halfword target, scaled height, scaled depth, int force)
 {
+    (void) *state;
     if (height < lmt_alignment_state.min_height) {
         height = lmt_alignment_state.min_height;
     }
@@ -2331,6 +2340,7 @@ static halfword tex_aux_get_rowline(alignment_split_state *state, halfword curpt
 static halfword tex_aux_get_rowglue(alignment_split_state *state, halfword curptr, scaled amount)
 {
     halfword glue = tex_new_glue_node(zero_glue, user_skip_glue);
+    (void) *state;
     tex_attach_attribute_list_attribute(glue, node_attr(curptr));
     glue_amount(glue) = amount;
     return glue;
@@ -2339,6 +2349,7 @@ static halfword tex_aux_get_rowglue(alignment_split_state *state, halfword curpt
 static halfword tex_aux_get_rowpenalty(alignment_split_state *state, halfword curptr, scaled amount)
 {
     halfword penalty = tex_new_penalty_node(0, user_penalty_subtype);
+    (void) *state;
     tex_attach_attribute_list_attribute(penalty, node_attr(curptr));
     penalty_amount(penalty) = amount;
     return penalty;
@@ -2440,7 +2451,7 @@ static void tex_aux_split_align(void)
     }
 }
 
-/* End experimental code. */
+/*tex Here this splitting code ends. */
 
 static void tex_aux_finish_align(void)
 {
@@ -3044,9 +3055,8 @@ void tex_run_alignment_error(void)
         /*tex
             Express consternation over the fact that no alignment is in progress. In traditional
             \TEX\ the ampersand case will show a specific tab help, while in case of another
-            character a more generic message is shown.
-
-            We go for consistency here, so a little patch:
+            character a more generic message is shown. We go for consistency here, so a little
+            patch:
         */
         switch (cmd) {
             case alignment_tab_cmd:

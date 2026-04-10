@@ -91,7 +91,7 @@ static int aeslib_decode(lua_State *L) {
 
 static int aeslib_random(lua_State *L) {
     uint8_t iv[32];
-    int n = (int) luaL_optinteger(L, 1, 16);
+    int n = lmt_optinteger(L, 1, 16);
     if (n > 32) {
         n = 32;
     }

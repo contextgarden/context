@@ -1005,9 +1005,10 @@ int tex_insert_is_dummy(halfword current)
 
 int tex_insert_is_top(halfword index)
 {
-    for (int index = 0; index <= lmt_insert_state.insert_data.top; index++) {
-        if (lmt_insert_state.inserts[index].category & insert_category_page) {
-            if (lmt_insert_state.inserts[index].placed) {
+    (void) index;
+    for (int i = 0; i <= lmt_insert_state.insert_data.top; i++) {
+        if (lmt_insert_state.inserts[i].category & insert_category_page) {
+            if (lmt_insert_state.inserts[i].placed) {
                 return 0;
             }
         }

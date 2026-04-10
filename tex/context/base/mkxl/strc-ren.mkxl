@@ -389,7 +389,6 @@
      \ifconditional\headissomewhere
        \strc_sectioning_stay_on_this_line % test case: alternative=margintext and \startparagraph ..
      \else
-      %\hskip\headnumberdistance\s!plus\headnumberdistance\s!minus.25{\headnumberdistance}%
        \hskip\headtextdistance\relax
        \strc_sectioning_inject_continuous_signal
      \fi
@@ -611,7 +610,7 @@
         \begstrut
         \ifconditional\headshownumber % \ifheadnumbercontent
             \headnumbercontent
-            \hskip\headnumberdistance
+            \kern\headnumberdistance
         \fi
         \headtextcontent
     }
@@ -648,7 +647,10 @@
             \ifzeropt\headnumberwidth \else
                 \headnumberdistance\zeropoint
             \fi
-            \setbox\scratchbox\hbox \ifzeropt\headnumberwidth\else to \headnumberwidth\fi{\headnumbercontent}
+            \setbox\scratchbox\hbox
+                \s!nokerning
+                \ifzeropt\headnumberwidth\else to \headnumberwidth\fi
+                {\headnumbercontent}
             \scratchdimen{\wd\scratchbox+\headnumberdistance}%
             \ifzeropt\headtextwidth \else
                 \hsize{\scratchdimen+\headtextwidth}%
@@ -657,7 +659,8 @@
             \hangafter \plusone
             \noindent
             \box\scratchbox
-            \hskip\headnumberdistance
+          % \resetcharacterkerning
+            \kern\headnumberdistance % was \hskip
         \else
             \ifzeropt\headtextwidth
                 \ifzeropt\headwidth \else
@@ -736,7 +739,7 @@
         \headisdisplay\conditionalfalse % so a kind of mix
         \headtextcontent
         \ifconditional\headshownumber
-            \kern\headnumberdistance
+            \kern\headnumberdistance % was \hskip
             \headnumbercontent
         \else
             \fakeheadnumbercontent
@@ -779,7 +782,7 @@
     \headsetupspacing % no stretch in distance
     \ifconditional\headshownumber
         \headnumbercontent
-        \kern\headnumberdistance
+        \kern\headnumberdistance % was \hskip
     \fi
     \begstrut
     \headtextcontent
@@ -806,7 +809,7 @@
         }
         \hpack {
             \box\scratchboxone
-            \hskip\headnumberdistance
+            \kern\headnumberdistance % was \hskip
             \box\scratchboxtwo
         }
     \else
@@ -835,7 +838,7 @@
         }
         \hpack {
             \box\scratchboxone
-            \hskip\headnumberdistance
+            \kern\headnumberdistance % was \hskip
             \box\scratchboxtwo
         }
     \else

@@ -467,7 +467,6 @@ static int bytemaplib_tostring(lua_State *L)
     } else {
         return 0;
     }
-    return 0;
 }
 
 static int bytemaplib_gc(lua_State *L)

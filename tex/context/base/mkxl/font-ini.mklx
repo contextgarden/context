@@ -1060,6 +1060,7 @@
        \ifempty\somefontsqueeze\else\glyphyscale\somefontsqueeze\relax\fi
        \glyphslant \ifempty\somefontslant \zerocount\else\somefontslant \fi\relax
        \glyphweight\ifempty\somefontweight\zerocount\else\somefontweight\fi\relax
+       % so we go from \lastrawfontcall == font to \lastrawfontcall == fontspec
        \mutable\fontspecdef\lastrawfontcall
             \lastnamedcs
             all \glyphscale \glyphxscale \glyphyscale \glyphslant \glyphweight

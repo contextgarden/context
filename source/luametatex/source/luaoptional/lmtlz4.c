@@ -79,7 +79,7 @@ static int lz4lib_decompresssize(lua_State *L)
 {
     if (lz4lib_state.initialized) {
         size_t sourcesize = 0;
-        size_t targetsize = luaL_checkinteger(L, 2);
+        size_t targetsize = (size_t) luaL_checkinteger(L, 2);
         const char *source = luaL_checklstring(L, 1, &sourcesize);
         if (source && targetsize > 0) {
             luaL_Buffer buffer;

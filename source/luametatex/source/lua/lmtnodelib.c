@@ -1026,7 +1026,7 @@ static int nodelib_direct_setstate(lua_State *L)
                 break;
             case hlist_node:
             case vlist_node:
-                box_package_state(n) = (singleword) lmt_opthalfword(L, 2, 0);
+                box_package_state(n) = lmt_optsingleword(L, 2, 0);
                 break;
         }
     }
@@ -1323,16 +1323,16 @@ static int nodelib_direct_setpenalty(lua_State *L)
     if (n) {
         switch (node_type(n)) {
             case penalty_node:
-                penalty_amount(n) = (halfword) luaL_optinteger(L, 2, 0);
+                penalty_amount(n) = lmt_opthalfword(L, 2, 0);
                 break;
             case disc_node:
-                disc_penalty(n) = (halfword) luaL_optinteger(L, 2, 0);
+                disc_penalty(n) = lmt_opthalfword(L, 2, 0);
                 break;
             case math_node:
-                math_penalty(n) = (halfword) luaL_optinteger(L, 2, 0);
+                math_penalty(n) = lmt_opthalfword(L, 2, 0);
                 break;
             case glue_node:
-                glue_penalty(n) =  (halfword) luaL_optinteger(L, 2, 0);
+                glue_penalty(n) =  lmt_opthalfword(L, 2, 0);
                 glue_options(n) |= glue_option_has_penalty;
                 break;
         }
@@ -3289,48 +3289,75 @@ static int nodelib_direct_setorientation(lua_State *L)
 
 # define setoptions_usage (hlist_usage | vlist_usage | glyph_usage | disc_usage | glue_usage | rule_usage | math_usage | penalty_usage | simple_usage | radical_usage | fraction_usage | accent_usage | math_char_usage | math_text_char_usage)
 # define getoptions_usage setoptions_usage
+# define hasoptions_usage getoptions_usage
 
-static int nodelib_direct_getoptions(lua_State *L)
+static inline int nodelib_aux_get_options(lua_State *L, lua_Integer *options)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n) {
         switch (node_type(n)) {
             case hlist_node:
             case vlist_node:
-                lua_pushinteger(L, box_options(n));
+                *options = (lua_Integer) box_options(n);
                 return 1;
             case glyph_node:
-                lua_pushinteger(L, glyph_options(n));
+                *options = (lua_Integer) glyph_options(n);
                 return 1;
             case disc_node:
-                lua_pushinteger(L, disc_options(n));
+                *options = (lua_Integer) disc_options(n);
                 return 1;
             case glue_node:
-                lua_pushinteger(L, glue_options(n));
+                *options = (lua_Integer) glue_options(n);
                 return 1;
             case rule_node:
-                lua_pushinteger(L, rule_options(n));
+                *options = (lua_Integer) rule_options(n);
                 return 1;
             case math_node:
-                lua_pushinteger(L, math_options(n));
+                *options = (lua_Integer) math_options(n);
                 return 1;
             case penalty_node:
-                lua_pushinteger(L, penalty_options(n));
+                *options = (lua_Integer) penalty_options(n);
                 return 1;
             case simple_noad:
             case radical_noad:
             case fraction_noad:
             case accent_noad:
             case fence_noad:
-                lua_pushinteger(L, noad_options(n));
+                *options = (lua_Integer) noad_options(n);
                 return 1;
             case math_char_node:
             case math_text_char_node:
-                lua_pushinteger(L, math_kernel_options(n));
+                *options = (lua_Integer) math_kernel_options(n);
                 return 1;
-          }
+        }
     }
+    *options = 0;
     return 0;
+}
+
+static int nodelib_direct_getoptions(lua_State *L)
+{
+    lua_Integer options;
+    if (nodelib_aux_get_options(L, &options)) {
+        lua_pushinteger(L, options);
+    } else {
+        lua_pushnil(L);
+    }
+    return 1;
+}
+
+static int nodelib_direct_hasoptions(lua_State *L)
+{
+    lua_Integer options;
+    if (nodelib_aux_get_options(L, &options)) {
+        lua_Integer pattern = lua_tointeger(L, 2);
+        if (pattern) {
+            lua_pushboolean(L, (options & pattern) ? 1 : 0);
+            return 1;
+        }
+    }
+    lua_pushboolean(L, 0);
+    return 1;
 }
 
 /*
@@ -4465,7 +4492,7 @@ static int nodelib_direct_setglyphdata(lua_State *L)
 {
     halfword n = nodelib_valid_direct_from_index(L, 1);
     if (n && node_type(n) == glyph_node) {
-        glyph_data(n) = (halfword) luaL_optinteger(L, 2, unused_attribute_value);
+        glyph_data(n) = lmt_opthalfword(L, 2, unused_attribute_value);
     }
     return 0;
 }
@@ -5721,7 +5748,7 @@ static int nodelib_aux_packing(lua_State *L, int slot)
             }
         case LUA_TNUMBER:
             {
-                int m = (int) lua_tointeger(L, slot);
+                int m = lmt_tointeger(L, slot);
                 if (m >= packing_exactly && m <= packing_adapted) {
                     return m;
                 }
@@ -5841,7 +5868,7 @@ static int nodelib_direct_vpack(lua_State *L)
                         }
                     case LUA_TNUMBER:
                         {
-                            m = (int) lua_tointeger(L, 3);
+                            m = lmt_tointeger(L, 3);
                             if (m != packing_exactly && m != packing_additional) {
                                 m = packing_additional;
                             }
@@ -6248,7 +6275,7 @@ static int nodelib_shared_subtypes(lua_State *L)
             break;
         case LUA_TNUMBER:
             {
-                int id = (int) lua_tointeger(L, 1);
+                int id = lmt_tointeger(L, 1);
                 if (id >= first_nodetype && id <= last_nodetype) {
                     subtypes = lmt_interface.node_data[id].subtypes;
                 }
@@ -7426,7 +7453,7 @@ static int nodelib_direct_traverse(lua_State *L)
 static int nodelib_direct_aux_next_filtered(lua_State *L)
 {
     halfword t;
-    int i = (int) lua_tointeger(L, lua_upvalueindex(1));
+    int i = lmt_tointeger(L, lua_upvalueindex(1));
     if (lua_isnil(L, 2)) {
         t = lmt_tohalfword(L, 1) ;
         lua_settop(L, 1);
@@ -7451,7 +7478,7 @@ static int nodelib_direct_aux_next_filtered(lua_State *L)
 static int nodelib_direct_aux_prev_filtered(lua_State *L)
 {
     halfword t;
-    int i = (int) lua_tointeger(L, lua_upvalueindex(1));
+    int i = lmt_tointeger(L, lua_upvalueindex(1));
     if (lua_isnil(L, 2)) {
         t = lmt_tohalfword(L, 1) ;
         lua_settop(L, 1);
@@ -8119,7 +8146,7 @@ static int nodelib_userdata_traverse(lua_State *L)
 static int nodelib_aux_next_filtered(lua_State *L)
 {
     halfword t;
-    int i = (int) lua_tointeger(L, lua_upvalueindex(1));
+    int i = lmt_tointeger(L, lua_upvalueindex(1));
     if (lua_isnil(L, 2)) {
         /* first call */
         t = lmt_check_isnode(L, 1);
@@ -8145,7 +8172,7 @@ static int nodelib_aux_next_filtered(lua_State *L)
 static int nodelib_aux_prev_filtered(lua_State *L)
 {
     halfword t;
-    int i = (int) lua_tointeger(L, lua_upvalueindex(1));
+    int i = lmt_tointeger(L, lua_upvalueindex(1));
     if (lua_isnil(L, 2)) {
         /* first call */
         t = lmt_check_isnode(L, 1);
@@ -9456,7 +9483,6 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                              // case math_par_subtype:        
                                 default: 
                                     goto CANTSET;
-                                    break;
                             }
                             return 0;
                         case math_char_node:
@@ -9706,9 +9732,9 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else if (lua_key_eq(s, index)) {
                                 delimiter_math_index(n) = lmt_tohalfword(L, 3);
                             } else if (lua_key_eq(s, group)) {
-                                delimiter_math_group(n) = lmt_tohalfword(L, 3);
+                                delimiter_math_group(n) = lmt_toquarterword(L, 3);
                             } else if (lua_key_eq(s, properties)) {
-                                delimiter_math_properties(n) = lmt_tohalfword(L, 3);
+                                delimiter_math_properties(n) = lmt_toquarterword(L, 3);
                             } else {
                                 goto CANTSET;
                             }
@@ -9771,7 +9797,7 @@ static int nodelib_common_setfield(lua_State *L, int direct, halfword n)
                             } else {
                                 goto CANTSET;
                             }
-                            return 0;
+                         // return 0;
                         case adjust_node:
                             if (lua_key_eq(s, list) || lua_key_eq(s, head)) {
                                 adjust_list(n) = nodelib_direct_or_node_from_index(L, direct, 3);
@@ -10441,7 +10467,7 @@ static inline void nodelib_aux_mark_all_processing_fixed(halfword h, halfword pr
 {
     while (h) {
         if (node_type(h) == glyph_node) {
-            glyph_processing(h) = processing;
+            glyph_processing(h) = (singleword) processing;
         }
         h = node_next(h);
     }
@@ -10452,14 +10478,14 @@ static inline void nodelib_aux_mark_processing_fixed(halfword n, halfword proces
     while (n) {
         switch (node_type(n)) {
             case glyph_node:
-                glyph_processing(n) = processing;
+                glyph_processing(n) = (singleword) processing;
                 break;
             case disc_node:
                 if (disc_processing(n)) { 
                     nodelib_aux_mark_all_processing_fixed(disc_no_break_head(n), processing);
                     nodelib_aux_mark_all_processing_fixed(disc_pre_break_head(n), processing);
                     nodelib_aux_mark_all_processing_fixed(disc_post_break_head(n), processing);
-                    disc_processing(n) = processing;
+                    disc_processing(n) = (singleword) processing;
                 }
                 break;
             case math_node:
@@ -10478,8 +10504,8 @@ static int nodelib_direct_markglyphprocessing(lua_State *L)
             case 4:
                 {
                     /* set to okay or skip */
-                    halfword font = lua_tointeger(L, 2);
-                    halfword data = lua_tointeger(L, 3);
+                    halfword font = lmt_tohalfword(L, 2);
+                    halfword data = lmt_tohalfword(L, 3);
                     halfword state = (halfword) lua_tointegerx(L, 4, NULL); /* See elsewhere, can be false! */
                     nodelib_aux_mark_processing_checked(head, font, data, state);
                 }
@@ -12060,7 +12086,7 @@ static int nodelib_direct_getspeciallist(lua_State *L)
     switch (lua_type(L, 1)) {
         case LUA_TNUMBER:
             {
-                index = lua_tointeger(L, 1);
+                index = lmt_tointeger(L, 1);
                 break;
             }
         case LUA_TSTRING:
@@ -12854,6 +12880,7 @@ static const usage_record usage_data[] = {
     { .name = "getnumerator",            .target = direct_usage_target,   .usage = getnumerator_usage            },
     { .name = "getoffsets",              .target = direct_usage_target,   .usage = getoffsets_usage              },
     { .name = "getoptions",              .target = direct_usage_target,   .usage = getoptions_usage              },
+    { .name = "hasoptions",              .target = direct_usage_target,   .usage = hasoptions_usage              },
     { .name = "getorientation",          .target = direct_usage_target,   .usage = getorientation_usage          },
     { .name = "getparstate",             .target = direct_usage_target,   .usage = getparstate_usage             },
     { .name = "getpenalty",              .target = direct_usage_target,   .usage = getpenalty_usage              },
@@ -13150,7 +13177,7 @@ static int nodelib_direct_getusage(lua_State *L)
             break;
         case LUA_TNUMBER:
             {
-                int id = (int) lua_tointeger(L, 1);
+                int id = lmt_tointeger(L, 1);
                 if (id >= 0 && id <= passive_node) {
                     int target = lmt_optinteger(L, 2, 0);
                     lua_Integer bit = (lua_Integer) 1 << (id + 1);
@@ -13260,6 +13287,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getnumerator",            nodelib_direct_getnumerator            },
     { "getoffsets",              nodelib_direct_getoffsets              },
     { "getoptions",              nodelib_direct_getoptions              },
+    { "hasoptions",              nodelib_direct_hasoptions              },
     { "getorientation",          nodelib_direct_getorientation          },
     { "getparstate",             nodelib_direct_getparstate             },
     { "getpenalty",              nodelib_direct_getpenalty              },

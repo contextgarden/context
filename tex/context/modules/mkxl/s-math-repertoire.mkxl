@@ -1,0 +1,806 @@
+%D \module
+%D   [      file=s-math-parameters.mkiv, % was s-mat-12.mkiv
+%D        version=2026.04.02, % 2012.06.06, % whatever, probably a bit earlier
+%D          title=\CONTEXT\ Style File,
+%D       subtitle=Show Math Character Repertoire,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D We now use a dedicated file for \MKXL\ so that we can adapt it to the more modern
+%D approach to math. We now also include a few examples in the documentation suite.
+%D
+%D We still chekc for italics even if we no longer use them, just in case an *-nt file
+%D is used; one never knows.
+
+\enabletrackers[pages.timing]
+
+\usemodule[s][math-characters]
+
+% context --global --bodyfont=lucidaot --result=math-repertoire-lucidaot s-math-repertoire.mkxl
+% context --global --bodyfont=cambria  --result=math-repertoire-cambria  s-math-repertoire.mkxl
+% context --global --bodyfont=xits     --result=math-repertoire-xits     s-math-repertoire.mkxl
+% context --global --bodyfont=modern   --result=math-repertoire-modern   s-math-repertoire.mkxl
+% context --global --bodyfont=pagella  --result=math-repertoire-pagella  s-math-repertoire.mkxl
+% context --global --bodyfont=termes   --result=math-repertoire-termes   s-math-repertoire.mkxl
+% context --global --bodyfont=bonum    --result=math-repertoire-bonum    s-math-repertoire.mkxl
+
+% context --parallel math-repertoire.lua
+
+\startmodule[math-repertoire]
+
+% layout
+
+\definecolor[backgroundcolor] [r=.6,g=.6]
+\definecolor[backgroundcolorx][r=.6]
+\definecolor[backgroundcolory][g=.6]
+\definecolor[baselinecolor]   [a=1,t=.5,s=.6]
+\definecolor[charactercolor]  [b=.6]
+\definecolor[italiccolor]     [r=.6]
+\definecolor[anchorcolor]     [s=1]
+\definecolor[pagecolor]       [s=.1]
+\definecolor[nonecolor]       [s=.5]
+\definecolor[textcolor]       [s=.9]
+
+% \setuppapersize[HD]
+%
+% \setuplayout
+%   [page]
+
+\setuppapersize
+  [HD+]
+
+\setuplayout
+  [backspace=0pt,
+   topspace=0pt,
+   bottomspace=120pt, %1200-1080
+   bottom=24pt,
+   bottomdistance=5mm,
+   header=0pt,
+   footer=0pt,
+   width=middle,
+   height=middle]
+
+\definelayer
+  [page]
+
+\setuplayer
+  [page]
+  [width=\textwidth,
+   height=\textheight]
+
+\setupbackgrounds
+  [page]
+  [background=color,
+   backgroundcolor=pagecolor]
+
+\setupbackgrounds
+  [text][text]
+  [bottomframe=on,
+   framecolor=textcolor,
+   rulethickness=0.025ex]
+
+\setupmakeup
+  [standard]
+  [pagestate=start]
+
+\setupinteraction
+  [state=start,
+   menu=on]
+
+\defineinteractionmenu
+  [ALPHABETS]
+  [bottom]
+
+\defineinteractionmenu
+  [alphabets]
+  [bottom]
+
+\defineinteractionmenu
+  [symbols]
+  [bottom]
+
+\setupinteractionmenu
+  [bottom]
+  [before=\vfill,
+   after=\vfill,
+   left=\hfill,
+   right=\hfill,
+   style=\tt\bf,
+   distance=0pt,
+   color=textcolor,
+   contrastcolor=nonecolor]
+
+\startinteractionmenu[bottom]
+    \startgot [firstpage]       first    \stopgot \quad
+    \startgot [deltapage(-100)] -100     \stopgot \quad
+    \startgot [deltapage(-10)]  -10      \stopgot \quad
+    \startgot [previouspage]    previous \stopgot \quad
+    \startgot [nextpage]        next     \stopgot \quad
+    \startgot [deltapage(+10)]  +10      \stopgot \quad
+    \startgot [deltapage(+100)] +100     \stopgot \quad
+    \startgot [lastpage]        last     \stopgot
+\stopinteractionmenu
+
+\startinteractionmenu[ALPHABETS]
+    \startgot [U+00041] NORMAL            \stopgot \quad
+    \startgot [U+1D400] BOLD              \stopgot \quad
+    \startgot [U+1D434] ITALIC            \stopgot \quad
+    \startgot [U+1D468] BOLDITALIC        \stopgot \quad
+    \startgot [U+1D49C] SCRIPT            \stopgot \quad
+    \startgot [U+1D4D0] BOLDSCRIPT        \stopgot \quad
+    \startgot [U+1D504] FRAKTUR           \stopgot \quad
+    \startgot [U+1D538] DOUBLESTRUCK      \stopgot \quad
+    \startgot [U+1D56C] BOLDFRAKTUR       \stopgot \quad
+    \startgot [U+1D5A0] SS NORMAL         \stopgot \quad
+    \startgot [U+1D5D4] SS BOLD           \stopgot \quad
+    \startgot [U+1D608] SS ITALIC         \stopgot \quad
+    \startgot [U+1D63C] SS BOLDITALIC     \stopgot \quad
+    \startgot [U+1D670] MONOSPACE         \stopgot \quad
+    \startgot [U+00391] GRK NORMAL        \stopgot \quad
+    \startgot [U+1D6A8] GRK BOLD          \stopgot \quad
+    \startgot [U+1D6E2] GRK ITALIC        \stopgot \quad
+    \startgot [U+1D71C] GRK BOLDITALIC    \stopgot \quad
+    \startgot [U+1D756] GRK SS BOLD       \stopgot \quad
+    \startgot [U+1D790] GRK SS BOLDITALIC \stopgot
+\stopinteractionmenu
+
+\startinteractionmenu[alphabets]
+    \startgot [U+00061] normal            \stopgot \quad
+    \startgot [U+1D41A] bold              \stopgot \quad
+    \startgot [U+1D44E] italic            \stopgot \quad
+    \startgot [U+1D482] bolditalic        \stopgot \quad
+    \startgot [U+1D4B6] script            \stopgot \quad
+    \startgot [U+1D4EA] boldscript        \stopgot \quad
+    \startgot [U+1D51E] fraktur           \stopgot \quad
+    \startgot [U+1D552] doublestruck      \stopgot \quad
+    \startgot [U+1D586] boldfraktur       \stopgot \quad
+    \startgot [U+1D5BA] ss normal         \stopgot \quad
+    \startgot [U+1D5EE] ss bold           \stopgot \quad
+    \startgot [U+1D622] ss italic         \stopgot \quad
+    \startgot [U+1D656] ss bolditalic     \stopgot \quad
+    \startgot [U+1D68A] monospace         \stopgot \quad
+    \startgot [U+003B1] grk normal        \stopgot \quad
+    \startgot [U+1D6C2] grk bold          \stopgot \quad
+    \startgot [U+1D6FC] grk italic        \stopgot \quad
+    \startgot [U+1D736] grk bolditalic    \stopgot \quad
+    \startgot [U+1D770] grk ss bold       \stopgot \quad
+    \startgot [U+1D7AA] grk ss bolditalic \stopgot
+\stopinteractionmenu
+
+% \startinteractionmenu[symbols]
+%     \startgot [U+00030] dig normal       \stopgot \quad
+%     \startgot [U+1D7CE] dig bold         \stopgot \quad
+%     \startgot [U+1D7D8] dig doublestruck \stopgot \quad
+%     \startgot [U+1D7E2] dig ss normal    \stopgot \quad
+%     \startgot [U+1D7EC] dig ss bold      \stopgot \quad
+%     \startgot [U+1D7F6] dig monospace    \stopgot \quad
+%     \startgot [U+02200] operators        \stopgot \quad
+%     \startgot [U+02701] symbols a        \stopgot \quad
+%     \startgot [U+02901] symbols b        \stopgot \quad
+%     \startgot [U+02A00] supplemental     \stopgot \quad
+%     \startgot [U+027F0] arrows a         \stopgot \quad
+%     \startgot [U+02900] arrows b         \stopgot \quad
+%     \startgot [U+1F800] arrows c         \stopgot \quad
+%     \removeunwantedspaces
+% \stopinteractionmenu
+
+\startinteractionmenu[symbols]
+    \startgot [U+00030]                           dig normal       \stopgot \quad
+    \startgot [U+1D7CE]                           dig bold         \stopgot \quad
+    \startgot [U+1D7D8]                           dig doublestruck \stopgot \quad
+    \startgot [U+1D7E2]                           dig ss normal    \stopgot \quad
+    \startgot [U+1D7EC]                           dig ss bold      \stopgot \quad
+    \startgot [U+1D7F6]                           dig monospace    \stopgot \quad
+    \startgot [U+02200]                           operators        \stopgot \quad
+    \startgot [miscellaneousmathematicalsymbolsa] symbols a        \stopgot \quad
+    \startgot [miscellaneousmathematicalsymbolsb] symbols b        \stopgot \quad
+    \startgot [supplementalmathematicaloperators] supplemental     \stopgot \quad
+    \startgot [supplementalarrowsa]               arrows a         \stopgot \quad
+    \startgot [supplementalarrowsb]               arrows b         \stopgot \quad
+    \startgot [supplementalarrowsc]               arrows c         \stopgot \quad
+    \removeunwantedspaces
+\stopinteractionmenu
+
+\defineframed
+  [somedata]
+  [background=color,
+   backgroundcolor=textcolor,
+  %framecolor=charactercolor,
+  %rulethickness=1pt,
+   frame=off,
+   offset=1ex]
+
+% helpers
+
+\starttexdefinition protected showmathcharacterssetrange #1#2#3
+
+    \writestatus{range}{#1: \unihex{#2} - \unihex{#3}}
+
+    \ifcase#2\relax
+        \definereference[#1][notpresent]
+    \orelse\ifcase#3\relax
+        \definereference[#1][notpresent]
+    \else
+        \normalexpanded{\definereference[#1][\unihex{#2}]}
+    \fi
+
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharacterstxt #1
+    \begingroup
+        \tttf#1
+    \endgroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharacterschr #1#2
+    \iffontchar\font#2\relax
+        \showmathcharacterschrindeed{#1}{#2}
+    \fi
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharacterschrindeed #1#2
+    \scale [
+        sx=#1,
+        sy=#1
+    ] {
+        \dontleavehmode\hpack\bgroup
+
+            \setbox\scratchbox\hpack\bgroup
+                \charactercolor
+                \char#2\relax
+            \egroup
+
+            \scratchwidth \wd\scratchbox
+            \scratchheight\ht\scratchbox
+            \scratchdepth \dp\scratchbox
+            \scratchitalic\scaledfontcharic\font#2\relax
+            \scratchtotal \dimexpr\scratchwidth+\scratchitalic\relax
+
+            \setbox\scratchbox\hpack\bgroup
+                \ifcase\scratchitalic\else
+                    \hskip\scratchwidth
+                    \ifdim\scratchitalic<\zeropoint
+                        \hskip\scratchitalic
+                        \scratchitalic-\scratchitalic
+                    \fi
+                    \italiccolor
+                    \vrule
+                      width  \scratchitalic
+                      height \scratchheight
+                      depth  \scratchdepth
+                    \relax
+                    \hskip-\scratchtotal
+                \fi
+                \unhbox\scratchbox
+            \egroup
+
+            \wd\scratchbox\scratchtotal
+
+            \ifdim\scratchtotal>\zeropoint
+                \backgroundline[backgroundcolor]{\box\scratchbox}%
+            \orelse\ifdim\scratchtotal<\zeropoint
+                % really negative width?
+                \scratchtotal-\scratchtotal
+                \setbox\scratchbox\hpack to \scratchtotal{\hss\charactercolor\char#2}%
+                \backgroundline[backgroundcolorx]{\box\scratchbox}%
+            \else
+              \setbox\scratchbox\hpack to \emwidth{\hss\charactercolor\char#2}%
+              \scratchtotal\wd\scratchbox
+              \backgroundline[backgroundcolory]{\box\scratchbox}%
+            \fi
+
+            \hskip-\scratchtotal
+
+            \baselinecolor
+            \vrule
+                width  \scratchtotal
+                height .05\exheight
+                depth  .05\exheight
+            \relax
+
+            \scratchdimen\scaledfontcharta\font#2\relax
+            \ifzeropt\scratchdimen\else
+                \hskip-\scratchtotal
+                \hpack to \scratchwidth yoffset \scratchheight \bgroup
+                    \hskip\scratchdimen
+                    \anchorcolor
+                    \vrule
+                        width  .10\exheight
+                        height .05\exheight
+                        depth  .05\exheight
+                    \relax
+                    \hss
+                \egroup
+                \hskip\scratchitalic
+            \fi
+
+            \scratchdimen\scaledfontcharba\font#2\relax
+            \ifzeropt\scratchdimen\else
+                \hskip-\scratchtotal
+                \hpack to \scratchwidth yoffset -\scratchdepth \bgroup
+                    \hskip\scratchdimen
+                    \anchorcolor
+                    \vrule
+                        width  .10\exheight
+                        height .05\exheight
+                        depth  .05\exheight
+                    \relax
+                    \hss
+                \egroup
+                \hskip\scratchitalic
+            \fi
+        \egroup
+    }
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersmth #1#2
+    \setbox\scratchbox\hpack \bgroup
+        \showmathcharacterschr{#1}{#2}
+    \egroup
+    \ht\scratchbox\strutht
+    \dp\scratchbox\strutdp
+    \box\scratchbox
+\stoptexdefinition
+
+\let\showmathcharactersbodyfonts\empty
+
+\starttexdefinition protected showmathcharactersbodyfontentry #1#2
+    \somedata [
+        align={none,middle},background=,
+        height=5cm
+    ] {
+        \begingroup
+            \switchtobodyfont[#2,12pt]%
+            \definedfont[MathRoman*math-text]%
+            \showmathcharactersmth{10}{#1}%
+        \endgroup
+        \vfilll
+        \doifelsemode {crosslink} {
+            \goto {
+                \strut
+                \textcolor
+                \showmathcharacterstxt{#2}
+            }
+            [#2::#1]
+        } {
+            \strut
+            \textcolor
+            \showmathcharacterstxt{#2}
+        }
+    }
+    \hskip\exheight
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharacterssetbodyfonts #1
+    \edef\showmathcharactersbodyfonts{#1}%
+    \def\doshowmathcharacterssetbodyfonts##1{\usebodyfont[##1,12pt]}%
+    \processcommacommand
+        [\showmathcharactersbodyfonts]
+        \doshowmathcharacterssetbodyfonts
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersbodyfontschars #1
+    \processcommacommand
+        [\showmathcharactersbodyfonts]
+        {\showmathcharactersbodyfontentry{#1}}
+\stoptexdefinition
+
+% main
+
+\starttexdefinition protected showmathcharactersstart
+    \starttext
+    \startstandardmakeup % we use baselinecolor so that we have a transparency on page 1
+        \setupalign[middle]
+        \vfil
+        \dontleavehmode \scale
+            [width=.75\textwidth]
+            {\strut\color[textcolor]{\fontclass}}
+        \vfil
+        \dontleavehmode \scale
+            [height=.1\textheight]
+            {\strut\color[baselinecolor]{\currentdate}}
+        \vfil
+        \vfil
+    \stopstandardmakeup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstop
+    \stoptext
+\stoptexdefinition
+
+% entry
+
+\starttexdefinition protected showmathcharactersstartentry
+    \startstandardmakeup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstopentry
+    \tightlayer[page]
+    \stopstandardmakeup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersreference #1
+    \setlayer
+        [page]
+        {\pagereference[#1]}
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersentryhexdectit #1#2#3
+    \setlayer
+        [page]
+        [preset=middletop,voffset=5mm]
+        {\somedata[height=1cm]{\showmathcharacterstxt{#1}}}
+    \setlayer
+        [page]
+        [preset=middle,y=2cm]
+        {\showmathcharactersmth{25}{#2}}
+    \setlayer
+        [page]
+        [preset=righttop,offset=5mm]
+        {\somedata[height=1cm]{\showmathcharacterstxt{#3}}}
+    \doifsomething \showmathcharactersbodyfonts {
+        \setlayer
+            [page]
+            [preset=middlebottom,voffset=5mm]
+            {\showmathcharactersbodyfontschars{#2}}
+    }
+\stoptexdefinition
+
+% dimensions (we can ask them in tex)
+
+\uunit 1mm
+
+\newdimension\scratchta
+\newdimension\scratchba
+\newdimension\scratchrt
+\newdimension\scratchrb
+\newdimension\scratchlt
+\newdimension\scratchlb
+
+\starttexdefinition protected showmathcharactersentrywdhtdpicta #1
+    \setlayer [
+        page
+    ] [
+        preset=leftbottom,
+        offset=5uu
+    ] {
+        \somedata [
+            width=60uu,
+            strut=no,
+            align={snapping:1,normal}
+        ] {
+            \scratchwidth \scaledfontcharwd\font#1
+            \scratchheight\scaledfontcharht\font#1
+            \scratchdepth \scaledfontchardp\font#1
+            \scratchitalic\scaledfontcharic\font#1
+            \scratchta\scaledfontcharta\font#1
+            \scratchba\scaledfontcharba\font#1
+            \scratchrt\scaledfontcharrt\font#1
+            \scratchrb\scaledfontcharrb\font#1
+            \scratchlt\scaledfontcharlt\font#1
+            \scratchlb\scaledfontcharlb\font#1
+
+                                                      width\hfill \the\scratchwidth \localbreakpar
+                                                     height\hfill \the\scratchheight\localbreakpar
+                                                      depth\hfill \the\scratchdepth \localbreakpar
+            \ifzeropt\scratchitalic\else             italic\hfill \the\scratchitalic\localbreakpar\fi
+            \ifzeropt\scratchta    \else top         accent\hfill \the\scratchta    \localbreakpar\fi
+            \ifzeropt\scratchba    \else bottom      accent\hfill \the\scratchba    \localbreakpar\fi
+            \ifzeropt\scratchrt    \else right     top kern\hfill \the\scratchrt    \localbreakpar\fi
+            \ifzeropt\scratchrb    \else right  bottom kern\hfill \the\scratchrb    \localbreakpar\fi
+            \ifzeropt\scratchlt    \else left      top kern\hfill \the\scratchlt    \localbreakpar\fi
+            \ifzeropt\scratchlb    \else left   bottom kern\hfill \the\scratchlb    \localbreakpar\fi
+        }
+    }
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersentryresource #1
+    % {virtual: #1\par}
+\stoptexdefinition
+
+% next
+
+\starttexdefinition protected showmathcharactersstartnext
+    \setlayer
+        [page]
+        [preset=middleleft,hoffset=5mm]
+        \bgroup
+        \vpack\bgroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstopnext
+    \egroup
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersnextentry #1#2#3
+    \ifdim\scratchheight>.5\textheight
+        \ifnum#1>\plusone
+            \vskip.2\exheight
+        \fi
+        \setbox\scratchbox\hpack \bgroup
+            \blackrule[height=.2\exheight,depth=\zeropoint,width=4cm,color=white]
+        \egroup
+    \else
+        \ifnum#1>\plusone
+            \vskip\exheight
+        \fi
+        \setbox\scratchbox\hpack \somedata
+            [align=normal,width=4cm]
+            {
+                \strut
+                \showmathcharacterstxt{#2}
+                \hfill
+                \showmathcharacterschr{2}{#3}
+            }
+    \fi
+    \ifvoid\scratchbox\else
+        \advance\scratchheight\htdp\scratchbox
+        \dontleavehmode
+        \box\scratchbox
+        \par
+    \fi
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersnextcycle #1
+    \ifdim\scratchheight>.5\textheight
+        \ifnum#1>\plusone
+            \vskip.2\exheight
+        \fi
+        \setbox\scratchbox\hpack \bgroup
+            \blackrule[height=.2\exheight,depth=\zeropoint,width=4cm,color=white]
+        \egroup
+    \else
+        \ifnum#1>\plusone
+            \vskip\exheight
+        \fi
+        \setbox\scratchbox\hpack \somedata
+            [align=normal,width=4cm]
+            {
+                \strut
+                \showmathcharacterstxt{cycle}
+            }
+    \fi
+    \ifvoid\scratchbox\else
+        \advance\scratchheight\htdp\scratchbox
+        \dontleavehmode
+        \box\scratchbox
+        \par
+    \fi
+\stoptexdefinition
+
+% variants
+
+\starttexdefinition protected showmathcharactersstartvvariants
+    \setlayer
+        [page]
+        [preset=lefttop,offset=5mm]
+        \bgroup
+        \vpack\bgroup
+        \scratchheight\zeropoint
+        \scratchwidth \zeropoint
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstarthvariants
+    \setlayer
+        [page]
+        [preset=lefttop,offset=5mm]
+        \bgroup
+        \hpack\bgroup
+        \scratchheight\zeropoint
+        \scratchwidth \zeropoint
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersvvariantsentry #1#2#3
+    \ifnum#1>\plusone
+        \vskip\exheight
+    \fi
+    \dontleavehmode\somedata
+        [align=middle,width=4cm]
+        {
+            \strut
+            \showmathcharacterstxt{#2}
+            \hfilll
+            \showmathcharacterschr{2}{#3}
+        }
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactershvariantsentry #1#2#3
+    \ifnum#1>\plusone
+        \hskip\exheight
+    \else
+        \dontleavehmode
+    \fi
+    \somedata
+        [align={none,middle},height=2cm]
+        {
+            \strut
+            \showmathcharacterstxt{#2}
+            \vfilll
+            \showmathcharacterschr{2}{#3}
+        }
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstopvvariants
+    \egroup
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstophvariants
+    \egroup
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersbetweennextandvariants
+\stoptexdefinition
+
+% classes
+
+\starttexdefinition protected showmathcharactersstartentryclassspec
+    \setlayer
+        [page]
+        [preset=rightbottom,offset=5mm]
+        \bgroup
+        \somedata
+            [align=normal,width=8cm]
+            \bgroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstopentryclassspec
+    \egroup
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersentryclassname #1#2
+    \strut
+    \showmathcharacterstxt{#1}
+    \hfill
+    \showmathcharacterstxt{#2}
+    \par
+\stoptexdefinition
+
+% symbols
+
+\starttexdefinition protected showmathcharactersentrysymbol #1#2
+    \setlayer
+        [page]
+        [preset=leftbottom,hoffset=5mm,voffset=50mm]
+        {
+            \somedata
+                [align=normal,width=5cm]
+                {
+                    \showmathcharacterstxt{#1}
+                    \hfill
+                    \showmathcharacterschr{4}{#2}
+                }
+        }
+\stoptexdefinition
+
+% alternates
+
+\starttexdefinition protected showmathcharactersstartlookupvariants
+    \setlayer
+        [page]
+        [preset=middleright,hoffset=5mm]
+        \bgroup
+        \vpack\bgroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharactersstoplookupvariants
+    \egroup
+    \egroup
+\stoptexdefinition
+
+\starttexdefinition protected showmathcharacterslookupvariant #1#2#3#4
+    \ifnum#1>\plusone
+        \vskip\exheight
+    \fi
+    \somedata
+        [align=normal,width=7cm]
+        {
+            \showmathcharacterstxt{#4:}
+            \space
+            \showmathcharacterstxt{#2}
+            \hfill
+            \showmathcharacterschr{4}{#3}
+        }
+\stoptexdefinition
+
+% main
+
+% this is a one-run style so we can forget about an alternative
+% just assume that the previous definitions are global
+
+\unprotect
+
+\protected\def\showmathfontrepertoire
+  {\dosingleempty\module_math_repertoire_show}
+
+% \def\module_math_repertoire_show[#1]% why twice
+%   {\showmathfontcharacters[alternative=,option=,check=yes,#1]
+%    \showmathfontcharacters[alternative=,option=,#1]}
+
+\def\module_math_repertoire_show[#1]% why twice
+  {\showmathfontcharacters[alternative=,option=,check=yes,#1]}
+
+\protect
+
+\stopmodule
+
+\continueifinputfile{s-math-repertoire.mkxl}
+
+% \enabledirectives[math.nogoodies]
+
+% \showmathcharacterssetbodyfonts{lucidaot,cambria,xits,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+% \showmathcharacterssetbodyfonts{lucida,cambria,stixtwo,modern,pagella,termes,bonum,schola,ebgaramond,dejavu}% ,modernlatin}
+% \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+% \showmathcharacterssetbodyfonts{newcomputermodern-book,stixtwo,modern,pagella,termes,bonum,schola,dejavu}
+% \showmathcharacterssetbodyfonts{newcomputermodern-book,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
+% \showmathcharacterssetbodyfonts{modernlatin,lucidaot,cambria,stixtwo,modern,pagella,termes,schola,dejavu}
+
+% \usetypescriptfile[pennstander]
+
+% \showmathcharacterssetbodyfonts{
+%     pennstander-regular,%
+%     pennstander-thin,%
+%     pennstander-extralight,%
+%     pennstander-light,%
+%     pennstander-medium,%
+%     pennstander-semibold,%
+%     pennstander-bold,%
+%     pennstander-extrabold,%
+%     pennstander-black%
+% }
+
+\starttext
+
+    \doifelse {\getdocumentargument{bodyfont}} {demo} {
+
+        \showmathcharacterssetbodyfonts{cambria,modern,pagella,termes,bonum,schola,dejavu,lucidaot}
+
+    } {
+
+        \doifelse {\getdocumentargument{bodyfont}} {} {
+
+          % \setupbodyfont[cambria,                12pt]
+          % \setupbodyfont[modern,                 12pt]
+          % \setupbodyfont[lmvirtual,              12pt]
+          % \setupbodyfont[pxvirtual,              12pt]
+          % \setupbodyfont[txvirtual,              12pt]
+          % \setupbodyfont[mathtimes,              12pt]
+          % \setupbodyfont[stix,                   12pt]
+          % \setupbodyfont[xits,                   12pt]
+          % \setupbodyfont[lucida,                 12pt]
+          % \setupbodyfont[lucidaot,               12pt]
+          % \setupbodyfont[pagella,                12pt]
+          % \setupbodyfont[bonum,                  12pt]
+          % \setupbodyfont[schola,                 12pt]
+          % \setupbodyfont[dejavu,                 12pt]
+          % \setupbodyfont[lucida,                 12pt]
+          % \setupbodyfont[newcomputermodern-book, 12pt]
+
+          % \setupbodyfont[pennstander-regular,    12pt]
+          % \setupbodyfont[pennstander-thin,       12pt]
+          % \setupbodyfont[pennstander-extralight, 12pt]
+          % \setupbodyfont[pennstander-light,      12pt]
+          % \setupbodyfont[pennstander-medium,     12pt]
+          % \setupbodyfont[pennstander-semibold,   12pt]
+          % \setupbodyfont[pennstander-bold,       12pt]
+          % \setupbodyfont[pennstander-extrabold,  12pt]
+          % \setupbodyfont[pennstander-black,      12pt]
+
+        } {
+            \normalexpanded{\setupbodyfont[\getdocumentargument{bodyfont},12pt]}
+        }
+
+    }
+
+    \showmathfontrepertoire
+
+\stoptext
+

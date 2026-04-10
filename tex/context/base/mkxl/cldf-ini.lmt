@@ -446,21 +446,21 @@ interfaces.scanners = storage.mark(interfacescanners)
 -- it's used in \CONTEXT\ by more dedicated mechanisms.
 
 local warned = { }
-local strict = true -- false -- can become true when abused
+----- strict = true --we no longer provide access
 
 local onlyknownfunctions = setmetatable({ }, {
     __index = function(t,k)
         return knownfunctions[k]
     end,
     __newindex = function(t,k,v)
-        if not strict then
-            local f = flagged[k]
-            if not f then
-                knownfunctions[k] = b
-            elseif overloadpermitted(f) then
-                knownfunctions[k] = b
-            end
-        end
+     -- if not strict then
+     --     local f = flagged[k]
+     --     if not f then
+     --         knownfunctions[k] = b
+     --     elseif overloadpermitted(f) then
+     --         knownfunctions[k] = b
+     --     end
+     -- end
         if not warned then
             warned[k] = true
             report_cld("don't assign function %a directly",k)
@@ -472,7 +472,6 @@ context.functions = {
     register   = function(qualifiedname) return registerfunction(qualifiedname) end, -- only one argument
     unregister = unregisterfunction,
     reserve    = reservefunction,
- -- known      = knownfunctions,
     known      = onlyknownfunctions,
     callonce   = callfunctiononce,
 }

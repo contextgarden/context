@@ -590,8 +590,8 @@ static int pnglib_palettemask(lua_State *L)
     const char *content = luaL_checklstring(L, 1, &csize);
     const char *transparent = lua_gettop(L) > 3 ? luaL_checklstring(L, 4, &tsize) : NULL;
     if (csize > 0 && tsize > 0 && tsize <= 256) {
-        int bytes = lua_tointeger(L, 2);
-        int paths = lua_tointeger(L, 3);
+        int bytes = lmt_tointeger(L, 2);
+        int paths = lmt_tointeger(L, 3);
         switch (bytes) {
             case 3:
                 switch (paths) {
@@ -628,11 +628,11 @@ static int pnglib_transparentmask(lua_State *L)
     const char *content = luaL_checklstring(L, 1, &csize);
     if (csize > 0) {
         size_t tsize;
-        int depth = lua_tointeger(L, 3);
+        int depth = lmt_tointeger(L, 3);
         if (depth == 1 || depth == 2 || depth == 4 || depth == 8 || depth == 16) {
             const char *transparent = lua_gettop(L) > 3 ? luaL_checklstring(L, 4, &tsize) : NULL;
             if (transparent) {
-                int bytes = lua_tointeger(L, 2);
+                int bytes = lmt_tointeger(L, 2);
                 char *mask = NULL;
                 int size = 8;
                 size_t msize = 0;
@@ -647,13 +647,13 @@ static int pnglib_transparentmask(lua_State *L)
                                         unsigned char t = transparent[1] & 0x01;
                                         for (size_t i = 0; i < csize; i += 1) {
                                             unsigned char c = (unsigned char) content[i];
-                                            mask[msize++] = (unsigned char) ( (t == ((c >> 8) & 0x01) ? 0x00 : 0x80)
-                                                                            + (t == ((c >> 7) & 0x01) ? 0x00 : 0x40)
-                                                                            + (t == ((c >> 6) & 0x01) ? 0x00 : 0x20)
-                                                                            + (t == ((c >> 5) & 0x01) ? 0x00 : 0x10)
-                                                                            + (t == ((c >> 4) & 0x01) ? 0x00 : 0x08)
-                                                                            + (t == ((c >> 3) & 0x01) ? 0x00 : 0x04)
-                                                                            + (t == ((c >> 2) & 0x01) ? 0x00 : 0x02)
+                                            mask[msize++] = (unsigned char) ( (t == ((c >> 7) & 0x01) ? 0x00 : 0x80)
+                                                                            + (t == ((c >> 6) & 0x01) ? 0x00 : 0x40)
+                                                                            + (t == ((c >> 5) & 0x01) ? 0x00 : 0x20)
+                                                                            + (t == ((c >> 4) & 0x01) ? 0x00 : 0x10)
+                                                                            + (t == ((c >> 3) & 0x01) ? 0x00 : 0x08)
+                                                                            + (t == ((c >> 2) & 0x01) ? 0x00 : 0x04)
+                                                                            + (t == ((c >> 1) & 0x01) ? 0x00 : 0x02)
                                                                             + (t == ( c       & 0x01) ? 0x00 : 0x01) );
                                         }
                                     }
@@ -775,8 +775,8 @@ static int pnglib_frompalette(lua_State *L)
     if (csize > 0 && psize > 0) {
         size_t tsize;
         const char *transparent = lua_gettop(L) > 4 ? luaL_checklstring(L, 5, &tsize) : NULL;
-        int bytes = lua_tointeger(L, 3);
-        int paths = lua_tointeger(L, 4);
+        int bytes = lmt_tointeger(L, 3);
+        int paths = lmt_tointeger(L, 4);
         switch (bytes) {
             case 3:
                 switch (paths) {
@@ -1007,7 +1007,7 @@ static int pnglib_makemask(lua_State *L) /* for palette */
     switch (lua_type(L, 2)) {
         case LUA_TNUMBER:
             {
-                int n = (int) lua_tointeger(L, 2);
+                int n = lmt_tointeger(L, 2);
                 n = n < 0 ? 0 : n > 255 ? 255 : n;
                 for (int i = 0; i <= n; i++) {
                     mapping[i] = 0xFF;
@@ -1025,9 +1025,9 @@ static int pnglib_makemask(lua_State *L) /* for palette */
                             lua_rawgeti(L, -1, 1);
                             lua_rawgeti(L, -2, 2);
                             lua_rawgeti(L, -3, 3);
-                            b = (int) lua_tointeger(L, -3);
-                            e = (int) lua_tointeger(L, -2);
-                            v = (int) lua_tointeger(L, -1);
+                            b = lmt_tointeger(L, -3);
+                            e = lmt_tointeger(L, -2);
+                            v = lmt_tointeger(L, -1);
                             b = b < 0 ? 0 : b > 255 ? 255 : b;
                             e = e < 0 ? 0 : e > 255 ? 255 : e;
                             v = v < 0 ? 0 : v > 255 ? 255 : v;

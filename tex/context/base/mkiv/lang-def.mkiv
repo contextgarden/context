@@ -176,6 +176,7 @@
    \s!patterns=\s!gb,
    \s!lefthyphenmin=3,
    \s!righthyphenmin=3,
+   \c!date={\v!day,\space,\v!month,\space,\v!year},
    % the reverse of american (or maybe the american did it the reverse)
    \c!leftquote=\upperleftdoublesixquote,
    \c!rightquote=\upperrightdoubleninequote,
@@ -656,6 +657,23 @@
 
 % Celtic: Breton, Welsh, Irish, Manx, Scottish Gaelic
 
+\installlanguage
+  [\s!gd]
+  [\c!spacing=\v!packed,
+   \c!leftsentence=\endash,
+   \c!rightsentence=\endash,
+   \c!leftsubsentence=\endash,
+   \c!rightsubsentence=\endash,
+   \c!leftquote=\upperleftdoublesixquote,
+   \c!rightquote=\upperrightdoubleninequote,
+   \c!leftquotation=\upperleftsinglesixquote,
+   \c!rightquotation=\upperrightsingleninequote,
+   \c!date={\v!day,\space,\v!month,\space,\v!year},
+%   \s!patterns=\s!gd,
+   \s!lefthyphenmin=2,
+   \s!righthyphenmin=3]
+
+
 % CJK: Chinese, Japanese, Korean
 
 \installlanguage
@@ -868,8 +886,7 @@
 \installlanguage [\s!latin]       [\s!la]
 \installlanguage [\s!portuguese]  [\s!pt]
 \installlanguage [\s!romanian]    [\s!ro]
-\installlanguage [\s!moldovan]    [\s!mo]
-%installlanguage [\s!moldavian]   [\s!mo]
+\installlanguage [\s!moldavian]   [\s!mo]
 
 % Vietnamese Language
 

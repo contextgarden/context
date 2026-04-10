@@ -1712,7 +1712,7 @@ static int vectorlib_getstacking(lua_State *L)
 
 static inline unsigned short vectorlib_valid_point(lua_State *L, int index)
 {
-    int p = lmt_tointeger(L, index);
+    unsigned short p = lmt_tounsignedshort(L, index);
     return p < 0 ? 0 : p > max_mesh ? max_mesh : p;
 }
 
@@ -1852,7 +1852,7 @@ inline static mesh vectorlib_mesh_aux_get(lua_State *L, int index)
     return m;
 }
 
-mesh vectorlib_get_mesh(lua_State *L, int index)
+static mesh vectorlib_get_mesh(lua_State *L, int index)
 {
     if (lua_type(L, index) == LUA_TUSERDATA) {
         mesh m = lua_touserdata(L, index);
@@ -2254,26 +2254,28 @@ static int vectorlib_contour_collectoverlap(lua_State *L)
                 double *U1 = &(v->data[u1 * vc]); 
                 double *U2 = &(v->data[u2 * vc]); 
                 for (int j = i + 1; j < lr; j++) {
+                    int v0, v1, v2;
+                    double *V0, *V1, *V2;
                     meshentry *triangle = &(l->data[j]);
-                    int v0 = triangle->points[0] - 1;
+                    v0 = triangle->points[0] - 1;
                     if (
                         u0 == v0 || u1 == v0 || u2 == v0 
                     ) { 
                         continue; /* triangles_intersection_nop_same_points */
                     }
-                    int v1 = triangle->points[1] - 1;
+                    v1 = triangle->points[1] - 1;
                     if (
                         u0 == v1 || u1 == v1 || u2 == v1
                     ) { 
                         continue; /* triangles_intersection_nop_same_points */
                     }
-                    int v2 = triangle->points[2] - 1;
+                    v2 = triangle->points[2] - 1;
                     if (
                         u0 == v2 || u1 == v2 || u2 == v2
                     ) { 
                         continue; /* triangles_intersection_nop_same_points */
                     } 
-                    double *V0 = &(v->data[v0 * vc]); 
+                    V0 = &(v->data[v0 * vc]);
                     if ( 
                         (ISZERO(U0[0] - V0[0]) && ISZERO(U0[1] - V0[1]) && ISZERO(U0[2] - V0[2])) || 
                         (ISZERO(U1[0] - V0[0]) && ISZERO(U1[1] - V0[1]) && ISZERO(U1[2] - V0[2])) || 
@@ -2281,7 +2283,7 @@ static int vectorlib_contour_collectoverlap(lua_State *L)
                     ) { 
                         continue; /* triangles_intersection_nop_same_values */
                     } 
-                    double *V1 = &(v->data[v1 * vc]); 
+                    V1 = &(v->data[v1 * vc]);
                     if ( 
                         (ISZERO(U0[0] - V1[0]) && ISZERO(U0[1] - V1[1]) && ISZERO(U0[2] - V1[2])) || 
                         (ISZERO(U1[0] - V1[0]) && ISZERO(U1[1] - V1[1]) && ISZERO(U1[2] - V1[2])) || 
@@ -2289,7 +2291,7 @@ static int vectorlib_contour_collectoverlap(lua_State *L)
                     ) { 
                         continue; /* triangles_intersection_nop_same_values */
                     } 
-                    double *V2 = &(v->data[v2 * vc]);
+                    V2 = &(v->data[v2 * vc]);
                     if ( 
                         (ISZERO(U0[0] - V2[0]) && ISZERO(U0[1] - V2[1]) && ISZERO(U0[2] - V2[2])) || 
                         (ISZERO(U1[0] - V2[0]) && ISZERO(U1[1] - V2[1]) && ISZERO(U1[2] - V2[2])) || 
@@ -2501,7 +2503,7 @@ static int vectorlib_contour_bounds(lua_State *L)
     return 0;
 }
 
-int vectorlib_contour_compare_mesh_average(const void *entry_1, const void *entry_2) 
+static int vectorlib_contour_compare_mesh_average(const void *entry_1, const void *entry_2)
 {
     const meshentry *value_1 = (const meshentry *) entry_1;
     const meshentry *value_2 = (const meshentry *) entry_2;

@@ -154,10 +154,14 @@ local modes = {
 
     vkern         = 0x0000008,
     hkern         = 0x0000008,
+    ckern         = 0x0000040,
+
     vglue         = 0x0000010,
     hglue         = 0x0000010,
     sglue         = 0x0000010,
     pglue         = 0x0000010,
+    cglue         = 0x0000010,
+
     vpenalty      = 0x0000020,
     hpenalty      = 0x0000020,
 
@@ -167,20 +171,22 @@ local modes = {
 }
 
 local filters = {
-    vglue        = 0x00001,
-    hglue        = 0x00002,
- -- mglue        = 0x00004,
-    vkern        = 0x00010,
-    hkern        = 0x00020,
- -- mkern        = 0x00040,
-    vpenalty     = 0x00100,
-    hpenalty     = 0x00200,
- -- mpenalty     = 0x00400,
-    toddler      = 0x01000,
-    continuation = 0x02000,
-    short        = 0x04000,
-    sglue        = 0x08000,
-    pglue        = 0x10000,
+    vglue         = 0x00001,
+    hglue         = 0x00002,
+ -- mglue         = 0x00004,
+    vkern         = 0x00010,
+    hkern         = 0x00020,
+ -- mkern         = 0x00040,
+    vpenalty      = 0x00100,
+    hpenalty      = 0x00200,
+ -- mpenalty      = 0x00400,
+    toddler       = 0x01000,
+    continuation  = 0x02000,
+    short         = 0x04000,
+    sglue         = 0x08000,
+    pglue         = 0x10000,
+    cglue         = 0x20000,
+    ckern         = 0x40000,
 }
 
 visualizers.modes   = modes
@@ -580,6 +586,7 @@ end
 local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
 
     local f_cache = caches["fontkern"]
+    local c_cache = caches["characterkern"]
     local i_cache = caches["italiccorrection"]
     local s_cache = caches["shapekern"]
     local m_cache = caches["marginkern"]
@@ -619,6 +626,10 @@ local fontkern, italiccorrection, marginkern, mathkern, mathshapekern do
     end
 
     fontkern = function(head,current)
+        return somekern(head,current,f_cache,"trace:ds",l_fontkern)
+    end
+
+    characterkern = function(head,current)
         return somekern(head,current,f_cache,"trace:ds",l_fontkern)
     end
 
@@ -1201,7 +1212,7 @@ local ruledglyph do
 
     local getglyphdimensions  = nuts.getglyphdimensions
     local isglyph             = nuts.isglyph
-    local getoptions          = nuts.getoptions
+    local hasoptions          = nuts.hasoptions
 
     local istoddler_code      <const> = tex.glyphoptioncodes.istoddler
     local iscontinuation_code <const> = tex.glyphoptioncodes.iscontinuation
@@ -1210,15 +1221,11 @@ local ruledglyph do
         if not glyph then
             glyph = current
         end
-        if toddler then
-            local options = getoptions(glyph)
-            if (options & istoddler_code) ~= istoddler_code then
-                return head, current
-            end
+        if toddler and hasoptions(glyph,istoddler_code) then
+            return head, current
         end
         if continuation then
-            local options = getoptions(glyph)
-            continuation = (options & iscontinuation_code) == iscontinuation_code
+            continuation = hasoptions(glyph,iscontinuation_code)
         end
         local wd, ht, dp = getglyphdimensions(glyph)
         if wd ~= 0 then
@@ -1283,7 +1290,7 @@ local ruledglue, ruledmathglue, ruledspace do
 
     local effectiveglue         = nuts.effectiveglue
     local iszeroglue            = nuts.iszeroglue
-    local getoptions            = nuts.getoptions
+    local hasoptions            = nuts.hasoptions
 
     local gluecodes             = nodes.gluecodes
 
@@ -1291,6 +1298,7 @@ local ruledglue, ruledmathglue, ruledspace do
     local spaceskip_code        <const> = gluecodes.spaceskip
     local xspaceskip_code       <const> = gluecodes.xspaceskip
     local zerospaceskip_code    <const> = gluecodes.zerospaceskip or gluecodes.userskip
+    local intercharskip_code    <const> = gluecodes.intercharacterskip
  -- local keepskip_code         <const> = gluecodes.keepskip or gluecodes.userskip
     local leftskip_code         <const> = gluecodes.leftskip
     local rightskip_code        <const> = gluecodes.rightskip
@@ -1304,7 +1312,6 @@ local ruledglue, ruledmathglue, ruledspace do
     local intermathskip_code    <const> = gluecodes.intermathskip
     local correctionskip_code   <const> = gluecodes.correctionskip
     local tabskip_code          <const> = gluecodes.tabskip
-
     local noautobreak_code      <const> = tex.glueoptioncodes.noautobreak
 
     local g_cache_v  = caches["vglue"]
@@ -1345,6 +1352,7 @@ local ruledglue, ruledmathglue, ruledspace do
         [righthangskip_code]              = "RH",
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
+        [intercharskip_code]              = "IC",
         [zerospaceskip_code]              = "ZS",
         [parfillleftskip_code]            = "PL",
         [parfillrightskip_code]           = "PR",
@@ -1369,7 +1377,7 @@ local ruledglue, ruledmathglue, ruledspace do
 
     ruledglue = function(head,current,subtype,vertical,parent)
         local width   = effectiveglue(current,parent)
-        local nobreak = (getoptions(current) & noautobreak_code) ~= 0
+        local nobreak = hasoptions(current,noautobreak_code)
         local stag    = stags[subtype]
         local cache   = (nobreak and g_caches["NB"])
                      or g_caches[subtype]
@@ -1438,7 +1446,7 @@ local ruledglue, ruledmathglue, ruledspace do
     local g_cache_x = caches["xspace"]
     local g_cache_f = caches["fspace"]
 
-    local getoptions = nuts.getoptions
+    local hasoptions = nuts.hasoptions
 
     local factor_code <const> = tex.glueoptioncodes.hasfactor
 
@@ -1454,7 +1462,7 @@ local ruledglue, ruledmathglue, ruledspace do
                 end
                 g_cache_x[width] = info
             end
-        elseif (getoptions(current) & factor_code) == factor_code then
+        elseif hasoptions(current,factor_code) then
             info = g_cache_f[width]
             if not info then
                 info = someblob("SF",l_glue,"trace:c",nil,width)
@@ -1776,7 +1784,6 @@ local ruleddiscretionary, ruledglyphdiscretionary do
 
     ruledglyphdiscretionary = function(head,current,glyph)
         local part, after, code = getdiscpart(glyph)
--- print("part",part,"code",code)
         if after ~= 0 then
             local info = g_cache[after]
             if not info then
@@ -1825,16 +1832,16 @@ local ruledpenalty do
 
     directives.register("visualizers.raisepenalties",function(v) raisepenalties = v end)
 
-    local getoptions   = nuts.getoptions
+    local hasoptions = nuts.hasoptions
 
-    local mathforward   <const> = tex.penaltyoptioncodes.mathforward
-    local mathbackward  <const> = tex.penaltyoptioncodes.mathbackward
-    local doubled       <const> = tex.penaltyoptioncodes.doubleused
+    local mathforward_code   <const> = tex.penaltyoptioncodes.mathforward
+    local mathbackward_code  <const> = tex.penaltyoptioncodes.mathbackward
+    local doubleused_code    <const> = tex.penaltyoptioncodes.doubleused
 
     local vpenalty_code <const> = filters.vpenalty
 
     ruledpenalty = function(head,current,vertical,subtype,f)
-        local double  = (getoptions(current) & doubled) ~= 0
+        local double  = hasoptions(current,doubleused_code)
         local penalty = getpenalty(current,double)
         local ismath  = subtype == pre_penalty_code or subtype == post_penalty_code or subtype == true
         local amount
@@ -1842,9 +1849,8 @@ local ruledpenalty do
             if f and (f & vpenalty_code) == vpenalty_code then
                 return head, getnext(current)
             else
-                local options  = getoptions(current)
-                local forward  = (options & mathforward) ~= 0
-                local backward = (options & mathbackward) ~= 0
+                local forward  = hasoptions(current,mathforward_code)
+                local backward = hasoptions(current,mathbackward_code)
                 if forward then
                     if backward then
                         amount = "MP=%s"
@@ -1917,13 +1923,14 @@ local ruledmath do
         },
     }
 
-    local getoptions = nuts.getoptions
-    local shortmath  <const> = tex.mathoptioncodes.short
+    local hasoptions = nuts.hasoptions
+
+    local shortmath_code <const> = tex.mathoptioncodes.short
 
     ruledmath = function(head,current,subtype)
         local mtag  = mathcodes[subtype]
         local skip  = getkern(current) + getwidth(current) -- surround
-        local short = (getoptions(current) & shortmath) ~= 0
+        local short = hasoptions(current,shortmath_code)
         local htag  = tags[short][mtag or "math"] or tags[false].math
         local ttag  = htag[1]
         local cache = htag[2]
@@ -1993,6 +2000,7 @@ do
     local verticalmathkern_code   <const> = kerncodes.verticalmathkern
     local leftmathslackkern_code  <const> = kerncodes.leftmathslackkern
     local rightmathslackkern_code <const> = kerncodes.rightmathslackkern
+    local characterkern_code      <const> = kerncodes.characterkern
     ----- userkern_code           <const> = kerncodes.userkern
 
  -- local skipcodes               = nodes.skipcodes
@@ -2059,6 +2067,7 @@ do
         local hglue_code         <const> = filters.hglue
         local vkern_code         <const> = filters.vkern
         local hkern_code         <const> = filters.hkern
+        local ckern_code         <const> = filters.ckern
         local vpenalty_code      <const> = filters.vpenalty
         local hpenalty_code      <const> = filters.hpenalty
         local toddler_code       <const> = filters.toddler
@@ -2066,11 +2075,13 @@ do
         local short_code         <const> = filters.short
         local sglue_code         <const> = filters.sglue
         local pglue_code         <const> = filters.pglue
+        local cglue_code         <const> = filters.cglue
 
         local spaceskip_code     <const> = nodes.skipcodes.spaceskip
         local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
         local zerospaceskip_code <const> = nodes.skipcodes.zerospaceskip
         local intermathskip_code <const> = nodes.skipcodes.intermathskip
+        local intercharskip_code <const> = nodes.skipcodes.intercharacterskip
 
         while current do
             local id, subtype = getidsubtype(current)
@@ -2258,15 +2269,6 @@ do
             elseif trace_glue then
                 local f = getattr(current,a_filter)
                 if f then
---                     if vertical then
---                         if (f & hglue_code) == hglue_code then
---                             goto next
---                         end
---                     else
---                         if (f & vglue_code) == vglue_code then
---                             goto next
---                         end
---                     end
                     if (f & hglue_code) == hglue_code then
                         if vertical then
                             goto next
@@ -2277,6 +2279,10 @@ do
                         end
                     elseif (f & sglue_code) == sglue_code then
                         if subtype ~= spaceskip_code and subtype ~= xspaceskip_code then
+                            goto next
+                        end
+                    elseif (f & cglue_code) == cglue_code then
+                        if subtype ~= intercharskip_code then
                             goto next
                         end
                     elseif (f & pglue_code) == pglue_code then
@@ -2305,6 +2311,11 @@ do
                 end
                 if trace_expansion or prev_trace_expansion then
                     head, current = kernexpansion(head,current)
+                end
+            elseif subtype == characterkern_code then
+                local f = getattr(current,a_filter)
+                if f and (f & ckern_code) == ckern_code then
+                    head, current = characterkern(head,current)
                 end
             elseif subtype == italiccorrection_code or subtype == leftkern_code or subtype == rightkern_code then
                 if trace_italic or prev_trace_italic then

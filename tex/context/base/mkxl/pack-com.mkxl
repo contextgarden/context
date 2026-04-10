@@ -731,7 +731,74 @@
 %D \stopplacefigure
 %D \stoptyping
 
-% todo: natural size
+% A few new features per April 9, 2026 ... probably some more later (MS/HH).
+%
+% \definepairedbox
+%   [mylegend]
+%   [location={right,top},
+%    width=\hsize,
+%    alternative=vertical,
+%    align={normal,snapping},
+%    maxwidth=1tw,
+%    distance=fit]
+%
+% \setupfloat
+%   [intermezzo]
+%   [location=left]
+%
+% \startbuffer
+% \startMPcode
+%   draw fullcircle scaled 3cm ;
+%   fill unitsquare scaled 2cm withcolor darkblue ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startplaceintermezzo[location=none]
+%   \placesidebyside
+%   % {\unframed [offset=overlay,align=normal] {\typebuffer[before=,after=]}}
+%     {\typebuffer}
+%     {\getbuffer}
+% \stopplaceintermezzo
+%
+% \startplaceintermezzo[location=none]
+%   \placesidebyside
+%     {\unframed [offset=overlay,align=normal,width=.5\hsize] {\typebuffer[before=,after=]}}
+%     {\getbuffer}
+% \stopplaceintermezzo
+%
+% \startplaceintermezzo[location=none]
+%   \startplacemylegend
+%   % {\unframed [offset=overlay,align=normal] {\typebuffer[before=,after=]}}
+%   % {\typebuffer[before=,after=]}
+%     {\typebuffer}
+%     {\getbuffer}
+%   \stopplacemylegend
+% \stopplaceintermezzo
+%
+% \startbuffer
+% \startMPcode
+%   draw function(2,"x","sin(x)",0,4*pi,0.01)
+%     xsized (.2TextWidth)
+%     withpen pencircle scaled 3
+%     withcolor darkred ;
+% \stopMPcode
+% \stopbuffer
+%
+% \startplaceintermezzo[location=none]
+%   \startplacemylegend
+%     {\unframed [offset=overlay,align={normal,snapping}] {\typebuffer[before=,after=]}}
+%   % {\typebuffer}
+%     {\getbuffer}
+%   \stopplacemylegend
+% \stopplaceintermezzo
+%
+% \startplaceintermezzo[location=none]
+%   \startplacemylegend
+%   % {\hsize7cm \samplefile{ward}}
+%     {\typebuffer}
+%     {\getbuffer}
+%   \stopplacemylegend
+% \stopplaceintermezzo
 
 \newsystemmode{pairedbox}
 
@@ -745,7 +812,7 @@
 
 \setuppairedbox
  [\c!n=1,
-  \c!distance=\bodyfontsize,
+  \c!distance=\bodyfontsize, % \v!fit
  %\c!before=,
  %\c!after=,
  %\c!color=,
@@ -757,6 +824,7 @@
   \c!maxheight=\textheight, % \makeupheight,
  %\c!bodyfont=,
  %\c!align=,
+ %\c!alternative=\v!horizontal,
   \c!location=\v!bottom]
 
 % watch the hsize/vsize tricks
@@ -769,7 +837,7 @@
    \protected\frozen\instance\edefcsname\e!setup\currentpairedbox\e!endsetup\endcsname{\setuppairedbox     [\currentpairedbox]}%
    \protected\frozen\instance\edefcsname\e!place\currentpairedbox           \endcsname{\placepairedbox     [\currentpairedbox]}% one argument is mandate anyway
    \protected\frozen\instance\edefcsname\e!start\e!place\currentpairedbox   \endcsname{\startplacepairedbox[\currentpairedbox]}% one argument is mandate anyway
-   \protected\frozen\instance\edefcsname\e!stop\e!place \currentpairedbox   \endcsname{\stopplacepairedbox                    }%
+   \protected\frozen\instance\edefcsname\e!stop \e!place\currentpairedbox   \endcsname{\stopplacepairedbox                    }%
 \to \everydefinepairedbox
 
 \permanent\tolerant\protected\def\startplacepairedbox[#1]#*[#S#2]%
@@ -794,9 +862,19 @@
 
 \aliased\let\placepairedbox\startplacepairedbox    % we just pick up two boxes
 
+% \def\pack_pairedboxes_first_pickup
+%   {\dowithnextboxcs\pack_pairedboxes_first\hbox
+%      \bgroup
+%      \let\next=}
+
 \def\pack_pairedboxes_first_pickup
-  {\dowithnextboxcs\pack_pairedboxes_first\hbox
-     \bgroup
+  {\dowithnextboxcs\pack_pairedboxes_first
+     \ifcstok{\pairedboxparameter\c!alternative}\v!vertical
+       \vbox \s!prune \bgroup
+         \usealignparameter\pairedboxparameter
+     \else
+       \hbox \bgroup
+     \fi
      \let\next=}
 
 \def\pack_pairedboxes_first
@@ -844,14 +922,21 @@
    \let\pack_pairedboxes_fill_bottom\relax
    \let\pack_pairedboxes_flush\pack_pairedboxes_flush_bottom}
 
+\def\pack_pairedboxes_flush_distance
+  {\ifzeropt\scratchdistance
+     \hss
+   \else
+     \kern\scratchdistance
+   \fi}
+
 \def\pack_pairedboxes_flush_left
   {\box\b_pack_pairedboxes_second
-   \kern{\pairedboxparameter\c!distance}%
+   \pack_pairedboxes_flush_distance
    \box\b_pack_pairedboxes_first}
 
 \def\pack_pairedboxes_flush_right
   {\box\b_pack_pairedboxes_first
-   \kern{\pairedboxparameter\c!distance}%
+   \pack_pairedboxes_flush_distance
    \box\b_pack_pairedboxes_second}
 
 \def\pack_pairedboxes_flush_top
@@ -936,8 +1021,24 @@
      \setrigidcolumnhsize\hsize{\pairedboxparameter\c!distance}\p_n
    \fi}
 
+% \def\pack_pairedboxes_between_horizontal
+%   {\scratchdistance{\pairedboxparameter\c!distance}%
+%    \scratchwidth{\pairedboxparameter\c!maxwidth}%
+%    \setlocalhsize
+%    \hsize{\availablehsize-\wd\b_pack_pairedboxes_first-\scratchdistance}%
+%    \hsize{\pairedboxparameter\c!width}% can be \hsize
+%    \scratchdimen{\wd\b_pack_pairedboxes_first+\scratchdistance}%
+%    \ifdim{\hsize+\scratchdimen}>\scratchwidth
+%      \hsize{\scratchwidth-\scratchdimen}%
+%    \fi}
+
 \def\pack_pairedboxes_between_horizontal
-  {\scratchdistance{\pairedboxparameter\c!distance}%
+  {\scratchdistance
+     \ifcstok{\pairedboxparameter\c!distance}\v!fit
+       \zeropoint
+     \else
+       \lastnamedcs
+     \fi
    \scratchwidth{\pairedboxparameter\c!maxwidth}%
    \setlocalhsize
    \hsize{\availablehsize-\wd\b_pack_pairedboxes_first-\scratchdistance}%
@@ -969,7 +1070,7 @@
    \fi}
 
 \def\pack_pairedboxes_pack_horizontal
-  {\dontleavehmode\hbox\bgroup
+  {\dontleavehmode\hbox \ifzeropt\scratchwidth\else to \scratchwidth \fi\bgroup
      \forgetall
      \d_pack_pairedboxes_size\ht
        \ifdim\ht\b_pack_pairedboxes_first>\ht\b_pack_pairedboxes_second

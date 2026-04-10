@@ -435,7 +435,7 @@ static int xdecimallib_xor(lua_State *L)
 
 static int xdecimallib_setp(lua_State *L)
 {
-    int i = (int) luaL_optinteger(L, 1, default_precision);
+    int i = lmt_optinteger(L, 1, default_precision);
     if (i < min_precision) {
         context.digits = min_precision;
     } else if (i > max_precision) {

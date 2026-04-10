@@ -3,7 +3,7 @@
  <metadata>
   <entry name="name">mtx-scite</entry>
   <entry name="detail">Scite Helper Script</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.01</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -11,6 +11,7 @@
     <flag name="words"><short>convert spell-*.txt into spell-*.lua</short></flag>
     <flag name="tree"><short>converts a tree into an html tree (--source --target --numbers)</short></flag>
     <flag name="file"><short>converts a file into an html file (--source --target --numbers --lexer)</short></flag>
+    <flag name="update"><short>update interface files to given path</short></flag>
    </subcategory>
   </category>
  </flags>

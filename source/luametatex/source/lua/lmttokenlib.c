@@ -818,7 +818,7 @@ static void tokenlib_aux_to_token(lua_State *L, int i, int m, int *head, int *ta
             }
         case LUA_TNUMBER:
             {
-                halfword t = tex_get_available_token(tokenlib_aux_to_token_val((int) lua_tointeger(L, i)));
+                halfword t = tex_get_available_token(tokenlib_aux_to_token_val(lmt_tointeger(L, i)));
                 if (*head) {
                     token_link(*tail) = t;
                 } else {
@@ -829,7 +829,7 @@ static void tokenlib_aux_to_token(lua_State *L, int i, int m, int *head, int *ta
             }
         case LUA_TTABLE:
             {
-                size_t n = lua_rawlen(L, i);
+                size_t n = (size_t) lua_rawlen(L, i);
                 for (size_t j = 1; j <= n; j++) {
                     lua_rawgeti(L, i, j);
                     tokenlib_aux_to_token(L, -1, m, head, tail);
@@ -2641,8 +2641,8 @@ static int tokenlib_create(lua_State *L)
         case LUA_TNUMBER:
             {
                 int cs = 0;
-                int chr = (int) lua_tointeger(L, 1);
-                int cmd = (int) luaL_optinteger(L, 2, tex_get_cat_code(cat_code_table_par, chr));
+                int chr = lmt_tointeger(L, 1);
+                int cmd = lmt_optinteger(L, 2, tex_get_cat_code(cat_code_table_par, chr));
                 switch (cmd) {
                     case escape_cmd:
                     case ignore_cmd:
@@ -2693,12 +2693,12 @@ static int tokenlib_new(lua_State *L)
     int cmd = 0;
     switch (lua_type(L, 1)) {
         case LUA_TSTRING:
-            cmd = (int) tokenlib_aux_get_command_id(lua_tostring(L, 1));
-            chr = (int) luaL_optinteger(L, 2, 0);
+            cmd = tokenlib_aux_get_command_id(lua_tostring(L, 1));
+            chr = lmt_optinteger(L, 2, 0);
             break;
         case LUA_TNUMBER:
-            chr = (int) lua_tointeger(L, 1);
-            cmd = (int) luaL_optinteger(L, 2, 0);
+            chr = lmt_tointeger(L, 1);
+            cmd = lmt_optinteger(L, 2, 0);
             break;
         default:
             break;
@@ -2859,7 +2859,7 @@ static inline int tokenlib_getrange(lua_State *L)
 {
     int cmd;
     if (lua_type(L, 1) == LUA_TNUMBER) {
-        cmd = (int) lua_tointeger(L, 1);
+        cmd = lmt_tointeger(L, 1);
     } else {
         lua_token *n = tokenlib_aux_check_istoken(L, 1);
         halfword tok = token_info(n->token);
@@ -4107,7 +4107,7 @@ static int tokenlib_getcommandvalues(lua_State *L)
     int cmd = -1;
     switch (lua_type(L, 1)) { 
         case LUA_TSTRING:
-            cmd = (int) tokenlib_aux_get_command_id(lua_tostring(L, 1));
+            cmd = tokenlib_aux_get_command_id(lua_tostring(L, 1));
             break;
         case LUA_TNUMBER:
             cmd = lmt_tointeger(L, 1);

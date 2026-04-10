@@ -26,8 +26,7 @@ local middle_code       <const> = listcodes.middle
 local wrapped_code      <const> = listcodes.wrapped
 local mathpack_code     <const> = listcodes.mathpack
 local construct_code    <const> = listcodes.construct
-local alignment_code    <const> = listcodes.alignment
-local row_code          <const> = listcodes.row
+local alignment_code    <const> = listcodes.alignment -- row
 local fence_code        <const> = listcodes.fence
 
 local nuts              = nodes.nuts

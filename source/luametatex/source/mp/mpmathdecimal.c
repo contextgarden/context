@@ -364,19 +364,19 @@ static void mp_decimal_free_number(MP mp, mp_number *n)
 
 static void mp_decimal_set_from_int(mp_number *A, mp_scaled_t B)
 {
-    decNumberFromScaled(A->data.num, B);
+    decNumberFromScaled(A->data.num, (int32_t) B);
 }
 
 static void mp_decimal_set_from_boolean(mp_number *A, mp_scaled_t B)
 {
-    decNumberFromScaled(A->data.num, B);
+    decNumberFromScaled(A->data.num, (int32_t) B);
 }
 
 static void mp_decimal_set_from_scaled(mp_number *A, mp_scaled_t B)
 {
     decNumber c;
     decNumberFromScaled(&c, 65536);
-    decNumberFromScaled(A->data.num, B);
+    decNumberFromScaled(A->data.num, (int32_t) B);
     decNumberDivide(A->data.num, A->data.num, &c, &mp_decimal_data.set);
 }
 
@@ -424,14 +424,14 @@ static void mp_decimal_set_from_mul(mp_number *A, mp_number *B, mp_number *C)
 static void mp_decimal_set_from_int_div(mp_number *A, mp_number *B, mp_scaled_t C)
 {
     decNumber c;
-    decNumberFromScaled(&c, C);
+    decNumberFromScaled(&c, (int32_t) C);
     decNumberDivide(A->data.num, B->data.num, &c, &mp_decimal_data.set);
 }
 
 static void mp_decimal_set_from_int_mul(mp_number *A, mp_number *B, mp_scaled_t C)
 {
     decNumber c;
-    decNumberFromScaled(&c, C);
+    decNumberFromScaled(&c, (int32_t) C);
     decNumberMultiply(A->data.num, B->data.num, &c, &mp_decimal_data.set);
 }
 
@@ -479,7 +479,7 @@ static void mp_decimal_add_scaled(mp_number *A, mp_scaled_t B)
 {
     decNumber b, c;
     decNumberFromScaled(&c, 65536);
-    decNumberFromScaled(&b, B);
+    decNumberFromScaled(&b, (int32_t) B);
     decNumberDivide(&b, &b, &c, &mp_decimal_data.set);
     decNumberAdd(A->data.num, A->data.num, &b, &mp_decimal_data.set);
 }
@@ -487,14 +487,14 @@ static void mp_decimal_add_scaled(mp_number *A, mp_scaled_t B)
 static void mp_decimal_multiply_int(mp_number *A, mp_scaled_t B)
 {
     decNumber b;
-    decNumberFromScaled(&b, B);
+    decNumberFromScaled(&b, (int32_t) B);
     decNumberMultiply(A->data.num, A->data.num, &b, &mp_decimal_data.set);
 }
 
 static void mp_decimal_divide_int(mp_number *A, mp_scaled_t B)
 {
     decNumber b;
-    decNumberFromScaled(&b, B);
+    decNumberFromScaled(&b, (int32_t) B);
     decNumberDivide(A->data.num, A->data.num, &b, &mp_decimal_data.set);
 }
 

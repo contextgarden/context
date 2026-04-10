@@ -76,8 +76,8 @@
 # define negative_one_eighty_deg -0x0B400000
 # define three_sixty_deg          0x16800000
 
-# define odd(A)                   (labs(A) % 2 == 1)
-# define two_to_the(A)            (1 << (unsigned)(A))
+# define odd(A)                   (llabs(A) % 2 == 1)
+# define two_to_the(A)            (1 << (mp_scaled_t)(A))
 # define set_cur_cmd(A)           mp->cur_mod_->command = (A)
 # define set_cur_mod(A)           mp->cur_mod_->data.n.data.val = (A)
 
@@ -93,8 +93,8 @@ static const int mp_m_spec_atan[27] = {
     14, 7, 4, 2, 1
 };
 
-static mp_scaled_t mp_scaled_aux_take_fraction (MP mp, int p, mp_scaled_t q);
-static mp_scaled_t mp_scaled_aux_make_fraction (MP mp, int p, mp_scaled_t q);
+static mp_scaled_t mp_scaled_aux_take_fraction (MP mp, mp_scaled_t p, mp_scaled_t q);
+static mp_scaled_t mp_scaled_aux_make_fraction (MP mp, mp_scaled_t p, mp_scaled_t q);
 static mp_scaled_t mp_scaled_round_unscaled    (mp_number *x_orig);
 
 static void mp_scaled_allocate_number(MP mp, mp_number *n, mp_number_type t)
@@ -115,7 +115,7 @@ static void mp_scaled_allocate_abs(MP mp, mp_number *n, mp_number_type t, mp_num
 {
     (void) mp;
     n->type = t;
-    n->data.val = labs(v->data.val);
+    n->data.val = llabs(v->data.val);
 }
 
 static void mp_scaled_allocate_div(MP mp, mp_number *n, mp_number_type t, mp_number *a, mp_number *b)
@@ -268,7 +268,7 @@ static void mp_scaled_divide_int(mp_number *A, mp_scaled_t B)
 
 static void mp_scaled_abs(mp_number *A)
 {
-    A->data.val = labs(A->data.val);
+    A->data.val = llabs(A->data.val);
 }
 
 static void mp_scaled_clone(mp_number *A, mp_number *B)
@@ -283,7 +283,7 @@ static void mp_scaled_negated_clone(mp_number *A, mp_number *B)
 
 static void mp_scaled_abs_clone(mp_number *A, mp_number *B)
 {
-    A->data.val = labs(B->data.val);
+    A->data.val = llabs(B->data.val);
 }
 
 static void mp_scaled_swap(mp_number *A, mp_number *B)
@@ -362,7 +362,7 @@ static int mp_scaled_less(mp_number *A, mp_number *B)
 
 static int mp_scaled_non_equal_abs(mp_number *A, mp_number *B)
 {
-    return labs(A->data.val) != labs(B->data.val);
+    return llabs(A->data.val) != llabs(B->data.val);
 }
 
 /*tex 
@@ -486,7 +486,7 @@ static void mp_scaled_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
     Todo: check if we can replace this (see mpmathdouble): 
 */
 
-static mp_scaled_t mp_scaled_aux_make_fraction(MP mp, int p, mp_scaled_t q)
+static mp_scaled_t mp_scaled_aux_make_fraction(MP mp, mp_scaled_t p, mp_scaled_t q)
 {
     if (q == 0) {
         mp_confusion (mp, "division by zero");
@@ -523,7 +523,7 @@ static mp_scaled_t mp_scaled_aux_make_fraction(MP mp, int p, mp_scaled_t q)
 
 static void mp_scaled_make_fraction(MP mp, mp_number *ret, mp_number *p, mp_number *q)
 {
-    ret->data.val = mp_scaled_aux_make_fraction (mp, p->data.val, q->data.val);
+    ret->data.val = mp_scaled_aux_make_fraction(mp, p->data.val, q->data.val);
 }
 
 /*tex
@@ -536,7 +536,7 @@ static void mp_scaled_make_fraction(MP mp, mp_number *ret, mp_number *p, mp_numb
     substitute is advisable.
 */
 
-static mp_scaled_t mp_scaled_aux_take_fraction(MP mp, int p, mp_scaled_t q)
+static mp_scaled_t mp_scaled_aux_take_fraction(MP mp, mp_scaled_t p, mp_scaled_t q)
 {
     double d = (double) p *(double) q *TWEXP_28;
     if ((p ^ q) >= 0) {
@@ -1079,10 +1079,10 @@ static void mp_scaled_sqrt(MP mp, mp_number *ret, mp_number *x_orig)
 
 static void mp_scaled_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
-    mp_scaled_t a = labs(a_orig->data.val);
-    mp_scaled_t b = labs(b_orig->data.val);
+    mp_scaled_t a = llabs(a_orig->data.val);
+    mp_scaled_t b = llabs(b_orig->data.val);
     if (a < b) {
-        int r = b;
+        mp_scaled_t r = b;
         b = a;
         a = r;
     }
@@ -1133,8 +1133,8 @@ static void mp_scaled_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
 
 static void mp_scaled_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
-    mp_scaled_t a = labs(a_orig->data.val);
-    mp_scaled_t b = labs(b_orig->data.val);
+    mp_scaled_t a = llabs(a_orig->data.val);
+    mp_scaled_t b = llabs(b_orig->data.val);
     if (a <= b) {
         /*tex Handle erroneous |pyth_sub| and set |a:=0|: */
         if (a < b) {
@@ -1156,13 +1156,13 @@ static void mp_scaled_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
         if (a < fraction_four) {
             big = 0;
         } else {
-            a = (int) a/2;
-            b = (int) b/2;
+            a = a / 2;
+            b = b / 2;
             big = 1;
         }
         /*tex Replace |a| by an approximation to $\psqrt{a^2-b^2}$ */
         while (1) {
-            int r = mp_scaled_aux_make_fraction(mp, b, a);
+            mp_scaled_t r = mp_scaled_aux_make_fraction(mp, b, a);
             r = mp_scaled_aux_take_fraction(mp, r, r);
             /*tex Now $r\approx b^2/a^2$. */
             if (r == 0) {
@@ -1297,7 +1297,7 @@ static void mp_scaled_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
         }
         /* Multiply |y| by $\exp(-z/2^{27})$: */
         {
-            int k = 1;
+            mp_scaled_t k = 1;
             while (z > 0) {
                 while (z >= mp_m_spec_log[k]) {
                     z -= mp_m_spec_log[k];
@@ -1374,7 +1374,7 @@ static void mp_scaled_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number 
             y = y/2;
         }
         if (y > 0) {
-            int k = 0; /* loop counter */
+            mp_scaled_t k = 0; /* loop counter */
             while (x < fraction_one) {
                 x += x;
                 y += y;
@@ -1443,7 +1443,7 @@ static void mp_scaled_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number 
 
 static void mp_scaled_n_sin_cos(MP mp, mp_number *z_orig, mp_number *n_cos, mp_number *n_sin)
 {
-    int k;                          /* loop control variable */
+    mp_scaled_t k;                    /* loop control variable */
     mp_scaled_t q;                    /* specifies the quadrant */
     mp_scaled_t x, y, t;              /* temporary registers */
     mp_scaled_t z = z_orig->data.val; /* scaled */

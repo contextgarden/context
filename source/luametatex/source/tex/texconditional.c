@@ -902,8 +902,6 @@ void tex_conditional_if(halfword code, int unless)
                 } else {
                     while (p && q) {
                         if (token_info(p) != token_info(q)) {
-                         // p = null;
-                         // break;
                             result = 0;
                             goto IFTOKDONE;
                         } else {
@@ -986,8 +984,6 @@ void tex_conditional_if(halfword code, int unless)
                     } else {
                         while (p && q) {
                             if (token_info(p) != token_info(q)) {
-                             // p = null;
-                             // break;
                                 result = 0;
                                 goto IFXDONE;
                             } else {

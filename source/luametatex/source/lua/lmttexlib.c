@@ -1273,7 +1273,6 @@ static inline int texlib_aux_valid_register_index(lua_State *L, int slot, int cm
                     return -1; 
                 }
             }
-            break;
         case LUA_TNUMBER:
             {
                 int index = lmt_tointeger(L, slot);
@@ -1288,7 +1287,6 @@ static inline int texlib_aux_valid_register_index(lua_State *L, int slot, int cm
                     }
                 }
             }
-            break;
         default:
             luaL_error(L, "string or a number expected");
             return -1;
@@ -6122,11 +6120,12 @@ static int texlib_getruleoptionvalues(lua_State *L)
 
 static int texlib_getboxoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 2, 5);
+    lua_createtable(L, 2, 6);
     lua_set_string_by_index(L, box_option_no_math_axis, "nomathaxis");
     lua_set_string_by_index(L, box_option_discardable,  "discardable");
     lua_set_string_by_index(L, box_option_keep_spacing, "keepspacing");
     lua_set_string_by_index(L, box_option_snapping,     "snapping");
+    lua_set_string_by_index(L, box_option_no_kerning,   "nokerning");
     lua_set_string_by_index(L, box_option_no_snapping,  "nosnapping");
     lua_set_string_by_index(L, box_option_no_profiling, "noprofiling");
     lua_set_string_by_index(L, box_option_align_split,  "alignsplit");

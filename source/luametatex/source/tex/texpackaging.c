@@ -99,17 +99,19 @@ typedef enum saved_box_entries {
 } saved_box_entries;
 
 typedef enum saved_box_options { 
-    saved_box_reverse_option      = 0x001,
-    saved_box_container_option    = 0x002,
-    saved_box_limit_option        = 0x004,
-    saved_box_mathtext_option     = 0x008,
-    saved_box_discardable_option  = 0x010,
-    saved_box_swap_htdp_option    = 0x020,
-    saved_box_keep_spacing_option = 0x040,
-    saved_box_snapping_option     = 0x080,
-    saved_box_no_snapping_option  = 0x100,
-    saved_box_no_profiling_option = 0x200,
-    saved_box_align_split_option  = 0x400,
+    saved_box_reverse_option      = 0x0001,
+    saved_box_container_option    = 0x0002,
+    saved_box_limit_option        = 0x0004,
+    saved_box_mathtext_option     = 0x0008,
+    saved_box_discardable_option  = 0x0010,
+    saved_box_swap_htdp_option    = 0x0020,
+    saved_box_keep_spacing_option = 0x0040,
+    saved_box_snapping_option     = 0x0080,
+    saved_box_no_snapping_option  = 0x0100,
+    saved_box_no_profiling_option = 0x0200,
+    saved_box_align_split_option  = 0x0400,
+    saved_box_no_kerning_option   = 0x0800,
+    saved_box_prune_option        = 0x1000,
 } saved_box_options;
 
 static inline void saved_box_initialize(void)
@@ -232,7 +234,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
     int brace = 0;
     while (1) {
         /*tex Maybe |migrate <int>| makes sense here. */
-        switch (tex_scan_character("tascdoxyrklmnTASCDOXYRKLMN", 1, 1, 1)) {
+        switch (tex_scan_character("tascdoxyrklmnpTASCDOXYRKLMNP", 1, 1, 1)) {
             case 0:
                 goto DONE;
             case 't': case 'T':
@@ -464,6 +466,11 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                     options |= saved_box_keep_spacing_option;
                 }
                 break;
+            case 'p': case 'P':
+                if (tex_scan_mandate_keyword("prune", 1)) {
+                    options |= saved_box_prune_option;
+                }
+                break;
             case 'l': case 'L':
                 if (tex_scan_character("iI", 0, 0, 0)) {
                     switch (tex_scan_character("nmNM", 0, 0, 0)) {
@@ -490,7 +497,12 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                 break;
             case 'n': case 'N':
                 if (tex_scan_character("oO", 0, 0, 0)) {
-                    switch (tex_scan_character("spSP", 0, 0, 0)) {
+                    switch (tex_scan_character("kspKSP", 0, 0, 0)) {
+                        case 'k': case 'K' :
+                            if (tex_scan_mandate_keyword("nokerning", 3)) {
+                                options |= saved_box_no_kerning_option;
+                            }
+                            break;
                         case 's': case 'S' :
                             if (tex_scan_mandate_keyword("nosnapping", 3)) {
                                 options |= saved_box_no_snapping_option;
@@ -502,7 +514,7 @@ static void tex_aux_scan_full_spec(halfword context, quarterword c, quarterword 
                             }
                             break;
                         default:
-                            tex_aux_show_keyword_error("nosnapping|noprofiling");
+                            tex_aux_show_keyword_error("nokerning|nosnapping|noprofiling");
                             goto DONE;
                     }
                 }
@@ -1443,7 +1455,9 @@ void tex_limit(halfword p)
                 c = node_next(c);
             }
             if (nonfrozen) { /* was: frozen, needs checking */
-                set = (double) (set * (frozen + nonfrozen) - frozen) / (double) nonfrozen; 
+                double f = (double) frozen;
+                double n = (double) nonfrozen;
+                set = (set * (f + n) - f) / n;
             } else { 
                 limit = 0;
             }
@@ -3166,6 +3180,56 @@ void tex_finish_vcenter_group(void)
     }
 }
 
+static inline bool tex_aux_prunable(halfword n)
+{
+    return node_type(n) == glue_node && (
+        node_subtype(n) == user_skip_glue
+     || node_subtype(n) == space_skip_glue
+     || node_subtype(n) == xspace_skip_glue
+    );
+}
+
+static void tex_aux_prune_list(void)
+{
+    while (1) {
+        if (cur_list.head == cur_list.tail) {
+            return;
+        } else {
+            halfword n = node_next(cur_list.head);
+            if (! tex_aux_prunable(n)) {
+                break;
+            } else if (n == cur_list.tail) {
+                /* simple case: a single glue node */
+                node_next(cur_list.head) = null;
+                cur_list.tail = cur_list.head;
+                tex_flush_node(n);
+                return;
+            } else {
+                tex_couple_nodes(cur_list.head, node_next(n));
+                tex_flush_node(n);
+            }
+        }
+    }
+    while (1) {
+        if (cur_list.head == cur_list.tail) {
+            return;
+        } else {
+            halfword n = cur_list.tail;
+            if (! tex_aux_prunable(n)) {
+                break;
+            } else if (node_next(cur_list.head) == n) {
+                /* simple case: two glue nodes */
+                node_next(cur_list.head) = null;
+                cur_list.tail = cur_list.head;
+            } else {
+                cur_list.tail = node_prev(n);
+                node_next(node_prev(n)) = null;
+            }
+            tex_flush_node(n);
+        }
+    }
+}
+
 void tex_package(singleword nature)
 {
     int grp = cur_group;
@@ -3199,6 +3263,9 @@ void tex_package(singleword nature)
         scaled xmove = saved_box_xmove;
         scaled ymove = saved_box_ymove;
         halfword snapping = saved_box_snapping;
+        if (options & saved_box_prune_option) {
+            tex_aux_prune_list();
+        }
         if (cur_list.mode == restricted_hmode) {
             boxnode = tex_filtered_hpack(
                 cur_list.head, cur_list.tail, 
@@ -3220,7 +3287,7 @@ void tex_package(singleword nature)
             box_package_state(boxnode) = hbox_package_state;
             tex_aux_set_vnature(boxnode, nature);
         }
-        if (options & saved_box_limit_option && box_list(boxnode)) {
+        if ((options & saved_box_limit_option) && box_list(boxnode)) {
             tex_limit(boxnode);
         }
         if (dirptr) {
@@ -3312,6 +3379,9 @@ void tex_package(singleword nature)
         }
         if (options & saved_box_snapping_option) {
             box_options(boxnode) = box_option_snapping;
+        }
+        if (options & saved_box_no_kerning_option) {
+            box_options(boxnode) = box_option_no_kerning;
         }
         if (options & saved_box_no_snapping_option) {
             box_options(boxnode) = box_option_no_snapping;

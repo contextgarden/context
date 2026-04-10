@@ -1349,6 +1349,10 @@ halfword tex_active_to_cs(int c, int force)
 
 */
 
+/* prevent clang warning : arithmetic between different enumeration types */
+
+# define file_state_cmd(state,cmd) ((unsigned) state + (unsigned) cmd)
+
 static int tex_aux_get_next_file(void)
 {
   SWITCH:
@@ -1363,22 +1367,22 @@ static int tex_aux_get_next_file(void)
             cur_cmd = tex_aux_the_cat_code(cur_chr);
         }
         switch (lmt_input_state.cur_input.state + cur_cmd) {
-            case mid_line_state    + ignore_cmd:
-            case skip_blanks_state + ignore_cmd:
-            case new_line_state    + ignore_cmd:
-            case skip_blanks_state + spacer_cmd:
-            case new_line_state    + spacer_cmd:
+            case file_state_cmd(mid_line_state, ignore_cmd):
+            case file_state_cmd(skip_blanks_state, ignore_cmd):
+            case file_state_cmd(new_line_state, ignore_cmd):
+            case file_state_cmd(skip_blanks_state, spacer_cmd):
+            case file_state_cmd(new_line_state, spacer_cmd):
                 /*tex Cases where character is ignored. */
                 goto SWITCH;
-            case mid_line_state    + escape_cmd:
-            case new_line_state    + escape_cmd:
-            case skip_blanks_state + escape_cmd:
+            case file_state_cmd(mid_line_state, escape_cmd):
+            case file_state_cmd(new_line_state, escape_cmd):
+            case file_state_cmd(skip_blanks_state, escape_cmd):
                 /*tex Scan a control sequence. */
                 lmt_input_state.cur_input.state = (unsigned char) tex_aux_scan_control_sequence();
                 break;
-            case mid_line_state    + active_char_cmd:
-            case new_line_state    + active_char_cmd:
-            case skip_blanks_state + active_char_cmd:
+            case file_state_cmd(mid_line_state, active_char_cmd):
+            case file_state_cmd(new_line_state, active_char_cmd):
+            case file_state_cmd(skip_blanks_state, active_char_cmd):
                 /*tex Process an active-character. */
                 if ((lmt_input_state.scanner_status == scanner_is_tolerant || lmt_input_state.scanner_status == scanner_is_matching) && tex_pass_active_math_char(cur_chr)) {
                     /*tex We need to intercept a delimiter in arguments. */
@@ -1397,9 +1401,9 @@ static int tex_aux_get_next_file(void)
                 }
                 lmt_input_state.cur_input.state = mid_line_state;
                 break;
-            case mid_line_state    + superscript_cmd:
-            case new_line_state    + superscript_cmd:
-            case skip_blanks_state + superscript_cmd:
+            case file_state_cmd(mid_line_state, superscript_cmd):
+            case file_state_cmd(new_line_state, superscript_cmd):
+            case file_state_cmd(skip_blanks_state, superscript_cmd):
                 /*tex We need to check for multiple ^:
                     (0) always check for ^^ ^^^^ ^^^^^^^
                     (1) only check in text mode
@@ -1419,33 +1423,33 @@ static int tex_aux_get_next_file(void)
                 }
                 lmt_input_state.cur_input.state = mid_line_state;
                 break;
-            case mid_line_state    + invalid_char_cmd:
-            case new_line_state    + invalid_char_cmd:
-            case skip_blanks_state + invalid_char_cmd:
+            case file_state_cmd(mid_line_state, invalid_char_cmd):
+            case file_state_cmd(new_line_state, invalid_char_cmd):
+            case file_state_cmd(skip_blanks_state, invalid_char_cmd):
                 /*tex Decry the invalid character and |goto restart|. */
                 tex_aux_invalid_character_error();
                 /*tex Because state may be |token_list| now: */
                 return 0;
-            case mid_line_state + spacer_cmd:
+            case file_state_cmd(mid_line_state, spacer_cmd):
                 /*tex Enter |skip_blanks| state, emit a space. */
                 lmt_input_state.cur_input.state = skip_blanks_state;
                 cur_chr = ' ';
                 break;
-            case mid_line_state + end_line_cmd:
+            case file_state_cmd(mid_line_state, end_line_cmd):
                 /*tex Finish the line. See note above about dropped |\linepar|. */
                 lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
                 cur_cmd = spacer_cmd;
                 cur_chr = ' ';
                 break;
-            case skip_blanks_state + end_line_cmd:
-            case mid_line_state    + comment_cmd:
-            case new_line_state    + comment_cmd:
-            case skip_blanks_state + comment_cmd:
+            case file_state_cmd(skip_blanks_state, end_line_cmd):
+            case file_state_cmd(mid_line_state, comment_cmd):
+            case file_state_cmd(new_line_state, comment_cmd):
+            case file_state_cmd(skip_blanks_state, comment_cmd):
                 /*tex Finish line, |goto switch|. */
                 lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
                 goto SWITCH;
         # if (0) /*tex Experiment, see commented in |texequivalents.h| and |texcommands.c|. */
-            case mid_line_state    + comment_cmd:
+            case file_state_cmd(mid_line_state, comment_cmd):
                 switch (comment_mode_par) { 
                     case 0: 
                         /*tex Explicit zero test. */
@@ -1473,7 +1477,7 @@ static int tex_aux_get_next_file(void)
                 cur_cmd = other_char_cmd;
                 break;
         # endif 
-            case new_line_state + end_line_cmd:
+            case file_state_cmd(new_line_state, end_line_cmd):
                 if (! auto_paragraph_mode(auto_paragraph_go_on)) {
                     lmt_input_state.cur_input.loc = lmt_input_state.cur_input.limit + 1;
                 }
@@ -1489,42 +1493,42 @@ static int tex_aux_get_next_file(void)
                     cur_chr = eq_value(cur_cs);
                 }
                 break;
-            case skip_blanks_state + left_brace_cmd:
-            case new_line_state    + left_brace_cmd:
+            case file_state_cmd(skip_blanks_state, left_brace_cmd):
+            case file_state_cmd(new_line_state, left_brace_cmd):
                 lmt_input_state.cur_input.state = mid_line_state;
                 ++lmt_input_state.align_state;
                 break;
-            case mid_line_state + left_brace_cmd:
+            case file_state_cmd(mid_line_state, left_brace_cmd):
                 ++lmt_input_state.align_state;
                 break;
-            case skip_blanks_state + right_brace_cmd:
-            case new_line_state    + right_brace_cmd:
+            case file_state_cmd(skip_blanks_state, right_brace_cmd):
+            case file_state_cmd(new_line_state, right_brace_cmd):
                 lmt_input_state.cur_input.state = mid_line_state;
                 --lmt_input_state.align_state;
                 break;
-            case mid_line_state + right_brace_cmd:
+            case file_state_cmd(mid_line_state, right_brace_cmd):
                 --lmt_input_state.align_state;
                 break;
-            case mid_line_state + math_shift_cmd:
-            case mid_line_state + alignment_tab_cmd:
-            case mid_line_state + parameter_cmd:
-            case mid_line_state + subscript_cmd:
-            case mid_line_state + letter_cmd:
-            case mid_line_state + other_char_cmd:
+            case file_state_cmd(mid_line_state, math_shift_cmd):
+            case file_state_cmd(mid_line_state, alignment_tab_cmd):
+            case file_state_cmd(mid_line_state, parameter_cmd):
+            case file_state_cmd(mid_line_state, subscript_cmd):
+            case file_state_cmd(mid_line_state, letter_cmd):
+            case file_state_cmd(mid_line_state, other_char_cmd):
                 break;
             /*
-            case skip_blanks_state + math_shift_cmd:
-            case skip_blanks_state + alignment_tab_cmd:
-            case skip_blanks_state + parameter_cmd:
-            case skip_blanks_state + subscript_cmd:
-            case skip_blanks_state + letter_cmd:
-            case skip_blanks_state + other_char_cmd:
-            case new_line_state    + math_shift_cmd:
-            case new_line_state    + alignment_tab_cmd:
-            case new_line_state    + parameter_cmd:
-            case new_line_state    + subscript_cmd:
-            case new_line_state    + letter_cmd:
-            case new_line_state    + other_char_cmd:
+            case file_state_cmd(skip_blanks_state, math_shift_cmd):
+            case file_state_cmd(skip_blanks_state, alignment_tab_cmd):
+            case file_state_cmd(skip_blanks_state, parameter_cmd):
+            case file_state_cmd(skip_blanks_state, subscript_cmd):
+            case file_state_cmd(skip_blanks_state, letter_cmd):
+            case file_state_cmd(skip_blanks_state, other_char_cmd):
+            case file_state_cmd(new_line_state, math_shift_cmd):
+            case file_state_cmd(new_line_state, alignment_tab_cmd):
+            case file_state_cmd(new_line_state, parameter_cmd):
+            case file_state_cmd(new_line_state, subscript_cmd):
+            case file_state_cmd(new_line_state, letter_cmd):
+            case file_state_cmd(new_line_state, other_char_cmd):
             */
             default:
                 lmt_input_state.cur_input.state = mid_line_state;

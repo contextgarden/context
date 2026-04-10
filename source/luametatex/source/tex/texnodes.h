@@ -411,6 +411,13 @@ extern void     tex_undump_specification_data (dumpstream f);
     lines so that the \TEX shop environment could use that script/method (bidirectional); hopefully
     other viewers and editors will follow.
 
+    In \LUATEX\ and therefore \LUAMETATEX\ we have glyph nodes that are larger than the corresponding
+    character nodes in other engines. This means that we don't use the usual memory optimization
+    techniques and therefore also have file/line fields in these nodes. This permits better support
+    for synchronization than using glue and kerns to deduce where textual content sits. It might also
+    be the reason why syncyhrozation is so sensitive wrt \CONTEXT, because otherwise heuristics have
+    to be used.
+
 */
 
 /*
@@ -549,6 +556,7 @@ typedef enum glue_subtypes {
     space_skip_glue,
     xspace_skip_glue,
     zero_space_skip_glue,
+    inter_character_skip_glue,
     par_fill_left_skip_glue,
     par_fill_right_skip_glue,
     par_init_left_skip_glue,
@@ -680,52 +688,53 @@ static inline int tex_math_glue_is_zero(halfword g)
 static inline int tex_same_glue(halfword a, halfword b)
 {
     return
-        (a == b) /* same glue specs or both zero */
-     || (a && b && glue_amount(a)        == glue_amount(b)
-                && glue_stretch(a)       == glue_stretch(b)
-                && glue_shrink(a)        == glue_shrink(b)
-                && glue_stretch_order(a) == glue_stretch_order(b)
-                && glue_shrink_order(a)  == glue_shrink_order(b)
-        )
+        (a == b) ? eq_state_same_pointer :
+        (a && b
+           && glue_amount(a)        == glue_amount(b)
+           && glue_stretch(a)       == glue_stretch(b)
+           && glue_shrink(a)        == glue_shrink(b)
+           && glue_stretch_order(a) == glue_stretch_order(b)
+           && glue_shrink_order(a)  == glue_shrink_order(b)
+        ) ? eq_state_same_value : eq_state_different;
     ;
 }
 
 static inline void tex_reset_glue_to_zero(halfword target)
 {
     if (target) {
-        glue_amount(target) = 0;
-        glue_stretch(target) = 0;
-        glue_shrink(target) = 0;
+        glue_amount(target)        = 0;
+        glue_stretch(target)       = 0;
+        glue_shrink(target)        = 0;
         glue_stretch_order(target) = 0;
-        glue_shrink_order(target) = 0;
+        glue_shrink_order(target)  = 0;
     }
 }
 
 static inline void tex_reset_math_glue_to_zero(halfword target)
 {
     if (target) {
-        math_amount(target) = 0;
-        math_stretch(target) = 0;
-        math_shrink(target) = 0;
+        math_amount(target)        = 0;
+        math_stretch(target)       = 0;
+        math_shrink(target)        = 0;
         math_stretch_order(target) = 0;
-        math_shrink_order(target) = 0;
+        math_shrink_order(target)  = 0;
     }
 }
 
 static inline void tex_copy_glue_values(halfword target, halfword source)
 {
     if (source) {
-        glue_amount(target) = glue_amount(source);
-        glue_stretch(target) = glue_stretch(source);
-        glue_shrink(target) = glue_shrink(source);
+        glue_amount(target)        = glue_amount(source);
+        glue_stretch(target)       = glue_stretch(source);
+        glue_shrink(target)        = glue_shrink(source);
         glue_stretch_order(target) = glue_stretch_order(source);
-        glue_shrink_order(target) = glue_shrink_order(source);
+        glue_shrink_order(target)  = glue_shrink_order(source);
     } else {
-        glue_amount(target) = 0;
-        glue_stretch(target) = 0;
-        glue_shrink(target) = 0;
+        glue_amount(target)        = 0;
+        glue_stretch(target)       = 0;
+        glue_shrink(target)        = 0;
         glue_stretch_order(target) = 0;
-        glue_shrink_order(target) = 0;
+        glue_shrink_order(target)  = 0;
     }
 }
 
@@ -748,15 +757,16 @@ static inline int tex_is_par_init_glue(halfword n)
 */
 
 typedef enum kern_subtypes {
-    explicit_kern_subtype,      /*tex from |\kern| */
-    accent_kern_subtype,        /*tex from accents */
+    explicit_kern_subtype,         /*tex from |\kern| */
+    accent_kern_subtype,           /*tex from accents */
     font_kern_subtype,
-    italic_kern_subtype,        /*tex from |\/| */
+    italic_kern_subtype,           /*tex from |\/| */
     left_margin_kern_subtype,
     right_margin_kern_subtype,
     left_correction_kern_subtype,
     right_correction_kern_subtype,
-    space_font_kern_subtype,    /*tex for tracing only */
+    character_kern_subtype,        /*tex for tracing only */
+    space_font_kern_subtype,       /*tex for tracing only */
     explicit_math_kern_subtype,
     math_shape_kern_subtype,
     left_math_slack_kern_subtype,
@@ -1059,8 +1069,8 @@ typedef enum list_balance_states {
 # define box_glue_set(a)        dvalue(a,7)    /* So we reserve a whole memory word! */
 # define box_direction(a)       memtwo00(a,8)  /* We could encode it as geometry but not now. */
 # define box_package_state(a)   memtwo01(a,8)
-# define box_options(a)         memtwo02(a,8)
-# define box_geometry(a)        memtwo03(a,8)
+# define box_geometry(a)        memtwo02(a,8)
+# define box_reserved(a)        memtwo03(a,8)
 # define box_orientation(a)     memone(a,8)    /* Also used for size in alignments. */
 # define box_x_offset(a)        memtwo(a,9)
 # define box_y_offset(a)        memone(a,9)
@@ -1078,13 +1088,10 @@ typedef enum list_balance_states {
 # define box_tail(a)            memone(a,15)   /* internal usage, alignment */
 # define box_natural_height(a)  memtwo(a,16)
 # define box_natural_depth(a)   memone(a,16)
-# define box_input_file(a)      memtwo(a,17)
-# define box_input_line(a)      memone(a,17)
-# define box_short(a)           memtwo(a,18)   /* depends on subtype, here line */
-# define box_dimension_state(a) memone00(a,18) /* todo */
-# define box_leader_state(a)    memone01(a,18) /* todo */
-# define box_reserved_1(a)      memone02(a,18)
-# define box_reserved_2(a)      memone03(a,18)
+# define box_short(a)           memtwo(a,17)   /* depends on subtype, here line */
+# define box_options(a)         memone(a,17)
+# define box_input_file(a)      memtwo(a,18)
+# define box_input_line(a)      memone(a,18)
 
 # define box_total(a) (box_height(a) + box_depth(a)) /* Here we add, with glyphs we maximize. */
 
@@ -1156,20 +1163,21 @@ typedef enum box_anchoring {
 # define set_box_snapped_state(p)   box_content_state(p) |= snapped_content_state
 # define is_box_snapped_state(p)    ((box_content_state(p) & snapped_content_state) == snapped_content_state)
 
-typedef enum box_option_flags {
-    box_option_no_math_axis = 0x01,
-    box_option_discardable  = 0x02,
-    box_option_keep_spacing = 0x04,
-    box_option_snapping     = 0x08,
-    box_option_no_snapping  = 0x10,
-    box_option_no_profiling = 0x20,
-    box_option_align_split  = 0x40,
- // box_option_synchronize  = 0x80,
+typedef enum box_option_flags { /* halfword */
+    box_option_no_math_axis = 0x0001,
+    box_option_discardable  = 0x0002,
+    box_option_keep_spacing = 0x0004,
+    box_option_snapping     = 0x0008,
+    box_option_no_kerning   = 0x0010, /* a bonus for me */
+    box_option_no_snapping  = 0x0020,
+    box_option_no_profiling = 0x0040, /* a bonus for me */
+    box_option_align_split  = 0x0080,
+ // box_option_synchronize  = 0x0100,
 } box_option_flags;
 
-static inline void tex_set_box_option    (halfword a, halfword r) { box_options(a) = r; }
-static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |= r; }
-static inline void tex_remove_box_option (halfword a, halfword r) { box_options(a) &= ~r; }
+static inline void tex_set_box_option    (halfword a, halfword r) { box_options(a)  =   r; }
+static inline void tex_add_box_option    (halfword a, halfword r) { box_options(a) |=   r; }
+static inline void tex_remove_box_option (halfword a, halfword r) { box_options(a) &= ~ r; }
 static inline int  tex_has_box_option    (halfword a, halfword r) { return (box_options(a) & r) == r; }
 
 /*tex
@@ -1861,15 +1869,16 @@ typedef enum fontspec_states {
 static inline int tex_same_fontspec(halfword a, halfword b)
 {
     return
-        (a == b)
-     || (a && b && font_spec_state(a)      == font_spec_state(b)
-                && font_spec_identifier(a) == font_spec_identifier(b)
-                && font_spec_scale(a)      == font_spec_scale(b)
-                && font_spec_x_scale(a)    == font_spec_x_scale(b)
-                && font_spec_y_scale(a)    == font_spec_y_scale(b)
-                && font_spec_slant(a)      == font_spec_slant(b)
-                && font_spec_weight(a)     == font_spec_weight(b)
-        )
+        (a == b) ? eq_state_same_pointer :
+        (a && b
+           && font_spec_state(a)      == font_spec_state(b)
+           && font_spec_identifier(a) == font_spec_identifier(b)
+           && font_spec_scale(a)      == font_spec_scale(b)
+           && font_spec_x_scale(a)    == font_spec_x_scale(b)
+           && font_spec_y_scale(a)    == font_spec_y_scale(b)
+           && font_spec_slant(a)      == font_spec_slant(b)
+           && font_spec_weight(a)     == font_spec_weight(b)
+        ) ? eq_state_same_value : eq_state_different;
     ;
 }
 
@@ -1891,14 +1900,15 @@ static inline int tex_same_fontspec(halfword a, halfword b)
 static inline int tex_same_mathspec(halfword a, halfword b)
 {
     return
-        (a == b)
-     || (a && b && math_spec_class(a)      == math_spec_class(b)
-                && math_spec_family(a)     == math_spec_family(b)
-                && math_spec_character(a)  == math_spec_character(b)
-                && math_spec_properties(a) == math_spec_properties(b)
-                && math_spec_group(a)      == math_spec_group(b)
-                && math_spec_index(a)      == math_spec_index(b)
-        )
+        (a == b) ? eq_state_same_pointer :
+        (a && b
+           && math_spec_class(a)      == math_spec_class(b)
+           && math_spec_family(a)     == math_spec_family(b)
+           && math_spec_character(a)  == math_spec_character(b)
+           && math_spec_properties(a) == math_spec_properties(b)
+           && math_spec_group(a)      == math_spec_group(b)
+           && math_spec_index(a)      == math_spec_index(b)
+        ) ? eq_state_same_value : eq_state_different;
     ;
 }
 

@@ -160,6 +160,16 @@
 \permanent\protected\def\setupTEXpage
   {\setupfittingpage[TEXpage]}
 
+%D For manuals we fake this and might eventually even remove the primitive from the
+%D engine; this is easier on documentation. We  can fake a few more liek this.
+
+\untraced\permanent\protected\def\shipout
+  {\dowithnextbox
+     {%ifvoid\nextbox\else
+      \iflist\nextbox
+        \startTEXpage\box\nextbox\stopTEXpage
+      \fi}}
+
 %D For Mojca:
 %D
 %D \starttyping

@@ -664,12 +664,20 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case font_char_ic_code:
         case font_char_ta_code:
         case font_char_ba_code:
+        case font_char_rt_code:
+        case font_char_rb_code:
+        case font_char_lt_code:
+        case font_char_lb_code:
         case scaled_font_char_wd_code:
         case scaled_font_char_ht_code:
         case scaled_font_char_dp_code:
         case scaled_font_char_ic_code:
         case scaled_font_char_ta_code:
         case scaled_font_char_ba_code:
+        case scaled_font_char_rt_code:
+        case scaled_font_char_rb_code:
+        case scaled_font_char_lt_code:
+        case scaled_font_char_lb_code:
             {
                 halfword fnt = tex_scan_font_identifier(NULL);
                 halfword chr = tex_scan_char_number(0);
@@ -699,12 +707,32 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
                         case scaled_font_char_ba_code:
                             cur_val = tex_char_bottom_anchor_from_font(fnt, chr);
                             break;
+                        case font_char_rt_code:
+                        case scaled_font_char_rt_code:
+                            cur_val = tex_char_top_right_kern_from_font(fnt, chr);
+                            break;
+                        case font_char_rb_code:
+                        case scaled_font_char_rb_code:
+                            cur_val = tex_char_bottom_right_kern_from_font(fnt, chr);
+                            break;
+                        case font_char_lt_code:
+                        case scaled_font_char_lt_code:
+                            cur_val = tex_char_top_left_kern_from_font(fnt, chr);
+                            break;
+                        case font_char_lb_code:
+                        case scaled_font_char_lb_code:
+                            cur_val = tex_char_bottom_left_kern_from_font(fnt, chr);
+                            break;
                     }
                     switch (code) {
                         case scaled_font_char_wd_code:
                         case scaled_font_char_ic_code:
                         case scaled_font_char_ta_code:
                         case scaled_font_char_ba_code:
+                        case scaled_font_char_rt_code:
+                        case scaled_font_char_rb_code:
+                        case scaled_font_char_lt_code:
+                        case scaled_font_char_lb_code:
                             cur_val = tex_font_x_scaled(cur_val);
                             break;
                         case scaled_font_char_ht_code:
@@ -2434,7 +2462,7 @@ singleword tex_scan_box_index                 (void)               { return (sin
 singleword tex_scan_box_axis                  (void)               { return (singleword) tex_aux_scan_limited_int(0, 0, max_box_axis, "Box axis"); }
 halfword   tex_scan_category_code             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_category_code,"Category code"); }
 halfword   tex_scan_space_factor              (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_space_factor, max_space_factor, "Space factor"); }
-halfword   tex_scan_scale_factor              (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_scale_factor, max_scale_factor, "Scale factor"); }
+halfword   tex_scan_space_penalty             (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, min_space_penalty, max_space_penalty, "Space penalty"); }
 halfword   tex_scan_clipped_scale_factor      (int optional_equal) { return tex_aux_clip_limited_int(optional_equal, min_scale_factor, max_scale_factor); }
 halfword   tex_scan_function_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_function_reference, "Function reference"); }
 halfword   tex_scan_bytecode_reference        (int optional_equal) { return tex_aux_scan_limited_int(optional_equal, 0, max_bytecode_index, "Bytecode reference"); }
@@ -2614,7 +2642,6 @@ halfword tex_scan_integer(int optional_equal, int *radix, int *grouped)
                             }
                         }
                     }
-                 // break;
                 }
             case hex_token:
                 {
@@ -2648,7 +2675,6 @@ halfword tex_scan_integer(int optional_equal, int *radix, int *grouped)
                             }
                         }
                     }
-                 // break;
                 }
             default:
                 if (radix) {
@@ -2677,7 +2703,6 @@ halfword tex_scan_integer(int optional_equal, int *radix, int *grouped)
                     }
                     tex_get_x_token();
                 }
-                // break;
         }
       DONE:
         if (vacuous) {
@@ -2832,7 +2857,6 @@ int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
                             result = max_cardinal;
                         }
                     }
-                 // break;
                 }
             case hex_token:
                 {
@@ -2854,7 +2878,6 @@ int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
                             result = max_cardinal;
                         }
                     }
-                 // break;
                 }
             default:
                 {
@@ -2872,7 +2895,6 @@ int tex_scan_cardinal(int optional_equal, unsigned *value, int dontbark)
                         }
                         tex_get_x_token();
                     }
-                 // break;
                 }
         }
       DONE:
@@ -6183,7 +6205,6 @@ static halfword tex_scan_bit_integer(int *radix)
                             }
                         }
                     }
-                 // break;
                 }
             case hex_token:
                 {
@@ -6212,7 +6233,6 @@ static halfword tex_scan_bit_integer(int *radix)
                             }
                         }
                     }
-                 // break;
                 }
             default:
                 {
@@ -6237,7 +6257,6 @@ static halfword tex_scan_bit_integer(int *radix)
                         }
                         tex_get_x_token();
                     }
-                 // break;
                 }
         }
       DONE:
@@ -6820,7 +6839,6 @@ static inline halfword tex_scan_aux_b(void)
                 default:
                     goto B_ERROR;
             }
-            break;
         case o_token_l: case o_token_o:
             tex_get_x_token();
             switch (cur_tok) {
@@ -6829,7 +6847,6 @@ static inline halfword tex_scan_aux_b(void)
                 default:
                     goto B_ERROR;
             }
-            break;
         case x_token_l: case x_token_o:
             tex_get_x_token();
             switch (cur_tok) {
@@ -6844,7 +6861,6 @@ static inline halfword tex_scan_aux_b(void)
                 default:
                     goto B_ERROR;
             }
-            break;
         case s_token_l: case s_token_o:
             tex_get_x_token();
             switch (cur_tok) { 
@@ -6859,7 +6875,6 @@ static inline halfword tex_scan_aux_b(void)
                 default:
                     goto B_ERROR;
             }
-            break;
         case u_token_l: case u_token_o:
             tex_get_x_token();
             switch (cur_tok) {
@@ -6886,7 +6901,6 @@ static inline halfword tex_scan_aux_b(void)
                 default:
                     goto B_ERROR;
             }
-            break;
         default:
           B_ERROR:
             tex_aux_show_keyword_error("band|bor|bxor|bset|bunset");
@@ -6912,7 +6926,6 @@ static inline halfword tex_scan_aux_c(void)
                 default:
                     goto C_ERROR;
             }
-            break;
         case o_token_l: case o_token_o:
             tex_get_x_token();
             switch (cur_tok) {
@@ -7317,7 +7330,7 @@ static void tex_aux_scan_integer_expression(int braced)
                 numerator = factor;
                 operation = expression_scale;
             } else {
-                term = tex_aux_long_long((double) term * (double) factor);
+                term = tex_aux_double_rounded_long_long((double) term * (double) factor);
             }
             break;
         case expression_divide:

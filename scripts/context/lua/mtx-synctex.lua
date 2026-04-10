@@ -6,11 +6,38 @@ if not modules then modules = { } end modules ['mtx-synctex'] = {
     license   = "see context related readme files"
 }
 
+-- Test file:
+--
+-- \setupsynctex[state=repeat,compress=yes]
+--
+-- \starttext
+--
+-- first  line of text on page 1 \blank
+-- second line of text on page 1 \page
+--
+-- first  line of text on page 2 \blank
+-- second line of text on page 2 \vfill
+-- last   line of text on page 2 \page
+--
+-- first  line of text on page 3 \blank
+-- second line of text on page 3 \vfill
+-- last   line of text on page 3 \page
+--
+-- first  line of text on page 4 \blank
+-- second line of text on page 4 \page
+--
+-- first  line of text on page 5 \blank
+-- second line of text on page 5 \page
+--
+-- \stoptext
+
 -- InverseSearchCmdLine = scite.exe "%f" "-goto:%l" $
 -- InverseSearchCmdLine = mtxrun.exe --script synctex --edit --name="%f" --line="%l" $
 
 local tonumber = tonumber
 local find, match, gsub, formatters = string.find, string.match, string.gsub, string.formatters
+local lower = string.lower
+local basename = file.basename
 local isfile = lfs.isfile
 local max = math.max
 local longtostring = string.longtostring
@@ -21,16 +48,16 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-synctex</entry>
   <entry name="detail">SyncTeX Checker</entry>
-  <entry name="version">1.01</entry>
+  <entry name="version">1.02</entry>
  </metadata>
  <flags>
   <category name="basic">
    <subcategory>
-    <flag name="edit"><short>open file at line: --line=.. --editor=.. sourcefile</short></flag>
-    <flag name="list"><short>show all areas: synctexfile</short></flag>
-    <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. [--tolerance=] --editor=.. synctexfile</short></flag>
+    <flag name="edit"><short>open file at line: --line=.. --editor=.. [--tolerance=..] sourcefile</short></flag>
+    <flag name="list"><short>show all areas: synctexfile [--content]</short></flag>
+    <flag name="goto"><short>open file at position: --page=.. --x=.. --y=.. [--tolerance=..] --editor=.. synctexfile</short></flag>
     <flag name="report"><short>show (tex) file and line: [--direct] --page=.. --x=.. --y=.. [--tolerance=] --console synctexfile</short></flag>
-    <flag name="find"><short>find (pdf) page and box: [--direct] --file=.. --line=.. synctexfile</short></flag>
+    <flag name="find"><short>find (pdf) page and box: [--direct] [--launch] --file=.. --line=.. synctexfile</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -67,6 +94,67 @@ local editors = {
             "-goto:%linenumber%"
         ]],
     },
+    emacs = sandbox.registerrunner {
+        name     = "emacs",
+        program  = {
+            windows = "emacsclient",
+         -- unix    = "emacsclient",
+            unix    = "/home/zsd/src/ech",
+        },
+        template = longtostring [[
+            -c
+            -n
+            "+%linenumber%"
+            "%filename%"
+        ]],
+    },
+}
+
+local launchers = {
+--     console = function(specification)
+--         print(string.formatters["%q %i %i"](specification.filename,specification.linenumber or 1,specification.tolerance))
+--     end,
+    sumatrapdf = sandbox.registerrunner {
+        name    = "sumatrapdf",
+        program = {
+            windows = "sumatrapdf",
+            unix    = "sumatrapdf", -- let's assume wine
+        },
+        template = longtostring [[
+            -reuse-instance
+            -scroll %h%,%v%
+            -page %page%
+            -zoom fit-width
+            "%filename%"
+        ]],
+    },
+    emacsclient = sandbox.registerrunner {
+        name    = "emacsclient",
+        program = {
+            windows = "emacsclient",
+            unix = "emacsclient",
+        },
+     -- emacsclient -c --eval '(progn (find-file "path/to/file.pdf") (pdf-view-goto-page 10))
+        template = longtostring [[
+            -c
+	    -n
+            --eval
+            "(progn (find-file \"%filename%\") (pdf-view-goto-page %page%))"
+        ]],
+    },
+    acroread = sandbox.registerrunner {
+        name    = "acroread",
+        program = {
+         -- windows = "maybe",
+            unix    = "acroread",
+        },
+        template = longtostring [[
+            -openInNewWindow
+            /a
+            page=%page%
+            "%filename%"
+        ]],
+    },
 }
 
 local function validfile(filename)
@@ -76,13 +164,23 @@ local function validfile(filename)
     elseif not isfile(filename) then
         report("invalid synctex log file %a",filename)
         return false
-    else
-        return true
+    elseif file.suffix(filename) == "gz" then
+        local data = io.loaddata(filename)
+        if data then
+            filename = file.removesuffix(filename)
+            data = gzip.decompress(data)
+            if data then
+                io.savedata(filename,data)
+             -- report("using uncompressed file %a",filename)
+            end
+        end
     end
+    return filename
 end
 
 local function editfile(filename,line,tolerance,editor)
-    if not validfile(filename) then
+    filename = validfile(filename)
+    if not filename then
         return
     end
     local runner = editors[editor or "scite"] or editors.scite
@@ -103,106 +201,20 @@ end
 local factor = (7200/7227)/65536 -- we assume unit 1
 local quit   = true              -- we only have one hit anyway
 
-local function findlocation(filename,page,xpos,ypos)
-    if not validfile(filename) then
-        return
-    elseif not page then
-        page = 1
-    elseif not xpos or not ypos then
-        report("provide x and y coordinates (unit: basepoints)")
-        return
-    end
-    local files = { }
-    local found = false
-    local skip  = false
-    local dx    = false
-    local dy    = false
-    local px    = xpos / factor
-    local py    = ypos / factor
-    local fi    = 0
-    local ln    = 0
-    for line in io.lines(filename) do
-        if found then
-            if find(line,"^}") then
-                break
-            else
-                -- we only look at positive cases / could be sped up but it is not critical
-                local f, l, x, y, w, h, d = match(line,"^[hr](.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
-                if f and f ~= 0 then
-                    x = tonumber(x)
-                    if px >= x then
-                        w = tonumber(w)
-                        if px <= x + w then
-                            y = tonumber(y)
-                            d = tonumber(d)
-                            if py >= y - d then
-                                h = tonumber(h)
-                                if py <= y + h then
-                                    if quit then
-                                        -- we have no overlapping boxes
-                                        fi = f
-                                        ln = l
-                                        break
-                                    else
-                                        local lx = px - x
-                                        local rx = x + w - px
-                                        local by = py - y + d
-                                        local ty = y + h - py
-                                        mx = lx < rx and lx or rx
-                                        my = by < ty and by or ty
-                                        if not dx then
-                                            dx = mx
-                                            dy = my
-                                            fi = f
-                                            ln = l
-                                        else
-                                            if mx < dx then
-                                                dx = mx
-                                                di = f
-                                                ln = l
-                                            end
-                                            if my < dy then
-                                                dy = my
-                                                fi = f
-                                                ln = l
-                                            end
-                                        end
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-        elseif skip then
-            if find(line,"^}") then
-                skip = false
-            end
-        elseif find(line,"^{(%d+)") then
-            local p = tonumber(match(line,"^{(%d+)"))
-            if p == page then
-                found = true
-            else
-                skip = true
-            end
-        elseif find(line,"^Input:") then
-            local id, name = match(line,"^Input:(.-):(.-)$")
-            if id then
-                files[id] = name
-            end
-        end
-    end
-    if fi ~= 0 then
-        return files[fi], ln
-    end
+local function uncompressfile(filename)
+    validfile(filename) -- just this will do
 end
 
 local function findlocation(filename,page,xpos,ypos,tolerance)
-    if not validfile(filename) then
+    filename = validfile(filename)
+    if not filename then
         return
-    elseif not page then
-        page = 1
-    elseif not xpos or not ypos then
+    end
+    page      = tonumber(page) or 1
+    tolerance = tonumber(tolerance) or 0
+    xpos      = tonumber(xpos)
+    ypos      = tonumber(ypos)
+    if not xpos or not ypos then
         report("provide x and y coordinates (unit: basepoints)")
         return
     end
@@ -216,6 +228,7 @@ local function findlocation(filename,page,xpos,ypos,tolerance)
     for line in io.lines(filename) do
         if found then
             if find(line,"^}") then
+                -- hoist this out of the loop
                 local function locate(x,y)
                     local dx = false
                     local dy = false
@@ -226,7 +239,6 @@ local function findlocation(filename,page,xpos,ypos,tolerance)
                         -- we only look at positive cases
                         local f, l, x, y, w, h, d = match(line,"^[hr](.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
                         if f and f ~= 0 then
--- print(x,y,f)
                             x = tonumber(x)
                             if px >= x then
                                 w = tonumber(w)
@@ -318,18 +330,24 @@ local function findlocation(filename,page,xpos,ypos,tolerance)
     end
 end
 
-local function showlocation(filename,sourcename,linenumber,direct)
-    if not validfile(filename) then
+local function showlocation(filename,sourcename,linenumber,direct,launch)
+    filename = validfile(filename)
+    if not filename then
         return
     end
-    local files = { }
-    local found = false
-    local page  = 0
+    local files      = { }
+    local bases      = { }
+    local data       = environment.arguments.content and { } or false
+    local found      = false
+    local page       = 0
+    local sourcebase = false
     if sourcename then
         sourcename = file.collapsepath(sourcename)
+        sourcename = lower(sourcename)
+        sourcebase = basename(sourcename)
     end
+    linenumber = tonumber(linenumber)
     for line in io.lines(filename) do
--- print(found,line)
         if found then
             if find(line,"^}") then
                 found = false
@@ -337,28 +355,49 @@ local function showlocation(filename,sourcename,linenumber,direct)
                     report("end page: %i",page)
                 end
             else
-                local f, l, x, y, w, h, d = match(line,"^[hr](.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
--- print(f, l, x, y, w, h, d)
-                if f then
+                local id, l, x, y, w, h, d = match(line,"^[hr](.-),(.-):(.-),(.-):(.-),(.-),(.-)$")
+                if id then
                     x = tonumber(x)
                     y = tonumber(y)
+                    l = tonumber(l)
                     local llx = factor * ( x               )
                     local lly = factor * ( y - tonumber(d) )
                     local urx = factor * ( x + tonumber(w) )
                     local ury = factor * ( y + tonumber(h) )
-                    f = files[f]
+                    local f = files[id]
                     if not f then
                         --
                     elseif not sourcename then
-                        report("  [% 4r % 4r % 4r % 4r] : % 5i : %s",llx,lly,urx,ury,l,f)
-                    elseif f == sourcename and l == linenumber then
+                        local d = data
+                        if d then
+                            d = d[id]
+                            if d then
+                                d = d[l]
+                            end
+                        end
+                        if d then
+                            report("  [% 4r % 4r % 4r % 4r] : % 5i : %s : %s",llx,lly,urx,ury,l,f,d)
+                        else
+                            report("  [% 4r % 4r % 4r % 4r] : % 5i : %s",llx,lly,urx,ury,l,f)
+                        end
+                    elseif (f == sourcename or bases[id] == sourcebase) and l >= linenumber then
                         (direct and reportdirect or report)(template_show,page,llx,lly,urx,ury)
+                        if launch then
+                            launch = launchers[launch] or launchers["sumatrapdf"]
+                            if launch then
+                                launch {
+                                    h        = math.round(llx - 10),
+                                    v        = math.round(lly - 10),
+                                    page     = page,
+                                    filename = file.replacesuffix(sourcename,"pdf"),
+                                }
+                            end
+                        end
                         return
                     end
                 end
             end
         elseif find(line,"^{(%d+)") then
--- print("!")
             page  = tonumber(match(line,"^{(%d+)"))
             found = true
             if not sourcename then
@@ -366,8 +405,13 @@ local function showlocation(filename,sourcename,linenumber,direct)
             end
         elseif find(line,"^Input:") then
             local id, name = match(line,"^Input:(.-):(.-)$")
-            if id then
+            if id and not files[id] then
+                name = lower(name)
                 files[id] = name
+                bases[id] = basename(name)
+                if data then
+                    data[id] = string.splitlines(io.loaddata(name) or "")
+                end
             end
         end
     end
@@ -395,15 +439,17 @@ local argument = environment.argument
 local filename = environment.files[1]
 
 if argument("edit") then
-    editfile(filename,argument("line"),argument("editor"))
+    editfile(filename,argument("line"),argument("tolerance"),argument("editor"))
 elseif argument("goto") then
     gotolocation(filename,argument("page"),argument("x"),argument("y"),argument("editor"),argument("direct"),argument("tolerance"))
+elseif argument("uncompress") then
+    uncompressfile(filename)
 elseif argument("report") then
     gotolocation(filename,argument("page"),argument("x"),argument("y"),"console",argument("direct"),argument("tolerance"))
 elseif argument("list") then
     showlocation(filename)
 elseif argument("find") then
-    showlocation(filename,argument("file"),argument("line"),argument("direct"))
+    showlocation(filename,argument("file"),argument("line"),argument("direct"),argument("launch"))
 elseif argument("exporthelp") then
     application.export(argument("exporthelp"),filename)
 else

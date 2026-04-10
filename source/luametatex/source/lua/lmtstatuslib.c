@@ -168,14 +168,14 @@ static int statslib_aux_memory_state(lua_State* L, memory_data *data)
     lua_set_integer_by_key(L, "min", data->minimum);
     lua_set_integer_by_key(L, "max", data->maximum);
     lua_set_integer_by_key(L, "mem", data->allocated);
-    lua_set_integer_by_key(L, "ext", data->extra);
     lua_set_integer_by_key(L, "itm", data->itemsize);
-    lua_set_integer_by_key(L, "all", data->allocated * data->itemsize + data->extra);
     lua_set_integer_by_key(L, "top", data->top - data->offset);
     lua_set_integer_by_key(L, "ptr", data->ptr - data->offset);
     lua_set_integer_by_key(L, "ini", data->initial); /*tex Can |memory_data_unset|. */
     lua_set_integer_by_key(L, "stp", data->step);
  // lua_set_integer_by_key(L, "off", data->offset);
+    lua_set_size_t_by_key (L, "ext", data->extra);
+    lua_set_size_t_by_key (L, "all", (size_t) (data->allocated * data->itemsize) + data->extra);
     return 1;
 }
 

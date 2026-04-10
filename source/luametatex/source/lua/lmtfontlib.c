@@ -95,7 +95,7 @@ static void fontlib_aux_read_lua_parameters(lua_State *L, int f)
         lua_pushnil(L);
         while (lua_next(L, -2)) {
             if (lua_type(L, -2) == LUA_TNUMBER) {
-                int i = (int) lua_tointeger(L, -2);
+                int i = lmt_tointeger(L, -2);
                 if (i > maxindex) {
                     maxindex = i;
                 }
@@ -155,7 +155,7 @@ static void fontlib_aux_read_lua_parameters(lua_State *L, int f)
                 case LUA_TNUMBER:
                     {
                         /* Math fonts can have more than 7. */
-                        int index = (int) lua_tointeger(L, -2);
+                        int index = lmt_tointeger(L, -2);
                         if (index >= 8) {
                             tex_set_font_parameter(f, index, value);
                         }
@@ -182,7 +182,7 @@ static void fontlib_aux_read_lua_math_parameters(lua_State *L, int f)
                     i = valid_math_parameter(L, -2);
                     break;
                 case LUA_TNUMBER:
-                    i = (int) lua_tointeger(L, -2);
+                    i = lmt_tointeger(L, -2);
                     break;
             }
             if (i > 0) {
@@ -444,7 +444,7 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
                         switch (lua_type(L, -2)) {
                             case LUA_TNUMBER:
                                 /*tex Adjacent char: */
-                                k = (int) lua_tointeger(L, -2);
+                                k = lmt_tointeger(L, -2);
                                 if (k < 0) {
                                     k = non_boundary_char;
                                 }
@@ -501,7 +501,7 @@ static void fontlib_aux_font_char_from_lua(lua_State *L, halfword f, int i, int 
                         switch (lua_type(L, -2)) {
                             case LUA_TNUMBER:
                                 /*tex Adjacent char: */
-                                k = (int) lua_tointeger(L, -2);
+                                k = lmt_tointeger(L, -2);
                                 if (k < 0) {
                                     k = non_boundary_char;
                                 }
@@ -676,7 +676,7 @@ static int lmt_font_from_lua(lua_State *L, int f)
             lua_pushnil(L);
             while (lua_next(L, -2)) {
                 if (lua_isnumber(L, -2)) {
-                    int i = (int) lua_tointeger(L, -2);
+                    int i = lmt_tointeger(L, -2);
                     if (i >= 0 && lua_istable(L, -1)) {
                         num++;
                         if (i > last) {

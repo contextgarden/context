@@ -743,6 +743,56 @@ regular height and depth are those of a \type {\vbox}.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Modes]
+
+When \TEX\ typesets some content (glyph, rule, box, etc.) it behaves different
+depending on the mode it is in. For instance, in horizontal mode spaces matter
+and are turned into space skips; an empty normally ends a paragraph. In vertical
+mode spaces and newlines are basically ignored for typesetting.
+
+Characters and rules start a new paragraph but a box doesn't. Here are some
+examples.
+
+\startbuffer
+\ruledvbox \bgroup
+    test \strut
+\egroup
+
+\ruledvbox \bgroup
+    \dontleavehmode test
+\egroup
+
+\ruledvbox \bgroup \darkblue
+    \vrule height .8sh depth .8sd width 3em \relax
+\egroup
+
+\ruledvbox \bgroup \darkblue
+    \dontleavehmode
+    \vrule height .8sh depth .8sd width 3em \relax
+\egroup
+
+\dontleavehmode \ruledvbox \bgroup
+    \ruledhbox{!}
+\egroup \quad \type {this one is tight}
+
+\ruledvbox \bgroup
+    \dontleavehmode \ruledhbox{!}
+\egroup
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+We get this:
+
+\startlinecorrection
+\getbuffer
+\stoplinecorrection
+
+When we start with a box and want to enter so called horizontal mode, here a
+paragraph, we can use \typ {\dontleavehmode} to go horizontal.
+
+\stopsectionlevel
+
 \startsectionlevel[title=Splitting]
 
 When you feed \TEX\ a paragraph of text it will accumulate the content in a
@@ -839,9 +889,9 @@ a native engine primitive.}
 
 A split off box gets packed at its natural size and a badness as well as
 overshoot amount is calculated. When the overshoot is positive and the the
-badness is larger than the stretch criterium, the box gets repacked to the
+badness is larger than the stretch criterion, the box gets repacked to the
 natural size. The same happens when the overshoot is negative and the badness
-exceeds the shrink criterium. When the overshoot is zero (basically we have a
+exceeds the shrink criterion. When the overshoot is zero (basically we have a
 fit) but the badness still exceeds the stretch or shrink we also repack. Indeed
 this is a bit fuzzy, but so is badness.
 
@@ -881,6 +931,82 @@ that users will find reasons to abuse this effect.
 
 \stopsectionlevel
 
+\startsectionlevel[title=Pruning]
+
+The \type {prune} keyword can be used to get rid of top and bottom glue (\type
+{\vskip}) in vertical boxes and leading an trailing glue (\type {\hskip} and
+spaces) in horizontal boxes. We demonstrate this on a few examples.
+
+\def\PruneTest#1{\NC \NC \type[option=TEX] {#1} \NC \type[option=TEX] {prune} \NC \NR}
+
+\def\PruneTestH#1{\NC \type[option=TEX]{#1} \NC \ruledhbox           {#1} \NC \ruledhbox prune           {#1} \NC \NR}
+\def\PruneTestV#1{\NC \type[option=TEX]{#1} \NC \ruledvbox {\hsize 3em#1} \NC \ruledvbox prune {\hsize 3em#1} \NC \NR}
+\def\PruneTestT#1{\NC \type[option=TEX]{#1} \NC \ruledvtop {\hsize 3em#1} \NC \ruledvtop prune {\hsize 3em#1} \NC \NR}
+
+Successive glue items are pruned:
+
+\starttabulate[|j2|j2||]
+    \PruneTest {\hbox}
+    \PruneTestH{\hskip 10pt\relax test 2\hskip 10pt}
+    \PruneTestH{test 3\hskip 10pt}
+    \PruneTestH{\hskip 10pt\relax test 4}
+    \PruneTestH{\hskip 10pt\hskip 10pt\relax test 5}
+    \PruneTestH{\hskip 10pt\relax}
+    \PruneTestH{\hskip 10pt\relax\hskip 10pt}
+\stoptabulate
+
+Watch out, this also deals with explicit spacing, like:
+
+\startlines[before=,after=]
+    \normalexpanded{\type[option=TEX]{\meaning\quad   }}
+    \normalexpanded{\type[option=TEX]{\meaning\emquad }}
+    \normalexpanded{\type[option=TEX]{\meaning\enquad }}
+    \normalexpanded{\type[option=TEX]{\meaning\emspace}}
+    \normalexpanded{\type[option=TEX]{\meaning\enspace}}
+\stoplines
+
+So we get:
+
+\starttabulate[|j2|j2||]
+    \PruneTest {\hbox}
+    \PruneTestH{ test }
+    \PruneTestH{\quad test }
+    \PruneTestH{\emspace test }
+    \PruneTestH{\enspace test }
+    \PruneTestH{\quad  \emspace test }
+    \PruneTestH{\quad  \enspace test }
+    \PruneTestH{\emquad test }
+    \PruneTestH{\enquad test }
+\stoptabulate
+
+Vertical pruning only handles explicit skips:
+
+\starttabulate[|j2|j2||]
+    \PruneTest {\vbox}
+    \PruneTestV{\vskip 10pt\relax test 2\vskip 10pt}
+    \PruneTestV{test 3\vskip 10pt}
+    \PruneTestV{\vskip 10pt\relax test 4}
+    \PruneTestV{\vskip 10pt\vskip 10pt\relax test 5}
+    \PruneTestV{\vskip 10pt\relax}
+    \PruneTestV{\vskip 10pt\relax\vskip 10pt}
+\stoptabulate
+
+Of course this works independent of the nature of the box; pruning is applied
+right after the content has been collected and not yet subjected to for instance
+callbacks.
+
+\starttabulate[|j2|j2||]
+    \PruneTest {\vtop}
+    \PruneTestT{\vskip 10pt\relax test 2\vskip 10pt}
+    \PruneTestT{test 3\vskip 10pt}
+    \PruneTestT{\vskip 10pt\relax test 4}
+    \PruneTestT{\vskip 10pt\vskip 10pt\relax test 5}
+    \PruneTestT{\vskip 10pt\relax}
+    \PruneTestT{\vskip 10pt\relax\vskip 10pt}
+\stoptabulate
+
+\stopsectionlevel
+
 \stopdocument
 
 % todo:
@@ -908,3 +1034,103 @@ that users will find reasons to abuse this effect.
 }
 
 111111\par \box0 \par 222222\par
+
+
+\setuptype[option=TEX]
+
+\def\PruneTest#1%
+  {\NC
+   \NC
+     \type {#1}
+   \NC
+     \type {prune}
+   \NC \NR}
+
+\def\PruneTestH#1%
+  {\NC
+     \type{#1}
+   \NC
+     \ruledhbox {#1}
+   \NC
+     \ruledhbox prune {#1}
+   \NC \NR}
+
+\def\PruneTestV#1%
+  {\NC
+     \type{#1}
+   \NC
+     \ruledvbox {\hsize 3em#1}
+   \NC
+     \ruledvbox prune {\hsize 3em#1}
+   \NC \NR}
+
+\def\PruneTestT#1%
+  {\NC
+     \type{#1}
+   \NC
+     \ruledvtop {\hsize 3em#1}
+   \NC
+     \ruledvtop prune {\hsize 3em#1}
+   \NC \NR}
+
+\starttext
+
+\startTEXpage[offset=1ts]
+    \starttabulate[||||]
+        \PruneTest {\hbox}
+        \PruneTestH{\hskip 10pt\relax test 2\hskip 10pt}
+        \PruneTestH{test 3\hskip 10pt}
+        \PruneTestH{\hskip 10pt\relax test 4}
+        \PruneTestH{\hskip 10pt\hskip 10pt\relax test 5}
+        \PruneTestH{\hskip 10pt\relax}
+        \PruneTestH{\hskip 10pt\relax\hskip 10pt}
+    \stoptabulate
+\stopTEXpage
+
+\startTEXpage[offset=1ts]
+    \starttabulate[||||]
+        \PruneTest {\hbox}
+        \PruneTestH{ test }
+        \PruneTestH{\quad test }
+        \PruneTestH{\emspace test }
+        \PruneTestH{\enspace test }
+        \PruneTestH{\quad  \emspace test }
+        \PruneTestH{\quad  \enspace test }
+        \PruneTestH{\emquad test }
+        \PruneTestH{\enquad test }
+    \stoptabulate
+\stopTEXpage
+
+\startTEXpage[offset=1ts]
+    \starttabulate[||||]
+        \PruneTest {\vbox}
+        \PruneTestV{\vskip 10pt\relax test 2\vskip 10pt}
+        \PruneTestV{test 3\vskip 10pt}
+        \PruneTestV{\vskip 10pt\relax test 4}
+        \PruneTestV{\vskip 10pt\vskip 10pt\relax test 5}
+        \PruneTestV{\vskip 10pt\relax}
+        \PruneTestV{\vskip 10pt\relax\vskip 10pt}
+    \stoptabulate
+\stopTEXpage
+
+\startTEXpage[offset=1ts]
+    \starttabulate[||||]
+        \PruneTest {\vtop}
+        \PruneTestT{\vskip 10pt\relax test 2\vskip 10pt}
+        \PruneTestT{test 3\vskip 10pt}
+        \PruneTestT{\vskip 10pt\relax test 4}
+        \PruneTestT{\vskip 10pt\vskip 10pt\relax test 5}
+        \PruneTestT{\vskip 10pt\relax}
+        \PruneTestT{\vskip 10pt\relax\vskip 10pt}
+    \stoptabulate
+\stopTEXpage
+
+\startTEXpage[offset=1ts]
+\startlines[before=,after=]
+    \normalexpanded{\type {\meaning\quad   }}
+    \normalexpanded{\type {\meaning\emquad }}
+    \normalexpanded{\type {\meaning\enquad }}
+    \normalexpanded{\type {\meaning\emspace}}
+    \normalexpanded{\type {\meaning\enspace}}
+\stoplines
+\stopTEXpage

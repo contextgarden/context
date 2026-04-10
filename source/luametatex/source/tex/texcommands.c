@@ -85,12 +85,20 @@ const unsigned char some_item_classification[] = {
     [font_char_ic_code]                  = classification_unknown,
     [font_char_ta_code]                  = classification_unknown,
     [font_char_ba_code]                  = classification_unknown,
+    [font_char_rt_code]                  = classification_unknown,
+    [font_char_rb_code]                  = classification_unknown,
+    [font_char_lt_code]                  = classification_unknown,
+    [font_char_lb_code]                  = classification_unknown,
     [scaled_font_char_wd_code]           = classification_unknown,
     [scaled_font_char_ht_code]           = classification_unknown,
     [scaled_font_char_dp_code]           = classification_unknown,
     [scaled_font_char_ic_code]           = classification_unknown,
     [scaled_font_char_ta_code]           = classification_unknown,
     [scaled_font_char_ba_code]           = classification_unknown,
+    [scaled_font_char_rt_code]           = classification_unknown,
+    [scaled_font_char_rb_code]           = classification_unknown,
+    [scaled_font_char_lt_code]           = classification_unknown,
+    [scaled_font_char_lb_code]           = classification_unknown,
     [font_spec_id_code]                  = classification_unknown,
     [font_spec_scale_code]               = classification_unknown,
     [font_spec_xscale_code]              = classification_unknown,
@@ -919,6 +927,10 @@ void tex_initialize_commands(void)
         tex_primitive(etex_command,       no_legacy,       "fontcharht",                     some_item_cmd,          font_char_ht_code,                        0);
         tex_primitive(etex_command,       no_legacy,       "fontcharic",                     some_item_cmd,          font_char_ic_code,                        0);
         tex_primitive(luametatex_command, no_legacy,       "fontcharta",                     some_item_cmd,          font_char_ta_code,                        0);
+        tex_primitive(luametatex_command, no_legacy,       "fontcharrt",                     some_item_cmd,          font_char_rt_code,                        0);
+        tex_primitive(luametatex_command, no_legacy,       "fontcharrb",                     some_item_cmd,          font_char_rb_code,                        0);
+        tex_primitive(luametatex_command, no_legacy,       "fontcharlt",                     some_item_cmd,          font_char_lt_code,                        0);
+        tex_primitive(luametatex_command, no_legacy,       "fontcharlb",                     some_item_cmd,          font_char_lb_code,                        0);
         tex_primitive(etex_command,       no_legacy,       "fontcharwd",                     some_item_cmd,          font_char_wd_code,                        0);
         tex_primitive(luametatex_command, no_legacy,       "scaledfontcharba",               some_item_cmd,          scaled_font_char_ba_code,                 0);
         tex_primitive(luametatex_command, no_legacy,       "scaledfontchardp",               some_item_cmd,          scaled_font_char_dp_code,                 0);
@@ -926,6 +938,10 @@ void tex_initialize_commands(void)
         tex_primitive(luametatex_command, no_legacy,       "scaledfontcharic",               some_item_cmd,          scaled_font_char_ic_code,                 0);
         tex_primitive(luametatex_command, no_legacy,       "scaledfontcharta",               some_item_cmd,          scaled_font_char_ta_code,                 0);
         tex_primitive(luametatex_command, no_legacy,       "scaledfontcharwd",               some_item_cmd,          scaled_font_char_wd_code,                 0);
+        tex_primitive(luametatex_command, no_legacy,       "scaledfontcharrt",               some_item_cmd,          scaled_font_char_rt_code,                 0);
+        tex_primitive(luametatex_command, no_legacy,       "scaledfontcharrb",               some_item_cmd,          scaled_font_char_rb_code,                 0);
+        tex_primitive(luametatex_command, no_legacy,       "scaledfontcharlt",               some_item_cmd,          scaled_font_char_lt_code,                 0);
+        tex_primitive(luametatex_command, no_legacy,       "scaledfontcharlb",               some_item_cmd,          scaled_font_char_lb_code,                 0);
         tex_primitive(luatex_command,     no_legacy,       "fontid",                         some_item_cmd,          font_id_code,                             0);
         tex_primitive(luametatex_command, no_legacy,       "fontmathcontrol",                some_item_cmd,          font_math_control_code,                   0);
         tex_primitive(luametatex_command, no_legacy,       "fontspecid",                     some_item_cmd,          font_spec_id_code,                        0);

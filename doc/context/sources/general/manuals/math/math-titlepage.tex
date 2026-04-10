@@ -4,13 +4,14 @@
 
 \startMPpage
 
-    StartPage;
-        fill Page withcolor .35magenta ;
+    StartPage ;
+        fill Page withcolor if contextlmtxmode : .35blue else : .35magenta fi ;
         picture p ; p := image ( draw outlinetext.b
             ("\textdollar")
             (withcolor .35green)
             (withcolor .5yellow withpen pencircle scaled .1) ;
         ) ;
+        if contextlmtxmode : p := p xscaled -1 fi ;
         p := p xysized(PaperWidth - 20pt,PaperHeight - 20pt ) ;
         p := p shifted - llcorner p shifted (10pt,10pt) ;
         draw p ;
@@ -19,10 +20,10 @@
             (withcolor .35green)
             (withcolor .5yellow withpen pencircle scaled .2) ;
         ) ;
-        p := p xsized(PaperWidth/2 - 40pt) ;
+        p := p xsized(PaperWidth/2 - 60pt) ;
         p := p shifted - llcorner p shifted (10pt,10pt) ;
-        draw p shifted (PaperWidth/2 + 20pt,20pt);
-    StopPage;
+        draw p shifted (PaperWidth/2 + 40pt,10pt) ;
+    StopPage ;
 
 \stopMPpage
 

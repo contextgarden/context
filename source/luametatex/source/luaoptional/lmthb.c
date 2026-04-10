@@ -467,7 +467,7 @@ static int hblib_get_version(lua_State * L)
 static int hblib_load_font(lua_State * L)
 {
     if (hblib_state.initialized) {
-        int id = (int) lua_tointeger(L, 1);
+        int id = lmt_tointeger(L, 1);
         const char *str= lua_tostring(L, 2);
         int size = (int) lua_rawlen(L, 2);
         hb_blob_t *blob = hblib_state.hb_blob_create(str, size, 0, NULL, NULL);

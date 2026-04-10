@@ -682,6 +682,7 @@ do
                 end
                 if current then
                     setlink(current,annot)
+                    result = current
                 else
                     result = annot
                 end
@@ -831,19 +832,19 @@ do
                 texts = justadd("destination",texts,show_destinations,current)
                 if texts then
                     current = texts
+                    result = current
                 end
             end
             nofdestinations = nofdestinations + 1
---             local annot = injectdestination(width,height,depth,name,view,internal)
             local annot = injectdestination(width,height,depth,name,view,internal)
             if annot then
                 annot = tonut(annot) -- obsolete soon
                 if result then
                     setlink(current,annot)
+                    result = current
                 else
                     result = annot
                 end
-                current = find_node_tail(annot)
             end
             if result then
                 result = new_hlist(result)

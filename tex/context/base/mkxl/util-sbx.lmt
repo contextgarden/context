@@ -337,7 +337,7 @@ local function validcommand(name,program,template,checkers,defaults,variables,re
                             report("variable %a with value %a fails the check",variable,value)
                             return
                         end
-                    else
+                    elseif type(value) ~= "number" then
                         report("variable %a has no checker",variable)
                         return
                     end

@@ -1304,6 +1304,16 @@ This mechanism obeys grouping so you have complete control over where and when
 it gets applied. The \type {\showfontkerns} command can be used to trace the
 injection of (font) kerns.
 
+% to be explained:
+%
+% \showmakeup[ckern]
+%
+% {This is \hbox {box} a very long\crlf Title}
+% {This is \hbox nokerning {box} a very long\crlf Title}
+% {This is\hskip10pt\hbox {box}\hskip10pt a very long\crlf Title}
+% {This is\kern10pt\hbox nokerning {box}\kern10pt a very long\crlf Title}
+% {This is \hbox nokerning {box} a very long\crlf Title}
+
 \stopsection
 
 \startsection[title=Ligatures]

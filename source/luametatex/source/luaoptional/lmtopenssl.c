@@ -457,7 +457,6 @@ static int openssllib_verify(lua_State * L)
     } else { 
         return 1;
     }
-    return 1;
 }
 
 static int openssllib_getversion(lua_State * L)

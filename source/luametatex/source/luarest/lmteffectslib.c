@@ -155,6 +155,8 @@ static double grad(int hash, double x, double y, double z) /* we can avoid one h
 
 static double effectslib_perlin_noise_3(double x, double y, double z)
 {
+    double u, v, w;
+    int A, B;
     /* Find unit cube that contains point: */
     int X = lfloor(x) & 0xFF;
     int Y = lfloor(y) & 0xFF;
@@ -164,12 +166,12 @@ static double effectslib_perlin_noise_3(double x, double y, double z)
     y -= floor(y);
     z -= floor(z);
     /* Compute fade curves for each of x, y, z: */
-    double u = fade(x);
-    double v = fade(y);
-    double w = fade(z);
+    u = fade(x);
+    v = fade(y);
+    w = fade(z);
     /* Hash coordinates of the 8 cube corners: */
-    int A = pmap[X  ] + Y; int AA = pmap[A] + Z; int AB = pmap[A+1] + Z;
-    int B = pmap[X+1] + Y; int BA = pmap[B] + Z; int BB = pmap[B+1] + Z;
+    A = pmap[X  ] + Y; int AA = pmap[A] + Z; int AB = pmap[A+1] + Z;
+    B = pmap[X+1] + Y; int BA = pmap[B] + Z; int BB = pmap[B+1] + Z;
     /* Add blended results from  8 corners of cube: */
     return lerp(w, lerp(v, lerp(u, grad(pmap[AA  ], x  , y  , z  ),
                                    grad(pmap[BA  ], x-1, y  , z  )),
@@ -694,7 +696,7 @@ static double grad2m[8][2] = {
     angle.
 */
 
-# define a 0.81649658f /* a = sqrt(2)/sqrt(3) = 0.816496580 */
+# define a 0.81649658 /* a = sqrt(2)/sqrt(3) = 0.816496580 */
 
 static double grad3u[16][3] = {
   {  1.0,  0.0,  1.0 }, {  0.0,  1.0,  1.0 }, // 12 cube edges

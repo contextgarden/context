@@ -47,8 +47,17 @@
    height=middle,
    width=middle]
 
-\definecolor[maincolor] [darkmagenta]
-\definecolor[extracolor][darkyellow]
+\ifcase\contextlmtxmode
+
+    \definecolor[maincolor] [darkmagenta]
+    \definecolor[extracolor][darkyellow]
+
+\else
+
+    \definecolor[maincolor] [darkblue]
+    \definecolor[extracolor][darkyellow]
+
+\fi
 
 \setuphead
   [chapter]

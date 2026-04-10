@@ -387,9 +387,9 @@
 
 \installcorenamespace{spacecodemethod}
 
-\sfcode\rightparentasciicode \zerocount % hm
-\sfcode\rightbracketasciicode\zerocount % hm hm
-\sfcode\singlequoteasciicode \zerocount % hm hm hm
+% \sfcode\rightparentasciicode \zerocount % hm
+% \sfcode\rightbracketasciicode\zerocount % hm hm
+% \sfcode\singlequoteasciicode \zerocount % hm hm hm
 
 %D We always had:
 
@@ -425,42 +425,59 @@
 \spcode\colonasciicode           4 % 2000
 \spcode\semicolonasciicode       5 % 1500
 
+\spcode\rightparentasciicode     6 % 0 for Jim Diamond
+\spcode\rightbracketasciicode    6 % idem
+\spcode\singlequoteasciicode     6 % idem
+
 % frenchspacing == fixed
 
 % options \constantspecificationoptioncode
 
 \specificationdef \nospacingmap \textspacing 0
 
-\specificationdef \nonfrenchspacingmap \textspacing 5 constant
+\specificationdef \nonfrenchspacingmap \textspacing 6 constant
     \plusthreethousand      \zerocount % .
     \plustwelvehundredfifty \zerocount % ,
     \plusthreethousand      \zerocount % ! ?
     \plustwothousand        \zerocount % :
     \plusfifteenhundred     \zerocount % ;
+    \zerocount              \zerocount % ) ] '
 \relax
 
-\specificationdef \frenchspacingmap \textspacing 1 constant
-    \plusthousand \zerocount
+\specificationdef \frenchspacingmap \textspacing 6 constant
+    \plusthousand \zerocount % .
+    \plusthousand \zerocount % ,
+    \plusthousand \zerocount % ! ?
+    \plusthousand \zerocount % :
+    \plusthousand \zerocount % ;
+    \zerocount    \zerocount % ) ] '
 \relax
 
-\specificationdef \newfrenchspacingmap \textspacing 1 constant
-    \plusthousandfifty \zerocount
+\specificationdef \newfrenchspacingmap \textspacing 6 constant
+    \plusthousandfifty \zerocount % .
+    \plusthousandfifty \zerocount % ,
+    \plusthousandfifty \zerocount % ! ?
+    \plusthousandfifty \zerocount % :
+    \plusthousandfifty \zerocount % ;
+    \zerocount         \zerocount % ) ] '
 \relax
 
-\specificationdef \penalizedspacingmap \textspacing 5 constant
+\specificationdef \penalizedspacingmap \textspacing 6 constant
     \plusthousand -\plusfifty % .
     \plusthousand -\plusfifty % ,
     \plusthousand -\plusfifty % ! ?
     \plusthousand -\plusfifty % :
     \plusthousand -\plusfifty % ;
+    \zerocount     \zerocount % ) ] '
 \relax
 
-\specificationdef \nonpenalizedspacingmap \textspacing 5 constant
+\specificationdef \nonpenalizedspacingmap \textspacing 6 constant
     \plusthreethousand      -\plusfifty % .
     \plustwelvehundredfifty -\plusfifty % ,
     \plusthreethousand      -\plusfifty % ! ?
     \plustwothousand        -\plusfifty % :
     \plusfifteenhundred     -\plusfifty % ;
+    \zerocount               \zerocount % ) ] '
 \relax
 
 \permanent\protected\def\nonfrenchspacing   {\textspacing\nonfrenchspacingmap   }

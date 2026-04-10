@@ -496,7 +496,7 @@ static void mujslib_file_new(js_State *J)
                 } else {
                     int *id = malloc(sizeof(int));
                     if (id) {
-                        *((int*) id) = (int) lua_tointeger(L, -1);
+                        *((int*) id) = lmt_tointeger(L, -1);
                         lua_settop(L, top);
                         if (id) {
 	                        mujslib_state.js_currentfunction(J);

@@ -760,6 +760,19 @@ do
         end
     end
 
+    local function wrap(left,right)
+        local selection = editor:GetSelText()
+        if selection ~= "" then
+            selection = left .. selection .. right
+            editor:ReplaceSel(selection)
+        end
+    end
+
+    function wrap_curly_braces   () wrap("{","}") end
+    function wrap_square_brackets() wrap("[","]") end
+    function wrap_parentheses    () wrap("(",")") end
+    function wrap_angle_brackets () wrap("<",">") end
+
 end
 
 do

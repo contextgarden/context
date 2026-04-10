@@ -31,7 +31,7 @@ if not modules then modules = { } end modules ['math-noa'] = {
 
 local next, tonumber = next, tonumber
 local formatters, gmatch, match = string.formatters, string.gmatch, string.match
-local insert, remove, concat, sortedhash = table.insert, table.remove, table.concat, table.sortedhash
+local insert, remove, concat, sortedhash, copy, sort = table.insert, table.remove, table.concat, table.sortedhash, table.copy, table.sort
 local div, round = math.div, math.round
 
 local fonts              = fonts
@@ -145,7 +145,7 @@ local setoffsets         = nuts.setoffsets
 local getscripts         = nuts.getscripts
 local setscripts         = nuts.setscripts
 
-local getoptions         = nuts.getoptions
+local hasoptions         = nuts.hasoptions
 local setoptions         = nuts.setoptions
 
 local setprop            = nuts.setprop
@@ -1429,22 +1429,28 @@ do
     local known = setmetatableindex(function(t,k)
         local v = 0 | 2^last
         t[k] = v
-        last = last + 1
+        if last < 30 then
+            last = last + 1
+        else
+            report_alternates("too many alternate features")
+        end
         return v
     end)
 
     local defaults = {
-        dotless = { feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
-     -- zero    = { feature = 'zero', value = 1, comment = "Slashed or Dotted Zero" }, -- in no math font (yet)
+        { order = 1, name = "dotless", feature = 'dtls', value = 1, comment = "Mathematical Dotless Forms" },
+     -- { order = 2, name = "zero",    feature = 'zero', value = 1, comment = "Slashed or Dotted Zero" }, -- in no math font (yet)
     }
 
     local function initializemathalternates(tfmdata)
         if use_math_goodies then
 
             local goodies  = tfmdata.goodies
-            local autolist = defaults -- table.copy(defaults)
+            local autolist = defaults
 
             local function setthem(newalternates)
+                -- we now pass alternates as array and no longer as hash but we do
+                -- keep the order
                 local resources      = tfmdata.resources -- was tfmdata.shared
                 local mathalternates = resources.mathalternates
                 local alternates, attributes, registered, presets
@@ -1464,17 +1470,40 @@ do
                     }
                     resources.mathalternates = mathalternates
                 end
-                --
-                for name, data in sortedhash(newalternates) do
-                    if alternates[name] then
-                        -- ignore
-                    else
-                        local attr = known[name]
-                        attributes[attr] = data
-                        alternates[name] = attr
-                        registered[#registered+1] = attr
+                local used = { }
+                local last = 2000 -- 0xFFFF
+                for i=1,#newalternates do
+                    local data = newalternates[i]
+                    local name = data.name
+                    if name then
+                        if alternates[name] then
+                            -- ignore
+                        else
+                            local attr = known[name]
+                            attributes[attr] = data
+                            alternates[name] = attr
+                            registered[#registered+1] = attr
+                        end
+--                             used[known[name]] = i -- order
+                        local order = data.order
+                        if not order then
+                            last = last + 1
+                            order = last
+                        end
+                        used[known[name]] = order
                     end
                 end
+                for k, v in sortedhash(registered) do
+                    if not used[v] then
+                        last = last + 1
+                        used[v] = last
+                    end
+                end
+                sort(registered,function(a,b) return used[a] < used[b] end)
+-- inspect(newalternates)
+-- inspect(registered)
+-- inspect(used)
+-- inspect(known)
             end
 
             if goodies then
@@ -1488,12 +1517,48 @@ do
                         if trace_goodies then
                             report_goodies("loading alternates for font %a",tfmdata.properties.name)
                         end
-                        for k, v in next, autolist do
-                            if not alternates[k] then
-                                alternates[k] = v
+                        -- we use a copy
+                        local newalternates = { }
+                        local newfoundnames = { }
+                        for i=1,#autolist do
+                            local data = autolist[i]
+                            local name = data.name
+                            if name and not newfoundnames[name] then
+                                newalternates[#newalternates+1] = copy(data)
+                                newfoundnames[name] = true
                             end
                         end
-                        setthem(alternates)
+                        if #alternates > 0 then
+                            -- ordered
+                            for i=1,#alternates do
+                                local data = alternates[i]
+                                local name = data.name
+                                if name and not newfoundnames[name] then
+                                    newalternates[#newalternates+1] = copy(data)
+                                    newfoundnames[name] = true
+                                    data.order = #newalternates
+                                end
+                            end
+                        else
+                            -- unordered
+                            local offset = #autolist
+                            local last   = 1000 -- 0xFFFF
+                            for name, data in sortedhash(alternates) do
+                                if not newfoundnames[name] then
+                                    newalternates[#newalternates+1] = copy(data)
+                                    if not data.name then
+                                        data.name = name
+                                    end
+                                    local order = data.order
+                                    if not order then
+                                        last  = last + 1
+                                        order = last
+                                    end
+                                    data.order = order + offset
+                                end
+                            end
+                        end
+                        setthem(newalternates)
                         return
                     end
                 end
@@ -1641,6 +1706,8 @@ do
                     local registered = mathalternates.registered
                     local hashes     = mathalternates.hashes
                     local newchar    = nil
+-- inspect(attributes)
+-- inspect(registered)
                     for i=1,#registered do
                         local r = registered[i]
                         if (a & r) ~= 0 then
@@ -1662,7 +1729,7 @@ do
                                             top = top + 1
                                         elseif class == "close" then
                                             value = cache[top]
--- report_alternates("random fence, top %a, class %a, value %a",top,class,value)
+-- report_alternates("random fence,     top %a, class %a, value %a",top,class,value)
                                             cache[top] = false
                                             top = top - 1
                                         elseif class == "middle" then
@@ -1671,15 +1738,21 @@ do
                                         else
                                             -- keep value as it is
                                         end
-                                        alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
-                                        if choice == nil then
+                                        if value == false then
+                                            alt = char
                                             choice = false
+                                        else
+                                            alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                            if choice == nil then
+                                                choice = false
+                                            end
                                         end
                                         if class == "open" then
                                             cache[top] = choice
 -- report_alternates("random fence, top %a, class %a, value %a",top,class,choice)
                                         end
-                                     --
+--  inspect(fontdata[fontid].characters[alt])
+                                    --
                                      -- local cdata  = chardata[char]
                                      -- -- inspect(cdata)
                                      -- class = cdata and cdata.mathclass or false -- use helper
@@ -1905,7 +1978,7 @@ do
     local followedbyspace_code <const> = tex.noadoptioncodes.followedbyspace
 
     local function followedbyspace(n)
-        return n and (getoptions(n) & followedbyspace_code == followedbyspace_code)
+        return n and hasoptions(n,followedbyspace_code)
     end
 
     local function followbyspace(n)

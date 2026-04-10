@@ -144,8 +144,8 @@ static void helperlib_aux_getprofile(lua_State *L, profiling_specification *prof
         {
          // scaled p = lround((double) (profile->position - profile->margin) / profile->step);
          // scaled w = lround((double) (profile->width + profile->margin) / profile->step);
-            scaled p = floor((double) (profile->position - profile->margin)/profile->step + 0.5);
-            scaled w = floor((double) (profile->width    + profile->margin)/profile->step - 0.5);
+            scaled p = lfloor((double) (profile->position - profile->margin)/profile->step + 0.5);
+            scaled w = lfloor((double) (profile->width    + profile->margin)/profile->step - 0.5);
             if (p < 0) {
                 p = 0;
             }

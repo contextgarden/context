@@ -290,7 +290,6 @@ do
             text  = { }
             start = nil
         end
-
         while current do
             local char, id = ischar(current,font,dynamic,currentscale,currentxscale,currentyscale)
             if char then
@@ -332,7 +331,7 @@ do
                     stopspacing  = false
                 else
                     if start and size > 0 then
-                        head = handle(startspacing)
+                        handle(startspacing)
                     end
                     startspacing = false
                     stopspacing  = false
@@ -517,7 +516,7 @@ do
         if start and size > 0 then
             handle(startspacing,stopspacing)
         end
-        return head, true
+        return head -- , true
     end
 
     function fonts.handlers.otf.texthandler(head,font,dynamic,direction,action)
@@ -527,7 +526,7 @@ do
         if action then
             return texthandler(head,font,dynamic,direction == righttoleft_code and -1 or 0,action)
         else
-            return head, false
+            return head -- , false
         end
     end
 

@@ -589,10 +589,10 @@ messing with these parameters.
 \starttexdefinition TestRun #1#2
     \dontleavehmode
     \scale[width=1tw] \bgroup \pushoverloadmode
-        \def\TestA{$ \showglyphs \Uover              {#1}{#2} $}
-        \def\TestB{$ \showglyphs \Uover vfactor  100 {#1}{#2} $}
-        \def\TestC{$ \showglyphs \Uover vfactor 2000 {#1}{#2} $}
-        \def\TestD{$ \showglyphs \Uover vfactor    0 {#1}{#2} $}
+        \def\TestA{$ \maincolor \showglyphs \Uover              {\darkgray #1}{\darkgray #2} $}
+        \def\TestB{$ \maincolor \showglyphs \Uover vfactor  100 {\darkgray #1}{\darkgray #2} $}
+        \def\TestC{$ \maincolor \showglyphs \Uover vfactor 2000 {\darkgray #1}{\darkgray #2} $}
+        \def\TestD{$ \maincolor \showglyphs \Uover vfactor    0 {\darkgray #1}{\darkgray #2} $}
         \everymath{\fam\zerocount}%
         \Umathfractionnumup    \allmathstyles\zeropoint
         \Umathfractiondenomdown\allmathstyles\zeropoint

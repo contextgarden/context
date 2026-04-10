@@ -24,6 +24,7 @@ local nuts               = nodes.nuts
 local setfont            = nuts.setfont
 
 local nextchar           = nuts.traversers.char
+local nextdisc           = nuts.traversers.disc
 local getscales          = nuts.getscales
 local setscales          = nuts.setscales
 local getslant           = nuts.getslant
@@ -34,6 +35,7 @@ local getxscale          = nuts.getxscale
 local getyscale          = nuts.getyscale
 local setprop            = nuts.setprop
 local getcharspec        = nuts.getcharspec
+local getdisc            = nuts.getdisc
 
 local settings_to_hash   = utilities.parsers.settings_to_hash
 
@@ -456,9 +458,9 @@ end
 
 -- todo: also general one for missing
 
-local function apply(n,char,font,vector,vect)
+local function apply(n,char,font,vector,vect,scales)
     local kind   = type(vect)
-    local rscale = rscales[font][char] or 1
+    local rscale = scales[char] or 1
     local newfont, newchar
     if kind == "table" then
         newfont = vect[1]
@@ -501,71 +503,93 @@ local function apply(n,char,font,vector,vect)
         setscales(n,s*rscale,x,y)
     end
     setfont(n,newfont,newchar)
---
--- squeeze (1000) extend (1000) slant (0) weight (0)
---
-local neweffect = propdata[newfont].compacteffect
-if neweffect then
-    local oldeffect  = propdata[font].compacteffect
-    local newslant   = neweffect.slant
-    local newweight  = neweffect.weight
-    local newextend  = neweffect.extend
-    local newsqueeze = neweffect.squeeze
-    -- todo: scale, xscale, yscale, slant, weight = getglyphspec(n) -- combine with above rscale
-    if newslant ~= 0 then
-        local oldslant = oldeffect.slant
-        if oldslant ~= 0 then
-            local useslant = getslant(n)
-            if useslant ~= 0 then
-                newslant = round(newslant*useslant/oldslant)
+    --
+    -- squeeze (1000) extend (1000) slant (0) weight (0)
+    --
+    local neweffect = propdata[newfont].compacteffect
+    if neweffect then
+        local oldeffect  = propdata[font].compacteffect
+        local newslant   = neweffect.slant
+        local newweight  = neweffect.weight
+        local newextend  = neweffect.extend
+        local newsqueeze = neweffect.squeeze
+        -- todo: scale, xscale, yscale, slant, weight = getglyphspec(n) -- combine with above rscale
+        if newslant ~= 0 then
+            local oldslant = oldeffect.slant
+            if oldslant ~= 0 then
+                local useslant = getslant(n)
+                if useslant ~= 0 then
+                    newslant = round(newslant*useslant/oldslant)
+                end
             end
+            setslant(n,newslant)
         end
-        setslant(n,newslant)
-    end
-    if newweight ~= 0 then
-        local oldweight = oldeffect.weight
-        if oldweight ~= 0 then
-            local useweight = getweight(n)
-            if useweight ~= 0 then
-                newweight = round(newweight*useweight/oldweight)
+        if newweight ~= 0 then
+            local oldweight = oldeffect.weight
+            if oldweight ~= 0 then
+                local useweight = getweight(n)
+                if useweight ~= 0 then
+                    newweight = round(newweight*useweight/oldweight)
+                end
             end
+            setweight(n,newweight)
         end
-        setweight(n,newweight)
-    end
-    if newextend ~= 1000 then
-        local oldextend = oldeffect.extend
-        if oldextend ~= 0 then
-            local useextend = getxscale(n)
-            if useextend ~= 0 then
-                newextend = round(newextend*useextend/oldextend)
+        if newextend ~= 1000 then
+            local oldextend = oldeffect.extend
+            if oldextend ~= 0 then
+                local useextend = getxscale(n)
+                if useextend ~= 0 then
+                    newextend = round(newextend*useextend/oldextend)
+                end
             end
+            setscales(n,nil,newextend,nil)
         end
-        setscales(n,nil,newextend,nil)
-    end
-    if newsqueeze ~= 1000 then
-        local oldsqueeze = oldeffect.squeeze
-        if oldsqueeze ~= 0 then
-            local usesqueeze = getyscale(n)
-            if usesqueeze ~= 0 then
-                newsqueeze = round(newsqueeze*usesqueeze/oldsqueezed)
+        if newsqueeze ~= 1000 then
+            local oldsqueeze = oldeffect.squeeze
+            if oldsqueeze ~= 0 then
+                local usesqueeze = getyscale(n)
+                if usesqueeze ~= 0 then
+                    newsqueeze = round(newsqueeze*usesqueeze/oldsqueezed)
+                end
             end
+            setscales(n,nil,nil,newsqueeze)
         end
-        setscales(n,nil,nil,newsqueeze)
     end
-end
     --
     setprop(n, "original", { font = font, char = char })
 end
 
-function collections.process(head) -- this way we keep feature processing
+local function process(head)
+    local current = false
+    local vector  = false
+    local scales  = false
     for n, char, font in nextchar, head do
-        local vector = validvectors[font]
+        if font ~= current then
+            current = font
+            vector  = validvectors[font]
+            scales  = rscales[font]
+        end
         if vector then
             local vect = vector[char]
             if vect then
--- print(char,font,vect)
-                apply(n,char,font,vector,vect)
+                apply(n,char,font,vector,vect,scales)
             end
+        end
+    end
+end
+
+function collections.process(head) -- this way we keep feature processing
+    process(head)
+    for disc in nextdisc, head do
+        local pre, post, replace = getdisc(disc)
+        if pre then
+            process(pre)
+        end
+        if post then
+            process(post)
+        end
+        if replace then
+            process(replace)
         end
     end
     return head
@@ -578,7 +602,7 @@ function collections.direct(n)
         if vector then
             local vect = vector[char]
             if vect then
-                apply(n,char,font,vector,vect)
+                apply(n,char,font,vector,vect,rscales[font])
             end
         end
     end

@@ -40,7 +40,7 @@ static inline unsigned char min_of_three(unsigned char a, unsigned char b, unsig
 
 static inline int weighted(int r, int g, int b)
 {
-    return round(0.299 * r + 0.587 * g + 0.114 * b);
+    return lround(0.299 * r + 0.587 * g + 0.114 * b);
 }
 
 int bytemap_reset(bytemap_data *bytemap, size_t *count)
@@ -81,7 +81,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
             switch (method) {
                 case bytemap_reduction_average:
                     for (int g = 0; g < nxny; g++) {
-                        int s = round( (double) (
+                        int s = lround( (double) (
                               (unsigned char) color[c]
                             + (unsigned char) color[c+1]
                             + (unsigned char) color[c+2]
@@ -92,7 +92,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
                     break;
                 case bytemap_reduction_minmax:
                     for (int g = 0; g < nxny; g++) {
-                        int s = round( (double) (
+                        int s = lround( (double) (
                               max_of_three(color[c], color[c+1], color[c+2]),
                             + min_of_three(color[c], color[c+1], color[c+2])
                         ) / 2.0);
@@ -104,7 +104,7 @@ void bytemap_reduce(bytemap_data *bytemap, int method, size_t *count)
              //     /* fall through */
                 default:
                     for (int g = 0; g < nxny; g++) {
-                        int s = round(
+                        int s = lround(
                               0.299 * (unsigned char) color[c]
                             + 0.587 * (unsigned char) color[c+1]
                             + 0.114 * (unsigned char) color[c+2]
@@ -228,7 +228,7 @@ void bytemap_slice_range(bytemap_data *bytemap, int x, int y, int dx, int dy, in
     }
 }
 
-int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry, int compensate)
+static int bytemap_aux_bounds(bytemap_data *bytemap, int value, int *lx, int *ly, int *rx, int *ry, int compensate)
 {
     unsigned char *d = bytemap->data;
     int nx = bytemap->nx;

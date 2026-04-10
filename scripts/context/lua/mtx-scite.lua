@@ -23,7 +23,7 @@ local helpinfo = [[
  <metadata>
   <entry name="name">mtx-scite</entry>
   <entry name="detail">Scite Helper Script</entry>
-  <entry name="version">1.00</entry>
+  <entry name="version">1.01</entry>
  </metadata>
  <flags>
   <category name="basic">
@@ -31,6 +31,7 @@ local helpinfo = [[
     <flag name="words"><short>convert spell-*.txt into spell-*.lua</short></flag>
     <flag name="tree"><short>converts a tree into an html tree (--source --target --numbers)</short></flag>
     <flag name="file"><short>converts a file into an html file (--source --target --numbers --lexer)</short></flag>
+    <flag name="update"><short>update interface files to given path</short></flag>
    </subcategory>
   </category>
  </flags>
@@ -39,7 +40,7 @@ local helpinfo = [[
 
 local application = logs.application {
     name     = "mtx-scite",
-    banner   = "Scite Helper Script 1.00",
+    banner   = "Scite Helper Script 1.01",
     helpinfo = helpinfo,
 }
 
@@ -226,7 +227,7 @@ function scripts.scite.words()
         local tag = string.match(tag,"spell%-(..)%.") or tag
         local txtname = format("spell-%s.txt",tag)
         local luaname = format("spell-%s.lua",tag)
-        local lucname = format("spell-%s.luc",tag)
+     -- local lucname = format("spell-%s.luc",tag)
         if lfs.isfile(txtname) then
             report("loading %s",txtname)
             local olddata = io.loaddata(txtname) or ""
@@ -309,6 +310,39 @@ function scripts.scite.file()
     end
 end
 
+function scripts.scite.update()
+    local target = environment.files[1]
+    if not target or not lfs.isdir(target) then
+        return
+    end
+    local source = scite.lexerroot
+    if not source or not lfs.isdir(source) then
+        return
+    end
+    source = string.gsub(source,"/context/lexers","")
+    report()
+    report("target root %a",target)
+    report("source root %a",source)
+    report()
+    local function update(where)
+        local source = source .. "/" .. where
+        local target = target .. "/" .. where
+        local files = dir.glob(source .. "/*.lua")
+     -- report("target path %a",target)
+     -- report("source path %a",source)
+        for i=1,#files do
+            local basename = file.basename(files[i])
+            local source   = source .. "/" .. basename
+            local target   = target .. "/" .. basename
+            local okay     = io.loaddata(source) == io.loaddata(target)
+            report("updating %s %a",okay and "+" or "-",target)
+        end
+    end
+    update("/context/lexers")
+    update("/context/lexers/data")
+    update("/context/lexers/themes")
+end
+
 -- if environment.argument("start") then
 --     scripts.scite.start(true)
 -- elseif environment.argument("test") then
@@ -323,6 +357,8 @@ elseif environment.argument("tree") then
     scripts.scite.tree()
 elseif environment.argument("file") then
     scripts.scite.file()
+elseif environment.argument("update") then
+    scripts.scite.update()
 elseif environment.argument("exporthelp") then
     application.export(environment.argument("exporthelp"),environment.files[1])
 else

@@ -1275,7 +1275,7 @@ static halfword tex_aux_scan_snapper(int factor)
     return factor ? tex_scan_integer(0, NULL, NULL) : tex_scan_dimension(0, 0, 0, 1, NULL, NULL);
 }
 
-static halfword tex_aux_scan_specification_line_snapping(halfword code)
+static halfword tex_aux_scan_specification_line_snapping(quarterword code)
 {
     halfword p = null;
     halfword count = tex_scan_integer(1, NULL, NULL);

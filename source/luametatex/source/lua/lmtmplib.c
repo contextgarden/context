@@ -754,8 +754,8 @@ static mp_knot mplib_aux_make_vector_t(lua_State *L, MP mp, vector v, int close)
     mp_knot first = NULL;
     unsigned n = (unsigned) lua_rawlen(L, -1);
     int f = -1;
-    double lastx; 
-    double lasty; 
+    double lastx = 0;
+    double lasty = 0;
     for (unsigned i = 1; i <= n; i++) {
         int r = lua_rawgeti(L, -1, i) == LUA_TNUMBER ? lmt_tounsigned(L, -1) : 0;
         if (r > 0 && r <= v->rows) { 
@@ -1958,7 +1958,7 @@ static int mplib_new(lua_State *L)
                 if (lua_type(L, -2) == LUA_TSTRING) {
                     const char *s = lua_tostring(L, -2);
                     if (lua_key_eq(s, random_seed)) {
-                        options->random_seed = (int) lua_tointeger(L, -1);
+                        options->random_seed = lmt_tointeger(L, -1);
                     } else if (lua_key_eq(s, interaction)) {
                         options->interaction = luaL_checkoption(L, -1, "silent", mplib_interaction_options);
                     } else if (lua_key_eq(s, job_name)) {
@@ -2455,7 +2455,7 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
     int midcycle = 0;
     mp_knot ln = NULL;
     mp_knot rn = NULL;
-    double tension = *tense ? -1.0 : 1.0; /* todo  */
+ // double tension = *tense ? -1.0 : 1.0; /* todo  */
     for (int i = 1; i <= numpoints; i++) {
         switch (lua_rawgeti(L, index, i)) { 
             case LUA_TTABLE:
@@ -2483,12 +2483,12 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
                     if (*p) {
 // todo : use tension when 
                         if (*curled) {
-if (ln && ln != rn) { 
-    mp_set_knot_simple_right_curl(mp, ln);
-    mp_set_knot_simple_left_curl(mp, rn);  
-}
-ln = NULL;
-rn = NULL;
+                            if (ln && ln != rn) {
+                                mp_set_knot_simple_right_curl(mp, ln);
+                                mp_set_knot_simple_left_curl(mp, rn);
+                            }
+                            ln = NULL;
+                            rn = NULL;
                             if (! ln) { 
                                 ln = *p;
                             }
@@ -3416,7 +3416,7 @@ static int mplib_getfields(lua_State *L)
             }
         case LUA_TNUMBER: 
             {
-                n = (int) lua_tointeger(L, 1);
+                n = lmt_tointeger(L, 1);
                 break;
             }
         default:

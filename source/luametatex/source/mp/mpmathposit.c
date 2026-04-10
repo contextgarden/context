@@ -14,7 +14,7 @@
 # define mp_angle_multiplier    16
 # define mp_warning_limit       pow(2.0,52)
 
-# define odd(A)                 (labs(A) %2 == 1)
+# define odd(A)                 (llabs(A) %2 == 1)
 # define two_to_the(A)          (1 << (unsigned) (A))
 # define set_cur_cmd(A)         mp->cur_mod_->command = (A)
 # define set_cur_mod(A)         mp->cur_mod_->data.n.data.pval = (A)

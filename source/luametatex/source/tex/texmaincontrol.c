@@ -173,18 +173,24 @@ static void tex_aux_adjust_space_factor(halfword chr)
     tex_get_sp_codes(chr, &sf, &sp);
     if (sf == default_space_factor) {
         cur_list.space_factor = default_space_factor;
+     // printf("1 set %i\n",cur_list.space_factor);
     } else if (sf < default_space_factor) {
         if (sf > 0) {
             cur_list.space_factor = sf;
+         // printf("2 set %i\n",cur_list.space_factor);
         } else {
             /* sf <= 0 */ /* keep it */
+         // printf("3 keep %i\n",cur_list.space_factor);
         }
     } else if (tex_aux_use_space_factor_overload(cur_list.tail, cur_list.space_factor)) {
         /* keep it */
+     // printf("4 keep %i\n",cur_list.space_factor);
     } else if (cur_list.space_factor < default_space_factor) {
         cur_list.space_factor = default_space_factor;
+     // printf("5 set %i\n",cur_list.space_factor);
     } else {
         cur_list.space_factor = sf;
+     // printf("6 set %i\n",cur_list.space_factor);
     }
     cur_list.space_penalty = sp;
 }
@@ -4689,7 +4695,7 @@ static void tex_aux_set_shorthand_def(int a, int force)
     if (force || tex_define_permitted(cur_cs, a)) {
         /* can we optimize the dual define, like no need to destroy in second call */
         halfword p = cur_cs;
-        tex_define(a, p, relax_cmd, relax_code);
+        tex_define(a, p, relax_cmd, relax_code); /* Can't we be more clever here? */
         tex_scan_optional_equals();
         switch (code) {
             case char_def_code:
@@ -4816,7 +4822,7 @@ static void tex_aux_set_shorthand_def(int a, int force)
             case fontspec_def_code:
                 {
                     halfword v = tex_scan_font(1);
-                    tex_define(a, p, fontspec_cmd, v);
+                    tex_define(a, p, fontspec_cmd, v); // _again
                     break;
                 }
             case specification_def_code:
@@ -5439,7 +5445,7 @@ static void tex_aux_set_define_char_code(int a) /* maybe make |a| already a bool
         case spcode_charcode:
             {
                 halfword chr = tex_scan_char_number(0);
-                halfword val = tex_scan_space_factor(1);
+                halfword val = tex_scan_space_penalty(1);
                 tex_set_sp_code(chr, val, global_or_local(a));
             }
             break;
@@ -6334,6 +6340,10 @@ void tex_get_r_token(void)
     atom panalties but that's all. No need for more code.
 */
 
+/* We want to avoid the somewhat useless clang warning about adding different types. */
+
+# define internal_math_integer_location(code,subtype) internal_integer_location((unsigned) code + (unsigned) subtype)
+
 void tex_assign_internal_integer_value(int a, halfword p, int val)
 {
     switch (internal_integer_number(p)) {
@@ -6568,20 +6578,20 @@ void tex_assign_internal_integer_value(int a, halfword p, int val)
             break;
         /* We only synchronize these four one way. */
         case post_binary_penalty_code:
-            tex_word_define(a, internal_integer_location(first_math_post_penalty_code + binary_noad_subtype), val);
-            tex_word_define(a, internal_integer_location(first_math_display_post_penalty_code + binary_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_post_penalty_code, binary_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_display_post_penalty_code, binary_noad_subtype), val);
             break;
         case post_relation_penalty_code:
-            tex_word_define(a, internal_integer_location(first_math_post_penalty_code + relation_noad_subtype), val);
-            tex_word_define(a, internal_integer_location(first_math_display_post_penalty_code + relation_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_post_penalty_code, relation_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_display_post_penalty_code, relation_noad_subtype), val);
             break;
         case pre_binary_penalty_code:
-            tex_word_define(a, internal_integer_location(first_math_pre_penalty_code + binary_noad_subtype), val);
-            tex_word_define(a, internal_integer_location(first_math_display_pre_penalty_code + binary_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_pre_penalty_code, binary_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_display_pre_penalty_code, binary_noad_subtype), val);
             break;
         case pre_relation_penalty_code:
-            tex_word_define(a, internal_integer_location(first_math_pre_penalty_code + relation_noad_subtype), val);
-            tex_word_define(a, internal_integer_location(first_math_display_pre_penalty_code + relation_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_pre_penalty_code, relation_noad_subtype), val);
+            tex_word_define(a, internal_math_integer_location(first_math_display_pre_penalty_code, relation_noad_subtype), val);
             break;
         /* We could do this, but then we also need to do day and check it per month. */ /*
         case month_code:
