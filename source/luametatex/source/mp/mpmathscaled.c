@@ -439,13 +439,32 @@ static void mp_scaled_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
         if (y <= EL_GORDO - x) {
             ret->data.val = x + y;
         } else {
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 1);
             ret->data.val =  EL_GORDO;
         }
     } else if (-y <= EL_GORDO + x) {
         ret->data.val = x + y;
     } else {
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 2);
+        ret->data.val = negative_EL_GORDO;
+    }
+}
+
+static void mp_scaled_slow_sub(MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
+{
+    mp_scaled_t x = x_orig->data.val;
+    mp_scaled_t y = y_orig->data.val;
+    if (x >= 0) {
+        if (-y <= EL_GORDO - x) {
+            ret->data.val = x - y;
+        } else {
+            mp->arithmic_error = mp_error_code(mp, 1);
+            ret->data.val =  EL_GORDO;
+        }
+    } else if (y <= EL_GORDO + x) {
+        ret->data.val = x - y;
+    } else {
+        mp->arithmic_error = mp_error_code(mp, 2);
         ret->data.val = negative_EL_GORDO;
     }
 }
@@ -496,7 +515,7 @@ static mp_scaled_t mp_scaled_aux_make_fraction(MP mp, mp_scaled_t p, mp_scaled_t
         if ((p ^ q) >= 0) {
             d += 0.5;
             if (d >= TWEXP31) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 3);
                 return EL_GORDO;
             } else {
                 mp_scaled_t i = (mp_scaled_t) d;
@@ -508,7 +527,7 @@ static mp_scaled_t mp_scaled_aux_make_fraction(MP mp, mp_scaled_t p, mp_scaled_t
         } else {
             d -= 0.5;
             if (d <= -TWEXP31) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 4);
                 return -negative_EL_GORDO;
             } else {
                 mp_scaled_t i = (mp_scaled_t) d;
@@ -543,7 +562,7 @@ static mp_scaled_t mp_scaled_aux_take_fraction(MP mp, mp_scaled_t p, mp_scaled_t
         d += 0.5;
         if (d >= TWEXP31) {
             if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 040000) == 0) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 5);
             }
             return EL_GORDO;
         } else {
@@ -557,7 +576,7 @@ static mp_scaled_t mp_scaled_aux_take_fraction(MP mp, mp_scaled_t p, mp_scaled_t
         d -= 0.5;
         if (d <= -TWEXP31) {
             if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 6);
             }
             return -negative_EL_GORDO;
         } else {
@@ -595,7 +614,7 @@ static mp_scaled_t mp_take_scaled(MP mp, int p, mp_scaled_t q)
         d += 0.5;
         if (d >= TWEXP31) {
             if (d != TWEXP31 || (((p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 7);
             }
             return EL_GORDO;
         } else {
@@ -609,7 +628,7 @@ static mp_scaled_t mp_take_scaled(MP mp, int p, mp_scaled_t q)
         d -= 0.5;
         if (d <= -TWEXP31) {
             if (d != -TWEXP31 || ((-(p & 0x7FFF) * (q & 0x7FFF)) & 0x4000) == 0) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 8);
             }
             return -negative_EL_GORDO;
         } else {
@@ -646,7 +665,7 @@ static mp_scaled_t mp_make_scaled(MP mp, mp_scaled_t p, mp_scaled_t q)
         if ((p ^ q) >= 0) {
             d += 0.5;
             if (d >= TWEXP31) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 9);
                 return EL_GORDO;
             } else {
                 mp_scaled_t i = (mp_scaled_t) d;
@@ -658,7 +677,7 @@ static mp_scaled_t mp_make_scaled(MP mp, mp_scaled_t p, mp_scaled_t q)
         } else {
             d -= 0.5;
             if (d <= -TWEXP31) {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 10);
                 return -negative_EL_GORDO;
             } else {
                 mp_scaled_t i = (mp_scaled_t) d;
@@ -1117,7 +1136,7 @@ static void mp_scaled_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
             if (a < fraction_two) {
                 a = a + a + a + a;
             } else {
-                mp->arithmic_error = 1;
+                mp->arithmic_error = mp_error_code(mp, 11);
                 a = EL_GORDO;
             }
         }
@@ -1190,12 +1209,12 @@ static void mp_scaled_power_of(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     long r = lround(p * 65536.0);
     if (r > 0) {
         if (r >= EL_GORDO) {
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 12);
             r = EL_GORDO;
         }
     } else if (r < 0) {
         if (r <= - EL_GORDO) {
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 13);
             r = - EL_GORDO;
         }
     }
@@ -1276,7 +1295,7 @@ static void mp_scaled_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     mp_scaled_t x = x_orig->data.val;
     if (x > 174436200) {
         /* $2^{24}\ln((2^{31}-1)/2^{16})\approx 174436199.51$ */
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 14);
         ret->data.val = EL_GORDO;
     } else if (x < -197694359) {
         /* $2^{24}\ln(2^{-1}/2^{16})\approx-197694359.45$ */
@@ -1829,6 +1848,7 @@ math_data *mp_initialize_scaled_math(MP mp)
     math->md_init_randoms             = mp_scaled_init_randoms;
     math->md_sin_cos                  = mp_scaled_n_sin_cos;
     math->md_slow_add                 = mp_scaled_slow_add;
+    math->md_slow_sub                 = mp_scaled_slow_sub;
     math->md_sqrt                     = mp_scaled_sqrt;
     math->md_print                    = mp_scaled_print;
     math->md_tostring                 = mp_scaled_tostring;

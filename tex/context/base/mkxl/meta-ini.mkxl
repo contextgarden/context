@@ -214,6 +214,7 @@
 \defineMPinstance[binaryfun]  [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!binary]
 \defineMPinstance[decimalfun] [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!decimal]
 \defineMPinstance[positfun]   [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!posit]
+\defineMPinstance[intervalfun][\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes,\c!method=\s!interval]
 
 \defineMPinstance[mprun]      [\s!format=metafun,\s!extensions=\v!yes,\s!initializations=\v!yes]
 

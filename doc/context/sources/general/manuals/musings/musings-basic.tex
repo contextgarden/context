@@ -242,6 +242,14 @@ end
 
 \stopluacode
 
+\enablemode[presentation]
+
+\starttexdefinition PresentationItem #1
+    \doifmode {presentation} {
+        \margintext{< #1 >}
+    }
+\stoptexdefinition
+
 \startsection[title=Introduction]
 
 When Mikael told me that there were enhanced lectures by Don Knuth, pushed
@@ -386,6 +394,8 @@ differences with today's \TEX. Let's start with a quote: \footnote {There is a
 list of named characters in the manual but they are not defined in the basic
 format, so I guess that there is an extra file that defines them.}
 
+\PresentationItem{2.1}
+
 \startquotation
     Those of you who wish to define control sequences should know that \TEX\ has
     further rules about them, namely that many different spellings of the same
@@ -402,6 +412,8 @@ format, so I guess that there is an extra file that defines them.}
     in \gamma, but \quotation {\type {\Gamma}} or \quotation {\type {\GAMMA}}
     results in \Gamma.)
 \stopquotation
+
+\PresentationItem{2.2}
 
 In one presentation Knuth explains that \PASCAL\ has some limitations on the
 length of an identifier: eight, and therefore he played safe by limiting them to
@@ -420,6 +432,8 @@ are needed. Tell that to a 2025 \TEX\ user or macro package writer: it just
 wouldn't work out today. Of course this became clear pretty soon so this feature
 was dropped in the follow-up. It was mentioned in a dangerous bend section that
 when a reader dared read that, it would lead to a next bend:
+
+\PresentationItem{2.3}
 
 \startquotation
     Another rule takes over when there are seven or more letters after the
@@ -456,6 +470,8 @@ dangerous bend:
 In the \WEB\ file we can read this (and best keep this in mind when we progress
 in this wrap-up):
 
+\PresentationItem{2.4}
+
 \startquotation
     The present implementation has a long ancestry, beginning in the summer
     of~1977, when Michael~F. Plass and Frank~M. Liang designed and coded a
@@ -488,6 +504,8 @@ dumps) efficiently.
 It's here the transition from basic to plain happened. The old book discusses the
 basic format, but the final \TEX\ reference talks plain.
 
+\PresentationItem{2.5}
+
 \startquotation
     The \TeX82 program, which was written by the author during the latter part of
     1981 and the early part of 1982, also incorporates ideas from the 1979
@@ -515,6 +533,8 @@ different encoding schemes, that itself in turn had consequences for, e.g.,
 hyphenation patterns.
 
 Another interesting remark in the book is the following.
+
+\PresentationItem{2.6}
 
 \startquotation
     When a space comes after a control sequence (of either kind), it is ignored
@@ -547,6 +567,8 @@ wonder why if flat panels were not predicted, it's clear that foreseeing
 computers to become 1000 or more times faster and memory going gigabytes was not
 easy.
 
+\PresentationItem{2.7}
+
 \startquotation
     When you do use the \type {\:} instruction to change fonts, here are the
     rules you need to know. \TEX\ can handle up to 32 different fonts in any
@@ -560,9 +582,13 @@ easy.
     \TEX s may allow more than 32 fonts.
 \stopquotation
 
+\PresentationItem{2.8}
+
 Indeed, today's \TEX\ implementations go way over 32 fonts, use multi-byte names,
 ship macro packages that provide complex font setups, and what more. This of course
 already had changed in the final version of \TEX.
+
+\PresentationItem{2.9}
 
 \startquotation
     Groups within groups will happen only in rather complicated situations, but
@@ -571,11 +597,15 @@ already had changed in the final version of \TEX.
     confused.
 \stopquotation
 
+\PresentationItem{2.10}
+
 It is these (dangerous bend) comments that makes reading this old document
 worthwhile! Although nesting groups 300 deep is not something that happens often,
 processing this document in \CONTEXT\ brings us up to 11 levels, while
 the \LUAMETATEX\ manual tops at 25. Maybe in the end macro packages
 indeed became too complex.
+
+\PresentationItem{2.11}
 
 The way a horizontal list becomes a paragraph of lines remained conceptually
 mostly the same. The formulas changed a bit and some more features were added. In
@@ -609,11 +639,15 @@ had been suppressed. \footnote {Implementing this is actually rather easy but as
 it won't get used it only adds overhead and we don't feel the need to prove that
 it can be done.}
 
+\PresentationItem{2.12}
+
 An interesting difference with the final \TEX\ is that spaces after the right brace
 that ends the body of a definition (\type {\def}) are ignored. That for sure
 got rid of what we call spurious spaces but the final \TEX\ is more consistent
 in no longer doing that. I think that dealing with spaces and line endings has
 always been somewhat tricky so it is no wonder this evolved.
+
+\PresentationItem{2.13}
 
 There are of course dimensions, and they have the usual units. However, there is
 no \type {ex} yet, nor \type {sp}. The mentioned repertoire is: \type {pt}, \type
@@ -628,6 +662,8 @@ is likely due to the fact that the focus is on Latin scripts with well known
 punctuation code points. Later that became configurable but the approach remained
 the same.
 
+\PresentationItem{2.14}
+
 In fact quite a bit is still hard-coded, like the way hyphenation hooks into the
 par builder. However, in appendix H the book suggests that there are built-in
 rules while the \WEB\ file shows the ability to load pattern files efficiently.
@@ -637,6 +673,8 @@ listen to) the way hyphenation patterns are made and applied, and when you
 realize that we're at the Artificial Intelligence lab, you can actually consider
 this to be an an example of machine learning. After all we have lookups driven by
 weights stored in a compact form.}
+
+\PresentationItem{2.15}
 
 A substantial bit of the book and talks is about error messages and interacting
 with the system, which is understandable given the systems used at that time. We
@@ -665,6 +703,8 @@ feedback. Today the problem is that the (progress, diagnostic, warning) messages
 scroll by so fast that users probably don't notice them. Do they go to the log
 file? \footnote {This is why in \CONTEXT\ we explore the possibilities to visual
 feedback via a connected device.}
+
+\PresentationItem{2.16}
 
 I tried to locate where the single character primitives were defined and ended up
 at the interesting section that describes the magic look-up trickery of
@@ -748,6 +788,8 @@ refers to, progress was made real time in 1982!
 
 \startsection[title=The basic format]
 
+\PresentationItem{3.1}
+
 One thing that you will notice, also in the presentations, is that in addition to
 \ASCII, which is mentioned explicitly, Don loved to use some special symbols,
 like \type {←} for an assignment instead of an \type {=}. In plain \TEX\ that is
@@ -773,6 +815,8 @@ Commands often have short names although nowadays one will not see these:
 \def\rt#1{\hfill#1}
 \stoptyping
 
+\PresentationItem{3.2}
+
 Here we see a feature not present in \TEX, the size keyword, which stands for the
 current horizontal size. Another interesting observation is the extreme value of
 \type {1000cm}, something not possible today. But at least it's metric.
@@ -794,6 +838,8 @@ test what that does.
 \starttyping
 \def\trace{\chpar0←} \def\jpar{\chpar1←} \def\ragged{\chpar8←}
 \stoptyping
+
+\PresentationItem{3.3}
 
 Although we won't go into much detail, it is nice to know how it all started out.
 The \quote {tolerance} is set by a multiplier:
@@ -828,6 +874,8 @@ Watch how we can make a paragraph more ragged by changing a parameter:
 Currently this is done by a combination of tolerance and left and/or right skips,
 in up to three passes (in \LUAMETATEX\ we can specify a sequence of passes so that
 can be seen as a \quote {many years later} follow up then).
+
+\PresentationItem{3.4}
 
 Of course there are some math definitions, watch the way characters are defined:
 by value. The \type {\limitsswitch} is what later became \type {\limits}.
@@ -880,12 +928,16 @@ functions, also because we can set more properties.}
 \def\sin{\mathop{\rm sin}\nolimits}
 \stoptyping
 
+\PresentationItem{3.5}
+
 This definitions calls for \type {\quad} which is not defined, so it's still a
 primitive.
 
 \starttyping
 \def\qquad{\quad\quad}
 \stoptyping
+
+\PresentationItem{3.6}
 
 The \type {\≥} is likely some spacing directive and uses a symbol that even today
 is not on keyboards:
@@ -906,6 +958,8 @@ later became. Again we have rather large plus and minus values. The short \type
 use these pile commands, a two-line helper (meant for splitting a long math line
 in display mode), chops and/or sposes? The \type {\spose} definitely is invalid
 in later \TEX\ engines as they have put a limit on the size of dimensions.
+
+\PresentationItem{3.7}
 
 The \type {\!} is a hard-coded primitive that basically ends a line
 without adding a space. To quote the manual:
@@ -941,6 +995,8 @@ primitives, the future \type {\ignorespaces}.
 \def\spose#l{\hbox to 0pt{#1\hskip0pt minus10000000pt}}
 \stoptyping
 
+\PresentationItem{3.8}
+
 We now arrive at fonts. Given memory constraints the number of fonts that can be
 used is small. The names start with \type {\:} and the reference is a character.
 These are the precursors of computer modern with predefined sizes, no scaling.
@@ -955,6 +1011,8 @@ These are the precursors of computer modern with predefined sizes, no scaling.
 \:?←mti10
 \stoptyping
 
+\PresentationItem{3.9}
+
 In later versions of the basic file (dating from after the book) we see that
 a\type {c} has been being prepended to the font names. The $10 \rightarrow 7
 \rightarrow 5$ steps didn't change over time. These are familiar shortcuts and we
@@ -963,6 +1021,8 @@ kept them in \CONTEXT, although with a different macro body:
 \starttyping
 \def\rm{\:a} \def\sl{\:n} \def\bf{\:q} \def\it{\:?}
 \stoptyping
+
+\PresentationItem{3.10}
 
 There are a few names here that were replaced: \type {\topbaseline} became \type
 {\topskip} and the three display skips became four more verbose ones.
@@ -985,11 +1045,13 @@ Here we see a font switch to an extensible font:
 \def\bigggrp{\mathclose{\vcenter{\hbox{\:@\char'41}}}}
 \stoptyping
 
+\PresentationItem{3.11}
+
 Without reading documentation one can guess what this does: we set the
 three families:
 
 \starttyping
-\mathrm adf \mathit gj1 \mathsy uxz \mathex @
+\mathrm adf \mathit gjl \mathsy uxz \mathex @
 \stoptyping
 
 Eventually \TEX\ got the \type {\textfont} (and script) definition primitives
@@ -999,6 +1061,8 @@ We're nearly done, here is the basic output routine. It assumes a meaningful
 \type {\page}. A page gets the top inserts, followed by the skip, then the
 content, then the other skip and finally the bottom inserts. Of course that
 became different in \TEX82\ when we got a more generalized approach to inserts.
+
+\PresentationItem{3.12}
 
 The baseline skip is quite extreme here, as if it's meant for proofing. Also
 watch the page counter: the \type {\count} command is not what we're accustomed
@@ -1033,6 +1097,10 @@ writing more general purpose macro packages easier.
 
 \startsection[title=Sail]
 
+
+\PresentationItem{4.1}
+\PresentationItem{4.2}
+
 The first version was written in \SAIL, and when we fetch the sources from Don
 Knuth's website we can identify what became primitives and how they are grouped.
 Contrary to the next sections, where we can parse the \type {.web} files for
@@ -1041,6 +1109,8 @@ some more manually filtered sections. If you're not familiar with how \TEX\ is
 coded, you have to take what is said below for granted and just try to get the
 idea. Seeing the variables and definitions involved can give an impression of how
 it all relates to (for instance) primitives and functionality that you run into.
+
+\PresentationItem{4.3}
 
 In \TEX\ we need to distinguish primitives and the way that is done is by
 relating them with two numbers: \type {cmd} and \type {chr}. The first 12
@@ -1056,6 +1126,8 @@ An interesting revelation in the presentations is that when you start up \TEX\ i
 interaction mode, and no escape character has been setup, the first character
 entered will be defined as such, something that of course gets unnoticed when you
 start with a command, because then the backslash becomes the escape character.
+
+\PresentationItem{4.4}
 
 \starttyping
 escape      0 # escape delimiter (\ in TEX manual);
@@ -1099,6 +1171,8 @@ overload protection flag, the immutable property inhibits even that.)}
 \permanent\immutable\integerdef\invalidcatcode     15
 \stoptyping
 
+\PresentationItem{4.5}
+
 Watch the change in terminology: \emphasize {block symbol} is now \emphasize
 {group}, \emphasize {math break} became \emphasize {math shift}, and some other
 minor renames. But we also got active characters, a configurable comment and, just
@@ -1115,6 +1189,8 @@ endv        15 # end of vlist in halign or valign template;
 call        16 # call a user-defined macro;
 \stoptyping
 
+\PresentationItem{4.6}
+
 In the presentations Don frequently refers to extensions. In current \TEX\
 examples of extensions are opening and closing files, reading and writing to
 them, and specials. They are nowadays called whatsits but were always part of the
@@ -1130,6 +1206,8 @@ invisible because, after all, one can wrap into a box to communicate dimensions.
 \starttyping
 xt  17 # extensions to basic TEX (\x)
 \stoptyping
+
+\PresentationItem{4.7}
 
 Here we see dedicated assignment classes for glue and (indeed) reals. In later
 versions we talk about (16.16) dimensions and only use \quote {real} for
@@ -1182,6 +1260,8 @@ is there:
 fntfam  29 # declare font family (\mathrm,etc.)
 \stoptyping
 
+\PresentationItem{4.8}
+
 Here we see a difference with later versions. We have an explicit set and advance
 primitives and a serializer. In modern \TEX\ \type {\count} got a different
 meaning (setter and getter in one) and \type {\advance} got shared.
@@ -1191,6 +1271,8 @@ setcount  30 # set current page number (\setcount)
 advcount  31 # increase current page number (\advcount)
 count     32 # insert current page number (\count)
 \stoptyping
+
+\PresentationItem{4.9}
 
 We're sure that there have been good reasons to change \type {\ifeven} into \type
 {\ifodd} even when that introduced an incompatibility, but I guess that given the
@@ -1243,6 +1325,8 @@ vrule    46 # vertical rule (\vrule)
 hrule    47 # horizontal rule (\hrule)
 \stoptyping
 
+\PresentationItem{4.10}
+
 However, inserts were hard-coded. I think that in these days graphics were still
 glued in so basically only footnotes were in demand.
 
@@ -1256,6 +1340,8 @@ In the book style example in the basic \TEX book we see this definition:
 \def\footnote#1#2{\botinsert{\hrule width5pc \vskip3pt
   \baselineskip9pt\hbox par size{\eightpoint#1#2}}}
 \stoptyping
+
+\PresentationItem{4.11}
 
 So we use the bottom insert, which eventually will be separated by a \type
 {\botskip} and it will have a rule on top (question: what will happen with
@@ -1279,6 +1365,8 @@ This \type {par} is used in the footnote definition, we basically get a \type
 At that point we also got \type {\vsplit}, multiple inserts, inserts that could
 be split over pages, properties like skips bound to inserts, etc.
 
+\PresentationItem{4.12}
+
 The, also migrating, marks look familiar and two command categories are used.
 Here \type {\firstmark} is not mentioned:
 
@@ -1298,6 +1386,8 @@ And:
 \starttyping
 noindent  52 # begin nonindented paragraph (\noindent)
 \stoptyping
+
+\PresentationItem{4.13}
 
 Eh \unknown\ we now have triggers like \type {\outputpenalty} and the concept of
 push back in the output routine. The old \TEX\ engine has an explicit \type
@@ -1330,6 +1420,8 @@ accent     55 # attach accent to character (\+)
 newaccent  56 # define nonstandard accent (\accent)
 \stoptyping
 
+\PresentationItem{4.14}
+
 Only one side of the (centered) equation is covered:
 
 \starttyping
@@ -1343,6 +1435,8 @@ mathonly       58 # character or token allowed in mathmode only
 exspace        59 # explicit space (\ )
 nonmathletter  60 # letter except in mmode
 \stoptyping
+
+\PresentationItem{4.15}
 
 In modern \TEX\ these became fences:
 
@@ -1394,6 +1488,8 @@ Yes, another adjust. In traditional \TEX\ this is a math mode command, but in
 vcenter  68 # vjust centered on axis (\vcenter)
 \stoptyping
 
+\PresentationItem{4.16}
+
 This next command is peculiar because it is not a parameter as the other integer
 ones but it has it's own command category. There is in this list of commands no
 mentioning of more advanced paragraph properties, not even \type {\everypar}
@@ -1414,6 +1510,8 @@ command class because a special scanner is needed:
 A negative dimension hangs right, the \type {for} and \type {after} options
 determine the number of lines.
 
+\PresentationItem{4.17}
+
 Next we see some of the parameters mapped to memory. We challenge you to translate
 these to modern \TEX's parameters:
 
@@ -1432,6 +1530,8 @@ define ragged  = eqtb[hashsize+276] # raggedness
 The par builder can be configured a bit but some criteria are hard-coded. Watch
 how we don't have a club penalty here. The widow penalty is used for that as well
 as display math.
+
+\PresentationItem{4.18}
 
 Because skips are more than just a single integer, they are actually nodes, so
 here we need to refer to node memory:
@@ -1526,6 +1626,8 @@ between the prototype and what became the final version.
 
 \startsection[title=The intermezzo]
 
+\PresentationItem{5.1}
+
 The first, pre 1982, \TEX\ book has an appendix \type {<X>} titled \quotation {Recent extensions to
 \TEX} that describes additions to the engine done right before the mentioned book
 was published. These were likely driven by usage, macro packages showing up, and
@@ -1540,6 +1642,8 @@ generation pieces, the language, variables, path construction, macros \unknown\ 
 really has to rewrite the older code, but most ideas behind it remain. With references
 to built-in variables, hard-coded pens, control point features, subroutines and
 calls, it looks somewhat less meta than today.
+
+\PresentationItem{5.2}
 
 But when it comes to \TEX, in a way you can recognize the upcoming \TEX 82 in
 that, because when extensions like that get added, later changes are natural. So,
@@ -1572,6 +1676,8 @@ From that time on each register uses the same \type {\advance} and the now
 unexpandable register references have to use \type {\the} as serializer. This
 transition was rather natural and made it easier to program more complex
 solutions.
+
+\PresentationItem{5.3}
 
 We didn't mention yet that the conditional primitives were also syntactically
 different. It started with:
@@ -1620,6 +1726,8 @@ Let's just mention that \typ {\ifvmode}, \typ {\ifhmode}, \typ {\ifmmode} were
 added as well as \typ {\lineskiplimit} and \typ {\mathsurround} and more would
 follow.
 
+\PresentationItem{5.4}
+
 Yet another extension holds some promise for the future \TEX82: user dimensions
 (there are no dimen registers yet). The \type {\varunit} variable can be set to
 some value and the \type {vu} dimension can then use that. In order to be able to
@@ -1655,6 +1763,8 @@ notice that we do scan an expression. You can be sure that more is possible
 between these braces and in retrospect it is not that unnatural to \TEX\ after
 all.
 
+\PresentationItem{5.5}
+
 In today's \TEX\ there are ways to set up characters to be of a certain math
 class. In the intermezzo between \SAIL\ \TEX\ and \TEX82 that could be done via
 what was then the catcode setter: \type {\chcode}, using values beyond the
@@ -1667,6 +1777,8 @@ later \TEX\ got frozen, not only because of the rendering but also because of
 setting it up to do just that. \footnote {There is this active character class in
 math mode so in some sense we still have a special relationship between character
 codes and math classes.}
+
+\PresentationItem{5.6}
 
 The somewhat weird, large \type {plus} and \type {minus} values in some basic
 macros are so large that later they became invalid. In the intermezzo period

@@ -376,7 +376,7 @@ local function flushconcatpath(path,t,open,tolerance,transform)
         nt = nt + 1
         pth = path[i]
         local state = pth.state
-        -- here concat for all x y 
+        -- here concat for all x y
         local x, y  = mpconcat(pth.x_coord,pth.y_coord)
         if not ith or state == state_begin or state == state_single then
             t[nt] = f_m(x,y)
@@ -403,7 +403,7 @@ local function flushconcatpath(path,t,open,tolerance,transform)
             local state = one.state
             local x     = one.x_coord
             local y     = one.y_coord
-            -- here concat for some x y ... 
+            -- here concat for some x y ...
             if state == state_begin then
                 t[nt] = f_m(x,y)
             elseif state == state_single then

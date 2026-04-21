@@ -85,7 +85,6 @@ local function woff2otf(inpname,outname,infoonly)
 
     local outname = outname or replacesuffix(inpname,"otf")
     local inp     = ioopen(inpname,"rb")
-
     if not inp then
         report("invalid input file %a",inpname)
         return

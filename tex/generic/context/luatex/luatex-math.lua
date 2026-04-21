@@ -131,9 +131,12 @@ local italics = table.tohash { 8458, 8459, 8462, 8464, 8466, 8475, 8492, 8495,
 
 local report = logs.reporter("math")
 
-fonts.constructors.emulatelmtx = false -- true
+fonts.constructors.emulatelmtx = false
+-- fonts.constructors.emulatelmtx = true
 
 local function emulatelmtx(tfmdata,key,value)
+-- print(tfmdata.filename, tfmdata.fontname, tfmdata.parameters.space)
+-- if true then return end
     if tfmdata.mathparameters and not tfmdata.emulatedlmtx then
         if fonts.constructors.emulatelmtx then
             local targetcharacters   = tfmdata.characters

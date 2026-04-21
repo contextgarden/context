@@ -293,20 +293,100 @@ In \CONTEXT\ we also provide a bunch of pseudo primitives. These take one float:
 
 \stopsectionlevel
 
+\startsectionlevel[title=Decimal]
+
+{\em todo}
+
+\stopsectionlevel
+
+\startsectionlevel[title=Interval]
+
+At the \LUA\ end we have doubles, posits, decimal and interval libraries. We also
+have complex numbers but these are just pairs of doubles. We introduced posits
+because they fit into a 32 bit integer, and decimal came as one of the \METAPOST\
+number models. When we added posits, we also added that as number model to
+\METAPOST\ and when we added intervals we made a \METAPOST\ variant, although it
+doesn't come as default (read: you need to compile it). In the next examples the
+leading \type {x} indicated a math extension library, just like we have \type
+{xmath} that provides mode than the default \LUA\ \type {math} library.
+
+\startbuffer
+\startluacode
+    local a = xinterval.new(1)
+    local b = xinterval.new(2)
+
+    local c = xinterval.mid(a + b)
+    local d = xinterval.mid(a - b)
+
+    local context = context
+
+    local NC, NR = context.NC, context.NR
+
+    context.starttabulate { "|T|T|" }
+        context.FL()
+        NC() context("a")     NC() context(a)     NC() NR()
+        NC() context("b")     NC() context(b)     NC() NR()
+        context.ML()
+        NC() context("c")     NC() context(c)     NC() NR()
+        NC() context("d")     NC() context(d)     NC() NR()
+        context.ML()
+        NC() context("a + a") NC() context(a + a) NC() NR()
+        NC() context("a + b") NC() context(a + b) NC() NR()
+        NC() context("a - b") NC() context(a - b) NC() NR()
+        context.LL()
+    context.stoptabulate()
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This results in:
+
+\getbuffer
+
+We will not discuss all aspects here but it is worth mentioning that you can use
+expressions, like:
+
+\startbuffer
+\startluacode
+    local new = xinterval.new
+    local sin = xinterval.sin
+    local mid = xinterval.mid
+
+    context(mid(sin(1 + new(1/4) / new(1/6) - 5 + new(2))))
+    context(" and ")
+
+    local new = xmath.new
+    local sin = xmath.sin
+
+    context(sin(1 + (1/4) / (1/6) - 5 + (2)))
+\stopluacode
+\stopbuffer
+
+\typebuffer
+
+This gives: \inlinebuffer, which is pretty close and of course not a good
+example. In fact, we're still looking for a good application. In case you
+wonder why we added this, first of all it was kind of fun, add to that
+curiosity, and finally it fits in the repertoire of helpers.
+
+\stopsectionlevel
+
 \startsectionlevel[title=\METAPOST]
 
 In addition to the instances \typ {metafun} (double in \LMTX), \typ {scaledfun},
 \typ {doublefun}, \typ {decimalfun} we now also have \typ {positfun}. Because we
 currently use 32 bit posits in the new number system there is no real gain over
 the already present 64 bit doubles. When 64 bit posits show up we might move on
-to that.
+to that. The \type {intervalfun} mode is only available when interval math is
+enabled in the \METAPOST\ library.
 
 \stopsectionlevel
 
 \startsectionlevel[title=\LUA]
 
 We support posits in \LUA\ too. Here we need to create a posit user data
-object. The usual metatable magick kicks in:
+object. The usual metatable magic kicks in:
 
 \starttyping
 local p = posit.new(123.456)

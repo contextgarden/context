@@ -63,7 +63,8 @@ even.
 
 */
 
-static inline double mp_double_make_fraction(double p, double q) { 
+static inline double mp_double_make_fraction(double p, double q)
+{
  // return (p / q) * fraction_multiplier; 
     return p == 0.0 ? 0.0 : (p / q) * fraction_multiplier; 
 }
@@ -71,12 +72,14 @@ static inline double mp_double_make_fraction(double p, double q) {
 // printf("%f %f %f %f\n",p,q,p*q,(p * q) / fraction_multiplier);
 // -4096.000000 0.000000 -0.000000 -0.000000
 
-static inline double mp_double_take_fraction(double p, double q) { 
+static inline double mp_double_take_fraction(double p, double q)
+{
  // return (p * q) / fraction_multiplier; 
     return p == 0.0 ? 0.0 : q == 0.0 ? 0.0 : (p * q) / fraction_multiplier; 
 }
 
-static inline double mp_double_make_scaled(double p, double q) { 
+static inline double mp_double_make_scaled(double p, double q)
+{
  // return p / q; 
     return p == 0.0 ? 0.0 : p / q; 
 }
@@ -398,13 +401,32 @@ static void mp_double_slow_add(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
         if (y <= EL_GORDO - x) {
             ret->data.dval = x + y;
         } else {
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 1);
             ret->data.dval = EL_GORDO;
         }
     } else if (-y <= EL_GORDO + x) {
         ret->data.dval = x + y;
     } else {
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 2);
+        ret->data.dval = negative_EL_GORDO;
+    }
+}
+
+static void mp_double_slow_sub(MP mp, mp_number *ret, mp_number *x_orig, mp_number *y_orig)
+{
+    double x = x_orig->data.dval;
+    double y = y_orig->data.dval;
+    if (x >= 0.0) {
+        if (-y <= EL_GORDO - x) {
+            ret->data.dval = x - y;
+        } else {
+            mp->arithmic_error = mp_error_code(mp, 1);
+            ret->data.dval = EL_GORDO;
+        }
+    } else if (y <= EL_GORDO + x) {
+        ret->data.dval = x - y;
+    } else {
+        mp->arithmic_error = mp_error_code(mp, 2);
         ret->data.dval = negative_EL_GORDO;
     }
 }
@@ -666,7 +688,7 @@ static void mp_double_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     errno = 0;
     ret->data.dval = sqrt(a*a + b*b);
     if (errno) {
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 3);
         ret->data.dval = EL_GORDO;
     }
 }
@@ -702,7 +724,7 @@ static void mp_double_power_of(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     errno = 0;
     ret->data.dval = pow(a_orig->data.dval, b_orig->data.dval);
     if (errno) {
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 4);
         ret->data.dval = EL_GORDO;
     }
 }
@@ -732,7 +754,7 @@ static void mp_double_m_exp(MP mp, mp_number *ret, mp_number *x_orig)
     ret->data.dval = exp(x_orig->data.dval / 256.0);
     if (errno) {
         if (x_orig->data.dval > 0) {
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 5);
             ret->data.dval = EL_GORDO;
         } else {
             ret->data.dval = 0;
@@ -1214,6 +1236,7 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_init_randoms             = mp_double_init_randoms;
     math->md_sin_cos                  = mp_double_sin_cos;
     math->md_slow_add                 = mp_double_slow_add;
+    math->md_slow_sub                 = mp_double_slow_sub;
     math->md_sqrt                     = mp_double_square_rt;
     math->md_print                    = mp_double_print_number;
     math->md_tostring                 = mp_double_number_tostring;

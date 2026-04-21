@@ -151,13 +151,15 @@ local f_preamble = formatters [ [[
 ]] ]
 
 local methods = {
-    double  = "double",
-    scaled  = "scaled",
- -- binary  = "binary",
-    binary  = "double",
-    decimal = "decimal",
-    posit   = "posit",
-    default = "scaled",
+    double   = "double",
+    scaled   = "scaled",
+ -- binary   = "binary",
+    binary   = "double",
+    decimal  = "decimal",
+    posit    = "posit",
+    interval = "interval",
+--     interval = "double",
+    default  = "scaled",
 }
 
 function metapost.runscript(code)

@@ -269,13 +269,14 @@
 \definesystemconstant {hyphenmin}
 \definesystemconstant {identity}
 \definesystemconstant {implication}
+\definesystemconstant {in}
 \definesystemconstant {indeed}
 \definesystemconstant {index}
 \definesystemconstant {initializations}
 \definesystemconstant {insert} % maybe insertclass
 \definesystemconstant {integral}
 \definesystemconstant {internal}
-\definesystemconstant {in}
+\definesystemconstant {interval}
 \definesystemconstant {italics}
 \definesystemconstant {Italic}
 \definesystemconstant {italic}

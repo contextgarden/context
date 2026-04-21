@@ -39,6 +39,7 @@ local new_glue           = nodepool.glue
 local new_kern           = nodepool.kern
 local new_penalty        = nodepool.penalty
 local new_intercharglue  = nodepool.intercharacterglue -- penalizedglue
+----- new_intercharglue  = nodepool.discretionaryglue -- penalizedglue
 
 local nodecodes          = nodes.nodecodes
 local gluecodes          = nodes.gluecodes
@@ -66,11 +67,13 @@ local trace_details      = false  trackers.register("scripts.details", function(
 
 local report_details     = logs.reporter("scripts","detail")
 
-local penalized          = false  experiments.register("scripts.penalized", function(v) penalized = v end)
+-- For a decentcjk  export, penalized has to be true so we now default to it.
 
--- raggedleft is controlled by leftskip and we might end up with a situation where
+local penalized          = true  experiments.register("scripts.penalized", function(v) penalized = v end)
+
+-- Ragged left is controlled by leftskip and we might end up with a situation where
 -- the intercharacter spacing interferes with this; the solution is to patch the
--- nodelist but better is to use veryraggedleft
+-- nodelist but better is to use veryraggedleft.
 
 local insertnodeafter  = scripts.helpers.insertnodeafter
 local insertnodebefore = scripts.helpers.insertnodebefore
@@ -145,14 +148,22 @@ local function stretch_break(head,current)
     if trace_details then
         trace_detail(current,"stretch break")
     end
-    insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    if penalized then
+        insertnodebefore(head,current,new_intercharglue(0,0,inter_char_stretch,0))
+    else
+        insertnodebefore(head,current,new_glue(0,inter_char_stretch,0))
+    end
 end
 
 local function shrink_break(head,current)
     if trace_details then
         trace_detail(current,"shrink break")
     end
-    insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_intercharglue(0,0,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_glue(0,0,inter_char_half_shrink))
+    end
 end
 
 local function nobreak_stretch(head,current)
@@ -305,7 +316,11 @@ local function japanese_between_full_close_open(head,current) -- todo: check wid
         trace_detail(current,"japanese between full close open")
     end
     insertnodebefore(head,current,new_kern(-half_char_width))
-    insertnodebefore(head,current,new_glue(half_char_width,0,inter_char_half_shrink))
+    if penalized then
+        insertnodebefore(head,current,new_intercharglue(0,half_char_width,0,inter_char_half_shrink))
+    else
+        insertnodebefore(head,current,new_glue(half_char_width,0,inter_char_half_shrink))
+    end
     insertnodebefore(head,current,new_kern(-half_char_width))
 end
 
@@ -335,7 +350,11 @@ local function japanese_after_full_width_punct(head,current) -- todo: check widt
         trace_detail(current,"japanese after full width punct")
     end
     insertnodebefore(head,current,new_kern(-quarter_char_width))
-    insertnodebefore(head,current,new_glue(quarter_char_width,0,inter_char_quarter_shrink))
+     if penalized then
+        insertnodebefore(head,current,new_intercharglue(0,quarter_char_width,0,inter_char_quarter_shrink))
+    else
+        insertnodebefore(head,current,new_glue(quarter_char_width,0,inter_char_quarter_shrink))
+    end
 end
 
 local function nobreak_autoshrink_break_stretch_nobreak_autoshrink(head,current)
@@ -1071,7 +1090,6 @@ local function process(head,first,last)
                                 -- also scriptstatus check?
                                 local subtype = getsubtype(first)
                                 if subtype == userskip_code or subtype == spaceskip_code or subtype == xspaceskip_code then
-                                    -- for the moment no distinction possible between space and userskip
                                     local w = getwidth(first)
                                     local s = spacedata[getfont(p)]
                                     if w == s then -- could be option

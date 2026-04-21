@@ -1023,6 +1023,11 @@
    %
    \usealignparameter\itemgroupparameter
    \edef\m_strc_itemgroups_indenting{\itemgroupparameter\c!indenting}%
+   % new, for WS to test
+   \doifelsecounteractive\v_strc_itemgroups_counter
+     \donothing
+     {\c_strc_itemgroups_continue\conditionalfalse}%
+   %
    \ifnum\c_strc_itemgroups_nesting>\zerocount
      \c_strc_itemgroups_first\conditionaltrue
      \ifconditional\c_strc_itemgroups_continue \else

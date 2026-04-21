@@ -6132,6 +6132,14 @@ static int texlib_getboxoptionvalues(lua_State *L)
     return 1;
 }
 
+static int texlib_getboxcontinuationvalues(lua_State *L)
+{
+    lua_createtable(L, 2, 0);
+    lua_push_key_at_index(L, left,  continuation_state_left);
+    lua_push_key_at_index(L, right, continuation_state_right);
+    return 1;
+}
+
 static int texlib_getmathsurroundvalues(lua_State *L)
 {
     lua_createtable(L, 2, 6);
@@ -7516,6 +7524,7 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getdiscoptionvalues",          texlib_getdiscoptionvalues            },
     { "getruleoptionvalues",          texlib_getruleoptionvalues            },
     { "getboxoptionvalues",           texlib_getboxoptionvalues             },
+    { "getboxcontinuationvalues",     texlib_getboxcontinuationvalues       },
     { "getmathsurroundvalues",        texlib_getmathsurroundvalues          },
     { "getlistanchorvalues",          texlib_getlistanchorvalues            },
     { "getlistsignvalues",            texlib_getlistsignvalues              },

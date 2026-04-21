@@ -5571,7 +5571,7 @@ static int tex_aux_short_math(halfword m)
     return 0;
 }
 
-inline void tex_aux_set_math_option(halfword beginmath, halfword endmath, halfword option)
+static inline void tex_aux_set_math_option(halfword beginmath, halfword endmath, halfword option)
 {
     if (math_options_par & option) {
         math_options(beginmath) |= option;
@@ -5586,7 +5586,7 @@ void tex_run_math_shift(void)
         case math_display_group:
         case math_equation_number_group:
             {
-                /*tex box containing equation number */
+                /*tex The box containing equation number, if we're doing that. */
                 halfword eqnumber = null;
                 /*tex Use |\leqno| instead of |\eqno|, we default to right. */
                 int atleft = 0;
@@ -5620,6 +5620,7 @@ void tex_run_math_shift(void)
                             tex_aux_check_display_math_end();
                             break;
                     }
+                    /*tex So an equation number is rendered in inline-math mode. */
                     tex_run_mlist_to_hlist(mathlist, 0, text_style, unset_noad_class, unset_noad_class);
                     eqnumber = tex_hpack(node_next(temp_head), 0, packing_additional, direction_unknown, holding_none_option, box_limit_none, null, null);
                     tex_attach_current_attribute_list(eqnumber);
@@ -5766,6 +5767,11 @@ void tex_run_math_shift(void)
                     math_tolerance(endmath) = tolerance_par;
                     math_pre_tolerance(endmath) = pre_tolerance_par;
                     tex_aux_unsave_math();
+                    /*
+                        Here we can call an italic correction callback but then we also need to
+                        check every time we add a character: look back (over glue) and when there
+                        is an |endmath| node also call the callback. That is kind of ugly.
+                    */
                 } else {
                     if (! eqnumber) {
                         if (cur_cmd == math_shift_cmd) {

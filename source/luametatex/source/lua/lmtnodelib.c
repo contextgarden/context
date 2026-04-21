@@ -1212,6 +1212,38 @@ static int nodelib_direct_setcontrol(lua_State *L)
     return 0;
 }
 
+# define getcontinuation_usage (hlist_usage | vlist_usage)
+# define setcontinuation_usage getcontinuation_usage
+
+static int nodelib_direct_getcontinuation(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        switch (node_type(n)) {
+            case hlist_node:
+            case vlist_node:
+                lua_pushinteger(L, box_continuation(n));
+                return 1;
+        }
+    }
+    lua_pushnil(L);
+    return 1;
+}
+
+static int nodelib_direct_setcontinuation(lua_State *L)
+{
+    halfword n = nodelib_valid_direct_from_index(L, 1);
+    if (n) {
+        switch (node_type(n)) {
+            case hlist_node:
+            case vlist_node:
+                box_continuation(n) = lmt_tosingleword(L, 2);
+                break;
+        }
+    }
+    return 0;
+}
+
 /* node.direct.getattributelist */
 /* node.direct.setattributelist */
 
@@ -12839,6 +12871,7 @@ static const usage_record usage_data[] = {
     { .name = "getchoice",               .target = direct_usage_target,   .usage = getchoice_usage               },
     { .name = "getclass",                .target = direct_usage_target,   .usage = getclass_usage                },
     { .name = "getcontrol",              .target = direct_usage_target,   .usage = getcontrol_usage              },
+    { .name = "getcontinuation",         .target = direct_usage_target,   .usage = getcontinuation_usage         },
     { .name = "getcornerkerns",          .target = direct_usage_target,   .usage = getcornerkerns_usage          },
     { .name = "getdata",                 .target = direct_usage_target,   .usage = getdata_usage                 },
     { .name = "getdegree",               .target = direct_usage_target,   .usage = getdegree_usage               },
@@ -12994,6 +13027,7 @@ static const usage_record usage_data[] = {
     { .name = "setcharspec",             .target = direct_usage_target,   .usage = setcharspec_usage             },
     { .name = "setchoice",               .target = direct_usage_target,   .usage = setchoice_usage               },
     { .name = "setclass",                .target = direct_usage_target,   .usage = setclass_usage                },
+    { .name = "setcontinuation",         .target = direct_usage_target,   .usage = setcontinuation_usage         },
     { .name = "setcontrol",              .target = direct_usage_target,   .usage = setcontrol_usage              },
     { .name = "setdata",                 .target = direct_usage_target,   .usage = setdata_usage                 },
     { .name = "setdegree",               .target = direct_usage_target,   .usage = setdegree_usage               },
@@ -13245,6 +13279,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "getcharspec",             nodelib_direct_getcharspec             },
     { "getchoice",               nodelib_direct_getchoice               },
     { "getclass",                nodelib_direct_getclass                },
+    { "getcontinuation",         nodelib_direct_getcontinuation         },
     { "getcontrol",              nodelib_direct_getcontrol              },
     { "getcornerkerns",          nodelib_direct_getcornerkerns          },
     { "getdata",                 nodelib_direct_getdata                 },
@@ -13402,6 +13437,7 @@ static const struct luaL_Reg nodelib_direct_function_list[] = {
     { "setchardict",             nodelib_direct_setchardict             },
     { "setchoice",               nodelib_direct_setchoice               },
     { "setclass",                nodelib_direct_setclass                },
+    { "setcontinuation",         nodelib_direct_setcontinuation         },
     { "setcontrol",              nodelib_direct_setcontrol              },
     { "setdata",                 nodelib_direct_setdata                 },
     { "setdegree",               nodelib_direct_setdegree               },

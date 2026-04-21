@@ -105,6 +105,7 @@ extern int  luaopen_texio       (lua_State *L);
 extern int  luaopen_token       (lua_State *L);
 extern int  luaopen_xcomplex    (lua_State *L);
 extern int  luaopen_xdecimal    (lua_State *L);
+extern int  luaopen_xinterval   (lua_State *L);
 extern int  luaopen_xmath       (lua_State *L);
 extern int  luaopen_xzip        (lua_State *L);
 extern int  luaopen_serial      (lua_State *L);
@@ -293,13 +294,14 @@ extern int  luaextend_xcomplex  (lua_State *L);
 
 /* Various */
 
-# define VECTOR_METATABLE_INSTANCE  "vector"
-# define MESH_METATABLE_INSTANCE    "mesh"
-# define DECIMAL_METATABLE_INSTANCE "decimal"
-# define COMPLEX_METATABLE_INSTANCE "complex"
-# define POSIT_METATABLE_INSTANCE   "posit"
-# define BYTEMAP_METATABLE_INSTANCE "bytemap"
-# define SERIAL_METATABLE_INSTANCE  "serial"
+# define VECTOR_METATABLE_INSTANCE   "vector"
+# define MESH_METATABLE_INSTANCE     "mesh"
+# define DECIMAL_METATABLE_INSTANCE  "decimal"
+# define COMPLEX_METATABLE_INSTANCE  "complex"
+# define POSIT_METATABLE_INSTANCE    "posit"
+# define BYTEMAP_METATABLE_INSTANCE  "bytemap"
+# define SERIAL_METATABLE_INSTANCE   "serial"
+# define INTERVAL_METATABLE_INSTANCE "interval"
 
 /*tex Directory scanner in |lmtfilelib|  */
 
@@ -699,6 +701,7 @@ make_lua_key(L, disc);\
 make_lua_key(L, discpart);\
 make_lua_key(L, discretionary);\
 make_lua_key(L, discretionarypenalty);\
+make_lua_key(L, discretionaryskip);\
 make_lua_key(L, display);\
 make_lua_key(L, DisplayOperatorMinHeight);\
 make_lua_key(L, displaywidowpenalties);\
@@ -862,6 +865,7 @@ make_lua_key(L, ifstack);\
 make_lua_key(L, ignore);\
 make_lua_key(L, ignore_something);\
 make_lua_key(L, ignored);\
+make_lua_key(L, ignoredskip);\
 make_lua_key(L, image);\
 make_lua_key(L, immediate);\
 make_lua_key(L, immutable);\
@@ -907,6 +911,7 @@ make_lua_key(L, internaldimension);\
 make_lua_key(L, internalgluespec);\
 make_lua_key(L, internalinteger);\
 make_lua_key(L, internalmugluespec);\
+make_lua_key(L, interval);\
 make_lua_key(L, invalid_char);\
 make_lua_key(L, italic);\
 make_lua_key(L, italic_correction);\
@@ -1130,6 +1135,7 @@ make_lua_key(L, pagediscardshead);\
 make_lua_key(L, pagehead);\
 make_lua_key(L, pageinserthead);\
 make_lua_key(L, pages);\
+make_lua_key(L, pageskip);\
 make_lua_key(L, Pages);\
 make_lua_key(L, par);\
 make_lua_key(L, parameter);\
@@ -1578,6 +1584,7 @@ make_lua_key_alias(L, complex_instance,         COMPLEX_METATABLE_INSTANCE);\
 make_lua_key_alias(L, posit_instance,           POSIT_METATABLE_INSTANCE);\
 make_lua_key_alias(L, bytemap_instance,         BYTEMAP_METATABLE_INSTANCE);\
 make_lua_key_alias(L, serial_instance,          SERIAL_METATABLE_INSTANCE);\
+make_lua_key_alias(L, interval_instance,        INTERVAL_METATABLE_INSTANCE);\
 /* */ \
 make_lua_key_alias(L, file_handle_instance,     LUA_FILEHANDLE);\
 make_lua_key_alias(L, dir_handle_instance,      DIR_HANDLE_INSTANCE);\

@@ -19,7 +19,7 @@ set(mp_sources
     source/lua/lmtmplib.c
 
     source/luarest/lmtxdecimallib.c
-
+    source/luarest/lmtxintervallib.c
 )
 
 add_library(mp STATIC ${mp_sources})
@@ -34,6 +34,7 @@ target_include_directories(mp PRIVATE
     source/utilities
     source/libraries/mimalloc/include
     source/libraries/softposit/source/include
+    source/libraries/filib
 )
 
 target_compile_definitions(mp PUBLIC

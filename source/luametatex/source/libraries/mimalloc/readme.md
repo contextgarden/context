@@ -1,7 +1,10 @@
-
 <img align="left" width="100" height="100" src="doc/mimalloc-logo.png"/>
-
-[<img align="right" src="https://dev.azure.com/Daan0324/mimalloc/_apis/build/status/microsoft.mimalloc?branchName=dev3"/>](https://dev.azure.com/Daan0324/mimalloc/_build?definitionId=1&_a=summary)
+<div align="right">
+<sup> v3:</sup><a href="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml"><img src="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml/badge.svg?branch=dev3"/></a>
+<sup> v2:</sup><a href="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml"><img src="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml/badge.svg?branch=dev2"/></a>
+<sup> v1:</sup><a href="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml"><img src="https://github.com/microsoft/mimalloc/actions/workflows/test.yaml/badge.svg?branch=dev"/></a>
+&nbsp;&nbsp;&nbsp;<sup>v3:</sup><a href="https://dev.azure.com/Daan0324/mimalloc/_build?definitionId=1&_a=summary"><img src="https://dev.azure.com/Daan0324/mimalloc/_apis/build/status/microsoft.mimalloc?branchName=dev3"/></a>
+</div>
 
 # mimalloc
 
@@ -12,9 +15,9 @@ is a general purpose allocator with excellent [performance](#performance) charac
 Initially developed by Daan Leijen for the runtime systems of the
 [Koka](https://koka-lang.github.io) and [Lean](https://github.com/leanprover/lean) languages.
 
-Latest release   : `v3.2.8` (2026-02-03) release candidate 3, please report any issues.  
-Latest v2 release: `v2.2.7` (2026-01-15).  
-Latest v1 release: `v1.9.7` (2026-01-15).
+Latest release   : `v3.3.1` (2026-04-20) recommended.  
+Latest v2 release: `v2.3.1` (2026-04-20) stable.  
+Latest v1 release: `v1.9.9` (2026-04-20) legacy.
 
 mimalloc is a drop-in replacement for `malloc` and can be used in other programs
 without code changes, for example, on dynamically linked ELF-based systems (Linux, BSD, etc.) you can use it as:
@@ -76,16 +79,27 @@ Enjoy!
 There are three maintained versions of mimalloc. These are mostly equal except for how the OS memory is handled. 
 New development is mostly on v3, while v1 and v2 are maintained with security and bug fixes. 
 
-- __v1__: initial design of mimalloc (release tags: `v1.9.x`, development branch `dev`). Send PR's against this version if possible.
-- __v2__: main mimalloc version. Uses thread-local segments to reduce fragmentation. (release tags: `v2.2.x`, development branch `dev2` and `main`)
-- __v3__: simplifies the lock-free design of previous versions and improves sharing of 
+- __v3__: recommended: simplifies the lock-free design of previous versions and improves sharing of 
         memory between threads. On certain large workloads this version may use 
         (much) less memory. Also supports true first-class heaps (that can allocate from any thread) 
         and has more efficient heap-walking (for the CPython GC for example).
-        (release tags: `v3.2.x`, development branch `dev3`).
+        (release tags: `v3.x`, development branch `dev3`).
+- __v2__: stable mimalloc version. Uses thread-local segments to reduce fragmentation. (release tags: `v2.x`, development branch `dev2` and `main`)
+- __v1__: legacy version: initial design of mimalloc (release tags: `v1.9.x`, development branch `dev`). Send PR's against this version if possible.
 
 ### Releases
-
+* 2026-04-20, `v1.9.9`, `v2.3.1`, `v3.3.1`: various bug and security fixes. Special thanks to 
+  @jinpzhanAMD, @res2k, and @GoldJohnKing for their help in improving Windows finalization, and 
+  @Zoxc for his help in finding various issues.
+* 2026-04-15, `v1.9.8`, `v2.3.0`, `v3.3.0`: initial support for github (binary) releases, 
+  fix visiting of full pages during collection (performance),
+  fix THP alignment (performance), fix arm64 cross-compilation on Windows, enable guard pages in debug mode,
+  always use uncommitted areas between arenas (security), enable static overloading of `malloc` etc. on Windows with the 
+  static CRT (by @Noxybot), fix TLS slot leak on Windows (v3), enable clean DLL load/unload with statically linked
+  mimalloc (v3), fix race in `mi_heap_destroy` (v3), by default put page meta info separate from allocated 
+  objects (v3,security), fix C++ overrides for emscripten. Various bugs found by DeepTest include: 
+  fix offset for `mi_heap_realloc_aligned`, fix `mi_(w)dupenv_s` buffer size, fix potential overflow in size options,
+  and error codes for `mi_reallocarr(ay)`. 
 * 2026-02-03, `v3.2.8` (rc3): Fix thread reinitialize issue on macOS. Fix SIMD codegen bug on older
   GCC versions. Extend Windows TLS slot limit from 64 to 1088. Report commit statistics more precise.
   Fixes issue in free-page search in arenas.
@@ -146,7 +160,7 @@ mimalloc is used in various large scale low-latency services and programs, for e
 <a href="https://learn.microsoft.com/en-us/azure/cosmos-db/"><img height="100" align="left" src="https://miro.medium.com/v2/1*TcATfAZhqi8TlZyx4vZAHg.png" style="border-radius:10px">
 <a href="https://deathstrandingpc.505games.com"><img height="100" src="doc/ds-logo.png"></a>
 <a href="https://docs.unrealengine.com/4.26/en-US/WhatsNew/Builds/ReleaseNotes/4_25/"><img height="100" src="doc/unreal-logo.svg"></a>
-<a href="https://cab.spbu.ru/software/spades/"><img height="100" src="doc/spades-logo.png"></a>
+<a href="https://ablab.github.io/software/spades/"><img height="100" src="doc/spades-logo.png"></a>
 
 
 # Building
@@ -355,7 +369,7 @@ Further options for large workloads and services:
 
 - `MIMALLOC_ALLOW_THP=1`: By default always allow transparent huge pages (THP) on Linux systems. On Android only this is
    by default off. When set to `0`, THP is disabled for the process that mimalloc runs in. If enabled, mimalloc also sets
-   the `MIMALLOC_MINIMAL_PURGE_SIZE` in v3 to 2MiB to avoid potentially breaking up transparent huge pages.
+   the `MIMALLOC_MINIMAL_PURGE_SIZE` in v3 to 2MiB to avoid potentially breaking up transparent huge pages when purging memory.
 - `MIMALLOC_USE_NUMA_NODES=N`: pretend there are at most `N` NUMA nodes. If not set, the actual NUMA nodes are detected
    at runtime. Setting `N` to 1 may avoid problems in some virtual environments. Also, setting it to a lower number than
    the actual NUMA nodes is fine and will only cause threads to potentially allocate more memory across actual NUMA
@@ -390,8 +404,7 @@ OS will copy the entire 1GiB huge page (or 2MiB large page) which can cause the 
 _mimalloc_ can be build in secure mode by using the `-DMI_SECURE=ON` flags in `cmake`. This build enables various mitigations
 to make mimalloc more robust against exploits. In particular:
 
-- All internal mimalloc pages are surrounded by guard pages and the heap metadata is behind a guard page as well (so a buffer overflow
-  exploit cannot reach into the metadata).
+- All internal mimalloc page meta-data is surrounded by guard pages (so a buffer overflow exploit cannot reach into the metadata).
 - All free list pointers are
   [encoded](https://github.com/microsoft/mimalloc/blob/783e3377f79ee82af43a0793910a9f2d01ac7863/include/mimalloc-internal.h#L396)
   with per-page keys which is used both to prevent overwrites with a known pointer, as well as to detect heap corruption.
@@ -399,6 +412,9 @@ to make mimalloc more robust against exploits. In particular:
 - The free lists are initialized in a random order and allocation randomly chooses between extension and reuse within a page to
   mitigate against attacks that rely on a predicable allocation order. Similarly, the larger heap blocks allocated by mimalloc
   from the OS are also address randomized.
+- If enabling `-DMI_SECURE_FULL=ON` there will also be guard pages at the end of each (64KiB) mimalloc page (thus interleaving
+  valid block data with inaccessible gaps). This setting is not recommended in general as it is more expensive and can lead to
+  reaching the maximum VMA limit on Linux systems if the heap gets too large.
 
 As always, evaluate with care as part of an overall security strategy as all of the above are mitigations but not guarantees.
 
@@ -415,13 +431,14 @@ various checks are done at runtime to catch development errors.
 ## Guarded Mode
 
 <span id="guarded">_mimalloc_ can be build in guarded mode using the `-DMI_GUARDED=ON` flags in `cmake`.</span>
-This enables placing OS guard pages behind certain object allocations to catch buffer overflows as they occur.
+This is `ON` by default when building a debug version of mimalloc.
+Guarded mode enables placing OS guard pages behind certain object allocations to catch buffer overflows as they occur.
 This can be invaluable to catch buffer-overflow bugs in large programs. However, it also means that any object
 allocated with a guard page takes at least 8 KiB memory for the guard page and its alignment. As such, allocating
 a guard page for every allocation may be too expensive both in terms of memory, and in terms of performance with
 many system calls. Therefore, there are various environment variables (and options) to tune this:
 
-- `MIMALLOC_GUARDED_SAMPLE_RATE=N`: Set the sample rate to `N` (by default 4000). This mode places a guard page
+- `MIMALLOC_GUARDED_SAMPLE_RATE=N`: Set the sample rate to `N` (by default 0). This mode places a guard page
   behind every `N` suitable object allocations (per thread). Since the performance in guarded mode without placing
   guard pages is close to release mode, this can be used to enable guard pages even in production to catch latent 
   buffer overflow bugs. Set the sample rate to `1` to guard every object, and to `0` to place no guard pages at all.
@@ -540,6 +557,9 @@ This is provided by [`mimalloc-override.h`](include/mimalloc-override.h). This o
 reliably though if all sources are
 under your control or otherwise mixing of pointers from different heaps may occur!
 
+Note: recently we also enabled static overloading on Windows. In that case you need
+to link with the static CRT _release_ runtime (`/MT`) and link with the static 
+`mimalloc(-debug).obj` (to take precendence over the definitions in the CRT library).
 
 # Tools
 

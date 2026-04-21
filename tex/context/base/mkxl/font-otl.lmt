@@ -631,12 +631,21 @@ end
 -- makes this code kind of obsolete before it's even used. Although ... it might become a
 -- more general conversion plug in.
 
+-- When I wanted to check the pennstander (math) as part of jr/ms/hh playing with this font
+-- I noticed that I lost the wof2f conversion binary so I can't really check it right now so ...
+-- maybe when we pick up on the export. It's not that relevant anyway. With all this useless
+-- web overhead (advertisements, graphics, tracking, unsollicited ai crap, whatever) compressing
+-- fonts like this is kind of pathetic anyway (a zip compression probably had made more sense).
+
 local converters = {
     woff = {
         cachename = "webfonts",
         action    = otf.readers.woff2otf,
-    }
+    },
+    woff2 = false,
 }
+
+converters.woff2 = converters.woff
 
 -- We can get differences between daylight saving etc ... but it makes no sense to
 -- mess with trickery .. so be it when you use a different binary.
@@ -916,7 +925,7 @@ function otf.getsubstitution(tfmdata,k,kind,value,script,language,choicetoo)
             end
         end
         if choicetoo then
-            return k, choice
+            return k, choice, found and #found
         else
             return k
         end
@@ -985,6 +994,8 @@ function readers.woff(specification)
     checkconversion(specification)
     opentypereader(specification,"")
 end
+
+readers.woff2 = readers.woff --for testing pennstander (bt)
 
 -- this will be overloaded
 

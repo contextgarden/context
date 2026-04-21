@@ -160,6 +160,10 @@ mi_decl_nodiscard extern inline mi_decl_restrict void* mi_heap_malloc_small(mi_h
   return mi_heap_malloc_small_zero(heap, size, false, NULL);
 }
 
+mi_decl_nodiscard extern inline mi_decl_restrict void* mi_heap_zalloc_small(mi_heap_t* heap, size_t size) mi_attr_noexcept {
+  return mi_heap_malloc_small_zero(heap, size, true, NULL);
+}
+
 mi_decl_nodiscard extern inline mi_decl_restrict void* mi_malloc_small(size_t size) mi_attr_noexcept {
   return mi_heap_malloc_small(mi_prim_get_default_heap(), size);
 }
@@ -206,7 +210,7 @@ mi_decl_nodiscard extern inline mi_decl_restrict void* mi_malloc(size_t size) mi
 
 // zero initialized small block
 mi_decl_nodiscard mi_decl_restrict void* mi_zalloc_small(size_t size) mi_attr_noexcept {
-  return mi_heap_malloc_small_zero(mi_prim_get_default_heap(), size, true, NULL);
+  return mi_heap_zalloc_small(mi_prim_get_default_heap(), size);
 }
 
 mi_decl_nodiscard extern inline mi_decl_restrict void* mi_heap_zalloc(mi_heap_t* heap, size_t size) mi_attr_noexcept {
@@ -385,6 +389,7 @@ mi_decl_nodiscard void* mi_recalloc(void* p, size_t count, size_t size) mi_attr_
 mi_decl_nodiscard mi_decl_restrict char* mi_heap_strdup(mi_heap_t* heap, const char* s) mi_attr_noexcept {
   if (s == NULL) return NULL;
   size_t len = _mi_strlen(s);
+  if (len > MI_MAX_ALLOC_SIZE - 1) return NULL;  // prevent overflow on len+1
   char* t = (char*)mi_heap_malloc(heap,len+1);
   if (t == NULL) return NULL;
   _mi_memcpy(t, s, len);
@@ -400,6 +405,7 @@ mi_decl_nodiscard mi_decl_restrict char* mi_strdup(const char* s) mi_attr_noexce
 mi_decl_nodiscard mi_decl_restrict char* mi_heap_strndup(mi_heap_t* heap, const char* s, size_t n) mi_attr_noexcept {
   if (s == NULL) return NULL;
   const size_t len = _mi_strnlen(s,n);  // len <= n
+  if (len > MI_MAX_ALLOC_SIZE - 1) return NULL;  // prevent overflow on len+1
   char* t = (char*)mi_heap_malloc(heap, len+1);
   if (t == NULL) return NULL;
   _mi_memcpy(t, s, len);
@@ -435,35 +441,44 @@ mi_decl_nodiscard mi_decl_restrict char* mi_heap_realpath(mi_heap_t* heap, const
     return mi_heap_strndup(heap, buf, PATH_MAX);
   }
 }
+
 #else
-/*
+
 #include <unistd.h>  // pathconf
+
 static size_t mi_path_max(void) {
-  static size_t path_max = 0;
-  if (path_max <= 0) {
-    long m = pathconf("/",_PC_PATH_MAX);
-    if (m <= 0) path_max = 4096;      // guess
-    else if (m < 256) path_max = 256; // at least 256
-    else path_max = m;
+  static _Atomic(size_t) path_max = 0;
+  size_t pmax = mi_atomic_load_acquire(&path_max);
+  if (pmax == 0) {
+    long m = 0;
+    #ifdef _PC_PATH_MAX
+    m = pathconf("/",_PC_PATH_MAX);
+    #endif
+    if (m <= 0) pmax = 4096;      // guess
+    else if (m < 256) pmax = 256; // at least 256
+    else if (m > 64*1024) pmax = 64*1024;  // at most 64 KiB
+    else pmax = m;
+    size_t expected = 0;
+    mi_atomic_cas_strong_acq_rel(&path_max, &expected, pmax);
   }
-  return path_max;
+  return pmax;
 }
-*/
+
 char* mi_heap_realpath(mi_heap_t* heap, const char* fname, char* resolved_name) mi_attr_noexcept {
   if (resolved_name != NULL) {
     return realpath(fname,resolved_name);
   }
   else {
+  /*
     char* rname = realpath(fname, NULL);
     if (rname == NULL) return NULL;
     char* result = mi_heap_strdup(heap, rname);
-    mi_cfree(rname);  // use checked free (which may be redirected to our free but that's ok)
+    mi_cfree(rname);  // note: may leak the original pointer if allocated internally with the system allocator 
     // note: with ASAN realpath is intercepted and mi_cfree may leak the returned pointer :-(
-    return result;
-  }
-  /*
+    return result;  
+  */
     const size_t n  = mi_path_max();
-    char* buf = (char*)mi_malloc(n+1);
+    char* const buf = (char*)mi_zalloc(n+1);
     if (buf == NULL) {
       errno = ENOMEM;
       return NULL;
@@ -473,7 +488,6 @@ char* mi_heap_realpath(mi_heap_t* heap, const char* fname, char* resolved_name) 
     mi_free(buf);
     return result;
   }
-  */
 }
 #endif
 
@@ -672,7 +686,8 @@ static void* mi_block_ptr_set_guarded(mi_block_t* block, size_t obj_size) {
     // give up to place it right in front of the guard page if the offset is too large for unalignment
     offset = MI_BLOCK_ALIGNMENT_MAX;
   }
-  void* p = (uint8_t*)block + offset;
+  uint8_t* const p = (uint8_t*)block + offset;
+  mi_assert_internal(p == guard_page - obj_size);
   mi_track_align(block, p, offset, obj_size);
   mi_track_mem_defined(block, sizeof(mi_block_t));
   return p;
@@ -680,24 +695,29 @@ static void* mi_block_ptr_set_guarded(mi_block_t* block, size_t obj_size) {
 
 mi_decl_restrict void* _mi_heap_malloc_guarded(mi_heap_t* heap, size_t size, bool zero) mi_attr_noexcept
 {
-  #if defined(MI_PADDING_SIZE)
-  mi_assert(MI_PADDING_SIZE==0);
-  #endif
   // allocate multiple of page size ending in a guard page
   // ensure minimal alignment requirement?
+  if mi_unlikely(size >= MI_MAX_ALLOC_SIZE - MI_PADDING_SIZE) {  // check up front so the `req_size` won't overflow    
+    _mi_error_message(EOVERFLOW, "(guarded) allocation request is too large (%zu bytes)\n", size);
+    return NULL;
+  }
   const size_t os_page_size = _mi_os_page_size();
   const size_t obj_size = (mi_option_is_enabled(mi_option_guarded_precise) ? size : _mi_align_up(size, MI_MAX_ALIGN_SIZE));
   const size_t bsize    = _mi_align_up(_mi_align_up(obj_size, MI_MAX_ALIGN_SIZE) + sizeof(mi_block_t), MI_MAX_ALIGN_SIZE);
   const size_t req_size = _mi_align_up(bsize + os_page_size, os_page_size);
-  mi_block_t* const block = (mi_block_t*)_mi_malloc_generic(heap, req_size, zero, 0 /* huge_alignment */, NULL);
+  mi_block_t* const block = (mi_block_t*)_mi_malloc_generic(heap, req_size, false /* don't zero */, 0 /* huge_alignment */, NULL);
   if (block==NULL) return NULL;
   void* const p   = mi_block_ptr_set_guarded(block, obj_size);
+  if (zero) {
+    _mi_memzero(p,obj_size);  // we have to zero afterwards as padding might have written inside the block (if the `blocksize > reqsize + os_page_size`)
+  }
 
   // stats
-  mi_track_malloc(p, size, zero);
+  mi_track_malloc(p, obj_size, zero);  
   if (p != NULL) {
     if (!mi_heap_is_initialized(heap)) { heap = mi_prim_get_default_heap(); }
     #if MI_STAT>1
+    // adjust stats to only count the allocated size of the block (and not the guard page)
     mi_heap_stat_adjust_decrease(heap, malloc_requested, req_size);
     mi_heap_stat_increase(heap, malloc_requested, size);
     #endif

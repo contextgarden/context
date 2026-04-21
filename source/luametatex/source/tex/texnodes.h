@@ -557,6 +557,7 @@ typedef enum glue_subtypes {
     xspace_skip_glue,
     zero_space_skip_glue,
     inter_character_skip_glue,
+    discretionary_skip_glue,
     par_fill_left_skip_glue,
     par_fill_right_skip_glue,
     par_init_left_skip_glue,
@@ -1050,6 +1051,11 @@ typedef enum list_balance_states {
     balance_state_uinserts = 0x4,
 } list_balance_states;
 
+typedef enum list_continuation_states {
+    continuation_state_left  = 0x1,
+    continuation_state_right = 0x2,
+} list_continuation_states;
+
 // todo: reorder memone and memtwo (but also check adjust then)
 
 # define box_node_size          19
@@ -1070,7 +1076,7 @@ typedef enum list_balance_states {
 # define box_direction(a)       memtwo00(a,8)  /* We could encode it as geometry but not now. */
 # define box_package_state(a)   memtwo01(a,8)
 # define box_geometry(a)        memtwo02(a,8)
-# define box_reserved(a)        memtwo03(a,8)
+# define box_continuation(a)    memtwo03(a,8)
 # define box_orientation(a)     memone(a,8)    /* Also used for size in alignments. */
 # define box_x_offset(a)        memtwo(a,9)
 # define box_y_offset(a)        memone(a,9)
@@ -1164,15 +1170,15 @@ typedef enum box_anchoring {
 # define is_box_snapped_state(p)    ((box_content_state(p) & snapped_content_state) == snapped_content_state)
 
 typedef enum box_option_flags { /* halfword */
-    box_option_no_math_axis = 0x0001,
-    box_option_discardable  = 0x0002,
-    box_option_keep_spacing = 0x0004,
-    box_option_snapping     = 0x0008,
-    box_option_no_kerning   = 0x0010, /* a bonus for me */
-    box_option_no_snapping  = 0x0020,
-    box_option_no_profiling = 0x0040, /* a bonus for me */
-    box_option_align_split  = 0x0080,
- // box_option_synchronize  = 0x0100,
+    box_option_no_math_axis    = 0x0001,
+    box_option_discardable     = 0x0002,
+    box_option_keep_spacing    = 0x0004,
+    box_option_snapping        = 0x0008,
+    box_option_no_kerning      = 0x0010, /* a bonus for me */
+    box_option_no_snapping     = 0x0020,
+    box_option_no_profiling    = 0x0040, /* a bonus for me */
+    box_option_align_split     = 0x0080,
+ // box_option_synchronize     = 0x0100,
 } box_option_flags;
 
 static inline void tex_set_box_option    (halfword a, halfword r) { box_options(a)  =   r; }

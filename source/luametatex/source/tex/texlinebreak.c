@@ -6160,6 +6160,8 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
     halfword rs = null;
     /*tex was a break at glue? */
     int glue_break;
+    int oldcontinuation = 0;
+    int newcontinuation = 0;
     /*tex are we in some shape */
     int shaping = 0;
     int midshaping = 0;
@@ -6322,12 +6324,20 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
         disc_break = 0;
         post_disc_break = 0;
         glue_break = 0;
+        oldcontinuation = newcontinuation;
+        newcontinuation = 0;
         if (r) {
             switch (node_type(r)) {
                 case glue_node:
+                    switch (node_subtype(r)) {
+                        case inter_character_skip_glue:
+                        case discretionary_skip_glue:
+                            newcontinuation = continuation_state_right;
+                            break;
+                    }
+                    glue_break = 1;
                     tex_copy_glue_values(r, properties->right_skip);
                     node_subtype(r) = right_skip_glue;
-                    glue_break = 1;
                     /*tex |q| refers to the last node of the line */
                     q = r;
                     rs = q;
@@ -6968,6 +6978,12 @@ static void tex_aux_post_line_break(const line_break_properties *properties, hal
                     scaled slack = local_hang_l_slack > local_hang_r_slack ? local_hang_l_slack : local_hang_r_slack;
                     box_depth(linebox) = slack * glue_amount(baseline_skip_par);
                 }
+            }
+            if (oldcontinuation) {
+                box_continuation(lmt_linebreak_state.just_box) |= continuation_state_left;
+            }
+            if (newcontinuation) {
+                box_continuation(lmt_linebreak_state.just_box) |= continuation_state_right;
             }
         } else {
             /*tex Here we can have a right skip way to the right due to an overshoot! */

@@ -4859,6 +4859,9 @@
     \fi
 \to \everymathematics
 
+\setupmathematics
+  [\s!italics=\v!yes] % per 2026-04-21
+
 %D Bonus for testing:
 
 % styles       : regular sansserif monospaced fraktur script blackboard

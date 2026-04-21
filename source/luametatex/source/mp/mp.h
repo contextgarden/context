@@ -49,7 +49,7 @@ rid of the intermediate \POSTSCRIPT\ representation or add a little more abstrac
     rather future number, like 30 or so. This is to be decided.
 */
 
-# define metapost_version "3.16.02"
+# define metapost_version "3.16.03"
 
 typedef struct MP_instance *MP;
 
@@ -1005,6 +1005,7 @@ typedef void        (*take_fraction_func)                (MP mp, mp_number *ret,
 typedef void        (*take_scaled_func)                  (MP mp, mp_number *ret, mp_number *A, mp_number *B);
 typedef void        (*sin_cos_func)                      (MP mp, mp_number *A, mp_number *S, mp_number *C);
 typedef void        (*slow_add_func)                     (MP mp, mp_number *A, mp_number *S, mp_number *C);
+typedef void        (*slow_sub_func)                     (MP mp, mp_number *A, mp_number *S, mp_number *C);
 typedef void        (*sqrt_func)                         (MP mp, mp_number *ret, mp_number *A);
 typedef void        (*init_randoms_func)                 (MP mp, int seed);
 typedef void        (*allocate_number_func)              (MP mp, mp_number *A, mp_number_type t);
@@ -1138,6 +1139,7 @@ typedef struct math_data {
     sin_cos_func                      md_sin_cos;
     sqrt_func                         md_sqrt;
     slow_add_func                     md_slow_add;
+    slow_sub_func                     md_slow_sub;
     print_func                        md_print;
     tostring_func                     md_tostring;
     scan_func                         md_scan_numeric;
@@ -1437,6 +1439,7 @@ typedef enum mp_curvature_codes {
     mp_weird_curvature_code,
 } mp_curvature_codes;
 
+# define internal_data(A)         mp->internal[(A)].v.data
 # define internal_value(A)        mp->internal[(A)].v.data.n
 # define internal_string(A)       mp->internal[A].v.data.str
 # define set_internal_string(A,B) mp->internal[(A)].v.data.str=(B)
@@ -2080,5 +2083,7 @@ extern void            *mp_memory_allocate            (size_t size);
 extern void            *mp_memory_clear_allocate      (size_t size);
 extern void            *mp_memory_reallocate          (void *p, size_t size);
 extern void             mp_memory_free                (void *p);
+
+extern int              mp_error_code                 (MP mp, int n);
 
 # endif

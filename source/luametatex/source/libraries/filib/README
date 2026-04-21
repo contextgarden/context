@@ -1,0 +1,161 @@
+/*********************************************************************/
+/*                                                                   */
+/*   fi_lib  --- A fast interval library (Version 1.2)               */
+/*                                                                   */
+/*  Authors:                                                         */
+/*  --------                                                         */
+/*  Werner Hofschuster, Walter Kraemer                               */
+/*  Wissenschaftliches Rechnen/Softwaretechnologie                   */
+/*  Universitaet Wuppertal, Germany                                  */
+/*                                                                   */ 
+/*  Copyright:                                                       */
+/*  ----------                                                       */
+/*  Copyright (C) 1997-2000 Institut fuer Wissenschaftliches Rechnen */
+/*                          und Mathematische Modellbildung (IWRMM)  */
+/*                                           and                     */
+/*                          Institut fuer Angewandte Mathematik      */
+/*                          Universitaet Karlsruhe, Germany          */
+/*            (C) 2000-2005 Wiss. Rechnen/Softwaretechnologie        */
+/*                          Universitaet Wuppertal, Germany          */
+/*                                                                   */
+/*  This library is free software; you can redistribute it and/or    */
+/*  modify it under the terms of the GNU Library General Public      */
+/*  License as published by the Free Software Foundation; either     */
+/*  version 2 of the License, or (at your option) any later version. */
+/*                                                                   */
+/*  This library is distributed in the hope that it will be useful,  */
+/*  but WITHOUT ANY WARRANTY; without even the implied warranty of   */
+/*  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.             */
+/*  See the GNU Library General Public License for more details.     */
+/*                                                                   */
+/*  You should have received a copy of the GNU Library General Public*/
+/*  License along with this library; if not, write to the Free       */
+/*  Foundation, Inc., 59 Temple Place, Suite 330, Boston,            */
+/*  MA  02111-1307  USA                                              */
+/*                                                                   */
+/*********************************************************************/
+
+Some remarks about the ANSI-C library fi_lib:
+---------------------------------------------
+
+The main features of the library, called fi_lib 
+(fast interval library) are:
+-  Fast table look-up algortihms are used for the basic functions
+   like arctan, exp or log 
+-  All elementary function routines are supplied with reliable relative 
+   error bounds of high quality.
+   The error estimates cover rounding errors, errors introduced by
+   not exactly representable constants as well as
+   approximation errors (best approximations with reliable error bounds).
+-  All error estimates are reliable worst-case estimates, which
+   have been derived using interval methods.
+-  We only insist in a faithful computer arithmetic. The routines do not
+   manipulate the rounding mode of basic operations (setting the rounding 
+   mode may be rather expensive).
+-  No higher precision internal data format is used. All computations
+   are done using the IEEE-double format (64 bit).
+-  A C++ interface for easier use is also supplied with the library.
+-  To get good portability all programs are written in ANSI-C.
+-  Source code and some applications are available:
+   http://www.math.uni-wuppertal.de/wrswt/software/filib.html
+
+Improvements and extensions of the library are still in progress.
+Please contact from time to time our web server.
+
+Please send bugs and comments per e-mail to
+    hofschuster@math.uni-wuppertal.de  or
+    kraemer@math.uni-wuppertal.de
+
+How to unpack the source code of the library fi_lib?
+----------------------------------------------------
+Use the commands
+
+   gunzip fi_lib.tgz
+   tar xf fi_lib.tar
+
+They generate the directory tree
+
+   fi_lib               (source code and makefile) 
+    |
+    |------ test        (integrity test          )  
+    |
+    |------ example     (some simple applications)
+
+To compile the source code, change the directory
+
+   cd fi_lib
+
+and select the correct entries in the configuration section 
+at the beginning of file 'fi_lib.h', then use the command  
+
+   make all
+
+If you have problems with the make command on MS-DOS/Windows PC's you
+can use the batch file 'compall.bat'.
+
+Use
+
+   cd test
+
+to change the directory and run the test program 
+
+   fi_test
+
+You should get the final message: 
+
+   'Test for library fi_lib.a OK!'
+ 
+If you have problems:
+---------------------
+1. Check the configuration section in file 'fi_lib.h'
+2. Check the call of the C-compiler in the Makefile   (e.g. CC  = cc   or 
+                                                                = gcc  or ... )
+3. Check the call of the C++ compiler in the Makefile (e.g. CPP = CC   or 
+                                                                = g++  or ... )
+4. Check the options for the compiler in the Makefile
+   (e.g. on HP-Workstations you must probably use CFLAGS= -Aa and COPT = -O)
+   or in the batch file compall.bat
+5. Compile the library without any optimization options (e.g. without -O or 
+   -O2). Some compilers do some nasty things here.
+
+Literature:
+-----------
+Hofschuster, W.; Kraemer, W.:
+     A Fast Public Domain Interval Library in ANSI C,
+     Proceedings of the 15th IMACS World Congress on Scientific Computation,
+     Modelling and Applied Mathematics, Berlin, edited by Achim Sydow, 
+     Vol. 2, Numerical Mathematics, pp 395-400, 1997.
+Hofschuster, W.; Kraemer, W.:
+     A computer Oriented Approach to Get Sharp Reliable Error Bounds,
+     Reliable Computing, Issue 3, Volume 3, pp. 239-248, 1997.
+Hofschuster, W.; Kraemer, W.:
+     FI_LIB, eine schnelle und portable Funktionsbibliothek fuer reelle
+     Argumente und reelle Intervalle im IEEE-double-Format,
+     Preprint Nr. 98/7 des IWRMM, Universitaet Karlsruhe, 1998.
+Blomquist, F.; Kraemer, W.:
+     Reliable computation of the error function and the complementary 
+     error function,
+     Preprint BUGHW-WRSWT 2000/2, Universitaet Wuppertal, 2000.
+     
+History
+-------
+1997/08/20  (Version 1.0) First version available on the FTP-server.
+
+1998/03/18  (Version 1.1) Some modifications in the interval routines
+            for the basic operations and in the error handling routines
+            have been made (e.g. the input/output of intervals and the 
+            test program fi_test have been modified).
+            Also some simple application programs have been added. 
+
+2005/12/19  (Version 1.2) Modifications for newer C++ compilers in
+            interval.hpp, hornercpp.C, bisection.C, xinewton.C;
+       some minor bug fixes;
+	    some new mathematical functions have been added: 
+	    error function 
+	       q_erf(double x), j_erf(interval x) 
+            and complementary error function
+	       q_erfc(double x) and j_erfc(interval x)
+	       
+2026/04/10  Reformatting and some adaptions by Hans Hagen so that we
+            can play with it in the perspective of LuaMetaTeX (read:
+            providing a LUA module.)

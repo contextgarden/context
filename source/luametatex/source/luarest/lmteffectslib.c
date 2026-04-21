@@ -216,7 +216,7 @@ static int effectslib_perlinnoise(lua_State *L)
 
 /* # define FASTFLOOR(x) ( ((int) (x) <= (x)) ? ((int) x) : (((int) x) - 1) ) */
 
-inline int FASTFLOOR(double x) {
+static inline int FASTFLOOR(double x) {
     return (int) (x) <= x ? (int) x : (int) x - 1;
 }
 

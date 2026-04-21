@@ -28,6 +28,7 @@ target_link_libraries(luametatex
     qrcodegen
     triangles
     nanojpeg    
+    filib
 )
 
 if (LUAMETATEX_NOLDL) 

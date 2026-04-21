@@ -1489,10 +1489,10 @@ local function pushcontent(oldparagraph,newparagraph)
             end
         end
         local content = concat(currentcontent,"",1,nofcurrentcontent)
--- maybe a boolean that keeps track of this
-if not keephyphens and find(content,hyphen) then
-    content = gsub(content,hyphen,"")
-end
+       -- maybe a boolean that keeps track of this
+        if not keephyphens and find(content,hyphen) then
+            content = gsub(content,hyphen,"")
+        end
         if content == "" then
             -- omit; when oldparagraph we could push, remove spaces, pop
         elseif somespace[content] and oldparagraph then
@@ -1556,32 +1556,35 @@ end
 
 local collectresults  do -- too many locals otherwise
 
-    local nodecodes          = nodes.nodecodes
-    local gluecodes          = nodes.gluecodes
-    local listcodes          = nodes.listcodes
-    local whatsitcodes       = nodes.whatsitcodes
+    local nodecodes                = nodes.nodecodes
+    local gluecodes                = nodes.gluecodes
+    local listcodes                = nodes.listcodes
+    local whatsitcodes             = nodes.whatsitcodes
 
-    local subtypes           = nodes.subtypes
+    local subtypes                 = nodes.subtypes
 
-    local userkern_code      <const> = nodes.kerncodes.userkern
+    local userkern_code            <const> = nodes.kerncodes.userkern
 
-    local hlist_code         <const> = nodecodes.hlist
-    local vlist_code         <const> = nodecodes.vlist
-    local glyph_code         <const> = nodecodes.glyph
-    local glue_code          <const> = nodecodes.glue
-    local kern_code          <const> = nodecodes.kern
-    local disc_code          <const> = nodecodes.disc
-    local whatsit_code       <const> = nodecodes.whatsit
-    local par_code           <const> = nodecodes.par
+    local hlist_code               <const> = nodecodes.hlist
+    local vlist_code               <const> = nodecodes.vlist
+    local glyph_code               <const> = nodecodes.glyph
+    local glue_code                <const> = nodecodes.glue
+    local kern_code                <const> = nodecodes.kern
+    local disc_code                <const> = nodecodes.disc
+    local whatsit_code             <const> = nodecodes.whatsit
+    local par_code                 <const> = nodecodes.par
 
-    local userskip_code      <const> = gluecodes.userskip
-    local rightskip_code     <const> = gluecodes.rightskip
-    local parfillskip_code   <const> = gluecodes.parfillskip
-    local spaceskip_code     <const> = gluecodes.spaceskip
-    local xspaceskip_code    <const> = gluecodes.xspaceskip
-    local intermathskip_code <const> = gluecodes.intermathskip
+    local userskip_code            <const> = gluecodes.userskip
+    local rightskip_code           <const> = gluecodes.rightskip
+    local parfillskip_code         <const> = gluecodes.parfillskip
+    local spaceskip_code           <const> = gluecodes.spaceskip
+    local xspaceskip_code          <const> = gluecodes.xspaceskip
+    local intermathskip_code       <const> = gluecodes.intermathskip
 
-    local linelist_code      <const> = listcodes.line
+    local intercharacterskip_code  <const> = gluecodes.intercharacterskip
+    local discretionaryskip_code   <const> = gluecodes.interdiscretionaryskip
+
+    local linelist_code            <const> = listcodes.line
 
     local userdefinedwhatsit_code  <const> = whatsitcodes.userdefined
 
@@ -1612,16 +1615,17 @@ local collectresults  do -- too many locals otherwise
     local getwidth         = nuts.getwidth
     local getclass         = nuts.getclass
     local getdiscpart      = nuts.getdiscpart
+    local getcontinuation  = nuts.getcontinuation
 
     local startofpar       = nuts.startofpar
 
     local nexthlist        = nuts.traversers.hlist
     local nextnode         = nuts.traversers.node
 
-    local discpartcodes            = tex.discpartcodes
-    local glyphdisccodes           = tex.glyphdisccodes
-    local automatic_code   <const> = glyphdisccodes.automatic
-    local syllable_code    <const> = glyphdisccodes.syllable
+    local discpartcodes              = tex.discpartcodes
+    local glyphdisccodes             = tex.glyphdisccodes
+    local automatic_code     <const> = glyphdisccodes.automatic
+    local syllable_code      <const> = glyphdisccodes.syllable
 
     local function addtomaybe(maybewrong,c,paragraph,ap,case)
         if trace_export then
@@ -1655,11 +1659,15 @@ local collectresults  do -- too many locals otherwise
         end
     end
 
+    -- todo: skip over visual
+
     local function collectresults(head,list,pat,pap) -- is last used (we also have currentattribute)
+-- hm, pap is not set
         local p
         local paragraph
         local maybewrong
         local isdisc = false
+        local continuation = list and getcontinuation(list) or 0
         for n, id, subtype in nextnode, head do
             if trace_details then
                 showdetail(n,id,subtype)
@@ -1911,6 +1919,11 @@ local collectresults  do -- too many locals otherwise
                     end
                 elseif subtype == intermathskip_code then
                     -- put this as attribute when it differs, maybe more ... check mathml
+                 -- isdisc = false
+                elseif subtype == intercharacterskip_code then
+                    isdisc = false
+                elseif subtype == discretionaryskip_code then
+                    isdisc = false
                 elseif subtype == rightskip_code then
                     -- a line
                     if nofcurrentcontent > 0 then
@@ -1919,22 +1932,43 @@ local collectresults  do -- too many locals otherwise
                             -- keep it
                         elseif isdisc then
                             -- nasty
+-- elseif continuation > 0 then
+-- print("reject")
+--     if trace_export then
+--         report_export("%w<!-- rejecting spacing 1 (end of line, stay in element) -->",currentdepth)
+--     end
+--     continuation = 0
                         elseif not somespace[r] then
+-- print("inject")
                             local a = getattr(n,a_tagged) or pat
                             if a == last then
+if nofcurrentcontent > 0 then
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 1 (end of line, stay in element) -->",currentdepth)
                                 end
+    if continuation > 0 then
+--                                 nofcurrentcontent = nofcurrentcontent + 1
+--                                 currentcontent[nofcurrentcontent] = "\1"
+    else
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+    end
+end
                             else
                                 if trace_export then
                                     report_export("%w<!-- injecting spacing 1 (end of line, end of element) -->",currentdepth)
                                 end
                                 last = a
                                 pushcontent()
+if nofcurrentcontent > 0 then
+    if continuation > 0 then
+--                                 nofcurrentcontent = nofcurrentcontent + 1
+--                                 currentcontent[nofcurrentcontent] = "\1"
+    else
                                 nofcurrentcontent = nofcurrentcontent + 1
                                 currentcontent[nofcurrentcontent] = " "
+    end
+end
                                 isdisc = false  -- is already false
                                 currentnesting = taglist[last]
                                 pushentry(currentnesting)
@@ -1971,7 +2005,8 @@ local collectresults  do -- too many locals otherwise
                     if list then
                         -- todo: no par checking needed in math
                         local at = getattr(n,a_tagged) or pat
-                        collectresults(list,n,at)
+-- hm, fourth argument pap is not set
+                        collectresults(list,n,at,nil)
                     end
                 end
             elseif id == kern_code then
@@ -2315,6 +2350,7 @@ local htmltemplate <const> = [[
             result[1] = gsub(result[1],"^%s+","")
             result[#result] = gsub(result[#result],"%s+$","")
             result = concat(result)
+-- result = gsub(result,"\1%s*","")
             result = gsub(result,"\n *\n","\n")
             result = gsub(result,"\n +([^< ])","\n%1")
             return result

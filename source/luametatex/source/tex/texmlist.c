@@ -209,6 +209,11 @@ because, after all, we can't test that anyway.
     options and accepted potential sub-optimal rendering. It basically means that the remarks
     in the \OPENTYPE\ specification with regards to italic correction are ignored.
 
+    A pitfall with traditional fonts is that math fonts have no space and that fact is used to
+    determine if we have a stretch of characters. However, when you use text in math, you'd
+    better wrap it in a box so that the right features get applied. Consider it progress. This
+    is controlled by |math_control_check_space_italic_kern|.
+
 */
 
 # include "luametatex.h"
@@ -1009,7 +1014,9 @@ static halfword tex_aux_underbar(halfword box, scaled gap, scaled height, scaled
     - opentype   : traditional_math_char_italic_width: add to width
     -            : traditional_math_char_italic_pass : pass ic
 
-    Adding a kern in traditional mode is a mode driven option, not a font one.
+    Adding a kern in traditional mode is a mode driven option, not a font one. In a traditional
+    (eigh  bit) math font ther eis no space set and that then can steer \TEX\ into obeying the
+    italic correction.
 
 */
 

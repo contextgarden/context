@@ -325,19 +325,75 @@ local function correction_kern(kern,n)
     return k
 end
 
+local function injectafter(head,glyph,font,char,where)
+    local italic, extra = getrightitalic(font,char,glyph)
+    if italic ~= 0 then
+        -- we could have a .01 pt threshold but correction doesn't happen often
+        local kern = correction_kern(italic,glyph)
+        insertnodeafter(head,glyph,kern)
+        if extra > 0 then
+            -- todo helper: isspace
+            local next = getnext(kern)
+            if next and getid(next) == glue_code then
+                local subtype = getsubtype(next)
+                if subtype == spaceskip_code or subtype == xspaceskip_code then
+                    local width, stretch, shrink = getglue(next)
+                    setglue(next,width+extra,stretch,shrink)
+                end
+            end
+        end
+        if trace_italics then
+            report_italics("inserting %p between %s italic %C ",italic,where,char)
+        end
+    end
+end
+
 -- The code below now assumes the non-italic math model to be used so instead of
 -- nilling a kern (italic correction) we now compensate for the right corner kern.
 --
 -- [math: <glyph><kern>]<glyph> is now just [math: <glyph>]<glyph>
 
------ function domath(head,last)
+-- This will also become a callback, we just call at the beginning
+-- and end of math then!
+
 local function domath(head,current)
     if exfactormath and exfactormath > 0 then
-        local current = endofmath(current)
-        local next    = getnext(current)
-        if not hasglyphoption(next,no_correction_code) then -- check node and id too
+        -- before math: char [space] math
+        local prev = getprev(current)
+        if prev then
+            if getid(prev) == glue_code then
+                prev = getprev(prev)
+            end
+            if prev then
+                local char, id = isglyph(prev)
+                if not char then
+                    -- do nothing
+                elseif hasglyphoption(prev,no_correction_code) then
+                    -- do nothing
+                else
+                    local italic, extra = getrightitalic(id,char,prev)
+                    if italic ~= 0 then
+                        local kern = correction_kern(italic,prev)
+                        insertnodeafter(head,prev,kern)
+                        if trace_italics then
+                            report_italics("inserting %p between %C and %s ",italic,char,"math")
+                        end
+                    end
+                end
+            end
+        end
+        -- after math: math punctuation char
+        current = endofmath(current)
+        local next = getnext(current)
+        if next then
             local char, id = isglyph(next)
-            if char and ispunctuation[char] then
+            if not char then
+                -- do nothing
+            elseif hasglyphoption(next,no_correction_code) then
+                -- do nothing
+            elseif not ispunctuation[char] then
+                -- do nothing
+            else
                 local glyph = getprev(current)
                 if hasglyphoption(glyph,math_check_italic_code) then -- check node and id too
                     local ll, lr = getcornerkerns(glyph)
@@ -369,29 +425,6 @@ local function mathhandler(head)
         end
     end
     return head
-end
-
-local function injectafter(head,glyph,font,char,where)
-    local italic, extra = getrightitalic(font,char,glyph)
-    if italic ~= 0 then
-        -- we could have a .01 pt threshold but correction doesn't happen often
-        local kern = correction_kern(italic,glyph)
-        insertnodeafter(head,glyph,kern)
-        if extra > 0 then
-            -- todo helper: isspace
-            local next = getnext(kern)
-            if next and getid(next) == glue_code then
-                local subtype = getsubtype(next)
-                if subtype == spaceskip_code or subtype == xspaceskip_code then
-                    local width, stretch, shrink = getglue(next)
-                    setglue(next,width+extra,stretch,shrink)
-                end
-            end
-        end
-        if trace_italics then
-            report_italics("inserting %p between %s italic %C ",italic,where,char)
-        end
-    end
 end
 
 local function fixleftitalic(current)

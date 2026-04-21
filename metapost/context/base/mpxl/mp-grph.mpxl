@@ -21,7 +21,8 @@ numeric mfun_fig_nesting ; mfun_fig_nesting := 0 ;
 
 def beginfig (expr c) =
     mfun_fig_nesting := mfun_fig_nesting + 1 ;
-    if mfun_fig_nesting = 1 :
+  % if mfun_fig_nesting = 1 :
+    if abs(mfun_fig_nesting - 1) < eps : % satisfy interval */
         begingroup
         charcode := c ;
         resetfig ;
@@ -31,7 +32,8 @@ enddef ;
 
 def endfig =
     ; % safeguard
-    if mfun_fig_nesting = 1 :
+  % if mfun_fig_nesting = 1 :
+    if abs(mfun_fig_nesting - 1) < eps : % satisfy interval */
         scantokens extra_endfig ;
         scantokens every_before_shipout ;
         shipout currentpicture ; % shipit ;

@@ -1288,31 +1288,33 @@ end
 
 local ruledglue, ruledmathglue, ruledspace do
 
-    local effectiveglue         = nuts.effectiveglue
-    local iszeroglue            = nuts.iszeroglue
-    local hasoptions            = nuts.hasoptions
+    local effectiveglue = nuts.effectiveglue
+    local iszeroglue    = nuts.iszeroglue
+    local hasoptions    = nuts.hasoptions
 
-    local gluecodes             = nodes.gluecodes
+    local gluecodes     = nodes.gluecodes
 
-    local userskip_code         <const> = gluecodes.userskip
-    local spaceskip_code        <const> = gluecodes.spaceskip
-    local xspaceskip_code       <const> = gluecodes.xspaceskip
-    local zerospaceskip_code    <const> = gluecodes.zerospaceskip or gluecodes.userskip
-    local intercharskip_code    <const> = gluecodes.intercharacterskip
- -- local keepskip_code         <const> = gluecodes.keepskip or gluecodes.userskip
-    local leftskip_code         <const> = gluecodes.leftskip
-    local rightskip_code        <const> = gluecodes.rightskip
-    local lefthangskip_code     <const> = gluecodes.lefthangskip
-    local righthangskip_code    <const> = gluecodes.righthangskip
-    local parfillleftskip_code  <const> = gluecodes.parfillleftskip or parfillskip_code
-    local parfillrightskip_code <const> = gluecodes.parfillrightskip or parfillskip_code
-    local parinitleftskip_code  <const> = gluecodes.parinitleftskip
-    local parinitrightskip_code <const> = gluecodes.parinitrightskip
-    local indentskip_code       <const> = gluecodes.indentskip
-    local intermathskip_code    <const> = gluecodes.intermathskip
-    local correctionskip_code   <const> = gluecodes.correctionskip
-    local tabskip_code          <const> = gluecodes.tabskip
-    local noautobreak_code      <const> = tex.glueoptioncodes.noautobreak
+    local userskip_code           <const> = gluecodes.userskip
+    local spaceskip_code          <const> = gluecodes.spaceskip
+    local xspaceskip_code         <const> = gluecodes.xspaceskip
+    local zerospaceskip_code      <const> = gluecodes.zerospaceskip or gluecodes.userskip
+    local intercharacterskip_code <const> = gluecodes.intercharacterskip
+    local discretionaryskip_code  <const> = gluecodes.discretionaryskip
+ -- local keepskip_code           <const> = gluecodes.keepskip or gluecodes.userskip
+    local leftskip_code           <const> = gluecodes.leftskip
+    local rightskip_code          <const> = gluecodes.rightskip
+    local lefthangskip_code       <const> = gluecodes.lefthangskip
+    local righthangskip_code      <const> = gluecodes.righthangskip
+    local parfillleftskip_code    <const> = gluecodes.parfillleftskip or parfillskip_code
+    local parfillrightskip_code   <const> = gluecodes.parfillrightskip or parfillskip_code
+    local parinitleftskip_code    <const> = gluecodes.parinitleftskip
+    local parinitrightskip_code   <const> = gluecodes.parinitrightskip
+    local indentskip_code         <const> = gluecodes.indentskip
+    local intermathskip_code      <const> = gluecodes.intermathskip
+    local correctionskip_code     <const> = gluecodes.correctionskip
+    local tabskip_code            <const> = gluecodes.tabskip
+
+    local noautobreak_code        <const> = tex.glueoptioncodes.noautobreak
 
     local g_cache_v  = caches["vglue"]
     local g_cache_h  = caches["hglue"]
@@ -1340,6 +1342,8 @@ local ruledglue, ruledmathglue, ruledspace do
         [intermathskip_code]              = "IM",
         [gluecodes.keepskip or 99]        = "KS",
         [gluecodes.mathskip]              = "MT",
+        [gluecodes.pageskip]              = "PA",
+        [gluecodes.ignoredskip]           = "IG",
         [gluecodes.leaders]               = "NL",
         [gluecodes.cleaders]              = "CL",
         [gluecodes.xleaders]              = "XL",
@@ -1352,7 +1356,8 @@ local ruledglue, ruledmathglue, ruledspace do
         [righthangskip_code]              = "RH",
         [spaceskip_code]                  = "SP",
         [xspaceskip_code]                 = "XS",
-        [intercharskip_code]              = "IC",
+        [discretionaryskip_code]          = "DI",
+        [intercharacterskip_code]         = "CJ", -- cjk
         [zerospaceskip_code]              = "ZS",
         [parfillleftskip_code]            = "PL",
         [parfillrightskip_code]           = "PR",
@@ -1406,9 +1411,12 @@ local ruledglue, ruledmathglue, ruledspace do
                 else
                     info = sometext(amount,l_glue,"trace:g")
                 end
-            elseif subtype == tabskip_code then
+            elseif subtype == tabskip_code
+                or subtype == discretionaryskip_code
+                or subtype == intercharacterskip_code then
                 info = sometext(amount,l_glue,"trace:s")
-            elseif subtype == indentskip_code or subtype == correctionskip_code then
+            elseif subtype == indentskip_code
+                or subtype == correctionskip_code then
                 info = sometext(amount,l_glue,"trace:s")
             elseif subtype == leftskip_code then
                 info = sometext(amount,l_glue,"trace:y",false,true,stag)
@@ -2063,25 +2071,27 @@ do
 
         -- too many locals so:
 
-        local vglue_code         <const> = filters.vglue
-        local hglue_code         <const> = filters.hglue
-        local vkern_code         <const> = filters.vkern
-        local hkern_code         <const> = filters.hkern
-        local ckern_code         <const> = filters.ckern
-        local vpenalty_code      <const> = filters.vpenalty
-        local hpenalty_code      <const> = filters.hpenalty
-        local toddler_code       <const> = filters.toddler
-        local continuation_code  <const> = filters.continuation
-        local short_code         <const> = filters.short
-        local sglue_code         <const> = filters.sglue
-        local pglue_code         <const> = filters.pglue
-        local cglue_code         <const> = filters.cglue
+        local vglue_code              <const> = filters.vglue
+        local hglue_code              <const> = filters.hglue
+        local vkern_code              <const> = filters.vkern
+        local hkern_code              <const> = filters.hkern
+        local ckern_code              <const> = filters.ckern
+        local vpenalty_code           <const> = filters.vpenalty
+        local hpenalty_code           <const> = filters.hpenalty
+        local toddler_code            <const> = filters.toddler
+        local continuation_code       <const> = filters.continuation
+        local short_code              <const> = filters.short
+        local sglue_code              <const> = filters.sglue
+        local pglue_code              <const> = filters.pglue
+        local cglue_code              <const> = filters.cglue
 
-        local spaceskip_code     <const> = nodes.skipcodes.spaceskip
-        local xspaceskip_code    <const> = nodes.skipcodes.xspaceskip
-        local zerospaceskip_code <const> = nodes.skipcodes.zerospaceskip
-        local intermathskip_code <const> = nodes.skipcodes.intermathskip
-        local intercharskip_code <const> = nodes.skipcodes.intercharacterskip
+        local skipcodes                       = nodes.skipcodes
+        local spaceskip_code          <const> = skipcodes.spaceskip
+        local xspaceskip_code         <const> = skipcodes.xspaceskip
+        local zerospaceskip_code      <const> = skipcodes.zerospaceskip
+        local intermathskip_code      <const> = skipcodes.intermathskip
+        local intercharacterskip_code <const> = skipcodes.intercharacterskip
+        local discretionaryskip_code  <const> = skipcodes.discretionaryskip
 
         while current do
             local id, subtype = getidsubtype(current)
@@ -2282,7 +2292,7 @@ do
                             goto next
                         end
                     elseif (f & cglue_code) == cglue_code then
-                        if subtype ~= intercharskip_code then
+                        if subtype ~= intercharacterskip_code and subtype ~= discretionaryskip_code then
                             goto next
                         end
                     elseif (f & pglue_code) == pglue_code then

@@ -103,6 +103,10 @@
 
 \aliased\let\doifcounterelse\doifelsecounter
 
+\permanent\protected\def\doifelsecounteractive#1% see strc-itm for an example
+  {\clf_doifelsecounteractive{\namedcounterparameter{#1}\s!name}}
+
+
 \permanent\tolerant\protected\def\setcounter[#1]#*[#2]#*[#3]%
   {\ifarguments\or\or
      \clf_setcounter   {\namedcounterparameter{#1}\s!name}{#2}%

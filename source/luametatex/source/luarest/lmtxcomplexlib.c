@@ -358,9 +358,9 @@ static int xcomplexlib_totable(lua_State *L)
     Complex z = xcomplexlib_get(L, 1);
     lua_createtable(L, 2, 0);
     lua_pushnumber(L, (lua_Number) creal(z));
+    lua_rawseti(L, -2, 1);
     lua_pushnumber(L, (lua_Number) cimag(z));
-    lua_rawseti(L, -3, 1);
-    lua_rawseti(L, -3, 2);
+    lua_rawseti(L, -2, 2);
     return 1;
 }
 

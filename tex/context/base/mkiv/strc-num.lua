@@ -121,7 +121,7 @@ local constructor = { -- maybe some day we will provide an installer for more va
         return min(t.last,t.number+1) -- todo: step
     end,
 
-    backward =function(t,name,i)
+    backward = function(t,name,i)
         if t.number - 1 < t.first then
             return t.last
         else
@@ -177,6 +177,7 @@ local function allocate(name,i) -- can be metatable but it's a bit messy
             state   = v_start, -- true
             data    = { },
             saved   = { },
+            isset   = false,
         }
         tobesaved[name]   = { }
         counterdata[name] = cd
@@ -388,7 +389,7 @@ local function reset(name,n)
             synchronize(name,d)
         end
         cd.numbers = nil
-    else
+        cd.isset   = false
     end
 end
 
@@ -407,16 +408,20 @@ local function set(name,n,value)
 end
 
 local function check(name,data,start,stop)
-    for i=start or 1,stop or #data do
-        local d = data[i]
-        savevalue(name,i)
-        local number = d.start or 0
-        d.number = number
-        d.own = nil
-        if trace_counters then
-            report_counters("action %a, name %a, sub %a, value %a","check",name,i,number)
+    local cd = counterdata[name]
+    if cd then
+        for i=start or 1,stop or #data do
+            local d = data[i]
+            savevalue(name,i)
+            local number = d.start or 0
+            d.number = number
+            d.own = nil
+            if trace_counters then
+                report_counters("action %a, name %a, sub %a, value %a","check",name,i,number)
+            end
+            synchronize(name,d)
         end
-        synchronize(name,d)
+        cd.isset = true
     end
 end
 
@@ -436,6 +441,7 @@ local function setown(name,n,value)
             -- happens elsewhere, check this for block
         end
         synchronize(name,d)
+        cd.isset = true
     end
 end
 
@@ -512,6 +518,7 @@ local function add(name,n,delta)
             end
         end
         synchronize(name,d)
+        cd.isset = true
         return d.number -- not needed
     end
     return 0
@@ -686,6 +693,17 @@ setmetatablecall(counterdata,function(t,k) return t[k] end)
 implement { name = "doifelsecounter", actions = { counterdata, commands.doifelse }, arguments = "string" }
 implement { name = "doifcounter",     actions = { counterdata, commands.doif     }, arguments = "string" }
 implement { name = "doifnotcounter",  actions = { counterdata, commands.doifnot  }, arguments = "string" }
+
+function counters.isset(name)
+    local d = counterdata[name]
+    return d and d.isset
+end
+
+implement {
+    name      = "doifelsecounteractive",
+    actions   = { counters.isset, commands.doifelse },
+    arguments = "string"
+}
 
 implement {
     name      = "definecounter",

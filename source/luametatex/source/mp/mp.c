@@ -848,6 +848,7 @@ The first set of numerical values goes into the header
 # define mp_n_sin_cos(A,S,C)                        mp->math->md_sin_cos(mp,&(A),&(S),&(C))
 # define mp_square_rt(A,S)                          mp->math->md_sqrt(mp,&(A),&(S))
 # define mp_slow_add(R,A,B)                         mp->math->md_slow_add(mp,&(R),&(A),&(B))
+# define mp_slow_sub(R,A,B)                         mp->math->md_slow_sub(mp,&(R),&(A),&(B))
 # define mp_round_unscaled(A)                       mp->math->md_round_unscaled(&(A))
 # define mp_floor_scaled(A)                         mp->math->md_floor_scaled(&(A))
 # define mp_fraction_to_round_scaled(A)             mp->math->md_fraction_to_round_scaled(&(A))
@@ -917,32 +918,32 @@ code when we make then the same. Todo: use char for some.
 //define bm_first_y(ny,y,dy) (bm_current_y(ny,y)-dy+1)
 //define bm_last_y(ny,y,dy)  (bm_current_y(ny,y)-1)
 
-# define mp_path_ptr(A)       (A)->path
-# define mp_pen_ptr(A)        (A)->pen
-# define mp_dash_ptr(A)       ((mp_shape_node) (A))->dash
-# define mp_line_cap(A)       ((mp_shape_node) (A))->linecap
-# define mp_line_join(A)      ((mp_shape_node) (A))->linejoin
-# define mp_miterlimit(A)     ((mp_shape_node) (A))->miterlimit
-# define mp_curvature(A)      ((mp_shape_node) (A))->curvature
-# define mp_set_linecap(A,B)  ((mp_shape_node) (A))->linecap = (unsigned char) (B)
-# define mp_set_linejoin(A,B) ((mp_shape_node) (A))->linejoin = (unsigned char) (B)
-# define mp_set_curvature(A,B)((mp_shape_node) (A))->curvature = (unsigned char) (B)
-# define mp_set_mesh(A,B)     ((mp_shape_node) (A))->mesh = (short) (B)
-# define mp_set_bytemap(A,B)  ((mp_shape_node) (A))->bytemap = (short) (B)
-# define mp_pre_script(A)     ((mp_shape_node) (A))->pre_script
-# define mp_post_script(A)    ((mp_shape_node) (A))->post_script
-# define mp_color_model(A)    ((mp_shape_node) (A))->color_model
-# define mp_stacking(A)       ((mp_shape_node) (A))->stacking
-# define mp_pen_type(A)       ((mp_shape_node) (A))->pen_type
-# define mp_cyan_color(A)     ((mp_shape_node) (A))->cyan
-# define mp_magenta_color(A)  ((mp_shape_node) (A))->magenta
-# define mp_yellow_color(A)   ((mp_shape_node) (A))->yellow
-# define mp_black_color(A)    ((mp_shape_node) (A))->black
-# define mp_red_color(A)      ((mp_shape_node) (A))->red
-# define mp_green_color(A)    ((mp_shape_node) (A))->green
-# define mp_blue_color(A)     ((mp_shape_node) (A))->blue
-# define mp_gray_color(A)     ((mp_shape_node) (A))->grey
-# define mp_grey_color(A)     ((mp_shape_node) (A))->grey
+# define mp_path_ptr(A)         (A)->path
+# define mp_pen_ptr(A)          (A)->pen
+# define mp_dash_ptr(A)         ((mp_shape_node) (A))->dash
+# define mp_line_cap(A)         ((mp_shape_node) (A))->linecap
+# define mp_line_join(A)        ((mp_shape_node) (A))->linejoin
+# define mp_miterlimit(A)       ((mp_shape_node) (A))->miterlimit
+# define mp_curvature(A)        ((mp_shape_node) (A))->curvature
+# define mp_set_linecap(A,B)    ((mp_shape_node) (A))->linecap = (unsigned char) (B)
+# define mp_set_linejoin(A,B)   ((mp_shape_node) (A))->linejoin = (unsigned char) (B)
+# define mp_set_curvature(A,B)  ((mp_shape_node) (A))->curvature = (unsigned char) (B)
+# define mp_set_mesh(A,B)       ((mp_shape_node) (A))->mesh = (short) (B)
+# define mp_set_bytemap(A,B)    ((mp_shape_node) (A))->bytemap = (short) (B)
+# define mp_pre_script(A)       ((mp_shape_node) (A))->pre_script
+# define mp_post_script(A)      ((mp_shape_node) (A))->post_script
+# define mp_color_model(A)      ((mp_shape_node) (A))->color_model
+# define mp_stacking(A)         ((mp_shape_node) (A))->stacking
+# define mp_pen_type(A)         ((mp_shape_node) (A))->pen_type
+# define mp_cyan_color(A)       ((mp_shape_node) (A))->cyan
+# define mp_magenta_color(A)    ((mp_shape_node) (A))->magenta
+# define mp_yellow_color(A)     ((mp_shape_node) (A))->yellow
+# define mp_black_color(A)      ((mp_shape_node) (A))->black
+# define mp_red_color(A)        ((mp_shape_node) (A))->red
+# define mp_green_color(A)      ((mp_shape_node) (A))->green
+# define mp_blue_color(A)       ((mp_shape_node) (A))->blue
+# define mp_gray_color(A)       ((mp_shape_node) (A))->grey
+# define mp_grey_color(A)       ((mp_shape_node) (A))->grey
 
 # define mp_has_color(A)        ((A)->type <  mp_start_clip_node_type)
 # define mp_has_script(A)       ((A)->type <= mp_start_bounds_node_type)
@@ -3238,6 +3239,14 @@ At crucial points the program will say |mp_check_arithmic|, to test if an arithm
 detected.
 
 */
+
+int mp_error_code(MP mp, int n)
+{
+    mp_begin_diagnostic_print(mp, "arithmic", "error", 1);
+    mp_print_format(mp, " mode %i, code %i", mp->math_mode, n);
+    mp_end_diagnostic(mp, 1);
+    return 1;
+}
 
 static void mp_check_arithmic(MP mp)
 {
@@ -7852,6 +7861,8 @@ relatively expensive to compute and they are needed in different instances of |a
 
 */
 
+// static int mp_arc_level = 0;
+
 static void mp_arc_test(MP mp,
     mp_number *ret, mp_number *dx0, mp_number *dy0, mp_number *dx1,
     mp_number *dy1, mp_number *dx2, mp_number *dy2, mp_number *v0,
@@ -7865,6 +7876,10 @@ static void mp_arc_test(MP mp,
     mp_number arc1;       /* arc length estimate for the first half */
     mp_number simply;
     mp_number tol;
+//  mp_arc_level++;
+//  if (mp_arc_level > 10) {
+//      goto OEPS;
+//  }
     mp_new_number(arc );
     mp_new_number(arc1);
     mp_new_number(dx01);
@@ -7927,7 +7942,7 @@ static void mp_arc_test(MP mp,
             mp_number_add(arc, arc1);
         } else {
             mp_free_number(tmp);
-            mp->arithmic_error = 1;
+            mp->arithmic_error = mp_error_code(mp, 1);
             if (mp_number_infinite(*a_goal)) {
                 mp_set_number_to_inf(*ret);
             } else {
@@ -7972,7 +7987,7 @@ static void mp_arc_test(MP mp,
     mp_number_subtract(simply, *v02);
     mp_number_abs(simply);
     if (simple && mp_number_lessequal(simply, tol)) {
-        if (mp_number_less(arc, *a_goal)){
+        if (mp_number_less(arc, *a_goal)) {
             mp_number_clone(*ret, arc);
         } else {
             /*tex
@@ -8158,6 +8173,8 @@ static void mp_arc_test(MP mp,
     mp_free_number(v022);
     mp_free_number(simply);
     mp_free_number(tol);
+//OEPS:
+//  mp_arc_level--;
 }
 
 /*
@@ -8273,7 +8290,7 @@ static void mp_do_arc_test(MP mp,
     mp_pyth_add(v1, *dx1, *dy1);
     mp_pyth_add(v2, *dx2, *dy2);
     if ((mp_number_greaterequal(v0, mp_fraction_four_t)) || (mp_number_greaterequal(v1, mp_fraction_four_t)) || (mp_number_greaterequal(v2, mp_fraction_four_t))) {
-        mp->arithmic_error = 1;
+        mp->arithmic_error = mp_error_code(mp, 2);
         if (mp_number_infinite(*a_goal)) {
             mp_set_number_to_inf(*ret);
         } else {
@@ -8501,7 +8518,7 @@ static mp_knot mp_get_arc_time(MP mp, mp_number *ret, mp_knot h, mp_number *arc0
                     mp_number_add(v1, mp_epsilon_t);       /* v1 = v1 + 1 */
                     mp_set_number_from_div(d1, d1, v1);    /* |d1 = EL_GORDO / v1| */
                     if (mp_number_greater(t_tot, d1)) {
-                        mp->arithmic_error = 1;
+                        mp->arithmic_error = mp_error_code(mp, 3);
                         mp_check_arithmic(mp);
                         mp_set_number_to_inf(*ret);
                         mp_free_number(n);
@@ -22712,11 +22729,15 @@ static void mp_add_or_subtract(MP mp, mp_node p, mp_node q, int c)
     }
     if (t == mp_known_type) {
         mp_value_node qq = (mp_value_node) q;
-        if (c == mp_minus_operation) {
-            mp_number_negate(vv);
-        }
+//        if (c == mp_minus_operation) {
+//            mp_number_negate(vv);
+//        }
         if (p->type == mp_known_type) {
+if (c == mp_minus_operation) {
+            mp_slow_sub(vv, mp_get_value_number(p), vv);
+} else {
             mp_slow_add(vv, mp_get_value_number(p), vv);
+}
             if (q == NULL) {
                 mp_set_cur_exp_value_number(mp, &vv);
             } else {
@@ -22732,7 +22753,11 @@ static void mp_add_or_subtract(MP mp, mp_node p, mp_node q, int c)
             while (mp_get_dep_info(r) != NULL) {
                 r = (mp_value_node) r->link;
             }
+if (c == mp_minus_operation) {
+            mp_slow_sub(vv, mp_get_dep_value(r), vv);
+} else {
             mp_slow_add(vv, mp_get_dep_value(r), vv);
+}
             mp_set_dep_value(r, vv);
             if (qq == NULL) {
                 qq = mp_get_dep_node(mp, 8);
@@ -24041,7 +24066,6 @@ static void mp_set_up_compare(MP mp, mp_node p, int c)
             default:
                 mp_bad_binary(mp, p, (int) c);
                 goto DONE;
-                break;
         }
     }
     /*tex
@@ -27715,7 +27739,7 @@ static void mp_bytemap_reset(MP mp) /* todo */
                 int index = (int) mp_round_unscaled(cur_exp_value_number);
                 if (mp_bytemap_valid_data(mp, index)) {
                     mp_aux_reset_bytemap(mp, index);
-                  // printf("[bitmap: reset, index %i\n", index);
+                 // printf("[bitmap: reset, index %i\n", index);
                 }
                 break;
             }
@@ -32700,9 +32724,8 @@ MP mp_initialize(MP_options *opt)
      //     mp->math = mp_initialize_double_math(mp);
      //     break;
         case mp_math_binary_mode:
-            /*tex This reports an warning in luametatex. */
             mp->math = mp_initialize_binary_math(mp);
-            goto DOUBLE_MATH;
+            break;
         case mp_math_decimal_mode:
             mp->math = mp_initialize_decimal_math(mp);
             break;
@@ -32710,13 +32733,15 @@ MP mp_initialize(MP_options *opt)
             mp->math = mp_initialize_posit_math(mp);
             break;
         case mp_math_interval_mode:
-            /*tex This reports an warning in luametatex. */
             mp->math = mp_initialize_interval_math(mp);
-            goto DOUBLE_MATH;
-        default:
-          DOUBLE_MATH:
-            mp->math = mp_initialize_double_math(mp);
             break;
+        default:
+            mp->math = NULL;
+            break;
+    }
+    if (! mp->math) {
+        mp->math = mp_initialize_double_math(mp);
+        opt->math_mode = mp_math_double_mode;
     }
     mp->parameter_size = 4;
     mp->max_in_open = 0;
@@ -32817,25 +32842,26 @@ MP mp_initialize(MP_options *opt)
     mp->history = mp_fatal_error_stop;
     mp_do_initialize(mp);
     mp_initialize_tables(mp);
-    switch (opt->math_mode) {
+ // switch (opt->math_mode) {
+    switch (mp->math_mode) {
         case mp_math_scaled_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "scaled"));
             break;
      // case mp_math_double_mode:
      //     set_internal_string(mp_number_system_internal, mp_intern(mp, "double"));
      //     break;
-     // case mp_math_binary_mode:
-     //     set_internal_string(mp_number_system_internal, mp_intern(mp, "binary"));
-     //     break;
+        case mp_math_binary_mode:
+            set_internal_string(mp_number_system_internal, mp_intern(mp, "binary"));
+            break;
         case mp_math_decimal_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "decimal"));
             break;
         case mp_math_posit_mode:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "posit"));
             break;
-     // case mp_math_interval_mode:
-     //     set_internal_string(mp_number_system_internal, mp_intern(mp, "interval"));
-     //     break;
+        case mp_math_interval_mode:
+            set_internal_string(mp_number_system_internal, mp_intern(mp, "interval"));
+            break;
         default:
             set_internal_string(mp_number_system_internal, mp_intern(mp, "double"));
             break;

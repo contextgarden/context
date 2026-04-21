@@ -159,6 +159,7 @@ local indentskip         = register_nut(new_nut(glue_code,gluecodes.indentskip))
 local correctionskip     = register_nut(new_nut(glue_code,gluecodes.correctionskip))
 local spaceskip          = register_nut(new_nut(glue_code,gluecodes.spaceskip))
 local intercharacterskip = register_nut(new_nut(glue_code,gluecodes.intercharacterskip))
+local discretionaryskip  = register_nut(new_nut(glue_code,gluecodes.discretionaryskip))
 
 local temp               = register_nut(new_nut(nodecodes.temp,0))
 
@@ -334,6 +335,12 @@ end
 
 function nutpool.intercharacterglue(penalty,width,stretch,shrink,stretch_order,shrink_order)
     local g = someskip(intercharacterskip,width,stretch,shrink,stretch_order,shrink_order)
+    setpenalty(g,penalty)
+    return g
+end
+
+function nutpool.discretionaryglue(penalty,width,stretch,shrink,stretch_order,shrink_order)
+    local g = someskip(discretionaryskip,width,stretch,shrink,stretch_order,shrink_order)
     setpenalty(g,penalty)
     return g
 end

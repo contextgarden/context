@@ -54,10 +54,10 @@
 \protected\def\strc_define_commands_label#1#2#3% current level parent
   {\ifempty{#3}%
      \expanded{\defineconstruction[#1][\s!handler=\v!label,\c!level=#2]}%
-     \edefcsname\??label#1:\s!parent\endcsname{\??label}%
+     \edefcsname\??labels#1:\s!parent\endcsname{\??labels}%
    \else
      \expanded{\defineconstruction[#1][#3][\s!handler=\v!label,\c!level=#2]}%
-     \edefcsname\??label#1:\s!parent\endcsname{\??label#3}%
+     \edefcsname\??labels#1:\s!parent\endcsname{\??labels#3}%
    \fi
    \ifconditional\c_strc_constructions_define_commands
      \protected\frozen\instance\edefcsname\e!next #1\endcsname{\strc_labels_next {#1}{\number#2}}% obsolete
@@ -113,7 +113,7 @@
 \defcsname\??constructioninitializer\v!label\endcsname
   {\let         \currentlabel                    \currentconstruction
    \enforced\let\constructionparameter           \labelparameter
-   \enforced\let\constructionnamespace           \??label
+   \enforced\let\constructionnamespace           \??labels
    \enforced\let\detokenizedconstructionparameter\detokenizedlabelparameter
    \enforced\let\letconstructionparameter        \letlabelparameter
    \enforced\let\useconstructionstyleandcolor    \uselabelstyleandcolor

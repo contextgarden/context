@@ -1333,7 +1333,6 @@ primarydef p rightenlarged  d = ( llcorner p -- (lrcorner p) shifted (d,0) -- (u
 primarydef p topenlarged    d = ( llcorner p -- lrcorner p -- (urcorner p) shifted (0,d) -- (ulcorner p) shifted (0,d) -- cycle   ) enddef ;
 primarydef p bottomenlarged d = ( llcorner p shifted (0,-d) -- lrcorner p shifted (0,-d) -- urcorner p -- ulcorner p -- cycle     ) enddef ;
 
-
 permanent
     enlarged, llenlarged, lrenlarged, urenlarged, ulenlarged,
     llmoved, lrmoved, urmoved, ulmoved,
@@ -1344,7 +1343,6 @@ permanent
 vardef rotation(expr i, n) =
     if (n == 0) : 0 else : i * 360 / n fi
 enddef ;
-
 
 permanent rotation ;
 

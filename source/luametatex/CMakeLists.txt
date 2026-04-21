@@ -324,6 +324,7 @@ include(cmake/luasocket.cmake)
 include(cmake/luaoptional.cmake)
 
 include(cmake/pplib.cmake)
+include(cmake/filib.cmake)
 include(cmake/miniz.cmake)
 include(cmake/softposit.cmake)
 include(cmake/potrace.cmake)

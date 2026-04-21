@@ -335,6 +335,7 @@ static void enginelib_show_credits(void)
         "  nanojpeg   : Martin J. Fiedler (adapted)\n"
         "  triangles  : Moller, Guigue and Devillers (adapted)\n"
         "  effects    : Ken Perlin and Stefan Gustavson (adapted)\n"
+        "  filib      : Werner Hofschuster, Walter Kraemer (adapted)\n"
         "\n"
         "The code base contains more names and references. Some libraries are partially adapted or\n"
         "have been replaced. The MetaPost library has additional functionality, some of which is\n"
@@ -1092,6 +1093,7 @@ static const luaL_Reg lmt_libs_extra_function_list[] = {
     { "xmath",     luaopen_xmath     },
     { "xcomplex",  luaopen_xcomplex  },
     { "xdecimal",  luaopen_xdecimal  },
+    { "xinterval", luaopen_xinterval },
     { "posit",     luaopen_posit     },
     { "vector",    luaopen_vector    },
     { "potrace",   luaopen_potrace   },

@@ -36,7 +36,6 @@ local div, round = math.div, math.round
 
 local fonts              = fonts
 local nodes              = nodes
-local node               = node
 local mathematics        = mathematics
 
 local privateattribute   = attributes.private
@@ -1681,6 +1680,20 @@ do
 
     local cache = { }
     local top   = 0
+    local retry = false
+
+    directives.register("math.random.retry", function(v)
+        if not v then
+            retry = false
+        else
+            retry = tonumber(v)
+            if not retry or retry > 8 then
+                retry = 8
+            elseif retry < 0 then
+                retry = 0
+            end
+        end
+    end)
 
  -- local delmap = {
  --     "open",   -- left_fence_side,
@@ -1706,8 +1719,6 @@ do
                     local registered = mathalternates.registered
                     local hashes     = mathalternates.hashes
                     local newchar    = nil
--- inspect(attributes)
--- inspect(registered)
                     for i=1,#registered do
                         local r = registered[i]
                         if (a & r) ~= 0 then
@@ -1720,6 +1731,7 @@ do
                                     local value   = what.value
                                     local feature = what.feature
                                     local choice  = false
+                                    local prevran = false
                                     local random  = value == "random" or value == "selfrandom"
                                     if random then
                                         local cdata = chardata[char]
@@ -1728,8 +1740,11 @@ do
                                         if class == "open" then
                                             top = top + 1
                                         elseif class == "close" then
+                                            -- for cases like (] we also choose the matching
+                                            -- choice which is not ok but let's assume that
+                                            -- there is some consistency here
                                             value = cache[top]
--- report_alternates("random fence,     top %a, class %a, value %a",top,class,value)
+-- report_alternates("random fence, top %a, class %a, value %a",top,class,value)
                                             cache[top] = false
                                             top = top - 1
                                         elseif class == "middle" then
@@ -1742,7 +1757,22 @@ do
                                             alt = char
                                             choice = false
                                         else
-                                            alt, choice = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                            local n = retry or 0 -- deadcycles
+                                            local m = 0          -- number of choices
+                                            while n >= 0 do
+                                                alt, choice, m = otf.getalternate(fontdata[fontid],char,feature,value,_,_,true)
+                                                if not random then
+                                                    break -- no random
+                                                elseif not choice then
+                                                    break -- no alternate
+                                                elseif not m or m < 2 then
+                                                    break -- we have no alternates
+                                                elseif n == 0 then
+                                                    break -- we ran out of choices (todo: return n)
+                                                else
+                                                    n = n - 1 -- try again
+                                                end
+                                            end
                                             if choice == nil then
                                                 choice = false
                                             end
@@ -1751,8 +1781,7 @@ do
                                             cache[top] = choice
 -- report_alternates("random fence, top %a, class %a, value %a",top,class,choice)
                                         end
---  inspect(fontdata[fontid].characters[alt])
-                                    --
+                                     --
                                      -- local cdata  = chardata[char]
                                      -- -- inspect(cdata)
                                      -- class = cdata and cdata.mathclass or false -- use helper
@@ -2561,10 +2590,8 @@ do
             end
             local ht, dp, dd, hs, ds, hd
             -- x + 1 = y : only struts glyphs glue and penalties ...
--- node.direct.show(h)
             for n, s in traversehlist, h do
                 local step = getattr(n,a_mathsnap)
--- print("!",a_mathsnap,step,node.direct.serialized(n))
                 if step then
                     local done = false
                     if not dd then
@@ -3114,16 +3141,50 @@ local starttiming, stoptiming = statistics.starttiming, statistics.stoptiming
 --     return head
 -- end
 
-local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style,options)
-    return actions(head,style,penalties,beginclass,endclass,level,style,options)
-end
+do
 
-callbacks.register {
-    name    = "mlist_to_hlist",
-    action  = mlist_to_hlist_callback,
-    comment = "convert a noad list into a node list",
-    frozen  = true,
-}
+    local seed = false
+    local main = false
+
+    -- todo: in supp-ran implement push/pop for named categories
+
+    directives.register("math.randomseed", function(v)
+        main = v
+        seed = tonumber(v) or false
+    end)
+
+    local function pushrandom()
+        if not seed then
+            seed = utilities.randomizer.getseed()
+        end
+        commands.pushrandomseed()
+        commands.setrandomseed(seed)
+    end
+
+    local function poprandom()
+        seed = utilities.randomizer.getseed()
+        commands.poprandomseed()
+    end
+
+    local function mlist_to_hlist_callback(head,style,penalties,beginclass,endclass,level,style,options)
+        if main and level == 0 then
+            pushrandom()
+        end
+        head = actions(head,style,penalties,beginclass,endclass,level,style,options)
+        if main and level == 0 then
+            poprandom()
+        end
+        return head
+    end
+
+    callbacks.register {
+        name    = "mlist_to_hlist",
+        action  = mlist_to_hlist_callback,
+        comment = "convert a noad list into a node list",
+        frozen  = true,
+    }
+
+end
 
 -- tracing
 

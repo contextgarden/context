@@ -236,6 +236,7 @@ tex.insertcategorycodes      = getthem(tex.getinsertcategoryvalues,"insertcatego
 tex.discoptioncodes          = getthem(tex.getdiscoptionvalues,"discoptioncode")
 tex.ruleoptioncodes          = getthem(tex.getruleoptionvalues,"ruleoptioncode")
 tex.boxoptioncodes           = getthem(tex.getboxoptionvalues,"boxoptioncode")
+tex.boxcontinuationcodes     = getthem(tex.getboxcontinuationvalues)
 tex.glueoptioncodes          = getthem(tex.getglueoptionvalues)
 tex.mathoptioncodes          = getthem(tex.getmathoptionvalues,"mathoptioncode")
 tex.snappingcodes            = getthem(tex.getsnappingvalues)
