@@ -57,7 +57,7 @@ static int sparselib_new(lua_State *L)
             {
                 int d = defval < 0 ? 0 : (defval > 0xF ? 0xF : defval);
                 for (int i = 0; i <= 7; i++) {
-                    item.uint_value = set_nibble(item.uint_value,i,d);
+                    item.uint_value = set_nibble(item.uint_value, i, d);
                 }
                 break;
             }

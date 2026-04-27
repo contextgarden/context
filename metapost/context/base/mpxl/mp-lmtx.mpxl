@@ -2989,13 +2989,9 @@ enddef ;
 
 vardef lmt_do_samplefunction =
     lmt_load_mlib_fnc ;
-
     pushparameters "samplefunction" ;
-
-    lua.mp.lmt_samplefunction_do()
-
+        lua.mp.lmt_samplefunction_do()
     popparameters ;
-
     lua.mp.lmt_samplefunction_flush()
 enddef ;
 
@@ -3025,13 +3021,9 @@ def lmt_parametricplot = applyparameters "parametricplot" "lmt_do_parametricplot
 
 vardef lmt_do_parametricplot =
     lmt_load_mlib_fnc ;
-
     pushparameters "parametricplot" ;
-
-    lua.mp.lmt_parametricplot_do()
-
+        lua.mp.lmt_parametricplot_do()
     popparameters ;
-
     lua.mp.lmt_parametricplot_flush()
 enddef ;
 
@@ -3065,7 +3057,7 @@ presetparameters "vectorplot" [
 
 def lmt_vectorplot = applyparameters "vectorplot" "lmt_do_vectorplot" enddef ;
 
-% We can use functione before we load so this is a no-go:
+% We can use functions before we load so this is a no-go:
 %
 % def lmt_load_mlib_msh =
 %     runscript("lua.registercode('mlib-msh')");
@@ -3074,24 +3066,19 @@ def lmt_vectorplot = applyparameters "vectorplot" "lmt_do_vectorplot" enddef ;
 
 vardef lmt_do_vectorplot =
   % lmt_load_mlib_msh ;
-
     image (
-
         pushparameters "vectorplot" ;
-
-        save p ; path p ; p := meshcontour(getparameter "name",getparameter "kind") ;
-%         if (getparameter "kind") = "bytemap" :
-%             addto currentpicture doublepath unitsquare
-%                 withbytemap getparameter "bytemap"
-%         else :
-            addto currentpicture doublepath p
-                withprescript "ms_name=" & (getparameter "name")
-                withprescript "ms_kind=" & (getparameter "kind")
-%         fi ;
-
+            save p ; path p ; p := meshcontour(getparameter "name",getparameter "kind") ;
+          % if (getparameter "kind") = "bytemap" :
+          %     addto currentpicture doublepath unitsquare
+          %         withbytemap getparameter "bytemap"
+          % else :
+                addto currentpicture doublepath p
+                    withprescript "ms_name=" & (getparameter "name")
+                    withprescript "ms_kind=" & (getparameter "kind")
+          % fi ;
         popparameters ;
     )
-
 enddef ;
 
 %D For Keith McKay:
@@ -3137,10 +3124,10 @@ vardef lmt_do_noise =
     lmt_load_mlib_eff ;
     image (
         pushparameters "noise" ;
-        lua.mp.lmt_noise_do() ;
-        draw unitsquare
-            withbytemap (getparameterdefault "bytemap" 1)
-            withpen pencircle scaled 0 ;
+            lua.mp.lmt_noise_do() ;
+            draw unitsquare
+                withbytemap (getparameterdefault "bytemap" 1)
+                withpen pencircle scaled 0 ;
         popparameters ;
     )
 enddef ;

@@ -2312,6 +2312,20 @@ static inline void tex_add_noad_option    (halfword a, uint64_t r) { noad_option
 static inline void tex_remove_noad_option (halfword a, uint64_t r) { noad_options(a) &= ~r; }
 static inline int  tex_has_noad_option    (halfword a, uint64_t r) { return (noad_options(a) & r) == r; }
 
+static inline int is_noad(halfword n)
+{
+    switch (node_type(n)) {
+        case simple_noad:
+        case accent_noad:
+        case radical_noad:
+        case fence_noad:
+        case fraction_noad:
+            return 1;
+        default:
+            return 0;
+    }
+}
+
 static inline int has_noad_no_script_option(halfword n, halfword option)
 {
     switch (node_type(n)) {

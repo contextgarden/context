@@ -1536,6 +1536,24 @@
    \availablefloatwidth \ifchkdimexpr\floatparameter\c!availablewidth \lastchkdimension\else\hsize\fi
    \availablefloatheight\ifchkdimexpr\floatparameter\c!availableheight\lastchkdimension\else\vsize\fi}
 
+% maybe
+%
+% \def\strc_floats_set_local_hsize
+%   {\ifconditional\c_page_floats_center_box_local
+%      % also available check here?
+%      \seteffectivehsize
+%      \hsize\localhsize
+%    \orelse\ifcommon{\v!margin,\v!inleft,\v!inright}\floatlocation % brr, really needed! see wm will be redone
+%      \ifchkdimexpr\namedmarginblockparameter\empty\c!width\or
+%        \hsize\lastchkdimension % {\namedmarginblockparameter\empty\c!width}%
+%      \fi
+%      \ifempty{\floatparameter\c!align}\else
+%        \usealignparameter\floatparameter
+%      \fi
+%    \fi
+%    \availablefloatwidth \ifchkdimexpr\floatparameter\c!availablewidth \or\lastchkdimension\else\hsize\fi
+%    \availablefloatheight\ifchkdimexpr\floatparameter\c!availableheight\or\lastchkdimension\else\vsize\fi}
+
 \ifdefined\everyinsidefloat \else \newevery \everyinsidefloat \relax \fi
 
 \appendtoks

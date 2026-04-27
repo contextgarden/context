@@ -5,6 +5,10 @@
 
 % Thanks to Jim Diamond for checking and correcting the text.
 
+% \nopdfcompression
+% \nopdfobjectcompression
+\enablemode[presentation]
+
 \usemodule[math-verbatim]
 
 % This is a stand-alone chapter of the musing series.
@@ -53,7 +57,7 @@ vardef OneTeX (expr bmp, clrfnc, n, what) =
             draw lmt_noise [
                 bytemap       = bmp,
                 nx            = 500,
-                ny            = 500,
+                ny            = 550,
                 nz            = 3,
                 iterations    = 1,
                 frequency     = 0.01,
@@ -242,13 +246,23 @@ end
 
 \stopluacode
 
-\enablemode[presentation]
+\startmode [presentation]
 
-\starttexdefinition PresentationItem #1
-    \doifmode {presentation} {
-        \margintext{< #1 >}
-    }
-\stoptexdefinition
+    \setupinteraction[state=start]
+
+    \starttexdefinition PresentationItem #1
+        \margintext{\pagereference[presentation-#1]< #1 >}
+    \stoptexdefinition
+
+\stopmode
+
+\startnotmode [presentation]
+
+    \starttexdefinition PresentationItem #1
+        % nothing
+    \stoptexdefinition
+
+\stopnotmode
 
 \startsection[title=Introduction]
 

@@ -64,11 +64,14 @@
     price we pay is that a stack entry now has two values but that is not really an issue.
 
     By packing the math code values we loose the option to store an active state but that's no big
-    deal.
+    deal. We have a special am codes for that so it's no real loss.
 
-    todo: consider simple char array for catcodes.
-
-    The code here is somewhat messy because we generalized it a bit. Maybe I'll redo it some day.
+    The code here is somewhat messy because we generalized it a bit. Maybe I'll redo it some day,
+    for instance with pointers to arrays. Also, names can be better (indicating the data type that
+    is involved). I played with 64 bit structs but there is no gain and currently we dont'need them
+    anyway. What I might do is plug in a restore message so that we can get rid of the kind of
+    copies in the math stack unsave code. The current 32 bit approach also is better for the format
+    file which is quite a bit smaller then.
 
  */
 
@@ -84,11 +87,11 @@ typedef struct sa_mathblob {
     unsigned int character_value:math_character_bits;
 } sa_mathblob;
 
-typedef struct sa_mathspec {
-    unsigned short properties;
-    unsigned short group;
-    unsigned int   index;
-} sa_mathspec;
+// typedef struct sa_mathspec {
+//     unsigned short properties;
+//     unsigned short group;
+//     unsigned int   index;
+// } sa_mathspec;
 
 typedef struct packed_math_character {
     union {
@@ -98,12 +101,12 @@ typedef struct packed_math_character {
 } packed_math_character;
 
 typedef union sa_tree_item {
-    unsigned int   uint_value;
-    int            int_value;
-    sa_mathblob    math_code_value;
-    sa_mathspec    math_spec_value;
-    unsigned short ushort_value[2];
-    unsigned char  uchar_value[4];
+    unsigned int   uint_value;        /* 32 : 32       */
+    int            int_value;         /* 32 : 32       */
+    sa_mathblob    math_code_value;   /* 32 : 6 6 20   */
+ // sa_mathspec    math_spec_value;   /* 64 : 16 16 32 */ /* outlier, can be a v1/v2 */
+    unsigned short ushort_value[2];   /* 32 : 16 16    */
+    unsigned char  uchar_value[4];    /* 32 : 8 8 8 8  */
 } sa_tree_item;
 
 typedef struct sa_stack_item {
@@ -118,7 +121,6 @@ typedef struct sa_tree_head {
     int              sa_stack_step;         /*tex increment stack step */
     int              sa_stack_ptr;          /*tex current stack point  */
     sa_tree_item     dflt;                  /*tex default item value   */
- // sa_tree_item  ***tree;                  /*tex item tree head       */
     sa_tree_item   **tree[LMT_SA_HIGHPART]; /*tex item tree head       */ /* we always have HIGH now cf mail by AK to luatex list, little gain */
     sa_stack_item   *stack;                 /*tex stack tree head      */
     int              bytes;                 /*tex the number of items per entry */
@@ -127,8 +129,7 @@ typedef struct sa_tree_head {
 
 typedef sa_tree_head *sa_tree;
 
-//define set_nibble(original,position,nibble) (((original) & ~(0xF << (4*(position%8)))) | ((nibble & 0xF) << (4*(position%8))))
-//define get_nibble(original,position)        (((original) >> (4*(position%8))) & 0xF)
+# define wipe_sa_tree_item(itemptr) memset(itemptr, 0, sizeof(sa_tree_item))
 
 static inline unsigned int set_nibble(unsigned int original, int position, int nibble)
 {
@@ -141,88 +142,11 @@ static inline unsigned int get_nibble(unsigned int original, int position)
     return (original >> (4 * (position % 8))) & 0xF;
 }
 
-# define sa_inline_get 0
-
-# if (! sa_inline_get) 
-
-    extern int sa_get_item_0 (const sa_tree head, int n);                                     /* these return the value or dflt */
-    extern int sa_get_item_1 (const sa_tree head, int n);                                     /* these return the value or dflt */
-    extern int sa_get_item_2 (const sa_tree head, int n);                                     /* these return the value or dflt */
-    extern int sa_get_item_4 (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
-    extern int sa_get_item_8 (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
-
-# else 
-
-    /* 512 bytes larger binary ... no gain ... well, some .25% in a tex loop so neglectable on a run */
-
-    static inline int sa_get_item_0(const sa_tree head, int n)
-    {
-        int h = LMT_SA_H_PART(n);
-        if (head->tree[h]) {
-            int m = LMT_SA_M_PART(n);
-            if (head->tree[h][m]) {
-                return get_nibble(head->tree[h][m][LMT_SA_L_PART(n)/8].uint_value, n);
-            }
-        }
-        return (int) get_nibble(head->dflt.uint_value,0);
-    }
-
-    static inline int sa_get_item_1(const sa_tree head, int n)
-    {
-        int h = LMT_SA_H_PART(n);
-        if (head->tree[h]) {
-            int m = LMT_SA_M_PART(n);
-            if (head->tree[h][m]) {
-                return head->tree[h][m][LMT_SA_L_PART(n)/4].uchar_value[n%4];
-            }
-        }
-        return (int) head->dflt.uchar_value[0];
-    }
-
-    static inline int sa_get_item_2(const sa_tree head, int n)
-    {
-        int h = LMT_SA_H_PART(n);
-        if (head->tree[h]) {
-            int m = LMT_SA_M_PART(n);
-            if (head->tree[h][m]) {
-                return head->tree[h][m][LMT_SA_L_PART(n)/2].ushort_value[n%2];
-            }
-        }
-        return (int) head->dflt.ushort_value[0];
-    }
-
-    static inline int sa_get_item_4(const sa_tree head, int n, sa_tree_item *v)
-    {
-        int h = LMT_SA_H_PART(n);
-        if (head->tree[h]) {
-            int m = LMT_SA_M_PART(n);
-            if (head->tree[h][m]) {
-                *v = head->tree[h][m][LMT_SA_L_PART(n)];
-                return 1;
-            }
-        }
-        *v = head->dflt;
-        return 0;
-    }
-
-    static inline int sa_get_item_8(const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2)
-    {
-        int h = LMT_SA_H_PART(n);
-        if (head->tree[h]) {
-            int m = LMT_SA_M_PART(n);
-            if (head->tree[h][m]) {
-                int l = 2*LMT_SA_L_PART(n);
-                *v1 = head->tree[h][m][l];
-                *v2 = head->tree[h][m][l+1];
-                return 1;
-            }
-        }
-        *v1 = head->dflt;
-        *v2 = head->dflt;
-        return 0;
-    }
-
-# endif 
+//     int     sa_get_item_0    (const sa_tree head, int n);                                     /* these return the value or dflt */
+//     int     sa_get_item_1    (const sa_tree head, int n);                                     /* these return the value or dflt */
+//     int     sa_get_item_2    (const sa_tree head, int n);                                     /* these return the value or dflt */
+extern int     sa_get_item_4    (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
+extern int     sa_get_item_8    (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
 
 extern void    sa_set_item_0    (const sa_tree head, int n, int v, int gl);
 extern void    sa_set_item_1    (const sa_tree head, int n, int v, int gl);

@@ -325,8 +325,8 @@ lpdf.usedindices     = usedindices     -- [streamhash][index] -> realindex (can 
 
 local horizontalmode = true
 local scalefactor    = 1
-local threshold      = 655360
-local tjfactor       = 100 / 65536
+local threshold      <const> = 655360
+local tjfactor       <const> = 100 / 65536
 
 function flushers.updatefontstate(font)
     -- virtual t3 fonts have negative font index
@@ -659,6 +659,8 @@ do
     local squeeze = 1
     local tohex   = h_hex_4
 
+    local bp_d_10 = bpfactor / 10
+
     local function setup_fontparameters(font,factor,sx,sy,slant,weight,effect)
         --
         current_sx = sx
@@ -729,11 +731,12 @@ tmry             = 1
         current_slant  = tmsy
         current_weight = weight
 
-        local sc = fontparameters.size * bpfactor / 10
+        local sc = fontparameters.size * bp_d_10
         -- kind of special:
         if format == "opentype" or format == "type1" then
-            sc = sc * 1000 / fontparameters.units
-            tj_scale = fontparameters.units / 1000
+            local units = fontparameters.units
+            sc = sc * 1000 / units
+            tj_scale = units / 1000
         else
             tj_scale = 1
         end
@@ -788,10 +791,10 @@ tmry             = 1
     local h_font = setmetatableindex(function(t,k) local v = f_font(k) t[k] = v return v end)
     local h_skip = setmetatableindex(function(t,k) local v = f_skip(k) t[k] = v return v end)
 
-    local s_width = "0 w"
-    local s_mode  = "0 Tr"
+    local s_width <const> = "0 w"
+    local s_mode  <const> = "0 Tr"
 
-    local width_factor = 72.27 / 72.0
+    local width_factor <const> = 72.27 / 72.0
 
     local last_pdf
 
@@ -2200,8 +2203,8 @@ do
 
     -- 1111 0000 1100 0011
 
-    local mandate  = 0x0200
-    local defaults = options.print | options.extract | options.quality
+    local mandate  <const> = 0x0200
+    local defaults <const> = options.print | options.extract | options.quality
 
     -- majorversion = 2
     -- minorversion = 0
@@ -2746,8 +2749,8 @@ local addtocache, flushcache, cache do
     local coffset  = 0
     local indices  = { }
 
-    local maxsize  = 32 * 1024 -- uncompressed
-    local maxcount = 0xFF
+    local maxsize  <const> = 32 * 1024 -- uncompressed
+    local maxcount <const> = 0xFF
 
     addtocache = function(n,str)
         local size = #str

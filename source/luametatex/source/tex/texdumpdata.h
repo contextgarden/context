@@ -55,7 +55,7 @@
 
 */
 
-# define luametatex_format_fingerprint 729
+# define luametatex_format_fingerprint 730
 
 /* These end up in the string pool. */
 
@@ -77,8 +77,11 @@ extern void tex_initialize_dump_state  (void);
 # define   dump_items(f,p,item_size,nitems) fwrite((void *) p, (size_t) item_size, (size_t) nitems, f)
 # define undump_items(f,p,item_size,nitems) fread ((void *) p, (size_t) item_size, (size_t) nitems, f)
 
-# define   dump_things(f,base,len)   dump_items(f, (char *) &(base), sizeof (base), (int) (len))
-# define undump_things(f,base,len) undump_items(f, (char *) &(base), sizeof (base), (int) (len))
+//# define   dump_things(f,base,len)   dump_items(f, (char *) &(base), sizeof (base), (int) (len))
+//# define undump_things(f,base,len) undump_items(f, (char *) &(base), sizeof (base), (int) (len))
+
+# define   dump_things(f,base,len)   dump_items(f, (char *) &(base), sizeof (base), (len))
+# define undump_things(f,base,len) undump_items(f, (char *) &(base), sizeof (base), (len))
 
 # define   dump_mem(f,x)   dump_things(f,x,1)
 # define undump_mem(f,x) undump_things(f,x,1)

@@ -71,16 +71,16 @@ static void tex_aux_initialize_catcodes(void)
 
 void tex_set_cat_code(int h, int n, halfword v, int gl)
 {
-    sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
     sa_tree tree = lmt_catcode_state.catcode_heads[h];
     if (! tree) {
+        sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
         if (h > lmt_catcode_state.catcode_max) {
             lmt_catcode_state.catcode_max = h;
         }
 # if nibbled_catcodes
         tree = sa_new_tree(catcode_sparse_identifier, CATCODESTACK, CATCODESTEP, 0, item);
 # else 
-        tree = sa_new_tree(catcode_sparse_identifier, CATCODESTACK, CATCODESTEP,1, item);
+        tree = sa_new_tree(catcode_sparse_identifier, CATCODESTACK, CATCODESTEP, 1, item);
 # endif 
         lmt_catcode_state.catcode_heads[h] = tree;
     }
@@ -93,9 +93,9 @@ void tex_set_cat_code(int h, int n, halfword v, int gl)
 
 halfword tex_get_cat_code(int h, int n)
 {
-    sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
     sa_tree tree = lmt_catcode_state.catcode_heads[h];
     if (! tree) {
+        sa_tree_item item = { .uint_value = CATCODEDEFAULTS };
         if (h > lmt_catcode_state.catcode_max) {
             lmt_catcode_state.catcode_max = h;
         }
@@ -341,7 +341,7 @@ static void tex_aux_unsave_lccodes(int gl)
 
 static void tex_aux_initialize_lccodes(void)
 {
-    sa_tree_item item = {.int_value = LCCODEDEFAULT };
+    sa_tree_item item = { .int_value = LCCODEDEFAULT };
     lmt_luscode_state.lccode_head = sa_new_tree(lccode_sparse_identifier, LCCODESTACK, LCCODESTEP, 4, item);
 }
 
@@ -414,18 +414,14 @@ static void tex_aux_free_uccodes(void)
 void tex_set_sf_code(int n, halfword v, int gl)
 {
     int code = sa_return_item_4(lmt_luscode_state.sfcode_head, n);
-    sa_tree_item item = {
-        .int_value = (code & 0xFFFF0000) | (v & 0x0000FFFF)
-    };
+    sa_tree_item item = { .int_value = (code & 0xFFFF0000) | (v & 0x0000FFFF) };
     sa_set_item_4(lmt_luscode_state.sfcode_head, n, item, gl);
 }
 
 void tex_set_sp_code(int n, halfword v, int gl)
 {
     int code = sa_return_item_4(lmt_luscode_state.sfcode_head, n);
-    sa_tree_item item = {
-        .int_value = ((v << 16) & 0xFFFF0000) | (code & 0x0000FFFF)
-    };
+    sa_tree_item item = { .int_value = ((v << 16) & 0xFFFF0000) | (code & 0x0000FFFF) };
     sa_set_item_4(lmt_luscode_state.sfcode_head, n, item, gl);
 }
 
@@ -611,7 +607,7 @@ static void tex_aux_unsave_cccodes(int gl)
 
 static void tex_aux_initialize_cccodes(void)
 {
-    sa_tree_item item = {.int_value = CCCODEDEFAULT };
+    sa_tree_item item = { .int_value = CCCODEDEFAULT };
     lmt_luscode_state.cccode_head = sa_new_tree(lccode_sparse_identifier, CCCODESTACK, CCCODESTEP, 2, item);
 }
 
@@ -650,14 +646,14 @@ static void tex_aux_free_cccodes(void)
 void tex_set_hj_code(int h, int n, halfword v, int gl)
 {
     if (h >= 0 && h <= lmt_language_state.language_data.top) {
-        sa_tree_item item = { .int_value = HJCODEDEFAULT };
         sa_tree tree = lmt_language_state.languages[h]->hjcode_head;
         if (! tree) {
+            sa_tree_item item = { .int_value = HJCODEDEFAULT };
             tree = sa_new_tree(hjcode_sparse_identifier, HJCODESTACK, HJCODESTEP, 4, item);
             lmt_language_state.languages[h]->hjcode_head = tree;
         }
         if (tree) {
-            item.int_value = (int) v;
+            sa_tree_item item = { .int_value = v };
             sa_set_item_4(tree, n, item, gl);
         }
     }

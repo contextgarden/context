@@ -24,7 +24,6 @@ dependencies on other binaries.
     context.lua        : the context runner code
 
     luatex[.exe]       : optional
-
 The lua files have to be alongside its runner. Wrapping a runner in some launcher
 makes no sense and is not supported. The whole idea is to have one single
 independent framework that is the same on all main platforms (windows, linux,
@@ -53,25 +52,27 @@ will manage your tex runs. For example:
 When mkii (with pdftex or xetex) is used the texexec ruby script is launched. By
 using the runners the likelyhood of a clash with other program in a tex
 distriubution is minimized. Other ways of running context and its related scripts
-is not officially supported by the:
+is not officially supported.
 
 An installation can be done using the installer but also by unzipping the archive
 or fetching from github (contextgarden). You can, if needed, compile the binary
-yourself from the includes source code.
+yourself from the includes source code. You have to install a compiler and cmake.
 
-All tex resources (macros, styles, fonts, patterns, etc.) are located relative
-to the binary path so you only need to make sure that the binary is in the path.
+All tex resources (macros, styles, fonts, patterns, etc.) are located relative to
+the binary path so you only need to make sure that the binary is in the path.
 
 The project and font trees can be shared (using links) and are untouched by the
-installers. By keeping fonts in the tree you retain stability, By using the
+installers. By keeping fonts in the tree you retain stability. By using the
 project tree you can make sure that your styles are found when you process files
 outside the tex tree.
 
 After installing you need to run 'mtxrun --generate' so that a successive
-'context' run can find the files it needs.
+'context' run can find the files it needs. You can also decide to run 'mtxrun
+--script font --reload', optionally with '--force' in order to update the font
+database.
 
-You can get help and more information on the context garden, mailing lists and user
-forums cq. platforms.
+You can get help and more information on the context garden, mailing lists and
+user forums cq. platforms.
 
 Per mid 2025 the reference installation described here uses some 340 MB disk
 space, much of which is taken by the documentation. If needed you can also
@@ -83,3 +84,16 @@ and hb engines are present but not supported anyway). Just stick to the regular
 'mtxrun' and 'context' commands. Also be aware that support for commercial (os
 related) fonts are not installed by default. Support on the mailing lists uses
 the reference installation so in case of troubles, try that one first.
+
+A remark: one sometimes read that generating the file and font databases takes a
+bit of time. Context will make a new format automatically when it has been
+updated. Although it's a bit pathetic to wine about these one-time lost seconds,
+you have to realize that many files are involved. If context is the first to be
+upgraded then it carries the burden of being the first populating the operating
+systems file cache. Also, when a system comes out of hybernation the first runs
+can take more time too, for the same reason. Few get it right when musing about
+performance, but rest assured: we try to make regular runs as fast as possible.
+
+Enjoy,
+
+Hans Hagen (for the dev team)

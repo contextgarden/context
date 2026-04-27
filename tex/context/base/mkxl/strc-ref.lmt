@@ -423,7 +423,7 @@ function references.set(data)
     local reference  = references.reference
     if not reference or reference == "" then
      -- report_references("invalid reference") -- harmless
-        return 0
+        return false -- was 0
     end
     --
     references.structure = resolvers.jobs.currentstructure()
@@ -533,7 +533,7 @@ local function register_from_list(collected,derived,external,namestack)
     end
     local action = trace_external and
         function(s)
-local structure = references.structure
+            local structure = references.structure
             if structure then
                 for i=1,#structure do
                     local si = structure[i]
@@ -578,7 +578,7 @@ local structure = references.structure
             if not derived_g[s] then
                 derived_g[s] = entry -- first wins
             end
-local structure = references.structure
+            local structure = references.structure
             if structure then
                 for i=1,#structure do
                     local si = structure[i]
@@ -3290,18 +3290,27 @@ implement {
     actions   = { popreferenceprefix, context }, -- we can use setmacro
 }
 
--- a bit weird one, used for checkinh in the backend
+-- a bit weird one, used for checking in the backend
 
 function references.pagefromhash(hash,destination,page,actions)
-    local r = actions[1]
-    if type(r) == "table" then
-        r = r.i
-        if r then
-            r = r.references
-            if r then
-                local structure = r.structure
+    local action = actions[1]
+-- inspect(actions)
+    if type(action) == "table" then
+        local inner = action.inner
+        if inner then
+            local p = hash[inner]
+            if p then
+                return p, destination
+            end
+            -- Is this bit still okay? I need a test!
+            --
+            -- We had action = references.i
+            --
+            local references = action.references or actions.references
+            if references then
+                local structure = references.structure
                 if structure then
-                    local namestack = r.namestack
+                    local namestack = references.namestack
                     if namestack then
                         for i=#namestack,1,-1 do
                             local d = namestack[i] .. ":" .. destination
@@ -3316,7 +3325,7 @@ function references.pagefromhash(hash,destination,page,actions)
             end
         end
     end
-    return page, destination
+ -- not: return page, destination
 end
 
 implement {

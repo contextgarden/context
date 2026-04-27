@@ -10,106 +10,116 @@ return {
     copyright   = "ConTeXt development team",
     mathematics = {
         parameters = {
-            PrimeShiftUpCramped               = "SuperscriptShiftUp",
-            -- RadicalKernBeforeExtensible    = 100,
-            -- RadicalDisplayStyleVerticalGap = 0,
-            RadicalDegreeBottomRaisePercent   = 60,
-            RadicalKernAfterDegree            = -300,
+            PrimeShiftUpCramped             = "SuperscriptShiftUp",
+         -- RadicalKernBeforeExtensible     = 100,
+         -- RadicalDisplayStyleVerticalGap  = 0,
+            RadicalDegreeBottomRaisePercent = 60,
+            RadicalKernAfterDegree          = -300,
         },
         tweaks = {
             aftercopying = {
-                {
-                    tweak = "accentdimensions",
-                },
-                {
-                    tweak = "checkspacing",
-                },
-                {
-                    tweak = "kernpairs",  -- can I put this instead in the font?
-                    list = {
-                        [0x002F] = { -- slash
-                            [0x007C] = .2,
-                        },
-                    },
-                },
-                presets.fallbacks            { },
-                presets.moveitalics          { correct = true },
-                presets.moveitalics          { correct = true, letters = true },
-                presets.moveintegrals        { },
-                presets.wipeitalics          { },
-             -- {
-             --     tweak   = "fixvariants",
-             --     comment = "keep this as an example",
-             --     list    = {
-             --         -- we also need to set the unicodes
-             --         [0x0028] = { template = 0x005B, index = 1 },
-             --         [0x0029] = { template = 0x005D, index = 1 },
-             --         [0x007C] = { template = 0x005B, index = 1 },
-             --         [0x2016] = { template = 0x005B, index = 1 },
-             --         [0x2980] = { template = 0x005B, index = 1 },
-             --     }
-             -- },
-                {
-                    -- needed for stupid corner kerns
-                    tweak = "simplifykerns",
-                },
-                {
-                    tweak = "checkaccents",
-                },
-                {
-                    tweak = "extendaccents",
-                },
-                {
-                    tweak = "flattenaccents",
-                },
-                {
-                    tweak = "fixaccents",
-                },
-                {
-                    tweak = "copyaccents",
-                },
-             -- presets.addmathkerns { },
-                {
-                    tweak = "checkspacing",
-                },
-                {
-                    tweak = "addscripts",
-                },
-                {
-                    tweak = "accentdimensions",
-                },
-                -- Assume the font will be complete
-                -- {
-                --     tweak = "addrules",
-                -- },
-                -- Maybe not, since font is squarish
-             -- {
-             --     tweak    = "replacerules",
-             --     fraction = { height = .254, yoffset = .746, leftoffset = .1, rightoffset = .1,  },
-             --     radical  = { height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
-             --     stacker  = { height = .254, yoffset = .746 },
-             -- },
-                {
-                    tweak = "wipecues",
-                },
-             -- {
-             --     tweak   = "addbars",
-             --     advance = 0.175,
-             -- },
-                {
-                    tweak = "addactuarian",
-                },
-                {
-                    tweak = "addequals",
-                },
-                {
-                    tweak   = "addfourier",
-                    variant = 1,
-                },
-                {
-                    tweak = "addprimed",
-                },
-            },
+--                {
+--                    tweak = "accentdimensions",
+--                },
+               {
+                   tweak = "checkspacing",
+               },
+               {
+                   tweak = "kernpairs",  -- can I put this instead in the font?
+                   list = {
+                       [0x002F] = { -- slash
+                           [0x007C] = .2,
+                       },
+                   },
+               },
+               presets.fallbacks            { },
+               presets.moveitalics          { correct = true },
+               presets.moveitalics          { correct = true, letters = true },
+               presets.moveintegrals        { },
+               presets.wipeitalics          { },
+            -- {
+            --     tweak   = "fixvariants",
+            --     comment = "keep this as an example",
+            --     list    = {
+            --         -- we also need to set the unicodes
+            --         [0x0028] = { template = 0x005B, index = 1 },
+            --         [0x0029] = { template = 0x005D, index = 1 },
+            --         [0x007C] = { template = 0x005B, index = 1 },
+            --         [0x2016] = { template = 0x005B, index = 1 },
+            --         [0x2980] = { template = 0x005B, index = 1 },
+            --     }
+            -- },
+               {
+                   -- needed for stupid corner kerns
+                   tweak = "simplifykerns",
+               },
+               {
+                   tweak = "checkaccents",
+               },
+               {
+                   tweak = "extendaccents",
+               },
+               {
+                   tweak = "flattenaccents",
+               },
+--                {
+--                    tweak = "fixaccents",
+--                },
+-- {
+--     tweak = "fixradicals",
+-- },
+               {
+                   tweak = "copyaccents",
+               },
+            -- presets.addmathkerns { },
+               {
+                   tweak = "checkspacing",
+               },
+               {
+                   tweak = "addscripts",
+               },
+{
+   tweak = "accentdimensions", -- twice ?
+},
+            -- Assume the font will be complete
+            -- {
+            --     tweak = "addrules",
+            -- },
+            -- Maybe not, since font is squarish
+            -- {
+            --     tweak    = "replacerules",
+            --     fraction = { height = .254, yoffset = .746, leftoffset = .1, rightoffset = .1,  },
+            --     radical  = { height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
+            --     stacker  = { height = .254, yoffset = .746 },
+            -- },
+-- {
+--     tweak    = "replacerules",
+--     fraction = { height = .254, yoffset = .746, leftoffset = .1, rightoffset = .1,  },
+--     radical  = { template = 0xE000, height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
+--     radical  = { height = .17, leftoffset = .1, rightoffset = .1, yoffset = .485, yscale = .65  },
+--     stacker  = { height = .254, yoffset = .746 },
+-- },
+               {
+                   tweak = "wipecues",
+               },
+            -- {
+            --     tweak   = "addbars",
+            --     advance = 0.175,
+            -- },
+               {
+                   tweak = "addactuarian",
+               },
+               {
+                   tweak = "addequals",
+               },
+               {
+                   tweak   = "addfourier",
+                   variant = 1,
+               },
+               {
+                   tweak = "addprimed",
+               },
+           },
         },
      -- scales = {
      --     feature            = "pennstanderscale",
@@ -126,41 +136,41 @@ return {
         --
         -- Hash based: order explicit with fallback
         --
---      alternates = {
---      	--
---       -- sstyrandom         = {             feature = "ssty", value = "selfrandom", comment = "Experiment" },
---       -- random             = {             feature = "rand", value = "selfrandom", comment = "Experiment" },
---	        --
---          -- The next alternates may supress randomness:
---          --
---          alternateletters   = { order =  1, feature = 'ss01', value = "yes",    comment = "Alternate a,g,I"                  },
---          sharpletters       = { order =  1, feature = 'ss02', value = "yes",    comment = "Alternate A,M,N,V,W,Q,Z,v,z"      },
---          alternatefour      = { order =  1, feature = 'ss03', value = "yes",    comment = "Alternate four"                   },
---          straightfeet       = { order =  1, feature = 'ss04', value = "yes",    comment = "Alternate l,t"                    },
---          simplifiedfraktur  = { order =  1, feature = 'ss05', value = "yes",    comment = "Simplified fraktur-like letters"  },
---          alternateseven     = { order =  1, feature = 'ss07', value = "yes",    comment = "Alternate seven"                  },
---          alternatefences    = { order =  1, feature = 'cv05', value = 2,        comment = "Alternate parentheses and braces" },
---          alternateintegrals = { order =  1, feature = 'cv03', value = 2,        comment = "Serif integrals"                  },
---          flair              = { order =  2, feature = 'ss20', value = "yes",    comment = "Extra flair throughout"           },
---	        --
---          -- Now various random alternates:
---	        --
---          randomfences       = { order = 10, feature = "cv01", value = "random", comment = "Random fences"                    },
---          randomletters      = { order = 11, feature = "cv10", value = "random", comment = "Random letters"                   },
---          randomnumerals     = { order = 12, feature = "cv04", value = "random", comment = "Random numerals"                  },
---          randomintegrals    = { order = 13, feature = "cv02", value = "random", comment = "Random integrals"                 },
---       -- randomsymbols      = { order = 14, feature = "cvXX", value = "random", comment = "Random symbols"                   },
---          random             = { order = 15, feature = "rand", value = "random", comment = "All randoms"                      },
---	        --
---          -- The rest is just for testing:
---	        --
---          allrandomintegrals = { order = 14, feature = "cv06", value = "random", comment = "All random integrals"             },
---          random0            = {             feature = "rand", value = false,    comment = "For testing only"                 },
---          random1            = {             feature = "rand", value = 1,        comment = "For testing only"                 },
---          random2            = {             feature = "rand", value = 2,        comment = "For testing only"                 },
---          random3            = {             feature = "rand", value = 3,        comment = "For testing only"                 },
---          random4            = {             feature = "rand", value = 4,        comment = "For testing only"                 },
---      },
+     -- alternates = {
+     -- 	--
+     --  -- sstyrandom         = {             feature = "ssty", value = "selfrandom", comment = "Experiment" },
+     --  -- random             = {             feature = "rand", value = "selfrandom", comment = "Experiment" },
+     --    --
+     --     -- The next alternates may supress randomness:
+     --     --
+     --     alternateletters   = { order =  1, feature = 'ss01', value = "yes",    comment = "Alternate a,g,I"                  },
+     --     sharpletters       = { order =  1, feature = 'ss02', value = "yes",    comment = "Alternate A,M,N,V,W,Q,Z,v,z"      },
+     --     alternatefour      = { order =  1, feature = 'ss03', value = "yes",    comment = "Alternate four"                   },
+     --     straightfeet       = { order =  1, feature = 'ss04', value = "yes",    comment = "Alternate l,t"                    },
+     --     simplifiedfraktur  = { order =  1, feature = 'ss05', value = "yes",    comment = "Simplified fraktur-like letters"  },
+     --     alternateseven     = { order =  1, feature = 'ss07', value = "yes",    comment = "Alternate seven"                  },
+     --     alternatefences    = { order =  1, feature = 'cv05', value = 2,        comment = "Alternate parentheses and braces" },
+     --     alternateintegrals = { order =  1, feature = 'cv03', value = 2,        comment = "Serif integrals"                  },
+     --     flair              = { order =  2, feature = 'ss20', value = "yes",    comment = "Extra flair throughout"           },
+     --    --
+     --     -- Now various random alternates:
+     --    --
+     --     randomfences       = { order = 10, feature = "cv01", value = "random", comment = "Random fences"                    },
+     --     randomletters      = { order = 11, feature = "cv10", value = "random", comment = "Random letters"                   },
+     --     randomnumerals     = { order = 12, feature = "cv04", value = "random", comment = "Random numerals"                  },
+     --     randomintegrals    = { order = 13, feature = "cv02", value = "random", comment = "Random integrals"                 },
+     --  -- randomsymbols      = { order = 14, feature = "cvXX", value = "random", comment = "Random symbols"                   },
+     --     random             = { order = 15, feature = "rand", value = "random", comment = "All randoms"                      },
+     --    --
+     --     -- The rest is just for testing:
+     --    --
+     --     allrandomintegrals = { order = 14, feature = "cv06", value = "random", comment = "All random integrals"             },
+     --     random0            = {             feature = "rand", value = false,    comment = "For testing only"                 },
+     --     random1            = {             feature = "rand", value = 1,        comment = "For testing only"                 },
+     --     random2            = {             feature = "rand", value = 2,        comment = "For testing only"                 },
+     --     random3            = {             feature = "rand", value = 3,        comment = "For testing only"                 },
+     --     random4            = {             feature = "rand", value = 4,        comment = "For testing only"                 },
+     -- },
         --
         -- Array, order by index:
         --
@@ -196,6 +206,6 @@ return {
             { name = "random3",            feature = "rand", value = 3,        comment = "For testing only"                     },
             { name = "random4",            feature = "rand", value = 4,        comment = "For testing only"                     },
         },
-        --
-     },
+       --
+    },
 }

@@ -3242,10 +3242,12 @@ detected.
 
 int mp_error_code(MP mp, int n)
 {
-    mp_begin_diagnostic_print(mp, "arithmic", "error", 1);
-    mp_print_format(mp, " mode %i, code %i", mp->math_mode, n);
-    mp_end_diagnostic(mp, 1);
-    return 1;
+    if (0) { /* can be an internal, for debugging */
+        mp_begin_diagnostic_print(mp, "arithmic", "error", 1);
+        mp_print_format(mp, " mode %i, code %i", mp->math_mode, n);
+        mp_end_diagnostic(mp, 1);
+    }
+    return n;
 }
 
 static void mp_check_arithmic(MP mp)

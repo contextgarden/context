@@ -21,7 +21,7 @@ local report = logs.reporter("metapost","potrace")
 local potracefromfile -- implemented later on
 
 local function potracefrompng(filename,parameters)
-    local nx, ny, nz, bytes = bitmaps.load(filename,parameters)
+    local nx, ny, nz, bytes = graphics.bitmaps.load(filename,parameters)
     return bytes, nx, ny
 end
 

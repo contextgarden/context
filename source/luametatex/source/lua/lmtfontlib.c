@@ -44,7 +44,8 @@ static int valid_math_parameter(lua_State *L, int narg) {
     return -1;
 }
 
-/*
+/*tex
+
     Most of these special ligature indicators have never been used by fonts but they are part of
     \TEX's legacy so of course we keep them around!
 

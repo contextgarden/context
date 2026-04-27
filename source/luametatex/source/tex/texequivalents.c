@@ -844,11 +844,10 @@ void tex_show_save_groups(void)
             case global_box_flag:
                 tex_print_str_esc("global");
             case box_flag:
-                {
-                    tex_print_str_esc("setbox");
-                    tex_print_int(tex_get_packaging_context());
-                    tex_print_char('=');
-                }
+             // tex_print_str_esc("setbox");
+             // tex_print_int(tex_get_packaging_context());
+             // tex_print_char('=');
+                tex_print_format("%esetbox%i=", tex_get_packaging_context());
                 break;
             case a_leaders_flag:
                 tex_print_cmd_chr(leader_cmd, a_leaders);

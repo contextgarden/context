@@ -856,52 +856,112 @@ static void tex_aux_set_glyph_expansion(halfword p, int ratio)
     }
 }
 
-scaled tex_left_marginkern(halfword p)
-{
-    while (p && node_type(p) == glue_node) {
-        p = node_next(p);
-    }
-    if (p && node_type(p) == kern_node && node_subtype(p) == left_margin_kern_subtype) {
-        return kern_amount(p);
-    } else  {
-        return 0;
-    }
-}
+/*
+    We go stupid here because we also want to catch weirdly places margin kerns. We
+    could quite at a content item (skip over edge glue and directions and such) but
+    we could actually mis a misplaced kern then.
 
-scaled tex_right_marginkern(halfword p)
+*/
+
+scaled tex_left_marginkern(halfword p, int strict)
 {
-    if (p) {
-        p = tex_tail_of_node_list(p);
-        /*tex
-            There can be a leftskip, rightskip, penalty and yes, also a disc node with a nesting
-            node that points to glue spec ... and we don't want to analyze that messy lot.
-        */
+    if (strict) {
         while (p) {
-            switch(node_type(p)) {
-                case glue_node:
-                    /*tex We backtrack over glue. */
-                    p = node_prev(p);
-                    break;
+            switch (node_type(p)) {
                 case kern_node:
-                    if (node_subtype(p) == right_margin_kern_subtype) {
-                        return kern_amount(p);
+                    return node_subtype(p) == left_margin_kern_subtype ? kern_amount(p) : 0;
+                case par_node:
+                case dir_node:
+                case whatsit_node:
+                    p = node_next(p);
+                    break;
+                case rule_node:
+                    if (node_subtype(p) == strut_rule_subtype) {
+                        p = node_prev(p);
+                        break;
                     } else {
                         return 0;
                     }
-                case disc_node:
-                    /*tex
-                        Officially we should look in the replace but currently protrusion doesn't
-                        work anyway with |foo\discretionary {} {} {bar-} | (no following char) so we
-                        don't need it now.
-                    */
-                    p = node_prev(p);
-                    if (p && node_type(p) == kern_node && node_subtype(p) == right_margin_kern_subtype) {
-                        return kern_amount(p);
+                case hlist_node:
+                    if (node_subtype(p) == indent_list) {
+                        p = node_next(p);
+                        break;
                     } else {
                         return 0;
                     }
+                case glue_node:
+                    switch (node_subtype(p)) {
+                        case par_fill_left_skip_glue:
+                        case par_init_left_skip_glue:
+                        case indent_skip_glue:
+                        case left_hang_skip_glue:
+                        case left_skip_glue:
+                            p = node_next(p);
+                            break;
+                        default:
+                            return 0;
+                    }
+                    break;
                 default:
                     return 0;
+            }
+        }
+    } else {
+        while (p) {
+            if (node_type(p) == kern_node) {
+                return node_subtype(p) == left_margin_kern_subtype ? kern_amount(p) : 0;
+            } else {
+                /*tex We could warn in case of an unexpected node; no need for a speed here. */
+                p = node_next(p);
+            }
+        }
+    }
+    return 0;
+}
+
+scaled tex_right_marginkern(halfword p, int strict)
+{
+    p = tex_tail_of_node_list(p);
+    if (strict) {
+        while (p) {
+            switch (node_type(p)) {
+                case kern_node:
+                    return node_subtype(p) == right_margin_kern_subtype ? kern_amount(p) : 0;
+                case whatsit_node:
+                case dir_node:
+                    p = node_prev(p);
+                    break;
+                case rule_node:
+                    if (node_subtype(p) == strut_rule_subtype) {
+                        p = node_prev(p);
+                        break;
+                    } else {
+                        return 0;
+                    }
+                case glue_node:
+                    switch (node_subtype(p)) {
+                        case par_fill_right_skip_glue:
+                        case par_init_right_skip_glue:
+                        case correction_skip_glue:
+                        case right_hang_skip_glue:
+                        case right_skip_glue:
+                            p = node_prev(p);
+                            break;
+                        default:
+                            return 0;
+                    }
+                    break;
+                default:
+                    return 0;
+            }
+        }
+    } else {
+        while (p) {
+            if (node_type(p) == kern_node) {
+                return node_subtype(p) == right_margin_kern_subtype ? kern_amount(p) : 0;
+            } else {
+                /*tex We could warn in case of an unexpected node; no need for a speed here. */
+                p = node_prev(p);
             }
         }
     }

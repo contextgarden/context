@@ -98,8 +98,7 @@ local editors = {
         name     = "emacs",
         program  = {
             windows = "emacsclient",
-         -- unix    = "emacsclient",
-            unix    = "/home/zsd/src/ech",
+            unix    = "emacsclient",
         },
         template = longtostring [[
             -c

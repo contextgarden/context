@@ -1771,45 +1771,68 @@ do
         end
     end
 
-    local function process(target,original,characters,list,baseheight,basedepth)
-        if list then
-            for k, v in sortedhash(list) do -- sort for tracing
-                local c = characters[k]
-                if c and not c.yoffset then
-                    local factor = v.factor
-                    if factor then
-                        adapt(c,factor,baseheight,basedepth)
-                        local nc  = c.next
-                        local nv = 0
-                        local ns = 0
-                        while nc do
-                            local c = characters[nc]
-                            if c then
-                                adapt(c,factor,baseheight,basedepth)
-                                nv = nv + 1
-                                nc = c.next
-                                if not nc then
-                                    local hv = c.parts
-                                    if hv then
-                                        for i=1,#hv do
-                                            local c = characters[hv[i].glyph]
+    local alsosmaller = true
+
+    local function processone(target,original,characters,k,v,baseheight,basedepth)
+        while true do
+            local c = characters[k]
+            if c and not c.yoffset then
+                local factor = v.factor
+                if factor then
+                    adapt(c,factor,baseheight,basedepth)
+                    local nc  = c.next
+                    local nv = 0
+                    local ns = 0
+                    while nc do
+                        local c = characters[nc]
+                        if c then
+                            adapt(c,factor,baseheight,basedepth)
+                            nv = nv + 1
+                            nc = c.next
+                            if not nc then
+                                local hv = c.parts
+                                if hv then
+                                    for i=1,#hv do
+                                        local g = hv[i].glyph
+                                        for s=1,3 do
+                                            local c = characters[g]
                                             if c then
-                                                adapt(c,factor,baseheight,basedepth)
+                                                local m = 1
+                                                if s == 2 then
+                                                    m = m * target.parameters.scriptscale / 1000
+                                                elseif s == 3 then
+                                                    m = m * target.parameters.scriptscriptscale / 1000
+                                                end
+                                                adapt(c,factor,m*baseheight,basedepth)
                                                 ns = ns + 1
+                                                g = alsosmaller and c.smaller
+                                            else
+                                                break
                                             end
                                         end
                                     end
-                                    break
                                 end
-                            else
                                 break
                             end
-                        end
-                        if trace_tweaking then
-                            report_tweak("adapting extensible (%i sizes, %i parts) %U",target,original,k,nv,ns)
+                        else
+                            break
                         end
                     end
+                    if trace_tweaking then
+                        report_tweak("adapting extensible (%i sizes, %i parts) %U",target,original,k,nv,ns)
+                    end
                 end
+                k = alsosmaller and c.smaller
+            else
+                break
+            end
+        end
+    end
+
+    local function process(target,original,characters,list,baseheight,basedepth)
+        if list then
+            for k, v in sortedhash(list) do -- sort for tracing
+                processone(target,original,characters,k,v,baseheight,basedepth)
             end
         end
     end
@@ -2006,9 +2029,21 @@ do
 
     local forceextensible_tag <const> = tex.charactertagcodes.forceextensible
 
-    local function useminus(target,unicode,characters,parameters,skipfirst,what,tounicode)
-        local minus   = characters[0x2212]
-        local parts   = minus.parts
+    local function useminus(target,unicode,characters,parameters,skipfirst,what,tounicode,template)
+        local minus = characters[parameters.template]
+        local parts = false
+        if minus then
+            parts = minus.parts
+            if parts then
+                skipfirst = false
+            else
+                minus = false
+            end
+        end
+        if not minus then
+            minus = characters[0x2212]
+            parts = minus.parts
+        end
         if parameters == true then
             parameters = { }
         end

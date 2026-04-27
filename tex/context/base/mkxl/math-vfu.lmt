@@ -46,6 +46,17 @@ fonts.encodings.math    = mathencodings -- better is then: fonts.encodings.vecto
 local vfmath            = allocate()
 fonts.handlers.vf.math  = vfmath
 
+local loaded = false
+
+setmetatableindex(mathencodings,function(t,k)
+    if not loaded then
+        dofile(resolvers.findfile("math-ttv.lmt"))
+        setmetatableindex(mathencodings)
+        report_virtual("loaded tex encodings^: % t",table.sortedkeys(mathencodings))
+    end
+    return t[k]
+end)
+
 local helpers           = fonts.helpers
 
 local addprivate        = helpers.addprivate

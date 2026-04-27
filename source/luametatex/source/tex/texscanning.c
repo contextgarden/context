@@ -934,13 +934,19 @@ static int tex_aux_set_cur_val_by_some_cmd(int code)
         case left_margin_kern_code:
         case right_margin_kern_code:
             {
+                /*tex
+                    The |strict| keyword is undocumented and only for checking correct use. When
+                    for some reason a kern end up in the wrong spot it is just a kern so it's not
+                    like when we have one in th emiddle of a line it gets ignored.
+                */
+                int strict = tex_scan_keyword("strict");
                 halfword v = tex_scan_integer(0, NULL, NULL);
                 halfword b = box_register(v);
                 if (b && (node_type(b) == hlist_node)) {
                     if (code == left_margin_kern_code) {
-                        cur_val = tex_left_marginkern(box_list(b));
+                        cur_val = tex_left_marginkern(box_list(b), strict);
                     } else {
-                        cur_val = tex_right_marginkern(box_list(b));
+                        cur_val = tex_right_marginkern(box_list(b), strict);
                     }
                 } else {
                     tex_normal_error("marginkern", "a hbox expected");

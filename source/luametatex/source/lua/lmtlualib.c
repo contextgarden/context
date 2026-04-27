@@ -83,9 +83,10 @@ void lmt_undump_registers(dumpstream f)
         if (lmt_bytecode_registers) {
             lmt_lua_state.bytecode_bytes = n;
             for (int j = 0; j <= lmt_lua_state.bytecode_max; j++) {
-                lmt_bytecode_registers[j].buf = NULL;
-                lmt_bytecode_registers[j].size = 0;
-                lmt_bytecode_registers[j].alloc = 0;
+             // lmt_bytecode_registers[j].buf = NULL;
+             // lmt_bytecode_registers[j].size = 0;
+             // lmt_bytecode_registers[j].alloc = 0;
+                memset(&lmt_bytecode_registers[j], 0, sizeof(bytecode));
             }
             undump_int(f, n);
             for (int j = 0; j < n; j++) {
@@ -93,13 +94,15 @@ void lmt_undump_registers(dumpstream f)
                 int slot, size;
                 undump_int(f, slot);
                 undump_int(f, size);
-                buffer = (unsigned char *) lmt_memory_malloc((unsigned) size); // todo: calloc 
+                buffer = (unsigned char *) lmt_memory_malloc((unsigned) size);
                 if (buffer) {
-                    memset(buffer, 0, (size_t) size);
+                    memset(buffer, 0, (size_t) size); /* not needed */
                     undump_items(f, buffer, 1, size);
-                    lmt_bytecode_registers[slot].buf = buffer;
-                    lmt_bytecode_registers[slot].size = size;
-                    lmt_bytecode_registers[slot].alloc = size;
+                    lmt_bytecode_registers[slot] = (bytecode) {
+                        .buf   = buffer,
+                        .size  = size,
+                        .alloc = size
+                    };
                     lmt_lua_state.bytecode_bytes += size;
                 } else {
                     tex_fatal_undump_error("not enough memory for undumping bytecodes");
@@ -263,9 +266,10 @@ static int lualib_set_bytecode(lua_State *L)
                     lmt_bytecode_registers = r;
                     lmt_lua_state.bytecode_bytes += ((int) sizeof(bytecode) * (k + 1 - (lmt_lua_state.bytecode_max > 0 ? lmt_lua_state.bytecode_max : 0)));
                     for (unsigned j = (unsigned) (lmt_lua_state.bytecode_max + 1); j <= (unsigned) k; j++) {
-                        lmt_bytecode_registers[j].buf = NULL;
-                        lmt_bytecode_registers[j].size = 0;
-                        lmt_bytecode_registers[j].alloc = 0;
+                     // lmt_bytecode_registers[j].buf = NULL;
+                     // lmt_bytecode_registers[j].size = 0;
+                     // lmt_bytecode_registers[j].alloc = 0;
+                        memset(&lmt_bytecode_registers[j], 0, sizeof(bytecode));
                     }
                     lmt_lua_state.bytecode_max = k;
                 } else {
@@ -275,8 +279,10 @@ static int lualib_set_bytecode(lua_State *L)
             if (lmt_bytecode_registers[k].buf) {
                 lmt_memory_free(lmt_bytecode_registers[k].buf);
                 lmt_lua_state.bytecode_bytes -= lmt_bytecode_registers[k].size;
-                lmt_bytecode_registers[k].size = 0;
-                lmt_bytecode_registers[k].buf = NULL;
+             // lmt_bytecode_registers[k].buf = NULL;
+             // lmt_bytecode_registers[k].size = 0;
+             // lmt_bytecode_registers[k].alloc = 0;
+                memset(&lmt_bytecode_registers[k], 0, sizeof(bytecode));
                 lua_pushnil(L);
                 lualib_aux_bytecode_register_shadow_set(L, k);
             }

@@ -4112,7 +4112,7 @@ void tex_dump_token_mem(dumpstream f)
         It doesn't pay off to prune the available list. We save less than 10K if we do this and
         it assumes a sequence at the end. It doesn't help that the list is in reverse order so
         we just dump the lot. But we do check the allocated size. We cheat a bit in reducing
-        the ptr so that we can set the the initial counter on loading.
+        the ptr so that we can set the initial counter on loading.
     */
     halfword p = lmt_token_memory_state.available;
     halfword u = lmt_token_memory_state.tokens_data.top + 1;

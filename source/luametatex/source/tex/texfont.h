@@ -424,14 +424,17 @@ extern halfword tex_checked_font_adjust (
 */
 
 typedef enum font_parameter_codes {
-    slant_code = 1,
-    space_code,
-    space_stretch_code,
-    space_shrink_code,
-    ex_height_code,
-    em_width_code,
-    extra_space_code,
+    slant_code         = 1, /* These numbers are also used with |\fontdimen|. */
+    space_code         = 2,
+    space_stretch_code = 3,
+    space_shrink_code  = 4,
+    ex_height_code     = 5,
+    em_width_code      = 6,
+    extra_space_code   = 7, /* Traditional math fonts go beyond this range. */
 } font_parameter_codes;
+
+# define first_font_parameter slant_code
+# define last_font_parameter  extra_space_code
 
 extern scaled   tex_get_font_slant            (halfword f);
 extern scaled   tex_get_font_space            (halfword f);
@@ -637,8 +640,9 @@ extern scaled    tex_char_top_margin_from_font          (halfword f, halfword c)
 extern scaled    tex_char_bottom_margin_from_font       (halfword f, halfword c);
 extern scaled    tex_char_top_overshoot_from_font       (halfword f, halfword c);
 extern scaled    tex_char_bottom_overshoot_from_font    (halfword f, halfword c);
+
 extern extinfo  *tex_char_extensible_recipe_from_font   (halfword f, halfword c);
-extern extinfo  *tex_char_extensible_recipe_front_last  (halfword f, halfword c);
+extern extinfo  *tex_char_extensible_recipe_from_last   (halfword f, halfword c);
 
 extern halfword  tex_char_unchecked_top_anchor_from_font    (halfword f, halfword c);
 extern halfword  tex_char_unchecked_bottom_anchor_from_font (halfword f, halfword c);

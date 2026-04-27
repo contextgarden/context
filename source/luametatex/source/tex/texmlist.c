@@ -333,6 +333,7 @@ static inline void tex_math_copy_kerns(kernset *kerns, kernset *parent) {
         kerns->dimensions = parent->dimensions;
         kerns->font = parent->font;
         kerns->character = parent->character;
+        kerns->padding = parent->padding;
     }
 }
 
@@ -775,7 +776,7 @@ static inline int tex_aux_has_extensible(halfword delimiter, halfword size)
     if (delimiter && delimiter_small_character(delimiter)) {
         halfword curfnt = tex_fam_fnt(delimiter_small_family(delimiter), size);
         if (curfnt != null_font) {
-            return tex_char_extensible_recipe_front_last(curfnt, delimiter_small_character(delimiter)) ? 1 : 0;
+            return tex_char_extensible_recipe_from_last(curfnt, delimiter_small_character(delimiter)) ? 1 : 0;
         }
     }
     return 0;
@@ -923,7 +924,7 @@ static halfword tex_aux_make_delimiter(halfword target, halfword delimiter, int 
 
 static halfword tex_aux_overbar(halfword box, scaled gap, scaled height, scaled krn, halfword att, quarterword index, halfword size, halfword fam, halfword topdelimiter, halfword style)
 {
-    halfword rule = (topdelimiter  > 0 && tex_aux_has_extensible(topdelimiter, size))
+    halfword rule = (topdelimiter > 0 && tex_aux_has_extensible(topdelimiter, size))
         ? tex_aux_make_delimiter(null, topdelimiter, size, box_width(box), 1, style, 0, NULL, NULL, 0, 0, NULL, 0, att, 0, 1)
         : tex_aux_fraction_rule(box_width(box), height, att, index, size, fam);
     /*tex Safeguard: */
@@ -5556,11 +5557,17 @@ static scaled tex_aux_find_math_kern(halfword l_f, int l_c, halfword r_f, int r_
     }
 }
 
-/*
+/*tex
+
+    \starttyping
     $\dot{\mathscr{F}}_2         = G$ % handled by corner kerns
-    $\mathscr{F}      _2         = G$ % handled by corner kerns
-    $\mathscr{F}      _{\dot{x}} = G$ % the whatever case
+    $     \mathscr{F} _2         = G$ % handled by corner kerns
+    $     \mathscr{F} _{\dot{x}} = G$ % the whatever case
     $\dot{\mathscr{F}}_{\dot{x}} = G$ % handled by analyzed kerns
+    \stoptyping
+
+    This might need checking:
+
 */
 
 static int tex_aux_discard_shape_kerns(halfword target)
@@ -5569,12 +5576,12 @@ static int tex_aux_discard_shape_kerns(halfword target)
         if (has_noad_option_discard_shape_kern(target)) {
             return 1;
         }
-    } else if (node_next(target) && has_noad_option_continuation(node_next(target))) {
+    } else if (node_next(target) && is_noad(node_next(target)) && has_noad_option_continuation(node_next(target))) {
         if (has_noad_option_discard_shape_kern(node_next(target))) {
             return 1;
         }
     } if (node_prev(target)) {
-        if (has_noad_option_discard_shape_kern(node_prev(target))) {
+        if (is_noad(node_prev(target)) && has_noad_option_discard_shape_kern(node_prev(target))) {
             return 1;
         }
     }
@@ -5610,7 +5617,7 @@ static int tex_aux_get_sup_kern(halfword kernel, scriptdata *sup, scaled shift_u
         }
         return found;
     }
-    if (kerns && kerns->topright) {
+   if (kerns && kerns->topright) {
         *supkern = kerns->topright;
         if (*supkern == MATH_KERN_NOT_FOUND) {
             *supkern = supshift;
@@ -5795,11 +5802,11 @@ static void tex_aux_make_scripts(halfword target, halfword kernel, scaled italic
     scaled shift_up = 0;
     scaled shift_down = 0;
     scaled prime_up = 0;
-    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
-    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
-    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
-    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
-    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = null, .slack = 0, .whatever = 0 };
+    scriptdata postsubdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = 0, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata postsupdata = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = 0, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata presubdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = 0, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata presupdata  = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = 0, .slack = 0, .shifted = 0, .whatever = 0 };
+    scriptdata primedata   = { .node = null, .fnt = null_font, .chr = 0, .box = null, .kern = 0, .slack = 0, .shifted = 0, .whatever = 0 };
     halfword maxleftkern = 0;
  // halfword maxrightkern = 0;
     scaled leftslack = 0;
@@ -6434,7 +6441,7 @@ static halfword tex_aux_make_left_right(halfword target, int style, scaled max_d
         extremes->tfont = null_font;
         extremes->bfont = null_font;
         extremes->tchar = 0;
-        extremes->tchar = 0;
+        extremes->bchar = 0;
         extremes->height = 0;
         extremes->depth = 0;
     }

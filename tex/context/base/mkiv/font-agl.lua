@@ -4771,64 +4771,41 @@ local extras = allocate { -- private extensions
 --
 -- Well, we currently have this table preloaded anyway.
 
-local names    = agl.names
------ unicodes = agl.unicodes
+local unicodes = agl.unicodes
 local ctxcodes = agl.ctxcodes
 
-if names then
+if unicodes then
 
-    mark(names)
     mark(unicodes)
     mark(ctxcodes)
 
 elseif characters then
 
-    names    = allocate { } -- filled from char-def.lua
- -- unicodes = allocate { }
+    unicodes = allocate { }
     ctxcodes = allocate { }
 
     for u, c in next, characters.data do
-     -- local a = c.adobename
-     -- if a then
-     --  -- unicodes[a] = u
-     --     names   [u] = a
-     -- end
         local n = c.contextname
         if n then
             ctxcodes[n] = u
-         -- names   [u] = a
         end
     end
 
     for a, u in next, extras do
         unicodes[a] = u
-     -- if names[u] then
-     --     -- comment
-     --  -- print("dup extra",a,u)
-     -- else
-     --     names[u] = a
-     -- end
     end
 
     for s, u in next, synonyms do
         unicodes[s] = u
-     -- if names[u] then
-     --     -- comment
-     --  -- print("dup synonym",s,u)
-     -- else
-     --     names[u] = s
-     -- end
     end
 
     if storage then
-     -- storage.register("encodings/names",    names,    "fonts.encodings.agl.names")
         storage.register("encodings/unicodes", unicodes, "fonts.encodings.agl.unicodes")
         storage.register("encodings/ctxcodes", ctxcodes, "fonts.encodings.agl.ctxcodes")
     end
 
 end
 
----.names    = names     -- unicode -> name
 agl.unicodes = unicodes  -- name -> unicode
 agl.ctxcodes = ctxcodes  -- name -> unicode
 agl.synonyms = synonyms  -- merged into the other two -- used?

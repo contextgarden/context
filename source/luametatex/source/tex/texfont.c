@@ -211,7 +211,7 @@ void tex_set_font_parameters(halfword f, int index)
     int i = font_parameter_count(f);
     if (index > i) {
         /*tex If really needed this can be a calloc. */
-        int size = (index + 2) * (int) sizeof(int);
+        int size = (index + 2) * (int) sizeof(int); /* we add a bit reserve */
         int *list = lmt_memory_realloc(font_parameter_base(f), (size_t) size);
         if (list) {
             lmt_font_state.font_data.extra += (index - i + 1) * (int) sizeof(scaled);
@@ -237,7 +237,7 @@ int tex_new_font(void)
         size = sizeof(texfont);
         tf = lmt_memory_calloc(1, (size_t) size);
         if (tf) {
-            sa_tree_item sa_value = { 0 };
+            sa_tree_item sa_value = { .uint_value = 0 };
             int id = tex_new_font_id();
             lmt_font_state.font_data.extra += size;
             lmt_font_state.fonts[id] = tf;
@@ -252,9 +252,9 @@ int tex_new_font(void)
             set_font_hyphen_char(id, '-');
             set_font_skew_char(id, -1);
             /*tex allocate eight values including 0 */
-            tex_set_font_parameters(id, 7);
-            for (int i = 0; i <= 7; i++) {
-                tex_set_font_parameter(id, i, 0);
+            tex_set_font_parameters(id, last_font_parameter);
+            for (int i = 0; i <= last_font_parameter; i++) {
+              tex_set_font_parameter(id, i, 0); /*tex These are already zero'd but ... */
             }
             /*tex character info zero is reserved for |notdef|. The stack size 1, default item value 0. */
             tf->characters = sa_new_tree(fontchar_sparse_identifier, 1, 1, 4, sa_value);
@@ -326,20 +326,15 @@ void tex_char_malloc_mathinfo(charinfo *ci)
 
 static inline int aux_find_charinfo_id(halfword f, int c) 
 {
-    sa_tree_item item; 
-    sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);
-    return (int) item.int_value;
+    return sa_return_item_4(lmt_font_state.fonts[f]->characters, c);
 }
 
 charinfo *tex_get_charinfo(halfword f, int c)
 {
     if (proper_char_index(f, c)) {
-        sa_tree_item item;
-        int glyph; 
-        sa_get_item_4(lmt_font_state.fonts[f]->characters, c, &item);
-        glyph = (int) item.int_value;
+        int glyph = sa_return_item_4(lmt_font_state.fonts[f]->characters, c);
         if (! glyph) {
-            sa_tree_item sa_value = { 0 };
+            sa_tree_item sa_value = { .uint_value = 0 };
             int tglyph = ++lmt_font_state.fonts[f]->chardata_count;
             if (tglyph >= lmt_font_state.fonts[f]->chardata_size) {
                 tex_font_malloc_charinfo(f, 256);
@@ -976,9 +971,6 @@ halfword tex_get_scaled_parameter_glue(quarterword p, quarterword s)
 {
     halfword n = tex_new_glue_node(zero_glue, s);
     halfword g = glue_parameter(p);
- // if (g) {
- //     memcpy((void *) (node_memory_state.nodes + n + 2), (void *) (node_memory_state.nodes + g + 2), (glue_spec_size - 2) * (sizeof(memoryword)));
- // }
     glue_amount(n) = tex_aux_font_x_scaled(glue_amount(g));
     glue_stretch(n) = tex_aux_font_x_scaled(glue_stretch(g));
     glue_shrink(n) = tex_aux_font_x_scaled(glue_shrink(g));
@@ -1926,7 +1918,7 @@ extinfo *tex_char_extensible_recipe_from_font(halfword f, halfword c)
     return ci->math ? ci->math->extensible_recipe : NULL;
 }
 
-extinfo *tex_char_extensible_recipe_front_last(halfword f, halfword c)
+extinfo *tex_char_extensible_recipe_from_last(halfword f, halfword c)
 {
     charinfo *ci = tex_aux_char_info(f, c);
     while (ci) { 

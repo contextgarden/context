@@ -163,8 +163,8 @@ local flush_character, flush_space  do
 
     -- todo: cache streams
 
-    local default    =   16384 -- * number.dimenfactors.bp -- 65536 // 4
-    local refactored = 1000000 -- expansion related
+    local default    <const> =   16384 -- * number.dimenfactors.bp -- 65536 // 4
+    local refactored <const> = 1000000 -- expansion related
 
     local vfinjectors = fonts.helpers.vfinjectors
 
@@ -879,14 +879,14 @@ popgroup()
     local hnextnode = nextnode
     local vnextnode = nextnode
 
-experiments.register("optimize.backend.traverse",function()
-    if helper and helper.traversehorizontal then
-        local glyph = nuts.pool.glyph()
-        hnextnode = helper.traversehorizontal(glyph)
-        vnextnode = helper.traversevertical(glyph)
-        nuts.flushnode(glyph)
-    end
-end)
+    experiments.register("optimize.backend.traverse",function()
+        if helper and helper.traversehorizontal then
+            local glyph = nuts.pool.glyph()
+            hnextnode = helper.traversehorizontal(glyph)
+            vnextnode = helper.traversevertical(glyph)
+            nuts.flushnode(glyph)
+        end
+    end)
 
     hlist_out = function(this_box,current)
         local ref_h = pos_h

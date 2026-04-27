@@ -754,9 +754,10 @@ static void tex_aux_print_fam(const char *what, halfword size, halfword fam)
 int tex_fam_fnt(int fam, int size)
 {
     /* todo check valid fam */
-    sa_tree_item item;
-    sa_get_item_4(lmt_math_state.fam_head, fam + (256 * size), &item);
-    return (int) item.int_value;
+ // sa_tree_item item;
+ // sa_get_item_4(lmt_math_state.fam_head, fam + (256 * size), &item);
+ // return (int) item.int_value;
+    return sa_return_item_4(lmt_math_state.fam_head, fam + (256 * size));
 }
 
 void tex_def_fam_fnt(int fam, int size, int fnt, int level)
@@ -772,6 +773,7 @@ void tex_def_fam_fnt(int fam, int size, int fnt, int level)
 
 static void tex_aux_unsave_math_fam_data(int gl)
 {
+ // sa_restore_stack(lmt_math_state.fam_head, gl);
     if (lmt_math_state.fam_head->stack) {
         while (lmt_math_state.fam_head->sa_stack_ptr > 0 && abs(lmt_math_state.fam_head->stack[lmt_math_state.fam_head->sa_stack_ptr].level) >= (int) gl) {
             sa_stack_item item = lmt_math_state.fam_head->stack[lmt_math_state.fam_head->sa_stack_ptr];
@@ -1055,13 +1057,14 @@ scaled tex_get_math_parameter(int style, int param, halfword *type)
 
 int tex_has_math_parameter(int style, int param)
 {
-    sa_tree_item v1, v2;
+    sa_tree_item v1, v2; /* what with v1 */
     sa_get_item_8(lmt_math_state.par_head, (param + (math_parameter_max_range * style)), &v1, &v2);
     return v2.int_value == lmt_math_state.par_head->dflt.int_value ? indirect_math_unset : v2.uint_value;
 }
 
 static void tex_aux_unsave_math_parameter_data(int gl)
 {
+ // sa_restore_stack(lmt_math_state.par_head, gl);
     if (lmt_math_state.par_head->stack) {
      // printf("unsaving level %i >= gl %i\n", lmt_math_state.par_head->stack[lmt_math_state.par_head->sa_stack_ptr].level, gl);
         while (lmt_math_state.par_head->sa_stack_ptr > 0 && abs(lmt_math_state.par_head->stack[lmt_math_state.par_head->sa_stack_ptr].level) >= gl) {

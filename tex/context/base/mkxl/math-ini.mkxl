@@ -99,7 +99,7 @@
 %registerctxluafile{math-act}{autosuffix}
 \registerctxluafile{math-ext}{autosuffix} % might go
 \registerctxluafile{math-vfu}{autosuffix}
-\registerctxluafile{math-ttv}{autosuffix}
+%registerctxluafile{math-ttv}{autosuffix} % save no time, only memory
 \registerctxluafile{math-map}{autosuffix}
 \registerctxluafile{math-act}{autosuffix}
 \registerctxluafile{math-ren}{autosuffix}

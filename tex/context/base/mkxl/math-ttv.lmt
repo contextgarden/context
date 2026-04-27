@@ -7,6 +7,8 @@ if not modules then modules = { } end modules ['math-ttv'] = {
     dataonly  = true,
 }
 
+-- This file is now loaded on demand.
+
 local vfmath        = fonts.handlers.vf.math
 local setletters    = vfmath.setletters
 local setdigits     = vfmath.setdigits

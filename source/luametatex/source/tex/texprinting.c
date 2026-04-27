@@ -364,7 +364,7 @@ void tex_print_str(const char *s)
             int newline = s[len-1] == '\n';
             if (logfile) {
                 fputs(s, lmt_print_state.logfile);
-             // fwrite(s, sizeof(char), len, lmt_print_state.logfile);
+             // fwrite(s, sizeof(char), len, lmt_print_state.logfile); /* feels slower */
                 if (newline) {
                     lmt_print_state.logfile_offset = 0;
                 } else {
@@ -373,7 +373,7 @@ void tex_print_str(const char *s)
             }
             if (terminal) {
                 fputs(s, stdout);
-             // fwrite(s, sizeof(char), len, stdout);
+             // fwrite(s, sizeof(char), len, stdout); /* feels slower */
                 if (newline) {
                     lmt_print_state.terminal_offset = 0;
                 } else {
