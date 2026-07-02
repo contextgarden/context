@@ -1,0 +1,80 @@
+% signal=squid,language=uk
+
+\startcomponent excursion-en-usersetups
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=User specifications]
+
+\index{preamble}
+\index{input+file}
+
+The setup area of your document is the area before the \type {\startdocument}
+command. For example:
+
+\setuptyping
+    [escape=yes]
+
+\definestartstop
+    [comment][style={\rm}]
+
+\starttyping
+                                   /BTEX \comment{\color[blue]{first line of your file}} /ETEX
+\setuplayout[width=25cm]           /BTEX \comment{\color[blue]{set the width of your text}} /ETEX
+                                   /BTEX \comment{\color[blue]{empty line for readability}} /ETEX
+\startdocument                     /BTEX \comment{\color[blue]{starts your text}} /ETEX
+  Hello Hasselt.                   /BTEX \comment{\color[blue]{your text}} /ETEX
+\stopdocument                      /BTEX \comment{\color[blue]{ends your text}} /ETEX
+\stoptyping
+
+Note that the first line of this file is empty. However, this first line is a
+preamble and can be used for specific user specifications. For example:
+
+\starttyping
+%engine=luatex                     /BTEX \comment{\color[blue]{use the \type{luatex} engine}} /ETEX
+                                   /BTEX \comment{\color[blue]{empty line for readability}} /ETEX
+\setuplayout[width=25cm]           /BTEX \comment{\color[blue]{set the width of your text}} /ETEX
+                                   /BTEX \comment{\color[blue]{empty line for readability}} /ETEX
+\startdocument                     /BTEX \comment{\color[blue]{starts your text}} /ETEX
+  Hello Hasselt.                   /BTEX \comment{\color[blue]{your text}} /ETEX
+\stopdocument                      /BTEX \comment{\color[blue]{ends your text}} /ETEX
+\stoptyping
+
+Note that \CONTEXT\ sees the text after the \type{ % } sign in this first line
+not as a comment. Specifying the engine is only necessary if you want to use a
+different engine than is used standard i.e. \LUAMETATEX\ for the latest
+standalone installation of \CONTEXT.
+
+The preamble can have a meaning for both \CONTEXT\ and \SCITE:
+
+\starttyping
+% engine=luatex interface=english modes=screen language=uk
+
+\startdocument
+Hello Hasselt.
+\stopdocument
+\stoptyping
+
+This first line will be interpreted as shown in \in{table}[tab:firstline].
+
+\startplacetable
+  [location=here,
+   reference=tab:firstline,
+   title=Interpretation of first line comments]
+  \bTABLE
+    \bTR \bTD First line       \eTD \bTD  for     \eTD \bTD Effect                                            \eTD \eTR
+    \bTR \bTD engine=pdftex    \eTD \bTD \CONTEXT \eTD \bTD run as \PDFTEX\ (\CONTEXT\ MKII)                  \eTD \eTR
+    \bTR \bTD engine=luatex    \eTD \bTD \CONTEXT \eTD \bTD run as \LUATEX\ (\CONTEXT\ MKIV)                  \eTD \eTR
+    \bTR \bTD engine=luametatex\eTD \bTD \CONTEXT \eTD \bTD run as \LUAMETATEX\ (\CONTEXT\ LMTX)              \eTD \eTR
+    \bTR \bTD interface=en     \eTD \bTD \CONTEXT \eTD \bTD expect english \CONTEXT\ commands (lexing)        \eTD \eTR
+    \bTR \bTD                  \eTD \bTD \SCITE   \eTD \bTD use english lexing                                \eTD \eTR
+    \bTR \bTD modes=Screen     \eTD \bTD \CONTEXT \eTD \bTD invoke mode \type{Screen} that is set in the text \eTD \eTR
+    \bTR \bTD language=uk      \eTD \bTD \SCITE   \eTD \bTD use the english spell checker                     \eTD \eTR
+  \eTABLE
+\stopplacetable
+
+\stopchapter
+
+\stopcomponent

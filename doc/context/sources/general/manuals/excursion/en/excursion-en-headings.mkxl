@@ -1,0 +1,169 @@
+% signal=squid
+
+\startcomponent excursion-en-headings
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[reference=heads,title=Section headings]
+
+\index{section}
+\index{section+head}
+\index{section+setup head}
+
+\Command{\tex{startchapter}}
+\Command{\tex{starttitle}}
+\Command{\tex{startsection}}
+\Command{\tex{startsubject}}
+\Command{\tex{startsubsubject}}
+\Command{\tex{setuphead}}
+\Command{\tex{setupheads}}
+
+An important part of the document's structure is determined by its chapter and
+section titles. The section levels are created with the commands shown in
+\in{table}[tab:headings].
+
+\startplacetable
+  [location={here,force},
+   reference=tab:headings,
+   title={Headings}]
+  {\switchtobodyfont[9pt]
+  \bTABLE
+    \bTR
+      \bTD[style=bold] Numbered heading  \eTD
+      \bTD[style=bold] Unnumbered heading \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startchapter ... \stopchapter} \eTD
+      \bTD \type{\starttitle ... \stoptitle}     \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startsection ... \stopsection} \eTD
+      \bTD \type{\startsubject ... \stopsubject} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startsubsection ... \stopsubsection} \eTD
+      \bTD \type{\startsubsubject ... \stopsubsubject} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startsubsubsection  ... \stopsubsubsection} \eTD
+      \bTD\type{\startsubsubsubject ... \stopsubsubsubject}   \eTD
+    \eTR
+    \bTR
+      \bTD \unknown \eTD
+      \bTD \unknown \eTD
+    \eTR
+  \eTABLE}
+\stopplacetable
+
+\shortsetup{startsection:instance:chapter}
+
+\shortsetup{startsection:instance:section}
+
+\shortsetup{startsection:instance:subsection}
+
+\shortsetup{startsection:instance:title}
+
+\shortsetup{startsection:instance:subject}
+
+\shortsetup{startsection:instance:subsubject}
+
+These commands will produce a numbered or unnumbered title in a predefined
+font-size and font-type with some vertical spacing before and after the header.
+
+Please keep in mind that only numbered sections will appear in a table of
+contents. See also in \in{chapter}[chap:toc].
+
+The title commands can take several arguments, like in
+
+\starttyping
+\starttitle
+  [title=Hasselt by night,reference=chap:hasselt-by-night]
+
+...
+
+\stoptitle
+\stoptyping
+
+Of course the chapter and section titles can be set to your own preferences and
+you can even define your own sections. This is done with the \type{\setuphead}
+and \type{\definehead} command.
+
+\shortsetup{definehead}
+
+\shortsetup{setuphead}
+
+\startbuffer[Headdefine]
+\definehead
+  [Myhead]
+  [section]
+
+\setuphead
+  [Myhead]
+  [numberstyle=bold,
+   textstyle=bold,
+   before=\hairline\blank,
+   after=\inhibitwhitespace\hairline]
+\stopbuffer
+\startbuffer[StartMyhead]
+\startMyhead
+  [title=Hasselt makes headlines,reference=headlines]
+
+...
+
+\stopMyhead
+\stopbuffer
+
+\typebuffer[Headdefine]
+
+\page[bigpreference]
+
+\typebuffer[StartMyhead]
+
+A new heading \type{\startMyhead ... \stopMyhead} is defined and it inherits the
+properties of \type{\startsection ... \stopsection}. It would look something like
+this
+
+\getbuffer[Headdefine]
+\getbuffer[StartMyhead]
+
+There is one other command you should know now, and that is \type{\setupheads}.
+You can use this command to set up the numbering of the numbered chapters and
+sections. If you type:
+
+\startbuffer
+\setupheads
+  [alternative=inmargin,
+   separator=--]
+\stopbuffer
+
+\typebuffer
+
+all numbers will appear in the margin. Section 1.1 would look like 1--1.
+
+Commands like \type{\setupheads} are typed in the setup area of your input file.
+
+\shortsetup{setupheads}
+
+In order to make profit of the strengths of \CONTEXT\ it is advised against using
+the old \TEX\ way of coding sections. The list in \in{table}[tab:old-headings] is
+only displayed here for understanding the old and new way of coding.
+
+\startplacetable
+  [location={here,force},
+   reference=tab:old-headings,
+   title={Discouraged use of headings}]
+  \bTABLE
+    \bTR \bTD \bf Numbered heading  \eTD \bTD \bf Unnumbered heading  \eTD \eTR
+    \bTR \bTD \type{\chapter}       \eTD \bTD \type{\title}           \eTD \eTR
+    \bTR \bTD \type{\section}       \eTD \bTD \type{\subject}         \eTD \eTR
+    \bTR \bTD \type{\subsection}    \eTD \bTD \type{\subsubject}      \eTD \eTR
+    \bTR \bTD \type{\subsubsection} \eTD \bTD \type{\subsubsubject}   \eTD \eTR
+    \bTR \bTD \unknown              \eTD \bTD \unknown                \eTD \eTR
+  \eTABLE
+\stopplacetable
+
+\stopchapter
+
+\stopcomponent

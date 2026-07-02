@@ -1,0 +1,19 @@
+\startenvironment excursion-en-language
+
+\mainlanguage[en]
+
+\setuplabeltext
+  [en]
+  [           % document:author=Author,
+               document:design=Design and style,
+               document:editor=Editor,
+        document:contributions=Contributions,
+         document:translations=Translations,
+        document:illustrations=Illustrations,
+   document:commanddefinitions=Command definitions,
+         document:commandindex=Command index,
+         document:subjectindex=Subject index,
+             document:contents=Contents,
+    document:supportandreading=Support and further reading]
+
+\stopenvironment

@@ -1,0 +1,235 @@
+% language=uk macros=mkvi
+
+\usemodule[article-basic]
+
+% https://github.com/mjs513/Arduino-Uno-Q-and-ROS2-Implementation/blob/main/Docker%20Ros2%20Notes/Migrating%20Docker%20Data.md
+
+\setuphead  [color=darkblue]
+\setuptype  [color=darkblue]
+\setuptyping[color=darkblue]
+
+\starttext
+
+\useMPlibrary[threesix]
+
+\definefontfeature % color, with some spread
+  [fontthreesix-color]
+  [default]
+  [metapost={category=fontthreesix,shape=diamond,color=random,pen=fancy,spread=.1,random=yes}]
+
+\definefont[DEKFontB][Serif*fontthreesix-color]
+
+\startstandardmakeup[pagestate=keep]
+    \hbox to \hsize \bgroup \hss \scale
+        [width=.8pw]
+        {\framed
+           [frame=off,
+            align={middle,lohi},
+            foregroundstyle=\DEKFontB]
+           {THE\enspace LITTLE\\ CONTEXT\\BOOK}}%
+    \hss \egroup
+    \vfill
+    \hbox to \hsize \bgroup \hss \scale
+        [width=.5pw]
+        {\framed
+           [frame=off,
+            align={middle,lohi},
+            foregroundstyle=\DEKFontB]
+           {RUNNING \TEX\\ ON AN\\ ARDUINO UNO Q}}%
+    \hss \egroup
+\stopstandardmakeup
+
+\startsubject[title=the gadget]
+
+The Arduino Uno Q is tiny board with a Qualcomm® Dragonwing™ QRB2210
+microprocessor (MPU) and STM32U585 microcontroller (MCU). You can best take the
+one with 4GB memory (DDR4) and 32GB eMMC disk. It has WIFI and more on board. It
+has a full blown USB-C connector which interfaces with an external hub so that
+you can have HDMI, Ethernet and several USB ports. Power then comes via that
+connection. It runs Debian Linux.
+
+When booted up you have to answer some questions, like network connection and
+password. However, when you get this \quote {flickering} screen that makes it
+impossible to set it up, you can use \quote {arduino app lab} on a laptop to set
+up the initial password and network.
+
+When the desktop pops up you can launch a console and:
+
+\starttyping
+sudo apt update
+sudo apt upgrade
+\stoptyping
+
+and then
+
+\starttyping
+sudo apt install okular
+\stoptyping
+
+Maybe you want to do:
+
+\starttyping
+sudo hostnamectl set-hostname cms-xx
+sudo hostnamectl
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=the tools]
+
+Normally I put all under \type {/data} but in this case we have to go under the
+home directory because the root sector is kind of small. Beware, the used name is
+\type {arduino} which is in group \type {arduino}.
+
+\starttyping
+mkdir ~/data
+mkdir ~/data/context
+mkdir ~/data/scite
+mkdir ~/data/test
+\stoptyping
+
+Next one has to install the \type {aarch64} version of \CONTEXT, here under \type
+{~/data/context}. Installing SciTE can be done from the installation arrchive.
+The \type {readme.txt} file shows where files fly. Make sure to set the
+permissions on the binary. You might also decide to change the user, group and
+permissions on the \type {share/scite} path and files so that you can update as
+well as adapt the properties file:
+
+\starttyping
+/usr/share/scite/context/scite-context.properties
+\stoptyping
+
+The relevant variable is:
+
+\starttyping
+name.flag.pdfopen=--autopdf=okular
+\stoptyping
+
+You need to add the binaries path (console or in \type {~/.profile} or \type
+{~/.xsessionrc}):
+
+\starttyping
+export PATH=~/data/context/tex/texmf-linux-aarch64/bin:$PATH
+\stoptyping
+
+Then you can test:
+
+\starttyping
+cd ~/data/test
+SciTE test.tex &
+\stoptyping
+
+Running \CONTEXT\ should happen with \type {control+F7}, \type {control+F12} or
+\type {control+1}; it depends on the operating system. Of course a first run will
+cache some fonts.
+
+\stopsubject
+
+\startsubject[title=the clock]
+
+If you want the signal gadget (aka \CONTEXT\ Watch) to work you
+need to do this:
+
+\starttyping
+mkdir ~/data/context/tex/texmf-local/context
+mkdir ~/data/context/tex/texmf-local/context/data
+mkdir ~/data/context/tex/texmf-local/context/data/signal
+
+cp  ~/data/context/tex/texmf-context/context/data/signal/ctxsignals-template.lua \
+    ~/data/context/tex/texmf-local/context/data/signal/ctxsignals.lua
+
+mtxrun --generate
+\stoptyping
+
+You also need to permit control over the serial bus, something that needs a
+reboot to be effective.
+
+\starttyping
+sudo usermod -a -G dialout yourname (and reboot)
+sudo reboot
+\stoptyping
+
+\stopsubject
+
+\startsubject[title=the rest]
+
+Here are some more useful helpers:
+
+\starttyping
+sudo apt install mupdf
+sudo apt install mupdf-tools
+sudo apt install qpdfview
+\stoptyping
+
+If you're deep into tagging, you might want to also install \type {verapdf} which
+is of course not the fastest feature then. First you need to install a runtime:
+
+\starttyping
+sudo apt install default-jre
+\stoptyping
+
+We then download the installer and put it in:
+
+\starttyping
+~/data/verapdf
+\stoptyping
+
+After unpacking we run
+
+\starttyping
+./verapdf-install
+\stoptyping
+
+And when asked for a next step make sure we adapt the directory it will end up
+in: \typ {~/data/verapdf} and adapt \type {.xsessionrc}:
+
+\starttyping
+export PATH=/home/arduino/data/context/tex/texmf-linux-aarch64/bin:\
+/home/arduino/data/verapdf:\
+$PATH
+\stoptyping
+
+After this one-liner has been set you need to login again to make it effective
+but after that \typ {mtxrun --script pdf --validate ...} should work. Don't
+expect spectacular performance; we just wanted to demo it but never will use it
+on such an under-powered device.
+
+\stopsubject
+
+\startsubject[title=the end]
+
+A shutdown is a bit special on a device that is supposed to be always on. A more
+permanent ending is one of:
+
+\starttyping
+sudo shutdown -h now
+sudo halt
+\stoptyping
+
+If you want a text on the display \unknown\ there are ways to do this but you
+need to make an app and get that in the controler. At some point we might put
+one in the distribution.
+
+\startsubject[title=the wrapper]
+
+This setup was used at Bacho\TeX\ 2026 by Hans Hagen, Mikael Sundqvist and
+Willi Egger for a presentation. There we used this board in small booklets
+(dwarsliggers) made by Willi for this occasion.
+
+\startlinecorrection
+    \externalfigure[little-context-book-002.jpg][width=.5tw,orientation=90]
+\stoplinecorrection
+
+Of course this is way more cool than a plastic enclosure. If I had a 3D printer
+I'd play with
+
+\starttyping
+https://makerworld.com/en/models/2218829-arduino-uno-q-case-kit-snap-fit-wall-mount\
+#profileId-2412804
+\stoptyping
+
+in order to get a \quote {server} setup.
+
+\stopsubject
+
+\stoptext

@@ -1,0 +1,53 @@
+% signal=squid
+
+\startcomponent excursion-en-sortedlists
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Sorted lists,reference=chap:sortedlists]
+
+\index{sorted lists}
+
+\Command{\tex{definesorting}}
+\Command{\tex{setupsorting}}
+\Command{\tex{placelistofsorts}}
+\Command{\tex{completelistofsorts}}
+
+If you want to create a sorted list you can use:
+
+\shortsetup{definesorting}
+
+For example:
+
+\startbuffer
+\define[1]\Street{#1\SortStreet{#1}}
+\definesorting[SortStreet][SortStreets]
+\setupsorting[SortStreet][criterium=all]
+
+When you walk in the \Street{Eikenlaan} you will cross the
+\Street{Vechtlaan} and \Street{Gasthuisstraat}.
+Go left into the \Street{Gasthuisstraat} and take
+another left turn on the \Street{Heerengracht}. You
+walk along the canal to the \Street{Ridderstraat},
+there you turn right. Cross the canal and turn left
+to the \Street{Julianakade}. There you can enjoy
+the view over the Zwartewater.
+
+So the streets you visited are:
+
+\placelistofSortStreets
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+Note that the Gasthuisstraat appears only once in the list.
+
+\stopchapter
+
+\stopcomponent

@@ -18,6 +18,7 @@ local P, V, C, S, R, Ct, Cs, Cp, Carg, Cc = lpeg.P, lpeg.V, lpeg.C, lpeg.S, lpeg
 local patterns, lpegmatch = lpeg.patterns, lpeg.match
 local tsplitat = lpeg.tsplitat
 local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len
+local round = math.round
 
 ----- loadstripped = utilities.lua.loadstripped
 ----- setmetatableindex = table.setmetatableindex
@@ -470,6 +471,8 @@ end
 -- stripped  %...N    %...N
 -- comma/period real  %...m
 -- period/comma real  %...M
+-- comma/period int   %...v
+-- period/comma int   %...V
 -- formatted float    %...k   n.m
 -- left aligned       %...<
 -- right aligned      %...>
@@ -574,7 +577,7 @@ local splitter3 = Cs (
 
 patterns.formattednumber = splitter
 
-function number.formatted(n,sep1,sep2)
+local function formatted(n,sep1,sep2)
     if sep1 == false then
         if type(n) == "number" then
             n = tostring(n)
@@ -594,6 +597,12 @@ function number.formatted(n,sep1,sep2)
             return lpegmatch(splitter,n,1,sep1 or ",",sep2 or ".")
         end
     end
+end
+
+number.formatted = formatted
+
+function number.formattedinteger(n,...)
+    return formatted(round(n),false,...)
 end
 
 -- print(number.formatted(1))
@@ -753,42 +762,43 @@ string.texnewlines = lpeg.replacer(patterns.newline,"\r",true)
 local preamble = ""
 
 local environment = {
-    ["global"]      = _G, -- for old times sake
-    ["globals"]     = _G, -- avoids keyword clash
-    ["globaldata"]  = _G, -- consistent with other *data names
+    ["global"]       = _G, -- for old times sake
+    ["globals"]      = _G, -- avoids keyword clash
+    ["globaldata"]   = _G, -- consistent with other *data names
 
-    lpeg            = lpeg,
-    type            = type,
-    tostring        = tostring,
-    tonumber        = tonumber,
-    format          = string.format,
-    concat          = table.concat,
-    signed          = number.signed,
-    points          = number.points,
-    nupoints        = number.nupoints,
-    basepoints      = number.basepoints,
-    nubasepoints    = number.nubasepoints,
-    utfchar         = utf.char,
-    utfbyte         = utf.byte,
-    lpegmatch       = lpeg.match,
-    utfpadding      = string.utfpadding,
-    tracedchar      = string.tracedchar,
-    autosingle      = string.autosingle,
-    autodouble      = string.autodouble,
-    sequenced       = table.sequenced,
-    formattednumber = number.formatted,
-    sparseexponent  = number.sparseexponent,
-    formattedfloat  = number.formattedfloat,
-    stripzero       = patterns.stripzero,
-    stripzeros      = patterns.stripzeros,
-    escapedquotes   = string.escapedquotes,
+    lpeg             = lpeg,
+    type             = type,
+    tostring         = tostring,
+    tonumber         = tonumber,
+    format           = string.format,
+    concat           = table.concat,
+    signed           = number.signed,
+    points           = number.points,
+    nupoints         = number.nupoints,
+    basepoints       = number.basepoints,
+    nubasepoints     = number.nubasepoints,
+    utfchar          = utf.char,
+    utfbyte          = utf.byte,
+    lpegmatch        = lpeg.match,
+    utfpadding       = string.utfpadding,
+    tracedchar       = string.tracedchar,
+    autosingle       = string.autosingle,
+    autodouble       = string.autodouble,
+    sequenced        = table.sequenced,
+    formattednumber  = number.formatted,
+    formattedinteger = number.formattedinteger,
+    sparseexponent   = number.sparseexponent,
+    formattedfloat   = number.formattedfloat,
+    stripzero        = patterns.stripzero,
+    stripzeros       = patterns.stripzeros,
+    escapedquotes    = string.escapedquotes,
 
-    FORMAT          = string.f6,
+    FORMAT           = string.f6,
 
-    nspaces         = hashes.spaces,
-    X00             = hashes.X00,
-    X02             = false, -- set later
-    X04             = false, -- set later
+    nspaces          = hashes.spaces,
+    X00              = hashes.X00,
+    X02              = false, -- set later
+    X04              = false, -- set later
 }
 
 -- -- --
@@ -1256,6 +1266,30 @@ local format_M = function(f)
     end
 end
 
+local format_v = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = ","
+    end
+    if f == "0" then
+        return format([[formattedinteger(a%s,false)]],n)
+    else
+        return format([[formattedinteger(a%s,%q,".")]],n,f)
+    end
+end
+
+local format_V = function(f)
+    n = n + 1
+    if not f or f == "" then
+        f = "."
+    end
+    if f == "0" then
+        return format([[formattedinteger(a%s,false)]],n)
+    else
+        return format([[formattedinteger(a%s,%q,",")]],n,f)
+    end
+end
+
 --
 
 local format_z = function(f)
@@ -1371,7 +1405,8 @@ local builder = Cs { "start",
               + V("a")
               + V("A")
               + V("j") + V("J") -- stripped e E
-              + V("m") + V("M") -- new (formatted number)
+              + V("m") + V("M")
+              + V("v") + V("V")
               + V("z") + V("Z")
               --
               + V(">") -- left padding
@@ -1429,6 +1464,9 @@ local builder = Cs { "start",
     --
     ["m"] = (prefix_any * P("m")) / format_m, -- %m => xxx.xxx.xxx,xx (optional prefix instead of .)
     ["M"] = (prefix_any * P("M")) / format_M, -- %M => xxx,xxx,xxx.xx (optional prefix instead of ,)
+    --
+    ["v"] = (prefix_any * P("v")) / format_v, -- %v => xxx.xxx.xxx
+    ["V"] = (prefix_any * P("V")) / format_V, -- %V => xxx,xxx,xxx
     --
     ["z"] = (prefix_any * P("z")) / format_z, -- %z => skip n arguments
     ["Z"] = (prefix_any * P("Z")) / format_Z, -- %Z => access argument N

@@ -1,0 +1,208 @@
+% signal=squid
+
+\startcomponent excursion-en-tabulations
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[reference=tabulation,title=Tabulation / Paragraph formatting]
+
+\index{tabulation}
+
+\Command{\tex{starttabulate}}
+\Command{\tex{definetabulate}}
+\Command{\tex{setuptabulate}}
+\Command{\tex{NC}}
+
+Sometimes you want to typeset paragraphs in a specific formatted way. This is
+done with:
+
+\shortsetup{starttabulate}
+\shortsetup{setuptabulate}
+
+You can use the tabulation mechanism in cases you want to typeset complete
+paragraphs within a cell. The tabulation mechanism also works fine at a page
+break when \type {split=yes} is set in a \type {\setuptabulate} command.
+
+\startbuffer
+\setuptabulate
+  [split=yes]
+\stopbuffer
+
+\typebuffer
+
+\startbuffer
+\starttabulate[|Bw(0.05\textwidth)
+               |p(0.34\textwidth)
+               |p(0.54\textwidth)|]
+  \NC 1252
+  \NC Hasselt obtains its city charter from bishop
+      Hendrik van Vianden.
+  \NC Hendrik van Vianden was pressed by other towns
+      not to agree with the charter. It took Hasselt
+      a long period of time to convince the Bishop.
+      After supporting the Bishop in a small war
+      against the Drents, the charter was released.
+  \NC\NR
+  \NC 1350
+  \NC Hasselt joins the Hanzepact to protect their
+      international trade.
+  \NC The Hanzepact was of great importance for
+      merchants in Hasselt. In those days trading
+      goods were taxed at every city, highway or
+      river|-|crossing. After joining the Hanzepact
+      duty free routes all over Europe became
+      available to Hasselt. However important the
+      Hanzepact was, Hasselt always stayed a
+      minor member of the pact.
+  \NC\NR
+\stoptabulate
+\stopbuffer
+
+A tabulate definition could look like this:
+
+\typebuffer
+
+In this case the first column is 10\% of the text width wide and is typeset bold
+(\type {B}). The second column has a width of 35\% of the text width and is
+typeset like a paragraph. The remaining horizontal space is used up by the last
+paragraph.
+
+The example is typeset like this:
+
+\getbuffer
+
+The tabulation entries are placed between the \typ {\starttabulate} and \typ
+{\stoptabulate} pair. Between the bracket pair you specify the tabulate format
+with the column separators \type {|} and the format keys (see \in {table}
+[tab:tabularformattingkeys]).
+
+\startplacetable
+  [location=here,
+	 reference=tab:tabularformattingkeys,
+   title={Formatting keys for tabulate}]
+    \switchtobodyfont[9pt]
+    \bTABLE
+        \bTR
+            \bTD  Key           \eTD \bTD Meaning \eTD
+            \bTD  Key           \eTD \bTD Meaning \eTD
+        \eTR
+        \bTR
+            \bTD l              \eTD \bTD left align \eTD
+            \bTD I              \eTD \bTD italic \eTD
+        \eTR
+        \bTR
+            \bTD c              \eTD \bTD center \eTD
+            \bTD R              \eTD \bTD roman \eTD
+        \eTR
+        \bTR
+            \bTD r              \eTD \bTD right align \eTD
+            \bTD S              \eTD \bTD slanted \eTD
+        \eTR
+        \bTR
+            \bTD i\sl n         \eTD \bTD spacing left \eTD
+            \bTD T              \eTD \bTD teletype \eTD
+        \eTR
+        \bTR
+            \bTD j\sl n         \eTD \bTD spacing right \eTD
+            \bTD m              \eTD \bTD in||line math \eTD
+        \eTR
+        \bTR
+            \bTD k\sl n         \eTD \bTD spacing around \eTD
+            \bTD M              \eTD \bTD display math \eTD
+        \eTR
+        \bTR
+            \bTD w({\sl d})     \eTD \bTD 1 line, fixed width \eTD
+            \bTD f\tex{command} \eTD \bTD font specification \eTD
+        \eTR
+        \bTR
+            \bTD p({\sl d})     \eTD \bTD paragraph, fixed width \eTD
+            \bTD b\arg{..}      \eTD \bTD place \type{..} before the entry \eTD
+        \eTR
+        \bTR
+            \bTD p              \eTD \bTD paragraph, maximum width \eTD
+            \bTD a\arg{..}      \eTD \bTD place \type{..} after the entry \eTD
+        \eTR
+        \bTR
+            \bTD B              \eTD \bTD boldface \eTD
+            \bTD h\tex{command} \eTD \bTD apply \tex{command} on the entry \eTD
+        \eTR
+    \eTABLE
+\stopplacetable
+
+In \in {table} [tab:tabulatestructurecommands] you find an overview
+of the tabulate structuring commands.
+
+\page[bigpreference]
+
+\startplacetable
+  [location=here,
+   reference=tab:tabulatestructurecommands,
+   title={Commands to define tabulate}]
+    \switchtobodyfont[9pt]
+    \bTABLE
+        \bTR \bTD Command                \eTD \bTD Meaning             \eTD \eTR
+        \bTR \bTD \type{\starttabulate ... \stoptabulate}
+                                         \eTD \bTD begin end tabulate  \eTD \eTR
+        \bTR \bTD \type{\NC}             \eTD \bTD next column         \eTD \eTR
+        \bTR \bTD \type{\NN}             \eTD \bTD next column in math mode \eTD \eTR
+        \bTR \bTD \type{\NS[2][c]}       \eTD \bTD actual column plus the next 2 columns
+                                                   as span, contents centered \eTD \eTR
+        \bTR \bTD \type{\NR}             \eTD \bTD next row            \eTD \eTR
+        \bTR \bTD \type{\HL}             \eTD \bTD horizontal line     \eTD \eTR
+        \bTR \bTD \type{\VL}             \eTD \bTD vertical line       \eTD \eTR
+        \bTR \bTD \type{\TB}             \eTD \bTD empty table line    \eTD \eTR
+        \bTR \bTD \type{\definetabulate} \eTD \bTD define own tabulate \eTD \eTR
+        \bTR \bTD \type{\setuptabulate}  \eTD \bTD tabulate setup      \eTD \eTR
+    \eTABLE
+\stopplacetable
+
+The \type {\NS} command for going to the next column expects two parameters to
+create a span of cells. e.g. for 1 extra column one would type \type {\NS[1][c]}.
+The second parameter sets the alignment \type {l,r,c}. See for an example in
+\in{tabulation}[tab:tabulate] hereunder. The spanning mechanism works only on one
+line cells and not with paragraph cells.
+
+The \type {\TB} command can be followed by a dimension like \type {line} or
+\type {halfline} e.g. \type {\TB[halfline]} which inserts a halfline of white
+space between the previous and the following row.
+
+Another example of paragraph formatting is given below. Remember that a
+\type {|p|} column takes always as much of the remaning width as possible. This
+results in the following example that the tabulation fills the width of the
+typesetting area.
+
+We can define our own tabulation environments with \type {\definetabulate}.
+
+\shortsetup{definetabulate}
+
+\startbuffer
+\definetabulate[ChemPar][|l|p(0.45\makeupwidth)|l|]
+
+\startChemPar
+  \reference[tab:tabulate]{\quote{Quicklime production}}
+  \pagereference[tab:tabulatepageref]
+  \NS[2][c] \bf Quicklime production \NC \NR
+  \NC Limekilns
+  \NC Hasselt has its own limekilns. These were build
+      in 1504 and produced quick lime up to 1956.
+      Nowadays they are a tourist attraction.
+  \NC \inlinechemical{CaCO_3,GIVES,CaO,+,CO_2} \NC \NR
+\stopChemPar
+\stopbuffer
+
+\typebuffer
+
+And it would come out like this:
+
+\getbuffer
+
+In \in {chapter} [chap:chemical] you can find some more information on chemistry
+typesetting with \CONTEXT.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

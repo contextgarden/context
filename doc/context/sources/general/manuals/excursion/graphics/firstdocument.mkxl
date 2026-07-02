@@ -1,0 +1,11 @@
+% signal=squid
+
+% the very first \CONTEXT document
+
+\setupbodyfont[pagella,10pt]
+
+\startdocument
+
+  \bfb  This is my very first \CONTEXT\ document!
+
+\stopdocument

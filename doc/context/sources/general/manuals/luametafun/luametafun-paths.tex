@@ -3,6 +3,8 @@
 % \enablemode[check]
 
 % corners == boundingbox
+% check all delta*
+% check all path*
 
 \environment luametafun-style
 
@@ -776,6 +778,65 @@ ten point shape looks like:
 
 \startlinecorrection \getbuffer \stoplinecorrection
 
+There are more efficient helpers. Some are applied to a path, like in the example
+below:
+
+\startbuffer[a]
+\startMPcode
+path p ; p := fullcircle xyscaled (100,20) ;
+
+draw p withpen pencircle scaled 3 withcolor "middlegray" ;
+
+pickup pencircle scaled 5;
+
+drawdot firstpoint       p withcolor "darkred"   ;
+drawdot lastpoint        p withcolor "darkgreen" ;
+
+pickup pencircle scaled 3;
+
+drawdot firstprecontrol  p withcolor "darkred"   ;
+drawdot firstpostcontrol p withcolor "darkred"   ;
+drawdot lastprecontrol   p withcolor "darkgreen" ;
+drawdot lastpostcontrol  p withcolor "darkgreen" ;
+
+setbounds currentpicture to p enlarged 5 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[a][option=TEX]
+
+These mostly make sense in macros that manipulate paths, so for examples you can
+check their usage in the \CONTEXT\ distribution. In addition there are also \typ
+{firstdirection}, \typ {lastdirection}, \typ {firstunitdirection}, \typ
+{lastunitdirection}
+
+\startbuffer[b]
+\startMPcode
+path p ; p := fullcircle xyscaled (100,20) ;
+
+draw p withpen pencircle scaled 3 withcolor "middlegray" ;
+
+for i within p :
+    drawarrow
+        (pathpoint -- 20 * pathunitdirection shifted pathpoint)
+        withcolor "darkblue" ;
+endfor
+setbounds currentpicture to p enlarged 5 ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[b][option=TEX]
+
+Again, these are mostly meant for extensive path manipulations. There are also
+\typ {delta*} variants. Anyway, these two examples give us:
+
+\startlinecorrection
+    \startcombination[distance=1cm,align=middle]
+        {\getbuffer[a]} {}
+        {\getbuffer[b]} {}
+    \stopcombination
+\stoplinecorrection
+
 \stopsection
 
 \startsection[title=Randomized paths]
@@ -1042,6 +1103,356 @@ draw piece
 
 This turtle graphics example (by Milkael S) also demonstrates appending subpaths
 to a single path.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Segments]
+
+Because we can construct a path in segments using \type {&&} we have methods for
+accessing these segments. The following example demonstrates how we can access
+these segments. We define a path that is made from two segments. We \type
+{eofill} them, as we do for instance with glyphs in fonts. Here we have two
+segments. The \type {segments} operators returns the number of segments, and
+\type {segment} returns the subpath range. The \type {subpath} operator accepts a
+numeric in which case it will return the segment.
+
+\startbuffer
+\startMPcode
+    path p ; p := fullcircle xysized (TextWidth,2cm) ;
+    p := p && p scaled .5;
+    eofill p && cycle withcolor "lightgray" ;
+    draw
+        subpath 1 of p
+        withcolor "darkred"
+        withpen pencircle scaled 4mm ;
+    draw
+        subpath 2 of p
+        withcolor "darkgreen"
+        withpen pencircle scaled 4mm ;
+    draw
+        subpath (segment 1 of p) of p
+        withcolor white
+        withpen pencircle scaled 2mm ;
+    draw
+        subpath (segment 2 of p) of p
+        withcolor white
+        withpen pencircle scaled 2mm ;
+    draw p
+        withcolor "darkblue"
+        withpen pencircle scaled .75mm ;
+    draw textext("\tx we have " & decimal segments p & " segments");
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+In order to let the \type{eofill} do its work we have to close the path properly. The
+next snippet has the same effect:
+
+\starttyping[option=MP]
+p := p && reverse p scaled 2;
+fill p && cycle withcolor "lightgray" ;
+\stoptyping
+
+Anyway, we get this picture:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+\stopsection
+
+\startsection[title=Checking progress]
+
+While constructing a path you have access to the coordinates of the
+last added point:
+
+\startbuffer
+\startMPcode
+    draw (0,0)
+        -- (1cm,1cm)
+        -- (lastx + 2cm, 1cm)
+        -- (lastx + 1cm, lasty - 1cm)
+        -- 2 * lastxy
+    withpen pencircle scaled 1mm withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The not so spectacular result is:
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+We also have \type {previousx}, \type {previousy} and \type {previousxy} but be
+aware of the fact that when you consult these after a first knot, these can have
+a value related to a previous path. This is on purpose because we can use this to
+pick up a path made from segments. When it has huge (infinite) values that
+indicates a reset, for instance when we cycle. This might evolve a bit
+as we proceed.
+
+\starttyping[option=MP]
+% draw (0,0); uncomment this to see the difference
+draw
+    (0,   0) -- % after adding the knot:
+    hide(message(ddecimal previousxy & " " & ddecimal lastxy))
+    (10, 10) -- % after adding the knot:
+    hide(message(ddecimal previousxy & " " & ddecimal lastxy))
+    (lastx + 20, 10) -- % after adding the knot:
+    hide(message(ddecimal previousxy & " " & ddecimal lastxy))
+    (lastx + 10, lasty - 10) -- % after adding the knot:
+    hide(message(ddecimal previousxy & " " & ddecimal lastxy))
+    2 * lastxy
+;
+\stoptyping
+
+\stopsection
+
+\startsection[title=Triplets]
+
+In a way we can see a triplet as used in \RGB\ colors as a three dimensional
+coordinate and in the future we might actually add some native support
+for it. For the moment we provide \type {xpart}, \type {ypart},
+\type {zpart} and \type {wpart} for the triplet and quadruplets.
+
+A consequence is that some operations that one would not expect to work on
+colors, now actually do. So, one can multiply them and for instance apply the
+\type {normalize} unary operator.
+
+\stopsection
+
+\startsection[title=Nice to know]
+
+It is hard to document every trick which is why users can peek in the source and
+see what can be done. In \in {figure} [fig:roundpath] we see a possible
+application for \type {round}.
+
+\startbuffer
+\startMPcode
+    pickup pencircle scaled 2mm
+    draw      (fullcircle scaled 30mm) withcolor "darkred"   ;
+    draw round(fullcircle scaled 30mm) withcolor "white"     ;
+    draw      (fullcircle scaled 20mm) withcolor "darkgreen" ;
+    draw round(fullcircle scaled 20mm) withcolor "white"     ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The \type {round} command can be applied to various data types, which is true for more
+such commands. If you miss something, just ask for it.
+
+\startplacefigure[title={An a-typical application of \type {round}.},reference=fig:roundpath]
+    \framed{\getbuffer}
+\stopplacefigure
+
+There are some helpers that only make sense in specific situations, take for
+instance this one:
+
+\startbuffer
+\startMPcode
+pickup pencircle scaled 1mm ;
+draw sortedpath fullcircle  xyscaled (5cm,1cm)
+    withcolor "darkred" ;
+draw sortedpath fulldiamond xyscaled (5cm,1cm) xshifted 6cm
+    withcolor "darkgreen" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Although can use this for special effects, its's main application is in
+situations where we use a path as a data structure, an efficient collection of
+points.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Here are some more, can you guess what they are?
+
+\startbuffer
+\startMPcode
+draw image (
+    draw sortedpath fulloctagon xyscaled (5cm,1cm) ;
+    draw sortedpath fullsquare  xyscaled (5cm,1cm) xshifted  6cm ;
+    draw sortedpath fullhexagon xyscaled (5cm,1cm) xshifted 12cm ;
+) withcolor "darkblue" withpen pencircle scaled 1mm ;
+\stopMPcode
+\stopbuffer
+
+% \typebuffer[option=TEX]
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Some commands can be improved but best can be left untouched because they might
+be used in specific situations. The next two cutters are for instance used in a
+presentation style that already was present in \MKII.
+
+\startbuffer
+\startMPcode
+def demo (expr p) =
+    image (
+        drawarrow           p scaled 20mm withcolor "darkred"   ;
+        drawarrow leftpath  p scaled 15mm withcolor "darkblue"  ;
+        drawarrow rightpath p scaled 10mm withcolor "darkgreen" ;
+    )
+enddef ;
+
+draw demo(fullcircle rotated 90)
+    withpen pencircle scaled 1mm
+;
+draw demo(fullsquare) xshifted 25mm
+    withpen pencircle scaled 1mm
+;
+draw demo(fullsquare squeezed .1) xshifted 50mm
+    withpen pencircle scaled 1mm
+;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+As long as you keep in mind that in matters where the first point is, you're
+probably fine. Also, there might in the meantime be better ways to get the result
+you want.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+Although you can use \type {cycle} to close a curve you might want
+a different solution, like this:
+
+\startbuffer
+\startMPcode
+def demo (expr p) =
+    image (
+        draw closedcurve (p scaled 20mm) withcolor "darkred" ;
+        draw (p && cycle)   scaled 20mm  withcolor "darkblue" ;
+        draw p              scaled 20mm  withcolor "darkgray" ;
+    ) withpen pencircle scaled 2mm
+enddef ;
+
+draw demo ((0,0) -- (1,0) -- (1,1)) ;
+draw demo ((0,0) .. (1,0) .. (1,1)) xshifted 40mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Such helpers can also be looked at to get ideas of how to manipulate graphics
+because one easily forget that they are around. If you look at the source you
+will notice that they are just selectively applied \typ {.. cycle} and \typ {--
+cycle} operations.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+For some trickery normalization can be needed and that is what \typ
+{xnormalized}, \typ {ynormalized} and \typ {xynormalized} do. Here is an example:
+
+\startbuffer
+\startMPcode
+draw fullcircle scaled 2cm
+    withpen pencircle scaled 4mm withcolor "lightgray" ;
+draw unitcircle scaled 2cm                               xshifted 3cm
+    withpen pencircle scaled 2mm withcolor "lightgray" ;
+draw fullcircle scaled 2cm xynormalized (1,1) scaled 2cm
+    withpen pencircle scaled 3mm withcolor "darkred" ;
+draw unitcircle scaled 2cm xynormalized (1,1) scaled 2cm xshifted 3cm
+    withpen pencircle scaled 1mm withcolor "darkgreen" ;
+
+drawdot origin              withpen pencircle scaled 2mm ;
+drawdot origin xshifted 3cm withpen pencircle scaled 2mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+It also demonstrates the difference between these (predefined) \type {full} and
+\type {unit} paths.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+The version of \type {drawdot} that we have in \LUAMETAFUN\ also handles a path and
+picture. It actually generates a rather efficient output.
+
+\startbuffer
+\startMPcode
+drawdot fullcircle scaled 20mm
+    withpen pencircle scaled 2mm withcolor "darkgreen" ;
+
+drawdot image (
+    draw fullcircle rotated (45/4) scaled 15mm ;
+    draw fullcircle rotated (45/2) scaled 10mm ;
+) withpen pencircle scaled 2mm withcolor "darkred" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+Looking at the definition of this macro might actually teach you some tricks as it
+used functionality not present in stock \METAPOST.
+
+\startlinecorrection \getbuffer \stoplinecorrection
+
+% Here is another curious one. We efficiently loop over a path and apply some
+% macro to it and from the \quote {return} values we constrict a new path. The
+% problem is of course that you get the control points true so
+%
+% \startbuffer
+% \startMPcode
+% vardef foo (expr what, p) =
+%     draw p withpen pencircle scaled (1mm/what) ; p
+% enddef ;
+%
+% draw processpath (fullcircle xyscaled (6cm,2cm)) (foo)
+%     withpen pencircle scaled .25mm withcolor "darkred" ;
+% \stopMPcode
+% \stopbuffer
+%
+% \typebuffer[option=TEX]
+%
+% Of course just looping with \type {within} is often better but we didn't had that
+% one yet.
+%
+% \startlinecorrection \getbuffer \stoplinecorrection
+
+Although \METAPOST\ relates to \POSTSCRIPT\ its ancestor \METAFONT\ is slightly
+different when it comes to transform matrices. The following definitions from \METAFUN\
+show this:
+
+\starttyping[option=MP]
+vardef totransform(expr x, y, xx, xy, yx, yy) =
+    save t ; transform t ;
+    xxpart t = xx ; yypart t = yy ;
+    xypart t = xy ; yxpart t = yx ;
+    xpart  t = x  ; ypart  t = y  ;
+    t
+enddef ;
+
+vardef bymatrix(expr rx, sx, sy, ry, tx, ty) =
+    save t ; transform t ;
+    xxpart t = rx ; yypart t = ry ;
+    xypart t = sx ; yxpart t = sy ;
+    xpart  t = tx ; ypart  t = ty ;
+    t
+enddef ;
+\stoptyping
+
+The second definition can come in handy when you operate in a \POSTSCRIPT, \PDF, \SVG\ or
+similar regime.
+
+\startbuffer
+\startMPcode
+draw (fullcircle scaled 20mm)
+    withpen pencircle scaled 1mm withcolor "darkred" ;
+draw (fullcircle scaled 20mm) transformed bymatrix(2,0.5,0.5,1,5mm,-5mm)
+    withpen pencircle scaled 1mm withcolor "darkblue" ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+The term transform matrix is often use in this context and it also shows up when
+fonts are involved. The first and third parameter are scales, the second and
+third slant and/or rotate, while the last two move.
 
 \startlinecorrection \getbuffer \stoplinecorrection
 

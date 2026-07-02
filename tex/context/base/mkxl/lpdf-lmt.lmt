@@ -40,30 +40,31 @@ local concat, sortedhash = table.concat, table.sortedhash
 local setmetatableindex = table.setmetatableindex
 local loaddata = io.loaddata
 
-local bpfactor       <const> = number.dimenfactors.bp
+local bpfactor     <const> = number.dimenfactors.bp
+local objectmargin <const> = 1 -- bp here but sp lpdf-wid / todo: check elsewhere
 
-local osuuid                 = os.uuid
-local zlibcompresssize       = xzip.compresssize
+local osuuid               = os.uuid
+local zlibcompresssize     = xzip.compresssize
 
-local nuts                   = nodes.nuts
+local nuts                 = nodes.nuts
 
-local pdfreference           = lpdf.reference
-local pdfdictionary          = lpdf.dictionary
-local pdfarray               = lpdf.array
-local pdfconstant            = lpdf.constant
-local pdfliteral             = lpdf.literal -- not to be confused with a whatsit!
-local pdfunicode             = lpdf.unicode
+local pdfreference         = lpdf.reference
+local pdfdictionary        = lpdf.dictionary
+local pdfarray             = lpdf.array
+local pdfconstant          = lpdf.constant
+local pdfliteral           = lpdf.literal -- not to be confused with a whatsit!
+local pdfunicode           = lpdf.unicode
 
-local pdfreserveobject       -- forward reference
-local pdfpagereference       -- forward reference
-local pdfgetpagereference    -- forward reference
-local pdfsharedobject        -- forward reference
-local pdfflushobject         -- forward reference
-local pdfflushstreamobject   -- forward reference
-local pdfdeferredobject      -- forward reference
-local pdfimmediateobject     -- forward reference
+local pdfreserveobject     -- forward reference
+local pdfpagereference     -- forward reference
+local pdfgetpagereference  -- forward reference
+local pdfsharedobject      -- forward reference
+local pdfflushobject       -- forward reference
+local pdfflushstreamobject -- forward reference
+local pdfdeferredobject    -- forward reference
+local pdfimmediateobject   -- forward reference
 
-local pdfincludeimage        -- forward reference
+local pdfincludeimage      -- forward reference
 
 local pdf_pages         = pdfconstant("Pages")
 local pdf_page          = pdfconstant("Page")
@@ -1386,7 +1387,6 @@ do
         end
         --
         local width, height, depth = getwhd(list)
--- print(width,height,depth)
         --
         local l = {
             width      = width,
@@ -2553,7 +2553,7 @@ local finalize  do
         else
 
             local xformtype  = specification.type or 0
-            local margin     = specification.margin or 0
+            local margin     = specification.margin or 0 -- this will go
             local attributes = specification.attributes or ""
             local resources  = specification.resources or ""
             local wrapper    = nil
@@ -2575,13 +2575,30 @@ local finalize  do
                 }
             end
             if xformtype == 0 or xformtype == 1 or xformtype == 3 then
-                margin = 1
+
+                -- This is tricky. Nowadays viewers seem to be accurate, in the past
+                -- boundingboxes could not always be floats so we had to round and
+                -- compensate for unwanted clipping.
+
+                -- However, because appearance symbols can alse be sensitive we now
+                -- no longer round so that we can reliably shift over the llcorner
+                -- when that is needed: see lpdf-wid (commentrs and attachments).
+                --
+                -- This is something we need to keep an eye on now that viewers
+                -- converge. In the past it depended on the viewer (so I adapted to
+                -- the one we use. I might need to check a few places and maybe
+                -- just hard-code the margin (we anyway have different compensation
+                -- in place too, already from MKII times).
+
+                margin = objectmargin -- hard coded
+
                 wrapper.BBox = pdfarray {
-                     floor(boundingbox[1] * bpfactor) - margin,
-                     floor(boundingbox[2] * bpfactor) - margin,
-                     ceil (boundingbox[3] * bpfactor) + margin,
-                     ceil (boundingbox[4] * bpfactor) + margin,
+                     boundingbox[1] * bpfactor - margin, -- was floor(...) - margin
+                     boundingbox[2] * bpfactor - margin, -- was floor(...) - margin
+                     boundingbox[3] * bpfactor + margin, -- was ceil (...) + margin
+                     boundingbox[4] * bpfactor + margin, -- was ceil (...) + margin
                 }
+
             end
             if xformtype == 0 or xformtype == 2 or xformtype == 3 then
                 -- can be shared too
@@ -3300,6 +3317,13 @@ local openfile, closefile  do
     -- reconstruction of the file by a viewer gives weird effects probably because percent symbols
     -- gets interpreted then. Thanks to Ross Moore for noticing this side effect!
 
+    -- When we compress we also compact the cross reference table. Mid 2026 there was a post on the
+    -- LuaTeX list wrt some inkscape output using 8 bytes for the offset. The pdf library maxed at 4
+    -- so we bumped that to 8 there. Of course that 8 probably had to be 4 (nibbles vs bytes)
+    -- because what application will produce TB files, especially an editor because the data file
+    -- (say xml) would be even larger let alone memory consumption for the internal data structures
+    -- and processing power needed for dealing with rendering and editing and such.
+
     local f_used       = formatters["%010i 00000 n\013\010"]
     local f_link       = formatters["%010i 00000 f\013\010"]
     local f_first      = formatters["%010i 65535 f\013\010"]
@@ -3523,7 +3547,7 @@ local openfile, closefile  do
                             end
                         end
                     end
-                else
+                elseif offset <= 0xFFFFFFFF then
                     nofbytes = 4
                     for i=1,nofobjects do
                         local o = objects[i]
@@ -3554,6 +3578,49 @@ local openfile, closefile  do
                                 local f3 = (lastfree>> 8)&0xFF
                                 local f4 = (lastfree>> 0)&0xFF
                                 objects[i] = char(0,f1,f2,f3,f4,0)
+                                lastfree   = i
+                            end
+                        end
+                    end
+                else
+                    -- This should be more than enough, normally we have a compressed file so we
+                    -- don't go into TB space but one never knows if a user wants to challenge the
+                    -- machinery. One needs a lot of memory to get there anyway (maybe with huge
+                    -- images). In LuaTeX the maximum is 5 which is quite okay.
+                    nofbytes = 6
+                    for i=1,nofobjects do
+                        local o = objects[i]
+                        if not o then
+                            noffree = noffree + 1
+                        else
+                            local strm = o < 0
+                            if strm then
+                                o = -o
+                            end
+                            c1 = (o>>40)&0xFF
+                            c2 = (o>>32)&0xFF
+                            c3 = (o>>24)&0xFF
+                            c4 = (o>>16)&0xFF
+                            c5 = (o>> 8)&0xFF
+                            c6 = (o>> 0)&0xFF
+                            if strm then
+                                objects[i] = char(2,c1,c2,c3,c4,c5,c6,streams[o][i])
+                            else
+                                objects[i] = char(1,c1,c2,c3,c4,c5,c6,0)
+                            end
+                        end
+                    end
+                    if noffree > 0 then
+                        for i=nofobjects,1,-1 do
+                            local o = objects[i]
+                            if not o then
+                                local f1 = (lastfree>>40)&0xFF
+                                local f2 = (lastfree>>32)&0xFF
+                                local f3 = (lastfree>>24)&0xFF
+                                local f4 = (lastfree>>16)&0xFF
+                                local f5 = (lastfree>> 8)&0xFF
+                                local f6 = (lastfree>> 0)&0xFF
+                                objects[i] = char(0,f1,f2,f3,f4,f5,f6,0)
                                 lastfree   = i
                             end
                         end
@@ -3693,7 +3760,7 @@ do
     local lastindex      = 0
     local indices        = { }
 
-    local bpfactor       = number.dimenfactors.bp
+    ----- bpfactor        const> = number.dimenfactors.bp
 
     function codeinjections.newimage(specification)
         return specification
@@ -3926,8 +3993,8 @@ do
 --         converter(useddriver,...) -- otherwise nil .. lua bug
 --     end
 
-    localconverter = function(a,b,c,d)
-        converter(useddriver,a,b,c,d)
+    localconverter = function(...)
+        converter(useddriver,...)
     end
 
     drivers.install {

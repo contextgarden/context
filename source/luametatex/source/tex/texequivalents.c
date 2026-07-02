@@ -1050,11 +1050,11 @@ static void tex_aux_handle_overload(const char *s, halfword cs, int overload, in
     }
 }
 
-static void tex_aux_handle_overload_register(const char *s, halfword cs, int overload, int error_type, halfword index, const char *reg)
+static void tex_aux_handle_overload_register(const char *s, halfword flags, int overload, int error_type, halfword index, const char *reg)
 {
     int callback_id = lmt_callback_defined(handle_overload_callback);
     if (callback_id > 0) {
-        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "bdSdd->", error_type == normal_error_type, overload, reg, eq_flag(cs), index);
+        lmt_run_callback(lmt_lua_state.lua_instance, callback_id, "bdSdd->", error_type == normal_error_type, overload, reg, flags, index);
     } else {
         tex_handle_error(
             error_type,
@@ -1065,96 +1065,103 @@ static void tex_aux_handle_overload_register(const char *s, halfword cs, int ove
     }
 }
 
-int tex_report_overload(halfword cs, int overload)
+static int tex_report_overload(halfword overload, halfword flags, halfword cs)
 {
     int error_type = overload & 1 ? warning_error_type : normal_error_type;
-    if (has_eq_flag_bits(cs, immutable_flag_bit)) {
+    if (is_immutable(flags)) {
         tex_aux_handle_overload("immutable", cs, overload, error_type);
-    } else if (has_eq_flag_bits(cs, primitive_flag_bit)) {
+    } else if (is_primitive(flags)) {
         tex_aux_handle_overload("primitive", cs, overload, error_type);
-    } else if (has_eq_flag_bits(cs, permanent_flag_bit)) {
+    } else if (is_permanent(flags)) {
         tex_aux_handle_overload("permanent", cs, overload, error_type);
-    } else if (has_eq_flag_bits(cs, frozen_flag_bit)) {
+    } else if (is_frozen(flags)) {
         tex_aux_handle_overload("frozen", cs, overload, error_type);
-    } else if (has_eq_flag_bits(cs, instance_flag_bit)) {
+    } else if (is_instance(flags)) {
         tex_aux_handle_overload("instance", cs, overload, warning_error_type);
         return 1;
     }
     return error_type == warning_error_type;
 }
 
-int tex_report_overload_register(halfword cs, int overload, halfword index, const char *str)
+static int tex_report_overload_register(halfword overload, halfword flags, halfword index, const char *str)
 {
     int error_type = overload & 1 ? warning_error_type : normal_error_type;
-    if (has_eq_flag_bits(cs, immutable_flag_bit)) {
-        tex_aux_handle_overload_register("immutable", cs, overload, error_type, index, str);
+    if (is_immutable(flags)) {
+        tex_aux_handle_overload_register("immutable", flags, overload, error_type, index, str);
     }
     return error_type == warning_error_type;
 }
 
 int tex_define_permitted(halfword cs, halfword prefixes)
 {
-    halfword overload = overload_mode_par;
-    if (! cs || ! overload || has_eq_flag_bits(cs, mutable_flag_bit)) {
+    if (! cs) {
         return 1;
-    } else if (is_overloaded(prefixes)) {
-        if (overload > 2 && has_eq_flag_bits(cs, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit)) {
-            return tex_report_overload(cs, overload);
+    }  else {
+        halfword overload = overload_mode_par;
+        int flags = eq_flag(cs);
+        if (is_persistent(flags) && lmt_main_state.overload_state) {
+             /* bad */
+        } else if (! overload || is_mutable(flags)) {
+             return 1;
+        } else if (is_overloaded(prefixes)) {
+            if (overload > 2 && has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit)) {
+                /* bad */
+            } else {
+                return 1;
+            }
+        } else if (overload > 4) {
+            if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit | instance_flag_bit)) {
+                /* bad */
+            } else {
+                return 1;
+            }
+        } else if (overload > 2) {
+            if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit)) {
+                /* bad */
+            } else {
+                return 1;
+            }
+        } else if (has_flag_bits(flags, immutable_flag_bit)) {
+            /* bad */
+        } else {
+            return 1;
         }
-    } else if (overload > 4) {
-        if (has_eq_flag_bits(cs, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit | instance_flag_bit)) {
-            return tex_report_overload(cs, overload);
-        }
-    } else if (overload > 2) {
-        if (has_eq_flag_bits(cs, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit)) {
-            return tex_report_overload(cs, overload);
-        }
-    } else if (has_eq_flag_bits(cs, immutable_flag_bit)) {
-        return tex_report_overload(cs, overload);
+        return tex_report_overload(overload, flags, cs);
     }
-    return 1;
-}
-
-int tex_overload_permitted(halfword flags)
-{
-    halfword overload = overload_mode_par;
-    if (! overload || has_flag_bits(flags, mutable_flag_bit)) {
-        return 1;
-    } else if (is_overloaded(flags)) {
-        if (overload > 2 && has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit)) {
-            return tex_report_overload(flags, overload);
-        }
-    } else if (overload > 4) {
-        if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit | instance_flag_bit)) {
-            return tex_report_overload(flags, overload);
-        }
-    } else if (overload > 2) {
-        if (has_flag_bits(flags, immutable_flag_bit | permanent_flag_bit | primitive_flag_bit | frozen_flag_bit)) {
-            return tex_report_overload(flags, overload);
-        }
-    } else if (has_flag_bits(flags, immutable_flag_bit)) {
-        return tex_report_overload(flags, overload);
-    }
-    return 1;
 }
 
 int tex_mutation_permitted(halfword cs)
 {
-    halfword overload = overload_mode_par;
-    if (cs && overload && has_eq_flag_bits(cs, immutable_flag_bit)) {
-        return tex_report_overload(cs, overload);
-    } else {
+    if (! cs) {
         return 1;
+    } else {
+        int flags = eq_flag(cs);
+        if (is_persistent(flags) && lmt_main_state.overload_state) {
+            /* bad */
+        } else if (overload_mode_par && is_immutable(flags)) {
+            /* bad */
+        } else {
+            return 1;
+        }
+        return tex_report_overload(overload_mode_par, flags, cs);
     }
 }
 
 int tex_register_permitted(halfword cs, halfword index, halfword cmd)
 {
-    halfword overload = overload_mode_par;
-    if (cs && overload && has_eq_flag_bits(cs, immutable_flag_bit)) {
-        return tex_report_overload_register(cs, overload, index, lmt_interface.command_names[cmd].name);
-    } else {
+    if (! cs) {
         return 1;
+    } else {
+        halfword overload = overload_mode_par;
+        int flags = eq_flag(cs);
+        if (is_persistent(flags) && lmt_main_state.overload_state) {
+            /* bad */
+        } else if (overload && is_immutable(flags)) {
+            /* bad */
+        } else {
+            return 1;
+        }
+        return tex_report_overload_register(overload, flags, index, lmt_interface.command_names[cmd].name);
     }
 }
 
@@ -1789,6 +1796,8 @@ void tex_define_swapped(int g, halfword p1, halfword p2, int force)
            } else if (is_immutable(f1)) {
                goto NOTDONE;
            }
+        } else if (is_persistent(f1) && lmt_main_state.overload_state) {
+           goto NOTDONE;
         }
         if (v1 == v2)  {
             return;

@@ -737,11 +737,6 @@ static int texlib_isprintable(lua_State* L)
     return 1;
 }
 
-static int texlib_overloadpermitted(lua_State* L)
-{
-    return tex_overload_permitted(lmt_tointeger(L, 1));
-}
-
 /*tex We actually don't need to copy and could read from the string. */
 
 int lmt_cstring_input(halfword *result, int *cattable, int *partial, int *finalline)
@@ -4122,8 +4117,8 @@ static int texlib_primitives(lua_State *L)
 {
     int cs = 0;
     int nt = 0;
-    lua_createtable(L, prim_size, 0);
-    while (cs < prim_size) {
+    lua_createtable(L, primitives_size, 0);
+    while (cs < primitives_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
             lua_pushstring(L, tex_to_cstring(s));
@@ -4159,8 +4154,8 @@ static int texlib_extraprimitives(lua_State *L)
             }
         }
     }
-    lua_createtable(L, prim_size, 0);
-    while (cs < prim_size) {
+    lua_createtable(L, primitives_size, 0);
+    while (cs < primitives_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) & mask)) {
             lua_pushstring(L, tex_to_cstring(s));
@@ -4235,7 +4230,7 @@ static int texlib_enableprimitives(lua_State *L)
                 break;
             case LUA_TBOOLEAN:
                 if (lua_toboolean(L, 2)) {
-                    for (int cs = 0; cs < prim_size; cs++) {
+                    for (int cs = 0; cs < primitives_size; cs++) {
                         strnumber s = get_prim_text(cs);
                         if (s > 0) {
                             const char *primitive = tex_to_cstring(s);
@@ -5184,12 +5179,15 @@ static int texlib_expandasvalue(lua_State *L) /* mostly like the mp one */
                     if (! lmt_error_state.last_intercept) {
                         lua_pushinteger(L, value);
                         break;
-                    } else if (kind == lua_value_none_code) {
-                        head = lmt_macro_to_tok(L, 2, &tail);
-                        goto TRYAGAIN;
                     } else {
-                        head = lmt_macro_to_tok(L, 2, &tail);
-                        goto JUSTINCASE;
+                        lmt_error_state.last_intercept = 0;
+                        if (kind == lua_value_none_code) {
+                            head = lmt_macro_to_tok(L, 2, &tail);
+                            goto TRYAGAIN;
+                        } else {
+                            head = lmt_macro_to_tok(L, 2, &tail);
+                            goto JUSTINCASE;
+                        }
                     }
                 }
             case lua_value_integer_code:
@@ -5211,6 +5209,7 @@ static int texlib_expandasvalue(lua_State *L) /* mostly like the mp one */
                         tex_get_token();
                     }
                     if (lmt_error_state.last_intercept) {
+                        lmt_error_state.last_intercept = 0;
                         head = lmt_macro_to_tok(L, 2, &tail);
                         goto JUSTINCASE;
                     } else if (kind == lua_value_boolean_code) {
@@ -5823,6 +5822,18 @@ static int texlib_getrunstate(lua_State *L)
     return 1;
 }
 
+static int texlib_getoverloadstate(lua_State *L)
+{
+    lua_pushinteger(L, lmt_main_state.overload_state);
+    return 1;
+}
+
+static int texlib_setoverloadstate(lua_State *L)
+{
+    lmt_main_state.overload_state = 1;
+    return 0;
+}
+
 /*tex
     todo: Some of these keywords can be removed from the interface keys, saves bytes and never 
     accessed as key.
@@ -5911,7 +5922,7 @@ static int texlib_getinsertsplitvalues(lua_State *L)
 
 static int texlib_getglueoptionvalues(lua_State *L)
 {
-    lua_createtable(L, 10, 2);
+    lua_createtable(L, 11, 2);
     lua_set_string_by_index(L, glue_option_normal,            "normal");
     lua_set_string_by_index(L, glue_option_no_auto_break,     "noautobreak");
     lua_set_string_by_index(L, glue_option_has_factor,        "hasfactor");
@@ -5925,6 +5936,7 @@ static int texlib_getglueoptionvalues(lua_State *L)
  // lua_set_string_by_index(L, glue_option_delay,             "delay");
     lua_set_string_by_index(L, glue_option_has_parskip,       "hasparskip");
     lua_set_string_by_index(L, glue_option_ragged_done,       "raggeddone");
+    lua_set_string_by_index(L, glue_option_is_space,          "isspace");
     return 1;
 }
 
@@ -7342,7 +7354,6 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "tprint",                       texlib_tprint                         },
     { "cprint",                       texlib_cprint                         },
     { "isprintable",                  texlib_isprintable                    },
-    { "overloadpermitted",            texlib_overloadpermitted              },
     { "pushlocal",                    texlib_pushlocal                      },
     { "poplocal",                     texlib_poplocal                       },
     { "runlocal",                     texlib_runlocal                       },
@@ -7506,6 +7517,8 @@ static const struct luaL_Reg texlib_function_list[] = {
     { "getrunstatevalues",            texlib_getrunstatevalues              },
     { "setrunstate",                  texlib_setrunstate                    },
     { "getrunstate",                  texlib_getrunstate                    },
+    { "setoverloadstate",             texlib_setoverloadstate               },
+    { "getoverloadstate",             texlib_getoverloadstate               },
     { "gethyphenationvalues",         texlib_gethyphenationvalues           },
     { "getglyphoptionvalues",         texlib_getglyphoptionvalues           },
     { "getinsertoptionvalues",        texlib_getinsertoptionvalues          },

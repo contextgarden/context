@@ -1,0 +1,354 @@
+%D \module
+%D   [       file=meta-imp-meshes-mengersponge,
+%D        version=2026.06.09,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Menger Sponge,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D On the web one can find nice examples of (printed) 3D objects that are
+%D mathematically defined. When we added support for stl files to the 3D rendering,
+%D Menger Sponges were among the examples. Because it was not clear what licenses
+%D these files cary, it made sense to make one ourselves. Because we were still in
+%D \quotation {Let's see how good these code generators are} mode I decided to query
+%D the Google Gemini \LLM\ in the browser and it actually did come up with something
+%D that sort of looked right but coloring was bad. In these images the normal
+%D vectors are important so one need to get these right and that also demands some
+%D understanding. Normally one uses some interactive 3D program for these shape
+%D anyway.
+%D
+%D Later attemps (also with some local open source models) failed and gave
+%D suspicious similar wrong solutions so one can wonder where it all comes from. In
+%D the end one had to massage the kind-of-working one into something correct which
+%D of course is wasting time too. On top of that, not knowing where some suggested
+%D solution comes from makes one feel kind of bad. It makes one wonder what is done with
+%D open source sode one produces.
+%D
+%D One of the more interesting experiences was that when you ask for \LUA\ code, you
+%D get weird syntax additions, quite inefficient code, and branhes that when they
+%D would kick in are just wrong. It often looks like some mix of (maybe) \PYTHON\
+%D and \CCODE\ turned \LUA. So: be suspicious and never realy on it. And because
+%D we're talking typesetting and graphics: trust your eyes! And don't expect me (or
+%D someone on the mailing list) to waste time on fixing your AI generated code.
+%D
+%D Once the initial AI hype is over we probably end up with dedicated small usage in
+%D toolchains (syntax checking or so), checking text for errors (just another tool
+%D in text procesing) and advanced searching. Of course the dubious morale of the
+%D big tech companies involved, the devastating amount of resources needed to train
+%D and keep these models up to date in no way trades of, the benetfits are not worth
+%D it. The suggestion of talking to something intelligent quicky wears of because
+%D it's like talking to a wise kid, not really knowing things. Even worse: you
+%D correct it, try to improve the results but in the end it doesn't pick up because
+%D in the (unpredictable) next session its brain has flushed.
+%D
+%D Neverthless, here is a solution:
+
+\startluacode
+
+local directions = {
+    {  1,  0,  0 }, -- right
+    { -1,  0,  0 }, -- left
+    {  0,  1,  0 }, -- top
+    {  0, -1,  0 }, -- bottom
+    {  0,  0,  1 }, -- front
+    {  0,  0, -1 }, -- back
+}
+
+local function issolid(x,y,z,level)
+    for i=1,level do
+        local axes = 0
+        if (x % 3) == 1 then axes = axes + 1 end
+        if (y % 3) == 1 then axes = axes + 1 end
+        if (z % 3) == 1 then axes = axes + 1 end
+        if axes >= 2 then
+            return false
+        else
+            x = x // 3
+            y = y // 3
+            z = z // 3
+        end
+    end
+    return true
+end
+
+local function mengersponge(level,scale,sparse,transform)
+    local dimension = 3 ^ level
+    local last      = dimension - 1
+    local step      = scale / dimension
+    local vertices  = { }
+ -- local triangles = triangles and { } or false
+    for x=0,last do
+        for y=0,last do
+            for z=0,last do
+                if issolid(x,y,z,level) then
+                    for i=1,#directions do
+                        local dir = directions[i]
+                        local nx = x + dir[1]
+                        local ny = y + dir[2]
+                        local nz = z + dir[3]
+                        if not sparse
+                           or nx < 0 or nx >= dimension
+                           or ny < 0 or ny >= dimension
+                           or nz < 0 or nz >= dimension
+                           or not issolid(nx,ny,nz,level) then
+                            local x0 = x * step
+                            local y0 = y * step
+                            local z0 = z * step
+                            local x1 = x0 + step
+                            local y1 = y0 + step
+                            local z1 = z0 + step
+                            local p1, p2, p3, p4
+                            if i == 1 then
+                                p1 = { x1, y0, z0,  1,  0,  0 }  p2 = { x1, y1, z0,  1,  0,  0 }
+                                p3 = { x1, y1, z1,  1,  0,  0 }  p4 = { x1, y0, z1,  1,  0,  0 }
+                            elseif i == 2 then
+                                p1 = { x0, y0, z1, -1,  0,  0 }  p2 = { x0, y1, z1, -1,  0,  0 }
+                                p3 = { x0, y1, z0, -1,  0,  0 }  p4 = { x0, y0, z0, -1,  0,  0 }
+                            elseif i == 3 then
+                                p1 = { x0, y1, z0,  0,  1,  0 }  p2 = { x0, y1, z1,  0,  1,  0 }
+                                p3 = { x1, y1, z1,  0,  1,  0 }  p4 = { x1, y1, z0,  0,  1,  0 }
+                            elseif i == 4 then
+                                p1 = { x0, y0, z1,  0, -1,  0 }  p2 = { x0, y0, z0,  0, -1,  0 }
+                                p3 = { x1, y0, z0,  0, -1,  0 }  p4 = { x1, y0, z1,  0, -1,  0 }
+                            elseif i == 5 then
+                                p1 = { x0, y0, z1,  0,  0,  1 }  p2 = { x1, y0, z1,  0,  0,  1 }
+                                p3 = { x1, y1, z1,  0,  0,  1 }  p4 = { x0, y1, z1,  0,  0,  1 }
+                            else -- if i == 6 then
+                                p1 = { x1, y0, z0,  0,  0, -1 }  p2 = { x0, y0, z0,  0,  0, -1 }
+                                p3 = { x0, y1, z0,  0,  0, -1 }  p4 = { x1, y1, z0,  0,  0, -1 }
+                            end
+
+                            if transform then
+                                p1 = { transform(p1,step,scale) }
+                                p2 = { transform(p2,step,scale) }
+                                p3 = { transform(p3,step,scale) }
+                                p4 = { transform(p4,step,scale) }
+                            end
+
+                            local v1 = #vertices + 1
+                            local v2 = v1 + 1
+                            local v3 = v2 + 1
+                            local v4 = v3 + 1
+
+                            vertices[v1] = p1
+                            vertices[v2] = p2
+                            vertices[v3] = p3
+                            vertices[v4] = p4
+
+                         -- if triangles then
+                         --     triangles[#triangles+1] = { v1, v2, v3 }
+                         --     triangles[#triangles+1] = { v1, v3, v4 }
+                         -- end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return vertices, triangles
+end
+
+local sqrt = math.sqrt
+
+local function transformcircle(p,step,scale) -- radius,size)
+    local nx = (p[1]/scale) * 2 - 1
+    local ny = (p[2]/scale) * 2 - 1
+    local nz = (p[3]/scale) * 2 - 1
+    local distance = sqrt(nx*nx + ny*ny + nz*nz)
+    if distance == 0 then
+        return 0, 0, 0, p[4], p[5], p[6]
+    else
+        local factor = scale / distance
+        local factor = 1 / distance
+        return
+            factor * nx, factor * ny, factor * nz,
+            p[4], p[5], p[6]
+    end
+end
+
+-- local function transformweird(p,step,scale) -- radius,size)
+--     local nx = (p[1]/scale) * 2 - 1
+--     local ny = (p[2]/scale) * 2 - 1
+--     local nz = (p[3]/scale) * 2 - 1
+--     local distance = sqrt(nx*nx + ny*ny + nz*nz)
+--     if distance == 0 then
+--         return 0, 0, 0, p[4], p[5], p[6]
+--     else
+--         distance = sqrt(3) / distance
+--         local factor = scale / distance
+--         return
+--             factor * nx, factor * ny, factor * nz,
+--             p[4], p[5], p[6]
+--     end
+-- end
+
+local transforms = {
+    circle = transformcircle,
+--  weird  = transformweird,
+}
+
+metapost.registermesher("mengersponge", function(specification)
+    local vertices, triangles = mengersponge(
+        specification.level or 2,
+        specification.size  or 10,
+        specification.sparse,
+        transforms[specification.transform or false] --"circle"
+    )
+-- table.save("temp.lmtmesh", triangles)
+    return {
+        name      = "mengersponge",
+        id        = specification.id,
+        meshtype  = 7, -- [1 2 3] [ 1 3 4 ] [5 6 7 ] 5 7 8 ] ...
+        vertices  = vertices,
+     -- triangles = triangles, -- auto by type
+    }
+end)
+
+\stopluacode
+
+\continueifinputfile{meta-imp-meshes-mengersponge.mkxl}
+
+\setupbackgrounds
+  [paper]
+  [background=color,
+   backgroundcolor=darkblue,
+   backgroundcolor=,
+   frame=on,
+   framecolor=darkblue]
+
+\starttext
+
+\startMPpage
+
+    lmt_scene_start [
+        bytemap      = 34,
+        width        = 8cm,
+        crop         = true,
+        supersample  = 2,
+        projection   = "perspective",
+        eye          = (20,20,20),
+        target       = (5,5,5),
+        up           = (0,0,1),
+        light        = (-1.2,-1,-2),
+        intensity    = 1,
+    ] ;
+
+    lmt_scene_material [
+        name      = "surface",
+        diffuse   = (0,0.5,.5),
+        specular  = (.40,.40,.40),
+        shininess = 40,
+%         opacity   = .15,
+%         opacity   = .45,
+% twosided = true,
+    ] ;
+
+    lmt_scene_internal [
+        id        = "one",
+        name      = "mengersponge",
+        level     = 2,
+        sparse    = false,
+        size      = 10,
+        cache     = true,      % todo
+        material  = "surface",
+    ] ;
+
+    lmt_scene_stop ;
+
+\stopMPpage
+
+\stoptext
+
+\startMPpage
+
+    lmt_scene_start [
+        bytemap      = 34,
+        width        = 8cm,
+        crop         = true,
+        supersample  = 2,
+        projection   = "perspective",
+        eye          = (20,20,20),
+        target       = (5,5,5),
+        up           = (0,0,1),
+        light        = (-1.2,-1,-2),
+        intensity    = 1,
+    ] ;
+
+    lmt_scene_material [
+        name      = "surface",
+        diffuse   = (0,0.5,.5),
+        specular  = (.40,.40,.40),
+        shininess = 40,
+%         opacity   = .15,
+    ] ;
+
+    lmt_scene_internal [
+        id        = "one",
+        name      = "mengersponge",
+        level     = 1,
+        sparse    = false,
+        scale     = 10,
+        transform = "circle",
+        cache     = true,      % todo
+        material  = "surface",
+    ] ;
+
+    lmt_scene_stop ;
+
+\stopMPpage
+
+\stoptext
+
+% Just for fun I asked several llm's in illama and the results were kind of
+% disappointing. Qwen (basic) was kind of fast but kept hallucinating about what
+% cubes to drop, starting over and over again with different drops. The larger 32
+% model did a better job but seems to use some Lua stuff not in the language. The
+% 72 model was so slow on my machine that it is kind of useless. Even the base model
+% reminds one of the early \TEX\ days. Other llm's were unuseable too. In the end
+% Chat 5.5 (which I can't afford) and Google in the browser were mostly. Here's a
+% snippet of qwen32 when I asked where it got "step" from:
+%
+%     By using the `step` metamethod, the code can efficiently create a sequence of
+%     coordinates to access the sub-cubes in the Menger sponge algorithm without
+%     explicitly defining separate loops for corners, edges, and center cubes. This
+%     makes the code more concise and easier to understand.
+%
+%     >>> as far as i can see there is no "step" in lua 5.5 so where did you read
+%     that
+%
+%     Apologies for the confusion. I apologize for the error in my previous
+%     response. The `step` metamethod does not exist in Lua by default. Instead, we
+%     should use a standard `for` loop with an increment operator to achieve the
+%     same effect. Here's how you can modify the code to use regular loops:
+%
+%     Replace the following lines:
+%     ```lua
+%     for dz in offset[1]:step(3, edge_length) do
+%         for dy in offset[2]:step(3, edge_length) do
+%             for dx in offset[3]:step(3, edge_length) do
+%     ```
+%     With this block:
+%     ```lua
+%     for dz = offset[1], edge_length - 1, 3 do
+%         for dy = offset[2], edge_length - 1, 3 do
+%             for dx = offset[3], edge_length - 1, 3 do
+%
+% Now ask yourself, does the first blob really looks more concise and better? It
+% will be slower for sure. Anyway: "How does one generate a menger sponge mesh in
+% Lua" makes a nice test because somehow all these models know a bit about it. As
+% far as I'm concerned, only a few got it kind of right, and even then one had to
+% unslop the code.
+%
+% Then I tried Qwen3-Coder-Next-GGUF in Unsloth and that not only ran reasonable
+% fast but also started to generate code that worked, although I ran into context
+% length limits (\TEX\ doesn't pay for a hardware upgrade.) But apart from adding
+% extra unmatched braces that invalidated \LUA\ tables it also messed up the
+% normals. Some comments suggested that all used used the same Python code as
+% template. So, basically a wasted day. Interesting was that the models agreed in
+% errors that one points out. In the end on can best just write such code from
+% scratch when the basic algorithm is known.

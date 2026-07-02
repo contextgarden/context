@@ -1,0 +1,779 @@
+% macros=mkvi
+
+% \enablemode[**en-us,**uk]
+
+\startenvironment excursion-style
+
+\usemodule[chart]
+
+\usemodule[s][abr-03]
+\usemodule[x][set-11]
+\usemodule[setups-basics]
+
+% Setups are kind of special.
+
+\loadsetups[i-context]
+
+\setupframedtexts
+  [setuptext]
+  [before={\blank[big]},
+   after={\blank[big]},
+   background=setup-shape,
+   backgroundoffset=10pt,
+   rulethickness=2.5pt,
+   offset=15pt,
+   shape:line=ShapeLightFrame,
+   shape:fill=ShapeLightFill,
+   frame=off]
+
+\setupexternalfigures
+  [directory={../graphics}]
+
+% The layout dimensions are based on the A4 paper dimensions because that way users
+% can print this manual themselves. Let's be economical with paper. We also assume a
+% decent doublesided A4 printer. We use equal margins so that a single sided run or
+% print also comes out all right.
+
+\setupbodyfont[pagella,10pt]
+
+\startmode[A4]
+
+    \setuplayout
+      [backspace=22.5mm,
+       width=fit,
+       cutspace=22.5mm,
+       margin=20mm,
+       margindistance=5mm,
+       topspace=15mm,
+       header=10mm,
+       headerdistance=5mm,
+       height=fit,
+       footerdistance=5mm,
+       footer=15mm,
+       bottomspace=15mm]
+
+\stopmode
+
+\setuppagenumbering
+  [alternative=doublesided]
+
+% Let's keep the text compact.
+
+\setupwhitespace
+  [medium]
+
+\setupblank
+  [medium]
+
+% We indent verbatim with the default indenting value.
+
+\setuptyping
+  [margin=standard,
+   blank=medium]
+
+% Manuals as usual need a bit more tolerance, because a lot of in||line verbatim is
+% used.
+
+\setuptolerance % or \setupalign
+  [verytolerant,stretch]
+
+% This manual makes heavy use of backgrounds. During a run many metaclips are
+% generated. For printing the book versin of this manual, all colors had to be in cmyk.
+% Because Metapost natively does not support cmyk, the approach became to use
+% parameters in the framed environments. This way ConTeXt can handle the cmyk colors.
+
+\defineoverlay [chapter-state]     [\useMPgraphic{chapter-state}]
+\defineoverlay [pagenumber-state]  [\uniqueMPgraphic{pagenumber-state}]
+
+\defineoverlay [basic-shape]       [\useMPgraphic{basic-shape}]
+
+\defineoverlay [setup-shape]       [\useMPgraphic{setup-shape}]
+\defineoverlay [note-rule]         [\uniqueMPgraphic{note-rule}]
+\defineoverlay [column-rule]       [\uniqueMPgraphic{column-rule}]
+
+\defineoverlay [coverbackground]   [\setups{coverbackground}]
+
+% Footnote rule
+
+\starttexdefinition protected FootnoteRule
+  \blank[quarterline]
+  \framed
+      [background=note-rule,
+       width=.4\makeupwidth,
+       height=2pt,
+       offset=overlay,
+       rulethickness=2pt,
+       shape:dots=ShapeDarkEnd,
+       shape:line=ShapeDarkLine,
+       frame=off]
+      {}
+  \blank[small]
+\stoptexdefinition
+
+\setupfootnotes
+  [rule=off,
+   before=\FootnoteRule]
+
+% Chapter titles have a fancy shape around them. Because we have a lot of small
+% chapters, we don't go to a new page. Titles in the appendix look the same, but
+% there we go to a new page.
+
+\setuphead
+  [chapter]
+  [command=\HeadCommand,
+   page=,
+   before={\blank[3*big]},
+   after={\blank[2*big,samepage]},
+   style=\bf\ssb]
+
+\setuphead
+  [title]
+  [page=right]
+
+\starttexdefinition protected HeadCommand #number #title
+  \alignedline {outer} {left}
+    {\framed
+      [background=basic-shape,
+       rulethickness=10pt,
+       frame=off,
+       width=fit,
+       rulethickness=10pt,
+       strut=no,
+       offset=24pt,
+       align=middle,
+       shape:dots=ShapeDarkDots,
+       shape:line=ShapeDarkLine]
+      {\doifmode {*sectionnumber}
+        {#number
+         \kern.5em
+         \blackrule
+           [color=green,
+            width=1pt,
+            height=1.5\ht\strutbox,
+            depth=1.25\dp\strutbox]
+         \kern.5em
+        }
+        #title
+      }
+    }
+\stoptexdefinition
+
+% The current chapter number is typeset in the (outer) margin and slowly moves
+% down. We could have directly put it in the margin but using the footermargin as
+% starting point works better. This is an old command and there is no reason to
+% change the definition to the LMTX version.
+% For the screen version no chapter indicator with background-graphic is used.
+% Instead there is the text "Chapter:" followed by the chapter numbers
+
+\doifmodeelse{Screen} {
+
+    \setupfootertexts
+        [text]
+        [][Chapter:\hbox spread 60pt {\hss\headnumber[chapter][current]\hss}]
+        [Chapter:\hbox spread 60pt {\hss\headnumber[chapter][current]\hss}][]
+
+} {
+
+    \setupfootertexts
+        [margin]
+        [][\directsetup{chapterindicator}]
+        [\directsetup{chapterindicator}][]
+
+}
+
+\startsetups chapterindicator
+
+    \determineheadnumber[chapter]
+
+    \ifcase\currentheadnumber\else
+        \vbox to \makeupheight \bgroup
+            \scratchcounter{\lastpage-\realpageno}
+            \vskip2cm
+            \vskip0pt plus \realpageno cm
+            \framed [
+                background=chapter-state,
+                width=36pt,
+                height=72pt,
+                backgroundoffset=5pt,
+                shape:dots=ShapeDarkDots,
+                shape:line=ShapeDarkLine,
+                frame=off
+            ] {
+                \lower.5\dp\strutbox\hbox \bgroup
+                    \bfb
+                    \getmarking[chapternumber]
+                \egroup
+            }
+            \vskip0pt plus \scratchcounter cm
+            \vskip2cm
+        \egroup
+    \fi
+
+\stopsetups
+
+% The index is put on a double collumned grid. The index section glyphs
+% are surrounded by a shape.
+
+\setupregister
+  [index]
+  [command=\IndexCommand,
+   before={\blank[line]},
+   after=]
+
+\starttexdefinition protected IndexCommand #text
+    \framed [
+        background=basic-shape,
+        width=36pt,
+        frame=off,
+        offset=4pt,
+        align=middle,
+        rulethickness=2.5pt,
+        shape:dots=ShapeDarkDots,
+        shape:line=ShapeDarkLine
+    ] {
+        #text
+    }
+\stoptexdefinition
+
+% When bound, we use a double sided layout, the pagenumber is
+% enhanced by a fancy background.
+
+\setuppagenumbering
+  [location={footer,middle},
+   command=\PageNumberCommand]
+
+\starttexdefinition protected PageNumberCommand #pagenumber
+    \framed [
+        background=pagenumber-state,
+        backgroundoffset=5pt,
+        frame=off,
+        offset=6pt,
+        shape:dots=ShapeDarkDots,
+        shape:line=ShapeDarkLine
+    ] {
+        \lower.5\dp\strutbox\hbox spread 60pt {
+            \hss
+            #pagenumber
+            \hss
+        }
+    }
+\stoptexdefinition
+
+% We put the chapter title in the head.
+
+\setupheadertexts
+  [{\ssa \getmarking[chapter]}]
+
+% Guess what the next one does.
+
+\setupitemgroup
+  [itemize]
+  [1]
+  [autointro]
+  [symbol=2]
+
+% The coverpage
+
+\startsetups coverbackground
+
+  \externalfigure
+    [excursion-cover-background]
+    [width=\paperwidth,
+     height=\paperheight]
+
+\stopsetups
+
+% Here we only make sure that the document is getting the front and back covers.
+% Other document variables are in the product excursion-en.mkxl. Of course we
+% could use instances of framed and spli tthe setups ... but this is how it
+% evolved.
+
+\startsetups document:start % front cover
+
+    \doifmodeelse {Book} {
+        \setupbackgrounds
+            [rightpage]
+            [background=]
+        } {
+            \setupbackgrounds
+                [rightpage]
+                [background=coverbackground]
+        }
+
+    \startmakeup[standard][page=yes,doublesided=no]
+
+        \hbox to \hsize \bgroup
+            \midaligned {
+                \doifmodeelse {Screen} {
+                    \definedfont[Bold*default at 16pt]
+                    \framed [
+                        background=basic-shape,
+                        frame=off,
+                        width=fit,
+                        rulethickness=12pt,
+                        align=middle,
+                        offset=50pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeMiddleLine,
+                        foregroundcolor=ShapeMiddleFill
+                    ] {
+                        \dontleavehmode\hbox{\documentvariable{title}}
+                        \par
+                        \dontleavehmode\hbox{\documentvariable{subtitle}}
+                    }
+                } {
+                    \definedfont[Bold*default at 40pt]
+                    \framed [
+                        background=basic-shape,
+                        frame=off,
+                        width=fit,
+                        rulethickness=20pt,
+                        align=middle,
+                        offset=50pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeMiddleLine,
+                        foregroundcolor=ShapeMiddleFill
+                    ] {
+                        \dontleavehmode\hbox{\documentvariable{title}}
+                        \par
+                        \dontleavehmode\hbox{\documentvariable{subtitle}}
+                    }
+                }
+                \doifmode{Book} {
+                    \definedfont[Bold*default at 40pt]
+                     \framed [
+                        background=basic-shape,
+                        frame=off,
+                        rulethickness=20pt,
+                        align=middle,
+                        offset=40pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeDarkLine,
+                        foregroundcolor=ShapeDarkFill
+                    ] {
+                        \dontleavehmode\hbox{\documentvariable{title}}
+                        \par
+                        \dontleavehmode\hbox{\documentvariable{subtitle}}
+                    }
+                }
+            }
+        \egroup
+
+        \vfill
+
+        \doifsomething {\documentvariable{subtitle}} {
+            \hbox to \hsize \bgroup
+                \doifmodeelse {Screen} {
+                    \definedfont[SansBold*default at 14pt]
+                    \framed [
+                        background=basic-shape,
+                        frame=off,
+                        rulethickness=12pt,
+                        align=middle,
+                        offset=20pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeMiddleLine,
+                        foregroundcolor=ShapeMiddleFill
+                    ] {
+                        \documentvariable{version}
+                    }
+                } {
+                    \definedfont[SansBold*default at 16pt]
+                    \framed [
+                        background=basic-shape,
+                        frame=off,
+                        rulethickness=12pt,
+                        align=middle,
+                        offset=20pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeMiddleLine,
+                        foregroundcolor=ShapeMiddleFill
+                    ] {
+                        \documentvariable{version}
+                    }
+                }
+                \doifmode{Book} {
+                    \definedfont[SansBold*default at 16pt]
+                    \framed [
+                        background=basic-shape,
+                        frame=off,
+                        rulethickness=12pt,
+                        align=middle,
+                        offset=20pt,
+                        shape:dots=ShapeDarkDots,
+                        shape:line=ShapeDarkLine,
+                        foregroundcolor=ShapeDarkFill
+                    ] {
+                        \documentvariable{version}
+                    }
+                }
+                \hss
+            \egroup
+        }
+
+        \hbox to \hsize \bgroup
+            \hss
+            \doifmodeelse{Screen} {
+                \definedfont[SansBold*default at 14pt]
+                \framed [
+                    background=basic-shape,
+                    frame=off,
+                    width=fit,
+                    rulethickness=12pt,
+                    align=middle,
+                    offset=35pt,
+                    shape:dots=ShapeDarkDots,
+                    shape:line=ShapeMiddleLine,
+                    foregroundcolor=ShapeMiddleFill
+                ] {
+                    \documentvariable{author}
+                }
+            } {
+                \definedfont[SansBold*default at 24pt]
+                \framed [
+                    background=basic-shape,
+                    frame=off,
+                    width=fit,
+                    rulethickness=18pt,
+                    align=middle,
+                    offset=35pt,
+                    shape:dots=ShapeDarkDots,
+                    shape:line=ShapeMiddleLine,
+                    foregroundcolor=ShapeMiddleFill
+                ] {
+                    \documentvariable{author}
+                }
+            }
+
+            \doifmode{Book} {
+                \definedfont[SansBold*default at 24pt]
+                \framed [
+                    background=basic-shape,
+                    frame=off,
+                    rulethickness=18pt,
+                    align=middle,
+                    offset=35pt,
+                    shape:dots=ShapeDarkDots,
+                    shape:line=ShapeDarkLine,
+                    foregroundcolor=ShapeDarkFill
+                ] {
+                    \documentvariable{author}
+                }
+            }
+        \egroup
+
+    \stopmakeup
+
+    \setupbackgrounds
+      [text]
+      [text]
+      [background=]
+
+    \setupbackgrounds
+      [rightpage]
+      [background=]
+
+    \doifmode{Screen} {
+        \setupbackgrounds
+          [page]
+          [background=color,
+           backgroundcolor=ScreenGray]
+
+        \setupbackgrounds
+          [text] [text]
+          [backgroundoffset=.25cm,
+           depth=.125cm,
+           background=color,
+           backgroundcolor=white]
+    }
+
+    \component[excursion-copyright]
+
+\stopsetups
+
+% The backpage uses the same background as the front cover and is overlayed
+% with a piece of text.
+
+\startsetups document:stop %colofon and backpage
+
+    \page[yes,blank,right]
+
+    \component[excursion-colofon]
+
+    \page[yes]
+
+    \doifnotmode{Book} {
+
+        \setupbackgrounds
+            [page]
+            [background=coverbackground]
+
+        \doifmode {Screen} {
+            \setupbackgrounds
+                [text][text]
+                [background=coverbackground]
+        }
+
+        \startmakeup
+            [standard]
+            [page=,doublesided=no]
+
+            \setuptolerance
+                [verytolerant]
+
+            \vfill
+
+            \hbox to \hsize \bgroup
+                \framed [
+                    background=color,
+                    backgroundcolor=ShapeMiddleFill,
+                    frame=off,
+                    offset=10pt,
+                    corner=round,
+                    radius=2pt,
+                    width=.45\makeupwidth,
+                    height=\textheight,
+                    align=middle,
+                    strut=no
+                ] {
+                    \component[excursion-en-backpagetext]
+                }
+                \hss
+            \egroup
+
+            \vfill
+
+        \stopmakeup
+
+    }
+\stopsetups
+
+% To save space we don't start chapters on a new page, except in appendices and the
+% introduction. These settings happen in dedicated setup sections (see later). We
+% also add some white space between the table of content entries for the different parts.
+
+\setupsectionblock [frontpart] [page=right,before=\setups{frontpart}]
+\setupsectionblock [bodypart]  [page=right,before=\setups{bodypart}]
+\setupsectionblock [appendix]  [page=right,before=\setups{appendix}]
+\setupsectionblock [backpart]  [page=right,before=\setups{backpart}]
+
+\setuplist
+  [chapter]
+  [criterium=all,
+   before=,
+   after=]
+
+\startsetups frontpart
+
+  \setuphead[chapter][page=right]
+
+  \writebetweenlist[chapter]{\blank}
+
+\stopsetups
+
+\startsetups bodypart
+
+  \setuphead[chapter][page=]
+
+  \writebetweenlist[chapter]{\blank}
+
+\stopsetups
+
+\startsetups appendix
+
+  \setuphead[chapter][page=right]
+
+  \writebetweenlist[chapter]{\blank}
+
+\stopsetups
+
+\startsetups backpart
+
+  \setuphead[chapter][page=right]
+
+  \writebetweenlist[chapter]{\blank}
+
+\stopsetups
+
+% We draw a nice line between columns. The next command does the job. Of course a
+% normal line can be set more easily, but here we hook in a command.
+
+\installmixedcolumnseparator{ColumnRule}%
+  {\framed
+     [background=column-rule,
+      height=\mixedcolumnseparatorheight,
+      depth=\mixedcolumnseparatordepth,
+      width=\mixedcolumnseparatorwidth,
+      offset=overlay,
+      rulethickness=2pt,
+      shape:dots=ShapeDarkEnd,
+      shape:line=ShapeDarkLine,
+      frame=off]
+     {}}
+
+\setupmixedcolumns
+  [n=2,
+   distance=30pt, %36pt
+   separator=ColumnRule,
+   after={\blank[line]}]
+
+\definemixedcolumns
+  [documentcolumns]
+  [n=2,
+   distance=30pt,  %36pt
+   separator=ColumnRule,
+   after={\blank[line]}]
+
+% In other versions of the book than the printed version, there is an index with all used commands
+
+\defineregister
+  [Command]
+
+\setupregister
+  [Command]
+  [indicator=off,
+   before={\blank[line]}]
+
+% Highlights
+
+\definehighlight[Emph] [style=italic]
+\definehighlight[Bemph][style=bolditalic]
+\definehighlight[Bold] [style=bold]
+\definehighlight[Scaps][style=smallcaps]
+
+
+% We want to have a consistent appearance of tables, all of them are made up with \bTABLE...\eTABLE
+
+\setupTABLE
+  [frame=on,rulethickness=1pt,framecolor=white,offset=3pt,rightmargindistance=1em]
+\setupTABLE
+  [r][first][background=color,backgroundcolor=ShapeLightColorFill,foregroundcolor=white,style=bold]
+\setupTABLE
+  [r][each][background=color,backgroundcolor=ShapeLightFill]
+
+% Colorpalet. For verbatim CosmicCobalt is used from the crayola palet.
+
+\usecolors[crayola]
+
+% Color definitions. For the printed book cmyk colors are required.
+
+\doifmodeelse {Book} {
+
+    \setupcolors[rgb=no]
+
+    \definecolor[ShapeDarkLine]      [s=.4]
+    \definecolor[ShapeDarkDots]      [c=0,m=1.00,y=1.00,k=0]
+    \definecolor[ShapeDarkEnd]       [c=0.47,m=0,y=1.00,k=0]
+    \definecolor[ShapeLightLine]     [s=.95]
+    \definecolor[ShapeMiddleLine]    [s=.85]
+    \definecolor[ShapeMiddleFill]    [s=.85]
+    \definecolor[ShapeLightFrame]    [c=0.53,m=.34,y=0,k=0]
+    \definecolor[ScreenGray]         [s=0.8]
+    \definecolor[ShapeLightColorFill][c=0.53,m=.34,y=0,k=0,t=0.5,a=1] % Tables first row
+
+} {
+
+    \definecolor[ShapeDarkLine]      [s=.4]
+    \definecolor[ShapeDarkDots]      [r=1]
+    \definecolor[ShapeDarkEnd]       [g=1]
+    \definecolor[ShapeLightLine]     [s=.95]
+    \definecolor[ShapeLightFill]     [s=.95]
+    \definecolor[ShapeMiddleLine]    [s=.85]
+    \definecolor[ShapeMiddleFill]    [s=.85]
+    \definecolor[ShapeLightFrame]    [r=.5,g=.50,b=.9]
+    \definecolor[ScreenGray]         [s=0.8]
+    \definecolor[ShapeLightColorFill][r=.5,g=.5,b=.9,t=0.5,a=1] % Tables first row
+
+}
+
+% Configuration of table floats
+
+\setupcaption
+  [table]
+  [align=flushleft,
+   leftmargin=0.5em]
+
+\setupfloat
+  [table]
+  [location=flushleft,
+   leftmargin=0.5em,
+   rightmargin=0.5em,
+   offset=0pt]
+
+% Configuration of figure floats
+
+\setupcaption
+ [figure]
+ [align=flushleft,
+  leftmargin=0.5em]
+
+\setupfloat
+  [figure]
+  [location=flushleft,
+   leftmargin=0.5em,
+   rightmargin=0.5em,
+   offset=0pt]
+
+% Configuring verbatim text
+
+\setuptyping
+  [option=none,
+   color=CosmicCobalt]
+
+\setuptype
+  [option=none,
+   color=CosmicCobalt]
+
+% Configuring the headings
+
+\setuphead
+  [section]
+  [style=\bf\ssa]
+
+\setuphead
+  [subsection]
+  [style=\bf\ss]
+
+% This manual is provided through the distribution as an A4 version.
+% The NTG is sponsoring the version 3 and the result is produced as a book.
+
+\doifmode {Book} {
+
+    \definepapersize
+        [Book]
+        [height=240mm,
+         width=184mm]
+
+    \setuppapersize[Book][Book]
+
+    \setuplayout
+        [topspace=11mm,
+         backspace=19mm,
+         margin=15mm,
+         margindistance=3mm,
+         header=7mm,
+         headerdistance=3mm,
+         footer=13mm,
+         footerdistance=3mm,
+         width=140mm,
+         height=212mm,
+         marking=on,
+         location={doublesided,middle},
+         vz=2]
+
+    \setupframedtexts
+        [setuptext]
+        [before={\blank[big]},
+         after={\blank[big]},
+         background=setup-shape,
+         backgroundoffset=10pt,
+         rulethickness=2.5pt,
+         offset=15pt,
+         shape:line=ShapeLightFrame,
+         shape:fill=ShapeLightFill,
+         frame=off,
+         style={\switchtobodyfont[8pt]}]
+
+    }
+
+\stopenvironment

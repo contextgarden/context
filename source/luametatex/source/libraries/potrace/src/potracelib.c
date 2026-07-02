@@ -110,5 +110,5 @@ void potrace_param_free(potrace_param_t *p) {
 }
 
 const char *potrace_version(void) {
-  return "potracelib " VERSION "";
+  return "potracelib 1.00";
 }

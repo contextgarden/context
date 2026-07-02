@@ -1,0 +1,17 @@
+% signal=squid
+
+\startcomponent excursion-en-subjectindex
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=\labeltext{document:subjectindex},reference=chap:index]
+
+  \startmixedcolumns[documentcolumns]
+    \placeregister[index]
+  \stopmixedcolumns
+
+\stopchapter
+
+\stopcomponent

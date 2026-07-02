@@ -1,0 +1,262 @@
+% signal=squid
+
+\startcomponent excursion-en-framed-paragraphs
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Framed text]
+
+\index{framed+text}
+
+\Command{\tex{framed}}
+\Command{\tex{setupframed}}
+\Command{\tex{inframed}}
+
+You can put text in a \inframed{frame} with \type{\framed}. The
+command looks like this
+
+\shortsetup{framed}
+
+The bracket pair is optional and contains the set up parameters. The curly braces
+enclose the text. To be honest, the framed text in the first paragraph was done
+with \type{\inframed}. This command takes care of the interline spacing.
+
+Be aware that the \type{\framed} environment is used for single line texts only.
+For paragraphs one needs to use \type{\startframedtext ... \stopframedtext}.
+
+Some other examples of \type{\framed} and its setup parameters are shown below.
+
+The setup of this series of \type{\framed} is done with buffers. Buffers are
+discussed in \in{chapter}[chap:miscellaneous], \in{paragraph}[sec:buffer]. We
+show here only the coding for the first framed text and its outcome to the right
+as a figure.
+
+\startbuffer[Showsetup]
+\startbuffer[a]
+  \framed
+    [height=fit,
+     width=.5\textwidth]
+    {Hasselt}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[a][type=buffer]}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer[Showsetup]
+
+The approach is to put the \type{\framed} contents into a buffer. Then
+\type{\externalfigure} is called that is picking up the buffer and places its
+contents as a figure.
+
+\startbuffer[a]
+\framed
+  [height=fit,
+   width=.5\textwidth]
+  {Hasselt}
+\stopbuffer
+
+\pagereference[framed:externalfigure-with-buffer]
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[a][type=buffer]}
+\stopplacefigure
+
+\typebuffer[a]
+
+\startbuffer[b]
+\framed
+  [height=3em,
+   width=.5\textwidth]
+  {Hasselt now has more space}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[b][type=buffer]}
+\stopplacefigure
+
+\typebuffer[b]
+
+\startbuffer[d]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue]
+  {Hasselt now has some color}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[d][type=buffer]}
+\stopplacefigure
+
+\typebuffer[d]
+
+\startbuffer[e]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt]
+  {Hasselt now has a thicker frame}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[e][type=buffer]}
+\stopplacefigure
+
+\typebuffer[e]
+
+\startbuffer[f]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=color,
+   backgroundcolor=green]
+  {Hasselt now has a colorful background}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[f][type=buffer]}
+\stopplacefigure
+
+\typebuffer[f]
+
+\startbuffer[g]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=color,
+   backgroundcolor=green,
+   foregroundstyle=bold]
+  {Hasselt now has another style}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[g][type=buffer]}
+\stopplacefigure
+
+\typebuffer[g]
+
+\startbuffer[needed-for-h]
+\definecolor[a][black]
+\definecolor[b][white]
+
+\startuniqueMPgraphic{LinearShade}
+  fill OverlayBox
+    withshademethod "linear"
+    withcolor \MPcolor{a}
+    shadedinto \MPcolor{b} ;
+\stopuniqueMPgraphic
+
+\defineoverlay
+  [linear shade]
+  [\uniqueMPgraphic{LinearShade}]
+\stopbuffer
+
+\getbuffer[needed-for-h]
+
+\startbuffer[h]
+\framed
+  [height=3em,
+   width=.5\textwidth,
+   foregroundcolor=red,
+   framecolor=blue,
+   rulethickness=2pt,
+   background=linear shade,
+   foregroundstyle=bold]
+  {Hasselt now has a little shade}
+\stopbuffer
+
+\startplacefigure
+  [location=right,
+   number=,
+   title=]
+  {\externalfigure[h][type=buffer]}
+\stopplacefigure
+
+\typebuffer[h]
+
+The shady background was defined with:
+
+\typebuffer[needed-for-h]
+
+The \type{\framed} command is very sophisticated and is used in many macros. The
+command to set up frames is
+
+\shortsetup{setupframed}
+
+When using \type{\framed} between paragraphs, the vertical spacing is tight. If
+one wants the spacing like with normal paragraphs, then the command
+\type{\startlinecorrection ... \stoplinecorrection} is the solution.
+
+\startbuffer[nocorrection]
+A simple line of text
+
+\startframed
+  An important piece of information
+\stopframed
+
+The next line of text.
+\stopbuffer
+
+\typebuffer[nocorrection]
+
+\getbuffer[nocorrection]
+
+This looks better if one puts the \type{\startframed ... \stopframed} between
+\type{\startlinecorrection ... \stoplinecorrection}.
+
+\startbuffer[linecorrection]
+A simple line of text
+
+\startlinecorrection
+  \startframed
+    An important piece of information
+  \stopframed
+\stoplinecorrection
+
+The next line of text.
+\stopbuffer
+
+\typebuffer[linecorrection]
+
+\getbuffer[linecorrection]
+
+\stopchapter
+
+\doifmode{Book}
+  {\page[yes]}
+
+\stopcomponent

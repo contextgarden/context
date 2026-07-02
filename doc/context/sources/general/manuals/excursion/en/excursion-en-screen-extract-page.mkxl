@@ -1,0 +1,18 @@
+% signal=squid
+
+% Extract a page from the screen version for the paperversions.
+
+\setuplayout
+  [topspace=0pt,
+   backspace=0pt,
+   header=0pt,
+   footer=0pt]
+
+\startdocument
+
+    \filterpages
+      [excursion-en-book]
+      [184]
+      [alternative=page] % Test print midnight-blue Oliver
+
+\stopdocument

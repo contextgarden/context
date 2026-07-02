@@ -34,12 +34,82 @@ perspective the library is downward compatible but at the same time it offers
 more.
 
 Just as \LUATEX\ is frozen, the \METAPOST\ library that it uses can be considered
-frozen. In \LUAMETATEX\ we have plans for some more extensions. We don't discuss
-the already present new functionality here in detail, for that we have separate
+frozen. In \LUAMETATEX\ we have plans for some more extensions and actually
+implemented as well as improved quite a bit in the meantime. We don't discuss the
+already present new functionality here in detail, for that we have separate
 manuals, organized under the \LUAMETAFUN\ umbrella. After all, most of what we
 did was done in the perspective of using \CONTEXT. Users don't use the functions
 discussed below because they only make sense in a more integrated approach as
-with \LUAMETAFUN.
+with \LUAMETAFUN. There are some libraries in \LUAMETATEX\ that are only used for
+enhancing graphic capabilities, using a mix of \LUA\, \CCODE, and of course
+\METAPOST.
+
+\stopsection
+
+\startsection[title={The language}]
+
+When we added \METAPOST\ to \LUATEX, the language was extended with the \CMYK\
+colorspace, \LUA\ script support, various number systems etc. In the overview
+below, these \LUATEX\ extensions are rendered in green. Those rendered in blue
+are additions in \LUAMETATEX. At the end we also mention the primitives that are
+not present in the library in \LUAMETATEX.
+
+The commands are organize in groups. Internally every primitive belongs to a
+command group and within that group is an operation. These groups share for
+instance a syntax and priority level and therefore often share code.
+
+\startalign[flushleft,verytolerant,broad,stretch,nothyphenated]
+\startluacode
+    local codes      = mplib.getcodes()
+    local primitives = mplib.getprimitives(true)
+    local origins    = mplib.getprimitiveorigins()
+    local grouped    = table.setmetatableindex("table")
+    local hashed     = { }
+    local obsolete   = { }
+    for i=1,#primitives do
+        local primitive = primitives[i]
+        local command   = primitive[1]
+        local operator  = primitive[2]
+        local name      = primitive[3]
+        local group     = codes[command]
+        if command == 0 then
+            obsolete[#obsolete+1] = name
+        else
+            grouped[group][#grouped[group]+1] = name
+            hashed[name] = primitive
+        end
+    end
+    for command, operator in table.sortedhash(grouped) do
+        context.start()
+        context.ttbf()
+        context.verbatim(command)
+        context.stop()
+        context.quad()
+        table.sort(operator)
+        for i=1,#operator do
+            local name      = operator[i]
+            local primitive = hashed[name]
+            local origin    = origins[primitive[4]]
+            context.bgroup()
+            if origin == "luatex" then
+                context.darkgreen()
+            elseif origin == "luametatex" then
+                context.darkblue()
+            end
+            context.verbatim(operator[i])
+            context.egroup()
+            context.space()
+        end
+        context.blank()
+    end
+    table.sort(obsolete)
+    context.bold("obsolete primitives: ")
+    for i=1,#obsolete do
+        context.verbatim(obsolete[i])
+        context.space()
+    end
+\stopluacode
+\stopalign
 
 \stopsection
 
@@ -61,6 +131,9 @@ function mplib.new (
         job_name       = <t:string>,
         find_file      = <t:function>,
         open_file      = <t:function>,
+        close_file     = <t:function>,
+        read_file      = <t:function>,
+        write_file     = <t:function>,
         run_script     = <t:function>,
         run_internal   = <t:function>,
         make_text      = <t:function>,
@@ -69,10 +142,6 @@ function mplib.new (
         text_mode      = <t:boolean>,
         show_mode      = <t:boolean>,
         halt_on_error  = <t:boolean>,
-        run_logger     = <t:function>,
-        run_overload   = <t:function>,
-        run_error      = <t:function>,
-        run_warning    = <t:function>,
         bend_tolerance = <t:number>,
         move_tolerance = <t:number>,
     }
@@ -144,6 +213,14 @@ function mplib.gettolerance ( <t:mp> instance )
         <t:number>  -- movetolerance
 end
 \stoptyping
+
+In \CONTEXT\ we default to the \quote {double} number mode, but original
+\METAPOST\ is of course \quote {scaled}. Recent versions of the library (also in
+\LUATEX) internally moved to double precision scaled integers because otherwise
+we can get errors due to inaccurate mapping from doubles to scaled when
+\METAPOST\ switches to that mode for some features (even in other number
+systems). The \type {getscaledbits} helper returns the (internal) accuracy of a
+scaled.
 
 Next we detail the functions that are hooked into the instance because without
 them being passed to the engine not that much will happen. We start with the
@@ -490,6 +567,33 @@ These numbers represent commands, properties and subcommands, and thereby also
 assume some knowledge about how \METAPOST\ works internally. As this kind of
 information is only useful when doing low level development we leave it at that.
 
+In \LUAMETATEX\ we have a lot of helpers that are just there to help us with
+documentation.
+
+\starttyping[option=LUA]
+function mplib.getprimitives (
+    <t:boolean> details
+)
+    return <t:table>
+end
+\stoptyping
+
+Primitives are a combination of a command, operator and string, but we also can
+report the origin (\METAPOST, \LUATEX\ or \LUAMETATEX) and their state (like
+being discarded or obsolete). The optional boolean can be used to get more than
+just the names. These two relate to this:
+
+\starttyping[option=LUA]
+function mplib.getprimitiveorigins  ( ) return <t:table> end
+function mplib.getprimitivelegacies ( ) return <t:table> end
+\stoptyping
+
+The \type {prunesingularities} features is controlled by options (numbers) like:
+
+\startfourrows
+    \ctxlua{moduledata.mplib.codes("getpruneoptions")}
+\stopfourrows
+
 \stopsection
 
 \startsection[title=Processing]
@@ -589,11 +693,11 @@ Each \type {dash} is a hash with two items. We use the same model as \POSTSCRIPT
 for the representation of the dash list; \type {dashes} is an array of \quote
 {on} and \quote {off}, values, and \type {offset} is the phase of the pattern.
 
-There is helper function \type {peninfo} that returns a table containing a bunch
-of vital characteristics of the used pen:
+There is helper function \type {getobjectpeninfo} that returns a table containing
+a bunch of vital characteristics of the used pen:
 
 \starttyping[option=LUA]
-function mplib.peninfo ( <t:mpobj> object )
+function mplib.getobjectpeninfo ( <t:mpobj> object )
     return {
         width = <t:number>,
         rx    = <t:number>,
@@ -605,6 +709,32 @@ function mplib.peninfo ( <t:mpobj> object )
     }
 end
 \stoptyping
+
+In order to know if stacking is needed, a helper can give the stacking level of
+an object. If you want to know if stacking is used at all, the \type {stacking}
+method of the pseudo objects array can be used.
+
+\starttyping[option=LUA]
+function mplib.getobjectstacking ( <t:mpobj> object )
+    return <t:number> | <t:false>
+end
+\stoptyping
+
+Instead of using the colon interface to objects we can get all fields in one call
+where of course the specific fields depend on the object:
+
+\starttyping[option=LUA]
+function mplib.getobjectdata (
+    <t:mpobj> object,
+    <t:number> bendtolerance,
+    <t:number> movetolerance
+)
+    return <t:table>
+end
+\stoptyping
+
+The tolerance parameters are optional and the defaults are often good enough for
+efficient output.
 
 \stopsection
 
@@ -657,6 +787,20 @@ end
 
 \startfourrows
     \ctxlua{moduledata.mplib.codes("getstates")}
+\stopfourrows
+
+When there is a result produces or what that fails, there is also a state but that one
+normally is then intercepted by the user interface so that we can recover and
+not end up in a confusing backend state.
+
+\starttyping[option=LUA]
+function mplib.getresultstates ( )
+    return <t:table> -- states
+end
+\stoptyping
+
+\startfourrows
+    \ctxlua{moduledata.mplib.codes("getresultstates")}
 \stopfourrows
 
 Knots is how the \quote {points} in a curve are called internally and in paths we
@@ -1073,6 +1217,162 @@ function mplib.expandtex (
     return <t:whatever>
 end
 \stoptyping
+
+\stopsection
+
+\startsection[title=Bytemaps]
+
+The \METAPOST\ graphic subsystem is mainly used for vector graphics but in
+\LUAMETATEX\ we also accommodate bitmaps or as we call them: bytemaps. A bytemap
+usually represents a gray scale of \RGB\ matrix. We do have a \LUA\ interface to
+them but as they originally were made for \METAPOST\ there we integrated it into
+the language. They are (currently) not like other objects, so for instance they
+are not variables that can for instance be saved in a group. You define one, use
+it, and discard if afterwards. In \CONTEXT\ the later is managed automatically.
+Because this is a rather special subsystem you should know what you're doing, for
+instance make sure that your bytemaps are not messed up by other features.
+
+The implementation is lightweight, there can be multiple bytemaps, each indicated
+by an integer. A bytemap is eventually drawn by drawing a rectangle of given
+proportions and a \type {withbytemap} specifier. It is up to the backend to
+actually deal with the embedding in the final document. The following functions
+are normally only used in combination with \LUA\ driven \LUAMETAFUN\ features.
+
+A new bytemap is created by either copying an existing one or setting up a new
+one. They are stored in memory in an efficient way.
+
+\starttyping[option=LUA]
+function mplib.newbytemap (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:bytemap> bytemap
+)
+    return <t:bytemap>
+end
+\stoptyping
+
+Here \type {nz} defaults to 1. The \type {data} string is optional. In various
+places in \LUAMETATEX\ we have some x/y or row/column helpers. Depending on how
+it evolved and in what subsystem we work we either pass the row first or the
+column.
+
+\starttyping[option=LUA]
+function mplib.newbytemap (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:integer> nx,
+    <t:integer> ny,
+    <t:integer> nz,
+    <t:string>  data
+)
+    return <t:bytemap>
+end
+\stoptyping
+
+A specific byte or triplet is accessible with:
+
+\starttyping[option=LUA]
+function mplib.setbytemap (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:integer> x,
+    <t:integer> y,
+    <t:number>  r,
+    <t:number>  g,
+    <t:number>  b
+)
+    -- return nothing
+end
+\stoptyping
+
+and
+
+\starttyping[option=LUA]
+function mplib.getbytemap (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:integer> x,
+    <t:integer> y
+)
+    return
+        <t:integer>, <t:integer>, <t:integer>
+end
+\stoptyping
+
+Of course in the case of a gray scale (1 byte) you pass or get back one integer
+only. This is also the case for:
+
+\starttyping[option=LUA]
+function mplib.fillbytemap (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:number>  r,
+    <t:number>  g,
+    <t:number>  b
+)
+    -- return nothing
+end
+\stoptyping
+
+You can get properties of a bytemap with the next helper, where the boolean
+determines of you also get back the bytes as string.
+
+\starttyping[option=LUA]
+function mplib.getbytemapdata (
+    <t:mp>      instance,
+    <t:integer> index,
+    <t:boolean> bytestoo
+)
+    return
+        <t:integer>, -- nx
+        <t:integer>, -- ny
+        <t:integer>, -- nz
+        <t:string>   -- bytes
+end
+\stoptyping
+
+In addition to these basics we have some helpers that one can best understand by
+looking at how they are used in \CONTEXT. For instance \typ {setbytemapoctave}
+was made when Mikael, Keith and Hans played with Perlin noise. It permits tuning
+such semi-random graphics with functions. It is part of the effects library.
+
+Processing a bytemap with \typ {processbytemap} hooks into the bytemap library
+and make function based manipulations possible. In a way the bytemap and effects
+libraries are just there to work with these \LUAMETAFUN\ features so they are
+related.
+
+These two are a bit more generic:
+
+\starttyping[option=LUA]
+function mplib.downsamplebytemap (
+    <t:mp>      instance,
+    <t:integer> source,
+    <t:integer> target,
+    <t:integer> factor
+)
+    -- return nothing
+end
+\stoptyping
+
+Downgrading is just going from \RGB\ to gray scales.
+
+\starttyping[option=LUA]
+function mplib.downgradebytemap (
+    <t:mp>      instance,
+    <t:integer> source,
+    <t:integer> target
+)
+    -- return nothing
+end
+\stoptyping
+
+\stopsection
+
+\startsection[title=Experimental]
+
+The \type {injectvector} and \type {injectvectors} are experimental (and relate
+to meshing) but we need to pick up on that. The \type {getlastaddtype} is also
+not for users.
 
 \stopsection
 

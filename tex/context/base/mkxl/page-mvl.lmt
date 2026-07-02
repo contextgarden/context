@@ -2945,7 +2945,8 @@ do
                     if action == "spread" then
                         if count > 0 then
                             if not shaped then
-                                quit = #shape + (spread-shape[#shape].spread+1) * nofcolumns - column + 1
+                                quit = slot + nofcolumns - column + 1
+--                                 quit = #shape + (spread-shape[#shape].spread+1) * nofcolumns - column + 1
 --                             elseif slot == #shape - 1 then
                             elseif slot == #shape then
                                 quit = #shape
@@ -2955,6 +2956,7 @@ do
                                     local s = shape[i].spread
                                     quit = quit + 1
                                     if s > spread then
+--                                         quit = quit - 1
                                         break
                                     end
                                 end
@@ -2968,7 +2970,7 @@ do
                     elseif action == "page" then
                         if count > 0 then
                             if not shaped then
-                                quit = slot + nofcolumns - column + 1
+                                quit = slot + nofcolumns - column -- + 1
                                 if odd(page) then
                                     quit = quit - nofright
                                 end
@@ -2980,6 +2982,8 @@ do
                                     local p = shape[i].page
                                     quit = quit + 1
                                     if p > page then
+                                        -- new
+                                        quit = quit - 1
                                         break
                                     end
                                 end

@@ -1283,7 +1283,9 @@
      \currentnoterulecommand
    \egroup
    \ifzeropt\htdp\scratchbox\else
-     \box\scratchbox\par
+     \noindent % for r2l
+     \box\scratchbox
+     \par
      \ifvmode
        \vkern{\noteparameter\c!ruledistance}%
      \fi

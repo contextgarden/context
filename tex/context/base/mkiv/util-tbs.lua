@@ -61,27 +61,45 @@ do
 
     local P, C, Ct, Cc, R = lpeg.P, lpeg.C, lpeg.Ct, lpeg.Cc, lpeg.R
 
-    local separator = P(".")
-    local equal     = P("=")
+    local spaces    = lpeg.patterns.whitespace^0
+    local separator = spaces * P(".") * spaces
+    local equal     = spaces * P("=") * spaces
     local digit     = R("09")
-    local lbracket  = P("[")
-    local rbracket  = P("]")
-    local index     = Ct(Cc("index") * lbracket * (digit^1 / tonumber) * rbracket)
-    local test      = Ct(Cc("test")  * lbracket * C((1-equal)^1) * equal * C((1-rbracket)^1) * rbracket)
-    local entry     = Ct(Cc("entry") * C((1-lbracket-separator)^1))
+    local lbracket  = spaces * P("[") * spaces
+    local rbracket  = spaces * P("]") * spaces
+    local index     = Ct( Cc("index")
+                        * lbracket
+                        * (digit^1 / tonumber)
+                        * rbracket
+                    )
+    local test      = Ct( Cc("test")
+                        * lbracket
+                        * C((1 - equal)^1)
+                        * equal
+                        * C((1 - rbracket)^1)
+                        * rbracket
+                    )
+    local entry     = Ct( Cc("entry")
+                        * spaces
+                        * C( ( 1 - lbracket - separator - spaces * P(-1) )^1 )
+                    )
 
-    local specifier = Ct ((entry + (separator + index + test))^1)
+    local specifier = Ct (
+                        (spaces * (entry + (separator + index + test)) )^1
+                    )
 
     local function field(namespace,name,default)
         local data = loaded[namespace] or current
         if data then
             local t = lpeg.match(specifier,name)
+-- inspect(t)
             local n = #t
             local last = nil
             for i=1,n do
                 local ti = t[i]
                 local t1 = ti[1]
                 local k  = ti[2]
+-- print(i,t1,k)
                 if t1 == "test" then
                     local v = ti[3]
                     for j=1,#data do
@@ -110,17 +128,19 @@ do
         end
     end
 
-    function length(namespace,name)
+    local function length(namespace,name)
         local data = field(namespace,name)
         return type(data) == "table" and #data or 0
     end
 
-    function formatted(namespace,name,fmt)
+    local function formatted(namespace,name,fmt)
         local data = field(namespace,name)
         if data then
             return formatters[fmt](data)
         end
     end
+
+    -- public
 
     tablestore.field     = field
     tablestore.length    = length

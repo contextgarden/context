@@ -1,0 +1,72 @@
+\startcomponent excursion-en-errors
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Problems during processing,reference=trouble]
+
+\index{errors}
+\index{problems}
+
+If processing is not successful --- for example because you typed
+\type{\startchpter} instead of \type{\startchapter} --- \CONTEXT\ produces an
+error message giving you an indication or even a straight forward answer to what
+is wrong with the input i.e. your file. When a compilation run is aborted due to
+an error there is still a \PDF\ file generated containing the colorful word
+\type{error}.
+
+\starttyping
+! Undefined control sequence
+tex error       > tex error on line 4 in file ./example-file.mkxl:
+
+<line 3.4>
+    \startchpter
+    [title=Test]
+
+ 1
+ 2     \startdocument
+ 3
+ 4 >>  \startchpter[title=Test]
+ 5
+ 6     A typo causing a fatal error \unknown
+ 7     \stopchapter
+ 8
+ 9
+10
+11     \stopdocument
+12
+The control sequence at the end of the top line of your error
+message was never \def'ed.
+You can just continue as I'll forget about whatever was undefined.
+\stoptyping
+
+This error message is also included in the log file. In addition to this
+\CONTEXT\ generates an error file like \type{example-file-error.log} with
+additional information.
+
+Sometimes the error messages are obscure and you can not point directly to the
+culprit. The reason for this is that the problem starts much earlier in the file
+before \CONTEXT\ gives up because of an error. Finding the location of the error
+in an extensive document can then be a tedious job. In such a case you have to
+isolate the error using the following procedure:
+
+\startitemize[packed]
+\item open the file in your text editor
+\item save a copy of your file (to be on the safe side)
+\item isolate the error by
+      \startitemize[n,packed]
+      \item placing a \type{\stopdocument} command higher up in your text
+      \item processing the file
+      \item repeating step 1 and 2 until the file processes correctly
+      \stopitemize
+\item study the content that produces the error
+\item fix the error
+\item place the \type{\stopdocument} command after the corrected error
+\item process your file
+\item etc.
+\stopitemize
+
+\stopchapter
+
+\stopcomponent

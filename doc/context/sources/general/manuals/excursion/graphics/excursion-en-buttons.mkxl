@@ -1,0 +1,29 @@
+% signal=squid
+
+% Two buttons as in the paper version of \CONTEXT\ an excursion. The program
+% feature is no longer relevant in the perspective of \PDF\ as it's one
+% of the dropped features (among other instable features). One can try to
+% use an attachment and hope for the best.
+
+\setupinteraction
+  [state=start]
+
+\startdocument
+
+\startTEXpage
+\framed
+  [width=45.85mm,height=19mm,frame=off,align={middle,lohi}]
+  {\button
+     [height=8mm,
+      width=44.85mm,
+      background=color,
+      backgroundcolor=blue,
+      foregroundcolor=white]
+     {Website Hasselt} [ url(https://www.hasselt.nl) ]
+   \button
+     [height=8mm,
+      foregroundcolor=blue]
+     {MSWord Document} [ program(hasselt.docx) ]}
+\stopTEXpage
+
+\stopdocument`

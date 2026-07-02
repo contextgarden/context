@@ -122,8 +122,8 @@ static void tex_aux_dump_preamble(dumpstream f)
 {
     dump_via_int(f, hash_size);
     dump_via_int(f, hash_prime);
-    dump_via_int(f, prim_size);
-    dump_via_int(f, prim_prime);
+    dump_via_int(f, primitives_size);
+    dump_via_int(f, primitives_prime);
     dump_via_int(f, memory_mode);
     dump_via_int(f, number_tex_commands);
     dump_int(f, lmt_hash_state.hash_data.allocated);
@@ -143,11 +143,11 @@ static void tex_aux_undump_preamble(dumpstream f)
         goto BAD;
     }
     undump_int(f, x);
-    if (x != prim_size) {
+    if (x != primitives_size) {
         goto BAD;
     }
     undump_int(f, x);
-    if (x != prim_prime) {
+    if (x != primitives_prime) {
         goto BAD;
     }
     undump_int(f, x);

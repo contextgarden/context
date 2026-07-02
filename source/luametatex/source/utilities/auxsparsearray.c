@@ -136,18 +136,6 @@ static void sa_aux_skip_in_stack(const sa_tree head, int n)
     }
 }
 
-// # define LMT_SA_L_PART_1(n) (LMT_SA_L_PART(n)/4)
-// # define LMT_SA_L_SLOT_1(n) (n%4)
-// # define LMT_SA_LOWPART_1   (LMT_SA_LOWPART/4)
-// 
-// # define LMT_SA_L_PART_2(n) (LMT_SA_L_PART(n)/2)
-// # define LMT_SA_L_SLOT_2(n) (n%2)
-// # define LMT_SA_LOWPART_2   (LMT_SA_LOWPART/2)
-// 
-// # define LMT_SA_L_PART_4(n) (LMT_SA_L_PART(n))
-// # define LMT_SA_L_SLOT_4(n) (n)
-// # define LMT_SA_LOWPART_4   (LMT_SA_LOWPART)
-
 // int sa_get_item_0(const sa_tree head, int n)
 // {
 //     int h = LMT_SA_H_PART(n);

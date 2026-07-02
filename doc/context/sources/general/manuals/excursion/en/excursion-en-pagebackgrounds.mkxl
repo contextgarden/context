@@ -1,0 +1,108 @@
+% signal=squid
+
+\startcomponent excursion-en-pagebackgrounds
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Backgrounds in page areas]
+
+\index{page+areas}
+\index{background+page areas}
+
+\Command{\tex{setupbackgrounds}}
+
+The page background can be set, with
+
+\shortsetup{setupbackgrounds}
+
+The first two bracket pairs are used to define the page areas. The last bracket
+pair is used for set up.
+
+\defineframed
+  [Gray]
+	[background=color,backgroundcolor=gray]
+
+\startbuffer[Areas]
+\switchtobodyfont[tt,6pt]
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {}
+   \framed[width=.1\makeupwidth, frame=off] {left}
+   \framed[width=.15\makeupwidth,frame=off] {left}
+   \framed[width=.3\makeupwidth, frame=off] {text}
+   \framed[width=.15\makeupwidth,frame=off] {right}
+   \framed[width=.1\makeupwidth, frame=off] {right}}
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {}
+   \framed[width=.1\makeupwidth, frame=off] {edge}
+   \framed[width=.15\makeupwidth,frame=off] {margin}
+   \framed[width=.3\makeupwidth, frame=off] {}
+   \framed[width=.15\makeupwidth,frame=off] {margin}
+   \framed[width=.1\makeupwidth, frame=off] {edge}}
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {top}
+   \framed[width=.1\makeupwidth]            {}
+   \framed[width=.15\makeupwidth]           {}
+   \framed[width=.3\makeupwidth]            {}
+   \framed[width=.15\makeupwidth]           {}
+   \framed[width=.1\makeupwidth]            {}}
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {header}
+   \framed[width=.1\makeupwidth]            {}
+   \Gray  [width=.15\makeupwidth]           {}
+   \Gray  [width=.3\makeupwidth]            {}
+   \Gray  [width=.15\makeupwidth]           {}
+   \framed[width=.1\makeupwidth]            {}}
+\hbox
+  {\framed[width=.05\makeupwidth,height=.25\makeupheight,frame=off] {text}
+   \framed[width=.1\makeupwidth, height=.25\makeupheight]           {}
+   \Gray  [width=.15\makeupwidth,height=.25\makeupheight]           {}
+   \Gray  [width=.3\makeupwidth, height=.25\makeupheight]           {}
+   \Gray  [width=.15\makeupwidth,height=.25\makeupheight]           {}
+   \framed[width=.1\makeupwidth, height=.25\makeupheight]           {}}
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {footer}
+   \framed[width=.1\makeupwidth]            {}
+   \Gray  [width=.15\makeupwidth]           {}
+   \Gray  [width=.3\makeupwidth]            {}
+   \Gray  [width=.15\makeupwidth]           {}
+   \framed[width=.1\makeupwidth]            {}}
+\hbox
+  {\framed[width=.05\makeupwidth,frame=off] {bottom}
+   \framed[width=.1\makeupwidth]            {}
+   \framed[width=.15\makeupwidth]           {}
+   \framed[width=.3\makeupwidth]            {}
+   \framed[width=.15\makeupwidth]           {}
+   \framed[width=.1\makeupwidth]            {}}
+\stopbuffer
+
+\startplacefigure
+  [location=here,
+   reference=fig:pageareas,
+   title={The page areas defined in \type{\setupbackgrounds}}]
+   \getbuffer[Areas]
+\stopplacefigure
+
+\page[bigpreference]
+
+If you want to have backgrounds in the gray areas of the page layout of
+\in{figure}[fig:pageareas] you type
+
+\startbuffer
+\setupbackgrounds
+  [header,text,footer]
+  [leftmargin,text,rightmargin]
+  [background=color,
+   background=gray]
+\stopbuffer
+
+\typebuffer
+
+The edge areas in \in{figure}[fig:pageareas] are meant for use in screen
+documents. The white areas at the top and the bottom can also be used in paper
+documents.
+
+\stopchapter
+
+\stopcomponent

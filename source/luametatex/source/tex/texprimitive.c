@@ -78,8 +78,8 @@ hash_state_info lmt_hash_state = {
     |prim_is_full|; some fields: |prim_origin_field (a)|, |prim_eq_type_field (a)| and
     |prim_equiv_field(a)|; the level of definition: |prim_origin (a)|; the command code for
     equivalent: |prim_eq_type(a)|; the equivalent value: |prim_equiv(a)|; the allocation pointer
-    for |prim|: |prim_used|; the primitives tables: |two_halves prim [(prim_size + 1)]| and
-    |memoryword prim_eqtb [(prim_size + 1)]|. The array |prim_data| works the other way around, it
+    for |prim|: |prim_used|; the primitives tables: |two_halves prim [(primitives_size + 1)]| and
+    |memoryword prim_eqtb [(primitives_size + 1)]|. The array |prim_data| works the other way around, it
     is used for |cmd, chr| to name lookups.
 
 */
@@ -88,20 +88,20 @@ primitive_state_info lmt_primitive_state;
 
 /*tex Test if all positions are occupied: */
 
-# define prim_base           1
+# define primitives_base     1
 # define reserved_hash_slots 1
 
 /*tex Initialize the memory arrays: */
 
 void tex_initialize_primitives(void)
 {
-    memset(lmt_primitive_state.prim_data, 0, sizeof(prim_info)  * (last_cmd  + 1));
-    memset(lmt_primitive_state.prim,      0, sizeof(memoryword) * (prim_size + 1));
-    memset(lmt_primitive_state.prim_eqtb, 0, sizeof(memoryword) * (prim_size + 1));
-    for (int k = 0; k <= prim_size; k++) {
+    memset(lmt_primitive_state.prim_data, 0, sizeof(primitive_info) * (last_cmd       + 1));
+    memset(lmt_primitive_state.prim,      0, sizeof(memoryword)     * (primitives_size + 1));
+    memset(lmt_primitive_state.prim_eqtb, 0, sizeof(memoryword)     * (primitives_size + 1));
+    for (int k = 0; k <= primitives_size; k++) {
         prim_eq_type(k) = undefined_cs_cmd;
     }
-    lmt_primitive_state.prim_used = prim_size;
+    lmt_primitive_state.prim_used = primitives_size;
 }
 
 void tex_initialize_hash_mem(void)
@@ -199,7 +199,7 @@ static inline halfword tex_aux_compute_primitive(const char *j, unsigned l)
 {
     halfword h = (unsigned const char) j[0];
     for (unsigned k = 1; k < l; k++) {
-        h = (h + h + (unsigned const char) j[k]) % prim_prime;
+        h = (h + h + (unsigned const char) j[k]) % primitives_prime;
     }
     return h;
 }
@@ -227,10 +227,10 @@ halfword tex_primitive_lookup(strnumber s)
                 if (prim_text(p) > 0) {
                     /*tex Search for an empty location in |prim| */
                     do {
-                        if (lmt_primitive_state.prim_used > prim_base) {
+                        if (lmt_primitive_state.prim_used > primitives_base) {
                             --lmt_primitive_state.prim_used;
                         } else {
-                            tex_overflow_error("primitive size", prim_size);
+                            tex_overflow_error("primitive size", primitives_size);
                         }
                     } while (prim_text(lmt_primitive_state.prim_used));
                     prim_next(p) = lmt_primitive_state.prim_used;
@@ -272,15 +272,15 @@ int tex_cs_is_primitive(strnumber csname)
 void tex_dump_primitives(dumpstream f)
 {
     /*
-    for (int p = 0; p <= prim_size; p++) {
+    for (int p = 0; p <= primitives_size; p++) {
         dump_mem(f, prim_state.prim[p]);
     }
-    for (int p = 0; p <= prim_size; p++) {
+    for (int p = 0; p <= primitives_size; p++) {
         dump_mem(f, prim_state.prim_eqtb[p]);
     }
     */
-    dump_things(f, lmt_primitive_state.prim[0], prim_size + 1);
-    dump_things(f, lmt_primitive_state.prim_eqtb[0], prim_size + 1);
+    dump_things(f, lmt_primitive_state.prim     [0], primitives_size + 1);
+    dump_things(f, lmt_primitive_state.prim_eqtb[0], primitives_size + 1);
     for (int p = 0; p <= last_cmd; p++) {
         dump_int(f, lmt_primitive_state.prim_data[p].offset);
         dump_int(f, lmt_primitive_state.prim_data[p].subids);
@@ -293,8 +293,8 @@ void tex_dump_primitives(dumpstream f)
 
 void tex_undump_primitives(dumpstream f)
 {
-    undump_things(f, lmt_primitive_state.prim[0], prim_size + 1);
-    undump_things(f, lmt_primitive_state.prim_eqtb[0], prim_size + 1);
+    undump_things(f, lmt_primitive_state.prim     [0], primitives_size + 1);
+    undump_things(f, lmt_primitive_state.prim_eqtb[0], primitives_size + 1);
     for (int p = 0; p <= last_cmd; p++) {
         undump_int(f, lmt_primitive_state.prim_data[p].offset);
         undump_int(f, lmt_primitive_state.prim_data[p].subids);

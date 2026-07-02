@@ -75,9 +75,9 @@ local function transform(eta,phi,theta,sx,sy,sz)
     return v -- * projz
 end
 
-local function points(M, N)
+local function points(M, N, count)
     if M then
-        return newvector((M + 1) * ((N or M) + 1), 4)
+        return newvector((M + 1) * ((N or M) + 1), count or 4)
     end
 end
 

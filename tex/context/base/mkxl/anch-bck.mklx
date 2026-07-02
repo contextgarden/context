@@ -658,9 +658,9 @@
 \startMPpositiongraphic{mpos:encircle}{linecolor,fillcolor,linewidth,lineoffset}
     getposboxes("self","anchor") ;
     if nofposboxes = 1 :
-        posboxes[1] := (posboxes[1] enlarged mpvar "lineoffset") cornered mpvar "lineoffset" ;
-        fill posboxes[1] withcolor mpvar "fillcolor" ;
-        draw posboxes[1] withpen pencircle scaled mpvar "linewidth" withcolor mpvar "linecolor"  ;
+        posboxes[1] := (posboxes[1] enlarged mpvard "lineoffset") cornered mpvard "lineoffset" ;
+        fill posboxes[1] withcolor mpvars "fillcolor" ;
+        draw posboxes[1] withpen pencircle scaled mpvard "linewidth" withcolor mpvars "linecolor"  ;
     fi ;
 \stopMPpositiongraphic
 
@@ -671,9 +671,9 @@
    linewidth=1pt]
 
 \startMPpositiongraphic{mpos:connect}{linecolor,lineoffset,linewidth}
-    boxlinewidth  := mpvar "linewidth" ;
-    boxlineoffset := mpvar "lineoffset" ;
-    def boxlineoptions = withcolor mpvar "linecolor" enddef ;
+    boxlinewidth  := mpvard "linewidth" ;
+    boxlineoffset := mpvard "lineoffset" ;
+    def boxlineoptions = withcolor mpvars "linecolor" enddef ;
     getposboxes("from,to","anchor") ;
     connect_positions ;
 \stopMPpositiongraphic

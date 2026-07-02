@@ -1,0 +1,53 @@
+% signal=squid
+
+\startcomponent excursion-en-texteditor
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Text editors,reference=texteditor]
+
+The developers of \CONTEXT\ have always been able to process their \TEX\ files
+from a text editor. In that way \CONTEXT\ became an effective authoring tool.
+
+At this moment the text editors \SCITE\ and \TEX works\ and VScode are supported
+by the \CONTEXT\ distribution.
+
+\startsection[title=\SCITE]
+
+Please refer to the \goto {\Emph{\CONTEXTWIKI}, Input and compilation with
+\SCITE} [ url
+(https://wiki.contextgarden.net/Windows_Installation:_ConTeXt_Suite_with_SciTe) ]
+and learn how to install \SCITE.
+
+\SCITE\ supports the:
+
+\startitemize[packed]
+  \startitem processing \TEX\ files \stopitem
+  \startitem colored display of commands (syntax highlighting, lexing) \stopitem
+  \startitem syntax checking of \TEX, \XML\ and \LUA\ files \stopitem
+  \startitem spell checking of your text \stopitem
+\stopitemize
+
+The \CONTEXT\ specific support of \SCITE\ is described in the manual \goto
+{\Emph{\SCITE\ in \CONTEXT}} [ url (manual:scite) ].
+\stopsection
+
+\startsection[title=\TEX works]
+
+Please refer to the \goto{\Emph{\CONTEXTWIKI}, Input and compilation with \TEX
+works}
+[https://wiki.contextgarden.net/Input_and_compilation/Text_editors/TeXworks].
+
+\stopsection
+
+\startsection[title=VScode]
+
+For using VScode with the \CONTEXT\ extension module please refer to \goto
+{\Emph{\CONTEXTWIKI }, Input and compilation with VScode}
+[https://wiki.contextgarden.net/Input_and_compilation/Text_editors/Visual_Studio_Code].
+
+\stopchapter
+
+\stopcomponent

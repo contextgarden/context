@@ -2383,7 +2383,7 @@ static const int glue_filler_codes[] = {
     fi_l_neg_glue,
 };
 
-static void tex_aux_run_glue(int penalty_too)
+static void tex_aux_run_glue(int penalty_too, int space_too)
 {
     halfword code = cur_chr;
     switch (code) {
@@ -2405,6 +2405,10 @@ static void tex_aux_run_glue(int penalty_too)
                 } else if (penalty_too) { // } && cur_mode == hmode) {
                     glue_options(g) |= glue_option_has_penalty;
                     glue_penalty(g) = p;
+                }
+                if (space_too && tex_has_glue_option(g, glue_option_is_space)) {
+                    node_subtype(g) = space_skip_glue;
+                    glue_font(g) = cur_font_par;
                 }
                 tex_tail_append(g);
                 tex_flush_node(v);
@@ -2831,7 +2835,7 @@ static void tex_aux_wrapup_leader_box(halfword boxcontext, halfword boxnode, hal
         tex_get_x_token();
     } while (cur_cmd == spacer_cmd || cur_cmd == relax_cmd);
     if ((cur_cmd == hskip_cmd && cur_mode != vmode) || (cur_cmd == vskip_cmd && cur_mode == vmode)) {
-        tex_aux_run_glue(0); /* uses cur_chr */
+        tex_aux_run_glue(0, 0); /* uses cur_chr */
         switch (boxcontext) {
             case a_leaders_flag:
                 node_subtype(cur_list.tail) = a_leaders;
@@ -7204,7 +7208,7 @@ static inline void tex_aux_big_switch(int mode, int cmd)
         case explicit_space_cmd:   mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_space();         break;
         case hmove_cmd:            mode == vmode ? tex_aux_run_move()          : tex_aux_run_illegal_case();  break;
         case vmove_cmd:            mode == vmode ? tex_aux_run_illegal_case()  : tex_aux_run_move();          break;    
-        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue(1);          break;
+        case hskip_cmd:            mode == vmode ? tex_aux_run_new_paragraph() : tex_aux_run_glue(1, 1);      break;
         case un_hbox_cmd:          mode == vmode ? tex_aux_run_new_paragraph() : tex_run_unpackage();         break;   
 
         /* */
@@ -7300,7 +7304,7 @@ static inline void tex_aux_big_switch(int mode, int cmd)
 
         case vskip_cmd:              
             switch (mode) { 
-                case vmode: tex_aux_run_glue(1);              break;
+                case vmode: tex_aux_run_glue(1, 0);           break;
                 case hmode: tex_aux_run_head_for_vmode();     break;   
                 case mmode: tex_aux_run_insert_dollar_sign(); break;
             } 

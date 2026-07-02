@@ -250,8 +250,7 @@ return {
         "phantom",
         "scrutinized",
         --
-        "xshifted",
-        "yshifted",
+     -- "xshifted", "yshifted",
         --
         "reducedpath", "reducedenvelope", "enveloped", "hasreducedcurvature",
         --

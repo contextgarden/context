@@ -544,17 +544,17 @@ implement {
     end
 }
 
-local bp = number.dimenfactors.bp
+local bpfactor <const> = number.dimenfactors.bp
 
 implement {
     name      = "tobigpoints",
-    actions   = function(d) context("%.5F",bp * d) end,
+    actions   = function(d) context("%.5F",bpfactor * d) end,
     arguments = "dimension",
 }
 
 implement {
     name      = "towholebigpoints",
-    actions   = function(d) context("%r",bp * d) end,
+    actions   = function(d) context("%r",bpfactor * d) end,
     arguments = "dimension",
 }
 

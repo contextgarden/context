@@ -42,6 +42,8 @@ local f_draw        = formatters["draw %s;"]
 local f_rectangle   = formatters["((%N,%N)--(%N,%N)--(%N,%N)--(%N,%N)--cycle)"]
 local f_line        = formatters["((%N,%N)--(%N,%N))"]
 
+local bpfactor      <const> = number.dimenfactors.bp
+
 function metapostfonts.boundingbox(d,factor)
     local bounds = d.boundingbox
     local factor = factor or 1
@@ -304,8 +306,8 @@ local f_rule             = formatters["mfun_do_outline_rule_flush(%q,%N,%N,%N,%N
 local f_bounds           = formatters["checkbounds(%N,%N,%N,%N);"]
 local s_nothing          = "(origin scaled 10)"
 
-local sc                 = 10
-local fc                 = number.dimenfactors.bp
+local scalefactor        <const> = 10
+----- bpfactor           <const> = number.dimenfactors.bp
 
 -- handle compact mode here:
 
@@ -320,7 +322,7 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
                 local glyf = glyphs[index]
                 if glyf then
                     local units    = 1000 -- factor already takes shapedata.units into account
-                    local yfactor  = (sc/units) * fontparameters[font].factor / 655.36
+                    local yfactor  = (scalefactor/units) * fontparameters[font].factor / 655.36
                     local xfactor  = yfactor
                     local shift    = shift or 0
                     local advance  = advance or 0
@@ -336,10 +338,10 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
                         xfactor = xfactor * wfactor
                     end
                     if xoffset ~= 0 then
-                        advance = advance + s * sx * xoffset * fc / 1000000
+                        advance = advance + s * sx * xoffset * bpfactor / 1000000
                     end
                     if yoffset ~= 0 then
-                        shift = shift + s * sy * yoffset * fc / 1000000
+                        shift = shift + s * sy * yoffset * bpfactor  / 1000000
                     end
                     if s then
                         xfactor = (s/1000) * ((sx or 1000)/1000) * xfactor
@@ -347,7 +349,7 @@ local function glyph(kind,font,char,advance,shift,ex,s,sx,sy)
                     end
                     local paths = topaths(glyf,xfactor,yfactor)
                     if paths then
-                        return f_text(kind,#paths,advance,shift,detail,paths), character.width * fc * wfactor
+                        return f_text(kind,#paths,advance,shift,detail,paths), character.width * bpfactor * wfactor
                     end
                 end
             end
@@ -379,8 +381,8 @@ local function flushcharacter(current,pos_h,pos_v,pos_r,font,char,data,csx,csy,f
     if current then
         local char, font = isglyph(current)
         local s, sx, sy = getscales(current)
-        local ph = pos_h*fc
-        local code, width = glyph(kind,font,char,ph,pos_v*fc,getexpansion(current),s,sx,sy)
+        local ph = pos_h*bpfactor
+        local code, width = glyph(kind,font,char,ph,pos_v*bpfactor,getexpansion(current),s,sx,sy)
         if code then
             b = b + 1
             buffer[b] = code
@@ -401,8 +403,8 @@ register(ph,width/2)
             if csy then sy = sy * csy end
             if ssx then sx = sx * ssx end
             if ssy then sy = sy * ssy end
-            local ph = pos_h*fc
-            local code, width = glyph(kind,font,char,ph,pos_v*fc,factor,s,sx,sy)
+            local ph = pos_h*bpfactor
+            local code, width = glyph(kind,font,char,ph,pos_v*bpfactor,factor,s,sx,sy)
             if code then
                 b = b + 1
                 buffer[b] = code
@@ -420,29 +422,29 @@ end
 local function flushrule(current,pos_h,pos_v,pos_r,size_h,size_v,subtype)
     -- how about math rules
     if subtype == normalrule_code then
-        local ph = pos_h*fc
-        local sh = size_h*fc
+        local ph = pos_h*bpfactor
+        local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule(kind,ph,pos_v*fc,sh,size_v*fc)
+        buffer[b] = f_rule(kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == outlinerule_code then
-        local ph = pos_h *fc
-        local sh = size_h*fc
+        local ph = pos_h*bpfactor
+        local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule("d",ph,pos_v*fc,sh,size_v*fc)
+        buffer[b] = f_rule("d",ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == userrule_code then
         -- same as normal_rule
-        local ph = pos_h *fc
-        local sh = size_h*fc
+        local ph = pos_h*bpfactor
+        local sh = size_h*bpfactor
         b = b + 1
-        buffer[b] = f_rule(kind,ph,pos_v*fc,sh,size_v*fc)
+        buffer[b] = f_rule(kind,ph,pos_v*bpfactor,sh,size_v*bpfactor)
 register(ph,sh/2)
     elseif subtype == emptyrule_code then
         -- ignore
     else
      -- b = b + 1
-     -- buffer[b] = f_rule("f",pos_h*fc,pos_v*fc,size_h*fc,size_v*fc)
+     -- buffer[b] = f_rule("f",pos_h*bpfactor,pos_v*bpfactor,size_h*bpfactor,size_v*bpfactor)
     end
 end
 
@@ -469,10 +471,10 @@ drivers.install {
        end,
         finalize = function(driver,details)
             local bb  = details.boundingbox
-            local llx = bb[1] * fc
-            local lly = bb[2] * fc
-            local urx = bb[3] * fc
-            local ury = bb[4] * fc
+            local llx = bb[1] * bpfactor
+            local lly = bb[2] * bpfactor
+            local urx = bb[3] * bpfactor
+            local ury = bb[4] * bpfactor
             b = b + 1
             buffer[b] = f_bounds(llx,lly,urx,ury)
          -- inspect(buffer)
@@ -486,8 +488,6 @@ drivers.install {
         specialrule     = flushspecialrule,
     }
 }
-
-local bpfactor = number.dimenfactors.bp
 
 local function boxtompposition  (i) return positions[i] or 0 end
 local function boxtompdimensions( ) return boxwidth*bpfactor, boxheight*bpfactor, boxdepth*bpfactor end

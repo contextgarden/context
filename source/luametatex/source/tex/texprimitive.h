@@ -35,8 +35,8 @@ typedef enum command_origin {
 typedef enum command_legacy {
     no_legacy       = 0x00,
     /* these can be disabled (low level token blocked to) */
-    text_legacy     = 0x01, /* makes no sense in new fonts   : accent             */
-    math_legacy     = 0x02, /* sort of limited to eight bit  : left delimiter     */
+    text_legacy     = 0x01, /* makes no sense in new fonts    : accent             */
+    math_legacy     = 0x02, /* sort of limited to eight bit   : left delimiter     */
     /* these are just tags (for manuals etc) */
     callback_legacy = 0x04, /* not implemented, callback      : font shipout       */
     ignored_legacy  = 0x08, /* doesn't do anything any more   : outer long         */
@@ -73,8 +73,8 @@ extern hash_state_info lmt_hash_state;
 # define cs_text(a) lmt_hash_state.hash[(a)].half1 /*tex string number for control sequence name */
 
 # define undefined_primitive    0
-# define prim_size           2100 /*tex maximum number of primitives (quite a bit more than needed) */
-# define prim_prime          1777 /*tex about 85 percent of |primitive_size| */
+# define primitives_size     2100 /*tex maximum number of primitives (quite a bit more than needed) */
+# define primitives_prime    1777 /*tex about 85 percent of |primitive_size| */
 
 typedef enum primitive_permissions {
     primitive_permitted = 0x00,
@@ -88,13 +88,13 @@ typedef struct primitive_info {
     halfword       offset;      /*tex offset to be used for |chr_code|s */
     strnumber     *names;       /*tex array of names */
     unsigned char *permissions; /*tex array of bitsets */
-} prim_info;
+} primitive_info;
 
 typedef struct primitive_state_info {
-    memoryword prim[prim_size + 1];
-    memoryword prim_eqtb[prim_size + 1];
-    prim_info  prim_data[last_cmd + 1];
-    halfword   prim_used;
+    memoryword      prim     [primitives_size + 1];
+    memoryword      prim_eqtb[primitives_size + 1];
+    primitive_info  prim_data[last_cmd + 1];
+    halfword        prim_used;
     /* alignment */
     int        padding;
 } primitive_state_info;

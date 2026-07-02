@@ -831,7 +831,8 @@ char *tex_read_file_name(int optionalequal, const char * name, const char* ext)
     }
     do {
         tex_get_x_token();
-    } while (cur_cmd == spacer_cmd || cur_cmd == relax_cmd);
+ // } while (cur_cmd == spacer_cmd || cur_cmd == relax_cmd);
+    } while (cur_cmd == spacer_cmd);
     if (cur_cmd == left_brace_cmd) {
         result = tex_scan_toks_expand(1, NULL, 0, 0);
     } else {

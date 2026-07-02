@@ -1,0 +1,99 @@
+% signal=squid
+
+\startcomponent excursion-en-chemical
+
+\enablemode[**en-us]
+
+\project excursion
+
+\setupfloat[chemical][frame=off,location=middle]
+
+\startchapter[title=Chemical stuff,reference=chap:chemical]
+
+\index{chemistry}
+\index{chemical structure}
+\index{chemical equation}
+
+\Command{\tex{chemical}}
+\Command{\tex{startchemical}}
+\Command{\tex{setupchemical}}
+
+The chemical module was developed at the end of the previous century and it was
+the first \CONTEXT\ module that was officially published and documented. It has
+seen a number of face lifts over the years.
+
+\shortsetup[startchemicalformula]
+\shortsetup[startchemical]
+\shortsetup[chemical]
+\shortsetup[setupchemical]
+
+Chemical structures may look very impressive.
+
+\startbuffer
+\startchemical[frame=off]
+  [scale=small,width=6000,height=6000]
+  \chemical[SIX,SB2356,DB14,Z2346,SR36,RZ36]
+    [C,N,C,C,H,H_2]
+  \chemical[PB:Z1,ONE,Z0,MOV8,Z0,SB24,DB7,Z27,PE]
+    [C,C,CH_3,O]
+  \chemical[PB:Z5,ONE,Z0,MOV6,Z0,SB24,DB7,Z47,PE]
+    [C,C,H_3C,O]
+  \chemical[SR24,RZ24]
+    [CH_3,H_3C]
+\stopchemical
+\stopbuffer
+
+
+\startplacechemical
+  [title=, number=]
+  {\getbuffer}
+\stopplacechemical
+
+\CONTEXT\ relies on \METAPOST\ to draw these kind of chemical structures.
+Although these chemical structures are defined with only very few commands, it
+takes some practice to get the desired results. This is how the input looks
+
+\typebuffer
+
+Chemical reactions can be typeset within a paragraph or as a display formula with
+the \type{\inlinechemical} and \type{\startchemicalformula ...
+\stopchemicalformula} command.
+
+One of the steps in the Hasselt canal water treatment is the removal of phosphate
+by means of a chemical reaction with iron.
+
+\startbuffer
+\startplacefigure
+  [title=,number=,location=middle]
+  \startchemicalformula
+    \chemical{Fe(OH)_3}{iron hydroxide}
+    \chemical{PLUS}
+    \chemical{H_3PO_4}{phosphoric acid}
+    \chemical{GIVES}{\hphantom{whatever}}
+    \chemical{FePO_4}{iron phosphate}
+    \chemical{PLUS}
+    \chemical{H_2O}{water}
+  \stopchemicalformula
+\stopplacefigure
+\stopbuffer
+
+\getbuffer
+
+\blank
+
+The \inlinechemical{FePO_4} is a solid and precipitates in water. It is filtered
+and re-used as a fertilizer resource.
+
+This is defined by
+
+\typebuffer
+
+The use of the chemical commands is described in the \goto{\Emph{PPCHTeX
+Manual}}[ url(manual:chemic) ] and the example manual \goto{\Emph{Chemical
+Formulas in \CONTEXT}} [ url(manual:chemic-ex) ].
+
+\stopchapter
+
+\stopcomponent
+
+

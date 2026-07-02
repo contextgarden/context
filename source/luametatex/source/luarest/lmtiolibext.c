@@ -963,6 +963,273 @@ static int siolib_read2dot14(lua_State *L) {
     return 1;
 }
 
+/* quick hack ... will be less code */
+
+static const union { /* taken from lua */
+    int  dummy;
+    char little;  /* true iff machine is little endian */
+} nativeendian = { 1 };
+
+static inline void copywithendian(char *dest, const char *src, unsigned size, int islittle)  /* taken from lua */
+{
+    if (islittle == nativeendian.little)
+        memcpy(dest, src, size);
+    else {
+        dest += size - 1;
+        while (size-- != 0) {
+            *(dest--) = *(src++);
+        }
+    }
+}
+
+static inline void readwithendian4(char *dest, FILE *f, int islittle)  /* taken from lua */
+{
+    if (islittle == nativeendian.little) {
+        dest[0] = (char) getc(f); dest[1] = (char) getc(f); dest[2] = (char) getc(f); dest[3] = (char) getc(f);
+    } else {
+        dest[3] = (char) getc(f); dest[2] = (char) getc(f); dest[1] = (char) getc(f); dest[0] = (char) getc(f);
+    }
+}
+
+static inline void readwithendian8(char *dest, FILE *f, int islittle)  /* taken from lua */
+{
+    if (islittle == nativeendian.little) {
+        dest[0] = (char) getc(f); dest[1] = (char) getc(f); dest[2] = (char) getc(f); dest[3] = (char) getc(f);
+        dest[4] = (char) getc(f); dest[5] = (char) getc(f); dest[6] = (char) getc(f); dest[7] = (char) getc(f);
+    } else {
+        dest[7] = (char) getc(f); dest[6] = (char) getc(f); dest[5] = (char) getc(f); dest[4] = (char) getc(f);
+        dest[3] = (char) getc(f); dest[2] = (char) getc(f); dest[1] = (char) getc(f); dest[0] = (char) getc(f);
+    }
+}
+
+static inline void writewithendian(char *dest, FILE *f, unsigned size, int islittle)
+{
+    if (islittle == nativeendian.little) {
+        for (unsigned i = 0; i < size; i++) {
+            putc(dest[i], f);
+        }
+    } else {
+        for (unsigned i = 0; i < size; i++) {
+            putc(dest[size-1-i], f);
+        }
+    }
+}
+
+/* */
+
+typedef struct floatcast  { union { char c[4]; float  f; }; } floatcast;
+typedef struct doublecast { union { char c[8]; double d; }; } doublecast;
+
+static int fiolib_readfloat(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        floatcast flt;
+        readwithendian4(&flt.c[0], f, 0);
+        lua_pushnumber(L, (double) flt.f);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int fiolib_writefloat(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        floatcast flt;
+        flt.f = (float) lua_tonumber(L, 2);
+        writewithendian(&flt.c[0], f, 4, 0);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int fiolib_readfloatle(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        floatcast flt;
+        readwithendian4(&flt.c[0], f, 1);
+        lua_pushnumber(L, (double) flt.f);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+// static int fiolib_readfloatle12(lua_State *L) {
+//     FILE *f = lmt_valid_file(L);
+//     if (f) {
+//         for (int i = 0; i < 12; i++) {
+//             floatcast flt;
+//             readwithendian4(&flt.c[0], f, 1);
+//             lua_pushnumber(L, (double) flt.f);
+//         }
+//         return 12;
+//     } else {
+//         return 0;
+//     }
+// }
+
+static int fiolib_writefloatle(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        floatcast flt;
+        flt.f = (float) lua_tonumber(L, 2);
+        writewithendian(&flt.c[0], f, 4, 1);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int siolib_readfloat(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 3) >= l) {
+        lua_pushnil(L);
+    } else {
+        floatcast flt;
+        copywithendian(&flt.c[0], &s[p], 4, 0);
+        lua_pushnumber(L, (double) flt.f);
+    }
+    return 1;
+}
+
+static int siolib_readfloatle(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 3) >= l) {
+        lua_pushnil(L);
+    } else {
+        floatcast flt;
+        copywithendian(&flt.c[0], &s[p], 4, 1);
+        lua_pushnumber(L, (double) flt.f);
+    }
+    return 1;
+}
+
+static int siolib_readfloatle6(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 23) >= l) {
+        lua_pushnil(L); // 12 nils
+    } else {
+        for (int i = 0; i < 6; i++) {
+            floatcast flt;
+            copywithendian(&flt.c[0], &s[p], 4, 1);
+            lua_pushnumber(L, (double) flt.f);
+            p += 4;
+        }
+        return 6;
+    }
+    return 1;
+}
+
+static int siolib_readfloatle12(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 47) >= l) {
+        lua_pushnil(L); // 12 nils
+    } else {
+        for (int i = 0; i < 12; i++) {
+            floatcast flt;
+            copywithendian(&flt.c[0], &s[p], 4, 1);
+            lua_pushnumber(L, (double) flt.f);
+            p += 4;
+        }
+        return 12;
+    }
+    return 1;
+}
+
+static int fiolib_readdouble(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        doublecast dbl;
+        readwithendian8(&dbl.c[0], f, 0);
+        lua_pushnumber(L, dbl.d);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int fiolib_writedouble(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        doublecast dbl;
+        dbl.d = lua_tonumber(L, 2);
+        writewithendian(&dbl.c[0], f, 8, 0);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int fiolib_readdoublele(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        doublecast dbl;
+        readwithendian8(&dbl.c[0], f, 1);
+        lua_pushnumber(L, dbl.d);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int fiolib_writedoublele(lua_State *L) {
+    FILE *f = lmt_valid_file(L);
+    if (f) {
+        doublecast dbl;
+        dbl.d = lua_tonumber(L, 2);
+        writewithendian(&dbl.c[0], f, 8, 1);
+        return 1;
+    } else {
+        return 0;
+    }
+}
+
+static int siolib_readdouble(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 7) >= l) {
+        lua_pushnil(L);
+    } else {
+        doublecast dbl;
+        copywithendian(&dbl.c[0], &s[p], 8, 0);
+        lua_pushnumber(L, dbl.d);
+    }
+    return 1;
+}
+
+static int siolib_readdoublele(lua_State *L) {
+    size_t ls = 0;
+    const char *s = luaL_checklstring(L, 1, &ls);
+    lua_Integer p = luaL_checkinteger(L, 2) - 1;
+    lua_Integer l = (lua_Integer) ls;
+    if ((p + 7) >= l) {
+        lua_pushnil(L);
+    } else {
+        doublecast dbl;
+        copywithendian(&dbl.c[0], &s[p], 8, 1);
+        lua_pushnumber(L, dbl.d);
+    }
+    return 1;
+}
+
+/* */
+
 static int fiolib_getposition(lua_State *L) {
     FILE *f = lmt_valid_file(L);
     if (f) {
@@ -1422,6 +1689,13 @@ static const luaL_Reg fiolib_function_list[] = {
     { "readfixed2",        fiolib_readfixed2        },
     { "readfixed4",        fiolib_readfixed4        },
 
+    { "readfloat",         fiolib_readfloat         },
+    { "readdouble",        fiolib_readdouble        },
+    { "readfloatle",       fiolib_readfloatle       },
+    { "readdoublele",      fiolib_readdoublele      },
+
+ /* { "readfloatle12",     fiolib_readfloatle12     }, */
+
     { "read2dot14",        fiolib_read2dot14        },
 
     { "setposition",       fiolib_setposition       },
@@ -1443,6 +1717,11 @@ static const luaL_Reg fiolib_function_list[] = {
     { "writecardinal2le",  fiolib_writecardinal2_le },
     { "writecardinal3le",  fiolib_writecardinal3_le },
     { "writecardinal4le",  fiolib_writecardinal4_le },
+
+    { "writefloat",        fiolib_writefloat        },
+    { "writedouble",       fiolib_writedouble       },
+    { "writefloatle",      fiolib_writefloatle      },
+    { "writedoublele",     fiolib_writedoublele     },
 
     { NULL,                NULL                     }
 };
@@ -1476,6 +1755,14 @@ static const luaL_Reg siolib_function_list[] = {
     { "readfixed2",        siolib_readfixed2        },
     { "readfixed4",        siolib_readfixed4        },
     { "read2dot14",        siolib_read2dot14        },
+
+    { "readfloat",         siolib_readfloat         },
+    { "readdouble",        siolib_readdouble        },
+    { "readfloatle",       siolib_readfloatle       },
+    { "readdoublele",      siolib_readdoublele      },
+
+    { "readfloatle6",      siolib_readfloatle6      },
+    { "readfloatle12",     siolib_readfloatle12     },
 
     { "readbytes",         siolib_readbytes         },
     { "readbytetable",     siolib_readbytetable     },

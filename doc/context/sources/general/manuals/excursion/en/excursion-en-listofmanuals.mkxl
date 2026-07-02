@@ -1,0 +1,268 @@
+% signal=squid
+
+\startcomponent excursion-en-listofmanuals
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Support and further reading]
+
+\startsection[title=Websites for more information]
+
+\starttabulate[|l|p|]
+    \NC \goto {Pragma ADE  website}           [url (www:pragma)]           \NC \url[www:pragma]           \NC \NR
+    \NC \goto {Pragma ADE overview of manuals}[url (www:overview-manuals)] \NC \url[www:overview-manuals] \NC \NR
+    \NC \goto {\CONTEXTWIKI}                  [url (www:garden)]           \NC \url[www:garden]           \NC \NR
+    \NC \goto {\CONTEXTWIKI, TikZ}            [url (www:garden:tikz)]      \NC \url[www:garden:tikz]      \NC \NR
+    \NC \goto {\CONTEXT\ on web}              [url (www:contextweb)]       \NC \url[www:contextweb]       \NC \NR
+    \NC \goto {\CONTEXT\ Third party modules} [url (www:wiki-modules)]     \NC \url[www:wiki-modules]     \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\TEX\ users groups]
+
+The main \TEX\ users group is situated in the United States. However there exist
+also a couple of local users groups.
+
+If you use one of the \TEX\ typesetting systems which all come free of charge it
+would be advisable to join one of the local users groups in order to support
+ongoing development of the \TEX\ environments.
+
+% Willy: this table was wrong
+
+\starttabulate[|p|p|]
+    \NC \goto
+            {\CONTEXT\ group}
+            [url (group:context-group)]
+    \NC \url[group:context-group]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {\TEX\ Users Group}
+            [url (group:tug)]
+    \NC \url[group:tug]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\cz Československé sdružení uživatelů TeXu}
+                Czech Users Group (CSTUG)}
+            [url (group:cstug)]
+    \NC \url[group:cstug]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\de Deutschsprachige Anwendervereinigung \par  TeX e.V.}
+                German \TEX\ users association (Dante e.V.)}
+            [url (group:dante)]
+    \NC \url[group:dante]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\nl Nederlandstalige \TEX\ Gebruikersgroep}
+                Dutch \TEX\ Users Group (NTG)}
+            [url (group:ntg)]
+    \NC \url[group:dante]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\fr Groupe francophone des Utilisateurs de TEX, \LATEX\ et logiciels compagnons}
+                French speaking \TEX, \LATEX and companion software users Group  (GUTenberg)}
+                [url (group:GUTenberg)]
+    \NC     \url[group:GUTenberg]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\pl Polska Grupa Użytkowników Systemu TeX}
+                Polish \TEX\ users group (GUST)}
+            [url (group:GUST)]
+        \NC \url[group:GUST]
+    \NC \NR
+    \TB[halfline]
+    \NC \goto
+            {{\language[it]Gruppo Utilizzatori Italiani di \TEX}
+                Italian speaking \TEX\ users group (GuIT)}
+            [url (group:guit)]
+    \NC \url[group:guit]
+    \NC \NR
+\stoptabulate
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Mailinglist for \CONTEXT\ users]
+
+For your Questions and Answers you can subscribe to the
+
+\starttabulate[|p|p|]
+    \NC \goto{\CONTEXT\ mailing list}[url (list:context)] \NC \url[list:context] \NC\NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Installation help]
+
+\starttabulate[|p|p|]
+    \NC \goto{\CONTEXT\ installation help}[url (install)] \NC \url[install] \NC\NR
+\stoptabulate
+
+\stopsection
+
+% --- manuals
+
+\startsection[title=Manuals]
+
+Please be informed, that you find the manuals as well on the \goto{Pragma ADE
+website}[url (www:pragma)] as also in the standalone distribution and therefore
+on your own computer in
+
+\starttyping
+.../tex/texmf-context/doc/context/documents/general/...
+\stoptyping
+
+\starttabulate[|p|p|]
+    \NC \goto{\CONTEXT\ general manual (screen version)}[url (manual:general)]
+    \NC   \url[manual:general] \NC \NR
+    \NC \goto{\CONTEXT\ general manual (paper version)}[url (manual:context)]
+    \NC   \url[manual:context] \NC \NR
+    \NC \goto{\METAFUN\ manual (screen version)}[url (manual:metafuns)]
+    \NC   \url[manual:metafuns] \NC \NR
+    \NC \goto{\METAFUN\ manual (paper version)}[url (manual:metafunp)]
+    \NC   \url[manual:metafunp] \NC \NR
+    \NC \goto{TikZ \& PGF manual}[url (manual:tikz)]
+    \NC   \url[manual:tikz] \NC \NR
+    \NC \goto{svg in context and metafun xl}[url (manual:svg)]
+    \NC   \url[manual:svg] \NC \NR
+    \NC \goto{Natural tables examples}[url (manual:nattab)]
+    \NC   \url[manual:nattab] \NC \NR
+    \NC \goto{Extreme tables}[url (manual:extab)]
+    \NC   \url[manual:extab] \NC \NR
+    \NC \goto{\CONTEXT\ Interaction}[url (manual:interaction)]
+    \NC   \url[manual:interaction] \NC \NR
+    \NC \goto{It's in the details}[url (manual:details)]
+    \NC   \url[manual:details] \NC \NR
+    \NC \goto{Fonts in \CONTEXT} [url (manual:fonts)]
+    \NC   \url[manual:fonts] \NC \NR
+    \NC \goto{Charts with \CONTEXT\ mkiv}[url (manual:charts)]
+    \NC   \url[manual:charts] \NC\NR
+    \NC \goto{PPCHTEX, typesetting chemical \crlf formulas with \CONTEXT}[url (manual:chemic)]
+    \NC   \url[manual:chemic] \NC \NR
+    \NC \goto{Chemical formulas in \CONTEXT\ examples}[url (manual:chemic-ex)]
+    \NC   \url[manual:chemic-ex] \NC \NR
+    \NC \goto{Adding text to graphics}[url (manual:labels)]
+    \NC   \url[manual:labels] \NC \NR
+    \NC \goto{Typograpic programming}[url (manual:style)]
+    \NC   \url[manual:style] \NC \NR
+    \NC \goto{Dealing with XML in \CONTEXT\ MKIV}[url (manual:xml)]
+    \NC   \url[manual:xml] \NC \NR
+    \NC \goto{MathML}[url(manual:mathml)]
+    \NC   \url[manual:mathml] \NC \NR
+    \NC \goto{MathML in \CONTEXT}[url(manual:mathml-example)]
+    \NC   \url[manual:mathml-example] \NC \NR
+    \NC \goto{Units \CONTEXT\ MKIV}[url (manual:units)]
+    \NC   \url[manual:units] \NC \NR
+    \NC \goto{luatools mtxrun context}[url (manual:tools)]
+    \NC   \url[manual:tools] \NC \NR
+    \NC \goto{Figures \CONTEXT\ XML}[url (manual:figures)]
+    \NC   \url[manual:figures] \NC \NR
+    \NC \goto{Graphics}[url (manual:graphics)]
+    \NC   \url[manual:graphics] \NC \NR
+    \NC \goto{Mathematics in \CONTEXT\ \crlf (screen version)}[url (manual:mathematics)]
+    \NC   \url[manual:mathematics] \NC \NR
+    \NC \goto{Mathematics in \CONTEXT\ \crlf (paper version)}[url (manual:mathematics-p)]
+    \NC   \url[manual:mathematics-p] \NC \NR
+    \NC \goto{Meaningful math in \CONTEXT \par examples}[url (manual:mathematics-ex)]
+    \NC   \url[manual:mathematics-ex] \NC \NR
+    \NC \goto{Colors} [url (manual:color)]
+    \NC   \url[manual:color] \NC \NR
+    \NC \goto{Color separation}[url (manual:color-sep)]
+    \NC   \url[manual:color-sep] \NC \NR
+    \NC \goto{Columnsets}[url (manual:columnsets)]
+    \NC   \url[manual:columnsets] \NC \NR
+    \NC \goto{Page columns}[url (manual:pagecolumns)]
+    \NC   \url[manual:pagecolumns] \NC \NR
+    \NC \goto{Bibliography the \CONTEXT\ way}[url (manual:mkiv-publications)]
+    \NC   \url[manual:mkiv-publications] \NC \NR
+    \NC \goto{\CONTEXT\ commands}[url (manual:qr-en)]
+    \NC   \url[manual:qr-en] \NC \NR
+    \NC \goto{l2r-r2l a few tips} [url (manual:bidi)]
+    \NC   \url[manual:bidi] \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Magazines]
+
+\starttabulate[|p|p|]
+    \NC \goto{Good looking shapes}[url (thisway:shapes)]            \NC \url[thisway:shapes]     \NC \NR
+    \NC \goto{Cross referencing documents}[url (thisway:crossrefs)] \NC \url[thisway:crossrefs]  \NC \NR
+    \NC \goto{Project structure}[url (thisway:proj-struc)]          \NC \url[thisway:proj-struc] \NC \NR
+    \NC \goto{Use of the natural table}[url (myway:nattab)]         \NC \url[myway:nattab]       \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Low level manuals]
+
+If you want to dive into the depth of how \CONTEXT\ is working, there is a whole
+set of manuals which names start all with \type{lowlevel- ...}. These manuals are
+coming with the distribution.
+
+\stopsection
+
+\startsection[title=Third party manuals]
+
+\starttabulate[|p|]
+    \NC
+        Henning Hraban Ramm. Drucksachen gestalten mit \CONTEXT\ und \LUAMETATEX.
+        Lehmanns Media GmbH, Berlin. 2026. ISBN 978-3-96543-604-6 (Druckversion),
+        ISBN 978-3-96543-637-4 (eBook).
+    \NC \NR
+    \NC
+        Joaquín Ataz-López. A not so short introduction to ConTEXt Mark IV
+        (Original title: Una introducción (no demasiado breve) a ConTEXt Mark
+        IV). 2021.
+    \NC \NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\SCITE\ editor]
+
+\starttabulate[|p|p|]
+    \NC \goto{\SCITE}[url (manual:scite)]
+    \NC \url[manual:scite]
+\stoptabulate
+
+\stopsection
+
+\startsection[title=Test suite]
+
+In case you need examples to test or to solve an issue typesetting with \CONTEXT\
+you might consult the test suite which contains a wealth of information. You can
+download it from:
+
+\starttabulate[|p|p|]
+    \NC \goto{\CONTEXT\  test suite}[url (testsuit)]
+    \NC \url[testsuit] \NC\NR
+\stoptabulate
+
+\stopsection
+
+\startsection[title=\CONTEXT\ on Web]
+
+If you intend to try \CONTEXT\ as an online tool then you might enjoy:
+
+\starttabulate[|p|p|]
+    \NC \goto{\CONTEXT\ on Web}[url (www:contextweb)]
+    \NC \url[www:contextweb]
+    \NC\NR
+\stoptabulate
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

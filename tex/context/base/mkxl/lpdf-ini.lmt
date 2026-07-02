@@ -84,7 +84,7 @@ local context           = context
 -- strings between () but then we end up with escaped ()\ characters too.
 
 pdf                     = type(pdf) == "table" and pdf or { }
-local factor            = number.dimenfactors.bp
+local bpfactor  <const> = number.dimenfactors.bp
 
 local pdfbackend        = backends and backends.registered.pdf or { }
 local codeinjections    = pdfbackend.codeinjections
@@ -235,7 +235,7 @@ do
         end
         if pdfhasmatrix() then
             local rx, sx, sy, ry, _, _, px, py = pdfgetmatrix()
-         -- print("tx px dx",tx*factor,px*factor,dx*factor)
+         -- print("tx px dx",tx*bpfactor,px*bpfactor,dx*bpfactor)
             local llx, lly, urx, ury = bounds(0,-depth,width,height,rx,sx,sy,ry)
          -- tx = tx + sx * height
          -- ty = ty - rx * height + height
@@ -243,16 +243,16 @@ do
             tx = px + sx * height + dx * rx -- kind of
             ty = py - rx * height + dx * sx -- horrible
             return
-                factor * (tx + llx),
-                factor * (ty + lly),
-                factor * (tx + urx),
-                factor * (ty + ury)
+                bpfactor * (tx + llx),
+                bpfactor * (ty + lly),
+                bpfactor * (tx + urx),
+                bpfactor * (ty + ury)
         else
             return
-                factor *  tx,          -- llx
-                factor * (ty - depth), -- lly
-                factor * (tx + width), -- urx
-                factor * (ty + height) -- ury
+                bpfactor *  tx,          -- llx
+                bpfactor * (ty - depth), -- lly
+                bpfactor * (tx + width), -- urx
+                bpfactor * (ty + height) -- ury
         end
     end
 
@@ -274,16 +274,16 @@ do
             tx = px + sx * height + dx * rx -- kind of
             ty = py - rx * height + dx * sx -- horrible
             return
-                factor * (tx + x1), factor * (ty + y1),
-                factor * (tx + x2), factor * (ty + y2),
-                factor * (tx + x3), factor * (ty + y3),
-                factor * (tx + x4), factor * (ty + y4),
+                bpfactor * (tx + x1), bpfactor * (ty + y1),
+                bpfactor * (tx + x2), bpfactor * (ty + y2),
+                bpfactor * (tx + x3), bpfactor * (ty + y3),
+                bpfactor * (tx + x4), bpfactor * (ty + y4),
                 zero
         else
-            local llx = factor *  tx
-            local lly = factor * (ty - depth)
-            local urx = factor * (tx + width)
-            local ury = factor * (ty + height)
+            local llx = bpfactor *  tx
+            local lly = bpfactor * (ty - depth)
+            local urx = bpfactor * (tx + width)
+            local ury = bpfactor * (ty + height)
             return llx, lly, urx, lly, urx, ury, llx, ury, 0
         end
     end

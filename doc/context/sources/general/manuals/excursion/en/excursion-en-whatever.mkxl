@@ -1,0 +1,1208 @@
+% signal=squid
+
+\startcomponent excursion-en-whatever
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Miscellaneous,reference=chap:miscellaneous]
+
+\startsection[title=A title page,reference=sec:titlepagesetup]
+
+\index{title page}
+
+\Command{\tex{startstandardmakeup}}
+\Command{\tex{definemakeup}}
+\Command{\tex{setupmakeup}}
+
+In the first example of this manual on \at{page}[pagref:inputfile] we used the command
+
+\shortsetup{startmakeup:instance:standard}
+
+This command can be used to define title pages. Such a command is needed since
+title pages often have a different layout than those of the body text. With the
+command pair \typ {\startstandardmakeup} and \typ {\stopstandardmakeup} you can
+make up a page within the default page dimensions.
+
+A simple title page may look like this
+
+\startbuffer
+\startstandardmakeup
+\blank
+\rightaligned{\tfd Hasselt in the 21st century}
+\blank
+\rightaligned{\tfb The future}
+\vfill
+\rightaligned{\tfa C. van Marle}
+\rightaligned{Hasselt, 2013}
+\stopstandardmakeup
+\stopbuffer
+
+\typebuffer
+
+In a double-sided document you have to go through some additional actions to
+typeset the back of the title page.
+
+\startbuffer
+\startstandardmakeup[doublesided=no]
+\blank
+\rightaligned{\tfd Hasselt in the 21st century}
+\blank
+\rightaligned{\tfb The future}
+\vfill
+\rightaligned{\tfa C. van Marle}
+\rightaligned{Hasselt, \currentdate[year]}
+\stopstandardmakeup
+\startstandardmakeup[page=no]
+\vfill
+\copyright \currentdate[year]
+
+This book is dedicated to the people living in Hasselt. We
+want to thank photographer J. Jonker for manipulating the
+photos in this book in such a way that readers can get a
+clear picture of Hasselt's future look.
+\stopstandardmakeup
+\stopbuffer
+
+\typebuffer
+
+Your own makeups can be made and set up with
+
+\shortsetup{definemakeup}
+
+and
+
+\shortsetup{setupmakeup}
+
+Please refer to the \goto {\Emph {\CONTEXTWIKI}} [ url
+(https://wiki.contextgarden.net/Command/setupmakeup) ] for more information on
+the \typ {\startmakeup} and \typ {\stopmakeup} commands.
+
+\stopsection
+
+\startsection[title=Setups,reference=setups]
+
+\index{setups}
+
+\Command{\tex{setup}}
+
+While defining the layout of a document you can define setups with \typ
+{\startsetups} upto \typ {\stopsetups}. Setups are placed in the setup area of
+the input file and mostly used to combine a number of commands.
+
+\startbuffer[Setupitemize]
+\startsetups colorize
+  \blue
+\stopsetups
+
+\startsetups decolorize
+  \black
+\stopsetups
+
+\setupitemize
+  [before=\setups{colorize},
+   after=\setups{decolorize}]
+\stopbuffer
+
+\page[bigpreference]
+
+\typebuffer[Setupitemize]
+
+Some data about the church are
+
+\startbuffer[Churchdata]
+\startitemize[packed,3*broad]
+  \sym{~997} mentioned for the first time
+  \sym{1380} destroyed by fire
+  \sym{1466} rebuild
+  \sym{1657} restored after shelling by enemy troops
+  \sym{1725} struck by lightning
+\stopitemize
+\stopbuffer
+
+\typebuffer[Churchdata]
+
+Which would result in:
+
+\start
+  \getbuffer[Setupitemize]
+  \getbuffer[Churchdata]
+\stop
+
+Another way of invoking the setups is by the \type {setups} option that comes
+with some \CONTEXT\ commands.
+
+\startbuffer[Remarkdefinition]
+\definestartstop[Remark]
+
+\setupstartstop[Remark]
+  [before=\startframed,
+   after=\stopframed]
+\stopbuffer
+
+\startbuffer[Remarksetups]
+\startsetups important
+  \inleftmargin
+    [scope=local,
+     hoffset=1em]{\bf\color[blue]{→}}
+\stopsetups
+
+\setupframed
+  [align=normal,
+   setups=important,
+   frame=on,
+   framecolor=blue,
+   offset=5pt]
+
+\startRemark
+  The Stephanus Church was built in 997. After an enormous
+  fire in 1380 it was rebuilt and that's why it has Gothic
+  features. The rebuilding was finished in 1466.\endgraf
+\stopRemark
+\stopbuffer
+
+\typebuffer[Remarkdefinition]
+
+\page[bigpreference]
+
+\typebuffer[Remarksetups]
+
+This becomes:
+
+\blank
+
+\start
+  \getbuffer[Remarkdefinition]
+  \getbuffer[Remarksetups]
+\stop
+
+\stopsection
+
+\startsection[title=Variables, reference=variables]
+
+\index{variables}
+
+\Command{\tex{getvariable}}
+\Command{\tex{setvariables}}
+
+There is a mechanism in \CONTEXT\ that enables you to compact information in a
+list of variables that you can recall throughout the document.
+
+\shortsetup{setvariables}
+
+The example below shows how to use variables in defining a coverpage called \type
+{Cover}.
+
+\startbuffer
+\setvariables
+  [Cover]
+  [set=\setups{coverpage},
+   student=no,
+   teacher=yes,
+   booktitle=From Hasselt to America,
+   subtitle=An Odyssey,
+   authors=\setup{allauthors},
+   edition=2012,
+   isbn=0123456789]
+\stopbuffer
+
+\typebuffer
+
+The moment you need the title on your cover page (or somewhere else in your
+document) you can summon it by using the command \type {\getvariable} which has
+two arguments i.e. the name of the variable set and the variable itself.
+
+\startbuffer
+\getvariable{Cover}{booktitle}
+\stopbuffer
+
+\typebuffer
+
+If you use \typ {\startdocument} and \typ {\stopdocument} you can join to this
+command a set of variables to your free choosing as already described in \in
+{chapter}[chap:structure] at \at{page}[chap:structure]. In the framework of
+calling a variable there is also the possibility to use \type
+{\structurevariable}.
+
+\shortsetup{structurevariable}
+
+\startbuffer
+\startdocument
+  [title=\CONTEXT\ LMTX an Excursion,
+   subtitle=An introduction to \CONTEXT,
+   editor={T. Otten},
+   design={H. Hagen},
+   publisher={Pragma ADE}]
+
+  \startchapter[title=Hasselt in the early ages]
+
+    ... \structurevariable{title} ...
+
+  \stopchapter
+
+  ...
+
+\stopdocument
+\stopbuffer
+
+\typebuffer
+
+\startbuffer
+We are currently at the section level. What is the title of this section? It is
+\color [blue] {\structurevariable{title}}
+\stopbuffer
+
+\typebuffer
+This results in:
+
+\getbuffer
+
+Yet another possibility is to assign a user defined variable to a section command
+with
+
+\shortsetup{structureuservariable}
+
+\startbuffer
+\startsubject[title=Hasselt][carnaval=Hazelnöttenstad]
+
+During carnaval \color [blue] {\structurevariable{title}} is officially called
+\color [blue] {\structureuservariable{carnaval}.}
+
+\stopsubject
+
+\startsubject[title=Den Bosch][carnaval=Oeteldonck]
+
+During carnaval \color [blue] {\structurevariable{title}} is officially called
+\color [blue] {\structureuservariable{carnaval}.}
+
+\stopsubject
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Floating blocks,reference=sec:floatingblocks]
+
+\index{floating blocks}
+\index{postponing}
+
+\Command{\tex{definefloat}}
+\Command{\tex{setupfloat}}
+\Command{\tex{setupfloats}}
+\Command{\tex{setupcaptions}}
+\Command{\tex{placeintermezzo}}
+
+A block in \CONTEXT\ is a text element, for example a table or a figure that you
+can process in a special way. You have already seen the use of
+
+\starttyping
+\startplacefigure ... \stopplacefigure,
+\startplacetable ... \stopplacetable and
+\startplaceintermezzo ... \stopplaceintermezzo
+\stoptyping
+
+These are all examples of floating blocks and are predefined in \CONTEXT. The
+floating mechanism is described in \in {chapter} [chap:figures] and \in {chapter}
+[chap:tables].
+
+You can define these kind of blocks yourself with
+
+\shortsetup{definefloat}
+
+The bracket pairs are used for the name in singular and plural form. For example
+
+\startbuffer
+\definefloat[Myfloat][Myfloats]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Now the following commands are available
+
+\starttyping
+\startplaceMyfloat[]{} ... \stopplaceMyfloat
+\startMyfloattext[][]{}{} ... \stopMyfloattext
+\placelistofMyfloats
+\completelistofMyfloats
+\stoptyping
+
+\page[bigpreference]
+
+The newly defined floating block can be set up with
+
+\shortsetup{setupfloat}
+
+This means that you can type \typ {\setupfloat [Myfloat] [...]} and adjust the
+appearance of each float block individually.
+
+\shortsetup{setupcaption}
+
+The layout of the individual floating block's caption can be adjusted by
+
+\type{\setupcaption[Myfloat][...]}.
+
+\page[bigpreference]
+
+You can set up the layout of \Emph{all} floating blocks with
+
+\shortsetup{setupfloats}
+
+Without optional argument \type {\setupfloats} will affect all floating blocks.
+You can restrict the adjustments to a list of floating blocks that you want to
+appear differently with \typ {\setupfloats [figure,Myfloat] [...]}.
+
+You can set up the numbering and the labels with
+
+\shortsetup{setupcaptions}
+
+Also this command will influence all floating blocks or when joined with a list
+the mentioned floating blocks only.
+
+These commands should be issued in the setup area of your input file.
+
+\setupframedtexts
+    [width=.8\makeupwidth,
+     background=color,
+     backgroundcolor=gray,
+     corner=round,
+     framecolor=blue,
+     rulethickness=2pt]
+
+\startbuffer
+\setupfloat[Myfloat][location=center]
+\setupcaption[Myfloat][location=bottom,headstyle=boldslanted]
+
+\startplaceMyfloat
+  [location=middle,
+   title={An intermezzo}]
+  \startframedtext
+At the beginning of this century there was a tram line from
+Zwolle to Blokzijl via Hasselt. Other means of transport became
+more important and just before the second world war the tram line
+was stopped. Nowadays such a tram line would have been very
+profitable.
+  \stopframedtext
+\stopplaceMyfloat
+
+\stopbuffer
+
+\typebuffer
+
+\start
+\getbuffer
+\stop
+
+Tables or figures may take up a lot of space. The placing of these text elements
+can be postponed till the next page break. This is done with \typ
+{\startpostponing} and \typ {\stoppostponing}.
+
+\startbuffer
+\startpostponing
+  \startplacefigure
+    [location=here,
+     reference=fig:postponing,
+     title={A postponed figure}]
+    {\externalfigure[excursion-16][width=.6\textwidth]}
+  \stopplacefigure
+\stoppostponing
+\stopbuffer
+
+\page[bigpreference]
+
+\typebuffer
+
+The figure will be placed at the top of the next page and will cause minimal
+disruption of the running text.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Storing text for later use,reference=sec:buffer]
+
+\index{buffers}
+\seeindex{storing text}{buffers}
+
+\Command{\tex{startbuffer}}
+\Command{\tex{getbuffer}}
+\Command{\tex{typebuffer}}
+\Command{\tex{savebuffer}}
+\Command{\tex{setupbuffer}}
+
+You can store information temporarily for future use in your document in so
+called buffers.
+
+\shortsetup{startbuffer}
+
+For example:
+
+\starttyping
+\startbuffer[visit]
+If you want to see what Hasselt has in store you should
+come and visit it some time. If you take this manual
+with you, you will recognise some locations.
+\stopbuffer
+
+\getbuffer[visit]
+\stoptyping
+
+With \typ {\getbuffer [visit]} you recall the stored text and it will be
+processed. The logical name is optional. With \typ {\typebuffer [visit]} you get
+the buffer's contents typeset verbatim.
+
+Buffers are set up with
+
+\shortsetup{setupbuffer}
+
+You can also save a buffer to an external file with
+
+\shortsetup{savebuffer}
+
+\doifmode{Book}{\page[yes]}
+
+If you want to save the buffer \type {visit} in an external file you type
+
+\starttyping
+\savebuffer[visit][sightseeing]
+\stoptyping
+
+What you get is a file named as the current filename with appended \quote
+{sightseeing} with the extension \type {tmp} i.e. \typ
+{current-filename-sightseeing.tmp}.
+
+\stopsection
+
+\startsection[title=Lines]
+
+\index{lines}
+\seeindex{rules}{lines}
+
+\Command{\tex{hairline}}
+\Command{\tex{starttextrule}}
+\Command{\tex{thinrule}}
+\Command{\tex{thinrules}}
+\Command{\tex{setupthinrules}}
+\Command{\tex{underbar}}
+\Command{\tex{overstrikes}}
+\Command{\tex{periods}}
+
+There are many commands to draw lines. For a single line you type
+
+\shortsetup{hairline}
+
+or:
+
+\shortsetup{thinrule}
+
+For more lines you type
+
+\shortsetup{thinrules}
+
+Text in combination with lines is also possible.
+
+\startbuffer
+\starttextrule{Hasselt -- Amsterdam}
+If you draw a straight line from Hasselt to Amsterdam
+you would have to cover a distance of almost 145 \unit{Kilo Meter}.
+\stoptextrule
+
+If you draw two straight lines from Hasselt to Amsterdam you would
+have to cover a distance of almost 290 \unit{Kilo Meter}.
+
+Amsterdam \thinrules[n=3] Hasselt
+\stopbuffer
+
+\getbuffer
+
+\doifmode{Book}{\page[yes]}
+
+The code of this example is
+
+\typebuffer
+
+You always have to be careful with drawing lines. Empty lines around \type
+{\thinrules} must not be forgotten and the vertical spacing is always a point of
+concern.
+
+\page[bigpreference]
+
+You can set up line spacing with
+
+\shortsetup{setupthinrules}
+
+There are a few complementary commands that might be very
+useful.
+
+\shortsetup{setupfillinrules}
+
+These commands are introduced in the examples below.
+
+\startbuffer
+\setupfillinrules[width=2cm]
+\setupfillinlines[width=3cm]
+
+\fillinrules[n=1]{\bf name}
+\fillinrules[n=1]{\bf address}
+
+\fillinline{Can you please state the \underbar{number}
+of houses in Hasselt.} \par
+
+Strike out \overstrikes{Hasselt in this text}\periods[18]
+\stopbuffer
+
+\typebuffer
+
+\doifmode{Screen}{\page[yes]}
+
+This will become:
+
+\getbuffer
+
+These commands are used in questionnaires. Text which is struck out or underlined
+will not be hyphenated.
+
+In \in {chapter} [chap:overlays] you have already seen the use of the \type
+{\blackrule} command that can be set up with
+
+\shortsetup{setupblackrules}
+
+\startbuffer
+\blank
+\blackrule[width=\textwidth,height=8mm,color=blue]
+\stopbuffer
+
+\typebuffer
+
+This will result in a rather fat line.
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Super- and subscript in text]
+
+\index{subscript}
+\index{superscript}
+
+\Command{\tex{low}}
+\Command{\tex{high}}
+\Command{\tex{lohi}}
+
+\startbuffer
+Hasselt's economy has known its \high{ups} and \low{downs}.
+Since the nineties of the last century its economy is
+\lohi{so}{so}.
+\stopbuffer
+
+\getbuffer
+
+This ugly text was made with \type {\low{}}, \type {\high{}} and \type
+{\lohi{}{}}. The text was placed between the curly braces.
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Date]
+
+\index{date}
+
+\Command{\tex{currentdate}}
+
+You can invoke the system date in your text with
+
+\shortsetup{currentdate}
+
+With \type {\currentdate[day]}, \type {\currentdate[month]} and \type
+{\currentdate[year]} you can invoke day, month and year separately.
+
+You can setup the presentation of the date according to your wish. \in {Table}
+[tab:currentdate] shows the preconfigured setup for different languages and
+examples how to change the formatting.
+
+\startplacetable
+  [location=here,
+   reference=tab:currentdate,
+   title=Date formats]
+   \switchtobodyfont[9pt]
+   \bTABLE
+     \bTR
+       \bTD Language \eTD
+       \bTD Preconfigured \eTD
+       \bTD[nx=2] Alternative format \eTD
+     \eTR
+     \bTR
+       \bTD English \eTD
+       \bTD \language[en] \currentdate \eTD
+       \bTD \type{\currentdate[d:highord,{~of~},month,{~},year]} \eTD
+       \bTD \en \currentdate[d:highord,{~of~},month,{~},year] \eTD
+     \eTR
+     \bTR
+       \bTD Dutch \eTD
+       \bTD \language[nl] \currentdate \eTD
+       \bTD \type{\currentdate[dd,{-},mm,{-},year]} \eTD
+       \bTD \language[nl] \currentdate[dd,{-},mm,{-},year] \eTD
+     \eTR
+     \bTR
+       \bTD French \eTD
+       \bTD \language[fr] \currentdate \eTD
+       \bTD \type{\currentdate[dd,{~},month:mnem,{~},year]} \eTD
+       \bTD \language[fr] \currentdate[dd,{~},month:mnem,{~},year] \eTD
+     \eTR
+     \bTR
+       \bTD Italian \eTD
+       \bTD \language[it] \currentdate \eTD
+       \bTD \type{\currentdate[dd,{/},mm,{/},year]} \eTD
+       \bTD \language[it] \currentdate[dd,{/},mm,{/},year] \eTD
+     \eTR
+       \bTR
+       \bTD Swedish \eTD
+       \bTD \language[sv] \currentdate \eTD
+       \bTD \type{\currentdate[year,{-},mm,{-},dd]} \eTD
+       \bTD \language[sv] \currentdate[year,{-},mm,{-},dd] \eTD
+     \eTR
+   \eTABLE
+\stopplacetable
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Rotating text, figures and tables]
+
+\index{rotating}
+
+\Command{\tex{rotate}}
+
+Sometimes you may want to rotate text or images. You can rotate text and other
+objects with
+
+\shortsetup{rotate}
+
+The first bracket pair is optional. Within that bracket pair you specify the
+rotation: \type {rotation=90}. The curly braces contain the text or object you
+want to rotate.
+
+\startbuffer
+Hasselt got its municipal rights in 1252. From that time
+on it had the \rotate[rotation=90]{right} to use its own
+seal on official documents. This seal showed Holy
+Stephanus known as one of the first Christian martyrs,
+and was the \rotate[rotation=270]{patron} of Hasselt.
+After the Reformation the seal was redesigned and
+Stephanus lost his \quote{holiness} and was from that
+time on depicted without his aureole.
+\stopbuffer
+
+\typebuffer
+
+This results in a fairly strange paragraph.
+
+\getbuffer
+
+You can rotate an image just as easily.
+
+\startbuffer
+\startplacefigure
+  [location=here,
+   reference=fig:rotation,
+   title={The 180 \unit{Degrees}
+          rotated fish gate (de Vispoort)}]
+  {\rotate[rotation=180]
+    {\externalfigure[excursion-15][width=.5\textwidth]}}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+You can see in \in {figure} [fig:rotation] that it is not always clear what you
+get when you rotate.
+
+\getbuffer
+
+We can set up rotating with
+
+\shortsetup{setuprotate}
+
+In the example above you could also rotate image and caption by:
+
+\startbuffer
+\startplacefigure
+  [location=here,
+   reference=fig:rotation,
+   rotation=180,
+   title={The 180 \unit{Degrees}
+          rotated fish port (de Vispoort)}]
+  {\externalfigure[excursion-15][width=0.5\textwidth]}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\startsection[title=Scaling text]
+
+\index{scaling}
+
+\Command{\tex{scale}}
+\Command{\tex{setupscale}}
+
+For some obscure reasons you may want to scale text. You can scale text and other
+objects with
+
+\shortsetup{scale}
+
+\startbuffer
+After 1810 the Dedemsvaart brought some prosperity
+to Hasselt. All ships went through the canals of
+Hasselt and the \scale[factor=10]{shops} on both
+sides of the canals \scale[factor=10]{prospered}.
+\stopbuffer
+
+\typebuffer
+
+Which will result in:
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Space]
+
+\index{space}
+\index{tilde}
+\index{non-breakable space}
+
+\Command{\tex{space}}
+\Command{\tex{fixedspaces}}
+
+The command \type {\space} will produce a space. In \CONTEXT\ the \type {~}
+(tilde) is a non-breakable space. You can alse use \type {\nbsp}.
+
+\startbuffer
+The Ridderstraat in Hasselt is about 160~m long and 5 to 6~m wide
+with houses on both sides of the street.
+\stopbuffer
+
+\typebuffer
+
+Tildes can also be used to align numbers in a table row. The command \type
+{\fixedspaces} will give the tilde the fixed width of a number.
+
+\startbuffer
+\fixedspaces
+
+\bTABLE
+\bTR \bTD Street        \eTD \bTD Length \eTD \eTR
+\bTR \bTD Ridderstraat  \eTD \bTD 160 m  \eTD \eTR
+\bTR \bTD Prinsengracht \eTD \bTD 240 m  \eTD \eTR
+\bTR \bTD Kalverstraat  \eTD \bTD ~60 m  \eTD \eTR
+\bTR \bTD Meestersteeg  \eTD \bTD ~45 m  \eTD \eTR
+\eTABLE
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Carriage return]
+
+\index{carriage return}
+
+\Command{\tex{crlf}}
+\Command{\tex{startlines}}
+
+A new line can be enforced with
+
+\shortsetup{crlf}
+
+As a \CONTEXT\ user you should use this command only as a last resort.
+
+When a number of lines should be followed by a \Emph {carriage return and line
+feed} you can use
+
+\shortsetup{startlines:instance:lines}
+
+\starttyping
+\startlines
+
+...
+
+\stoplines
+\stoptyping
+
+\startbuffer
+On a wooden panel in the town hall of Hasselt you can read:
+
+\startnarrower[left]
+  \startlines
+  Heimelijcken haet
+  eigen baet
+  jongen raet
+  Door diese drie wilt verstaen
+  is het Roomsche Rijck vergaen.
+  \stoplines
+\stopnarrower
+
+This little rhyme contains a warning for the magistrates of
+Hasselt: don't allow personal benefits or feelings to
+influence your wisdom in decision making.
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+In a few commands new lines are generated by \type {\\}. For example if you type
+\type {\inmargin {in the\\ margin}} then the text will be divided over two lines.
+
+\stopsection
+
+\startsection[title=Hyphenation]
+
+\index{hyphenation}
+\index{language}
+
+\Command{\tex{mainlanguage}}
+\Command{\tex{language}}
+\Command{\tex{nl}}
+\Command{\tex{en}}
+
+When writing multi-lingual texts you have to be aware of the fact that
+hyphenation may differ from one language to another.
+
+To activate the primary language in a document you type
+
+\shortsetup{mainlanguage}
+
+in the setup area.
+
+Between the brackets you fill in
+\type{af},
+\type{ca},
+\type{cs},
+\type{cs},
+\type{da},
+\type{de},
+\type{en},
+\type{fi},
+\type{fr},
+\type{it},
+\type{la},
+\type{nl},
+\type{nb},
+\type{nn},
+\type{pl},
+\type{pt},
+\type{es},
+\type{sv} and
+\type{tr} for
+afrikaans,
+catalan,
+czech,
+slovak,
+danish,
+german,
+english,
+finnish,
+french,
+italian,
+latin,
+dutch,
+bokmal,
+nnynorsk,
+polish,
+portuguese,
+spanish,
+swedish and
+turkish respectively.
+
+To change from one language to another you can use
+
+\starttyping
+\language[nl] \language[en] \language[de] \language[fr] \language[es] ...
+\stoptyping
+
+or the shorthand versions
+
+\starttyping
+\nl  \en  \de  \fr  \es ...
+\stoptyping
+
+\page[bigpreference]
+
+An example:
+
+\startbuffer
+If you want to know more about Hasselt, the best book
+to read is probably \quote{\nl Uit de geschiedenis
+van Hasselt} by F.~Peereboom.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+If a word is wrongly hyphenated you can define the hyphenation points yourself.
+This is done in the setup area of your input file:
+
+\Command{\tex{registerhyphenationexception}}
+
+\startbuffer
+\registerhyphenationexception[en][his-to-ry]
+\stopbuffer
+
+\typebuffer
+
+Note that the language setting is also responsible for the way quotes are placed
+around quotations (see \in {section} [chap:quotations]).
+
+In some languages (like Dutch) compound words are used which are connected with a
+hyphen. The separate words have to be hyphenated correctly. In order to do that
+you can use \type {||}.
+
+\startbuffer
+If you are looking for an English||speaking person
+in Hasselt you should go to the Tourist Information
+Office. There you may expect to find full|| and
+part||time employees who are fluent in German,
+English, French and of course Dutch.
+\stopbuffer
+
+\typebuffer
+
+This will become:
+
+\getbuffer
+
+The double \type {||} takes care of the hyphen and the correct hyphenation of the
+separate words. Also note the suspended compounds.
+
+\stopsection
+
+\startsection[title=Comment in input file]
+
+\index{comment}
+\index[percent]{\% sign in input file}
+
+All text between \typ {\startdocument} and \typ {\stopdocument} will be processed
+while running \CONTEXT. Sometimes however you may have text fragments you don't
+want to be processed or you want to comment on your \CONTEXT\ commands.
+
+If you precede your text with a percentage sign \type{%} it will not be
+processed.
+
+\startbuffer
+% In very big documents you can use the command \input for
+% different files.
+%
+% For example:
+%
+% \input{hass01.mkxl}  % chapter 1 on Hasselt
+% \input{hass02.mkxl}  % chapter 2 on Hasselt
+% \input{hass03.mkxl}  % chapter 3 on Hasselt
+\stopbuffer
+
+\typebuffer
+
+When you delete the \type {%} before \type {\input} the respective files will be
+processed. The comment describing the contents of the files will not be
+processed.
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Notes]
+
+\index{note}
+
+\Command{\tex{startcomment}}
+
+If you want your comment in the input file visible as a 'sticky note' in the
+\PDF\ file you can use
+
+\shortsetup{startcomment:instance:comment}
+
+\startbuffer
+\startcomment
+    The image of the Vispoort should be in color.
+\stopcomment
+\stopbuffer
+
+\typebuffer
+
+The command will produce a sticky note in the PDF.
+
+The note is only visible when interactivity is set with \typ {\setupinteraction}
+and the comment with \typ {\setupcomment}.
+
+You could define your own comment style and assign other comment styles for
+others e.g.
+
+\startbuffer[Comment-definition-Ton]
+\setupinteraction[state=start]
+
+\definecomment[Ton]
+\setupcomment
+  [Ton]
+  [symbol=Note,color=lightgreen,location=rightmargin]
+\stopbuffer
+
+\startbuffer[Comment-definition-Willi]
+\definecomment[Willi]
+\setupcomment
+  [Willi]
+  [color=yellow,symbol=Paragraph,location=rightmargin]
+\stopbuffer
+
+\typebuffer[Comment-definition-Ton]
+
+\page[bigpreference]
+
+\typebuffer[Commewnt-defintion-Willi]
+
+In the document comments per author are placed in the following way.
+
+\startbuffer[Comment-examples]
+\startWilli
+  This is Willi's signet.
+\stopWilli
+Some other text \dots
+\startTon
+  This is Ton's signet!
+\stopTon
+\stopbuffer
+
+\typebuffer[Comment-examples]
+
+\start
+\doifmodeelse{Screen}
+  {\getbuffer[Comment-definition-Ton]
+   \getbuffer[Comment-definition-Willi]
+   \getbuffer[Comment-examples]
+  }
+  {\inleftmargin{\externalfigure[excursion-28][width=.5\marginwidth]}
+   \inrightmargin{\externalfigure[excursion-29][width=.5\marginwidth]}
+   These icons show up when opening the \PDF\ file on screen. They are clickable for showing the content of the note. When printing, these annotation icons are not printed. So what you see here on paper are two pictures for illustration!
+  }
+\stop
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=Hiding text]
+
+\index{hiding text}
+
+\Command{\tex{starthiding}}
+
+Text can be hidden with
+
+\shortsetup{startbuffer:instance:hiding}
+
+The text between \typ {\starthiding} and \typ {\stophiding} will not be processed.
+
+\stopsection
+
+\startsection[title=Input of another {\tt tex} file]
+
+\index{input+other \TEX-files}
+
+\Command{\tex{input}}
+
+In a number of situations you may want to insert other \TEX\ files in your input
+file. For example, sometimes it is more efficient to specify \CONTEXT\ sources in
+more than one file in order to be able to partially process your files.
+
+Another file (with the name \type {another.mkxl}) can be inserted by
+
+\starttyping
+\input{another.mkxl}
+\stoptyping
+
+The extension is optional so this will work too:
+
+\starttyping
+\input{another}
+\stoptyping
+
+The command \type{\input} is a \TEX\ primitive (command).
+
+For a more systematic approach in maintaining your documents \CONTEXT\ supports a
+project structure with commands like \typ {\startenvironment} with \typ
+{\stopenvironment} and \typ {\startproduct} with \typ {\stopproduct}. Please
+refer to the magazine \goto {\Emph {Project structure}} [ url(thisway:proj-struc)
+] for more information.
+
+\stopsection
+
+\startsection[title=\XML]
+
+\index{xml}
+\index{mathml}
+
+Normally you code your document with \CONTEXT\ commands so you can tell \CONTEXT\
+what to do with the coded text elements.
+
+A more rigid way to code your content is \XML\ \ (\infull {XML}) which enables
+you to have more control over your content (scripting, xslt, validation).
+
+\page[bigpreference]
+
+A simple \XML\ coded document could look like this:
+
+\startbuffer
+<?xml version='1.0' standalone=yes?>
+
+<document>
+  <section>
+    <title>Hasselt in winter</title>
+    <content>
+      <p>In winter scating is a very popular sport in
+         Hasselt. All over Hasselt the frozen canals
+         offer children a great play ground.</p>
+      <p>...</p>
+    </content>
+  </section>
+</document>
+\stopbuffer
+
+\typebuffer
+
+\CONTEXT\ is able to deal with \XML\ directly without underlying XML2TEX
+conversions. Please refer to the manual \goto {\Emph {Dealing with XML}} [ url
+(manual:xml) ] for more information on how to process \XML\ documents.
+
+\CONTEXT\ also supports \MATHML\ (presentational and content markup) which is
+useful when adding math to \XML\ documents. For more info please refer to the
+\goto {\Emph{MathML}} [ url (manual:mathml)] manual.
+
+\stopsection
+
+\stopchapter
+
+\startchapter[title=Bidi typesetting]
+
+Western typesetting is horizontal and from left to right. Other scripts run
+horizontally but from right to left as Arabic or Hebrew. \CONTEXT\ supports left
+to right typesetting. For getting information on right to left typesetting please
+refer to the \goto {\Emph  {l2r-r2l a few tips}} [ url (manual:bidi)] manual.
+
+\stopchapter
+
+\stopcomponent

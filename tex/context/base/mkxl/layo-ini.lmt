@@ -52,7 +52,7 @@ function status.isleftpage(r)
     elseif texgetcount(c_pagenoshift) % 2 == 0 then
         return (r or texgetcount(c_realpageno)) % 2 == 0
     else
-        return not (r or texgetcount(c_realpageno)) % 2 == 0
+        return (r or texgetcount(c_realpageno)) % 2 ~= 0
     end
 end
 

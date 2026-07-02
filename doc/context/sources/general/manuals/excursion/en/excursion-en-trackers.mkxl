@@ -1,0 +1,39 @@
+% signal=squid
+
+\startcomponent excursion-en-trackers
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Trackers,reference=chap:trackers]
+
+Trackers are tools to track down information on certain aspects, which are
+normally not shown in the log file. Some of the trackers output their results in
+the log file only. Enabling trackers may slow down the compilation process and
+the log file can become huge.
+
+In total there are currently a couple of hundred such tracking tools. However to
+a large extent they are meant for the developers. Still there are some which
+might be of interest for the work at hand. First concentrate on visualizers,
+font, figure and float trackers. For seeing what is available you can run
+
+\starttyping
+context --showtrackers
+\stoptyping
+
+If you want to enable a tracker you would place an enabling command at the front
+of your document e.g.
+
+\starttyping
+\enabletrackers[figure.*]
+\enabletrackers[font.*]
+\stoptyping
+
+Enabling a tracker family you achieve with \type {.*}. If you need to run a
+specific tracker you will have to use the \typ {\enabletrackers} command with the
+full tracker's name.
+
+\stopchapter
+
+\stopcomponent

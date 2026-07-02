@@ -55,6 +55,8 @@ local registrations            = pdfbackend.registrations
 local executers                = structures.references.executers
 local variables                = interfaces.variables
 
+local objectmargin             <const> = 1/number.dimenfactors.bp -- scaled points
+
 local v_hidden                 <const> = variables.hidden
 local v_auto                   <const> = variables.auto
 local v_embed                  <const> = variables.embed
@@ -500,6 +502,14 @@ function nodeinjections.attachfile(specification)
             box.width    = width
             box.height   = height
             box.depth    = depth
+            --
+            -- we need to compensate for the margin
+            --
+            if appearance then
+                box.xoffset = objectmargin
+                box.yoffset = objectmargin
+            end
+            --
             return box
         end
     end
@@ -544,7 +554,7 @@ local function checkcontent(text,option)
     return pdfunicode(text)
 end
 
-function nodeinjections.comment(specification) -- brrr: seems to be done twice
+function nodeinjections.comment(specification)
     nofcomments = nofcomments + 1
     local text = specification.data or ""
     if specification.space ~= v_yes then
@@ -607,6 +617,14 @@ function nodeinjections.comment(specification) -- brrr: seems to be done twice
     box.width  = width  -- redundant
     box.height = height -- redundant
     box.depth  = depth  -- redundant
+    --
+    -- we need to compensate for the margin
+    --
+    if appearance then
+        box.xoffset = objectmargin
+        box.yoffset = objectmargin
+    end
+    --
     return box
 end
 
@@ -616,7 +634,7 @@ end
 -- object_2  -> <</Type /Rendition /S /MR /C << /Type /MediaClip ... >> >>
 -- rendering -> <</Type /Rendition /S /MS [objref_1 objref_2]>>
 --
--- we only work foreward here (currently)
+-- we only work forward here (currently)
 -- annotation is to be packed at the tex end
 
 -- aiff audio/aiff
@@ -704,7 +722,7 @@ local function insertrenderingwindow(specification)
         C       = bc,
         AA      = actions,
     }
-    local width = specification.width or 0
+    local width  = specification.width or 0
     local height = specification.height or 0
     context(nodeinjections.annotation(width,height,0,d(),r)) -- save ref
     return pdfreference(r)

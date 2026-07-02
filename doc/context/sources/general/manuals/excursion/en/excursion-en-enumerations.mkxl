@@ -1,0 +1,155 @@
+% signal=squid
+
+\startcomponent excursion-en-enumerations
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Numbered definitions]
+
+\index{numbered definition}
+
+\Command{\tex{defineenumeration}}
+\Command{\tex{setupenumerations}}
+
+With \type{\defineenumeration} you can number text elements like remarks or
+questions. If you want to make numbered remarks in your document you use
+
+\shortsetup{defineenumeration}
+
+For example:
+
+\startbuffer[RemarkA]
+\defineenumeration
+  [Remark]
+  [alternative=top,
+   text=Remark,
+   inbetween={\blank[none]},
+   after=\blank]
+\stopbuffer
+
+\typebuffer[RemarkA]
+
+Now the following new commands are available:
+
+\starttyping
+\startRemark ... \stopRemark},
+\startsubRemark ... \stopsubRemark},
+\startnextRemark ... \stopnextRemark},
+\startnextsubRemark ... \stopnextsubRemark}
+\stoptyping
+
+\page[bigpreference]
+
+Writing a numbered remark could like this
+
+\startbuffer[RemarkB]
+\startRemark
+In the early medieval times Hasselt was a place of pilgrimage.
+The \Emph{Heilige Stede} (Holy Place) was torn down during
+the Reformation. In 1930, after 300 years, the
+\Emph{Heilige Stede} was reopened.
+
+\startsubRemark
+Nowadays the \Emph{Heilige Stede} is closed again but once
+a year an open air service is held on the same spot.
+\stopsubRemark
+
+\stopRemark
+\stopbuffer
+
+\typebuffer[RemarkB]
+
+This becomes:
+
+\start
+  \getbuffer[RemarkA]
+	\getbuffer[RemarkB]
+\stop
+
+You can reset numbering with \type{\resetRemark} or \type{\resetsubRemark} or
+increment a number with \type{\startnextRemark ... \stopnextRemark},
+\type{\startnextsubRemark ... \stopnextsubRemark}. This is normally done
+automatically per chapter, section or whatever.
+
+You can set up the layout of \type{\defineenumeration} with
+
+\shortsetup{setupenumerations}
+
+You can also vary the layout of \type{Remark} and \type{subRemark} in the example
+above with
+
+\starttyping
+\setupenumeration[Remark][headstyle=bold]
+\setupenumeration[subRemark][headstyle=slanted]
+\stoptyping
+
+If a number becomes obsolete you can type
+
+\starttyping
+\startRemark[-] ... \stopRemark
+\stoptyping
+
+\startbuffer[RemarkC]
+\setupenumeration
+   [Remark]
+   [alternative=hanging,
+    width=broad]
+
+\startRemark
+In the early medieval times Hasselt was a place of pilgrimage.
+The \Emph{Heilige Stede} (Holy Place) was torn down
+during the Reformation.
+
+After 300 years in 1930 the \Emph{Heilige Stede} was reopened.
+Nowadays the \Emph{Heilige Stede} is closed again but once
+a year an open air service is held on the same spot.
+\stopRemark
+\stopbuffer
+
+\page[bigpreference]
+
+\typebuffer[RemarkC]
+
+So the example above would look like this:
+
+\start
+  \getbuffer[RemarkA]
+	\getbuffer[RemarkC]
+\stop
+
+\startbuffer[TheoremLemma]
+\defineenumeration
+  [Theorem]
+  [alternative=serried,
+   width=fit,
+   distance=\emwidth,
+   text=Theorem,
+   style=italic,
+   title=yes,
+   titlestyle=normal,
+   prefix=yes,
+   headcommand=\groupedcommand{}{.}]
+
+\defineenumeration
+  [Lemma]
+  [Theorem]
+  [text=Lemma]
+\stopbuffer
+
+As a teaser for \in{chapter}[mathematics] on mathematics here are two forms of
+enumerations i.e. Theorem and Lemma. The examples are taken from
+\goto{\Emph{Mathematics in \CONTEXT}} [ url (manual:mathematics) ].
+
+\typebuffer[TheoremLemma]
+
+As you can see, the enumeration \quote{Lemma} is a copy of the \quote{Theorem}
+and therefore inherits all properties of this definition and therefore also the
+counter.
+
+\getbuffer[TheoremLemma]
+
+\stopchapter
+
+\stopcomponent

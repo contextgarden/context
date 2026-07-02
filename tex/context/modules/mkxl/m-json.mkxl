@@ -45,6 +45,18 @@
     }
 
     interfaces.implement {
+        name      = "tablerawfield",
+        actions   = function(namespace,name)
+            local data = field(namespace,name)
+            if data then
+                context(data)
+            end
+        end,
+        arguments = "2 arguments",
+        public    = true,
+    }
+
+    interfaces.implement {
         name      = "tablefielddefault",
         actions   = function(namespace,name,default)
             local data = field(namespace,name,default)
@@ -85,6 +97,7 @@
 \stopluacode
 
 \let\loadjsonfile     \loadtable
+\let\jsonrawfield     \tablerawfield
 \let\jsonfield        \tablefield
 \let\jsonfielddefault \tablefielddefault
 \let\jsonformatted    \tableformatted

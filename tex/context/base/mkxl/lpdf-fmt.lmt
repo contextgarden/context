@@ -221,7 +221,7 @@ local function loadprofile(name,filename)
                 end
             elseif suffix == "lua" then
                 local luadata = loadfile(filename)
-                luadata = ludata and luadata()
+                luadata = luadata and luadata()
                 if luadata then
                     profile = luadata[name] or luadata[lname] -- hashed
                     if not profile then

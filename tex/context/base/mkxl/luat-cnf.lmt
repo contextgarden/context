@@ -55,6 +55,7 @@ function texconfig.init()
             "xzip", "xmath", "xcomplex", "xdecimal", "basexx", "posit", "sparse",
             "md5", "sha2", "aes", "fio", "sio",
             "lfs","socket",
+            "vector",
         },
         extratex = {
             "pdfe", "mplib", "potrace",

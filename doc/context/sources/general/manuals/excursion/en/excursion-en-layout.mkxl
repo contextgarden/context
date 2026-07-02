@@ -1,0 +1,372 @@
+% signal=squid
+
+\startcomponent excursion-en-layout
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Page layout,reference=chap:page-layout]
+
+\index{layout}
+\index{page+design}
+
+\Command{\tex{setuplayout}}
+\Command{\tex{adaptlayout}}
+\Command{\tex{showlayout}}
+\Command{\tex{showframe}}
+\Command{\tex{showsetups}}
+\Command{\tex{showmakeup}}
+\Command{\tex{setuppapersize}}
+\Command{\tex{definepapersize}}
+
+\startsection[title=Introduction]
+
+The \Emph{Layouts in \CONTEXT} manual by Willi Egger contains the necessary
+background information on page layout and design. Below you will find only the
+basic information necessary for defining rather simple layouts for paper and
+screen documents.
+
+For more information (examples and usage) on the \type{\setuplayout} command
+please refer to the \goto {\Emph{\CONTEXTWIKI}} [
+url(https://wiki.contextgarden.net/Layout) ].
+
+\stopsection
+
+\startsection[title=Designing the page layout]
+
+To be able to design a page layout you have to familiarize yourself with the
+page model of \CONTEXT. \in{Figure}[fig:pageareas] shows the areas on a page
+which you can use in your design.
+
+\startplacefigure
+  [location=here,
+   reference=fig:pageareas,
+   title={The page areas}]
+  {\externalfigure[excursion-en-fig-page-areas][width=.6\hsize]}
+\stopplacefigure
+
+The orange body text area contains the running text. The top, bottom and edge
+area are useful for buttons in screen documents.
+
+Please keep in mind that in \CONTEXT\ you are defining|/|designing a
+right-hand (odd) page. Only after you have setup
+
+\type{\setuppagenumbering[alternative=doublesided]}
+
+the left page is available (mirrored right page).
+
+\starthiding
+  % AFO: this is the file minibook-en.tex in graphics map
+  \setuppapersize[A10][A10]
+  \setuplayout[cutspace=2mm,backspace=6mm,width=15mm]
+  \setupbodyfont[9pt]
+  \setuppagenumbering[state=stop]
+  \setupbackgrounds[text][text][background=color,backgroundcolor=orange]
+  \setupbackgrounds
+    [header,text,footer]
+    [leftmargin]
+    [background=color,backgroundcolor=lightgreen]
+
+  \setupbackgrounds[header,text,footer][leftmargin,text,rightmargin][frame=on]
+  \setupfootertexts
+    [margin]
+    [\midaligned{l}]
+    [\midaligned{r}]
+    [\midaligned{r}]
+    [\midaligned{l}]
+
+  \starttext
+  \midaligned{design page} \page
+  \setuppagenumbering[alternative={singlesided}]
+  \inmargin{\midaligned{m}}\midaligned{left page}  \page
+  \inmargin{\midaligned{m}}\midaligned{right page} \page
+  \setuppagenumbering[alternative={singlesided,doublesided}]
+  \inmargin{\midaligned{m}}\midaligned{left page}  \page
+  \inmargin{\midaligned{m}}\midaligned{right page} \page
+  \setuppagenumbering[alternative={doublesided}]
+  \inmargin{\midaligned{m}}\midaligned{left page}  \page
+  \inmargin{\midaligned{m}}\midaligned{right page}
+  \stoptext
+\stophiding
+
+\startplacefigure
+  [location=here,
+   reference=fig:sidedness,
+   title={Page alternatives}]
+  \startcombination[3*1]
+    {\externalfigure
+     [minibook-en.pdf][
+      type=pdf,page=2,width=0.15\textwidth]
+    \externalfigure
+      [minibook-en.pdf]
+      [type=pdf,page=3,width=0.15\textwidth]}{singlesided}
+  {\externalfigure
+	  [minibook-en.pdf]
+    [type=pdf,page=4,width=0.15\textwidth]
+     \externalfigure
+      [minibook-en.pdf]
+      [type=pdf,page=5,width=0.15\textwidth]}{single-double}
+    {\externalfigure
+      [minibook-en.pdf]
+      [type=pdf,page=6,width=0.15\textwidth]
+     \externalfigure
+       [minibook-en.pdf][type=pdf,page=7,width=0.15\textwidth]}{doublesided}
+   \stopcombination
+\stopplacefigure
+
+Note in \in{figure}[fig:sidedness] that
+
+\startitemize[packed]
+	\startitem
+	  the margin text (\type{\inmargin{m}}) is always in the left margin
+  \stopitem
+	\startitem
+	  the footer text in the margin \crlf
+      (\type{\setupfootertexts[margin][l][r][r][l]}) adapts automatically.
+      The page is completely mirrored when \type{alternative=doublesided} is active.
+	\stopitem
+\stopitemize
+
+When designing a page ask yourself a few questions:
+
+\startitemize[packed]
+	\startitem do I want margin texts or margin figures \stopitem
+	\startitem will I use the margin for the section numbering \stopitem
+	\startitem do I have footer and/or header texts \stopitem
+	\startitem do I want a double sided layout (right--left page mirrored) \stopitem
+	\startitem do I use ornaments (like tabs) on the page \stopitem
+	\startitem do I have navigational buttons (screen documents) \stopitem
+\stopitemize
+
+\stopsection
+
+\startsection[title=Defining the paper size / screen size]
+
+Before you can set up your page layout you have to have an idea about the paper
+dimensions. The cut marks connected by the dashed lines in
+\in{figure}[fig:pageareas] indicate the paper size. In \CONTEXT\ you set up your
+paper size with
+
+\shortsetup{setuppapersize}
+
+Most common paper sizes for Europe and North America are predefined in \CONTEXT\
+A0 \dots\ A10 and B1 \dots\ B10 for paper and S3 \dots\ S8 for screen documents.
+There are also special formats for envelopes.
+
+The concept of the \type{setuppapersize} command is to provide the possibility to
+give the \Emph{page size} in the first bracket pair and the size of the
+\Emph{sheet of paper} in the second pair. Predefined is
+\type{\setuppapersize[A4][A4]} portrait.
+
+\startbuffer
+\setuppapersize
+  [A4][A4]
+\stopbuffer
+
+\typebuffer
+
+If you need to use landscape orientation of the paper you indicate this with the \type{\setuppapersize} command.
+
+\startbuffer
+\setuppapersize[A5][A4,landscape]
+\stopbuffer
+
+\typebuffer
+
+Of course you can also define your own paper size for specific products
+
+\shortsetup{definepapersize}
+
+\startbuffer
+\definepapersize
+  [Postcard]
+  [width=15cm,
+   height=10cm]
+\stopbuffer
+
+\typebuffer
+
+and then:
+
+\startbuffer
+\setuppapersize[Postcard][A4]
+\stopbuffer
+
+\typebuffer
+
+or
+
+\startbuffer
+\setuppapersize[Postcard][Postcard]
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\startsection[title=Defining the page layout]
+
+The page layout is defined by
+
+\shortsetup{setuplayout}
+
+This command is typed in the setup area of your input file.
+
+\startplacefigure
+  [location=here,
+   reference=fig:pageparameters,
+   title={The page parameters}]
+  {\externalfigure[excursion-en-fig-page-parameters][width=.6\hsize]}
+\stopplacefigure
+
+An important thing is that the \type{height} contained in the variable
+\type{\textheight} is always the sum of
+
+\starttyping
+textheight+
+headerheight+headerdistance+
+footerheight+footerdistance
+\stoptyping
+
+You will have to consider this when setting the height of the text block
+explicitly. If you set the \type{height} to \type{fit} then \CONTEXT\ calculates
+the text height based on the provided and default values of the different
+variables that determine the height.
+
+\page[bigpreference]
+
+The layout of an A4 manual could be set up as follows
+
+\startbuffer[manual-layout]
+\setuplayout
+  [backspace=22.5mm,
+   width=fit,
+   cutspace=22.5mm,
+   margin=20mm,
+   margindistance=5mm,
+   topspace=15mm,
+   header=10mm,
+   headerdistance=5mm,
+   height=fit,
+   footerdistance=5mm,
+   footer=15mm,
+   bottomspace=15mm]
+\stopbuffer
+
+\typebuffer[manual-layout]
+
+Be aware, that \typ{\setuplayout} basically defines the layout of the right (odd)
+page. For doublesided documents \CONTEXT\ mirrors the layout automatically. In
+case that the left (even) page layout must be different then you will have to set
+it up in the following way.
+
+\startbuffer
+\setuplayout % defines always the right (odd) page!
+  [topspace=7mm,
+   backspace=12mm,
+   margin=7mm,
+   margindistance=2mm,
+   header=0pt,
+   headerdistance=0pt,
+   footer=1ex,
+   footerdistance=1pt,
+   height=middle,
+   width=middle,
+   location=middle]
+
+\definelayout[even]
+  [topspace=7mm,
+   backspace=12mm,
+   margin=7mm,
+   margindistance=2mm,
+   header=1.5\bodyfontsize,
+   headerdistance=4pt,
+   footer=0pt,
+   footerdistance=0pt,
+   height=middle,
+   width=middle,
+   location=middle]
+\stopbuffer
+
+
+\typebuffer
+
+If you want to look at your page layout you can type the command
+\type{\showframe} and process one page or the whole file. The areas are shown in
+a number of frames.
+
+The command \type{\showsetups} shows the values of the parameters. A combination
+of both commands is \type{\showlayout}.
+
+The values of the layout parameters are available as commands. This enables you
+to work more accurately when defining measures of columns, figures and tables. A
+few of these parameters are explained in \in{table}[tab:fewparameters].
+
+\startplacetable
+  [location={here,force},
+   reference=tab:fewparameters,
+   title={A few parameters as commands}]
+  \bTABLE
+    \bTR\bTD Commands             \eTD\bTD Meaning                        \eTD\eTR
+    \bTR\bTD \type{\makeupwidth}  \eTD\bTD width of the typesetting area  \eTD\eTR
+    \bTR\bTD \type{\makeupheight} \eTD\bTD height of the typsetting area  \eTD\eTR
+    \bTR\bTD \type{\textwidth}    \eTD\bTD width of the text area         \eTD\eTR
+    \bTR\bTD \type{\textheight}   \eTD\bTD height of the text area        \eTD\eTR
+	\eTABLE
+\stopplacetable
+
+It might be a little confusing, but what is the difference between
+\type{\makeupwidth} and \type{\textwidth}? In most cases these two commands hold
+the same value. However if you use e.g. columns, then the \type{\textwidth}
+contains the width of the column. On the other hand \type{\makeupwidth} always
+carries the value of the whole width of the text area.
+
+If you want to define the width of a column or the height of a figure you can do
+it relative to the \type{\textwidth} or \type{\textheight}. Changes in this width
+or height will alter columns and figures proportionally.
+
+\startbuffer
+\startplacefigure
+  [location=here,
+   reference=fig:stepgable,
+   title={A step gable}]
+  {\externalfigure[excursion-19][width=.4\makeupwidth]}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+\page[bigpreference]
+
+This would after processing  become \in{figure}[fig:stepgable].
+
+\getbuffer
+
+The other available values are (shown with \type{\showsetups}):
+
+\start
+	\switchtobodyfont[tt,9pt]
+	\showsetups
+\stop
+
+The parameter values have a global effect and are default throughout the
+document. Nevertheless you might want to make slight changes in the page design
+for a number of pages.
+
+\startbuffer
+\adaptlayout[21,38][height=+0.5cm]
+\stopbuffer
+
+\typebuffer
+
+In this case page 21 and 38 have a height of \type{textheight} + 0.5~cm.
+
+It is advisable not to use these local changes too often. It is always better to
+alter the text than to change the page layout.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

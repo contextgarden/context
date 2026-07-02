@@ -42,10 +42,10 @@
 
 static const double epsilon = 0.000001;
 
-static inline interval interval_neg(interval i)
-{
-    return (interval) { - i.SUP, - i.INF };
-}
+// static inline interval interval_neg(interval i)
+// {
+//     return (interval) { - i.SUP, - i.INF };
+// }
 
 static inline interval interval_mod(interval a, interval b)
 {
@@ -95,18 +95,18 @@ static inline int interval_eq(interval a, interval b)
 {
     return a.INF == b.INF && a.SUP == b.SUP;
 }
-static inline int interval_gt(interval a, interval b)
-{
-    return a.INF > b.INF && a.SUP > b.SUP;
-}
+// static inline int interval_gt(interval a, interval b)
+// {
+//     return a.INF > b.INF && a.SUP > b.SUP;
+// }
 static inline int interval_lt(interval a, interval b)
 {
     return a.INF < b.INF && a.SUP < b.SUP;
 }
-static inline int interval_ge(interval a, interval b)
-{
-    return (a.INF > b.INF && a.SUP > b.SUP) || (a.INF == b.INF && a.SUP == b.SUP);
-}
+// static inline int interval_ge(interval a, interval b)
+// {
+//     return (a.INF > b.INF && a.SUP > b.SUP) || (a.INF == b.INF && a.SUP == b.SUP);
+// }
 static inline int interval_le(interval a, interval b)
 {
     return (a.INF < b.INF && a.SUP < b.SUP) || (a.INF == b.INF && a.SUP == b.SUP);

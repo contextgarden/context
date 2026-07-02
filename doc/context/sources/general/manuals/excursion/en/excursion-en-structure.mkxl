@@ -1,0 +1,284 @@
+% signal=squid
+
+\startcomponent excursion-en-structure
+
+\enablemode[**en-us]
+
+\project excursion
+
+\Command{\tex{starttext}}
+\Command{\tex{startdocument}}
+\Command{\tex{setupdocument}}
+\Command{\tex{startsetups}}
+\Command{\tex{starttitle}}
+\Command{\tex{startchapter}}
+\Command{\tex{definemakeup}}
+\Command{\tex{setupmakeup}}
+\Command{\tex{startmakeup}}
+\Command{\tex{setupsectionblock}}
+
+\startchapter[title=Defining a document,reference=chap:structure]
+
+Every document is started with \type{\startdocument} which is nowadays the {\bf
+preferred} command or also \type{\starttext} and closed with \type{\stopdocument}
+and \type{\stoptext} respectively. All textual input is placed between these two
+commands and \CONTEXT\ will only process that information.
+
+\setuptyping
+  [escape=yes]
+
+\definestartstop
+  [comment][style={\rm}]
+
+\starttyping
+\setupbodyfont[12pt]              /BTEX \comment{\color[blue]{setup area of document}} /ETEX
+
+\startdocument
+This is a one line document.      /BTEX \comment{\color[blue]{your text}} /ETEX
+\stopdocument
+\stoptyping
+
+The \type{\startdocument} command is preferred because it allows you to combine it with a set of arguments. You can use arbitrary key -- value pairs which you can refer to throughout the document.
+
+\shortsetup[definedocument]
+\shortsetup{startdocument}
+\shortsetup{setupdocument}
+
+\startbuffer[Startdocument]
+\startdocument
+  [Title={From Hasselt to America}
+   Author={J. Jonker and C. van Marle},
+   Version={2012},
+   Editor={T. Otten},
+   Designer={H. Hagen}]
+
+  ...
+
+\stopdocument
+\stopbuffer
+
+\page[bigpreference]
+
+\typebuffer[Startdocument]
+
+For calling one of the variables attached to \type{\startdocument} you just would
+type \type{\documentvariable{Title}} or \type{\documentvariable{Editor}} and
+\CONTEXT\ will fetch and typeset the content of a called variable during
+compilation.
+
+\index{setups}
+
+To the \type{\startdocument} command two setups are attached i.e.
+\type{document:start} and \type{document:stop}. These setups are called
+automatically just after \type{\startdocument} and after \type{\stopdocument}.
+Inside \type{document:start} we could define a title page and how the title
+should be typeset.
+
+\startbuffer[Document:start:A]
+\startsetups document:start
+  \startalignment[middle]
+    {\ssbf \documentvariable{Title}}
+    \blank[2*big]
+    {\tfa \documentvariable{Author}}
+    \blank[2*line]
+    Editor: \documentvariable{Editor}
+    \crlf
+    Coeditor: \documentvariable{Designer}
+    \vfill
+    \documentvariable{Version}
+    \page[yes]
+  \stopalignment
+\stopsetups
+
+\definedocument[SimpleBook]
+\stopbuffer
+
+\startbuffer[Document:start:B]
+\setupdocument[SimpleBook]
+  [Title={From Hasselt to America},
+   Author={J. Jonker and C. van Marle},
+   Version={2012},
+   Editor={T. Otten},
+   Designer={Hans Hagen},
+   before=\setups{document:start}]
+\stopbuffer
+
+\typebuffer[Document:startA]
+
+\page[bigpreference]
+
+\typebuffer[Document:start:B]
+
+The \type{document:stop} setups could be used for calling e.g. for an index, appendices.
+
+\startbuffer[Document:stop]
+\startsetups document:stop
+  \startchapter[title={Appendix: Photos}]
+    A list of presented photos
+  \stopchapter
+
+  \placeindex
+\stopsetups
+\stopbuffer
+
+\typebuffer[Document:stop]
+
+\page[bigpreference]
+
+The definition of a (very simple) book could look something like this:
+
+\startbuffer[Book]
+\startdocument[SimpleBook]
+
+  \starttitle[title={Foreword}]
+    All what you want to state in a foreword
+  \stoptitle
+
+  \startchapter[title={Introduction}]
+    Explain the approach to the book contents
+  \stopchapter
+
+  \startchapter[title={The Rensselaer family}]
+    All about the Rensselaer family
+  \stopchapter
+
+  \startchapter[title={The Lansing family}]
+    All about the Lansing family
+  \stopchapter
+
+  \startchapter[title={The Cuyler family}]
+    All about the Cuyler family
+  \stopchapter
+\stopdocument
+\stopbuffer
+
+\typebuffer[Book]
+
+If you want to create a page which has no page numbering and no headers and
+footers, the environment \type{\startstandardmakeup} is your friend. These pages
+easily serve the purpose of e.g. a title page, a colophon and alike. See also
+\in{chapter}[sec:titlepagesetup].
+
+\index{makeup}
+
+\shortsetup{definemakeup}
+\shortsetup{setupmakeup}
+\shortsetup{startmakeup}
+
+Because there is a \type{\definemakeup} command, you are able to define your own
+makeups. By using de \type{\setupmakeup} command you can influence the working of
+a makeup. Calling a makeup can be done in two ways. First is to use the name of
+the defined command in \type{\startMYOWNmakeup} or by \type{\startmakeup[MYOWN]}.
+To both command usages you can add arguments derived from \type{\setupmakeup}.
+
+\startbuffer
+\startstandardmakeup
+  \midaligned{From Hasselt to America}
+  \midaligned{by}
+  \midaligned{J. Jonker and C. van Marle}
+\stopstandardmakeup
+\stopbuffer
+
+\typebuffer
+
+\CONTEXT\ comes with a predefined overall structure in which the document is
+divided into four main document parts:\footnote{Here we try to avoid the word
+\Emph{section}.}
+
+\startplacetable
+  [location=here,
+   reference=tab:doc-parts,
+   title=Main parts of a document]
+  \bTABLE
+    \bTR
+      \bTD Name \eTD\bTD Command \eTD
+    \eTR
+    \bTR
+      \bTD Front matter \eTD\bTD \type{\startfrontmatter ... \stopfrontmatter} \eTD
+    \eTR
+    \bTR
+      \bTD Body matter  \eTD\bTD \type{\startbodymatter  ... \stopbodymatter} \eTD
+    \eTR
+    \bTR
+      \bTD Appendices   \eTD\bTD \type{\startappendices  ... \stopappendices}\eTD
+    \eTR
+    \bTR
+      \bTD Back matter  \eTD\bTD \type{\startbackmatter  ... \stopbackmatter} \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+
+\page[bigpreference]
+
+The chapters in your book can be divided over the following parts.
+
+\startbuffer
+\startdocument
+
+  \startstandardmakeup
+    \midaligned{From Hasselt to America}
+    \midaligned{by}
+    \midaligned{J. Jonker and C. van Marle}
+  \stopstandardmakeup
+
+  \startfrontmatter
+
+    \starttitle[title={Preface}]
+
+    \stoptitle
+
+    \startchapter[title={Introduction}]
+
+    \stopchapter
+
+  \stopfrontmatter
+
+  \startbodymatter
+
+    \startchapter[title={The Rensselaer family}]
+
+    \stopchapter
+
+    \startchapter[title={The Lansing family}]
+
+    \stopchapter
+
+    \startchapter[title={The Cuyler family}]
+
+    \stopchapter
+
+  \stopbodymatter
+
+  \startappendices
+
+    \startchapter[title={Photos}]
+
+    \stopchapter
+
+  \stopappendices
+
+\stopdocument
+\stopbuffer
+
+\typebuffer
+
+In the front matter as well as back matter the command \type{\startchapter}
+produces an unnumbered line in the table of contents. The front matter is mostly
+used for the table of contents, the list of figures and tables, the preface, the
+acknowledgements etc. It often comes with a roman page numbering.
+
+The appendices part is used for (indeed) appendices. Chapter headings may be
+typeset in a different way; for example, \type{\startchapter} may be numbered
+alphabetically.
+
+The style of each document part can be set up with:
+
+\shortsetup{setupsectionblock}
+
+\shortsetup{startsectionblockenvironment}
+
+The set up of pagenumbers is discussed in \in{section}[sec:pagenumbering].
+
+\stopchapter
+
+\stopcomponent

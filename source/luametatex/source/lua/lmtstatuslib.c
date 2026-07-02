@@ -232,6 +232,7 @@ static int statslib_enginestate(lua_State *L)
     lua_set_string_by_key (L, "used_compiler",   lmt_version_state.compiler);
  // lua_set_string_by_key (L, "used_libc",       lmt_version_state.libc);
     lua_set_integer_by_key(L, "run_state",       lmt_main_state.run_state);
+    lua_set_integer_by_key(L, "overload_state",  lmt_main_state.overload_state);
     lua_set_boolean_by_key(L, "permit_loadlib",  lmt_engine_state.permit_loadlib);
     return 1;
 }
@@ -454,6 +455,10 @@ static int statslib_getconstants(lua_State *L)
 
     lua_set_string_by_key (L, "active_character_namespace",     active_character_namespace);
 
+    lua_set_integer_by_key(L, "sa_part_high",                   LMT_SA_HIGHPART);
+    lua_set_integer_by_key(L, "sa_part_middle",                 LMT_SA_MIDPART);
+    lua_set_integer_by_key(L, "sa_part_low",                    LMT_SA_LOWPART);
+
     return 1;
 }
 
@@ -524,6 +529,7 @@ static struct statistic_entry statslib_entries[] = {
     /* */
     { .name = "used_compiler",      .value = (void *) &lmt_version_state.compiler,      .type = 'c' }, /* can be moved up */
     { .name = "run_state",          .value = (void *) &lmt_main_state.run_state,        .type = 'g' },
+    { .name = "overload_state",     .value = (void *) &lmt_main_state.overload_state,   .type = 'g' },
     { .name = "permit_loadlib",     .value = (void *) &lmt_engine_state.permit_loadlib, .type = 'b' },
     /* */
     { .name = "tex_memory_mode",    .value = &statslib_memory_mode,                     .type = 'f' }, /* can be moved up */

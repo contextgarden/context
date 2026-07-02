@@ -50,7 +50,9 @@ local setfont           = nuts.setfont
 local setscale          = nuts.setscale
 local setwhd            = nuts.setwhd
 local setkern           = nuts.setkern
-local setoffsets        = nuts.setoffsets
+----- setoffsets        = nuts.setoffsets
+local addxoffset        = nuts.addxoffset
+local addyoffset        = nuts.addyoffset
 local setoptions        = nuts.setoptions
 local getdirection      = nuts.getdirection
 local setdirection      = nuts.setdirection
@@ -59,6 +61,8 @@ local getparstate       = nuts.getparstate
 local patchparshape     = nuts.patchparshape
 
 local hpack_nodes       = nuts.hpack
+local fullhpack         = nuts.fullhpack
+local fullhpackrl       = nuts.fullhpackrl
 
 local nodepool          = nuts.pool
 local new_kern          = nodepool.kern
@@ -228,7 +232,12 @@ actions[v_default] = function(head,settings)
                 if getattr(current,a_initial) then
                     last = current
                 else
-                    break
+                    local char = getchar(current)
+                    if char and category(char) == "mn" then
+                        last = current
+                    else
+                        break
+                    end
                 end
             end
         elseif method[v_auto] then
@@ -281,7 +290,9 @@ actions[v_default] = function(head,settings)
             if next then
                 for current, char in nextglyph, next do
                     local kind = category(char)
-                    if kind == "po" then
+                    if kind == "mn" then
+                        last = current
+                    elseif kind == "po" then
                         if method[v_last] then
                             -- remove period etc after initial
                             remove_node(head,current,true)
@@ -294,12 +305,20 @@ actions[v_default] = function(head,settings)
                 end
             end
         else
-            for current in nextglyph, first do
-                last = current
-                if length <= 1 then
+            local done = false
+            for current, char in nextglyph, first do
+                if category(char) == "mn" then
+                    last = current
+                    -- continue
+                elseif done then
                     break
                 else
                     length = length - 1
+                    if length <= 1 then
+                        done = true
+                    else
+                        last = current
+                    end
                 end
             end
         end
@@ -307,9 +326,9 @@ actions[v_default] = function(head,settings)
         while true do
             local id = getid(current)
             if id == kern_code then
+                -- hm
                 setkern(current,0)
             elseif id == glyph_code and skip ~= current then
-                local next = getnext(current)
                 if font then
                     setfont(current,font)
                 end
@@ -335,13 +354,12 @@ actions[v_default] = function(head,settings)
         --
         setprev(first)
         setnext(last)
-        local dropper = hpack_nodes(first)
+        local direction = getdirection(head)
+        local dropper = (direction == righttoleft_code and fullhpackrl or fullhpack)(first)
         local width, height, depth = getwhd(dropper)
         setwhd(dropper,0,0,0)
-        --
         setlink(prev,dropper,next)
-        --
-        if getdirection(head) == righttoleft_code then
+        if direction == righttoleft_code then
             setdirection(dropper,righttoleft_code)
         end
         if next then
@@ -361,10 +379,9 @@ actions[v_default] = function(head,settings)
         --
         local hoffset = width + hoffset + distance + (indent and parindent or 0)
         for current in nextglyph, first do
-            if skip == current then
-                setoffsets(current,-hoffset,0)
-            else
-                setoffsets(current,-hoffset,-voffset) -- no longer - height here
+            addxoffset(current,-hoffset)
+            if skip ~= current then
+                addyoffset(current,-voffset) -- no longer - height here
             end
             if current == last then
                 break

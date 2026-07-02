@@ -1,0 +1,351 @@
+% signal=squid
+
+\startcomponent excursion-en-figures
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Figures,reference=chap:figures]
+
+\index{figure}
+\seeindex{picture}{figure}
+\index{floating blocks}
+
+\Command{\tex{placefigure}}
+\Command{\tex{startfiguretext}}
+\Command{\tex{startcombination}}
+\Command{\tex{setupfloats}}
+\Command{\tex{setupcaptions}}
+\Command{\tex{externalfigure}}
+
+Images can be placed in your document with the command \type{\externalfigure}.
+
+\startbuffer
+\externalfigure
+  [cow.pdf]
+  [width=.1\textwidth,
+   frame=on,framecolor=gray,
+   frameoffset=3pt,rulethickness=3pt,
+   framecorner=round]
+\stopbuffer
+
+\typebuffer
+
+Such an image will be placed on the location where you defined it \space
+\getbuffer \space and can have some strange effects on the surrounding white
+space. By the way, the cow image is always available for \CONTEXT\ users which is
+very convenient when you are testing the figure related commands.
+
+You can use the command \type{\startplacefigure ... \stopplacefigure} to
+influence the positioning of images in your document.
+
+\startbuffer
+\startplacefigure
+   [location={here,middle},
+    reference=fig:church,
+    title={Stephanus Church}]
+   {\externalfigure[excursion-24][width=.4\textwidth]}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+After processing this will come out as \in{figure}[fig:church] at the first
+available location.
+
+\start
+\setupfloat
+ [figure]
+ [location=middle]
+
+\getbuffer
+\stop
+
+The command \type{\startplacefigure ... \stopplacefigure} handles numbering and
+vertical spacing before and after your figure. Furthermore this command
+initializes a float mechanism, which means that \CONTEXT\ looks whether there is
+enough space for your figure on the actual page. If not, the figure will be
+placed at another location and the text carries on, while the figure floats in
+your document until the optimal location is found.
+
+You can influence this mechanism within the bracket pair.
+
+The command \type{\startplacefigure...\stopplacefigure} is a predefined example
+of:
+
+\shortsetup{startplacefloat}
+
+A number of basic options are described in \in{table}[tab:placefigure].
+
+% \startpostponing
+\startplacetable
+  [location=here,
+   reference=tab:placefigure,
+   title={Options in \type{\startplacefigure ... \stopplacefigure}}]
+  {\switchtobodyfont [9pt]
+  \bTABLE
+    \bTR
+      \bTD Option \eTD
+      \bTD Value  \eTD
+      \bTD Meaning \eTD
+    \eTR
+    \bTR
+      \bTD location  \eTD
+      \bTD here      \eTD
+      \bTD put figure at this location if possible \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD force     \eTD
+      \bTD force figure placement here \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD page      \eTD
+      \bTD put figure on its own page \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD top       \eTD
+      \bTD put the figure at the top of the page \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD bottom    \eTD
+      \bTD put the figure at the bottom of the page \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD left      \eTD
+      \bTD place figure at the left margin \eTD
+    \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD right     \eTD
+      \bTD place figure at the right margin \eTD
+      \eTR
+    \bTR
+      \bTD           \eTD
+      \bTD margin    \eTD
+      \bTD place figure in the margin \eTD
+    \eTR
+	  \bTR
+      \bTD reference \eTD
+      \bTD           \eTD
+      \bTD text for referencing (e.g. fig:church) \eTD
+    \eTR
+	  \bTR
+      \bTD title     \eTD
+      \bTD           \eTD
+      \bTD text which appears as a caption \eTD
+    \eTR
+	  \bTR
+      \bTD list      \eTD
+      \bTD           \eTD
+      \bTD alternative text appearing in the list of figures \eTD
+    \eTR
+  \eTABLE}
+\stopplacetable
+% \stoppostponing
+
+The text behind \type{reference=} is used for cross-referencing. You can refer to
+such a reference anywhere in the document with:
+
+\starttyping
+\in{figure}[fig:church]
+\stoptyping
+
+Text after \type{title=} is typeset as the caption of the figure or table. You
+can type any text you want. The figure captions are set up with
+\type{\setupcaptions} (see \in{paragraph}[sec:floatingblocks]).
+
+The brace pair is used for defining the figure and addressing the file names of
+external figures.
+
+In the next example you see how \inframed{Hasselt} is defined within the brace
+pair to show you the function of \type{\startplacefigure ... \stopplacefigure}.
+
+\startbuffer
+\startplacefigure
+  [title={The boundaries of Hasselt}]
+  \framed
+    [width=.55\makeupwidth,
+     offset=5pt,
+     align={lohi,center}]
+    {\tfb Hasselt}
+\stopplacefigure
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+However, your images are often created using specialized programs for image
+processing and photos are --- after scanning --- improved in packages for this
+purpose. Then the images are available as files. \CONTEXT\ supports image file
+types like \type {JPG}, \type {PNG} and (pages from) \type {PDF} files as well as
+\METAPOST\ output (\type {MP} files). With the latest \CONTEXT\ versions you also
+can include \type{svg} (scalable vector graphics) without depending on external
+software to convert them to \PDF. Those are processed by \METAPOST\ on the fly.
+For further information see the \goto{\Emph{svg in context and metafun
+xl}}[url(manual:svg)] manual and the
+\goto{\Emph{\CONTEXTWIKI}}[url(www:garden:svg)] about svg support in \CONTEXT.
+
+In \in{figure}[fig:canals] you see a photo and a graphic combined into one
+figure.
+
+\startbuffer[PhotoandGraphic]
+\startplacefigure
+  [location={here,force},
+   reference=fig:canals,
+   title={The Hasselt Canals}]
+  \startcombination[2*1]
+    {\externalfigure
+      [excursion-03]
+      [width=.45\makeupwidth][frame=on]}{a bitmap picture}
+    {\externalfigure
+      [excursion-00]
+      [width=.45\makeupwidth]}{a vector graphic}
+   \stopcombination
+\stopplacefigure
+\stopbuffer
+
+\getbuffer[PhotoandGraphic]
+
+\page[bigpreference]
+
+You can produce this figure by typing something like
+
+\typebuffer[PhotoandGraphic]
+
+\page[bigpreference]
+
+In this figure two pictures are combined with:
+
+\shortsetup{startcombination}
+
+The \type{\startcombination ...\stopcombination} pair is used for combining two
+pictures in one figure. You can type the number of pictures within the bracket
+pair. If you want to display one picture below the other you would have typed
+\type{[1*2]}. You can imagine what happens when you combine 6~pictures as
+\type{[3*2]} (\type{[nx*ny]}).
+
+The examples shown above are enough for creating illustrated documents. Sometimes
+however you want a more integrated layout of the picture and the text. For that
+purpose you can use \type{\startfiguretext ... \stopfiguretext} command pair.
+
+\startbuffer
+\startfiguretext
+  [left,verytolerant]
+  [fig:statue-barges]
+  {Statue \quotation{Two Hasselt Barges}}
+  {\externalfigure[excursion-18][width=.44\makeupwidth]}
+   Hasselt has always had a varying number of citizens
+   due to economic events. For example the {\nl Dedemsvaart}
+   was dug around 1810. This canal runs through Hasselt
+   and therefore trade flourished. This led to a
+   population growth of almost 40\% within 10~years.
+   Nowadays the {\nl Dedemsvaart} has no commercial
+   value anymore and the canals have become a tourist
+   attraction. But reminders of these prosperous
+   times can be found everywhere.
+\stopfiguretext
+\stopbuffer
+
+\page[bigpreference]
+
+The effect of
+
+\typebuffer
+
+is shown in \in{figure}[fig:statue-barges] below.
+
+\start
+  \getbuffer
+\stop
+
+\startbuffer[marginpicture]
+  \inouter
+    {\externalfigure
+       [excursion-23]
+       [width=.6\marginwidth]}
+  \stopbuffer
+
+As you have seen in the examples above you can summon a figure with the
+command
+
+\shortsetup{externalfigure}
+
+The command \type{\externalfigure} has three bracket pairs. The first is used for
+the exact file name without extension, the second argument can contain a symbolic
+name. The third bracket pair contains \type{key = value} pairs for file formats,
+conversion, dimensions etc. It is not difficult to guess what happens if you
+type:
+
+\getbuffer[marginpicture]
+
+\typebuffer[marginpicture]
+
+An interesting option is to call \type{\externalfigure} with a buffer name. On
+\at{page}[framed:externalfigure-with-buffer] you find examples using this
+approach.
+
+You can set up the layout of figures with
+
+\shortsetup{setupfloats}
+
+\doifmodeelse{Book}
+  {\page[bigpreference]}
+  {\blank}
+
+You can set up the captions with
+
+\shortsetup{setupcaptions}
+
+\startbuffer[figuresetups]
+\setupfloat
+  [figure]
+  [default=right,
+   spacebefore=none]
+
+\setupcaptions
+  [location=bottom,
+   style=boldslanted]
+\stopbuffer
+
+\startbuffer[figuredefinition]
+\startplacefigure
+  [title={A characteristic
+          view in Hasselt}]
+  {\externalfigure
+    [excursion-12]
+    [width=.4\makeupwidth]}
+\stopplacefigure
+\stopbuffer
+
+These commands are typed in the setup area of your input file and have a global
+effect on all floating blocks.
+
+\start
+  \getbuffer[figuresetups]
+  \getbuffer[figuredefinition]
+\stop
+
+\typebuffer[figuresetups,figuredefinition]
+
+For figure management there are commands like \crlf \type{\setupexternalfigure}.
+
+Please refer to the \goto {\Emph{\CONTEXTWIKI}} [
+url(https://wiki.contextgarden.net/Command/defineexternalfigure) ] and
+\goto{\Emph{Graphics}} [ url (manual:graphics ] manual for practical applications
+and instructions for these commands.
+
+\doifnotmode{Book}{\blank[2*big]}
+
+If you want to work with an \XML\ based figure database please see the \goto
+{\Emph{Figures}} [ url (manual:figures) ] manual.
+
+\stopchapter
+
+\stopcomponent

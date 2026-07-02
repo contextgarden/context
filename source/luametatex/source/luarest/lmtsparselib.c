@@ -25,6 +25,8 @@ typedef struct sa_tree_object {
     sa_tree tree;
     int     min;
     int     max;
+    int     bytes;
+    int     padding;
 } sa_tree_object;
 
 static sa_tree_object *sparselib_aux_check_is_sa_object(lua_State *L, int n)
@@ -86,6 +88,8 @@ static int sparselib_new(lua_State *L)
     o->tree = sa_new_tree(user_sparse_identifier, SPARSE_STACK, SPARSE_STEP, bytes, item);
     o->min = -1;
     o->max = -1;
+    o->bytes = bytes;
+    o->padding = 0;
     luaL_setmetatable(L, SPARSE_METATABLE_INSTANCE);
     return 1;
 }
@@ -102,7 +106,7 @@ static int sparselib_gc(lua_State *L)
 static int sparselib_tostring(lua_State *L) {
     sa_tree_object *o = sparselib_aux_check_is_sa_object(L, 1);
     if (o) {
-        lua_pushfstring(L, "<sa.object %p>", o->tree);
+        lua_pushfstring(L, "<sparse : %d : %d .. %d : %p>", o->bytes, o->min, o->max, o->tree);
         return 1;
     } else {
         return 0;

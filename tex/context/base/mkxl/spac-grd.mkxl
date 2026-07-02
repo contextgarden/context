@@ -455,7 +455,6 @@
 %      \linesnappingone
 %    \fi}
 
-
 \permanent\protected\def\douseinstalledsnapping#1%
   {\ifcsname\??snapping#1\endcsname
      \lastnamedcs

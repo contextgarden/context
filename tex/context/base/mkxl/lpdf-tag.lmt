@@ -21,15 +21,20 @@ if not modules then modules = { } end modules ['lpdf-tag'] = {
 -- e.g. headings). Validators and standards are instable and we don't expect much
 -- from applications that have to deal with it, or we'd already seen that over time.
 
--- instead of taglist we can have a backpointer to the parent but then
--- we also need to adapt the export, it might be a bit slower
---
--- maybe also make specifications a two dimensional table
+-- Instead of taglist we can have a backpointer to the parent but then we also need
+-- to adapt the export, it might be a bit slower. Maybe also make specifications a
+-- two dimensional table
 
--- Updated july/august 2025 to match changed in specifations, validation
--- etc. Musical timestamp: (video) Brad Mehldau performs Elliott Smith's
--- "Colorbars" (with others), a demonstration that there can still come
--- something good from that country in free-fall.
+-- Updated july/august 2025 to match changed in specifations, validation etc.
+-- Musical timestamp: (video) Brad Mehldau performs Elliott Smith's "Colorbars"
+-- (with others), a demonstration that there can still come something good from that
+-- country in free-fall.
+--
+-- One indication that tagging is an afterthought is that when untagged stuff would
+-- automatically be artifacts, we would not see so much bloated pdf and add to that
+-- the possibility that the related keyword could even have been a one character. As
+-- with more formats (think fonts) we get an (in)efficiency mix: very compact and
+-- parsing unfriendy on the one hand and very verbose on the other. History will tell.
 
 local next, type, tonumber, rawget = next, type, tonumber, rawget
 local format, match, gmatch, find, gsub = string.format, string.match, string.gmatch, string.find, string.gsub

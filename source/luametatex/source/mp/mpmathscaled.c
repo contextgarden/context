@@ -643,7 +643,7 @@ static mp_scaled_t mp_take_scaled(MP mp, int p, mp_scaled_t q)
 
 static void mp_scaled_take_scaled(MP mp, mp_number *ret, mp_number *p_orig, mp_number *q_orig)
 {
-    ret->data.val = mp_take_scaled(mp, p_orig->data.val, q_orig->data.val);
+    ret->data.val = (mp_scaled_t) mp_take_scaled(mp, p_orig->data.val, q_orig->data.val);
 }
 
 /*tex 
@@ -1144,6 +1144,27 @@ static void mp_scaled_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     ret->data.val = a;
 }
 
+static void mp_scaled_pyth_add3(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig)
+{
+    double a = mp_scaled_to_double(a_orig);
+    double b = mp_scaled_to_double(b_orig);
+    double c = mp_scaled_to_double(c_orig);
+    double p = sqrt(a*a + b*b + c*c);
+    long r = lround(p * 65536.0);
+    if (r > 0) {
+        if (r >= EL_GORDO) {
+            mp->arithmic_error = mp_error_code(mp, 15);
+            r = EL_GORDO;
+        }
+    } else if (r < 0) {
+        if (r <= - EL_GORDO) {
+            mp->arithmic_error = mp_error_code(mp, 16);
+            r = - EL_GORDO;
+        }
+    }
+    ret->data.val = r;
+}
+
 /*tex
     The key idea here is to reflect the vector $(a,b)$ about the line through $(a,b/2)$. Here is a
     similar algorithm for $\psqrt{a^2-b^2}$. It converges slowly when $b$ is near $a$, but 
@@ -1270,7 +1291,7 @@ static void mp_scaled_m_log(MP mp, mp_number *ret, mp_number *x_orig)
                 Increase |k| until |x| can be multiplied by a factor of $2^{-k}$, and adjust $y$ 
                 accordingly.
             */
-            z = ((x - 1) / two_to_the (k)) + 1; /* $z=\lceil x/2^k\rceil$ */
+            z = ((x - 1) / two_to_the(k)) + 1; /* $z=\lceil x/2^k\rceil$ */
             while (x < fraction_four + z) {
                 z = (z + 1)/2;
                 k++;
@@ -1403,7 +1424,7 @@ static void mp_scaled_n_arg(MP mp, mp_number *ret, mp_number *x_orig, mp_number 
                 y += y;
                 k++;
                 if (y > x) {
-                    int t = x; 
+                    mp_scaled_t t = x;
                     z = z + mp_m_spec_atan[k];
                     x = x + (y / two_to_the(k + k));
                     y = y - t;
@@ -1839,6 +1860,7 @@ math_data *mp_initialize_scaled_math(MP mp)
     math->md_m_unif_rand              = mp_scaled_m_unif_rand;
     math->md_m_norm_rand              = mp_scaled_m_norm_rand;
     math->md_pyth_add                 = mp_scaled_pyth_add;
+    math->md_pyth_add3                = mp_scaled_pyth_add3;
     math->md_pyth_sub                 = mp_scaled_pyth_sub;
     math->md_power_of                 = mp_scaled_power_of;
     math->md_fraction_to_scaled       = mp_scaled_fraction_to_scaled;

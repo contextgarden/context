@@ -1,0 +1,538 @@
+% signal=squid
+
+\startcomponent excursion-en-tables
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Tables,reference=chap:tables]
+
+\index{tables}
+
+\Command{\tex{bTABLE}}
+\Command{\tex{eTABLE}}
+\Command{\tex{bTABLEhead}}
+\Command{\tex{bTABLEfoot}}
+\Command{\tex{bTABLEnext}}
+\Command{\tex{bTR}}
+\Command{\tex{eTR}}
+\Command{\tex{eTD}}
+\Command{\tex{stopxtable}}
+\Command{\tex{startxtablehead}}
+\Command{\tex{startxtablebody}}
+\Command{\tex{startxtablefoot}}
+\Command{\tex{startxcell}}
+\Command{\tex{startxrow}}
+\Command{\tex{setupxtable}}
+\Command{\tex{startlinetablehead}}
+\Command{\tex{startlinetablebody}}
+\Command{\tex{startlinetablecell}}
+
+There are a number of ways to define a table:
+
+\startitemize[packed]
+  \startitem
+    the \type{\bTABLE ... \eTABLE} mechanism (natural tables)
+  \stopitem
+  \startitem
+  the \type{\startxtable ... \stopxtable} mechanism (extreme tables)
+  \stopitem
+  \startitem
+    the \type{\startlinetable ... \stoplinetable} environment (line tables)
+  \stopitem
+\stopitemize
+
+In the early times of \CONTEXT\ there was a \type{\starttable ... \stoptable}
+mechanism, based on the work of M. Wichura. Although this environment still
+works, it is \Emph{strongly discouraged} to use this table mechanism in new
+documents.
+
+In the next sections we describe the principles of the three mechanisms.
+
+\startsection[title=Natural tables]
+
+\index{tables+natural tables}
+
+The natural table mechanism (\type{\bTABLE ... \eTABLE}) is developed for more
+complex tables and has features of the general interface of \CONTEXT.
+
+\shortsetup{bTABLE}
+
+\startbuffer
+\startplacetable
+  [location={here,force},
+   reference=tab:votedivision,
+   title={Division of votes over political parties}]
+  \bTABLE[align=middle,offset=3pt]
+    \setupTABLE[frame=on,rulethickness=1pt,framecolor=white]
+    \setupTABLE[r][first][background=color,backgroundcolor=GreenSheen]
+    \setupTABLE[r][each][background=color,backgroundcolor=MiddleGreenYellow]
+   \bTABLEhead
+     \bTR[width=6cm] \bTD[nc=5] Elections for the City Council \eTD\eTR
+   \eTABLEhead
+   \bTABLEbody
+     \bTR
+       \bTD[nr=2,align={right,lohi}] Party \eTD
+       \bTD[nc=3,foregroundstyle=bold] Districts \eTD
+       \bTD[nr=2,align={middle,lohi}] Total \eTD
+     \eTR
+     \bTR
+       \bTD 1   \eTD
+       \bTD 2   \eTD
+       \bTD 3   \eTD
+     \eTR
+     \bTR
+       \bTD[align=right] PvdA \eTD
+       \bTD 351  \eTD
+       \bTD 433  \eTD
+       \bTD 459  \eTD
+       \bTD 1243 \eTD
+     \eTR
+     \bTR
+       \bTD[align=right] CDA  \eTD
+       \bTD 346  \eTD
+       \bTD 350  \eTD
+       \bTD 285  \eTD
+       \bTD ~981 \eTD
+     \eTR
+     \bTR
+       \bTD[align=right] VVD  \eTD
+       \bTD 140  \eTD
+       \bTD[background=color,
+            backgroundcolor=red,foregroundcolor=white,
+            foregroundstyle=bold,framecolor=blue,
+            frameoffset=-0.6pt] 113 \eTD
+       \bTD  132  \eTD
+       \bTD ~385 \eTD
+     \eTR
+     \bTR
+       \bTD[align=right] SGP  \eTD
+       \bTD 348 \eTD
+       \bTD 261 \eTD
+       \bTD 158 \eTD
+       \bTD ~767 \eTD
+     \eTR
+     \bTR
+       \bTD[align=right] GPV  \eTD
+       \bTD 117 \eTD
+       \bTD 192 \eTD
+       \bTD 291 \eTD
+       \bTD ~600 \eTD
+     \eTR
+  \eTABLEbody
+  \eTABLE
+\stopplacetable
+\stopbuffer
+
+\start
+\switchtobodyfont[9pt]
+\typebuffer
+\stop
+
+In the last column a \type{~} is used to simulate a four digit number. The
+\type{~} has the width of a digit.
+
+\start
+\fixedspaces
+\getbuffer
+\stop
+
+Instead of using formatting information at each element you better can use the
+\type{\setupTABLE} command. If the setup is to stay local the \type{\setupTABLE}
+commands are placed after \type{\bTABLE}. Otherwise the setup can be placed into
+the setup area of the document to have the setup being global for the document.
+
+\shortsetup{setupTABLE}
+
+\startbuffer
+\startplacetable
+  [location={here,force},
+   reference=tab:votedivision,
+   title={Division of votes over political parties}]
+  \bTABLE[align=middle,offset=3pt]
+    \setupTABLE[row][align=middle,offset=3pt]
+    \setupTABLE[1][1][width=0.3\textwidth]
+    \setupTABLE[1][2][align={right,lohi}]
+    \setupTABLE[5][2][align={right,lohi}]
+    \setupTABLE[2][2][foregroundstyle=bold]
+    \setupTABLE[1][4,5,6,7,8][align=right]
+    \setupTABLE[3][6][background=color,
+                      backgroundcolor=red,
+                      foregroundcolor=white,
+                      foregroundstyle=bold,
+                      framecolor=blue,
+                      frameoffset=-0.6pt]
+    \bTABLEhead
+
+      ...
+
+    \eTABLEhead
+    \bTABLEbody
+
+      ...
+
+    \eTABLEbody
+  \eTABLE
+\stopplacetable
+\stopbuffer
+
+\typebuffer
+
+The meaning of the \CONTEXT\ commands are indicated in \in {table}
+[tab:tablecommands02].
+
+\startplacetable
+  [location=here,
+   reference=tab:tablecommands02,
+   title={Commands to define natural tables}]
+  {\switchtobodyfont[9pt]
+   \bTABLE
+     \bTR\bTD  Command                           \eTD\bTD Meaning                   \eTD\eTR
+     \bTR\bTD \type{\bTABLE ... \eTABLE}         \eTD\bTD begin end table           \eTD\eTR
+     \bTR\bTD \type{\bTR ... \eTR}               \eTD\bTD begin end row             \eTD\eTR
+     \bTR\bTD \type{\bTD ... \eTD}               \eTD\bTD begin end cell            \eTD\eTR
+     \bTR\bTD \type{\bTABLEhead ... \eTABLEhead} \eTD\bTD begin end table head      \eTD\eTR
+     \bTR\bTD \type{\bTABLEbody ... \eTABLEbody} \eTD\bTD begin end table body      \eTD\eTR
+     \bTR\bTD \type{\bTABLEfoot ... \eTABLEfoot} \eTD\bTD begin end table foot      \eTD\eTR
+     \bTR\bTD \type{\bTABLEnext ... \eTABLEnext} \eTD\bTD begin end next table head \eTD\eTR
+     \bTR\bTD \type{\setupTABLE}                 \eTD\bTD table setup               \eTD\eTR
+   \eTABLE}
+\stopplacetable
+
+You can find more information on this table mechanism on the \CONTEXTWIKI\ and
+examples in the \goto {\Emph{Natural Tables}} [ url (manual:nattab) ] manual.
+
+\stopsection
+
+\doifmode{Book}{\page[yes]}
+
+\startsection[title=Extreme tables]
+
+\index{tables+extreme tables}
+
+For large tables that extend over a number of pages and where you want the table
+head repeated after each page break \CONTEXT\ has the {\Emph{extreme table}}
+mechanism.
+
+\shortsetup{startxtable}
+\shortsetup{setupxtable}
+\shortsetup{startxrow}
+\shortsetup{startxcell}
+\shortsetup{startxtablehead}
+\shortsetup{startxtablebody}
+\shortsetup{startxtablefoot}
+\shortsetup{startxtablenext}
+
+\startbuffer[Xtable]
+\setupxtable[split=yes,header=repeat]
+\setupxtable[offset=3pt]
+
+\startplacetable
+  [location=here,
+   reference=tab:wealthdecline,
+   title={Decline of wealth through time}]
+   \setupxtable[frame=on,rulethickness=1pt,framecolor=white,offset=3pt]
+   \startxtable
+      \startxtablehead
+        [align=middle,foregroundstyle=bold,
+         background=color,backgroundcolor=GreenSheen]
+      \startxrow
+        \startxcell[nx=6]
+            Decline of wealth in Dutch florine (Dfl)
+        \stopxcell
+      \stopxrow
+      \startxrow[foregroundstyle=bold]
+        \startxcell[width=0.1\textwidth] Year \stopxcell
+        \startxcell 1.000--2.000      \stopxcell
+        \startxcell 2.000--3.000      \stopxcell
+        \startxcell 3.000--5.000      \stopxcell
+        \startxcell 5.000--10.000     \stopxcell
+        \startxcell   over 10.000     \stopxcell
+      \stopxrow
+    \stopxtablehead
+    \startxtablebody
+      [align=middle,background=color,
+       backgroundcolor=MiddleGreenYellow]
+      \startxrow
+        \startxcell 1675 \stopxcell
+        \startxcell 22   \stopxcell
+        \startxcell ~7   \stopxcell
+        \startxcell ~5   \stopxcell
+        \startxcell ~4   \stopxcell
+        \startxcell ~5   \stopxcell
+      \stopxrow
+
+      \startxrow
+        \startxcell 1724 \stopxcell
+        \startxcell ~4   \stopxcell
+        \startxcell ~4   \stopxcell
+        \startxcell --   \stopxcell
+        \startxcell ~4   \stopxcell
+        \startxcell ~3   \stopxcell
+      \stopxrow
+      \startxrow
+        \startxcell 1750 \stopxcell
+        \startxcell 12   \stopxcell
+        \startxcell ~3   \stopxcell
+        \startxcell ~2   \stopxcell
+        \startxcell ~2   \stopxcell
+        \startxcell --   \stopxcell
+      \stopxrow
+      \startxrow
+        \startxcell 1808 \stopxcell
+        \startxcell ~9   \stopxcell
+        \startxcell ~2   \stopxcell
+        \startxcell --   \stopxcell
+        \startxcell --   \stopxcell
+        \startxcell --   \stopxcell
+      \stopxrow
+    \stopxtablebody
+  \stopxtable
+\stopplacetable
+\stopbuffer
+
+\start
+  \switchtobodyfont[9pt]
+  \typebuffer[Xtable]
+\stop
+
+\shortsetup{setupxtable}
+
+With the \type{\setupxtable} it is indicated that the table is allowed to split
+at a page break and that the head should contain the content of the
+\type{\startxtablenext ... \stopxtablenext}.
+
+The result of this definition is shown in \in {table} [tab:wealthdecline].
+
+\start
+  \switchtobodyfont[9pt]
+  \getbuffer[Xtable]
+\stop
+
+The meaning of the commands are explained in \in{table}[tab:tablecommands-three].
+
+\page[bigpreference]
+
+\startplacetable
+  [location=here,
+   reference=tab:tablecommands-three,
+   title={Commands to define extreme tables}]
+  {\switchtobodyfont[9pt]
+  \bTABLE
+    \bTR\bTD Command                                     \eTD\bTD Meaning                   \eTD\eTR
+    \bTR\bTD \type{\startxtable ... \stopxtable}         \eTD\bTD begin end table           \eTD\eTR
+    \bTR\bTD \type{\startxrow ... \stopxrow}             \eTD\bTD begin end row             \eTD\eTR
+    \bTR\bTD \type{\startxcell ... \stopxcell}           \eTD\bTD begin end column          \eTD\eTR
+    \bTR\bTD \type{\startxtablehead ... \stopxtablehead} \eTD\bTD begin end table head      \eTD\eTR
+    \bTR\bTD \type{\startxtablenext ... \stopxtablenext} \eTD\bTD begin end table head next \eTD\eTR
+    \bTR\bTD \type{\startxtablebody ... \stopxtablebody} \eTD\bTD begin end table body      \eTD\eTR
+    \bTR\bTD \type{\startxtablefoot ... \stopxtablefoot} \eTD\bTD begin end table foot      \eTD\eTR
+    \bTR\bTD \type{\setupxtable}                         \eTD\bTD table setup               \eTD\eTR
+  \eTABLE}
+\stopplacetable
+
+More information and examples can be found in the \goto {\Emph{Extreme Tables}}
+[url (manual:extab)] manual.
+
+\stopsection
+
+\startsection[title=Line tables]
+
+\index{tables+line tables}
+
+The third environment for typesetting tables is \type{\startlinetable ...
+\stoplinetable}. This form of tables is characterized by the fact that it can
+break over pages vertically as well as horizontally. With linetables it is
+possible to repeat header rows as well as columns after a page break. This
+environment does not draw frames. Instead there may be (colored) backgrounds.
+
+\shortsetup{startlinetable}
+\shortsetup{setuplinetable}
+
+The previous example (\in{table}[tab:wealthdecline]) typeset now with
+\type{\startlinetable ... \stoplinetable} would look as
+\in{table}[tab:wealthdecline2].
+
+\startbuffer
+\startplacetable
+  [location={here,middle},
+   reference=tab:wealthdecline2,
+   title={Decline of wealth through time}]
+  \setuplinetable[stretch=0pt]%,offset=3pt,linethickness=2pt
+  \setuplinetable[n=6,lines=12]%
+  \setuplinetable
+     [c]
+     [1]
+     [width=0.1\textwidth,
+      background=color,
+      backgroundcolor=Malachite,
+      align=flushright]%
+  \setuplinetable[c][2]   [align=flushright,width=0.15\textwidth]%
+  \setuplinetable[c][3]   [align=flushright,width=0.15\textwidth]%
+  \setuplinetable[c][4]   [align=flushright,width=0.15\textwidth]%
+  \setuplinetable[c][5]   [align=flushright,width=0.15\textwidth]%
+  \setuplinetable[c][6]   [align=flushright,width=0.15\textwidth]%
+  \setuplinetable[r][odd] [background=color,
+                           backgroundcolor=GreenSheen]%
+  \setuplinetable[r][even][background=color,
+                           backgroundcolor=MiddleGreenYellow]%
+  \startlinetable
+    \startlinetablehead
+      \NC[nx=6,align=middle,style=bold,
+          background=color,backgroundcolor=CaribbeanGreen]
+          Decline of wealth in Dutch florine (Dfl)
+      \NC\NR
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow] Year
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow,align-flushright]
+          1--2.000
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow,align-flushright]
+          2--3.000
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow,align-flushright]
+          3--5.000
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow,align-flushright]
+          5--10.000
+      \NC[style=bold,background=color,
+          backgroundcolor=LemonYellow,align-flushright]
+          > 10.000
+      \NC\NR
+    \stoplinetablehead
+    \startlinetablebody
+        \NC 1675 \NC 22 \NC ~7 \NC ~5 \NC ~4  \NC ~5 \NC\NR
+        \NC 1724 \NC ~4 \NC ~4 \NC -- \NC ~4  \NC ~3 \NC\NR
+        \NC 1750 \NC 12 \NC ~3 \NC ~2 \NC ~2  \NC -- \NC\NR
+        \NC 1808 \NC ~9 \NC ~2 \NC -- \NC --  \NC -- \NC\NR
+        \NC 1675 \NC 22 \NC ~7 \NC ~5 \NC ~4  \NC ~5 \NC\NR
+        \NC 1724 \NC ~4 \NC ~4 \NC -- \NC ~4  \NC ~3 \NC\NR
+        \NC 1750 \NC 12 \NC ~3 \NC ~2 \NC ~2  \NC -- \NC\NR
+        \NC 1808 \NC ~9 \NC ~2 \NC -- \NC --  \NC -- \NC\NR
+    \stoplinetablebody
+  \stoplinetable
+\stopplacetable
+\stopbuffer
+
+\start
+\switchtobodyfont[9pt]
+\typebuffer
+\stop
+
+\start
+\setupwhitespace[none]
+\getbuffer
+\stop
+
+The meaning of the commands are explained in \in{table} [tab:tablecommands-four].
+
+\startplacetable
+  [location=here,
+   reference=tab:tablecommands-four,
+   title={Commands to define line tables}]
+  {\switchtobodyfont[9pt]
+   \bTABLE
+     \bTR\bTD Command                                           \eTD\bTD Meaning              \eTD\eTR
+     \bTR\bTD \type{\startlinetable ... \stoplinetable}         \eTD\bTD begin end table      \eTD\eTR
+     \bTR\bTD \type{\NC}                                        \eTD\bTD begin end column     \eTD\eTR
+     \bTR\bTD \type{\NR}                                        \eTD\bTD new row              \eTD\eTR
+     \bTR\bTD \type{\startlinetablehead ... \stoplinetablehead} \eTD\bTD begin end table head \eTD\eTR
+     \bTR\bTD \type{\startlinetablebody ... \stoplinetablebody} \eTD\bTD begin end table body \eTD\eTR
+     \bTR\bTD \type{\setuplinetable}                            \eTD\bTD table setup          \eTD\eTR
+   \eTABLE}
+\stopplacetable
+
+\stopsection
+
+\startsection[title=Placing tables as floating objects]
+
+\index{tables+placement}
+\index{floating blocks}
+
+You can place tables in two different ways. The first option is to place them
+like running text, so \CONTEXT\ tries to fit them in the stream where they occur.
+The second option is to place tables as floating objects. In this case \CONTEXT\
+will place the object at the asked place if there is enough room for it or
+otherwise the floating mechanism moves the object to the next page. The advantage
+of placing tables as a floating object is that you can add a caption and a
+reference to the table and force the placement to the left, middle or right.
+
+In all examples you see the command \type{\startplacetable ... \stopplacetable}.
+This command has the same function as \type{\startplacefigure ...
+\stopplacefigure} (see for the discussion of figures in
+\in{chapter}[chap:figures]). These commands invoke the floating mechanism which
+takes care of the vertical spacing, numbering and optimal placement of the
+floating object in the document.
+
+\startbuffer
+\setupfloat[table][location=right]
+\setupcaption[table][style=boldslanted,
+              location={left,middle},align=flushright]
+
+\startplacetable
+ [location=here,
+  reference=tab:opening hours,
+  title={Library opening hours}]
+  \bTABLE
+    \setupTABLE[frame=on,rulethickness=1pt,framecolor=white,offset=3pt]
+    \setupTABLE[r][first][background=color,
+                          backgroundcolor=GreenSheen]
+    \setupTABLE[r][each] [background=color,
+                          backgroundcolor=MiddleGreenYellow]
+    \bTR
+      \bTD Day                              \eTD
+      \bTD[nx=2,align=middle] Opening hours \eTD
+    \eTR
+    \bTR
+      \bTD Monday         \eTD
+      \bTD 14.00 -- 17.30 \eTD
+    \eTR
+    \bTR
+      \bTD Tuesday        \eTD
+      \bTD                \eTD
+      \bTD                \eTD
+    \eTR
+    \bTR
+      \bTD Wednesday      \eTD
+      \bTD 10.00 -- 12.00 \eTD
+      \bTD 14.00 -- 17.30 \eTD
+    \eTR
+    \bTR
+      \bTD Thursday       \eTD
+      \bTD 14.00 -- 17.30 \eTD
+      \bTD 18.30 -- 20.30 \eTD
+    \eTR
+    \bTR
+      \bTD Friday         \eTD
+      \bTD 14.00 -- 17.30 \eTD
+      \bTD                \eTD
+    \eTR
+    \bTR
+      \bTD Saturday       \eTD
+      \bTD 10.00 -- 12.30 \eTD
+      \bTD                \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+\stopbuffer
+
+\start
+\switchtobodyfont[9pt]
+\typebuffer
+\stop
+
+The result is displayed in \in{table}[tab:opening hours].
+
+\start
+\getbuffer
+\stop
+
+\stopsection
+
+\stopchapter
+
+\doifmode{Book}{\page[yes]}
+
+\stopcomponent

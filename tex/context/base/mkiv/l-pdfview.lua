@@ -99,7 +99,7 @@ else
         ['okular']    = false,
         ['evince']    = false,
         ['mupdf']     = false,
-        ['zathura']   = [[killall zathura]],
+        ['zathura']   = false,
         ['sumatra']   = false,
         ['auto']      = false,
     }

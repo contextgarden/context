@@ -1,0 +1,186 @@
+% signal=squid
+
+\startcomponent excursion-en-references
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Referring to text elements, reference=chap:reference]
+
+\index{referring}
+\index{label}
+
+\Command{\tex{in}}
+\Command{\tex{at}}
+\Command{\tex{about}}
+\Command{\tex{pagereference}}
+
+To disclose your document for your readers you can use the table of contents and
+the register. However, it is not uncommon to refer to specific numbered text
+elements like formulas, tables, images and sections to enhance readability.
+
+For referring from one location in a document to another you can use the command
+
+\shortsetup{in}
+
+The curly braces contain text. The first pair of braces contain the prefix and
+the second pair a suffix. The latter could be a full stop (.). The brackets
+contain a logical label, the reference you want to point to.
+
+\page[bigpreference]
+
+If you have written a chapter header like this
+
+\starttyping
+\startchapter[title=Hotels in Hasselt,reference=chap:hotel]
+  ...
+\stopchapter
+\stoptyping
+
+then you can refer to this chapter with
+
+\starttyping
+\in{chapter}[chap:hotel]
+\stoptyping
+
+After processing the chapter number is available and the reference could look
+something like: \Emph{chapter 23}. Remember that the referencing mechanism
+requires numbered elements like chapters, sections, figures, tables, formulas
+etc.
+
+Another example:
+
+\startbuffer
+There are a number of things you can do in Hasselt:
+
+\startitemize[n,packed]
+  \startitem swimming       \stopitem
+  \startitem sailing        \stopitem
+  \startitem[hiking] hiking \stopitem
+  \startitem biking         \stopitem
+\stopitemize
+
+An activity like \in{activity}[hiking] described
+on \at{page}[hiking] is very tiring.
+\stopbuffer
+
+\typebuffer
+
+This would look like this:
+
+\getbuffer
+
+As you can see, it is also possible to refer to pages. This is done with
+
+\shortsetup{at}
+
+For example with:
+
+\starttyping
+\at{page}[hiking]
+\stoptyping
+
+\page[bigpreference]
+
+This command can be used in combination with
+
+\shortsetup{pagereference}
+
+and
+
+\shortsetup{textreference}
+
+If you want to refer to the chapter \Emph{Hotels in Hasselt} you could type
+
+\startbuffer
+Look in \in{chapter}[hotel] on \at{page}[hotel]
+for a complete overview of accommodations in
+\pagereference[accommodation]Hasselt.
+\stopbuffer
+
+\typebuffer
+
+The command \type{\pagereference} causes \CONTEXT\ to generate a page number when
+processing the input file. On another spot in the document you can refer to
+\type{accommodation} with \type{\at{page}[accommodation]}.
+
+When using the command \type{\textreference} which has a text attached to it,
+\CONTEXT\ generates the page number at compilation time of the file and anywhere
+in the text you can refer as well to that page number and the text.
+\textreference[Hasselt:HanzeHotel]{Hanze Hotel}
+
+\startbuffer
+\textreference[Hasselt:HanzeHotel]{Hanze Hotel}
+\stopbuffer
+
+\typebuffer
+
+\startbuffer
+As described on \at{page}[Hasselt:HanzeHotel],
+\about[Hasselt:HanzeHotel] is the best known hotel
+in the area.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+You can also define a set of labels separated by commas.
+
+\startbuffer
+\startplacefigure
+  [location=here,
+   reference={fig:canals,fig:boats},
+   title={A characteristic picture of Hasselt}]
+  {\externalfigure[excursion-08][width=.45\textwidth]}
+\stopplacefigure
+
+There are many canals in Hasselt
+(see \in{figure}[fig:canals]).
+
+...
+
+Boats can be moored in the canals of Hasselt (see
+\in{figure}[fig:boats]).
+\stopbuffer
+
+\typebuffer
+
+\page[bigpreference]
+
+This might look like this:
+
+\getbuffer
+
+You can also refer to a title of a chapter or section or even a caption of an
+image. This is done with
+
+\shortsetup{about}
+
+This:
+
+\startbuffer
+The caption of \in{figure}[fig:canals] is
+\Emph{\about[fig:canals]}.
+\stopbuffer
+
+\typebuffer
+
+Becomes:
+
+\getbuffer
+
+With the command
+
+\starttyping
+\setupinteraction[state=start]
+\stoptyping
+
+all references become active links. See \in{chapter}[chap:interactivity] for more
+information on this subject.
+
+\stopchapter
+
+\stopcomponent
+

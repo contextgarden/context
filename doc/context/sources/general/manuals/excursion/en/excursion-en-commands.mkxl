@@ -1,0 +1,106 @@
+\startcomponent excursion-en-commands
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Defining commands / macros]
+
+\CONTEXT\ is a set of macros based on \TEX. \TEX\ is a programming language as
+well as a typographical system. This means that you can do the programming
+yourself if you need that kind of flexibility.
+
+You can define a new command with
+
+\shortsetup{define}
+
+In case you intend to create your own macros it is strongly advised to choose the
+logical name wisely and type it in mixed case (Mixedcase) or camel case
+(CamelCase). This will prevent unpleasant crashes with the names used in the
+\CONTEXT\ core.
+
+The next example will explain its meaning.
+
+You may have a well illustrated document and you are tired of typing
+
+\startbuffer
+\startplacefigure
+  [location={here,force},
+  [reference=fig:logical name,
+   title={Caption}]
+  {\externalfigure[filename][width=0.45\makeupwidth]}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer
+
+You could define your own command with a few variables like
+
+\startitemize[packed]
+	\item logical name
+	\item caption
+	\item file name
+\stopitemize
+
+Your command definition and call could look something like this
+
+\startbuffer[Myputfigure]
+\define[3]\Putgraphic
+  {\startplacefigure
+     [location={here,force},
+      reference=fig:#1,
+      title={#2}]
+     {\externalfigure[#3][width=.45\makeupwidth]}
+   \stopplacefigure}
+
+\Putgraphic{lion}{The Dutch lion is a sentry}{excursion-13}
+\stopbuffer
+
+\typebuffer[Myputfigure]
+
+From then on the newly defined command \type{\Putgraphic} is available.
+
+The number inside the brackets (\type{[3]} indicates that you want to use three
+variables \type{#1}, \type{#2} and \type{#3}. In the command call
+\type{\Putgraphic} you have to place these variables between curly braces. The
+result is shown in \in{figure}[fig:lion].
+
+Very sophisticated commands can be programmed, but this is left to your own
+inventiveness.
+
+In addition to defining commands you can also define \type{\start ... \stop}
+command pairs.
+
+\shortsetup{definestartstop}
+
+\page[bigprefrence]
+
+For example:
+
+\startbuffer
+\definestartstop
+   [Attention]
+   [before=\blank\startmarginrule,
+    after=\stopmarginrule\blank]
+
+\startAttention
+\Emph{Hasselter Juffers} are sweet cookies but the name
+is no coincidence. On July 21 in 1233 the
+\Emph{Zwartewaterklooster} (Blackwater Monastery) was
+founded. The monastery was meant for unmarried girls
+and women belonging to the nobility of Hasselt.
+These girls and women were called \Emph{juffers}.
+\stopAttention
+\stopbuffer
+
+\typebuffer
+
+This will result in:
+
+\getbuffer
+
+\getbuffer[Myputfigure]
+
+\stopchapter
+
+\stopcomponent

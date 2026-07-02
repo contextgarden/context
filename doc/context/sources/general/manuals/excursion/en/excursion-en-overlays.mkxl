@@ -1,0 +1,216 @@
+% signal=squid
+
+\startcomponent excursion-en-overlays
+
+\enablemode[**en-us]
+
+\project excursion
+
+\Command{\tex{defineoverlay}}
+
+\index{overlay}
+
+\startchapter[title=Overlays,reference=chap:overlays]
+
+\startsection[title=Introduction]
+
+\CONTEXT\ has a very powerful mechanism called overlays. This allows you to put
+graphics or texts stacked on top of each other. The mechanism is available in any
+environment which has a \type{background} key. This is e.g. framed, headers, all
+document areas (see in \in{chapter}[chap:page-layout], in
+\in{figure}[fig:pageareas]) and even paragraphs.
+
+There is a tutorial on the \goto{\Emph{\CONTEXTWIKI}}[url
+(www:garden:tutorial-graphics)] about the use of graphics in \CONTEXT\ including
+extended examples of using overlays and layers. You can find it under
+\Emph{Graphics and media/Tutorials/Graphical programming with \METAPOST\ and
+\METAFUN}.
+
+\stopsection
+
+\startsection[title=Advertisement in front of the bakery]
+
+The bakery in Hasselt will tomorrow (morgen) have a new batch of \quote{Hasselter
+juffers} for sale with promotion (aanbieding). -- They own a blackboard for
+advertising in front of the bakery. This could look as shown in
+\in{figure}[fig:blackboard].
+
+\blank
+
+First we need to define the overlay with \type{\defineoverlay}. We can give
+contents to the overlay directly after the name of it.
+
+\shortsetup{defineoverlay}
+
+\startbuffer
+\defineoverlay
+  [Juffers]
+  [\color[yellow]
+  {\bfc Hasselter juffers}]
+
+\framed
+ [frame=on,
+  rulethickness=2pt,
+  framecolor=red,
+  background={color,
+  Juffers,foreground},
+  backgroundcolor=black,
+  foregroundcolor=white,
+  width=0.45\makeupwidth,
+  height=0.35\makeupheight,
+  offset=10pt,
+  style=\bfa]
+ {\bfb Morgen!
+  \vfill
+   aanbieding}
+\stopbuffer
+
+\startcolumns[n=2]
+  \typebuffer
+\stopcolumns
+
+\startplacefigure
+  [location={here},
+   reference=fig:blackboard,
+   title=The blackboard advertisement]
+   \getbuffer
+\stopplacefigure
+
+Note the \type{background} key. The sequence of the list is indicating how the
+different overlays are assembled. The sequence is from back to front. The color
+key is needed, if we want to use a background color as in this example.
+
+We have a black background, yellow text on top of the background and white text
+in the foreground.
+
+\stopsection
+
+\page[bigpreference]
+
+\startsection[title=A picture in an overlay]
+
+One can also add a picture to the background and use the foreground for placing
+text. As we demonstrate in the following example. The result is shown in
+\in{figure}[fig:bridge-overlay].
+
+\startbuffer
+\defineoverlay
+  [Drawbridge]
+  [{\externalfigure
+    [excursion-01]
+    [height=0.45\textheight]}]
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+\startbuffer[Bridge]
+\startplacefigure
+  [location=here,
+   reference=fig:bridge-overlay,
+   title=Background picture and foreground text]
+  \framedtext
+    [frame=off,background=Drawbridge,
+     foregroundcolor=yellow,align=center,
+     style=\bfb,width=0.45\makeupwidth,
+     height=0.45\textheight]
+    {Drawbridge in Hasselt}
+\stopplacefigure
+\stopbuffer
+
+\typebuffer[Bridge]
+
+\getbuffer[Bridge]
+
+\stopsection
+
+\startsection[title=A picture as a background of a page]
+
+It is also easy to put a picture into the background of the whole page:
+
+\startbuffer[Millbackground]
+  \defineoverlay
+    [Mill]
+    [{\externalfigure
+      [excursion-23]
+      [width=0.6\makeupwidth]}]
+
+  \setupbackgrounds[text][text][background=Mill]
+\stopbuffer
+
+\typebuffer[Millbackground]
+
+\stopsection
+
+\startsection[title=The flag of Hasselt,reference=sec:flag]
+
+\startbuffer[OverlayA]
+\defineoverlay
+  [verticalbar]
+  [{\blackrule[height=10mm,width=.3cm,color=red]}]
+\stopbuffer
+
+\startbuffer[OverlayB]
+\defineoverlay
+  [horizontalbar]
+  [{\blackrule[height=.3cm,width=\makeupwidth,color=red]}]
+
+\framed
+  [width=\makeupwidth,
+   height=3cm,
+   background={color,foreground,verticalbar,horizontalbar},
+   offset=overlay, backgroundcolor=blue,frame=off]
+  {\blackrule[width=\makeupwidth,height=10mm,color=white]}
+\stopbuffer
+
+The flag of Hasselt could be defined with framed and a number of overlays:
+
+\typebuffer[OverlayA]
+
+\getbuffer[OverlayA]
+
+\typebuffer[OverlayB]
+
+\doifmode {Book} {
+    \page[yes]
+}
+
+This will become:
+
+\startlinecorrection
+\getbuffer[OverlayB]
+\stoplinecorrection
+
+\stopsection
+
+\startsection[title=The page number of this manual]
+
+The page number in this manual has a background with an overlay where the
+\type{\MPclipFive} command takes care of drawing the image with \METAPOST.
+
+\startbuffer
+\defineoverlay
+  [NumberBackground]
+  [\MPclipFive{\overlaywidth}{\overlayheight}{30pt}{5pt}]
+
+\setuppagenumbering
+  [location={footer,middle},
+   command=\NumberCommand]
+
+\def\NumberCommand#1%
+  {\framed
+     [background=NumberBackground,
+      frame=off,
+      offset=6pt]
+     {\lower.5\dp\strutbox\hbox spread 60pt{\hss#1\hss}}}
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent
+

@@ -791,6 +791,20 @@ void tex_begin_macro_list(halfword t)
 
 */
 
+static inline void tex_cleanup_parameter_stack(void)
+{
+    /*tex Parameters must be flushed: */
+    int ptr = lmt_input_state.parameter_stack_data.ptr;
+    int start = lmt_input_state.cur_input.parameter_start;
+    while (ptr > start) {
+        if (lmt_input_state.parameter_stack[--ptr]) {
+            tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
+         // lmt_input_state.parameter_stack[ptr] = null;
+        }
+    }
+    lmt_input_state.parameter_stack_data.ptr = start;
+}
+
 void tex_end_token_list(void)
 {
     /*tex Leave a token-list input level: */
@@ -809,29 +823,17 @@ void tex_end_token_list(void)
             break;
         case backed_up_text:
         case inserted_text:
-//        case end_of_group_text:
+     // case end_of_group_text:
      /* case local_text: */
             tex_flush_token_list(lmt_input_state.cur_input.start);
             break;
         case macro_text:
-            {
-                tex_delete_token_reference(lmt_input_state.cur_input.start);
-                if (get_token_preamble(lmt_input_state.cur_input.start)) {
-                    /*tex Parameters must be flushed: */
-                    int ptr = lmt_input_state.parameter_stack_data.ptr;
-                    int start = lmt_input_state.cur_input.parameter_start;
-                    while (ptr > start) {
-                        if (lmt_input_state.parameter_stack[--ptr]) {
-                            tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
-                         // lmt_input_state.parameter_stack[ptr] = null;
-                        }
-                    }
-                    lmt_input_state.parameter_stack_data.ptr = start;
-                } else { 
-                    /*tex We have no arguments so we save very little runtime here. */
-                }
-                break;
+            tex_delete_token_reference(lmt_input_state.cur_input.start);
+         // if (get_token_preamble(lmt_input_state.cur_input.start)) {
+            if (get_token_parameters(lmt_input_state.cur_input.start)) {
+                tex_cleanup_parameter_stack();
             }
+            break;
         default:
             /*tex Update the reference count: */
             tex_delete_token_reference(lmt_input_state.cur_input.start);
@@ -877,22 +879,12 @@ void tex_cleanup_input_state(void)
                 tex_flush_token_list(lmt_input_state.cur_input.start);
                 break;
             case macro_text:
-                {
-                    tex_delete_token_reference(lmt_input_state.cur_input.start);
-                    if (get_token_preamble(lmt_input_state.cur_input.start)) {
-                        /*tex Parameters must be flushed: */
-                        int ptr = lmt_input_state.parameter_stack_data.ptr;
-                        int start = lmt_input_state.cur_input.parameter_start;
-                        while (ptr > start) {
-                            if (lmt_input_state.parameter_stack[--ptr]) {
-                                tex_flush_token_list(lmt_input_state.parameter_stack[ptr]);
-                             // lmt_input_state.parameter_stack[ptr] = null;
-                            }
-                        }
-                        lmt_input_state.parameter_stack_data.ptr = start;
-                    }
-                    break;
+                tex_delete_token_reference(lmt_input_state.cur_input.start);
+             // if (get_token_preamble(lmt_input_state.cur_input.start)) {
+                if (get_token_parameters(lmt_input_state.cur_input.start)) {
+                    tex_cleanup_parameter_stack();
                 }
+                break;
             default:
                 /*tex Update the reference count: */
                 tex_delete_token_reference(lmt_input_state.cur_input.start);

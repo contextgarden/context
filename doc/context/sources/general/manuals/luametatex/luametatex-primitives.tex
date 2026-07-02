@@ -5278,6 +5278,31 @@ math fonts have such a property in \CONTEXT\ we deal with it differently.
 
 \stopoldprimitive
 
+\startnewprimitive[title={\prm {fontcharlb}}]
+
+This command returns the left-bottom math kern of a glyph. These kerns are set
+by \CONTEXT font goodies and more reliable than the OPENTYPE\ staircase kerns.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {fontcharlt}}]
+
+This command returns the left-top math kern of a glyph.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {fontcharrb}}]
+
+This command returns the right-bottom math kern of a glyph.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {fontcharrt}}]
+
+This command returns the right-top math kern of a glyph.
+
+\stopnewprimitive
+
 \startnewprimitive[title={\prm {fontcharta}}]
 
 Fetches the top anchor of a character in the given font, so:
@@ -12470,6 +12495,32 @@ Returns the height of the given font|-|character pair scaled according to \prm
 Returns the italic correction of the given font|-|character pair scaled according
 to \prm {glyphscale} and \prm {glyphxscale}. This property is only real for
 traditional fonts.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scaledfontcharlb}}]
+
+This command returns the left-bottom math kern of a glyph. scaled according to
+\prm {glyphscale} and \prm {glyphxscale}. These kerns are set by \CONTEXT font
+goodies and more reliable than the OPENTYPE\ staircase kerns.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scaledfontcharlt}}]
+
+See \prm {scaledfontcharlb}, here we return the left-top kern.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scaledfontcharrb}}]
+
+See \prm {scaledfontcharlb}, here we return the right-bottom kern.
+
+\stopnewprimitive
+
+\startnewprimitive[title={\prm {scaledfontcharrt}}]
+
+See \prm {scaledfontcharlb}, here we return the right-top kern.
 
 \stopnewprimitive
 

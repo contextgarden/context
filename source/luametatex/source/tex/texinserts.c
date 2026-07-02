@@ -578,7 +578,7 @@ void tex_undump_insert_data(dumpstream f) {
 }
 
 /*tex
-    Inserts, not the easiest mechanism and a candicate for more opening up.
+    Inserts, not the easiest mechanism and a candidate for more opening up.
 */
 
 void tex_run_insert(void)

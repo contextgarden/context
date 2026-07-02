@@ -159,11 +159,11 @@ local effects = {
     clip   = 7,
 }
 
-local bp = number.dimenfactors.bp
+local bpfactor <const> = number.dimenfactors.bp
 
 function nodeinjections.effect(effect,stretch,rulethickness)
     -- always, no zero test (removed)
-    rulethickness = bp * rulethickness
+    rulethickness = rulethickness * bpfactor
     effect = effects[effect] or effects['normal']
     return register(setstate(f_effect(stretch,rulethickness,effect))) -- watch order
 end

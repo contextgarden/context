@@ -351,7 +351,7 @@ static int xmathlib_remainder(lua_State *L)
 
 static int xmathlib_round(lua_State *L)
 {
-    lua_pushinteger(L, lround(luaL_checknumber(L, 1)));
+    lua_pushinteger(L, llround(luaL_checknumber(L, 1)));
     return 1;
 }
 
@@ -421,70 +421,121 @@ static int xmathlib_yn(lua_State *L)
     return 1;
 }
 
+/* bonus */
+
+static int xmathlib_normalize(lua_State *L)
+{
+    double x = lua_tonumber(L, 1);
+    double y = lua_tonumber(L, 2);
+    double z = lua_tonumber(L, 3);
+    double l = sqrt(x * x + y * y + z * z);
+    if (l == 0) {
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 0);
+        lua_pushnumber(L, 1);
+    } else {
+        lua_pushnumber(L, x/l);
+        lua_pushnumber(L, y/l);
+        lua_pushnumber(L, z/l);
+    }
+    return 3;
+}
+
+static int xmathlib_crossproduct(lua_State *L)
+{
+    /* ax, ay, az, bx, by, bz -> ay * bz - az * by, az * bx - ax * bz, ax * by - ay * bx */
+    double ax = lua_tonumber(L, 1);
+    double ay = lua_tonumber(L, 2);
+    double az = lua_tonumber(L, 3);
+    double bx = lua_tonumber(L, 4);
+    double by = lua_tonumber(L, 5);
+    double bz = lua_tonumber(L, 6);
+    lua_pushnumber(L, ay * bz - az * by);
+    lua_pushnumber(L, az * bx - ax * bz);
+    lua_pushnumber(L, ax * by - ay * bx);
+    return 3;
+}
+
+static int xmathlib_dotproduct(lua_State *L)
+{
+    /* ax, ay, az, bx, by, bz -> ax * bx + ay * by + az * bz */
+    lua_pushnumber(L,
+        lua_tonumber(L, 1) * lua_tonumber(L, 4)
+      + lua_tonumber(L, 2) * lua_tonumber(L, 5)
+      + lua_tonumber(L, 3) * lua_tonumber(L, 6)
+    );
+    return 1;
+}
+
 static const luaL_Reg xmathlib_function_list[] =
 {
-    { "acos",      xmathlib_acos      },
-    { "acosh",     xmathlib_acosh     },
-    { "asin",      xmathlib_asin      },
-    { "asinh",     xmathlib_asinh     },
-    { "atan",      xmathlib_atan      },
-    { "atan2",     xmathlib_atan2     },
-    { "atanh",     xmathlib_atanh     },
-    { "cbrt",      xmathlib_cbrt      },
-    { "ceil",      xmathlib_ceil      },
-    { "copysign",  xmathlib_copysign  },
-    { "cos",       xmathlib_cos       },
-    { "cosh",      xmathlib_cosh      },
-    { "deg",       xmathlib_deg       },
-    { "erf",       xmathlib_erf       },
-    { "erfc",      xmathlib_erfc      },
-    { "exp",       xmathlib_exp       },
-    { "exp2",      xmathlib_exp2      },
-    { "expm1",     xmathlib_expm1     },
-    { "fabs",      xmathlib_fabs      },
-    { "fdim",      xmathlib_fdim      },
-    { "floor",     xmathlib_floor     },
-    { "fma",       xmathlib_fma       },
-    { "fmax",      xmathlib_fmax      },
-    { "fmin",      xmathlib_fmin      },
-    { "fmod",      xmathlib_fmod      },
-    { "frexp",     xmathlib_frexp     },
-    { "gamma",     xmathlib_gamma     },
-    { "hypot",     xmathlib_hypot     },
-    { "isfinite",  xmathlib_isfinite  },
-    { "isinf",     xmathlib_isinf     },
-    { "isnan",     xmathlib_isnan     },
-    { "isnormal",  xmathlib_isnormal  },
-    { "j0",        xmathlib_j0        },
-    { "j1",        xmathlib_j1        },
-    { "jn",        xmathlib_jn        },
-    { "ldexp",     xmathlib_ldexp     },
-    { "lgamma",    xmathlib_lgamma    },
-    { "log",       xmathlib_log       },
-    { "log10",     xmathlib_log10     },
-    { "log1p",     xmathlib_log1p     },
-    { "log2",      xmathlib_log2      },
-    { "logb",      xmathlib_logb      },
-    { "modf",      xmathlib_modf      },
-    { "nearbyint", xmathlib_nearbyint },
-    { "nextafter", xmathlib_nextafter },
-    { "pow",       xmathlib_pow       },
-    { "rad",       xmathlib_rad       },
-    { "remainder", xmathlib_remainder },
-    { "remquo",    xmathlib_fremquo   },
-    { "round",     xmathlib_round     },
-    { "scalbn",    xmathlib_scalbn    },
-    { "sin",       xmathlib_sin       },
-    { "sinh",      xmathlib_sinh      },
-    { "sqrt",      xmathlib_sqrt      },
-    { "tan",       xmathlib_tan       },
-    { "tanh",      xmathlib_tanh      },
-    { "tgamma",    xmathlib_tgamma    },
-    { "trunc",     xmathlib_trunc     },
-    { "y0",        xmathlib_y0        },
-    { "y1",        xmathlib_y1        },
-    { "yn",        xmathlib_yn        },
-    { NULL,        NULL               },
+    { "acos",         xmathlib_acos         },
+    { "acosh",        xmathlib_acosh        },
+    { "asin",         xmathlib_asin         },
+    { "asinh",        xmathlib_asinh        },
+    { "atan",         xmathlib_atan         },
+    { "atan2",        xmathlib_atan2        },
+    { "atanh",        xmathlib_atanh        },
+    { "cbrt",         xmathlib_cbrt         },
+    { "ceil",         xmathlib_ceil         },
+    { "copysign",     xmathlib_copysign     },
+    { "cos",          xmathlib_cos          },
+    { "cosh",         xmathlib_cosh         },
+    { "deg",          xmathlib_deg          },
+    { "erf",          xmathlib_erf          },
+    { "erfc",         xmathlib_erfc         },
+    { "exp",          xmathlib_exp          },
+    { "exp2",         xmathlib_exp2         },
+    { "expm1",        xmathlib_expm1        },
+    { "fabs",         xmathlib_fabs         },
+    { "fdim",         xmathlib_fdim         },
+    { "floor",        xmathlib_floor        },
+    { "fma",          xmathlib_fma          },
+    { "fmax",         xmathlib_fmax         },
+    { "fmin",         xmathlib_fmin         },
+    { "fmod",         xmathlib_fmod         },
+    { "frexp",        xmathlib_frexp        },
+    { "gamma",        xmathlib_gamma        },
+    { "hypot",        xmathlib_hypot        },
+    { "isfinite",     xmathlib_isfinite     },
+    { "isinf",        xmathlib_isinf        },
+    { "isnan",        xmathlib_isnan        },
+    { "isnormal",     xmathlib_isnormal     },
+    { "j0",           xmathlib_j0           },
+    { "j1",           xmathlib_j1           },
+    { "jn",           xmathlib_jn           },
+    { "ldexp",        xmathlib_ldexp        },
+    { "lgamma",       xmathlib_lgamma       },
+    { "log",          xmathlib_log          },
+    { "log10",        xmathlib_log10        },
+    { "log1p",        xmathlib_log1p        },
+    { "log2",         xmathlib_log2         },
+    { "logb",         xmathlib_logb         },
+    { "modf",         xmathlib_modf         },
+    { "nearbyint",    xmathlib_nearbyint    },
+    { "nextafter",    xmathlib_nextafter    },
+    { "pow",          xmathlib_pow          },
+    { "rad",          xmathlib_rad          },
+    { "remainder",    xmathlib_remainder    },
+    { "remquo",       xmathlib_fremquo      },
+    { "round",        xmathlib_round        },
+    { "scalbn",       xmathlib_scalbn       },
+    { "sin",          xmathlib_sin          },
+    { "sinh",         xmathlib_sinh         },
+    { "sqrt",         xmathlib_sqrt         },
+    { "tan",          xmathlib_tan          },
+    { "tanh",         xmathlib_tanh         },
+    { "tgamma",       xmathlib_tgamma       },
+    { "trunc",        xmathlib_trunc        },
+    { "y0",           xmathlib_y0           },
+    { "y1",           xmathlib_y1           },
+    { "yn",           xmathlib_yn           },
+    /* */
+    { "normalize",    xmathlib_normalize    },
+    { "crossproduct", xmathlib_crossproduct },
+    { "dotproduct",   xmathlib_dotproduct   },
+    /* */
+    { NULL,           NULL                  },
 };
 
 int luaopen_xmath(lua_State *L)

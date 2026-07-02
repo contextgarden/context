@@ -1427,10 +1427,10 @@
   {\edef\m_strc_itemgroups_destination{#destination}%
    \startitemgroupitem}
 
-\protected\def\strc_itemgroups_start_symbol#text%
+\tolerant\protected\def\strc_itemgroups_start_symbol[#reference]#:#text
   {\def\strc_itemgroups_extra_symbol{#text}%
    \c_strc_itemgroups_symbol\conditionaltrue
-   \startitemgroupitem
+   \startitemgroupitem[#reference]%
    \dotagsetitem\s!symbol}
 
 \protected\def\strc_itemgroups_start_dummy
@@ -1465,11 +1465,11 @@
    \startitemgroupitem
    \dotagsetitem\s!margin}
 
-\protected\def\strc_itemgroups_start_text#text%
+\tolerant\protected\def\strc_itemgroups_start_text[#reference]#:#text%
   {\def\strc_itemgroups_extra_symbol{#text}%
    \c_strc_itemgroups_symbol\conditionaltrue
    \c_strc_itemgroups_txt\conditionaltrue
-   \startitemgroupitem}
+   \startitemgroupitem[#reference]}
 
 \protected\tolerant\def\strc_itemgroups_start_items[#1]%
   {\strc_itemgroups_start_edge

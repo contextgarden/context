@@ -1,0 +1,135 @@
+% interface=english language=uk signal=squid
+
+% The first version of this manual showed up in \MKII\ and it was later adapted
+% to \MKIV. Maintainance shifted from Ton Otten to Willi Egger but Ton is still
+% involved. The manual also tells a bit about Hasself NL, the place where Ton
+% and Hans have their smallish outlet PRAGMA ADE and spend time on the \CONTEXT\
+% macro package as well as (noaways) the \LUAMETATEX\ engine.
+%
+% The 2026 version is also printed in high quality and given to members of the
+% NTG and CTX user groups. Thanks to Willi for taking care of everthing within
+% his high standards!
+%
+% Hans
+
+\enablemode[A4]
+% \enablemode[Book]
+% \enablemode[Screen]
+
+\startproduct excursion-en
+
+\project excursion
+
+% The coverpage is organized in the excursion-style.mkxl
+
+\startdocument
+   [title={\ConTeXt\ LMTX},
+    subtitle={an excursion},
+    version={Version 3},
+    language={English},
+    author={\CONTEXT\ group},
+    editor={Willi Egger}]
+
+\startfrontmatter
+
+    \starttitle[title=\labeltext{document:contents},reference=chap:contents]
+
+        \startmixedcolumns[documentcolumns]
+            \placelist[chapter]
+        \stopmixedcolumns
+
+    \stoptitle
+
+    \page[right]
+
+    \component excursion-en-introduction.mkxl
+
+\stopfrontmatter
+
+\startbodymatter
+
+    \component excursion-en-system-install
+    \component excursion-en-gettingstarted
+    \component excursion-en-create-textbook
+    \component excursion-en-specialcharacters
+    \component excursion-en-structure
+    %
+    % When the command list is also typeset in the book, you need to
+    % adapt this file: \doifmode ...
+    %
+    \component excursion-en-setupcommands
+    %
+    \component excursion-en-headings
+    \component excursion-en-itemizations
+    \component excursion-en-figures
+    \component excursion-en-tables
+    \component excursion-en-tabulations
+    \component excursion-en-columns
+    \component excursion-en-footnotes
+    \component excursion-en-quotation
+    \component excursion-en-descriptions
+    \component excursion-en-enumerations
+    \component excursion-en-framed-paragraphs
+    \component excursion-en-framedtexts
+    \component excursion-en-margintexts
+    \component excursion-en-pages   % Page breaking and page numbering
+    \component excursion-en-headers % Headers and footers
+    \component excursion-en-tablesofcontent
+    \component excursion-en-registers
+    \component excursion-en-sortedlists
+    \component excursion-en-synonyms
+    \component excursion-en-references % Referenceing text elements
+    \component excursion-en-alignments
+    \component excursion-en-fonts
+    \component excursion-en-composedcharacters
+    \component excursion-en-layout  % Page layout
+    \component excursion-en-pagebackgrounds
+    \component excursion-en-textbackgrounds % Background in paragraphs
+    \component excursion-en-overlays
+    \component excursion-en-layers
+    \component excursion-en-paragraphs  % Paragraph spacing
+    \component excursion-en-color
+    \component excursion-en-math
+    \component excursion-en-chemical
+    \component excursion-en-units
+    \component excursion-en-bibliography
+    \component excursion-en-commands % Defining commands/macros
+    \component excursion-en-modes
+    \component excursion-en-whatever % Miscellaneous
+    \component excursion-en-modules
+    \component excursion-en-charts
+    \component excursion-en-arranging
+    \component excursion-en-interactivity
+    \component excursion-en-presentations
+    \component excursion-en-metapost % Graphical extension/Metapost
+    \component excursion-en-usersetups % User specifications
+    \component excursion-en-trackers
+    \component excursion-en-pdfa
+    \component excursion-en-context-web
+
+\stopbodymatter
+
+\startappendices
+
+    \doifnotmode{Book} {
+        \component excursion-en-commandlist
+    }
+
+    \component excursion-en-commandindex
+    \component excursion-en-subjectindex
+    \component excursion-en-listofmanuals
+    \component excursion-en-mathcharacters
+    \component excursion-en-errors
+    \component excursion-en-texteditor
+    \component excursion-en-processingfiles
+    \component excursion-en-runtimefiles
+
+\stopappendices
+
+% The backcoverpage is organized in the excursion-style.mkxl, so you might
+% want to load excursion-backpagetext then.
+
+\stopdocument
+
+\stopproduct
+

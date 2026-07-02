@@ -1,0 +1,77 @@
+% signal=squid
+
+\startcomponent excursion-en-headers
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Page headers and footers]
+
+\index{page+header}
+\index{page+footer}
+
+\Command{\tex{setupfootertexts}}
+\Command{\tex{setupheadertexts}}
+\Command{\tex{setupheader}}
+\Command{\tex{setupfooter}}
+\Command{\tex{noheaderandfooterlines}}
+
+In some cases you want to give your document a page header and footer. The
+commands to do this are
+
+\shortsetup{setupheadertexts}
+\shortsetup{setupfootertexts}
+
+These commands allow you to configure different contents for the left and right
+page of a double sided document, hence the number of arguments.
+
+The first bracket pair is used for the location of the header or footer
+(\type{text}, \type{margin}, \type{edge}). For a graphical representation of
+these keys please refer to \in{figure}[fig:pageareas] on
+\at{page}[fig:pageareas]. For a single sided document you can use two bracket
+pairs. The location of \type{text} is assumed by \CONTEXT\ if not stated. Within
+the first bracket pair a left portion and in the other bracket pair a right
+portion of the header or footer is placed. In a double sided document four
+bracket pairs are used. This allows you to establish a left and right part of the
+header or footer individually for the left and right page of the document.
+
+\startbuffer
+\setupfootertexts[Manual][section]
+\stopbuffer
+
+\typebuffer
+
+In this case the text \Emph{Manual} will appear in the lower left corner and the
+title of the actual section on the lower right-hand side of the footer. This
+footer will change with the beginning of a new section.
+
+\startbuffer
+\setuppagenumbering
+  [location={footer,middle},alternative=doublesided]
+\setupheadertexts
+  [\CONTEXT\ an excursion][chapter][chapter][\CONTEXT\ an excursion]
+\stopbuffer
+
+\typebuffer
+
+The first two bracket pairs refer to the two portions of the header of the
+\Emph{right hand} page. Making a double sided document you could have in the left
+portion of the header the title of the document and in the right portion the name
+of the actual chapter. For the right hand page the sequence of the portions would
+be inverted.
+
+You can set up the layout of the header and footer with
+
+\shortsetup{setupheader}
+\shortsetup{setupfooter}
+
+If you want to leave out the page header and footer you can type
+
+\starttyping
+\noheaderandfooterlines
+\stoptyping
+
+\stopchapter
+
+\stopcomponent

@@ -474,6 +474,7 @@ static int bytemaplib_gc(lua_State *L)
     bytemap_data *bytemap = bytemaplib_aux_valid(L, 1);
     if (bytemap && bytemap->data) {
         lmt_memory_free(bytemap->data);
+        bytemap->data = NULL;
     }
     return 0;
 }

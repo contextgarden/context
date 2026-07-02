@@ -584,11 +584,17 @@ end
 
 -- helpers
 
-local function realign(lines,strip) -- "yes", <number>
+local function realign(lines,strip,first,last) -- "yes", <number>
     local n
+    if not first then
+        first = 1
+    end
+    if not last then
+        last = #lines
+    end
     if strip == v_yes then
         n = 0xFFFF
-        for i=1, #lines do
+        for i=first,last do
             local spaces = find(lines[i],"%S") -- can be lpeg
             if not spaces then
                 -- empty line
@@ -605,12 +611,14 @@ local function realign(lines,strip) -- "yes", <number>
     end
     if n and n > 0 then
         local copy = { }
-        for i=1,#lines do
-            copy[i] = sub(lines[i],n+1)
+        local c    = 0
+        for i=first,last do
+            c = c + 1
+            copy[c] = sub(lines[i],n+1)
         end
-        return copy
+        return copy, 1, c, c
     end
-    return lines
+    return lines, first, last, last - first + 1
 end
 
 local onlyspaces = S(" \t\f\n\r")^0 * P(-1)
@@ -748,16 +756,16 @@ end
 local function filter(lines,settings) -- todo: inline or display in settings
     local strip = settings.strip
  -- if strip and strip == "" then
-    if strip ~= v_no and strip ~= false then
-        lines = realign(lines,strip)
-    end
     local line  = 0
     local n     = 0
     local range = settings.range
     local first, last, m = getstrip(lines)
     if range then
         first, last = getrange(lines,first,last,range)
-        first, last = getstrip(lines,first,last)
+        first, last, m = getstrip(lines,first,last)
+    end
+    if strip ~= v_no and strip ~= false then
+        lines, first, last, m = realign(lines,strip,first,last)
     end
     -- \r is \endlinechar but \n would is more generic so this choice is debatable
     local content = concat(lines,(settings.nature == "inline" and " ") or "\n",first,last)

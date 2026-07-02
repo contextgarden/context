@@ -1,6 +1,6 @@
 -- merged file : c:/data/develop/context/sources/luatex-fonts-merged.lua
 -- parent file : c:/data/develop/context/sources/luatex-fonts.lua
--- merge date  : 2026-04-27 13:52
+-- merge date  : 2026-07-02 09:41
 
 do -- begin closure to overcome local limits and interference
 
@@ -3157,6 +3157,17 @@ if setinspector and vector then
    end
   end)
  end
+ local points=vector.points
+ if points then
+  local ispoints=points.ispoints
+  local totable=points.totable
+  setinspector("points",function(v)
+   if ispoints(v) then
+    inspect(totable(v))
+    return true
+   end
+  end)
+ end
 end
 
 end -- closure
@@ -3181,6 +3192,7 @@ local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local tsplitat=lpeg.tsplitat
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
+local round=math.round
 local loadstripped=function(str,shortcuts)
  if shortcuts then
   return load(dump(load(str),true),nil,nil,shortcuts)
@@ -3483,7 +3495,7 @@ local splitter3=Cs (
  three*prefix*endofstring+two*prefix*endofstring+digit*prefix*endofstring+three+two+digit
 )
 patterns.formattednumber=splitter
-function number.formatted(n,sep1,sep2)
+local function formatted(n,sep1,sep2)
  if sep1==false then
   if type(n)=="number" then
    n=tostring(n)
@@ -3503,6 +3515,10 @@ function number.formatted(n,sep1,sep2)
    return lpegmatch(splitter,n,1,sep1 or ",",sep2 or ".")
   end
  end
+end
+number.formatted=formatted
+function number.formattedinteger(n,...)
+ return formatted(round(n),false,...)
 end
 local p=Cs(
   P("-")^0*(P("0")^1/"")^0*(1-period)^0*(period*P("0")^1*endofstring/""+period^0)*P(1-P("0")^1*endofstring)^0
@@ -3613,6 +3629,7 @@ local environment={
  autodouble=string.autodouble,
  sequenced=table.sequenced,
  formattednumber=number.formatted,
+ formattedinteger=number.formattedinteger,
  sparseexponent=number.sparseexponent,
  formattedfloat=number.formattedfloat,
  stripzero=patterns.stripzero,
@@ -3963,6 +3980,28 @@ local format_M=function(f)
   return format([[formattednumber(a%s,%q,",")]],n,f)
  end
 end
+local format_v=function(f)
+ n=n+1
+ if not f or f=="" then
+  f=","
+ end
+ if f=="0" then
+  return format([[formattedinteger(a%s,false)]],n)
+ else
+  return format([[formattedinteger(a%s,%q,".")]],n,f)
+ end
+end
+local format_V=function(f)
+ n=n+1
+ if not f or f=="" then
+  f="."
+ end
+ if f=="0" then
+  return format([[formattedinteger(a%s,false)]],n)
+ else
+  return format([[formattedinteger(a%s,%q,",")]],n,f)
+ end
+end
 local format_z=function(f)
  n=n+(tonumber(f) or 1)
  return "''" 
@@ -4017,8 +4056,7 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S")+V("Q")+V("n")+V("N")+V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w")+V("W")+V("a")+V("A")+V("j")+V("J") 
-+V("m")+V("M") 
-+V("z")+V("Z")
++V("m")+V("M")+V("v")+V("V")+V("z")+V("Z")
 +V(">") 
 +V("<")
    )+V("*")
@@ -4064,6 +4102,8 @@ local builder=Cs { "start",
  ["J"]=(prefix_any*P("J"))/format_J,
  ["m"]=(prefix_any*P("m"))/format_m,
  ["M"]=(prefix_any*P("M"))/format_M,
+ ["v"]=(prefix_any*P("v"))/format_v,
+ ["V"]=(prefix_any*P("V"))/format_V,
  ["z"]=(prefix_any*P("z"))/format_z,
  ["Z"]=(prefix_any*P("Z"))/format_Z,
  ["a"]=(prefix_any*P("a"))/format_a,
@@ -4726,12 +4766,12 @@ if not caches.namespace or caches.namespace=="" or caches.namespace=="context" t
  caches.namespace='generic'
 end
 do
- local cachepaths=kpse.expand_var('$TEXMFCACHE') or ""
+ local cachepaths=kpse.expand_braces('$TEXMFCACHE') or ""
  if cachepaths=="" or cachepaths=="$TEXMFCACHE" then
-  cachepaths=kpse.expand_var('$TEXMFVAR') or ""
+  cachepaths=kpse.expand_braces('$TEXMFVAR') or ""
  end
  if cachepaths=="" or cachepaths=="$TEXMFVAR" then
-  cachepaths=kpse.expand_var('$VARTEXMF') or ""
+  cachepaths=kpse.expand_braces('$VARTEXMF') or ""
  end
  if cachepaths=="" then
   local fallbacks={ "TMPDIR","TEMPDIR","TMP","TEMP","HOME","HOMEPATH" }

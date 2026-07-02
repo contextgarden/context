@@ -31,13 +31,18 @@ set(LMT_HB_TOO   1) # Maybe handy for Idris' font development (old converted ffi
 # percent on runtime. When set, because we're sparse, we also strip the binary. On the manual
 # we gain 2-4 percent, so not that much.
 
-set(LMT_OPTIMIZE 1)
+# set(LMT_OPTIMIZE 1)
 
 # This makes the binary some 135K smaller so it might become the default at some point which is 
 # nice (the smaller as runner the better). After all, we don't load external (Lua) libraries 
 # anyway. 
 
 set(LMT_STRIP 1)
+
+# This is for Mikael, Keith and Hans to play with. We use less memory but not that much compared
+# to what this mechanism used anyway. This will likely become the default.
+
+# add_definitions(-DLMT_ZBUFFER_FLOAT_RGB=1)
 
 # When one wants to use Lua libraries, this is needed. But keep in mind that it's not supported, 
 # so we won't look into issues that could result from that. Getting a matching library is upto 
@@ -275,7 +280,7 @@ if (DEFINED LMT_OPTIMIZE)
 endif()
 
 # Mimalloc is still under development, so we only support it on a few platforms. By the time it is
-# stable we can probably remove some of the following tests. A bit of a hack:
+# stable we can probably remove some of the following tests. A bit of a hack.
 #
 # When the old osx version is dropped and armhf is upgraded we can enable unix except solaris which
 # fails. So, only osx 10.6 and rpi 32 fail. But we will probably drop 32 bit in the future anyway.

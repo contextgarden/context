@@ -1,0 +1,329 @@
+% signal=squid
+
+\startcomponent excursion-en-fonts
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Fonts and font switches,reference=chap:fonts]
+
+\startsection[title=Introduction]
+
+\index{Latin Modern Roman}
+\index{font}
+
+The default font in \CONTEXT\ is \Emph{Latin Modern Roman} (\type{lmr}). In
+\CONTEXT\ the \in{table}[tab:fonts-in-context] shows fonts that are included in
+the distribution.
+
+\startpostponing
+\startplacetable
+  [reference=tab:fonts-in-context,
+   title={Fonts in \CONTEXT}]
+  \switchtobodyfont[9pt]
+  \bTABLE
+    \bTR \bTD Name                \eTD \bTD Logical name \eTD \bTD Also known as      \eTD \eTR
+    \bTR \bTD Latin Modern Roman  \eTD \bTD lmr          \eTD \bTD Latin Modern Roman \eTD \eTR
+    \bTR \bTD Termes              \eTD \bTD termes       \eTD \bTD Times New Roman    \eTD \eTR
+    \bTR \bTD Adventor            \eTD \bTD adventor     \eTD \bTD Avant Garde        \eTD \eTR
+    \bTR \bTD Bonum               \eTD \bTD bonum        \eTD \bTD Bookman            \eTD \eTR
+    \bTR \bTD Chorus              \eTD \bTD chorus       \eTD \bTD Zapf Chancery      \eTD \eTR
+    \bTR \bTD Cursor              \eTD \bTD cursor       \eTD \bTD Courier            \eTD \eTR
+    \bTR \bTD Heros               \eTD \bTD heros        \eTD \bTD Helvetica          \eTD \eTR
+    \bTR \bTD Pagella             \eTD \bTD pagella      \eTD \bTD Palatino           \eTD \eTR
+    \bTR \bTD Schola              \eTD \bTD schola       \eTD \bTD Century Schoolbook \eTD \eTR
+    \bTR \bTD Dejavu              \eTD \bTD dejavu       \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Iwona               \eTD \bTD iwona        \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Kurier              \eTD \bTD kurier       \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Antykwa             \eTD \bTD antykwa      \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Antykwa Poltawskiego\eTD \bTD antykwa-poltawskiego \eTD \bTD            \eTD \eTR
+    \bTR \bTD Stix                \eTD \bTD stixtwo      \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Xits                \eTD \bTD xits         \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Almfixed            \eTD \bTD almfixed     \eTD \bTD                    \eTD \eTR
+    \bTR \bTD PK Fonts            \eTD \bTD pkfonts      \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Erewhon             \eTD \bTD erwhon       \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Libertinus          \eTD \bTD libertinus   \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Ebgaramond          \eTD \bTD ebgaramond   \eTD \bTD                    \eTD \eTR
+    \bTR \bTD IBM Plex            \eTD \bTD ibimplex     \eTD \bTD                    \eTD \eTR
+    \bTR \bTD Gentium             \eTD \bTD gentium      \eTD \bTD                    \eTD \eTR
+  \eTABLE
+\stopplacetable
+\stoppostponing
+
+For further reading we refer to the \goto {\Emph{Fonts in \CONTEXT}} [ url
+(manual:fonts) ] manual where you can find information on how to install your own
+font.
+
+\stopsection
+
+\startsection[title=Fontstyle and size,reference=sec:fontstyle]
+
+\Command{\tex{setupbodyfont}}
+\Command{\tex{switchtobodyfont}}
+
+You can select the font family, style and size for a document with:
+
+\shortsetup{setupbodyfont}
+
+If you typed \type{\setupbodyfont[chorus,9pt]} {\switchtobodyfont[chorus,9pt] in
+the setup area of the input file your text would look like this.}
+
+For changes in mid-document and on section level you should use:
+
+\shortsetup{switchtobodyfont}
+
+\page[bigpreference]
+
+\startbuffer
+On November 10th (one day before Saint Martin's day) the youth of
+Hasselt goes from door to door to sing a special song and they
+accompany themselves on a \Emph{foekepot}. They won't leave
+before you give them some money or sweets. The song goes like this:
+
+\startnarrower
+\switchtobodyfont[heros,small]
+\startlines
+  Foekepotterij, foekepotterij,
+  Geef mij een centje dan ga'k voorbij.
+  Geef mij een alfje dan blijf ik staan,
+  'k Zal nog liever naar m'n arrenmoeder gaan.
+  Hier woont zo'n rieke man, die zo vulle gèven kan.
+  Gèf wat, old wat, gèf die arme stumpers wat,
+  'k Eb zo lange met de foekepot elopen.
+  'k Eb gien geld om brood te kopen.
+  Foekepotterij, foekepotterij,
+  Geef mij een centje dan ga'k voorbij.
+\stoplines
+\stopnarrower
+\stopbuffer
+
+\typebuffer
+
+Notice that \type{\startnarrower...\stopnarrower} is also used as a begin and end
+of the font switch. The function of \type{\startlines...\stoplines} in this
+example is obvious.
+
+\start
+  \getbuffer
+\stop
+
+If you want an overview of an available font family you can e.g. type:
+
+\startbuffer
+\showbodyfont[pagella]
+\stopbuffer
+
+\typebuffer
+
+\start
+\switchtobodyfont[8pt]
+\getbuffer
+\stop
+
+\stopsection
+
+\startsection[title=Style and size switch in commands]
+
+In a number of commands one of the parameters is \type{style} to indicate the
+desired typestyle. For example:
+
+\startbuffer
+\setuphead[chapter][style=\tfd]
+\stopbuffer
+
+\typebuffer
+
+In this case the character size for chapters is indicated with the command
+\type{\tfd}. But instead of a command you could use the predefined options that
+are related to the actual typeface:
+
+\startbuffer
+normal  bold  slanted  boldslanted  type  mediaeval
+small  smallbold  smallslanted  smallboldslanted smalltype
+capital cap
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\startsection[title=Local font style and size]
+
+In the running text (local) you can change the \Emph{typestyle} into roman, sans
+serif and teletype with \type{\rm}, \type{\ss} and \type{\tt}.
+
+You can change the \Emph{typeface} like italic and boldface with \type{\sl} and
+\type{\bf}.
+
+The \Emph{type size} is changed with \type{\switchtobodyfont}.
+
+The actual style is indicated with \type{\tf}. If you want to change into a
+somewhat bigger size you can type \type{\tfa}, \type{\tfb}, \type{\tfc} and
+\type{\tfd}. Appending \type{a}, \type{b}, \type{c} or \type{d} to \type{\sl},
+\type{\it} and \type{\bf} is also allowed.
+
+\startbuffer
+{\tfc Mintage}
+
+In the period from {\tt 1404} till {\tt 1585} Hasselt had its own
+\Emph{right of coinage}. This right was challenged by other cities,
+but the {\switchtobodyfont[7pt] bishops of Utrecht} did not honour
+these {\slb protests}.
+\stopbuffer
+
+\typebuffer
+
+The curly braces indicate begin and end of style or size switches.
+
+\page[bigpreference]
+
+\getbuffer
+
+\stopsection
+
+\startsection[title=Redefining fontsize]
+
+\index{fontsize}
+
+\Command{\tex{definebodyfont}}
+
+For special purposes you can define your own size of the body font.
+
+\shortsetup{definebodyfont}
+
+A definition could look like this:
+
+\startbuffer
+\definebodyfont[10pt][rm][tfe=Regular at 24pt]
+
+{\tfe Hasselt!}
+\stopbuffer
+
+\typebuffer
+
+Now \type{\tfe} will produce 24pt characters saying:
+{\hbox{\getbuffer}}
+
+\stopsection
+
+\startsection[title=Small caps]
+
+\index{small caps}
+
+\Command{\tex{cap}}
+
+Abbreviations like \PDF\ (\infull{PDF}) are printed in pseudo small caps. A small
+capital is somewhat smaller than the capital of the actual typeface. Pseudo small
+caps are produced with:
+
+\shortsetup{cap}
+
+If you compare \type{\cap{hasselt}} and \type{\sc hasselt}: \cap{hasselt} and
+{\sc hasselt} you can see the difference. The command \type{\sc} shows the real
+small caps. The reason for using pseudo small caps instead of real small caps is
+just a matter of taste.
+
+\stopsection
+
+\doifmode{Book}{\page[yes]}
+
+\startsection[title=Emphasized]
+
+\index{emphasized}
+
+\Command{\tex{em}}
+
+To emphasize words consistently throughout your document you use the traditional
+\type{\em}
+
+Although it is still correct to do so, another approach could be to use the
+highlight mechanism for this purpose:
+
+\shortsetup[definehighlight]
+
+The advantage hereof is that it separates the meaning of an emphasis from the
+text and that in case one wants to change it, it has to be altered only in one
+place in order to get everything consistent throughout the text.
+
+As an example throughout this manual all emphasized text uses a highlight:
+
+\startbuffer
+\definehighlight[Emph][style=italic]
+\definehighlight[Bemph][style=bolditalic]
+\stopbuffer
+
+\typebuffer
+
+Emphasized words appear in a slanted style.
+
+\startbuffer
+If you walk through Hasselt you should \Bemph{watch out} for
+\Emph{Amsterdammers}. An \Emph{Amsterdammer} is \Bemph{not} a
+person from Amsterdam but a little stone pillar used to separate
+sidewalk and road. A pedestrian should be protected by these
+\Emph{Amsterdammers} against cars but more often people get hurt
+from tripping over them.
+\stopbuffer
+
+\typebuffer
+
+This becomes:
+
+\getbuffer
+
+If you want that an emphasize inside an emphasize is turning to roman then you
+should use \type{\em}.
+
+\startbuffer
+{\em An emphasize within an emphasize is {\em normal} again
+and a boldface emphasize looks like {\bf this or {\em this}}}.
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsection
+
+\doifmode{Book}
+  {\page[yes]}
+
+\startsection[title=Teletype / verbatim]
+
+\index{type}
+\index{verbatim}
+
+\Command{\tex{starttyping}}
+\Command{\tex{type}}
+\Command{\tex{setuptyping}}
+\Command{\tex{setuptype}}
+
+If you want to display typed text and want to keep your line breaking exactly as
+it is you use:
+
+\shortsetup{starttyping:instance:typing}
+
+In the text you can use:
+
+\shortsetup{type}
+
+The curly braces enclose the text you want in teletype. You have to be careful
+with \type{\type} because the line breaking mechanism does not work anymore.
+
+You can set up the \quote{typing} with:
+
+\shortsetup{setuptyping}
+\shortsetup{setuptype}
+
+\stopsection
+
+\startsection[title=Font encodings]
+
+\CONTEXT\ LMTX does not need font encodings.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

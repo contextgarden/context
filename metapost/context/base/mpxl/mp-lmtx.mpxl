@@ -11,9 +11,6 @@
 %C therefore copyrighted by \PRAGMA. See mreadme.pdf for
 %C details.
 
-% This is an experimental module where I test some new interface methods;
-% for real advanced graphics use the luapost module.
-
 if known metafun_loaded_lmtx : endinput ; fi ;
 
 newinternal boolean metafun_loaded_lmtx ; metafun_loaded_lmtx := true ; immutable metafun_loaded_lmtx ;

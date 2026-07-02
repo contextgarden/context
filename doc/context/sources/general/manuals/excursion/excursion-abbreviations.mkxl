@@ -1,0 +1,17 @@
+\startenvironment excursion-abbreviations
+
+\logo [Enter]  {\type{Enter}}
+\logo [READER] {pdf-reader|/|browser}
+
+\definesynonyms
+    [Short]
+    [Shorts]
+    [\infull]
+
+\setupsynonyms
+    [textstyle=\cap]
+
+\Short {PDF} {Portable Document Format}
+\Short {XML} {eXtended Markup Language}
+
+\stopenvironment

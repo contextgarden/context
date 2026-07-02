@@ -2480,7 +2480,7 @@ do
         if not f then return end f = f.rawdata
         if not f then return end f = f.resources
         if not f then return end f = f.features
-        return f and (f.gpos[n] or f.gsub[n])
+        return f and ((f.gpos and f.gpos[n]) or (f.gsub and f.gsub[n]))
     end
 
     local ctx_doifelse = commands.doifelse

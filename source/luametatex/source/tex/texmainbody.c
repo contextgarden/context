@@ -177,9 +177,10 @@
 */
 
 main_state_info lmt_main_state = {
-    .run_state     = production_state,
-    .ready_already = output_disabled_state,
-    .start_time    = 0.0,
+    .run_state      = production_state,
+    .overload_state = 0,
+    .ready_already  = output_disabled_state,
+    .start_time     = 0.0,
 };
 
 /*tex

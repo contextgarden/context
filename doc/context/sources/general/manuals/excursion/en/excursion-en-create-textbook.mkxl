@@ -1,0 +1,172 @@
+\startcomponent excursion-en-document
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=How to create a textbook, reference=chap:create-textbook]
+
+\index{input+file}
+
+Let's assume you want to create a simple textbook. It has some structure and
+contains a title page, a few chapters, sections and subsections. Of course there
+is a table of contents.
+
+\CONTEXT\ can create such a document automatically if you offer the right input
+by means of a file. So first you have to create an input file. An input file
+consists of a name and an extension. You can choose any name you want but the
+extension should be \type{.mkxl} to mark the file as one to be compiled with
+\CONTEXT\ and \LUAMETATEX. Other extensions understood by \CONTEXT\ are
+\type{*.tex}, \type{*.mkiv}. If you create a file with the name
+\type{mybook.mkxl} you will find no difficulties in running \CONTEXT.
+
+\page[bigpreference]
+
+An \pagereference[pagref:inputfile] input file could look like this:
+
+\startbuffer
+\startdocument
+
+\startstandardmakeup
+  \midaligned{From Hasselt to America}
+  \midaligned{by}
+  \midaligned{J. Jonker and C. van Marle}
+\stopstandardmakeup
+
+\placecombinedlist[content]
+
+\startchapter[title=Introduction]
+
+... ties between Hasselt and America ...
+
+\stopchapter
+
+\startchapter
+  [title=The Rensselaer family,reference=chap:rensselaer]
+
+\startsection[title=The first born]
+
+... was born in the year ...
+
+\stopsection
+
+\startsection[title=The early years]
+
+... in those days Hasselt was ...
+
+\stopsection
+
+\startsection[title=Living and working in America]
+
+... life in America was ...
+
+\stopsection
+
+\stopchapter
+
+\startchapter
+  [title=The Lansing family,reference=chap:lansing]
+
+... the Lansing family was also ...
+
+\stopchapter
+
+\startchapter
+  [title=The Cuyler family,reference=chap:cuyler]
+
+... much later Tydeman Cuyler ...
+
+\stopchapter
+
+\stopdocument
+\stopbuffer
+
+\start
+  \typebuffer
+\stop
+
+\CONTEXT\ expects a plain \ASCII\ input file. Of course you can use any
+text editor, as long as you save the file as standard \ASCII\ (also called txt
+file) with the extension \type{.mkxl}. Note that spaces in the filename are not
+allowed.
+
+The input file contains the text you want to typeset and the \CONTEXT\ commands.
+A \CONTEXT\ command begins with a backslash~\tex{}. With the command
+\type{\startdocument} you indicate the beginning of your text.
+
+Sometimes you will see two brackets (\type{[]}) directly after the command.
+These brackets are used to feed specific options to the command.
+
+The command
+
+\type{\startchapter[title=The Cuyler family,reference=chap:cuyler]}
+
+that you see in the example will have its effect on \Emph{The Cuyler family}. Its
+actions will have effect on the design, typography and structure. The actions may
+be:
+
+\startitemize[n,packed]
+  \startitem start a new page \stopitem
+  \startitem increase chapter number by one \stopitem
+  \startitem place chapter number in front of chapter title \stopitem
+  \startitem reserve some vertical space \stopitem
+  \startitem use a big font \stopitem
+  \startitem
+	  put chapter title (and page number) into the table of contents
+	\stopitem
+\stopitemize
+
+Other actions concerning running heads, numbering options and interactivity are
+disregarded at this moment.
+
+A command is sometimes followed by an argument which is enclosed by curly braces
+\type{{}} as shown in \in{table}[tab:commandappearance]. Reading through this
+manual will show you many opportunities to see how commands work.
+
+The commands in your input file can have the appearance as shown in
+\in{table}[tab:commandappearance].
+
+\startplacetable
+  [location={here,middle},
+   reference=tab:commandappearance,
+   title=How \CONTEXT\ commands look like]
+  {\bTABLE
+    \bTR
+      \bTD[style=\bf] Appearance of command \eTD
+      \bTD[style=\bf] Example \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startcommand ... \stopcommand} \eTD
+      \bTD \type{\startcenteraligned ... \stopcenteraligned} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\startcommand[] ... \stopcommand} \eTD
+      \bTD \type{\startitemize[packed] ... \stopitemize} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\command} \eTD
+      \bTD \type{\bf} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\command[]} \eTD
+      \bTD \type{\about[chap:cuyler]} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\command{}[]} \eTD
+      \bTD \type{\at{page}[chap:cuyler]} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\command{}} \eTD
+      \bTD \type{\index{America}} \eTD
+    \eTR
+  \eTABLE}
+\stopplacetable
+
+If you let \CONTEXT\ process the above example file, you would obtain a very
+simple document with a title page, a few numbered chapters and section headers
+and a table of content (because of \type{\placecombinedlist[content]} see
+\in{chapter}[chap:toc]).
+
+\stopchapter
+
+\stopcomponent

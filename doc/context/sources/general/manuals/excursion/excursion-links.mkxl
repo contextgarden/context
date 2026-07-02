@@ -1,0 +1,395 @@
+\startenvironment excursion-links
+
+% Links to external documents for referencing.
+
+\useURL
+  [www:pragma]
+  [http://www.pragma-ade.com]
+  []
+  [Pragma ADE]
+
+\useurl
+  [www:pragma:installation]
+  [https://www.pragma-ade.nl/install.htm]
+  []
+  [Installation of Context from Pragma ade]
+
+\useURL
+  [www:garden]
+  [http://wiki.contextgarden.net]
+  []
+  [ConTeXt garden]
+
+\useURL
+  [www:garden:svg]
+  [https://wiki.contextgarden.net/Graphics_and_media/File_formats/SVG]
+  []
+  [Info about svg use in ConTeXt]
+
+\useURL
+  [www.garden:installation]
+  [https://wiki.contextgarden.net/Introduction/Installation]
+  [Installation of ConTeXt from the garden]
+
+\useURL
+  [www:garden:tutorial-graphics]
+  [https://wiki.contextgarden.net/Graphics_and_media/Tutorials/Graphical_programming_with_MetaPost_and_MetaFun#Overlays]
+  []
+  [ConTeXt garden tutorial on using graphics, overlays, layers]
+
+\useURL
+  [www:garden:tutorial-layers
+  [https://wiki.contextgarden.net/Document_layout_and_layers/Layers]
+  []
+  [ConTeXt garden tutorial about layers]
+
+\useURL
+  [www:garden:command:setupuserpagenumber]
+  [https://wiki.contextgarden.net/Command/setupuserpagenumber]
+  []
+  [ConTeXt garden Command: userpagenumber]
+
+\useURL
+  [www:garden:tikz]
+  [https://wiki.contextgarden.net/Installing_TikZ_and_pgfplots]
+  []
+  [Install TikZ]
+
+\useURL
+  [www:contextweb]
+  [https://context-on-web.eu]
+  []
+  [ConTeXt on web]
+
+\useURL
+  [www:wiki-modules]
+  [https://modules.contextgarden.net/]
+  []
+  [Wiki Modules]
+
+\useURL
+  [www:overview-manuals]
+  [http://www.pragma-ade.com/overview.htm]
+  []
+  [Pragma ADE overview of manuals]
+
+\useURL
+  [group:context-group]
+  [https://group.contextgarden.net]
+  []
+  [Website ConTeXt group]
+
+\useURL
+  [group:cstug]
+  [http://www.cstug.cz]
+  []
+  [Czech \TEX\ users group (\CSTUG)]
+
+\useURL
+  [group:GUST]
+  [https://www.gust.org.pl/index_html-en?set_language=en]
+  []
+  [Polish \TEX\ users group (GUST)]
+
+\useURL
+  [group:tug]
+  [https://tug.org]
+  []
+  []
+
+\useURL
+  [group:ntg]
+  [http://ntg.nl]
+  []
+  [Dutch \TeX\ users group]
+
+\useURL
+  [group:GUTenberg]
+  [https://www.gutenberg-asso.fr/]
+  []
+  [Groupe francophone des Utilisateurs de \TEX]
+
+\useURL
+  [group:dante]
+  [https://www.dante.de]
+  []
+  [Deutschsprachige Anwendervereinigung \TEX\ e.V.]
+
+\useURL
+  [group:guit]
+  [https://www.guitex.org/home/en]
+  []
+  [Gruppo Utilizzatori Italiani di \TEX]
+
+% Installation info
+
+\useURL
+  [install]
+  [https://wiki.contextgarden.net/ConTeXt_Standalone]
+  []
+  [ConTeXt garden standalone installation]
+
+% Mailing list
+
+\useURL
+  [list:context]
+  [https://mailman.ntg.nl/mailman3/lists/ntg-context.ntg.nl]
+  []
+  [Mailing for ConTeXt users]
+
+% Manuals
+
+\useURL
+  [manual:general]
+  [https://www.pragma-ade.com/general/manuals/cont-eni.pdf]
+  []
+  [ConTeXt manual (screen version)]
+
+\useURL
+  [manual:context]
+  [https://www.pragma-ade.com/general/manuals/cont-enp.pdf]
+  []
+  [ConTeXt manual (paper version)]
+
+\useURL
+  [manual:metafuns]
+  [https://www.pragma-ade.com/general/manuals/metafun-s.pdf]
+  []
+  [Metafun (screen version)]
+
+\useURL
+  [manual:metafunp]
+  [https://www.pragma-ade.com/general/manuals/metafun-p.pdf]
+  []
+  [Metafun (paper version)]
+
+\useURL
+  [manual:svg]
+  [https://www.pragma-ade.com/general/manuals/svg-lmtx.pdf]
+  []
+  [svg in context and metafun xl]
+
+\useURL
+  [manual:nattab]
+  [https://www.pragma-ade.com/general/manuals/enattab.pdf]
+  []
+  [Natural tables examples]
+
+\useURL
+  [manual:extab]
+  [https://www.pragma-ade.com/general/manuals/xtables-mkiv.pdf]
+  []
+  [Extreme tables]
+
+\useURL
+  [manual:details]
+  [https://www.pragma-ade.com/general/manuals/details.pdf]
+  []
+  [Details manual]
+
+\useURL
+  [manual:fonts]
+  [https://www.pragma-ade.com/general/manuals/mfonts.pdf]
+  []
+  [Fonts in ConTeXt]
+
+\useURL
+  [manual:charts]
+  [https://www.pragma-ade.com/general/manuals/charts-mkiv.pdf]
+  []
+  [Flow charts in ConTeXt]
+
+\useURL
+  [manual:chemic] % manual for chemical structures
+  [https://www.pragma-ade.com/general/manuals/ppchtex-mkiv.pdf]
+  []
+  [Chemical formulas in ConTeXt]
+
+\useURL
+  [manual:chemic-ex] % manual for examples of setting up chemical formula
+  [https://www.pragma-ade.com/general/manuals/eppchtex.pdf]
+  []
+  [Chemical formulas examples]
+
+\useURL
+  [manual:labels]
+  [http://www.pragma-ade.com/general/manuals/mlabels.pdf]
+  []
+  [Adding text to graphics]
+
+\useURL
+  [manual:interaction]
+  [https://www.pragma-ade.com/general/manuals/interaction.pdf]
+  []
+  [ConTeXt Interaction]
+
+\useURL
+  [manual:style]
+  [http://www.pragma-ade.com/general/manuals/style.pdf]
+  []
+  [Typographic Programming]
+
+\useURL
+  [manual:xml]
+  [http://www.pragma-ade.com/general/manuals/xml-mkiv.pdf]
+  []
+  [Dealing with XML in \CONTEXT MKIV]
+
+\useURL
+  [manual:mathml]
+  [https://www.pragma-ade.nl/general/manuals/mmlprime.pdf]
+  []
+  [MathML]
+
+\useURL
+  [manual:mathml-example]
+  [https://www.pragma-ade.nl/general/manuals/mmlexamp.pdf]
+  []
+  [MathML in \CONTEXT]
+
+\useURL
+  [manual:units]
+  [http://www.pragma-ade.com/general/manuals/units-mkiv.pdf]
+  []
+  [Units in ConTeXt]
+
+\useURL
+  [manual:scite]
+  [http://www.pragma-ade.com/general/manuals/scite-context-readme.pdf]
+  []
+  [SciTE manual]
+
+\useURL
+  [manual:qr-en]
+  [http://www.pragma-ade.com/general/qrcs/setup-en.pdf]
+  []
+  [ConTeXT commands (English)]
+
+\useURL
+  [manual:qr-nl]
+  [http://www.pragma-ade.com/general/qrcs/setup-nl.pdf]
+  []
+  [Quick reference manual dutch]
+
+\useURL
+  [manual:tools]
+  [http://www.pragma-ade.com/general/manuals/tools-mkiv.pdf]
+  []
+  [tools-mkiv.pdf]
+
+\useURL
+  [manual:figures]
+  [http://www.pragma-ade.com/general/manuals/xfigures-p.pdf]
+  []
+  [Figure databases]
+
+\useURL
+  [manual:graphics]
+  [https://www.pragma-ade.com/general/manuals/graphics.pdf]
+  []
+  [Graphics]
+
+\useURL
+  [manual:mathematics]
+  [https://www.pragma-ade.com/general/manuals/mathincontext-screen.pdf]
+  []
+  [Mathematics in ConTeXt (screen version)]
+
+\useURL
+  [manual:mathematics-p]
+  [https://www.pragma-ade.com/general/manuals/mathincontext-paper.pdf]
+  []
+  [Mathematics in ConTeXt (paper version)]
+
+\useURL
+  [manual:mathematics-ex]
+  [https://www.pragma-ade.com/general/manuals/examples-mathmeanings.pdf]
+  []
+
+\useURL
+  [manual:color-sep]
+  [http://www.pragma-ade.nl/general/manuals/msplit.pdf]
+  []
+  [Color separation]
+
+\useURL
+  [manual:columnsets]
+  [https://www.pragma-ade.com/general/manuals/columnsets.pdf]
+  []
+  [Columnsets]
+
+\useURL
+  [manual:pagecolumns]
+  [https://www.pragma-ade.com/general/manuals/pagecolumns.pdf]
+  []
+  [Page columns]
+
+\useURL
+  [manual:color]
+  [https://www.pragma-ade.com/general/manuals/colors-mkiv.pdf]
+  []
+  [Colors]
+
+\useURL
+  [manual:mkiv-publications]
+  [http://www.pragma-ade.nl/general/manuals/mkiv-publications.pdf]
+  []
+  [Publications MKIV]
+
+\useURL
+  [testsuit]
+  [https://www.pragma-ade.com/context/latest/cont-tst.zip]
+  []
+  [Download of the test-suit]
+
+\useURL
+  [online:contextonweb]
+  [https://context-on-web.eu/]
+  []
+  [ConTeXt on Web]
+
+\useURL
+  [manual:tikz]
+  [https://pgf-tikz.github.io/pgf/pgfmanual.pdf]
+  []
+  [TikZ/pgf manual]
+
+\useURL
+  [manual:bidi]
+  [https://www.pragma-ade.com/general/manuals/bidi.pdf]
+  []
+  [l2r-r2l a few tips]
+
+% Magazines
+
+\useURL
+  [thisway:shapes]
+  [http://www.pragma-ade.com/general/magazines/mag-0010.pdf]
+  []
+  [mag-0010.pdf]
+
+\useURL
+  [thisway:crossrefs]
+  [http://www.pragma-ade.com/general/magazines/mag-1103.pdf]
+  []
+  [mag-1103.pdf]
+
+\useURL
+  [thisway:proj-struc]
+  [http://www.pragma-ade.com/general/magazines/mag-1101.pdf]
+  []
+  [mag-1101.pdf]
+
+\useURL
+  [myway:nattab]
+  [https://wiki.contextgarden.net/images/8/8c/NaturalTables.pdf]
+  []
+  [Use ot the natural table environment]
+
+\useURL
+  [loc:cityplan]
+  [http://www.stadindex.nl/plattegrond/hasselt]
+  []
+  []
+
+\stopenvironment

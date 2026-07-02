@@ -2782,8 +2782,8 @@ static int tokenlib_getprimitives(lua_State *L)
     int cs = 0;
     int nt = 0;
     int raw = lua_toboolean(L, 1);
-    lua_createtable(L, prim_size, 0);
-    while (cs < prim_size) {
+    lua_createtable(L, primitives_size, 0);
+    while (cs < primitives_size) {
         strnumber s = get_prim_text(cs);
         if (s > 0 && (get_prim_origin(cs) != no_command)) {
             const char *ss = tex_to_cstring(s);

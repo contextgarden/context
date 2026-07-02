@@ -1,0 +1,78 @@
+% signal=squid
+
+\startcomponent excursion-en-gettingstarted
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=How to process a file]
+
+\index{document+processing}
+\index[pdffile]{pdf--file}
+
+In this chapter we assume that you have installed and initiated \CONTEXT\ \LMTX\
+correctly so that you can run it from the command-line in your working directory.
+The installation procedure is described in \in{chapter}[chap:install] or you can
+find the \CONTEXT\ installation procedure on the \goto {\Emph{\CONTEXTWIKI}} [
+url (www:garden:installation) ].
+
+Let's try out what we get when creating a \TEX\ file in the working directory.
+
+Open your favorite \ASCII-text editor and type the following
+
+\startbuffer[firstdocument]
+\startdocument
+  This is my very first \CONTEXT\ document!
+\stopdocument
+\stopbuffer
+
+\typebuffer[firstdocument]
+
+Save the file as \type{first-document.mkxl}
+
+If you want to process a \CONTEXT\ input file, you should type at the command line
+prompt:
+
+\index{context (command)}
+
+\starttyping
+context first-document.mkxl
+\stoptyping
+
+The extension \type{.mkxl} is not needed to be typed. See
+\in{appendix}[chap:contextcommand] and \in{}[chap:runtimefiles] for more
+information on the \type{context} command.
+
+After pressing \Enter\ processing will start. \CONTEXT\ will show processing
+information on your screen. During the processing of your input file \CONTEXT\
+will also inform you of what it is doing with your document.
+
+\startfiguretext
+  [left]
+  [fig:firstdocument]
+  {The outcome of the \type{first-document.mkxl}}
+  {\externalfigure
+    [firstdocument]
+    [frame=on,framecolor=ShapeLightFrame,width=0.38\makeupwidth]}
+
+For example it will show page numbers and information about processing steps.
+Further more it gives warnings. These are of a typographical order and tell you
+when line breaking is not successful. All information on processing is stored in
+a \type{log} file which can be used for reviewing warnings and errors and the
+respective line numbers where they occur in your file.
+
+If processing is successful the command line prompt will return and \CONTEXT\
+will produce the file \par \type{first-document.pdf}.
+
+The abbreviation \PDF\ stands for \infull{PDF}. This is a platform independent
+format for printing and viewing with a \READER. The outcome looks like
+\in{figure}[fig:firstdocument].
+
+In case you use a configurable text editor you can also run \CONTEXT\ from that
+editor. More information on that topic can be found in \in{appendix}[texteditor].
+\stopfiguretext
+
+\stopchapter
+
+\stopcomponent

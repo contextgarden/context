@@ -1,0 +1,162 @@
+% signal=squid
+
+\startcomponent excursion-en-synonyms
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Synonyms,reference=chap:synonyms]
+
+\index{synonyms}
+\index{abbreviations}
+
+\Command{\tex{definesynonyms}}
+\Command{\tex{setupsynonyms}}
+\Command{\tex{abbreviation}}
+\Command{\tex{infull}}
+\Command{\tex{placelistofabbreviations}}
+\Command{\tex{completelistofabbreviations}}
+\Command{\tex{placelistofsynonyms}}
+\Command{\tex{completelistofsynonyms}}
+
+In many documents people want specific words consistently used throughout the
+document. For this purpose there is the predefined command \type{\abbreviation}.
+For placing a list of the used abbreviations there are the commands
+
+\starttyping
+\placelistofabbreviations
+\completelistofabbreviations
+\stoptyping
+
+You are not restricted to this command. You can define your own synonyms command
+by
+
+\shortsetup{definesynonyms}
+
+The first bracket pair contains the singular form of the synonym, and the second
+contains the plural form. The third bracket pair contains a command.
+
+The typesetting of synonyms can be influenced with
+
+\shortsetup{setupsynonyms}
+
+For example the command \type{\Shortcut} is defined by
+
+\start
+\startbuffer
+\definesynonyms[Shortcut][Shortcuts][\infull]
+\setupsynonyms[Shortcut][textstyle=\cap,textcolor=blue]
+\stopbuffer
+
+\typebuffer
+
+The command \type{\setupsynonyms} has a large number of key-value pairs. E.g. the
+key \type{textcolor} and \type{textstyle} influence the color and style of the
+text as can be seen in the example below.
+
+Be aware that there are also the key-value pairs \type{color} and \type{style}
+with the command \type{\setupsynonyms}. Those influence the color and style of
+texts in the lists of synonyms.
+
+\getbuffer
+
+Now the command \type{\Shortcut} is available and can be used to state your
+abbreviations.
+
+\startbuffer
+\Shortcut{ANWB}{Dutch Automobile Association}
+\Shortcut{VVV}{Bureau of Tourist Information}
+\Shortcut{NS}{Dutch Railways}
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+If you would type
+
+\startbuffer
+The Dutch \VVV\ (\infull{VVV}) can provide you with tourist
+information on Hasselt.
+
+The \ANWB\ (\infull{ANWB}) provides many services supporting Dutch automobilists.
+
+Hasselt has no train station of the \NS\ (\infull{NS}).
+\stopbuffer
+
+\typebuffer
+
+You would obtain
+
+\getbuffer
+
+\startbuffer
+  \setupsynonyms[Shortcut][style=bolditalic,color=green]
+  \placelistofShortcuts
+\stopbuffer
+
+\typebuffer
+
+The current list of Shortcuts as a sorted list:
+
+\getbuffer
+
+\stop
+
+The list of synonyms or abbreviations is best defined in the setup area of your
+input file for maintenance purposes. You can also store this kind of information
+in an external file, and load the file (e.g. \type{shortcuts.mkxl}) with
+
+\starttyping
+\input{shortcuts}
+\stoptyping
+
+If you want to put a list of the abbreviations used in your document you can
+type
+
+\starttyping
+\placelistofShortcuts
+\stoptyping
+
+or
+
+\starttyping
+\completelistofShortcuts
+\stoptyping
+
+A complete and sorted list with used abbreviations and their meaning is produced.
+
+The predefined \type{\logo} command is used for the consistent use of text logos.
+
+When you define
+
+\startbuffer
+\logo [HSTEX]  {Hassel\TeX}
+\stopbuffer
+
+\getbuffer
+
+\typebuffer
+
+You can use that logo throughout your text.
+
+\startbuffer
+How would you call a \TEX\ based macro-package when you work
+in Hasselt? \HSTEX?
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Of course you can also produce a sorted list of the used logos with
+
+\starttyping
+\placelistoflogos
+\completelistoflogos
+\stoptyping
+
+\stopchapter
+
+\stopcomponent

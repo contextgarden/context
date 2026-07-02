@@ -1,0 +1,101 @@
+\startcomponent excursion-colofon
+
+\startmakeup[standard][page=no,doublesided=no]
+
+  % This reference is needed for the interactive version.
+
+  \pagereference[colofon]
+  \textreference[Colofon]
+
+  % We align the text in the middle.
+
+  \setupalign
+      [middle]
+
+  % We use the default \framed macro but add a background. For most
+  % texts an offset of 20pt is adequate.
+
+  \defineframed
+    [colofon]
+    [frame=off,
+     background=basic-shape,
+     rulethickness=8pt,
+     align=middle,
+     offset=15pt,
+     style=normal,
+     shape:dots=ShapeDarkDots,
+     shape:line=ShapeDarkLine]
+
+  \bfa \setupinterlinespace
+
+  \doifsomething {\documentvariable{author}} {
+
+      \dontleavehmode
+      \startframed[colofon]
+        \documentvariable{author}
+      \stopframed
+
+      \vfill
+
+  }
+
+  \doifsomething {\documentvariable{translator}} {
+
+      \dontleavehmode
+      \startframed[colofon]
+        \labeltext{document:translations}:\space
+        \documentvariable{translator}
+      \stopframed
+
+      \vfill
+
+  }
+
+  \doifsomething {\documentvariable{contributer}} {
+
+      \dontleavehmode
+      \startframed[colofon]
+        \labeltext{document:contributions}:\space
+        \documentvariable{contributer}
+      \stopframed
+
+      \vfill
+
+  }
+
+  \doifsomething {\documentvariable{editor}} {
+
+      \dontleavehmode
+      \startframed[colofon]
+        \labeltext{document:editor}:\space
+        \documentvariable{editor}
+      \stopframed
+
+      \vfill
+
+  }
+
+  \dontleavehmode
+  \startframed[colofon]
+    \labeltext{document:design}:\space
+    Hans Hagen
+  \stopframed
+
+  \vfill
+
+  \dontleavehmode
+  \startframed[colofon]
+    \labeltext{document:illustrations}:\space
+    Johan Jonker
+  \stopframed
+
+  \vfill
+
+  \dontleavehmode
+  \startframed[colofon]
+    \currentdate
+  \stopframed
+
+\stopmakeup
+
+\stopcomponent

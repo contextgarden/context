@@ -189,6 +189,11 @@
 \permanent\tolerant\protected\def\typo_margins_data_nop[#name]#spacer[#S#dataparameters]#spacer[#S#textparameters]#:#content%
   {}
 
+%D Beware: when the style is set (default is bold) thi shas consequences, for
+%D instance for framed and other stuff in content that uses exheight. So, in
+%D case of subtle dimension issues \type {style=} migth help. Latin modern
+%D has a slight different height for bold.
+
 \permanent\tolerant\protected\def\typo_margins_data_yes[#name]#spacer[#S#dataparameters]#spacer[#S#textparameters]#:#content%
   {\inhibitmargindata\conditionalfalse % flushing afterwards
    \begingroup

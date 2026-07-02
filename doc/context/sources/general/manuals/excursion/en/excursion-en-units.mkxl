@@ -1,0 +1,124 @@
+% signal=squid
+
+\startcomponent excursion-en-units
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Units,reference=units]
+
+\index[siunit]{SI--unit}
+
+\Command{\tex{unit}}
+
+To force yourself to use dimensions and units consistently throughout your
+document you can use the \type {\unit} command. Let's give a few examples:
+
+\startbuffer
+\unit{meter per square meter}
+\unit{cubic meter per sec}
+\unit{square milli meter per inch}
+\unit{centi liter per sec}
+\unit{meter inverse sec}
+\unit{newton per square inch}
+\unit{newton times meter per square sec}
+\stopbuffer
+
+\typebuffer
+
+It looks like a lot of typing but it does guarantee a consistent use of units.
+The command \type {\unit} also prevents line breaking between number and unit.
+
+\page[bigpreference]
+
+The examples above come out as:
+
+\startnarrower
+\startlines
+\getbuffer
+\stoplines
+\stopnarrower
+
+You can add your own units with:
+
+\shortsetup{registerunit}
+
+\page[bigpreference]
+
+and set them up with:
+
+\shortsetup{setupunit}
+
+\startbuffer
+\registerunit[unit][inhab=inhabitants]
+\setupunittext[en][inhabitants=inh]
+
+\registerunit[unit][north=north]
+\setupunittext[en][north= N]
+
+\registerunit[unit][east=east]
+\setupunittext[en][east= E]
+
+Hasselt is part of the municipality of Zwartewaterland
+(coordinates 52\unit{degrees} 35 \unit{arcminute north},
+\unit {6 degrees} \unit{5 arcminute east}).
+Its area is about \unit {88 square kilometer}
+(land \unit {83 square kilom} and water \unit{5 square km}).
+As of 1st of Augustus 2013 the population is 22.201
+that is \unit {268 inhab per square kilo meter}.
+\stopbuffer
+
+In the example below you can see some new units and the non-consistent
+use of \unit {kilo meter}.
+
+\typebuffer
+
+This results in:
+
+\getbuffer
+
+The \type{\unit} command also allows you to align rows of units in a column.
+
+\startbuffer
+\bTABLE
+  \bTR
+    \bTD \bf Street     \eTD \bTD \bf Length         \eTD
+  \eTR
+  \bTR
+    \bTD Ridderstraat   \eTD \bTD \unit{_,160 meter} \eTD
+  \eTR
+  \bTR
+    \bTD Prinsengracht  \eTD \bTD \unit{_,240 meter} \eTD
+  \eTR
+  \bTR
+    \bTD Kalverstraat   \eTD \bTD \unit{_,_60 meter} \eTD
+  \eTR
+  \bTR
+    \bTD H.A.W. van de
+         Vechtlaan      \eTD \bTD \unit{1,250 meter} \eTD
+  \eTR
+  \bTR
+    \bTD Meestersteeg   \eTD \bTD \unit{_,_45 meter} \eTD
+  \eTR
+\eTABLE
+\stopbuffer
+
+When you type:
+
+\typebuffer
+
+\page[bigpreference]
+
+It will generate a well aligned second column.
+
+\startlinecorrection
+  \getbuffer
+\stoplinecorrection
+
+Please refer to the manual \goto {\Emph{Units}} [ url(manual:units)] for more
+information and details.
+
+\stopchapter
+
+\stopcomponent

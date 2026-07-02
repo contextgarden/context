@@ -50,7 +50,15 @@
 
 # define LMT_SA_H_PART(a) (((a)>>14)&127)
 # define LMT_SA_M_PART(a) (((a)>> 6)&255)
-# define LMT_SA_L_PART(a) ( (a)      &63)
+# define LMT_SA_L_PART(a) ( (a)     & 63)
+
+// # define LMT_SA_HIGHPART 256
+// # define LMT_SA_MIDPART  128
+// # define LMT_SA_LOWPART   64
+//
+// # define LMT_SA_H_PART(a) (((a)>> 6)&255)
+// # define LMT_SA_M_PART(a) (((a)>>14)&127)
+// # define LMT_SA_L_PART(a) ( (a)     & 63)
 
 # endif
 
@@ -142,11 +150,11 @@ static inline unsigned int get_nibble(unsigned int original, int position)
     return (original >> (4 * (position % 8))) & 0xF;
 }
 
-//     int     sa_get_item_0    (const sa_tree head, int n);                                     /* these return the value or dflt */
-//     int     sa_get_item_1    (const sa_tree head, int n);                                     /* these return the value or dflt */
-//     int     sa_get_item_2    (const sa_tree head, int n);                                     /* these return the value or dflt */
-extern int     sa_get_item_4    (const sa_tree head, int n, sa_tree_item *v);                    /* these return success */
-extern int     sa_get_item_8    (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* these return success */
+//     int     sa_get_item_0    (const sa_tree head, int n);                                     /* returns value or dflt */
+//     int     sa_get_item_1    (const sa_tree head, int n);                                     /* returns value or dflt */
+//     int     sa_get_item_2    (const sa_tree head, int n);                                     /* returns value or dflt */
+extern int     sa_get_item_4    (const sa_tree head, int n, sa_tree_item *v);                    /* returns success */
+extern int     sa_get_item_8    (const sa_tree head, int n, sa_tree_item *v1, sa_tree_item *v2); /* returns success */
 
 extern void    sa_set_item_0    (const sa_tree head, int n, int v, int gl);
 extern void    sa_set_item_1    (const sa_tree head, int n, int v, int gl);
@@ -172,7 +180,7 @@ static inline halfword sa_return_item_0(const sa_tree head, halfword n)
     if (head->tree[hp]) {
         int mp = LMT_SA_M_PART(n);
         if (head->tree[hp][mp]) {
-            return (halfword) get_nibble(head->tree[hp][mp][LMT_SA_L_PART(n)/8].uint_value,n);
+            return (halfword) get_nibble(head->tree[hp][mp][LMT_SA_L_PART(n)/8].uint_value, n);
         }
     }
     return (halfword) get_nibble(head->dflt.uint_value,0);

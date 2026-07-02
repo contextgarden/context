@@ -326,6 +326,8 @@ if sio and sio.readcardinal2 then
     local read2dot14     = sio.read2dot14
     local readbytes      = sio.readbytes
     local readbytetable  = sio.readbytetable
+    local readfloat      = sio.readfloat
+    local readdouble     = sio.readdouble
 
     function streams.readcardinal1(f)
         local i = f[2]
@@ -403,6 +405,16 @@ if sio and sio.readcardinal2 then
             f[2] = p
         end
         return readbytetable(f[1],i,n)
+    end
+    function streams.readfloat(f,n)
+        local i = f[2]
+        f[2] = i + 4
+        return readfloat(f[1],i)
+    end
+    function streams.readdouble(f,n)
+        local i = f[2]
+        f[2] = i + 8
+        return readdouble(f[1],i)
     end
 
     streams.readbyte       = streams.readcardinal1

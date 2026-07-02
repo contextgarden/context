@@ -1362,6 +1362,7 @@ typedef enum flag_bit {
 # define is_noaligned(a)            (((a) & noaligned_flag_bit))
 # define is_instance(a)             (((a) & instance_flag_bit))
 # define is_untraced(a)             (((a) & untraced_flag_bit))
+# define is_persistent(a)           (((a) & immutable_flag_bit) && ((a) & (primitive_flag_bit | permanent_flag_bit)))
 
 # define is_global(a)               (((a) & global_flag_bit))
 # define is_tolerant(a)             (((a) & tolerant_flag_bit))
@@ -1422,8 +1423,6 @@ extern void tex_define_swapped     (int g, halfword p1, halfword p2, int force);
 extern void tex_forced_define      (int g, halfword p, singleword flag, singleword cmd, halfword chr);
 extern void tex_word_define        (int g, halfword p, halfword w);
 /*     void tex_forced_word_define (int g, halfword p, singleword flag, halfword w); */
-
-extern int  tex_overload_permitted (halfword flags);
 
 /*tex
 
@@ -2085,9 +2084,6 @@ typedef enum badness_modes {
     badness_mode_overfull  = 0x08,
     badness_mode_all       = 0x0F,
 } badness_modes;
-
-extern int tex_report_overload          (halfword cs, int overload);
-extern int tex_report_overload_register (halfword cs, int overload, halfword index, const char *str);
 
 typedef enum no_spaces_modes {
     no_spaces_discard_mode    = 0x01,

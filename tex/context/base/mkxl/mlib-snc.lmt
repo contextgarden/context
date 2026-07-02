@@ -9,9 +9,10 @@ if not modules then modules = { } end modules ['mlib-snc'] = {
 local scanners       = mp.scan
 local scaninteger    = scanners.integer
 local scanstring     = scanners.string
-local factor         = number.dimenfactors.bp
 local synchronizers  = graphics.synchronizers
 local registerdirect = metapost.registerdirect
+
+local bpfactor <const> = number.dimenfactors.bp
 
 -- no need for locals (yet)
 
@@ -24,13 +25,13 @@ registerdirect("asnc_prune",    synchronizers.prune   )
 registerdirect("asnc_collapse", synchronizers.collapse)
 registerdirect("asnc_getsize",  synchronizers.getsize )
 
-registerdirect("asnc_gettop",   function() return synchronizers.gettop   (scaninteger()) * factor end)
-registerdirect("asnc_getbottom",function() return synchronizers.getbottom(scaninteger()) * factor end)
-registerdirect("asnc_getkind",  function() return synchronizers.getkind  (scaninteger())          end)
-registerdirect("asnc_gettask",  function() return synchronizers.gettask  (scaninteger())          end)
+registerdirect("asnc_gettop",   function() return synchronizers.gettop   (scaninteger()) * bpfactor end)
+registerdirect("asnc_getbottom",function() return synchronizers.getbottom(scaninteger()) * bpfactor end)
+registerdirect("asnc_getkind",  function() return synchronizers.getkind  (scaninteger())            end)
+registerdirect("asnc_gettask",  function() return synchronizers.gettask  (scaninteger())            end)
 
-registerdirect("asnc_getx",     function() return synchronizers.getx() * factor end)
-registerdirect("asnc_gety",     function() return synchronizers.gety() * factor end)
-registerdirect("asnc_getw",     function() return synchronizers.getw() * factor end)
-registerdirect("asnc_geth",     function() return synchronizers.geth() * factor end)
-registerdirect("asnc_getd",     function() return synchronizers.getd() * factor end)
+registerdirect("asnc_getx",     function() return synchronizers.getx() * bpfactor end)
+registerdirect("asnc_gety",     function() return synchronizers.gety() * bpfactor end)
+registerdirect("asnc_getw",     function() return synchronizers.getw() * bpfactor end)
+registerdirect("asnc_geth",     function() return synchronizers.geth() * bpfactor end)
+registerdirect("asnc_getd",     function() return synchronizers.getd() * bpfactor end)

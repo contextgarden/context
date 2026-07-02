@@ -1,0 +1,171 @@
+%D \module
+%D   [       file=meta-imp-meshes-dodecahedron,
+%D        version=2026.06.09,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Docecahedron fractals,
+%D         author=Hans Hagen,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+%D See \type {meta-imp-mengersponge.mkxl} for some comments. Liek that file, we
+%D added it because we needed (stl) examples for the manual and also wanted to
+%D demonstrate the plug-in model. Both files are dedicated to Keith McKay who is
+%D the one challenging us for such features.
+
+\startluacode
+
+local sqrt      = xmath.sqrt
+local normalize = xmath.normalize
+
+local p     <const> = (1 + sqrt(5)) / 2
+local d     <const> = 1/p
+local scale <const> = 1 / (2 + p)
+
+local base_vertices = {
+    {  1,  1, 1 }, { 1,  1, -1 }, {  1, -1, 1 }, {  1, -1, -1 },
+    { -1,  1, 1 }, {-1,  1, -1 }, { -1, -1, 1 }, { -1, -1, -1 },
+    {  0,  d, p }, { 0,  d, -p }, {  0, -d, p }, {  0, -d, -p },
+    {  d,  p, 0 }, { d, -p,  0 }, { -d,  p, 0 }, { -d, -p,  0 },
+    {  p,  0, d }, { p,  0, -d }, { -p,  0, d }, { -p,  0, -d },
+}
+
+for i=1,#base_vertices do
+    local b = base_vertices[i]
+    b[1], b[2], b[3] = normalize(b[1], b[2], b[3])
+end
+
+local base_faces = {
+    { 1,  9, 11, 3, 17 }, { 2, 18, 4, 12, 10 }, { 5, 19, 7, 11,  9 }, { 6, 10, 12, 8, 20 },
+    { 1, 13, 15, 5,  9 }, { 2, 10, 6, 15, 13 }, { 3, 11, 7, 16, 14 }, { 4, 14, 16, 8, 12 },
+    { 1, 17, 18, 2, 13 }, { 3, 14, 4, 18, 17 }, { 5, 15, 6, 20, 19 }, { 7, 19, 20, 8, 16 },
+}
+
+local function generatefractal(level,cx,cy,cz,radius,vertices,triangles)
+    if level == 0 then
+        local nofvertices = #vertices
+        local firstvertex = nofvertices
+        for i=1,#base_vertices do
+            local bv = base_vertices[i]
+            local b1 = bv[1]
+            local b2 = bv[2]
+            local b3 = bv[3]
+            nofvertices = nofvertices + 1
+            vertices[nofvertices] = {
+                cx + b1 * radius,
+                cy + b2 * radius,
+                cz + b3 * radius,
+                b1, b2, b3
+            }
+        end
+        local t = #triangles
+        for i=1,#base_faces do
+            local bf = base_faces[i]
+            local a = firstvertex + bf[1]
+            local b = firstvertex + bf[2]
+            local c = firstvertex + bf[3]
+            local d = firstvertex + bf[4]
+            local e = firstvertex + bf[5]
+            t = t + 1 triangles[t] = { a, b, c }
+            t = t + 1 triangles[t] = { a, c, d }
+            t = t + 1 triangles[t] = { a, d, e }
+        end
+        return
+    end
+
+    local distance = radius * (1 - scale)
+
+    radius = radius * scale
+    level  = level - 1
+
+    for i=1,#base_vertices do
+        local bv = base_vertices[i]
+        generatefractal(
+            level,
+            cx + bv[1] * distance,
+            cy + bv[2] * distance,
+            cz + bv[3] * distance,
+            radius,
+            vertices,
+            triangles
+        )
+    end
+end
+
+local function dodecahedron(iterations,radius)
+    local vertices  = { }
+    local triangles = { }
+    generatefractal(iterations,0,0,0,radius,vertices,triangles)
+    return vertices, triangles
+end
+
+metapost.registermesher("dodecahedron", function(specification)
+    local vertices, triangles = dodecahedron(
+        specification.level  or 3,
+        specification.radius or 10
+    )
+    return {
+        name      = "dodecahedron",
+        id        = specification.id,
+        vertices  = vertices,
+        triangles = triangles,
+    }
+end)
+
+\stopluacode
+
+\continueifinputfile{meta-imp-meshes-dodecahedron.mkxl}
+
+\setupbackgrounds
+  [paper]
+  [background=color,
+   backgroundcolor=darkblue,
+   backgroundcolor=,
+   frame=on,
+   framecolor=darkblue]
+
+\starttext
+
+\startMPpage
+
+    lmt_scene_start [
+        bytemap      = 34,
+        width        = 20cm,
+        crop         = true,
+        supersample  = 2,
+        projection   = "perspective",
+        eye          = (10,10,10),
+%         eye          = (20,20,20),
+%         target       = (5,5,5),
+        up           = (0,0,1),
+        light        = (-1.5,-1,-2),
+        intensity    = 1,
+    ] ;
+
+    lmt_scene_material [
+        name      = "surface",
+        diffuse   = (0,0.5,.5),
+        specular  = (.40,.40,.40),
+        shininess = 40,
+%         opacity   = .15,
+%         opacity   = .45,
+% twosided = true,
+    ] ;
+
+    lmt_scene_internal [
+        id        = "one",
+        name      = "dodecahedron",
+        level     = 3,
+        radius    = 10,
+        cache     = true,      % todo
+        material  = "surface",
+    ] ;
+
+    lmt_scene_stop ;
+
+\stopMPpage
+
+\stoptext

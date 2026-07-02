@@ -900,6 +900,15 @@ static void mp_interval_pyth_add(MP mp, mp_number *ret, mp_number *a, mp_number 
  // }
 }
 
+static void mp_interval_pyth_add3(MP mp, mp_number *ret, mp_number *a, mp_number *b, mp_number *c)
+{
+    interval ia = j_abs(to_interval(a));
+    interval ib = j_abs(to_interval(b));
+    interval ic = j_abs(to_interval(c));
+    interval rt = j_sqrt(add_ii(add_ii(mul_ii(ia, ia), mul_ii(ib, ib)), mul_ii(ic, ic)));
+    memcpy(ret->data.num, &rt, sizeof(interval));
+}
+
 static void mp_interval_pyth_sub(MP mp, mp_number *ret, mp_number *a, mp_number *b)
 {
     interval ia = j_abs(to_interval(a));
@@ -1515,6 +1524,7 @@ math_data *mp_initialize_interval_math(MP mp)
     math->md_m_unif_rand              = mp_interval_m_unif_rand;
     math->md_m_norm_rand              = mp_interval_m_norm_rand;
     math->md_pyth_add                 = mp_interval_pyth_add;
+    math->md_pyth_add3                = mp_interval_pyth_add3;
     math->md_pyth_sub                 = mp_interval_pyth_sub;
     math->md_power_of                 = mp_interval_power_of;
     math->md_fraction_to_scaled       = mp_interval_fraction_to_scaled;

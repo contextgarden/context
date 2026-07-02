@@ -168,7 +168,7 @@
     typedef struct dir_data {
         intptr_t handle;
         int      closed;
-        char     pattern[MY_MAXPATHLEN+1];
+        char     pattern[MY_MAXPATHLEN+5];
     } dir_data;
 
     static int get_stat(const char *s, info_struct *i)
@@ -346,7 +346,7 @@ static int filelib_chdir(lua_State *L) {
         char *path = NULL;
         size_t size = MY_MAXPATHLEN;
         while (1) {
-            path = lmt_memory_realloc(path, size);
+            path = path ? lmt_memory_realloc(path, size) : lmt_memory_malloc(size);
             if (! path) {
                 lua_pushboolean(L,0);
                 break;
@@ -361,7 +361,9 @@ static int filelib_chdir(lua_State *L) {
             }
             size *= 2;
         }
-        lmt_memory_free(path);
+        if (path) {
+            lmt_memory_free(path);
+        }
         return 1;
     }
 

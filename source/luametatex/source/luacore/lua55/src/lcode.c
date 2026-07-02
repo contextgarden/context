@@ -663,11 +663,11 @@ static int boolT (FuncState *fs) {
 ** Add nil to list of constants and return its index.
 */
 static int nilK (FuncState *fs) {
-  TValue k, v;
-  setnilvalue(&v);
+  lua_State *L = fs->ls->L;
+  TValue k;
   /* cannot use nil as key; instead use table itself */
-  sethvalue(fs->ls->L, &k, fs->kcache);
-  return k2proto(fs, &k, &v);
+  sethvalue(L, &k, fs->kcache);
+  return k2proto(fs, &k, &G(L)->nilvalue);
 }
 
 
@@ -1934,8 +1934,6 @@ void luaK_finish (FuncState *fs) {
     p->flag &= cast_byte(~PF_VAHID);  /* then it will not use hidden args. */
   for (i = 0; i < fs->pc; i++) {
     Instruction *pc = &p->code[i];
-    /* avoid "not used" warnings when assert is off (for 'onelua.c') */
-    (void)luaP_isOT; (void)luaP_isIT;
     lua_assert(i == 0 || luaP_isOT(*(pc - 1)) == luaP_isIT(*pc));
     switch (GET_OPCODE(*pc)) {
       case OP_RETURN0: case OP_RETURN1: {

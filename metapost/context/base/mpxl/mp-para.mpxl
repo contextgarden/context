@@ -1,0 +1,721 @@
+%D \module
+%D   [       file=mp-para.mpxl,
+%D        version=2026.06.23,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Parallel Paths,
+%D         author=Hans Hagen & Mikael Sundqvist & The Internet,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+% vardef firstpoint p = message(p) ; point 0 of p enddef ;
+
+if known metafun_loaded_para : endinput ; fi ;
+
+newinternal boolean metafun_loaded_para ; metafun_loaded_para := true ; immutable metafun_loaded_para ;
+
+% Robust adaptive cubic Bezier offsets for MetaPost.
+%
+% Exact offsets of cubic Beziers are not cubic Beziers. This code therefore
+% approximates the offset by cubic pieces, using de Casteljau subdivision and
+% accepting a piece only after checking it against sampled normal-offset points.
+% There are various sources on the internet that one can query with a search engine
+% or an \LLM\ as we did here as part of an experiment to see how well these models
+% / frameworks actually perform when you want to get info about something like
+% this. Snippets of code oen can find on the web vary in quality and performance.
+%
+% Here are few resources one runs into from various angles:
+%
+% An offset spline approximation for plane cubic splines,
+%     Reinhold Klass, 1983
+% Cubic spline approximation of offset curves of planar cubic splines,
+%     Manabu Sakai and Katsumasa Suenaga, 2001
+% Offsets of Two-Dimensional Profiles,
+%     Wayne Tiller and Eric G. Hanson, 1984
+% A New Offsetting Algorithm Based On Tracing Technique,
+%     Shi-Nine Yang and Ming-Liang Huang, 1993
+% Fast Cubic Bezier curve offsetting,
+%     Aurimas Gasilius
+%
+% Below is an implementation we arrived at after various experiments. The basics
+% were slapped together with Chat 5.5 (thanks to Lund) but we had to do quite a bit
+% of cleanup. Apart from curious code (likely a side effect of mapping onto
+% \METAPOST) we also took the opportunity to use some of the path manipulation
+% primitives in \LUAMETATEX. An interesting observation was that instead is using
+% subpath complex splitters were suggested. Actually one could do some conveniently
+% in \LUA\ (the pseudo arrays) and we did some prototyping but in the end didn't
+% want to waste time on it and stuck to primitive \METAPOST\ path manipulation.
+% After all it's not that this will be used much. Again our conclusion was that
+% because in the end the code is different one can best stick to using an \LLM\
+% for gathering information and not so much for coding. In the end the code below
+% is still kind of ugly and not something to be proud of. Let's say: it works.
+%
+% tolerance is the maximum accepted sampled distance between an offset candidate
+% and the true normal-offset samples, in MetaPost units.
+
+newinternal mfun_parallel_tolerance ; mfun_parallel_tolerance := .20 ;
+
+% max_depth is the recursion limit for adaptive subdivision of one source cubic
+% segment.
+
+newinternal mfun_parallel_max_depth ; mfun_parallel_max_depth := 13 ;
+
+% samples is the number of interior sample points used when estimating the error of
+% one candidate offset cubic.
+
+newinternal mfun_parallel_samples ; mfun_parallel_samples := 5 ;
+
+% eps is the general geometric zero tolerance used for degenerate segments,
+% coincident endpoints, and nearly zero algebraic quantities.
+
+newinternal mfun_parallel_epsilon ; mfun_parallel_epsilon := 1/65536 ;
+
+% cusp_epsilon is the tolerance for deciding that 1 - dist * curvature is close
+% enough to zero that the true offset may have a cusp.
+
+newinternal mfun_parallel_cusp_epsilon ; mfun_parallel_cusp_epsilon := .060 ;
+
+% min_speed_factor is the smallest allowed absolute endpoint speed scale when the
+% candidate offset handles are computed from 1 - dist * curvature.
+
+newinternal mfun_parallel_min_speed_factor ; mfun_parallel_min_speed_factor := .002 ;
+
+% join_miter is the numeric code for using a miter join at a corner.
+
+% newinternal mfun_parallel_join_miter ; mfun_paralleljoin_miter := mitered ;
+
+% join_bevel is the numeric code for using a straight bevel join at a corner.
+
+% newinternal mfun_parallel_join_bevel ; mfun_parallel_join_bevel := beveled ;
+
+% join_mode selects the preferred corner join style before miter-length and
+% numerical tests are applied.
+
+newinternal mfun_parallel_join_mode ; mfun_parallel_join_mode := mitered ;
+
+% miter_limit is the maximum miter length as a multiple of the absolute offset
+% distance.
+
+newinternal mfun_parallel_miter_limit ; mfun_parallel_miter_limit := 8 ;
+
+% join_epsilon is the denominator tolerance for intersecting the two tangent rays
+% that define a miter join.
+
+newinternal mfun_parallel_join_epsilon ; mfun_parallel_join_epsilon := .00001 ;
+
+% smooth_epsilon is the cross-product tolerance for treating consecutive source
+% tangents as a smooth continuation rather than a corner.
+
+newinternal mfun_parallel_smooth_epsilon ; mfun_parallel_smooth_epsilon := .0005 ;
+
+% Return the first derivative of a single cubic Bezier segment. The input c is
+% expected to be a one-segment path, and t is the local parameter, normally in the
+% interval [0,1]. The result is a tangent vector in the same coordinate system as
+% the path.
+
+vardef mfun_parallel_cubic_derivative(expr c, t) =
+      3 * (1 - t) * (1 - t) * (firstpostcontrol c - firstpoint       c)
+    + 6 * (1 - t) *      t  * (lastprecontrol   c - firstpostcontrol c)
+    + 3 *      t  *      t  * (lastpoint        c - lastprecontrol   c)
+enddef ;
+
+% Return the second derivative of a single cubic Bezier segment. The input c is
+% again a one-segment path and t is its local parameter. This is used together with
+% the first derivative to compute signed curvature.
+
+vardef mfun_parallel_cubic_second_derivative(expr c, t) =
+      6 * (1 - t) * (lastprecontrol c - 2 * firstpostcontrol c + firstpoint       c)
+    + 6 *      t  * (lastpoint      c - 2 * lastprecontrol   c + firstpostcontrol c)
+enddef ;
+
+% Compute signed curvature for one cubic segment at local parameter t. Positive and
+% negative values distinguish the two turning directions of the oriented path. If
+% the derivative is numerically too small, the function returns zero to avoid
+% division by a nearly singular speed.
+
+vardef mfun_parallel_signed_curvature(expr c, t) =
+    save d, dd, s ;
+    pair d, dd ; numeric s ;
+    d  := mfun_parallel_cubic_derivative(c, t) ;
+    dd := mfun_parallel_cubic_second_derivative(c, t) ;
+    s  := length d ;
+    if s > mfun_parallel_epsilon :
+        (d crossprod dd) / (s * s * s)
+    else :
+        0
+    fi
+enddef ;
+
+% Reconstruct the current segment while iterating with "for i within p". The macro
+% has no explicit arguments: it reads MetaPost's path iteration variables
+% pathpoint, pathpostcontrol, deltaprecontrol, and deltapoint. The result is a
+% one-segment cubic path, even when the original segment was written as a straight
+% line.
+
+% vardef cubic_path_segment = % inlined
+%     pathpoint .. controls pathpostcontrol and (deltaprecontrol 1) .. (deltapoint 1)
+% enddef ;
+
+% Measure the current iterated segment by the length of its cubic control polygon.
+% Like cubic_path_segment, this is meant to be called only inside a "for i within
+% p" loop. It is used to recognize zero-length closing segments and other
+% degenerate pieces.
+
+vardef cubic_path_segment_length =
+      abs(pathpostcontrol   - pathpoint        )
+    + abs(deltaprecontrol 1 - pathpostcontrol  )
+    + abs(deltapoint      1 - deltaprecontrol 1)
+enddef ;
+
+% Return a path with degenerate segments removed while preserving open or cyclic
+% status. The input is any MetaPost path; straight segments are kept as cubic
+% segments with coincident controls as supplied by MetaPost. This prevents an
+% explicit "point && cycle" style closing segment from being offset or sampled.
+
+vardef normalized_path(expr p) =
+    for i within p :
+        if i < pathlength if not cycle p : - 1 fi :
+            if cubic_path_segment_length > mfun_parallel_epsilon :
+                (pathpoint .. controls pathpostcontrol and (deltaprecontrol 1) .. (deltapoint 1))
+                &
+            fi
+        fi
+    endfor
+    if cycle p :
+        cycle
+    else :
+        nocycle
+    fi
+enddef ;
+
+% Test whether a cyclic path ends with an explicit zero-length closing segment.
+% This is a representation detail of inputs like "... (0,0) && cycle": the segment
+% is ignored for offset computation, but the final closing knot can be preserved in
+% the returned offset path for clearer point labels.
+
+vardef mfun_parallel_has_degenerate_cyclic_tail(expr p) =
+    save found ;
+    boolean found ;
+    found := false ;
+    if cycle p :
+        for i within p :
+            if i = pathlength - 1 :
+                found := cubic_path_segment_length <= mfun_parallel_epsilon ;
+            fi
+        endfor
+    fi
+    found
+enddef ;
+
+% Return the last point of a path. This is a small readability helper for join
+% code, where the tail of an offset piece is repeatedly compared with the start of
+% the next piece. For cyclic paths this is MetaPost's point at length p. (inlined)
+
+% Move the first point of a path to new_start while preserving its outgoing tangent
+% handle by the same translation. The input p must have at least one segment. Later
+% segments are appended unchanged.
+
+vardef mfun_parallel_set_path_start(expr p, new_start) =
+    new_start
+        .. controls (firstpostcontrol p + new_start - firstpoint p) and (precontrol 1 of p)
+        .. (point 1 of p)
+    &  subpath (1,length p) of p
+enddef ;
+
+% Move the last point of a path to new_end while preserving its incoming tangent
+% handle by the same translation.  The input p must have at least one segment.
+% Earlier segments are appended unchanged.
+
+vardef mfun_parallel_set_path_end(expr p, new_end) =
+    save lp ; numeric lp ; lp := length p ;
+    subpath(0, lp - 1) of p
+    &
+    point (lp - 1) of p
+        .. controls (postcontrol lp - 1 of p) and ((precontrol lp of p) + (new_end - point lp of p))
+        .. new_end
+enddef ;
+
+% Append path q after path p without creating duplicate knots when their
+% endpoints already match.  Tiny numerical gaps are snapped by moving the start
+% of q; genuine gaps are joined by a straight connector.  This keeps adaptive
+% subdivision boundaries from producing visible double points.
+
+vardef mfun_parallel_append_path_piece(expr p, q) =
+    p
+    if lastpoint p = firstpoint q :
+        & q
+    elseif abs(lastpoint p - firstpoint q) <= mfun_parallel_epsilon :
+        & mfun_parallel_set_path_start(q, lastpoint p)
+    else :
+        -- firstpoint q & q
+    fi
+enddef ;
+
+% Decide whether two source segments meet with a smooth tangent continuation. The
+% inputs are consecutive one-segment source cubics, not their offset pieces. A
+% smooth join can be assembled directly; a corner gets a miter or bevel join.
+
+vardef mfun_parallel_join_is_smooth(expr prev_src, next_src) =
+    save incoming, outgoing ; pair incoming, outgoing ;
+    incoming := lastunitdirection  prev_src ;
+    outgoing := firstunitdirection next_src ;
+    ((incoming dotprod outgoing) > 0) and (abs(incoming crossprod outgoing) < mfun_parallel_smooth_epsilon)
+enddef ;
+
+% Compute the miter point for a corner between two offset pieces. prev_src and
+% next_src provide the incoming and outgoing source tangents, while prev_piece and
+% next_piece provide the two offset endpoints to be joined. The result is the
+% intersection of the two tangent rays in offset space.
+
+vardef mfun_parallel_corner_miter_point(expr prev_src, next_src, prev_piece, next_piece) =
+    save join_start, join_end, incoming, outgoing ; save denom, along_prev ;
+    pair join_start, join_end, incoming, outgoing ; numeric denom, along_prev ;
+    join_start := lastpoint prev_piece ;
+    join_end   := firstpoint next_piece ;
+    incoming   := lastunitdirection prev_src ;
+    outgoing   := firstunitdirection next_src ;
+    denom      := incoming crossprod outgoing ;
+    if denom <> 0 :
+        along_prev := ((join_end - join_start) crossprod outgoing) / denom ;
+        join_start + along_prev * incoming
+    else :
+        % message("SOME ERROR");
+        join_start
+    fi
+enddef ;
+
+% Check whether the miter for a corner is numerically usable and not too long. The
+% inputs are the same as corner_miter_point, with dist used to scale the miter
+% limit. The function also respects join_mode, so setting the mode away from miters
+% forces bevels.
+
+vardef mfun_parallel_corner_miter_usable(expr prev_src, next_src, prev_piece, next_piece, dist) =
+    save join_start, join_end, incoming, outgoing, miter ; save denom, base, limit ;
+    pair join_start, join_end, incoming, outgoing, miter ; numeric denom, base, limit ;
+    join_start := lastpoint prev_piece ;
+    join_end   := firstpoint next_piece ;
+    incoming   := lastunitdirection  prev_src ;
+    outgoing   := firstunitdirection next_src ;
+    denom      := incoming crossprod outgoing ;
+    base       := abs(dist) ;
+    if base < mfun_parallel_tolerance :
+        base := mfun_parallel_tolerance ;
+    fi
+    limit := mfun_parallel_miter_limit * base ;
+    if (mfun_parallel_join_mode = mitered) and (abs(denom) > mfun_parallel_join_epsilon) :
+        miter := mfun_parallel_corner_miter_point(prev_src, next_src, prev_piece, next_piece) ;
+        (abs (miter - join_start) <= limit) and (abs (miter - join_end) <= limit)
+    else :
+        false
+    fi
+enddef ;
+
+% Return the internal inflection parameters of one cubic segment. The input piece
+% is a one-segment cubic path. The result is a pair of numeric parameters; a
+% missing root is encoded as -1, and two roots are returned in increasing order.
+
+vardef mfun_parallel_inflection_roots(expr piece) =
+    save a, b, c, ab, ca, cb, disc, roots, r ;
+    pair a, b, c, roots ; numeric ab, ca, cb, disc, r ;
+    a     :=    - firstpoint piece + 3 * firstpostcontrol piece - 3 * lastprecontrol piece + point 1 of piece ;
+    b     :=  3 * firstpoint piece - 6 * firstpostcontrol piece + 3 * lastprecontrol piece ;
+    c     := -3 * firstpoint piece + 3 * firstpostcontrol piece ;
+    ab    := -6 * a crossprod b ;
+    ca    :=  6 * c crossprod a ;
+    cb    :=  2 * c crossprod b ;
+    roots := (-1, -1) ;
+    if abs(ab) > mfun_parallel_epsilon :
+        disc := ca * ca - 4 * ab * cb ;
+        if disc >= 0 :
+            r := (-ca - sqrt(disc)) / (2 * ab) ;
+            if (r > mfun_parallel_epsilon) and (r < 1 - mfun_parallel_epsilon) :
+                roots := (r, ypart roots) ;
+            fi
+
+            r := (-ca + sqrt(disc)) / (2 * ab) ;
+            if (r > mfun_parallel_epsilon) and (r < 1 - mfun_parallel_epsilon) :
+                if xpart roots < 0 :
+                    roots := (r, ypart roots) ;
+                elseif abs(r - xpart roots) > 64 * mfun_parallel_epsilon :
+                    roots := (xpart roots, r) ;
+                fi
+            fi
+        fi
+    elseif abs(ca) > mfun_parallel_epsilon :
+        r := -cb / ca ;
+        if (r > mfun_parallel_epsilon) and (r < 1 - mfun_parallel_epsilon) :
+            roots := (r, -1) ;
+        fi
+    fi
+    if (xpart roots > 0) and (ypart roots > 0) and (xpart roots > ypart roots) :
+        (ypart roots, xpart roots)
+    else :
+        roots
+    fi
+enddef ;
+
+% Split one cubic segment at its inflection parameters, if any. The input c is a
+% one-segment cubic path. The result is a path made from one, two, or three cubic
+% segments, joined without duplicate knots.
+
+vardef mfun_parallel_split_cubic_at_inflections(expr c) =
+    save roots, rone, rtwo ;
+    pair roots ; numeric rone, rtwo ;
+    roots := mfun_parallel_inflection_roots(c) ;
+    rone  := xpart roots ;
+    rtwo  := ypart roots ;
+    if (rone > 0) and (rtwo > 0) :
+        subpath (0, rone) of c
+      &
+        subpath (rone,rtwo) of c
+      &
+        subpath (rtwo,1) of c
+    elseif rone > 0 :
+        subpath (0, rone) of c
+      &
+        subpath (rone,1) of c
+    else :
+        c
+    fi
+enddef ;
+
+% Normalize a full path and split every nondegenerate segment at inflections. The
+% input may be open or cyclic and may contain straight segments. The output keeps
+% the input's cyclic status after normalization, so later stages can decide whether
+% to join the final piece back to the first one.
+
+vardef mfun_parallel_split_at_inflections(expr p) =
+    save q ;
+    path q ;
+    q := normalized_path(p) ;
+    for i within q :
+        if i < pathlength if not cycle q : - 1 fi :
+            mfun_parallel_split_cubic_at_inflections(
+                pathpoint .. controls pathpostcontrol and (deltaprecontrol 1) .. (deltapoint 1)
+            ) &
+        fi
+    endfor
+    if cycle q :
+      cycle
+    else :
+      nocycle
+    fi
+enddef ;
+
+% Construct one cubic approximation to the offset of a single cubic segment. The
+% input c is one source segment and dist is the signed offset distance, with
+% positive distance using MetaPost's left normal. Endpoint positions and tangents
+% are matched using the curvature-scaled derivative of the true offset.
+
+vardef mfun_parallel_candidate(expr c, dist) =
+    save deriva, derivb, normala, normalb, curva, curvb, scalea, scaleb, qa, qb, qc, qd ;
+    pair deriva, derivb, normala, normalb, qa, qb, qc, qd; numeric curva, curvb, scalea, scaleb ;
+    deriva  := 3 * (firstpostcontrol c - firstpoint     c) ;
+    derivb  := 3 * (lastpoint        c - lastprecontrol c) ;
+    normala := unitvector(deriva) rotated 90 ;
+    normalb := unitvector(derivb) rotated 90 ;
+    qa      := firstpoint c + dist * normala ;
+    qd      := lastpoint  c + dist * normalb ;
+    curva   := mfun_parallel_signed_curvature(c, 0) ;
+    curvb   := mfun_parallel_signed_curvature(c, 1) ;
+    scalea  := 1 - dist * curva ;
+    scaleb  := 1 - dist * curvb ;
+    if abs(scalea) < mfun_parallel_min_speed_factor :
+        scalea := if scalea < 0 : - fi mfun_parallel_min_speed_factor ;
+    fi
+    if abs(scaleb) < mfun_parallel_min_speed_factor :
+        scaleb := if scaleb < 0 : - fi mfun_parallel_min_speed_factor ;
+    fi
+    qb := qa + (scalea / 3) * deriva ;
+    qc := qd - (scaleb / 3) * derivb ;
+    qa .. controls qb and qc .. qd
+enddef ;
+
+% Estimate how far an offset candidate is from sampled normal-offset targets. c is
+% the source segment, q is the candidate offset segment, and dist is the signed
+% offset distance. The returned number is the largest Euclidean sample error over
+% the configured interior sample points.
+
+vardef mfun_parallel_candidate_error(expr c, q, dist) =
+    save worst, e, t, target, got ;
+    numeric worst, e, t ; pair target, got ;
+    worst := 0 ;
+    for i = 1 step 1 until mfun_parallel_samples :
+        t      := i / (mfun_parallel_samples + 1) ;
+        target := point t of c + dist * ((unitdirection t of c) rotated 90) ;
+        got    := point t of q ;
+        e      := abs(got - target) ;
+        if e > worst :
+            worst := e ;
+        fi
+    endfor ;
+    worst
+enddef ;
+
+% Detect whether an offset segment is near a cusp of the true offset curve. The
+% input c is one source segment and dist is the signed offset distance. A cusp is
+% possible when 1 - dist * curvature is close to zero, so such pieces are forced to
+% subdivide further instead of being accepted too early.
+
+vardef mfun_parallel_cusp_risk(expr c, dist) =
+    save risky ;
+    boolean risky ;
+    risky := false ;
+    for i = 0 step 1 until 4 :
+        if abs(1 - dist * mfun_parallel_signed_curvature(c, i/4)) < mfun_parallel_cusp_epsilon :
+            risky := true ;
+        fi
+    endfor ;
+    risky
+enddef ;
+
+% Measure the control polygon length of a one-segment cubic path. The input piece
+% is assumed to have one segment. This inexpensive size measure is used both to
+% reject degenerate pieces and to stop recursion on pieces that are already smaller
+% than the requested tolerance scale.
+
+vardef mfun_parallel_control_polygon_length(expr piece) =
+      abs(firstpostcontrol piece - firstpoint       piece)
+    + abs(lastprecontrol   piece - firstpostcontrol piece)
+    + abs(lastpoint        piece - lastprecontrol   piece)
+enddef ;
+
+% Return true when a one-segment path is large enough to offset. The input piece is
+% measured by its control polygon length. Segments at or below epsilon are
+% skipped so zero-length cyclic tails do not create offset artifacts.
+
+vardef mfun_parallel_valid_segment(expr piece) =
+    mfun_parallel_control_polygon_length(piece) > mfun_parallel_epsilon
+enddef ;
+
+% Recursively approximate the offset of one cubic segment. The input c is one
+% source segment, dist is the signed offset distance, and depth is the remaining
+% subdivision budget. The function accepts a cubic candidate when its sampled error
+% is small and cusp risk is low; otherwise it subdivides at t = .5 and appends the
+% two recursive offsets.
+
+vardef mfun_parallel_cubic_recursive(expr c, distance, depth) =
+    save q, left_segment, right_segment, left_offset, right_offset, err, short_enough, risky ;
+    path q, left_segment, right_segment, left_offset, right_offset ; numeric err ; boolean short_enough, risky ;
+    q            := mfun_parallel_candidate(c, distance) ;
+    err          := mfun_parallel_candidate_error(c, q, distance) ;
+    short_enough := mfun_parallel_control_polygon_length(c) < 2 * mfun_parallel_tolerance ;
+    risky        := mfun_parallel_cusp_risk(c, distance) ;
+    if (depth <= 0) or ((err <= mfun_parallel_tolerance) and (not risky)) or short_enough :
+        q
+    else :
+        left_segment  := subpath (0,.5) of c ;
+        right_segment := subpath (.5,1) of c ;
+        left_offset   := mfun_parallel_cubic_recursive(left_segment,  distance, depth - 1) ;
+        right_offset  := mfun_parallel_cubic_recursive(right_segment, distance, depth - 1) ;
+        mfun_parallel_append_path_piece(left_offset, right_offset)
+    fi
+enddef ;
+
+% Offset a complete MetaPost path, including multi-segment paths and corners. The
+% input p may be open or cyclic and may contain cubic or straight segments; distance
+% is the signed offset distance. The path is normalized, split at inflections, offset
+% piece by piece, and then reassembled with smooth joins, miter joins, or bevel
+% joins as appropriate.
+
+def mfun_parallel_append_path_piece_x(expr q) =
+    if lastxy = firstpoint q :
+        & q
+    elseif abs(lastxy - firstpoint q) <= mfun_parallel_epsilon :
+        & mfun_parallel_set_path_start(q, lastxy)
+    else :
+        -- firstpoint q & q
+    fi
+enddef ;
+
+vardef mfun_parallel_adaptive_offset(expr p, dist) =
+    save prepared, out, current, src, piece, join_kind, join_point ; save n, source_closed, keep_closing_knot ;
+    path prepared, out, current, src[], piece[] ; pair join_point[] ; numeric join_kind[], n ; boolean source_closed, keep_closing_knot ;
+    prepared          := mfun_parallel_split_at_inflections(p) ;
+    source_closed     := cycle prepared ;
+    keep_closing_knot := mfun_parallel_has_degenerate_cyclic_tail(p) ;
+    n                 := 0 ;
+    for i within prepared :
+        if i < pathlength if not source_closed : - 1 fi :
+            current := pathpoint .. controls pathpostcontrol and (deltaprecontrol 1) .. (deltapoint 1) ;
+            if mfun_parallel_valid_segment(current) :
+                src[n]   := current ;
+                piece[n] := mfun_parallel_cubic_recursive(src[n], dist, mfun_parallel_max_depth) ;
+                n        := n + 1 ;
+            fi
+        fi
+    endfor
+    for i = 0 step 1 until n - 2 :
+        if mfun_parallel_join_is_smooth(src[i], src[i + 1]) :
+            join_kind[i] := -1; % mitered ; % unset or mitered
+        elseif mfun_parallel_corner_miter_usable(src[i], src[i + 1], piece[i], piece[i + 1], dist) :
+            join_point[i] := mfun_parallel_corner_miter_point(src[i], src[i + 1], piece[i], piece[i + 1]) ;
+            piece[i]      := mfun_parallel_set_path_end(piece[i], join_point[i]) ;
+            piece[i + 1]  := mfun_parallel_set_path_start(piece[i + 1], join_point[i]) ;
+            join_kind[i]  := mitered ; % skipped
+        else :
+            join_kind[i]  := beveled ; % checked
+        fi
+    endfor ;
+    if source_closed :
+        i := n - 1 ;
+        if mfun_parallel_join_is_smooth(src[i], src[0]) :
+            join_kind[i] := -1; % mitered ; % unset or mitered
+        elseif mfun_parallel_corner_miter_usable(src[i], src[0], piece[i], piece[0], dist) :
+            join_point[i] := mfun_parallel_corner_miter_point(src[i], src[0], piece[i], piece[0]) ;
+            piece[i]      := mfun_parallel_set_path_end(piece[i], join_point[i]) ;
+            piece[0]      := mfun_parallel_set_path_start(piece[0], join_point[i]) ;
+            join_kind[i]  := mitered ; % skipped
+        else :
+            join_kind[i]  := beveled ; % checked
+        fi
+    fi
+    % inefficient
+%     out := piece[0] ;
+%     for i = 1 step 1 until n - 1:
+%         if join_kind[i - 1] = beveled :
+%             connector :=  lastpoint out -- firstpoint piece[i] ;
+%             out := mfun_parallel_append_path_piece(out, connector) ;
+%         fi
+%         out := mfun_parallel_append_path_piece(out, piece[i]) ;
+%     endfor ;
+    %
+    out := piece[0]
+    for i = 1 step 1 until n - 1:
+        if join_kind[i - 1] = beveled :
+            mfun_parallel_append_path_piece_x(lastxy -- firstpoint piece[i])
+        fi
+        mfun_parallel_append_path_piece_x(piece[i])
+    endfor ;
+    %
+    if source_closed :
+        if join_kind[n - 1] = beveled :
+            connector := lastpoint out -- firstpoint piece[0] ;
+            out := mfun_parallel_append_path_piece(out, connector) ;
+        fi
+        if abs(lastpoint out - firstpoint out) <= mfun_parallel_epsilon :
+            out := mfun_parallel_set_path_end(out, firstpoint out) ;
+            if keep_closing_knot :
+                out := out &&
+            else :
+                out := out &
+            fi
+        else :
+            out := out --
+        fi cycle ;
+    fi
+    out
+enddef ;
+
+% Draw sampled points of the mathematical normal offset for comparison. The input p
+% is normalized before sampling, dist is the signed offset distance, n is the
+% number of sample intervals, and col is the dot color. Cyclic paths omit the
+% duplicate final sample so the closing point is not plotted twice.
+
+vardef mfun_parallel_sampled_points(expr p, distance, samples) =
+    save q, t ;
+    path q ; numeric t ;
+    q := normalized_path(p) ;
+    for i = 0 step 1 until samples if cycle q : - 1 fi :
+        hide(t := (length q) * i / samples ;)
+        point t of q + distance * ((unitdirection t of q) rotated 90) --
+    endfor
+    nocycle
+enddef ;
+
+% A user interface:
+
+presetparameters "parallel" [
+    tolerance      = .20,
+    maxdepth       = 13,
+    samples        = 5,
+    minspeedfactor = .002,
+    joinmode       = mitered, % beveled
+    miterlimit     = 8,
+    eps            = 1/65536,
+    cuspepsilon    = .060,
+    joinepsilon    = .00001,
+    smoothepsilon  = .0005,
+    path           = origin,
+    distance       = 5,
+    trace          = false,
+] ;
+
+def lmt_parallel = applyparameters "parallel" "lmt_do_parallel" enddef ;
+
+vardef lmt_do_parallel =
+    pushparameters "parallel" ;
+    %
+    interim mfun_parallel_tolerance        := getparameter "tolerance" ;
+    interim mfun_parallel_max_depth        := getparameter "maxdepth" ;
+    interim mfun_parallel_samples          := getparameter "samples" ;
+    interim mfun_parallel_min_speed_factor := getparameter "minspeedfactor" ;
+    interim mfun_parallel_join_mode        := getparameter "joinmode" ;
+    interim mfun_parallel_miter_limit      := getparameter "miterlimit" ;
+    %
+    interim mfun_parallel_epsilon          := getparameter "epsilon" ;
+    interim mfun_parallel_cusp_epsilon     := getparameter "cuspepsilon" ;
+    interim mfun_parallel_join_epsilon     := getparameter "joinepsilon" ;
+    interim mfun_parallel_smooth_epsilon   := getparameter "smoothepsilon" ;
+    %
+    save p ; path p ; p := getparameter "path" ;
+    if getparameter "trace" :
+        image (
+            draw p withcolor "darkred" ;
+            drawdot mfun_parallel_sampled_points(
+                p, getparameter "distance", getparameter "samples"
+            ) withpen pencircle scaled 3 withcolor "middlegray" ;
+            draw mfun_parallel_adaptive_offset(p,getparameter "distance") ;
+        )
+    else :
+        mfun_parallel_adaptive_offset(p,getparameter "distance")
+    fi
+    popparameters
+enddef ;
+
+% draw lmt_parallel [
+%     trace    = true,
+%     distance = -16,
+%     samples  = 10,
+%     path     = ((0,0){right} .. {left}(0,50) .. {right}(0,100) .. {left}(0,50) .. {right}(0,0) && cycle),
+% ] ;
+
+% draw lmt_parallel [
+%     path  = ((0,0){right} .. {left}(0,50) .. {right}(0,100) .. {left}(0,50) .. {right}(0,0) && cycle),
+% ] withcolor red ;
+
+% draw lmt_parallel [
+%     comment  = "near straight",
+%     trace    = true,
+%     distance = 10,
+%     samples  = 5,
+%     path     = ((0, 0) .. controls (55, 3) and (115, -2) .. (170, 6)),
+% ] shifted (100,50) ;
+
+% draw lmt_parallel [
+%     comment  = "tight",
+%     trace    = true,
+%     distance = -12,
+%     samples  = 5,
+%     path     = ((0, 0) .. controls (100, 120) and (15, 165) .. (65, 20)),
+% ] shifted (0,-150) ;
+
+% draw lmt_parallel [
+%     comment  = "polyline",
+%     trace    = true,
+%     distance = 9,
+%     samples  = 5,
+%     path     = ((0, 0) -- (70, 0) -- (70, 55) -- (120, 55)),
+% ] shifted (100,-150) ;
+
+% draw lmt_parallel [
+%     comment  = "square",
+%     trace    = true,
+%     distance = -8,
+%     samples  = 5,
+%     path     = ((0, 0) -- (64, 0) -- (64, 64) -- (0, 64) -- cycle),
+% ] shifted (250,-150) ;
+

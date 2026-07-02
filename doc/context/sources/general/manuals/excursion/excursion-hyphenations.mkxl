@@ -1,0 +1,7 @@
+\startenvironment excursion-hyphenations
+
+    \registerhyphenationexception[nl][Zwar-te-wa-ter-kloos-ter]
+    \registerhyphenationexception[nl][Ste-pha-nus]
+    \registerhyphenationexception[nl][De-dems-vaart]
+
+\stopenvironment

@@ -224,7 +224,7 @@
 
 \def\mlib_stop_group#1#2#3#4#5#6% some day this might happen elsewhere
   {\egroup
-   % a bit weird one basepoint correction here
+   % a bit weird one basepoint correction here (we need to check this, maybe the 1 bp margin)
    \setbox\scratchbox\hpack{\box\scratchbox}%
    \wd\scratchbox {#5\onebasepoint-#3\onebasepoint+2\onebasepoint}%
    \ht\scratchbox #6\onebasepoint

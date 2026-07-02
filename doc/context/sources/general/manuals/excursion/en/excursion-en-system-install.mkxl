@@ -1,0 +1,174 @@
+% signal=squid
+
+\startcomponent excursion-en-system-install
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=How to install \CONTEXT,reference=chap:install]
+
+\index{install context}
+
+\startsection[title=Short history about \TEX]
+
+The \TEX\ typesetting software was developed by Professor Donald E. Knuth at the
+Stanford University, USA and first made publicly available in 1976. When Donald
+E. Knuth released \TEX\ the output format was a DVI file i.e a device independent
+fileformat. For viewing and printing further software packages were necessary.
+Looking back to the seventies of the last century you might remember, that at
+that time computers were the main frame computers, available only to universities
+and big companies. Still with this restriction the \TEX\ programme became widely
+distributed over the world. It did not take too long and the first PCs became
+available which made it possible to use \TEX\ also on such small computers. The
+\TEX\ typesetting system is characterized by the possibility to program it. The
+programming bits are called macros. Due to the restrictions of old time
+computers, writing macros was quite difficult. This lead to the development of
+different more user friendly interfaces. One of those intermediate layers is
+\CONTEXT.
+
+In the early nineties of the last century Adobe introduced the \PDF\ file format
+i.e. a portable file format. This company also introduced the so called type 1
+fonts. These developments caused the \TEX\ community to invest into an extension
+of \TEX, enabling it to produce directly \PDF\ as output and the use of the type
+1 fonts. This work was carried out by \THANH.
+
+Development of \TEX\ went on with consent of Prof. Donald E. Knuth, however
+mostly outside the USA. A major step in modernizing the \TEX\ engine was the
+implementation of a \LUA\ interpreter. This enabled the access to internal
+variables in the \TEX\ engine, leading to more control. The development of
+\LUATEX\ started around 2005. During the following years multiple versions of
+increasing completeness were released. This work was mostly done by Hans Hagen
+and Taco Hoekwater. The version 1.0 was released in 2016.
+
+To this point the development of \TEX\ was always with the aim, that all \TEX\
+macro packages were able to use the \LUATEX\ machinery. After the end of the
+\LUATEX\ project, Hans Hagen started a new thread of development. Now a
+compatibility with other macro packages was given up, because Hans already had
+developed his own font handler, a separate \PDF\ backend and more. It was now
+time to start eliminating extensions added to the engine in the past which were
+nomore necessary. Furthermore this decision provided the possibility to break
+open even more of the internals of the \TEX\ engine. The result of these
+activities is the new \TEX\ engine called \LUAMETATEX. This engine is lean and
+approaches the size of the Knuthian \TEX\ engine. Alongside this development
+\CONTEXT\ was adapted accordingly. The use of the \LUAMETATEX\ engine requires to
+run an up-to-date version of \CONTEXT.
+
+\stopsection
+
+\startsection[title=Supported operating systems]
+
+Though the whole development of \LUAMETATEX\ and \CONTEXT\ take place in a
+WINDOWS environment other operating systems are served as well. In
+\in{table}[tab:supported-OS] there is a summary of supported environments.
+
+\startplacetable
+  [reference=tab:supported-OS,
+   title=Available precompiled \LUAMETATEX\ packages]
+   {\setupTABLE[option=stretch]
+   \bTABLE
+
+    \bTR
+      \bTD[style=\bf]  OS \eTD
+      \bTD[nx=2,style=\bf] Architecture \eTD
+      \bTD[style=\bf]  OS \eTD\bTD[nx=2,style=\bf] Architecture \eTD
+    \eTR
+    \bTR
+      \bTD Windows    \eTD\bTD X86  \eTD\bTD 32bits \eTD
+      \bTD GNU/Linux  \eTD\bTD X86  \eTD\bTD 32bits \eTD
+    \eTR
+    \bTR
+      \bTD            \eTD\bTD X86  \eTD\bTD 64bits \eTD
+      \bTD            \eTD\bTD X86  \eTD\bTD 64bits \eTD
+    \eTR
+    \bTR
+      \bTD            \eTD\bTD ARM  \eTD\bTD 64bits \eTD
+      \bTD            \eTD\bTD ARM  \eTD\bTD 64bits \eTD
+    \eTR
+    \bTR
+      \bTD macOS      \eTD\bTD X86  \eTD\bTD 64bits \eTD
+      \bTD            \eTD\bTD Musl \eTD\bTD 64bits \eTD
+    \eTR
+    \bTR
+      \bTD            \eTD\bTD ARM  \eTD\bTD 64bits \eTD
+      \bTD FreeBSD    \eTD\bTD 14.0 \eTD\bTD 64bits \eTD
+    \eTR
+    \bTR
+      \bTD            \eTD\bTD      \eTD\bTD        \eTD
+      \bTD OpenBSD    \eTD\bTD 7.4  \eTD\bTD 64bits  \eTD
+    \eTR
+  \eTABLE}
+\stopplacetable
+
+The different binaries are updated in parallel and are normally on the same stage
+of development.
+
+\stopsection
+
+\startsection[title=Installing \CONTEXT]
+
+Installing \CONTEXT\ is an easy process. Visit either the \goto{\Emph{Pragma
+website}}[url (www:pragma:installation)] or the \goto {\Emph{\CONTEXTWIKI}}[url
+(www:garden:installation)] and download the appropriate installation package.
+
+There is then a short sequence of steps to follow.
+
+\startitemize[n,packed]
+    \startitem create a directory for, e.g. \unknown/context \stopitem
+    \startitem go there and download the relevant zip, if not done already \stopitem
+    \startitem unpack the archive into your new directory \stopitem
+    \startitem on \UNIX\ set the executable permissions for \type{install.sh} \stopitem
+    \startitem on \WINDOWS\ run the \type{install.bat} \stopitem
+    \startitem on \UNIX\ run the \type{install.sh} file \stopitem
+    \startitem check the installation by issuing \type{context --version} from the command line
+    \startitem set the PATH variable pointing to your installation \stopitem
+\stopitemize
+
+On WINDOWS you can best run the script as administrator because that will use
+shortcuts to programs instead of copies which is more efficient. There you can
+also run the \type{setpath.bat} file from your installation directory.
+
+On GNU/Linux and MacOS systems the path to the \CONTEXT\ installation should be
+put into the shell startup configuration file e.g. the \type{.bashrc} or
+\type{.zshenv} or what your OS is using for this purpose.
+
+\stopsection
+
+\startsection[title=Rebuilding the file database]
+
+When installing or updating the installation the install script takes care of
+building the file database. If you have to regenerate this database because you
+added e.g. a new font, then run from the command line
+
+\index{mtxrun (command)}
+\type{mtxrun --generate}
+
+\stopsection
+
+
+\startsection[title=Rebuilding the format]
+
+Normally you will not have to deal with the format file because the installation
+script generates it upon installation or upgrading. However need be, you can run
+on the command line
+
+\index{context (command)}
+\type{context --make}
+
+\stopsection
+
+\startsection[title=Updating the distribution]
+
+Once you have a running installation the updating of it is simply running the
+install script again.
+
+If you would like to use the latest developments you might have an eye on the
+release of new \CONTEXT\ versions. This can best be done by joining the
+\goto{\Emph{\CONTEXT\ mailinglist}}[url (list:context)] because new releases are
+announced there.
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

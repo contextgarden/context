@@ -104,8 +104,8 @@ end
 local runner = sandbox.registerrunner {
     name     = "to file curl resolver",
     method   = "execute",
-    program  = "curl",
-    template = '--silent --insecure --create-dirs --output "%cachename%" "%original%"',
+    program  = "curl", -- redirects: -L or --follow (new)
+    template = '--L --silent --insecure --create-dirs --output "%cachename%" "%original%"',
     internal = function(specification)
         local fetch = fetcher(specification.reporter)
         return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
@@ -122,8 +122,8 @@ local runner = sandbox.registerrunner {
 local memrunner = sandbox.registerrunner {
     name     = "in memory curl resolver",
     method   = "resultof",
-    program  = "curl",
-    template = '--silent --insecure "%original%"',
+    program  = "curl", -- redirects: -L or --follow (new)
+    template = '--L --silent --insecure "%original%"',
     internal = function(specification)
         local fetch = fetcher(specification.reporter)
         return fetch and function(name,program,template,checkers,defaults,variables,reporter,finalized)
@@ -257,7 +257,7 @@ end
 
 install('http',http_handler)
 install('https') -- see pod
-install('ftp')
+install('ftp')   -- will go away
 
 statistics.register("scheme handling time", function()
     local l, r, nl, nr = { }, { }, 0, 0

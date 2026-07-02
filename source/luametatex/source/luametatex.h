@@ -111,7 +111,7 @@
 # define luametatex_release          8
 # define luametatex_version_string   "2.11.09"
 # define luametatex_version_number   211.9
-# define luametatex_development_id   20260427
+# define luametatex_development_id   20260701
 # define luametatex_name_camelcase   "LuaMetaTeX"
 # define luametatex_name_lowercase   "luametatex"
 # define luametatex_copyright_holder "Taco Hoekwater, Hans Hagen, Wolfgang Schuster & Mikael Sundqvist"
@@ -360,6 +360,7 @@ extern version_state_info lmt_version_state;
 # include "luarest/lmtvectorlib.h"
 # include "luarest/lmteffectslib.h"
 # include "luarest/lmtbytemaplib.h"
+# include "luarest/lmtzbufferlib.h"
 
 /*tex
 

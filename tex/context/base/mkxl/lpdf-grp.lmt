@@ -11,13 +11,14 @@ local formatters, gsub, char = string.formatters, string.gsub, string.char
 local sort = table.sort
 local round = math.round
 
-local colors         = attributes.colors
-local basepoints     = number.dimenfactors.bp
+local colors               = attributes.colors
 
-local pdfbackend     = backends.registered.pdf
-local nodeinjections = pdfbackend.nodeinjections
-local codeinjections = pdfbackend.codeinjections
-local registrations  = pdfbackend.registrations
+local basepoints   <const> = number.dimenfactors.bp
+
+local pdfbackend           = backends.registered.pdf
+local nodeinjections       = pdfbackend.nodeinjections
+local codeinjections       = pdfbackend.codeinjections
+local registrations        = pdfbackend.registrations
 
 local lpdf                 = lpdf
 local pdfdictionary        = lpdf.dictionary
@@ -28,9 +29,9 @@ local pdfreference         = lpdf.reference
 local pdfflushobject       = lpdf.flushobject
 local pdfflushstreamobject = lpdf.flushstreamobject
 
-local createimage = images.create
-local wrapimage   = images.wrap
-local embedimage  = images.embed
+local createimage          = images.create
+local wrapimage            = images.wrap
+local embedimage           = images.embed
 
 -- can also be done indirectly:
 --
@@ -303,6 +304,22 @@ do
             end
         end
         --
+        local masked = tonumber(t.masked)
+        if type(masked) == "number" then
+            if masked < 0 then
+                masked = 0
+            elseif masked > 255 then
+                masked = 255
+            end
+            if colors == 1 then
+                masked = pdfarray { masked, masked }
+            elseif colors == 3 then
+                masked = pdfarray { masked, masked, masked, masked, masked, masked }
+            else
+                masked = nil
+            end
+        end
+        --
         local xobject = pdfdictionary {
             Type             = pdfconstant("XObject"),
             Subtype          = pdfconstant("Image"),
@@ -312,6 +329,7 @@ do
             ColorSpace       = palette or colorspace,
             Length           = #data,
             Filter           = pdfconstant("FlateDecode"),
+            Mask             = masked,
         }
         --
         local mask = tonumber(t.mask)

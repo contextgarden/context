@@ -1,0 +1,170 @@
+% signal=squid
+
+\startcomponent excursion-en-modes
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Using modes, reference=chap:modes]
+
+\index{mode}
+
+\CONTEXT\ offers a very handy feature called \type{modes}. Assume you prepare a
+document which should be compiled as well for a paper as also for a screen
+version it is the most easy approach to define a mode for the screen version.
+
+\shortsetup{definemode}
+\shortsetup{enablemode}
+\shortsetup{startmode}
+
+\startbuffer
+\enablemode Screen
+
+\definemode[Screen]
+
+\startmode[Screen]
+  \environment  examplefile-screen
+\stopmode
+
+\stopbuffer
+
+\typebuffer
+
+If you enable the \type{Screen} mode at the beginning of the document \CONTEXT\
+will use this mode and compile with the instructions given for this mode. There
+can be multiple modes in a document. You can activate multiple modes by adding
+them to the \type{\enablemode} command as a list. Furthermore there are
+possibilities to use a mode conditionally e.g. \type{\doifmode} or
+\type{\doifnotmode}. There is a whole bunch of information on conditional
+processing with modes on the \goto{\Emph{\CONTEXTWIKI}}[url
+(https://wiki.contextgarden.net/Input_and_compilation/Conditional_processing_with_Modes)].
+
+The environment file \type{myscreen.mkxl} contains the particulars for this mode.
+
+\startbuffer[MyscreenA]
+\startenvironment Myscreen
+  \definepapersize
+    [LocalPaperFormat]
+    [width=28cm,
+     height=21cm]
+
+  \setuppapersize
+    [LocalPaperFormat]
+    [LocalPaperFormat]
+
+  \setuplayout
+    [location=middle,
+     topspace=.5cm,
+     header=1.5cm,
+     height=20cm,
+     rightedge=5cm,
+     rightedgedistance=1cm]
+
+  \setupinteractionscreen
+    [width=28cm,
+     height=21cm,
+     option=max]
+
+  \setuppagenumbering
+    [alternative=singlesided,
+     location={bottom,right}]
+
+  \setupinteraction
+    [state=start,
+     color=,
+     menu=on]
+
+  \setuplist
+    [chapter]
+    [interaction=all]
+
+  \setupinteractionmenu
+    [right]
+    [state=start,
+     color=blue,
+     offset=4pt,
+     frame=off]
+
+  \defineoverlay
+    [Gotocontents]
+    [\overlaybutton
+      {chap:Contents}]
+
+  \defineframed
+    [Menu]
+
+  \setupframed
+    [Menu]
+    [background=color,
+     backgroundcolor=
+       ShapeLightFill,
+     width=\rightedgewidth,
+     frame=off]
+\stopbuffer
+
+\startbuffer[MyscreenB]
+  \startinteractionmenu[right]
+    \vfill
+    \startgoto [chap:contents]{\Menu{Contents}}
+    \stopgoto\par
+    \startgoto [chap:index]{\Menu{Index}}
+    \stopgoto\par
+    \startgoto [chap:commandindex]{\Menu{Commandindex}}
+    \stopgoto\par
+    \startgoto [chap:commandsetups]{\Menu{Commanddefinitions}}
+    \stopgoto\par
+    \vfill
+    \startgoto [Colofon]{\Menu{Colofon}}
+    \stopgoto \par
+    \startgoto [CloseDocument]{\Menu{Close Document}}
+    \stopgoto\par
+    \startgoto [SearchDocument]{\Menu{Search}}
+    \stopgoto \par
+    \startgoto [PreviousJump]{\Menu{Go back}}
+    \stopgoto
+  \stopinteractionmenu
+\stopenvironment
+\stopbuffer
+
+\startcolumns[n=2]
+  \setuptyping[margin=]
+  \typebuffer[MyscreenA]
+\stopcolumns
+
+\typebuffer[MyscreenB]
+
+You can define an \type{\overlaybutton} as shown above. The overlay button is
+combined with a reference e.g. to the table of contents. Inside the document,
+after the table of contents this button may be activated with e.g.
+
+\startbuffer
+\setupbackgrounds
+  [page]
+  [background=Gotocontents]
+\stopbuffer
+
+\typebuffer
+
+\startplacefigure
+  [location=here,
+   reference=fig:screen,
+   title=Example page from the screen version]
+    {\externalfigure
+      [excursion-en-fig-screenshot]
+      [width=0.9\makeupwidth-1em]}
+\stopplacefigure
+
+The interaction screen is as big as the paper defined for this screen document.
+The menu will be placed in the \type{rightedge} with a width of 5 \unit{centi
+meter} and 1 \unit{centi meter} to the right of the text area. The document is of
+course single sided and the pagenumber will be placed at the bottom to the right.
+In the table of contents the chapters are clickable to move quickly to a certain
+chapter in the screen document. An interaction menu is normally created with at
+least three clickable links to jump to the table of contents from anywhere in the
+document, going directly to the index and as for a proper screen document only
+decent a button to exit the document.
+
+\stopchapter
+
+\stopcomponent

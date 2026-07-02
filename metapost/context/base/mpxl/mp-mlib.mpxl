@@ -2021,11 +2021,15 @@ def withbytemask expr n =
     withprescript "bytemask=" & decimal n
 enddef ;
 
+def withbytemasked expr n =
+    withprescript "bytemasked=" & decimal n
+enddef ;
+
 def withbyteexpansion expr n =
     withprescript "byteexpansion=" & decimal n
 enddef ;
 
-permanent withbytemask, withbyteexpansion ;
+permanent withbytemask, withbytemasked, withbyteexpansion ;
 
 vardef loadbytemapfromfile(expr index, filename) =
     lua.mp.bytemap_load_from_file(index, filename)

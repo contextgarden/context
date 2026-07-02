@@ -782,17 +782,42 @@ static inline int tex_aux_uni_to_buffer(unsigned char *b, int m, int c)
     much sense. It also long token lists that never (should) match anyway.
 */
 
+static int tex_aux_append_iterator(halfword *p, int *n)
+{
+    int prv_cmd = cur_cmd;
+    int prv_chr = cur_chr;
+    tex_get_next();
+    if (valid_iterator_reference(token_val(cur_cmd, cur_chr))) {
+        halfword t = null;
+        halfword h = tex_expand_parameter(token_val(cur_cmd, cur_chr), &t);
+        if (h) {
+            halfword c = h;
+            while (c) {
+                c = token_link(c);
+                n++;
+            }
+            set_token_link(*p, h);
+            *p = t;
+             return 1;
+        }
+    }
+    *p = tex_store_new_token(*p, token_val(prv_cmd, prv_chr));
+    *n += 1;
+    return 0;
+}
+
 static int tex_aux_collect_cs_tokens(halfword *p, int *n)
 {
     while (1) {
         tex_get_next();
+      AGAIN:
         switch (cur_cmd) {
             case left_brace_cmd:
             case right_brace_cmd:
             case math_shift_cmd:
             case alignment_tab_cmd:
          /* case end_line_cmd: */
-            case parameter_cmd:
+         /* case parameter_cmd: */ /* see below */
             case superscript_cmd:
             case subscript_cmd:
          /* case ignore_cmd: */
@@ -806,6 +831,13 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
          /* case comment_cmd: */
          /* case invalid_char_cmd: */
          /*      break; */
+            /* why not ... */
+            case parameter_cmd:
+                if (tex_aux_append_iterator(p, n)) {
+                    break;
+                } else {
+                    goto AGAIN;
+                }
             case call_cmd:
             case tolerant_call_cmd:
                 tex_aux_macro_call(cur_cs, cur_cmd, cur_chr);
@@ -843,6 +875,8 @@ static int tex_aux_collect_cs_tokens(halfword *p, int *n)
                         *p = tex_store_new_token(*p, token_val(cur_cmd, cur_chr));
                     }
                     break;
+                } else {
+                    /* fall through */
                 }
             default:
                 if (cur_cmd > max_command_cmd && cur_cmd < first_call_cmd) {

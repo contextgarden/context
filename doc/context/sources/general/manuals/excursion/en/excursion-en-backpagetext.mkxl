@@ -1,0 +1,33 @@
+\startcomponent excursion-en-backpagetext
+
+\enablemode[**en-us]
+
+\project excursion
+
+This manual describes some features of \CONTEXT, a document production system,
+based on \TEX.
+
+\vfil
+
+\CONTEXT\ offers the user a flexible and high quality typesetting environment. No
+in||depth knowledge of \TEX\ is needed. The parameter driven character of
+\CONTEXT\ enables users to define their own layout rather easily.
+
+\vfil
+
+\CONTEXT\ is developed and tested in a production environment and is used for
+typesetting simple books as well as complex documents, paper and/or screen based.
+This introduction manual describes the functionality needed for everyday
+publications, like manuals and educational materials.
+
+\vfil
+
+This manual is also available as an interactive document, be it in a bit
+different layout. The macro package \CONTEXT, some more advanced examples and
+additional information can be found at \goto{\Emph{Pragma Advanced Document
+Engineering}}[url (www:pragma)].
+
+\doifnotmode{Screen}
+  {\par(\url[www:pragma])}
+
+\stopcomponent

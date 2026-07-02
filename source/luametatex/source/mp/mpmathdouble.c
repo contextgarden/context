@@ -431,12 +431,14 @@ static void mp_double_slow_sub(MP mp, mp_number *ret, mp_number *x_orig, mp_numb
     }
 }
 
-static void mp_double_number_make_fraction(MP mp, mp_number *ret, mp_number *p, mp_number *q) {
+static void mp_double_number_make_fraction(MP mp, mp_number *ret, mp_number *p, mp_number *q)
+{
     (void) mp;
     ret->data.dval = mp_double_make_fraction(p->data.dval, q->data.dval);
 }
 
-static void mp_double_number_take_fraction(MP mp, mp_number *ret, mp_number *p, mp_number *q) {
+static void mp_double_number_take_fraction(MP mp, mp_number *ret, mp_number *p, mp_number *q)
+{
    (void) mp;
    ret->data.dval = mp_double_take_fraction(p->data.dval, q->data.dval);
 }
@@ -687,6 +689,19 @@ static void mp_double_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numb
     double b = fabs(b_orig->data.dval);
     errno = 0;
     ret->data.dval = sqrt(a*a + b*b);
+    if (errno) {
+        mp->arithmic_error = mp_error_code(mp, 3);
+        ret->data.dval = EL_GORDO;
+    }
+}
+
+static void mp_double_pyth_add3(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig)
+{
+    double a = fabs(a_orig->data.dval);
+    double b = fabs(b_orig->data.dval);
+    double c = fabs(c_orig->data.dval);
+    errno = 0;
+    ret->data.dval = sqrt(a*a + b*b + c*c);
     if (errno) {
         mp->arithmic_error = mp_error_code(mp, 3);
         ret->data.dval = EL_GORDO;
@@ -1227,6 +1242,7 @@ math_data *mp_initialize_double_math(MP mp)
     math->md_m_unif_rand              = mp_double_m_unif_rand;
     math->md_m_norm_rand              = mp_double_m_norm_rand;
     math->md_pyth_add                 = mp_double_pyth_add;
+    math->md_pyth_add3                = mp_double_pyth_add3;
     math->md_pyth_sub                 = mp_double_pyth_sub;
     math->md_power_of                 = mp_double_power_of;
     math->md_fraction_to_scaled       = mp_double_fraction_to_scaled;

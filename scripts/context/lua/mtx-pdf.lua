@@ -661,12 +661,15 @@ local function getfonts(pdffile)
     return usedfonts
 end
 
+-- As we are also for luatex we can't use the nicer lmt helpers.
+
 local function getunicodes(font)
     local cid = font.ToUnicode
     if cid then
         cid = cid()
-        local counts  = { }
-        local indices = { }
+        local counts    = { }
+        local indices   = { }
+        local ligatures = { }
      -- for s in gmatch(cid,"begincodespacerange%s*(.-)%s*endcodespacerange") do
      --     for a, b in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
      --         print(a,b)
@@ -674,7 +677,7 @@ local function getunicodes(font)
      -- end
         setmetatableindex(counts, function(t,k) t[k] = 0 return 0 end)
         for s in gmatch(cid,"beginbfrange%s*(.-)%s*endbfrange") do
-            for first, last, offset in gmatch(s,"<([^>]+)>%s+<([^>]+)>%s+<([^>]+)>") do
+            for first, last, offset in gmatch(s,"<([^>]+)>%s*<([^>]+)>%s*<([^>]+)>") do
                 local first  = tonumber(first,16)
                 local last   = tonumber(last,16)
                 local offset = tonumber(offset,16)
@@ -688,16 +691,24 @@ local function getunicodes(font)
         end
         local splitsixteen = lpdf.splitsixteen
         for s in gmatch(cid,"beginbfchar%s*(.-)%s*endbfchar") do
-            for old, new in gmatch(s,"<([^>]+)>%s+<([^>]+)>") do
-                indices[tonumber(old,16)] = true
-                local t = { splitsixteen(new) }
-                for i=1,#t do
-                    local c = t[i]
+            for old, new in gmatch(s,"<([^>]+)>%s*<([^>]+)>") do
+                local index = tonumber(old,16)
+                local chars = { splitsixteen(new) }
+                local n     = #chars
+                if n == 1 then
+                    local c = chars[1]
                     counts[c] = counts[c] + 1
+                else
+                    for i=1,n do
+                        local c = chars[i]
+                        counts[c] = counts[c] + 1
+                    end
+                    ligatures[index] = chars
                 end
+                indices[index] = true
             end
         end
-        return counts, indices
+        return counts, indices, ligatures
     end
 end
 
@@ -727,14 +738,15 @@ function scripts.pdf.fonts(filename)
             local encoding = font.Encoding
             local subtype  = font.Subtype
             local unicode  = font.ToUnicode
-            local counts,
-                  indices  = getunicodes(font)
+            local counts, indices, ligatures
+                           = getunicodes(font)
             local codes    = { }
             local chars    = { }
+            local ligas    = { }
             local names    = { }
-if type(basefont) == "table" then
-    basefont = basefont[2]
-end
+            if type(basefont) == "table" then
+                basefont = basefont[2]
+            end
             local prefix,
                   suffix   = match(basefont or "","^(.-)%+(.*)$")
             if counts then
@@ -743,16 +755,25 @@ end
                     local k = codes[i]
                     if k == 32 then
                         chars[i] = "SPACE"
+                        codes[i] = format("U+%06X",k)
                     elseif k < 32 then
                         chars[i] = format("U+%03X",k)
+                        codes[i] = format("U+%06X",k)
                     elseif isprivate(k) then
-                        chars[i] = format("U+%06X",k)
+                        chars[i] = format("P+%06X",k)
+                        codes[i] = format("U+%06X",k)
                     else
                         chars[i] = utfchar(k)
+                        codes[i] = format("U+%06X",k)
                     end
                 end
-                for i=1,#codes do
-                    codes[i] = format("U+%05X",codes[i])
+                for k, v in sortedhash(ligatures) do
+                    local l = { "[", format("U+%06X",k), ":" }
+                    for i=1,#v do
+                        l[#l+1] = format(" U+%06X",v[i])
+                    end
+                    l[#l+1] = "]"
+                    ligas[#ligas+1] = concat(l,"")
                 end
             end
             local d = encoding and encoding.Differences
@@ -778,6 +799,7 @@ end
                 unicode  = unicode and "unicode" or "no vector",
                 chars    = chars,
                 codes    = codes,
+                ligas    = ligas,
                 names    = names,
                 indices  = indices,
                 tags     = table.sortedkeys(list),
@@ -821,6 +843,9 @@ end
             end
             if v.codes and next(v.codes) then
                 report("codepoints : % t", v.codes)
+            end
+            if v.ligas and next(v.ligas) then
+                report("ligatures : % t", v.ligas)
             end
             if v.indices and next(v.indices) then
                 report("indices    : % t", sortedkeys(v.indices))

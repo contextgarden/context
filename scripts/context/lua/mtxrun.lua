@@ -6481,7 +6481,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["l-math"] = package.loaded["l-math"] or true
 
--- original size: 3260, stripped down to: 2345
+-- original size: 3573, stripped down to: 2571
 
 if not modules then modules={} end modules ['l-math']={
  version=1.001,
@@ -6596,6 +6596,17 @@ if setinspector and vector then
    end
   end)
  end
+ local points=vector.points
+ if points then
+  local ispoints=points.ispoints
+  local totable=points.totable
+  setinspector("points",function(v)
+   if ispoints(v) then
+    inspect(totable(v))
+    return true
+   end
+  end)
+ end
 end
 
 
@@ -6605,7 +6616,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 49064, stripped down to: 25701
+-- original size: 50000, stripped down to: 26375
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -6625,6 +6636,7 @@ local P,V,C,S,R,Ct,Cs,Cp,Carg,Cc=lpeg.P,lpeg.V,lpeg.C,lpeg.S,lpeg.R,lpeg.Ct,lpeg
 local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local tsplitat=lpeg.tsplitat
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
+local round=math.round
 local loadstripped=function(str,shortcuts)
  if shortcuts then
   return load(dump(load(str),true),nil,nil,shortcuts)
@@ -6927,7 +6939,7 @@ local splitter3=Cs (
  three*prefix*endofstring+two*prefix*endofstring+digit*prefix*endofstring+three+two+digit
 )
 patterns.formattednumber=splitter
-function number.formatted(n,sep1,sep2)
+local function formatted(n,sep1,sep2)
  if sep1==false then
   if type(n)=="number" then
    n=tostring(n)
@@ -6947,6 +6959,10 @@ function number.formatted(n,sep1,sep2)
    return lpegmatch(splitter,n,1,sep1 or ",",sep2 or ".")
   end
  end
+end
+number.formatted=formatted
+function number.formattedinteger(n,...)
+ return formatted(round(n),false,...)
 end
 local p=Cs(
   P("-")^0*(P("0")^1/"")^0*(1-period)^0*(period*P("0")^1*endofstring/""+period^0)*P(1-P("0")^1*endofstring)^0
@@ -7057,6 +7073,7 @@ local environment={
  autodouble=string.autodouble,
  sequenced=table.sequenced,
  formattednumber=number.formatted,
+ formattedinteger=number.formattedinteger,
  sparseexponent=number.sparseexponent,
  formattedfloat=number.formattedfloat,
  stripzero=patterns.stripzero,
@@ -7407,6 +7424,28 @@ local format_M=function(f)
   return format([[formattednumber(a%s,%q,",")]],n,f)
  end
 end
+local format_v=function(f)
+ n=n+1
+ if not f or f=="" then
+  f=","
+ end
+ if f=="0" then
+  return format([[formattedinteger(a%s,false)]],n)
+ else
+  return format([[formattedinteger(a%s,%q,".")]],n,f)
+ end
+end
+local format_V=function(f)
+ n=n+1
+ if not f or f=="" then
+  f="."
+ end
+ if f=="0" then
+  return format([[formattedinteger(a%s,false)]],n)
+ else
+  return format([[formattedinteger(a%s,%q,",")]],n,f)
+ end
+end
 local format_z=function(f)
  n=n+(tonumber(f) or 1)
  return "''" 
@@ -7461,8 +7500,7 @@ local builder=Cs { "start",
 +V("s")+V("q")+V("i")+V("d")+V("f")+V("F")+V("g")+V("G")+V("e")+V("E")+V("x")+V("X")+V("o")
 +V("c")+V("C")+V("S")+V("Q")+V("n")+V("N")+V("k")
 +V("r")+V("h")+V("H")+V("u")+V("U")+V("p")+V("P")+V("b")+V("B")+V("t")+V("T")+V("l")+V("L")+V("I")+V("w")+V("W")+V("a")+V("A")+V("j")+V("J") 
-+V("m")+V("M") 
-+V("z")+V("Z")
++V("m")+V("M")+V("v")+V("V")+V("z")+V("Z")
 +V(">") 
 +V("<")
    )+V("*")
@@ -7508,6 +7546,8 @@ local builder=Cs { "start",
  ["J"]=(prefix_any*P("J"))/format_J,
  ["m"]=(prefix_any*P("m"))/format_m,
  ["M"]=(prefix_any*P("M"))/format_M,
+ ["v"]=(prefix_any*P("v"))/format_v,
+ ["V"]=(prefix_any*P("V"))/format_V,
  ["z"]=(prefix_any*P("z"))/format_z,
  ["Z"]=(prefix_any*P("Z"))/format_Z,
  ["a"]=(prefix_any*P("a"))/format_a,
@@ -8706,7 +8746,7 @@ do -- create closure to overcome 200 locals limit
 
 package.loaded["util-sac"] = package.loaded["util-sac"] or true
 
--- original size: 14107, stripped down to: 10453
+-- original size: 14434, stripped down to: 10701
 
 if not modules then modules={} end modules ['util-sac']={
  version=1.001,
@@ -8988,6 +9028,8 @@ if sio and sio.readcardinal2 then
  local read2dot14=sio.read2dot14
  local readbytes=sio.readbytes
  local readbytetable=sio.readbytetable
+ local readfloat=sio.readfloat
+ local readdouble=sio.readdouble
  function streams.readcardinal1(f)
   local i=f[2]
   f[2]=i+1
@@ -9064,6 +9106,16 @@ if sio and sio.readcardinal2 then
    f[2]=p
   end
   return readbytetable(f[1],i,n)
+ end
+ function streams.readfloat(f,n)
+  local i=f[2]
+  f[2]=i+4
+  return readfloat(f[1],i)
+ end
+ function streams.readdouble(f,n)
+  local i=f[2]
+  f[2]=i+8
+  return readdouble(f[1],i)
  end
  streams.readbyte=streams.readcardinal1
  streams.readsignedbyte=streams.readinteger1
@@ -26878,8 +26930,8 @@ end -- of closure
 
 -- used libraries    : l-bit32.lua l-lua.lua l-macro.lua l-sandbox.lua l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lua l-io.lua l-number.lua l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lua l-math.lua util-str.lua util-tab.lua util-fil.lua util-sac.lua util-sto.lua util-prs.lua util-fmt.lua util-soc-imp-reset.lua util-soc-imp-socket.lua util-soc-imp-copas.lua util-soc-imp-ltn12.lua util-soc-imp-mime.lua util-soc-imp-url.lua util-soc-imp-headers.lua util-soc-imp-tp.lua util-soc-imp-http.lua util-soc-imp-ftp.lua util-soc-imp-smtp.lua trac-set.lua trac-log.lua trac-inf.lua trac-pro.lua util-lua.lua util-deb.lua util-tpl.lua util-sbx.lua util-mrg.lua util-env.lua luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lua data-con.lua data-use.lua data-zip.lua data-tre.lua data-sch.lua data-lua.lua data-aux.lua data-tmf.lua data-lst.lua libs-ini.lua luat-sta.lua luat-fmt.lua util-jsn.lua
 -- skipped libraries : -
--- original bytes    : 1077474
--- stripped bytes    : 430012
+-- original bytes    : 1079050
+-- stripped bytes    : 430440
 
 -- end library merge
 

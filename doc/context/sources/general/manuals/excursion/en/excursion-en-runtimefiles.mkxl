@@ -1,0 +1,37 @@
+% signal=squid
+
+\startcomponent excursion-en-runtimefiles
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Auxiliary files,reference=chap:runtimefiles]
+
+\index[tuc]{{\tt tuc}--file}
+\index{auxiliary files}
+\index{file+log}
+
+\CONTEXT\ will produce a number of auxiliary files during processing. If your
+input file is called \type{example-file.mkxl} the following files will appear on
+your working directory.
+
+\startplacetable
+	[title=,number=,align=center]
+  \bTABLE
+    \bTR \bTD \CONTEXT\ LMTX             \eTD \bTD Meaning                          \eTD \eTR
+    \bTR \bTD \tt example-file.mkxl      \eTD \bTD your text file                   \eTD \eTR
+    \bTR \bTD \tt example-file.log       \eTD \bTD log information                  \eTD \eTR
+    \bTR \bTD \tt example-file-error.log \eTD \bTD additional error log information \eTD \eTR
+    \bTR \bTD \tt example-file.tuc       \eTD \bTD output information               \eTD \eTR
+    \bTR \bTD \tt example-file.pdf       \eTD \bTD result file                      \eTD \eTR
+  \eTABLE
+\stopplacetable
+
+The \type{example-file.tuc} file contains information about registers, lists and
+references which will be used when necessary. The \type{example-file.log} can be
+viewed in case there are problems during processing.
+
+\stopchapter
+
+\stopcomponent

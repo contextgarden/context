@@ -232,6 +232,8 @@ local special_runfiles = {
 local extra_runfiles = {
     "^m_k_i_v_.-%.pdf$",
     "^l_m_t_x_.-%.pdf$",
+    "^m_k_i_v_.-%.lua$",
+    "^l_m_t_x_.-%.lua$",
 }
 
 local function purge_file(dfile,cfile)

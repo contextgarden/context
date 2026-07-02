@@ -27,10 +27,10 @@ if not number.dimenfactors then
 end
 
 local dimenfactors = number.dimenfactors
-local bpf          = 1/dimenfactors.bp
-local cmf          = 1/dimenfactors.cm
-local mmf          = 1/dimenfactors.mm
-local inf          = 1/dimenfactors["in"]
+local bpf  <const> = 1/dimenfactors.bp
+local cmf  <const> = 1/dimenfactors.cm
+local mmf  <const> = 1/dimenfactors.mm
+local inf  <const> = 1/dimenfactors["in"]
 
 local whitespace   = lpegpatterns.whitespace
 local skipspace    = whitespace^0

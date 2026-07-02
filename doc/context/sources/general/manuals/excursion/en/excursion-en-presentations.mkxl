@@ -1,0 +1,74 @@
+% signal=squid
+
+\startcomponent excursion-en-presentations
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Presentations,reference=chap:presentations]
+
+\index{presentation}
+
+You can use \CONTEXT\ for making your own presentations. A \CONTEXT\ presentation
+is an interactive PDF document with a screen layout. Often presentations are good
+examples of the cooperation between \CONTEXT\ and \METAPOST.
+
+\CONTEXT\ comes with a number of ready-to-use presentations. A presentation is a
+module with the prefix \type{s-} which you can load with the \type{\usemodule}
+command.
+
+You can run the different available presentation styles directly from the command
+line. e.g.
+
+\starttyping
+context --mode=demo --autopdf=auto s-pre-06
+\stoptyping
+
+Assuming you have one of the supported \PDF\ readers installed and you use
+
+\starttyping
+context --autopdf=auto yourfile
+\stoptyping
+
+on the command line then the \PDF\ reader will be opened after a successful
+compilation run.
+
+If you want to use an existing presentation as a base for your own presentation
+the best way to proceed is:
+
+\startitemize[packed]
+  \startitem
+    goto
+
+    \type{.../tex/texmf-context/tex/context/modules/common}
+
+    in your text editor
+  \stopitem
+  \startitem
+    open a presentation: for example \type{s-pre-07.tex}
+  \stopitem
+  \startitem
+    goto the end of the file and study the commands between the
+    \type{\starttext ... \stoptext} pair
+  \stopitem
+  \startitem
+    copy the commands into your own presentation file
+  \stopitem
+  \startitem
+    invoke the presentation with \type{\usemodule[pre-07]} in de setup area of your presentation file
+  \stopitem
+  \startitem
+    process the file to view the result
+  \stopitem
+  \startitem
+    edit the content of your presentation
+  \stopitem
+\stopitemize
+
+A stepwise setup of a presentation is given on the \goto{\Emph{\CONTEXTWIKI}}[
+url (https://wiki.contextgarden.net/Presentations) ].
+
+\stopchapter
+
+\stopcomponent

@@ -1,0 +1,112 @@
+\startcomponent excursion-en-descriptions
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Descriptions]
+
+\index{definition}
+
+\Command{\tex{definedescription}}
+\Command{\tex{setupdescriptions}}
+
+If you want to display notions, concepts and ideas in a consistent manner you can
+use
+
+\shortsetup{definedescription}
+
+For example:
+
+\startbuffer
+\definedescription
+  [Notion]
+  [alternative=serried,headstyle=bold,width=broad]
+
+\startNotion[title={Hasselter juffer}]
+  A sort of biscuit made of puff pastry and
+  covered with sugar. It tastes very sweet.
+\stopNotion
+\stopbuffer
+
+\typebuffer
+
+It would look like this:
+
+\getbuffer
+
+But you can also choose other layouts
+
+\startbuffer
+\definedescription
+  [Notion]
+  [alternative=top,
+   inbetween={\blank[none]},
+   headstyle=bold,
+   width=broad,
+   style=slanted]
+
+\startNotion[title={Hasselter bitter}]
+  A strong alcoholic drink (up to 40\%) mixed with
+  herbs to give it a special taste. It is sold in
+  an earthware flask and it should be served
+  \Emph{ijskoud} (as cold as ice).
+\stopNotion
+\stopbuffer
+
+\typebuffer
+\getbuffer
+
+\startbuffer
+\definedescription
+  [Notion]
+  [alternative=outermargin,
+   headstyle=\bfx,
+   width=broad,
+   style=roman]
+
+\startNotion[title={Euifeest}]
+  A harvest feast to celebrate the end of a period
+  of hard work. The festivities take place in the
+  last week of August.
+\stopNotion
+
+\stopbuffer
+
+\typebuffer
+\getbuffer
+
+\startbuffer
+
+\definedescription
+  [Notion]
+  [alternative=right,
+   headstyle=bold,
+   width=broad,
+   style=roman]
+
+\startNotion{Euifeest}
+  A harvest feast to celebrate the end of a period
+  of hard work. This event takes place at the end
+  of August and lasts one week. The city is
+  completely illuminated and the streets are
+  decorated. This feast week ends with a
+  \Emph{Braderie}.
+\stopNotion
+
+\stopbuffer
+
+\typebuffer
+
+This would become:
+
+\getbuffer
+
+The layout is set up within the second bracket pair of \type{\definedescription}.
+But you can also use
+
+\shortsetup{setupdescription}
+
+\stopchapter
+
+\stopcomponent

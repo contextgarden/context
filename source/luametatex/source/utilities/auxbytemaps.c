@@ -6,7 +6,6 @@
 # include "auxmemory.h"
 # include <math.h>
 
-
 /* 
     todo: set nz to zero when no data so we have a test less 
     todo: round keep in integer domain (see end of decodelib)

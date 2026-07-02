@@ -700,6 +700,29 @@ static void mp_posit_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_numbe
     );
 }
 
+static void mp_posit_pyth_add3(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig)
+{
+    (void) mp;
+    ret->data.pval = posit_sqrt(
+        posit_add(
+            posit_add(
+                posit_mul(
+                    a_orig->data.pval,
+                    a_orig->data.pval
+                ),
+                posit_mul(
+                    b_orig->data.pval,
+                    b_orig->data.pval
+                )
+            ),
+            posit_mul(
+                c_orig->data.pval,
+                c_orig->data.pval
+            )
+        )
+    );
+}
+
 static void mp_posit_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
     /* can be made nicer */
@@ -1320,6 +1343,7 @@ math_data *mp_initialize_posit_math(MP mp)
     math->md_m_unif_rand              = mp_posit_m_unif_rand;
     math->md_m_norm_rand              = mp_posit_m_norm_rand;
     math->md_pyth_add                 = mp_posit_pyth_add;
+    math->md_pyth_add3                = mp_posit_pyth_add3;
     math->md_pyth_sub                 = mp_posit_pyth_sub;
     math->md_power_of                 = mp_posit_power_of;
     math->md_fraction_to_scaled       = mp_posit_fraction_to_scaled;

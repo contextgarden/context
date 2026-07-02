@@ -1,0 +1,57 @@
+% signal=squid
+
+\startcomponent excursion-en-composedcharacters
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Composite characters]
+
+\index{accents}
+\index{foreign characters}
+
+In \in{chapter}[special chars] you have already seen that you have to type more
+than one token to obtain special characters like \# \$ \% \& \_ \im{\{} and
+\im{\}}.
+
+When in former times you had to include characters with accents, you needed to
+compose them of different tokens. \CONTEXT\ is since a long time fully aware of
+utf-8 and we can type accented letters directly into the editor.
+
+Be aware that \CONTEXT\ still can handle those encoded accented characters when
+e.g. processing older files.
+
+For your information the way you would have to code composed characters a
+selection is shown in \in{table}[tab:composed-characters].
+
+\startplacetable
+  [location={here,force},
+   reference=tab:composed-characters,
+   title={Composed characters}]
+   \switchtobodyfont[9pt]
+   \bTABLE
+     \bTR \bTD Character \eTD \bTD Composed      \eTD \bTD \CONTEXT\ command   \eTD\bTD UTF8     \eTD \eTR
+     \bTR \bTD ü         \eTD \bTD \type{\"u}	 \eTD \bTD \type{\udiaeresis}  \eTD\bTD \type{ü} \eTD \eTR
+     \bTR \bTD é         \eTD \bTD \type{\'e}	 \eTD \bTD \type{\eacute}      \eTD\bTD \type{é} \eTD \eTR
+     \bTR \bTD â         \eTD \bTD \type{\^a}    \eTD \bTD \type{\acircumflex} \eTD\bTD \type{â} \eTD \eTR
+     \bTR \bTD ä         \eTD \bTD \type{\"a}    \eTD \bTD \type{\adiaeresis}  \eTD\bTD \type{ä} \eTD \eTR
+     \bTR \bTD à         \eTD \bTD \type{\`a}	 \eTD \bTD \type{\agrave}      \eTD\bTD \type{à} \eTD \eTR
+     \bTR \bTD å         \eTD \bTD \type{\aa}    \eTD \bTD \type{\aring}       \eTD\bTD \type{å} \eTD \eTR
+     \bTR \bTD ç         \eTD \bTD \type{\c{c}}  \eTD \bTD \type{\ccedilla}    \eTD\bTD \type{ç} \eTD \eTR
+     \bTR \bTD ï         \eTD \bTD \type{\"{\i}} \eTD \bTD \type{\idiaeresis}  \eTD\bTD \type{ï} \eTD \eTR
+     \bTR \bTD î         \eTD \bTD \type{\^{\i}} \eTD \bTD \type{\icircumflex} \eTD\bTD \type{î} \eTD \eTR
+     \bTR \bTD Ä         \eTD \bTD \type{\"A}    \eTD \bTD \type{\Adiaeresis}  \eTD\bTD \type{Ä} \eTD \eTR
+     \bTR \bTD Å         \eTD \bTD \type{\AA}    \eTD \bTD \type{\Aring}       \eTD\bTD \type{Å} \eTD \eTR
+     \bTR \bTD É         \eTD \bTD \type{\'E}    \eTD \bTD \type{\Eacute}      \eTD\bTD \type{É} \eTD \eTR
+     \bTR \bTD æ         \eTD \bTD \type{\ae}    \eTD \bTD \type{\aeligature}  \eTD\bTD \type{æ} \eTD \eTR
+     \bTR \bTD Æ         \eTD \bTD \type{\AE}    \eTD \bTD \type{\AEligature}  \eTD\bTD \type{Æ} \eTD \eTR
+     \bTR \bTD ÿ         \eTD \bTD \type{\"y}	 \eTD \bTD \type{\ydiaeresis}  \eTD\bTD \type{ÿ} \eTD \eTR
+   \eTABLE
+\stopplacetable
+
+\stopchapter
+
+\doifmode{Book}{\page[yes]}
+
+\stopcomponent

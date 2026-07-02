@@ -7,7 +7,6 @@ if not modules then modules = { } end modules ['util-sac'] = {
     license   = "see context related readme files"
 }
 
-
 local byte, sub = string.byte, string.sub
 local tonumber = tonumber
 
@@ -173,6 +172,20 @@ local read2dot14 = sio.read2dot14
 function streams.readfixed2(f) local i = f[2] f[2] = i + 2 return readfixed2(f[1],i) end
 function streams.readfixed4(f) local i = f[2] f[2] = i + 4 return readfixed4(f[1],i) end
 function streams.read2dot14(f) local i = f[2] f[2] = i + 2 return read2dot14(f[1],i) end
+
+local readfloat     = sio.readfloat
+local readdouble    = sio.readdouble
+local readfloatle   = sio.readfloatle
+local readdoublele  = sio.readdoublele
+local readfloatle6  = sio.readfloatle6
+local readfloatle12 = sio.readfloatle12
+
+function streams.readfloat    (f) local i = f[2] f[2] = i +  4 return readfloat    (f[1],i) end
+function streams.readdouble   (f) local i = f[2] f[2] = i +  8 return readdouble   (f[1],i) end
+function streams.readfloatle  (f) local i = f[2] f[2] = i +  4 return readfloatle  (f[1],i) end
+function streams.readdoublele (f) local i = f[2] f[2] = i +  8 return readdoublele (f[1],i) end
+function streams.readfloatle6 (f) local i = f[2] f[2] = i + 24 return readfloatle6 (f[1],i) end
+function streams.readfloatle12(f) local i = f[2] f[2] = i + 48 return readfloatle12(f[1],i) end
 
 local readcstring = sio.readcstring
 local readcline   = sio.readcline

@@ -885,6 +885,7 @@ permanent xsized, ysized, xysized, sized ;
 %     fi
 %     endgroup
 % enddef ;
+
 primarydef p xynormalized s =
     begingroup save w, h, b ; path b;
     b := corners p ;
@@ -921,6 +922,7 @@ enddef ;
 %     fi
 %     endgroup
 % enddef ;
+
 primarydef p xnormalized s =
     begingroup save h, r ; pair r ;
     r := xrange p ;
@@ -954,6 +956,7 @@ enddef ;
 %     fi
 %     endgroup
 % enddef ;
+
 primarydef p ynormalized s =
     begingroup save h, r ; pair r ;
     r := yrange p ;
@@ -1524,15 +1527,27 @@ primarydef p randomrotatedcontrols s = (
 
 primarydef p randomized s = (
     if path p :
-        for i=0 upto length(p)-1 :
-            ((point       i    of p) randomshifted s) .. controls
-            ((postcontrol i    of p) randomshifted s) and
-            ((precontrol (i+1) of p) randomshifted s) ..
+      % for i=0 upto length(p)-1 :
+      %     ((point       i    of p) randomshifted s) .. controls
+      %     ((postcontrol i    of p) randomshifted s) and
+      %     ((precontrol (i+1) of p) randomshifted s) ..
+      % endfor
+      % if cycle p :
+      %     cycle
+      % else :
+      %     ((point length(p) of p) randomshifted s)
+      % fi
+        for i within p :
+            if i < pathlength :
+                ((pathpoint        ) randomshifted s) .. controls
+                ((pathpostcontrol  ) randomshifted s) and
+                ((deltaprecontrol 1) randomshifted s) ..
+            fi
         endfor
         if cycle p :
             cycle
         else :
-            ((point length(p) of p) randomshifted s)
+            ((lastpoint p) randomshifted s)
         fi
     elseif pair p :
         p randomshifted s
@@ -1935,12 +1950,12 @@ enddef ;
 
 def mfun_draw_yticks text t =
     for i=0 step -tickstep until ypart llcorner temp_c - eps :
-        if (i<=ypart ulcorner temp_c) :
+        if (i <= ypart ulcorner temp_c) :
             normaldraw (-ticklength,i)--(ticklength,i) mfun_opt_ori t ;
         fi ;
     endfor ;
     for i=0 step  tickstep until ypart ulcorner temp_c + eps :
-        if (i>=ypart llcorner temp_c) :
+        if (i >= ypart llcorner temp_c) :
             normaldraw (-ticklength,i)--(ticklength,i) mfun_opt_ori t ;
         fi ;
     endfor ;
@@ -2608,23 +2623,23 @@ enddef ;
 
 let greyed = grayed ;
 
-vardef hsvtorgb(expr h,s,v) =
-    save H, S, V, x ;
-    H = h mod 360 ;
-    S = if s < 0 : 0 elseif s > 1 : 1 else: s fi ;
-    V = if v < 0 : 0 elseif v > 1 : 1 else: v fi ;
-    x = 1 - abs(H mod 120 - 60)/60 ;
-    V * ( (1-S) * (1,1,1) + S *
-        if     H <  60 : (1,x,0)
-        elseif H < 120 : (x,1,0)
-        elseif H < 180 : (0,1,x)
-        elseif H < 240 : (0,x,1)
-        elseif H < 300 : (x,0,1)
-        else           : (1,0,x)
-    fi )
-enddef ;
+% vardef hsvtorgb(expr h,s,v) =
+%     save H, S, V, x ;
+%     H = h mod 360 ;
+%     S = if s < 0 : 0 elseif s > 1 : 1 else: s fi ;
+%     V = if v < 0 : 0 elseif v > 1 : 1 else: v fi ;
+%     x = 1 - abs(H mod 120 - 60)/60 ;
+%     V * ( (1-S) * (1,1,1) + S *
+%         if     H <  60 : (1,x,0)
+%         elseif H < 120 : (x,1,0)
+%         elseif H < 180 : (0,1,x)
+%         elseif H < 240 : (0,x,1)
+%         elseif H < 300 : (x,0,1)
+%         else           : (1,0,x)
+%     fi )
+% enddef ;
 
-permanent colorcircle, uncolored, inverted, grayed, greyed, hsvtorgb ;
+permanent colorcircle, uncolored, inverted, grayed, greyed ; % , hsvtorgb ;
 
 % yes or no: "text" infont "cmr12" at 24pt ;
 
@@ -3729,6 +3744,10 @@ vardef mfun_applied(expr p, s)(suffix a) =
             else :
                 (a(xpart point length(p) of p,xpart s),a(ypart point length(p) of p,ypart s))
             fi
+            % or just:
+          % for i within p if cycle p : -1 fi :
+          %     (a(xpart pathpoint,xpart s),a(ypart pathpoint,ypart s)) --
+          % endfor if cycle p : cycle fi
         else :
             for i=0 upto length(p)-1 :
                 (a(xpart point i of p,s),a(ypart point i of p,s)) --
@@ -3738,6 +3757,10 @@ vardef mfun_applied(expr p, s)(suffix a) =
             else :
                 (a(xpart point length(p) of p,s),a(ypart point length(p) of p,s))
             fi
+            % or just:
+          % for i within p if cycle p : -1 fi :
+          %     (a(xpart pathpoint,s),a(ypart pathpoint,s)) --
+          % endfor if cycle p : cycle fi
         fi
     elseif pair p :
         if pair s :
@@ -4238,8 +4261,8 @@ vardef tolist(suffix l)(text t) =
             l[n] := p ;
             n := n + 1 ;
         elseif path p :
-            for i=0 step 1 until length(p) :
-                l[n] := point i of p ;
+            for i within p :
+                l[n] := pathpoint ;
                 n := n + 1 ;
             endfor ;
         else :
@@ -4276,21 +4299,25 @@ def drawdot expr p =
             withpen currentpen base_draw_options
     elseif path p :
         draw image (
-            for i=0 upto length p :
-                addto currentpicture doublepath point i of p
-                    withpen currentpen base_draw_options ;
-            endfor ;
+          % for i within p :
+          %     addto currentpicture doublepath pathpoint
+          %         withpen currentpen base_draw_options ;
+          % endfor ;
+            draw
+                for i within p : pathpoint && endfor cycle
+                withpen currentpen base_draw_options ;
         )
     elseif picture p :
         draw image (
-            save pp ; path pp ;
             for i within p :
                 if stroked i or filled i :
-                    pp := pathpart i ;
-                    for j=0 upto length pp :
-                        addto currentpicture doublepath point j of pp
-                            withpen currentpen base_draw_options ;
-                    endfor ;
+                  % for j within pathpart i :
+                  %     addto currentpicture doublepath pathpoint
+                  %         withpen currentpen base_draw_options ;
+                  % endfor ;
+                    draw
+                        for j within pathpart i : pathpoint && endfor cycle
+                        withpen currentpen base_draw_options ;
                 fi ;
             endfor ;
         )
@@ -4366,20 +4393,25 @@ enddef ;
 
 permanent xslanted, yslanted ;
 
+% we already sort of have this above .. you have to check for a cycle in order
+% to know what you get so in retrospect we added an extra parameter.
+
 vardef processpath (expr p) (text pp) =
     if path p :
-        for i=0 upto length(p)-1 :
-            pp(point       i    of p) .. controls
-            pp(postcontrol i    of p) and
-            pp(precontrol (i+1) of p) ..
+        for i within p :
+            if i < pathlength :
+                pp(1, pathpoint        ) .. controls
+                pp(2, pathpostcontrol  ) and
+                pp(3, deltaprecontrol 1) ..
+            fi
         endfor
         if cycle p :
             cycle
         else :
-            pp(point length(p) of p)
+            pp(4, lastpoint p)
         fi
     elseif pair p :
-        pp(p)
+        pp(0, p)
     else :
         p
     fi

@@ -1,0 +1,228 @@
+% signal=segment
+
+% why \blank[line] and not just \blank
+
+\startcomponent excursion-en-bibliography
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Bibliography]
+
+\index{bibliography}
+
+\Command{\tex{definebtxdataset}}
+\Command{\tex{usebtxdefinitions}}
+\Command{\tex{usebtxdataset}}
+\Command{\tex{setupbtxrendering}}
+\Command{\tex{cite}}
+\Command{\tex{placelistofpublications}}
+\Command{\tex{placebtxrendering}}
+
+Since the last publication of this manual the bibliography mechanism has been
+completely overhauled.
+
+\CONTEXT\ is now independent of \BIBTEX. There is a set of new commands all
+containing the label \Emph{btx}.
+
+\shortsetup{definebtxdataset}
+\shortsetup{setupbtxdataset}
+\shortsetup{usebtxdataset}
+\shortsetup{setupbtxrendering}
+\shortsetup{setupbtx}
+\shortsetup{cite}
+\shortsetup{placelistofpublications}
+\shortsetup{placebtxrendering}
+
+Very basic use of the bibliography mechanism is simple. You only need to select a
+database containing the references, place citations in the text and place the
+list of publications at the end of the document.
+
+A bibliography entry can be in different formats as in the \BIBTEX -format
+(\type{*.bib} file), as a \LUA -table (\type{*.lua} file) or as an \XML -makeup
+(\type{*.xml} file) or even in the form of a buffer.
+
+The following example is contained in \type {excursion-en-hasselt.bib}. An entry
+in a \BIBTEX -file might look like:
+
+\startbuffer
+@INBOOK{book01,
+  author = {Jonker, J.},
+  title = {From Hasselt to America},
+  publisher = {Bookplan Publishers},
+  year = {2012},
+  chapter = {1.2},
+}
+\stopbuffer
+
+\typebuffer
+
+In order to get the entries typeset as a list you call this file accompanied by
+the choise of bibliographic style.
+
+\startbuffer
+\usebtxdataset [hasselt.bib]
+\usebtxdefinitions[apa,numbering=yes]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+Please refer to \cite[authoryears][book01] for more information on
+famous people who were born in Hasselt.
+\stopbuffer
+
+\typebuffer
+
+Which would produce:
+
+\getbuffer
+
+\page[bigpreference]
+
+In an appendix you can place the complete list of publications with
+
+\startbuffer
+\placelistofpublications
+\stopbuffer
+
+\typebuffer
+
+\blank[line]
+
+Result will be a list with all entries of the dataset-file:
+
+\blank[line]
+
+\getbuffer
+
+\blank[line]
+
+The next example shows a more elaborate version which is more to the point for what is needed to get bibliographies:
+
+\startbuffer[Hasselt]
+\usebtxdefinitions[apa]
+\definebtxdataset
+  [hasselt]
+\usebtxdataset
+  [hasselt]
+  [hasselt.bib]
+\definebtxrendering
+  [hasselt]
+  [dataset=hasselt,
+   criterium=text,
+   specification=apa]
+\stopbuffer
+
+\typebuffer[Hasselt]
+
+\blank[line]
+
+\getbuffer[Hasselt]
+
+\blank[line]
+
+The following bibliographic entry is written inside
+
+\starttyping
+\startbuffer[Leibniz]...\stopbuffer}.
+\stoptyping
+
+\startbuffer[Leibniz]
+@incollection{leibniz1885,
+    author    = {Leibniz, G. W.},
+    title     = {Principes de la nature et de la grâce
+                 fondés en raison, 1714},
+    title:en  = {Principles of Nature and Grace
+                 Founded in Reason},
+    booktitle = {\de Die Philosophischen Schriften
+                 von Gottfried Wilhelm Leibniz}
+    editor    = {Gerhardt, C. G.},
+    publisher = {Weidmann},
+    year      = {1885},
+    volume    = {6},
+    chapter   = {8},
+    pages     = {598–606},
+    address   = {Berlin},
+    language  = {french},
+}
+\stopbuffer
+
+\typebuffer[Leibniz]
+
+\startbuffer[LeibnizB]
+\usebtxdataset
+  [leibniz]
+  [Leibniz.buffer]
+\definebtxrendering
+  [leibniz]
+  [dataset=leibniz,
+   criterium=text,
+   specification=apa]
+\stopbuffer
+
+\typebuffer[LeibnizB]
+
+\getbuffer[LeibnizB]
+
+\startbuffer[Hasselt]
+Hasselt: \cite[authoryears][hasselt::book01]
+\stopbuffer
+
+\startbuffer[Leibniz]
+Leibniz: \cite[authoryears][leibniz::leibniz1885]
+\stopbuffer
+
+\typebuffer[Hasselt]
+
+\typebuffer[Leibniz]
+
+The citation result becomes:
+
+\blank
+
+\getbuffer[Hasselt]
+
+\blank
+
+\getbuffer[Leibniz]
+
+\blank
+
+The bibliographic entries would look as follows when using the apa \Emph{(Publication Manual of the American Psychological Association)} style
+
+\startbuffer[RenderingHasselt]
+\placebtxrendering
+  [hasselt]
+\stopbuffer
+
+\typebuffer[RenderingHasselt]
+
+\blank
+
+\startbuffer[RenderingLeibniz]
+\placebtxrendering
+  [leibniz]
+\stopbuffer
+
+\typebuffer[RenderingLeibniz]
+
+\blank[line]
+
+\resetcounter[btxrendering]
+\getbuffer[RenderingHasselt]
+
+\blank[line]
+
+\getbuffer[RenderingLeibniz]
+
+\blank[line]
+
+However, once customizations are required, the bibliography environment can become quite complicated. For further reading there is a manual \goto{\Emph{Bibliographies the \CONTEXT\ way}} [ url(manual:miv-publications) ].
+
+\stopchapter
+
+\stopcomponent

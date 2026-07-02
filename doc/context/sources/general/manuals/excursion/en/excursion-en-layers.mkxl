@@ -1,0 +1,358 @@
+% signal=squid language=uk
+
+\startcomponent excursion-en-layers
+
+\enablemode[**en-us]
+
+\project excursion
+
+\Command{\tex{definelayer}}
+\Command{\tex{setuplayer}}
+\Command{\tex{placelayer}}
+\Command{\tex{setlayer}}
+\Command{\tex{setlayerframed}}
+
+\startchapter[title=Layers,reference=chap:layers]
+
+\index{layer}
+\index{defineframedtext}
+
+We discussed already the \type{overlay} mechanism. The \type{layer} mechanism is
+a similar concept intended also for stacking information on top of each other but
+not depending on the background key of a command. Layers are meant to place
+information at any location on a page. There are two versions of the mechanism,
+one is combined with the \type{\framed} environment.
+
+On the \goto{\Emph{\CONTEXTWIKI}}[url (www:garden:tutorial-graphics)] there is an
+extensive tutorial on the layer mechanism and its use under
+\Emph{Document_layout_and_layers/Layers}. Here we can only lift the tip of the
+veil.
+
+Layers are normally anchored at the top left corner of the typesetting area. You
+can move them to any place of the paper.
+
+In order to use a layer it must be defined first. The command used for this
+purpose is
+
+\shortsetup{definelayer}
+
+When defining a layer \CONTEXT\ immediately defines also an overlay with the same
+name. This can come in handy when placing the defined layer in a command with the
+background key.
+
+\startsection[title=A logo on a page]
+
+In this example we will use a layer as a \Emph{page} background. This means that
+the layer will be anchored at the top left corner of the paper.
+
+We will call the layer \quote{Logo}.
+
+\startbuffer[Logo]
+\definelayer
+  [Logo]
+  [hoffset=0mm,
+   voffset=0mm,
+   x=0mm,
+   y=0mm,
+   width=\paperwidth,
+   height=\paperheight,
+   state=start]
+\stopbuffer
+
+\typebuffer[Logo]
+
+You see that the layer has a name and there are the dimensions. The
+\type{hoffset} and \type{voffset} dimensions in this example tell the distance of
+the layer from the top left corner of the \Emph{paper}. The type \type{x} and
+\type{y} values tell the offset of the layer's content from the top left corner
+of the \Emph{layer}. The \type{state} key can have different values as shown in
+\in{table}[tab:layerstates].
+
+\startplacetable
+  [location=here,
+   reference=tab:layerstates,
+   title=States of a layer]
+  \bTABLE
+    \bTR\bTD State    \eTD\bTD Explanation                             \eTD\eTR
+    \bTR\bTD start    \eTD\bTD layer appears only on the current page  \eTD\eTR
+    \bTR\bTD stop     \eTD\bTD layer doesn't show up                   \eTD\eTR
+    \bTR\bTD repeat   \eTD\bTD layer prints on all pages               \eTD\eTR
+    \bTR\bTD next     \eTD\bTD layer appears on the following page     \eTD\eTR
+  \eTABLE
+\stopplacetable
+
+Now you can fill the layer.
+
+\shortsetup{setlayer}
+
+\startbuffer[Fill-Logo]
+\setlayer
+  [Logo]
+  [x=\makeupwidth+3mm,
+   y=2mm]
+   {\externalfigure[excursion-27][height=17mm]}
+\stopbuffer
+
+\typebuffer[Fill-Logo]
+
+With \type{\setlayer} you start filling the layer with the given name. \type{x}
+and \type{y} indicate the position of the content in relation to the top left
+corner of the layer. Between the braces there is the actual content.
+
+The layer's content can be used as a background of the page
+
+\startbuffer[Background]
+\setupbackgrounds[page][state=start,background=Logo]
+\stopbuffer
+
+\typebuffer[Background]
+
+If the layer's content should occur on the following (all) pages, the
+\type{state} key of the layer definition is \type{state=repeat}.
+
+Stopping the repetition of the layer placement is done with
+
+\starttyping
+\setupbackgrounds[state=stop]
+\stoptyping
+
+%\start
+  \getbuffer[Logo]
+  \getbuffer[Background]
+  \getbuffer[Fill-Logo]
+%\stop
+\stopsection
+
+\startsection[title=Estate sale advertisement]
+
+When an estate is sold in The Netherlands through an estate agency, normally the
+building gets a poster positioned at a good visible spot. Such a poster could
+look as follows. There are two text lines \quote{TE KOOP} (FOR SALE) and
+\quote{Makelaardij Lensing} the estate agency Lensing.
+
+When the estate is sold, the poster remains with the indication that it is sold
+(verkocht).
+
+\typebuffer[Sale-four]
+
+All parts of this example are put into a series of buffers. For the
+\in{figure}[fig:estatesale] the buffer \type{All-Sale} is called two times where
+for the right figure also the \type{Sold} buffer is added.
+
+\startbuffer[Layer-Definition]
+\startbuffer
+  [Layer-Definition]
+
+\definelayer
+  [Estatesale]
+  [x=0mm,
+   y=0mm,
+   width=67mm,
+   height=85mm,
+   state=repeat]
+\stopbuffer
+\stopbuffer
+
+\startbuffer[Framed-Definition]
+\startbuffer
+  [Framed-Definition]
+
+\defineframedtext
+  [Advertisement]
+
+\setupframedtext
+  [Advertisement]
+  [width=67mm,
+   height=85mm,
+   align=middle,
+   style=\bfa,
+   foregroundcolor=blue,
+   frame=off,
+   offset=0pt]
+\stopbuffer
+\stopbuffer
+
+\startbuffer[Fill-Text]
+\startbuffer[Fill-Text]
+\setlayer
+  [Estatesale]
+  [x=-4mm,
+   y=4mm]
+  {\Advertisement{TE KOOP}}
+
+\setlayer
+  [Estatesale]
+  [y=66mm,
+   x=-4mm]
+  {\Advertisement
+    {Makelaardij Lensing \par Hasselt}}
+\stopbuffer
+\stopbuffer
+
+\startbuffer[Fill-Graphic]
+\startbuffer[Fill-Graphic]
+\setlayer
+  [Estatesale]
+  [hoffset=10mm,
+   voffset=11mm]
+  {\externalfigure
+    [excursion-23]
+    [width=41mm]}
+\stopbuffer
+\stopbuffer
+
+\startbuffer[Sold]
+\startbuffer[Sold]
+\setlayer
+  [Estatesale]
+  [hoffset=3mm,
+   voffset=17mm]
+  {\rotate[rotation=20]{%
+    \framedtext
+     [align=center,
+      width=52mm,
+      style=\bfd,
+      background=color,
+      backgroundcolor=white,
+      foregroundcolor=blue,
+      frame=on]
+     {Verkocht}}}
+\stopbuffer
+\stopbuffer
+
+\startbuffer[All-Sale]
+\startbuffer[All-Sale]
+\framed
+  [width=60mm,
+   height=85mm,
+   background=Estatesale]
+   {}
+\stopbuffer
+\stopbuffer
+
+\startcolumns[n=2,distance=0.5em]
+  \typebuffer[Layer-Definition]
+  \typebuffer[Framed-Definition]
+  \typebuffer[Fill-Text]
+  \typebuffer[Fill-Graphic]
+  \typebuffer[Sold]
+  \typebuffer[All-Sale]
+\stopcolumns
+
+Now that all is set, you can place the advertisement in two figures next to each
+other. The result is given in \in{figure}[fig:estatesale].
+
+\startbuffer[Figure-Placement]
+\getbuffer[Layer-Definition]
+\getbuffer[Framed-Definition]
+\getbuffer[Fill-Text]
+\getbuffer[Fill-Graphic]
+
+\startplacefigure
+  [location=here,
+   reference=fig:estatesale,
+   title=Advertisement for selling an estate]
+  \startcombination[2*1]
+    {\getbuffer[All-Sale]}{During selling}
+    {\getbuffer[Sold]
+     \getbuffer[All-Sale]}{After selling}
+  \stopcombination
+\stopplacefigure
+\stopbuffer
+
+\typebuffer[Figure-Placement]
+
+\startbuffer[Layer-Definition]
+\definelayer
+  [Estatesale]
+  [x=0mm,
+   y=0mm,
+   width=67mm,
+   height=85mm,
+   state=repeat]
+\stopbuffer
+
+\startbuffer[Framed-Definition]
+\defineframedtext[Advertisement]
+
+\setupframedtext
+  [Advertisement]
+  [width=67mm,
+   height=85mm,
+   align=middle,
+   style=\bfa,
+   foregroundcolor=blue,
+   frame=off,
+   offset=0pt]
+\stopbuffer
+
+\startbuffer[Fill-Text]
+\setlayer
+  [Estatesale]
+  [x=-4mm,
+   y=4mm]
+  {\Advertisement{TE KOOP}}
+
+\setlayer
+  [Estatesale]
+  [y=66mm,
+   x=-4mm]
+  {\Advertisement
+    {Makelaardij Lensing \par Hasselt}}
+\stopbuffer
+
+\startbuffer[Fill-Graphic]
+\setlayer
+  [Estatesale]
+  [hoffset=10mm,
+   voffset=11mm]
+  {\externalfigure
+    [excursion-23]
+    [width=41mm]}
+\stopbuffer
+
+\startbuffer[Sold]
+\setlayer
+  [Estatesale]
+  [hoffset=3mm,
+   voffset=17mm]
+  {\rotate[rotation=20]{%
+    \framedtext
+      [align=center,width=52mm,
+       style=\bfd,background=color,
+       backgroundcolor=white,
+       foregroundcolor=blue,frame=on]
+      {Verkocht}}}
+\stopbuffer
+
+\startbuffer[All-Sale]
+\framed
+  [width=60mm,
+   height=85mm,
+   background=Estatesale]
+   {}
+\stopbuffer
+
+\getbuffer[Layer-Definition]
+\getbuffer[Framed-Definition]
+\getbuffer[Fill-Text]
+\getbuffer[Fill-Graphic]
+
+\startplacefigure
+  [location=here,
+   reference=fig:estatesale,
+   title=Advertisement for selling an estate]
+  \startcombination[2*1]
+    {\getbuffer[All-Sale]}{During selling}
+    {\getbuffer[Sold]
+     \getbuffer[All-Sale]}{After selling}
+  \stopcombination
+\stopplacefigure
+\stopsection
+\stopchapter
+
+\doifmode{Book} {
+    \page[yes]
+}
+
+\stopcomponent

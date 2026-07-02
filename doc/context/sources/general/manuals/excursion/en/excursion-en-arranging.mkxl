@@ -1,0 +1,267 @@
+% signal=squid
+
+\startcomponent excursion-en-arranging
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Arranging pages on paper,reference=chap:arranging]
+
+We are accustomed to see documents made up as A4 and we print them single or
+double sided. However if we want to prepare a book with folded pages for binding
+then the pages must be arranged in a well defined order before you can print.
+\CONTEXT\ supports arranging pages in many different ways, actually the
+capability is quite astonishing.
+
+Willi Egger's manual of \Emph{Layout in \CONTEXT} contains a whole chapter on
+arranging pages.
+
+\startsection[title=XY arranging]
+
+Assume you want to put address labels on a sheet of sticky labels where in this
+case the sheet contains 3 \m{\times} 8 labels. According to the specification of
+the label sheet you setup the document.
+
+\startbuffer[XYarranging]
+\setupbodyfont[12pt]
+\definepapersize[Label][height=37.1mm,width=70mm]
+\setuppapersize [Label][A4,portrait]
+\setuppaper % A4 parameters
+  [topspace=0mm,
+   backspace=5mm,
+   dx=0.1mm,
+   dy=0.1mm,
+   nx=3,
+   ny=8,
+   margin=0pt,
+   width=210mm,
+   height=294mm]
+\stopbuffer
+
+\startbuffer[XYlayout]
+\setuplayout  % Label layout
+  [topspace=4mm,
+   backspace=5mm,
+   margin=0mm,
+   width=middle,
+   height=middle,
+   header=0mm,
+   footer=0mm]
+\setuparranging[XY]
+\stopbuffer
+
+\typebuffer[XYarranging]
+
+\page[bigpreference]
+
+\typebuffer[XYlayout]
+
+After the size of the label is defined you need to setup the paper i.e. the sheet
+on which the labels are printed. \type{dx} and \type{dy} determine the distance
+in horizontal and vertical direction between the individual labels. The \type{nx}
+and \type{ny} values give the number of labels in horizontal and vertical
+direction and add up to the total number of labels available on the sheet. In the
+\type{\setuplayout} you define parameters belonging to the individual label. In
+order to process the labels you start \type{\setuparranging}. In \CONTEXT\ this
+is called \type{XY} arranging.
+
+\page[bigpreference]
+
+\startbuffer
+\setupmakeup
+  [standard]
+  [top=,bottom=]
+
+\startdocument
+  \showframe
+  \dorecurse
+    {24}
+    {\startstandardmakeup[page=yes]
+       Address \recurselevel
+     \stopstandardmakeup}
+\stopdocument
+\stopbuffer
+
+\typebuffer
+
+The \type{\standardmakeup} centers the contents vertically, in order to switch it
+off you need to issue the \type{\setupmakeup} command. In this sample document we
+use a simple loop running from 1 up to 24 repeating the contents inside the
+\type{\standardmakeup}. The \type{\recurselevel} is the actual count of the loop.
+\type{\showframe} is used to check for the result and will be commented for the
+production process.
+
+\stopsection
+
+\startsection[title=A simple booklet]
+
+Assume you have a document with a couple of pages which you would like to print
+and then fold into a booklet. For this purpose \CONTEXT\ has an arranging mode
+called \type{2UP}. For the simplicity of the example we will use A4 paper and
+typeset our document on a A5 layout.
+
+\startbuffer
+\setuppapersize[A5][A4,landscape]
+
+\setuplayout
+  [topspace=1cm,
+   backspace=1cm,
+   header=0pt,
+   footer=1.5/bodyfontsize,
+   height=middle,
+   width=middle]
+
+\setuppagenumbering
+  [location={bottom,right},alternative=doublesided]
+
+\setuparranging[2UP]
+\stopbuffer
+
+\typebuffer
+
+You want to print 2 A5 pages on A4, this requires the paper to be rotated by 90
+degrees, which is indicated by \type{landscape}. As usual you define the layout
+of the A5 page. You intend to have the page number placed non standard so you
+indicate the desired place with the \type{location} inside the
+\type{\setuppagenumbering} command. The document further should be a double sided
+one. The \type{alternative} tells \CONTEXT\ to take care of mirroring the layout
+for odd and even pages. The page number will be put into the footer at the
+outside corner of the text area.
+
+\startbuffer
+\startdocument
+  \dorecurse
+    {16}
+    {\startsection[title=Paragraph]
+       \input bryson
+     \stopsection
+     \page[yes]}
+\stopdocument
+\stopbuffer
+
+\typebuffer
+
+For the simplicity to show how this works again a loop is used to produce the
+booklet. On purpose the loop runs over 16 pages. This is the number of pages
+generally considered a good amount to create a section. Of course you can include
+more pages, but the booklet is quickly getting bulky.
+
+\stopsection
+
+\startsection[title=More arranging schemes]
+
+For getting acquainted with page arrangements one should start with simple
+layouts and play with the different page arrangements. In order to understand the
+mechanism it is easiest to print the created samples and \quotation{bind} the
+obtained section. After cutting the edges the section can be looked through.
+
+Mind you there are arranging schemes intended for single sided printing only.
+While developing a style it is best to set \type{\showframe} on.
+
+For playing purposes the \in{table}[tab:arranging] can be of help.
+
+\startplacetable
+  [location=here,
+   reference=tab:arranging,
+   title=Page arrangement schemes]
+  \switchtobodyfont[9pt]
+  \bTABLE[split=yes]
+    \bTR
+      \bTD Arranging scheme \eTD
+      \bTD Printing         \eTD
+      \bTD Description      \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[XY]  } \eTD
+      \bTD single sided \eTD\bTD one sheet with  x rows and y columns  \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[1*4] } \eTD
+      \bTD single sided \eTD\bTD section: one sheet 1 \m{\times}  4 pages =  4 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[1*8] } \eTD
+      \bTD single sided \eTD\bTD section: one sheet 1 \m{\times}  8 pages =  8 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2SIDE]} \eTD
+      \bTD single sided \eTD\bTD 2 pages ne\m{\times}t to each other \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2TOP]} \eTD
+      \bTD single sided \eTD\bTD 2 pages above each other \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*16]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times} 16 pages = 32 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*8]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times}  8 pages = 16 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*8*Z]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times}  8 pages = 16 pages, special folding: zig-zag \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*4]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times}  4 pages =  8 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*2]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times}  2 pages =  4 pages \eTD\
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2**2]} \eTD
+      \bTD double sided \eTD\bTD section: one sheet 2 \m{\times}  2 pages =  4 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*2*4]} \eTD
+      \bTD double sided \eTD\bTD section: 2 \m{\times} 2 pages on 4 sheets = 16 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2*4*2]} \eTD
+      \bTD double sided \eTD\bTD section: 2 \m{\times} 4 pages on 2 sheets = 16 pages \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2UP]} \eTD
+      \bTD double sided \eTD\bTD 2 pages ne\m{\times}t to each other, n sheets arranged for a single booklet! Folding edge along the long side of the printing paper \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2DOWN]} \eTD
+      \bTD double sided    \eTD
+      \bTD 2 pages above each other, n sheets arranged for a single booklet! Folding edge along the short side of the printing paper \eTD
+    \eTR
+    \bTR
+      \bTD \type{\setuparranging[2TOPSIDE]} \eTD
+      \bTD double sided \eTD
+      \bTD two odd pages on one side, two even pages verso, above each other \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+
+Another application for arranging pages is the production of flyers. \CONTEXT\
+provides a couple of them as shown in \in{table}[tab:flyers].
+
+\startplacetable
+  [location=here,
+   reference=tab:flyers,
+   title=Flyers in \CONTEXT]
+  \switchtobodyfont[9pt]
+  \bTABLE
+	  \bTR\bTD Arrangement                          \eTD\bTD Result                                 \eTD\bTD Number of pages \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[TRYPTICHON]  } \eTD\bTD flyer: one sheet \im{2 \times 3} pages \eTD\bTD 6 pages         \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[DOUBLEWINDOW]} \eTD\bTD flyer: one sheet \im{2 \times 4} pages \eTD\bTD 8 pages         \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[ZFLYER-8]    } \eTD\bTD flyer: one sheet \im{2 \times 4} pages \eTD\bTD 8 pages         \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[ZFLYER-10]   } \eTD\bTD flyer: one sheet \im{2 \times 5} pages \eTD\bTD 10 pages        \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[ZFLYER-12]   } \eTD\bTD flyer: one sheet \im{2 \times 6} pages \eTD\bTD 12 pages        \eTD\eTR
+	  \bTR\bTD \type{\setuparranging[MAPFLYER-12] } \eTD\bTD flyer: one sheet \im{2 \times 6} pages \eTD\bTD 12 pages        \eTD\eTR
+  \eTABLE
+\stopplacetable
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

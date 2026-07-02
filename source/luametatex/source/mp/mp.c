@@ -835,6 +835,7 @@ The first set of numerical values goes into the header
 # define mp_make_fraction(R,A,B)                    mp->math->md_make_fraction(mp,&(R),&(A),&(B))
 # define mp_take_fraction(R,A,B)                    mp->math->md_take_fraction(mp,&(R),&(A),&(B))
 # define mp_pyth_add(R,A,B)                         mp->math->md_pyth_add(mp,&(R),&(A),&(B))
+# define mp_pyth_add3(R,A,B,C)                      mp->math->md_pyth_add3(mp,&(R),&(A),&(B),&(C))
 # define mp_pyth_sub(R,A,B)                         mp->math->md_pyth_sub(mp,&(R),&(A),&(B))
 # define mp_power_of(R,A,B)                         mp->math->md_power_of(mp,&(R),&(A),&(B))
 # define mp_n_arg(R,A,B)                            mp->math->md_n_arg(mp,&(R),&(A),&(B))
@@ -1150,7 +1151,16 @@ the 5-word packets for $U$, $V$, $X$, and~$Y$.
 The following macros define the allocation of stack positions to the quantities needed for
 bisection-intersection.
 
+The size of stack for bisection algorithms; it should probably be left at this value. The stack bumps
+by 20 or 5 so it is actually not that large. The bisect stack size is large enough and seldom goes
+above 1000 anyway. There is some 31 mentioned in the explanations and 30 times 20 is indeed 1500.
+
 */
+
+# define bisect_int_packets      20
+# define bisect_int_step          5
+
+# define bisect_stack_size     1500 /* so a mulitple of 20 */
 
 # define stack_1(A)   mp->bisect_stack[(A)]
 # define stack_2(A)   mp->bisect_stack[(A)+1]
@@ -1158,14 +1168,12 @@ bisection-intersection.
 # define stack_min(A) mp->bisect_stack[(A)+3]
 # define stack_max(A) mp->bisect_stack[(A)+4]
 
-# define int_packets  20
-
 # define u_packet(A) ((A)- 5)
 # define v_packet(A) ((A)-10)
 # define x_packet(A) ((A)-15)
 # define y_packet(A) ((A)-20)
 
-# define l_packets (mp->bisect_ptr-int_packets)
+# define l_packets (mp->bisect_ptr - bisect_int_packets)
 # define r_packets  mp->bisect_ptr
 
 # define ul_packet u_packet(l_packets)
@@ -1202,13 +1210,13 @@ bisection-intersection.
 # define y2r stack_2(yr_packet)
 # define y3r stack_3(yr_packet)
 
-# define stack_dx  mp->bisect_stack[mp->bisect_ptr]
+# define stack_dx  mp->bisect_stack[mp->bisect_ptr    ]
 # define stack_dy  mp->bisect_stack[mp->bisect_ptr + 1]
 # define stack_tol mp->bisect_stack[mp->bisect_ptr + 2]
 # define stack_uv  mp->bisect_stack[mp->bisect_ptr + 3]
 # define stack_xy  mp->bisect_stack[mp->bisect_ptr + 4]
 
-# define int_increment (int_packets + int_packets + 5)
+# define bisect_int_increment (bisect_int_packets + bisect_int_packets + bisect_int_step)
 
 /*tex
 
@@ -2382,7 +2390,7 @@ static void mp_free_instance(MP mp)
     }
     mp_free_number(mp->cur_x);
     mp_free_number(mp->cur_y);
-    for (int i=0; i<bistack_size + 1; i++) {
+    for (int i = 0; i < bisect_stack_size + 1; i++) {
         mp_free_number(mp->bisect_stack[i]);
     }
     mp_memory_free(mp->bisect_stack);
@@ -3488,6 +3496,8 @@ static const char *mp_op_string_names[] = {
     [mp_attribute_operation]           = "attribute",
     [mp_x_part_operation]              = "xpart",
     [mp_y_part_operation]              = "ypart",
+    [mp_z_part_operation]              = "zpart",
+    [mp_w_part_operation]              = "wpart",
     [mp_xx_part_operation]             = "xxpart",
     [mp_xy_part_operation]             = "xypart",
     [mp_yx_part_operation]             = "yxpart",
@@ -3545,9 +3555,20 @@ static const char *mp_op_string_names[] = {
     [mp_hex_operation]                 = "hex",
     [mp_ASCII_operation]               = "ASCII",
     [mp_char_operation]                = "char",
+    [mp_segments_operation]            = "segments",
     [mp_length_operation]              = "length",
     [mp_prune_singularities_operation] = "prunesingularities",
     [mp_no_length_operation]           = "nolength",
+    [mp_first_point_operation]         = "firstpoint",
+    [mp_first_pre_control_operation]   = "firstprecontrol",
+    [mp_first_post_control_operation]  = "firstpostcontrol",
+    [mp_first_direction_operation]     = "firstdirection",
+    [mp_first_unit_direction_operation]= "firstunitdirection",
+    [mp_last_point_operation]          = "lastpoint",
+    [mp_last_pre_control_operation]    = "lastprecontrol",
+    [mp_last_post_control_operation]   = "lastpostcontrol",
+    [mp_last_direction_operation]      = "lastdirection",
+    [mp_last_unit_direction_operation] = "lastunitdirection",
     [mp_turning_operation]             = "turningnumber",
     [mp_color_model_operation]         = "colormodel",
     [mp_path_part_operation]           = "pathpart",
@@ -3563,6 +3584,7 @@ static const char *mp_op_string_names[] = {
     [mp_sin_d_operation]               = "sind",
     [mp_cos_d_operation]               = "cosd",
     [mp_floor_operation]               = "floor",
+    [mp_normalize_operation]           = "normalize",
     [mp_uniform_deviate_operation]     = "uniformdeviate",
     [mp_ll_corner_operation]           = "llcorner",
     [mp_lr_corner_operation]           = "lrcorner",
@@ -3577,6 +3599,7 @@ static const char *mp_op_string_names[] = {
     [mp_delta_precontrol_operation]    = "deltaprecontrol",
     [mp_delta_postcontrol_operation]   = "deltapostcontrol",
     [mp_delta_direction_operation]     = "deltadirection",
+    [mp_delta_unit_direction_operation]= "deltaunitdirection",
     [mp_delta_arclength_operation]     = "deltaarclength",
     [mp_arc_length_operation]          = "arclength",
     [mp_angle_operation]               = "angle",
@@ -3626,6 +3649,8 @@ static const char *mp_op_string_names[] = {
     [mp_y_scaled_operation]            = "yscaled",
     [mp_z_scaled_operation]            = "zscaled",
     [mp_xy_scaled_operation]           = "xyscaled",
+    [mp_x_shifted_operation]           = "xshifted",
+    [mp_y_shifted_operation]           = "yshifted",
     [mp_bytemap_scaled_operation]      = "bytemapscaled",
     [mp_uncycled_operation]            = "uncycled",
     [mp_intertimes_operation]          = "intersectiontimes",
@@ -3633,11 +3658,13 @@ static const char *mp_op_string_names[] = {
     [mp_double_dot_operation]          = "..",
     [mp_substring_operation]           = "substring",
     [mp_subpath_operation]             = "subpath",
+    [mp_segment_operation]             = "segment",
     [mp_direction_time_operation]      = "directiontime",
     [mp_point_operation]               = "point",
     [mp_precontrol_operation]          = "precontrol",
     [mp_postcontrol_operation]         = "postcontrol",
     [mp_direction_operation]           = "direction",
+    [mp_unit_direction_operation]      = "unitdirection",
     [mp_last_xy_operation]             = "lastxy",
     [mp_last_x_operation]              = "lastx",
     [mp_last_y_operation]              = "lasty",
@@ -3648,12 +3675,15 @@ static const char *mp_op_string_names[] = {
     [mp_path_precontrol_operation]     = "pathprecontrol",
     [mp_path_postcontrol_operation]    = "pathpostcontrol",
     [mp_path_direction_operation]      = "pathdirection",
+    [mp_path_unit_direction_operation] = "pathunitdirection",
     [mp_path_state_operation]          = "pathstate",
     [mp_path_index_operation]          = "pathindex",
     [mp_path_lastindex_operation]      = "pathlastindex",
     [mp_path_length_operation]         = "pathlength",
     [mp_path_first_operation]          = "pathfirst",
     [mp_path_last_operation]           = "pathlast",
+    [mp_path_xpart_operation]          = "pathxpart",
+    [mp_path_ypart_operation]          = "pathypart",
     [mp_pen_offset_operation]          = "penoffset",
     [mp_arc_time_operation]            = "arctime",
     [mp_arc_point_operation]           = "arcpoint",
@@ -3670,12 +3700,13 @@ static const char *mp_op_string_names[] = {
 
 static const char *mp_operator_string(int c)
 {
-    if (c >= mp_root_operation && c <= mp_bytemap_bounds_operation) {
+    if (c >= mp_first_operation && c <= mp_last_operation) {
         return mp_op_string_names[c];
     } else {
         return "unknown operation";
     }
 }
+
 /* weird, these slightly different ranges, side effect from unknown */
 
 static void mp_print_operator(MP mp, int c)
@@ -3927,12 +3958,29 @@ the new |eqtb| pointer after |primitive| has acted.
 
 */
 
-static void mp_primitive(MP mp, const char *str, int c, int o)
+static int n_of_primitives = 0;
+static int primitives_max  = 500;
+static int primitives_set  = 0;
+
+static mp_primitive_data primitivedata[500]; /* more than enough */
+
+static void mp_primitive(MP mp, int origin, int legacy, const char *str, int command, int operator)
 {
-    set_cur_sym(mp_id_lookup(mp, (char *) str, strlen(str), 1));
-    mp_set_eq_type(cur_sym, c);
-    mp_set_eq_property(cur_sym, 0x1); /* todo: enumeration values */
-    mp_set_eq_valent(cur_sym, o);
+    if (mp && command != mp_undefined_command) {
+        set_cur_sym(mp_id_lookup(mp, (char *) str, strlen(str), 1));
+        mp_set_eq_type(cur_sym, command);
+        mp_set_eq_property(cur_sym, 0x1); /* todo: enumeration values */
+        mp_set_eq_valent(cur_sym, operator);
+    }
+    if (! primitives_set && n_of_primitives < primitives_max) {
+        primitivedata[n_of_primitives++] = (mp_primitive_data) {
+            .name      = str,
+            .command   = (unsigned char) command,
+            .operation = (unsigned char) operator,
+            .origin    = (unsigned char) origin,
+            .legacy    = (unsigned char) legacy,
+        };
+    }
 }
 
 /*tex
@@ -4862,8 +4910,8 @@ static int mp_interesting(MP mp, mp_node p)
                             t = mp_cyan_part(tt)->name_type;
                             break;
                         default:
-                                t = mp_x_part(tt)->name_type;
-                                break;
+                            t = mp_x_part(tt)->name_type;
+                            break;
                     }
                     break;
                 case mp_y_part_operation:
@@ -4888,6 +4936,7 @@ static int mp_interesting(MP mp, mp_node p)
                             t = mp_yellow_part(tt)->name_type;
                             break;
                         default:
+                            t = mp_capsule_operation; /* error */
                             break;
                     }
                     break;
@@ -4897,6 +4946,7 @@ static int mp_interesting(MP mp, mp_node p)
                             t = mp_black_part(tt)->name_type;
                             break;
                         default:
+                            t = mp_capsule_operation; /* error */
                             break;
                     }
                     break;
@@ -12733,7 +12783,7 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
     /*tex Initialize for intersections at level zero: */
     q = mp_next_knot(p);
     qq = mp_next_knot(pp);
-    mp->bisect_ptr = int_packets;
+    mp->bisect_ptr = bisect_int_packets;
     mp_set_number_from_subtraction(u1r, p->right_x, p->x_coord);
     mp_set_number_from_subtraction(u2r, q->left_x, p->right_x);
     mp_set_number_from_subtraction(u3r, q->x_coord, q->left_x);
@@ -12764,8 +12814,8 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
             When we are in arbitrary precision math, low precisions can lead to access locations
             beyond the |stack_size|: in this case we say that there is no intersection.
         */
-        if (((x_packet (mp->xy)) + 4) > bistack_size || ((u_packet (mp->uv)) + 4) > bistack_size
-         || ((y_packet (mp->xy)) + 4) > bistack_size || ((v_packet (mp->uv)) + 4) > bistack_size) {
+        if (((x_packet(mp->xy)) + bisect_int_step - 1) > bisect_stack_size || ((u_packet(mp->uv)) + bisect_int_step - 1) > bisect_stack_size
+         || ((y_packet(mp->xy)) + bisect_int_step - 1) > bisect_stack_size || ((v_packet(mp->uv)) + bisect_int_step - 1) > bisect_stack_size) {
             mp_set_number_from_scaled(mp->cur_t, 1);
             mp_set_number_from_scaled(mp->cur_tt, 1);
             goto NOT_FOUND;
@@ -12788,8 +12838,7 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
                             if (mp_number_equal(mp->max_t, x_two_t) || mp_number_greater(mp->max_t, x_two_t_low_precision)) {
                                 if (run == 1) {
                                     /*tex
-                                        We've done 17+2 bisections, first restore values due bit
-                                        precision.
+                                        We've done 17+2 bisections, first restore values to bit precision.
                                     */
                                     mp_number_divide_int(mp->cur_t, cubic_precision);
                                     mp_number_divide_int(mp->cur_tt, cubic_precision);
@@ -12815,7 +12864,7 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
                         mp_set_number_from_scaled(stack_tol, mp->tol);
                         mp_set_number_from_scaled(stack_uv, mp->uv);
                         mp_set_number_from_scaled(stack_xy, mp->xy);
-                        mp->bisect_ptr = mp->bisect_ptr + int_increment;
+                        mp->bisect_ptr = mp->bisect_ptr + bisect_int_increment;
                         mp_number_double(mp->cur_t);
                         mp_number_double(mp->cur_tt);
                         mp_number_clone(u1l, stack_1(u_packet (mp->uv)));
@@ -12896,7 +12945,7 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
                     mp_free_number(x_two_t_low_precision);
                     return 3;
                 } else {
-                    mp->bisect_ptr -= int_increment;
+                    mp->bisect_ptr -= bisect_int_increment;
                     mp->three_l -= (int) mp->tol_step;
                     mp_number_clone(mp->delx, stack_dx);
                     mp_number_clone(mp->dely, stack_dy);
@@ -12907,34 +12956,34 @@ static int mp_cubic_intersection(MP mp, mp_knot p, mp_knot pp, int run, int cubi
                 }
             } else {
                 mp_set_number_from_scaled(mp->cur_t, mp_number_to_scaled(mp->cur_t) + 1);
-                mp_number_add(mp->delx, stack_1(u_packet (mp->uv)));
-                mp_number_add(mp->delx, stack_2(u_packet (mp->uv)));
-                mp_number_add(mp->delx, stack_3(u_packet (mp->uv)));
-                mp_number_add(mp->dely, stack_1(v_packet (mp->uv)));
-                mp_number_add(mp->dely, stack_2(v_packet (mp->uv)));
-                mp_number_add(mp->dely, stack_3(v_packet (mp->uv)));
+                mp_number_add(mp->delx, stack_1(u_packet(mp->uv)));
+                mp_number_add(mp->delx, stack_2(u_packet(mp->uv)));
+                mp_number_add(mp->delx, stack_3(u_packet(mp->uv)));
+                mp_number_add(mp->dely, stack_1(v_packet(mp->uv)));
+                mp_number_add(mp->dely, stack_2(v_packet(mp->uv)));
+                mp_number_add(mp->dely, stack_3(v_packet(mp->uv)));
                 /*tex switch from |l_packets| to |r_packets| */
-                mp->uv = mp->uv + int_packets;
+                mp->uv = mp->uv + bisect_int_packets;
                 mp_set_number_from_scaled(mp->cur_tt, mp_number_to_scaled(mp->cur_tt) - 1);
-                mp->xy = mp->xy - int_packets;
-                mp_number_add(mp->delx, stack_1(x_packet (mp->xy)));
-                mp_number_add(mp->delx, stack_2(x_packet (mp->xy)));
-                mp_number_add(mp->delx, stack_3(x_packet (mp->xy)));
-                mp_number_add(mp->dely, stack_1(y_packet (mp->xy)));
-                mp_number_add(mp->dely, stack_2(y_packet (mp->xy)));
-                mp_number_add(mp->dely, stack_3(y_packet (mp->xy)));
+                mp->xy = mp->xy - bisect_int_packets;
+                mp_number_add(mp->delx, stack_1(x_packet(mp->xy)));
+                mp_number_add(mp->delx, stack_2(x_packet(mp->xy)));
+                mp_number_add(mp->delx, stack_3(x_packet(mp->xy)));
+                mp_number_add(mp->dely, stack_1(y_packet(mp->xy)));
+                mp_number_add(mp->dely, stack_2(y_packet(mp->xy)));
+                mp_number_add(mp->dely, stack_3(y_packet(mp->xy)));
             }
         } else {
             mp_set_number_from_scaled(mp->cur_tt, mp_number_to_scaled(mp->cur_tt) + 1);
             mp->tol = mp->tol + mp->three_l;
-            mp_number_subtract(mp->delx, stack_1(x_packet (mp->xy)));
-            mp_number_subtract(mp->delx, stack_2(x_packet (mp->xy)));
-            mp_number_subtract(mp->delx, stack_3(x_packet (mp->xy)));
-            mp_number_subtract(mp->dely, stack_1(y_packet (mp->xy)));
-            mp_number_subtract(mp->dely, stack_2(y_packet (mp->xy)));
-            mp_number_subtract(mp->dely, stack_3(y_packet (mp->xy)));
+            mp_number_subtract(mp->delx, stack_1(x_packet(mp->xy)));
+            mp_number_subtract(mp->delx, stack_2(x_packet(mp->xy)));
+            mp_number_subtract(mp->delx, stack_3(x_packet(mp->xy)));
+            mp_number_subtract(mp->dely, stack_1(y_packet(mp->xy)));
+            mp_number_subtract(mp->dely, stack_2(y_packet(mp->xy)));
+            mp_number_subtract(mp->dely, stack_3(y_packet(mp->xy)));
             /*tex switch from |l_packets| to |r_packets| */
-            mp->xy = mp->xy + int_packets;
+            mp->xy = mp->xy + bisect_int_packets;
         }
     }
     mp_free_number(x_two_t);
@@ -19717,24 +19766,25 @@ performs is a |primary_binary| or |secondary_binary|, etc.
 static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_number n)
 {
     switch (what) {
-        case 0:
+        case 0: /* point */
             mp_pair_value(mp, &(p->x_coord), &(p->y_coord));
             break;
-        case 1:
+        case 1: /* precontrol */
             if (mp_left_type(p) == mp_endpoint_knot) {
                 mp_pair_value(mp, &(p->x_coord), &(p->y_coord));
             } else {
                 mp_pair_value(mp, &(p->left_x), &(p->left_y));
             }
             break;
-        case 2:
+        case 2: /* postcontrol */
             if (mp_right_type(p) == mp_endpoint_knot) {
                 mp_pair_value(mp, &(p->x_coord), &(p->y_coord));
             } else {
                 mp_pair_value(mp, &(p->right_x), &(p->right_y));
             }
             break;
-        case 3:
+        case 3: /* direction */
+        case 4: /* unitdirection */
             {
                 mp_number x, y;
                 if (mp_right_type(p) == mp_endpoint_knot) {
@@ -19751,12 +19801,24 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                     mp_number_subtract(x, p->left_x);
                     mp_number_subtract(y, p->left_y);
                 }
+                if (what == 4) {
+                    mp_number n;
+                    mp_pyth_add(n, x, y);
+                    if (mp_number_zero(n)) {
+                        mp_number_clone(x, mp_zero_t);
+                        mp_number_clone(y, mp_zero_t);
+                    } else {
+                        mp_set_number_from_div(x, x, n);
+                        mp_set_number_from_div(y, y, n);
+                    }
+                    mp_free_number(n);
+                }
                 mp_pair_value(mp, &x, &y);
                 mp_free_number(x);
                 mp_free_number(y);
             }
             break;
-        case 4:
+        case 5: /* state */
             {
                 mp_value expr;
                 memset(&expr, 0, sizeof(mp_value));
@@ -19765,7 +19827,7 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                 mp_flush_cur_exp(mp, expr);
             }
             break;
-        case 5:
+        case 6: /* index */
             {
                 mp_value expr;
                 memset(&expr, 0, sizeof(mp_value));
@@ -19773,7 +19835,7 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                 mp_flush_cur_exp(mp, expr);
             }
             break;
-        case 6:
+        case 7: /* lastindex */
             {
                 mp_value expr;
                 memset(&expr, 0, sizeof(mp_value));
@@ -19781,7 +19843,7 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                 mp_flush_cur_exp(mp, expr);
             }
             break;
-        case 7:
+        case 8: /* length */
             {
                 mp_value expr;
                 memset(&expr, 0, sizeof(mp_value));
@@ -19789,25 +19851,25 @@ static void mp_push_of_path_result(MP mp, int what, mp_knot p, mp_number i, mp_n
                 mp_flush_cur_exp(mp, expr);
             }
             break;
-        case 8: /* first */
+        case 9: /* first */
             {
                 cur_exp_type = mp_boolean_type;
                 mp_set_cur_exp_value_boolean(mp, mp_number_equal(i, mp_unity_t) ? mp_true_operation : mp_false_operation);
             }
             break;
-        case 9: /* last */
+        case 10: /* last */
             {
                 cur_exp_type = mp_boolean_type;
                 mp_set_cur_exp_value_boolean(mp, mp_number_greater(i, n) ? mp_true_operation : mp_false_operation);
             }
             break;
-        case 10: /* xpart */
+        case 11: /* xpart */
             {
                 cur_exp_type = mp_known_type;
                 mp_set_cur_exp_value_number(mp,  &(p->x_coord));
             }
             break;
-        case 11: /* ypart */
+        case 12: /* ypart */
             {
                 cur_exp_type = mp_known_type;
                 mp_set_cur_exp_value_number(mp,  &(p->y_coord));
@@ -19922,6 +19984,7 @@ static void mp_do_command_nullary(MP mp, int c)
         case mp_path_precontrol_operation:
         case mp_path_postcontrol_operation:
         case mp_path_direction_operation:
+        case mp_path_unit_direction_operation:
         case mp_path_state_operation:
         case mp_path_index_operation:
         case mp_path_lastindex_operation:
@@ -20097,6 +20160,12 @@ static int mp_nice_pair(MP mp, mp_node p, int t)
     return (t == mp_pair_type) && mp_pair_is_known(mp_get_value_node(p));
 }
 
+static int mp_nice_color(MP mp, mp_node p, int t)
+{
+    (void) mp;
+    return (t == mp_color_type) && mp_rgb_color_is_known(mp_get_value_node(p));
+}
+
 static int mp_nice_color_or_pair(MP mp, mp_node p, int t)
 {
     (void) mp;
@@ -20232,7 +20301,7 @@ static void mp_take_part(MP mp, int c)
                     mp_make_exp_copy(mp, mp_yellow_part(p), c);
                     break;
                 default:
-                    /* can't happen */
+                    mp_confusion(mp, "invalid zpart");
                     break;
             }
             break;
@@ -20242,7 +20311,7 @@ static void mp_take_part(MP mp, int c)
                     mp_make_exp_copy(mp, mp_black_part(p), c);
                     break;
                 default:
-                    /* can't happen */
+                    mp_confusion(mp, "invalid wpart");
                     break;
             }
             break;
@@ -21129,6 +21198,40 @@ static void mp_set_up_floor(MP mp, int c)
     }
 }
 
+static void mp_set_up_normalize(MP mp, int c)
+{
+    if (mp_nice_color(mp, cur_exp_node, cur_exp_type)) {
+        mp_number n;
+        mp_node q = cur_exp_node;
+        mp_make_exp_copy(mp, q, 2);
+        mp_node p = mp_get_value_node(cur_exp_node);
+        mp_pyth_add3(n,
+            mp_get_value_number(mp_red_part(p)),
+            mp_get_value_number(mp_green_part(p)),
+            mp_get_value_number(mp_blue_part(p))
+        );
+        if (mp_number_zero(n)) {
+            mp_set_value_number(mp_red_part(p), mp_zero_t);
+            mp_set_value_number(mp_green_part(p), mp_zero_t);
+            mp_set_value_number(mp_blue_part(p), mp_zero_t);
+        } else {
+            mp_number x, y, z;
+            mp_new_number_from_div(x, mp_get_value_number(mp_red_part(p)), n);
+            mp_new_number_from_div(y, mp_get_value_number(mp_green_part(p)), n);
+            mp_new_number_from_div(z, mp_get_value_number(mp_blue_part(p)), n);
+            mp_set_value_number(mp_red_part(p), x);
+            mp_set_value_number(mp_green_part(p), y);
+            mp_set_value_number(mp_blue_part(p), z);
+        }
+        mp_free_number(n);
+        mp_recycle_value(mp, q);
+        mp_free_value_node(mp, q);
+    } else {
+        mp_bad_unary(mp, c);
+    }
+}
+
+
 static void mp_set_up_uniform_deviate(MP mp, int c)
 {
     if (cur_exp_type != mp_known_type) {
@@ -21338,7 +21441,7 @@ static void mp_set_up_length(MP mp, int c)
                 break;
             }
         default:
-            if (mp_nice_pair (mp, cur_exp_node, cur_exp_type)) {
+            if (mp_nice_pair(mp, cur_exp_node, cur_exp_type)) {
                 mp_value expr;
                 memset(&expr, 0, sizeof(mp_value));
                 mp_new_number(expr.data.n);
@@ -21347,10 +21450,47 @@ static void mp_set_up_length(MP mp, int c)
                     mp_get_value_number(mp_y_part(mp_get_value_node(cur_exp_node)))
                 );
                 mp_flush_cur_exp(mp, expr);
+            } else if (mp_nice_color(mp, cur_exp_node, cur_exp_type)) {
+                mp_value expr;
+                memset(&expr, 0, sizeof(mp_value));
+                mp_new_number(expr.data.n);
+                mp_pyth_add3(expr.data.n,
+                    mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))),
+                    mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))),
+                    mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node)))
+                );
+                mp_flush_cur_exp(mp, expr);
             } else {
                 mp_bad_unary(mp, c);
             }
             break;
+    }
+}
+
+static void mp_set_up_some_point(MP mp, int c)
+{
+    if (cur_exp_type == mp_path_type) {
+        mp_knot p = cur_exp_knot;
+        switch (c) {
+            case mp_first_point_operation:
+            case mp_first_pre_control_operation:
+            case mp_first_post_control_operation:
+            case mp_first_direction_operation:
+            case mp_first_unit_direction_operation:
+                c -= mp_first_point_operation;
+                break;
+            case mp_last_point_operation:
+            case mp_last_pre_control_operation:
+            case mp_last_post_control_operation:
+            case mp_last_direction_operation:
+            case mp_last_unit_direction_operation:
+                c -= mp_last_point_operation;
+                p = mp_prev_knot(p);
+                break;
+        }
+        mp_push_of_path_result(mp, c, p, mp_zero_t, mp_zero_t);
+    } else {
+        mp_bad_unary(mp, c);
     }
 }
 
@@ -22270,6 +22410,9 @@ static void mp_do_unary(MP mp, int c)
         case mp_floor_operation:
             mp_set_up_floor(mp, c);
             break;
+        case mp_normalize_operation:
+            mp_set_up_normalize(mp, c);
+            break;
         case mp_uniform_deviate_operation:
             mp_set_up_uniform_deviate(mp, c);
             break;
@@ -22326,6 +22469,18 @@ static void mp_do_unary(MP mp, int c)
             break;
         case mp_no_length_operation:
             mp_set_up_no_length(mp, c);
+            break;
+        case mp_first_point_operation:
+        case mp_first_pre_control_operation:
+        case mp_first_post_control_operation:
+        case mp_first_direction_operation:
+        case mp_first_unit_direction_operation:
+        case mp_last_point_operation:
+        case mp_last_pre_control_operation:
+        case mp_last_post_control_operation:
+        case mp_last_direction_operation:
+        case mp_last_unit_direction_operation:
+            mp_set_up_some_point(mp, c);
             break;
         case mp_turning_operation:
             mp_set_up_turning(mp, c);
@@ -22411,6 +22566,7 @@ static void mp_do_unary(MP mp, int c)
         case mp_delta_precontrol_operation:
         case mp_delta_postcontrol_operation:
         case mp_delta_direction_operation:
+        case mp_delta_unit_direction_operation:
         case mp_delta_arclength_operation:
             mp_set_up_delta(mp, c);
             break;
@@ -22731,15 +22887,12 @@ static void mp_add_or_subtract(MP mp, mp_node p, mp_node q, int c)
     }
     if (t == mp_known_type) {
         mp_value_node qq = (mp_value_node) q;
-//        if (c == mp_minus_operation) {
-//            mp_number_negate(vv);
-//        }
         if (p->type == mp_known_type) {
-if (c == mp_minus_operation) {
-            mp_slow_sub(vv, mp_get_value_number(p), vv);
-} else {
-            mp_slow_add(vv, mp_get_value_number(p), vv);
-}
+            if (c == mp_minus_operation) {
+                mp_slow_sub(vv, mp_get_value_number(p), vv);
+            } else {
+                mp_slow_add(vv, mp_get_value_number(p), vv);
+            }
             if (q == NULL) {
                 mp_set_cur_exp_value_number(mp, &vv);
             } else {
@@ -22755,11 +22908,11 @@ if (c == mp_minus_operation) {
             while (mp_get_dep_info(r) != NULL) {
                 r = (mp_value_node) r->link;
             }
-if (c == mp_minus_operation) {
-            mp_slow_sub(vv, mp_get_dep_value(r), vv);
-} else {
-            mp_slow_add(vv, mp_get_dep_value(r), vv);
-}
+            if (c == mp_minus_operation) {
+                mp_slow_sub(vv, mp_get_dep_value(r), vv);
+            } else {
+                mp_slow_add(vv, mp_get_dep_value(r), vv);
+            }
             mp_set_dep_value(r, vv);
             if (qq == NULL) {
                 qq = mp_get_dep_node(mp, 8);
@@ -22956,6 +23109,28 @@ static void mp_hard_times(MP mp, mp_node p)
     }
 }
 
+static void mp_harder_times(MP mp, mp_node p)
+{
+    if (p->type <= mp_pair_type) {
+        mp_value_node q = (mp_value_node) mp_stash_cur_exp(mp);
+        mp_unstash_cur_exp(mp, p);
+        p = (mp_node) q;
+    }
+    {
+        mp_node e = mp_get_value_node(cur_exp_node);
+        mp_number x, y, z;
+        mp_new_number_from_mul(x, mp_get_value_number(mp_red_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_red_part(mp_get_value_node(p))));
+        mp_new_number_from_mul(y, mp_get_value_number(mp_green_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_green_part(mp_get_value_node(p))));
+        mp_new_number_from_mul(z, mp_get_value_number(mp_blue_part(mp_get_value_node(cur_exp_node))), mp_get_value_number(mp_blue_part(mp_get_value_node(p))));
+        mp_set_value_number(mp_red_part(e), x);
+        mp_set_value_number(mp_green_part(e), y);
+        mp_set_value_number(mp_blue_part(e), z);
+        mp_free_number(x);
+        mp_free_number(y);
+        mp_free_number(z);
+    }
+}
+
 static void mp_dep_div(MP mp, mp_value_node p, mp_number *v)
 {
     mp_value_node q; /*tex the dependency list being divided by |v| */
@@ -23100,6 +23275,20 @@ static void mp_set_up_trans(MP mp, int c)
                 } else if (p->type > mp_pair_type) {
                     mp_install(mp, mp_xx_part(q), p);
                     mp_install(mp, mp_yy_part(q), p);
+                    goto DONE;
+                }
+                break;
+            case mp_x_shifted_operation:
+                if (p->type == mp_pair_type) {
+                    r = mp_get_value_node(p);
+                    mp_install(mp, mp_tx_part(q), mp_x_part(r));
+                    goto DONE;
+                }
+                break;
+            case mp_y_shifted_operation:
+                if (p->type == mp_pair_type) {
+                    r = mp_get_value_node(p);
+                    mp_install(mp, mp_ty_part(q), mp_y_part(r));
                     goto DONE;
                 }
                 break;
@@ -24470,6 +24659,10 @@ static int mp_set_up_times(MP mp, mp_node p, int c, mp_node old_p, mp_node old_e
         mp_hard_times(mp, p);
         mp_finish_binary(mp, old_p, old_exp);
         return 1;
+    } else if (mp_nice_color(mp, p, p->type) && mp_nice_color(mp, cur_exp_node, cur_exp_type)) {
+        mp_harder_times(mp, p);
+        mp_finish_binary(mp, old_p, old_exp);
+        return 1;
     } else {
         mp_bad_binary(mp, p, c);
         return 0;
@@ -25155,6 +25348,8 @@ static void mp_do_binary(MP mp, mp_node p, int c)
         case mp_y_scaled_operation:
         case mp_z_scaled_operation:
         case mp_xy_scaled_operation:
+        case mp_x_shifted_operation:
+        case mp_y_shifted_operation:
         case mp_bytemap_scaled_operation:
             if (mp_set_up_transform(mp, p, c, old_p, old_exp)) {
                 return;
@@ -25180,6 +25375,7 @@ static void mp_do_binary(MP mp, mp_node p, int c)
         case mp_precontrol_operation:
         case mp_postcontrol_operation:
         case mp_direction_operation:
+        case mp_unit_direction_operation:
             mp_set_up_direction(mp, p, c);
             break;
         case mp_pen_offset_operation:
@@ -31762,8 +31958,8 @@ mp_number_clone(mp->previous_y, mp_inf_t);
                 break;
         }
     } else {
-mp_number_clone(mp->previous_x, mp_inf_t);
-mp_number_clone(mp->previous_y, mp_inf_t);
+// mp_number_clone(mp->previous_x, mp_inf_t);
+// mp_number_clone(mp->previous_y, mp_inf_t);
         mp_scan_tertiary(mp);
         /*tex
             Convert the right operand, |cur_exp|, into a partial path from |pp| to~|qq|.
@@ -32106,409 +32302,501 @@ void mp_final_cleanup(MP mp)
 
 static void mp_initialize_primitives(MP mp)
 {
-    mp_primitive(mp, "tracingtitles",         mp_internal_command,         mp_tracing_titles_internal);
-    mp_primitive(mp, "tracingequations",      mp_internal_command,         mp_tracing_equations_internal);
-    mp_primitive(mp, "tracingcapsules",       mp_internal_command,         mp_tracing_capsules_internal);
-    mp_primitive(mp, "tracingdependencies",   mp_internal_command,         mp_tracing_dependencies_internal);
-    mp_primitive(mp, "tracingchoices",        mp_internal_command,         mp_tracing_choices_internal);
-    mp_primitive(mp, "tracingspecs",          mp_internal_command,         mp_tracing_specs_internal);
-    mp_primitive(mp, "tracingcommands",       mp_internal_command,         mp_tracing_commands_internal);
-    mp_primitive(mp, "tracingrestores",       mp_internal_command,         mp_tracing_restores_internal);
-    mp_primitive(mp, "tracingmacros",         mp_internal_command,         mp_tracing_macros_internal);
-    mp_primitive(mp, "tracingoutput",         mp_internal_command,         mp_tracing_output_internal);
-    mp_primitive(mp, "tracingstats",          mp_internal_command,         mp_tracing_stats_internal);
-    mp_primitive(mp, "tracingonline",         mp_internal_command,         mp_tracing_online_internal);
-    mp_primitive(mp, "year",                  mp_internal_command,         mp_year_internal);
-    mp_primitive(mp, "month",                 mp_internal_command,         mp_month_internal);
-    mp_primitive(mp, "day",                   mp_internal_command,         mp_day_internal);
-    mp_primitive(mp, "time",                  mp_internal_command,         mp_time_internal);
-    mp_primitive(mp, "hour",                  mp_internal_command,         mp_hour_internal);
-    mp_primitive(mp, "minute",                mp_internal_command,         mp_minute_internal);
-    mp_primitive(mp, "charcode",              mp_internal_command,         mp_char_code_internal);
-    mp_primitive(mp, "charwd",                mp_internal_command,         mp_char_wd_internal);
-    mp_primitive(mp, "charht",                mp_internal_command,         mp_char_ht_internal);
-    mp_primitive(mp, "chardp",                mp_internal_command,         mp_char_dp_internal);
-    mp_primitive(mp, "charic",                mp_internal_command,         mp_char_ic_internal);
-    mp_primitive(mp, "pausing",               mp_internal_command,         mp_pausing_internal);
-    mp_primitive(mp, "showstopping",          mp_internal_command,         mp_showstopping_internal);
-    mp_primitive(mp, "texscriptmode",         mp_internal_command,         mp_texscriptmode_internal);
-    mp_primitive(mp, "overloadmode",          mp_internal_command,         mp_overloadmode_internal);
-    mp_primitive(mp, "linejoin",              mp_internal_command,         mp_linejoin_internal);
-    mp_primitive(mp, "linecap",               mp_internal_command,         mp_linecap_internal);
-    mp_primitive(mp, "stacking",              mp_internal_command,         mp_stacking_internal);
-    mp_primitive(mp, "miterlimit",            mp_internal_command,         mp_miterlimit_internal);
-    mp_primitive(mp, "warningcheck",          mp_internal_command,         mp_warning_check_internal);
-    mp_primitive(mp, "defaultzeroangle",      mp_internal_command,         mp_default_zero_angle_internal);
-    mp_primitive(mp, "truecorners",           mp_internal_command,         mp_true_corners_internal);
-    mp_primitive(mp, "defaultcolormodel",     mp_internal_command,         mp_default_color_model_internal);
-    mp_primitive(mp, "restoreclipcolor",      mp_internal_command,         mp_restore_clip_color_internal);
-    mp_primitive(mp, "numbersystem",          mp_internal_command,         mp_number_system_internal);
-    mp_primitive(mp, "numberprecision",       mp_internal_command,         mp_number_precision_internal);
-    mp_primitive(mp, "jobname",               mp_internal_command,         mp_job_name_internal);
-    mp_primitive(mp, "lessdigits",            mp_internal_command,         mp_less_digits_internal);
-    mp_primitive(mp, "intersectionprecision", mp_internal_command,         mp_intersection_precision_internal);
-    mp_primitive(mp, "jointolerance",         mp_internal_command,         mp_join_tolerance_internal);
-    mp_primitive(mp, "singlequotemode",       mp_internal_command,         mp_single_quote_mode_internal);
-    mp_primitive(mp, "pruneoptions",          mp_internal_command,         mp_prune_options_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingtitles",         mp_internal_command,         mp_tracing_titles_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingequations",      mp_internal_command,         mp_tracing_equations_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingcapsules",       mp_internal_command,         mp_tracing_capsules_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingdependencies",   mp_internal_command,         mp_tracing_dependencies_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingchoices",        mp_internal_command,         mp_tracing_choices_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingspecs",          mp_internal_command,         mp_tracing_specs_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingcommands",       mp_internal_command,         mp_tracing_commands_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingrestores",       mp_internal_command,         mp_tracing_restores_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingmacros",         mp_internal_command,         mp_tracing_macros_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingoutput",         mp_internal_command,         mp_tracing_output_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingstats",          mp_internal_command,         mp_tracing_stats_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tracingonline",         mp_internal_command,         mp_tracing_online_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "year",                  mp_internal_command,         mp_year_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "month",                 mp_internal_command,         mp_month_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "day",                   mp_internal_command,         mp_day_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "time",                  mp_internal_command,         mp_time_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "hour",                  mp_internal_command,         mp_hour_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "minute",                mp_internal_command,         mp_minute_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "charcode",              mp_internal_command,         mp_char_code_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "charwd",                mp_internal_command,         mp_char_wd_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "charht",                mp_internal_command,         mp_char_ht_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "chardp",                mp_internal_command,         mp_char_dp_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "charic",                mp_internal_command,         mp_char_ic_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "pausing",               mp_internal_command,         mp_pausing_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "showstopping",          mp_internal_command,         mp_showstopping_internal);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "texscriptmode",         mp_internal_command,         mp_texscriptmode_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "overloadmode",          mp_internal_command,         mp_overloadmode_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "linejoin",              mp_internal_command,         mp_linejoin_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "linecap",               mp_internal_command,         mp_linecap_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "stacking",              mp_internal_command,         mp_stacking_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "miterlimit",            mp_internal_command,         mp_miterlimit_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "warningcheck",          mp_internal_command,         mp_warning_check_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "defaultzeroangle",      mp_internal_command,         mp_default_zero_angle_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "truecorners",           mp_internal_command,         mp_true_corners_internal);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "defaultcolormodel",     mp_internal_command,         mp_default_color_model_internal);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "restoreclipcolor",      mp_internal_command,         mp_restore_clip_color_internal);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "numbersystem",          mp_internal_command,         mp_number_system_internal);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "numberprecision",       mp_internal_command,         mp_number_precision_internal);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "jobname",               mp_internal_command,         mp_job_name_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lessdigits",            mp_internal_command,         mp_less_digits_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "intersectionprecision", mp_internal_command,         mp_intersection_precision_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "jointolerance",         mp_internal_command,         mp_join_tolerance_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "singlequotemode",       mp_internal_command,         mp_single_quote_mode_internal);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pruneoptions",          mp_internal_command,         mp_prune_options_internal);
 
-    mp_primitive(mp, "..",                    mp_path_join_command,        0);
-    mp_primitive(mp, "--",                    mp_path_connect_command,     0);
-    mp_primitive(mp, "[",                     mp_left_bracket_command,     0);
-    mp_primitive(mp, "]",                     mp_right_bracket_command,    0);
-    mp_primitive(mp, "}",                     mp_right_brace_command,      0);
-    mp_primitive(mp, "{",                     mp_left_brace_command,       0);
-    mp_primitive(mp, ":",                     mp_colon_command,            0);
-    mp_primitive(mp, ":=",                    mp_assignment_command,       0);
-    mp_primitive(mp, ",",                     mp_comma_command,            0);
-    mp_primitive(mp, ";",                     mp_semicolon_command,        0);
-    mp_primitive(mp, "\\",                    mp_relax_command,            0);
-    mp_primitive(mp, "addto",                 mp_add_to_command,           0);
-    mp_primitive(mp, "atleast",               mp_at_least_command,         0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "..",                    mp_path_join_command,        0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "--",                    mp_path_connect_command,     0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "[",                     mp_left_bracket_command,     0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "]",                     mp_right_bracket_command,    0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "}",                     mp_right_brace_command,      0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "{",                     mp_left_brace_command,       0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ":",                     mp_colon_command,            0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ":=",                    mp_assignment_command,       0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ",",                     mp_comma_command,            0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ";",                     mp_semicolon_command,        0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "\\",                    mp_relax_command,            0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "addto",                 mp_add_to_command,           0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "atleast",               mp_at_least_command,         0);
 
-    mp_primitive(mp, "controls",              mp_controls_command,         mp_both_controls_code);
-    mp_primitive(mp, "firstcontrol",          mp_controls_command,         mp_first_control_code);
-    mp_primitive(mp, "secondcontrol",         mp_controls_command,         mp_second_control_code);
-    mp_primitive(mp, "curl",                  mp_curl_command,             0);
-    mp_primitive(mp, "delimiters",            mp_delimiters_command,       0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "controls",              mp_controls_command,         mp_both_controls_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstcontrol",          mp_controls_command,         mp_first_control_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "secondcontrol",         mp_controls_command,         mp_second_control_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "curl",                  mp_curl_command,             0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "delimiters",            mp_delimiters_command,       0);
 
-    mp_primitive(mp, "begingroup",            mp_begin_group_command,      0); mp->bg_loc = cur_sym;
-    mp_primitive(mp, "endgroup",              mp_end_group_command,        0); mp->eg_loc = cur_sym;
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "begingroup",            mp_begin_group_command,      0); if (mp) { mp->bg_loc = cur_sym; }
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "endgroup",              mp_end_group_command,        0); if (mp) { mp->eg_loc = cur_sym; }
 
-    mp_primitive(mp, "everyjob",              mp_every_job_command,        0);
-    mp_primitive(mp, "exitif",                mp_exit_test_command,        0);
-    mp_primitive(mp, "expandafter",           mp_expand_after_command,     0);
-    mp_primitive(mp, "interim",               mp_interim_command,          0);
-    mp_primitive(mp, "let",                   mp_let_command,              0);
-    mp_primitive(mp, "newinternal",           mp_new_internal_command,     0);
-    mp_primitive(mp, "of",                    mp_of_command,               0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "everyjob",              mp_every_job_command,        0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "exitif",                mp_exit_test_command,        0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "expandafter",           mp_expand_after_command,     0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "interim",               mp_interim_command,          0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "let",                   mp_let_command,              0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "newinternal",           mp_new_internal_command,     0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "of",                    mp_of_command,               0);
 
-    mp_primitive(mp, "setbyte",               mp_bytemap_command,          mp_bytemap_set_byte_code);
-    mp_primitive(mp, "setbytemapoffset",      mp_bytemap_command,          mp_bytemap_set_offset_code);
-    mp_primitive(mp, "copybytemap",           mp_bytemap_command,          mp_bytemap_copy_code);
-    mp_primitive(mp, "newbytemap",            mp_bytemap_command,          mp_bytemap_new_code);
-    mp_primitive(mp, "setbytemap",            mp_bytemap_command,          mp_bytemap_set_code);
-    mp_primitive(mp, "clipbytemap",           mp_bytemap_command,          mp_bytemap_clip_code);
-    mp_primitive(mp, "reducebytemap",         mp_bytemap_command,          mp_bytemap_reduce_code);
-    mp_primitive(mp, "setbytemapoptions",     mp_bytemap_command,          mp_bytemap_set_options_code);
-    mp_primitive(mp, "resetbytemap",          mp_bytemap_command,          mp_bytemap_reset_code);
-    mp_primitive(mp, "resetbytemaps",         mp_bytemap_command,          mp_bytemap_reset_all_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setbyte",               mp_bytemap_command,          mp_bytemap_set_byte_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setbytemapoffset",      mp_bytemap_command,          mp_bytemap_set_offset_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "copybytemap",           mp_bytemap_command,          mp_bytemap_copy_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "newbytemap",            mp_bytemap_command,          mp_bytemap_new_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setbytemap",            mp_bytemap_command,          mp_bytemap_set_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "clipbytemap",           mp_bytemap_command,          mp_bytemap_clip_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "reducebytemap",         mp_bytemap_command,          mp_bytemap_reduce_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setbytemapoptions",     mp_bytemap_command,          mp_bytemap_set_options_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "resetbytemap",          mp_bytemap_command,          mp_bytemap_reset_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "resetbytemaps",         mp_bytemap_command,          mp_bytemap_reset_all_code);
 
-    mp_primitive(mp, "randomseed",            mp_only_set_command,         mp_random_seed_code);
-    mp_primitive(mp, "maxknotpool",           mp_only_set_command,         mp_max_knot_pool_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "randomseed",            mp_only_set_command,         mp_random_seed_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "maxknotpool",           mp_only_set_command,         mp_max_knot_pool_code);
 
-    mp_primitive(mp, "save",                  mp_save_command,             0);
-    mp_primitive(mp, "scantokens",            mp_scan_tokens_command,      0);
-    mp_primitive(mp, "runscript",             mp_runscript_command,        0);
-    mp_primitive(mp, "maketext",              mp_maketext_command,         0);
-    mp_primitive(mp, "shipout",               mp_ship_out_command,         0);
-    mp_primitive(mp, "step",                  mp_step_command,             0);
-    mp_primitive(mp, "str",                   mp_str_command,              0);
-    mp_primitive(mp, "void",                  mp_void_command,             0);
-    mp_primitive(mp, "tension",               mp_tension_command,          0);
-    mp_primitive(mp, "to",                    mp_to_command,               0);
-    mp_primitive(mp, "until",                 mp_until_command,            0);
-    mp_primitive(mp, "within",                mp_within_command,           0);
-    mp_primitive(mp, "write",                 mp_write_command,            0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "save",                  mp_save_command,             0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "scantokens",            mp_scan_tokens_command,      0);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "runscript",             mp_runscript_command,        0);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "maketext",              mp_maketext_command,         0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "shipout",               mp_ship_out_command,         0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "step",                  mp_step_command,             0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "str",                   mp_str_command,              0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "void",                  mp_void_command,             0); /* hidden gem */
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tension",               mp_tension_command,          0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "to",                    mp_to_command,               0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "until",                 mp_until_command,            0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "within",                mp_within_command,           0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "write",                 mp_write_command,            0);
 
-    mp_primitive(mp, "btex",                  mp_btex_command,             mp_btex_code);
-    mp_primitive(mp, "verbatimtex",           mp_btex_command,             mp_verbatim_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "btex",                  mp_btex_command,             mp_btex_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "verbatimtex",           mp_btex_command,             mp_verbatim_code)  ;
 
-    mp_primitive(mp, "etex",                  mp_etex_command,             0);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "etex",                  mp_etex_command,             0);
 
-    mp_primitive(mp, "def",                   mp_macro_def_command,        mp_def_code);
-    mp_primitive(mp, "vardef",                mp_macro_def_command,        mp_var_def_code);
-    mp_primitive(mp, "primarydef",            mp_macro_def_command,        mp_primary_def_code);
-    mp_primitive(mp, "secondarydef",          mp_macro_def_command,        mp_secondary_def_code);
-    mp_primitive(mp, "tertiarydef",           mp_macro_def_command,        mp_tertiary_def_code);
-    mp_primitive(mp, "enddef",                mp_macro_def_command,        mp_end_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "def",                   mp_macro_def_command,        mp_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "vardef",                mp_macro_def_command,        mp_var_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "primarydef",            mp_macro_def_command,        mp_primary_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "secondarydef",          mp_macro_def_command,        mp_secondary_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tertiarydef",           mp_macro_def_command,        mp_tertiary_def_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "enddef",                mp_macro_def_command,        mp_end_def_code);
 
-    mp_primitive(mp, "for",                   mp_iteration_command,        mp_start_for_code);
-    mp_primitive(mp, "forsuffixes",           mp_iteration_command,        mp_start_forsuffixes_code);
-    mp_primitive(mp, "forever",               mp_iteration_command,        mp_start_forever_code);
-    mp_primitive(mp, "endfor",                mp_iteration_command,        mp_end_for_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "for",                   mp_iteration_command,        mp_start_for_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "forsuffixes",           mp_iteration_command,        mp_start_forsuffixes_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "forever",               mp_iteration_command,        mp_start_forever_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "endfor",                mp_iteration_command,        mp_end_for_code);
 
-    mp_primitive(mp, "quote",                 mp_macro_special_command,    mp_macro_quote_code);
-    mp_primitive(mp, "#@",                    mp_macro_special_command,    mp_macro_prefix_code);
-    mp_primitive(mp, "@",                     mp_macro_special_command,    mp_macro_at_code);
-    mp_primitive(mp, "@#",                    mp_macro_special_command,    mp_macro_suffix_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "quote",                 mp_macro_special_command,    mp_macro_quote_code); /* hidden gem */
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "#@",                    mp_macro_special_command,    mp_macro_prefix_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "@",                     mp_macro_special_command,    mp_macro_at_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "@#",                    mp_macro_special_command,    mp_macro_suffix_code);
 
-    mp_primitive(mp, "expr",                  mp_parameter_commmand,       mp_expr_parameter);
-    mp_primitive(mp, "suffix",                mp_parameter_commmand,       mp_suffix_parameter);
-    mp_primitive(mp, "text",                  mp_parameter_commmand,       mp_text_parameter);
-    mp_primitive(mp, "primary",               mp_parameter_commmand,       mp_primary_macro);
-    mp_primitive(mp, "secondary",             mp_parameter_commmand,       mp_secondary_macro);
-    mp_primitive(mp, "tertiary",              mp_parameter_commmand,       mp_tertiary_macro);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "expr",                  mp_parameter_commmand,       mp_expr_parameter);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "suffix",                mp_parameter_commmand,       mp_suffix_parameter);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "text",                  mp_parameter_commmand,       mp_text_parameter);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "primary",               mp_parameter_commmand,       mp_primary_macro);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "secondary",             mp_parameter_commmand,       mp_secondary_macro);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "tertiary",              mp_parameter_commmand,       mp_tertiary_macro);
 
-    mp_primitive(mp, "input",                 mp_input_command,            mp_input_code);
-    mp_primitive(mp, "endinput",              mp_input_command,            mp_end_input_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "input",                 mp_input_command,            mp_input_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "endinput",              mp_input_command,            mp_end_input_code);
 
-    mp_primitive(mp, "if",                    mp_if_test_command,          mp_if_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "if",                    mp_if_test_command,          mp_if_code);
 
-    mp_primitive(mp, "fi",                    mp_fi_or_else_command,       mp_fi_code);
-    mp_primitive(mp, "else",                  mp_fi_or_else_command,       mp_else_code);
-    mp_primitive(mp, "elseif",                mp_fi_or_else_command,       mp_else_if_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "fi",                    mp_fi_or_else_command,       mp_fi_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "else",                  mp_fi_or_else_command,       mp_else_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "elseif",                mp_fi_or_else_command,       mp_else_if_code);
 
-    mp_primitive(mp, "true",                  mp_nullary_command,          mp_true_operation);
-    mp_primitive(mp, "false",                 mp_nullary_command,          mp_false_operation);
-    mp_primitive(mp, "nullpicture",           mp_nullary_command,          mp_null_picture_operation);
-    mp_primitive(mp, "nullpen",               mp_nullary_command,          mp_null_pen_operation);
-    mp_primitive(mp, "readstring",            mp_nullary_command,          mp_read_string_operation);
-    mp_primitive(mp, "pencircle",             mp_nullary_command,          mp_pen_circle_operation);
-    mp_primitive(mp, "normaldeviate",         mp_nullary_command,          mp_normal_deviate_operation);
-    mp_primitive(mp, "pathpoint",             mp_nullary_command,          mp_path_point_operation);
-    mp_primitive(mp, "pathprecontrol",        mp_nullary_command,          mp_path_precontrol_operation);
-    mp_primitive(mp, "pathpostcontrol",       mp_nullary_command,          mp_path_postcontrol_operation);
-    mp_primitive(mp, "pathdirection",         mp_nullary_command,          mp_path_direction_operation);
-    mp_primitive(mp, "lastxy",                mp_nullary_command,          mp_last_xy_operation);
-    mp_primitive(mp, "lastx",                 mp_nullary_command,          mp_last_x_operation);
-    mp_primitive(mp, "lasty",                 mp_nullary_command,          mp_last_y_operation);
-    mp_primitive(mp, "previousxy",            mp_nullary_command,          mp_previous_xy_operation);
-    mp_primitive(mp, "previousx",             mp_nullary_command,          mp_previous_x_operation);
-    mp_primitive(mp, "previousy",             mp_nullary_command,          mp_previous_y_operation);
-    mp_primitive(mp, "pathstate",             mp_nullary_command,          mp_path_state_operation);
-    mp_primitive(mp, "pathindex",             mp_nullary_command,          mp_path_index_operation);
-    mp_primitive(mp, "pathlastindex",         mp_nullary_command,          mp_path_lastindex_operation);
-    mp_primitive(mp, "pathlength",            mp_nullary_command,          mp_path_length_operation);
-    mp_primitive(mp, "pathfirst",             mp_nullary_command,          mp_path_first_operation);
-    mp_primitive(mp, "pathlast",              mp_nullary_command,          mp_path_last_operation);
-    mp_primitive(mp, "pathxpart",             mp_nullary_command,          mp_path_xpart_operation);
-    mp_primitive(mp, "pathypart",             mp_nullary_command,          mp_path_ypart_operation);
-    mp_primitive(mp, "mpversion",             mp_nullary_command,          mp_version_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "true",                  mp_nullary_command,          mp_true_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "false",                 mp_nullary_command,          mp_false_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "nullpicture",           mp_nullary_command,          mp_null_picture_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "nullpen",               mp_nullary_command,          mp_null_pen_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "readstring",            mp_nullary_command,          mp_read_string_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "pencircle",             mp_nullary_command,          mp_pen_circle_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "normaldeviate",         mp_nullary_command,          mp_normal_deviate_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathpoint",             mp_nullary_command,          mp_path_point_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathprecontrol",        mp_nullary_command,          mp_path_precontrol_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathpostcontrol",       mp_nullary_command,          mp_path_postcontrol_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathdirection",         mp_nullary_command,          mp_path_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathunitdirection",     mp_nullary_command,          mp_path_unit_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastxy",                mp_nullary_command,          mp_last_xy_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastx",                 mp_nullary_command,          mp_last_x_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lasty",                 mp_nullary_command,          mp_last_y_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "previousxy",            mp_nullary_command,          mp_previous_xy_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "previousx",             mp_nullary_command,          mp_previous_x_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "previousy",             mp_nullary_command,          mp_previous_y_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathstate",             mp_nullary_command,          mp_path_state_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathindex",             mp_nullary_command,          mp_path_index_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathlastindex",         mp_nullary_command,          mp_path_lastindex_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathlength",            mp_nullary_command,          mp_path_length_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathfirst",             mp_nullary_command,          mp_path_first_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathlast",              mp_nullary_command,          mp_path_last_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathxpart",             mp_nullary_command,          mp_path_xpart_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "pathypart",             mp_nullary_command,          mp_path_ypart_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "mpversion",             mp_nullary_command,          mp_version_operation);
 
-    mp_primitive(mp, "readfrom",              mp_unary_command,            mp_read_from_operation);
-    mp_primitive(mp, "closefrom",             mp_unary_command,            mp_close_from_operation);
-    mp_primitive(mp, "odd",                   mp_unary_command,            mp_odd_operation);
-    mp_primitive(mp, "known",                 mp_unary_command,            mp_known_operation);
-    mp_primitive(mp, "unknown",               mp_unary_command,            mp_unknown_operation);
-    mp_primitive(mp, "not",                   mp_unary_command,            mp_not_operation);
-    mp_primitive(mp, "decimal",               mp_unary_command,            mp_decimal_operation);
-    mp_primitive(mp, "reverse",               mp_unary_command,            mp_reverse_operation);
-    mp_primitive(mp, "uncycle",               mp_unary_command,            mp_uncycle_operation);
-    mp_primitive(mp, "singularity",           mp_unary_command,            mp_singularity_operation);
-    mp_primitive(mp, "makepath",              mp_unary_command,            mp_make_path_operation);
-    mp_primitive(mp, "makepen",               mp_unary_command,            mp_make_pen_operation);
-    mp_primitive(mp, "makenep",               mp_unary_command,            mp_make_nep_operation);
-    mp_primitive(mp, "convexed",              mp_unary_command,            mp_convexed_operation);
-    mp_primitive(mp, "uncontrolled",          mp_unary_command,            mp_uncontrolled_operation);
-    mp_primitive(mp, "oct",                   mp_unary_command,            mp_oct_operation);
-    mp_primitive(mp, "hex",                   mp_unary_command,            mp_hex_operation);
-    mp_primitive(mp, "ASCII",                 mp_unary_command,            mp_ASCII_operation);
-    mp_primitive(mp, "char",                  mp_unary_command,            mp_char_operation);
-    mp_primitive(mp, "segments",              mp_unary_command,            mp_segments_operation);
-    mp_primitive(mp, "prunesingularities",    mp_unary_command,            mp_prune_singularities_operation);
-    mp_primitive(mp, "length",                mp_unary_command,            mp_length_operation);
-    mp_primitive(mp, "nolength",              mp_unary_command,            mp_no_length_operation);
-    mp_primitive(mp, "turningnumber",         mp_unary_command,            mp_turning_operation);
-    mp_primitive(mp, "xpart",                 mp_unary_command,            mp_x_part_operation);
-    mp_primitive(mp, "ypart",                 mp_unary_command,            mp_y_part_operation);
-    mp_primitive(mp, "zpart",                 mp_unary_command,            mp_z_part_operation);
-    mp_primitive(mp, "wpart",                 mp_unary_command,            mp_w_part_operation);
-    mp_primitive(mp, "xxpart",                mp_unary_command,            mp_xx_part_operation);
-    mp_primitive(mp, "xypart",                mp_unary_command,            mp_xy_part_operation);
-    mp_primitive(mp, "yxpart",                mp_unary_command,            mp_yx_part_operation);
-    mp_primitive(mp, "yypart",                mp_unary_command,            mp_yy_part_operation);
-    mp_primitive(mp, "redpart",               mp_unary_command,            mp_red_part_operation);
-    mp_primitive(mp, "greenpart",             mp_unary_command,            mp_green_part_operation);
-    mp_primitive(mp, "bluepart",              mp_unary_command,            mp_blue_part_operation);
-    mp_primitive(mp, "cyanpart",              mp_unary_command,            mp_cyan_part_operation);
-    mp_primitive(mp, "magentapart",           mp_unary_command,            mp_magenta_part_operation);
-    mp_primitive(mp, "yellowpart",            mp_unary_command,            mp_yellow_part_operation);
-    mp_primitive(mp, "blackpart",             mp_unary_command,            mp_black_part_operation);
-    mp_primitive(mp, "greypart",              mp_unary_command,            mp_grey_part_operation);
-    mp_primitive(mp, "colormodel",            mp_unary_command,            mp_color_model_operation);
-    mp_primitive(mp, "prescriptpart",         mp_unary_command,            mp_prescript_part_operation);
-    mp_primitive(mp, "postscriptpart",        mp_unary_command,            mp_postscript_part_operation);
-    mp_primitive(mp, "stackingpart",          mp_unary_command,            mp_stacking_part_operation);
-    mp_primitive(mp, "pathpart",              mp_unary_command,            mp_path_part_operation);
-    mp_primitive(mp, "penpart",               mp_unary_command,            mp_pen_part_operation);
-    mp_primitive(mp, "dashpart",              mp_unary_command,            mp_dash_part_operation);
-    mp_primitive(mp, "sqrt",                  mp_unary_command,            mp_sqrt_operation);
-    mp_primitive(mp, "knownnorm",             mp_unary_command,            mp_norm_operation);
-    mp_primitive(mp, "mexp",                  mp_unary_command,            mp_m_exp_operation);
-    mp_primitive(mp, "mlog",                  mp_unary_command,            mp_m_log_operation);
-    mp_primitive(mp, "sind",                  mp_unary_command,            mp_sin_d_operation);
-    mp_primitive(mp, "cosd",                  mp_unary_command,            mp_cos_d_operation);
-    mp_primitive(mp, "floor",                 mp_unary_command,            mp_floor_operation);
-    mp_primitive(mp, "uniformdeviate",        mp_unary_command,            mp_uniform_deviate_operation);
-    mp_primitive(mp, "llcorner",              mp_unary_command,            mp_ll_corner_operation);
-    mp_primitive(mp, "lrcorner",              mp_unary_command,            mp_lr_corner_operation);
-    mp_primitive(mp, "ulcorner",              mp_unary_command,            mp_ul_corner_operation);
-    mp_primitive(mp, "urcorner",              mp_unary_command,            mp_ur_corner_operation);
-    mp_primitive(mp, "corners",               mp_unary_command,            mp_corners_operation);
-    mp_primitive(mp, "centerof",              mp_unary_command,            mp_center_of_operation);
-    mp_primitive(mp, "centerofmass",          mp_unary_command,            mp_center_of_mass_operation);
-    mp_primitive(mp, "xrange",                mp_unary_command,            mp_x_range_operation);
-    mp_primitive(mp, "yrange",                mp_unary_command,            mp_y_range_operation);
-    mp_primitive(mp, "deltapoint",            mp_unary_command,            mp_delta_point_operation);
-    mp_primitive(mp, "deltaprecontrol",       mp_unary_command,            mp_delta_precontrol_operation);
-    mp_primitive(mp, "deltapostcontrol",      mp_unary_command,            mp_delta_postcontrol_operation);
-    mp_primitive(mp, "deltadirection",        mp_unary_command,            mp_delta_direction_operation);
-    mp_primitive(mp, "deltaarclength",        mp_unary_command,            mp_delta_arclength_operation);
-    mp_primitive(mp, "arclength",             mp_unary_command,            mp_arc_length_operation);
-    mp_primitive(mp, "angle",                 mp_unary_command,            mp_angle_operation);
-    mp_primitive(mp, "stroked",               mp_unary_command,            mp_stroked_operation);
-    mp_primitive(mp, "filled",                mp_unary_command,            mp_filled_operation);
-    mp_primitive(mp, "clipped",               mp_unary_command,            mp_clipped_operation);
-    mp_primitive(mp, "grouped",               mp_unary_command,            mp_grouped_operation);
-    mp_primitive(mp, "bounded",               mp_unary_command,            mp_bounded_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "readfrom",              mp_unary_command,            mp_read_from_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "closefrom",             mp_unary_command,            mp_close_from_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "odd",                   mp_unary_command,            mp_odd_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "known",                 mp_unary_command,            mp_known_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "unknown",               mp_unary_command,            mp_unknown_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "not",                   mp_unary_command,            mp_not_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "decimal",               mp_unary_command,            mp_decimal_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "reverse",               mp_unary_command,            mp_reverse_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "uncycle",               mp_unary_command,            mp_uncycle_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "singularity",           mp_unary_command,            mp_singularity_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "makepath",              mp_unary_command,            mp_make_path_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "makepen",               mp_unary_command,            mp_make_pen_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "makenep",               mp_unary_command,            mp_make_nep_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "convexed",              mp_unary_command,            mp_convexed_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "uncontrolled",          mp_unary_command,            mp_uncontrolled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "oct",                   mp_unary_command,            mp_oct_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "hex",                   mp_unary_command,            mp_hex_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "ASCII",                 mp_unary_command,            mp_ASCII_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "char",                  mp_unary_command,            mp_char_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "segments",              mp_unary_command,            mp_segments_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "prunesingularities",    mp_unary_command,            mp_prune_singularities_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "length",                mp_unary_command,            mp_length_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "nolength",              mp_unary_command,            mp_no_length_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstpoint",            mp_unary_command,            mp_first_point_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstprecontrol",       mp_unary_command,            mp_first_pre_control_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstpostcontrol",      mp_unary_command,            mp_first_post_control_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstdirection",        mp_unary_command,            mp_first_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "firstunitdirection",    mp_unary_command,            mp_first_unit_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastpoint",             mp_unary_command,            mp_last_point_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastprecontrol",        mp_unary_command,            mp_last_pre_control_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastpostcontrol",       mp_unary_command,            mp_last_post_control_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastdirection",         mp_unary_command,            mp_last_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "lastunitdirection",     mp_unary_command,            mp_last_unit_direction_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "turningnumber",         mp_unary_command,            mp_turning_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "xpart",                 mp_unary_command,            mp_x_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "ypart",                 mp_unary_command,            mp_y_part_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "zpart",                 mp_unary_command,            mp_z_part_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "wpart",                 mp_unary_command,            mp_w_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "xxpart",                mp_unary_command,            mp_xx_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "xypart",                mp_unary_command,            mp_xy_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "yxpart",                mp_unary_command,            mp_yx_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "yypart",                mp_unary_command,            mp_yy_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "redpart",               mp_unary_command,            mp_red_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "greenpart",             mp_unary_command,            mp_green_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "bluepart",              mp_unary_command,            mp_blue_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "cyanpart",              mp_unary_command,            mp_cyan_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "magentapart",           mp_unary_command,            mp_magenta_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "yellowpart",            mp_unary_command,            mp_yellow_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "blackpart",             mp_unary_command,            mp_black_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "greypart",              mp_unary_command,            mp_grey_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "colormodel",            mp_unary_command,            mp_color_model_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "prescriptpart",         mp_unary_command,            mp_prescript_part_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "postscriptpart",        mp_unary_command,            mp_postscript_part_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "stackingpart",          mp_unary_command,            mp_stacking_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "pathpart",              mp_unary_command,            mp_path_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "penpart",               mp_unary_command,            mp_pen_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "dashpart",              mp_unary_command,            mp_dash_part_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "sqrt",                  mp_unary_command,            mp_sqrt_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knownnorm",             mp_unary_command,            mp_norm_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "mexp",                  mp_unary_command,            mp_m_exp_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "mlog",                  mp_unary_command,            mp_m_log_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "sind",                  mp_unary_command,            mp_sin_d_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "cosd",                  mp_unary_command,            mp_cos_d_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "floor",                 mp_unary_command,            mp_floor_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knownnormalize",        mp_unary_command,            mp_normalize_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "uniformdeviate",        mp_unary_command,            mp_uniform_deviate_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "llcorner",              mp_unary_command,            mp_ll_corner_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "lrcorner",              mp_unary_command,            mp_lr_corner_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "ulcorner",              mp_unary_command,            mp_ul_corner_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "urcorner",              mp_unary_command,            mp_ur_corner_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "corners",               mp_unary_command,            mp_corners_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "centerof",              mp_unary_command,            mp_center_of_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "centerofmass",          mp_unary_command,            mp_center_of_mass_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xrange",                mp_unary_command,            mp_x_range_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "yrange",                mp_unary_command,            mp_y_range_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltapoint",            mp_unary_command,            mp_delta_point_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltaprecontrol",       mp_unary_command,            mp_delta_precontrol_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltapostcontrol",      mp_unary_command,            mp_delta_postcontrol_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltadirection",        mp_unary_command,            mp_delta_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltaunitdirection",    mp_unary_command,            mp_delta_unit_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "deltaarclength",        mp_unary_command,            mp_delta_arclength_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "arclength",             mp_unary_command,            mp_arc_length_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "angle",                 mp_unary_command,            mp_angle_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "stroked",               mp_unary_command,            mp_stroked_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "filled",                mp_unary_command,            mp_filled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "clipped",               mp_unary_command,            mp_clipped_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "grouped",               mp_unary_command,            mp_grouped_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "bounded",               mp_unary_command,            mp_bounded_operation);
 
-    mp_primitive(mp, "cycle",                 mp_cycle_command,            mp_cycle_operation);
-    mp_primitive(mp, "recycle",               mp_cycle_command,            mp_recycle_operation);
-    mp_primitive(mp, "nocycle",               mp_cycle_command,            mp_no_cycle_operation);
-    mp_primitive(mp, "xrelative",             mp_cycle_command,            mp_x_relative_operation);
-    mp_primitive(mp, "yrelative",             mp_cycle_command,            mp_y_relative_operation);
-    mp_primitive(mp, "xyrelative",            mp_cycle_command,            mp_xy_relative_operation);
-    mp_primitive(mp, "xabsolute",             mp_cycle_command,            mp_x_absolute_operation);
-    mp_primitive(mp, "yabsolute",             mp_cycle_command,            mp_y_absolute_operation);
-    mp_primitive(mp, "xyabsolute",            mp_cycle_command,            mp_xy_absolute_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "cycle",                 mp_cycle_command,            mp_cycle_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "recycle",               mp_cycle_command,            mp_recycle_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "nocycle",               mp_cycle_command,            mp_no_cycle_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xrelative",             mp_cycle_command,            mp_x_relative_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "yrelative",             mp_cycle_command,            mp_y_relative_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xyrelative",            mp_cycle_command,            mp_xy_relative_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xabsolute",             mp_cycle_command,            mp_x_absolute_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "yabsolute",             mp_cycle_command,            mp_y_absolute_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xyabsolute",            mp_cycle_command,            mp_xy_absolute_operation);
 
-    mp_primitive(mp, "+",                     mp_plus_or_minus_command,    mp_plus_operation);
-    mp_primitive(mp, "-",                     mp_plus_or_minus_command,    mp_minus_operation);
-    mp_primitive(mp, "/",                     mp_slash_command,            mp_over_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "+",                     mp_plus_or_minus_command,    mp_plus_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "-",                     mp_plus_or_minus_command,    mp_minus_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "/",                     mp_slash_command,            mp_over_operation);
 
-    mp_primitive(mp, "*",                     mp_secondary_binary_command, mp_times_operation);
-    mp_primitive(mp, "^",                     mp_secondary_binary_command, mp_power_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "*",                     mp_secondary_binary_command, mp_times_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "^",                     mp_secondary_binary_command, mp_power_operation);
 
-    mp_primitive(mp, "++",                    mp_tertiary_binary_command,  mp_pythag_add_operation);
-    mp_primitive(mp, "+-+",                   mp_tertiary_binary_command,  mp_pythag_sub_operation);
-    mp_primitive(mp, "or",                    mp_tertiary_binary_command,  mp_or_operation);
-    mp_primitive(mp, "knowndotprod",          mp_tertiary_binary_command,  mp_dotprod_operation);
-    mp_primitive(mp, "knowncrossprod",        mp_tertiary_binary_command,  mp_crossprod_operation);
-    mp_primitive(mp, "knowndiv",              mp_tertiary_binary_command,  mp_div_operation);
-    mp_primitive(mp, "knownmod",              mp_tertiary_binary_command,  mp_mod_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "++",                    mp_tertiary_binary_command,  mp_pythag_add_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "+-+",                   mp_tertiary_binary_command,  mp_pythag_sub_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "or",                    mp_tertiary_binary_command,  mp_or_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knowndotprod",          mp_tertiary_binary_command,  mp_dotprod_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knowncrossprod",        mp_tertiary_binary_command,  mp_crossprod_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knowndiv",              mp_tertiary_binary_command,  mp_div_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "knownmod",              mp_tertiary_binary_command,  mp_mod_operation);
 
-    mp_primitive(mp, "and",                   mp_and_command,              mp_and_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "and",                   mp_and_command,              mp_and_operation);
 
-    mp_primitive(mp, "<",                     mp_primary_binary_command,   mp_less_than_operation);
-    mp_primitive(mp, "<=",                    mp_primary_binary_command,   mp_less_or_equal_operation);
-    mp_primitive(mp, ">",                     mp_primary_binary_command,   mp_greater_than_operation);
-    mp_primitive(mp, ">=",                    mp_primary_binary_command,   mp_greater_or_equal_operation);
-    mp_primitive(mp, "<>",                    mp_primary_binary_command,   mp_unequal_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "<",                     mp_primary_binary_command,   mp_less_than_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "<=",                    mp_primary_binary_command,   mp_less_or_equal_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ">",                     mp_primary_binary_command,   mp_greater_than_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    ">=",                    mp_primary_binary_command,   mp_greater_or_equal_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "<>",                    mp_primary_binary_command,   mp_unequal_operation);
 
-    mp_primitive(mp, "=",                     mp_equals_command,           mp_equal_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "=",                     mp_equals_command,           mp_equal_operation);
 
-    mp_primitive(mp, "substring",             mp_of_binary_command,        mp_substring_operation);
-    mp_primitive(mp, "subpath",               mp_of_binary_command,        mp_subpath_operation);
-    mp_primitive(mp, "segment",               mp_of_binary_command,        mp_segment_operation);
-    mp_primitive(mp, "directiontime",         mp_of_binary_command,        mp_direction_time_operation);
-    mp_primitive(mp, "point",                 mp_of_binary_command,        mp_point_operation);
-    mp_primitive(mp, "precontrol",            mp_of_binary_command,        mp_precontrol_operation);
-    mp_primitive(mp, "postcontrol",           mp_of_binary_command,        mp_postcontrol_operation);
-    mp_primitive(mp, "direction",             mp_of_binary_command,        mp_direction_operation);
-    mp_primitive(mp, "penoffset",             mp_of_binary_command,        mp_pen_offset_operation);
-    mp_primitive(mp, "arctime",               mp_of_binary_command,        mp_arc_time_operation);
-    mp_primitive(mp, "arcpoint",              mp_of_binary_command,        mp_arc_point_operation);
-    mp_primitive(mp, "arcpointlist",          mp_of_binary_command,        mp_arc_point_list_operation);
-    mp_primitive(mp, "subarclength",          mp_of_binary_command,        mp_subarc_length_operation);
-    mp_primitive(mp, "bytevalue",             mp_of_binary_command,        mp_bytemap_value_operation);
-    mp_primitive(mp, "bytefound",             mp_of_binary_command,        mp_bytemap_found_operation);
-    mp_primitive(mp, "bytepath",              mp_of_binary_command,        mp_bytemap_path_operation);
-    mp_primitive(mp, "bytemapbounds",         mp_of_binary_command,        mp_bytemap_bounds_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "substring",             mp_of_binary_command,        mp_substring_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "subpath",               mp_of_binary_command,        mp_subpath_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "segment",               mp_of_binary_command,        mp_segment_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "directiontime",         mp_of_binary_command,        mp_direction_time_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "point",                 mp_of_binary_command,        mp_point_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "precontrol",            mp_of_binary_command,        mp_precontrol_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "postcontrol",           mp_of_binary_command,        mp_postcontrol_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "direction",             mp_of_binary_command,        mp_direction_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "unitdirection",         mp_of_binary_command,        mp_unit_direction_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "penoffset",             mp_of_binary_command,        mp_pen_offset_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "arctime",               mp_of_binary_command,        mp_arc_time_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "arcpoint",              mp_of_binary_command,        mp_arc_point_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "arcpointlist",          mp_of_binary_command,        mp_arc_point_list_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "subarclength",          mp_of_binary_command,        mp_subarc_length_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "bytevalue",             mp_of_binary_command,        mp_bytemap_value_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "bytefound",             mp_of_binary_command,        mp_bytemap_found_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "bytepath",              mp_of_binary_command,        mp_bytemap_path_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "bytemapbounds",         mp_of_binary_command,        mp_bytemap_bounds_operation);
 
-    mp_primitive(mp, "&",                     mp_ampersand_command,        mp_concat_operation);
-    mp_primitive(mp, "&&",                    mp_ampersand_command,        mp_just_append_operation);
-    mp_primitive(mp, "&&&",                   mp_ampersand_command,        mp_tolerant_concat_operation);
-    mp_primitive(mp, "&&&&",                  mp_ampersand_command,        mp_tolerant_append_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "&",                     mp_ampersand_command,        mp_concat_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "&&",                    mp_ampersand_command,        mp_just_append_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "&&&",                   mp_ampersand_command,        mp_tolerant_concat_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "&&&&",                  mp_ampersand_command,        mp_tolerant_append_operation);
 
-    mp_primitive(mp, "rotated",               mp_secondary_binary_command, mp_rotated_operation);
-    mp_primitive(mp, "slanted",               mp_secondary_binary_command, mp_slanted_operation);
-    mp_primitive(mp, "scaled",                mp_secondary_binary_command, mp_scaled_operation);
-    mp_primitive(mp, "shifted",               mp_secondary_binary_command, mp_shifted_operation);
-    mp_primitive(mp, "transformed",           mp_secondary_binary_command, mp_transformed_operation);
-    mp_primitive(mp, "xscaled",               mp_secondary_binary_command, mp_x_scaled_operation);
-    mp_primitive(mp, "yscaled",               mp_secondary_binary_command, mp_y_scaled_operation);
-    mp_primitive(mp, "zscaled",               mp_secondary_binary_command, mp_z_scaled_operation);
-    mp_primitive(mp, "xyscaled",              mp_secondary_binary_command, mp_xy_scaled_operation);
-    mp_primitive(mp, "bytemapscaled",         mp_secondary_binary_command, mp_bytemap_scaled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "rotated",               mp_secondary_binary_command, mp_rotated_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "slanted",               mp_secondary_binary_command, mp_slanted_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "scaled",                mp_secondary_binary_command, mp_scaled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "shifted",               mp_secondary_binary_command, mp_shifted_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "transformed",           mp_secondary_binary_command, mp_transformed_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "xscaled",               mp_secondary_binary_command, mp_x_scaled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "yscaled",               mp_secondary_binary_command, mp_y_scaled_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "zscaled",               mp_secondary_binary_command, mp_z_scaled_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xyscaled",              mp_secondary_binary_command, mp_xy_scaled_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "xshifted",              mp_secondary_binary_command, mp_x_shifted_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "yshifted",              mp_secondary_binary_command, mp_y_shifted_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "bytemapscaled",         mp_secondary_binary_command, mp_bytemap_scaled_operation);
 
-    mp_primitive(mp, "intersectiontimes",     mp_tertiary_binary_command,  mp_intertimes_operation);
-    mp_primitive(mp, "intersectiontimeslist", mp_tertiary_binary_command,  mp_intertimes_list_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "intersectiontimes",     mp_tertiary_binary_command,  mp_intertimes_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "intersectiontimeslist", mp_tertiary_binary_command,  mp_intertimes_list_operation);
 
-    mp_primitive(mp, "envelope",              mp_of_binary_command,        mp_envelope_operation);
-    mp_primitive(mp, "boundingpath",          mp_of_binary_command,        mp_boundingpath_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "envelope",              mp_of_binary_command,        mp_envelope_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "boundingpath",          mp_of_binary_command,        mp_boundingpath_operation);
 
-    mp_primitive(mp, "numeric",               mp_type_name_command,        mp_numeric_type_operation);
-    mp_primitive(mp, "string",                mp_type_name_command,        mp_string_type_operation);
-    mp_primitive(mp, "boolean",               mp_type_name_command,        mp_boolean_type_operation);
-    mp_primitive(mp, "path",                  mp_type_name_command,        mp_path_type_operation);
-    mp_primitive(mp, "pen",                   mp_type_name_command,        mp_pen_type_operation);
-    mp_primitive(mp, "nep",                   mp_type_name_command,        mp_nep_type_operation);
-    mp_primitive(mp, "picture",               mp_type_name_command,        mp_picture_type_operation);
-    mp_primitive(mp, "transform",             mp_type_name_command,        mp_transform_type_operation);
-    mp_primitive(mp, "color",                 mp_type_name_command,        mp_color_type_operation);
-    mp_primitive(mp, "rgbcolor",              mp_type_name_command,        mp_color_type_operation);
-    mp_primitive(mp, "cmykcolor",             mp_type_name_command,        mp_cmykcolor_type_operation);
-    mp_primitive(mp, "pair",                  mp_type_name_command,        mp_pair_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "numeric",               mp_type_name_command,        mp_numeric_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "string",                mp_type_name_command,        mp_string_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "boolean",               mp_type_name_command,        mp_boolean_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "path",                  mp_type_name_command,        mp_path_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "pen",                   mp_type_name_command,        mp_pen_type_operation);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "nep",                   mp_type_name_command,        mp_nep_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "picture",               mp_type_name_command,        mp_picture_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "transform",             mp_type_name_command,        mp_transform_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "color",                 mp_type_name_command,        mp_color_type_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "rgbcolor",              mp_type_name_command,        mp_color_type_operation);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "cmykcolor",             mp_type_name_command,        mp_cmykcolor_type_operation);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "pair",                  mp_type_name_command,        mp_pair_type_operation);
 
-    mp_primitive(mp, "end",                   mp_stop_command,             mp_end_code);
-    mp_primitive(mp, "dump",                  mp_stop_command,             mp_dump_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "end",                   mp_stop_command,             mp_end_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "dump",                  mp_stop_command,             mp_dump_code);
 
-    mp_primitive(mp, "batchmode",             mp_mode_command,             mp_batch_mode);
-    mp_primitive(mp, "nonstopmode",           mp_mode_command,             mp_nonstop_mode);
-    mp_primitive(mp, "scrollmode",            mp_mode_command,             mp_scroll_mode);
-    mp_primitive(mp, "errorstopmode",         mp_mode_command,             mp_error_stop_mode);
-    mp_primitive(mp, "silentmode",            mp_mode_command,             mp_silent_mode);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "batchmode",             mp_mode_command,             mp_batch_mode);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "nonstopmode",           mp_mode_command,             mp_nonstop_mode);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "scrollmode",            mp_mode_command,             mp_scroll_mode);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "errorstopmode",         mp_mode_command,             mp_error_stop_mode);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "silentmode",            mp_mode_command,             mp_silent_mode);
 
-    mp_primitive(mp, "inner",                 mp_protection_command,       mp_inner_protection_code);
-    mp_primitive(mp, "outer",                 mp_protection_command,       mp_outer_protection_code);
+    mp_primitive(mp, mp_origin_unset,      mp_legacy_language, "inner",                 mp_protection_command,       mp_inner_protection_code);
+    mp_primitive(mp, mp_origin_unset,      mp_legacy_language, "outer",                 mp_protection_command,       mp_outer_protection_code);
 
-    mp_primitive(mp, "setproperty",           mp_property_command,         1);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setproperty",           mp_property_command,         1);
 
-    mp_primitive(mp, "showtoken",             mp_show_command,             mp_show_token_code);
-    mp_primitive(mp, "showstats",             mp_show_command,             mp_show_stats_code);
-    mp_primitive(mp, "show",                  mp_show_command,             mp_show_code);
-    mp_primitive(mp, "showvariable",          mp_show_command,             mp_show_var_code);
-    mp_primitive(mp, "showdependencies",      mp_show_command,             mp_show_dependencies_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "showtoken",             mp_show_command,             mp_show_token_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "showstats",             mp_show_command,             mp_show_stats_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "show",                  mp_show_command,             mp_show_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "showvariable",          mp_show_command,             mp_show_var_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "showdependencies",      mp_show_command,             mp_show_dependencies_code);
 
-    mp_primitive(mp, "doublepath",            mp_thing_to_add_command,     mp_add_double_path_code);
-    mp_primitive(mp, "contour",               mp_thing_to_add_command,     mp_add_contour_code);
-    mp_primitive(mp, "also",                  mp_thing_to_add_command,     mp_add_also_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "doublepath",            mp_thing_to_add_command,     mp_add_double_path_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "contour",               mp_thing_to_add_command,     mp_add_contour_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "also",                  mp_thing_to_add_command,     mp_add_also_code);
 
-    mp_primitive(mp, "withpen",               mp_with_option_command,      mp_with_pen_code);
-    mp_primitive(mp, "dashed",                mp_with_option_command,      mp_with_dashed_code);
-    mp_primitive(mp, "withprescript",         mp_with_option_command,      mp_with_pre_script_code);
-    mp_primitive(mp, "withpostscript",        mp_with_option_command,      mp_with_post_script_code);
-    mp_primitive(mp, "withnestedprescript",   mp_with_option_command,      mp_with_nested_pre_script_code);
-    mp_primitive(mp, "withnestedpostscript",  mp_with_option_command,      mp_with_nested_post_script_code);
-    mp_primitive(mp, "withstacking",          mp_with_option_command,      mp_with_stacking_code);
-    mp_primitive(mp, "withlinecap",           mp_with_option_command,      mp_with_linecap_code);
-    mp_primitive(mp, "withlinejoin",          mp_with_option_command,      mp_with_linejoin_code);
-    mp_primitive(mp, "withmiterlimit",        mp_with_option_command,      mp_with_miterlimit_code);
-    mp_primitive(mp, "withoutcolor",          mp_with_option_command,      mp_with_no_model_code);
-    mp_primitive(mp, "withgreyscale",         mp_with_option_command,      mp_with_grey_model_code);
-    mp_primitive(mp, "withcolor",             mp_with_option_command,      mp_with_uninitialized_model_code);
-    mp_primitive(mp, "withrgbcolor",          mp_with_option_command,      mp_with_rgb_model_code);
-    mp_primitive(mp, "withcmykcolor",         mp_with_option_command,      mp_with_cmyk_model_code);
-    mp_primitive(mp, "withcurvature",         mp_with_option_command,      mp_with_curvature_code);
-    mp_primitive(mp, "withmesh",              mp_with_option_command,      mp_with_mesh_code);
-    mp_primitive(mp, "withbytemap",           mp_with_option_command,      mp_with_bytemap_code);
-    mp_primitive(mp, "withnothing",           mp_with_option_command,      mp_with_nothing_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "withpen",               mp_with_option_command,      mp_with_pen_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "dashed",                mp_with_option_command,      mp_with_dashed_code);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "withprescript",         mp_with_option_command,      mp_with_pre_script_code);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "withpostscript",        mp_with_option_command,      mp_with_post_script_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withnestedprescript",   mp_with_option_command,      mp_with_nested_pre_script_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withnestedpostscript",  mp_with_option_command,      mp_with_nested_post_script_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withstacking",          mp_with_option_command,      mp_with_stacking_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withlinecap",           mp_with_option_command,      mp_with_linecap_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withlinejoin",          mp_with_option_command,      mp_with_linejoin_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withmiterlimit",        mp_with_option_command,      mp_with_miterlimit_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withoutcolor",          mp_with_option_command,      mp_with_no_model_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withgreyscale",         mp_with_option_command,      mp_with_grey_model_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "withcolor",             mp_with_option_command,      mp_with_uninitialized_model_code);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "withrgbcolor",          mp_with_option_command,      mp_with_rgb_model_code);
+    mp_primitive(mp, mp_origin_luatex,     mp_legacy_unset,    "withcmykcolor",         mp_with_option_command,      mp_with_cmyk_model_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withcurvature",         mp_with_option_command,      mp_with_curvature_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withmesh",              mp_with_option_command,      mp_with_mesh_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withbytemap",           mp_with_option_command,      mp_with_bytemap_code);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "withnothing",           mp_with_option_command,      mp_with_nothing_code);
 
-    mp_primitive(mp, "clip",                  mp_bounds_command,           mp_start_clip_node_type);
-    mp_primitive(mp, "setgroup",              mp_bounds_command,           mp_start_group_node_type);
-    mp_primitive(mp, "setbounds",             mp_bounds_command,           mp_start_bounds_node_type);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "clip",                  mp_bounds_command,           mp_start_clip_node_type);
+    mp_primitive(mp, mp_origin_luametatex, mp_legacy_unset,    "setgroup",              mp_bounds_command,           mp_start_group_node_type);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "setbounds",             mp_bounds_command,           mp_start_bounds_node_type);
 
-    mp_primitive(mp, "message",               mp_message_command,          mp_normal_message_code);
-    mp_primitive(mp, "errmessage",            mp_message_command,          mp_error_message_code);
-    mp_primitive(mp, "errhelp",               mp_message_command,          mp_error_help_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "message",               mp_message_command,          mp_normal_message_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "errmessage",            mp_message_command,          mp_error_message_code);
+    mp_primitive(mp, mp_origin_metapost,   mp_legacy_unset,    "errhelp",               mp_message_command,          mp_error_help_code);
 
-    mp->frozen_left_bracket    = mp_frozen_primitive(mp, "[",              mp_left_bracket_command,    0);
-    mp->frozen_colon           = mp_frozen_primitive(mp, ":",              mp_colon_command,           0);
-    mp->frozen_semicolon       = mp_frozen_primitive(mp, ";",              mp_semicolon_command,       0);
-    mp->frozen_end_group       = mp_frozen_primitive(mp, "endgroup",       mp_end_group_command,       0);
-    mp->frozen_etex            = mp_frozen_primitive(mp, "etex",           mp_etex_command,            0);
-    mp->frozen_end_def         = mp_frozen_primitive(mp, "enddef",         mp_macro_def_command,       mp_end_def_code);
-    mp->frozen_end_for         = mp_frozen_primitive(mp, "endfor",         mp_iteration_command,       mp_end_for_code);
-    mp->frozen_fi              = mp_frozen_primitive(mp, "fi",             mp_fi_or_else_command,      mp_fi_code);
-    mp->frozen_slash           = mp_frozen_primitive(mp, "/",              mp_slash_command,           mp_over_operation);
-    mp->frozen_dump            = mp_frozen_primitive(mp, "dump",           mp_stop_command,            mp_dump_code);
+    /* These are only registered for documentation purposes. */
 
-    mp->frozen_bad_vardef      = mp_frozen_primitive(mp, "a bad variable", mp_tag_command,             0);
-    mp->frozen_right_delimiter = mp_frozen_primitive(mp, ")",              mp_right_delimiter_command, 0);
-    mp->frozen_inaccessible    = mp_frozen_primitive(mp, " INACCESSIBLE",  mp_tag_command,             0);
-    mp->frozen_undefined       = mp_frozen_primitive(mp, " UNDEFINED",     mp_tag_command,             0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "tracinglostchars", mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "charexists",       mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "charext",          mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_font,   "glyph",            mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "kern",             mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "boundarychar",     mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "designsize",       mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "fontmaking",       mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "charlist",         mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "ligtable",         mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "extensible",       mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "headerbyte",       mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "fontdimen",        mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "skipto",           mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "::",               mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "||:",              mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "=:",               mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "=:|",              mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "=:|>",             mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "|=:",              mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "|=:>",             mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "|=:|",             mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "|=:|>",            mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_font,   "|=:|>>",           mp_undefined_command, 0);
 
-    mp->frozen_repeat_loop     = mp_frozen_primitive(mp, " ENDFOR",        mp_repeat_loop_command,     0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text,   "fontpart",         mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text,   "textual",          mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text,   "textpart",         mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text,   "infont",           mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text,   "fontsize",         mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_text ,  "mpxbreak",         mp_undefined_command, 0);
+
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_output, "special",          mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "fontmapfile",      mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "fontmapline",      mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_metapost, mp_legacy_output, "prologues",        mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "mpprocset",        mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "troffmode",        mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "outputtemplate",   mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "outputfilename",   mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "filenametemplate", mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "hppp",             mp_undefined_command, 0);
+    mp_primitive(mp, mp_origin_luatex,   mp_legacy_output, "vppp",             mp_undefined_command, 0);
+
+ /* mp_primitive(mp, mp_origin_metapost, mp_legacy_unset, "interval_get_left_endpoint",  mp_undefined_command, 0); */
+ /* mp_primitive(mp, mp_origin_metapost, mp_legacy_unset, "interval_get_right_endpoint", mp_undefined_command, 0); */
+ /* mp_primitive(mp, mp_origin_metapost, mp_legacy_unset, "interval_set",                mp_undefined_command, 0); */
+
+    if (mp) {
+
+        mp->frozen_left_bracket    = mp_frozen_primitive(mp, "[",              mp_left_bracket_command,    0);
+        mp->frozen_colon           = mp_frozen_primitive(mp, ":",              mp_colon_command,           0);
+        mp->frozen_semicolon       = mp_frozen_primitive(mp, ";",              mp_semicolon_command,       0);
+        mp->frozen_end_group       = mp_frozen_primitive(mp, "endgroup",       mp_end_group_command,       0);
+        mp->frozen_etex            = mp_frozen_primitive(mp, "etex",           mp_etex_command,            0);
+        mp->frozen_end_def         = mp_frozen_primitive(mp, "enddef",         mp_macro_def_command,       mp_end_def_code);
+        mp->frozen_end_for         = mp_frozen_primitive(mp, "endfor",         mp_iteration_command,       mp_end_for_code);
+        mp->frozen_fi              = mp_frozen_primitive(mp, "fi",             mp_fi_or_else_command,      mp_fi_code);
+        mp->frozen_slash           = mp_frozen_primitive(mp, "/",              mp_slash_command,           mp_over_operation);
+        mp->frozen_dump            = mp_frozen_primitive(mp, "dump",           mp_stop_command,            mp_dump_code);
+
+        mp->frozen_bad_vardef      = mp_frozen_primitive(mp, "a bad variable", mp_tag_command,             0);
+        mp->frozen_right_delimiter = mp_frozen_primitive(mp, ")",              mp_right_delimiter_command, 0);
+        mp->frozen_inaccessible    = mp_frozen_primitive(mp, " INACCESSIBLE",  mp_tag_command,             0);
+        mp->frozen_undefined       = mp_frozen_primitive(mp, " UNDEFINED",     mp_tag_command,             0);
+
+        mp->frozen_repeat_loop     = mp_frozen_primitive(mp, " ENDFOR",        mp_repeat_loop_command,     0);
+
+    }
+
+    primitives_set = 1;
+}
+
+int mp_n_of_primitives(void)
+{
+    if (! primitives_set) {
+        mp_initialize_primitives(NULL);
+    }
+    return n_of_primitives;
+}
+
+mp_primitive_data mp_get_primitive_data(int i)
+{
+    if (! primitives_set) {
+        mp_initialize_primitives(NULL);
+    }
+    if (i >= 1 && i <= n_of_primitives) {
+        return primitivedata[i-1];
+    } else {
+        return (mp_primitive_data) { .name = NULL, .command = 0, .operation = 0 };
+    }
 }
 
 static void mp_initialize_tables(MP mp)
@@ -32823,9 +33111,11 @@ MP mp_initialize(MP_options *opt)
 
     mp->symbols = avl_create(mp_compare_symbols_entry, mp_copy_symbols_entry, mp_delete_symbols_entry, mp_memory_allocate, mp_memory_free, NULL);
     mp->frozen_symbols = avl_create(mp_compare_symbols_entry, mp_copy_symbols_entry, mp_delete_symbols_entry, mp_memory_allocate, mp_memory_free, NULL);
-    mp->bisect_stack = mp_memory_allocate((size_t) (bistack_size + 1) * sizeof(mp_number));
-    for (int i=0; i<bistack_size + 1; i++) {
-        mp_new_number(mp->bisect_stack[i]);
+    mp->bisect_stack = mp_memory_allocate((size_t) (bisect_stack_size + 1) * sizeof(mp_number));
+    if (mp->bisect_stack) {
+        for (int i = 0; i < bisect_stack_size + 1; i++) {
+            mp_new_number(mp->bisect_stack[i]);
+        }
     }
     mp->stack_size = 16;
     mp->input_stack = mp_memory_allocate((size_t) (mp->stack_size + 1) * sizeof(mp_in_state_record));

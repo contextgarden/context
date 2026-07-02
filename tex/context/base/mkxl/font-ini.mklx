@@ -2870,7 +2870,7 @@
    \font_push_x_size % experiment
    \ifempty\m_font_step
      \font_helpers_set_font\zerocount{#specification}%
-   \else
+   \orelse\ifinset{#specification}{\v!small,\v!big}%
      \font_helpers_switch_bodyfont_step % so we have a fast [small] switch
    \fi
    \expand\everybodyfont

@@ -49,6 +49,7 @@ set(tex_sources
     source/luarest/lmtxcomplexlib.c
     source/luarest/lmtziplib.c
     source/luarest/lmtsparselib.c
+    source/luarest/lmtbitsetlib.c
     source/luarest/lmtposit.c
     source/luarest/lmtpotrace.c
     source/luarest/lmtqrcodegen.c
@@ -57,6 +58,7 @@ set(tex_sources
     source/luarest/lmtvectorlib.c
     source/luarest/lmtbytemaplib.c
     source/luarest/lmteffectslib.c
+    source/luarest/lmtzbufferlib.c
 
     source/tex/texalign.c
     source/tex/texarithmetic.c

@@ -62,6 +62,7 @@ local function bitmapimage(t)
             bytes       = t.bytes or false,
             reduce      = t.reduce,
             palette     = palette,
+            masked      = t.masked,
         }
         if n then
          -- context.hpack(n)
@@ -87,6 +88,7 @@ interfaces.implement {
             { "height", "dimen"  },
             { "xresolution", "integer" },
             { "yresolution", "integer" },
+            { "masked", "integer" },
         }
     }
 }

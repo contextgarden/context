@@ -138,7 +138,7 @@ local function checkimage(figure)
         end
      -- local xres    = figure.xres
      -- local yres    = figure.yres
-        local changes = false
+        local changed = false
         if height > width then
             if height > maxdimen then
                 figure.height = maxdimen

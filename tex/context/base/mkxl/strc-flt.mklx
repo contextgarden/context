@@ -1257,7 +1257,10 @@
    \else
      \global\c_floats_append_to_stored\conditionalfalse
    \fi
-   \ifinset\v!force\floatlocation
+   \ifconditional\c_strc_floats_par_float
+     \global\c_floats_force         \conditionalfalse
+     \global\c_page_sides_shape_down\conditionalfalse % might be changed later
+   \orelse\ifinset\v!force\floatlocation
      \global\c_floats_force         \conditionaltrue
      \global\c_page_sides_shape_down\conditionaltrue  % might be changed later
    \else

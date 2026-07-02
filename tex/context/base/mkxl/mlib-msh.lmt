@@ -35,11 +35,11 @@ local report                = logs.reporter("metapost","mesh")
 local formatters            = string.formatters
 
 local injectpath            = mp.inject.path
-local injectvectors         = mp.inject.vectors
+----- injectvectors         = mp.inject.vectors
 local scanstring            = mp.scan.string -- whatever
 local registerscript        = metapost.registerscript
 
-local vectornew             = vector.new
+----- vectornew             = vector.new
 local vectortruncate        = vector.truncate
 local vectorgetepsilon      = vector.getepsilon
 local vectortotable         = vector.totable

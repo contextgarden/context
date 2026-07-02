@@ -909,7 +909,25 @@ local function mpoptions(model,ca,ta,default) -- will move to mlib-col .. not re
     return formatters["withcolor %s"](mpcolor(model,ca,ta,default))
 end
 
+local function mprgbcolor(name,default)
+    if not name then
+        return default
+    elseif type(name) == "string" then
+        local model, ca = namedcolorattributes(name)
+        local cv = colorvalues[ca]
+        if cv then
+            return { cv[3], cv[4], cv[5] }
+        else
+            return { .5, .5, .5 }
+        end
+    else
+        return name
+    end
+end
+
+
 colors.mpcolor      = mpcolor
+colors.mprgbcolor   = mprgbcolor
 colors.mpnamedcolor = mpnamedcolor
 colors.mpoptions    = mpoptions
 

@@ -39,6 +39,7 @@ static int aeslib_aux_code(lua_State *L, aes_coder code) {
             size_t outputlength = 0;
             /* this is optional, iv get copied in aes */
             const uint8_t *iv = NULL;
+            uint8_t randiv[16];
             switch (lua_type(L, 3)) {
                 case LUA_TSTRING:
                     {
@@ -51,7 +52,6 @@ static int aeslib_aux_code(lua_State *L, aes_coder code) {
                     }
                 case LUA_TBOOLEAN:
                     if (lua_toboolean(L, 3)) {
-                        uint8_t randiv[16];
                         random_bytes(randiv, 16);
                         iv = (const uint8_t *) randiv;
                         break;

@@ -735,13 +735,13 @@ local hlist_out, vlist_out  do
                     local box = si -- si[1]
                     -- tagging needs it to be earlier
                  -- finalize(box,false)
-pushgroup()
+                    pushgroup()
                     if getid(box) == vlist_code then
                         vlist_out(current,box)
                     else
                         hlist_out(current,box)
                     end
-popgroup()
+                    popgroup()
                     flushnode(box)
                     s[i] = false
                 end
@@ -904,8 +904,8 @@ popgroup()
      --     current = getlist(this_box)
      -- end
 
-local boxr = pos_r == 1
-local boxh = pos_h
+        local boxr = pos_r == 1
+        local boxh = pos_h
 
         -- we can encounter par, boundary and penalty nodes but a special
         -- iterator over content nodes won't save much

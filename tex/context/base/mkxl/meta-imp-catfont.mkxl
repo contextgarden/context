@@ -1,0 +1,1069 @@
+%D \module
+%D   [       file=meta-imp-catfont,
+%D        version=2026.05.01,
+%D          title=\METAPOST\ Graphics,
+%D       subtitle=Cat Alphabet,
+%D         author=Wolfgang Schuster,
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+
+\startMPcalculation{simplefun}
+
+    def CatfontInitialize =
+
+        save CatfontColor, CatfontWeight, CatfontRuleColor, CatfontPen, CatfontRandomColor, CatfontFixedColor ;
+
+        string CatfontColor     ; CatfontColor     := getparameterdefault "mpsfont" "color"     "" ;
+        string CatfontWeight    ; CatfontWeight    := getparameterdefault "mpsfont" "weight"    "" ;
+        string CatfontRuleColor ; CatfontRuleColor := getparameterdefault "mpsfont" "rulecolor" "" ;
+
+        pen CatfontPen ; CatfontPen := pencircle scaled if CatfontWeight = "light" : 1 elseif CatfontWeight = "medium" : 3 elseif CatfontWeight = "bold" : 4 else : 2 fi / 10 ;
+
+        color  CatfontRandomColor[] ;
+        string CatfontFixedColor [] ;
+
+        if CatfontColor = "random" :
+            CatfontRandomColor[1] := white randomized (3/4,3/4,3/4) ;
+            CatfontRandomColor[2] := white randomized (3/4,3/4,3/4) ;
+            CatfontRandomColor[3] := white randomized (3/4,3/4,3/4) ;
+        elseif CatfontColor <> "" :
+            string  c ;
+            numeric l ; l := length CatfontColor ;
+            numeric j ; j := 1 ; % array index
+            numeric b ; b := 0 ; % begin substring
+            numeric e ; e := 0 ; % end substring
+            for i = 0 upto l - 1 :
+                c := substring(i,i+1) of CatfontColor ;
+                if c = "," :
+                    e := i ;
+                    CatfontFixedColor[j] := substring(b,e) of CatfontColor ;
+                    b := i + 1 ;
+                    j := j + 1 ;
+                elseif i = l - 1 :
+                    e := i + 1 ;
+                    CatfontFixedColor[j] := substring(b,e) of CatfontColor ;
+                fi ;
+            endfor ;
+        fi ;
+
+    enddef ;
+
+    vardef CatfontHead(expr n, x, y) =
+
+        if CatfontColor <> "" :
+            fill catfont_head[n] shifted (x,y) withcolor if known CatfontRandomColor[1] : CatfontRandomColor[1] elseif known CatfontFixedColor[1] : CatfontFixedColor[1] else : CatfontColor fi ;
+        fi ;
+
+        draw catfont_head[n] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    vardef CatfontBody(expr n, x, y) =
+
+        if CatfontColor <> "" :
+            fill catfont_body[n] shifted (x,y) withcolor if known CatfontRandomColor[2] : CatfontRandomColor[2] elseif known CatfontFixedColor[2] : CatfontFixedColor[2] else : CatfontColor fi ;
+        fi ;
+
+        draw catfont_body[n] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    vardef CatfontFoot(expr n, x, y) =
+
+        if CatfontColor <> "" :
+            fill catfont_foot[n] shifted (x,y) withcolor if known CatfontRandomColor[3] : CatfontRandomColor[3] elseif known CatfontFixedColor[3] : CatfontFixedColor[3] else : CatfontColor fi ;
+        fi ;
+
+        draw catfont_foot[n] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    vardef CatfontTail(expr n, x, y) =
+
+        draw catfont_tail[n] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    vardef CatfontYarn(expr n, x, y) =
+
+        if CatfontColor <> "" :
+            fill catfont_yarn[n*3-2] shifted (x,y) withcolor if known CatfontRandomColor[1] : CatfontRandomColor[1] elseif known CatfontFixedColor[1] : CatfontFixedColor[1] else : CatfontColor fi ;
+            fill catfont_yarn[n*3-1] shifted (x,y) withcolor if known CatfontRandomColor[2] : CatfontRandomColor[2] elseif known CatfontFixedColor[2] : CatfontFixedColor[2] else : CatfontColor fi ;
+            fill catfont_yarn[n*3-0] shifted (x,y) withcolor if known CatfontRandomColor[3] : CatfontRandomColor[3] elseif known CatfontFixedColor[3] : CatfontFixedColor[3] else : CatfontColor fi ;
+        fi ;
+
+        draw catfont_yarn[n*3-2] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+        draw catfont_yarn[n*3-1] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+        draw catfont_yarn[n*3-0] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    vardef CatfontThread (expr n, x, y) =
+
+        draw catfont_thread[n] shifted (x,y) withpen CatfontPen if CatfontRuleColor <> "" : withcolor CatfontRuleColor fi ;
+
+    enddef ;
+
+    path catfont_head[], catfont_body[], catfont_foot[], catfont_tail[], catfont_yarn[], catfont_thread[] ;
+
+    catfont_head   [1] := (1,0) -- (2,1) -- (2,3) -- (1,2) -- (0,3) -- (0,1) -- cycle ;
+    catfont_head   [2] := (0,0) -- (2,0) -- (2,1) -- (1,2) -- (1,3) -- (0,2) -- cycle ;
+    catfont_head  [-2] := catfont_head[2] reflectedabout(up,down) shifted (2,0) ;
+    catfont_head   [3] := (1,0) -- (2,0) -- (2,1) -- (1,2) -- (1,3) -- (0,2) -- (0,1) -- cycle ;
+    catfont_head  [-3] := catfont_head[3] reflectedabout(up,down) shifted (2,0) ;
+
+    catfont_body   [1] := (1,2) -- (1,0) -- (2,2) -- (2,3) -- (1,4) -- (0,3) -- (0,2) -- (1,0) -- cycle ;
+    catfont_body   [2] := (1,2) -- (1,0) -- (2,2) -- (2,4) -- (1,3) -- (0,4) -- (0,2) -- (1,0) -- cycle ;
+    catfont_body   [3] := (2,2) -- (2,0) -- (4,0) -- (3,1) -- (3,2) -- (2,3) -- (1,2) -- (1,1) -- (0,0) -- (2,0) -- cycle ;
+    catfont_body   [4] := (0,0) -- (1,1) -- (2,1) -- (3,0) -- (3,3) -- (1,3) -- (0,4) -- cycle ;
+    catfont_body  [-4] := catfont_body[4] reflectedabout(up,down) shifted (3,0) ;
+    catfont_body   [5] := (1,4) -- (1,1) -- (2,0) -- (4,0) -- (5,1) -- (2,1) -- (2,6) -- (1,7) -- (0,7) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body  [-5] := catfont_body[5] reflectedabout(up,down) shifted (5,0) ;
+    catfont_body   [6] := (1,4) -- (1,1) -- (2,0) -- (4,0) -- (2,2) -- (2,6) -- (1,7) -- (0,7) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body   [7] := (1,4) -- (1,1) -- (2,0) -- (4,0) -- (5,1) -- (3,1) -- (2,2) -- (2,6) -- (1,7) -- (0,7) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body  [-7] := catfont_body[7] reflectedabout(up,down) shifted (5,0) ;
+    catfont_body   [8] := (5,2) -- (5,1) -- (4,0) -- (5,0) -- (6,1) -- (6,3) -- (5,3) -- (3,1) -- (0,1) -- (1,0) -- (4,0) -- (5,1) -- cycle ;
+    catfont_body   [9] := (1,2) -- (1,1) -- (2,0) -- (5,0) -- (6,1) -- (3,1) -- (1,3) -- (0,2) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body  [10] := (1,1) -- (2,0) -- (4,0) -- (3,1) -- (2,1) -- (1,2) -- (2,2) -- (2,3) -- (1,4) -- (1,5) -- (0,6) -- (0,1) -- (1,0) -- (2,0) -- cycle ;
+    catfont_body  [11] := (0,0) -- (2,2) -- (1,3) -- (1,4) -- (0,5) -- cycle ;
+    catfont_body  [12] := (0,0) -- (3,3) -- (3,4) -- (2,4) -- (1,3) -- (0,4) -- cycle ;
+    catfont_body  [13] := (2,0) -- (3,0) -- (3,1) -- (0,4) -- (0,2) -- cycle ;
+    catfont_body  [14] := (2,0) -- (4,0) -- (0,4) -- (0,2) -- cycle ;
+    catfont_body  [15] := (0,0) -- (2,2) -- (0,4) -- cycle ;
+    catfont_body  [16] := (0,0) -- (1,1) -- (2,1) -- (3,0) -- (3,2) -- (2,3) -- (1,3) -- (0,2) -- cycle ;
+    catfont_body  [17] := (1,4) -- (1,1) -- (2,0) -- (4,0) -- (2,2) -- (2,5) -- (1,6) -- (0,6) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body [-17] := catfont_body[17] reflectedabout(up,down) shifted (4,0) ;
+    catfont_body  [18] := (1,2) -- (2,0) -- (3,0) -- (2,2) -- (2,4) -- (1,5) -- (0,4) -- (0,2) -- (1,0) -- (2,0) -- cycle ;
+    catfont_body  [19] := (1,4) -- (1,1) -- (2,0) -- (4,0) -- (2,2) -- (2,4) -- (3,5) -- (1,5) -- (0,4) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body [-19] := catfont_body[19] reflectedabout(up,down) shifted (4,0) ;
+    catfont_body  [20] := (1,2) -- (1,1) -- (2,0) -- (4,0) -- (5,1) -- (2,1) -- (1,3) -- (0,3) -- (0,1) -- (1,0) -- (2,0) -- (1,1) -- cycle ;
+    catfont_body [-20] := catfont_body[20] reflectedabout(up,down) shifted (5,0) ;
+    catfont_body  [21] := (1,0) -- (4,0) -- (5,1) -- (2,1) -- (0,3) -- (0,1) -- cycle ;
+    catfont_body [-21] := catfont_body[21] reflectedabout(up,down) shifted (5,0) ;
+    catfont_body  [22] := (1,0) -- (2,1) -- (3,3) -- (3,5) -- (0,2) -- (0,1) -- cycle ;
+
+    catfont_foot   [1] := (0,0) -- (1,0) -- (0,1) -- cycle ;
+    catfont_foot  [-1] := catfont_foot[1] reflectedabout(up,down) shifted (1,0) ;
+    catfont_foot   [2] := (0,0) -- (1,0) -- (0,1) -- (0,2) -- cycle ;
+    catfont_foot  [-2] := catfont_foot[2] reflectedabout(up,down) shifted (1,0) ;
+    catfont_foot   [3] := (0,0) -- (1,0) -- (0,1) -- (0,5) -- cycle ;
+    catfont_foot  [-3] := catfont_foot[3] reflectedabout(up,down) shifted (1,0) ;
+    catfont_foot   [4] := (2,0) -- (3,0) -- (0,3) -- (2,1) -- cycle ;
+    catfont_foot   [5] := (0,0) -- (2,0) -- (1,1) -- cycle ;
+
+    catfont_tail   [1] := (1,5) -- (1,7) -- (2,8) -- (3,8) -- (4,7) ;
+    catfont_tail   [2] := (2,0) -- (4,0) -- (5,1) -- (5,3) -- (4,4) -- (3,4) -- (4,5) -- (4,7) -- (3,8) ;
+    catfont_tail   [3] := (0,7) -- (1,8) -- (4,8) -- (5,7) ;
+    catfont_tail   [4] := (2,0) -- (3,0) -- (5,2) -- (5,6) -- (3,8) ;
+    catfont_tail   [5] := (0,6) -- (2,8) -- (4,8) -- (5,7) ;
+    catfont_tail   [6] := (0,7) -- (1,8) -- (4,8) -- (5,7) -- (5,6) ;
+    catfont_tail   [7] := (4,6) -- (4,7) -- (5,8) ;
+    catfont_tail   [8] := (3,0) -- (1,0) -- (0,1) -- (0,2) -- (1,3) ;
+    catfont_tail   [9] := (0,5) -- (0,8) ;
+    catfont_tail  [10] := (2,0) -- (4,0) -- (5,1) ;
+    catfont_tail  [11] := (4,4) -- (5,5) -- (6,4) -- (6,1) -- (7,0) ;
+    catfont_tail  [12] := (4,2) -- (4,7) -- (5,8) ;
+    catfont_tail  [13] := (5,7) -- (4,8) -- (1,8) -- (0,7) -- (0,2) ;
+    catfont_tail  [14] := (2,3) -- (4,3) -- (5,4) -- (5,7) -- (4,8) -- (3,8) ;
+    catfont_tail  [15] := (0,7) -- (1,8) -- (4,8) -- (5,7) -- (5,2) -- (7,0) ;
+    catfont_tail  [16] := (3,3) -- (4,3) -- (5,4) -- (5,7) -- (4,8) -- (3,8) ;
+    catfont_tail  [17] := (6,3) -- (4,5) -- (2,5) -- (1,6) -- (1,7) -- (2,8) -- (4,8) -- (5,7) -- (4,6) ;
+    catfont_tail  [18] := (3,5) -- (3,7) -- (4,7) -- (5,6) -- (6,7) -- (5,8) -- (1,8) -- (0,7) ;
+    catfont_tail  [19] := (3,0) -- (2,0) -- (1,1) -- (1,8) -- (0,8) ;
+    catfont_tail  [20] := (3,0) -- (0,6) -- (0,8) -- (1,8) ;
+    catfont_tail  [21] := (2,0) -- (4,2) -- (6,0) -- (6,7) -- (5,8) ;
+    catfont_tail  [22] := (3,3) -- (6,6) -- (6,7) -- (5,8) ;
+    catfont_tail  [23] := (4,5) -- (6,7) -- (5,8) ;
+    catfont_tail  [24] := (1,3) -- (5,7) -- (4,8) -- (0,8) ;
+    catfont_tail  [25] := (5,7) -- (4,8) -- (1,8) -- (0,7) -- (0,2) ;
+    catfont_tail  [26] := (3,0) -- (3,8) ;
+    catfont_tail  [27] := (2,0) -- (1,0) -- (0,1) -- (0,2) -- (1,3) -- (4,5) -- (4,7) -- (3,8) -- (1,8) -- (0,7) -- (1,6) ;
+    catfont_tail  [28] := (5,3) -- (3,5) -- (4,6) -- (4,7) -- (3,8) -- (1,8) -- (0,7) -- (1,6) ;
+    catfont_tail  [29] := (3,3) -- (2,3) -- (1,4) -- (1,8) -- (0,8) ;
+    catfont_tail  [30] := (2,5) -- (1,6) -- (1,8) -- (5,8) ;
+    catfont_tail  [31] := (3,0) -- (4,0) -- (5,1) -- (5,3) -- (4,4) -- (2,4) -- (1,5) -- (0,4) -- (0,7) -- (1,8) -- (4,8) -- (5,7) ;
+    catfont_tail  [32] := (3,4) -- (5,7) -- (5,8) -- (1,8) -- (0,7) ;
+    catfont_tail  [33] := (4,0) -- (5,0) -- (6,1) -- (6,2) -- (5,3) -- (1,5) -- (1,7) -- (2,8) -- (4,8) -- (5,7) -- (5,5) -- (4,4) ;
+    catfont_tail  [34] := (5,6) -- (5,7) -- (4,8) -- (1,8) -- (0,7) -- (0,5) -- (1,4) -- (2,4) ;
+
+    catfont_yarn   [1] := (0,2) -- (3,2) -- (2,3) -- (1,3) -- cycle ;
+    catfont_yarn   [2] := (0,1) -- (3,1) -- (3,2) -- (0,2) -- cycle ;
+    catfont_yarn   [3] := (0,1) -- (1,0) -- (2,0) -- (3,1) -- cycle ;
+    catfont_yarn   [4] := catfont_yarn[1] rotated 90 shifted (3,0) ;
+    catfont_yarn   [5] := catfont_yarn[2] rotated 90 shifted (3,0) ;
+    catfont_yarn   [6] := catfont_yarn[3] rotated 90 shifted (3,0) ;
+    catfont_yarn   [7] := (0,1) -- (1,1) -- (1,2) -- (2,2) -- (2,3) -- (1,3) -- (0,2) -- cycle ;
+    catfont_yarn   [8] := (0,1) -- (1,0) -- (1,1) -- (2,1) -- (2,2) -- (3,2) -- (2,3) -- (2,2) -- (1,2) -- (1,1) -- cycle ;
+    catfont_yarn   [9] := (1,0) -- (2,0) -- (3,1) -- (3,2) -- (2,2) -- (2,1) -- (1,1) -- cycle ;
+    catfont_yarn  [10] := catfont_yarn[7] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [11] := catfont_yarn[8] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [12] := catfont_yarn[9] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [13] := (0,2) -- (2,2) -- (2,3) -- (1,3) -- cycle ;
+    catfont_yarn  [14] := (1,0) -- (1,1) -- (3,1) -- (3,2) -- (2,3) -- (2,2) -- (0,2) -- (0,1) -- cycle ;
+    catfont_yarn  [15] := (1,0) -- (2,0) -- (3,1) -- (1,1) -- cycle;
+    catfont_yarn  [16] := catfont_yarn[13] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [17] := catfont_yarn[14] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [18] := catfont_yarn[15] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [19] := catfont_yarn[16] rotated 90 shifted (3,0) ;
+    catfont_yarn  [20] := catfont_yarn[17] rotated 90 shifted (3,0) ;
+    catfont_yarn  [21] := catfont_yarn[18] rotated 90 shifted (3,0) ;
+    catfont_yarn  [22] := catfont_yarn[19] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [23] := catfont_yarn[20] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [24] := catfont_yarn[21] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [25] := (0,1) -- (1,2) -- (2,2) -- (2,3) -- (1,3) -- (0,2) -- cycle ;
+    catfont_yarn  [26] := (1,0) -- (1,1) -- (2,1) -- (3,2) -- (2,3) -- (2,2) -- (1,2) -- (0,1) -- cycle ;
+    catfont_yarn  [27] := (1,0) -- (2,0) -- (3,1) -- (3,2) -- (2,1) -- (1,1) -- cycle ;
+    catfont_yarn  [28] := catfont_yarn[25] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [29] := catfont_yarn[26] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [30] := catfont_yarn[27] reflectedabout(up,down) shifted (3,0) ;
+    catfont_yarn  [31] := catfont_yarn[28] rotated 90 shifted (3,0) ;
+    catfont_yarn  [32] := catfont_yarn[29] rotated 90 shifted (3,0) ;
+    catfont_yarn  [33] := catfont_yarn[30] rotated 90 shifted (3,0) ;
+    catfont_yarn  [34] := catfont_yarn[31] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [35] := catfont_yarn[32] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [36] := catfont_yarn[33] reflectedabout(left,right) shifted (0,3) ;
+    catfont_yarn  [37] := (0,0) -- (2,0) -- (3,1) -- (1,1) -- cycle ;
+    catfont_yarn  [38] := (2,0) -- (4,0) -- (5,1) -- (3,1) -- cycle ;
+    catfont_yarn  [39] := (4,0) -- (6,0) -- (7,1) -- (5,1) -- cycle ;
+
+    catfont_thread [1] := (2,0) -- (3,0) -- (4,1) ;
+    catfont_thread [2] := (3,1) -- (3,0) -- (1,-2) ;
+    catfont_thread [3] := (2,0) -- (3,0) -- (4,1) -- (5,0) -- (4,0) -- (3,1) ;
+    catfont_thread [4] := (1,3) -- (1,4) -- (2,5) -- (3,8) -- (0,8) -- (1,5) ;
+    catfont_thread [5] := (2,3) -- (2,4) -- (3,5) -- (4,5) -- (5,6) -- (5,7) -- (4,8) -- (1,8) -- (0,7) -- (0,6) ;
+    catfont_thread [6] := (2,0) -- (3,0) -- (4,1) -- (5,0) -- (6,0) -- (5,1) -- (4,0) -- (3,1) ;
+    catfont_thread [6] := (2,0) -- (3,0) -- (4,1) -- (5,0) -- (6,1) -- (7,0) -- (6,0) -- (5,1) -- (4,0) -- (3,1) ;
+    catfont_thread [7] := (2,0) -- (3,0) -- (4,1) -- (5,0) -- (6,1) -- (7,0) -- (8,1) -- (9,0) -- (8,0) -- (7,1) -- (6,0) -- (5,1) -- (4,0) -- (3,1) ;
+    catfont_thread [8] := (0,2) -- (0,3) -- (2,5) -- (3,5) -- (2,4) ;
+    catfont_thread [9] := (3,2) -- (3,3) -- (1,5) -- (0,5) -- (1,4) ;
+    catfont_thread[10] := (6,0) -- (7,0) -- (8,1) ;
+    catfont_thread[11] := (5,4) -- (6,4) -- (6,6) -- (1,6) -- (1,1) -- (6,1) -- (6,3) ;
+    catfont_thread[11] := (3,2) -- (3,1) -- (5,1) -- (5,6) -- (0,6) -- (0,1) -- (2,1) ;
+    catfont_thread[12] := (4,3) -- (5,3) -- (5,2) -- (4,1) -- (1,1) -- (0,2) -- (0,5) -- (1,6) -- (4,6) -- (5,5) -- (5,4) ;
+
+    def CatfontLetterA =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,4) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontBody   (4,1,1) ;
+            CatfontTail   (1,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterB =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontTail   (2,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterC =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,2,1) ;
+            CatfontBody   (5,0,0) ;
+            CatfontTail   (3,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterD =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontTail   (4,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterE =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,2,2) ;
+            CatfontBody  (10,0,0) ;
+            CatfontTail   (5,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterF =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,2,3) ;
+            CatfontFoot   (1,0,0) ;
+            CatfontBody  (11,0,1) ;
+            CatfontTail   (5,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterG =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,0) ;
+            CatfontBody   (6,0,0) ;
+            CatfontTail   (6,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterH =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody  (-4,1,2) ;
+            CatfontFoot   (2,4,0) ;
+            CatfontFoot  (-2,0,0) ;
+            CatfontTail   (7,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterI =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterJ =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,5) ;
+            CatfontBody   (1,3,1) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-1,3,0) ;
+            CatfontTail   (8,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterK =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,3,5) ;
+            CatfontFoot   (1,0,0) ;
+            CatfontFoot   (4,2,0) ;
+            CatfontBody  (12,0,1) ;
+            CatfontTail   (9,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterL =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontTail  (10,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterM =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontFoot  (-3,0,0) ;
+            CatfontFoot  (-2,3,0) ;
+            CatfontBody  (16,1,2) ;
+            CatfontTail  (11,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterN =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-3,0,0) ;
+            CatfontBody  (13,1,1) ;
+            CatfontTail  (12,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterO =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,1,1) ;
+            CatfontBody  (-5,0,0) ;
+            CatfontTail  (13,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterP =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontTail  (14,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterQ =
+        draw image (
+            CatfontInitialize     ;
+            CatfontBody   (7,0,0) ;
+            CatfontHead   (3,2,1) ;
+            CatfontTail  (15,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterR =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontFoot   (1,5,0) ;
+            CatfontFoot  (-3,0,0) ;
+            CatfontBody  (14,1,1) ;
+            CatfontTail  (16,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterS =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,1,1) ;
+            CatfontBody   (8,0,0) ;
+            CatfontTail  (17,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterT =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,2,3) ;
+            CatfontBody   (3,1,0) ;
+            CatfontTail  (18,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterU =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,5) ;
+            CatfontBody   (1,3,1) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-1,3,0) ;
+            CatfontTail  (19,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterV =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,5) ;
+            CatfontBody   (1,3,1) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-1,3,0) ;
+            CatfontTail  (20,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterW =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontBody   (1,0,1) ;
+            CatfontFoot   (1,1,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontTail  (21,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterX =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,5) ;
+            CatfontFoot   (4,3,0) ;
+            CatfontFoot  (-1,0,0) ;
+            CatfontBody  (15,1,1) ;
+            CatfontTail  (22,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterY =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,0,5) ;
+            CatfontFoot   (1,3,0) ;
+            CatfontFoot  (-1,2,0) ;
+            CatfontBody   (2,2,1) ;
+            CatfontTail  (23,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontLetterZ =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,3,1) ;
+            CatfontBody   (9,0,0) ;
+            CatfontTail  (24,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitZero =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-3,1,1) ;
+            CatfontBody  (-7,0,0) ;
+            CatfontTail  (25,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitOne =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,0,5) ;
+            CatfontBody   (1,1,1) ;
+            CatfontFoot   (1,2,0) ;
+            CatfontFoot  (-1,1,0) ;
+            CatfontTail  (26,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitTwo =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,3,1) ;
+            CatfontBody  (21,1,0) ;
+            CatfontTail  (27,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitThree =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,1,1) ;
+            CatfontBody (-20,0,0) ;
+            CatfontTail  (28,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitFour =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,3,5) ;
+            CatfontBody   (1,3,1) ;
+            CatfontFoot   (1,4,0) ;
+            CatfontFoot  (-1,3,0) ;
+            CatfontTail  (29,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitFive =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,0) ;
+            CatfontBody (-19,1,0) ;
+            CatfontTail  (30,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitSix =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (2,1,5) ;
+            CatfontBody  (18,0,0) ;
+            CatfontTail  (31,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitSeven =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,1,5) ;
+            CatfontBody  (22,0,0) ;
+            CatfontFoot   (5,1,0) ;
+            CatfontTail  (32,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitEight =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead  (-2,1,1) ;
+            CatfontBody (-21,0,0) ;
+            CatfontTail  (33,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontDigitNine =
+        draw image (
+            CatfontInitialize     ;
+            CatfontHead   (1,0,0) ;
+            CatfontBody (-17,1,0) ;
+            CatfontTail  (34,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolPeriod =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (1,0,0) ;
+            CatfontThread (1,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolComma =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (2,0,0) ;
+            CatfontThread (2,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolHyphen =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (5,0,0) ;
+            CatfontYarn   (6,4,0) ;
+            CatfontThread (3,0,0) ;
+        ) shifted (1,2) ;
+    enddef ;
+
+    def CatfontSymbolColon =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (5,0,0) ;
+            CatfontYarn   (6,0,4) ;
+            CatfontThread (1,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolSemicolon =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (7,0,0) ;
+            CatfontYarn   (8,0,4) ;
+            CatfontThread (2,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolExclamationmark =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn  (10,0,0) ;
+            CatfontThread (4,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolQuestionmark =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn  (12,1,0) ;
+            CatfontThread (5,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolEndash =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn  (10,0,0) ;
+            CatfontYarn   (9,6,0) ;
+            CatfontThread (6,0,0) ;
+        ) shifted (1,2) ;
+    enddef ;
+
+    def CatfontSymbolEmdash =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn  (12,0,0) ;
+            CatfontYarn  (11,8,0) ;
+            CatfontThread (7,0,0) ;
+        ) shifted (1,2) ;
+    enddef ;
+
+    def CatfontSymbolUnderscore =
+        draw image (
+            CatfontInitialize      ;
+            CatfontYarn   (13,0,0) ;
+            CatfontThread (10,0,0) ;
+        ) shifted (1,-2) ;
+    enddef ;
+
+    def CatfontSymbolLeftquote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontThread (8,0,0) ;
+        ) shifted (1,3) ; ;
+    enddef ;
+
+    def CatfontSymbolRightquote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontThread (9,0,0) ;
+        ) reflectedabout(left,right) shifted (1,8) ;
+    enddef ;
+
+    def CatfontSymbolLeftdoublequote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontYarn   (4,4,0) ;
+            CatfontThread (8,0,0) ;
+            CatfontThread (8,4,0) ;
+        ) shifted (1,3) ;
+    enddef ;
+
+    def CatfontSymbolRightdoublequote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontYarn   (4,4,0) ;
+            CatfontThread (9,0,0) ;
+            CatfontThread (9,4,0) ;
+        ) reflectedabout(left,right) shifted (1,8) ;
+    enddef ;
+
+    def CatfontSymbolLowleftquote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontThread (9,0,0) ;
+        ) reflectedabout(left,right) shifted (1,3) ;
+    enddef ;
+
+    def CatfontSymbolLowleftdoublequote =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (4,0,0) ;
+            CatfontYarn   (4,4,0) ;
+            CatfontThread (9,0,0) ;
+            CatfontThread (9,4,0) ;
+        ) reflectedabout(left,right) shifted (1,3) ;
+    enddef ;
+
+    def CatfontSymbolSquare =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (2,1,2) ;
+            CatfontThread(11,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    def CatfontSymbolCircle =
+        draw image (
+            CatfontInitialize     ;
+            CatfontYarn   (1,1,2) ;
+            CatfontThread(12,0,0) ;
+        ) shifted (1,0) ;
+    enddef ;
+
+    lmt_registerglyphs [
+        name     = "catfont",
+        units    = 12,
+        usecolor = true,
+        width    = 7,
+        height   = 9,
+        depth    = 3,
+    ] ;
+
+    lmt_registerglyph [ category = "catfont", unicode = "0x0041", code = "CatfontLetterA"                              ] ; % A
+    lmt_registerglyph [ category = "catfont", unicode = "0x0042", code = "CatfontLetterB"                              ] ; % B
+    lmt_registerglyph [ category = "catfont", unicode = "0x0043", code = "CatfontLetterC"                              ] ; % C
+    lmt_registerglyph [ category = "catfont", unicode = "0x0044", code = "CatfontLetterD"                              ] ; % D
+    lmt_registerglyph [ category = "catfont", unicode = "0x0045", code = "CatfontLetterE"                              ] ; % E
+    lmt_registerglyph [ category = "catfont", unicode = "0x0046", code = "CatfontLetterF"                              ] ; % F
+    lmt_registerglyph [ category = "catfont", unicode = "0x0047", code = "CatfontLetterG"                              ] ; % G
+    lmt_registerglyph [ category = "catfont", unicode = "0x0048", code = "CatfontLetterH"                              ] ; % H
+    lmt_registerglyph [ category = "catfont", unicode = "0x0049", code = "CatfontLetterI",                  width = 4  ] ; % I
+    lmt_registerglyph [ category = "catfont", unicode = "0x004A", code = "CatfontLetterJ"                              ] ; % J
+    lmt_registerglyph [ category = "catfont", unicode = "0x004B", code = "CatfontLetterK"                              ] ; % K
+    lmt_registerglyph [ category = "catfont", unicode = "0x004C", code = "CatfontLetterL"                              ] ; % L
+    lmt_registerglyph [ category = "catfont", unicode = "0x004D", code = "CatfontLetterM",                  width = 9  ] ; % M
+    lmt_registerglyph [ category = "catfont", unicode = "0x004E", code = "CatfontLetterN"                              ] ; % N
+    lmt_registerglyph [ category = "catfont", unicode = "0x004F", code = "CatfontLetterO"                              ] ; % O
+    lmt_registerglyph [ category = "catfont", unicode = "0x0050", code = "CatfontLetterP"                              ] ; % P
+    lmt_registerglyph [ category = "catfont", unicode = "0x0051", code = "CatfontLetterQ",                  width = 9  ] ; % Q
+    lmt_registerglyph [ category = "catfont", unicode = "0x0052", code = "CatfontLetterR",                  width = 8  ] ; % R
+    lmt_registerglyph [ category = "catfont", unicode = "0x0053", code = "CatfontLetterS",                  width = 8  ] ; % S
+    lmt_registerglyph [ category = "catfont", unicode = "0x0054", code = "CatfontLetterT",                  width = 8  ] ; % T
+    lmt_registerglyph [ category = "catfont", unicode = "0x0055", code = "CatfontLetterU"                              ] ; % U
+    lmt_registerglyph [ category = "catfont", unicode = "0x0056", code = "CatfontLetterV"                              ] ; % V
+    lmt_registerglyph [ category = "catfont", unicode = "0x0057", code = "CatfontLetterW",                  width = 8  ] ; % W
+    lmt_registerglyph [ category = "catfont", unicode = "0x0058", code = "CatfontLetterX",                  width = 8  ] ; % X
+    lmt_registerglyph [ category = "catfont", unicode = "0x0059", code = "CatfontLetterY",                  width = 8  ] ; % Y
+    lmt_registerglyph [ category = "catfont", unicode = "0x005A", code = "CatfontLetterZ",                  width = 8  ] ; % Z
+
+    lmt_registerglyph [ category = "catfont", unicode = "0x0030", code = "CatfontDigitZero"                            ] ; % 0
+    lmt_registerglyph [ category = "catfont", unicode = "0x0031", code = "CatfontDigitOne",                 width = 5  ] ; % 1
+    lmt_registerglyph [ category = "catfont", unicode = "0x0032", code = "CatfontDigitTwo",                 width = 8  ] ; % 2
+    lmt_registerglyph [ category = "catfont", unicode = "0x0033", code = "CatfontDigitThree"                           ] ; % 3
+    lmt_registerglyph [ category = "catfont", unicode = "0x0034", code = "CatfontDigitFour"                            ] ; % 4
+    lmt_registerglyph [ category = "catfont", unicode = "0x0035", code = "CatfontDigitFive"                            ] ; % 5
+    lmt_registerglyph [ category = "catfont", unicode = "0x0036", code = "CatfontDigitSix"                             ] ; % 6
+    lmt_registerglyph [ category = "catfont", unicode = "0x0037", code = "CatfontDigitSeven"                           ] ; % 7
+    lmt_registerglyph [ category = "catfont", unicode = "0x0038", code = "CatfontDigitEight",               width = 8  ] ; % 8
+    lmt_registerglyph [ category = "catfont", unicode = "0x0039", code = "CatfontDigitNine"                            ] ; % 9
+
+    lmt_registerglyph [ category = "catfont", unicode = "0x002D", code = "CatfontSymbolHyphen",             width = 9  ] ; % -
+    lmt_registerglyph [ category = "catfont", unicode = "0x002E", code = "CatfontSymbolPeriod",             width = 6  ] ; % .
+    lmt_registerglyph [ category = "catfont", unicode = "0x002C", code = "CatfontSymbolComma",              width = 5  ] ; % ,
+    lmt_registerglyph [ category = "catfont", unicode = "0x003A", code = "CatfontSymbolColon",              width = 6  ] ; % :
+    lmt_registerglyph [ category = "catfont", unicode = "0x003B", code = "CatfontSymbolSemicolon",          width = 5  ] ; % ;
+    lmt_registerglyph [ category = "catfont", unicode = "0x0021", code = "CatfontSymbolExclamationmark",    width = 5  ] ; % !
+    lmt_registerglyph [ category = "catfont", unicode = "0x003F", code = "CatfontSymbolQuestionmark"                   ] ; % ?
+    lmt_registerglyph [ category = "catfont", unicode = "0x2018", code = "CatfontSymbolLeftquote",          width = 5  ] ; % ‘
+    lmt_registerglyph [ category = "catfont", unicode = "0x2019", code = "CatfontSymbolRightquote",         width = 5  ] ; % ’
+    lmt_registerglyph [ category = "catfont", unicode = "0x201A", code = "CatfontSymbolLowleftquote",       width = 5  ] ; % ‚
+    lmt_registerglyph [ category = "catfont", unicode = "0x201C", code = "CatfontSymbolLeftdoublequote",    width = 9  ] ; % “
+    lmt_registerglyph [ category = "catfont", unicode = "0x201D", code = "CatfontSymbolRightdoublequote",   width = 9  ] ; % ”
+    lmt_registerglyph [ category = "catfont", unicode = "0x201E", code = "CatfontSymbolLowleftdoublequote", width = 9  ] ; % „
+
+    lmt_registerglyph [ category = "catfont", unicode = "0x00AD", code = "CatfontSymbolHyphen",             width = 9  ] ; % -
+    lmt_registerglyph [ category = "catfont", unicode = "0x2013", code = "CatfontSymbolEndash",             width = 11 ] ; % –
+    lmt_registerglyph [ category = "catfont", unicode = "0x2014", code = "CatfontSymbolEmdash",             width = 13 ] ; % —
+    lmt_registerglyph [ category = "catfont", unicode = "0x005F", code = "CatfontSymbolUnderscore",         width = 10 ] ; % _
+    lmt_registerglyph [ category = "catfont", unicode = "0x25A1", code = "CatfontSymbolSquare",             width = 7  ] ; % □
+    lmt_registerglyph [ category = "catfont", unicode = "0x25CB", code = "CatfontSymbolCircle",             width = 7  ] ; % ○
+
+\stopMPcalculation
+
+\startluacode
+
+    local shapes  = { }
+    local utfchar = utf.char
+    local utfbyte = utf.byte
+
+    for k, v in next, characters.data do
+        local s = v.shcode
+        if s then
+            if type(s) == "number" then
+                shapes[utfchar(k)] = { utfchar(s) }
+            elseif #s == 2 then
+                shapes[utfchar(k)] = { utfchar(s[1]), utfchar(s[2]) }
+            end
+        end
+    end
+
+    fonts.handlers.otf.addfeature {
+        name = "catfont:shapes",
+        type = "multiple",
+        data = shapes,
+    }
+
+    local uppercase = { }
+
+    for i = utfbyte("a"), utfbyte("z") do
+        uppercase[i] = i - 32
+    end
+
+    fonts.handlers.otf.addfeature {
+        name = "catfont:uppercase",
+        type = "substitution",
+        data = uppercase,
+    }
+
+\stopluacode
+
+\starttypescriptcollection [catfont]
+
+\definefontfeature [catfont] [always] [catfont:shapes=yes,catfont:uppercase=yes]
+
+\definefontfeature [catfont:light]   [catfont] [metapost={category=catfont,weight=light}]
+\definefontfeature [catfont:regular] [catfont] [metapost={category=catfont,weight=regular}]
+\definefontfeature [catfont:medium]  [catfont] [metapost={category=catfont,weight=medium}]
+\definefontfeature [catfont:bold]    [catfont] [metapost={category=catfont,weight=bold}]
+\definefontfeature [catfont:color]   [catfont] [metapost={category=catfont,color=random}]
+
+\starttypescript [sans] [catfont-light]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [DefaultFont] [features=catfont:light]
+    \definefontsynonym [SansBold] [DefaultFont] [features=catfont:medium]
+\stoptypescript
+
+\starttypescript [sans] [catfont]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans]     [DefaultFont] [features=catfont:regular]
+    \definefontsynonym [SansBold] [DefaultFont] [features=catfont:bold]
+\stoptypescript
+
+\starttypescript [sans] [catfont-color]
+    \setups[font:fallback:sans]
+    \definefontsynonym [Sans] [DefaultFont] [features=catfont:color]
+\stoptypescript
+
+\starttypescript [catfont-light,catfont,catfont-color]
+    \definetypeface [\typescriptone] [ss] [sans]  [\typescriptone]
+    \definetypeface [\typescriptone] [mm] [math]  [modern]
+\stoptypescript
+
+\stoptypescriptcollection
+
+\continueifinputfile{meta-imp-catfont.mkxl}
+
+\usebodyfont[catfont-light,catfont,catfont-color]
+
+\definebodyfontenvironment[22pt]
+\definebodyfontenvironment[44pt]
+
+\switchtobodyfont[plex,40pt]
+
+\setuplayout[header=0pt,footer=0pt]
+
+\starttext
+
+\startTEXpage[offset=1ts,foregroundstyle={\switchtobodyfont[catfont,44pt]}]
+Donald Ervin Knuth
+\stopTEXpage
+
+\startTEXpage[offset=1ts,foregroundstyle={\switchtobodyfont[catfont,44pt]}]
+\red Donald \green Ervin \blue Knuth
+\stopTEXpage
+
+\startTEXpage[offset=1ts,foregroundstyle={\switchtobodyfont[catfont-color,44pt]}]
+Donald Ervin Knuth
+\stopTEXpage
+
+\starttabulate[|cf{\ss}|*{2}{b{\showmakeup[glyph]}f{\switchtobodyfont[catfont,44pt]}|}*{2}{b{\showmakeup[glyph]}f{\switchtobodyfont[catfont-light,44pt]}|}b{\showmakeup[glyph]}f{\switchtobodyfont[catfont-color,44pt]}|]
+\NC A \NC A \NC \bf A \NC A \NC \bf A \NC A \NC\NR
+\NC B \NC B \NC \bf B \NC B \NC \bf B \NC B \NC\NR
+\NC C \NC C \NC \bf C \NC C \NC \bf C \NC C \NC\NR
+\NC D \NC D \NC \bf D \NC D \NC \bf D \NC D \NC\NR
+\NC E \NC E \NC \bf E \NC E \NC \bf E \NC E \NC\NR
+\NC F \NC F \NC \bf F \NC F \NC \bf F \NC F \NC\NR
+\NC G \NC G \NC \bf G \NC G \NC \bf G \NC G \NC\NR
+\NC H \NC H \NC \bf H \NC H \NC \bf H \NC H \NC\NR
+\NC I \NC I \NC \bf I \NC I \NC \bf I \NC I \NC\NR
+\NC J \NC J \NC \bf J \NC J \NC \bf J \NC J \NC\NR
+\NC K \NC K \NC \bf K \NC K \NC \bf K \NC K \NC\NR
+\NC L \NC L \NC \bf L \NC L \NC \bf L \NC L \NC\NR
+\NC M \NC M \NC \bf M \NC M \NC \bf M \NC M \NC\NR
+\NC N \NC N \NC \bf N \NC N \NC \bf N \NC N \NC\NR
+\NC O \NC O \NC \bf O \NC O \NC \bf O \NC O \NC\NR
+\NC P \NC P \NC \bf P \NC P \NC \bf P \NC P \NC\NR
+\NC Q \NC Q \NC \bf Q \NC Q \NC \bf Q \NC Q \NC\NR
+\NC R \NC R \NC \bf R \NC R \NC \bf R \NC R \NC\NR
+\NC S \NC S \NC \bf S \NC S \NC \bf S \NC S \NC\NR
+\NC T \NC T \NC \bf T \NC T \NC \bf T \NC T \NC\NR
+\NC U \NC U \NC \bf U \NC U \NC \bf U \NC U \NC\NR
+\NC V \NC V \NC \bf V \NC V \NC \bf V \NC V \NC\NR
+\NC W \NC W \NC \bf W \NC W \NC \bf W \NC W \NC\NR
+\NC X \NC X \NC \bf X \NC X \NC \bf X \NC X \NC\NR
+\NC Y \NC Y \NC \bf Y \NC Y \NC \bf Y \NC Y \NC\NR
+\NC Z \NC Z \NC \bf Z \NC Z \NC \bf Z \NC Z \NC\NR
+\TB
+\NC 0 \NC 0 \NC \bf 0 \NC 0 \NC \bf 0 \NC 0 \NC\NR
+\NC 1 \NC 1 \NC \bf 1 \NC 1 \NC \bf 1 \NC 1 \NC\NR
+\NC 2 \NC 2 \NC \bf 2 \NC 2 \NC \bf 2 \NC 2 \NC\NR
+\NC 3 \NC 3 \NC \bf 3 \NC 3 \NC \bf 3 \NC 3 \NC\NR
+\NC 4 \NC 4 \NC \bf 4 \NC 4 \NC \bf 4 \NC 4 \NC\NR
+\NC 5 \NC 5 \NC \bf 5 \NC 5 \NC \bf 5 \NC 5 \NC\NR
+\NC 6 \NC 6 \NC \bf 6 \NC 6 \NC \bf 6 \NC 6 \NC\NR
+\NC 7 \NC 7 \NC \bf 7 \NC 7 \NC \bf 7 \NC 7 \NC\NR
+\NC 8 \NC 8 \NC \bf 8 \NC 8 \NC \bf 8 \NC 8 \NC\NR
+\NC 9 \NC 9 \NC \bf 9 \NC 9 \NC \bf 9 \NC 9 \NC\NR
+\TB
+\NC - \NC - \NC \bf - \NC - \NC \bf - \NC - \NC\NR
+\NC – \NC – \NC \bf – \NC – \NC \bf – \NC – \NC\NR
+\NC — \NC — \NC \bf — \NC — \NC \bf — \NC — \NC\NR
+\NC _ \NC _ \NC \bf _ \NC _ \NC \bf _ \NC _ \NC\NR
+\TB
+\NC , \NC , \NC \bf , \NC , \NC \bf , \NC , \NC\NR
+\NC : \NC : \NC \bf : \NC : \NC \bf : \NC : \NC\NR
+\NC ; \NC ; \NC \bf ; \NC ; \NC \bf ; \NC ; \NC\NR
+\NC ! \NC ! \NC \bf ! \NC ! \NC \bf ! \NC ! \NC\NR
+\NC ? \NC ? \NC \bf ? \NC ? \NC \bf ? \NC ? \NC\NR
+\NC ‘ \NC ‘ \NC \bf ‘ \NC ‘ \NC \bf ‘ \NC ‘ \NC\NR
+\NC ’ \NC ’ \NC \bf ’ \NC ’ \NC \bf ’ \NC ’ \NC\NR
+\NC ‚ \NC ‚ \NC \bf ‚ \NC ‚ \NC \bf ‚ \NC ‚ \NC\NR
+\NC “ \NC “ \NC \bf “ \NC “ \NC \bf “ \NC “ \NC\NR
+\NC ” \NC ” \NC \bf ” \NC ” \NC \bf ” \NC ” \NC\NR
+\NC „ \NC „ \NC \bf „ \NC „ \NC \bf „ \NC „ \NC\NR
+\TB
+\NC □ \NC □ \NC \bf □ \NC □ \NC \bf □ \NC □ \NC\NR
+\NC ○ \NC ○ \NC \bf ○ \NC ○ \NC \bf ○ \NC ○ \NC\NR
+\stoptabulate
+
+\page
+
+\startalignment[flushleft,nothyphenated]
+
+\switchtobodyfont[catfont,22pt]
+
+\samplefile{lorem}
+
+\page
+
+\switchtobodyfont[catfont-color,22pt]
+
+\samplefile{lorem}
+
+\stopalignment
+
+\definefontfeature [catfont:orange] [catfont] [metapost={category=catfont,color=orange}]
+
+\startTEXpage[offset=1ts]
+\definedfont[DefaultFont*catfont:orange at 44pt]ABCDEF
+\stopTEXpage
+
+\definefontfeature [catfont:rgb] [catfont] [metapost={category=catfont,color={red,green,blue}}]
+
+\startTEXpage[offset=1ts]
+\definedfont[DefaultFont*catfont:rgb at 44pt]ABCDEF
+\stopTEXpage
+
+\definefontfeature [catfont:a] [catfont] [metapost={category=catfont,color={red,green,blue}}]
+\definefontfeature [catfont:b] [catfont] [metapost={category=catfont,color={red,blue,green}}]
+\definefontfeature [catfont:c] [catfont] [metapost={category=catfont,color={green,red,blue}}]
+\definefontfeature [catfont:d] [catfont] [metapost={category=catfont,color={green,blue,red}}]
+\definefontfeature [catfont:e] [catfont] [metapost={category=catfont,color={blue,red,green}}]
+\definefontfeature [catfont:f] [catfont] [metapost={category=catfont,color={blue,green,red}}]
+
+\startTEXpage[offset=1ts]
+\definedfont[DefaultFont*catfont:a at 44pt]A%
+\definedfont[DefaultFont*catfont:b at 44pt]B%
+\definedfont[DefaultFont*catfont:c at 44pt]C%
+\definedfont[DefaultFont*catfont:d at 44pt]D%
+\definedfont[DefaultFont*catfont:e at 44pt]E%
+\definedfont[DefaultFont*catfont:f at 44pt]F%
+\stopTEXpage
+
+\definefontfeature [catfont:outline] [catfont] [metapost={category=catfont,color=orange,rulecolor=white,weight=medium}]
+
+\startTEXpage[offset=1ts,background=color,backgroundcolor=black]
+\definedfont[DefaultFont*catfont:outline at 44pt]ABCDEF
+\stopTEXpage
+
+\startbuffer
+test,test
+test.test
+test:test
+test;test
+test!test
+test?test
+test-test
+test--test
+test---test
+test_test
+test□test
+test○test
+\quotation{test}
+\quote{test}
+\de\quotation{test}
+\de\quote{test}
+\stopbuffer
+
+\startTEXpage[offset=1ts,foregroundstyle={\switchtobodyfont[catfont,44pt]}]
+\startlines[before=,after=]
+\getbuffer
+\stoplines
+\stopTEXpage
+
+\startTEXpage[offset=1ts,foregroundstyle={\switchtobodyfont[catfont-color,44pt]}]
+\startlines[before=,after=]
+\getbuffer
+\stoplines
+\stopTEXpage
+
+\stoptext

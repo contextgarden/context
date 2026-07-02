@@ -435,6 +435,7 @@
 \definesystemconstant {small}
 \definesystemconstant {somewhere}
 \definesystemconstant {source}
+\definesystemconstant {space}
 \definesystemconstant {special}
 \definesystemconstant {spec}
 \definesystemconstant {spot}

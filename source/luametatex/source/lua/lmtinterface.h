@@ -98,6 +98,7 @@ extern int  luaopen_bytemap     (lua_State *L);
 extern int  luaopen_sha2        (lua_State *L);
 extern int  luaopen_sio         (lua_State *L);
 extern int  luaopen_socket_core (lua_State *L);
+extern int  luaopen_bitset      (lua_State *L);
 extern int  luaopen_sparse      (lua_State *L);
 extern int  luaopen_status      (lua_State *L);
 extern int  luaopen_tex         (lua_State *L);
@@ -110,6 +111,7 @@ extern int  luaopen_xmath       (lua_State *L);
 extern int  luaopen_xzip        (lua_State *L);
 extern int  luaopen_serial      (lua_State *L);
 extern int  luaopen_vector      (lua_State *L);
+extern int  luaopen_zbuffer     (lua_State *L);
 
 extern int  luaextend_io        (lua_State *L);
 extern int  luaextend_os        (lua_State *L);
@@ -294,8 +296,14 @@ extern int  luaextend_xcomplex  (lua_State *L);
 
 /* Various */
 
+# define BITSET_METATABLE_INSTANCE   "bitset"
+
 # define VECTOR_METATABLE_INSTANCE   "vector"
+# define POINT_METATABLE_INSTANCE    "point"
+# define POINTS_METATABLE_INSTANCE   "points"
 # define MESH_METATABLE_INSTANCE     "mesh"
+# define ZBUFFER_METATABLE_INSTANCE  "zbuffer"
+# define ZENTRY_METATABLE_INSTANCE   "zbuffer"
 # define DECIMAL_METATABLE_INSTANCE  "decimal"
 # define COMPLEX_METATABLE_INSTANCE  "complex"
 # define POSIT_METATABLE_INSTANCE    "posit"
@@ -638,6 +646,7 @@ make_lua_key(L, connectoroverlapmin);\
 make_lua_key(L, constant);\
 make_lua_key(L, constant_call);\
 make_lua_key(L, container);\
+make_lua_key(L, contour);\
 make_lua_key_alias(L, key_continue, "continue");\
 make_lua_key(L, contributehead);\
 make_lua_key(L, control);\
@@ -1161,6 +1170,8 @@ make_lua_key(L, penalty);\
 make_lua_key(L, permanent);\
 make_lua_key(L, phantom);\
 make_lua_key_alias(L, key_posit, "posit");\
+make_lua_key(L, point);\
+make_lua_key(L, points);\
 make_lua_key(L, post);\
 make_lua_key(L, post_linebreak);\
 make_lua_key(L, postadjust);\
@@ -1551,14 +1562,18 @@ make_lua_key(L, woffset);\
 make_lua_key(L, word);\
 make_lua_key(L, wordpenalty);\
 make_lua_key(L, wrapup);\
+make_lua_key(L, x);\
 make_lua_key(L, xheight);\
 make_lua_key(L, xleaders);\
 make_lua_key(L, xoffset);\
 make_lua_key(L, xray);\
 make_lua_key(L, xscale);\
 make_lua_key(L, xspaceskip);\
+make_lua_key(L, y);\
 make_lua_key(L, yoffset);\
 make_lua_key(L, yscale);\
+make_lua_key(L, z);\
+make_lua_key(L, zbuffer);\
 make_lua_key(L, zerospaceskip);\
 make_lua_key_alias(L, empty_string,             "");\
 /* */ \
@@ -1577,8 +1592,14 @@ make_lua_key_alias(L, pdfe_array_instance,      PDFE_METATABLE_ARRAY);\
 make_lua_key_alias(L, pdfe_stream_instance,     PDFE_METATABLE_STREAM);\
 make_lua_key_alias(L, pdfe_reference_instance,  PDFE_METATABLE_REFERENCE);\
 /* */ \
+make_lua_key_alias(L, bitset_instance,          BITSET_METATABLE_INSTANCE);\
+/* */ \
 make_lua_key_alias(L, vector_instance,          VECTOR_METATABLE_INSTANCE);\
+make_lua_key_alias(L, point_instance,           POINT_METATABLE_INSTANCE);\
+make_lua_key_alias(L, points_instance,          POINTS_METATABLE_INSTANCE);\
 make_lua_key_alias(L, mesh_instance,            MESH_METATABLE_INSTANCE);\
+make_lua_key_alias(L, zbuffer_instance,         ZBUFFER_METATABLE_INSTANCE);\
+make_lua_key_alias(L, zentry_instance,          ZENTRY_METATABLE_INSTANCE);\
 make_lua_key_alias(L, decimal_instance,         DECIMAL_METATABLE_INSTANCE);\
 make_lua_key_alias(L, complex_instance,         COMPLEX_METATABLE_INSTANCE);\
 make_lua_key_alias(L, posit_instance,           POSIT_METATABLE_INSTANCE);\
@@ -1635,6 +1656,7 @@ make_lua_key(L, linecap);\
 make_lua_key(L, linejoin);\
 make_lua_key(L, make_text);\
 make_lua_key(L, math_mode);\
+make_lua_key(L, metapost);\
 make_lua_key(L, memory);\
 make_lua_key(L, miterlimit);\
 make_lua_key(L, nodes);\
@@ -1756,7 +1778,7 @@ extern lmt_keys_info lmt_keys;
 # define lmt_checklong(L,i)          (long)           luaL_checkinteger(L,i)
 # define lmt_optlong(L,i,j)          (long)           luaL_optinteger(L,i,j)
 
-# define lmt_todouble(L,i,d)         (double)         lua_tonumber(L,i)
+# define lmt_todouble(L,i)           (double)         lua_tonumber(L,i)
 # define lmt_optdouble(L,i,d)        (double)         luaL_optnumber(L,i,d)
 
 # define lmt_tointeger(L,i)          (int)            lua_tointeger(L,i)

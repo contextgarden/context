@@ -693,12 +693,12 @@ do
             if group then
                 group = groupnames[group] or 0
                 if group ~= 0 then
-                    texmathchardef(name,class,family,slot,"permanent",0x1,group,slot)
+                    texmathchardef(name,class,family,slot,"permanent","immutable",0x1,group,slot)
                     registercharacter(group,slot,meaning,class,name)
                     return
                 end
             end
-            texmathchardef(name,class,family,slot,"permanent")
+            texmathchardef(name,class,family,slot,"permanent","immutable")
         end
     end
 

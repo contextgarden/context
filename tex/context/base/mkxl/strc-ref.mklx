@@ -1739,7 +1739,7 @@
    \global\lastsavedreferenceattribute\lastreferenceattribute
    \c_attr_reference\lastreferenceattribute
    \ifexporting\dostarttaggednodetail\t!link\fi
-   \let\stopgoto\strc_references_stop_goto_yes}
+   \enforced\let\stopgoto\strc_references_stop_goto_yes}
 
 \protected\def\strc_references_stop_goto_yes
   {\ifexporting\dostoptagged\fi

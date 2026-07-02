@@ -1,0 +1,107 @@
+% signal=squid
+
+\startcomponent excursion-en-charts
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Charts,chap:chart]
+
+\index{chart}
+
+\Command{\tex{FLOWchart}}
+\Command{\tex{setupFLOWcharts}}
+\Command{\tex{startFLOWchart}}
+\Command{\tex{startFLOWcell}}
+\Command{\tex{setupFLOWlines}}
+
+To enable drawing flow diagrams \CONTEXT\ provides the core module \type{chart}.
+For using the \type{chart} module you have to load it in the preamble with
+
+\startbuffer
+\usemodule[chart]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+There are a couple of commands to know for working with charts.
+
+%WE 09-01-2025:
+% The following commands are not included in the setup-*.pdf files (QRC) because those contain only commands for \CONTEXT\ without modules (Wolfgang's answer on 07-01-2026) for showing those commands one needs to load the respective module's xml file.
+
+\loadsetups[i-chart.xml]
+
+\shortsetup{setupFLOWcharts}
+\shortsetup{startFLOWchart}
+\shortsetup{startFLOWcell}
+\shortsetup{setupFLOWlines}
+
+A simple organisational chart may look like this:
+
+\startbuffer
+\setupFLOWcharts
+  [width=9\bodyfontsize,
+   height=2\bodyfontsize,
+   dx=1\bodyfontsize,
+   dy=1\bodyfontsize]
+
+\setupFLOWlines
+  [arrow=no]
+
+\startFLOWchart[organogram]
+  \startFLOWcell
+    \shape    {action}
+    \name     {01}
+    \location {2,1}
+    \text     {Zwartewaterland}
+    \connect  [bt]{02}
+    \connect  [bt]{03}
+    \connect  [bt]{04}
+  \stopFLOWcell
+  \startFLOWcell
+    \shape    {action}
+    \name     {02}
+    \location {1,2}
+    \text     {Hasselt}
+  \stopFLOWcell
+  \startFLOWcell
+    \shape    {action}
+    \name     {03}
+    \location {2,2}
+    \text     {Zwartsluis}
+  \stopFLOWcell
+  \startFLOWcell
+    \shape    {action}
+    \name     {04}
+    \location {3,2}
+    \text     {Genemuiden}
+  \stopFLOWcell
+\stopFLOWchart
+\stopbuffer
+
+\midaligned{\getbuffer\FLOWchart[organogram]}
+
+This diagram is defined with the commands below:
+
+\typebuffer
+
+It is of good practice to define your setups and flow diagrams in separate
+definition files (environments).
+
+\startbuffer
+\FLOWchart[organogram]
+\stopbuffer
+
+The flowchart can then be invoked by:
+
+\typebuffer
+
+There is a manual with a detailed description of the charts module:
+\goto{\Emph{Charts-mkiv}} [ url (manuals:charts) ].
+
+\stopchapter
+
+\stopcomponent

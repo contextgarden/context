@@ -597,7 +597,7 @@ local function colorconverter(cs)
     return models[outercolormodel](cs)
 end
 
-local factor = 65536*(7227/7200)
+local factor <const> = 65536*(7227/7200)
 
 implement {
     name       = "mpsetsxsy",
@@ -837,7 +837,7 @@ end
 
 -- helpers
 
-local basepoints = number.dimenfactors["bp"]
+local bpfactor <const> = number.dimenfactors.bp
 
 local function cm(object)
     local op = object.path
@@ -910,8 +910,6 @@ local tx_reset, tx_process  do
     local ctx_MPLIBsetCtext = context.MPLIBsetCtextX
     local ctx_MPLIBsettext  = context.MPLIBsettextX
 
-    local bp = number.dimenfactors.bp
-
     local mp_index  = 0
     local mp_target = 0
     local mp_c      = nil
@@ -975,7 +973,7 @@ local tx_reset, tx_process  do
         texrunlocal("mptexttoks") -- todo: expandmacro
         local box = textakebox("mptextbox")
         top.textexts[mp_target] = box
-        injecttriplet(bp*box.width,bp*box.height,bp*box.depth)
+        injecttriplet(bpfactor*box.width,bpfactor*box.height,bpfactor*box.depth)
         madetext = nil
     end
 
@@ -1044,7 +1042,7 @@ local tx_reset, tx_process  do
                 end
                 texrunlocal("mptexttoks")
                 local box = textakebox("mptextbox") or new_hlist()
-                width = bp * box.width
+                width = bpfactor * box.width
                 where = overload.where
             end
             -- the real text
@@ -1055,9 +1053,9 @@ local tx_reset, tx_process  do
             end
             texrunlocal("mptexttoks")
             local box = textakebox("mptextbox") or new_hlist()
-            local twd = bp * box.width
-            local tht = bp * box.height
-            local tdp = bp * box.depth
+            local twd = bpfactor * box.width
+            local tht = bpfactor * box.height
+            local tdp = bpfactor * box.depth
             -- the check
             if where then
                 local scale = 1 --  / (map.scale or 1)
@@ -1479,6 +1477,7 @@ local function bm_process(object,prescript,before,after)
         local expand  = bytemap and bytemap.expansion or prescript.byteexpansion
         local reduce  = bytemap and bytemap.reduce    or prescript.bytereduce
         local palette = bytemap and bytemap.palette   or prescript.bytepalette
+        local masked  = bytemap and bytemap.masked    or prescript.bytemasked
         if expand then
             data = posit.expand(data,tonumber(expand) or 4)
         end
@@ -1490,14 +1489,15 @@ local function bm_process(object,prescript,before,after)
                     figures.bitmapimage {
                         xresolution = nx,
                         yresolution = ny,
-                        width       = 1/basepoints,
-                        height      = 1/basepoints,
+                        width       = 1/bpfactor,
+                        height      = 1/bpfactor,
                         data        = data,
                         mask        = mask,
                         bytes       = bytemap and true  or false,
                         format      = bytemap and "png" or "hex",
                         reduce      = reduce,
                         palette     = palette,
+                        masked      = masked,
                     }
                 end,
                 sx, rx, ry, sy, tx, ty

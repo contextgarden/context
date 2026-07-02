@@ -534,9 +534,9 @@ int tex_formatted_error(const char *t, const char *fmt, ...)
     va_list args;
     va_start(args, fmt);
     vsnprintf(print_buffer, print_buffer_size, fmt, args);
+    va_end(args);
     return tex_normal_error(t, print_buffer);
     /*
-    va_end(args);
     return 0;
     */
 }

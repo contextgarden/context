@@ -1,0 +1,1119 @@
+% signal=squid
+
+\startcomponent excursion-en-math
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Typesetting math,reference={mathematics,formulas}]
+
+\startsection[title=Introduction]
+
+\index {math}
+
+\Command{\tex{m}}
+\Command{\tex{im}}
+\Command{\tex{dm}}
+\Command{\tex{startformula}}
+\Command{\tex{definereferenceformat}}
+\Command{\tex{startnamedmatrix}}
+\Command{\tex{startmathmatrix}}
+\Command{\tex{mtext}}
+\Command{\tex{texthere}}
+\Command{\tex{startcases}}
+\Command{\tex{setupmathoperators}}
+\Command{\tex{setupmathradical}}
+
+In this section we spend a large number of pages on math because \CONTEXT\ is
+based on \TEX\ which is famous for its math typesetting. If math is not your
+thing and you don't need it in your document you can always skip this section.
+
+The math environment used by \CONTEXT\ has been overhauled completely. There have
+been a great number of improvements, sometimes leading also to a changed way of
+coding math in \CONTEXT. It is beyond this manual to go into the depth of the
+possibilities and the details. We advise you to do some further reading on
+typesetting formulas with \CONTEXT\ in \goto{\Emph{Mathematics in \CONTEXT}}[url
+(manual:mathematics)] written by Mikael Sundqvist and Hans Hagen. The following
+pages are completely derived from the afore mentioned manual.
+
+\stopsection
+
+\startsection[title=Typesetting math]
+
+\index {math mode}
+\index {display mode}
+\index {text mode}
+
+Normally different conventions are applied for typesetting normal text and math
+text. These conventions are \quote{known} by \CONTEXT\ \LMTX\ and applied
+accordingly when generating a document. We can rely on \CONTEXT\ \LMTX\ for
+delivering high quality math output.
+
+\startsubsection[title=Conventions]
+
+A number of conventions for math are:
+
+\startitemize[n,packed]
+
+  \startitem
+    Characters are typeset in \m{math\ italic} (don't confuse this with the
+    normal {\it italic characters} in a text font).
+  \stopitem
+
+  \startitem
+    Symbols like Greek characters (\m{\alpha}, \m{\chi}) and math symbols
+    (\m{\leq}, \m{\geq}, \m{\in}) are used.
+  \stopitem
+
+  \startitem
+    Spacing will differ from normal spacing.
+  \stopitem
+
+  \startitem
+    Math expressions have a different alignment than running text.
+  \stopitem
+
+  \startitem
+    The sub- and superscripts are downsized automatically, like in \m{a^{b}_{c}}.
+  \stopitem
+
+  \startitem
+	 Certain symbols have different appearances in the inline and display mode.
+  \stopitem
+
+\stopitemize
+
+\stopsubsection
+
+\startsubsection[title=Math modes]
+
+When typesetting math you have to work in the so called math mode in which math
+expressions can be defined in \CONTEXT. Math mode has two alternatives: text mode
+(inline math) and display mode (displayed math). Math in text mode can be
+activated by \type{\im}, while display mode is activated by \type{\dm}. These
+commands are rather simple and replace basically the old \type{$ ... $} and
+\type{$$ ... $$} commands. Although the latter commands still work in \CONTEXT\
+it is discouraged to use them anymore. A better command for inline math
+typesetting is: \type{\m} allowing for giving some optional arguments with the
+command.
+
+\startbuffer
+\m[color=blue]{a^2 + b^2 = c^2}
+\stopbuffer
+
+\typebuffer
+
+This becomes after type setting: \getbuffer
+
+In \CONTEXT\ displayed math is activated with the \type{\startformula ...
+\stopformula} command pair in order to have more grip on vertical spacing around
+the formula. The use of \type{{}} (grouping) in mathematical expressions are
+essential for separating operations in a given formula.
+
+There are naturally three different sizes used in math, as seen in \m {a ^ {b ^
+c}}. You usually do not have to care about this, but if you want to enforce the
+size in sub/superscripts you can use \type{\scriptstyle} and if you want to
+enforce the size in the next level, use \type{\scriptscriptstyle}.
+
+Symbols like \type{\int} \m{\int} and \type{\sum} \m{\sum} will have a different
+form in text and display mode. If we type \type {\m{\sum_{n=1}^{m}}} or \type
+{\m{\int_{-\infty}^{+\infty}}} we will get {\m{\sum_{n=1}^{m}}} and
+{\m{\int_{-\infty}^{+\infty}}}. But when you type:
+
+\startbuffer
+\startformula
+  \sum_{n=1}^{m} \quad \mtext{and} \quad
+  \int_{-\infty}^{+\infty}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to get display mode, you get:
+
+\getbuffer
+
+In the previous examples super- and subscripts are used. For superscript the
+caret (^) is used and for subscript the underscore (_) is applied. If a super- or
+subscript is more than one character long, grouping with \type{{}} is required.
+
+\stopsubsection
+
+\startsubsection[title=Fractions]
+
+For typesetting fractions there is the command \type {\frac} which takes two
+arguments the numerator and the denominator. For\space \m{{\frac{a}{1+b}}+c} we
+type for instance \type {\m{\frac{a}{1+b}+c}}. The \type{\frac} command has a
+couple of siblings. \type{\dfrac}, \type{\tfrac}, \type{\sfrac} which force
+display size, text size and script size respectively. There is also \type{\vfrac}
+which replaces the horizontal dividing bar into a slanted bar.
+
+\startbuffer
+\startformula
+  \frac{a}{b} = \dfrac{a}{b}
+              = \tfrac{a}{b}
+              = \sfrac{a}{b}
+              = \vfrac{a}{b}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The \type{\vfrac} version looks sometimes better in running text \m{\vfrac{a}{b}}
+or in situations where a fraction occurs inside another fraction.
+
+\startbuffer
+\startformula
+  a_0+{\frac{a}{a_1+\frac{1}{a_2}}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page[bigpreference]
+
+but prefer:
+
+\startbuffer
+\startformula
+  a_0 + {\frac{a}{a_1 + \vfrac{1}{a_2}}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+to obtain:
+
+\getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Fences]
+
+Fences, also known as paired delimiters, are a pair of symbols to visually group
+parts of a mathematical expression.
+
+\startbuffer
+\startformula
+  \fenced[parenthesis] {1 + \frac{a}{b}} \mtp{}
+  \fenced[bracket]     {F(x)^2}_a^b      \mtp{}
+  \fenced[brace]       {\frac{x}{n}}     \mtp{}
+  \fenced[angle]       {f ,g}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Another possibility is to use the traditional fencing commands \type{\left} and
+\type{\right}:
+
+\startbuffer
+\startformula
+  \left( 1 + \frac{a}{b}   \right)       \mtp{}
+  \left[ F(x)^2            \right]_a^b   \mtp{}
+  \left{ \frac{x}{n}       \right}       \mtp{}
+  \left\langle f, g        \right\rangle
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Further aspects of fences are discussed in the manual \goto{\Emph{Mathematics in
+\CONTEXT}}[url (manual:mathematics)].
+
+\stopsubsection
+
+\page[bigpreference]
+
+\startsubsection[title=Matrices]
+
+For presenting a simple matrix one can use
+
+\startbuffer
+\startformula
+  \startmathmatrix
+    \NC a \NC b \NR
+    \NC c \NC d \NR
+  \stopmathmatrix
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\page[bigpreference]
+
+Often such matrices are surrounded with fences
+
+\startbuffer
+\startformula
+  \startmathmatrix[fences=bracket]
+    \NC a \NC b \NR
+    \NC c \NC d \NR
+  \stopmathmatrix
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+A number of fenced matrices are predefined. Using those looks as follows:
+
+\startbuffer
+\startformula
+  \startnamedmatrix[matrix:bars]
+    \NC a \NC b \NR
+    \NC c \NC d \NR
+  \stopnamedmatrix
+  =
+  \bmatrix{a,b;c,d}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The predefined fences for \type{\startnamedmatrix ... \stopnamedmatrix} are
+summarized in \in{table}[tab:matrix-fences]. As shown in the a forehead shown
+example there are \quote{simple commands} giving in the similar results than with
+the full commands. They save typing but do not add to the readability of the
+code.
+
+\startplacetable
+  [location=here,
+   reference=tab:matrix-fences,
+   title={Predefined named matrix fences}]
+   \bTABLE
+     \bTR \bTD Instance           \eTD \bTD Simple command \eTD \eTR
+     \bTR \bTD matrix:bars        \eTD \bTD vmatrix        \eTD \eTR
+     \bTR \bTD matrix:braces      \eTD \bTD bracematrix    \eTD \eTR
+     \bTR \bTD matrix:brackets    \eTD \bTD bmatrix        \eTD \eTR
+     \bTR \bTD matrix:doublebar   \eTD \bTD vvmatrix       \eTD \eTR
+     \bTR \bTD matrix:groups      \eTD \bTD gmatrix        \eTD \eTR
+     \bTR \bTD matrix:none        \eTD \bTD  matrix        \eTD \eTR
+     \bTR \bTD matrix parentheses \eTD \bTD pmatrix        \eTD \eTR
+     \bTR \bTD matrix:triplebar   \eTD \bTD vvvmatrix      \eTD \eTR
+   \eTABLE
+\stopplacetable
+
+\stopsubsection
+
+%\doifmode{Book}{\page[yes]}
+
+\startsubsection[title=Accents]
+
+There is a set of accents predefined. They can be put on top of characters e.g. \type{\acute{x}}~\m{\acute{x}}. \in{Table}[tab:accents] shows the details.
+
+\startplacetable
+  [location=here,
+   reference=tab:accents,
+   title={Math accents}]
+  \switchtobodyfont[9pt]
+  \bTABLE
+    \setupTABLE[c][2,4,6][style=math,align=middle]
+    \bTR
+      \bTD Symbol name \eTD \bTD Typeset symbol \eTD
+      \bTD Symbol name \eTD \bTD Typeset symbol \eTD
+    \eTR
+    \bTR
+      \bTD \type{\grave} \eTD \bTD \m{\grave{x}} \eTD
+  	  \bTD \type{\acute} \eTD \bTD \m{\acute{x}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\hat  } \eTD \bTD \m{\hat  {x}} \eTD
+      \bTD \type{\tilde} \eTD \bTD \m{\tilde{x}} \eTD
+    \eTR
+    \bTR
+  	  \bTD \type{\bar  } \eTD \bTD \m{\bar  {x}} \eTD
+  	  \bTD \type{\breve} \eTD \bTD \m{\breve{x}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\dot }  \eTD \bTD \m{\dot  {x}} \eTD
+      \bTD \type{\ddot}  \eTD \bTD \m{\ddot {x}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\dddot}  \eTD \bTD \m{ \dddot{x}} \eTD
+      \bTD \type{\ddddot} \eTD \bTD \m{\ddddot{x}} \eTD
+    \eTR
+    \bTR
+  	  \bTD \type{\ring}  \eTD \bTD \m{\ring {x}} \eTD
+      \bTD \type{\check} \eTD \bTD \m{\check{x}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overleftharpoon}  \eTD \bTD \m{\overleftharpoon{x}}  \eTD
+      \bTD \type{\overrightharpoon} \eTD \bTD \m{\overrightharpoon{x}} \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+
+When an accent has to be covering more than one character we have the so called
+wide variants as given in \in{table}[tab:wideaccents].
+
+\startplacetable
+  [location=here,
+	 reference=tab:wideaccents,
+   title={Wide accents}]
+  \switchtobodyfont[9pt]
+  \bTABLE
+    \setupTABLE[c][2,4,6][style=math,align=middle]
+    \bTR
+      \bTD Symbol name \eTD\bTD Typeset symbol \eTD
+      \bTD Symbol name \eTD\bTD Typeset symbol \eTD
+    \eTR
+    \bTR
+      \bTD \type{\widehat }  \eTD
+      \bTD \widehat{x + y}   \eTD
+      \bTD \type{\widecheck} \eTD
+      \bTD \widecheck{x = y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\widebar}      \eTD
+      \bTD \widebar{x + y}      \eTD
+      \bTD \type{\wideunderbar} \eTD
+      \bTD \wideunderbar{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\wideoverleftharpoon}  \eTD
+      \bTD \wideoverleftharpoon{x + y}  \eTD
+      \bTD \type{\wideoverrightharpoon} \eTD
+      \bTD \wideoverrightharpoon{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\wideoverleftarrow}  \eTD
+      \bTD \wideoverleftarrow{x + y}  \eTD
+      \bTD \type{\wideoverrightarrow} \eTD
+      \bTD \wideoverrightarrow{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\wideoverleftrightarrow}  \eTD
+      \bTD \wideoverleftrightarrow{x + y}  \eTD
+      \bTD \type{\wideunderleftrightarrow} \eTD
+      \bTD \wideunderleftrightarrow{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\wideunderleftharpoon}  \eTD
+      \bTD \wideunderleftharpoon{x + y}  \eTD
+      \bTD \type{\wideunderrightharpoon} \eTD
+      \bTD \wideunderrightharpoon{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\wideunderleftarrow}  \eTD
+      \bTD \wideunderleftarrow{x + y}  \eTD
+      \bTD \type{\wideunderrightarrow} \eTD
+      \bTD \wideunderrightarrow{x + y} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\widetilde} \eTD
+      \bTD \widetilde{x + y} \eTD
+  	  \bTD                   \eTD
+      \bTD                   \eTD
+    \eTR
+   \eTABLE
+\stopplacetable
+
+\startbuffer
+\startformula
+ \check{u} + \widecheck{u} + \widecheck{uv} + \widecheck{uvw}
+ \breakhere
+ + \widecheck{uvwx} + \widecheck{abcdefghijklmn...}
+ \breakhere
+ \hat{u} + \widehat{u} + \widehat{uv} + \widehat{uvw}
+ + \widehat{uvwx} + \widehat{abcdefghijklmn...}
+ \breakhere
+ \tilde{u} + \widetilde{u} + \widetilde{uv} + \widetilde{uvw}
+ \breakhere
+ + \widetilde{uvwx} + \widetilde{abcdefghijklmn...}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The collection of extensible arrows/stackers hereunder can be placed on top of an
+expression of there under. Replacing the \type{\over...} part with \type{\under
+...} the arrow will be placed under the expression.
+
+\stopsubsection
+
+\startsubsection[title=Stackers and annotations]
+
+Stackers and annotations are decorative elements put on top or below a snipped of
+a formula. An overview is given in \in{table}[tab:stackers].
+
+\startplacetable
+  [location=here,
+	 reference=tab:stackers,
+   title={Math stackers}]
+  \switchtobodyfont[9pt]
+  \bTABLE
+    \setupTABLE[c][2,4,6][style=math,align=middle]
+    \bTR
+      \bTD Symbol name \eTD \bTD Typeset symbol \eTD
+      \bTD Symbol name \eTD \bTD Typeset symbol \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overleftarrow}      \eTD
+      \bTD \m{\overleftarrow{x + y}}  \eTD
+      \bTD \type{\overrightarrow}     \eTD
+      \bTD \m{\overrightarrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overtwoheadleftarrow}      \eTD
+      \bTD \m{\overtwoheadleftarrow{x + y}}  \eTD
+      \bTD \type{\overtwoheadrightarrow}     \eTD
+      \bTD \m{\overtwoheadrightarrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overlefttailarrow}      \eTD
+      \bTD \m{\overlefttailarrow{x + y}}  \eTD
+      \bTD \type{\overrighttailarrow}     \eTD
+      \bTD \m{\overrighttailarrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overleftbararrow}          \eTD
+      \bTD \m{\overleftbararrow{x + y}}      \eTD
+      \bTD \type{\overrightbararrow}         \eTD
+      \bTD \m{\overrightbararrow    {x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overlefthookarrow}      \eTD
+      \bTD \m{\overlefthookarrow{x + y}}  \eTD
+      \bTD \type{\overrighthookarrow}     \eTD
+      \bTD \m{\overrighthookarrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overleftharpoondown }     \eTD
+      \bTD \m{\overleftharpoondown{x + y}}  \eTD
+      \bTD \type{\overrightharpoondown}     \eTD
+      \bTD \m{\overrightharpoondown{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overleftharpoonup}      \eTD
+      \bTD \m{\overleftharpoonup{x + y}}  \eTD
+      \bTD \type{\overrightharpoonup}     \eTD
+      \bTD \m{\overrightharpoonup{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overLeftarrow}      \eTD
+      \bTD \m{\overLeftarrow{x + y}}  \eTD
+      \bTD \type{\overRightarrow}     \eTD
+      \bTD \m{\overRightarrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overLeftbararrow}      \eTD
+      \bTD \m{\overLeftbararrow{x + y}}  \eTD
+      \bTD \type{\overRightbararrow}     \eTD
+      \bTD \m{\overRightbararrow{x + y}} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\overLeftrightarrow}     \eTD
+      \bTD \m{\overLeftrightarrow{x + y}} \eTD
+      \bTD                                \eTD
+      \bTD                                \eTD
+    \eTR
+  \eTABLE
+
+\stopplacetable
+
+Annotations can be achieved with different approaches. We present here the
+\type{\mathannotation} method.
+
+\startbuffer
+\startformula
+  \mathannotation[bottom={= mx}]
+  {\underbrace{x + x + \ldots + x}} +
+  \mathannotation[bottom={= ny}]
+  {\underbrace{y + y + \ldots + y}}
+  = mx + ny
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\page[bigpreference]
+
+\startsubsection[title=Big operators]
+
+In \CONTEXT\ there are four groups of predefined big operators: integrals,
+summations, products and operators. They can be setup with
+
+\shortsetup{setupmathoperators}
+
+There is a big group of different integrals. One needs however to pay attention,
+that not all of them are available in all fonts. The summations group contain
+three predefined signs and the product group contains two signs. The operators
+group contains 21 different symbols.
+
+Here follow some examples
+
+\startbuffer[Operators]
+\m{ \int_0^1 f(x) \dd x \neq \sum_{k=1}^n a_k \neq
+    \prod_{k=1}^n a_k \neq \bigoplus_{k=1}^n a_k} \crlf
+\dm{\int_0^1 f(x) \dd x \neq \sum_{k=1}^n a_k \neq
+    \prod_{k=1}^n a_k \neq \bigoplus_{k=1}^n a_k}
+\stopbuffer
+
+\typebuffer[Operators]
+
+\getbuffer[Operators]
+
+As you can see the limits in displayed math are to the right of the integral. One
+can change this by
+
+\startbuffer
+\setupmathoperators
+  [integrals]
+  [method=auto]
+\stopbuffer
+
+\typebuffer
+
+\page[bigpreference]
+
+\start
+  \getbuffer
+
+  Then the above example looks like this
+
+  \getbuffer[Operators]
+\stop
+
+\stopsubsection
+
+\startsubsection[title=Radicals]
+
+Radicals in math are obtained with the commands \type{\sqrt} or \type{\root}.
+These can have an argument if the root is not a square root. Another way of
+representing a (square) root is rising the expression to the power of the
+fraction:
+
+\startbuffer
+\startformula
+  \sqrt{1 + x} = (1 + x)^{\frac{1}{2}} \breakhere
+  \root[n=n]{1 + x} = \root[n]{1 + x} = \sqrt[n]{1 + x} = (1+x)^{\strut 1/n}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Radicals can have different appearances which can be influenced with
+
+\shortsetup{setupmathradical}
+
+\stopsubsection
+
+\startsubsection[title=Text]
+
+In case there should appear normal text inside a math-formula the command
+\type{\mtext} is used:
+
+\startbuffer
+\startformula
+  \mtext{Like this: } a^2 + b^2 = c^2 \breakhere
+  n = \underbrace{1 + 1 + \ldots + 1}_{n \mtext{ terms}}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+There is also \type{\texthere} which is used as follows
+
+\startbuffer
+\startformula
+  1 + 2 - 3
+  \breakhere
+  \texthere[left]{and}
+  4 + 5 + 6 =  7 + 8
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\doifmode{Book}{\page[yes]}
+
+\startsubsection[title=Math functions]
+
+Common math functions like \m{\sin} and \m{\tan} that have to be typeset in the
+actual font are predefined functions. Please look at
+\in{table}[tab:mathfunctions] for an overview.
+
+\startplacetable
+  [location=here,
+	 reference=tab:mathfunctions,
+   title={Predefined math functions}]
+  \switchtobodyfont[9pt]
+  \bTABLE
+    \setupTABLE[c][2,4][style=math,align=middle]
+    \bTR
+      \bTD Function name \eTD\bTD Typeset function \eTD
+      \bTD Function name \eTD\bTD Typeset function \eTD
+    \eTR
+    \bTR
+      \bTD \type{\arccos}  \eTD
+      \bTD \m{\arccos(x)}  \eTD
+      \bTD \type{\arcsin}  \eTD
+      \bTD \m{\arcsin(x)}  \eTD
+    \eTR
+    \bTR
+      \bTD \type{\arctan}  \eTD
+      \bTD \m{\arctan(x)}  \eTD
+      \bTD \type{\arccosh} \eTD
+      \bTD \m{\arccosh(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\arcsinh} \eTD
+      \bTD \m{\arcsinh(x)} \eTD
+      \bTD \type{\arctanh} \eTD
+      \bTD \m{\arctanh(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\acos} \eTD
+      \bTD \m{\acos(x)} \eTD
+      \bTD \type{\asin} \eTD
+      \bTD \m{\asin(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\atan} \eTD
+      \bTD \m{\atan(x)} \eTD
+      \bTD \type{\arg}  \eTD
+      \bTD \m{\arg(x)}  \eTD
+    \eTR
+    \bTR
+      \bTD \type{\cos}  \eTD
+      \bTD \m{\cos(x)}  \eTD
+      \bTD \type{\cosh} \eTD
+      \bTD \m{\cosh(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\cot}  \eTD
+      \bTD \m{\cot(x)}  \eTD
+      \bTD \type{\coth} \eTD
+      \bTD \m{\coth(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\csc} \eTD
+      \bTD \m{\csc(x)} \eTD
+      \bTD \type{\deg} \eTD
+      \bTD \m{\deg(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\diff} \eTD
+      \bTD \m{\diff(x)} \eTD
+      \bTD \type{\dim}  \eTD
+      \bTD \m{\dim(x)}  \eTD
+    \eTR
+    \bTR
+     \bTD \type{\exp} \eTD
+     \bTD \m{\exp(x)} \eTD
+     \bTD \type{\hom} \eTD
+     \bTD \m{\hom(x)} \eTD
+    \eTR
+    \bTR
+     \bTD \type{\ker} \eTD
+     \bTD \m{\ker(x)} \eTD
+     \bTD \type{\lg}  \eTD
+     \bTD \m{\lg(x)}  \eTD
+    \eTR
+    \bTR
+     \bTD \type{\ln}  \eTD
+     \bTD \m{\ln(x)}  \eTD
+     \bTD \type{\log} \eTD
+     \bTD \m{\log(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\sec} \eTD
+      \bTD \m{\sec(x)} \eTD
+      \bTD \type{\sin} \eTD
+      \bTD \m{\sin(x)} \eTD
+    \eTR
+    \bTR
+      \bTD \type{\sinh} \eTD
+      \bTD \m{\sinh(x)} \eTD
+      \bTD \type{\tan}  \eTD
+      \bTD \m{\tan(x)}  \eTD
+    \eTR
+    \bTR
+      \bTD \type{\tanh} \eTD
+      \bTD \m{\tanh(x)} \eTD
+      \bTD \eTD
+      \bTD \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+
+\stopsubsection
+
+\stopsection
+
+\doifmode{Book}{\page[yes]}
+
+\startsection[title=Displayed math]
+
+\startsubsection[title=Simple formulas]
+
+An example of a simple formula is
+
+\startbuffer
+  \startformula
+    \sum _ {k = 1} ^ n k = \frac {n(n + 1)}{2}
+  \stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Chain formulas]
+
+Alignment in math expressions may need special attention. In multi line
+expressions we sometimes need to align at the equal sign.
+
+\startbuffer
+\startformula
+  ax^2 + Bx +c \alignhere = 0
+\stopformula
+\stopbuffer
+
+\startbuffer
+\startformula
+  2\int __ {-1} ^^ {1} \sqrt {1 - t ^ 2} \dd t
+  \alignhere
+  =
+  2\int __ {-\pi/2} ^^ {\pi/2} \cos ^ 2 x \dd x
+  \breakhere
+  =
+  \int __ {-\pi/2} ^^ {\pi/2} 1 + \cos 2x \dd x
+  \breakhere
+  = \pi.
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+A different, and often more compact approach, is to typeset the formulas not
+aligned, but the first one flushed left, the last one flushed right and the rest
+of them midaligned. This can be done by using \type{align=slanted}.
+
+\stopsubsection
+
+\startsubsection[title=Multiple formulas]
+
+Punctuation in math has to be considered. There is a section explaining this in
+\goto{\Emph{Mathematics in \CONTEXT}}[url(manual:mathematics)] for reference.
+
+\startbuffer
+ \im{f(x)=\sin x}, \im{x\in\reals}
+\stopbuffer
+
+In inline math writing \type{\im{f(x)=\sin x}, \im{x\in\reals}}, we get
+\getbuffer. The point is, that the comma between the two formulas is taken from
+the text font. In order to achieve this in displayed math \type{\mtp} (math text
+punctuation) is used:
+
+\startbuffer
+\startformula
+  f(x) = \sin x \mtp{,}
+  x \in \reals  \mtp{.}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The following three formulas fit easily in one line and then it is the preferred
+way of showing them:
+
+\startbuffer
+\startformula
+  x = r \sin\theta \cos\phi \mtp{,}
+  y = r \sin\theta \sin\phi \mtp{,}
+  z = r \cos\theta          \mtp{.}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+However one can easily stack several formulas on top of each other with
+
+\startbuffer
+\startformula
+  x = r \sin\theta \cos\phi \mtp{,} \breakhere
+  y = r \sin\theta \sin\phi \mtp{,} \breakhere
+  z = r \cos\theta          \mtp{.}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+When alignment should be enforced, this can best be done on the first equal sign
+
+\startbuffer
+\startformula
+  x \alignhere = r \sin\theta \cos\phi \mtp{,} \breakhere
+  y \alignhere = r \sin\theta \sin\phi \mtp{,} \breakhere
+  z \alignhere = r \cos\theta          \mtp{.}
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+The old method of aligning with \type{\startalign...\stopalign} is still in place
+and can be used:
+
+\startbuffer
+\startformula
+  \startalign
+    \NC x \EQ r \sin\theta \cos\phi \mtp{,} \NR
+    \NC y \EQ r \sin\theta \sin\phi \mtp{,} \NR
+    \NC z \EQ r \cos\theta          \mtp{.} \NR
+  \stopalign
+\stopformula
+\stopbuffer
+
+ \typebuffer
+
+ \getbuffer
+
+\stopsubsection
+
+\page[bigpreference]
+
+\startsubsection[title=Cases]
+
+Math cases have a lot of options. You can define your one versions with
+
+\shortsetup{definemathcases}
+
+and influence the appearance with
+
+\shortsetup{setupmathcases}
+
+An example dealing with the possibility to have enlarged (display style) formulas
+could look like this
+
+\startbuffer
+\definemathcases
+  [Mynewcases]
+  [cases]
+  [mathstyle=display]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+\startformula
+  \frac{1}{2} \int f(x) \alignhere =
+  \startcases
+    \NC  \frac{1}{2} \int \NC x \geq 0 \NR
+    \NC -\frac{1}{2} \int \NC x <    0 \NR
+  \stopcases
+  \breakhere =
+  \startMynewcases
+    \NC  \frac{1}{2} \int \NC x \geq 0 \NR
+    \NC -\frac{1}{2} \int \NC x <    0 \NR
+  \stopMynewcases
+\stopformula
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\startsubsection[title=Equation labels]
+
+\CONTEXT\ always offered the possibility to label equations automatically. This
+is done by using:
+
+\startbuffer
+\startplaceformula
+  [reference=eq:Pythagoras]
+  \startformula
+    a^2 + b^2 = c^2
+  \stopformula
+\stopplaceformula
+
+From \in{Equation}[eq:Pythagoras] it follows \unknown
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+There is nothing new to the method of referencing the equation (see also in
+\in{chapter}[chap:reference]). However unlike the number style of the equation
+between parentheses the reference in the text show only the number. To change
+this one can define a new referencing command
+
+\shortsetup{definereferenceformat}
+
+\startbuffer
+\definereferenceformat
+  [Eqref]
+  [left=(,
+   right=)]
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+We now can use the \type{\Eqref}:\type{ From \Eqref{equation }[eq:pythagoras]
+follows \unknown}
+
+From \Eqref{equation }[eq:Pythagoras] follows \unknown
+
+If there is a number of formulas combined into a set, each formula can have its
+own number and also its own reference. You do not need to use
+\type{\startplaceformula ... \stopplaceformula} in this case.
+
+\startbuffer
+\startformula
+  x \alignhere = r \sin\theta \cos\phi \mtp{,}
+    \numberhere[eq:xa] \breakhere
+  y \alignhere = r \sin\theta \sin\phi \mtp{,}
+    \numberhere[eq:ya]\breakhere
+  z \alignhere = r \cos\theta          \mtp{.}
+    \numberhere[eq:za]
+\stopformula
+
+
+In \Eqref{equations }[eq:xa], \Eqref{}[eq:ya] and
+\Eqref{}[eq:za] we see \unknown
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+With the alternative alignment command it would look as follows. Note that the
+reference is attached to the new line command \type{\NR}. Using this method of
+coding the use of \type{\startplaceformula ... \stopplaceformula} is needed:
+
+\startbuffer
+\startplaceformula
+  \startformula
+    \startalign
+      \NC x \EQ r \sin\theta \cos\phi \mtp{,} \NR[eq:xb]
+      \NC y \EQ r \sin\theta \sin\phi \mtp{,} \NR[eq:yb]
+      \NC z \EQ r \cos\theta          \mtp{.} \NR[eq:zb]
+    \stopalign
+  \stopformula
+\stopplaceformula
+
+
+In \Eqref{equations }[eq:xb], \Eqref{}[eq:yb]
+and \Eqref{}[eq:zb] we see \unknown
+\stopbuffer
+
+ \typebuffer
+
+ \getbuffer
+
+In case that sub-numbering is asked for one can use:
+
+\startbuffer
+\startformula
+  \startsubnumberinghere
+    x \alignhere = r \sin\theta \cos\phi \mtp{,}
+      \numberhere[eq:xc] \breakhere
+    y \alignhere = r \sin\theta \sin\phi \mtp{,}
+      \numberhere[eq:yc]\breakhere
+    z \alignhere = r \cos\theta          \mtp{.}
+    \numberhere[eq:zc]
+  \stopsubnumberinghere
+\stopformula
+
+In \Eqref{equations }[eq:xc], \Eqref{}[eq:yc]
+and \Eqref{}[eq:zc] we see \unknown
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\startbuffer
+\startplaceformula[eq:spheres]
+  \startformula
+    \startalign
+      \NC x \EQ r \sin\theta \cos\phi \mtp{,} \NR[+]
+      \NC y \EQ r \sin\theta \sin\phi \mtp{,} \NR[+]
+      \NC z \EQ r \cos\theta          \mtp{.} \NR[+]
+    \stopalign
+  \stopformula
+\stopplaceformula
+
+We see in \Eqref{equation }[eq:spheres] \unknown
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+Obviously the reference is to the whole set of equations, therefore we get the
+equation number only. If we need to refer to the single equations the coding
+becomes:
+
+\startbuffer
+\startplaceformula
+  \startformula
+    \startalign
+      \NC x \EQ r \sin\theta \cos\phi \mtp{,} \NR[eq:xd]
+      \NC y \EQ r \sin\theta \sin\phi \mtp{,} \NR[eq:yd]
+      \NC z \EQ r \cos\theta          \mtp{.} \NR[eq:zd]
+    \stopalign
+  \stopformula
+\stopplaceformula
+
+In \Eqref{equations }[eq:xd], \Eqref{}[eq:yd]
+and \Eqref{}[eq:zd] we see \unknown
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsubsection
+
+\stopsection
+
+\stopcomponent

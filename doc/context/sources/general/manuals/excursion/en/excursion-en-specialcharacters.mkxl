@@ -1,0 +1,192 @@
+% signal=squid
+
+\startcomponent excursion-en-specialcharacters
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Special characters,reference={special chars}]
+
+\index{special characters}
+
+You have seen that \CONTEXT\ commands are preceded by a \tex{} (backslash). This
+means that \tex{} has a special meaning to \CONTEXT. Aside from \tex{} there are
+other characters that need special attention when you want them to appear in
+verbatim mode or in text mode. \in{Table}[tab:special-chars-1] and
+\in{}[tab:special-chars-2] gives an overview of these special characters and what
+you have to type to produce them.
+
+\startplacetable
+    [location={here,force},
+     reference=tab:special-chars-1,
+     title={Special characters (1)}]
+    \switchtobodyfont[9pt]
+    \bTABLE
+        \bTR[style=bold]
+            \bTD[nx=2,align=flushleft] Special character \eTD
+            \bTD[nx=2] Verbatim \eTD
+            \bTD[nx=2] Text \eTD
+        \eTR
+        \bTR[style=bold]
+            \bTD Character \eTD
+            \bTD Name \eTD
+            \bTD Type \eTD
+            \bTD Generates \eTD
+            \bTD Type \eTD
+            \bTD Generates \eTD
+        \eTR
+        \bTR
+            \bTD \letterhash \eTD
+            \bTD hashtag \eTD
+            \bTD \type{\type{\#}} \eTD
+            \bTD \# \eTD
+            \bTD \type{\letterhash} \eTD
+            \bTD \letterhash \eTD
+        \eTR
+        \bTR
+            \bTD \letterdollar \eTD
+            \bTD dollar \eTD
+            \bTD \type{\type{\$}} \eTD
+            \bTD \$ \eTD
+            \bTD \type{\letterdollar} \eTD
+            \bTD \letterdollar \eTD
+        \eTR
+        \bTR
+            \bTD \letterampersand \eTD
+            \bTD ampersand \eTD
+            \bTD \type{\type{\&}} \eTD
+            \bTD \& \eTD
+            \bTD \type{\letterampersand} \eTD
+            \bTD \letterampersand \eTD
+        \eTR
+        \bTR
+            \bTD \letterpercent \eTD
+            \bTD percent \eTD
+            \bTD \type{\type{\%}} \eTD
+            \bTD \% \eTD
+            \bTD \type{\letterpercent} \eTD
+            \bTD \letterpercent \eTD
+        \eTR
+        \bTR
+            \bTD \letterbackslash \eTD
+            \bTD backslash \eTD
+            \bTD \type{\type{\ }} \eTD
+            \bTD \letterbackslash \eTD
+            \bTD \type{\letterbackslash} \eTD
+            \bTD \letterbackslash \eTD
+        \eTR
+        \bTR
+            \bTD \letterrightbrace \eTD
+            \bTD right curly brace \eTD
+            \bTD \type{\type{\} }}\eTD
+            \bTD \letterrightbrace \eTD
+            \bTD \type{\letterrightbrace} \eTD
+            \bTD \letterrightbrace \eTD
+        \eTR
+        \bTR
+            \bTD \letterleftbrace \eTD
+            \bTD left curly brace \eTD
+            \bTD \type{\type{\{ }} \eTD
+            \bTD \letterleftbrace \eTD
+            \bTD \type{\letterleftbrace} \eTD
+            \bTD \letterleftbrace \eTD
+        \eTR
+        \bTR
+            \bTD \type{|} \eTD
+            \bTD vertical bar \eTD
+            \bTD \type{\type{|}} \eTD
+            \bTD \type{|} \eTD
+            \bTD \type{\letterbar} \eTD
+            \bTD \letterbar \eTD
+        \eTR
+        \bTR
+            \bTD \type{_} \eTD
+            \bTD underscore \eTD
+            \bTD \type{\type{_}} \eTD
+            \bTD \type{_} \eTD
+            \bTD \type{\letterunderscore} \eTD
+            \bTD \letterunderscore\eTD
+        \eTR
+        \bTR
+            \bTD \type{~} \eTD
+            \bTD tilde \eTD
+            \bTD \type{\type{~}} \eTD
+            \bTD \type{~} \eTD
+            \bTD \type{\lettertilde} \eTD
+            \bTD \lettertilde \eTD
+        \eTR
+        \bTR
+            \bTD \type{^} \eTD
+            \bTD caret \eTD
+            \bTD \type{\type{^}} \eTD
+            \bTD \type{^} \eTD
+            \bTD \type{\letterhat} \eTD
+            \bTD \letterhat \eTD
+        \eTR
+    \eTABLE
+\stopplacetable
+
+\startplacetable
+    [location={here,force},
+     reference=tab:special-chars-2,
+     title={Special characters (2)}]
+    \switchtobodyfont[9pt]
+    \setupTABLE[c][1][width=0.2\textwidth]
+    \bTABLE
+        \bTR[style=bold]
+            \bTD[align=flushleft] Special character \eTD
+            \bTD[nx=2] Verbatim \eTD
+            \bTD[nx=2] Text \eTD
+        \eTR
+        \bTR[style=bold]
+            \bTD Character \eTD
+            \bTD Type \eTD
+            \bTD Generates \eTD
+            \bTD Type \eTD
+            \bTD Generates \eTD
+        \eTR
+        \bTR
+            \bTD \type{+} \eTD
+            \bTD \type{\type{+}} \eTD
+            \bTD \type{+} \eTD
+            \bTD \type{\m{+}} \eTD
+            \bTD \m{+} \eTD
+        \eTR
+        \bTR
+            \bTD \type{-} \eTD
+            \bTD \type{\type{-}} \eTD
+            \bTD \type{-} \eTD
+            \bTD \type{\m{-}} \eTD
+            \bTD \m{-} \eTD
+        \eTR
+        \bTR
+            \bTD \type{=} \eTD
+            \bTD \type{\type{=}} \eTD
+            \bTD \type{=} \eTD
+            \bTD \type{\m{=}} \eTD
+            \bTD \m{=} \eTD
+        \eTR
+        \bTR
+            \bTD \type{<} \eTD
+            \bTD \type{\type{<}} \eTD
+            \bTD \type{<} \eTD
+            \bTD \type{\m{<}} \eTD
+            \bTD \m{<} \eTD
+        \eTR
+        \bTR
+            \bTD \type{>} \eTD
+            \bTD \type{\type{>}} \eTD
+            \bTD \type{>} \eTD
+            \bTD \type{\m{>}} \eTD
+            \bTD \m{>} \eTD
+        \eTR
+    \eTABLE
+\stopplacetable
+
+\stopchapter
+
+\doifmode{Book}
+  {\page[yes]}
+
+\stopcomponent

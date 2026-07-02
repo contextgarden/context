@@ -1,0 +1,72 @@
+% signal=squid
+
+\startcomponent excursion-en-PDFA
+
+\enablemode[**en-us]
+
+\project excursion
+
+\Command{\tex{setupbackend}}
+\Command{\tex{setuptagging}}
+
+\startchapter[title=\PDF /A]
+
+\index{pdf/a}
+\index{tagging}
+
+\startsection[title=Introduction]
+
+\PDF/A stands for PDF for archiving or \PDF\ for long-time preservation. This
+standard has grown during time adding more elements to it. \PDF/A is a family of
+standards, so there is e.g. \PDF/A-1 up to \PDF/A-4 where \PDF/A-4 is based on
+the ISO32000-2 (2017, 2020) standard and \PDF~2.0.
+
+\CONTEXT\ also supports \PDF/A-3a archiving. One aspect of this format is, that
+inside the PDF file tagging has to be applied for enabling accessibility for
+visually impaired users.
+
+\stopsection
+
+\startsection[title=Example \PDF /A file]
+
+In order to get a \PDF /A document, you will have to setup the system. The
+commands used for this are:
+
+\shortsetup{setupbackend}
+
+\shortsetup{setuptagging}
+
+Most important to get a well tagged document is using a strict structure.
+
+\startbuffer
+\setupinteraction
+  [state=start,
+   title={Your Document Title},
+   author={Your Name},
+   subject={Document Subject},
+   keywords={keyword1, keyword2}]
+
+\setupbackend
+  [format=PDF/A-2a, %2b, 3a
+   intent={Coated FOGRA39 (ISO 12647-2:2004)}, % paper
+   profile={default_cmyk.icc,
+            default_rgb.icc,
+            default_gray.icc}, % color profile
+   export=yes]
+
+\setuptagging
+  [state=start,
+   method=auto]
+
+\startdocument
+  ...
+\stopdocument
+\stopbuffer
+
+\typebuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

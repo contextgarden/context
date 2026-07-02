@@ -377,12 +377,17 @@
 %D
 %D Although it's not clear from the macros, one character trait of this macros,
 %D which are build on top of the support module, is that they don't hyphenate. We
-%D therefore offer the alternative \type{\typ}. The current implementation works all
-%D right, but a decent hyphenation support of \type{\tt} text will be implemented
-%D soon.
+%D therefore offer the alternative \type {\typ}.
+%D
+%D Copying verbatim with spaces would be nice but even after decades viewers treat
+%D spaces differentry (a side effect of it never having specified well). So even if
+%D we use spaces multiple could be collapsed. Also, in the backend, at the begin of
+%D a line we would have to cheat a bit which we don't want to do because in the end
+%D viewers might ignore leading spaces. But [space=character] does good job anyway.
 
 \permanent\protected\def\specialfixedspace     {\kern\interwordspace\relax}
 \permanent\protected\def\specialobeyedspace    {\hskip\interwordspace\relax} % better than spaceskip
+%permanent\protected\def\specialobeyedspace    {\hskip\interwordspace \s!space\relax} % to be tested
 \permanent\protected\def\specialstretchedspace {\hskip.5\interwordspace\s!plus.125\interwordspace\relax} % \interwordstretch can be zero
 \permanent\protected\def\specialcontrolspace   {\normalcontrolspace\allowbreak} % uses fallback
 

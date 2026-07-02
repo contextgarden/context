@@ -1,0 +1,47 @@
+\startcomponent excursion-copyright
+
+% The copyright page. English it is and english it will be.
+
+\startmakeup[standard][page=yes,doublesided=no]
+
+    \switchtobodyfont
+      [small]
+
+    \setupframed
+      [frame=off,
+       width=.8\textwidth,
+       align=normal,
+       background=basic-shape,
+       rulethickness=8pt,
+       shape:dots=ShapeDarkDots,
+       shape:line=ShapeDarkLine,
+       offset=25pt]
+
+    \vfill
+
+    \startframed
+        This book project was supported by \crlf
+        \startnarrower[left]
+            Erik Nijenhuis (Xerdi) \crlf
+            Foundation Johan Polak (Johan Polak Stichting) \crlf
+            Dutch \TEX\ Usersgroup (NTG)
+        \stopnarrower
+    \stopframed
+
+    \blank[3*big]
+
+    \startframed
+        This document is produced with \CONTEXT\ \LMTX\ and \LUAMETATEX.
+    \stopframed
+
+    \blank[3*big]
+
+    \startframed
+         \copyright\space
+         1991\endash\currentdate[year]\space
+         Cooperative work of the \CONTEXT\ group
+    \stopframed
+
+\stopmakeup
+
+\stopcomponent

@@ -20,7 +20,7 @@
 %D \macros
 %D   {setobject,getobject,ifinobject}
 %D
-%D Boxes can be considered reuable objects. Traditionally once passed to the \DVI\
+%D Boxes can be considered reusable objects. Traditionally once passed to the \DVI\
 %D file, such objects cannot be reused. In \PDF\ however, reusing is possible and
 %D sometimes even a necessity. Therefore, \CONTEXT\ supports reusable objects and
 %D \LUATEX\ has native support for so called box resources.

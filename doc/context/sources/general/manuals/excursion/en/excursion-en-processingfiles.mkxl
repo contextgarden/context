@@ -1,0 +1,107 @@
+% signal=squid
+
+\startcomponent excursion-en-processingfiles
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=The \type{context} command,reference=chap:contextcommand]
+
+\index{context (command)}
+\index{mtxrun (command)}
+\index{processing \TeX\ file}
+
+You can process a \TEX\ file or run \CONTEXT\ with the command \type{context}
+which you type at your command line:
+
+\starttyping
+context example-file
+\stoptyping
+
+\CONTEXT\ will make multiple runs to get the layout, references, lists and page
+numbering straight. You can see those runs echoed on your screen and listed in
+the \type{example-file.log} file.
+
+You can add parameters to give the command \type{context} additional
+tasks while processing the file.
+
+E.g. you can start up your PDF reader automatically, if you use one of the
+following programmes: evince, okular, pdfxcview, sumatra or zathura by typing on
+the command line
+
+\starttyping
+context --autopdf=auto example-file
+\stoptyping
+
+Another example would be \type{context --mode=Screen} telling \CONTEXT\ to use
+the mode \type{Screen} and do what is specified for this mode. See for a complete
+example in \in{chapter}[chap:modes].
+
+If you want the resulting \PDF\ file renamed directly after compiling you could
+issue
+
+\starttyping
+context --result=renamed-example-file
+\stoptyping
+
+An overview of the parameters is given when you type:
+
+\starttyping
+context --help
+\stoptyping
+
+Please refer to the manual \goto{\Emph{luatools mtxrun context}}[ url
+(manual:tools) ] for more information on running \CONTEXT.
+
+Arranging pages for printing on paper is introduced in
+\in{chapter}[chap:arranging]. When running \CONTEXT\ from the command line you
+can switch arranging on and off by issuing
+
+\starttyping
+context --arrange example-file.mkxl
+\stoptyping
+
+and
+
+\starttyping
+context --noarrange example-file.mkxl
+\stoptyping
+
+respectively. This requires, that the arranging is setup in
+\type{example-file.mkxl} e.g. \type{\setuparranging[2UP]}.
+
+In case that there is no setup of arranging pages in \type{example-file.mkxl} you
+still can tell \CONTEXT\ to run an arranging pass at the end of the typeseting
+process by issuing
+
+\starttyping
+context --extra=arrange --printformat=XY paperformat=A6*A4 --nx=2 --ny=2
+\stoptyping
+
+where the \type{printformat} contains one of the predefined arranging schemes.
+The \type{paperformat} tells the size of the arranged page on the printing paper
+size. Of course you need also to specify the layout of the arranged pages on the
+printing paper.
+
+Sometimes it is necessary to extract a series of pages from a larger document.
+This can be achieved by
+
+\starttyping
+context --extra=select --selection=9:13  example-file.pdf
+        --result=extract.pdf
+\stoptyping
+
+Hereby you can indicate ranges and or single pages in a comma separated list e.g.
+
+\starttyping
+... --selection=9:13,50,60:62,200 ...
+\stoptyping
+
+\CONTEXT\ creates then a \PDF\ file with the name \type{extract.pdf} containing
+for this example pages 9 to 13, 50, 60 to 62 and page 200 from the
+\type{example-file.pdf}
+
+\stopchapter
+
+\stopcomponent

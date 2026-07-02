@@ -1,0 +1,452 @@
+% signal=squid
+
+\startcomponent excursion-en-mathcharacters
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Commands in math mode,reference=overviews]
+
+\index{symbols in math mode}
+
+\startsection[title=Greek characters]
+
+\bTABLE
+  \setupTABLE[c][1,2,4,5,7,8][width=.1\makeupwidth]
+  \bTR
+    \bTD[nx=2] Character \eTD \bTD Command \eTD
+    \bTD[nx=2] Character \eTD \bTD Command \eTD
+    \bTD[nx=2] Character \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\alpha}     \eTD \bTD \type{\alpha}  \eTD
+    \bTD            \eTD \bTD \m{\iota}      \eTD \bTD \type{\iota}   \eTD
+    \bTD            \eTD \bTD \m{\varrho}    \eTD \bTD \type{\varrho} \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\beta}      \eTD \bTD \type{\beta}  \eTD
+    \bTD            \eTD \bTD \m{\kappa}     \eTD \bTD \type{\kappa} \eTD
+    \bTD \m{\Sigma} \eTD \bTD \m{\sigma}     \eTD \bTD \type{\sigma} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Gamma} \eTD \bTD \m{\gamma}     \eTD \bTD \type{\gamma}    \eTD
+    \bTD \m{\Lambda}\eTD \bTD \m{\lambda}    \eTD \bTD \type{\lambda}   \eTD
+    \bTD            \eTD \bTD \m{\varsigma}  \eTD \bTD \type{\varsigma} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Delta} \eTD \bTD \m{\delta}     \eTD \bTD \type{\delta} \eTD
+    \bTD            \eTD \bTD \m{\mu}        \eTD \bTD \type{\mu}    \eTD
+    \bTD            \eTD \bTD \m{\tau}       \eTD \bTD \type{\tau}   \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\epsilon}   \eTD \bTD \type{\epsilon} \eTD
+    \bTD            \eTD \bTD \m{\nu}        \eTD \bTD \type{\nu}      \eTD
+    \bTD            \eTD \bTD \m{\upsilon}   \eTD \bTD \type{\upsilon} \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\varepsilon}\eTD \bTD \type{\varepsilon} \eTD
+    \bTD \m{\Xi}    \eTD \bTD \m{\xi}        \eTD \bTD \type{\xi}         \eTD
+    \bTD \m{\Phi}   \eTD \bTD \m{\phi}       \eTD \bTD \type{\phi}        \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\zeta}      \eTD \bTD \type{\zeta}   \eTD
+    \bTD            \eTD \bTD \m{o}          \eTD \bTD \type{o}       \eTD
+    \bTD            \eTD \bTD \m{\varphi}    \eTD \bTD \type{\varphi} \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\eta}       \eTD \bTD \type{\eta} \eTD
+    \bTD \m{\Pi}    \eTD \bTD \m{\pi}        \eTD \bTD \type{\pi}  \eTD
+    \bTD            \eTD \bTD \m{\chi}       \eTD \bTD \type{\chi} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Theta} \eTD \bTD \m{\theta}     \eTD \bTD \type{\theta} \eTD
+    \bTD            \eTD \bTD \m{\varpi}     \eTD \bTD \type{\varpi} \eTD
+    \bTD \m{\Psi}   \eTD \bTD \m{\psi}       \eTD \bTD \type{\psi}   \eTD
+  \eTR
+  \bTR
+    \bTD            \eTD \bTD \m{\vartheta}  \eTD \bTD \type{\vartheta} \eTD
+    \bTD            \eTD \bTD \m{\rho}       \eTD \bTD \type{\rho}      \eTD
+    \bTD \m{\Omega} \eTD \bTD \m{\omega}     \eTD \bTD \type{\omega}    \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title=Special symbols]
+
+\bTABLE
+  \bTR
+    \bTD Symbol \eTD \bTD Command \eTD
+    \bTD Symbol \eTD \bTD Command \eTD
+    \bTD Symbol \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+   \bTD \m{\aleph}  \eTD \bTD \type{\aleph}  \eTD
+   \bTD \m{\prime}  \eTD \bTD \type{\prime}  \eTD
+   \bTD \m{\forall} \eTD \bTD \type{\forall} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\hbar}     \eTD \bTD \type{\hbar}     \eTD
+    \bTD \m{\emptyset} \eTD \bTD \type{\emptyset} \eTD
+    \bTD \m{\exists}   \eTD \bTD \type{\exists}   \eTD
+  \eTR
+  \bTR
+    \bTD \m{\imath}    \eTD \bTD \type{\imath} \eTD
+    \bTD \m{\nabla}    \eTD \bTD \type{\nabla} \eTD
+    \bTD \m{\neg}      \eTD \bTD \type{\neg}   \eTD
+  \eTR
+  \bTR
+    \bTD \m{\jmath}    \eTD \bTD \type{\jmath} \eTD
+    \bTD \m{\surd}     \eTD \bTD \type{\surd}  \eTD
+    \bTD \m{\flat}     \eTD \bTD \type{\flat}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\ell}      \eTD \bTD \type{\ell}     \eTD
+    \bTD \m{\top}      \eTD \bTD \type{\top}     \eTD
+    \bTD \m{\natural}  \eTD \bTD \type{\natural} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\wp}       \eTD \bTD \type{\wp}    \eTD
+    \bTD \m{\bot}      \eTD \bTD \type{\bot}   \eTD
+    \bTD \m{\sharp}    \eTD \bTD \type{\sharp} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Re}       \eTD \bTD \type{\Re}       \eTD
+    \bTD \m{\Vert}     \eTD \bTD \type{\Vert}     \eTD
+    \bTD \m{\clubsuit} \eTD \bTD \type{\clubsuit} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Im}          \eTD \bTD \type{\Im}          \eTD
+    \bTD \m{\angle}       \eTD \bTD \type{\angle}       \eTD
+    \bTD \m{\diamondsuit} \eTD \bTD \type{\diamondsuit} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\partial}   \eTD \bTD \type{\partial}   \eTD
+    \bTD \m{\triangle}  \eTD \bTD \type{\triangle}  \eTD
+    \bTD \m{\heartsuit} \eTD \bTD \type{\heartsuit} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\infty}     \eTD \bTD \type{\infty}     \eTD
+    \bTD \m{\backslash} \eTD \bTD \type{\backslash} \eTD
+    \bTD \m{\spadesuit} \eTD \bTD \type{\spadesuit} \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title={Operators in addition to \m{+}, \m{-} and \m{*}}]
+
+\bTABLE
+    \bTR
+    \bTD Operator \eTD \bTD Command \eTD
+    \bTD Operator \eTD \bTD Command \eTD
+    \bTD Operator \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\pm}  \eTD \bTD \type{\pm}  \eTD
+    \bTD \m{\cap} \eTD \bTD \type{\cap} \eTD
+    \bTD \m{\vee} \eTD \bTD \type{\vee} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\mp}    \eTD \bTD \type{\mp}    \eTD
+    \bTD \m{\cup}   \eTD \bTD \type{\cup}   \eTD
+    \bTD \m{\wedge} \eTD \bTD \type{\wedge} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\setminus} \eTD \bTD \type{\setminus} \eTD
+    \bTD \m{\uplus}    \eTD \bTD \type{\uplus}    \eTD
+    \bTD \m{\oplus}    \eTD \bTD \type{\oplus}    \eTD
+  \eTR
+  \bTR
+    \bTD \m{\cdot}   \eTD \bTD \type{\cdot}   \eTD
+    \bTD \m{\sqcap}  \eTD \bTD \type{\sqcap}  \eTD
+    \bTD \m{\ominus} \eTD \bTD \type{\ominus} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\times}  \eTD \bTD \type{\times}  \eTD
+    \bTD \m{\sqcup}  \eTD \bTD \type{\sqcup}  \eTD
+    \bTD \m{\otimes} \eTD \bTD \type{\otimes} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\ast}          \eTD \bTD \type{\ast}          \eTD
+    \bTD \m{\triangleleft} \eTD \bTD \type{\triangleleft} \eTD
+    \bTD \m{\oslash}       \eTD \bTD \type{\oslash}       \eTD
+  \eTR
+  \bTR
+    \bTD \m{\star}          \eTD \bTD \type{\star}          \eTD
+    \bTD \m{\triangleright} \eTD \bTD \type{\triangleright} \eTD
+    \bTD \m{\odot}          \eTD \bTD \type{\odot}          \eTD
+  \eTR
+  \bTR
+    \bTD \m{\diamond} \eTD \bTD \type{\diamond} \eTD
+    \bTD \m{\wr}      \eTD \bTD \type{\wr}      \eTD
+    \bTD \m{\dagger}  \eTD \bTD \type{\dagger}  \eTD
+  \eTR
+  \bTR
+   \bTD \m{\circ}    \eTD \bTD \type{\circ}    \eTD
+   \bTD \m{\bigcirc} \eTD \bTD \type{\bigcirc} \eTD
+   \bTD \m{\ddagger} \eTD \bTD \type{\ddagger} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\bullet}        \eTD \bTD \type{\bullet}        \eTD
+    \bTD \m{\bigtriangleup} \eTD \bTD \type{\bigtriangleup} \eTD
+    \bTD \m{\amalg}         \eTD \bTD \type{\amalg}         \eTD
+  \eTR
+  \bTR
+    \bTD \m{\div}             \eTD \bTD \type{\div}             \eTD
+    \bTD \m{\bigtriangledown} \eTD \bTD \type{\bigtriangledown} \eTD
+    \bTD ~                    \eTD \bTD ~                       \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title=Operators]
+
+\bTABLE
+  \bTR
+    \bTD Operator \eTD \bTD Command \eTD
+    \bTD Operator \eTD \bTD Command \eTD
+    \bTD Operator \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\sum}    \eTD \bTD \type{\sum}    \eTD
+    \bTD \m{\prod}   \eTD \bTD \type{\prod}   \eTD
+    \bTD \m{\coprod} \eTD \bTD \type{\coprod} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\int}    \eTD \bTD \type{\int}    \eTD
+    \bTD \m{\oint}   \eTD \bTD \type{\oint}   \eTD
+    \bTD \m{\bigcap} \eTD \bTD \type{\bigcap} \eTD
+  \eTR
+  \bTR
+    \bTD  \m{\bigcup}   \eTD \bTD \type{\bigcup}   \eTD
+    \bTD  \m{\bigsqcup} \eTD \bTD \type{\bigsqcup} \eTD
+    \bTD  \m{\bigvee}   \eTD \bTD \type{\bigvee}   \eTD
+  \eTR
+  \bTR
+    \bTD \m{\bigwedge}  \eTD \bTD \type{\bigwedge}  \eTD
+    \bTD \m{\bigodot}   \eTD \bTD \type{\bigodot}   \eTD
+    \bTD \m{\bigotimes} \eTD \bTD \type{\bigotimes} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\bigoplus} \eTD \bTD \type{\bigoplus} \eTD
+    \bTD \m{\biguplus} \eTD \bTD \type{\biguplus} \eTD
+    \bTD               \eTD \bTD                  \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title={Relation in addition to \m{>}, \m{<} and \m{=}}]
+
+\bTABLE
+  \bTR
+    \bTD Relation \eTD \bTD Command \eTD
+    \bTD Relation \eTD \bTD Command \eTD
+    \bTD Relation \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\leq}   \eTD \bTD \type{\leq}   \eTD
+    \bTD \m{\geq}   \eTD \bTD \type{\geq}   \eTD
+    \bTD \m{\equiv} \eTD \bTD \type{\equiv} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\prec} \eTD \bTD \type{\prec} \eTD
+    \bTD \m{\succ} \eTD \bTD \type{\succ} \eTD
+    \bTD \m{\sim}  \eTD \bTD \type{\sim}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\preceq} \eTD \bTD \type{\preceq} \eTD
+    \bTD \m{\succeq} \eTD \bTD \type{\succeq} \eTD
+    \bTD \m{\simeq}  \eTD \bTD \type{\simeq}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\ll}    \eTD \bTD \type{\ll}    \eTD
+    \bTD \m{\gg}    \eTD \bTD \type{\gg}    \eTD
+    \bTD \m{\asymp} \eTD \bTD \type{\asymp} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\subset} \eTD \bTD \type{\subset} \eTD
+    \bTD \m{\supset} \eTD \bTD \type{\supset} \eTD
+    \bTD \m{\approx} \eTD \bTD \type{\approx} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\subseteq} \eTD \bTD \type{\subseteq} \eTD
+    \bTD \m{\supseteq} \eTD \bTD \type{\supseteq} \eTD
+    \bTD \m{\cong}     \eTD \bTD \type{\cong}     \eTD
+  \eTR
+  \bTR
+    \bTD \m{\sqsubseteq} \eTD \bTD \type{\sqsubseteq} \eTD
+    \bTD \m{\sqsupseteq} \eTD \bTD \type{\sqsupseteq} \eTD
+    \bTD \m{\bowtie}     \eTD \bTD \type{\bowtie}     \eTD
+  \eTR
+  \bTR
+    \bTD \m{\in}     \eTD \bTD \type{\in}     \eTD
+    \bTD \m{\ni}     \eTD \bTD \type{\ni}     \eTD
+    \bTD \m{\propto} \eTD \bTD \type{\propto} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\vdash}  \eTD \bTD \type{\vdash}  \eTD
+    \bTD \m{\dashv}  \eTD \bTD \type{\dashv}  \eTD
+    \bTD \m{\models} \eTD \bTD \type{\models} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\smile} \eTD \bTD \type{\smile} \eTD
+    \bTD \m{\mid}   \eTD \bTD \type{\mid}   \eTD
+    \bTD \m{\doteq} \eTD \bTD \type{\doteq} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\frown}    \eTD \bTD \type{\frown}    \eTD
+    \bTD \m{\parallel} \eTD \bTD \type{\parallel} \eTD
+    \bTD \m{\perp}     \eTD \bTD \type{\perp}     \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title=Negated relations]
+
+\bTABLE
+  \bTR
+    \bTD Relation \eTD \bTD Command \eTD
+    \bTD Relation \eTD \bTD Command \eTD
+    \bTD Relation \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not<} \eTD \bTD \type{\not}\type{<} \eTD
+    \bTD \m{\not>} \eTD \bTD \type{\not}\type{>} \eTD
+    \bTD \m{\not=} \eTD \bTD \type{\not}\type{=} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\leq}   \eTD \bTD \type{\not}\type{\leq}   \eTD
+    \bTD \m{\not\geq}   \eTD \bTD \type{\not}\type{\geq}   \eTD
+    \bTD \m{\not\equiv} \eTD \bTD \type{\not}\type{\equiv} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\prec} \eTD \bTD \type{\not}\type{\prec} \eTD
+    \bTD \m{\not\succ} \eTD \bTD \type{\not}\type{\succ} \eTD
+    \bTD \m{\not\sim}  \eTD \bTD \type{\not}\type{\sim}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\preceq}  \eTD \bTD \type{\not}\type{\preceq} \eTD
+    \bTD \m{\not\succeq}  \eTD \bTD \type{\not}\type{\succeq} \eTD
+    \bTD \m{\not\simeq}   \eTD \bTD \type{\not}\type{\simeq}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\subset} \eTD \bTD \type{\not}\type{\subset} \eTD
+    \bTD \m{\not\supset} \eTD \bTD \type{\not}\type{\supset} \eTD
+    \bTD \m{\not\approx} \eTD \bTD \type{\not}\type{\approx} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\subseteq} \eTD \bTD \type{\not}\type{\subseteq} \eTD
+    \bTD \m{\not\supseteq} \eTD \bTD \type{\not}\type{\supseteq} \eTD
+    \bTD \m{\not\cong}     \eTD \bTD \type{\not}\type{\cong}     \eTD
+  \eTR
+  \bTR
+    \bTD \m{\not\sqsubseteq} \eTD \bTD \type{\not}\type{\sqsubseteq} \eTD
+    \bTD \m{\not\sqsupseteq} \eTD \bTD \type{\not}\type{\sqsupseteq} \eTD
+    \bTD \m{\not\asymp}      \eTD \bTD \type{\not}\type{\asymp}      \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title=Some arrows]
+
+\bTABLE
+  \bTR
+    \bTD Arrow \eTD \bTD Command \eTD
+    \bTD Arrow \eTD \bTD Command \eTD
+    \bTD Arrow \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\leftarrow{x}}  \eTD \bTD \type{\leftarrow}     \eTD
+    \bTD \m{\longleftarrow} \eTD \bTD \type{\longleftarrow} \eTD
+    \bTD \m{\uparrow}       \eTD \bTD \type{\uparrow}       \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Leftarrow}     \eTD \bTD \type{\Leftarrow}     \eTD
+    \bTD \m{\Longleftarrow} \eTD \bTD \type{\Longleftarrow} \eTD
+    \bTD \m{\Uparrow}       \eTD \bTD \type{\Uparrow}       \eTD
+  \eTR
+  \bTR
+    \bTD \m{\rightarrow}     \eTD \bTD \type{\rightarrow} \eTD
+    \bTD \m{\longrightarrow} \eTD \bTD \type{\Rightarrow} \eTD
+    \bTD \m{\downarrow}      \eTD \bTD \type{\downarrow}  \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Rightarrow}     \eTD \bTD \type{\Rightarrow}     \eTD
+    \bTD \m{\Longrightarrow} \eTD \bTD \type{\Longrightarrow} \eTD
+    \bTD \m{\Downarrow}      \eTD \bTD \type{\Downarrow}      \eTD
+  \eTR
+  \bTR
+    \bTD \m{\leftrightarrow}     \eTD \bTD \type{\leftrightarrow}     \eTD
+    \bTD \m{\longleftrightarrow} \eTD \bTD \type{\longleftrightarrow} \eTD
+    \bTD \m{\updownarrow}        \eTD \bTD \type{\updownarrow}        \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Leftrightarrow}     \eTD \bTD \type{\Leftrightarrow}     \eTD
+    \bTD \m{\Longleftrightarrow} \eTD \bTD \type{\Longleftrightarrow} \eTD
+    \bTD \m{\Updownarrow}        \eTD \bTD \type{\Updownarrow}        \eTD
+  \eTR
+  \bTR
+    \bTD \m{\mapsto}     \eTD \bTD \type{\mapsto}     \eTD
+    \bTD \m{\longmapsto} \eTD \bTD \type{\longmapsto} \eTD
+    \bTD \m{\nearrow}    \eTD \bTD \type{\nearrow}    \eTD
+  \eTR
+  \bTR
+    \bTD \m{\searrow} \eTD \bTD \type{\searrow} \eTD
+    \bTD \m{\swarrow} \eTD \bTD \type{\swarrow} \eTD
+    \bTD \m{\nwarrow} \eTD \bTD \type{\nwarrow} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\hookleftarrow}  \eTD \bTD \type{\hookleftarrow}  \eTD
+    \bTD \m{\hookrightarrow} \eTD \bTD \type{\hookrightarrow} \eTD
+    \bTD ~                   \eTD \bTD ~                      \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\startsection[title=Alternative commands]
+
+\bTABLE
+  \bTR
+    \bTD Alternative \eTD \bTD Command \eTD
+    \bTD Alternative \eTD \bTD Command \eTD
+    \bTD Alternative \eTD \bTD Command \eTD
+  \eTR
+  \bTR
+    \bTD \m{\ne}   \eTD \bTD \type{\ne}           \eTD
+    \bTD \m{\{}    \eTD \bTD {\tttf\leftargument} \eTD
+    \bTD \m{\land} \eTD \bTD \type{\land}         \eTD
+  \eTR
+  \bTR
+    \bTD \m{\to}   \eTD \bTD \type{\to}   \eTD
+    \bTD \m{\vert} \eTD \bTD \type{\vert} \eTD
+    \bTD \m{\le}   \eTD \bTD \type{\le}   \eTD
+  \eTR
+  \bTR
+    \bTD \m{\}}    \eTD \bTD {\tttf\rightargument} \eTD
+    \bTD \m{\lor}  \eTD \bTD \type{\lor}           \eTD
+    \bTD \m{\gets} \eTD \bTD \type{\gets}          \eTD
+  \eTR
+  \bTR
+    \bTD \m{\Vert} \eTD \bTD \type{\Vert} \eTD
+    \bTD \m{\ge}   \eTD \bTD \type{\ge}   \eTD
+    \bTD \m{\owns} \eTD \bTD \type{\owns} \eTD
+  \eTR
+  \bTR
+    \bTD \m{\lnot} \eTD \bTD \type{\lnot} \eTD
+    \bTD           \eTD \bTD              \eTD
+    \bTD           \eTD \bTD              \eTD
+  \eTR
+\eTABLE
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

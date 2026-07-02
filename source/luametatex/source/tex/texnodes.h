@@ -623,7 +623,8 @@ typedef enum glue_option_codes {
     glue_option_has_penalty       = 0x0200,
     glue_option_has_parskip       = 0x0400,
     glue_option_ragged_done       = 0x0800,
-//  glue_option_delay             = 0x1000,
+    glue_option_is_space          = 0x1000,
+//  glue_option_delay             = 0x2000,
 } glue_option_codes;
 
 static inline void tex_set_glue_option    (halfword a, halfword r) { glue_options(a) = r; }

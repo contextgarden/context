@@ -1,0 +1,3320 @@
+if not modules then modules = { } end modules ['mlib-thr'] = {
+    version   = 1.001,
+    optimize  = true,
+    comment   = "companion to mlib-ctx.mkiv",
+    author    = "Hans Hagen, Mikael Sundqvist",
+    copyright = "PRAGMA ADE / ConTeXt Development Team",
+    license   = "see context related readme files",
+}
+
+-- eye target up : pick up from camera .. although: they come first!
+
+if not mp then mp = { } end -- for load testing
+
+-- Musical timestamp: "Triangulation" by the "Steve Morse Band" (track 3: "tex us"),
+-- 2026 so kind of adequate here.
+--
+-- As an experiment we have used Chat GPT 5.5 to get information about z-buffering
+-- and implicit meshing. See drawinglines-ai.pdf for the process and conclusions. In
+-- the end we only needed to get some of the concepts involved which actually are
+-- pretty old: the second half of the previous century. The main outcomes of this
+-- experiment are that (1) one should not let an llm generate code, as it costs too
+-- much time to get it in a good state, (2) given enough background information it's
+-- just easier to come up with somethign not being distracted by slop, and (3) it's
+-- more fun to figure it out oneself and also way faster in the end. So, that is what
+-- we eventually ended up with. Life's too short to waste it on hypes and (4) an
+-- llm is nice for collecting information (assuming one is capable of checking it).
+--
+-- Anyway, on the bookshelf and worth reading/browsing:
+
+-- Three-Dimensional Computer Graphics, Alan Watt
+-- Image Synthesis, Elementary Algorithms, Gerard Hegron
+-- Computer Grahics, Systems and Concepts, Rod Salmon and Mel Slater
+
+-- overlays : use key in spec instead for check
+
+local min, max, abs, sin, cos, tan, pi, floor, ceil, round = math.min, math.max, math.abs, math.sin, math.cos, math.tan, math.pi, math.floor, math.ceil, math.round
+local type, tonumber, tostring, getmetatable, rawget = type, tonumber, tostring, getmetatable, rawget
+local newindex = lua.newindex
+local strip, lower = string.strip, string.lower
+local setmetatableindex = table.setmetatableindex
+local replacer = utilities.templates.replacer
+
+local huge        <const> = math.huge
+local infinity    <const> = huge
+----- nifinity    <const> = -huge
+
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
+local elapsedtime = statistics.elapsedtime
+local ioflush     = io.flush
+
+local zbuffernew       = zbuffer.new
+local zbuffergetdepth  = zbuffer.getdepth
+local zbuffertobytes   = zbuffer.tobytes
+local zbuffercrop      = zbuffer.crop
+local zbufferresolve   = zbuffer.resolve
+local zbuffertriangles = zbuffer.triangles
+local zbufferpoints    = zbuffer.points
+local zbuffercomposite = zbuffer.composite
+local zbuffersetup     = zbuffer.setup
+local zbufferproject   = zbuffer.project
+local zbuffertransform = zbuffer.transform
+local zbufferflatten   = zbuffer.flatten
+local zbuffersmoothen  = zbuffer.smoothen
+local zbufferbounds    = zbuffer.bounds
+local zbufferimplicit  = zbuffer.implicit
+local zbuffermeshmesh  = zbuffer.meshmesh
+----- zbtrianglebounds = zbuffer.trianglebounds
+local zbufferedgepoint = zbuffer.edgepoint
+local zbufferprocess   = zbuffer.process
+
+local ispoints         = vector.points.ispoints
+local newpoints        = vector.points.new
+local getpoint         = vector.points.get
+local getpointxyz      = vector.points.getxyz
+local getpointbounds   = vector.points.getbounds
+
+local ismesh           = vector.mesh.ismesh
+local vectornewmesh    = vector.mesh.new
+local vectorsetmesh    = vector.mesh.set
+local vectorgetmesh    = vector.mesh.get
+
+local vectormakemesh   = vector.contour.makemesh -- todo: just use vector.mesh.new
+
+local vectorgetmemory  = vector.getmemory
+
+local mprgbcolor = attributes.colors.mprgbcolor
+
+local report = logs.reporter("metapost 3D")
+
+-- This is a bit creepy but we want to save memory so ... however, intermediate
+-- cleanup of temporary variables we leave to the collectors (for now). Calling the
+-- garbage collector explicitly can crash the engine when some mesh is needed later
+-- on. So:
+
+----- collect = false
+local collect = true
+
+-- We are not loaded yet ... so ...
+--
+-- directives.register("metapost.zbuffers.gc", function(v) collect = v end)
+
+local function resetwhatever(whatever)
+    if collect and whatever then
+        local gc = getmetatable(whatever).__gc
+        if gc then
+         -- local b = vectorgetmemory()
+            gc(whatever)
+         -- local a = vectorgetmemory()
+        end
+    end
+end
+
+local compilecode  do
+
+    local math = xmath
+
+    local limited = { math = xmath, print = print }
+    for k, v in next, xmath do
+        limited[k] = v
+    end
+
+    compilecode = function(code,arguments,mandate,comment)
+        local tcode = type(code)
+        if tcode == "function" then
+            return code -- just in case we end up here again
+        elseif tcode == "string" and code ~= "" then
+            if arguments then
+                code = "return function(" .. arguments .. ") return " .. code .. " end"
+            end
+            local chunk = load(code, "MP 3D: " .. comment, "t", limited)
+            if chunk then
+                local ok, fn = pcall(chunk)
+                if ok then
+                    return fn
+                end
+            end
+        elseif not mandate then
+            return false
+        end
+        report("%s, %s / %s",
+            mandate and "mandate" or "optional",
+            (not comment or comment == "") and "?" or comment,
+            (not code    or code    == "") and "?" or strip(code)
+        )
+        return false
+    end
+
+end
+
+local function validmesh(value)
+ -- local mesh = value.vertices and value or value.mesh
+    local mesh = value.mesh or value.vertices and value
+    if mesh and mesh.vertices and mesh.triangles then
+        return mesh
+    end
+end
+
+-- We realized that making caching a core feature is better here than using
+-- already present mechanisms and little code is needed.
+
+local function hashspecification(scene,specification)
+    if scene.checking ~= false then
+        local checksums = scene.checksums or { }
+        scene.checksums = checksums
+        local s = specification.scenedata
+        specification.scenedata = nil
+        checksums[#checksums+1] = md5.HEX(table.sequenced(specification))
+        specification.scenedata = s
+    end
+end
+
+local function samespecification(scene,cache)
+    local checksums = scene and scene.checksums
+    local cachesums = cache and cache.checksums
+    return
+        checksums and cachesums
+        and table.are_equal(checksums,cachesums)
+end
+
+local crossproduct = xmath.crossproduct
+local dotproduct   = xmath.dotproduct
+local normalize    = xmath.normalize
+
+-- I might make some more native feature.
+
+-- vector.lpoint = {
+--     new = function(x,y,z)
+--         return { x or 0, y or 0, z or 0 }
+--     end,
+--     sub = function(va,vb)
+--         return { va[1] - vb[1], va[2] - vb[2], va[3] - vb[3] }
+--     end,
+--     add = function(va,vb)
+--         return { va[1] + vb[1], va[2] + vb[2], va[3] + vb[3] }
+--     end,
+--     mul = function(v,m)
+--         return { v[1] * m, v[2] * m, v[3] * m }
+--     end,
+--     div = function(v,d)
+--         return s ~= 0 and { v[1] / d, v[2] / d, v[3] / d }
+--     end,
+--     normalize = function(v)
+--         return { normalize(v[1],v[2],v[3]) }
+--     end,
+--     crossproduct = function(va,vb)
+--         return { crossproduct(va[1],va[2],va[3],vb[1],vb[2],vb[3]) }
+--     end,
+--     dotproduct = function(va,vb)
+--         return dotproduct(va[1],va[2],va[3],vb[1],vb[2],vb[3])
+--     end,
+-- }
+
+local normal_smooth <const> = 0
+local normal_flat   <const> = 1
+local normal_up     <const> = 2
+
+local function validnormal(mode)
+    if mode == "flat" then
+        return normal_flat
+    elseif mode == "up" then
+        return normal_up
+    else
+        return normal_smooth
+    end
+end
+
+-- well ...
+
+local external = { }
+
+setmetatableindex(external, function(t,k)
+    external = require("mlib-thr-imp-external.lmt")
+    return external[k]
+end)
+
+-- this will be cleaned up further:
+
+local scenes       = { }
+local generators   = { }
+local compilers    = { }
+local intersectors = { }
+local rasterizers  = { }
+
+local defaultresolution     <const> = 300
+local intersectiontolerance <const> = 1e-10
+local depthtolerance        <const> = 1e-6
+local steptolerance         <const> = 1e-9
+local viewtolerance         <const> = 1e-12
+
+local defaults = {
+    -- some general settings,
+    viewport = {
+     -- bytewidth       = false, -- unset
+     -- byteheight      = false, -- unset
+     -- width           = false, -- unset
+     -- height          = false, -- unset
+        resolution      = defaultresolution,
+        supersample     = 1,
+        maxfragment     = 0,
+        backgroundcolor = { 1, 1, 1 },
+    },
+    camera = {
+        projection = "perspective",
+        eye        = { 3, -4, 2 },
+        target     = { 0, 0, 0 },
+        up         = { 0, 0, 1 },
+        fov        = 45,
+        near       = nil,
+        far        = nil,
+        scale      = nil,
+        crop       = nil, -- auto set
+    },
+    light = {
+        kind      = "directional",
+        direction = { -1, -1, -1 },
+        color     = { 1, 1, 1 },
+        intensity = 1,
+    },
+    material = {
+        diffuse   = { 0.70, 0.75, 0.95 },
+        specular  = { 0.50, 0.50, 0.50 },
+        shininess = 40,
+        ambient   = 0.18,
+        twosided  = false,
+        opacity   = 1.0,
+        ontop     = false,
+        dx        = 0,
+        dy        = 0,
+        depth     = 0,
+    }
+}
+
+local function checkbounds(target,source)
+    if not source then
+        return target
+    elseif target then
+        if source.xmin < target.xmin then target.xmin = source.xmin end
+        if source.xmax > target.xmax then target.xmax = source.xmax end
+        if source.ymin < target.ymin then target.ymin = source.ymin end
+        if source.ymax > target.ymax then target.ymax = source.ymax end
+        if source.zmin < target.zmin then target.zmin = source.zmin end
+        if source.zmax > target.zmax then target.zmax = source.zmax end
+        return target
+    elseif source.xmin then
+        return {
+            xmin = source.xmin, xmax = source.xmax,
+            ymin = source.ymin, ymax = source.ymax,
+            zmin = source.zmin, zmax = source.zmax,
+        }
+    else
+        return {
+            xmin = 0, xmax = 0,
+            ymin = 0, ymax = 0,
+            zmin = 0, zmax = 0,
+        }
+    end
+end
+
+local connect_points_method  <const> = 0x00
+local isolated_points_method <const> = 0x01
+local segment_points_method  <const> = 0x02
+local stitch_points_method   <const> = 0x04
+
+do
+
+    -- todo: simple check and rawget
+
+    local function intersectionobjects(scene,overlay)
+        local first  = scene.objects[overlay.first]
+        local second = scene.objects[overlay.second]
+        if first and second then
+            if first.kind == "graph" and second.kind == "plane" then
+                return first, second, "graph plane" --
+            elseif first.kind == "plane" and second.kind == "graph" then
+                return second, first, "graph plane" --
+            elseif first.kind == "graph" and second.kind == "graph" then
+                return first, second, "graph graph" -- mesh mesh
+            elseif first.kind ~= "plane" and second.kind == "plane" and first.mesh then
+                return first, second, "mesh plane" --
+            elseif first.kind == "plane" and second.kind ~= "plane" and second.mesh then
+                return second, first, "mesh plane" --
+            elseif first.mesh and second.mesh then
+                return first, second, "mesh mesh" --
+            end
+        end
+    end
+
+    function scenes.new(specification)
+        specification = specification or { }
+        local scene = {
+            viewport  = setmetatableindex(specification.viewport,defaults.viewport),
+            camera    = setmetatableindex(specification.camera,  defaults.camera),
+            light     = setmetatableindex(specification.light,   defaults.light),
+            materials = { },
+            objects   = { },
+            overlays  = { },
+            functions = { },
+        }
+        hashspecification(scene,specification)
+        scenes.addmaterial(scene, { name = "default" })
+        return scene
+    end
+
+    function scenes.addmaterial(scene,specification)
+        if not scene.generated then
+            hashspecification(scene,specification)
+            setmetatableindex(specification,defaults.material)
+            scene.materials[specification.name] = specification
+            specification.diffuse = mprgbcolor(specification.diffuse)
+        end
+    end
+
+    function scenes.addobject(scene,object,specification)
+        if not scene.generated then
+            hashspecification(scene,specification or object)
+            object.scenedata = scene
+            scene.objects[#scene.objects + 1] = object
+            scene.objects[object.id] = object
+            return object
+        end
+    end
+
+    function scenes.addoverlay(scene,object,specification)
+        if not scene.generated then
+            hashspecification(scene,specification or object)
+            object.scenedata = scene
+            scene.overlays[#scene.overlays + 1] = object
+            return object
+        end
+    end
+
+    function scenes.pointstomesh(scene,vertices,id,overlay,method)
+        local bounds = getpointbounds(vertices,true)
+-- print("POINTS")
+-- inspect(bounds)
+        local specification = {
+            kind       = "points",
+            creator    = "to mesh",
+            scenedata  = scene,
+            id         = id,
+            meshpoints = vertices,
+            bounds     = bounds,
+            method     = method or 0,
+            material   = overlay.material or "default",
+        }
+        overlay.done  = true
+        local object  = scenes.addobject(scene,specification,overlay)
+-- object.bounds = bounds
+     -- object.bounds = object.bounds or mesh.bounds
+        object.mesh   = specification
+    end
+
+    function scenes.registersegments(scene,specification) -- can become a generator
+        starttiming("thr",true) ioflush()
+        local segments    = specification.segments
+        local nofsegments = #segments or 0
+        if nofsegments == 0 then
+            return
+        end
+        local vertices = newpoints(2*nofsegments)
+        for i=1,nofsegments do -- evt just pass
+            local s = segments[i]
+            vertices(s[1])
+            vertices(s[2])
+        end
+        if not specification.material then
+            if not specification.diffuse then
+                specification.diffuse = specification.color
+            end
+            if not specification.dx then
+                specification.dx = specification.width
+            end
+            if not specification.dy then
+                specification.dy = specification.width
+            end
+            setmetatableindex(specification,defaults.material)
+            local n = tostring(specification)
+            specification.material = n
+            specification.name     = n
+            specification.diffuse  = mprgbcolor(specification.diffuse),
+            scenes.addmaterial(scene,specification)
+        end
+        local id = specification.id
+        if not id or id == "" then
+            id = specification.kind or "unknown"
+        end
+        stoptiming("thr")
+        report("segment: %s, runtime %s",id,elapsedtime("thr"))
+        scenes.pointstomesh(scene,vertices,id,specification,specification.method or 2)
+    end
+
+    function scenes.compile(scene)
+        if scene.compiled then
+            return
+        end
+        local objects = scene.objects
+        for i=1,#objects do
+            local object   = objects[i]
+            local compiler = compilers[object.kind]
+            if compiler then
+                compiler(object)
+            end
+        end
+        scene.compiled = true
+    end
+
+    function scenes.generate(scene)
+        if scene.generated then
+            return
+        end
+        local objects   = scene.objects
+        local materials = scene.materials
+        local overlays  = scene.overlays
+        for i=1,#objects do
+            local object   = objects[i]
+            local material = object.material
+            if material and not materials[material] then
+                return
+            end
+            if not object.mesh then
+                local mesh = generators[object.kind](object,scene)
+                if mesh then
+                    object.mesh   = mesh
+                    object.bounds = object.bounds or mesh.bounds
+                else
+--                     return
+                end
+            end
+            object.done = true
+        end
+        for i=1,#overlays do
+            local overlay = overlays[i]
+            if not overlay.done then
+                if overlay.kind == "intersection" then
+                    local firstobject, secondobject, mode = intersectionobjects(scene,overlay)
+                    if firstobject then
+                        local result = intersectors[mode](firstobject,secondobject,overlay)
+                        if result then
+                            overlay.bounds = overlay.bounds or result.bounds
+                        end
+                    end
+                end
+            end
+        end
+        for i=1,#objects do
+            local object = objects[i]
+            if not object.done then
+                local material = object.material
+                if material and not materials[material] then
+                    return
+                end
+                if not object.mesh then
+                    local mesh = generators[object.kind](object,scene)
+                    if mesh then
+                        object.mesh   = mesh
+                        object.bounds = object.bounds or mesh.bounds
+                    else
+--                         return
+                    end
+                end
+            end
+        end
+        scene.bounds    = scenes.bounds(scene) -- should not have changed
+        scene.generated = true
+    end
+
+    -- used in scenes.update below
+
+    do
+
+        local scale_factor <const> = 1.05
+        local range_factor <const> = 0.05
+
+        local function boundarypoints(bounds)
+            if bounds then
+                local xmin, xmax = bounds.xmin, bounds.xmax
+                local ymin, ymax = bounds.ymin, bounds.ymax
+                local zmin, zmax = bounds.zmin, bounds.zmax
+                return {
+                    { xmin, ymin, zmin },
+                    { xmax, ymin, zmin },
+                    { xmin, ymax, zmin },
+                    { xmax, ymax, zmin },
+                    { xmin, ymin, zmax },
+                    { xmax, ymin, zmax },
+                    { xmin, ymax, zmax },
+                    { xmax, ymax, zmax },
+                }
+            else
+                return { { 0, 0, 0 } }
+            end
+        end
+
+        function scenes.bounds(scene)
+            local target
+            local objects = scene.objects
+            if objects then
+                for i=1,#objects do
+                    local object = objects[i]
+                    local mesh   = object.mesh
+                    local source = object.bounds or (mesh and mesh.bounds)
+                    target = checkbounds(target,source)
+                end
+            end
+            local overlays = scene.overlays
+            if overlays then
+                for i=1,#overlays do
+                    local overlay = overlays[i]
+                    if not overlay.done and overlay.bounds then
+                         target = checkbounds(target,overlay.bounds)
+                    end
+--                     local source = overlay.bounds
+--                     if source then
+--                          target = checkbounds(target,source)
+--                     end
+                end
+            end
+            return target
+        end
+
+        local function objectsboundarypoints(scene)
+            local points  = { }
+            local p       = 0
+            local objects = scene.objects
+            if objects then
+                for i=1,#objects do
+                    local object = objects[i]
+                    local mesh   = object.mesh
+                    if mesh and mesh.bounds then
+                        local b = boundarypoints(mesh.bounds)
+                        for i=1,#b do
+                            p = p + 1 points[p] = b[i]
+                        end
+                    end
+                end
+            end
+-- local overlays = scene.overlays
+-- if overlays then
+--     for i=1,#overlays do
+--         local overlay = overlays[i]
+--         if overlay.bounds then
+--             local b = boundarypoints(overlay.bounds)
+--             for i=1,#b do
+--                 p = p + 1 points[p] = b[i]
+--             end
+--         end
+--     end
+-- end
+            if p > 0 then
+                return points
+            end
+        end
+
+        function scenes.prepare(scene)
+            if scene.prepared then
+                return
+            end
+            local zbuffer = zbuffernew()
+            if zbuffer then
+                scene.buffer = {
+                    zbuffer         = zbuffer,
+                    width           = 0,     -- width,
+                    height          = 0,     -- height,
+                    backgroundcolor = false, -- backgroundcolor,
+                    supersample     = 1,     -- supersample,
+                }
+            end
+            scene.prepared = true
+        end
+
+        function scenes.update(scene)
+            if scene.updated then
+                return
+            end
+            local buffer = scene.buffer
+            if not buffer then
+                return
+            end
+            --
+            local viewport = scene.viewport
+            local camera   = scene.camera
+            local zbuffer  = buffer.zbuffer
+            --
+            -- We need to get started so we set the target, up and eye vectors immediately. As we
+            -- started with a less integrated zbuffer object we might eventually decide to do this
+            -- when we create it. But for now ...
+            --
+            zbuffersetup(zbuffer, {
+                target = camera.target,
+                up     = camera.up,
+                eye    = camera.eye,
+            })
+            --
+            local crop        = camera.crop
+            local projection  = camera.projection
+            local perspective = projection == "perspective"
+            local bounds      = scene.bounds or scenes.bounds(scene)
+            --
+            if not bounds then
+                return
+            end
+            --
+            local corners         = boundarypoints(bounds) -- also done elsewhere
+            --
+            local supersample     = viewport.supersample or 1
+            local resolution      = viewport.resolution  or 300
+            local maxfragment     = viewport.maxfragment or 0
+            local backgroundcolor = mprgbcolor(viewport.backgroundcolor,{ 1, 1, 1 })
+            local width           = viewport.width
+            local height          = viewport.height
+            local bytewidth       = viewport.bytewidth
+            local byteheight      = viewport.byteheight
+            --
+            local xmin, xmax      = bounds.xmin, bounds.xmax
+            local ymin, ymax      = bounds.ymin, bounds.ymax
+            --
+            local usedwidth       = xmax - xmin
+            local usedheight      = ymax - ymin
+            report("unprojected dimensions: x [%N %N], y [%N %N], width %N, height %N",xmin,xmax,ymin,ymax,usedwidth,usedheight)
+            --
+            -- We need to get the aspect ratio for the bitmap right, as we want the same
+            -- resolution in both dimentions.
+            --
+            if width then
+                bytewidth  = resolution * width  / 72
+                byteheight = bytewidth  * usedheight / usedwidth
+            elseif height then
+                byteheight = resolution * height / 72
+                bytewidth  = byteheight * usedwidth / usedheight
+            elseif bytewidth and byteheight then
+                -- keep these
+            elseif bytewidth then
+                byteheight = bytewidth  * usedheight / usedwidth
+            elseif byteheight then
+                bytewidth  = byteheight * usedwidth / usedheight
+            elseif usedwidth > usedheight then
+                bytewidth  = 600
+                byteheight = bytewidth  * usedheight / usedwidth
+            else
+                byteheight = 600
+                bytewidth  = byteheight * usedwidth / usedheight
+            end
+            if supersample > 4 then
+                supersample = 4
+            elseif supersample < 1 then
+                supersample = 1
+            end
+            bytewidth  = round(bytewidth)  -- We need integers !
+            byteheight = round(byteheight) -- We need integers !
+            local displaywidth  = bytewidth
+            local displayheight = byteheight
+            if displaywidth <= 0 then
+                displaywidth = 1
+            end
+            if displayheight <= 0 then
+                displayheight = 1
+            end
+            if bytewidth <= 0 or byteheight <= 0 then
+                bytewidth  = defaultresolution
+                byteheight = defaultresolution
+            end
+            --
+            width  = bytewidth  * supersample
+            height = byteheight * supersample
+            --
+            viewport.width           = width
+            viewport.height          = height
+            viewport.maxfragment     = maxfragment
+            viewport.supersample     = supersample
+            viewport.bytewidth       = bytewidth
+            viewport.byteheight      = byteheight
+            viewport.displaywidth    = displaywidth
+            viewport.displayheight   = displayheight
+            viewport.backgroundcolor = backgroundcolor
+            --
+            scene.layout = {
+                bytewidth  = bytewidth,
+                byteheight = byteheight,
+                width      = displaywidth,
+                height     = displayheight,
+            }
+            --
+            buffer.width           = width
+            buffer.height          = height
+            buffer.backgroundcolor = backgroundcolor
+            buffer.supersample     = supersample
+            --
+            -- Todo:
+            --
+            local near  = scene.near
+            local far   = scene.far
+            local scale = 1
+            if not near or not far or near <= 0 or far <= 0 or near < far then
+                local mindepth = false
+                local maxdepth = false
+                for i=1,#corners do
+                    local corner = corners[i]
+                    local view   = zbuffertransform(zbuffer,corner) or { 0, 0, 0 }
+                    local z      = view[3]
+                    if not mindepth then
+                        mindepth = z
+                        maxdepth = z
+                    elseif z < mindepth then
+                        mindepth = z
+                    elseif z > maxdepth then
+                        maxdepth = z
+                    end
+                    scale = max(scale, abs(view[1]), abs(view[2]))
+                    if scale <= 0 then
+                        scale = 1
+                    else
+                        scale = max(scale * scale_factor, viewtolerance) -- why 1.05
+                    end
+                end
+                local range = range_factor * max(maxdepth - mindepth, 1)
+                near = max(viewtolerance, mindepth - range)
+                far  =                    maxdepth + range
+                if far <= near then
+                    far = near + 1
+                end
+            end
+            --
+            -- We can set the field of view but it gets compensated with we auto crop
+            -- so below we can scale back.
+            --
+            local fov = camera.fov
+            if not fov or fov <= 0 or fov >= 180 then
+                fov = 45
+            end
+            local tanhalf = tan(fov * pi / 360)
+            --
+--             if crop ~= true then
+--                 tanhalf = 1
+--             end
+            --
+            camera.near    = near
+            camera.far     = far
+            camera.scale   = scale
+            camera.tanhalf = tanhalf
+            camera.fov     = fov
+            --
+            -- We either use the original (coordinate space) bounds or we use the ones that
+            -- were collected when we created the mesh.
+            --
+            local points = crop and objectsboundarypoints(scene) or corners -- boundarypoints(bounds)
+            local count  = #points
+            --
+            -- For clearity we have inlined the helper so that we see what gets done in
+            -- relation to the already calculated properties. Kind of messy.
+            --
+            local transform do
+                local xmin, xmax, ymin, ymax
+                local tanhalf = crop ~= true and 1 or tanhalf
+                for i=1,count do
+                    local view = zbuffertransform(zbuffer,points[i])
+                    local ndcx
+                    local ndcy
+                    if perspective then
+                        if view[3] > viewtolerance then
+                            local scale = view[3] * tanhalf
+                            ndcx = view[1] / scale
+                            ndcy = view[2] / scale
+                        else
+                            goto DONE
+                        end
+                    else
+                        ndcx = view[1] / scale
+                        ndcy = view[2] / scale
+                    end
+                    local x = (ndcx + 1) * width  / 2
+                    local y = (1 - ndcy) * height / 2
+                    if xmin then
+                        if x < xmin then xmin = x elseif x > xmax then xmax = x end
+                        if y < ymin then ymin = y elseif y > ymax then ymax = y end
+                    else
+                        xmin = x
+                        xmax = x
+                        ymin = y
+                        ymax = y
+                    end
+                    ::DONE::
+                end
+                if not xmin then
+                    xmin = -viewtolerance
+                    xmax =  viewtolerance
+                    ymin = -viewtolerance
+                    ymax =  viewtolerance
+                end
+                local spanx = max(xmax - xmin,viewtolerance)
+                local spany = max(ymax - ymin,viewtolerance)
+                local scale = min(width/spanx,height/spany)
+                if scale <= 0 then
+                    scale = 1
+                end
+                local centerx = (xmin + xmax) / 2
+                local centery = (ymin + ymax) / 2
+                local x       = width  / 2 - scale * centerx
+                local y       = height / 2 - scale * centery
+                --
+                transform = {
+                    scale     = scale,
+                    x         = x,
+                    y         = y,
+                    centerx   = centerx,
+                    centery   = centery,
+                    crop      = crop,
+                    bounds    = {
+                        xmin = xmin,
+                        xmax = xmax,
+                        ymin = ymin,
+                        ymax = ymax,
+                    },
+                }
+            end
+            --
+            -- We can now allocate the zbuffer matrix. We actually went through various intermediate
+            -- steps when we did more in \LUA\ and had to get things ready earlier.
+            --
+            height = height + supersample -- brrr
+            width  = width  + supersample
+            --
+            report("zbuffer width %N, height %N, supersample %i", width, height, supersample)
+            zbuffersetup(zbuffer, {
+                width    = width,
+                height   = height,
+                viewport = { backgroundcolor = backgroundcolor },
+            })
+            --
+            local light     = scene.light
+            local direction = light.direction
+            local intensity = light.intensity
+
+            local materials = scene.materials
+
+            local width     = viewport.width
+            local height    = viewport.height
+            --
+            -- check some in the zbuffer, like scale, should be non zero
+            --
+            zbuffersetup(zbuffer,{
+                perspective = perspective,
+                light       = light,
+                viewport    = viewport,
+                transform   = transform,
+                camera      = camera,
+            })
+            --
+            scene.transform = transform
+            scene.updated   = true
+        end
+
+        local function project(zbuffer,point)
+            local visible, behind, vx, vy, vz, x, y = zbufferproject(zbuffer,point)
+            -- x y z vx vy vz visible behind
+            if behind then
+                return {
+                    view    = { vx, vy, vz },
+                    visible = false,
+                    behind  = true
+                }
+            else
+                return {
+                    view       = { vx, vy, vz },
+                    projection = { x, y },
+                    depth      = vz, -- not needed
+                    visible    = visible,
+                }
+            end
+        end
+
+        function scenes.projectpoint(scene,point)
+            local result = scene.result
+            if not result then
+                return
+            end
+            local buffer = result.buffer
+            if not buffer then
+                return
+            end
+            local resolved = result.resolved or buffer
+            local zbuffer  = buffer.zbuffer
+            if not zbuffer then
+                return
+            end
+            --
+            local projected = project(zbuffer,point)
+            if not projected then
+                return
+            end
+            local projection = projected.projection
+            if not projection then
+                return {
+                    visible   = false,
+                    projected = projected,
+                }
+            end
+            local x            = projection[1]
+            local y            = projection[2]
+            local visible      = projected.visible
+            local depth        = projected.depth
+         -- local xscale       = resolved.width  / buffer.width
+         -- local yscale       = resolved.height / buffer.height
+            local ratio        = resolved.width  / buffer.width
+            local tolerance    = depthtolerance
+            local surfacedepth = zbuffergetdepth(zbuffer,x,y)
+            if not surfacedepth then
+                visible = false
+            elseif depth > surfacedepth + tolerance then
+                visible = false
+            end
+            -- still not ok
+            x = x * ratio
+            y = y * ratio
+            if resolved.bounds then
+                y = resolved.bounds[4] - y
+            else
+                y = resolved.height - y
+            end
+            --
+            return {
+                x         = x,
+                y         = y,
+                visible   = visible,
+                depth     = depth,
+             -- tolerance = tolerance,
+                projected = projected,
+            }
+        end
+
+    end
+
+end
+
+-- We went for sort of independent compilers when we needed to be able
+-- to get points and normals at the \METAPOST\ end even with caching.
+
+do
+
+    local combinedf = replacer [[
+        return function(u,v)
+            return %x%, %y%, %z%, 0, 0, 1 -- , u, v
+        end
+    ]]
+
+    local combinedn = replacer [[
+        local function f(u,v)
+            return %x%, %y%, %z%
+        end
+        return function(u,v)
+            local x, y, z = f(u,v)
+            local ux = %xu%
+            local uy = %yu%
+            local uz = %zu%
+            local vx = %xv%
+            local vy = %yv%
+            local vz = %zv%
+            local nx, ny, nz = normalize(crossproduct(ux,uy,uz,vx,vy,vz))
+            return x, y, z, nx, ny, nz -- , u, v
+        end
+    ]]
+
+    compilers["parametric"] = function(specification)
+        local normalmode = validnormal(specification.normal)
+        --
+        local xu = compilecode(specification.xu,"u,v",false,"parametric xu") -- 1
+        local yu = compilecode(specification.yu,"u,v",false,"parametric yu") -- 0
+        local zu = compilecode(specification.zu,"u,v",false,"parametric zu") -- dfdx
+        local xv = compilecode(specification.xv,"u,v",false,"parametric xv") -- 0
+        local yv = compilecode(specification.yv,"u,v",false,"parametric yv") -- 1
+        local zv = compilecode(specification.zv,"u,v",false,"parametric zv") -- dfdy
+        --
+        local f        = false
+        local analytic = xu and yu and zu and xv and yv and zv
+        if analytic then
+            f = compilecode(combinedn(specification),false,true,"parametric fn")
+        else
+            f = compilecode(combinedf(specification),false,true,"parametric fp")
+        end
+        --
+        specification.f        = f
+        specification.analytic = analytic
+        specification.normal   = normalmode
+        --
+        specification.scenedata.functions[specification.id] = {
+            point  = function(u,v)
+                local x, y, z = f(u,v)
+                return x, y, z
+            end,
+            normal = function(u,v)
+                local _, _, _, nx, ny, nz = f(u,v)
+                return nx, ny, nz
+            end
+        }
+    end
+
+    generators["parametric"] = function(specification)
+        starttiming("thr",true) ioflush()
+        compilers["parametric"](specification)
+        local umin = specification.umin
+        local umax = specification.umax
+        local vmin = specification.vmin
+        local vmax = specification.vmax
+        local nu   = specification.nu
+        local nv   = specification.nv
+        local du   = (umax - umin) / nu
+        local dv   = (vmax - vmin) / nv
+        --
+        local analytic   = specification.analytic
+        local normalmode = specification.normal -- already checked
+        local f          = specification.f
+        --
+        local vertices  = newpoints(nu+1,nv+1)
+        local triangles = vectormakemesh(nu,nv,6)
+        --
+        if normalmode == normal_smooth and analytic then
+            local v = vmin
+            for j=0,nv do
+                local u = umin
+                for i=0,nu do
+                    vertices(f(u,v))
+                    u = u + du
+                end
+                v = v + dv
+            end
+        else
+            local v = vmin
+            for j=0,nv do
+                local u = umin
+                for i=0,nu do
+                    vertices(f(u,v))
+                    u = u + du
+                end
+                v = v + dv
+            end
+            if normalmode == normal_smooth then
+                vertices = zbuffersmoothen(vertices,nv+1,nu+1)
+            elseif normalmode == normal_flat then
+                vertices, triangles = zbufferflatten(vertices,triangles)
+            end
+        end
+        local bounds       = getpointbounds(vertices,true)
+-- print("PARAMETRIC")
+-- inspect(bounds)
+        local nofvertices  = #vertices
+        local noftriangles = #triangles
+        stoptiming("thr")
+        report("parametric mesh: %i vertices, %i triangles, runtime %s",nofvertices,noftriangles,elapsedtime("thr"))
+        return {
+            creator      = "parametric",
+            vertices     = vertices,
+            triangles    = triangles,
+            nofvertices  = nofvertices,
+            noftriangles = noftriangles,
+            bounds       = bounds,
+            normalmode   = normalmode,
+            grid         = { -- check this
+                nu = nu,
+                nv = nv,
+            },
+        }
+    end
+
+end
+
+do
+
+    -- We decided to just map graphs onto parametrics.
+
+--     local combinedf = replacer [[
+--         return function(x,y)
+--             return %code%
+--         end
+--     ]]
+
+--     local combinedn = replacer [[
+--         return function(x,y)
+--             local z = %code%
+--             local nx, ny, nz = normalize(-(%dfdx%),-(%dfdy%),1)
+--             return z, nx, ny, nz
+--         end
+--     ]]
+
+--     local combinedp = replacer [[
+--         local function f(x,y)
+--             return %code%
+--         end
+--         return function(x,y,dx,dy)
+--             local z  = %code% -- f(x,y)
+--             local x0 = x - dx
+--             local x1 = x + dx
+--             local y0 = y - dy
+--             local y1 = y + dy
+--             local nx = (f(x1, y) - f(x0, y)) / (x1 - x0)
+--             local ny = (f(x, y1) - f(x, y0)) / (y1 - y0)
+--             local nz = 1
+--             nx, ny, nz = normalize(-nx,-ny,nz)
+--             return z, nx, ny, nz
+--         end
+--     ]]
+
+--     generators["graph"] = function(specification)
+--         starttiming("thr",true) ioflush()
+--         local normalmode = validnormal(specification.normal)
+--         --
+--         local fn   = compilecode(specification.code,"x,y",true, "graph code")
+--         local dfdx = compilecode(specification.dfdx,"x,y",false,"graph dfdx")
+--         local dfdy = compilecode(specification.dfdy,"x,y",false,"graph dfdy")
+--         --
+--         local f        = false
+--         local analytic = dfdx and dfdy
+--         if analytic then
+--             f = compilecode(combinedn(specification),false,true,"graph fn")
+--         elseif normalmode == normal_smooth then
+--             f = compilecode(combinedp(specification),false,true,"graph fp")
+--         else
+--             f = compilecode(combinedf(specification),false,true,"graph ff")
+--         end
+--         --
+--         local xmin       = specification.xmin
+--         local xmax       = specification.xmax
+--         local ymin       = specification.ymin
+--         local ymax       = specification.ymax
+--         local nx         = specification.nx
+--         local ny         = specification.ny
+--         local dx         = (xmax - xmin) / nx
+--         local dy         = (ymax - ymin) / ny
+--         local vertices   = newpoints(nx+1,ny+1)
+--         local triangles  = vectormakemesh(nx,ny,3)
+--      -- local triangles  = vectormakemesh(nx,ny,6)
+--         if normalmode == normal_smooth then
+--             if analytic then
+--                 local y = ymin
+--                 for j=0,ny do
+--                     local x = xmin
+--                     for i=0,nx do
+--                         vertices(x,y,f(x,y))
+--                         x = x + dx
+--                     end
+--                     y = y + dy
+--                 end
+--             else
+--                 local y = ymin
+--                 for j=0,ny do
+--                     local x = xmin
+--                     for i=0,nx do
+--                         vertices(x,y,f(x,y,dx,dy))
+--                         x = x + dx
+--                     end
+--                     y = y + dy
+--                 end
+--             end
+--         else
+--             local y = ymin
+--             for j=0,ny do
+--                 local x = xmin
+--                 for i=0,nx do
+--                     vertices(x,y,f(x,y),0,0,1)
+--                     x = x + dx
+--                 end
+--                 y = y + dy
+--             end
+--             if normalmode == normal_flat then
+--                 vertices, triangles = zbufferflatten(vertices,triangles)
+--             end
+--         end
+--         local bounds       = getpointbounds(vertices,true)
+--         local nofvertices  = #vertices
+--         local noftriangles = #triangles
+--         stoptiming("thr")
+--         report("graph mesh: %i vertices, %i triangles, runtime %s",nofvertices,noftriangles,elapsedtime("thr"))
+--         return {
+--             creator      = "graph",
+--             vertices     = vertices,
+--             triangles    = triangles,
+--             nofvertices  = nofvertices,
+--             noftriangles = noftriangles,
+--             bounds       = bounds,
+--             normalmode   = normalmode,
+--             grid         = {
+--                 nx = nx,
+--                 ny = ny,
+--             },
+--         }
+--     end
+
+    local p = lpeg.Cs((
+        lpeg.R("AZ","az")^2 +
+        lpeg.S("x") / "u" +
+        lpeg.S("y") / "v" +
+        lpeg.P(1)
+    )^1)
+
+    local function remap(s) return lpeg.match(p,s) or s end
+
+    generators["graph"] = function(specification)
+        --
+        local code = remap(specification.code or "")
+        local dfdx = remap(specification.dfdx or "")
+        local dfdy = remap(specification.dfdy or "")
+        --
+        specification.x    = "u"
+        specification.y    = "v"
+        specification.z    = code
+        --
+        specification.xu   = 1
+        specification.yu   = 0
+        specification.zu   = dfdx
+        specification.xv   = 0
+        specification.yv   = 1
+        specification.zv   = dfdy
+        --
+        specification.umin = specification.xmin
+        specification.umax = specification.xmax
+        specification.vmin = specification.ymin
+        specification.vmax = specification.ymax
+        --
+        specification.nu   = specification.nx
+        specification.nv   = specification.ny
+        --
+        report("mapping graph onto parametric: xu=1 | yu=0 | zu=%s | xv=0 | yv=1 | zv=%s | x=u | y=v | z=%s",dfdx,dfdy,code)
+        --
+        return generators["parametric"](specification)
+    end
+
+end
+
+setmetatableindex(generators, function() return generators["graph"] end)
+
+do
+
+    local combinedf = replacer [[
+        return function(t)
+            return %x%, %y%, %z%
+        end
+    ]]
+
+    compilers["curve"] = function(specification)
+        local f = compilecode(combinedf(specification),false,true,"curve fp")
+        specification.f = f
+        specification.scenedata.functions[specification.id] = {
+            point = f,
+        }
+    end
+
+    generators["curve"] = function(specification)
+        starttiming("thr",true) ioflush()
+        compilers["curve"](specification)
+        local tmin  = specification.tmin
+        local tmax  = specification.tmax
+        local nt    = specification.nt or 2
+        local tstep = specification.tstep
+        if tmin >= tmax then
+            return
+        end
+        if tstep and tstep > 0 then
+            nt = ceil((tmax - tmin) / tstep) + 1
+        end
+        if nt < 2 then
+            nt = 2
+        end
+        local f        = specification.f
+        local pstep    = (tmax - tmin) / (nt - 1)
+        local t        = tmin
+        local vertices = newpoints(nt)
+        for i=1,nt do
+            vertices(f(t))
+            t = t + pstep
+        end
+        local bounds = getpointbounds(vertices,true)
+        report("curve mesh: %i points, runtime %s",nt,elapsedtime("thr"))
+        return {
+            creator    = "curve",
+            meshpoints = vertices,
+            method     = 0, -- method or 0,
+            bounds     = bounds,
+        }
+    end
+
+end
+
+do
+
+    local combinedn = replacer [[
+        return function(xx,yy,zz,step)
+            local x, y, z, x1, x2, y1, y2, z1, z2
+            y = yy z = zz
+            x = xx + step ; x1 = %code%
+            x = xx - step ; x2 = %code%
+            x = xx z = zz
+            y = yy + step ; y1 = %code%
+            y = yy - step ; y2 = %code%
+            x = xx y = yy
+            z = zz + step ; z1 = %code%
+            z = zz - step ; z2 = %code%
+            step = 2 * step
+            -- normalization happens in the c helper
+            return (x1 - x2) / step, (y1 - y2) / step, (z1 - z2) / step
+        end
+    ]]
+
+    local combinedd = utilities.templates.replacer [[
+        return function(x,y,z)
+            return %dfdx%, %dfdy%, %dfdz%
+        end
+    ]]
+
+    compilers["implicit"] = function(specification)
+        local normalmode = validnormal(specification.normal)
+        specification.normalmode = normalmode
+        specification.normalstep = specification.normalstep or 0     -- never set
+        specification.fp         = compilecode(specification.code,"x,y,z",true, "implicit fp")
+        --
+        local dfdx = compilecode(specification.dfdx,"x,y,z",false,"implicit dfdx")
+        local dfdy = compilecode(specification.dfdy,"x,y,z",false,"implicit dfdy")
+        local dfdz = compilecode(specification.dfdz,"x,y,z",false,"implicit dfdz")
+        if dfdx and dfdy and dfdz then
+            specification.fn = compilecode(combinedd(specification),false,true,"implicit fn")
+        else
+            specification.fn = compilecode(combinedn(specification),false,true,"implicit fn")
+        end
+        --
+        specification.scenedata.functions[specification.id] = {
+            point  = specification.fp,
+            normal = specification.fn,
+        }
+    end
+
+    generators["implicit"] = function(specification)
+        starttiming("thr",true) ioflush()
+        compilers["implicit"](specification)
+        local vertices    = zbufferimplicit(specification)
+        local triangles   = vectormakemesh(#vertices/3,1,5)
+        local nofvertices = #vertices
+        local bounds      = getpointbounds(vertices,true)
+        if not triangles then
+            report("implicit mesh: %i vertices, %i triangles, overflow",nofvertices,nofvertices/3)
+            return
+        end
+        local noftriangles = #triangles
+        stoptiming("thr")
+        report("implicit mesh: %i vertices, %i triangles, runtime %s",nofvertices,noftriangles,elapsedtime("thr"))
+        return {
+            creator      = "implicit",
+            vertices     = vertices,
+            triangles    = triangles,
+            nofvertices  = nofvertices,
+            noftriangles = noftriangles,
+            bounds       = bounds,
+            normalmode   = specification.normal, -- already checked
+            iso          = specification.iso,
+            grid         = { -- used ?
+                nx = specification.nx,
+                ny = specification.ny,
+                nz = specification.nz,
+            },
+        }
+    end
+
+end
+
+-- Planes are just very simple meshes. They are defined independently because
+-- overlaps can be optimized then, we get continuous segments.
+
+generators["plane"] = function(specification)
+    starttiming("thr",true) ioflush()
+    local usize  = specification.usize
+    local vsize  = specification.vsize
+    local normal = specification.normal
+    local center = specification.center
+    --
+    if usize <= 0 then usize = 1 end
+    if vsize <= 0 then vsize = 1 end
+    --
+    local nx, ny, nz = normalize(normal[1],normal[2],normal[3])
+    --
+    local hx = 0
+    local hy = 1
+    local hz = 0
+    if abs(nz) < 0.9 then
+        hy = 0
+        hz = 1
+    end
+    --
+    local ux, uy, uz = normalize(crossproduct(hx,hy,hz,nx,ny,nz))
+    local vx, vy, vz = crossproduct(nx,ny,nz,ux,uy,uz)
+    --
+    local uh = usize / 2
+    local vh = vsize / 2
+    --
+    local coordinates = {
+        { -uh, -vh },
+        {  uh, -vh },
+        { -uh,  vh },
+        {  uh,  vh },
+    }
+    local vertices     = newpoints(2,2)
+    local triangles    = vectormakemesh(1,1,3)
+    local nofvertices  = 4
+    local noftriangles = 2
+    --
+    local cx, cy, cz = center[1], center[2], center[3]
+    --
+    for i=1,#coordinates do
+        local c = coordinates[i] -- check
+        local u = c[1]
+        local v = c[2]
+        local x = cx + u * ux + v * vx
+        local y = cy + u * uy + v * vy
+        local z = cz + u * uz + v * vz
+        vertices(x, y, z, nx, ny, nz) -- , u, v)
+    end
+    local bounds = getpointbounds(vertices,true)
+    stoptiming("thr")
+    report("plane mesh: %i vertices, %i triangles, runtime %s",nofvertices,noftriangles,elapsedtime("thr"))
+    return {
+        creator      = "plane",
+        nofvertices  = nofvertices,
+        noftriangles = noftriangles,
+        vertices     = vertices,
+        triangles    = triangles,
+        bounds       = bounds,
+    }
+end
+
+-- local mnormals = mesh.normals
+-- if mnormals and #mnormals == #mvertices then
+--     if mnormals[1].nx then
+--         for i=1,#mvertices do
+--             local t = mvertices[i]
+--             local n = mnormals[i]
+--             vertices(t[1],t[2],t[3],n.nx,n.ny,n.nz)
+--         end
+--     else
+--         for i=1,#mvertices do
+--             local t = mvertices[i]
+--             local n = mnormals[i]
+--             vertices(t[1],t[2],t[3],n[1],n[2],n[3])
+--         end
+--     end
+-- end
+
+local function checkedmesh(creator,name,specification,mesher)
+    local nofvertices  = 0
+    local noftriangles = 0
+    local bounds       = false
+    starttiming("thr",true) ioflush()
+    local mesh = mesher(name,specification)
+    if mesh then
+        local mvertices    = mesh.vertices
+        local mtriangles   = mesh.triangles
+        local vertices     = false
+        local triangles    = false
+        --
+        if type(mvertices) == "table" then
+            nofvertices = #mvertices
+            vertices    = newpoints(nofvertices,1)
+            -- just for testing
+            local x = specification.x
+            local y = specification.y
+            local z = specification.z
+            if x or y or z then
+                if not x then x = 0 end
+                if not y then y = 0 end
+                if not z then z = 0 end
+                for i=1,nofvertices do
+                    local v = mvertices[i]
+                    v[1] = v[1] + x
+                    v[2] = v[2] + y
+                    v[3] = v[3] + z
+                end
+            end
+            --
+            for i=1,nofvertices do
+                vertices(mvertices[i])
+            end
+        elseif ispoints(mvertices) then
+            nofvertices = #mvertices
+            vertices    = mvertices
+        else
+            goto BAD
+        end
+        --
+        if type(mtriangles) == "table" then
+            noftriangles = #mtriangles
+            triangles    = vectornewmesh(noftriangles,3)
+            for i=1,noftriangles do
+                triangles(mtriangles[i])
+            end
+        elseif ismesh(mtriangles) then
+            noftriangles = #mtriangles
+            triangles    = mtriangles
+        else
+            local meshtype = mesh.meshtype
+            if meshtype == 5 or meshtype == 6 then
+                noftriangles = #vertices // 3
+            elseif meshtype == 7 then
+                noftriangles = #vertices // 4
+            end
+            if noftriangles > 0 then
+                triangles = vectormakemesh(noftriangles,1,meshtype)
+            else
+                report("missing triangles")
+            end
+        end
+        if vertices and triangles then
+            --
+            local normalmode = validnormal(specification.normal)
+            if normalmode == normal_flat then
+                local v, t = zbufferflatten(vertices,triangles)
+                if v and t then
+                    vertices, triangles = v, t
+                end
+            end
+            --
+            bounds = getpointbounds(vertices,true)
+            mesh = {
+                creator      = creator,
+                vertices     = vertices,
+                triangles    = triangles,
+                nofvertices  = nofvertices,
+                noftriangles = noftriangles,
+                normalmode   = normalmode,
+                bounds       = bounds,
+            }
+        else
+            mesh = false
+        end
+    end
+  ::BAD::
+    stoptiming("thr")
+    if mesh then
+        report("%s mesh: name %a, %i vertices, %i triangles, runtime %s",
+            creator,name,nofvertices,noftriangles,elapsedtime("thr"))
+        report("%s mesh: xmin %N, xmax %N, ymin %N, ymax %N, zmin %N, zmax %N,",
+            creator,bounds.xmin,bounds.xmax,bounds.ymin,bounds.ymax,bounds.zmin,bounds.zmax)
+    else
+        report("internal mesh: name %a, invalid, runtime %s",name,elapsedtime("thr"))
+    end
+    return mesh
+end
+
+generators["internal"] = function(specification)
+    local name = specification.name or ""
+    if name and name ~= "" then
+        return checkedmesh("internal",name,specification,metapost.mesher)
+    end
+end
+
+generators["external"] = function(specification)
+    local filename = specification.filename or ""
+    if filename and filename ~= "" then
+        return checkedmesh("external",filename,specification,external.load)
+    end
+end
+
+do
+
+    local function samepoint(a,b,tolerance)
+        return a and b and
+            abs(a[1] - b[1]) <= tolerance and
+            abs(a[2] - b[2]) <= tolerance and
+            abs(a[3] - b[3]) <= tolerance
+    end
+
+    local function appendsegment(segments,a,b,tolerance)
+        if not samepoint(a,b,tolerance) then
+            segments[#segments+1] = { a, b }
+        end
+    end
+
+    local function uniquepoints(points,tolerance)
+        local unique    = { }
+        local nofunique = 0
+        for i=1,#points do
+            local point     = points[i]
+            local duplicate = false
+            for j=1,nofunique do
+                if samepoint(point,unique[j],tolerance) then
+                    duplicate = true
+                    break
+                end
+            end
+            if not duplicate then
+                nofunique = nofunique + 1
+                unique[nofunique] = point
+            end
+        end
+        return unique
+    end
+
+    local function planepatch(plane)
+        local usize  = plane.usize
+        local vsize  = plane.vsize
+        local center = plane.center
+        local normal = plane.normal
+        if not usize or not vsize or usize <= 0 or vsize <= 0 or not center or not normal then
+            return
+        end
+        local nx, ny, nz = normalize(normal[1],normal[2],normal[3])
+        local hx, hy, hz = 0, 1, 0
+        if abs(nz) < 0.9 then
+            hy = 0
+            hz = 1
+        end
+        local ux, uy, uz = normalize(crossproduct(hx,hy,hz,nx,ny,nz))
+        local vx, vy, vz = crossproduct(nx,ny,nz,ux,uy,uz)
+        return {
+            center = center,
+            ux     = ux,
+            uy     = uy,
+            uz     = uz,
+            vx     = vx,
+            vy     = vy,
+            vz     = vz,
+            umin   = - usize / 2,
+            umax   =   usize / 2,
+            vmin   = - vsize / 2,
+            vmax   =   vsize / 2,
+        }
+    end
+
+    local function patchcoordinates(point,patch)
+        local center = patch.center
+        local dx     = point[1] - center[1]
+        local dy     = point[2] - center[2]
+        local dz     = point[3] - center[3]
+        return
+            dx * patch.ux + dy * patch.uy + dz * patch.uz,
+            dx * patch.vx + dy * patch.vy + dz * patch.vz
+    end
+
+    local function cliprange(value,delta,minimum,maximum,t0,t1,tolerance)
+        if abs(delta) <= tolerance then
+            if value < minimum - tolerance or value > maximum + tolerance then
+                return
+            else
+                return t0, t1
+            end
+        else
+            local a = (minimum - value) / delta
+            local b = (maximum - value) / delta
+            if a > b then
+                a, b = b, a
+            end
+            if a > t0 then t0 = a end
+            if b < t1 then t1 = b end
+            if t0 <= t1 + tolerance then
+                return t0, t1
+            end
+        end
+    end
+
+    local function clippatchsegment(a,b,patch,tolerance)
+        if not patch then
+            return a, b
+        else
+            local au, av = patchcoordinates(a,patch)
+            local bu, bv = patchcoordinates(b,patch)
+            local t0, t1 = cliprange(au,bu-au,patch.umin,patch.umax,0,1,tolerance)
+            if t0 then
+                t0, t1 = cliprange(av,bv-av,patch.vmin,patch.vmax,t0,t1,tolerance)
+                if t0 and t1 - t0 > tolerance then
+                    local a1, a2, a3 = a[1], a[2], a[3]
+                    local d1, d2, d3 = b[1] - a1, b[2] - a2, b[3] - a3
+                    return
+                        { a1 + t0 * d1, a2 + t0 * d2, a3 + t0 * d3 },
+                        { a1 + t1 * d1, a2 + t1 * d2, a3 + t1 * d3 }
+                end
+            end
+        end
+    end
+
+    local zbedgepoint = zbufferedgepoint
+
+    -- we already have a collector for this
+
+    local function intersectionspan(segments)
+        local xmin, ymin, zmin
+        local xmax, ymax, zmax
+        for i=1,#segments do
+            -- unrolled loop of 2
+            local segment = segments[i]
+            local point   = segment[1]
+            local x       = point[1]
+            local y       = point[2]
+            local z       = point[3]
+            if xmin then
+                if x < xmin then xmin = x elseif x > xmax then xmax = x end
+                if y < ymin then ymin = y elseif y > ymax then ymax = y end
+                if z < zmin then zmin = z elseif z > zmax then zmax = z end
+            else
+                xmin = x  xmax = x
+                ymin = y  ymax = y
+                zmin = z  zmax = z
+            end
+            point = segment[2]
+            x     = point[1]
+            y     = point[2]
+            z     = point[3]
+            if x < xmin then xmin = x elseif x > xmax then xmax = x end
+            if y < ymin then ymin = y elseif y > ymax then ymax = y end
+            if z < zmin then zmin = z elseif z > zmax then zmax = z end
+        end
+        if not xmin then
+            return 1
+        else
+            local span = max(xmax - xmin,ymax - ymin,zmax - zmin)
+            if span > 0 then
+                return span
+            else
+                return 1
+            end
+        end
+    end
+
+    local function segmentchains(segments,patch,tolerance)
+        local nofsegments = #segments
+        if nofsegments == 0 then
+            return false
+        end
+
+        local jointolerance  = max(tolerance,intersectionspan(segments) * 1e-6)
+        local jointolerance2 = jointolerance * jointolerance
+        local invcell        = 1 / jointolerance
+        local nodes          = { }
+        local buckets        = { }
+        local edges          = { }
+        local edgehash       = { }
+        local nofnodes       = 0
+        local nofedges       = 0
+
+        local nodeid
+
+        if patch then
+
+            local function hashkey(u,v)
+                return u .. ":" .. v
+             -- return 0x10000000 * u + v
+            end
+
+            nodeid = function(point)
+                local u, v = patchcoordinates(point,patch)
+                local cu = floor(u * invcell)
+                local cv = floor(v * invcell)
+                for du=-1,1 do
+                    for dv=-1,1 do
+                        local bucket = buckets[hashkey(cu+du,cv+dv)]
+                        if bucket then
+                            for i=1,#bucket do
+                                local id   = bucket[i]
+                                local node = nodes[id]
+                                local ud   = u - node.u
+                                local vd   = v - node.v
+                             -- local wd   = w - node.w
+                             -- if ud*ud + vd*vd + wd*wd <= jointolerance2 then
+                                if ud*ud + vd*vd <= jointolerance2 then
+                                    return id
+                                end
+                            end
+                        end
+                    end
+                end
+                nofnodes = nofnodes + 1
+                nodes[nofnodes] = {
+                    point = point,
+                    u     = u,
+                    v     = v,
+                 -- w     = w,
+                    w     = 0,
+                    edges = { },
+                }
+                local key    = hashkey(cu,cv)
+                local bucket = buckets[key]
+                if bucket then
+                    bucket[#bucket+1] = nofnodes
+                else
+                    buckets[key] = { nofnodes }
+                end
+                return nofnodes
+            end
+
+        else
+
+            local function hashkey(u,v,w)
+                return u .. ":" .. v .. ":" .. w
+            end
+
+            nodeid = function(point)
+                local u, v, w = point[1], point[2], point[3]
+                local cu = floor(u * invcell)
+                local cv = floor(v * invcell)
+                local cw = floor(w * invcell)
+                for du=-1,1 do
+                    for dv=-1,1 do
+                        for dw=-1,1 do
+                            local bucket = buckets[hashkey(cu+du,cv+dv,cw+dw)]
+                            if bucket then
+                                for i=1,#bucket do
+                                    local id   = bucket[i]
+                                    local node = nodes[id]
+                                    local ud   = u - node.u
+                                    local vd   = v - node.v
+                                    local wd   = w - node.w
+                                    if ud*ud + vd*vd + wd*wd <= jointolerance2 then
+                                        return id
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                nofnodes = nofnodes + 1
+                nodes[nofnodes] = {
+                    point = point,
+                    u     = u,
+                    v     = v,
+                    w     = w,
+                    edges = { },
+                }
+                local key    = hashkey(cu,cv,cw)
+                local bucket = buckets[key]
+                if bucket then
+                    bucket[#bucket+1] = nofnodes
+                else
+                    buckets[key] = { nofnodes }
+                end
+                return nofnodes
+            end
+
+        end
+
+        local function addedge(first,second)
+            if first ~= second then
+                local a, b = first, second
+                if a > b then
+                    a, b = b, a
+                end
+                local key = a .. ":" .. b
+                if not edgehash[key] then
+                    nofedges = nofedges + 1
+                    local edge = {
+                        first  = first,
+                        second = second,
+                    }
+                    edges[nofedges] = edge
+                    edgehash[key]   = edge
+                    local firstedges  = nodes[first ].edges
+                    local secondedges = nodes[second].edges
+                    firstedges [#firstedges +1] = edge
+                    secondedges[#secondedges+1] = edge
+                end
+            end
+        end
+
+        local function othernode(edge,id)
+            if edge.first == id then
+                return edge.second
+            else
+                return edge.first
+            end
+        end
+
+        local function nextedge(id,pu,pv,pw)
+            local node      = nodes[id]
+            local nodeedges = node.edges
+            local choice    = nil
+            if pu then
+                local best = -huge
+                for i=1,#nodeedges do
+                    local edge = nodeedges[i]
+                    if not edge.done then
+                        local nextnode = nodes[othernode(edge,id)]
+                        local score = pu * (nextnode.u - node.u) +
+                                      pv * (nextnode.v - node.v) +
+                                      pw * (nextnode.w - node.w)
+                        if score > best then
+                            choice = edge
+                            best   = score
+                        end
+                    end
+                end
+            else
+                for i=1,#nodeedges do
+                    local edge = nodeedges[i]
+                    if not edge.done then
+                        choice = edge
+                        break
+                    end
+                end
+            end
+            return choice
+        end
+
+        for i=1,nofsegments do
+            local segment = segments[i]
+            addedge(nodeid(segment[1]),nodeid(segment[2]))
+        end
+
+        local chains = { }
+
+        local function walk(startid,edge)
+            local points    = { nodes[startid].point }
+            local currentid = startid
+            local closed    = false
+            while edge do
+                edge.done = true
+                local nextid      = othernode(edge,currentid)
+                local currentnode = nodes[currentid]
+                local nextnode    = nodes[nextid]
+                points[#points+1] = nextnode.point
+                if nextid == startid then
+                    closed = true
+                    break
+                else
+                    local pu = nextnode.u - currentnode.u
+                    local pv = nextnode.v - currentnode.v
+                    local pw = nextnode.w - currentnode.w
+                    currentid = nextid
+                    edge = nextedge(currentid,pu,pv,pw)
+                end
+            end
+            if #points > 1 then
+                chains[#chains+1] = {
+                    points = points,
+                    closed = closed,
+                }
+            end
+        end
+
+        for i=1,nofnodes do
+            local node = nodes[i]
+            if #node.edges ~= 2 then
+                while true do
+                    local edge = nextedge(i)
+                    if edge then
+                        walk(i,edge)
+                    else
+                        break
+                    end
+                end
+            end
+        end
+
+        for i=1,nofedges do
+            local edge = edges[i]
+            if not edge.done then
+                walk(edge.first,edge)
+            end
+        end
+
+        return chains
+    end
+
+    local function segmentstostitch(scene,segments,id,overlay,patch,tolerance)
+        local chains = segmentchains(segments,patch,tolerance)
+        if chains then
+            local nofchains = #chains
+            for i=1,nofchains do
+                local chain       = chains[i]
+                local chainpoints = chain.points
+                local nofpoints   = #chainpoints
+                if nofpoints > 1 then
+                    local points = newpoints(nofpoints)
+                    for j=1,nofpoints do
+                        points(chainpoints[j])
+                    end
+                    scenes.pointstomesh(
+                        scene,
+                        points,
+                        nofchains == 1 and id or id .. " " .. i,
+                        overlay,
+                        connect_points_method
+                    )
+                end
+            end
+            return nofchains
+        else
+            return 0
+        end
+    end
+
+    local function segmentstomesh(scene,segments,id,overlay,method)
+        local points = newpoints(2*#segments)
+        for i=1,#segments do
+            local segment = segments[i]
+            points(segment[1])
+            points(segment[2])
+        end
+        scenes.pointstomesh(scene,points,id,overlay,method or connect_points_method)
+    end
+
+    intersectors["graph plane"] = function(graph,plane,overlay)
+        local mesh = validmesh(graph)
+        if not mesh then
+            return
+        end
+        local tolerance = overlay.tolerance or intersectiontolerance
+        if tolerance <= 0 then
+            return
+        end
+        -- needs checking: not al have nx
+        local nx = mesh.grid.nx or mesh.grid.nu
+        local ny = mesh.grid.ny or mesh.grid.nv
+        if not nx or not ny then
+            report("NEEDS CHECKING")
+            return
+        end
+        if nx < 2 or ny < 2 then
+            return
+        end
+        starttiming("thr",true) ioflush()
+        local values   = { }
+        local vertices = mesh.vertices
+        local center   = plane.center
+        local centerx  = center[1]
+        local centery  = center[2]
+        local centerz  = center[3]
+        local normal   = plane.normal
+        local normalx  = normal[1]
+        local normaly  = normal[2]
+        local normalz  = normal[3]
+        --
+        for i=1,#vertices do
+            local x, y, z = getpointxyz(vertices,i)
+            values[i] =
+                normalx * (x - centerx) +
+                normaly * (y - centery) +
+                normalz * (z - centerz)
+        end
+        --
+        local segments = { }
+        local bounds   = { }
+        for j=0,ny do
+            local dx = j * (nx + 1)
+            for i=0,nx do
+                local a = dx + i + 1
+                local b = a + 1        -- right
+                local d = a + (nx + 1) -- below
+                local c = d + 1        -- right,below
+                local va = values[a]
+                local vb = values[b]
+                local vc = values[c]
+                local vd = values[d]
+                if not vb then vb = va b = a end
+                if not vc then vc = va c = a end
+                if not vd then vd = va d = a end
+                local points
+                points = zbedgepoint(vertices,a,b,va,vb,tolerance,points)
+                points = zbedgepoint(vertices,b,c,vb,vc,tolerance,points)
+                points = zbedgepoint(vertices,c,d,vc,vd,tolerance,points)
+                points = zbedgepoint(vertices,d,a,vd,va,tolerance,points)
+                if points then
+                    local nofpoints = #points
+                    if nofpoints == 2 then
+                        appendsegment(segments,points[1],points[2],tolerance)
+                    elseif nofpoints == 4 then
+                        appendsegment(segments,points[1],points[2],tolerance)
+                        appendsegment(segments,points[3],points[4],tolerance)
+                    elseif nofpoints > 2 then
+                        for i=1,nofpoints-1,2 do
+                            appendsegment(segments,points[i],points[i+1],tolerance)
+                        end
+                    end
+                end
+            end
+        end
+        --
+        -- Mikael: we need top decide on the interface here.
+        --
+        local zmove = overlay.zmove
+        local zzero = overlay.zzero
+        if zzero then
+            for i=1,#segments do
+                local s = segments[i]
+                s[1][3] = zzero
+                s[2][3] = zzero
+            end
+        elseif zmove then
+            for i=1,#segments do
+                local s = segments[i]
+                local s1 = s[1]
+                local s2 = s[2]
+                s1[3] = s1[3] * zmove
+                s2[3] = s2[3] * zmove
+            end
+        end
+        --
+        local nofsegments = #segments
+        local nofchains   = 1
+        local method      = overlay.method or stitch_points_method -- segment_points_method
+        if nofsegments > 0 then
+            local id     = graph.id .. " " .. plane.id
+            local method = overlay.method or stitch_points_method
+            local scene  = graph.scenedata
+            if method == stitch_points_method then
+                nofchains = segmentstostitch(scene,segments,id,overlay,patch,tolerance)
+            else
+                segmentstomesh(scene,segments,id,overlay,method)
+            end
+        end
+        stoptiming("thr")
+        report("graph plane: %i segments, %i chains, runtime %s",nofsegments,nofchains,elapsedtime("thr"))
+    end
+
+    intersectors["mesh plane"] = function(meshobject,plane,overlay)
+        local mesh = validmesh(meshobject)
+        if not mesh then
+            return
+        end
+        local tolerance = overlay.tolerance or intersectiontolerance
+        if tolerance <= 0 then
+            return
+        end
+        local vertices  = mesh.vertices
+        local triangles = mesh.triangles
+        local center    = plane.center
+        local normal    = plane.normal
+        if not center or not normal then
+            return
+        end
+        starttiming("thr",true) ioflush()
+        local centerx  = center[1]
+        local centery  = center[2]
+        local centerz  = center[3]
+        local normalx  = normal[1]
+        local normaly  = normal[2]
+        local normalz  = normal[3]
+        local patch    = planepatch(plane)
+        local segments = { }
+
+        for i=1,#triangles do
+            local a, b, c = vectorgetmesh(triangles,i)
+            local ax, ay, az = getpointxyz(vertices,a)
+            local bx, by, bz = getpointxyz(vertices,b)
+            local cx, cy, cz = getpointxyz(vertices,c)
+            local va =
+                normalx * (ax - centerx) +
+                normaly * (ay - centery) +
+                normalz * (az - centerz)
+            local vb =
+                normalx * (bx - centerx) +
+                normaly * (by - centery) +
+                normalz * (bz - centerz)
+            local vc =
+                normalx * (cx - centerx) +
+                normaly * (cy - centery) +
+                normalz * (cz - centerz)
+            if not (abs(va) <= tolerance and abs(vb) <= tolerance and abs(vc) <= tolerance) then
+                local points
+                points = zbedgepoint(vertices,a,b,va,vb,tolerance,points)
+                points = zbedgepoint(vertices,b,c,vb,vc,tolerance,points)
+                points = zbedgepoint(vertices,c,a,vc,va,tolerance,points)
+                if points then
+                    points = uniquepoints(points,tolerance)
+                    if #points >= 2 then
+                        local first, second = clippatchsegment(points[1],points[2],patch,tolerance)
+                        if first then
+                            appendsegment(segments,first,second,tolerance)
+                        end
+                    end
+                end
+            end
+        end
+
+        local nofsegments = #segments
+        local nofchains   = 1
+        if nofsegments > 0 then
+            local id     = meshobject.id .. " " .. plane.id
+            local method = overlay.method or stitch_points_method
+            local scene  = meshobject.scenedata
+            if method == stitch_points_method then
+                nofchains = segmentstostitch(scene,segments,id,overlay,patch,tolerance)
+            else
+                segmentstomesh(scene,segments,id,overlay,method)
+            end
+        end
+        stoptiming("thr")
+        report("mesh plane: %i segments, %i chains, runtime %s",nofsegments,nofchains,elapsedtime("thr"))
+    end
+
+ -- local sortpoints  do
+ --
+ --     local function distance(p1, p2)
+ --         local dx = p1[1] - p2[1]
+ --         local dy = p1[2] - p2[2]
+ --         local dz = p1[3] - p2[3]
+ --         return dx * dx + dy * dy + dz * dz
+ --     end
+ --
+ --     local insert  = table.insert
+ --     local remove  = table.remove
+ --     local totable = vector.points.totable
+ --
+ --     sortpoints = function(unordered)
+ --         if #unordered <= 2 then
+ --             return unordered
+ --         else
+ --             local ordered   = { }
+ --             local remaining = totable(unordered)
+ --             insert(ordered,remove(remaining,1))
+ --             while #remaining > 0 do
+ --                 local last = ordered[#ordered]
+ --                 local best = 1
+ --                 local min  = distance(last,remaining[1])
+ --                 for i=2,#remaining do
+ --                     local d = distance(last,remaining[i])
+ --                     if d < min then
+ --                         min  = d
+ --                         best = i
+ --                     end
+ --                 end
+ --                 insert(ordered,remove(remaining,best))
+ --             end
+ --             local points = newpoints(#ordered)
+ --             for i=1,#ordered do
+ --                 points(ordered[i])
+ --             end
+ --             return points
+ --         end
+ --     end
+ --
+ -- end
+
+    intersectors["mesh mesh"] = function(firstobject,secondobject,overlay)
+        local firstmesh  = validmesh(firstobject)
+        local secondmesh = validmesh(secondobject)
+        if not firstmesh or not secondmesh then
+            return
+        end
+        starttiming("thr",true) ioflush()
+        local tolerance = overlay.tolerance or intersectiontolerance
+        local vertices  = zbuffermeshmesh(firstmesh.vertices,firstmesh.triangles,secondmesh.vertices,secondmesh.triangles,tolerance)
+        local count     = vertices and #vertices or 0
+     -- vertices = sortpoints(vertices)
+        if count > 0 then
+            scenes.pointstomesh(
+                firstobject.scenedata,
+                vertices,
+                firstobject.id .. " " .. secondobject.id,
+                overlay,
+                overlay.method or 1 -- 2 when segments
+            )
+        else
+            -- maybe warning
+        end
+        stoptiming("thr")
+        report("mesh mesh: %i points, runtime %s",count,elapsedtime("thr"))
+    end
+
+end
+
+-- "mesh plane" "graph graph" :
+
+setmetatableindex(intersectors, function() return intersectors["mesh mesh"] end)
+
+-- We now arrived a the user interfacing. We hooks this in to the \LUAMETAFUN\
+-- infrastructure. It makes littler sense to add a dedicated (intermediate) layer
+-- for more general usage.
+
+
+do
+
+    local newbytemap     = mp.newbytemap
+    local getbytemapdata = mp.getbytemapdata
+
+    local epsilon   <const> =   1e-9
+    local nepsilon  <const> = - 1e-9
+
+    function rasterizers.resolve(buffer)
+        local rzbuffer, rheight, rwidth = zbufferresolve(buffer.zbuffer,buffer.supersample or 1)
+        if rzbuffer then
+            return {
+                zbuffer         = rzbuffer,
+                height          = rheight,
+                width           = rwidth,
+                backgroundcolor = buffer.backgroundcolor,
+                source          = buffer,
+                supersample     = buffer.supersample or 1,
+            }
+        else
+            return buffer
+        end
+    end
+
+    local method_slot    <const> = 0x0001
+    local method_color   <const> = 0x0002
+    local method_normal  <const> = 0x0004
+    local method_texture <const> = 0x0008
+    local method_skip    <const> = 0x1000
+
+    function rasterizers.process(scene,specification)
+        local name    = specification.process
+        local process = name and metapost.meshupper(name)
+        if process then
+            local meshup = process.process
+            if meshup then
+                local zbuffer = scene.buffer.zbuffer
+                starttiming("thr",true) ioflush()
+                if process.direct or process.method == "direct" then
+                    meshup(zbuffer,process)
+                else
+                    local method = 0
+                    if process.slot    then method = method | method_slot    end
+                    if process.color   then method = method | method_color   end
+                    if process.normal  then method = method | method_normal  end
+              if process.skip != false then method = method | method_skip    end
+                    if process.texture then method = method | method_texture end
+                    if method == 0 then
+                        method = method_color | method_skip
+                    end
+                    local okay = zbufferprocess(zbuffer,meshup,method,process)
+                 -- print(meshup,method,okay)
+                end
+                report("meshupper %a applied, runtime %s",name or "unset",elapsedtime("thr"))
+                stoptiming("thr")
+                return
+            end
+        end
+        report("unknown meshupper %a",name or "unset")
+    end
+
+    function rasterizers.tobytemap(buffer,index)
+        local data, height, width, components = zbuffertobytes(buffer.zbuffer)
+        newbytemap(index, width, height, components, data)
+        local storedwidth, storedheight, storedcomponents = getbytemapdata(index)
+        if storedwidth == width and storedheight == height and storedcomponents == components then
+            return {
+             -- index      = index,
+                width      = width,
+                height     = height,
+                components = components,
+                data       = data,
+            }
+        end
+    end
+
+    function rasterizers.recreate(bytemap,index)
+        local data = gzip.decompress(bytemap.data)
+        if data then
+            newbytemap(
+                index,
+                bytemap.width,
+                bytemap.height,
+                bytemap.components,
+                data
+            )
+            return true
+        else
+            return false
+        end
+    end
+
+    do
+
+        -- Here is a description of the logic as implemented (leaving out improvements
+        -- and extensions). Similar sescriptions can easily be got from the Internet
+        -- because it is old and proven technology.
+        --
+        -- 1. Use the z-buffer to find visible pixels and estimate robust depth
+        --    thresholds from the median non-zero neighbor depth difference.
+        -- 2. Compute an edge strength per visible pixel from depth discontinuities,
+        --    missing/background neighbors, and normal-angle creases.
+        -- 3. Convert per-pixel intensity to color coverage: coverage = 1 - intensity
+        --    Then add a configurable edge boost and gamma curve.
+        -- 4. Run serpentine Floyd-Steinberg error diffusion on the coverage buffer,
+        --    but only diffuse error to neighbors that pass same-surface tests
+        --    based on depth and normal continuity.
+        -- 5. Clear the color buffer to backgroundcolor and stamp color pixels/dots
+        --    where a final optional outline pass can reinforce strong edges.
+        --
+        -- The base halftoning step is Floyd-Steinberg error diffusion:
+        --
+        --   Robert W. Floyd and Louis Steinberg,
+        --   "An Adaptive Algorithm for Spatial Greyscale",
+        --   Proceedings of the Society for Information Display 17(2), 75--77, 1976.
+        --
+        --   https://isgwww.cs.uni-magdeburg.de/~stefans/npr/entry-Floyd-1976-AAS.html
+        --   https://cir.nii.ac.jp/crid/1573105974148265216?lang=en
+        --
+        -- The depth/normal edge detection and same-surface diffusion gate are local
+        -- additions for 3D renderer; they are not part of the original Floyd-Steinberg
+        -- paper.
+
+     -- local defaults = {
+     --     -- housekeeping
+     --     supersample       = 1,
+     --     usenormal         = true,
+     --     nobackground      = false,
+     --     backgroundcolor   = { 1, 1, 1 },
+     --     color             = { 0, 0, 0 },
+     --     -- depth/normal edge handling
+     --     creaseangle       = 25,
+     --     sameangle         = 15,
+     --     dzsamemultiplier  = 2.0,
+     --     dzedgemultiplier  = 8.0,
+     --     mindepthstep      = 1e-12,
+     --     luminance         = { 0.2126, 0.7152, 0.0722 },
+     --     -- tone input, per-pixel intensity is expected by default
+     --  -- intensityfield    = "intensity",
+     --  -- allowluminance    = false,
+     --     -- coverage shaping where intensity is [0,1] and coverage is the color amount
+     --     edgeboost         = 0.20,
+     --     coveragegamma     = 1.25,
+     --     minimumcoverage   = 0,
+     --     maximumcoverage   = 1,
+     --     -- error diffusion
+     --     serpentine        = true,  -- alternative scanlines
+     --     errorthreshold    = 0.5,
+     --     -- dot output: the default radius 0 is a single-pixel stipple and preserves
+     --     -- tone best. Larger radii need calibration because disks overlap.
+     --     dotradius         = 0,
+     --     clipdots          = true,
+     --     levels            = nil,
+     --     tonedots          = true,
+     --     -- optional edge overlay after diffusion.
+     --     outline           = false,
+     --     outlinethreshold  = 0.85,
+     --     outlineradius     = 0,
+     -- }
+
+        -- The equivalkent Lua solution is still somewhere on our disks. We used to delay
+        -- loading but the amount of code involved at this end is now small so we just
+        -- include it.
+
+        function rasterizers.stipple(buffer,specification)
+            local z = buffer.zbuffer
+            if z then
+                zbuffer.stipple_setup(z,specification)
+                zbuffer.stipple_0(z)
+                zbuffer.stipple_1(z)
+                zbuffer.stipple_2(z)
+                zbuffer.stipple_3(z)
+                zbuffer.stipple_4(z)
+            end
+            return true
+        end
+
+    end
+
+    function rasterizers.render(scene)
+        local buffer= scene.buffer
+        if scene.rendered then
+            return buffer
+        elseif not scene.updated then
+            return buffer
+        end
+        local materials = scene.materials
+        local zbuffer   = buffer.zbuffer
+        local followup  = false
+        local ontoppers = false
+        local objects   = scene.objects
+
+        for i=1,#objects do
+            local object = objects[i]
+            if not object.shown then
+                local mesh = object.mesh
+                if mesh then
+                    local material = materials[object.material or "default"] or materials.default
+                    local opacity  = material.opacity
+                    if material.hide then
+                        report("%i %i : %-9s : %s, opacity %0.3f, id %a",1,i,"hidden",object.kind,opacity,object.id)
+                        if opacity > 0 and opacity < 1 then
+                            followup = true
+                        end
+                    elseif material.ontop then
+                        ontoppers = true
+                        report("%i %i : %-9s : %s, opacity %0.3f, id %a",1,i,"delayed",object.kind,opacity,object.id)
+                    elseif opacity >= 1 then
+                        zbuffersetup(zbuffer, { material = material })
+                        if mesh.meshpoints then
+                            starttiming("thr",true) ioflush()
+                            zbufferpoints(zbuffer,mesh.meshpoints,mesh.method,false)
+                            stoptiming("thr")
+                            report("%i %i : %-9s : %s, opacity %0.3f, id %a, method %i, runtime %s",1,i,"points",object.kind,opacity,object.id,mesh.method,elapsedtime("thr"))
+                        else
+                            starttiming("thr",true) ioflush()
+                            zbuffertriangles(zbuffer,mesh.vertices,mesh.triangles)
+                            stoptiming("thr")
+                            report("%i %i : %-9s : %s, opacity %0.3f, id %a, runtime %s",1,i,"triangles",object.kind,opacity,object.id,elapsedtime("thr"))
+                        end
+                        object.shown = true
+                    elseif opacity > 0 and opacity < 1 then
+                        followup = true
+                        report("%i %i : %-9s : %s, opacity %0.3f, id %a",1,i,"delayed",object.kind,opacity,object.id)
+                    end
+                end
+            end
+        end
+        --
+        if followup then
+            for i=1,#objects do
+                local object = objects[i]
+                if not object.shown then
+                    local mesh = object.mesh
+                    if mesh then
+                        local material = materials[object.material or "default"]
+                        local opacity  = material.opacity
+                        if material.hide then
+                            report("%i %i : %-9s : %s, opacity %0.3f, id %a",2,i,"hidden",object.kind,opacity,object.id)
+                        elseif material.ontop then
+                            report("%i %i : %-9s : %s, opacity %0.3f, id %a",2,i,"delayed",object.kind,opacity,object.id)
+                        elseif opacity > 0 and opacity < 1 then
+                            zbuffersetup(zbuffer, { material = material })
+                            if mesh.meshpoints then
+                                starttiming("thr",true) ioflush()
+                                zbufferpoints(zbuffer,mesh.meshpoints,mesh.method,true)
+                                stoptiming("thr")
+                                report("%i %i : %-9s : %s, opacity %0.3f, id %a, method %i, runtime %s",2,i,"points",object.kind,opacity,object.id,mesh.method,elapsedtime("thr"))
+                            else
+                                starttiming("thr",true) ioflush()
+                                zbuffertriangles(zbuffer,mesh.vertices,mesh.triangles,true)
+                                stoptiming("thr")
+                                report("%i %i : %-9s : %s, opacity %0.3f, id %a, runtime %s",2,i,"triangles",object.kind,opacity,object.id,elapsedtime("thr"))
+                            end
+                            object.shown = true
+                        end
+                    end
+                end
+            end
+        end
+        --
+        if ontoppers then
+            for i=1,#objects do
+                local object = objects[i]
+                if not object.shown then
+                    local mesh   = object.mesh
+                    if mesh then
+                        local material = materials[object.material or "default"]
+                        local opacity  = material.opacity
+                        if material.hide then
+                            report("%i %i : %-9s : %s, opacity %0.3f, id %a",3,i,"hidden",object.kind,opacity,object.id)
+                        elseif material.ontop then
+                        zbuffersetup(zbuffer, { material = material })
+                            if mesh.meshpoints then
+                                starttiming("thr",true) ioflush()
+                                zbufferpoints(zbuffer,mesh.meshpoints,mesh.method,true)
+                                stoptiming("thr")
+                                report("%i %i : %-9s : %s, opacity %0.3f, id %a, method %i, runtime %s",3,i,"points",object.kind,opacity,object.id,mesh.method,elapsedtime("thr"))
+                            else
+                                starttiming("thr",true) ioflush()
+                                zbuffertriangles(zbuffer,mesh.vertices,mesh.triangles,true)
+                                stoptiming("thr")
+                                report("%i %i : %-9s : %s, opacity %0.3f, id %a, runtime %s",3,i,"triangles",object.kind,opacity,object.id,elapsedtime("thr"))
+                            end
+                            object.shown = true
+                        end
+                    end
+                end
+            end
+        end
+        if followup then
+            starttiming("thr",true) io.flush()
+            local n = zbuffercomposite(zbuffer,1e-9,1,1000) or 0
+            stoptiming("thr")
+            report("composing: max levels %i, runtime %s",n,elapsedtime("thr"))
+        end
+        scene.rendered = true
+        return buffer
+    end
+
+end
+
+do
+
+    local function cropbuffer(scene,buffer,cropstate)
+        if cropstate then
+            starttiming("thr",true) io.flush()
+            local zbuffer  = buffer.zbuffer
+            local cx       = cropstate.x -- not used yet
+            local cy       = cropstate.y -- not used yet
+            local xmin, xmax, ymin, ymax = zbufferbounds(buffer.zbuffer)
+            local width    = xmax - xmin + 1
+            local height   = ymax - ymin + 1
+            local czbuffer = zbuffercrop(zbuffer,ymin,xmin,height,width)
+            stoptiming("thr")
+            report("cropping: xmin %N, ymin %N, xmax %N, ymax %N, width %N, height %N, runtime %s",xmin,ymin,xmax,ymax,width,height,elapsedtime("thr"))
+            if czbuffer then
+                -- todo: replace z buffer by new zo we also need to update width etc then
+                resetwhatever(zbuffer) -- save memory
+                --
+                return {
+                    zbuffer         = czbuffer,
+                    width           = width,
+                    height          = height,
+                    backgroundcolor = buffer.backgroundcolor,
+                    source          = buffer,
+                    cropstate       = cropstate,
+                    bounds          = { xmin, ymin, xmax, ymax },
+                }
+            end
+        end
+        return buffer
+    end
+
+    local function cropstatus(scene,buffer,resolved)
+        local transform = scene.transform
+        if not transform then
+            return
+        elseif not transform.crop then
+            return
+        end
+        local bounds   = transform.bounds
+        local scale    = transform.scale or 1
+        local xoffset  = transform.x or 0
+        local yoffset  = transform.y or 0
+        local fullxmin = max(0, bounds.xmin * scale + xoffset)
+        local fullymin = max(0, bounds.ymin * scale + yoffset)
+        local fullxmax = min(buffer.width, bounds.xmax * scale + xoffset)
+        local fullymax = min(buffer.height,bounds.ymax * scale + yoffset)
+        if fullxmax <= fullxmin or fullymax <= fullymin then
+            return
+        end
+        local factor = buffer.width / resolved.width
+        if factor <= 0 then
+            factor = 1
+        end
+        local rx1 = max(1, floor(fullxmin / factor) + 1)
+        local ry1 = max(1, floor(fullymin / factor) + 1)
+        local rx2 = min(resolved.width,  ceil(fullxmax / factor))
+        local ry2 = min(resolved.height, ceil(fullymax / factor))
+        if rx2 < rx1 or ry2 < ry1 then
+            return
+        end
+        if rx1 == 1 and ry1 == 1 and rx2 == resolved.width and ry2 == resolved.height then
+            return
+        end
+        local width  = rx2 - rx1 + 1
+        local height = ry2 - ry1 + 1
+        return {
+            x             = rx1,
+            y             = ry1,
+            width         = width,
+            height        = height,
+            source_x      = (rx1 - 1) * factor,
+            source_y      = (ry1 - 1) * factor,
+            source_width  = width  * factor,
+            source_height = height * factor,
+            factor        = factor,
+        }
+    end
+
+    local version <const> = 1.006
+
+    local cachenames = { }
+
+    local function cachename(scene,exists)
+        if scene.cache then
+        local name = scene.name or "unknown"
+            local last = cachenames[name]
+            if exists then
+                last = (last or 0) + 1
+                cachenames[name] = last
+            elseif not last then
+                return -- not saved
+            end
+            name = string.formatters["l_m_t_x_%s_%s_%04i.lua"](environment.jobname,name,last)
+            return file.robustname(name)
+        end
+    end
+
+    function scenes.store(scene,bytemap)
+        local name = cachename(scene)
+        if name then
+            bytemap.data   = gzip.compress(bytemap.data)
+            local buffer   = scene.result.buffer
+            local resolved = scene.result.resolved
+            local camera   = scene.camera
+
+            local cache = {
+                kind      = "scenebytemap",
+                version   = version,
+                checksums = scene.checksums,
+                bytemap   = bytemap,
+                layout    = scene.layout,
+                process   = scene.process,
+                buffer    = {
+                    height      = buffer.height,
+                    width       = buffer.width,
+                    supersample = buffer.supersample,
+                },
+                resolved  = {
+                    height    = resolved.height,
+                    width     = resolved.width,
+                    cropstate = resolved.cropstate,
+                    bounds    = resolved.bounds,
+                },
+                setup     = {
+                    --
+                    eye         = camera.eye,
+                    target      = camera.target,
+                    up          = camera.up,
+                    perspective = camera.projection == "perspective",
+                    --
+                    light       = scene.light,
+                    viewport    = scene.viewport,
+                    transform   = scene.transform,
+                    camera      = scene.camera,
+                },
+            }
+            table.save(name,cache)
+        end
+    end
+
+    function scenes.recreate(scene,index)
+        local name = cachename(scene,true)
+        if name then
+            local cache = table.load(name)
+            if cache and cache.kind == "scenebytemap"
+                     and cache.version == version
+                     and samespecification(scene,cache) then
+                if rasterizers.recreate(cache.bytemap,index) then
+                    scenes.prepare(scene)
+                    --
+                    local zbuffer = scene.buffer.zbuffer
+                    --
+                    zbuffersetup(zbuffer,cache.setup)
+                    cache.buffer  .zbuffer = zbuffer
+                    cache.resolved.zbuffer = zbuffer
+                    --
+                    scene.layout      = cache.layout
+                    scene.perspective = cache.perspective
+                    scene.light       = cache.light
+                    scene.viewport    = cache.viewport
+                    scene.transform   = cache.transform
+                    scene.camera      = cache.camera
+                    scene.rendered    = true
+                    scene.result      = {
+                        scene    = scene,
+                        buffer   = cache.buffer,
+                        resolved = cache.resolved,
+                    }
+                    return true
+                end
+            end
+        end
+        return false
+    end
+
+    function scenes.render(scene,specification)
+        if scene.rendered then
+            return scene.result
+        end
+        if scenes.recreate(scene,specification.bytemap) then
+            scenes.compile(scene)
+        else
+            scene.checking = false
+            scenes.prepare(scene)
+            scenes.generate(scene)
+            scenes.update(scene)
+            -- we project the meshes
+            local buffer = rasterizers.render(scene)
+            if not buffer then
+                return
+            end
+            rasterizers.process(scene,specification)
+            local resolved = rasterizers.resolve(buffer)
+            if not resolved then
+                return
+            end
+            if specification.stipple then
+                local specification = specification.stipple
+                specification.backgroundcolor = mprgbcolor(specification.backgroundcolor)
+                specification.color           = mprgbcolor(specification.color)
+                rasterizers.stipple(resolved,specification)
+            end
+            local cropstate     = cropstatus(scene,buffer,resolved)
+            local displaybuffer = cropbuffer(scene,resolved,cropstate)
+            if not displaybuffer then
+                return
+            end
+            local bytemap = specification.bytemap
+            if bytemap then
+                bytemap = rasterizers.tobytemap(displaybuffer,bytemap)
+                if not bytemap then
+                    return
+                end
+            end
+            --
+            scene.rendered = true
+            scene.result   = {
+                scene    = scene,
+                buffer   = buffer,
+                resolved = displaybuffer,
+            }
+            --
+            scenes.store(scene,bytemap)
+        end
+    end
+
+    local threshold <const> = 32*1024*1024
+
+    function scenes.reset(scene)
+        if scene then
+            local memory = vectorgetmemory()
+            if memory > threshold then
+                report("trying to clean up %V bytes of memory",memory)
+                local buffer  = scene.buffer
+                local objects = scene.objects
+                local result  = scene.result
+                if objects then
+                    for i=1,#objects do
+                        local object = objects[i]
+                        local mesh   = object.mesh
+                        if mesh then
+                            resetwhatever(mesh.vertices)
+                            resetwhatever(mesh.triangles)
+                            resetwhatever(mesh.meshpoints)
+                        end
+                    end
+                end
+                if result and result.resolved then
+                    local resolved = result.resolved
+                    resetwhatever(resolved and resolved.zbuffer)
+                end
+                if buffer then
+                    resetwhatever(buffer.zbuffer)
+                end
+                memory = vectorgetmemory()
+                if memory > threshold then
+                    -- if we don't explicitly clean up we retain some for a while
+                    collectgarbage("collect")
+                    collectgarbage("collect")
+                    memory = vectorgetmemory()
+                end
+                if memory > 0 then
+                    report("we still use about %V bytes of memory",memory)
+                end
+            end
+        end
+    end
+
+end
+
+if mp and metapost then
+
+    local mp = mp
+
+    local registerscript   = metapost.registerscript
+    local registerdirect   = metapost.registerdirect
+
+    local getparameterset  = metapost.getparameterset
+    local getparameter     = metapost.getparameter
+
+    local projectpoint     = scenes.projectpoint
+    local render           = scenes.render
+    local registersegments = scenes.registersegments
+
+    local inject           = mp.inject
+    local scan             = mp.scan
+
+    local injectnumeric    = inject.numeric
+    local injectpair       = inject.pair
+    local injectboolean    = inject.boolean
+    local injectinteger    = inject.integer
+    local injecttriplet    = inject.triplet
+
+    local scanwhatever     = scan.whatever
+
+    -- we don't nest so we can discard all but the bitmap
+
+    local addmaterial = scenes.addmaterial
+    local addobject   = scenes.addobject
+    local addoverlay  = scenes.addoverlay
+
+    local scenedata = nil
+
+    local function getsteps(first,last,step)
+        local values    = { }
+        local nofvalues = 0
+        local tolerance = abs(step) * steptolerance
+        local value     = first
+        if step > 0 then
+            while value <= last + steptolerance do
+                nofvalues = nofvalues + 1
+                values[nofvalues] = value
+                value = value + step
+            end
+        else
+            while value >= last - steptolerance do
+                nofvalues = nofvalues + 1
+                values[nofvalues] = value
+                value = value + step
+            end
+        end
+        return values
+    end
+
+    function mp.lmt_scene_manage_prepare()
+        local specification = getparameterset("lmtthreedscene")
+        scenedata = scenes.new {
+            viewport = {
+                bytewidth       = specification.bytewidth,
+                byteheight      = specification.byteheight,
+                width           = specification.width,
+                height          = specification.height,
+                supersample     = specification.supersample,
+                resolution      = specification.resolution,
+                backgroundcolor = mprgbcolor(specification.backgroundcolor,{ 1, 1, 1 }),
+            },
+            camera = {
+                projection = specification.projection or "perspective",
+                eye        = specification.eye,
+                target     = specification.target,
+                up         = specification.up,
+                fov        = specification.fov,
+                crop       = specification.crop,
+            },
+            light = {
+                kind      = "directional",
+                direction = specification.light, -- name ?
+                intensity = specification.intensity or 1,
+            },
+            stipple = specification.stipple,
+        }
+        scenedata.name   = specification.name
+        scenedata.result = false
+        scenedata.cache  = specification.cache
+        scenedata.layout = {
+            bytewidth  = 0, -- bytewidth,
+            byteheight = 0, -- byteheight,
+            width      = 0, -- displaywidth,
+            height     = 0, -- displayheight,
+        }
+    end
+
+    function mp.lmt_scene_manage_render(specification)
+        if scenedata then
+            render(scenedata,getparameterset("lmtthreedscene"))
+        end
+    end
+
+    function mp.lmt_scene_manage_reset()
+        if scenedata then
+            scenes.reset(scenedata)
+            scenedata = false
+        end
+    end
+
+    function mp.lmt_scene_set_material    () addmaterial(scenedata,getparameterset("lmtthreedmaterial"))          end
+    function mp.lmt_scene_set_surface     () addobject  (scenedata,getparameterset("lmtthreedsurface"))           end
+    function mp.lmt_scene_set_parametric  () addobject  (scenedata,getparameterset("lmtthreedparametricsurface")) end
+    function mp.lmt_scene_set_implicit    () addobject  (scenedata,getparameterset("lmtthreedimplicitsurface"))   end
+    function mp.lmt_scene_set_internal    () addobject  (scenedata,getparameterset("lmtthreedinternalsurface"))   end
+    function mp.lmt_scene_set_external    () addobject  (scenedata,getparameterset("lmtthreedexternalsurface"))   end
+    function mp.lmt_scene_set_plane       () addobject  (scenedata,getparameterset("lmtthreedplane"))             end
+    function mp.lmt_scene_set_curve       () addobject  (scenedata,getparameterset("lmtthreedcurve"))             end
+    function mp.lmt_scene_set_intersection() addoverlay (scenedata,getparameterset("lmtthreedintersection"))      end
+
+    -- change this name .. we can also decide to move this to mp or to above
+
+    function mp.lmt_scene_overlay_segment(id)
+        local specification = getparameterset("lmtthreedvisiblesegment")
+        specification.kind     = "segment"
+        specification.segments = {
+            { specification.first, specification.second }
+        }
+        registersegments(scenedata,specification)
+    end
+
+    -- We use this opportunity to test the vector.point functionality. Vertices also
+    -- accept point userdata.
+
+    local pnew          = vector.point.new
+    local pnormalize    = vector.point.normalize
+    local pcrossproduct = vector.point.crossproduct
+
+    function mp.lmt_scene_overlay_grid()
+        local specification = getparameterset("lmtthreedvisiblegrid")
+        --
+        local origin        = specification.origin
+        local uaxis         = specification.uaxis
+        local vaxis         = specification.vaxis
+        local umin          = specification.umin
+        local umax          = specification.umax
+        local ustep         = specification.ustep
+        local vmin          = specification.vmin
+        local vmax          = specification.vmax
+        local vstep         = specification.vstep
+        local uvalues       = getsteps(umin,umax,ustep)
+        local vvalues       = getsteps(vmin,vmax,vstep)
+        local segments      = { }
+        local nofsegments   = 0
+        for i=1,#uvalues do
+            local u = uvalues[i]
+            nofsegments= nofsegments + 1 ; segments[nofsegments] = {
+                pnew(origin) + pnew(uaxis) * u + pnew(vaxis) * vmin,
+                pnew(origin) + pnew(uaxis) * u + pnew(vaxis) * vmax,
+            }
+        end
+        for i=1,#vvalues do
+            local v = vvalues[i]
+            nofsegments= nofsegments + 1 ; segments[nofsegments] = {
+                pnew(origin) + pnew(uaxis) * umin + pnew(vaxis) * v,
+                pnew(origin) + pnew(uaxis) * umax + pnew(vaxis) * v,
+            }
+        end
+        --
+        specification.kind     = "grid"
+        specification.segments = segments
+        --
+        registersegments(scenedata,specification)
+    end
+
+    function mp.lmt_scene_overlay_axis()
+        local specification = getparameterset("lmtthreedvisibleaxis")
+        --
+        local origin = specification.origin
+        local xaxis  = specification.xaxis
+        local yaxis  = specification.yaxis
+        local zaxis  = specification.zaxis
+        --
+        local segments = {
+            {
+                pnew(origin) + pnew(xaxis) * specification.xmin,
+                pnew(origin) + pnew(xaxis) * specification.xmax,
+            },
+            {
+                pnew(origin) + pnew(yaxis) * specification.ymin,
+                pnew(origin) + pnew(yaxis) * specification.ymax,
+            },
+            {
+                pnew(origin) + pnew(zaxis) * specification.zmin,
+                pnew(origin) + pnew(zaxis) * specification.zmax,
+            },
+        }
+        --
+        specification.kind     = "axis"
+        specification.segments = segments
+        --
+        registersegments(scenedata,specification)
+    end
+
+    local function arrowhead(from,to,length,width,rotation) -- userdata points
+        local forward = pnormalize(to -from)
+        local up
+        if abs(forward.x) < 0.001 and abs(forward.z) < 0.001 then
+            up = pnew(1,0,0)
+        else
+            up = pnew(0,1,0)
+        end
+        local right = pnormalize(pcrossproduct(forward,up))
+        if rotation and rotation ~= 0 then
+            right = right * cos(rotation) + up * sin(rotation)
+        end
+        local base = to - forward             * length
+        local tip  = to + pnormalize(forward) * 1/75
+        return
+            base + right * width/2,
+            base - right * width/2,
+            tip
+    end
+
+    local specials = { }
+
+    local function getpoint(specification)
+        local at = specification.at
+        if not at then
+            local name = specification.name
+            if name then
+                local namespace = scenedata.functions[name]
+                local getpoint  = namespace and namespace.point
+                if getpoint then
+                    at = specification.point
+                    if not at then
+                        local x = specification.x
+                        local y = specification.y
+                        local z = specification.z or 0
+                        if x and y then
+                            at = { x, y, z }
+                        end
+                    end
+                    if not at then
+                        local u = specification.u
+                        local v = specification.v
+                        if u and v then
+                            at = { u, v, 0 }
+                        end
+                    end
+                    if not at then
+                        local t = specification.t
+                        if t then
+                            at = { t }
+                        end
+                    end
+                    if at then
+                        local x, y, z = getpoint(unpack(at))
+                        if x then
+                            at = { x, y, z }
+                        end
+                    end
+                end
+            end
+        end
+        return at
+    end
+
+    local function getnormal(specification)
+        local name = specification.name
+        if name then
+            local namespace = scenedata.functions[name]
+            local getnormal = namespace and namespace.normal
+            if getnormal then
+                local at = getpoint(specification)
+                if at then
+                    local nx, ny, nz = getnormal(unpack(at))
+                    if nx then
+                        return { nx, ny, nz }
+                    end
+                end
+            end
+        end
+    end
+
+    function specials.point(specification)
+        local at = getpoint(specification)
+        if at then
+            local length = specification.length or 1/20
+            local at     = pnew(at)
+            return {
+                { at + pnew(-length,0,0), at + pnew(length,0,0) },
+                { at + pnew(0,-length,0), at + pnew(0,length,0) },
+            }
+        end
+    end
+
+    function specials.segment(specification)
+        local from = specification.from
+        local to   = specification.to
+        if from and to then
+            return { { pnew(from), pnew(to) } }
+        end
+    end
+
+    function specials.normal(specification)
+        local from = getpoint(specification)
+        if from then
+            local norm = getnormal(specification)
+            if norm then
+                local from = pnew(from)
+                local norm = pnew(norm)
+                local to   = from + norm * 1/4
+                local left, right, tip = arrowhead(
+                    from,
+                    to,
+                    rawget(specification,"length")   or 1/10,
+                    rawget(specification,"span")     or 1/10,
+                    rawget(specification,"rotation") or 0
+                )
+                return { { from, to }, { to, tip }, { to, left }, { to, right } }
+            end
+        end
+    end
+
+    function specials.arrow(specification)
+        local from = specification.from
+        local to   = specification.to
+        if from and to then
+            local from = pnew(from)
+            local to   = pnew(to)
+            local left, right, tip = arrowhead(
+                from,
+                to,
+                rawget(specification,"length")   or 1/10,
+                rawget(specification,"span")     or 1/10,
+                rawget(specification,"rotation") or 0
+            )
+            return { { from, to }, { to, tip }, { to, left }, { to, right } }
+        end
+    end
+
+    function mp.lmt_scene_overlay_special()
+        local specification = getparameterset("lmtthreedvisiblespecial")
+        scenes.compile(scenedata)
+        local kind     = specification.kind or "unset"
+        local special  = specials[kind]
+        local segments = special and special(specification)
+        if segments then
+-- print("SEGMENTS")
+-- inspect(segments)
+            specification.segments = segments
+            registersegments(scenedata,specification)
+        else
+            report("unknown or invalid special %a",kind)
+        end
+    end
+
+    function mp.lmt_scene_overlay_ticks()
+        local specification = getparameterset("lmtthreedvisibleticks")
+        --
+        local values      = getsteps(specification.first,specification.last,specification.step)
+        local origin      = specification.origin
+        local axis        = specification.axis
+        local tickaxis    = specification.tickaxis
+        local size        = 0.5 * specification.size
+        local segments    = { }
+        local nofsegments = 0
+        for i=1,#values do
+            local value = values[i]
+            nofsegments = nofsegments + 1
+            segments[nofsegments] = {
+                pnew(origin) + pnew(axis) * value + pnew(tickaxis) * -size,
+                pnew(origin) + pnew(axis) * value + pnew(tickaxis) *  size,
+            }
+        end
+        --
+        specification.segments = segments
+        specification.kind     = "ticks"
+        --
+        registersegments(scenedata,specification)
+    end
+
+    registerdirect("lmt_scene_project_point", function()
+        if scenedata.rendered then
+            local coordinate = scanwhatever()
+            local point      = scenedata.result and projectpoint(scenedata,coordinate)
+            if point then
+                injectpair(point.x or 0,point.y or 0)
+                return
+            else
+                report("you ask for an invisible point")
+            end
+        else
+            report("you need to render before working with points")
+        end
+        injectpair(0,0)
+    end)
+
+    registerdirect("lmt_scene_calculate_normal", function()
+        local name      = scanwhatever()
+        local input     = scanwhatever()
+        local namespace = scenedata.functions[name]
+        local getnormal = namespace and namespace.normal
+        if getnormal then
+            local x, y, z = normalize(getnormal(unpack(input)))
+            injecttriplet(x,y,z)
+        else
+            injecttriplet(0,0,0)
+        end
+    end)
+
+    registerdirect("lmt_scene_project_visible", function()
+        local coordinate = scanwhatever()
+        local point      = scenedata.result and projectpoint(scenedata,coordinate)
+        injectboolean(point and point.visible)
+    end)
+
+    registerdirect("lmt_scene_width", function()
+        injectnumeric(scenedata.result and scenedata.result.resolved.width or 0)
+    end)
+
+    registerdirect("lmt_scene_height",function()
+        injectnumeric(scenedata.result and scenedata.result.resolved.height or 0)
+    end)
+
+    registerdirect("lmt_scene_bytemap", function()
+        injectinteger(getparameter { "lmtthreedscene", "bytemap" })
+    end)
+
+end

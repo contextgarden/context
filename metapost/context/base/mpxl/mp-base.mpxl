@@ -115,7 +115,7 @@ vardef dashpattern(text t) =
     save on, off, w ;
     let on = _on_ ;
     let off = _off_ ;
-    w = 0 ;
+    w := 0 ;
     nullpicture t
 enddef ;
 
@@ -147,7 +147,7 @@ eps         := .00049 ;     % this is a pretty small positive number
 epsilon     := 1/256/256 ;  % but this is the smallest
 infinity    := 4095.99998 ; % and this is the largest
 neglectable := 0.000001 ;   % for double
-_           := -1 ;        % internal constant to make macros unreadable but shorter
+_           := -1 ;         % internal constant to make macros unreadable but shorter
 
 immutable eps, epsilon, neglectable, infinity, _ ;
 
@@ -303,13 +303,22 @@ vardef round primary u =
         floor(u+.5)
     elseif pair u :
         (floor(xpart u+.5), floor(ypart u+.5))
+    elseif color u :
+        % added by HH
+        (floor(redpart u+.5), floor(greenpart u+.5), floor(bluepart u+.5))
+    elseif cmykcolor u :
+        % added by HH
+        (floor(cyanpart u+.5), floor(magentapart u+.5), floor(yellowpart u+.5), floor(blackpart u+.5))
     elseif path u :
         % added by HH
-        for i=0 upto length u-1 :
-            round(point i of u) ..
-            controls round(postcontrol i of u) and round(precontrol i+1 of u) ..
+      % for i=0 upto length u-1 :
+      %     round(point i of u) ..
+      %     controls round(postcontrol i of u) and round(precontrol i+1 of u) ..
+      % endfor
+        for i within u :
+            round(pathpoint) ..
+            controls round(pathpostcontrol) and round(deltaprecontrol 1) ..
         endfor
-%         if cycle u : cycle else : point infinity of u fi
         if cycle u : cycle else : nocycle fi
     else :
         u
@@ -347,13 +356,13 @@ vardef counterclockwise primary c =
 enddef ;
 
 vardef tensepath expr r =
-    for k=0 upto length r - 1 :
-        point k of r ---
+    for i within r :
+        pathpoint ---
     endfor
     if cycle r :
         cycle
     else :
-        point infinity of r
+        nocycle
     fi
 enddef ;
 
@@ -424,27 +433,25 @@ primarydef x**y =
 enddef ;
 
 def takepower expr y of x =
-    if y=0 : % isn't x**0 = 1 even if x=0 ?
+    if y = 0 : % isn't x**0 = 1 even if x=0 ?
         1
-    elseif x=0 :
+    elseif x = 0 :
         0
-    else :
-        if y = floor y :
-            1
-            if y >= 0 :
-                for n=1 upto y :
-                    *x
-                endfor
-            else :
-                for n=-1 downto y :
-                    /x
-                endfor
-            fi
-        elseif x > 0 :
-            mexp(y*mlog x)
+    elseif y = floor y :
+        1
+        if y >= 0 :
+            for n=1 upto y :
+                *x
+            endfor
         else :
-            -mexp(y*mlog -x)
+            for n=-1 downto y :
+                /x
+            endfor
         fi
+    elseif x > 0 :
+         mexp(y*mlog  x)
+    else :
+        -mexp(y*mlog -x)
     fi
 enddef ;
 
@@ -484,7 +491,7 @@ enddef ;
 
 tertiarydef p softjoin q =
     begingroup
-    temp_path_a := fullcircle scaled 2join_radius shifted point 0 of q ;
+    temp_path_a     := fullcircle scaled 2join_radius shifted point 0 of q ;
     temp_internal_a := ypart(temp_path_a intersectiontimes p) ;
     temp_internal_b := ypart(temp_path_a intersectiontimes q) ;
     if temp_internal_a < 0 :
@@ -530,8 +537,8 @@ permanent join_radius, cuttings, cutbefore, cutafter ;
 
 % special operators
 
-vardef incr suffix $ = $ := $ + 1 ; $ enddef ;
-vardef decr suffix $ = $ := $ - 1 ; $ enddef ;
+vardef incr suffix $ = $ := $ + 1 ; $ enddef ; % increments as well as returns
+vardef decr suffix $ = $ := $ - 1 ; $ enddef ; % decrements as well as returns
 
 permanent incr, decr ;
 
@@ -600,11 +607,12 @@ enddef ;
 
 permanent min, max, flex ;
 
-def superellipse(expr r, t, l, b, s) =
+vardef superellipse(expr r, t, l, b, s) = % def -> vardef
     r { up    } ... (s[xpart t,xpart r],s[ypart r,ypart t]) { t-r } ...
     t { left  } ... (s[xpart t,xpart l],s[ypart l,ypart t]) { l-t } ...
     l { down  } ... (s[xpart b,xpart l],s[ypart l,ypart b]) { b-l } ...
-    b { right } ... (s[xpart b,xpart r],s[ypart r,ypart b]) { r-b } ... cycle enddef ;
+    b { right } ... (s[xpart b,xpart r],s[ypart r,ypart b]) { r-b } ... cycle
+enddef ;
 
 vardef interpath(expr a,p,q) =
     for t=0 upto length p-1 :

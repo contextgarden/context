@@ -416,7 +416,7 @@
     \protected\frozen\instance\edefcsname\e!stop \currentcomment\endcsname{\scrn_comment_stop                     }%
 \to \everydefinecomment
 
-\tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#S#settings]#:#text%%
+\tolerant\protected\def\scrn_comment_argument[#category]#spacer[#title]#spacer[#S#settings]#:#text%
   {\iflocation
      \cdef\currentcomment{#category}%
      \ifcstok{\commentparameter\c!state}\v!start

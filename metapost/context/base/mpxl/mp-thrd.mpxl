@@ -1,0 +1,397 @@
+%D \module
+%D   [       file=mp-thrd.mpxl,
+%D        version=2026.05.01,
+%D          title=\CONTEXT\ \METAPOST\ graphics,
+%D       subtitle=Scene based 3D plotting,
+%D         author=Mikael Sundqvist & Hans Hagen & Chat 5.5]
+%D           date=\currentdate,
+%D      copyright={PRAGMA ADE \& \CONTEXT\ Development Team}]
+%C
+%C This module is part of the \CONTEXT\ macro||package and is
+%C therefore copyrighted by \PRAGMA. See mreadme.pdf for
+%C details.
+
+if known metafun_loaded_thrd : endinput ; fi ;
+
+newinternal boolean metafun_loaded_thrd ; metafun_loaded_thrd := true ; immutable metafun_loaded_thrd ;
+
+runscript("lua.registercode('mlib-thr.lmt')");
+
+presetparameters "lmtthreedscene" [
+    bytemap     = 1,
+  % crop        = true,
+    maxfragment = 0,
+  % width       = 600,
+  % height      = 600,
+  % bytewidth   = "",
+  % byteheight  = "",
+    supersample = 1,
+    resolution  = 300,
+    projection  = "perspective",
+    eye         = (3,-4,2),
+    target      = (0,0,0),
+    up          = (0,0,1),
+    forward     = (0,0,0),
+    fov         = 45,
+    light       = (-1,-1,-1),
+    intensity   = 1,
+ %  stipple     = [
+ %      edgeboost        = .20,
+ %      gamma            = 1.25,
+ %      errorthreshold   = .5,
+ %      dotradius        = 0,
+ %      levels           = 2,
+ %      tonedots         = true,
+ %      outline          = false,
+ %      outlinethreshold = .85,
+ %      outlineradius    = 0,
+ %      color            = black,
+ %      backgroundcolor  = white
+ %  ]
+] ;
+
+presetparameters "lmtthreedmaterial" [
+    name      = "default",
+    diffuse   = (.7,.7,.7),
+    specular  = (0,0,0),
+    shininess = 10,
+    ambient   = .18,
+    twosided  = false,
+    opacity   = 1,
+    ontop     = false,
+    dx        = 0,
+    dy        = 0,
+] ;
+
+presetparameters "lmtthreedsurface" [
+    kind     = "graph",
+    id       = "surface",
+    code     = "0",
+    dfdx     = "",
+    dfdy     = "",
+    normal   = "smooth",
+    xstep    = "",
+    ystep    = "",
+    xmin     = -1,
+    xmax     =  1,
+    ymin     = -1,
+    ymax     =  1,
+    nx       = 32,
+    ny       = 32,
+    material = "default"
+] ;
+
+presetparameters "lmtthreedparametricsurface" [
+    kind          = "parametric",
+    id            = "surface",
+    x             = "u",
+    y             = "v",
+    z             = "0",
+    xu            = "",
+    yu            = "",
+    zu            = "",
+    xv            = "",
+    yv            = "",
+    zv            = "",
+    normal        = "smooth",
+    umin          = 0,
+    umax          = 2pi,
+    vmin          = 0,
+    vmax          = 2pi,
+    nu            = 64,
+    nv            = 32,
+    ustep         = "",
+    vstep         = "",
+    width         = .35,
+    boundary      = false,
+    boundarycolor = black,
+    boundarywidth = .5, % -1,
+    material      = "default"
+] ;
+
+presetparameters "lmtthreedimplicitsurface" [
+    kind     = "implicit",
+    id       = "surface",
+    code     = "x*x + y*y + z*z - 1",
+    dfdx     = "",
+    dfdy     = "",
+    dfdz     = "",
+    normal   = "smooth",
+    xmin     = -1,
+    xmax     =  1,
+    ymin     = -1,
+    ymax     =  1,
+    zmin     = -1,
+    zmax     =  1,
+    nx       = "",
+    ny       = "",
+    nz       = "",
+    iso      = 0,
+    material = "default"
+] ;
+
+presetparameters "lmtthreedexternalsurface" [
+    kind     = "external",
+    id       = "surface",
+  % filename = "",
+    scale    = 1,
+  % normal   = "smooth",
+    material = "default"
+] ;
+
+presetparameters "lmtthreedinternalsurface" [
+    kind     = "internal",
+    id       = "surface",
+  % name     = "",
+    scale    = 1,
+  % normal   = "smooth",
+    material = "default"
+] ;
+
+presetparameters "lmtthreedplane" [
+    kind     = "plane",
+    id       = "plane",
+    normal   = (0,0,1),
+    center   = (0,0,0),
+    usize    = 2,
+    vsize    = 2,
+    material = "default"
+] ;
+
+presetparameters "lmtthreedcurve" [
+    kind     = "curve",
+    id       = "curve",
+    x        = "t",
+    y        = "0",
+    z        = "0",
+    tmin     = 0,
+    tmax     = 1,
+    nt       = 64,
+  % tstep    = 0,
+    material = "default"
+] ;
+
+presetparameters "lmtthreedintersection" [
+    kind     = "intersection",
+    id       = "intersection",
+    first    = "surface",
+    second   = "plane",
+    nx       = 0,
+    ny       = 0,
+    material = "default"
+] ;
+
+presetparameters "lmtthreedvisiblegrid" [
+    id     = "",
+    origin = (0,0,0),
+    uaxis  = (1,0,0),
+    vaxis  = (0,1,0),
+    umin   = -1,
+    umax   =  1,
+    ustep  = .25,
+    vmin   = -1,
+    vmax   =  1,
+    vstep  = .25,
+    color  = black,
+    width  = -1
+] ;
+
+presetparameters "lmtthreedvisibleaxis" [
+    id     = "",
+    origin = (0,0,0),
+    xaxis  = (1,0,0),
+    yaxis  = (0,1,0),
+    zaxis  = (0,0,1),
+    xmin   = -1,
+    xmax   =  1,
+    ymin   = -1,
+    ymax   =  1,
+    zmin   =  0,
+    zmax   =  1,
+    color  = black,
+    width  = -1
+] ;
+
+presetparameters "lmtthreedvisibleticks" [
+    id       = "",
+    origin   = (0,0,0),
+    axis     = (1,0,0),
+    tickaxis = (0,1,0),
+    first    = -1,
+    last     =  1,
+    step     =  1,
+    size     = .1,
+    color    = black,
+    width    = -1
+] ;
+
+presetparameters "lmtthreedvisiblespecial" [
+    id       = "",
+  % from     = (0,0,0),
+  % to       = (0,0,0),
+  % at       = (0,0,0),
+    color    = black,
+    width    = -1
+] ;
+
+presetparameters "lmtthreedvisiblesegment" [
+    id     = "",
+    first  = (0,0,0),
+    second = (1,0,0),
+    color  = black,
+    width  = -1
+] ;
+
+newscriptindex mfid_scene_width   ; mfid_scene_width   := scriptindex "lmt_scene_width" ;
+newscriptindex mfid_scene_height  ; mfid_scene_height  := scriptindex "lmt_scene_height" ;
+newscriptindex mfid_scene_bytemap ; mfid_scene_bytemap := scriptindex "lmt_scene_bytemap" ;
+
+def lmt_scene_width   = runscript mfid_scene_width   enddef ;
+def lmt_scene_height  = runscript mfid_scene_height  enddef ;
+def lmt_scene_bytemap = runscript mfid_scene_bytemap enddef ;
+
+% newscriptindex mfid_scene_overlay_path_count ; mfid_scene_overlay_path_count := scriptindex "lmt_scene_overlay_path_count" ;
+% newscriptindex mfid_scene_overlay_path_data  ; mfid_scene_overlay_path_data  := scriptindex "lmt_scene_overlay_path_data"  ;
+% newscriptindex mfid_scene_overlay_path_width ; mfid_scene_overlay_path_width := scriptindex "lmt_scene_overlay_path_width" ;
+% newscriptindex mfid_scene_overlay_path_color ; mfid_scene_overlay_path_color := scriptindex "lmt_scene_overlay_path_color" ;
+
+% def lmt_scene_overlay_path_count          = runscript mfid_scene_overlay_path_count   enddef ;
+% def lmt_scene_overlay_path_data  (expr j) = runscript mfid_scene_overlay_path_data  j enddef ;
+% def lmt_scene_overlay_path_width (expr j) = runscript mfid_scene_overlay_path_width j enddef ;
+% def lmt_scene_overlay_path_color (expr j) = runscript mfid_scene_overlay_path_color j enddef ;
+
+newscriptindex mfid_scene_project_point    ; mfid_scene_project_point    := scriptindex "lmt_scene_project_point" ;
+newscriptindex mfid_scene_calculate_normal ; mfid_scene_calculate_normal := scriptindex "lmt_scene_calculate_normal" ;
+newscriptindex mfid_scene_project_visible  ; mfid_scene_project_visible  := scriptindex "lmt_scene_project_visible" ;
+
+def lmt_scene_project_point     expr    j  = runscript mfid_scene_project_point    j enddef ;
+def lmt_scene_calculate_normal (expr n, j) = runscript mfid_scene_calculate_normal n j enddef ;
+def lmt_scene_project_visible   expr    j  = runscript mfid_scene_project_visible  j enddef ;
+
+let lmt_scene_point   = lmt_scene_project_point   ;
+let lmt_scene_normal  = lmt_scene_calculate_normal ;
+let lmt_scene_visible = lmt_scene_project_visible ;
+
+def lmt_scene_material     = applyparameters "lmtthreedmaterial"          "lmt_scene_do_material"     enddef ;
+def lmt_scene_parametric   = applyparameters "lmtthreedparametricsurface" "lmt_scene_do_parametric"   enddef ;
+def lmt_scene_implicit     = applyparameters "lmtthreedimplicitsurface"   "lmt_scene_do_implicit"     enddef ;
+def lmt_scene_internal     = applyparameters "lmtthreedinternalsurface"   "lmt_scene_do_internal"     enddef ;
+def lmt_scene_external     = applyparameters "lmtthreedexternalsurface"   "lmt_scene_do_external"     enddef ;
+def lmt_scene_surface      = applyparameters "lmtthreedsurface"           "lmt_scene_do_surface"      enddef ;
+def lmt_scene_plane        = applyparameters "lmtthreedplane"             "lmt_scene_do_plane"        enddef ;
+def lmt_scene_curve        = applyparameters "lmtthreedcurve"             "lmt_scene_do_curve"        enddef ;
+def lmt_scene_intersection = applyparameters "lmtthreedintersection"      "lmt_scene_do_intersection" enddef ;
+
+vardef lmt_scene_do_material     = lua.mp.lmt_scene_set_material    () ; enddef ;
+vardef lmt_scene_do_parametric   = lua.mp.lmt_scene_set_parametric  () ; enddef ;
+vardef lmt_scene_do_implicit     = lua.mp.lmt_scene_set_implicit    () ; enddef ;
+vardef lmt_scene_do_internal     = lua.mp.lmt_scene_set_internal    () ; enddef ;
+vardef lmt_scene_do_external     = lua.mp.lmt_scene_set_external    () ; enddef ;
+vardef lmt_scene_do_surface      = lua.mp.lmt_scene_set_surface     () ; enddef ;
+vardef lmt_scene_do_plane        = lua.mp.lmt_scene_set_plane       () ; enddef ;
+vardef lmt_scene_do_curve        = lua.mp.lmt_scene_set_curve       () ; enddef ;
+vardef lmt_scene_do_intersection = lua.mp.lmt_scene_set_intersection() ; enddef ;
+
+def lmt_scene_segment    = applyparameters "lmtthreedvisiblesegment" "lmt_scene_do_segment" enddef ;
+def lmt_scene_grid       = applyparameters "lmtthreedvisiblegrid"    "lmt_scene_do_grid"    enddef ;
+def lmt_scene_axis       = applyparameters "lmtthreedvisibleaxis"    "lmt_scene_do_axis"    enddef ;
+def lmt_scene_ticks      = applyparameters "lmtthreedvisibleticks"   "lmt_scene_do_ticks"   enddef ;
+def lmt_scene_special    = applyparameters "lmtthreedvisiblespecial" "lmt_scene_do_special" enddef ;
+
+vardef lmt_scene_do_segment = lua.mp.lmt_scene_overlay_segment() ; enddef ;
+vardef lmt_scene_do_grid    = lua.mp.lmt_scene_overlay_grid   () ; enddef ;
+vardef lmt_scene_do_axis    = lua.mp.lmt_scene_overlay_axis   () ; enddef ;
+vardef lmt_scene_do_ticks   = lua.mp.lmt_scene_overlay_ticks  () ; enddef ;
+vardef lmt_scene_do_special = lua.mp.lmt_scene_overlay_special() ; enddef ;
+
+% this will change:
+%
+% proper begin /end
+% no lmt variables
+
+% todo : tick labels
+% todo : axis labels
+% todo : get position
+% todo : push/pop parameters
+% todo : cleanup results
+
+boolean lmt_scene_rendered ; lmt_scene_rendered := false ;
+numeric lmt_scene_nesting  ; lmt_scene_nesting  := 0 ;
+
+def lmt_load_mlib_thr =
+    runscript("lua.registercode('mlib-thr.lmt')");
+    let lmt_load_mlib_thr = relax ;
+enddef ;
+
+def lmt_scene_start =
+    lmt_load_mlib_lsy ;
+    applyparameters "lmtthreedscene" "lmt_scene_do_start"
+enddef ;
+
+def lmt_scene_do_start =
+    if lmt_scene_nesting = 0 :
+        lua.mp.lmt_scene_manage_prepare() ;
+        lmt_scene_rendered := false ;
+    fi ;
+    lmt_scene_nesting := lmt_scene_nesting + 1 ;
+enddef ;
+
+def lmt_scene_render =
+    if not lmt_scene_rendered and (lmt_scene_nesting = 1) :
+        lua.mp.lmt_scene_manage_render() ;
+        lmt_scene_flush_bytemap ;
+      % lmt_scene_flush_paths ;
+      % lmt_scene_flush_labels ;
+        lmt_scene_rendered := true ;
+    fi ;
+enddef ;
+
+def lmt_scene_stop =
+    lmt_scene_render ;
+    lmt_scene_nesting := lmt_scene_nesting - 1 ;
+    if lmt_scene_nesting = 0 :
+         lua.mp.lmt_scene_manage_reset() ;
+    fi
+enddef ;
+
+numeric lmt_scene_final_width ;
+numeric lmt_scene_final_height ;
+
+def lmt_scene_flush_bytemap =
+    begingroup ;
+        save p; path p ; p := unitsquare
+            xyscaled (lmt_scene_width,lmt_scene_height)
+            if (hasparameter "lmtthreedscene" "width") :
+                if (hasparameter "lmtthreedscene" "height") :
+                    xsized (getparameter "lmtthreedscene" "width"),getparameter "lmtthreedscene" "height"))
+                else :
+                    xsized (getparameter "lmtthreedscene" "width")
+                fi
+            elseif (hasparameter "lmtthreedscene" "height") :
+                ysized (getparameter "lmtthreedscene" "height")
+            fi
+        ;
+        lmt_final_width  := bbwidth (p) ;
+        lmt_final_height := bbheight(p) ;
+    endgroup ;
+    draw unitsquare
+        xyscaled(lmt_final_width,lmt_final_height)
+        withbytemap (lmt_scene_bytemap)
+        withbytemasked 255
+        withpen pencircle scaled 0
+    ;
+enddef ;
+
+def lmt_scene_project_point expr j =
+    (
+        (runscript mfid_scene_project_point j)
+            xscaled (lmt_final_width /lmt_scene_width )
+            yscaled (lmt_final_height/lmt_scene_height)
+    )
+enddef ;
+
+vardef lmt_scene_bounds =
+    unitsquare xyscaled(lmt_final_width,lmt_final_height)
+enddef ;
+
+let lmt_scene_point = lmt_scene_project_point ;

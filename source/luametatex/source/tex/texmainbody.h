@@ -20,6 +20,7 @@ typedef enum ready_states {
 
 typedef struct main_state_info {
     int    run_state;       /*tex Are we |INITEX|? */
+    int    overload_state;
     int    ready_already;   /*tex A typical \TEX\ variable name. */
     double start_time;
 } main_state_info ;

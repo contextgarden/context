@@ -1,0 +1,104 @@
+% signal=squid
+
+\startcomponent excursion-en-setupcommands
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Setup commands]
+
+\index{setup}
+\index{layout}
+
+Global commands are placed in the setup area of your input file, before
+\type{\startdocument}.
+
+\doifnotmode{Book} {
+    In \in{appendix}[chap:commandsetups] there is a complete overview of the used
+    commands in this manual and their parameters.
+}
+
+For a complete list of all commands please refer to \goto{\Emph{\CONTEXT\
+commands}} [ url (manual:qr-en)] manual.
+
+The set up commands all have an identical structure. They look like what is shown
+in \in{Figure}[fig:setupcommand].
+
+\startplacefigure
+  [location=here,
+   reference=fig:setupcommand,
+   title= Example of a setup command]
+  \scale[scale=950]{\showsetup{setupparagraphs}}
+\stopplacefigure
+
+A set up command consists of a more or less logical name and a number of bracket
+pairs. Bracket pairs may be optional and in that case the \type{[]} are typeset
+slanted {\tt \sl []}. If a bracket pair is optional, this is also stated under
+the pair with \type{OPT}. In the definition the bracket pairs may contain:
+
+\starttyping
+\setupacommand[.1.][.2.][..,..=..,..]
+\stoptyping
+
+In the options list following the definition, the \type{.1.} and \type{.2.} show
+the possible options that can be set in the first and second bracket pair
+respectively. The parameters and their possible values are placed in the third
+bracket pair. The commas in the third pair of brackets indicate that a list of
+parameters can be enclosed.
+
+The default options and parameter values are underlined.
+
+Furthermore you will notice that some values are typeset in uppercase like:
+\WORD{section}, \WORD{name}, \WORD{dimension}, \WORD{number}, \WORD{command},
+\WORD{style} and \WORD{text}. This indicates that you can set the value yourself.
+\in{Table}[tab:uppercase-keys] shows a selection of upper case values.
+
+\startplacetable
+  [location=here,
+   reference=tab:uppercase-keys,
+   title={Description of upper case keys in setup commands}]
+  \bTABLE
+    \bTR
+      \bTD[style=bold] Key \eTD
+      \bTD[style=bold] Meaning \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] section \eTD
+      \bTD a section name like chapter, section, subsection etc. \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] name \eTD
+      \bTD an identifier (logical name) \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] dimension \eTD
+      \bTD a dimension with a unit as \type{cm}, \type{pt},
+          \type{em}, \type{ex}, \type{sp} or \type{in} \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] number \eTD
+      \bTD an integer \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] command \eTD
+      \bTD a command \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] text \eTD
+      \bTD text \eTD
+    \eTR
+    \bTR
+      \bTD[style=smallcaps] style \eTD
+      \bTD bold, slanted \dots \eTD
+    \eTR
+    \bTR
+      \bTD \dots \eTD
+      \bTD \dots \eTD
+    \eTR
+  \eTABLE
+\stopplacetable
+
+\stopchapter
+
+\stopcomponent

@@ -2807,7 +2807,7 @@
      \zeropoint \hsize
    \relax
    \pushparagraphtweak {shift}
-   \dontleavehmode
+   \noindent % not \dontleavehmode
    \ifx\m_spac_hanging_location\v!right
      \rlap{\kern\scratchhsize\kern\scratchdistance\box\nextbox}%
    \else

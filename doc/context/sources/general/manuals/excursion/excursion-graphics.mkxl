@@ -1,0 +1,184 @@
+\startenvironment excursion-graphics
+
+% Colors are defined in the excursion-en-style.mkxl.
+
+% We can set color on the graphic but take them from framed because the
+% colors can be different per kind of rendering. The \METAPOST\ code
+% is kind of ancient and we might do it differently nowadays but why
+% touch it now. Okay, we did adapt it a bit (the drawdots).
+
+\setupMPvariables
+  [basic-shape]
+% [linecolor=ShapeDarkLine,
+%  dotscolor=ShapeDarkEnd]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots}]
+
+\startuseMPgraphic{basic-shape}{linecolor,dotscolor}
+    w := OverlayWidth  ; width  := 100 ; wfactor := w/width ;
+    h := OverlayHeight ; height := 100 ; hfactor := h/height ;
+    d := OverlayOffset ;
+    %
+    def random_delta (expr d) =
+        d - (uniformdeviate 2d)
+    enddef;
+    %
+    z1 = (0,height) ;
+    z2 = (0,0) ;
+    z3 = (width,0) ;
+    z4 = (width,height) ;
+    %
+    z5 = (  width+random_delta(.2width),height+random_delta(.2height)) ;
+    z6 = (.5width+random_delta(.1width),height+random_delta(.1height)) ;
+    %
+    path p ; p := z5 .. z1 .. z2 .. z3 .. z4 .. z6 ;
+    draw p
+        withpen pencircle
+            xscaled (OverlayLineWidth/   wfactor)
+            yscaled (OverlayLineWidth/(2*hfactor))
+            rotated 30
+        withcolor mpvars "linecolor" ;
+    drawdot p
+        withpen pencircle
+          xscaled (OverlayLineWidth/wfactor)
+          yscaled (OverlayLineWidth/hfactor)
+        withcolor mpvars "dotscolor" ;
+    %
+    currentpicture := currentpicture xysized (w,h) ;
+\stopuseMPgraphic
+
+\setupMPvariables
+  [chapter-state]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots}]
+
+\startreusableMPgraphic{chapter-state}{linecolor,dotscolor}
+    delta  := OverlayOffset ;
+    width  := (OverlayWidth  - 2*delta) ;
+    height := (OverlayHeight - 2*delta) / 3 ;
+    %
+    z1 = (0,3height) ;
+    z2 = (0,2height) ;
+    z3 = (if not odd RealPageNumber : - fi width,1.5height) ;
+    z4 = (0,height) ;
+    z5 = (0,0) ;
+    %
+    path p ; p := z1 -- z2{up} .. z3 .. {up} z4 -- z5 ;
+    draw p
+        withpen pencircle
+            xscaled delta
+            yscaled .5delta
+            rotated 30
+        withcolor mpvars "linecolor" ;
+    drawdot p
+        withpen pencircle
+            scaled delta
+        withcolor mpvars "dotscolor" ;
+\stopreusableMPgraphic
+
+\setupMPvariables
+  [pagenumber-state]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots}]
+
+\startreusableMPgraphic{pagenumber-state}{linecolor,dotscolor}
+    delta  := OverlayOffset ;
+    width  := OverlayWidth  - 2delta ;
+    height := OverlayHeight - 2delta ;
+    lines  := 5*OverlayOffset ;
+    %
+    z1 = (0,0) ;
+    z2 = (lines,0) ;
+    z3 = (.5width,height) ;
+    z4 = (width-lines,0) ;
+    z5 = (width,0) ;
+    %
+    path p ; p := z1 -- z2 {dir 135} ... z3 ... {dir -135} z4 -- z5 ;
+    draw p
+        withpen pencircle
+            xscaled delta
+            yscaled .5delta
+            rotated 30
+        withcolor mpvars "linecolor" ;
+    drawdot p
+        withpen pencircle
+            scaled delta
+        withcolor mpvars "dotscolor" ;
+\stopreusableMPgraphic
+
+\setupMPvariables
+  [setup-shape]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots},
+   fillcolor=\framedparameter{shape:fill}]
+
+\startuseMPgraphic{setup-shape}{linecolor,dotscolor,fillcolor}
+    delta  := OverlayOffset ;
+    width  := OverlayWidth - 2delta ;
+    height := OverlayHeight - 2delta ;
+    %
+    vardef gamma =
+        g := OverlayOffset ; ((g/8) + (uniformdeviate (g/9)))
+    enddef;
+    %
+    z1 = (0,0) ;
+    z2 = (width,0) ;
+    z3 = (width,height) ;
+    z4 = (0,height) ;
+    %
+    x12 = .5[x1,x2] ; y12 = y1 + gamma ;
+    y23 = .5[y2,y3] ; x23 = x2 - gamma ;
+    x34 = .5[x3,x4] ; y34 = y3 - gamma ;
+    y41 = .5[y4,y1] ; x41 = x4 + gamma ;
+    %
+    path p ; p :=
+        z1 .. z12 .. z2 &
+        z2 .. z23 .. z3 &
+        z3 .. z34 .. z4 &
+        z4 .. z41 .. z1 &
+        cycle ;
+    pickup pencircle
+        xscaled OverlayLineWidth
+        yscaled .5OverlayLineWidth
+        rotated 30;
+    fill p
+        withcolor mpvars "fillcolor" ;
+    draw p
+        withcolor mpvars "linecolor" ;
+\stopuseMPgraphic
+
+\setupMPvariables
+  [note-rule]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots}]
+
+\startuniqueMPgraphic{note-rule}{linecolor,dotscolor}
+    draw bottomboundary OverlayBox
+        withpen pencircle scaled OverlayLineWidth
+        withcolor mpvars "linecolor" ;
+    draw llcorner OverlayBox
+        withpen pencircle scaled 3OverlayLineWidth
+        withcolor mpvars "dotscolor" ;
+    draw lrcorner OverlayBox
+        withpen pencircle scaled 3OverlayLineWidth
+        withcolor mpvars "dotscolor" ;
+\stopuniqueMPgraphic
+
+\setupMPvariables
+  [column-rule]
+  [linecolor=\framedparameter{shape:line},
+   dotscolor=\framedparameter{shape:dots}]
+
+\startuniqueMPgraphic{column-rule}{linecolor,dotscolor}
+    draw leftboundary OverlayBox
+        withpen pencircle scaled  OverlayLineWidth
+        withcolor mpvars "linecolor" ;
+    draw ulcorner OverlayBox
+        withpen pencircle scaled 3OverlayLineWidth
+        withcolor mpvars "dotscolor" ;
+    draw llcorner OverlayBox
+        withpen pencircle scaled 3OverlayLineWidth
+        withcolor mpvars "dotscolor" ;
+\stopuniqueMPgraphic
+
+\stopenvironment

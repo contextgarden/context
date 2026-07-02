@@ -1,0 +1,18 @@
+% signal=squid
+
+% \enablemode[Book]
+
+\startcomponent excursion-en-whatever
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Test]
+
+\samplefile{tufte} \footnote {tufte}
+
+\stopchapter
+
+\stopcomponent
+

@@ -1,0 +1,39 @@
+\startcomponent excursion-en-introduction
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Introduction]
+
+\CONTEXT\ is a document development system based on \TEX, a typesetting system
+and programming language to typeset and produce documents. This system is easy to
+use and enables you to make complex paper and electronic documents.
+
+This manual was originally written by Ton Otten. The current
+\documentvariable{version} was edited by the \CONTEXT\ group. The book describes
+the capabilities of \CONTEXT\ \LMTX\ that uses the \LUAMETATEX\ engine. The
+manual introduces available commands and their functionality\footnote {All paper
+and electronic products around \CONTEXT\ are produced with \CONTEXT. All sources
+of these products are or will be made available electronically to give you
+insight in the way these products are made up.}.
+
+This system is developed for practical applications: the typesetting and
+production of documents ranging from simple straight forward books up to very
+complex and advanced technical manuals and textbooks in a paper or an electronic
+version. This introductory manual describes the functionality necessary to apply
+standard text elements in a manual or textbook. \CONTEXT, however, is capable of
+much more and for users who want more there are other manuals and sources
+available.
+
+\CONTEXT\ has a multi lingual interface to enable users to work with the system
+in their own language.
+
+\blank[3*big]
+
+\CONTEXT\ group
+
+Willi Egger
+\stopchapter
+
+\stopcomponent

@@ -94,10 +94,16 @@ do
         frozen  = true,
     }
 
-    local hpack = nuts.hpack
+    local hpack         = nuts.hpack
+    local group <const> = tex.groupcodes.hbox
+    local r2l   <const> = tex.directioncodes.righttoleft
 
-    function nuts.fullhpack(head,...)
-        return hpack(glyph_run_callback(head),...)
+    function nuts.fullhpack(head,...) -- "exactly"
+        return hpack(glyph_run_callback(head,group),...)
+    end
+
+    function nuts.fullhpackrl(head,...)
+        return hpack(glyph_run_callback(head,group,r2l),...)
     end
 
     local tonut  = nodes.tonut

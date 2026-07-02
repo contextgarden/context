@@ -1,0 +1,19 @@
+% signal=squid
+
+\startcomponent excursion-en-commandindex
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=\labeltext{document:commandindex},reference=chap:commandindex]
+
+  \startmixedcolumns[documentcolumns]
+    \setuptype
+      [color=black]
+    \placeregister[Command]
+  \stopmixedcolumns
+
+\stopchapter
+
+\stopcomponent

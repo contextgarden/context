@@ -1,0 +1,201 @@
+\startenvironment excursion-screen
+
+% This setup adds some functionality as well as redefines
+% some of the previously defined layout.
+
+\enablemode[**en-us,**uk]
+
+% \showframe
+
+% International menu names
+
+\startmode[**nl]
+
+  \setupinteractionmenu
+    [right]
+    [Contents=inhoud,
+     Index=index,
+     Cmdindex=commando's,
+     Cmddefs=definities,
+     Colofon=colofon,
+     CloseDoc=stoppen,
+     Search=zoeken,
+     Goback=terug,
+    ]
+
+\stopmode
+
+\startmode[**en-us,**uk]
+
+  \setvariables
+    [Menu]
+    [Contents=Contents,
+     Index=Index,
+     Cmdindex={Command Index},
+     Cmddefs={Command Definitions},
+     Colofon=Colofon,
+     CloseDoc=Exit,
+     Search=Search,
+     Goback={Go back},
+    ]
+
+\stopmode
+
+\startmode[**cz]
+
+  \setvariables
+    [Menu]
+    [Contents=obsah,
+     Index={rejst\rcaron\iacute k},
+     Cmdindex={seznam p\rcaron\iacute kaz\uring},
+     Cmddefs ={definice p\rcaron\iacute kaz\uring},
+     Colofon ={tir\aacute\zcaron},
+     CloseDoc={konec},
+     Search={vyhledej}
+     Goback  ={krok zp\ecaron t},
+    ]
+
+\stopmode
+
+\startmode[**fr]
+
+  \setvariables
+    [Menu]
+    [Contents={table des matières},
+     Index= index},
+     Cmdindex=commandes,
+     Cmddefs={définitions},
+     Colofon=colophon,
+     CloseDoc=quitter,
+     Search=recherche,
+     Goback=retour,
+    ]
+
+\stopmode
+
+\startmode[**vn]
+
+  \setvariables
+    [Menu]
+    [Contents={mục lục},
+     Index={bảng tra},
+     Cmdindex={lệnh[comind]},
+     Cmddefs  định nghĩa},
+     Colofon={trang cuối},
+     CloseDoc=thoát},
+     Search={tìm kiếm},
+     Goback={quay lại},
+    ]
+
+\stopmode
+
+% Screen definition
+
+\definepapersize
+  [LocalPaperFormat]
+  [width=260mm,
+   height=210mm]
+
+\setuppapersize
+  [LocalPaperFormat]
+  [LocalPaperFormat]
+
+% \showframe
+
+\setuplayout
+  [location=middle,
+   topspace=5mm,
+   backspace=6mm,
+   header=6mm,
+   headerdistance=5mm,
+   height=200mm,
+   rightedge=50mm,
+   rightedgedistance=3mm,
+   rightmargin=10mm,
+   rightmargindistance=3mm,
+   leftedge=0pt,
+   leftedgedistance=0pt,
+   leftmargin=0pt,
+   leftmargindistance=0pt,
+   footer=5mm,
+   footerdistance=5mm,
+   width=183mm]
+
+\setupinteractionscreen
+  [width=260mm,
+   height=210mm,
+   option=max]
+
+\defineoverlay[gotocontents][\overlaybutton{contents}]
+
+\setupbackgrounds
+  [page]
+  [background=gotocontents]
+
+\defineframed[Menu]
+
+\setupframed
+  [Menu]
+  [background=color,
+   backgroundcolor=ShapeLightFill,
+   width=\rightedgewidth,
+   frame=off]
+
+% We block the pagenumber (not that useful in an interactive
+% document)  and place the chapter number in the
+% footer.
+
+\setuppagenumbering
+  [alternative=singlesided,
+   location=,
+  ]
+
+\setupfootertexts
+  [margin]
+  [][][][]
+
+% The footer must be setup when the body matter starts, so the following code is placed in the file excursion-en.mkxl
+
+% Adapting the Chapter State:
+
+\setuphead
+  [chapter]
+  [command=\HeadCommand,
+   page=,
+   before={\blank[3*big]},
+   after={\blank[2*big,samepage]},
+   style=\bfa]
+
+\setupinteraction
+  [state=start,
+   color=blue,
+   menu=on]
+
+% We let users click on the whole table of contents line and
+% provide some menus.
+
+\setuplist
+  [chapter]
+  [interaction=all]
+
+\setupinteractionmenu
+  [right]
+  [state=start,
+   color=blue,
+   offset=4pt,
+   frame=off]
+
+ \startinteractionmenu[right]
+    \vfill
+    \startgoto [chap:contents]      \Menu{\getvariable{Menu}{Contents}} \stopgoto\par
+    \startgoto [chap:index]         \Menu{\getvariable{Menu}{Index}}    \stopgoto\par
+    \startgoto [chap:commandindex]  \Menu{\getvariable{Menu}{Cmdindex}} \stopgoto\par
+    \startgoto [chap:commandsetups] \Menu{\getvariable{Menu}{Cmddefs}}  \stopgoto\par
+    \vfill
+    \startgoto [Colofon]            \Menu{\getvariable{Menu}{Colofon}}  \stopgoto \par
+    \startgoto [CloseDocument]      \Menu{\getvariable{Menu}{CloseDoc}} \stopgoto\par
+    \startgoto [SearchDocument]     \Menu{\getvariable{Menu}{Search}}   \stopgoto \par
+    \startgoto [PreviousJump]       \Menu{\getvariable{Menu}{Goback}}   \stopgoto
+  \stopinteractionmenu
+
+\stopenvironment

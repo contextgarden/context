@@ -1,0 +1,33 @@
+% signal=squid
+
+\startcomponent excursion-en-commandlist
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=\labeltext{document:commanddefinitions},reference=chap:commandsetups]
+
+Here we summarize the commands we introduced in the previous chapters. This is
+just a selection of the whole repertoire of \CONTEXT\ commands. Those who want to
+see them all can take a look at the \goto{\Emph{\CONTEXT\ commands manual}} [url
+(manual:qrc)].
+
+\blank[2*big]
+
+  \start
+
+    \switchtobodyfont[7pt]
+
+    \setupframedtexts
+      [setuptext]
+      [before={\vskip6pt},
+       after={\vskip6pt}]
+
+      \placelistofsorts[texcommand]
+
+  \stop
+
+\stopchapter
+
+\stopcomponent

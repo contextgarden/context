@@ -104,7 +104,6 @@ local istoken           = token.istoken
 local setluatoken       = token.setlua
 
 local isprintable       = tex.isprintable
-local overloadpermitted = tex.overloadpermitted
 
 tex.runtoks             = tex.runlocal   -- obselete name
 tex.quittoks            = tex.quitlocal  -- obselete name
@@ -446,21 +445,12 @@ interfaces.scanners = storage.mark(interfacescanners)
 -- it's used in \CONTEXT\ by more dedicated mechanisms.
 
 local warned = { }
------ strict = true --we no longer provide access
 
 local onlyknownfunctions = setmetatable({ }, {
     __index = function(t,k)
         return knownfunctions[k]
     end,
     __newindex = function(t,k,v)
-     -- if not strict then
-     --     local f = flagged[k]
-     --     if not f then
-     --         knownfunctions[k] = b
-     --     elseif overloadpermitted(f) then
-     --         knownfunctions[k] = b
-     --     end
-     -- end
         if not warned then
             warned[k] = true
             report_cld("don't assign function %a directly",k)

@@ -1,0 +1,146 @@
+\startcomponent excursion-en-alignments
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Alignment]
+
+\startsection[title={Alignments left, right and centered},reference=sec:leftrightalignment]
+
+\index{alignment}
+
+\Command{\tex{setupalign}}
+\Command{\tex{setuptolerance}}
+\Command{\tex{rightaligned}}
+\Command{\tex{leftaligned}}
+\Command{\tex{midaligned}}
+
+Horizontal and vertical alignment can be set up with
+
+\shortsetup{setupalign}
+
+Single lines can be aligned with:
+
+\starttyping
+\rightaligned{}
+\leftaligned{}
+\midaligned{}
+\stoptyping
+
+An example can illustrate the alignment behavior.
+
+\startbuffer
+\leftaligned  {Hasselt was built on a sand hill.}
+\midaligned   {Hasselt was built on the crossing of two rivers.}
+\rightaligned {Hasselt's name stems from hazel-wood.}
+\stopbuffer
+
+\typebuffer
+
+After processing this would look like:
+
+\getbuffer
+
+Alignment of a paragraph is done with
+
+\shortsetup{startalignment}
+
+\startbuffer
+\startalignment[flushright,nothyphenated]
+  For Hasselt the 15th and 16th century were relatively
+  unstable times. There were upraises and disputes with
+  neighbouring cities. To be able to defend themselves
+  the city council ordered a number of arquebuses
+  (very primitive firearms). Fourteen of these have
+  survived and now form one of the greatest arquebus
+  collections in Europe.
+\stopalignment
+\stopbuffer
+
+\typebuffer
+
+This will become a right aligned paragraph without hyphenation.
+
+\getbuffer
+
+In case of alignment you can specify a tolerance and the direction (vertical or
+horizontal).
+
+\shortsetup{setuptolerance}
+
+Normally the tolerance is \type{verystrict}. In columns you could specify
+\type{verytolerant}. The tolerance in this manual is set up as
+
+\starttyping
+\setuptolerance[horizontal,verytolerant,stretch]
+\stoptyping
+
+Manuals like this one having a lot of verbatim inline texts need to be setup with
+bigger tolerance than other books.
+
+\stopsection
+
+\startsection[title=Block alignment,reference=sec:blockalignment]
+
+\Command{\tex{definenarrower}}
+\Command{\tex{setupnarrower}}
+\Command{\tex{startnarrower}}
+
+Sometimes one wants to put a text fragment not aligned to the left. You can
+locally restrict the width of the typeset area, indenting it from the left and or
+restrict the width from the right.
+
+You can set up your own narrower command if need be.
+
+\shortsetup{definenarrower}
+\shortsetup{setupnarrower}
+\shortsetup{startnarrower}
+
+In \in{section}[sec:fontstyle] you encounter the following example text. This
+time we show the possibilities with \type{\startnarrower ... \stopnarrower}. When
+using the command without argument(s) the text is centered. Setting up the
+command with \type{middle=0.2\makeupwidth} the left and right margins will be
+equal.
+
+\startbuffer[Textlines]
+\startlines
+  Foekepotterij, foekepotterij,
+  Geef mij een centje dan ga'k voorbij.
+  Geef mij een alfje dan blijf ik staan,
+  'k Zal nog liever naar m'n arrenmoeder gaan.
+  Hier woont zo'n rieke man, die zo vulle gèven kan.
+  Gèf wat, old wat, gèf die arme stumpers wat,
+  'k Eb zo lange met de foekepot elopen.
+  'k Eb gien geld om brood te kopen.
+  Foekepotterij, foekepotterij,
+  Geef mij een centje dan ga'k voorbij.
+\stoplines
+\stopbuffer
+
+\startbuffer
+\definenarrower[Mynarrower]
+\setupnarrower
+  [Mynarrower]
+  [left=0.3\makeupwidth,
+   right=0.2\makeupwidth,
+   middle=0.2\makeupwidth]
+
+\startMynarrower[left,right]
+  \getbuffer[Textlines]
+\stopMynarrower
+
+\startMynarrower[middle]
+  \getbuffer[Textlines]
+\stopMynarrower
+\stopbuffer
+
+\typebuffer
+
+\getbuffer
+
+\stopsection
+
+\stopchapter
+
+\stopcomponent

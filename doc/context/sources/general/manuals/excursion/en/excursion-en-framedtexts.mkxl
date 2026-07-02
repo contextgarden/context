@@ -1,0 +1,65 @@
+% signal=squid
+
+\startcomponent excursion-en-framedtexts
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Framed paragraphs]
+
+\index{framed+paragraph}
+
+\Command{\tex{startframedtext}}
+\Command{\tex{setupframedtext}}
+
+Complete paragraphs can be put into a frame with
+
+\shortsetup{startframedtext:instance:framedtext}
+
+\startbuffer
+\setupframedtexts
+  [width=.8\makeupwidth,
+   background=color,
+   backgroundcolor=gray,
+   corner=round,
+   framecolor=blue,
+   rulethickness=2pt]
+
+\startplaceintermezzo
+  [location=here,
+   reference=block:bridge,
+   title={An intermezzo}]
+  \startframedtext
+    It was essential for Hasselt to have a bridge across the Zwarte
+    Water river. The bishop of Utrecht gave Hasselt his consent in
+    1486.
+    \blank
+    Other cities in the neighbourhood of Hasselt were afraid of the
+    toll money to be paid when crossing this bridge so they
+    prevented the construction for many years.
+  \stopframedtext
+\stopplaceintermezzo
+\stopbuffer
+
+Let's give an example.
+
+\typebuffer
+
+The \type{\startplaceintermezzo ... \stopplaceintermezzo} environment is another
+predefined float block. You can find more information on float blocks in
+\in{chapter}[chap:figures] and in \in{paragraph}[sec:floatingblocks]
+\about[chap:miscellaneous]. The \type{\blank} is necessary to enforce a blank
+line.
+
+\start
+\getbuffer
+\stop
+
+The frame appearance can be set up with
+
+\shortsetup{setupframedtexts}
+
+\stopchapter
+
+\stopcomponent

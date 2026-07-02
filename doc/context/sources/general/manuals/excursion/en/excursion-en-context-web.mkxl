@@ -1,0 +1,22 @@
+% signal=squid
+
+\startcomponent excursion-en-Context-web
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=\CONTEXT\ on the web]
+
+It is possible to use / try out \CONTEXT\ without installing the software on the
+computer. In this case it is to use the web-version created at the University of
+Brno (Slovakia) under supervision of Tomáš Hala.
+
+Under the following link you can start your explorations after having created an
+account.
+
+\goto{\Emph{\CONTEXT\ on web}}[url (online:contextonweb)]:\quad \url[online:contextonweb]
+
+\stopchapter
+
+\stopcomponent

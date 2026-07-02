@@ -1,0 +1,223 @@
+% signal=squid
+
+\startcomponent excursion-en-pages
+
+\enablemode[**en-us]
+
+\project excursion
+
+\startchapter[title=Page breaking and page numbering]
+
+\index{page}
+\index{page+breaking}
+\index{page+numbering}
+
+\Command{\tex{page}}
+\Command{\tex{setuppagenumbering}}
+\Command{\tex{setupuserpagenumber}}
+
+\startsection[title=Page break]
+
+A page can be enforced or blocked by
+
+\shortsetup{page}
+
+The options can be stated within the brackets. The options and their meaning are
+presented in \in{table}[tab:page-options].
+
+\page[bigpreference]
+
+\startplacetable
+  [split=yes,
+   reference=tab:page-options,
+   title={Page options}]
+  {\switchtobodyfont[9pt]
+   \bTABLE
+     \bTR \bTD  Option              \eTD \bTD Meaning \eTD \eTR
+     \bTR \bTD \type{yes}           \eTD \bTD enforce a page \eTD \eTR
+     \bTR \bTD \type{makeup}        \eTD \bTD enforce a page without filling \eTD \eTR
+     \bTR \bTD \type{no}            \eTD \bTD no page \eTD \eTR
+     \bTR \bTD \type{preference}    \eTD \bTD prefer a new page here \eTD \eTR
+     \bTR \bTD \type{bigpreference} \eTD \bTD great preference for a new page here \eTD \eTR
+     \bTR \bTD \type{left}          \eTD \bTD next page is a left-hand side page \eTD \eTR
+     \bTR \bTD \type{right}         \eTD \bTD next page is a right-hand side page \eTD \eTR
+     \bTR \bTD \type{disable}       \eTD \bTD following commands have no effect \eTD \eTR
+     \bTR \bTD \type{last}          \eTD \bTD add pages till even number is reached \eTD \eTR
+     \bTR \bTD \type{quadruple}     \eTD \bTD add pages till a multiple of four is reached \eTD \eTR
+     \bTR \bTD \type{even}          \eTD \bTD next page is even \eTD \eTR
+     \bTR \bTD \type{odd}           \eTD \bTD next page in odd \eTD \eTR
+     \bTR \bTD \type{blank}         \eTD \bTD no page number \eTD \eTR
+     \bTR \bTD \type{empty}         \eTD \bTD insert an empty page \eTD \eTR
+     \bTR \bTD \type{reset}         \eTD \bTD following commands do have effect \eTD \eTR
+     \bTR \bTD \type{start}         \eTD \bTD from now on page commands have effect \eTD \eTR
+     \bTR \bTD \type{stop}          \eTD \bTD from now on page commands have no effect \eTD \eTR
+   \eTABLE}
+\stopplacetable
+
+\stopsection
+
+\startsection[title=Page numbering, reference=sec:pagenumbering]
+
+Numbering pages is done automatically by \CONTEXT. However, numbering the pages
+the way you want may take some effort.
+
+A rather simple \type{\startdocument ... \stopdocument} will be numbered from
+\type{1 ... n} (where \type{n} is the last page). If you want your document to
+number its pages alphabetically you can type
+
+\startbuffer
+\setupuserpagenumber
+    [numberconversion=character]
+\stopbuffer
+
+\typebuffer
+
+in the setup area of your file.
+
+You can enforce a page number with:
+
+\starttyping
+\setupuserpagenumber[number=25]
+\stoptyping
+
+\shortsetup{setupuserpagenumber}
+
+The options of the \type{\setupuserpagenumber} command are given in
+\in{table}[tab:user-page-number-options].
+
+% \startpostponing
+\startplacetable
+  [location=here,
+   reference=tab:user-page-number-options,
+   title={Page numbering options}]
+  {\switchtobodyfont[9pt]
+	  \bTABLE
+      \bTR \bTD Option                     \eTD \bTD Meaning                      \eTD \eTR
+      \bTR \bTD \type{way}                 \eTD \bTD how to number the document   \eTD \eTR
+      \bTR \bTD \type{prefix}              \eTD \bTD use pagenumber prefix        \eTD \eTR
+      \bTR \bTD \type{prefixset}           \eTD \bTD use defined prefixset        \eTD \eTR
+      \bTR \bTD \type{prefixseparatorset}  \eTD \bTD use defined separator        \eTD \eTR
+      \bTR \bTD \type{state}               \eTD \bTD start or stop page numbering \eTD \eTR
+      \bTR \bTD \type{number}              \eTD \bTD define page number           \eTD \eTR
+      \bTR \bTD \type{numberconversion}    \eTD \bTD convert page number          \eTD \eTR
+      \bTR \bTD \type{numberconversionset} \eTD \bTD used defined conversion set  \eTD \eTR
+  \eTABLE}
+\stopplacetable
+% \stoppostponing
+
+The \type{prefixset}, \type{prefixseparatorset} and the \type{numberconversionset}
+options are defined with the \type{\defineprefixset}, \type{\defineseparatorset}
+and \type{\defineconversionset} respectively.
+
+
+This manual uses the \CONTEXT\ standard document section blocks: frontmatter,
+bodymatter and appendices. These section blocks are numbered with roman
+characters, numeral digits and characters respectively.
+
+\page[bigprefrence]
+
+\startbuffer
+\defineconversionset
+  [frontpart:pagenumber][][romannumerals]
+
+\defineconversionset
+  [bodypart:pagenumber] [][numbers]
+
+\defineconversionset
+  [appendix:pagenumber] [][Characters]
+\stopbuffer
+
+\page[bigpreference]
+
+\typebuffer
+
+At the start of each section block the number is reset to i, 1 and A
+respectively.
+
+\page[bigpreference]
+
+The same effect would have been obtained with
+
+\startbuffer
+\startsectionblockenvironment[frontpart]
+  \setupuserpagenumber[numberconversion=romannumerals]
+\stopsectionblockenvironment
+\stopbuffer
+
+\typebuffer
+
+Page numbering and the location of the page numbers can be set up with
+
+\shortsetup{setuppagenumbering}
+
+The options of this command are shown in \in{table}[tab:page-numbering-options].
+
+\page[bigpreference]
+
+\startplacetable
+  [location=here,
+   reference=tab:page-numbering-options,
+   title={Page numbering layout options}]
+  {\switchtobodyfont[9pt]
+   \bTABLE
+     \bTR \bTD  Option            \eTD \bTD Meaning                             \eTD \eTR
+     \bTR \bTD \type{alternative} \eTD \bTD page layout: single or double sided \eTD \eTR
+     \bTR \bTD \type{location}    \eTD \bTD location of page number on page     \eTD \eTR
+     \bTR \bTD \type{width}       \eTD \bTD width of page number                \eTD \eTR
+     \bTR \bTD \type{left}        \eTD \bTD text left of page number            \eTD \eTR
+     \bTR \bTD \type{right}       \eTD \bTD text right of page number           \eTD \eTR
+     \bTR \bTD \type{page}        \eTD \bTD \unknown                            \eTD \eTR
+     \bTR \bTD \type{state}       \eTD \bTD start -- stop page numbering        \eTD \eTR
+     \bTR \bTD \type{command}     \eTD \bTD invoke command                      \eTD \eTR
+     \bTR \bTD \type{style}       \eTD \bTD set character style                 \eTD \eTR
+     \bTR \bTD \type{color}       \eTD \bTD set color                           \eTD \eTR
+   \eTABLE}
+\stopplacetable
+
+Note that this is also the command that indicates that your document is single or
+double sided which has an effect on the left-right page layout.
+
+\startbuffer
+\setuppagenumbering
+  [alternative=doublesided]
+\stopbuffer
+
+\typebuffer
+
+In a document the page numbering could be set up as
+
+\starttyping
+\setuppagenumbering
+  [location={footer,middle},
+   command=\NumberCommand]
+\stoptyping
+
+The \type{\NumberCommand} could use \METAPOST\ to draw a unique random image
+around each page number.
+
+You can recall a page number with \type{\userpagenumber}.
+
+\page[bigpreference]
+
+If you set up your header text with
+
+\startbuffer
+\setupheadertexts
+  [Page \userpagenumber\ of \lastuserpagenumber]
+\stopbuffer
+
+\typebuffer
+
+You would get a header with the actual page number and the total of pages (in the
+current section block).
+
+The actual page number and the real page number may differ since there may be
+sections which in your document are not numbered. If you feel the need to display
+the real page number there is the command \type{\realpagenumber}.
+
+Please refer to the \goto {\Emph{\CONTEXTWIKI}} [url
+([www:garden:command:setupuserpagenumber)] for more details.
+
+\stopchapter
+
+\stopcomponent

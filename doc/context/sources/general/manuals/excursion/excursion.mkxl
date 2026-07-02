@@ -1,0 +1,24 @@
+% There are a few overloads which can trigger a warning. When we switch to a more
+% strict overload regime, users will have to choose unique names for their own
+% instances.
+
+\pushoverloadmode
+
+\startproject  excursion
+
+    \environment  excursion-en-language
+
+    \environment  excursion-hyphenations
+    \environment  excursion-abbreviations
+    \environment  excursion-graphics
+    \environment  excursion-style
+
+    \environment  excursion-links
+
+    \startmode[Screen]
+        \environment  excursion-screen
+    \stopmode
+
+    \product  excursion-en
+
+\stopproject

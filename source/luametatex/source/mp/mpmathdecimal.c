@@ -1038,6 +1038,28 @@ static void mp_decimal_pyth_add(MP mp, mp_number *ret, mp_number *a_orig, mp_num
     mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
 }
 
+static void mp_decimal_pyth_add3(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig, mp_number *c_orig)
+{
+    decNumber a, b, c;
+    decNumber asq, bsq, csq;
+    decNumberCopyAbs(&a, a_orig->data.num);
+    decNumberCopyAbs(&b, b_orig->data.num);
+    decNumberCopyAbs(&c, c_orig->data.num);
+    decNumberMultiply(&asq, &a, &a, &mp_decimal_data.set);
+    decNumberMultiply(&bsq, &b, &b, &mp_decimal_data.set);
+    decNumberMultiply(&csq, &c, &c, &mp_decimal_data.set);
+    decNumberAdd(&a, &asq, &bsq, &mp_decimal_data.set);
+    decNumberAdd(&b, &a, &csq, &mp_decimal_data.set);
+    decNumberSquareRoot(ret->data.num, &b, &mp_decimal_data.set);
+    /*
+    if (set.status != 0) {
+      mp->arithmic_error = mp_error_code(mp, 5);
+      decNumberCopy(ret->data.num, &mp_decimal_data.EL_GORDO);
+    }
+    */
+    mp_decnumber_check(mp, ret->data.num, &mp_decimal_data.set);
+}
+
 static void mp_decimal_pyth_sub(MP mp, mp_number *ret, mp_number *a_orig, mp_number *b_orig)
 {
     decNumber a, b;
@@ -1663,6 +1685,7 @@ math_data *mp_initialize_decimal_math(MP mp)
     math->md_m_unif_rand              = mp_decimal_m_unif_rand;
     math->md_m_norm_rand              = mp_decimal_m_norm_rand;
     math->md_pyth_add                 = mp_decimal_pyth_add;
+    math->md_pyth_add3                = mp_decimal_pyth_add3;
     math->md_pyth_sub                 = mp_decimal_pyth_sub;
     math->md_power_of                 = mp_decimal_power_of;
     math->md_fraction_to_scaled       = mp_decimal_fraction_to_scaled;

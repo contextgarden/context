@@ -188,4 +188,20 @@ if setinspector and vector then
 
     end
 
+    local points = vector.points
+
+    if points then
+
+        local ispoints = points.ispoints
+        local totable  = points.totable
+
+        setinspector("points",function(v)
+            if ispoints(v) then
+                inspect(totable(v))
+                return true
+            end
+        end)
+
+    end
+
 end

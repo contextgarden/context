@@ -172,8 +172,8 @@ registerscript("scrutinized", function()
     local r   = 1
     for i=2,#pth do
         local pi = pth[i]
-        x2 = pi[1]
-        y2 = pi[2]
+        local x2 = pi[1]
+        local y2 = pi[2]
         if abs(x1-x2) > d or abs(y1-y2) > d then
             r = r + 1 res[r] = pi
             x1 = x2
@@ -236,3 +236,29 @@ registerscript("xyztorgb", function() injectcolor(xyztorgb(scannumeric(),scannum
 registerscript("lchtorgb", function() injectcolor(lchtorgb(scannumeric(),scannumeric(),scannumeric())) end)
 registerscript("hsvtorgb", function() injectcolor(hsvtorgb(scannumeric(),scannumeric(),scannumeric())) end)
 registerscript("hwbtorgb", function() injectcolor(hwbtorgb(scannumeric(),scannumeric(),scannumeric())) end)
+
+local meshers    = { }
+local meshuppers = { }
+
+function metapost.registermesher(name,f)
+    if name and type(f) == "function" then
+        meshers[name] = f
+    end
+end
+
+function metapost.registermeshupper(specification)
+    if type(specification) == "table" then
+        meshuppers[specification.name or "default"] = specification
+    end
+end
+
+function metapost.mesher(name,specification)
+    if name then
+        local mesher = meshers[name]
+        return type(mesher) == "function" and mesher(specification)
+    end
+end
+
+function metapost.meshupper(name)
+    return name and meshuppers[name]
+end

@@ -3975,8 +3975,8 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too, halfword 
         *penalty = 0;
     }
     while (1) {
-     // switch (tex_scan_character(options_too ? "pmldPMLD" : "pmPM", 0, 1, 0)) {
-        switch (tex_scan_character(options_too ? "pmlPML" : "pmPM", 0, 1, 0)) {
+     // switch (tex_scan_character(options_too ? "pmlsdPMLSD" : "pmsPMS", 0, 1, 0)) {
+        switch (tex_scan_character(options_too ? "pmlsPMLS"   : "pmsPMS", 0, 1, 0)) {
             case 0:
                 return q;
             case 'p': case 'P':
@@ -4018,6 +4018,11 @@ halfword tex_scan_glue(int level, int optional_equal, int options_too, halfword 
             case 'l': case 'L':
                 if (tex_scan_mandate_keyword("limit", 1)) {
                     glue_options(q) |= glue_option_limit;
+                }
+                break;
+            case 's': case 'S':
+                if (tex_scan_mandate_keyword("space", 1)) {
+                    glue_options(q) |= glue_option_is_space;
                 }
                 break;
          // case 'd': case 'D':
@@ -4772,6 +4777,7 @@ halfword tex_scan_toks_expand(int left_brace_found, halfword *tail, int expandco
                             p = t;
                             goto PICKUP;
                         } else {
+                            /* hm, nothing to flush so why */
                             tex_flush_token_list(h);
                         }
                     }

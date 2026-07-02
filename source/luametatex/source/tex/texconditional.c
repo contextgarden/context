@@ -1031,16 +1031,18 @@ void tex_conditional_if(halfword code, int unless)
                 goto CASECHECK;
             }
         case if_chk_intexpr_code: /* numeric result check */
-            lmt_error_state.intercept = 1;
-            lmt_error_state.last_intercept = 0;
-            lmt_condition_state.chk_integer = tex_scan_expr(integer_val_level);
-            result = lmt_error_state.last_intercept ? check_error : check_okay;
-            if (result == check_okay) { 
-                tex_aux_check_strict(&result);
+            {
+                lmt_error_state.intercept = 1;
+                lmt_error_state.last_intercept = 0;
+                lmt_condition_state.chk_integer = tex_scan_expr(integer_val_level);
+                result = lmt_error_state.last_intercept ? check_error : check_okay;
+                if (result == check_okay) {
+                    tex_aux_check_strict(&result);
+                }
+                lmt_error_state.intercept = 0;
+                lmt_error_state.last_intercept = 0;
+                goto CASECHECK;
             }
-            lmt_error_state.intercept = 0;
-            lmt_error_state.last_intercept = 0;
-            goto CASECHECK;
         case if_val_int_code:
             {
                 lmt_error_state.intercept = 1;
@@ -1067,7 +1069,6 @@ void tex_conditional_if(halfword code, int unless)
                 result = lmt_error_state.last_intercept ? check_error : check_okay;
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-             /* goto CASE; */
                 goto CASECHECK;
             }
         case if_chk_dimension_code:
@@ -1081,24 +1082,25 @@ void tex_conditional_if(halfword code, int unless)
                 }
                 lmt_error_state.intercept = 0;
                 lmt_error_state.last_intercept = 0;
-             /* goto CASE; */
                 goto CASECHECK;
             }
         case if_chk_dimexpr_code: /* dimension result check */
-            lmt_error_state.intercept = 1;
-            lmt_error_state.last_intercept = 0;
-            lmt_condition_state.chk_dimension = tex_scan_expr(dimension_val_level);
-            result = lmt_error_state.last_intercept ? check_error : check_okay;
-            if (result == check_okay) { 
-                tex_aux_check_strict(&result);
+            {
+                lmt_error_state.intercept = 1;
+                lmt_error_state.last_intercept = 0;
+                lmt_condition_state.chk_dimension = tex_scan_expr(dimension_val_level);
+                result = lmt_error_state.last_intercept ? check_error : check_okay;
+                if (result == check_okay) {
+                    tex_aux_check_strict(&result);
+                }
+                lmt_error_state.intercept = 0;
+                lmt_error_state.last_intercept = 0;
+                goto CASECHECK;
             }
-            lmt_error_state.intercept = 0;
-            lmt_error_state.last_intercept = 0;
-            goto CASECHECK;
         /* too messy as it expects a { } so best use \ifchkdimension 
-         case if_chk_dimexpression_code:
-         case if_chk_dimensionexpr_code: // alias
-          // lmt_condition_state.chk_dimension = tex_scanned_expression(dimension_val_level);
+        case if_chk_dimexpression_code:
+        case if_chk_dimensionexpr_code: // alias
+             // lmt_condition_state.chk_dimension = tex_scanned_expression(dimension_val_level);
         */
         case if_val_dim_code:
             {

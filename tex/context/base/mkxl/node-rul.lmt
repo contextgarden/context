@@ -854,7 +854,7 @@ do
 
     local ctx_latelua = context.latelua
 
-    local bpfactor    = number.dimenfactors.bp
+    local bpfactor    <const> = number.dimenfactors.bp
 
     local s_close     <const> = "h"
     local s_stroke    <const> = "S"

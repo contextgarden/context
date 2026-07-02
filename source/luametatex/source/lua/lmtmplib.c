@@ -2180,6 +2180,57 @@ static int mplib_gethashentry(lua_State *L)
     return 0;
 }
 
+/*tex
+    In the next list, the index has no meaning! Todo: also a table with more details.
+*/
+
+static int mplib_getprimitives(lua_State *L)
+{
+    int index   = 1;
+    int count   = mp_n_of_primitives();
+    int details = lua_toboolean(L, 1);
+    lua_createtable(L, count, 0);
+    for (int i = 1; i <= count; i++) {
+        mp_primitive_data data = mp_get_primitive_data(i);
+        if (data.name) {
+            if (details) {
+                lua_createtable(L, 3, 0);
+                lua_pushinteger(L, data.command);   lua_rawseti(L, -2, 1);
+                lua_pushinteger(L, data.operation); lua_rawseti(L, -2, 2);
+                lua_pushstring (L, data.name);      lua_rawseti(L, -2, 3);
+                lua_pushinteger(L, data.origin);    lua_rawseti(L, -2, 4);
+                lua_pushinteger(L, data.legacy);    lua_rawseti(L, -2, 5);
+            } else {
+             // lua_pushstring(L, strdup(data.name));
+                lua_pushstring(L, data.name);
+            }
+            lua_rawseti(L, -2, index++);
+        }
+    }
+    return 1;
+}
+
+static int mplib_getprimitiveorigins(lua_State *L)
+{
+    lua_createtable(L, 3, 1);
+    lua_push_key_at_index(L, unset,      mp_origin_unset);
+    lua_push_key_at_index(L, metapost,   mp_origin_metapost);
+    lua_push_key_at_index(L, luatex,     mp_origin_luatex);
+    lua_push_key_at_index(L, luametatex, mp_origin_luametatex);
+    return 1;
+}
+
+static int mplib_getprimitivelegacies(lua_State *L)
+{
+    lua_createtable(L, 4, 1);
+    lua_push_key_at_index(L, unset,    mp_legacy_unset);
+    lua_push_key_at_index(L, output,   mp_legacy_output);
+    lua_push_key_at_index(L, font,     mp_legacy_font);
+    lua_push_key_at_index(L, text,     mp_legacy_text);
+    lua_push_key_at_index(L, language, mp_legacy_language);
+    return 1;
+}
+
 static int mplib_gethashentries(lua_State *L)
 {
     MP *mpud = mplib_aux_is_mpud(L, 1);
@@ -2456,6 +2507,7 @@ static const char * mplib_aux_with_path_indexed(lua_State *L, MP mp, int index, 
     mp_knot ln = NULL;
     mp_knot rn = NULL;
  // double tension = *tense ? -1.0 : 1.0; /* todo  */
+    (void) tense;
     for (int i = 1; i <= numpoints; i++) {
         switch (lua_rawgeti(L, index, i)) { 
             case LUA_TTABLE:
@@ -3117,23 +3169,28 @@ static int mplib_figure_objects(lua_State *L)
 static int mplib_figure_stacking(lua_State *L)
 {
     struct mp_edge_object **hh = mplib_aux_is_figure(L, 1);
-    int stacking = 0; /* This only works when before fetching objects! */
     if (*hh) {
-        struct mp_graphic_object *p = (*hh)->body;
+        int stacking = 0; /* This only works when before fetching objects! */
+        mp_graphic_object *p = (*hh)->body;
         while (p) {
-            int s = (int) ((mp_shape_object *) p)->stacking; 
-            if (s) { 
-                if (! stacking) {
-                    lua_newtable(L);
-                    stacking = 1;
-                }
+            int s = (int) ((mp_shape_object *) p)->stacking;
+            if (s) {
+                stacking = 1;
+                break;
+            } else {
+                p = p->next;
+            }
+        }
+        if (stacking) {
+            lua_newtable(L);
+            p = (*hh)->body;
+            while (p) {
+                int s = (int) ((mp_shape_object *) p)->stacking;
                 lua_pushinteger(L, s);
                 lua_pushboolean(L, 1);
                 lua_rawset(L, -3);
+                p = p->next;
             }
-            p = p->next;
-        }
-        if (stacking) { 
             return 1;
         }
     }
@@ -3928,14 +3985,17 @@ static int mplib_expand_tex(lua_State *L)
                         if (! lmt_error_state.last_intercept) {
                             mp_push_numeric_value(mp, (double) value * (7200.0/7227.0) / 65536.0);
                             break;
-                        } else if (kind == lua_value_none_code) {
-                            head = lmt_macro_to_tok(L, 3, &tail);
-                            goto TRYAGAIN;
                         } else {
-                         // head = lmt_macro_to_tok(L, 3, &tail);
-                         // goto JUSTINCASE;
-                            lua_pushboolean(L, 0);
-                            return 1;
+                            lmt_error_state.last_intercept = 0;
+                            if (kind == lua_value_none_code) {
+                                head = lmt_macro_to_tok(L, 3, &tail);
+                                goto TRYAGAIN;
+                            } else {
+                             // head = lmt_macro_to_tok(L, 3, &tail);
+                             // goto JUSTINCASE;
+                                lua_pushboolean(L, 0);
+                                return 1;
+                            }
                         }
                     }
                 case lua_value_integer_code:
@@ -3957,6 +4017,7 @@ static int mplib_expand_tex(lua_State *L)
                             tex_get_token();
                         }
                         if (lmt_error_state.last_intercept) {
+                            lmt_error_state.last_intercept = 0;
                          // head = lmt_macro_to_tok(L, 3, &tail);
                          // goto JUSTINCASE;
                             lua_pushboolean(L, 0);
@@ -4253,91 +4314,95 @@ static const struct luaL_Reg mplib_instance_functions_list[] = {
 };
 
 static const struct luaL_Reg mplib_functions_list[] = {
-    { "new",                mplib_new                },
-    { "version",            mplib_version            },
+    { "new",                  mplib_new                  },
+    { "version",              mplib_version              },
     /* */                                            
-    { "getfields",          mplib_getfields          },
-    { "gettype",            mplib_gettype            },
-    { "gettypes",           mplib_gettypes           },
-    { "getcolormodels",     mplib_getcolormodels     },
-    { "getcodes",           mplib_getcodes           },
-    { "getstates",          mplib_getstates          },
-    { "getknotstates",      mplib_getknotstates      },
-    { "getobjecttypes",     mplib_getobjecttypes     },
-    { "getscantypes",       mplib_getscantypes       },
-    { "getlogtargets",      mplib_getlogtargets      },
-    { "getinternalactions", mplib_getinternalactions },
-    { "getpruneoptions",    mplib_getpruneoptions    },
-    { "getcallbackstate",   mplib_getcallbackstate   },
-    { "getresultstatus",    mplib_getresultstates    },
+    { "getfields",            mplib_getfields            },
+    { "gettype",              mplib_gettype              },
+    { "gettypes",             mplib_gettypes             },
+    { "getcolormodels",       mplib_getcolormodels       },
+    { "getcodes",             mplib_getcodes             },
+    { "getstates",            mplib_getstates            },
+    { "getknotstates",        mplib_getknotstates        },
+    { "getobjecttypes",       mplib_getobjecttypes       },
+    { "getscantypes",         mplib_getscantypes         },
+    { "getlogtargets",        mplib_getlogtargets        },
+    { "getinternalactions",   mplib_getinternalactions   },
+    { "getpruneoptions",      mplib_getpruneoptions      },
+    { "getcallbackstate",     mplib_getcallbackstate     },
+    { "getresultstates",      mplib_getresultstates      },
     /* */                                            
-    { "settolerance",       mplib_settolerance       },
-    { "gettolerance",       mplib_gettolerance       },
+    { "settolerance",         mplib_settolerance         },
+    { "gettolerance",         mplib_gettolerance         },
     /* indirect */                                   
-    { "execute",            mplib_execute            },
-    { "finish",             mplib_finish             },
-    { "showcontext",        mplib_showcontext        },
-    { "gethashentries",     mplib_gethashentries     },
-    { "gethashentry",       mplib_gethashentry       },
-    { "getstatistics",      mplib_getstatistics      },
-    { "getstatus",          mplib_getstatus          },
-    { "getscaledbits",      mplib_getscaledbits      },
-    { "solvepath",          mplib_solvepath          },
+    { "execute",              mplib_execute              },
+    { "finish",               mplib_finish               },
+    { "showcontext",          mplib_showcontext          },
+    { "gethashentries",       mplib_gethashentries       },
+    { "gethashentry",         mplib_gethashentry         },
+    { "getstatistics",        mplib_getstatistics        },
+    { "getstatus",            mplib_getstatus            },
+    { "getscaledbits",        mplib_getscaledbits        },
+    { "solvepath",            mplib_solvepath            },
     /* helpers */                                    
-    { "peninfo",            mplib_object_getpeninfo  }, /* old one */
-    { "getobjectpeninfo",   mplib_object_getpeninfo  },
-    { "getobjectdata",      mplib_object_getdata     },
-    { "getobjectstacking",  mplib_object_getstacking },
+    { "peninfo",              mplib_object_getpeninfo    }, /* old one */
+    { "getobjectpeninfo",     mplib_object_getpeninfo    },
+    { "getobjectdata",        mplib_object_getdata       },
+    { "getobjectstacking",    mplib_object_getstacking   },
     /* scanners */                                   
-    { "scannext",           mplib_scan_next          },
-    { "scanexpression",     mplib_scan_expression    },
-    { "scantoken",          mplib_scan_token         },
-    { "scansymbol",         mplib_scan_symbol        },
-    { "scanproperty",       mplib_scan_property      },
-    { "scannumeric",        mplib_scan_numeric       },
-    { "scannumber",         mplib_scan_numeric       }, /* bonus */
-    { "scaninteger",        mplib_scan_integer       },
-    { "scanboolean",        mplib_scan_boolean       },
-    { "scanstring",         mplib_scan_string        },
-    { "scanpair",           mplib_scan_pair          },
-    { "scancolor",          mplib_scan_color         },
-    { "scancmykcolor",      mplib_scan_cmykcolor     },
-    { "scantransform",      mplib_scan_transform     },
-    { "scanpath",           mplib_scan_path          },
-    { "scanpen",            mplib_scan_pen           },
+    { "scannext",             mplib_scan_next            },
+    { "scanexpression",       mplib_scan_expression      },
+    { "scantoken",            mplib_scan_token           },
+    { "scansymbol",           mplib_scan_symbol          },
+    { "scanproperty",         mplib_scan_property        },
+    { "scannumeric",          mplib_scan_numeric         },
+    { "scannumber",           mplib_scan_numeric         }, /* bonus */
+    { "scaninteger",          mplib_scan_integer         },
+    { "scanboolean",          mplib_scan_boolean         },
+    { "scanstring",           mplib_scan_string          },
+    { "scanpair",             mplib_scan_pair            },
+    { "scancolor",            mplib_scan_color           },
+    { "scancmykcolor",        mplib_scan_cmykcolor       },
+    { "scantransform",        mplib_scan_transform       },
+    { "scanpath",             mplib_scan_path            },
+    { "scanpen",              mplib_scan_pen             },
     /* skippers */                                   
-    { "skiptoken",          mplib_skip_token         },
+    { "skiptoken",            mplib_skip_token           },
     /* injectors */                                  
-    { "injectnumeric",      mplib_inject_numeric     },
-    { "injectnumber",       mplib_inject_numeric     }, /* bonus */
-    { "injectinteger",      mplib_inject_integer     },
-    { "injectboolean",      mplib_inject_boolean     },
-    { "injectstring",       mplib_inject_string      },
-    { "injectpair",         mplib_inject_pair        },
-    { "injectcolor",        mplib_inject_color       },
-    { "injectcmykcolor",    mplib_inject_cmykcolor   },
-    { "injecttransform",    mplib_inject_transform   },
-    { "injectpath",         mplib_inject_path        },
-    { "injectvector",       mplib_inject_vector      },
-    { "injectvectors",      mplib_inject_vectors     },
-    { "injectwhatever",     mplib_inject_whatever    },
- // { "injecttokens",       mplib_inject_tokens      },
+    { "injectnumeric",        mplib_inject_numeric       },
+    { "injectnumber",         mplib_inject_numeric       }, /* bonus */
+    { "injectinteger",        mplib_inject_integer       },
+    { "injectboolean",        mplib_inject_boolean       },
+    { "injectstring",         mplib_inject_string        },
+    { "injectpair",           mplib_inject_pair          },
+    { "injectcolor",          mplib_inject_color         },
+    { "injectcmykcolor",      mplib_inject_cmykcolor     },
+    { "injecttransform",      mplib_inject_transform     },
+    { "injectpath",           mplib_inject_path          },
+    { "injectvector",         mplib_inject_vector        },
+    { "injectvectors",        mplib_inject_vectors       },
+    { "injectwhatever",       mplib_inject_whatever      },
+ // { "injecttokens",         mplib_inject_tokens        },
     /* */                                            
-    { "getlastaddtype",     mplib_getlastaddtype     },
+    { "getlastaddtype",       mplib_getlastaddtype       },
     /* tex */                                            
-    { "expandtex",          mplib_expand_tex         },
+    { "expandtex",            mplib_expand_tex           },
     /* bytemaps */                                            
-    { "newbytemap",         mplib_bytemap_new        },
-    { "setbytemap",         mplib_bytemap_set        },
-    { "getbytemap",         mplib_bytemap_get        },
-    { "fillbytemap",        mplib_bytemap_fill       },
-    { "getbytemapdata",     mplib_bytemap_data       },
-    { "setbytemapoctave",   mplib_bytemap_octave     },
-    { "processbytemap",     mplib_bytemap_process    },
-    { "downsamplebytemap",  mplib_bytemap_downsample },
-    { "downgradebytemap",   mplib_bytemap_downgrade  },
-    /* */                                            
-    { NULL,                 NULL                     },
+    { "newbytemap",           mplib_bytemap_new          },
+    { "setbytemap",           mplib_bytemap_set          },
+    { "getbytemap",           mplib_bytemap_get          },
+    { "fillbytemap",          mplib_bytemap_fill         },
+    { "getbytemapdata",       mplib_bytemap_data         },
+    { "setbytemapoctave",     mplib_bytemap_octave       },
+    { "processbytemap",       mplib_bytemap_process      },
+    { "downsamplebytemap",    mplib_bytemap_downsample   },
+    { "downgradebytemap",     mplib_bytemap_downgrade    },
+    /* */
+    { "getprimitives",        mplib_getprimitives        }, /* no instance */
+    { "getprimitiveorigins",  mplib_getprimitiveorigins  }, /* no instance */
+    { "getprimitivelegacies", mplib_getprimitivelegacies }, /* no instance */
+    /* */
+    { NULL,                   NULL                       },
 };
 
 int luaopen_mplib(lua_State *L)
