@@ -215,6 +215,7 @@ return {
   ["mdpus-math.lfg"]=true,
   ["mdput-math.lfg"]=true,
   ["mdugm-math.lfg"]=true,
+  ["meta-imp-barcodes.mkxl"]=true,
   ["meta-imp-bitmaps.mkxl"]=true,
   ["meta-imp-catfont.mkxl"]=true,
   ["meta-imp-cistercian.mkxl"]=true,

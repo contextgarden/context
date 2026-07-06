@@ -5,6 +5,7 @@
 # include "auxbytemaps.h"
 # include "auxmemory.h"
 # include <math.h>
+# include <stdio.h>
 
 /* 
     todo: set nz to zero when no data so we have a test less 
@@ -370,7 +371,7 @@ void bytemap_allocate(bytemap_data *bytemap, int nx, int ny, int nz, size_t *cou
     if (bytemap) {
         int size = nx * ny * nz;
         *bytemap = (bytemap_data) {
-            .data    = lmt_memory_malloc(size),
+            .data    = lmt_memory_calloc(1, size),
             .nx      = nx,
             .ny      = ny,
             .nz      = nz,
@@ -409,7 +410,27 @@ void bytemap_copy(bytemap_data *source, bytemap_data *target, size_t *count)
     }
 }
 
+void bytemap_fill_gray(bytemap_data *bytemap, int s)
+{
+    memset(bytemap->data, valid_byte(s), bytemap->nx * bytemap->ny * bytemap->nz);
+}
+
+void bytemap_fill_rgb(bytemap_data *bytemap, int r, int g, int b)
+{
+    if (bytemap->nz == 3) {
+        bytemap->data[0] = valid_byte(r);
+        bytemap->data[1] = valid_byte(g);
+        bytemap->data[2] = valid_byte(b);
+        for (int n = 3; n < bytemap->nx * bytemap->ny * bytemap->nz; n += 3) {
+            memcpy(&(bytemap->data[n]), bytemap->data, 3);
+        }
+    }
+}
+
 /*tex We assume that bytemap has a value and we hope for inlining. */
+
+# define gray_min(a,b) if (b < a) { a = b; }
+# define gray_add(a,b) a = valid_byte(a+b);
 
 inline void bytemap_set_gray(bytemap_data *bytemap, int x, int y, int s)
 {
@@ -424,9 +445,6 @@ inline void bytemap_set_gray(bytemap_data *bytemap, int x, int y, int s)
         }
     }
 }
-
-# define gray_min(a,b) if (b < a) { a = b; }
-# define gray_add(a,b) a = valid_byte(a+b);
 
 inline void bytemap_set_gray_min(bytemap_data *bytemap, int x, int y, int s1, int s2, int s3)
 {
@@ -504,7 +522,7 @@ inline void bytemap_set_gray_add(bytemap_data *bytemap, int x, int y, int s1, in
     }
 }
 
-inline void bytemap_set_rgb(bytemap_data *bytemap, int x, int y, int r, int g, int b)
+void bytemap_set_rgb(bytemap_data *bytemap, int x, int y, int r, int g, int b)
 {
     if (x >= 0 && y >= 0 && x < bytemap->nx && y < bytemap->ny) {
         switch (bytemap->nz) {
@@ -593,7 +611,7 @@ int bytemap_get_byte(bytemap_data *bytemap, int x, int y, int z)
                     return bytemap->data[bm_current_y(ny,y) * nx + x];
                 case 3:
                     {
-                        int p = bm_current_y(ny,y) * ny * nz + x;
+                        int p = bm_current_y(ny,y) * nx * 3 + x * 3;
                         if (z >= 1 && z <= 3) { 
                             return bytemap->data[p+z-1];
                         } else {
@@ -627,7 +645,7 @@ void bytemap_get_bytes(bytemap_data *bytemap, int x, int y, unsigned char *b1, u
                     }
                 case 3:
                     {
-                        int p = bm_current_y(ny,y) * ny * nz + x;
+                        int p = bm_current_y(ny,y) * nx * 3 + x * 3;
                         *b1 = bytemap->data[p++];
                         *b2 = bytemap->data[p++];
                         *b3 = bytemap->data[p];
@@ -636,7 +654,7 @@ void bytemap_get_bytes(bytemap_data *bytemap, int x, int y, unsigned char *b1, u
             }
         }
     }
-    *b1 = '\0';;
+    *b1 = '\0';
     *b2 = '\0';
     *b3 = '\0';
 }
@@ -771,6 +789,105 @@ void bytemap_downgrade(bytemap_data *source, bytemap_data *target, int r)
                 int l = r * lround(((double) ((unsigned char) p[i]))/r);
                 q[i] = l > 0xFF ? 0xFF : (unsigned char) l;
             }
+        }
+    }
+}
+
+void bytemap_filter(bytemap_data *source, bytemap_data *target, int wx, int wy, double *map)
+{
+    if (source && target && source != target && source->data != target->data && source->data && map) {
+        int nx = source->nx;
+        int ny = source->ny;
+        int nz = source->nz;
+        if (nx == target->nx && ny == target->ny && nz == target->nz) {
+            if (wx > 2 && wy > 2 && (wx % 2) && (wy % 2)) {
+                int fx = - floor(wx / 2);
+                int lx =   floor(wx / 2);
+                int fy = - floor(wy / 2);
+                int ly =   floor(wy / 2);
+                switch (nz) {
+                    case 1:
+                        {
+                            int t = 0;
+                            for (int y = 0; y < ny; y++) {
+                                for (int x = 0; x < nx; x++) {
+                                    double s = 0;
+                                    int    n = 0;
+                                    for (int yy = fy; yy <= ly; yy++) {
+                                        int by = y + yy;
+                                        if (by >= 0 && by < ny) {
+                                            int sy = by * nx;
+                                            for (int xx = fx; xx <= lx; xx++) {
+                                                int bx = x + xx;
+                                                if (bx >= 0 && bx < nx) {
+                                                    s += map[n] * (unsigned char) source->data[sy + bx];
+                                                }
+                                                n++;
+                                            }
+                                        } else {
+                                            n += wx;
+                                        }
+                                    }
+                                    target->data[t++] = valid_byte(lround(s));
+                                }
+                            }
+                            break;
+                        }
+                    case 3:
+                        {
+                            int t = 0;
+                            for (int y = 0; y < ny; y++) {
+                                for (int x = 0; x < nx; x++) {
+                                    double r = 0;
+                                    double g = 0;
+                                    double b = 0;
+                                    int    n = 0;
+                                    for (int yy = fy; yy <= ly; yy++) {
+                                        int by = y + yy;
+                                        if (by >= 0 && by < ny) {
+                                            int sy = by * nx * 3;
+                                            for (int xx = fx; xx <= lx; xx++) {
+                                                int bx = x + xx;
+                                                if (bx >= 0 && bx < nx) {
+                                                    int sx = sy + bx * 3;
+                                                    r += map[n] * (unsigned char) source->data[sx++];
+                                                    g += map[n] * (unsigned char) source->data[sx++];
+                                                    b += map[n] * (unsigned char) source->data[sx  ];
+                                                }
+                                                n++;
+                                            }
+                                        } else {
+                                            n += wx;
+                                        }
+                                    }
+                                    target->data[t++] = valid_byte(lround(r));
+                                    target->data[t++] = valid_byte(lround(g));
+                                    target->data[t++] = valid_byte(lround(b));
+                                }
+                            }
+                            break;
+                        }
+                }
+            }
+        }
+    }
+}
+
+void bytemap_overlay(bytemap_data *source, bytemap_data *target, int sx, int sy, int tx, int ty, int nx, int ny)
+{
+    if (source && target && source->data && target->data && source->nz == target->nz) {
+        if (sx < 0) { sx = 0; } else if (sx >= source->nx) { sx = source->nx - 1; }
+        if (sy < 0) { sy = 0; } else if (sy >= source->ny) { sy = source->ny - 1; }
+        if (tx < 0) { tx = 0; } else if (tx >= target->nx) { tx = target->nx - 1; }
+        if (ty < 0) { ty = 0; } else if (ty >= target->ny) { ty = target->ny - 1; }
+        if (sx + nx - 1 > source->nx) { nx = source->nx - sx + 1; }
+        if (sy + ny - 1 > source->ny) { ny = source->ny - sy + 1; }
+        if (tx + nx - 1 > target->nx) { nx = target->nx - tx + 1; }
+        if (ty + ny - 1 > target->ny) { ny = target->ny - ty + 1; }
+        for (int i = 1; i <= ny; i++) {
+            int s = bm_current_y(source->ny,sy++) * source->nx * source->nz;
+            int t = bm_current_y(target->ny,ty++) * target->nx * source->nz;
+            memcpy(&(target->data[t]), &(source->data[s]), nx * source->nz);
         }
     }
 }

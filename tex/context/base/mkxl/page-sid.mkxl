@@ -292,7 +292,7 @@
      {\vpack
         {\forgetall
          \hsize\wd\floatbox
-         \vskip\privatescratchdimen
+         \vskip\privatescratchdimen % \vkern
          \offinterlineskip
          \box\floatbox
          % somehow we need this \scratchbox magic, but at least it's the same as the
@@ -301,9 +301,9 @@
          \wd\scratchbox\hsize
          \ht\scratchbox\d_page_sides_bottomtotal
          \box\scratchbox
-         \vskip-\d_page_sides_bottomtotal
+         \vskip-\d_page_sides_bottomtotal % \vkern
          \ifnum\c_page_sides_align=\plusfive
-           \vskip-\lineheight
+           \vskip-\lineheight % \vkern
          \fi}}}
 
 \def\page_sides_apply_vertical_shift_traced
@@ -311,7 +311,7 @@
      {\backgroundline[trace:r]{\ruledhpack{\vpack
         {\forgetall
          \hsize\wd\floatbox
-         \vskip\privatescratchdimen
+         \vskip\privatescratchdimen % \vkern
          \offinterlineskip
          \backgroundline
            [trace:g]%
@@ -322,9 +322,9 @@
             \c!height=\d_page_sides_bottomtotal,%
             \c!depth=\zeropoint,%
             \c!width=\hsize]%
-         \vskip-\d_page_sides_bottomtotal
+         \vskip-\d_page_sides_bottomtotal % \vkern
          \ifnum\c_page_sides_align=\plusfive
-           \vskip-\lineheight
+           \vskip-\lineheight % \vkern
          \fi}}}}}
 
 \def\page_sides_apply_vertical_shift
@@ -522,9 +522,9 @@
    \ruledhpack\bgroup\backgroundline[trace:b]{%
      \llap{\smash{\vrule\s!width4\points\s!height.4\points\s!depth.4\points}}%
      \ifnum\recurselevel=\plusone
-       \llap{\smash{\smallinfofont\the\scratchdimen}\hskip.5\leftmargindistance}%
+       \llap{\smash{\smallinfofont\the\scratchdimen}\hkern.5\leftmargindistance}%
      \orelse\ifodd\recurselevel
-       \llap{\smash{\smallinfofont\recurselevel}\hskip.5\leftmargindistance}%
+       \llap{\smash{\smallinfofont\recurselevel}\hkern.5\leftmargindistance}%
      \fi
      \page_sides_flush_floats_normal
      \kern\hsize
@@ -1156,12 +1156,12 @@
    \dontleavehmode
    \ifnum\c_page_sides_float_type>\plusfour
      \rlap
-       {\hskip\availablehsize % d_page_sides_width % kern
+       {\hkern\availablehsize % d_page_sides_width % kern
         \color[trace:o]%
           {\rlap{\kern.25\bodyfontsize\showstruts\strut}%
            \vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width}}%
    \else
-     \hskip-\d_page_sides_width % kern
+     \hkern-\d_page_sides_width % kern
      \color[trace:o]%
        {\vrule\s!height.5\points\s!depth.5\points\s!width\d_page_sides_width
         \llap{\showstruts\strut\kern.25\bodyfontsize}}%

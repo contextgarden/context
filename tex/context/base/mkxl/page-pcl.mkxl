@@ -121,7 +121,7 @@
    \ifdim{\d_page_one_natural_total+\scratchdepth}>\textheight
      % forget about it, prevents an overfull warning
    \else
-     \vskip\scratchdepth
+     \vskip\scratchdepth % or \vkern
      \prevdepth\openstrutdepth
    \fi}
 

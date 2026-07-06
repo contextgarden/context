@@ -964,6 +964,120 @@ end
 
 % \getbuffer % no need to show
 
+
+Although \CONTEXT\ is not really meant for manipulating graphics, the fact that
+we have \METAPOST\ and plenty \LUAMETAFUN\ features alone are good reasons to
+privide some playground, if only because of the fun. So let's talk filters. A
+filter is run over the pixels in a bitmap and are specified by a table with odd
+numbers of columns and rows. You can install filters yourself. In order to avoid
+defining to many you can delay setting the center value (just set it to \type
+{true}) and apply a multliplier (\type {factor}).
+
+\startbuffer
+\startluacode
+    metapost.registerfilter {
+        name    = "sharpen:5",
+        default = 45,
+        mapping = {
+            { -3, -2,   -2, -2, -3 },
+            { -2, -1,   -1, -1, -2 },
+            { -2, -1, true, -1, -2 },
+            { -2, -1,   -1, -1, -2 },
+            { -3, -2,   -2, -2, -3 },
+        }
+    }
+\stopluacode
+\stopbuffer
+
+\typebuffer[option=TEX] \getbuffer
+
+Next we show how to apply a filter. We have commented some parameters that
+demonstrate that you can also set the filter directly. The result can be
+seen in \in {figure} [fig:bytemap:filter:1]. Watch how we can apply multiple
+filters in sequence.
+
+\startbuffer
+\startMPcode
+    triplet bm ; bm := loadbytemapfromfile(3, "mill.png") ;
+
+    lmt_filter [
+        source  = 3,
+        target  = 4,
+      % factor  = 1,
+      % default = 45,
+      % filter  = {
+      %     { -3, -2,   -2, -2, -3 },
+      %     { -2, -1,   -1, -1, -2 },
+      %     { -2, -1, true, -1, -2 },
+      %     { -2, -1,   -1, -1, -2 },
+      %     { -3, -2,   -2, -2, -3 }
+      % }
+        filter  = "sharpen:5",
+      % filter  = "sharpen:3",
+    ] ;
+
+    lmt_filter [
+        source  = 3,
+        target  = 5,
+      % filter  = "gaussianblur",
+      % filter  = "sharpen:5,gaussianblur",
+        filter  = "gaussianblur,sharpen:5",
+    ] ;
+
+    draw bytemap 3 xsized 40mm ;
+    draw bytemap 4 xsized 40mm xshifted 45mm ;
+    draw bytemap 5 xsized 40mm xshifted 90mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:bytemap:filter:1,title={Sharpening (and blurring) a black and white \PNG\ image.}]
+    \getbuffer
+\stopplacefigure
+
+Filters can be applied to color graphics too, in this case we mess with a \JPEG\
+image; of course, afterwards it is a \PNG\ image. The result can be seen in \in
+{figure} [fig:bytemap:filter:2]. You need to play a bit with the \type {default}
+and \type {factor}.
+
+\startbuffer
+\startMPcode
+    triplet bm ; bm := loadbytemapfromfile(5, "hacker.jpg") ;
+
+    lmt_filter [
+        source = 5,
+        target = 6,
+        crop   = true, % can also be a number
+        filter = "sharpen:3",
+        factor = .5,
+    ] ;
+
+    draw bytemap 5 xsized 60mm ;
+    draw bytemap 6 xsized 60mm xshifted 65mm ;
+\stopMPcode
+\stopbuffer
+
+\typebuffer[option=TEX]
+
+\startplacefigure[reference=fig:bytemap:filter:2,title={Sharpening a color \JPEG\ image.}]
+    \getbuffer
+\stopplacefigure
+
+In \type {mlib-bmp.lmt} we predefine some filters:
+
+\starttabulate[|l|Tp|]
+\BC sharpening     \NC sharpen:5 sharpen:3:9 sharpen:3:5 unsharp:5 \NC \NR
+\BC edge detection \NC edge:3:8 edge:3:4 edge:horizontal edge:vertical
+                       sobel:horizontal sharr:horizontal sobel:vertical \NC \NR
+\BC embossing      \NC emboss:3 \NC \NR
+\BC blurring       \NC boxblur gaussianblur:3 gaussianblur:5 \NC \NR
+\stoptabulate
+
+You can find some information at \WIKIPEDIA: \type {Kernel_(image_processing)} or
+search for \quote {image processing} and \quote {kernel} to get such matrices
+and explanations.
+
 \stopchapter
 
 \stopcomponent

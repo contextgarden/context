@@ -416,3 +416,23 @@ usage inside the inner loop. Watch out with the \type {\edef}:
 \stopsectionlevel
 
 \stopdocument
+
+% \startdocument
+%   [whatever:1=ONE,
+%    whatever\letterhash\letterhash=HASH,
+%    whatever\letterhash2=TWO,
+%    whatever:3=THREE]
+%
+% \localcontrolledloop 1 3 1 {%
+%     \doifdocumentvariable{whatever:#I} {%
+%         (\documentvariable{whatever:#I})%
+%     }%
+%     \doifdocumentvariable{whatever\letterhash#I} {%
+%         (\documentvariable{whatever\letterhash#I})%
+%     }%
+%     \doifdocumentvariable{whatever\letterhash\letterhash} {%
+%         (\documentvariable{whatever\letterhash\letterhash})%
+%     }%
+% }
+%
+% \stopdocument

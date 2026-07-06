@@ -82,6 +82,9 @@ extern void   bytemap_set_rgb        (bytemap_data *bytemap, int x, int y, int r
 extern void   bytemap_set_gray_add   (bytemap_data *bytemap, int x, int y, int s1, int s2, int s3);
 extern void   bytemap_set_gray_min   (bytemap_data *bytemap, int x, int y, int s1, int s2, int s3);
 
+extern void   bytemap_fill_gray      (bytemap_data *bytemap, int s);
+extern void   bytemap_fill_rgb       (bytemap_data *bytemap, int r, int g, int b);
+
 /*tex beware: returns an allocated copy*/
 
 extern int    bytemap_get_byte       (bytemap_data *bytemap, int x, int y, int z);
@@ -90,5 +93,7 @@ extern char * bytemap_get_value      (bytemap_data *bytemap, int *nx, int *ny, i
 
 extern void   bytemap_downsample     (bytemap_data *source, bytemap_data *target, int r);
 extern void   bytemap_downgrade      (bytemap_data *source, bytemap_data *target, int r);
+extern void   bytemap_filter         (bytemap_data *source, bytemap_data *target, int wx, int wy, double *map);
+extern void   bytemap_overlay        (bytemap_data *source, bytemap_data *target, int sx, int sy, int tx, int ty, int nx, int ny);
 
 # endif

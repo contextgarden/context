@@ -155,7 +155,7 @@
         \rightorleftpageaction{\scratchwidth\zeropoint}{\hfill}%
       \fi
       \setbox\scratchbox\hpack
-        {\hskip-\scratchwidth
+        {\hkern-\scratchwidth
          \edef\p_category{\directwithpagesparameter\c!category}% \useexternalfigure[foo][width=\textwidth]
          \ifx\p_category\empty
            \externalfigure[#filename][\c!page=#page,\c!height=\textheight]%
@@ -426,7 +426,7 @@
         \else
           \setupcurrentwithpages[#evensettings]%
         \fi
-        \hskip{\directwithpagesparameter\c!offset}%
+        \hskip{\directwithpagesparameter\c!offset}% \hkern
         \clip
           [\c!hoffset=\directwithpagesparameter\c!hoffset,%
            \c!voffset=\directwithpagesparameter\c!voffset,

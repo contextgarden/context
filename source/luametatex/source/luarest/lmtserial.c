@@ -296,7 +296,7 @@ static int seriallib_tostring(lua_State *L) {
         lua_getiuservalue(L, 1, 1);
         port = lua_tostring(L, -1);
         lua_pop(L, -1);
-        lua_pushfstring(L, "<serial %s>", port); 
+        lua_pushfstring(L, "<serial %p : %s>", serial, port);
         return 1;
     } else {
         return 0;

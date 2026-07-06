@@ -226,7 +226,7 @@ void tex_set_text_dir(halfword d)
     }
 }
 
-void tex_set_line_dir(halfword d)
+void tex_set_line_dir(halfword d) /* same as previous */
 {
     if (valid_direction(d)) {
         tex_inject_text_or_line_dir(d, 1);

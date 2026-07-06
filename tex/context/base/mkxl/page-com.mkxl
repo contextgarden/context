@@ -118,9 +118,9 @@
      {%\forgetall
       \hsize\printpaperwidth\relax
       \ifx\p_page_commands_location\v!bottom
-        \vskip{\paperheight+\d_page_comments_distance+\d_page_comments_offset}%
+        \vskip{\paperheight+\d_page_comments_distance+\d_page_comments_offset}% \vkern
       \else
-        \vskip\d_page_comments_offset
+        \vskip\d_page_comments_offset % \vkern
         \vss
       \fi
       \hkern\d_page_comments_offset
@@ -134,9 +134,9 @@
       \hfill
       \ifx\p_page_commands_location\v!bottom
         \vss
-        \vskip\d_page_comments_offset
+        \vskip\d_page_comments_offset % \vkern
       \else
-        \vskip{\paperheight+\d_page_comments_distance+\d_page_comments_offset}%
+        \vskip{\paperheight+\d_page_comments_distance+\d_page_comments_offset}% \vkern
       \fi}}
 
 \protected\def\page_comments_left_right
@@ -149,7 +149,7 @@
       \fi
       \vbox to \printpaperheight
         {%\forgetall
-         \vskip\d_page_comments_offset
+         \vskip\d_page_comments_offset % \vkern
          \hsize\d_page_comments_width
          \ifconditional\c_page_comment_enabled
            \getbuffer[\v!pagecomment]%

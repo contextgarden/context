@@ -19,4 +19,9 @@ extern int bytemaplib_bytemapped(
     int             slot
 );
 
+extern int bytemaplib_pushed(
+    lua_State    * L,
+    bytemap_data * b
+) ;
+
 # endif

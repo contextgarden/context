@@ -192,24 +192,32 @@
 
 % inner outer
 
-\permanent\protected\def\page_margin_blocks_place_r_yes
-  {\setbox\b_page_margin_blocks_prepared\hbox to \rightmarginwidth
-     {\marginblockparameter\c!left
-      \box\b_page_margin_blocks_prepared
-      \marginblockparameter\c!right}%
+\permanent\protected\def\page_margin_blocks_place_indeed#1#2#3#4%
+  {\setbox\b_page_margin_blocks_prepared\hbox to #2\bgroup
+     \ifpositioning
+       % added for some SE user in 2026
+       \anch_mark_tagged_box
+         \b_page_margin_blocks_prepared
+         {\s!marginblock:#1}%
+         \realpageno
+     \fi
+     \marginblockparameter#3\relax
+     \box\b_page_margin_blocks_prepared
+     \marginblockparameter#4\relax
+   \egroup
    \vsmashbox\b_page_margin_blocks_prepared
    \box\b_page_margin_blocks_prepared}
+
+\permanent\protected\def\page_margin_blocks_place_r_yes
+  {\page_margin_blocks_place_indeed
+     \v!right\rightmarginwidth\c!left\c!right}
 
 \permanent\protected\def\page_margin_blocks_place_l_yes
-  {\setbox\b_page_margin_blocks_prepared\hbox to \leftmarginwidth
-     {\marginblockparameter\c!right
-      \box\b_page_margin_blocks_prepared
-      \marginblockparameter\c!left}%
-   \vsmashbox\b_page_margin_blocks_prepared
-   \box\b_page_margin_blocks_prepared}
+  {\page_margin_blocks_place_indeed
+     \v!left\leftmarginwidth\c!right\c!left}
 
-\permanent\protected\def\page_margin_blocks_place_r_nop{\hskip\rightmarginwidth}
-\permanent\protected\def\page_margin_blocks_place_l_nop{\hskip\leftmarginwidth}
+\permanent\protected\def\page_margin_blocks_place_r_nop{\hkern\rightmarginwidth}
+\permanent\protected\def\page_margin_blocks_place_l_nop{\hkern\leftmarginwidth}
 
 \aliased\let\placerightmarginblock\page_margin_blocks_place_r_nop
 \aliased\let\placeleftmarginblock \page_margin_blocks_place_l_nop

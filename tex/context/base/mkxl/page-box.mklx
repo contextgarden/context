@@ -65,9 +65,10 @@
    \scratchdepth \dp#box%
    \setbox#box\vpack
      {\offinterlineskip
-      \vskip\topoffset
+      \vskip\topoffset % \vkern
      %\hskip\doifbothsides\backoffset\backoffset{-\backoffset}%
-      \hskip\doifbothsides++-\backoffset
+%       \hskip\doifbothsides++-\backoffset
+      \hkern\doifbothsides++-\backoffset
       \box#box}%
    \wd#box\scratchwidth
    \ht#box\scratchheight
@@ -113,7 +114,7 @@
      {\offinterlineskip
       \dorecurse{\layoutparameter\c!ny}%
         {\hpack{\dorecurse{\layoutparameter\c!nx}{\copy#box\kern\layoutparameter\c!dx}\unskip}%
-         \vskip{\layoutparameter\c!dy}}%
+         \vskip{\layoutparameter\c!dy}}% \vkern
       \unskip}}
 
 \def\page_boxes_apply_orientate_paper#box%

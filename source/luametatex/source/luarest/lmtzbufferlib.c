@@ -567,11 +567,11 @@ static int zbufferlib_tostring(lua_State *L)
 {
     zbuffer zb = zbufferlib_aux_get(L, 1);
     if (zb) {
-        lua_pushfstring(L, "<zbuffer rows %d columns %d : xmin %d ymin %d xmax %d ymax %d : %p>",
+        lua_pushfstring(L, "<zbuffer %p : rows %d columns %d xmin %d ymin %d xmax %d ymax %d>",
+            zb,
             zb->rows, zb->columns,
             zb->setup.viewport.xmin, zb->setup.viewport.ymin,
-            zb->setup.viewport.xmax, zb->setup.viewport.ymax,
-            zb
+            zb->setup.viewport.xmax, zb->setup.viewport.ymax
         );
         return 1;
     } else {

@@ -11,11 +11,18 @@ if not modules then modules = { } end modules ['mlib-bmp'] = {
 -- too); September 2025.
 
 local type, tonumber, load = type, tonumber, load
+local gmatch = string.gmatch
 
 local report = logs.reporter("metapost","bytemap")
 
-local processbytemap  = mp.processbytemap
-local getparameterset = metapost.getparameterset
+local starttiming = statistics.starttiming
+local stoptiming  = statistics.stoptiming
+local elapsedtime = statistics.elapsedtime
+local ioflush     = io.flush
+
+local processbytemap   = mp.processbytemap
+local getbytemapdirect = mp.getbytemapdirect
+local getparameterset  = metapost.getparameterset
 
 local f_function = [[
     local math  = math
@@ -80,4 +87,269 @@ function mp.lmt_domainmap_do()
         action(bmp)
     end
     mp.newbytemap(mpbytemap,bmp.bytemap)
+end
+
+-- todo: normalize
+-- todo: autocenter
+-- todo: multiple
+-- todo: autoclip
+
+do -- https://en.wikipedia.org/wiki/Kernel_(image_processing)
+
+    -- shapening
+
+    metapost.registerfilter {
+        name    = "sharpen:5",
+        default = 45,
+        mapping = {
+            { -3, -2,   -2, -2, -3 },
+            { -2, -1,   -1, -1, -2 },
+            { -2, -1, true, -1, -2 },
+            { -2, -1,   -1, -1, -2 },
+            { -3, -2,   -2, -2, -3 },
+        }
+    }
+
+    metapost.registerfilter {
+        name    = "sharpen:3:9",
+        default = 9,
+        mapping = {
+            { -1,   -1, -1 },
+            { -1, true, -1 },
+            { -1,   -1, -1 },
+        }
+    }
+
+    metapost.registerfilter {
+        name    = "sharpen:3:5",
+        default = 5,
+        mapping = {
+            {  0,   -1,  0 },
+            { -1, true, -1 },
+            {  0,   -1,  0 },
+        }
+    }
+
+    metapost.registerfilter("sharpen:3","sharpen:3:9")
+
+    -- edging
+
+    metapost.registerfilter {
+        name    = "edge:3:8",
+        default = 8,
+        mapping = {
+            { -1,   -1, -1 },
+            { -1, true, -1 },
+            { -1,   -1, -1 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "edge:3:4",
+        default = 4,
+     -- factor  = -1, -- try this
+        mapping = {
+            {  0,   -1,  0 },
+            { -1, true, -1 },
+            {  0,   -1,  0 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "sobel:horizontal",
+        default = 0,
+        mapping = {
+            { -1,   -2, -1 },
+            {  0, true,  0 },
+            {  1,    2,  1 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "sharr:horizontal",
+        default = 0,
+        mapping = {
+            { -3,  -10, -3 },
+            {  0, true,  0 },
+            {  3,   10,  3 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "sobel:vertical",
+        default = 0,
+        mapping = {
+            { -1,   -0, 1 },
+            { -2, true, 2 },
+            { -1,    0, 1 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "edge:horizontal",
+        default = 3,
+        mapping = {
+            {  0,    0,  0 },
+            { -1, true, -1 },
+            {  0,    0,  0 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "edge:vertical",
+        default = 3,
+        mapping = {
+            { 0,   -1, 0 },
+            { 0, true, 1 },
+            { 0,   -1, 0 },
+        },
+    }
+
+    metapost.registerfilter("edge:3","edge:3:8")
+
+    -- embossing
+
+    metapost.registerfilter {
+        name    = "emboss:3",
+        default = 1,
+        mapping = {
+            { -2, -1, 0 },
+            { -1,  1, 1 },
+            {  0,  1, 2 },
+        },
+    }
+
+    -- blurring
+
+    metapost.registerfilter {
+        name    = "boxblur",
+     -- normal  = 1/9,
+        factor  = 1/9,
+        mapping = {
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+            { 1, 1, 1 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "gaussianblur:3",
+     -- normal  = 1/16,
+        factor  = 1/16,
+        mapping = {
+            { 1, 2, 1 },
+            { 2, 4, 2 },
+            { 1, 2, 1 },
+        },
+    }
+
+    metapost.registerfilter {
+        name    = "gaussianblur:5",
+     -- normal  = 1/256,
+        factor  = 1/256,
+        mapping = {
+            { 1,  4,  6,  4, 1 },
+            { 4, 16, 24, 16, 1 },
+            { 6,  4, 36,  4, 1 },
+            { 4, 16, 24, 16, 1 },
+            { 1,  4,  6,  4, 1 },
+        },
+    }
+
+    metapost.registerfilter("gaussianblur","gaussianblur:5")
+
+    -- unsharpening
+
+    metapost.registerfilter {
+        name    = "unsharp:5",
+     -- normal  = -1/256,
+        factor  = -1/256,
+        mapping = {
+            { 1,  4,    6,  4, 1 },
+            { 4, 16,   24, 16, 1 },
+            { 6,  4, -476,  4, 1 },
+            { 4, 16,   24, 16, 1 },
+            { 1,  4,    6,  4, 1 },
+        },
+    }
+
+    --
+
+--     function mp.lmt_bytemap_filter()
+--         local p       = getparameterset("filter")
+--         local bsource = tonumber(p.source)
+--         local btarget = tonumber(p.target)
+--         if bsource and btarget then
+--             local filter  = p.filter
+--             if type(filter) == "string" then
+--                 -- split and in sequence
+--                 filter = metapost.filter(filter)
+--             end
+--             if type(filter) == "table" then
+--                 local factor  = tonumber(p.factor)  or filter.factor  or 1
+--                 local default = tonumber(p.default) or filter.default or 25
+--                 local crop    = p.crop
+--                 local mapping = filter.mapping or filter
+--                 local source  = getbytemapdirect(bsource)
+--                 local nx, ny, nz = bytemap.dimensions(source)
+--                 local target = bytemap.new(nx,ny,nz)
+--                 bytemap.filter(source,target,mapping,factor,default)
+--                 if crop then
+--                     local final = bytemap.new(nx-2,ny-2,nz)
+--                     bytemap.overlay(target,final,1,1,0,0,nx-2,ny-2)
+--                     target = final
+--                 end
+--                 mp.newbytemap(btarget,target)
+--             end
+--         end
+--     end
+
+    function mp.lmt_bytemap_filter()
+        local p       = getparameterset("filter")
+        local bsource = tonumber(p.source)
+        local btarget = tonumber(p.target)
+        if bsource and btarget then
+            local filter  = p.filter
+            local filters = false
+            if type(filter) == "string" then
+                filters = { }
+                for s in gmatch(filter,"([^%s,]+)") do
+                    filters[#filters+1] = metapost.filter(s)
+                end
+            elseif type(filter) == "table" then
+                filters = { filter }
+            else
+                return
+            end
+            starttiming("bmp",true)
+            local crop       = false
+            local source     = getbytemapdirect(bsource)
+            local nx, ny, nz = bytemap.dimensions(source)
+            local target     = false
+            for i=1,#filters do
+                local filter  = filters[i]
+                local factor  = tonumber(p.factor)  or filter.factor  or 1
+                local default = tonumber(p.default) or filter.default or 25
+                local mapping = filter.mapping or filter
+                target = bytemap.new(nx,ny,nz)
+                bytemap.filter(source,target,mapping,factor,default)
+                source = target
+                crop   = crop or p.clip
+            end
+            if crop == true then
+                crop = 2
+            else
+                crop = tonumber(crop)
+            end
+            if crop then
+                local final = bytemap.new(nx-2,ny-2,nz)
+                bytemap.overlay(target,final,1,1,0,0,nx-2,ny-2)
+                target = final
+            end
+            stoptiming("bmp")
+            report("filtering %i to %i, runtime %s",bsource,btarget,elapsedtime("bmp"))
+            mp.newbytemap(btarget,target)
+        end
+    end
+
 end

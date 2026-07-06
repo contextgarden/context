@@ -44,7 +44,7 @@ static int bitsetlib_new(lua_State *L)
 static int bitsetlib_tostring(lua_State *L) {
     bitset *b = bitsetlib_aux_check_is_valid(L, 1);
     if (b) {
-        lua_pushfstring(L, "<bitset : %d : %p>", b->max, b->set);
+        lua_pushfstring(L, "<bitset %p : %d>", b->set, b->max);
         return 1;
     } else {
         return 0;

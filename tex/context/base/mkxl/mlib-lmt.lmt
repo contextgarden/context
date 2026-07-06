@@ -262,3 +262,17 @@ end
 function metapost.meshupper(name)
     return name and meshuppers[name]
 end
+
+local filters = { }
+
+function metapost.registerfilter(specification,parent)
+    if parent then
+        filters[specification] = filters[parent]
+    else
+        filters[specification.name or "default"] = specification
+    end
+end
+
+function metapost.filter(name)
+    return name and filters[name or "default"]
+end

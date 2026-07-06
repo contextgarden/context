@@ -978,7 +978,7 @@
      \egroup
      \clf_setcolumnsetarea{name {#1} box \scratchbox c #3 r #4}%
      \setbox\scratchbox\vbox\bgroup
-       \hskip-\layoutparameter\c!backspace % todo: #9
+       \hkern-\layoutparameter\c!backspace % todo: #9
        \clip
          [    \c!offset=\columnsetareaparameter\c!clipoffset,%
           \c!leftoffset=\columnsetareaparameter\c!leftoffset,%

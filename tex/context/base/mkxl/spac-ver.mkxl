@@ -2809,7 +2809,13 @@
    \pushparagraphtweak {shift}
    \noindent % not \dontleavehmode
    \ifx\m_spac_hanging_location\v!right
-     \rlap{\kern\scratchhsize\kern\scratchdistance\box\nextbox}%
+     \rlap{%
+        \ifcase\textdirection
+          \kern{\scratchhsize+\scratchdistance}\box\nextbox
+        \else
+          \box\nextbox\kern\scratchdistance
+        \fi
+      }%
    \else
      \llap{\box\nextbox\kern\scratchdistance}%
    \fi

@@ -1000,6 +1000,7 @@ void lmt_nodelib_initialize(void) {
     lmt_interface.par_data[par_line_break_checks_code      ] = (par_info) { .cmd = internal_integer_cmd,   .chr = line_break_checks_code,       .category = par_line_break_checks_category   };
     lmt_interface.par_data[par_single_line_penalty_code    ] = (par_info) { .cmd = internal_integer_cmd,   .chr = single_line_penalty_code,     .category = par_single_line_penalty_category };
     lmt_interface.par_data[par_hyphen_penalty_code         ] = (par_info) { .cmd = internal_integer_cmd,   .chr = hyphen_penalty_code,          .category = par_hyphen_penalty_category      };
+    lmt_interface.par_data[par_ex_hyphen_penalty_code      ] = (par_info) { .cmd = internal_integer_cmd,   .chr = ex_hyphen_penalty_code,       .category = par_hyphen_penalty_category      };
     lmt_interface.par_data[par_par_fill_mode_code          ] = (par_info) { .cmd = internal_integer_cmd,   .chr = par_fill_mode_code,           .category = par_skip_category                };
 }
 

@@ -3617,3 +3617,26 @@ if prune : prunesingularities fi
     fi
     hide(popparameters)
 enddef ;
+
+presetparameters "filter" [
+  % source  = 3,
+  % target  = 4,
+  % factor  = 1,
+  % default = 45,
+  % clip    = true,
+  % filter  = "sharpen:5",
+  % filter  = {
+  %     { -3, -2,   -2, -2, -3 },
+  %     { -2, -1,   -1, -1, -2 },
+  %     { -2, -1, true, -1, -2 },
+  %     { -2, -1,   -1, -1, -2 },
+  %     { -3, -2,   -2, -2, -3 }
+  % }
+] ;
+
+def lmt_filter = applyparameters "filter" "lmt_do_filter" enddef ;
+
+def lmt_do_filter =
+    lmt_load_mlib_bmp ;
+    lua.mp.lmt_bytemap_filter() ;
+enddef ;

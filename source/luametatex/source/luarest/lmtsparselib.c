@@ -106,7 +106,7 @@ static int sparselib_gc(lua_State *L)
 static int sparselib_tostring(lua_State *L) {
     sa_tree_object *o = sparselib_aux_check_is_sa_object(L, 1);
     if (o) {
-        lua_pushfstring(L, "<sparse : %d : %d .. %d : %p>", o->bytes, o->min, o->max, o->tree);
+        lua_pushfstring(L, "<sparse %p : %d : %d .. %d>", o, o->bytes, o->min, o->max);
         return 1;
     } else {
         return 0;

@@ -2719,12 +2719,12 @@ local htmltemplate <const> = [[
         nofbreaks    = saved_nofbreaks
         show_comment = saved_show_comment
 
-nofcurrentcontent = saved_nofcurrentcontent
-currentcontent    = saved_currentcontent
-currentnesting    = saved_currentnesting
-currentattribute  = saved_currentattribute
-last              = saved_last
-currentparagraph  = saved_currentparagraph
+        nofcurrentcontent = saved_nofcurrentcontent
+        currentcontent    = saved_currentcontent
+        currentnesting    = saved_currentnesting
+        currentattribute  = saved_currentattribute
+        last              = saved_last
+        currentparagraph  = saved_currentparagraph
 
         stoptiming(treehash)
 
@@ -2829,9 +2829,9 @@ currentparagraph  = saved_currentparagraph
         local usedname  = nameonly(askedname)
         local basepath  = usedname .. "-export"
 
-if not useextra then
-    basepath = "."
-end
+        if not useextra then
+            basepath = "."
+        end
 
         local imagepath = joinfile(basepath,"images")
         local stylepath = joinfile(basepath,"styles")
@@ -2917,6 +2917,7 @@ end
         local result = allcontent(tree,false,true)
 
         -- ugly but so be it:
+
         local extradata = structures.tags.getextradata()
 
         if extradata then
@@ -3025,11 +3026,11 @@ end
 
         -- we're now ready for saving the result in the xml file
 
+        local xmltree = xml.convert(result) -- this cleans up post end tag
+
         if exportxml then
-
             report_export("saving xml data in %a",xmlfilename)
-            io.savedata(xmlfilename,result)
-
+            xml.save(xmltree,xmlfilename)
         end
 
         report_export("saving css image definitions in %a",imagefilename)
@@ -3046,7 +3047,7 @@ end
 
         -- additionally we save an xhtml file; for that we load the file as xml tree
 
-        local xmltree = cleanxhtmltree(xml.convert(result))
+        xmltree = cleanxhtmltree(xmltree)
 
         if exportxhtml then
 
@@ -3064,7 +3065,7 @@ end
 
             xml.save(xmltree,xhtmlfilename)
 
--- remap(specification,xmltree)
+         -- remap(specification,xmltree)
 
         end
 

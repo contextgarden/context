@@ -154,7 +154,7 @@
      \setbox#1\hbox\bgroup
        \vbox to \textheight\bgroup
           \offinterlineskip
-          \vskip{-1\topskip+\strutheight}% could be an option
+          \vskip{-1\topskip+\strutheight}% could be an option, maybe \vkern
           \textwidth\makeupwidth
           \hsize\textwidth
           \boxmaxdepth\maxdepth

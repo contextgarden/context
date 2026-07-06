@@ -2364,7 +2364,7 @@ do
                     if process.slot    then method = method | method_slot    end
                     if process.color   then method = method | method_color   end
                     if process.normal  then method = method | method_normal  end
-              if process.skip != false then method = method | method_skip    end
+              if process.skip ~= false then method = method | method_skip    end
                     if process.texture then method = method | method_texture end
                     if method == 0 then
                         method = method_color | method_skip

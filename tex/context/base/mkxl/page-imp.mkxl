@@ -457,7 +457,7 @@
   {\global\setbox#5\hpack to \arrangedpageX\paperwidth
      {\setbox\scratchbox\vpack to \arrangedpageY\paperheight
         {\offinterlineskip
-         \vskip#4\paperheight
+         \vskip#4\paperheight % \vkern
          \hkern#3\paperwidth
          \dorotatebox{\ifcase#2 0\else180\fi}\hpack{\box#1}%
          \vfill}%
@@ -679,14 +679,14 @@
    \ifconditional\arrangedswapstate
      \global\setbox\arrangedpageA\vpack
        {\offinterlineskip
-        \vskip\paperheight
+        \vskip\paperheight % \vkern
         \box\arrangedpageA
         \box\arrangedpageB}%
      \arrangedswapstate\conditionalfalse
    \else
      \global\setbox\arrangedpageA\vpack
        {\offinterlineskip
-        \vskip\paperheight
+        \vskip\paperheight % \vkern
         \box\arrangedpageB
         \box\arrangedpageA}%
      \arrangedswapstate\conditionaltrue
@@ -1343,10 +1343,10 @@
          \ifvoid\arrangedpageA\else
            \unvbox\arrangedpageA
            \ifdim\v_page_target_dy>\zeropoint
-             \vskip\v_page_target_dy
+             \vskip\v_page_target_dy % \vkern
            \else
              \vss
-             \vskip\v_page_target_dy
+             \vskip\v_page_target_dy % \vkern
              \vss
            \fi
          \fi
@@ -1468,7 +1468,7 @@
   {\edef\next{\wd#1\the\wd#1\ht#1\the\ht#1\dp#1\the\dp#1}%
    \setbox#1\vpack
      {\offinterlineskip
-      \vskip\d_page_boxes_v_shifts
+      \vskip\d_page_boxes_v_shifts % \vkern
       \hkern\d_page_boxes_h_shifts
       \box#1}%
    \next}

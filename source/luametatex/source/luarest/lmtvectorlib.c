@@ -502,7 +502,7 @@ static int vectorlib_tostring(lua_State *L)
 {
     vector v = vectorlib_aux_get(L, 1);
     if (v) {
-        lua_pushfstring(L, "<vector %d x %d : %p>", v->rows, v->columns, v);
+        lua_pushfstring(L, "<vector %p : %d x %d>", v, v->rows, v->columns);
         return 1;
     } else {
         return 0;
@@ -2114,7 +2114,7 @@ static int vectorlib_mesh_tostring(lua_State *L)
 {
     mesh m = vectorlib_mesh_aux_get(L, 1);
     if (m) {
-        lua_pushfstring(L, "<mesh %d %s : %p>", m->size, mesh_names[m->type], m);
+        lua_pushfstring(L, "<mesh %p : %d %s>", m, m->size, mesh_names[m->type]);
         return 1;
     } else {
         return 0;
@@ -3131,9 +3131,9 @@ static int vectorlib_point_tostring(lua_State *L)
     point p = vectorlib_point_aux_get(L, 1);
     if (p) {
         if (isnan(p->z)) {
-            lua_pushfstring(L, "<point %f %f : %p>", p->x, p->y, p);
+            lua_pushfstring(L, "<point %p : %f %f>", p, p->x, p->y);
         } else {
-            lua_pushfstring(L, "<point %f %f %f : %p>", p->x, p->y, p->z, p);
+            lua_pushfstring(L, "<point %p : %f %f %f>", p, p->x, p->y, p->z);
         }
         return 1;
     } else {
@@ -3591,7 +3591,7 @@ static int vectorlib_points_tostring(lua_State *L)
 {
     points p = vectorlib_points_aux_get(L, 1);
     if (p) {
-        lua_pushfstring(L, "<points %d x %d : %p>", p->rows, p->columns, p);
+        lua_pushfstring(L, "<points %p : %d x %d>", p, p->rows, p->columns);
         return 1;
     } else {
         return 0;
