@@ -128,7 +128,6 @@ if not modules then modules = { } end modules ['font-ots'] = { -- sequences
 
 local type, next, tonumber = type, next, tonumber
 local random = math.random
-local formatters = string.formatters
 local insert = table.insert
 
 local registertracker      = trackers.register
@@ -137,6 +136,8 @@ local logs                 = logs
 local trackers             = trackers
 local nodes                = nodes
 local fonts                = fonts
+
+local formatted            = string.formatted
 
 local otf                  = fonts.handlers.otf
 local tracers              = nodes.tracers
@@ -355,18 +356,18 @@ end
 
 local gref  do
 
-    local f_unicode = formatters["U+%X"]      -- was ["%U"]
-    local f_uniname = formatters["U+%X (%s)"] -- was ["%U (%s)"]
-    local f_unilist = formatters["% t"]
+    local f_unicode = "U+%X"      -- was ["%U"]
+    local f_uniname = "U+%X (%s)" -- was ["%U (%s)"]
+    local f_unilist = "% t"
 
     gref = function(n) -- currently the same as in font-otb
         if type(n) == "number" then
             local description = descriptions[n]
             local name = description and description.name
             if name then
-                return f_uniname(n,name)
+                return formatted(f_uniname,n,name)
             else
-                return f_unicode(n)
+                return formatted(f_unicode,n)
             end
         elseif n then
             local t = { }
@@ -376,13 +377,13 @@ local gref  do
                     local di = descriptions[ni]
                     local nn = di and di.name
                     if nn then
-                        t[#t+1] = f_uniname(ni,nn)
+                        t[#t+1] = formatted(f_uniname,ni,nn)
                     else
-                        t[#t+1] = f_unicode(ni)
+                        t[#t+1] = formatted(f_unicode,ni)
                     end
                 end
             end
-            return f_unilist(t)
+            return formatted(f_unilist,t)
         else
             return "<error in node mode tracing>"
         end
@@ -396,16 +397,16 @@ local function cref(dataset,sequence,index)
     end
     local merged = sequence.merged and "merged " or ""
     if index and index > 1 then
-        return formatters["feature %a, type %a, %schain lookup %a, index %a"](
+        return formatted("feature %a, type %a, %schain lookup %a, index %a",
             dataset[4],sequence.type,merged,sequence.name,index)
     else
-        return formatters["feature %a, type %a, %schain lookup %a"](
+        return formatted("feature %a, type %a, %schain lookup %a",
             dataset[4],sequence.type,merged,sequence.name)
     end
 end
 
 local function pref(dataset,sequence)
-    return formatters["feature %a, type %a, %slookup %a"](
+    return formatted("feature %a, type %a, %slookup %a",
         dataset[4],sequence.type,sequence.merged and "merged " or "",sequence.name)
 end
 
@@ -756,36 +757,36 @@ local function get_alternative_glyph(start,alternatives,value)
         return alternatives[1], trace_alternatives and "1 (only one present)"
     elseif value == "random" then
         local r = getrandom and getrandom("glyph",1,n) or random(1,n)
-        return alternatives[r], trace_alternatives and formatters["value %a, taking %a"](value,r)
+        return alternatives[r], trace_alternatives and formatted("value %a, taking %a",value,r)
     elseif value == "first" then
-        return alternatives[1], trace_alternatives and formatters["value %a, taking %a"](value,1)
+        return alternatives[1], trace_alternatives and formatted("value %a, taking %a",value,1)
     elseif value == "last" then
-        return alternatives[n], trace_alternatives and formatters["value %a, taking %a"](value,n)
+        return alternatives[n], trace_alternatives and formatted("value %a, taking %a",value,n)
     end
     value = value == true and 1 or tonumber(value)
     if type(value) ~= "number" then
-        return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+        return alternatives[1], trace_alternatives and formatted("invalid value %s, taking %a",value,1)
     end
  -- local a = alternatives[value]
  -- if a then
  --     -- some kind of hash
- --     return a, trace_alternatives and formatters["value %a, taking %a"](value,a)
+ --     return a, trace_alternatives and formatted("value %a, taking %a",value,a)
  -- end
     if value > n then
         local defaultalt = otf.defaultnodealternate
         if defaultalt == "first" then
-            return alternatives[n], trace_alternatives and formatters["invalid value %s, taking %a"](value,1)
+            return alternatives[n], trace_alternatives and formatted("invalid value %s, taking %a",value,1)
         elseif defaultalt == "last" then
-            return alternatives[1], trace_alternatives and formatters["invalid value %s, taking %a"](value,n)
+            return alternatives[1], trace_alternatives and formatted("invalid value %s, taking %a",value,n)
         else
-            return false, trace_alternatives and formatters["invalid value %a, %s"](value,"out of range")
+            return false, trace_alternatives and formatted("invalid value %a, %s",value,"out of range")
         end
     elseif value == 0 then
-        return getchar(start), trace_alternatives and formatters["invalid value %a, %s"](value,"no change")
+        return getchar(start), trace_alternatives and formatted("invalid value %a, %s",value,"no change")
     elseif value < 1 then
-        return alternatives[1], trace_alternatives and formatters["invalid value %a, taking %a"](value,1)
+        return alternatives[1], trace_alternatives and formatted("invalid value %a, taking %a",value,1)
     else
-        return alternatives[value], trace_alternatives and formatters["value %a, taking %a"](value,value)
+        return alternatives[value], trace_alternatives and formatted("value %a, taking %a",value,value)
     end
 end
 

@@ -20,6 +20,8 @@ local tsplitat = lpeg.tsplitat
 local utfchar, utfbyte, utflen = utf.char, utf.byte, utf.len
 local round = math.round
 
+if not number then number = { } end -- temp hack for luatex-fonts
+
 local loadstripped = function(data,environment)
     local code = load(data,"=stripped","t")
     if not code then
@@ -32,8 +34,6 @@ local loadstripped = function(data,environment)
 end
 
 -- todo: make a special namespace for the formatter
-
-if not number then number = { } end -- temp hack for luatex-fonts
 
 local hashes  = string.hashes or { }
 string.hashes = hashes
@@ -120,23 +120,18 @@ local function nubasepoints(n)
     end
 end
 
-number.points       = points
-number.nupoints     = nupoints
-number.basepoints   = basepoints
-number.nubasepoints = nubasepoints
-
-local rubish     = spaceortab^0 * newline
-local anyrubish  = spaceortab + newline
-local stripped   = (spaceortab^1 / "") * newline
-local leading    = rubish^0 / ""
-local trailing   = (anyrubish^1 * endofstring) / ""
-local redundant  = rubish^3 / "\n"
-
-local pattern = Cs(leading * (trailing + redundant + stripped + anything)^0)
-
-function strings.collapsecrlf(str)
-    return lpegmatch(pattern,str)
-end
+-- local rubish     = spaceortab^0 * newline
+-- local anyrubish  = spaceortab + newline
+-- local stripped   = (spaceortab^1 / "") * newline
+-- local leading    = rubish^0 / ""
+-- local trailing   = (anyrubish^1 * endofstring) / ""
+-- local redundant  = rubish^3 / "\n"
+--
+-- local pattern = Cs(leading * (trailing + redundant + stripped + anything)^0)
+--
+-- function strings.collapsecrlf(str)
+--     return lpegmatch(pattern,str)
+-- end
 
 -- The following functions might end up in another namespace.
 
@@ -177,13 +172,11 @@ end
 -- local dashes = strings.newrepeater("--",-1)
 -- print(dashes[2],dashes[3],dashes[1])
 
-do
+local utfpadding  do
 
     local extra, tab, start = 0, 0, 4, 0
 
     local nspaces = strings.newrepeater(" ")
-
- -- string.nspaces = nspaces
 
     local pattern =
         Carg(1) / function(t)
@@ -211,7 +204,7 @@ do
         return lpegmatch(pattern,str,1,tab or 7)
     end
 
-    function string.utfpadding(s,n)
+    utfpadding = function(s,n)
         if not n or n == 0 then
             return ""
         end
@@ -225,31 +218,31 @@ do
 
     hashes.spaces = nspaces
 
-    function string.utfpadd(s,n,c)
-        if n and n ~= 0 then
-            local l = utflen(s)
-            if n > 0 then
-                local d = n - l
-                if d > 0 then
-                    if c and c ~= " " then
-                        return rep(c,d) .. s
-                    else
-                        return nspaces[d] .. s
-                    end
-                end
-            else
-                local d = - n - l
-                if d > 0 then
-                    if c and c ~= " " then
-                        return s .. rep(c,d)
-                    else
-                        return s .. nspaces[d]
-                    end
-                end
-            end
-        end
-        return s
-    end
+ -- utfpadd = function(s,n,c)
+ --     if n and n ~= 0 then
+ --         local l = utflen(s)
+ --         if n > 0 then
+ --             local d = n - l
+ --             if d > 0 then
+ --                 if c and c ~= " " then
+ --                     return rep(c,d) .. s
+ --                 else
+ --                     return nspaces[d] .. s
+ --                 end
+ --             end
+ --         else
+ --             local d = - n - l
+ --             if d > 0 then
+ --                 if c and c ~= " " then
+ --                     return s .. rep(c,d)
+ --                 else
+ --                     return s .. nspaces[d]
+ --                 end
+ --             end
+ --         end
+ --     end
+ --     return s
+ -- end
 
 end
 
@@ -357,13 +350,6 @@ do
     function strings.collapse(str)
         return str and lpegmatch(p_prune_intospace,str) or str
     end
-
-    -- local s = " \naa\n\naa\na   a\n\n "
-    -- local s = [[ \naa\n\naa\na   a\n\n]]
-    -- print("["..strings.striplines(s,"collapse all").."]")
-    -- also see: string.collapsespaces
-
- -- strings.striplong = strings.striplines
 
 end
 
@@ -479,7 +465,7 @@ local n = 0
 
 local sequenced = table.sequenced
 
-function string.autodouble(s,sep)
+local function autodouble(s,sep)
     if s == nil then
         return '""'
     end
@@ -493,7 +479,7 @@ function string.autodouble(s,sep)
     return ('"' .. tostring(s) .. '"')
 end
 
-function string.autosingle(s,sep)
+local function autosingle(s,sep)
     if s == nil then
         return "''"
     end
@@ -507,7 +493,10 @@ function string.autosingle(s,sep)
     return ("'" .. tostring(s) .. "'")
 end
 
-do
+-- strings.autodouble = autodouble
+-- strings.autosingle = autosingle
+
+local tracedchar do
 
     local X00 = { [0] =
         -- the regular bunch
@@ -527,7 +516,7 @@ do
 
     hashes.X00 = X00
 
-    function string.tracedchar(b)
+    tracedchar = function(b)
     -- todo: table
         if type(b) == "number" then
             return X00[b] or (utfchar(b) .. " (U+" .. format("%05X",b) .. ")")
@@ -539,7 +528,7 @@ do
 
 end
 
-function number.signed(i)
+local function signed(i)
     if i > 0 then
         return "+",  i
     else
@@ -569,7 +558,7 @@ local splitter3 = Cs (
 
 patterns.formattednumber = splitter
 
-local function formatted(n,sep1,sep2)
+local function formattednumber(n,sep1,sep2)
     if sep1 == false then
         if type(n) == "number" then
             n = tostring(n)
@@ -591,10 +580,8 @@ local function formatted(n,sep1,sep2)
     end
 end
 
-number.formatted = formatted
-
-function number.formattedinteger(n,...)
-    return formatted(round(n),false,...)
+local function formattedinteger(n,...)
+    return formattednumber(round(n),false,...)
 end
 
 -- print(number.formatted(1))
@@ -646,7 +633,7 @@ local exponent  = (S("eE") * (plus + Cs((minus * zero^0 * endofstring)/"") + min
 local pattern_a = Cs(minus^0 * digit^1 * (separator/"" * trailing + separator * (trailing + digit)^0) * exponent)
 local pattern_b = Cs((exponent + anything)^0)
 
-function number.sparseexponent(f,n)
+local function sparseexponent(f,n)
     if not n then
         n = f
         f = "%e"
@@ -684,7 +671,7 @@ setmetatable(hs, {
         end
 } )
 
-function number.formattedfloat(n,b,a)
+local function formattedfloat(n,b,a)
     local s = format(hf[a],n)
     local l = (b or 0) + (a or 0) + 1
     if #s < l then
@@ -722,7 +709,7 @@ local pattern = Cs(Cc('"') * (
 
 patterns.escapedquotes = pattern
 
-function string.escapedquotes(s)
+local function escapedquotes(s)
     return lpegmatch(pattern,s)
 end
 
@@ -733,23 +720,9 @@ local pattern = (1 - P("\\"))^1 ; pattern = Cs (
 
 patterns.unescapedquotes = pattern
 
-function string.unescapedquotes(s)
+local function unescapedquotes(s)
     return lpegmatch(pattern,s) or s
 end
-
--- function string.longifneeded(s)
---     if find(s,'["\\\n\r]') then
---         return "[===[" .. s .. "]===]"
---     else
---         return '"' .. s ..'"'
---     end
--- end
-
-string.texnewlines = lpeg.replacer(patterns.newline,"\r",true)
-
--- print(string.escapedquotes('1\\23\n"'))
-
--- but for now here
 
 local preamble = ""
 
@@ -762,28 +735,28 @@ local environment = {
     type             = type,
     tostring         = tostring,
     tonumber         = tonumber,
-    format           = string.format,
-    concat           = table.concat,
-    signed           = number.signed,
-    points           = number.points,
-    nupoints         = number.nupoints,
-    basepoints       = number.basepoints,
-    nubasepoints     = number.nubasepoints,
-    utfchar          = utf.char,
-    utfbyte          = utf.byte,
-    lpegmatch        = lpeg.match,
-    utfpadding       = string.utfpadding,
-    tracedchar       = string.tracedchar,
-    autosingle       = string.autosingle,
-    autodouble       = string.autodouble,
+    format           = format,
+    concat           = concat,
+    signed           = signed,
+    points           = points,
+    nupoints         = nupoints,
+    basepoints       = basepoints,
+    nubasepoints     = nubasepoints,
+    utfchar          = utfchar,
+    utfbyte          = utfbyte,
+    lpegmatch        = lpegmatch,
+    utfpadding       = utfpadding,
+    tracedchar       = tracedchar,
+    autosingle       = autosingle,
+    autodouble       = autodouble,
     sequenced        = table.sequenced,
-    formattednumber  = number.formatted,
-    formattedinteger = number.formattedinteger,
-    sparseexponent   = number.sparseexponent,
-    formattedfloat   = number.formattedfloat,
-    stripzero        = patterns.stripzero,
-    stripzeros       = patterns.stripzeros,
-    escapedquotes    = string.escapedquotes,
+    formattednumber  = formattednumber,
+    formattedinteger = formattedinteger,
+    sparseexponent   = sparseexponent,
+    formattedfloat   = formattedfloat,
+    stripzero        = stripzero,  -- patterns
+    stripzeros       = stripzeros, -- patterns
+    escapedquotes    = escapedquotes,
 
     FORMAT           = string.f6,
     FD               = string.fd,
@@ -911,17 +884,6 @@ local format_F = function(f) -- beware, no cast to number
         return format("format((a%s %% 1 == 0) and '%%i' or '%%%sf',a%s)",n,f,n)
     end
 end
-
--- if string.f9 then-- f3 f4 f6 f9
---     format_F = function(f) -- beware, no cast to number
---         n = n + 1
---         if not f or f == "" then
---             return format("(((a%s > -0.0000000005 and a%s < 0.0000000005) and '0') or FORMAT(a%s))",n,n,n,n,n)
---         else
---             return format("((a%s %% 1 == 0) and format('%%i',a%s) or FORMAT(a%s,'%%%sf'))",n,n,n,f)
---         end
---     end
--- end
 
 local format_k = function(b,a) -- slow
     n = n + 1
@@ -1488,10 +1450,9 @@ function strings.formatters.new(noconcat)
     return t
 end
 
-local formatters   = strings.formatters.new() -- the default instance
+local formatters = strings.formatters.new() -- the default instance
 
-string.formatters  = formatters -- in the main string namespace
-string.formatter   = function(str,...) return formatters[str](...) end -- sometimes nicer name
+strings.luaformatters = formatters
 
 local function add(t,name,template,preamble)
     if type(t) == "table" and t._type_ == "formatter" then
@@ -1523,32 +1484,7 @@ add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape = patterns.xmlescap
 add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape = patterns.texescape })
 add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape = patterns.luaescape })
 
--- This is a somewhat silly one used in commandline reconstruction but the older
--- method, using a combination of fine, gsub, quoted and unquoted was not that
--- reliable.
---
--- '"foo"bar \"and " whatever"' => "foo\"bar \"and \" whatever"
--- 'foo"bar \"and " whatever'   => "foo\"bar \"and \" whatever"
-
-local dquote = patterns.dquote -- P('"')
-local equote = patterns.escaped + dquote / '\\"' + 1
-local cquote = Cc('"')
-
-local pattern =
-    Cs(dquote * (equote - P(-2))^0 * dquote)                    -- we keep the outer but escape unescaped ones
-  + Cs(cquote * (equote - space)^0 * space * equote^0 * cquote) -- we escape unescaped ones
-
-function string.optionalquoted(str)
-    return lpegmatch(pattern,str) or str
-end
-
-local pattern = Cs((newline / (os.newline or "\r") + 1)^0)
-
-function string.replacenewlines(str)
-    return lpegmatch(pattern,str)
-end
-
---
+-- to be checked:
 
 do
 
@@ -1571,87 +1507,3 @@ do
     end
 
 end
-
---
-
-do
-
-    local formatted = string.formatted
-
-    function number.to16dot16(n)
-        return formatted("%0.5N",n/65536.0)
-    end
-
-end
-
-do
-
-    local p_whitespace = patterns.whitespace
-
-    local cache = setmetatable({ }, {
-        __index =
-            function(t,k)
-                local p = Ct((C((1-p_whitespace-P(k))^1) + P(1))^1)
-                local v = function(s)
-                    return lpegmatch(p,s)
-                end
-                t[k] = v
-                return v
-            end
-    })
-
-    function string.wordsplitter(s)
-        return cache[s]
-    end
-
-end
-
-local t = {
-    ["#"]  = "#H",
-    ["\n"] = "#L",
-    ['"']  = "#Q",
-    ["\r"] = "#R",
-    [" "]  = "#S",
-    ["\t"] = "#T",
-    ["\\"] = "#X",
-}
-
-function string.texhashed(s)
-    return (gsub(s,".",t))
-end
-
--- function string.utfpadding(s,n)
--- function string.utfpadd(s,n,c)
-
--- local formatted = string.formatted
---
--- function string.autodouble(s,sep)
---     if s == nil then
---         return '""'
---     elseif sep and type(s) == "table" then
---         return formatted("%"..sep.."A",s)
---     else
---         return formatted("%A",s)
---     end
--- end
---
--- function string.autosingle(s,sep)
---     if s == nil then
---         return "''"
---     elseif sep and type(s) == "table" then
---         return formatted("%"..sep.."a",s)
---     else
---         return formatted("%a",s)
---     end
--- end
-
--- function string.tracedchar(b)
---     return formatted("%C",b)
--- end
-
--- function string.escapedquotes(s)
--- function string.unescapedquotes(s)
--- function string.optionalquoted(str)
--- function string.replacenewlines(str)
--- function string.wordsplitter(s)
--- function string.texhashed(s)

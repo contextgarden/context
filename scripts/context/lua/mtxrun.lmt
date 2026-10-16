@@ -5318,9 +5318,152 @@ end -- of closure
 
 do -- create closure to overcome 200 locals limit
 
+package.loaded["util-for"] = package.loaded["util-for"] or true
+
+-- original size: 5700, stripped down to: 3429
+
+if not modules then modules={} end modules ['util-for']={
+ version=1.001,
+ comment="companion to luat-lib.mkiv",
+ author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
+ copyright="PRAGMA ADE / ConTeXt Development Team",
+ license="see context related readme files"
+}
+local rawget=rawget
+local rawset=rawset
+local gsub=string.gsub
+local formatted=sequencer.format
+local patterns=lpeg.patterns
+local lpegmatch=lpeg.match
+local P,C,S,Cs,Cc=lpeg.P,lpeg.C,lpeg.S,lpeg.Cs,lpeg.Cc
+local map={
+ ["%.1N"]="%\x01",
+ ["%.2N"]="%\x02",
+ ["%.3N"]="%\x03",
+ ["%.4N"]="%\x04",
+ ["%.5N"]="%\x05",
+ ["%.6N"]="%\x06",
+ ["%.7N"]="%\x07",
+ ["%.8N"]="%\x08",
+ ["%.9N"]="%\x09",
+ ["%02i"]="%\x0B",
+ ["%03i"]="%\x0C",
+ ["%04i"]="%\x0E",
+ ["%05i"]="%\x0F",
+ ["%02X"]="%\x10",
+ ["%03X"]="%\x11",
+ ["%04X"]="%\x12",
+ ["%05X"]="%\x13",
+ ["%06X"]="%\x14",
+ ["%07X"]="%\x15",
+ ["%08X"]="%\x16",
+ ["(%.6N,%.6N)"]="%\x17",
+ ["(%.6N,%.6N,%.6N)"]="%\x18",
+ ["(%.3N)"]="%\x19",
+ ["(%.3N,%.3N,%.3N)"]="%\x1A",
+ ["(%.3N,%.3N,%.3N,%.3N)"]="%\x1B",
+}
+local anything=patterns.anything
+local pattern=Cs(((lpeg.utfchartabletopattern(map)/map)+1)^0)
+local formatting=function(s) return lpegmatch(pattern,s) end
+local formatters=setmetatable(
+ {},
+ {
+  __index=function(t,k)
+   local f=lpegmatch(pattern,k)
+   local v=function(...)
+    return formatted(f,...)
+   end
+   rawset(t,k,v)
+   return v
+  end,
+  __newindex=function()
+  end,
+  __call=function(t,...)
+   return formatted(...)
+  end,
+ }
+)
+local extensions=sequencer.extensions
+setmetatable(extensions,{
+ __newindex=function(t,k,v)
+  if rawget(t,k) then
+  else
+   rawset(t,k,v)
+  end
+ end
+})
+patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
+patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
+patterns.ctxescape=Cs((C(S("#$%\\{}|"))/"\\%1"+anything)^0)
+patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
+patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
+extensions.xml=function(s) return lpegmatch(patterns.xmlescape,s) end
+extensions.tex=function(s) return lpegmatch(patterns.texescape,s) end
+extensions.lua=function(s) return lpegmatch(patterns.luaescape,s) end
+string.formatters=formatters
+string.formatting=formatting
+string.formatter=function(str,...) return formatters[str](...) end
+string.formatted=formatted
+function number.to16dot16(n)
+ return formatted("%0.5N",n/65536.0)
+end
+do
+ local t={
+  ["#"]="#H",
+  ["\n"]="#L",
+  ['"']="#Q",
+  ["\r"]="#R",
+  [" "]="#S",
+  ["\t"]="#T",
+  ["\\"]="#X",
+ }
+ function string.texhashed(s)
+  return (gsub(s,".",t))
+ end
+end
+do
+ local space=patterns.space
+ local newline=patterns.newline
+ local dquote=patterns.dquote 
+ local equote=patterns.escaped+dquote/'\\"'+1
+ local cquote=Cc('"')
+ local pattern=Cs(dquote*(equote-P(-2))^0*dquote)     
++Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
+ function string.optionalquoted(str)
+  return lpegmatch(pattern,str) or str
+ end
+ local pattern=Cs((newline/(os.newline or "\r")+1)^0)
+ function string.replacenewlines(str)
+  return lpegmatch(pattern,str)
+ end
+end
+do
+ local p_whitespace=patterns.whitespace
+ local cache=setmetatable({},{
+  __index=function(t,k)
+    local p=Ct((C((1-p_whitespace-P(k))^1)+P(1))^1)
+    local v=function(s)
+     return lpegmatch(p,s)
+    end
+    t[k]=v
+    return v
+   end
+ })
+ function string.wordsplitter(s)
+  return cache[s]
+ end
+end
+string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
+
+
+end -- of closure
+
+do -- create closure to overcome 200 locals limit
+
 package.loaded["util-str"] = package.loaded["util-str"] or true
 
--- original size: 47883, stripped down to: 26386
+-- original size: 44108, stripped down to: 24288
 
 if not modules then modules={} end modules ['util-str']={
  version=1.001,
@@ -5341,6 +5484,7 @@ local patterns,lpegmatch=lpeg.patterns,lpeg.match
 local tsplitat=lpeg.tsplitat
 local utfchar,utfbyte,utflen=utf.char,utf.byte,utf.len
 local round=math.round
+if not number then number={} end 
 local loadstripped=function(data,environment)
  local code=load(data,"=stripped","t")
  if not code then
@@ -5351,7 +5495,6 @@ local loadstripped=function(data,environment)
   return load(dump(code,true),"=stripped","b")
  end
 end
-if not number then number={} end 
 local hashes=string.hashes or {}
 string.hashes=hashes
 local stripzero=patterns.stripzero
@@ -5428,20 +5571,6 @@ local function nubasepoints(n)
   return format("%.5f",n) 
  end
 end
-number.points=points
-number.nupoints=nupoints
-number.basepoints=basepoints
-number.nubasepoints=nubasepoints
-local rubish=spaceortab^0*newline
-local anyrubish=spaceortab+newline
-local stripped=(spaceortab^1/"")*newline
-local leading=rubish^0/""
-local trailing=(anyrubish^1*endofstring)/""
-local redundant=rubish^3/"\n"
-local pattern=Cs(leading*(trailing+redundant+stripped+anything)^0)
-function strings.collapsecrlf(str)
- return lpegmatch(pattern,str)
-end
 local repeaters={} 
 function strings.newrepeater(str,offset)
  offset=offset or 0
@@ -5471,7 +5600,7 @@ function strings.newrepeater(str,offset)
  s[offset]=t
  return t
 end
-do
+local utfpadding  do
  local extra,tab,start=0,0,4,0
  local nspaces=strings.newrepeater(" ")
  local pattern=Carg(1)/function(t)
@@ -5493,7 +5622,7 @@ do
  function strings.tabtospace(str,tab)
   return lpegmatch(pattern,str,1,tab or 7)
  end
- function string.utfpadding(s,n)
+ utfpadding=function(s,n)
   if not n or n==0 then
    return ""
   end
@@ -5505,31 +5634,6 @@ do
   end
  end
  hashes.spaces=nspaces
- function string.utfpadd(s,n,c)
-  if n and n~=0 then
-   local l=utflen(s)
-   if n>0 then
-    local d=n-l
-    if d>0 then
-     if c and c~=" " then
-      return rep(c,d)..s
-     else
-      return nspaces[d]..s
-     end
-    end
-   else
-    local d=- n-l
-    if d>0 then
-     if c and c~=" " then
-      return s..rep(c,d)
-     else
-      return s..nspaces[d]
-     end
-    end
-   end
-  end
-  return s
- end
 end
 do
  local optionalspace=spacer^0
@@ -5581,7 +5685,7 @@ do
 end
 local n=0
 local sequenced=table.sequenced
-function string.autodouble(s,sep)
+local function autodouble(s,sep)
  if s==nil then
   return '""'
  end
@@ -5594,7 +5698,7 @@ function string.autodouble(s,sep)
  end
  return ('"'..tostring(s)..'"')
 end
-function string.autosingle(s,sep)
+local function autosingle(s,sep)
  if s==nil then
   return "''"
  end
@@ -5607,7 +5711,7 @@ function string.autosingle(s,sep)
  end
  return ("'"..tostring(s).."'")
 end
-do
+local tracedchar do
  local X00={ [0]=
   "[null]","[soh]","[stx]","[etx]","[eot]","[enq]","[ack]","[bel]",
   "[bs]","[ht]","[lf]","[vt]","[ff]","[cr]","[so]","[si]",
@@ -5620,7 +5724,7 @@ do
       end,
  })
  hashes.X00=X00
- function string.tracedchar(b)
+ tracedchar=function(b)
   if type(b)=="number" then
    return X00[b] or (utfchar(b).." (U+"..format("%05X",b)..")")
   else
@@ -5629,7 +5733,7 @@ do
   end
  end
 end
-function number.signed(i)
+local function signed(i)
  if i>0 then
   return "+",i
  else
@@ -5646,7 +5750,7 @@ local splitter3=Cs (
  three*prefix*endofstring+two*prefix*endofstring+digit*prefix*endofstring+three+two+digit
 )
 patterns.formattednumber=splitter
-local function formatted(n,sep1,sep2)
+local function formattednumber(n,sep1,sep2)
  if sep1==false then
   if type(n)=="number" then
    n=tostring(n)
@@ -5667,9 +5771,8 @@ local function formatted(n,sep1,sep2)
   end
  end
 end
-number.formatted=formatted
-function number.formattedinteger(n,...)
- return formatted(round(n),false,...)
+local function formattedinteger(n,...)
+ return formattednumber(round(n),false,...)
 end
 local p=Cs(
   P("-")^0*(P("0")^1/"")^0*(1-period)^0*(period*P("0")^1*endofstring/""+period^0)*P(1-P("0")^1*endofstring)^0
@@ -5694,7 +5797,7 @@ local trailing=zero^1*#S("eE")
 local exponent=(S("eE")*(plus+Cs((minus*zero^0*endofstring)/"")+minus)*zero^0*(endofstring*Cc("0")+anything^1))
 local pattern_a=Cs(minus^0*digit^1*(separator/""*trailing+separator*(trailing+digit)^0)*exponent)
 local pattern_b=Cs((exponent+anything)^0)
-function number.sparseexponent(f,n)
+local function sparseexponent(f,n)
  if not n then
   n=f
   f="%e"
@@ -5726,7 +5829,7 @@ setmetatable(hs,{
    return v
   end
 } )
-function number.formattedfloat(n,b,a)
+local function formattedfloat(n,b,a)
  local s=format(hf[a],n)
  local l=(b or 0)+(a or 0)+1
  if #s<l then
@@ -5744,17 +5847,16 @@ local pattern=Cs(Cc('"')*(
  (1-S('"\\\n\r'))^1+P('"')/'\\"'+P('\\')/'\\\\'+P('\n')/'\\n'+P('\r')/'\\r'
 )^0*Cc('"'))
 patterns.escapedquotes=pattern
-function string.escapedquotes(s)
+local function escapedquotes(s)
  return lpegmatch(pattern,s)
 end
 local pattern=(1-P("\\"))^1;pattern=Cs (
  pattern*((P("\\")/""*(digit^-3/function(s) return char(tonumber(s)) end))+pattern )^1
 )
 patterns.unescapedquotes=pattern
-function string.unescapedquotes(s)
+local function unescapedquotes(s)
  return lpegmatch(pattern,s) or s
 end
-string.texnewlines=lpeg.replacer(patterns.newline,"\r",true)
 local preamble=""
 local environment={
  ["global"]=_G,
@@ -5764,28 +5866,28 @@ local environment={
  type=type,
  tostring=tostring,
  tonumber=tonumber,
- format=string.format,
- concat=table.concat,
- signed=number.signed,
- points=number.points,
- nupoints=number.nupoints,
- basepoints=number.basepoints,
- nubasepoints=number.nubasepoints,
- utfchar=utf.char,
- utfbyte=utf.byte,
- lpegmatch=lpeg.match,
- utfpadding=string.utfpadding,
- tracedchar=string.tracedchar,
- autosingle=string.autosingle,
- autodouble=string.autodouble,
+ format=format,
+ concat=concat,
+ signed=signed,
+ points=points,
+ nupoints=nupoints,
+ basepoints=basepoints,
+ nubasepoints=nubasepoints,
+ utfchar=utfchar,
+ utfbyte=utfbyte,
+ lpegmatch=lpegmatch,
+ utfpadding=utfpadding,
+ tracedchar=tracedchar,
+ autosingle=autosingle,
+ autodouble=autodouble,
  sequenced=table.sequenced,
- formattednumber=number.formatted,
- formattedinteger=number.formattedinteger,
- sparseexponent=number.sparseexponent,
- formattedfloat=number.formattedfloat,
- stripzero=patterns.stripzero,
- stripzeros=patterns.stripzeros,
- escapedquotes=string.escapedquotes,
+ formattednumber=formattednumber,
+ formattedinteger=formattedinteger,
+ sparseexponent=sparseexponent,
+ formattedfloat=formattedfloat,
+ stripzero=stripzero,
+ stripzeros=stripzeros,
+ escapedquotes=escapedquotes,
  FORMAT=string.f6,
  FD=string.fd,
  FD3=string.fd3,
@@ -6314,8 +6416,7 @@ function strings.formatters.new(noconcat)
  return t
 end
 local formatters=strings.formatters.new() 
-string.formatters=formatters 
-string.formatter=function(str,...) return formatters[str](...) end 
+strings.luaformatters=formatters
 local function add(t,name,template,preamble)
  if type(t)=="table" and t._type_=="formatter" then
   t._extensions_[name]=template or "%s"
@@ -6337,18 +6438,6 @@ patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc(
 add(formatters,"xml",[[lpegmatch(xmlescape,%s)]],{ xmlescape=patterns.xmlescape })
 add(formatters,"tex",[[lpegmatch(texescape,%s)]],{ texescape=patterns.texescape })
 add(formatters,"lua",[[lpegmatch(luaescape,%s)]],{ luaescape=patterns.luaescape })
-local dquote=patterns.dquote 
-local equote=patterns.escaped+dquote/'\\"'+1
-local cquote=Cc('"')
-local pattern=Cs(dquote*(equote-P(-2))^0*dquote)     
-+Cs(cquote*(equote-space)^0*space*equote^0*cquote) 
-function string.optionalquoted(str)
- return lpegmatch(pattern,str) or str
-end
-local pattern=Cs((newline/(os.newline or "\r")+1)^0)
-function string.replacenewlines(str)
- return lpegmatch(pattern,str)
-end
 do
  local formatted=string.formatted
  function strings.newcollector()
@@ -6367,132 +6456,6 @@ do
    end
  end
 end
-do
- local formatted=string.formatted
- function number.to16dot16(n)
-  return formatted("%0.5N",n/65536.0)
- end
-end
-do
- local p_whitespace=patterns.whitespace
- local cache=setmetatable({},{
-  __index=function(t,k)
-    local p=Ct((C((1-p_whitespace-P(k))^1)+P(1))^1)
-    local v=function(s)
-     return lpegmatch(p,s)
-    end
-    t[k]=v
-    return v
-   end
- })
- function string.wordsplitter(s)
-  return cache[s]
- end
-end
-local t={
- ["#"]="#H",
- ["\n"]="#L",
- ['"']="#Q",
- ["\r"]="#R",
- [" "]="#S",
- ["\t"]="#T",
- ["\\"]="#X",
-}
-function string.texhashed(s)
- return (gsub(s,".",t))
-end
-
-
-end -- of closure
-
-do -- create closure to overcome 200 locals limit
-
-package.loaded["util-for"] = package.loaded["util-for"] or true
-
--- original size: 3750, stripped down to: 2305
-
-if not modules then modules={} end modules ['util-for']={
- version=1.001,
- comment="companion to luat-lib.mkiv",
- author="Hans Hagen, PRAGMA-ADE, Hasselt NL",
- copyright="PRAGMA ADE / ConTeXt Development Team",
- license="see context related readme files"
-}
-local rawget=rawget
-local rawset=rawset
-local formatted=sequencer.format
-local patterns=lpeg.patterns
-local lpegmatch=lpeg.match
-local P,C,S,Cs,Cc=lpeg.P,lpeg.C,lpeg.S,lpeg.Cs,lpeg.Cc
-local map={
- ["%.1N"]="%\x01",
- ["%.2N"]="%\x02",
- ["%.3N"]="%\x03",
- ["%.4N"]="%\x04",
- ["%.5N"]="%\x05",
- ["%.6N"]="%\x06",
- ["%.7N"]="%\x07",
- ["%.8N"]="%\x08",
- ["%.9N"]="%\x09",
- ["%02i"]="%\x0B",
- ["%03i"]="%\x0C",
- ["%04i"]="%\x0E",
- ["%05i"]="%\x0F",
- ["%02X"]="%\x10",
- ["%03X"]="%\x11",
- ["%04X"]="%\x12",
- ["%05X"]="%\x13",
- ["%06X"]="%\x14",
- ["%07X"]="%\x15",
- ["%08X"]="%\x16",
- ["(%.6N,%.6N)"]="%\x17",
- ["(%.6N,%.6N,%.6N)"]="%\x18",
- ["(%.3N)"]="%\x19",
- ["(%.3N,%.3N,%.3N)"]="%\x1A",
- ["(%.3N,%.3N,%.3N,%.3N)"]="%\x1B",
-}
-local anything=patterns.anything
-local pattern=Cs(((lpeg.utfchartabletopattern(map)/map)+1)^0)
-local formatting=function(s) return lpegmatch(pattern,s) end
-local formatters=setmetatable(
- {},
- {
-  __index=function(t,k)
-   local f=lpegmatch(pattern,k)
-   local v=function(...)
-    return formatted(f,...)
-   end
-   rawset(t,k,v)
-   return v
-  end,
-  __newindex=function()
-  end,
-  __call=function(t,...)
-   return formatted(...)
-  end,
- }
-)
-local extensions=sequencer.extensions
-setmetatable(extensions,{
- __newindex=function(t,k,v)
-  if rawget(t,k) then
-  else
-   rawset(t,k,v)
-  end
- end
-})
-patterns.xmlescape=Cs((P("<")/"&lt;"+P(">")/"&gt;"+P("&")/"&amp;"+P('"')/"&quot;"+anything)^0)
-patterns.texescape=Cs((C(S("#$%\\{}"))/"\\%1"+anything)^0)
-patterns.ctxescape=Cs((C(S("#$%\\{}|"))/"\\%1"+anything)^0)
-patterns.luaescape=Cs(((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0) 
-patterns.luaquoted=Cs(Cc('"')*((1-S('"\n'))^1+P('"')/'\\"'+P('\n')/'\\n"')^0*Cc('"'))
-extensions.xml=function(s) return lpegmatch(patterns.xmlescape,s) end
-extensions.tex=function(s) return lpegmatch(patterns.texescape,s) end
-extensions.lua=function(s) return lpegmatch(patterns.luaescape,s) end
-string.formatters=formatters
-string.formatting=formatting
-string.formatter=function(str,...) return formatters[str](...) end
-string.formatted=formatted
 
 
 end -- of closure
@@ -22353,10 +22316,10 @@ package.loaded.json=json
 
 end -- of closure
 
--- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lua l-number.lmt l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lmt l-math.lua util-str.lmt util-for.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lua data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
+-- used libraries    : l-bit32.lmt l-lua.lmt l-package.lua l-lpeg.lua l-function.lua l-string.lua l-table.lmt l-io.lua l-number.lmt l-set.lua l-os.lua l-file.lua l-gzip.lua l-md5.lua l-sha.lua l-url.lua l-dir.lua l-boolean.lua l-unicode.lmt l-math.lua util-for.lmt util-str.lmt util-tab.lmt util-fil.lmt util-sac.lmt util-sto.lua util-prs.lmt util-fmt.lua trac-set.lmt trac-log.lua util-tmr.lua trac-tmr.lua trac-inf.lmt trac-pro.lua util-lua.lmt util-deb.lmt util-srv.lmt util-tpl.lua util-sbx.lmt util-mrg.lua util-env.lmt luat-env.lua util-zip.lua util-sig.lua lxml-tab.lua lxml-lpt.lua lxml-mis.lua lxml-aux.lua lxml-xml.lua trac-xml.lua data-ini.lua data-exp.lua data-env.lua data-tmp.lua data-met.lua data-res.lua data-pre.lua data-inp.lua data-out.lua data-fil.lmt data-con.lua data-use.lua data-zip.lua data-tre.lua luat-sbx.lmt data-sch.lmt data-lua.lua data-tmf.lua data-lst.lua libs-ini.lmt luat-sta.lua luat-fmt.lua util-jsn.lmt
 -- skipped libraries : -
--- original bytes    : 938161
--- stripped bytes    : 390095
+-- original bytes    : 936336
+-- stripped bytes    : 389244
 
 -- end library merge
 
@@ -22404,8 +22367,8 @@ local ownlibs = {
     'l-unicode.lmt',
     'l-math.lua',
 
-    'util-str.lmt', -- will go away once we moved some
     'util-for.lmt',
+    'util-str.lmt', -- will go away once we moved some
     'util-tab.lmt',
     'util-fil.lmt',
     'util-sac.lmt',

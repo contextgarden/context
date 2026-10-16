@@ -67,7 +67,7 @@ target_compile_definitions(mimalloc PRIVATE
 # MIMALLOC_ALLOW_THP=1
     MI_DEBUG=0
     MI_SECURE=0
-    NDEBUG=0
+  # NDEBUG=0
   # MI_DEBUG=3
   # MI_SHOW_ERRORS=1
   # MI_PADDING=1

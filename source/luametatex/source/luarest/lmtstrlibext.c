@@ -623,7 +623,7 @@ static int strlib_utfvalue(lua_State *L)
     int i = 0;
     const char *s = luaL_checklstring(L, 1, &l);
     /* we return each code point, so (as in |utf8.codepoint|) we need room on the stack */
-    if (l >= INT_MAX) {
+    if lmt_unlikely(l >= INT_MAX) {
         return luaL_error(L, "string too long");
     }
     luaL_checkstack(L, (int) l, "string too long");
@@ -1495,14 +1495,14 @@ static int strlib_pack_rows_columns(lua_State* L)
             switch (lua_rawgeti(L, -1, 1)) {
                 case LUA_TNUMBER:
                     {
-                        if ((size_t) rows > SIZE_MAX / (size_t) columns) {
+                        if lmt_unlikely((size_t) rows > SIZE_MAX / (size_t) columns) {
                             lua_pop(L, 2); /* row and cell */
                             return luaL_error(L, "table dimensions in string.packrowscolumns are too large");
                         }
                         size_t size = (size_t) rows * (size_t) columns;
                         unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
-                        if (result) {
+                        if lmt_likely(result) {
                             unsigned char *first = result;
                             for (lua_Integer r = 1; r <= rows; r++) {
                                 if (lua_rawgeti(L, 1, r) == LUA_TTABLE) {
@@ -1533,14 +1533,14 @@ static int strlib_pack_rows_columns(lua_State* L)
                             lua_pushliteral(L, "");
                             return 1;
                         }
-                        if ((size_t) rows > SIZE_MAX / (size_t) columns || ((size_t) rows * (size_t) columns) > SIZE_MAX / (size_t) mode) {
+                        if lmt_unlikely((size_t) rows > SIZE_MAX / (size_t) columns || ((size_t) rows * (size_t) columns) > SIZE_MAX / (size_t) mode) {
                             lua_pop(L, 2);
                             return luaL_error(L, "table dimensions in string.packrowscolumns are too large");
                         }
                         size_t size = (size_t) rows * (size_t) columns * (size_t) mode;
                         unsigned char *result = lmt_memory_malloc(size);
                         lua_pop(L, 2); /* row and cell */
-                        if (result) {
+                        if lmt_likely(result) {
                             unsigned char *first = result;
                             for (lua_Integer r = 1; r <= rows; r++) {
                                 if (lua_rawgeti(L, 1, r) == LUA_TTABLE) {
@@ -1800,7 +1800,7 @@ inline static int lmt_buffer_has_room(lmt_string_buffer *b, size_t needed)
         b->buffer = (char *) lmt_memory_malloc(b->size);
         b->step   = 0;
     }
-    if (needed > SIZE_MAX - b->length) {
+    if lmt_unlikely(needed > SIZE_MAX - b->length) {
         luaL_error(b->L, "not enough memory for buffer");
         return 0;
     }
@@ -1809,7 +1809,7 @@ inline static int lmt_buffer_has_room(lmt_string_buffer *b, size_t needed)
         size_t new_size = b->size;
         if (b->step) {
             while (required >= new_size) {
-                if (new_size > SIZE_MAX - b->step) {
+                if lmt_unlikely(new_size > SIZE_MAX - b->step) {
                     luaL_error(b->L, "not enough memory for buffer");
                     return 0;
                 }
@@ -1817,7 +1817,7 @@ inline static int lmt_buffer_has_room(lmt_string_buffer *b, size_t needed)
             }
         } else {
             while (required >= new_size) {
-                if (new_size > (SIZE_MAX / 2)) {
+                if lmt_unlikely(new_size > (SIZE_MAX / 2)) {
                     /* prevent arithmetic overflow wrap-around */
                     luaL_error(b->L, "not enough memory for buffer");
                     return 0;
@@ -2098,7 +2098,7 @@ static const char_esc_t ESCAPE_LUT[256] = {
 
 static void serialize_string_escaped(lmt_string_buffer *b, const char *s, size_t len)
 {
-    if (len > (SIZE_MAX - 2) / 4) {
+    if lmt_unlikely(len > (SIZE_MAX - 2) / 4) {
         luaL_error(b->L, "not enough memory for buffer");
         return;
     }
@@ -2143,7 +2143,7 @@ static void serialize_string_escaped(lmt_string_buffer *b, const char *s, size_t
 
 static void serialize_string(lmt_string_buffer *b, const char *s, size_t len)
 {
-    if (len > (SIZE_MAX - 2) / 2) {
+    if lmt_unlikely(len > (SIZE_MAX - 2) / 2) {
         luaL_error(b->L, "not enough memory for buffer");
         return;
     }

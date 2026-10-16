@@ -8,6 +8,7 @@ if not modules then modules = { } end modules ['util-for'] = {
 
 local rawget    = rawget
 local rawset    = rawset
+local gsub      = string.gsub
 local formatted = sequencer.format
 local patterns  = lpeg.patterns
 local lpegmatch = lpeg.match
@@ -103,3 +104,86 @@ string.formatters = formatters
 string.formatting = formatting
 string.formatter  = function(str,...) return formatters[str](...) end
 string.formatted  = formatted
+
+-- moved from util-str to here:
+
+function number.to16dot16(n)
+    return formatted("%0.5N",n/65536.0)
+end
+
+do
+
+    local t = {
+        ["#"]  = "#H",
+        ["\n"] = "#L",
+        ['"']  = "#Q",
+        ["\r"] = "#R",
+        [" "]  = "#S",
+        ["\t"] = "#T",
+        ["\\"] = "#X",
+    }
+
+    function string.texhashed(s)
+        return (gsub(s,".",t))
+    end
+
+end
+
+-- This is a somewhat silly one used in commandline reconstruction but the older
+-- method, using a combination of fine, gsub, quoted and unquoted was not that
+-- reliable.
+--
+-- '"foo"bar \"and " whatever"' => "foo\"bar \"and \" whatever"
+-- 'foo"bar \"and " whatever'   => "foo\"bar \"and \" whatever"
+
+do
+
+    local space   = patterns.space
+    local newline = patterns.newline
+    local dquote  = patterns.dquote -- P('"')
+    local equote  = patterns.escaped + dquote / '\\"' + 1
+    local cquote  = Cc('"')
+
+    local pattern =
+        Cs(dquote * (equote - P(-2))^0 * dquote)                    -- we keep the outer but escape unescaped ones
+      + Cs(cquote * (equote - space)^0 * space * equote^0 * cquote) -- we escape unescaped ones
+
+    function string.optionalquoted(str)
+        return lpegmatch(pattern,str) or str
+    end
+
+    local pattern = Cs((newline / (os.newline or "\r") + 1)^0)
+
+    function string.replacenewlines(str)
+        return lpegmatch(pattern,str)
+    end
+
+end
+
+-- to be checked:
+
+do
+
+    local p_whitespace = patterns.whitespace
+
+    local cache = setmetatable({ }, {
+        __index =
+            function(t,k)
+                local p = Ct((C((1-p_whitespace-P(k))^1) + P(1))^1)
+                local v = function(s)
+                    return lpegmatch(p,s)
+                end
+                t[k] = v
+                return v
+            end
+    })
+
+    function string.wordsplitter(s)
+        return cache[s]
+    end
+
+end
+
+-- to be checked:
+
+string.texnewlines = lpeg.replacer(patterns.newline,"\r",true)
